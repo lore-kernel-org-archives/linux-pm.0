@@ -1,75 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to aid
- debugging failures
-Date: Tue, 11 Nov 2014 09:53:46 +0530
-Message-ID: <CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
-	<1415199239-19019-6-git-send-email-prarit@redhat.com>
+From: "Tc, Jenny" <jenny.tc@intel.com>
+Subject: RE: [PATCH 2/3] power: core: Add variables related temperature to
+ power_supply_info.
+Date: Tue, 11 Nov 2014 04:56:31 +0000
+Message-ID: <20ADAB092842284E95860F279283C5642EDB8431@BGSMSX104.gar.corp.intel.com>
+References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1412679518-21499-3-git-send-email-jonghwa3.lee@samsung.com>
+ <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
+ <546158A0.5000707@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:43529 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbaKKEXr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 23:23:47 -0500
-Received: by mail-ob0-f176.google.com with SMTP id va2so6818925obc.35
-        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2014 20:23:46 -0800 (PST)
-In-Reply-To: <1415199239-19019-6-git-send-email-prarit@redhat.com>
+Received: from mga03.intel.com ([134.134.136.65]:43505 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbaKKE4h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Nov 2014 23:56:37 -0500
+In-Reply-To: <546158A0.5000707@samsung.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index b1ee597..f158882 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  EXPORT_SYMBOL_GPL(dbs_check_cpu);
->
->  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-> -               unsigned int delay)
-> +                                   unsigned int delay,
-> +                                   struct cpufreq_policy *policy)
->  {
-> -       struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-
-I will let it crash right here instead of additional code :)
-
-> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -       WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
-> +       if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
-> +               pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
-> +                        policy->governor->name,
-> +                        atomic_read(&policy->governor->initialized),
-> +                        policy->governor_enabled, event);
-> +               BUG();
-
-How is the BUG better than the WARN here ?
-
->         switch (event) {
->         case CPUFREQ_GOV_POLICY_INIT:
-> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->         case CPUFREQ_GOV_POLICY_EXIT:
->                 mutex_lock(&dbs_data->usage_count_mutex);
->                 if (atomic_dec_and_test(&dbs_data->usage_count)) {
-> +                       if (atomic_read(&policy->governor->initialized) > 1) {
-
-Isn't this wrong? Consider 4 CPUs with separate clock line and have set
-governor-per-policy to true. EXIT will be called for every CPU hotplug and
-initialized will be 4 initially..
-
-Or I am still vacation lag'd ? :)
-
-> +                               pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
-> +                                        policy->governor->name,
-> +                                  atomic_read(&policy->governor->initialized));
-> +                               BUG();
-> +                       }
->                         sysfs_remove_group(get_governor_parent_kobj(policy),
->                                         get_sysfs_attr(dbs_data));
->
-> --
-> 1.7.9.3
->
+PiA+IFRoZSBDQyxDViBhbmQgcmVzdGFydCB0aHJlc2hvbGQgd291bGQgdmFyeSBiYXNlZCBvbiB0
+aGUgYmF0dGVyeSB0ZW1wZXJhdHVyZQ0KPiA+IFNvIEkgd291bGQgc3VnZ2VzdCB0byBoYXZlIHRl
+bXBlcmF0dXJlIHpvbmUgdGFibGUgYXMgcGFydCAgb2YgYmF0dGVyeSBpbmZvDQo+ID4gYWxvbmcg
+d2l0aCBvdGhlciBhdHRyaWJ1dGVzLg0KPiA+DQo+ID4gaW50IGl0ZXJtOyAvL2NoYXJnZSB0ZXJt
+aW5hdGlvbiBjdXJyZW50ICh1c2VkIHRvIHN0b3AgY2hhcmdpbmcpDQo+ID4gaW50IHRlbXBfem9u
+ZV9jb3VudDsgLy8gbnVtYmVyIG9mIHRlbXBlcmF0dXJlIHpvbmUgdGFibGVzIHByZXNlbnQNCj4g
+PiBzdHJ1Y3QgYmF0dF90ZW1wX21vbl90YWJsZSB0ZW1wX21vbl90YmxbTUFYX1RFTVBfTU9OX1RB
+QkxFXTsNCj4gLy90ZW1wZXJhdHVyZSB6b25lIHRhYmxlIGFycmF5DQo+ID4NCj4gPiBzdHJ1Y3Qg
+IGJhdHRfdGVtcF9tb25fdGFibGUgew0KPiA+IAkgc2hvcnQgaW50IHRlbXBfbWF4Ow0KPiA+IAkg
+c2hvcnQgaW50IGNjOw0KPiA+IAkgc2hvcnQgaW50IGN2Ow0KPiA+IAkgc2hvcnQgaW50IHZiYXRf
+dmNoa19kcm9wX3V2Ow0KPiA+IAkgc2hvcnQgaW50IHRlbXBfbWluOw0KPiA+IH07DQo+ID4NCj4g
+DQo+IA0KPiBJTU8sIHRocm90dGxpbmcgY2MvY3YgYWNjb3JkaW5nIHRoZSB0ZW1wZXJhdHVyZSBj
+YW4gYmUgZG9uZSB2aWEgdGhlcm1hbCBmdw0KPiBpbnRlcmZhY2UuIEhvd2V2ZXIgdm9sdGFnZSBk
+cm9wIGFuZCBjaGFyZ2luZyB0ZXJtaW5hdGlvbiBjdXJyZW50IGNhbiBiZSBhZGRlZCBoZXJlLg0K
+DQpUaGUgQ0MvQ1YgZm9yIGVhY2ggYmF0dGVyeSB0ZW1wZXJhdHVyZSB6b25lIGlzIGRlZmluZWQg
+YXMgcGFydCBvZiBiYXR0ZXJ5IHNwZWMuIFRoaXMgaXMNCmFzIHBlciB0aGUgSkVJVEEvUFNFIHN0
+YW5kYXJkcy4gU28gSU1PLCB0aGlzIGlzIGEgYmF0dGVyeSBjaGFyZ2luZyBpbmZvcm1hdGlvbg0K
+KGNoYXJnaW5nIG9iamVjdCkgcmF0aGVyIHRoYW4gYSB0aGVybWFsIHRocm90dGxpbmcgaW5mb3Jt
+YXRpb24uDQoNCkFsc28gdGhlIGJhdHRlcnkgaW5mb3JtYXRpb24gbWF5IG5vdCBmaXQgaW50byBh
+IHN0YW5kYXJkIGZvcm1hdC4gRGlmZmVyZW50IHN0YW5kYXJkcyBoYXZlDQpkaWZmZXJlbnQgZm9y
+bWF0IGZvciBjaGFyZ2luZyBvYmplY3QuIFNvIEkgd291bGQgc3VnZ2VzdCB0byBtYWtlIGl0IGZs
+ZXhpYmxlIGVub3VnaCB0bw0Kc3VwcG9ydCBkaWZmZXJlbnQgY2hhcmdpbmcgb2JqZWN0IGZvcm1h
+dC4gRm9yIGV4YW1wbGUgTUlQSSBCSUYgY2hhcmdpbmcgb2JqZWN0IGZvcm1hdA0KKGh0dHBzOi8v
+bWVtYmVycy5taXBpLm9yZy93Zy9CSUYvZG9jdW1lbnQvMTE1MTgpIGFuZCBNSVBJIEJJRiBSdWxl
+IGJhc2VkIGNoYXJnaW5nIGFsZ29yaXRobQ0KKGh0dHA6Ly9taXBpLm9yZy9zaXRlcy9kZWZhdWx0
+L2ZpbGVzL21pcGlfQklGX3J1bGUtYmFzZWQtY2hhcmdpbmdfd2hpdGUtcGFwZXJfMS5wZGYpDQpo
+YXMgZGlmZmVyZW50IGNoYXJnaW5nIG9iamVjdCBmb3JtYXQuIFRoaXMgaXMgd2h5IHRoZSBwYXRj
+aCAgaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTQvOC8xMy8zNTUNCmhhcyBvcHRpb24gdG8gc3Vw
+cG9ydCBkaWZmZXJlbnQgY2hhcmdpbmcgb2JqZWN0cyBhbmQgZGlmZmVyZW50IGNoYXJnaW5nIGFs
+Z29yaXRobXMuDQoNCi1KZW5ueQ0K
