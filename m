@@ -1,68 +1,46 @@
-From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH 2/3] power: core: Add variables related temperature to
- power_supply_info.
-Date: Tue, 11 Nov 2014 09:30:24 +0900
-Message-ID: <546158A0.5000707@samsung.com>
-References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
- <1412679518-21499-3-git-send-email-jonghwa3.lee@samsung.com>
- <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT calls
+Date: Tue, 11 Nov 2014 09:07:26 +0530
+Message-ID: <CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
+	<1415199239-19019-3-git-send-email-prarit@redhat.com>
+	<CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
+	<5460AF02.9010907@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:50020 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbaKKAa1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 19:30:27 -0500
-In-reply-to: <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
+Received: from mail-oi0-f44.google.com ([209.85.218.44]:60661 "EHLO
+	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbaKKDh1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 22:37:27 -0500
+Received: by mail-oi0-f44.google.com with SMTP id h136so6503778oig.3
+        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2014 19:37:26 -0800 (PST)
+In-Reply-To: <5460AF02.9010907@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Tc, Jenny" <jenny.tc@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 2014=EB=85=84 11=EC=9B=94 10=EC=9D=BC 20:16, Tc, Jenny wrote:
+On 10 November 2014 17:56, Prarit Bhargava <prarit@redhat.com> wrote:
 
->> @@ -241,6 +241,8 @@ struct power_supply_info {
->>  	int charge_empty_design;
->>  	int energy_full_design;
->>  	int energy_empty_design;
->> +	int temperature_max;
->> +	int temperature_min;
->>  	int use_for_apm;
->>  };
->=20
->=20
-> The CC,CV and restart threshold would vary based on the battery tempe=
-rature
-> So I would suggest to have temperature zone table as part  of battery=
- info
-> along with other attributes.
->=20
-> int iterm; //charge termination current (used to stop charging)
-> int temp_zone_count; // number of temperature zone tables present
-> struct batt_temp_mon_table temp_mon_tbl[MAX_TEMP_MON_TABLE]; //temper=
-ature zone table array
->=20
-> struct  batt_temp_mon_table {
-> 	 short int temp_max;
-> 	 short int cc;
-> 	 short int cv;
-> 	 short int vbat_vchk_drop_uv;
-> 	 short int temp_min;
-> };
->=20
+>> I still fail to understand why ? What will the _trylock() change ?
+>
+> viresh, afaict read_trylock will return 0 when busy with write:
 
+Yes..
 
-IMO, throttling cc/cv according the temperature can be done via thermal=
- fw
-interface. However voltage drop and charging termination current can be=
- added here.
+> static inline int queue_read_trylock(struct qrwlock *lock)
+> {
+>         u32 cnts;
+>
+>         cnts = atomic_read(&lock->cnts);
+>         if (likely(!(cnts & _QW_WMASK))) {
+>
+> so the deadlock will not occur.  the show() is opened, write lock is taken, and
+> if the thread is rescheduled and takes read lock the trylock will return 0, and
+> the thread will return -EBUSY to userspace avoiding the deadlock.
 
-
-Jonghwa
-
-> -Jenny
->=20
->=20
-
-
+Which deadlock? And also your changelog talks about accessing invalid pointers
+without the trylock change, how can that be possible? After the read
+lock is taken,
+all the pointers should be valid.
