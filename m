@@ -1,60 +1,113 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to aid
- debugging failures
-Date: Tue, 11 Nov 2014 18:41:21 +0530
-Message-ID: <CAKohpongwC4anO6+kLWVMDefuLWUmpNvUdBoLgFw7ru1vRYLgw@mail.gmail.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
-	<1415199239-19019-6-git-send-email-prarit@redhat.com>
-	<CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
-	<5461FEA0.5070706@redhat.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC 1/2] sched/fair: Add cumulative average of load_avg_contrib
+ to a task
+Date: Tue, 11 Nov 2014 20:22:55 +0530
+Message-ID: <546222C7.2030000@linux.vnet.ibm.com>
+References: <1415598358-26505-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1415598358-26505-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <20141110134911.GG29390@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5461FEA0.5070706@redhat.com>
+In-Reply-To: <20141110134911.GG29390@twins.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@linaro.org, amit.kucheria@linaro.org, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Morten.Rasmussen@arm.com, efault@gmx.de, nicolas.pitre@linaro.org, dietmar.eggemann@arm.com, pjt@google.com, bsegall@google.com, mingo@kernel.org, linaro-kernel@lists.linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 November 2014 17:48, Prarit Bhargava <prarit@redhat.com> wrote:
-> the problem is tht the userful information is the values of initialized,
-> enabled, and what the  event was :(
->
-> in every case i ended up needing the values.
+On 11/10/2014 07:19 PM, Peter Zijlstra wrote:
+> On Mon, Nov 10, 2014 at 11:15:57AM +0530, Shilpasri G Bhat wrote:
+>> +/**
+>> + * task_cumulative_load - return the cumulative load of
+>> + * the previous task if cpu is the current cpu OR the
+>> + * cumulative load of current task on the cpu. If cpu
+>> + * is idle then return 0.
+>> + *
+>> + * Invoked by the cpufreq governor to calculate the
+>> + * load when the CPU is woken from an idle state.
+>> + *
+>> + */
+>> +unsigned int task_cumulative_load(int cpu)
+>> +{
+>> +	struct rq *rq = cpu_rq(cpu);
+>> +	struct task_struct *p;
+>> +
+>> +	if (cpu == smp_processor_id()) {
+>> +		if (rq->prev == rq->idle)
+>> +			goto idle;
+>> +		p = rq->prev;
+>> +	} else {
+>> +		if (rq->curr == rq->idle)
+>> +			goto idle;
+>> +		p = rq->curr;
+>> +	}
+>> +	/*
+>> +	 * Removing the priority as we are interested in CPU
+>> +	 * utilization of the task
+>> +	 */
+>> +	return (100 * p->se.avg.cumulative_avg / p->se.load.weight);
+>> +idle:
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL(task_cumulative_load);
+> 
+> This doesn't make any sense, its wrong and also its broken.
+> 
+> This doesn't make any sense, because the load of a cpu is unrelated to
+> whatever task ran there last. You want to look at the task that is
+> waking now.
 
-So, just add a pr_debug instead and let every thing crash as it does today.
+Yes I agree that the task in consideration should be current task on
+cpu and not the last task. But the above code is handled by the
+cpufreq governor's kworker. So the task in context while executing
+'task_cumulative_load()' is kworker and we are not interested in
+kworker's load. The task's load which we want to account to is
+predecessor of kworker i.e, the task that woke up on the idle cpu.
 
->>> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>> -       WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
->>> +       if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
->>> +               pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
->>> +                        policy->governor->name,
->>> +                        atomic_read(&policy->governor->initialized),
->>> +                        policy->governor_enabled, event);
->>> +               BUG();
->>
->> How is the BUG better than the WARN here ?
->>
->
-> we null pointer panic later on, and again the useful values are the ones displayed.
+> 
+> It is wrong because dividing out the load.weight doesn't quite work
+> right. Also there's patches that introduce unweighted stats like you
+> want, you could have used those.
 
-For the values, I would add a pr_debug() for all cases. And maybe just
-do s/WARN_ON/BUG_ON
+Okay.
+> 
+> It it broken because who says rq->prev still exists?
 
->>>         switch (event) {
->>>         case CPUFREQ_GOV_POLICY_INIT:
->>> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>>         case CPUFREQ_GOV_POLICY_EXIT:
->>>                 mutex_lock(&dbs_data->usage_count_mutex);
->>>                 if (atomic_dec_and_test(&dbs_data->usage_count)) {
->>> +                       if (atomic_read(&policy->governor->initialized) > 1) {
->>
->> Isn't this wrong? Consider 4 CPUs with separate clock line and have set
->> governor-per-policy to true. EXIT will be called for every CPU hotplug and
->> initialized will be 4 initially..
->>
->> Or I am still vacation lag'd ? :)
->
-> oh, is that right?  i'll look into that.
+'task_cumulative_load()' is handled by the cpufreq governor's kworker.
+And the kworker is queued only if there is task running on cpu which
+guarantees the existence of rq->prev in a running state.
 
-What is right? sorry couldn't understand :(
+> 
+>> @@ -2476,11 +2478,13 @@ static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
+>>  static inline void __update_task_entity_contrib(struct sched_entity *se)
+>>  {
+>>  	u32 contrib;
+>> -
+>>  	/* avoid overflowing a 32-bit type w/ SCHED_LOAD_SCALE */
+>>  	contrib = se->avg.runnable_avg_sum * scale_load_down(se->load.weight);
+>>  	contrib /= (se->avg.runnable_avg_period + 1);
+>>  	se->avg.load_avg_contrib = scale_load(contrib);
+>> +	se->avg.cumulative_avg *= se->avg.cumulative_avg_count;
+>> +	se->avg.cumulative_avg += se->avg.load_avg_contrib;
+>> +	se->avg.cumulative_avg /= ++se->avg.cumulative_avg_count;
+>>  }
+> 
+> This is not a numerically stable algorithm. Look what happens when
+> cumulative_avg_count gets large. Also, whatever made you choose an
+> absolute decay filter like that?
+> 
+
+Yes I agree.
+
+The problem I am trying to solve using this metric is: if cpufreq
+governor's timer is handled very early when a task wakes up to run
+on an idle cpu then the value of 'load_avg_contrib' of that task is
+very less, when the governor's kworker is switched in. This happens
+because the task did not run for enough time such that it can update
+its 'load_avg_contrib' to show considerable amount of load.
+
+Cumulative load was our initial attempt at overcoming this. It is true
+that this is not the best solution. We wanted the community's suggestion
+on how to get around this issue. What do you propose?
+
+Thanks and Regards,
+Shilpa
