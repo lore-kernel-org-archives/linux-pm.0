@@ -1,49 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v6 00/48] kernel: Add support for power-off handler call
- chain
-Date: Tue, 11 Nov 2014 19:50:20 +0100
-Message-ID: <20141111185019.GA29452@amd>
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
- <20141110083347.GA29543@amd>
- <20141111182023.GA21970@roeck-us.net>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v3 1/2] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Tue, 11 Nov 2014 20:01:10 +0100
+Message-ID: <CABgxDoLfGYRnGCLmxnW6XCwJo3AoecO3=sLNBsOUAHig3P8New@mail.gmail.com>
+References: <1415283784-10885-1-git-send-email-romain.perier@gmail.com>
+	<1415283784-10885-2-git-send-email-romain.perier@gmail.com>
+	<20141111150139.A904BC416AF@trevor.secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141111182023.GA21970@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, LeeJon@roeck-us.net
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f177.google.com ([209.85.216.177]:56766 "EHLO
+	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbaKKTBL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 14:01:11 -0500
+In-Reply-To: <20141111150139.A904BC416AF@trevor.secretlab.ca>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Johan Hovold <johan@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
-On Tue 2014-11-11 10:20:23, Guenter Roeck wrote:
-> On Mon, Nov 10, 2014 at 09:33:48AM +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Introduce a system power-off handler call chain to solve the described
-> > > problems.  This call chain is expected to be executed from the architecture
-> > > specific machine_power_off() function.  Drivers providing system power-off
-> > > functionality are expected to register with this call chain.  By using the
-> > > priority field in the notifier block, callers can control power-off
-> > > handler
-> > 
-> > Linus rather disliked the idea of notifier chains for this... And I
-> > don't see how it got addressed.
-> > 
-> Hi all,
-> 
-> After more thought, I concluded that it is technically impossible to support
-> multiple power-off handlers without some kind of list or call chain, no matter
-> how it is called. Given the opposition from Linus and the power maintainers
-> to the series, I decided to shelf it.
+2014-11-11 16:01 GMT+01:00 Grant Likely <grant.likely@linaro.org>:
+> So, to be a little pendantic, the 'ti,' prefix is basically just for
+> backwards compatibility with the old binding, and that old binding is
+> only used on palmas.c, tps65*.c and twl4030-power.c, correct?
 
-Well, you can still do preparations -- current code directly setting
-pm_power_off is ugly -- so that if you want to switch to call chain
-later, it will be easy.
+No, the backward compatibility here is only useful for drivers which
+used "ti,system-power-controller" in the past and recently switched to
+the new property through the standard helper function. As most of the
+dts were not updated to use the new property, previous patches broke
+compatibility with "ti,system-power-controller" (this compat would be
+reverted with this serie). Only one driver has this problem, it is
+tps65910.
 
-And if that does not happen, we still get the cleanup :-).
+So, What you propose is that I should handle the old property directly
+from tps65910, and keep the standard helper generic right ?
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Romain
+
+
+
+
+>
+> We don't actually want a ti comparison in the generic code. Normally
+> what you'd do here is have the fixup in the ti driver code, possibly
+> with a ti specific helper for those 4 files.
+>
+> I'm not going to nak this patch and I know you need to get things cleaned
+> up, but the static inline really should be reduced back to just checking
+> only for "system-power-controller". The current mainline code does the
+> right thing anyway, and it is a *tiny* amount of extra code in 4 drivers
+> file.
+>
+> g.
+>
+>
+>>  }
+>>
+>>  #endif /* _LINUX_OF_H */
+>> --
+>> 1.9.1
+>>
+>
