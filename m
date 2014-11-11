@@ -1,83 +1,232 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Subject: Re: [PATCH 0/3] Add support for Tegra Activity Monitor
-Date: Tue, 11 Nov 2014 16:32:22 +0900
-Message-ID: <5461BB86.509@nvidia.com>
-References: <1414594232-15684-1-git-send-email-tomeu.vizoso@collabora.com> <545C8BCC.3090908@nvidia.com> <545CBC87.7050404@collabora.com> <546190BA.7050502@nvidia.com> <5461B35A.3080604@nvidia.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v6 41/48] powerpc: Register with kernel power-off handler
+Date: Tue, 11 Nov 2014 18:42:46 +1100
+Message-ID: <1415691766.9757.1.camel@concordia>
+References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+	 <1415583785-6980-42-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:19269 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbaKKHdD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 02:33:03 -0500
-In-Reply-To: <5461B35A.3080604@nvidia.com>
+Received: from ozlabs.org ([103.22.144.67]:55008 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbaKKHmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 11 Nov 2014 02:42:49 -0500
+In-Reply-To: <1415583785-6980-42-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?windows-1252?Q?Terje_Bergstr=F6m?= <tbergstrom@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <treding@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexander Graf <agraf@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 
-On 11/11/2014 03:57 PM, Terje Bergstr=F6m wrote:
-> On 11.11.2014 06:29, Alexandre Courbot wrote:
->> I think (after a quick look at devfreq's source) that you can avoid
->> polling altogether if you set polling_ms to 0 in your
->> devfreq_dev_profile instance. Then it is up to you to call
->> update_devfreq() from your custom governor whenever it sees fit.
->>
->> ACTMON support seems to overlap between being a governor (which reac=
-ts
->> to ACTMON interrupts and calls update_devfreq() when needed) and par=
-t of
->> a devfreq_dev_profile (get_dev_status() needs to use the actmon
->> counters). If we keep your current design where the driver simply
->> controls a clock, you could have the ACTMON driver obtain that clock=
-,
->> register its governor, create a non-polling devfreq_dev_profile that
->> controls that clock, and just call devfreq_add_device() with both. T=
-hen
->> we will have the benefit of being able to use ACTMON as well as the
->> performance and powersave governors on EMC, and switch policies
->> dynamically.
->
-> Another way to use it is that governor is just a governor. It takes i=
-n
-> load values and generates new target frequencies, and doesn't know
-> anything about HW.
->
-> Device profile is the one that enables threshold interrupts and disab=
-les
-> polling. Device profile receives the interrupt, retrieves new load
-> number from hardware, and calls update_devfreq().
->
-> This way we keep all HW specific code in device profile, and there's
-> potential to use a generic governor instead of writing your own.
+On Sun, 2014-11-09 at 17:42 -0800, Guenter Roeck wrote:
+> Register with kernel power-off handler instead of setting pm_power_off
+> directly.
+> 
+> If there is an indication that there can be more than one power-off handler,
+> use register_power_off_handler, otherwise use register_power_off_handler_simple
+> to register the power-off handler.
+> 
+> If the power-off handler only resets or stops the system, select the fallback
+> priority to indicate that the power-off handler is one of last resort.
+> If the power-off handler powers off the system, select the default priority,
+> unless the power-off handler installation code suggests that there can be
+> more than one power-off handler and the new handler is only installed
+> conditionally. In this case, install the handler with low priority.
+> 
+> Cc: Alexander Graf <agraf@suse.de>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-I see several obstacles with this approach:
+Can you fold in the patch below. I know pm.h is included by device.h, so most
+things will already have it, but I'd rather be explicit.
 
-1) update_devfreq() is a governor private function (defined in=20
-drivers/devfreq/governor.h) and it would need to be called from the=20
-device profile.
+With that you can add my:
 
-2) devfreq events (start monitoring, stop monitoring, suspend, resume,=20
-=2E..) are processed by the governor. So it would still need access to =
-the=20
-actmon registers to honor these requests.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-3) simple monitors like performance and powersave set the frequency (ma=
-x=20
-or min) once and for all when they are started, and don't need to be=20
-called again afterwards. But this is probably what will happen if you=20
-let the devfreq_dev_profile handle the ACTMON registers, since it can=20
-make no assumption on when the governor expects to be invoked.
+cheers
 
-It would be good to have the feedback of devfreq's maintainers about=20
-this (added them). How could an IP capable of monitoring activity=20
-through counters and firing interrupts when these counters reach a=20
-certain threshold be integrated nicely into devfreq? The functions seem=
-=20
-to overlap between the governor (reacting to specific events, in this=20
-case ACTMON interrupts) and dev_profile (querying current status throug=
-h=20
-the counters), and it seems difficult to come with a design where the=20
-governor and dev_profile are not tightly intertwined.
+
+
+diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+index 590d31fbbfc0..adbf36d8c5d9 100644
+--- a/arch/powerpc/platforms/44x/ppc476.c
++++ b/arch/powerpc/platforms/44x/ppc476.c
+@@ -24,6 +24,7 @@
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ #include <linux/rtc.h>
+ 
+ #include <asm/machdep.h>
+diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
+index 321a7a76eb80..7bdf4e8f7b99 100644
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -13,6 +13,7 @@
+ #include <generated/utsrelease.h>
+ #include <linux/pci.h>
+ #include <linux/of.h>
++#include <linux/pm.h>
+ #include <asm/dma.h>
+ #include <asm/prom.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index f0c4b5106103..4892491969ab 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -16,6 +16,7 @@
+ #include <linux/kdev_t.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
++#include <linux/pm.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
+index e301b1ae9c2d..1e14047f98d6 100644
+--- a/arch/powerpc/platforms/cell/celleb_setup.c
++++ b/arch/powerpc/platforms/cell/celleb_setup.c
+@@ -42,6 +42,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/console.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
+index 223d40a73130..429fefd30e4e 100644
+--- a/arch/powerpc/platforms/cell/qpace_setup.c
++++ b/arch/powerpc/platforms/cell/qpace_setup.c
+@@ -22,6 +22,7 @@
+ #include <linux/irq.h>
+ #include <linux/console.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index ea5460c0b8e7..1203a9d6cd53 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -31,6 +31,7 @@
+ #include <linux/mutex.h>
+ #include <linux/memory_hotplug.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 0c0288ed0c3b..910bd8b45fae 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -31,6 +31,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/initrd.h>
+ #include <linux/timer.h>
++#include <linux/pm.h>
+ 
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
+index af40f0fc2579..c90caff045bb 100644
+--- a/arch/powerpc/platforms/embedded6xx/gamecube.c
++++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
+@@ -18,6 +18,7 @@
+ #include <linux/kexec.h>
+ #include <linux/seq_file.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ 
+ #include <asm/io.h>
+ #include <asm/machdep.h>
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index 0c4dcf86fc7b..e1aec530f0ad 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -13,6 +13,7 @@
+ #include <linux/kernel.h>
+ #include <linux/initrd.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
+ 
+ #include <asm/time.h>
+ #include <asm/prom.h>
+diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
+index eea88245a9de..8c93b95bcc29 100644
+--- a/arch/powerpc/platforms/embedded6xx/wii.c
++++ b/arch/powerpc/platforms/embedded6xx/wii.c
+@@ -20,6 +20,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/of_platform.h>
+ #include <linux/memblock.h>
++#include <linux/pm.h>
+ #include <mm/mmu_decl.h>
+ 
+ #include <asm/io.h>
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index 73c3988202d8..962e4968d967 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -43,6 +43,7 @@
+ #include <linux/bitops.h>
+ #include <linux/of_device.h>
+ #include <linux/memblock.h>
++#include <linux/pm.h>
+ 
+ #include <asm/processor.h>
+ #include <asm/sections.h>
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 6496ae41a51d..52f2e965200a 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -53,6 +53,7 @@
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+ #include <linux/memblock.h>
++#include <linux/pm.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/sections.h>
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index a03c41bcfed1..9b124ddcddf5 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -28,6 +28,7 @@
+ #include <linux/bug.h>
+ #include <linux/pci.h>
+ #include <linux/cpufreq.h>
++#include <linux/pm.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index 77e0dea2590b..63ed88e25f3e 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -25,6 +25,7 @@
+ #include <linux/console.h>
+ #include <linux/export.h>
+ #include <linux/bootmem.h>
++#include <linux/pm.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index b3c85bb90e34..d5c944e42612 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -41,6 +41,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/of.h>
+ #include <linux/kexec.h>
++#include <linux/pm.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+
+
