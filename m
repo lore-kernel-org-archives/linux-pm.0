@@ -1,40 +1,42 @@
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
-Date: Tue, 11 Nov 2014 12:41:18 +0200
-Message-ID: <1767434.385ncFoNtj@spock>
-References: <4708675.eITUXPv8Ih@spock> <2067094.cJOA1APdny@spock> <CAKohponLC=NqTUG-mENuJ5Tomx6xgCYEBocj2P5RXXZumZaPZQ@mail.gmail.com>
+From: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH V2 12/12] MIPS: Loongson: Make CPUFreq usable for
+ Loongson-3
+Date: Tue, 11 Nov 2014 11:57:48 +0100
+Message-ID: <20141111105748.GK27259@linux-mips.org>
+References: <1415081928-25899-1-git-send-email-chenhc@lemote.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponLC=NqTUG-mENuJ5Tomx6xgCYEBocj2P5RXXZumZaPZQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eddie.linux-mips.org ([148.251.95.138]:39115 "EHLO
+	cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbaKKK55 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 05:57:57 -0500
+Received: from localhost.localdomain ([127.0.0.1]:57573 "EHLO linux-mips.org"
+        rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+        id S27013367AbaKKK5zReWly (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Nov 2014 11:57:55 +0100
+Content-Disposition: inline
+In-Reply-To: <1415081928-25899-1-git-send-email-chenhc@lemote.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Huacai Chen <chenhc@lemote.com>
+Cc: John Crispin <john@phrozen.org>, "Steven J. Hill" <Steven.Hill@imgtec.com>, linux-mips@linux-mips.org, linux-pm@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, Zhangjin Wu <wuzhangjin@gmail.com>, Hongliang Tao <taohl@lemote.com>
 
-It seems that this bug has nothing to do with acpi-cpufreq code but with 
-another ACPI area.
+On Tue, Nov 04, 2014 at 02:18:48PM +0800, Huacai Chen wrote:
 
-With ACPI enabled kernel may hang in a day or in a week (never survived more 
-than approx. 2 weeks). With acpi=off it seems to work OK. For instance, I had 
-to boot Ubuntu installer with acpi disabled to finish it successfully.
+> diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
+> index c94c4e9..01d676a 100644
+> --- a/arch/mips/kernel/smp.c
+> +++ b/arch/mips/kernel/smp.c
+> @@ -136,7 +136,8 @@ asmlinkage void start_secondary(void)
+>  	calibrate_delay();
+>  	preempt_disable();
+>  	cpu = smp_processor_id();
+> -	cpu_data[cpu].udelay_val = loops_per_jiffy;
+> +	if (!cpu_data[cpu].udelay_val)
+> +		cpu_data[cpu].udelay_val = loops_per_jiffy;
 
-Usually, hanging is not accompanied by panic log. Only small vertical red 
-lines appear on the screen near letters (tried to use plaintext 80x25 console 
-without radeon and got the same issue).
+Why this?  Is the idea that the value of loops_per_jiffy which was set
+on bootup may no longer match the actual clock frequency?
 
-Still observing this for 3.16 kernel.
-
-On Wednesday 13 August 2014 10:12:06 Viresh Kumar wrote:
-> On 13 August 2014 00:24, Oleksandr Natalenko <oleksandr@natalenko.name> 
-wrote:
-> > Updated logs.
-> 
-> Also will it be possible for you to find the last working kernel after
-> which this
-> happened?
--- 
-Oleksandr post-factum Natalenko, MSc
-pf-kernel community
-https://natalenko.name/
+  Ralf
