@@ -1,73 +1,60 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT calls
-Date: Tue, 11 Nov 2014 18:37:24 +0530
-Message-ID: <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
+Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to aid
+ debugging failures
+Date: Tue, 11 Nov 2014 18:41:21 +0530
+Message-ID: <CAKohpongwC4anO6+kLWVMDefuLWUmpNvUdBoLgFw7ru1vRYLgw@mail.gmail.com>
 References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
-	<1415199239-19019-3-git-send-email-prarit@redhat.com>
-	<CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
-	<5460AF02.9010907@redhat.com>
-	<CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com>
-	<5461FDE1.2080302@redhat.com>
+	<1415199239-19019-6-git-send-email-prarit@redhat.com>
+	<CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
+	<5461FEA0.5070706@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5461FDE1.2080302@redhat.com>
+In-Reply-To: <5461FEA0.5070706@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Prarit Bhargava <prarit@redhat.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 November 2014 17:45, Prarit Bhargava <prarit@redhat.com> wrote:
-> the deadlock in commit 955ef4833574636819cd269cfbae12f79cbde63a
+On 11 November 2014 17:48, Prarit Bhargava <prarit@redhat.com> wrote:
+> the problem is tht the userful information is the values of initialized,
+> enabled, and what the  event was :(
 >
-> [   75.471265]        CPU0                    CPU1
-> [   75.476327]        ----                    ----
-> [   75.481385]   lock(&policy->rwsem);
-> [   75.485307]                                lock(s_active#219);
-> [   75.491857]                                lock(&policy->rwsem);
-> [   75.498592]   lock(s_active#219);
-> [   75.502331]
-> [   75.502331]  *** DEADLOCK ***
+> in every case i ended up needing the values.
 
-I wanted to understand how this deadlock is prevented by a simple change
-to trylock..
+So, just add a pr_debug instead and let every thing crash as it does today.
 
->> And also your changelog talks about accessing invalid pointers
->> without the trylock change, how can that be possible? After the read
->> lock is taken,
->> all the pointers should be valid.
+>>> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>> -       WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
+>>> +       if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+>>> +               pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
+>>> +                        policy->governor->name,
+>>> +                        atomic_read(&policy->governor->initialized),
+>>> +                        policy->governor_enabled, event);
+>>> +               BUG();
+>>
+>> How is the BUG better than the WARN here ?
+>>
 >
-> consider the following very simple case:
+> we null pointer panic later on, and again the useful values are the ones displayed.
+
+For the values, I would add a pr_debug() for all cases. And maybe just
+do s/WARN_ON/BUG_ON
+
+>>>         switch (event) {
+>>>         case CPUFREQ_GOV_POLICY_INIT:
+>>> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>>         case CPUFREQ_GOV_POLICY_EXIT:
+>>>                 mutex_lock(&dbs_data->usage_count_mutex);
+>>>                 if (atomic_dec_and_test(&dbs_data->usage_count)) {
+>>> +                       if (atomic_read(&policy->governor->initialized) > 1) {
+>>
+>> Isn't this wrong? Consider 4 CPUs with separate clock line and have set
+>> governor-per-policy to true. EXIT will be called for every CPU hotplug and
+>> initialized will be 4 initially..
+>>
+>> Or I am still vacation lag'd ? :)
 >
-> the governor is ondemand.  cpu 0 reads cpuinfo_cur_freq. cpu0 expects to get the
-> current cpu freq for the ondemand governor.
+> oh, is that right?  i'll look into that.
 
-Name it A.
-
->
-> simultaneously, cpu1 changes the governor from ondemand to userspace.
-
-Name it B.
-
->
-> the two threads will race for the policy->mutex
->
-> suppose cpu0 gets it first.  then there is no problem.  the userspace program
-> for cpu0 gets exactly the data it is expecting.
->
-> Now suppose cpu1 gets the lock and starts to write ... cpu0 is blocked.
->
-> cpu1 completes the governor change, and cpu0 gets the mutex ... and returns
-> bogus data at this point.
-
-What do you mean by bogus here? That userspace wouldn't be able to know if
-the value is for which governor?
-
-If that's the case than it can still happen. Issue both above commands at almost
-the same time. You will never be able to differentiate if the sequence is:
-
-- A followed by B
-- B followed by A
-- A waited for B and so returned -EBUSY (Only this will be clear)
-
-And the value read can still be bogus. So, we haven't solved the problem at all.
+What is right? sorry couldn't understand :(
