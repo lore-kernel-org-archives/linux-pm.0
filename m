@@ -1,90 +1,68 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req before
- idle
-Date: Mon, 10 Nov 2014 23:21:19 +0100
-Message-ID: <54613A5F.7060107@linaro.org>
-References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-3-git-send-email-daniel.lezcano@linaro.org> <20141110124111.GN3337@twins.programming.kicks-ass.net> <5460D5EF.2000805@linaro.org> <20141110152803.GX10501@worktop.programming.kicks-ass.net> <5460E0A5.9040508@linaro.org> <20141110161530.GB10501@worktop.programming.kicks-ass.net> <5460F386.1050109@linaro.org> <20141110194820.GD10501@worktop.programming.kicks-ass.net>
+From: jonghwa3.lee@samsung.com
+Subject: Re: [PATCH 2/3] power: core: Add variables related temperature to
+ power_supply_info.
+Date: Tue, 11 Nov 2014 09:30:24 +0900
+Message-ID: <546158A0.5000707@samsung.com>
+References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1412679518-21499-3-git-send-email-jonghwa3.lee@samsung.com>
+ <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141110194820.GD10501@worktop.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:50020 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbaKKAa1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 19:30:27 -0500
+In-reply-to: <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Tc, Jenny" <jenny.tc@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-On 11/10/2014 08:48 PM, Peter Zijlstra wrote:
-> On Mon, Nov 10, 2014 at 06:19:02PM +0100, Daniel Lezcano wrote:
->>> I really don't get why the governors should know about this though,=
- its
->>> just another state, they should iterate all states and pick the bes=
-t,
->>> given the power usage this state should really never be eligible un=
-less
->>> we're QoS forced or whatnot.
->>
->> The governors just don't use the poll state at all, except for a cou=
-ple of
->> cases in menu.c defined above in the previous email. What is the rat=
-ional of
->> adding a state in the cpuidle driver and do everything we can to avo=
-id using
->> it ? From my POV, the poll state is a special state, we should remov=
-e from
->> the driver's idle states like the arch_cpu_idle() is a specific idle=
- state
->> only used in idle.c (but which may overlap with an idle state in dif=
-ferent
->> archs eg. cpu_do_idle() and the 0th idle state).
->
-> So I disagree, I think poll-idle is an idle mode just like all the
-> others. It should be an available state to the governor and it should
-> treat it like any other.
+On 2014=EB=85=84 11=EC=9B=94 10=EC=9D=BC 20:16, Tc, Jenny wrote:
 
-The governors are just ignoring it, except for a small timer=20
-optimization in menu.c (and I am still not convinced it is worth to hav=
-e=20
-it). I don't see the point to add a state we don't want to use.
-
-Eg. on my server it was called 2 times over 1313856 times.
-
-> I don't tihnk the whole ARCH_HAS_CPU_RELAX thing makes any kind of
-> sense, _every_ arch has some definition of it, the generic polling lo=
-op
-> is always a valid idle implementation.
->
-> What we can do is always populate the idle state table with it before
-> calling the regular drivers.
-
-I am not sure to understand. You want to add the poll idle loop in all=20
-the drivers ?
-
-What about "safe_halt()" ? (arch_cpu_idle() for x86). It is also an idl=
-e=20
-state. Why not add it in the idle state table also ?
-
-> If the arch drivers have a 'better' latency_req=3D=3D0 idle routine -=
-- note
-> my argument on the ppc issue, I think its wrong -- it can replace the
-> existing one.
->
-> We should further remove all the special casing in the governors, its
-> always a valid state, but it should hardly ever be the most desirable
-> state.
->
-> I think the whole arch specific idle loop is a mistake, we already ha=
-ve
-> an (arch) interface into the idle routines, we don't need yet another=
-=2E
+>> @@ -241,6 +241,8 @@ struct power_supply_info {
+>>  	int charge_empty_design;
+>>  	int energy_full_design;
+>>  	int energy_empty_design;
+>> +	int temperature_max;
+>> +	int temperature_min;
+>>  	int use_for_apm;
+>>  };
+>=20
+>=20
+> The CC,CV and restart threshold would vary based on the battery tempe=
+rature
+> So I would suggest to have temperature zone table as part  of battery=
+ info
+> along with other attributes.
+>=20
+> int iterm; //charge termination current (used to stop charging)
+> int temp_zone_count; // number of temperature zone tables present
+> struct batt_temp_mon_table temp_mon_tbl[MAX_TEMP_MON_TABLE]; //temper=
+ature zone table array
+>=20
+> struct  batt_temp_mon_table {
+> 	 short int temp_max;
+> 	 short int cc;
+> 	 short int cv;
+> 	 short int vbat_vchk_drop_uv;
+> 	 short int temp_min;
+> };
+>=20
 
 
+IMO, throttling cc/cv according the temperature can be done via thermal=
+ fw
+interface. However voltage drop and charging termination current can be=
+ added here.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Jonghwa
+
+> -Jenny
+>=20
+>=20
+
+
