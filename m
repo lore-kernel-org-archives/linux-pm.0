@@ -1,89 +1,63 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to
- aid debugging failures
-Date: Tue, 11 Nov 2014 07:18:40 -0500
-Message-ID: <5461FEA0.5070706@redhat.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-6-git-send-email-prarit@redhat.com> <CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: re: PM / clock_ops: Add pm_clk_add_clk()
+Date: Tue, 11 Nov 2014 16:04:14 +0300
+Message-ID: <20141111130414.GB19962@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36946 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbaKKMSw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Nov 2014 07:18:52 -0500
-In-Reply-To: <CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
+Received: from aserp1040.oracle.com ([141.146.126.69]:42805 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751297AbaKKNDE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 08:03:04 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: geert+renesas@glider.be
+Cc: linux-pm@vger.kernel.org
 
+Hello Geert Uytterhoeven,
 
+The patch 245bd6f6af8a: "PM / clock_ops: Add pm_clk_add_clk()" from
+Nov 6, 2014, leads to the following static checker warning:
 
-On 11/10/2014 11:23 PM, Viresh Kumar wrote:
-> On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
->> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
->> index b1ee597..f158882 100644
->> --- a/drivers/cpufreq/cpufreq_governor.c
->> +++ b/drivers/cpufreq/cpufreq_governor.c
->> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
->>
->>  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->> -               unsigned int delay)
->> +                                   unsigned int delay,
->> +                                   struct cpufreq_policy *policy)
->>  {
->> -       struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-> 
-> I will let it crash right here instead of additional code :)
+	drivers/base/power/clock_ops.c:98 __pm_clk_add()
+	warn: 'ce->clk' isn't an ERR_PTR
 
-the problem is tht the userful information is the values of initialized,
-enabled, and what the  event was :(
+drivers/base/power/clock_ops.c
+    74  static int __pm_clk_add(struct device *dev, const char *con_id,
+    75                          struct clk *clk)
+    76  {
+    77          struct pm_subsys_data *psd = dev_to_psd(dev);
+    78          struct pm_clock_entry *ce;
+    79  
+    80          if (!psd)
+    81                  return -EINVAL;
+    82  
+    83          ce = kzalloc(sizeof(*ce), GFP_KERNEL);
+    84          if (!ce) {
+    85                  dev_err(dev, "Not enough memory for clock entry.\n");
+    86                  return -ENOMEM;
+    87          }
+    88  
+    89          if (con_id) {
+    90                  ce->con_id = kstrdup(con_id, GFP_KERNEL);
+    91                  if (!ce->con_id) {
+    92                          dev_err(dev,
+    93                                  "Not enough memory for clock connection ID.\n");
+    94                          kfree(ce);
+    95                          return -ENOMEM;
+    96                  }
+    97          } else {
+    98                  if (IS_ERR(ce->clk) || !__clk_get(clk)) {
+                                   ^^^^^^^
+ce->clk is still zero because it comes from kzalloc().  I don't know
+what was intended here.
 
-in every case i ended up needing the values.
+    99                          kfree(ce);
+   100                          return -ENOENT;
+   101                  }
+   102                  ce->clk = clk;
+   103          }
 
-> 
->> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->> -       WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
->> +       if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
->> +               pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
->> +                        policy->governor->name,
->> +                        atomic_read(&policy->governor->initialized),
->> +                        policy->governor_enabled, event);
->> +               BUG();
-> 
-> How is the BUG better than the WARN here ?
-> 
-
-we null pointer panic later on, and again the useful values are the ones displayed.
-
->>         switch (event) {
->>         case CPUFREQ_GOV_POLICY_INIT:
->> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>         case CPUFREQ_GOV_POLICY_EXIT:
->>                 mutex_lock(&dbs_data->usage_count_mutex);
->>                 if (atomic_dec_and_test(&dbs_data->usage_count)) {
->> +                       if (atomic_read(&policy->governor->initialized) > 1) {
-> 
-> Isn't this wrong? Consider 4 CPUs with separate clock line and have set
-> governor-per-policy to true. EXIT will be called for every CPU hotplug and
-> initialized will be 4 initially..
-> 
-> Or I am still vacation lag'd ? :)
-
-oh, is that right?  i'll look into that.
-
-P.
-> 
->> +                               pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
->> +                                        policy->governor->name,
->> +                                  atomic_read(&policy->governor->initialized));
->> +                               BUG();
->> +                       }
->>                         sysfs_remove_group(get_governor_parent_kobj(policy),
->>                                         get_sysfs_attr(dbs_data));
->>
->> --
->> 1.7.9.3
->>
+regards,
+dan carpenter
