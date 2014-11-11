@@ -1,232 +1,231 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v6 41/48] powerpc: Register with kernel power-off handler
-Date: Tue, 11 Nov 2014 18:42:46 +1100
-Message-ID: <1415691766.9757.1.camel@concordia>
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-	 <1415583785-6980-42-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:55008 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751705AbaKKHmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Nov 2014 02:42:49 -0500
-In-Reply-To: <1415583785-6980-42-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V2] PM / Domains: Fix initial default state of the need_restore flag
+Date: Tue, 11 Nov 2014 11:07:08 +0100
+Message-ID: <1415700428-15867-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexander Graf <agraf@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 
-On Sun, 2014-11-09 at 17:42 -0800, Guenter Roeck wrote:
-> Register with kernel power-off handler instead of setting pm_power_off
-> directly.
-> 
-> If there is an indication that there can be more than one power-off handler,
-> use register_power_off_handler, otherwise use register_power_off_handler_simple
-> to register the power-off handler.
-> 
-> If the power-off handler only resets or stops the system, select the fallback
-> priority to indicate that the power-off handler is one of last resort.
-> If the power-off handler powers off the system, select the default priority,
-> unless the power-off handler installation code suggests that there can be
-> more than one power-off handler and the new handler is only installed
-> conditionally. In this case, install the handler with low priority.
-> 
-> Cc: Alexander Graf <agraf@suse.de>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+The initial state of the device's need_restore flag should'nt depend on
+the current state of the PM domain. For example it should be perfectly
+valid to attach an inactive device to a powered PM domain.
 
-Can you fold in the patch below. I know pm.h is included by device.h, so most
-things will already have it, but I'd rather be explicit.
+The pm_genpd_dev_need_restore() API allow us to update the need_restore
+flag to somewhat cope with such scenarios. Typically that should have
+been done from drivers/buses ->probe() since it's those that put the
+requirements on the value of the need_restore flag.
 
-With that you can add my:
+Until recently, the Exynos SOCs were the only user of the
+pm_genpd_dev_need_restore() API, though invoking it from a centralized
+location while adding devices to their PM domains.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Due to that Exynos now have swithed to the generic OF-based PM domain
+look-up, it's no longer possible to invoke the API from a centralized
+location. The reason is because devices are now added to their PM
+domains during the probe sequence.
 
-cheers
+Commit "ARM: exynos: Move to generic PM domain DT bindings"
+did the switch for Exynos to the generic OF-based PM domain look-up,
+but it also removed the call to pm_genpd_dev_need_restore(). This
+caused a regression for some of the Exynos drivers.
 
+To handle things more properly in the generic PM domain, let's change
+the default initial value of the need_restore flag to reflect that the
+state is unknown. As soon as some of the runtime PM callbacks gets
+invoked, update the initial value accordingly.
 
+Moreover, since the generic PM domain is verifying that all device's
+are both runtime PM enabled and suspended, using pm_runtime_suspended()
+while pm_genpd_poweroff() is invoked from the scheduled work, we can be
+sure of that the PM domain won't be powering off while having active
+devices.
 
-diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
-index 590d31fbbfc0..adbf36d8c5d9 100644
---- a/arch/powerpc/platforms/44x/ppc476.c
-+++ b/arch/powerpc/platforms/44x/ppc476.c
-@@ -24,6 +24,7 @@
- #include <linux/init.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- #include <linux/rtc.h>
- 
- #include <asm/machdep.h>
-diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-index 321a7a76eb80..7bdf4e8f7b99 100644
---- a/arch/powerpc/platforms/52xx/efika.c
-+++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -13,6 +13,7 @@
- #include <generated/utsrelease.h>
- #include <linux/pci.h>
- #include <linux/of.h>
-+#include <linux/pm.h>
- #include <asm/dma.h>
- #include <asm/prom.h>
- #include <asm/time.h>
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index f0c4b5106103..4892491969ab 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -16,6 +16,7 @@
- #include <linux/kdev_t.h>
- #include <linux/delay.h>
- #include <linux/interrupt.h>
-+#include <linux/pm.h>
- 
- #include <asm/time.h>
- #include <asm/machdep.h>
-diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
-index e301b1ae9c2d..1e14047f98d6 100644
---- a/arch/powerpc/platforms/cell/celleb_setup.c
-+++ b/arch/powerpc/platforms/cell/celleb_setup.c
-@@ -42,6 +42,7 @@
- #include <linux/root_dev.h>
- #include <linux/console.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- 
- #include <asm/mmu.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
-index 223d40a73130..429fefd30e4e 100644
---- a/arch/powerpc/platforms/cell/qpace_setup.c
-+++ b/arch/powerpc/platforms/cell/qpace_setup.c
-@@ -22,6 +22,7 @@
- #include <linux/irq.h>
- #include <linux/console.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- 
- #include <asm/mmu.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-index ea5460c0b8e7..1203a9d6cd53 100644
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -31,6 +31,7 @@
- #include <linux/mutex.h>
- #include <linux/memory_hotplug.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- 
- #include <asm/mmu.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 0c0288ed0c3b..910bd8b45fae 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -31,6 +31,7 @@
- #include <linux/root_dev.h>
- #include <linux/initrd.h>
- #include <linux/timer.h>
-+#include <linux/pm.h>
- 
- #include <asm/io.h>
- #include <asm/pgtable.h>
-diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
-index af40f0fc2579..c90caff045bb 100644
---- a/arch/powerpc/platforms/embedded6xx/gamecube.c
-+++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
-@@ -18,6 +18,7 @@
- #include <linux/kexec.h>
- #include <linux/seq_file.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- 
- #include <asm/io.h>
- #include <asm/machdep.h>
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index 0c4dcf86fc7b..e1aec530f0ad 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -13,6 +13,7 @@
- #include <linux/kernel.h>
- #include <linux/initrd.h>
- #include <linux/of_platform.h>
-+#include <linux/pm.h>
- 
- #include <asm/time.h>
- #include <asm/prom.h>
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index eea88245a9de..8c93b95bcc29 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -20,6 +20,7 @@
- #include <linux/seq_file.h>
- #include <linux/of_platform.h>
- #include <linux/memblock.h>
-+#include <linux/pm.h>
- #include <mm/mmu_decl.h>
- 
- #include <asm/io.h>
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 73c3988202d8..962e4968d967 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -43,6 +43,7 @@
- #include <linux/bitops.h>
- #include <linux/of_device.h>
- #include <linux/memblock.h>
-+#include <linux/pm.h>
- 
- #include <asm/processor.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 6496ae41a51d..52f2e965200a 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -53,6 +53,7 @@
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
- #include <linux/memblock.h>
-+#include <linux/pm.h>
- 
- #include <asm/reg.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index a03c41bcfed1..9b124ddcddf5 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -28,6 +28,7 @@
- #include <linux/bug.h>
- #include <linux/pci.h>
- #include <linux/cpufreq.h>
-+#include <linux/pm.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index 77e0dea2590b..63ed88e25f3e 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/console.h>
- #include <linux/export.h>
- #include <linux/bootmem.h>
-+#include <linux/pm.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index b3c85bb90e34..d5c944e42612 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -41,6 +41,7 @@
- #include <linux/root_dev.h>
- #include <linux/of.h>
- #include <linux/kexec.h>
-+#include <linux/pm.h>
- 
- #include <asm/mmu.h>
- #include <asm/processor.h>
+Do note that, the generic PM domain can still only know about active
+devices which has been activated through invoking its runtime PM resume
+callback. In other words, buses/drivers using pm_runtime_set_active()
+during ->probe() will still suffer from a race condition, potentially
+probing a device without having its PM domain being powered. That issue
+will have to be solved using a different approach.
+
+This a log from the boot regression for Exynos5, which is being fixed in
+this patch.
+
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
+Modules linked in:
+CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
+Workqueue: pm pm_runtime_work
+[<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
+[<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
+[<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
+[<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
+[<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
+[<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
+[<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
+[<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
+[<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
+[<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
+[<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
+[<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
+[<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
+[<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
+[<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
+[<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
+[<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
+[<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
+---[ end trace 40cd58bcd6988f12 ]---
+
+Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
+Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Tested-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+I am resending the v2, since I realized that I forgot to update the version in
+the patch header.
+
+Changes in v2:
+	Applied some Reviewed|Tested-by tags.
+	Added some newlines. (Kevin)
+	Checking for the sign instead of for a specific value. (Rafael)
 
 
+This patch is intended as fix for 3.18 rc[n] due to the regression for Exynos
+SOCs.
+
+I would also like to call for help in getting this thoroughly tested.
+
+I have tested this on Arndale Dual, Exynos 5250. According the log attached in
+the commit message as well.
+
+I have tested this on UX500, which support for the generic PM domain is about
+to be queued for 3.19. Since UX500 uses the AMBA bus/drivers, which uses
+pm_runtime_set_active() instead of pm_runtime_get_sync() during ->probe(), I
+could also verify that this behavior is maintained.
+
+Finally I have also tested this patchset on UX500 and using the below patchset
+to make sure the approach is suitable long term wise as well.
+[PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+http://www.spinics.net/lists/arm-kernel/msg369409.html
+
+---
+ drivers/base/power/domain.c | 38 ++++++++++++++++++++++++++++++++------
+ include/linux/pm_domain.h   |  2 +-
+ 2 files changed, 33 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index b520687..df41c69 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -361,9 +361,19 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+ 	struct device *dev = pdd->dev;
+ 	int ret = 0;
+ 
+-	if (gpd_data->need_restore)
++	if (gpd_data->need_restore > 0)
+ 		return 0;
+ 
++	/*
++	 * If the value of the need_restore flag is still unknown at this point,
++	 * we trust that pm_genpd_poweroff() has verified that the device is
++	 * already runtime PM suspended.
++	 */
++	if (gpd_data->need_restore < 0) {
++		gpd_data->need_restore = 1;
++		return 0;
++	}
++
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	genpd_start_dev(genpd, dev);
+@@ -373,7 +383,7 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+ 	mutex_lock(&genpd->lock);
+ 
+ 	if (!ret)
+-		gpd_data->need_restore = true;
++		gpd_data->need_restore = 1;
+ 
+ 	return ret;
+ }
+@@ -389,12 +399,17 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
+ {
+ 	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
+ 	struct device *dev = pdd->dev;
+-	bool need_restore = gpd_data->need_restore;
++	int need_restore = gpd_data->need_restore;
+ 
+-	gpd_data->need_restore = false;
++	gpd_data->need_restore = 0;
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	genpd_start_dev(genpd, dev);
++
++	/*
++	 * Make sure to also restore those devices which we until now, didn't
++	 * know the state for.
++	 */
+ 	if (need_restore)
+ 		genpd_restore_dev(genpd, dev);
+ 
+@@ -603,6 +618,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
+ static int pm_genpd_runtime_suspend(struct device *dev)
+ {
+ 	struct generic_pm_domain *genpd;
++	struct generic_pm_domain_data *gpd_data;
+ 	bool (*stop_ok)(struct device *__dev);
+ 	int ret;
+ 
+@@ -628,6 +644,16 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+ 		return 0;
+ 
+ 	mutex_lock(&genpd->lock);
++
++	/*
++	 * If we have an unknown state of the need_restore flag, it means none
++	 * of the runtime PM callbacks has been invoked yet. Let's update the
++	 * flag to reflect that the current state is active.
++	 */
++	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++	if (gpd_data->need_restore < 0)
++		gpd_data->need_restore = 0;
++
+ 	genpd->in_progress++;
+ 	pm_genpd_poweroff(genpd);
+ 	genpd->in_progress--;
+@@ -1442,7 +1468,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	mutex_lock(&gpd_data->lock);
+ 	gpd_data->base.dev = dev;
+ 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+-	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
++	gpd_data->need_restore = -1;
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = -1;
+ 	mutex_unlock(&gpd_data->lock);
+@@ -1546,7 +1572,7 @@ void pm_genpd_dev_need_restore(struct device *dev, bool val)
+ 
+ 	psd = dev_to_psd(dev);
+ 	if (psd && psd->domain_data)
+-		to_gpd_data(psd->domain_data)->need_restore = val;
++		to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ }
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b3ed776..2e0e06d 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -106,7 +106,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block nb;
+ 	struct mutex lock;
+ 	unsigned int refcount;
+-	bool need_restore;
++	int need_restore;
+ };
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
+-- 
+1.9.1
