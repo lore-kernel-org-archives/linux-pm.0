@@ -1,42 +1,99 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH V2 12/12] MIPS: Loongson: Make CPUFreq usable for
- Loongson-3
-Date: Tue, 11 Nov 2014 11:57:48 +0100
-Message-ID: <20141111105748.GK27259@linux-mips.org>
-References: <1415081928-25899-1-git-send-email-chenhc@lemote.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/6] sched: idle: Add a weak arch_cpu_idle_poll function
+Date: Tue, 11 Nov 2014 16:30:06 +0530
+Message-ID: <5461EC36.8080701@linux.vnet.ibm.com>
+References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org> <20141110122954.GM3337@twins.programming.kicks-ass.net> <5460C9A6.6080103@linux.vnet.ibm.com> <20141110151735.GW10501@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:39115 "EHLO
-	cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbaKKK55 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 05:57:57 -0500
-Received: from localhost.localdomain ([127.0.0.1]:57573 "EHLO linux-mips.org"
-        rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
-        id S27013367AbaKKK5zReWly (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Nov 2014 11:57:55 +0100
-Content-Disposition: inline
-In-Reply-To: <1415081928-25899-1-git-send-email-chenhc@lemote.com>
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38173 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752313AbaKKLA0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 11 Nov 2014 06:00:26 -0500
+Received: from /spool/local
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Tue, 11 Nov 2014 06:00:25 -0500
+In-Reply-To: <20141110151735.GW10501@worktop.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Huacai Chen <chenhc@lemote.com>
-Cc: John Crispin <john@phrozen.org>, "Steven J. Hill" <Steven.Hill@imgtec.com>, linux-mips@linux-mips.org, linux-pm@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, Zhangjin Wu <wuzhangjin@gmail.com>, Hongliang Tao <taohl@lemote.com>
+To: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-On Tue, Nov 04, 2014 at 02:18:48PM +0800, Huacai Chen wrote:
+On 11/10/2014 08:47 PM, Peter Zijlstra wrote:
+> On Mon, Nov 10, 2014 at 07:50:22PM +0530, Preeti U Murthy wrote:
+>> Hi Peter,
+>>
+>> On 11/10/2014 05:59 PM, Peter Zijlstra wrote:
+>>> On Fri, Nov 07, 2014 at 03:31:22PM +0100, Daniel Lezcano wrote:
+>>>> The poll function is called when a timer expired or if we force to poll when
+>>>> the cpu_idle_force_poll option is set.
+>>>>
+>>>> The poll function does:
+>>>>
+>>>>        local_irq_enable();
+>>>>        while (!tif_need_resched())
+>>>>                cpu_relax();
+>>>>
+>>>> This default poll function suits for the x86 arch because its rep; nop;
+>>>> hardware power optimization. But on other archs, this optimization does not
+>>>> exists and we are not saving power. The arch specific bits may want to
+>>>> optimize this loop by adding their own optimization.
+>>>
+>>> This doesn't make sense to me; should an arch not either implement an
+>>> actual idle driver or implement cpu_relax() properly, why allow for a
+>>> third weird option?
+>>>
+>>
+>> The previous version of this patch simply invoked cpu_idle_loop() for
+>> cases where latency_req was 0. This would have changed the behavior
+>> on PowerPC wherein earlier the 0th idle index was returned which is also
+>> a polling loop but differs from cpu_idle_loop() in two ways:
+>>
+>> a. It polls at a relatively lower power state than cpu_relax().
+>> b. We set certain registers to indicate that the cpu is idle.
+> 
+> So I'm confused; the current code runs the generic cpu_relax idle poll
+> loop for the broadcast case. I suppose you want to retain this because
+> not doing your a-b above will indeed give you a lower latency.
+> 
+> Therefore one could argue that latency_req==0 should indeed use this,
+> and your a-b idle state should be latency_req==1 or higher.
+> 
+> Thus yes it changes behaviour, but I think it actually fixes something.
+> You cannot have a latency_req==0 state which has higher latency than the
+> actual polling loop, as you appear to have.
 
-> diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-> index c94c4e9..01d676a 100644
-> --- a/arch/mips/kernel/smp.c
-> +++ b/arch/mips/kernel/smp.c
-> @@ -136,7 +136,8 @@ asmlinkage void start_secondary(void)
->  	calibrate_delay();
->  	preempt_disable();
->  	cpu = smp_processor_id();
-> -	cpu_data[cpu].udelay_val = loops_per_jiffy;
-> +	if (!cpu_data[cpu].udelay_val)
-> +		cpu_data[cpu].udelay_val = loops_per_jiffy;
+Yes you are right. This is fixing the current behavior. So we should be
+good to call cpuidle_idle_loop() when latency_req=0.
 
-Why this?  Is the idea that the value of loops_per_jiffy which was set
-on bootup may no longer match the actual clock frequency?
+> 
+>> Hence for all such cases wherein the cpu is required to poll while idle
+>> (only for cases such as force poll, broadcast ipi to arrive soon and
+>> latency_req = 0), we should be able to call into cpuidle_idle_loop()
+>> only if the cpuidle driver's 0th idle state has an exit_latency > 0.
+>> (The 0th idle state is expected to be a polling loop with
+>> exit_latency = 0).
+>>
+>> If otherwise, it would mean the driver has an optimized polling loop
+>> when idle. But instead of adding in the logic of checking the
+>> exit_latency, we thought it would be simpler to call into an arch
+>> defined polling idle loop under the above circumstances. If that is no
+>> better we could fall back to cpuidle_idle_loop().
+> 
+> That still doesn't make sense to me; suppose the implementation of this
+> special poll state differs on different uarchs for the same arch, then
+> we'll end up with another registration and selection interface parallel
+> to cpuidle.
 
-  Ralf
+Yeah this will only get complicated. I was trying to see how to keep the
+current behavior unchanged but looks like it is not worth it.
+
+Thanks
+
+Regards
+Preeti U Murthy
+> 
+> 
+
