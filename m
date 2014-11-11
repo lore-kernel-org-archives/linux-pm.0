@@ -1,63 +1,73 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: re: PM / clock_ops: Add pm_clk_add_clk()
-Date: Tue, 11 Nov 2014 16:04:14 +0300
-Message-ID: <20141111130414.GB19962@mwanda>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT calls
+Date: Tue, 11 Nov 2014 18:37:24 +0530
+Message-ID: <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
+	<1415199239-19019-3-git-send-email-prarit@redhat.com>
+	<CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
+	<5460AF02.9010907@redhat.com>
+	<CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com>
+	<5461FDE1.2080302@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:42805 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbaKKNDE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 08:03:04 -0500
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5461FDE1.2080302@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: geert+renesas@glider.be
-Cc: linux-pm@vger.kernel.org
 
-Hello Geert Uytterhoeven,
+On 11 November 2014 17:45, Prarit Bhargava <prarit@redhat.com> wrote:
+> the deadlock in commit 955ef4833574636819cd269cfbae12f79cbde63a
+>
+> [   75.471265]        CPU0                    CPU1
+> [   75.476327]        ----                    ----
+> [   75.481385]   lock(&policy->rwsem);
+> [   75.485307]                                lock(s_active#219);
+> [   75.491857]                                lock(&policy->rwsem);
+> [   75.498592]   lock(s_active#219);
+> [   75.502331]
+> [   75.502331]  *** DEADLOCK ***
 
-The patch 245bd6f6af8a: "PM / clock_ops: Add pm_clk_add_clk()" from
-Nov 6, 2014, leads to the following static checker warning:
+I wanted to understand how this deadlock is prevented by a simple change
+to trylock..
 
-	drivers/base/power/clock_ops.c:98 __pm_clk_add()
-	warn: 'ce->clk' isn't an ERR_PTR
+>> And also your changelog talks about accessing invalid pointers
+>> without the trylock change, how can that be possible? After the read
+>> lock is taken,
+>> all the pointers should be valid.
+>
+> consider the following very simple case:
+>
+> the governor is ondemand.  cpu 0 reads cpuinfo_cur_freq. cpu0 expects to get the
+> current cpu freq for the ondemand governor.
 
-drivers/base/power/clock_ops.c
-    74  static int __pm_clk_add(struct device *dev, const char *con_id,
-    75                          struct clk *clk)
-    76  {
-    77          struct pm_subsys_data *psd = dev_to_psd(dev);
-    78          struct pm_clock_entry *ce;
-    79  
-    80          if (!psd)
-    81                  return -EINVAL;
-    82  
-    83          ce = kzalloc(sizeof(*ce), GFP_KERNEL);
-    84          if (!ce) {
-    85                  dev_err(dev, "Not enough memory for clock entry.\n");
-    86                  return -ENOMEM;
-    87          }
-    88  
-    89          if (con_id) {
-    90                  ce->con_id = kstrdup(con_id, GFP_KERNEL);
-    91                  if (!ce->con_id) {
-    92                          dev_err(dev,
-    93                                  "Not enough memory for clock connection ID.\n");
-    94                          kfree(ce);
-    95                          return -ENOMEM;
-    96                  }
-    97          } else {
-    98                  if (IS_ERR(ce->clk) || !__clk_get(clk)) {
-                                   ^^^^^^^
-ce->clk is still zero because it comes from kzalloc().  I don't know
-what was intended here.
+Name it A.
 
-    99                          kfree(ce);
-   100                          return -ENOENT;
-   101                  }
-   102                  ce->clk = clk;
-   103          }
+>
+> simultaneously, cpu1 changes the governor from ondemand to userspace.
 
-regards,
-dan carpenter
+Name it B.
+
+>
+> the two threads will race for the policy->mutex
+>
+> suppose cpu0 gets it first.  then there is no problem.  the userspace program
+> for cpu0 gets exactly the data it is expecting.
+>
+> Now suppose cpu1 gets the lock and starts to write ... cpu0 is blocked.
+>
+> cpu1 completes the governor change, and cpu0 gets the mutex ... and returns
+> bogus data at this point.
+
+What do you mean by bogus here? That userspace wouldn't be able to know if
+the value is for which governor?
+
+If that's the case than it can still happen. Issue both above commands at almost
+the same time. You will never be able to differentiate if the sequence is:
+
+- A followed by B
+- B followed by A
+- A waited for B and so returned -EBUSY (Only this will be clear)
+
+And the value read can still be bogus. So, we haven't solved the problem at all.
