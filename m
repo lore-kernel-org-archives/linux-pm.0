@@ -1,75 +1,89 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT
- calls
-Date: Tue, 11 Nov 2014 07:15:29 -0500
-Message-ID: <5461FDE1.2080302@redhat.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-3-git-send-email-prarit@redhat.com> <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com> <5460AF02.9010907@redhat.com> <CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com>
+Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to
+ aid debugging failures
+Date: Tue, 11 Nov 2014 07:18:40 -0500
+Message-ID: <5461FEA0.5070706@redhat.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-6-git-send-email-prarit@redhat.com> <CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:36946 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbaKKMSw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 11 Nov 2014 07:18:52 -0500
+In-Reply-To: <CAKohpon3ybK1YhemeZ_kxFCLowsJSZSO3P7=CTZaWpAMwNh7Dg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 
 
-On 11/10/2014 10:37 PM, Viresh Kumar wrote:
-> On 10 November 2014 17:56, Prarit Bhargava <prarit@redhat.com> wrote:
-> 
->>> I still fail to understand why ? What will the _trylock() change ?
+On 11/10/2014 11:23 PM, Viresh Kumar wrote:
+> On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
+>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>> index b1ee597..f158882 100644
+>> --- a/drivers/cpufreq/cpufreq_governor.c
+>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
 >>
->> viresh, afaict read_trylock will return 0 when busy with write:
+>>  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+>> -               unsigned int delay)
+>> +                                   unsigned int delay,
+>> +                                   struct cpufreq_policy *policy)
+>>  {
+>> -       struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
 > 
-> Yes..
+> I will let it crash right here instead of additional code :)
+
+the problem is tht the userful information is the values of initialized,
+enabled, and what the  event was :(
+
+in every case i ended up needing the values.
+
 > 
->> static inline int queue_read_trylock(struct qrwlock *lock)
->> {
->>         u32 cnts;
->>
->>         cnts = atomic_read(&lock->cnts);
->>         if (likely(!(cnts & _QW_WMASK))) {
->>
->> so the deadlock will not occur.  the show() is opened, write lock is taken, and
->> if the thread is rescheduled and takes read lock the trylock will return 0, and
->> the thread will return -EBUSY to userspace avoiding the deadlock.
+>> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>> -       WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
+>> +       if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+>> +               pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
+>> +                        policy->governor->name,
+>> +                        atomic_read(&policy->governor->initialized),
+>> +                        policy->governor_enabled, event);
+>> +               BUG();
 > 
-> Which deadlock? 
+> How is the BUG better than the WARN here ?
+> 
 
-the deadlock in commit 955ef4833574636819cd269cfbae12f79cbde63a
+we null pointer panic later on, and again the useful values are the ones displayed.
 
-[   75.471265]        CPU0                    CPU1
-[   75.476327]        ----                    ----
-[   75.481385]   lock(&policy->rwsem);
-[   75.485307]                                lock(s_active#219);
-[   75.491857]                                lock(&policy->rwsem);
-[   75.498592]   lock(s_active#219);
-[   75.502331]
-[   75.502331]  *** DEADLOCK ***
+>>         switch (event) {
+>>         case CPUFREQ_GOV_POLICY_INIT:
+>> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>         case CPUFREQ_GOV_POLICY_EXIT:
+>>                 mutex_lock(&dbs_data->usage_count_mutex);
+>>                 if (atomic_dec_and_test(&dbs_data->usage_count)) {
+>> +                       if (atomic_read(&policy->governor->initialized) > 1) {
+> 
+> Isn't this wrong? Consider 4 CPUs with separate clock line and have set
+> governor-per-policy to true. EXIT will be called for every CPU hotplug and
+> initialized will be 4 initially..
+> 
+> Or I am still vacation lag'd ? :)
 
-And also your changelog talks about accessing invalid pointers
-> without the trylock change, how can that be possible? After the read
-> lock is taken,
-> all the pointers should be valid.
-
-consider the following very simple case:
-
-the governor is ondemand.  cpu 0 reads cpuinfo_cur_freq. cpu0 expects to get the
-current cpu freq for the ondemand governor.
-
-simultaneously, cpu1 changes the governor from ondemand to userspace.
-
-the two threads will race for the policy->mutex
-
-suppose cpu0 gets it first.  then there is no problem.  the userspace program
-for cpu0 gets exactly the data it is expecting.
-
-Now suppose cpu1 gets the lock and starts to write ... cpu0 is blocked.
-
-cpu1 completes the governor change, and cpu0 gets the mutex ... and returns
-bogus data at this point.
+oh, is that right?  i'll look into that.
 
 P.
 > 
+>> +                               pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
+>> +                                        policy->governor->name,
+>> +                                  atomic_read(&policy->governor->initialized));
+>> +                               BUG();
+>> +                       }
+>>                         sysfs_remove_group(get_governor_parent_kobj(policy),
+>>                                         get_sysfs_attr(dbs_data));
+>>
+>> --
+>> 1.7.9.3
+>>
