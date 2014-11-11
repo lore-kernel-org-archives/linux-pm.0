@@ -1,33 +1,39 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC 1/2] sched/fair: Add cumulative average of load_avg_contrib
- to a task
-Date: Tue, 11 Nov 2014 18:30:23 +0100
-Message-ID: <20141111173023.GP10501@worktop.programming.kicks-ass.net>
-References: <1415598358-26505-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1415598358-26505-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20141110134911.GG29390@twins.programming.kicks-ass.net>
- <546222C7.2030000@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v6 00/48] kernel: Add support for power-off handler call
+ chain
+Date: Tue, 11 Nov 2014 10:20:23 -0800
+Message-ID: <20141111182023.GA21970@roeck-us.net>
+References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+ <20141110083347.GA29543@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:38528 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbaKKRa0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 12:30:26 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <546222C7.2030000@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141110083347.GA29543@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, LeeJon@roeck-us.net
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@linaro.org, amit.kucheria@linaro.org, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Morten.Rasmussen@arm.com, efault@gmx.de, nicolas.pitre@linaro.org, dietmar.eggemann@arm.com, pjt@google.com, bsegall@google.com, mingo@kernel.org, linaro-kernel@lists.linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-On Tue, Nov 11, 2014 at 08:22:55PM +0530, Shilpasri G Bhat wrote:
-> On 11/10/2014 07:19 PM, Peter Zijlstra wrote:
-> > It it broken because who says rq->prev still exists?
+On Mon, Nov 10, 2014 at 09:33:48AM +0100, Pavel Machek wrote:
+> Hi!
 > 
-> 'task_cumulative_load()' is handled by the cpufreq governor's kworker.
-> And the kworker is queued only if there is task running on cpu which
-> guarantees the existence of rq->prev in a running state.
+> > Introduce a system power-off handler call chain to solve the described
+> > problems.  This call chain is expected to be executed from the architecture
+> > specific machine_power_off() function.  Drivers providing system power-off
+> > functionality are expected to register with this call chain.  By using the
+> > priority field in the notifier block, callers can control power-off
+> > handler
+> 
+> Linus rather disliked the idea of notifier chains for this... And I
+> don't see how it got addressed.
+> 
+Hi all,
 
-Not so, there is no guarantee it will still be running by the time the
-kworker actually comes around to running.
+After more thought, I concluded that it is technically impossible to support
+multiple power-off handlers without some kind of list or call chain, no matter
+how it is called. Given the opposition from Linus and the power maintainers
+to the series, I decided to shelf it.
+
+Thanks,
+Guenter
