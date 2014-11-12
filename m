@@ -1,120 +1,65 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v18 3/5] ARM: dts: add RK3288 Thermal data
-Date: Wed, 12 Nov 2014 13:02:40 +0800
-Message-ID: <1415768562-9155-4-git-send-email-caesar.wang@rock-chips.com>
-References: <1415768562-9155-1-git-send-email-caesar.wang@rock-chips.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Wed, 12 Nov 2014 11:33:53 +0530
+Message-ID: <CAHLCerPKv=NsLNZvwo-vhDwkved5+O4a40LvrP_7j30KjeKqUQ@mail.gmail.com>
+References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1415768562-9155-1-git-send-email-caesar.wang@rock-chips.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, dmitry.torokhov@gmail.com, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, dianders@chromium.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, fzf@rock-chips.com, caesar.wang@rock-chips.com, cf@rock-chips.com, linux-arm-kernel@lists.infradead.org, zyf@rock-chips.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:36124 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbaKLGDz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 01:03:55 -0500
+Received: by mail-lb0-f169.google.com with SMTP id 10so8933200lbg.28
+        for <linux-pm@vger.kernel.org>; Tue, 11 Nov 2014 22:03:54 -0800 (PST)
+In-Reply-To: <1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, kgene.kim@samsung.com, tomasz.figa@gmail.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, heiko@sntech.de, cw00.choi@samsung.com
 
-This patch changes a dtsi file to contain the thermal data
-on RK3288 and later SoCs. This data will
-enable a thermal shutdown over 90C.
+Hi Thomas,
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- arch/arm/boot/dts/rk3288-thermal.dtsi | 78 +++++++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
- create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
+On Mon, Oct 20, 2014 at 5:11 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+> The new CPU clock type allows the use of generic CPUfreq drivers. So for
+> Exynos4210/5250, switch to using generic cpufreq driver. For Exynos5420,
+> which did not have CPUfreq driver support, enable the use of generic
+> CPUfreq driver.
+>
+> Suggested-by: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
+> Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+> Tested-by: Chander Kashyap <k.chander@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c |   24 +++++++++++++++++++++++-
+>  1 files changed, 23 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 6b283eb..a1be294 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -282,6 +282,28 @@ static void __init exynos_init_irq(void)
+>         exynos_map_pmu();
+>  }
+>
+> +static const struct of_device_id exynos_cpufreq_matches[] = {
+> +       { .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
 
-diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
-new file mode 100644
-index 0000000..a8a5ea7
---- /dev/null
-+++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
-@@ -0,0 +1,78 @@
-+/*
-+ * Device Tree Source for RK3288 SoC thermal
-+ *
-+ * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+reserve_thermal: reserve_thermal {
-+	polling-delay-passive = <1000>; /* milliseconds */
-+	polling-delay = <5000>; /* milliseconds */
-+
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	0>;
-+
-+};
-+
-+cpu_thermal: cpu_thermal {
-+	polling-delay-passive = <1000>; /* milliseconds */
-+	polling-delay = <5000>; /* milliseconds */
-+
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	1>;
-+
-+	trips {
-+		cpu_alert0: cpu_alert0 {
-+			temperature = <70000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "passive";
-+		};
-+		cpu_crit: cpu_crit {
-+			temperature = <90000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "critical";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map0 {
-+			trip = <&cpu_alert0>;
-+			cooling-device =
-+				<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+		};
-+	};
-+};
-+
-+gpu_thermal: gpu_thermal {
-+	polling-delay-passive = <1000>; /* milliseconds */
-+	polling-delay = <5000>; /* milliseconds */
-+
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	2>;
-+
-+	trips {
-+		gpu_alert0: gpu_alert0 {
-+			temperature = <70000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "passive";
-+		};
-+		gpu_crit: gpu_crit {
-+			temperature = <90000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "critical";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map0 {
-+			trip = <&gpu_alert0>;
-+			cooling-device =
-+				<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+		};
-+	};
-+};
--- 
-1.9.1
+While you're at it, can you add this to so we don't have to patch
+kernels for the Chromebook2 and Odroid-XU3?
+
+      { .compatible = "samsung,exynos5422", .data = "arm-bL-cpufreq-dt" },
+      { .compatible = "samsung,exynos5800", .data = "arm-bL-cpufreq-dt" },
+
+
+> +       { .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
+> +       { .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+> +       { .compatible = "samsung,exynos5440", .data = "exynos5440-cpufreq" },
+> +       { /* sentinel */ }
