@@ -1,7 +1,7 @@
 From: Robin Gong <b38343@freescale.com>
-Subject: [PATCH 2/3] power: reset: imx-snvs-poweroff: add power off driver for i.mx6
-Date: Wed, 12 Nov 2014 16:20:38 +0800
-Message-ID: <1415780439-29728-3-git-send-email-b38343@freescale.com>
+Subject: [PATCH 1/3] ARM: dts: imx6: add pm_power_off support for i.mx6 chips
+Date: Wed, 12 Nov 2014 16:20:37 +0800
+Message-ID: <1415780439-29728-2-git-send-email-b38343@freescale.com>
 References: <1415780439-29728-1-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,153 +12,118 @@ To: shawn.guo@linaro.org, kernel@pengutronix.de, robh+dt@kernel.org, pawel.moll@
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, smoch@web.de
 List-Id: linux-pm@vger.kernel.org
 
-This driver register pm_power_off with snvs power off function. If
-your boards NOT use PMIC_ON_REQ to turn on/off external pmic, or use
-other pin to do, please disable the driver in dts, otherwise, your
-pm_power_off maybe overwrote by this driver.
+All chips of i.mx6 can be powered off by programming SNVS.
+For example :
+On i.mx6q-sabresd board, PMIC_ON_REQ connect with external
+pmic ON/OFF pin, that will cause the whole PMIC powered off
+except VSNVS. And system can restart once PMIC_ON_REQ goes
+high by push POWRER key.
 
 Signed-off-by: Robin Gong <b38343@freescale.com>
 ---
- .../bindings/power_supply/imx-snvs-poweroff.txt    |   23 +++++++
- drivers/power/reset/Kconfig                        |    9 +++
- drivers/power/reset/Makefile                       |    1 +
- drivers/power/reset/imx-snvs-poweroff.c            |   66 ++++++++++++++++++++
- 4 files changed, 99 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
- create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+ arch/arm/boot/dts/imx6qdl-sabresd.dtsi |    4 ++++
+ arch/arm/boot/dts/imx6qdl.dtsi         |    6 ++++++
+ arch/arm/boot/dts/imx6sl-evk.dts       |    4 ++++
+ arch/arm/boot/dts/imx6sl.dtsi          |    6 ++++++
+ arch/arm/boot/dts/imx6sx-sdb.dts       |    4 ++++
+ arch/arm/boot/dts/imx6sx.dtsi          |    6 ++++++
+ 6 files changed, 30 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-new file mode 100644
-index 0000000..3d824b6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-@@ -0,0 +1,23 @@
-+i.mx6 Poweroff Driver
-+
-+SNVS_LPCR in SNVS module can power off the whole system by pull
-+PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
-+If you don't want to use PMIC_ON_REQ as power on/off control,
-+please set status='disabled' to disable this driver.
-+
-+Required Properties:
-+-compatible: "fsl,sec-v4.0-poweroff"
-+-reg: Specifies the physical address of the SNVS_LPCR register
-+
-+Example:
-+	snvs@020cc000 {
-+		compatible = "fsl,sec-v4.0-mon", "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges = <0 0x020cc000 0x4000>;
-+		.....
-+		snvs-poweroff: snvs-poweroff@38 {
-+			compatible = "fsl,sec-v4.0-poweroff";
-+			reg = <0x38 0x4>;
-+		};
-+	}
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca41523..b26c547 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -45,6 +45,15 @@ config POWER_RESET_HISI
- 	help
- 	  Reboot support for Hisilicon boards.
+diff --git a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+index 07fb302..ba12cc6 100644
+--- a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+@@ -531,6 +531,10 @@
+ 	status = "okay";
+ };
  
-+config POWER_RESET_IMX
-+	bool "IMX6 power-off driver"
-+	depends on POWER_RESET && SOC_IMX6
-+	help
-+	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
-+	  boards.If you want to use other pin to control external power,please
-+	  say N here or disable in dts to make sure pm_power_off never be
-+	  overwrote wrongly by this driver.
-+
- config POWER_RESET_MSM
- 	bool "Qualcomm MSM power-off driver"
- 	depends on POWER_RESET && ARCH_QCOM
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index a42e70e..2524daf 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-+obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
-new file mode 100644
-index 0000000..ad6ce50
---- /dev/null
-+++ b/drivers/power/reset/imx-snvs-poweroff.c
-@@ -0,0 +1,66 @@
-+/* Power off driver for i.mx6
-+ * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
-+ *
-+ * based on msm-poweroff.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+
-+static void __iomem *snvs_base;
-+
-+static void do_imx_poweroff(void)
-+{
-+	u32 value = readl(snvs_base);
-+
-+	/* set TOP and DP_EN bit */
-+	writel(value | 0x60, snvs_base);
-+}
-+
-+static int imx_poweroff_probe(struct platform_device *pdev)
-+{
-+	snvs_base = of_iomap(pdev->dev.of_node, 0);
-+	if (!snvs_base) {
-+		dev_err(&pdev->dev, "failed to get memory\n");
-+		return -ENODEV;
-+	}
-+
-+	pm_power_off = do_imx_poweroff;
-+	return 0;
-+}
-+
-+static const struct of_device_id of_imx_poweroff_match[] = {
-+	{ .compatible = "fsl,sec-v4.0-poweroff", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
-+
-+static struct platform_driver imx_poweroff_driver = {
-+	.probe = imx_poweroff_probe,
-+	.driver = {
-+		.name = "imx-snvs-poweroff",
-+		.of_match_table = of_match_ptr(of_imx_poweroff_match),
-+	},
++&snvs-poweroff {
++	status = "okay";
 +};
 +
-+static int __init imx_poweroff_init(void)
-+{
-+	return platform_driver_register(&imx_poweroff_driver);
-+}
-+device_initcall(imx_poweroff_init);
+ &ssi2 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+index c701af9..3a032d1 100644
+--- a/arch/arm/boot/dts/imx6qdl.dtsi
++++ b/arch/arm/boot/dts/imx6qdl.dtsi
+@@ -645,6 +645,12 @@
+ 					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
+ 						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
+ 				};
++
++				snvs-poweroff: snvs-poweroff@38 {
++					compatible = "fsl,sec-v4.0-poweroff";
++					reg = <0x38 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			epit1: epit@020d0000 { /* EPIT1 */
+diff --git a/arch/arm/boot/dts/imx6sl-evk.dts b/arch/arm/boot/dts/imx6sl-evk.dts
+index 3f9e041..dab588f 100644
+--- a/arch/arm/boot/dts/imx6sl-evk.dts
++++ b/arch/arm/boot/dts/imx6sl-evk.dts
+@@ -488,6 +488,10 @@
+ 	status = "okay";
+ };
+ 
++&snvs-poweroff {
++	status = "okay";
++};
++
+ &ssi2 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
+index 505da9e..5e5ed07 100644
+--- a/arch/arm/boot/dts/imx6sl.dtsi
++++ b/arch/arm/boot/dts/imx6sl.dtsi
+@@ -565,6 +565,12 @@
+ 					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
+ 						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
+ 				};
++
++				snvs-poweroff: snvs-poweroff@38 {
++					compatible = "fsl,sec-v4.0-poweroff";
++					reg = <0x38 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			epit1: epit@020d0000 {
+diff --git a/arch/arm/boot/dts/imx6sx-sdb.dts b/arch/arm/boot/dts/imx6sx-sdb.dts
+index a3980d9..78dc031 100644
+--- a/arch/arm/boot/dts/imx6sx-sdb.dts
++++ b/arch/arm/boot/dts/imx6sx-sdb.dts
+@@ -251,6 +251,10 @@
+ 	};
+ };
+ 
++&snvs-poweroff {
++	status = "okay";
++};
++
+ &ssi2 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
+index f4b9da6..652be9f 100644
+--- a/arch/arm/boot/dts/imx6sx.dtsi
++++ b/arch/arm/boot/dts/imx6sx.dtsi
+@@ -668,6 +668,12 @@
+ 					reg = <0x34 0x58>;
+ 					interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+ 				};
++
++				snvs-poweroff: snvs-poweroff@38 {
++					compatible = "fsl,sec-v4.0-poweroff";
++					reg = <0x38 0x4>;
++					status = "disabled";
++				};
+ 			};
+ 
+ 			epit1: epit@020d0000 {
 -- 
 1.7.9.5
