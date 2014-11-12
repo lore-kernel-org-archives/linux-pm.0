@@ -1,8 +1,7 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v11 6/6] amba: Use inlines instead of macros for
- amba_pclk_enable/disable
-Date: Wed, 12 Nov 2014 15:32:28 +0100
-Message-ID: <1415802748-30530-7-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v11 5/6] dmaengine: pl330: Add PM sleep support
+Date: Wed, 12 Nov 2014 15:32:27 +0100
+Message-ID: <1415802748-30530-6-git-send-email-k.kozlowski@samsung.com>
 References: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,38 +10,68 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pa
 Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace the amba_pclk_enable and amba_pclk_disable macros with static
-inline functions and remove checks for IS_ERR. The amba bus clock won't
-be ERR because probe would fail before the use of these functions.
+Add system suspend/resume capabilities to the pl330 driver so the amba
+bus clock could be also unprepared to conserve energy.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- include/linux/amba/bus.h | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/dma/pl330.c | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-index 2afc618b15ce..7daba00ddabd 100644
---- a/include/linux/amba/bus.h
-+++ b/include/linux/amba/bus.h
-@@ -92,11 +92,15 @@ struct amba_device *amba_find_device(const char *, struct device *, unsigned int
- int amba_request_regions(struct amba_device *, const char *);
- void amba_release_regions(struct amba_device *);
+diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+index c3bd3584f261..fd71777fc565 100644
+--- a/drivers/dma/pl330.c
++++ b/drivers/dma/pl330.c
+@@ -2627,6 +2627,42 @@ static int pl330_dma_device_slave_caps(struct dma_chan *dchan,
+ 	return 0;
+ }
  
--#define amba_pclk_enable(d)	\
--	(IS_ERR((d)->pclk) ? 0 : clk_enable((d)->pclk))
-+static inline int amba_pclk_enable(struct amba_device *dev)
++/*
++ * Runtime PM callbacks are provided by amba/bus.c driver.
++ *
++ * It is assumed here that IRQ safe runtime PM is chosen in probe and amba
++ * bus driver will only disable/enable the clock in runtime PM callbacks.
++ */
++static int __maybe_unused pl330_suspend(struct device *dev)
 +{
-+	return clk_enable(dev->pclk);
++	struct amba_device *pcdev = to_amba_device(dev);
++
++	if (!pm_runtime_status_suspended(dev)) {
++		/* amba did not disable the clock */
++		amba_pclk_disable(pcdev);
++	}
++	amba_pclk_unprepare(pcdev);
++
++	return 0;
 +}
- 
--#define amba_pclk_disable(d)	\
--	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
-+static inline void amba_pclk_disable(struct amba_device *dev)
++
++static int __maybe_unused pl330_resume(struct device *dev)
 +{
-+	clk_disable(dev->pclk);
++	struct amba_device *pcdev = to_amba_device(dev);
++	int ret;
++
++	ret = amba_pclk_prepare(pcdev);
++	if (ret)
++		return ret;
++
++	if (!pm_runtime_status_suspended(dev))
++		ret = amba_pclk_enable(pcdev);
++
++	return ret;
 +}
- 
- static inline int amba_pclk_prepare(struct amba_device *dev)
++
++static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
++
+ static int
+ pl330_probe(struct amba_device *adev, const struct amba_id *id)
  {
+@@ -2853,6 +2889,7 @@ static struct amba_driver pl330_driver = {
+ 	.drv = {
+ 		.owner = THIS_MODULE,
+ 		.name = "dma-pl330",
++		.pm = &pl330_pm,
+ 	},
+ 	.id_table = pl330_ids,
+ 	.probe = pl330_probe,
 -- 
 1.9.1
