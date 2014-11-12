@@ -1,1149 +1,836 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] cpuidle: Invert CPUIDLE_FLAG_TIME_VALID logic
-Date: Wed, 12 Nov 2014 16:03:50 +0100
-Message-ID: <1415804630-5055-1-git-send-email-daniel.lezcano@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 2/2] cpuidle: exynos: add coupled cpuidle support for
+ Exynos4210
+Date: Wed, 12 Nov 2014 16:13:29 +0100
+Message-ID: <3813280.9hNcruz8Q6@amdc1032>
+References: <1415383252-20118-1-git-send-email-b.zolnierkie@samsung.com>
+ <1415383252-20118-3-git-send-email-b.zolnierkie@samsung.com>
+ <545F8EFF.7030704@linaro.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=nextPart2609936.ei6EljyavP
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f53.google.com ([74.125.82.53]:35534 "EHLO
-	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbaKLPD4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 10:03:56 -0500
-Received: by mail-wg0-f53.google.com with SMTP id b13so14393879wgh.12
-        for <linux-pm@vger.kernel.org>; Wed, 12 Nov 2014 07:03:54 -0800 (PST)
+Received: from mailout1.samsung.com ([203.254.224.24]:21707 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbaKLPN5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 10:13:57 -0500
+In-reply-to: <545F8EFF.7030704@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: preeti@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, lenb@kernel.org, nsekhar@ti.com, khilman@deeprootsystems.com, shawn.guo@linaro.org, kernel@pengutronix.de, tony@atomide.com, kgene.kim@samsung.com, horms@verge.net.au, magnus.damm@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, ralf@linux-mips.org, tglx@linutronix.de, lorenzo.pieralisi@arm.com, michal.simek@xilinx.com, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Lukasz Majewski <l.majewski@samsung.com>
 
-The only place where the time is invalid is when the ACPI_CSTATE_FFH entry
-method is not set. Otherwise for all the drivers, the time can be correctly
-measured.
 
-Instead of duplicating the CPUIDLE_FLAG_TIME_VALID flag in all the drivers
-for all the states, just invert the logic by replacing it by the flag
-CPUIDLE_FLAG_TIME_INVALID, hence we can set this flag only for the acpi idle
-driver, remove the former flag from all the drivers and invert the logic with
-this flag in the different governor.
+--nextPart2609936.ei6EljyavP
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/include/asm/cpuidle.h         |   1 -
- arch/arm/mach-davinci/cpuidle.c        |   1 -
- arch/arm/mach-imx/cpuidle-imx5.c       |   1 -
- arch/arm/mach-imx/cpuidle-imx6q.c      |   3 +-
- arch/arm/mach-imx/cpuidle-imx6sl.c     |   3 +-
- arch/arm/mach-omap2/cpuidle34xx.c      |   7 ---
- arch/arm/mach-omap2/cpuidle44xx.c      |   5 +-
- arch/arm/mach-s3c64xx/cpuidle.c        |   1 -
- arch/arm/mach-shmobile/pm-sh7372.c     |   4 --
- arch/arm/mach-tegra/cpuidle-tegra114.c |   1 -
- arch/arm/mach-tegra/cpuidle-tegra20.c  |   3 +-
- arch/arm/mach-tegra/cpuidle-tegra30.c  |   1 -
- arch/mips/include/asm/idle.h           |   1 -
- arch/sh/kernel/cpu/shmobile/cpuidle.c  |   3 -
- arch/x86/kernel/apm_32.c               |   1 -
- drivers/acpi/processor_idle.c          |   6 +-
- drivers/cpuidle/cpuidle-arm64.c        |   1 -
- drivers/cpuidle/cpuidle-at91.c         |   1 -
- drivers/cpuidle/cpuidle-big_little.c   |   6 +-
- drivers/cpuidle/cpuidle-calxeda.c      |   1 -
- drivers/cpuidle/cpuidle-cps.c          |   7 +--
- drivers/cpuidle/cpuidle-exynos.c       |   1 -
- drivers/cpuidle/cpuidle-kirkwood.c     |   1 -
- drivers/cpuidle/cpuidle-mvebu-v7.c     |   8 +--
- drivers/cpuidle/cpuidle-powernv.c      |   6 +-
- drivers/cpuidle/cpuidle-pseries.c      |   3 -
- drivers/cpuidle/cpuidle-ux500.c        |   3 +-
- drivers/cpuidle/cpuidle-zynq.c         |   1 -
- drivers/cpuidle/driver.c               |   1 -
- drivers/cpuidle/dt_idle_states.c       |   2 +-
- drivers/cpuidle/governors/ladder.c     |   2 +-
- drivers/cpuidle/governors/menu.c       |   2 +-
- drivers/idle/intel_idle.c              | 108 ++++++++++++++++-----------------
- include/linux/cpuidle.h                |   4 +-
- 34 files changed, 75 insertions(+), 125 deletions(-)
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index 2fca60a..af319ac 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -15,7 +15,6 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 	.exit_latency           = 1,\
- 	.target_residency       = 1,\
- 	.power_usage		= p,\
--	.flags                  = CPUIDLE_FLAG_TIME_VALID,\
- 	.name                   = "WFI",\
- 	.desc                   = "ARM WFI",\
- }
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index f1ac1c9..b4675fc 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -66,7 +66,6 @@ static struct cpuidle_driver davinci_idle_driver = {
- 		.enter			= davinci_enter_idle,
- 		.exit_latency		= 10,
- 		.target_residency	= 10000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
- 		.name			= "DDR SR",
- 		.desc			= "WFI and DDR Self Refresh",
- 	},
-diff --git a/arch/arm/mach-imx/cpuidle-imx5.c b/arch/arm/mach-imx/cpuidle-imx5.c
-index 5a47e3c..3feca52 100644
---- a/arch/arm/mach-imx/cpuidle-imx5.c
-+++ b/arch/arm/mach-imx/cpuidle-imx5.c
-@@ -24,7 +24,6 @@ static struct cpuidle_driver imx5_cpuidle_driver = {
- 		.enter            = imx5_cpuidle_enter,
- 		.exit_latency     = 2,
- 		.target_residency = 1,
--		.flags            = CPUIDLE_FLAG_TIME_VALID,
- 		.name             = "IMX5 SRPG",
- 		.desc             = "CPU state retained,powered off",
- 	},
-diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
-index aa93578..d76d086 100644
---- a/arch/arm/mach-imx/cpuidle-imx6q.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6q.c
-@@ -53,8 +53,7 @@ static struct cpuidle_driver imx6q_cpuidle_driver = {
- 		{
- 			.exit_latency = 50,
- 			.target_residency = 75,
--			.flags = CPUIDLE_FLAG_TIME_VALID |
--			         CPUIDLE_FLAG_TIMER_STOP,
-+			.flags = CPUIDLE_FLAG_TIMER_STOP,
- 			.enter = imx6q_enter_wait,
- 			.name = "WAIT",
- 			.desc = "Clock off",
-diff --git a/arch/arm/mach-imx/cpuidle-imx6sl.c b/arch/arm/mach-imx/cpuidle-imx6sl.c
-index d4b6b81..7d92e65 100644
---- a/arch/arm/mach-imx/cpuidle-imx6sl.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6sl.c
-@@ -40,8 +40,7 @@ static struct cpuidle_driver imx6sl_cpuidle_driver = {
- 		{
- 			.exit_latency = 50,
- 			.target_residency = 75,
--			.flags = CPUIDLE_FLAG_TIME_VALID |
--				CPUIDLE_FLAG_TIMER_STOP,
-+			.flags = CPUIDLE_FLAG_TIMER_STOP,
- 			.enter = imx6sl_enter_wait,
- 			.name = "WAIT",
- 			.desc = "Clock off",
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index e18709d..aa7b379 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -265,7 +265,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 2 + 2,
- 			.target_residency = 5,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C1",
- 			.desc		  = "MPU ON + CORE ON",
- 		},
-@@ -273,7 +272,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 10 + 10,
- 			.target_residency = 30,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C2",
- 			.desc		  = "MPU ON + CORE ON",
- 		},
-@@ -281,7 +279,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 50 + 50,
- 			.target_residency = 300,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C3",
- 			.desc		  = "MPU RET + CORE ON",
- 		},
-@@ -289,7 +286,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 1500 + 1800,
- 			.target_residency = 4000,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C4",
- 			.desc		  = "MPU OFF + CORE ON",
- 		},
-@@ -297,7 +293,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 2500 + 7500,
- 			.target_residency = 12000,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C5",
- 			.desc		  = "MPU RET + CORE RET",
- 		},
-@@ -305,7 +300,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 3000 + 8500,
- 			.target_residency = 15000,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C6",
- 			.desc		  = "MPU OFF + CORE RET",
- 		},
-@@ -313,7 +307,6 @@ static struct cpuidle_driver omap3_idle_driver = {
- 			.enter		  = omap3_enter_idle_bm,
- 			.exit_latency	  = 10000 + 30000,
- 			.target_residency = 30000,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID,
- 			.name		  = "C7",
- 			.desc		  = "MPU OFF + CORE OFF",
- 		},
-diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2/cpuidle44xx.c
-index 2498ab0..01e398a 100644
---- a/arch/arm/mach-omap2/cpuidle44xx.c
-+++ b/arch/arm/mach-omap2/cpuidle44xx.c
-@@ -196,7 +196,6 @@ static struct cpuidle_driver omap4_idle_driver = {
- 			/* C1 - CPU0 ON + CPU1 ON + MPU ON */
- 			.exit_latency = 2 + 2,
- 			.target_residency = 5,
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.enter = omap_enter_idle_simple,
- 			.name = "C1",
- 			.desc = "CPUx ON, MPUSS ON"
-@@ -205,7 +204,7 @@ static struct cpuidle_driver omap4_idle_driver = {
- 			/* C2 - CPU0 OFF + CPU1 OFF + MPU CSWR */
- 			.exit_latency = 328 + 440,
- 			.target_residency = 960,
--			.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_COUPLED,
-+			.flags = CPUIDLE_FLAG_COUPLED,
- 			.enter = omap_enter_idle_coupled,
- 			.name = "C2",
- 			.desc = "CPUx OFF, MPUSS CSWR",
-@@ -214,7 +213,7 @@ static struct cpuidle_driver omap4_idle_driver = {
- 			/* C3 - CPU0 OFF + CPU1 OFF + MPU OSWR */
- 			.exit_latency = 460 + 518,
- 			.target_residency = 1100,
--			.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_COUPLED,
-+			.flags = CPUIDLE_FLAG_COUPLED,
- 			.enter = omap_enter_idle_coupled,
- 			.name = "C3",
- 			.desc = "CPUx OFF, MPUSS OSWR",
-diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/cpuidle.c
-index 3c8ab07..2eb0724 100644
---- a/arch/arm/mach-s3c64xx/cpuidle.c
-+++ b/arch/arm/mach-s3c64xx/cpuidle.c
-@@ -48,7 +48,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_driver = {
- 			.enter            = s3c64xx_enter_idle,
- 			.exit_latency     = 1,
- 			.target_residency = 1,
--			.flags            = CPUIDLE_FLAG_TIME_VALID,
- 			.name             = "IDLE",
- 			.desc             = "System active, ARM gated",
- 		},
-diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
-index 7e5c267..0e37da6 100644
---- a/arch/arm/mach-shmobile/pm-sh7372.c
-+++ b/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -423,7 +423,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
- 		.desc = "Core Standby Mode",
- 		.exit_latency = 10,
- 		.target_residency = 20 + 10,
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.enter = sh7372_enter_core_standby,
- 	},
- 	.states[2] = {
-@@ -431,7 +430,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
- 		.desc = "A3SM PLL ON",
- 		.exit_latency = 20,
- 		.target_residency = 30 + 20,
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.enter = sh7372_enter_a3sm_pll_on,
- 	},
- 	.states[3] = {
-@@ -439,7 +437,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
- 		.desc = "A3SM PLL OFF",
- 		.exit_latency = 120,
- 		.target_residency = 30 + 120,
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.enter = sh7372_enter_a3sm_pll_off,
- 	},
- 	.states[4] = {
-@@ -447,7 +444,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
- 		.desc = "A4S PLL OFF",
- 		.exit_latency = 240,
- 		.target_residency = 30 + 240,
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.enter = sh7372_enter_a4s,
- 		.disabled = true,
- 	},
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
-index e3ebdce..b309082 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra114.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
-@@ -75,7 +75,6 @@ static struct cpuidle_driver tegra_idle_driver = {
- 			.exit_latency		= 500,
- 			.target_residency	= 1000,
- 			.power_usage		= 0,
--			.flags			= CPUIDLE_FLAG_TIME_VALID,
- 			.name			= "powered-down",
- 			.desc			= "CPU power gated",
- 		},
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index b30bf5c..4f25a7c 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -59,8 +59,7 @@ static struct cpuidle_driver tegra_idle_driver = {
- 			.exit_latency     = 5000,
- 			.target_residency = 10000,
- 			.power_usage      = 0,
--			.flags            = CPUIDLE_FLAG_TIME_VALID |
--			CPUIDLE_FLAG_COUPLED,
-+			.flags            = CPUIDLE_FLAG_COUPLED,
- 			.name             = "powered-down",
- 			.desc             = "CPU power gated",
- 		},
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
-index 3556127..f8815ed 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra30.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
-@@ -56,7 +56,6 @@ static struct cpuidle_driver tegra_idle_driver = {
- 			.exit_latency		= 2000,
- 			.target_residency	= 2200,
- 			.power_usage		= 0,
--			.flags			= CPUIDLE_FLAG_TIME_VALID,
- 			.name			= "powered-down",
- 			.desc			= "CPU power gated",
- 		},
-diff --git a/arch/mips/include/asm/idle.h b/arch/mips/include/asm/idle.h
-index 1c967ab..a2d18ab 100644
---- a/arch/mips/include/asm/idle.h
-+++ b/arch/mips/include/asm/idle.h
-@@ -22,7 +22,6 @@ extern int mips_cpuidle_wait_enter(struct cpuidle_device *dev,
- 	.exit_latency		= 1,\
- 	.target_residency	= 1,\
- 	.power_usage		= UINT_MAX,\
--	.flags			= CPUIDLE_FLAG_TIME_VALID,\
- 	.name			= "wait",\
- 	.desc			= "MIPS wait",\
- }
-diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-index e3abfd4..53b8eeb 100644
---- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
-+++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-@@ -59,7 +59,6 @@ static struct cpuidle_driver cpuidle_driver = {
- 			.exit_latency = 1,
- 			.target_residency = 1 * 2,
- 			.power_usage = 3,
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.enter = cpuidle_sleep_enter,
- 			.name = "C1",
- 			.desc = "SuperH Sleep Mode",
-@@ -68,7 +67,6 @@ static struct cpuidle_driver cpuidle_driver = {
- 			.exit_latency = 100,
- 			.target_residency = 1 * 2,
- 			.power_usage = 1,
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.enter = cpuidle_sleep_enter,
- 			.name = "C2",
- 			.desc = "SuperH Sleep Mode [SF]",
-@@ -78,7 +76,6 @@ static struct cpuidle_driver cpuidle_driver = {
- 			.exit_latency = 2300,
- 			.target_residency = 1 * 2,
- 			.power_usage = 1,
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.enter = cpuidle_sleep_enter,
- 			.name = "C3",
- 			.desc = "SuperH Mobile Standby Mode [SF]",
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 5848744..927ec92 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -378,7 +378,6 @@ static struct cpuidle_driver apm_idle_driver = {
- 		{ /* entry 1 is for APM idle */
- 			.name = "APM",
- 			.desc = "APM idle",
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.exit_latency = 250,	/* WAG */
- 			.target_residency = 500,	/* WAG */
- 			.enter = &apm_cpu_idle
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 17f9ec5..380b4b4 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -985,8 +985,8 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
- 		state->flags = 0;
- 		switch (cx->type) {
- 			case ACPI_STATE_C1:
--			if (cx->entry_method == ACPI_CSTATE_FFH)
--				state->flags |= CPUIDLE_FLAG_TIME_VALID;
-+			if (cx->entry_method != ACPI_CSTATE_FFH)
-+				state->flags |= CPUIDLE_FLAG_TIME_INVALID;
- 
- 			state->enter = acpi_idle_enter_c1;
- 			state->enter_dead = acpi_idle_play_dead;
-@@ -994,14 +994,12 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
- 			break;
- 
- 			case ACPI_STATE_C2:
--			state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 			state->enter = acpi_idle_enter_simple;
- 			state->enter_dead = acpi_idle_play_dead;
- 			drv->safe_state_index = count;
- 			break;
- 
- 			case ACPI_STATE_C3:
--			state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 			state->enter = pr->flags.bm_check ?
- 					acpi_idle_enter_bm :
- 					acpi_idle_enter_simple;
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 50997ea..87320e6 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -73,7 +73,6 @@ static struct cpuidle_driver arm64_idle_driver = {
- 		.exit_latency           = 1,
- 		.target_residency       = 1,
- 		.power_usage		= UINT_MAX,
--		.flags                  = CPUIDLE_FLAG_TIME_VALID,
- 		.name                   = "WFI",
- 		.desc                   = "ARM64 WFI",
- 	}
-diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidle-at91.c
-index a077437..1964ff0 100644
---- a/drivers/cpuidle/cpuidle-at91.c
-+++ b/drivers/cpuidle/cpuidle-at91.c
-@@ -43,7 +43,6 @@ static struct cpuidle_driver at91_idle_driver = {
- 		.enter			= at91_enter_idle,
- 		.exit_latency		= 10,
- 		.target_residency	= 10000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
- 		.name			= "RAM_SR",
- 		.desc			= "WFI and DDR Self Refresh",
- 	},
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index fbc00a1..e3e225f 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -67,8 +67,7 @@ static struct cpuidle_driver bl_idle_little_driver = {
- 		.enter			= bl_enter_powerdown,
- 		.exit_latency		= 700,
- 		.target_residency	= 2500,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--					  CPUIDLE_FLAG_TIMER_STOP,
-+		.flags			= CPUIDLE_FLAG_TIMER_STOP,
- 		.name			= "C1",
- 		.desc			= "ARM little-cluster power down",
- 	},
-@@ -89,8 +88,7 @@ static struct cpuidle_driver bl_idle_big_driver = {
- 		.enter			= bl_enter_powerdown,
- 		.exit_latency		= 500,
- 		.target_residency	= 2000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--					  CPUIDLE_FLAG_TIMER_STOP,
-+		.flags			= CPUIDLE_FLAG_TIMER_STOP,
- 		.name			= "C1",
- 		.desc			= "ARM big-cluster power down",
- 	},
-diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-index 6e51114..6541b0b 100644
---- a/drivers/cpuidle/cpuidle-calxeda.c
-+++ b/drivers/cpuidle/cpuidle-calxeda.c
-@@ -55,7 +55,6 @@ static struct cpuidle_driver calxeda_idle_driver = {
- 		{
- 			.name = "PG",
- 			.desc = "Power Gate",
--			.flags = CPUIDLE_FLAG_TIME_VALID,
- 			.exit_latency = 30,
- 			.power_usage = 50,
- 			.target_residency = 200,
-diff --git a/drivers/cpuidle/cpuidle-cps.c b/drivers/cpuidle/cpuidle-cps.c
-index fc7b627..1adb698 100644
---- a/drivers/cpuidle/cpuidle-cps.c
-+++ b/drivers/cpuidle/cpuidle-cps.c
-@@ -79,7 +79,6 @@ static struct cpuidle_driver cps_driver = {
- 			.enter	= cps_nc_enter,
- 			.exit_latency		= 200,
- 			.target_residency	= 450,
--			.flags	= CPUIDLE_FLAG_TIME_VALID,
- 			.name	= "nc-wait",
- 			.desc	= "non-coherent MIPS wait",
- 		},
-@@ -87,8 +86,7 @@ static struct cpuidle_driver cps_driver = {
- 			.enter	= cps_nc_enter,
- 			.exit_latency		= 300,
- 			.target_residency	= 700,
--			.flags	= CPUIDLE_FLAG_TIME_VALID |
--				  CPUIDLE_FLAG_TIMER_STOP,
-+			.flags	= CPUIDLE_FLAG_TIMER_STOP,
- 			.name	= "clock-gated",
- 			.desc	= "core clock gated",
- 		},
-@@ -96,8 +94,7 @@ static struct cpuidle_driver cps_driver = {
- 			.enter	= cps_nc_enter,
- 			.exit_latency		= 600,
- 			.target_residency	= 1000,
--			.flags	= CPUIDLE_FLAG_TIME_VALID |
--				  CPUIDLE_FLAG_TIMER_STOP,
-+			.flags	= CPUIDLE_FLAG_TIMER_STOP,
- 			.name	= "power-gated",
- 			.desc	= "core power gated",
- 		},
-diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-index ba9b34b..64d12a8 100644
---- a/drivers/cpuidle/cpuidle-exynos.c
-+++ b/drivers/cpuidle/cpuidle-exynos.c
-@@ -47,7 +47,6 @@ static struct cpuidle_driver exynos_idle_driver = {
- 			.enter			= exynos_enter_lowpower,
- 			.exit_latency		= 300,
- 			.target_residency	= 100000,
--			.flags			= CPUIDLE_FLAG_TIME_VALID,
- 			.name			= "C1",
- 			.desc			= "ARM power down",
- 		},
-diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-index 41ba843..d88f8d7 100644
---- a/drivers/cpuidle/cpuidle-kirkwood.c
-+++ b/drivers/cpuidle/cpuidle-kirkwood.c
-@@ -47,7 +47,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
- 		.enter			= kirkwood_enter_idle,
- 		.exit_latency		= 10,
- 		.target_residency	= 100000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
- 		.name			= "DDR SR",
- 		.desc			= "WFI and DDR Self Refresh",
- 	},
-diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
-index 45371bb..dd4c176 100644
---- a/drivers/cpuidle/cpuidle-mvebu-v7.c
-+++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
-@@ -53,7 +53,6 @@ static struct cpuidle_driver armadaxp_idle_driver = {
- 		.exit_latency		= 10,
- 		.power_usage		= 50,
- 		.target_residency	= 100,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
- 		.name			= "MV CPU IDLE",
- 		.desc			= "CPU power down",
- 	},
-@@ -62,8 +61,7 @@ static struct cpuidle_driver armadaxp_idle_driver = {
- 		.exit_latency		= 100,
- 		.power_usage		= 5,
- 		.target_residency	= 1000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--						MVEBU_V7_FLAG_DEEP_IDLE,
-+		.flags			= MVEBU_V7_FLAG_DEEP_IDLE,
- 		.name			= "MV CPU DEEP IDLE",
- 		.desc			= "CPU and L2 Fabric power down",
- 	},
-@@ -78,8 +76,7 @@ static struct cpuidle_driver armada370_idle_driver = {
- 		.exit_latency		= 100,
- 		.power_usage		= 5,
- 		.target_residency	= 1000,
--		.flags			= (CPUIDLE_FLAG_TIME_VALID |
--					   MVEBU_V7_FLAG_DEEP_IDLE),
-+		.flags			= MVEBU_V7_FLAG_DEEP_IDLE,
- 		.name			= "Deep Idle",
- 		.desc			= "CPU and L2 Fabric power down",
- 	},
-@@ -94,7 +91,6 @@ static struct cpuidle_driver armada38x_idle_driver = {
- 		.exit_latency		= 10,
- 		.power_usage		= 5,
- 		.target_residency	= 100,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
- 		.name			= "Idle",
- 		.desc			= "CPU and SCU power down",
- 	},
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 7d3a349..e9248bb 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -93,7 +93,6 @@ static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
-@@ -202,7 +201,7 @@ static int powernv_add_idle_states(void)
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
--			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].exit_latency =
- 					((unsigned int)latency_ns) / 1000;
- 			powernv_states[nr_idle_states].target_residency =
-@@ -215,8 +214,7 @@ static int powernv_add_idle_states(void)
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
--			powernv_states[nr_idle_states].flags =
--				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].exit_latency =
- 					((unsigned int)latency_ns) / 1000;
- 			powernv_states[nr_idle_states].target_residency =
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 6f7b019..bb9e2b6 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -142,14 +142,12 @@ static struct cpuidle_state dedicated_states[] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
- 	{ /* CEDE */
- 		.name = "CEDE",
- 		.desc = "CEDE",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 10,
- 		.target_residency = 100,
- 		.enter = &dedicated_cede_loop },
-@@ -162,7 +160,6 @@ static struct cpuidle_state shared_states[] = {
- 	{ /* Shared Cede */
- 		.name = "Shared Cede",
- 		.desc = "Shared Cede",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &shared_cede_loop },
-diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
-index 5e35804..292e65a 100644
---- a/drivers/cpuidle/cpuidle-ux500.c
-+++ b/drivers/cpuidle/cpuidle-ux500.c
-@@ -101,8 +101,7 @@ static struct cpuidle_driver ux500_idle_driver = {
- 			.enter		  = ux500_enter_idle,
- 			.exit_latency	  = 70,
- 			.target_residency = 260,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID |
--			                    CPUIDLE_FLAG_TIMER_STOP,
-+			.flags		  = CPUIDLE_FLAG_TIMER_STOP,
- 			.name		  = "ApIdle",
- 			.desc		  = "ARM Retention",
- 		},
-diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
-index c61b8b2..022dec8 100644
---- a/drivers/cpuidle/cpuidle-zynq.c
-+++ b/drivers/cpuidle/cpuidle-zynq.c
-@@ -52,7 +52,6 @@ static struct cpuidle_driver zynq_idle_driver = {
- 			.enter			= zynq_enter_idle,
- 			.exit_latency		= 10,
- 			.target_residency	= 10000,
--			.flags			= CPUIDLE_FLAG_TIME_VALID,
- 			.name			= "RAM_SR",
- 			.desc			= "WFI and RAM Self Refresh",
- 		},
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index e431d11..2697e87 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -201,7 +201,6 @@ static void poll_idle_init(struct cpuidle_driver *drv)
- 	state->exit_latency = 0;
- 	state->target_residency = 0;
- 	state->power_usage = -1;
--	state->flags = CPUIDLE_FLAG_TIME_VALID;
- 	state->enter = poll_idle;
- 	state->disabled = false;
- }
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-index 52f4d11..6e6f0b2 100644
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -73,7 +73,7 @@ static int init_state_node(struct cpuidle_state *idle_state,
- 		return -EINVAL;
- 	}
- 
--	idle_state->flags = CPUIDLE_FLAG_TIME_VALID;
-+	idle_state->flags = 0;
- 	if (of_property_read_bool(state_node, "local-timer-stop"))
- 		idle_state->flags |= CPUIDLE_FLAG_TIMER_STOP;
- 	/*
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 06b57c4..37263d9 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -79,7 +79,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 
- 	last_state = &ldev->states[last_idx];
- 
--	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
-+	if (!(drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_INVALID)) {
- 		last_residency = cpuidle_get_last_residency(dev) - \
- 					 drv->states[last_idx].exit_latency;
- 	}
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 710a233..659d7b0 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -405,7 +405,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * the measured amount of time is less than the exit latency,
- 	 * assume the state was never reached and the exit latency is 0.
- 	 */
--	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
-+	if (unlikely(target->flags & CPUIDLE_FLAG_TIME_INVALID)) {
- 		/* Use timer value as is */
- 		measured_us = data->next_timer_us;
- 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 9b7ee7e..9cceacb 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -128,28 +128,28 @@ static struct cpuidle_state nehalem_cstates[] = {
- 	{
- 		.name = "C1-NHM",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 3,
- 		.target_residency = 6,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-NHM",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-NHM",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 20,
- 		.target_residency = 80,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-NHM",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 200,
- 		.target_residency = 800,
- 		.enter = &intel_idle },
-@@ -161,35 +161,35 @@ static struct cpuidle_state snb_cstates[] = {
- 	{
- 		.name = "C1-SNB",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 2,
- 		.target_residency = 2,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-SNB",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-SNB",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 80,
- 		.target_residency = 211,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-SNB",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 104,
- 		.target_residency = 345,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7-SNB",
- 		.desc = "MWAIT 0x30",
--		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 109,
- 		.target_residency = 345,
- 		.enter = &intel_idle },
-@@ -201,42 +201,42 @@ static struct cpuidle_state byt_cstates[] = {
- 	{
- 		.name = "C1-BYT",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 1,
- 		.target_residency = 1,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-BYT",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 15,
- 		.target_residency = 30,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6N-BYT",
- 		.desc = "MWAIT 0x58",
--		.flags = MWAIT2flg(0x58) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x58) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 40,
- 		.target_residency = 275,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6S-BYT",
- 		.desc = "MWAIT 0x52",
--		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 140,
- 		.target_residency = 560,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7-BYT",
- 		.desc = "MWAIT 0x60",
--		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 1200,
- 		.target_residency = 1500,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7S-BYT",
- 		.desc = "MWAIT 0x64",
--		.flags = MWAIT2flg(0x64) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x64) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 10000,
- 		.target_residency = 20000,
- 		.enter = &intel_idle },
-@@ -248,35 +248,35 @@ static struct cpuidle_state ivb_cstates[] = {
- 	{
- 		.name = "C1-IVB",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 1,
- 		.target_residency = 1,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-IVB",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-IVB",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 59,
- 		.target_residency = 156,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-IVB",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 80,
- 		.target_residency = 300,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7-IVB",
- 		.desc = "MWAIT 0x30",
--		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 87,
- 		.target_residency = 300,
- 		.enter = &intel_idle },
-@@ -288,28 +288,28 @@ static struct cpuidle_state ivt_cstates[] = {
- 	{
- 		.name = "C1-IVT",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 1,
- 		.target_residency = 1,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-IVT",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 80,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-IVT",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 59,
- 		.target_residency = 156,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-IVT",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 82,
- 		.target_residency = 300,
- 		.enter = &intel_idle },
-@@ -321,28 +321,28 @@ static struct cpuidle_state ivt_cstates_4s[] = {
- 	{
- 		.name = "C1-IVT-4S",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 1,
- 		.target_residency = 1,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-IVT-4S",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 250,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-IVT-4S",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 59,
- 		.target_residency = 300,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-IVT-4S",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 84,
- 		.target_residency = 400,
- 		.enter = &intel_idle },
-@@ -354,28 +354,28 @@ static struct cpuidle_state ivt_cstates_8s[] = {
- 	{
- 		.name = "C1-IVT-8S",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 1,
- 		.target_residency = 1,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-IVT-8S",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 500,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-IVT-8S",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 59,
- 		.target_residency = 600,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-IVT-8S",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 88,
- 		.target_residency = 700,
- 		.enter = &intel_idle },
-@@ -387,56 +387,56 @@ static struct cpuidle_state hsw_cstates[] = {
- 	{
- 		.name = "C1-HSW",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 2,
- 		.target_residency = 2,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-HSW",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-HSW",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 33,
- 		.target_residency = 100,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-HSW",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 133,
- 		.target_residency = 400,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7s-HSW",
- 		.desc = "MWAIT 0x32",
--		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 166,
- 		.target_residency = 500,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C8-HSW",
- 		.desc = "MWAIT 0x40",
--		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 300,
- 		.target_residency = 900,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C9-HSW",
- 		.desc = "MWAIT 0x50",
--		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 600,
- 		.target_residency = 1800,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C10-HSW",
- 		.desc = "MWAIT 0x60",
--		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 2600,
- 		.target_residency = 7700,
- 		.enter = &intel_idle },
-@@ -447,56 +447,56 @@ static struct cpuidle_state bdw_cstates[] = {
- 	{
- 		.name = "C1-BDW",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 2,
- 		.target_residency = 2,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C1E-BDW",
- 		.desc = "MWAIT 0x01",
--		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x01),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C3-BDW",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 40,
- 		.target_residency = 100,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-BDW",
- 		.desc = "MWAIT 0x20",
--		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 133,
- 		.target_residency = 400,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C7s-BDW",
- 		.desc = "MWAIT 0x32",
--		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 166,
- 		.target_residency = 500,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C8-BDW",
- 		.desc = "MWAIT 0x40",
--		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 300,
- 		.target_residency = 900,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C9-BDW",
- 		.desc = "MWAIT 0x50",
--		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 600,
- 		.target_residency = 1800,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C10-BDW",
- 		.desc = "MWAIT 0x60",
--		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 2600,
- 		.target_residency = 7700,
- 		.enter = &intel_idle },
-@@ -508,28 +508,28 @@ static struct cpuidle_state atom_cstates[] = {
- 	{
- 		.name = "C1E-ATM",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C2-ATM",
- 		.desc = "MWAIT 0x10",
--		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x10),
- 		.exit_latency = 20,
- 		.target_residency = 80,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C4-ATM",
- 		.desc = "MWAIT 0x30",
--		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 100,
- 		.target_residency = 400,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-ATM",
- 		.desc = "MWAIT 0x52",
--		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 140,
- 		.target_residency = 560,
- 		.enter = &intel_idle },
-@@ -540,14 +540,14 @@ static struct cpuidle_state avn_cstates[] = {
- 	{
- 		.name = "C1-AVN",
- 		.desc = "MWAIT 0x00",
--		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.flags = MWAIT2flg(0x00),
- 		.exit_latency = 2,
- 		.target_residency = 2,
- 		.enter = &intel_idle },
- 	{
- 		.name = "C6-AVN",
- 		.desc = "MWAIT 0x51",
--		.flags = MWAIT2flg(0x51) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.flags = MWAIT2flg(0x51) | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 15,
- 		.target_residency = 45,
- 		.enter = &intel_idle },
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 25e0df6..a07e087 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -53,7 +53,7 @@ struct cpuidle_state {
- };
- 
- /* Idle State Flags */
--#define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
-+#define CPUIDLE_FLAG_TIME_INVALID	(0x01) /* is residency time measurable? */
- #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
- #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
- 
-@@ -90,7 +90,7 @@ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
-  * cpuidle_get_last_residency - retrieves the last state's residency time
-  * @dev: the target CPU
-  *
-- * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_VALID isn't set
-+ * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_INVALID is set
-  */
- static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
- {
--- 
-1.9.1
+Hi,
+
+On Sunday, November 09, 2014 04:57:51 PM Daniel Lezcano wrote:
+> On 11/07/2014 07:00 PM, Bartlomiej Zolnierkiewicz wrote:
+> > The following patch adds coupled cpuidle support for Exynos4210 to
+> > an existing cpuidle-exynos driver.  As a result it enables AFTR mode
+> > to be used by default on Exynos4210 without the need to hot unplug
+> > CPU1 first.
+> >
+> > The patch is heavily based on earlier cpuidle-exynos4210 driver from
+> > Daniel Lezcano:
+> >
+> > http://www.spinics.net/lists/linux-samsung-soc/msg28134.html
+> >
+> > Changes from Daniel's code include:
+> > - porting code to current kernels
+> > - fixing it to work on my setup (by using S5P_INFORM register
+> >    instead of S5P_VA_SYSRAM one on Revison 1.1 and retrying poking
+> >    CPU1 out of the BOOT ROM if necessary)
+> > - fixing rare lockup caused by waiting for CPU1 to get stuck in
+> >    the BOOT ROM (CPU hotplug code in arch/arm/mach-exynos/platsmp.c
+> >    doesn't require this and works fine)
+> > - moving Exynos specific code to arch/arm/mach-exynos/pm.c
+> > - using cpu_boot_reg_base() helper instead of BOOT_VECTOR macro
+> > - using exynos_cpu_*() helpers instead of accessing registers
+> >    directly
+> > - using arch_send_wakeup_ipi_mask() instead of dsb_sev()
+> >    (this matches CPU hotplug code in arch/arm/mach-exynos/platsmp.c)
+> 
+> I am curious. You experienced very rare hangs after running the tests a 
+> few hours, right ? Is the SEV replaced by the IPI solving the issue ? If 
+> yes, how did you catch it ?
+
+Rare hangs showed up after about 30-40 minutes of testing with the attached
+app and script (running of "./cpuidle_state1_test.sh script 2 500" has never
+completed on the umodified driver).
+
+The problem turned out to be in the following loop waiting for CPU1 to get
+stuck in the BOOT ROM:
+
+		/*
+		 * Wait for cpu1 to get stuck in the boot rom
+		 */
+		while ((__raw_readl(BOOT_VECTOR) != 0) &&
+		       !atomic_read(&cpu1_wakeup))
+			cpu_relax();
+
+[ Removal of the loop fixed the problem. ]
+
+Using the SEV instead of the IPI was not a issue but it was changed to
+match the existing Exynos platform code (exynos_boot_secondary() in
+arch/arm/mach-exynos/platsmp.c) and as preparation for Exynos4412 (quad
+core) support.
+
+> >- integrating separate exynos4210-cpuidle driver into existing
+> >    exynos-cpuidle one
+> >
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: Colin Cross <ccross@google.com>
+> > Cc: Kukjin Kim <kgene.kim@samsung.com>
+> > Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Thanks!
+
+> A few comments below:
+> 
+> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > ---
+> >   arch/arm/mach-exynos/common.h                |   4 +
+> >   arch/arm/mach-exynos/exynos.c                |   4 +
+> >   arch/arm/mach-exynos/platsmp.c               |   2 +-
+> >   arch/arm/mach-exynos/pm.c                    | 122 +++++++++++++++++++++++++++
+> >   drivers/cpuidle/Kconfig.arm                  |   1 +
+> >   drivers/cpuidle/cpuidle-exynos.c             |  62 ++++++++++++--
+> >   include/linux/platform_data/cpuidle-exynos.h |  20 +++++
+> >   7 files changed, 209 insertions(+), 6 deletions(-)
+> >   create mode 100644 include/linux/platform_data/cpuidle-exynos.h
+> >
+> > diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+> > index d4d09bc..f208a60 100644
+> > --- a/arch/arm/mach-exynos/common.h
+> > +++ b/arch/arm/mach-exynos/common.h
+> > @@ -14,6 +14,7 @@
+> >
+> >   #include <linux/reboot.h>
+> >   #include <linux/of.h>
+> > +#include <linux/platform_data/cpuidle-exynos.h>
+> >
+> >   #define EXYNOS3250_SOC_ID	0xE3472000
+> >   #define EXYNOS3_SOC_MASK	0xFFFFF000
+> > @@ -168,8 +169,11 @@ extern void exynos_pm_central_suspend(void);
+> >   extern int exynos_pm_central_resume(void);
+> >   extern void exynos_enter_aftr(void);
+> >
+> > +extern struct cpuidle_exynos_data cpuidle_coupled_exynos_data;
+> > +
+> >   extern void s5p_init_cpu(void __iomem *cpuid_addr);
+> >   extern unsigned int samsung_rev(void);
+> > +extern void __iomem *cpu_boot_reg_base(void);
+> >
+> >   static inline void pmu_raw_writel(u32 val, u32 offset)
+> >   {
+> > diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> > index a487e59..4f4eb9e 100644
+> > --- a/arch/arm/mach-exynos/exynos.c
+> > +++ b/arch/arm/mach-exynos/exynos.c
+> > @@ -317,6 +317,10 @@ static void __init exynos_dt_machine_init(void)
+> >   	if (!IS_ENABLED(CONFIG_SMP))
+> >   		exynos_sysram_init();
+> >
+> > +#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
+> > +	if (of_machine_is_compatible("samsung,exynos4210"))
+> > +		exynos_cpuidle.dev.platform_data = &cpuidle_coupled_exynos_data;
+> > +#endif
+> 
+> You should not add those #ifdef.
+
+Without those #ifdef I get:
+
+  LD      init/built-in.o
+arch/arm/mach-exynos/built-in.o: In function `exynos_dt_machine_init':
+/home/bzolnier/sam/linux-sprc/arch/arm/mach-exynos/exynos.c:334: undefined reference to `cpuidle_coupled_exynos_data'
+make: *** [vmlinux] Error 1
+
+when CONFIG_EXYNOS_CPU_SUSPEND is disabled.
+
+> >   	if (of_machine_is_compatible("samsung,exynos4210") ||
+> >   	    of_machine_is_compatible("samsung,exynos4212") ||
+> >   	    (of_machine_is_compatible("samsung,exynos4412") &&
+> > diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
+> > index adb36a8..0e3ffc9 100644
+> > --- a/arch/arm/mach-exynos/platsmp.c
+> > +++ b/arch/arm/mach-exynos/platsmp.c
+> > @@ -182,7 +182,7 @@ int exynos_cluster_power_state(int cluster)
+> >   		S5P_CORE_LOCAL_PWR_EN);
+> >   }
+> >
+> > -static inline void __iomem *cpu_boot_reg_base(void)
+> > +void __iomem *cpu_boot_reg_base(void)
+> >   {
+> >   	if (soc_is_exynos4210() && samsung_rev() == EXYNOS4210_REV_1_1)
+> >   		return pmu_base_addr + S5P_INFORM5;
+> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> > index 4b36ab5..44cc08a 100644
+> > --- a/arch/arm/mach-exynos/pm.c
+> > +++ b/arch/arm/mach-exynos/pm.c
+> > @@ -178,3 +178,125 @@ void exynos_enter_aftr(void)
+> >
+> >   	cpu_pm_exit();
+> >   }
+> > +
+> > +static atomic_t cpu1_wakeup = ATOMIC_INIT(0);
+> > +
+> > +static int exynos_cpu0_enter_aftr(void)
+> > +{
+> > +	int ret = -1;
+> > +
+> > +	/*
+> > +	 * If the other cpu is powered on, we have to power it off, because
+> > +	 * the AFTR state won't work otherwise
+> > +	 */
+> > +	if (cpu_online(1)) {
+> > +		/*
+> > +		 * We reach a sync point with the coupled idle state, we know
+> > +		 * the other cpu will power down itself or will abort the
+> > +		 * sequence, let's wait for one of these to happen
+> > +		 */
+> > +		while (exynos_cpu_power_state(1)) {
+> > +			/*
+> > +			 * The other cpu may skip idle and boot back
+> > +			 * up again
+> > +			 */
+> > +			if (atomic_read(&cpu1_wakeup))
+> > +				goto abort;
+> > +
+> > +			/*
+> > +			 * The other cpu may bounce through idle and
+> > +			 * boot back up again, getting stuck in the
+> > +			 * boot rom code
+> > +			 */
+> > +			if (__raw_readl(cpu_boot_reg_base()) == 0)
+> > +				goto abort;
+> > +
+> > +			cpu_relax();
+> > +		}
+> > +	}
+> > +
+> > +	exynos_enter_aftr();
+> > +	ret = 0;
+> > +
+> > +abort:
+> > +	if (cpu_online(1)) {
+> > +		/*
+> > +		 * Set the boot vector to something non-zero
+> > +		 */
+> > +		__raw_writel(virt_to_phys(exynos_cpu_resume),
+> > +			     cpu_boot_reg_base());
+> > +		dsb();
+> > +
+> > +		/*
+> > +		 * Turn on cpu1 and wait for it to be on
+> > +		 */
+> > +		exynos_cpu_power_up(1);
+> > +		while (exynos_cpu_power_state(1) != S5P_CORE_LOCAL_PWR_EN)
+> > +			cpu_relax();
+> > +
+> > +		while (!atomic_read(&cpu1_wakeup)) {
+> > +			/*
+> > +			 * Poke cpu1 out of the boot rom
+> > +			 */
+> > +			__raw_writel(virt_to_phys(exynos_cpu_resume),
+> > +				     cpu_boot_reg_base());
+> > +
+> > +			arch_send_wakeup_ipi_mask(cpumask_of(1));
+> > +		}
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static int exynos_wfi_finisher(unsigned long flags)
+> > +{
+> > +	cpu_do_idle();
+> > +
+> > +	return -1;
+> > +}
+> > +
+> > +static int exynos_cpu1_powerdown(void)
+> > +{
+> > +	int ret = -1;
+> > +
+> > +	/*
+> > +	 * Idle sequence for cpu1
+> > +	 */
+> > +	if (cpu_pm_enter())
+> > +		goto cpu1_aborted;
+> > +
+> > +	/*
+> > +	 * Turn off cpu 1
+> > +	 */
+> > +	exynos_cpu_power_down(1);
+> > +
+> > +	ret = cpu_suspend(0, exynos_wfi_finisher);
+> > +
+> > +	cpu_pm_exit();
+> > +
+> > +cpu1_aborted:
+> > +	dsb();
+> > +	/*
+> > +	 * Notify cpu 0 that cpu 1 is awake
+> > +	 */
+> > +	atomic_set(&cpu1_wakeup, 1);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static void exynos_pre_enter_aftr(void)
+> > +{
+> > +	__raw_writel(virt_to_phys(exynos_cpu_resume), cpu_boot_reg_base());
+> > +}
+> > +
+> > +static void exynos_post_enter_aftr(void)
+> > +{
+> > +	atomic_set(&cpu1_wakeup, 0);
+> > +}
+> > +
+> > +struct cpuidle_exynos_data cpuidle_coupled_exynos_data = {
+> > +	.cpu0_enter_aftr		= exynos_cpu0_enter_aftr,
+> > +	.cpu1_powerdown		= exynos_cpu1_powerdown,
+> > +	.pre_enter_aftr		= exynos_pre_enter_aftr,
+> > +	.post_enter_aftr		= exynos_post_enter_aftr,
+> > +};
+> > diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> > index 8c16ab2..8e07c94 100644
+> > --- a/drivers/cpuidle/Kconfig.arm
+> > +++ b/drivers/cpuidle/Kconfig.arm
+> > @@ -55,6 +55,7 @@ config ARM_AT91_CPUIDLE
+> >   config ARM_EXYNOS_CPUIDLE
+> >   	bool "Cpu Idle Driver for the Exynos processors"
+> >   	depends on ARCH_EXYNOS
+> > +	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+> >   	help
+> >   	  Select this to enable cpuidle for Exynos processors
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+> > index ba9b34b..4700d5d 100644
+> > --- a/drivers/cpuidle/cpuidle-exynos.c
+> > +++ b/drivers/cpuidle/cpuidle-exynos.c
+> > @@ -1,8 +1,11 @@
+> > -/* linux/arch/arm/mach-exynos/cpuidle.c
+> > - *
+> > - * Copyright (c) 2011 Samsung Electronics Co., Ltd.
+> > +/*
+> > + * Copyright (c) 2011-2014 Samsung Electronics Co., Ltd.
+> >    *		http://www.samsung.com
+> >    *
+> > + * Coupled cpuidle support based on the work of:
+> > + *	Colin Cross <ccross@android.com>
+> > + *	Daniel Lezcano <daniel.lezcano@linaro.org>
+> > + *
+> >    * This program is free software; you can redistribute it and/or modify
+> >    * it under the terms of the GNU General Public License version 2 as
+> >    * published by the Free Software Foundation.
+> > @@ -13,13 +16,49 @@
+> >   #include <linux/export.h>
+> >   #include <linux/module.h>
+> >   #include <linux/platform_device.h>
+> > +#include <linux/of.h>
+> > +#include <linux/platform_data/cpuidle-exynos.h>
+> >
+> >   #include <asm/proc-fns.h>
+> >   #include <asm/suspend.h>
+> >   #include <asm/cpuidle.h>
+> >
+> > +static atomic_t exynos_idle_barrier;
+> > +
+> > +static struct cpuidle_exynos_data *exynos_cpuidle_pdata;
+> >   static void (*exynos_enter_aftr)(void);
+> >
+> > +static int exynos_enter_coupled_lowpower(struct cpuidle_device *dev,
+> > +					 struct cpuidle_driver *drv,
+> > +					 int index)
+> > +{
+> > +	int ret;
+> > +
+> > +	exynos_cpuidle_pdata->pre_enter_aftr();
+> > +
+> > +	/*
+> > +	 * Waiting all cpus to reach this point at the same moment
+> > +	 */
+> > +	cpuidle_coupled_parallel_barrier(dev, &exynos_idle_barrier);
+> > +
+> > +	/*
+> > +	 * Both cpus will reach this point at the same time
+> > +	 */
+> > +	ret = dev->cpu ? exynos_cpuidle_pdata->cpu1_powerdown()
+> > +		       : exynos_cpuidle_pdata->cpu0_enter_aftr();
+> > +	if (ret)
+> > +		index = ret;
+> > +
+> > +	/*
+> > +	 * Waiting all cpus to finish the power sequence before going further
+> > +	 */
+> > +	cpuidle_coupled_parallel_barrier(dev, &exynos_idle_barrier);
+> > +
+> > +	exynos_cpuidle_pdata->post_enter_aftr();
+> > +
+> > +	return index;
+> > +}
+> > +
+> >   static int exynos_enter_lowpower(struct cpuidle_device *dev,
+> >   				struct cpuidle_driver *drv,
+> >   				int index)
+> > @@ -58,11 +97,24 @@ static struct cpuidle_driver exynos_idle_driver = {
+> >
+> >   static int exynos_cpuidle_probe(struct platform_device *pdev)
+> >   {
+> > +	const struct cpumask *coupled_cpus = NULL;
+> >   	int ret;
+> >
+> > -	exynos_enter_aftr = (void *)(pdev->dev.platform_data);
+> > +	if (of_machine_is_compatible("samsung,exynos4210")) {
+> > +		exynos_cpuidle_pdata = pdev->dev.platform_data;
+> > +
+> > +		exynos_idle_driver.states[1].enter =
+> > +						exynos_enter_coupled_lowpower;
+> > +		exynos_idle_driver.states[1].exit_latency = 5000;
+> > +		exynos_idle_driver.states[1].target_residency = 10000;
+> > +		exynos_idle_driver.states[1].flags |= CPUIDLE_FLAG_COUPLED |
+> > +						      CPUIDLE_FLAG_TIMER_STOP;
+> 
+> I tried to remove those dynamic state allocation everywhere in the 
+> different drivers. I would prefer to have another cpuidle_driver to be 
+> registered with its states instead of overwriting the existing idle state.
+> 
+> struct cpuidle_driver exynos4210_idle_driver = {
+> 	.name = "exynos4210_idle",
+> 	.owner = THIS_MODULE,
+> 	.states = {
+> 		[0] = ARM_CPUIDLE_WFI_STATE,
+>                  [1] = {
+>                          .enter = exynos_enter_coupled_lowpower,
+>                          .exit_latency = 5000,
+>                          .target_residency = 10000,
+> 			.flags = CPUIDLE_FLAG_TIME_VALID |
+> 				CPUIDLE_FLAG_COUPLED |
+> 				CPUIDLE_FLAG_TIMER_STOP,
+>                          .name = "C1",
+>                          .desc = "ARM power down",
+>                  },
+> 	}
+> };
+> 
+> 
+> and then:
+> 
+> if (of_machine_is_compatible("samsung,exynos4210")) {
+> 	...
+> 	ret = cpuidle_register(&exynos4210_idle_driver,
+> 				cpu_online_mask);
+> 	...
+> }
+> ...
+
+OK, I will fix it but (if you are OK with it) I will make the code use
+"exynos_coupled" naming instead of "exynos4210" one to not have to change
+it later.
+
+> If we can reuse this mechanism, which I believe it is possible to, for 
+> 4420 and 5250. Then we will be able to refactor this out again.
+
+I plan to add support for Exynos3250 next as it should be the simplest
+(it is also dual core) and I need it for other reasons anyway.  Exynos4412
+(quad core) support requires more work but should also be doable.
+
+When it comes to Exynos5250 I was thinking about disabling normal AFTR
+mode support for it as according to my testing (on Arndale board) it has
+never worked (at least in upstream kernels, I don't know about Linaro or
+internal ones).
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> > +
+> > +		coupled_cpus = cpu_possible_mask;
+> > +	} else
+> > +		exynos_enter_aftr = (void *)(pdev->dev.platform_data);
+> >
+> > -	ret = cpuidle_register(&exynos_idle_driver, NULL);
+> > +	ret = cpuidle_register(&exynos_idle_driver, coupled_cpus);
+> >   	if (ret) {
+> >   		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
+> >   		return ret;
+> > diff --git a/include/linux/platform_data/cpuidle-exynos.h b/include/linux/platform_data/cpuidle-exynos.h
+> > new file mode 100644
+> > index 0000000..bfa40e4
+> > --- /dev/null
+> > +++ b/include/linux/platform_data/cpuidle-exynos.h
+> > @@ -0,0 +1,20 @@
+> > +/*
+> > + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+> > + *              http://www.samsung.com
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > +*/
+> > +
+> > +#ifndef __CPUIDLE_EXYNOS_H
+> > +#define __CPUIDLE_EXYNOS_H
+> > +
+> > +struct cpuidle_exynos_data {
+> > +	int (*cpu0_enter_aftr)(void);
+> > +	int (*cpu1_powerdown)(void);
+> > +	void (*pre_enter_aftr)(void);
+> > +	void (*post_enter_aftr)(void);
+> > +};
+> > +
+> > +#endif
+
+--nextPart2609936.ei6EljyavP
+Content-Disposition: attachment; filename="cpuidle_state1_test.sh"
+Content-Transfer-Encoding: 7Bit
+Content-Type: application/x-shellscript; name="cpuidle_state1_test.sh"
+
+#!/bin/bash
+#
+# Simple scheduler test for deeper idle states (CPU idle).
+# Test runs some tasks and let scheduler decide where they
+# are executed.
+# At the end it prints CPU idle statistics.
+#
+
+SCHED_TASKS=2
+ROUNDS=10
+if [ $# -ne 2 ]; then
+	echo "Usage: $(basename $0) <# of tasks> <# executions>"
+	exit 1
+elif [ $# -eq 2 ]; then
+	SCHED_TASKS=$1
+	ROUNDS=$2
+fi
+
+CPU_IDLE_DIR="/sys/devices/system/cpu/cpu[0-9]*/cpuidle"
+CPI_IDLE_STATE="state1"
+SCHED_TPERIOD=50000
+SCHED_WORK=100
+SCHED_COUNT=100
+
+echo "Found $(ls -d1 ${CPU_IDLE_DIR} | wc -l) CPU idle sysfs entries"
+echo "Important: This will extract only $CPI_IDLE_STATE idle time"
+echo "Spawning $SCHED_TASKS tasks"
+
+before=$(cat ${CPU_IDLE_DIR}/${CPI_IDLE_STATE}/time)
+#echo "Before: $before"
+
+for i in `seq $ROUNDS` ; do
+	offset=100
+	pids=
+	for i in `seq $SCHED_TASKS` ; do
+		echo "./sched_task --tperiod $SCHED_TPERIOD --work $SCHED_WORK --offset $offset --count $SCHED_COUNT &"
+		./sched_task --sched_other --tperiod $SCHED_TPERIOD --work $SCHED_WORK --offset $offset --count $SCHED_COUNT &
+		pids="$pids $!"
+		offset=$((offset+3300));
+	done
+	wait $pids
+	sleep 5
+done
+
+after=$(cat ${CPU_IDLE_DIR}/${CPI_IDLE_STATE}/time)
+#echo "After: $after"
+
+echo "Diff:"
+i=1
+for cpu_before in $before ; do
+	cpu_after=$(echo $after | cut -f $i -d ' ')
+	echo $((cpu_after-cpu_before));
+	i=$((i+1))
+done
+
+
+--nextPart2609936.ei6EljyavP
+Content-Disposition: attachment; filename="Makefile"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/x-makefile; charset="UTF-8"; name="Makefile"
+
+CROSS_COMPILE ?= arm-linux-gnueabi-
+CC = $(CROSS_COMPILE)gcc
+OBJS = sched_task
+# -static needed for cross building for old EGLIBC on newer GLIBC
+# Example: Building for Rinato (Eglibc-2.13) on Glibc-2.19
+CFLAGS = -static-libgcc -static
+# -lrt for clock_gettime when Glibc < 2.17
+LDFLAGS = -lrt
+
+all:  $(OBJS)
+
+%.o : %.c
+	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
+
+% : %.c
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+
+clean:
+	rm -f *.o
+	rm -f $(OBJS)
+
+--nextPart2609936.ei6EljyavP
+Content-Disposition: attachment; filename="sched_task.c"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/x-csrc; charset="UTF-8"; name="sched_task.c"
+
+/*
+   sched_task - scheduler test task -> for power evaluation
+
+   Copyright (C) 2013 Lukasz Majewski <l.majewski@samsung.com>
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+   USA
+*/
+
+/* This is based on the pi_stress.c rt-test program by Clark Williams */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <sched.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <getopt.h>
+
+#define NSEC_PER_SEC    1000000000
+#define USEC_TO_NSEC    1000
+
+#define TIME_MIN 100000 /* 100 us minimal time */
+
+#define TEST_TAB_SIZE 512
+/*
+ * TODO: add support for chosing schedule policy (other, idle, rt)
+ */
+int sched_policy = SCHED_FIFO;
+int priority = 10;
+
+int task_period = 0;
+int task_count = 0;
+int work_time = 0;
+int work_count = 0;
+int work_offset = 0;
+
+int lockall_flag = 0;
+int debug_flag = 0;
+
+#define DBG(fmt, args...) do {	  \
+	if (debug_flag) \
+		printf(fmt, args); \
+	} while (0);
+
+
+/* command line options */
+struct option options[] = {
+	{"tperiod", required_argument, NULL, 't'},
+	{"work", required_argument, NULL, 'w'},
+	{"count", required_argument, NULL, 'c'},
+	{"offset", required_argument, NULL, 'o'},
+	{"prio", no_argument, NULL, 'p'},
+	{"debug", no_argument, &debug_flag, 'd'},
+	{"mlockall", no_argument, &lockall_flag, 'm'},
+	{"help", no_argument, NULL, 'h'},
+	{"sched_other", no_argument, NULL, 's'},
+	{NULL, 0, NULL, 0},
+};
+
+void busy_test(void)
+{
+	volatile static unsigned char test[TEST_TAB_SIZE];
+	int i, j;
+
+	for(i = 0xFF; i; i--)
+		for(j = 0; j < sizeof(test); j++)
+			test[j] = i;
+}
+
+int adjust_wakeup_time(struct timespec *t, int time)
+{
+	t->tv_nsec += time;
+
+	while (t->tv_nsec >= NSEC_PER_SEC) {
+		t->tv_nsec -= NSEC_PER_SEC;
+		t->tv_sec++;
+	}
+
+	return 0;
+}
+
+int time_passed(struct timespec *x, struct timespec *y, struct timespec *result)
+{
+	result->tv_sec = x->tv_sec - y->tv_sec;
+	result->tv_nsec = x->tv_nsec - y->tv_nsec;
+
+	if (result->tv_nsec < 0) {
+		--result->tv_sec;
+		result->tv_nsec += NSEC_PER_SEC;
+	}
+
+	/* Return 1 if result is negative. */
+	return result->tv_sec < 0;
+}
+
+void usage(void)
+{
+	printf("usage: sched_task <options>\n");
+	printf("    options:\n");
+	printf("\t--prio\t\t- specify priority [real time] of the task\n");
+	printf("\t--work\t\t- specify time the task is executed [us]\n");
+	printf("\t--count\t\t- specify how many times the task is executed\n");
+	printf("\t\t\t- if --count is specified but --work is not then\n");
+	printf("\t\t\t  the task will be executed (count/10) times before\n");
+	printf("\t\t\t  each sleep time\n");
+	printf("\t\t\t- if both --count and --work are specified then\n");
+	printf("\t\t\t  the task will be executed for --work time before\n");
+	printf("\t\t\t  going to sleep\n");
+	printf("\t--offset\t- specify time after which execution starts [us]\n");
+	printf("\t--tperiod\t- specify period of the task [us]\n");
+	printf("\t--mlockall\t- lock current and future memory\n");
+	printf("\t--sched_other\t- use standard SCHED_OTHER scheduling policy for normal\n");
+	printf("\t\t\t  task; priority will be ignored\n");
+	printf("\t--debug\t\t- turn on debug prints\n");
+	printf("\t--help\t\t- print this message\n");
+}
+
+
+void process_command_line(int argc, char **argv)
+{
+	int opt;
+	while ((opt = getopt_long(argc, argv, "+", options, NULL)) != -1) {
+		switch (opt) {
+		case '?':
+		case 'h':
+			usage();
+			exit(0);
+		case 'p':
+			priority = strtol(optarg, NULL, 10);
+			break;
+		case 's':
+			sched_policy = SCHED_OTHER;
+			break;
+		case 't':
+			task_period = strtoul(optarg, NULL, 10) * USEC_TO_NSEC;
+			break;
+		case 'w':
+			work_time = strtoul(optarg, NULL, 10) * USEC_TO_NSEC;
+			break;
+		case 'c':
+			task_count = strtoul(optarg, NULL, 10);
+			break;
+		case 'o':
+			work_offset = strtoul(optarg, NULL, 10) * USEC_TO_NSEC;
+			break;
+		}
+	}
+	if (!work_time)
+		work_count = task_count / 10;
+}
+
+int main(int argc, char* argv[])
+{
+	struct timespec t, tt, ttt, result;
+	struct sched_param param;
+	int count = 0;
+
+	process_command_line(argc, argv);
+
+	if(work_time > task_period) {
+		perror("Wrong value of \'work\' time");
+		exit(-1);
+	}
+
+	if(task_period < TIME_MIN) {
+		error(0, 0, "Task period time (%d) must be grater than %d [us]\n",
+		      task_period/1000, TIME_MIN/1000);
+		exit(-1);
+	}
+
+	if(work_time && (work_time < TIME_MIN)) {
+		error(0, 0, "Work time (%d) must be grater than %d [us]\n",
+		      work_time/1000, TIME_MIN/1000);
+		exit(-1);
+	}
+	if (task_count < 0) {
+		perror("Wrong value for --count\n");
+		exit(-1);
+	}
+	if (!work_time && !task_count) {
+		perror("At least one of (--work,--count) must be provided\n");
+		exit(-1);
+	}
+
+	if ((sched_policy != SCHED_FIFO) && (sched_policy != SCHED_RR))
+		priority = 0;
+	param.sched_priority = priority;
+	if(sched_setscheduler(0, sched_policy, &param) == -1) {
+		perror("sched_setscheduler for policy %d failed\n");
+	}
+
+	if (lockall_flag)
+		if(mlockall(MCL_CURRENT|MCL_FUTURE) == -1) {
+			perror("mlockall failed");
+			exit(-2);
+		}
+
+	clock_gettime(CLOCK_MONOTONIC ,&t);
+	adjust_wakeup_time(&t, work_offset);
+
+	while(!task_count || (count < task_count)) {
+		/* wait until next shot */
+		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+
+		clock_gettime(CLOCK_MONOTONIC ,&tt);
+		clock_gettime(CLOCK_MONOTONIC ,&ttt);
+
+		DBG("t:%d %d tt:%d %d ", t.tv_sec, t.tv_nsec,
+		       tt.tv_sec, tt.tv_nsec);
+		adjust_wakeup_time(&tt, work_time);
+
+		if (work_time) {
+			do {
+				busy_test();
+				clock_gettime(CLOCK_MONOTONIC ,&ttt);
+				count++;
+			} while (!time_passed(&tt, &ttt, &result));
+		} else {
+			int i = 0;
+			do {
+				busy_test();
+				clock_gettime(CLOCK_MONOTONIC ,&ttt);
+				count++;
+			} while (++i < work_count);
+		}
+
+		DBG("tt:%d %d ttt:%d %d\n", tt.tv_sec, tt.tv_nsec,
+		       ttt.tv_sec, ttt.tv_nsec);
+		/* calculate next shot */
+		adjust_wakeup_time(&t, task_period);
+	}
+	printf("Work executions: %d\n", count);
+}
+
+--nextPart2609936.ei6EljyavP--
 
