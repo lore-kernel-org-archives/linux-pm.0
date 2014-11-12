@@ -1,144 +1,137 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req before
- idle
-Date: Wed, 12 Nov 2014 14:53:10 +0100
-Message-ID: <54636646.6080709@linaro.org>
-References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-3-git-send-email-daniel.lezcano@linaro.org> <20141110124111.GN3337@twins.programming.kicks-ass.net> <5460D5EF.2000805@linaro.org> <20141110152803.GX10501@worktop.programming.kicks-ass.net> <5460E0A5.9040508@linaro.org> <20141110161530.GB10501@worktop.programming.kicks-ass.net> <5460F386.1050109@linaro.org> <20141110194820.GD10501@worktop.programming.kicks-ass.net> <54613A5F.7060107@linaro.org> <20141111102058.GI10501@worktop.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v11 0/6] amba/dmaengine: pl330: add Power Management support
+Date: Wed, 12 Nov 2014 15:32:22 +0100
+Message-ID: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:63557 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbaKLNxQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 08:53:16 -0500
-Received: by mail-wi0-f182.google.com with SMTP id d1so4907981wiv.15
-        for <linux-pm@vger.kernel.org>; Wed, 12 Nov 2014 05:53:14 -0800 (PST)
-In-Reply-To: <20141111102058.GI10501@worktop.programming.kicks-ass.net>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:60986 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbaKLOch (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 09:32:37 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On 11/11/2014 11:20 AM, Peter Zijlstra wrote:
-> On Mon, Nov 10, 2014 at 11:21:19PM +0100, Daniel Lezcano wrote:
->> On 11/10/2014 08:48 PM, Peter Zijlstra wrote:
->>> On Mon, Nov 10, 2014 at 06:19:02PM +0100, Daniel Lezcano wrote:
->>>>> I really don't get why the governors should know about this thoug=
-h, its
->>>>> just another state, they should iterate all states and pick the b=
-est,
->>>>> given the power usage this state should really never be eligible =
-unless
->>>>> we're QoS forced or whatnot.
->>>>
->>>> The governors just don't use the poll state at all, except for a c=
-ouple of
->>>> cases in menu.c defined above in the previous email. What is the r=
-ational of
->>>> adding a state in the cpuidle driver and do everything we can to a=
-void using
->>>> it ? From my POV, the poll state is a special state, we should rem=
-ove from
->>>> the driver's idle states like the arch_cpu_idle() is a specific id=
-le state
->>>> only used in idle.c (but which may overlap with an idle state in d=
-ifferent
->>>> archs eg. cpu_do_idle() and the 0th idle state).
->>>
->>> So I disagree, I think poll-idle is an idle mode just like all the
->>> others. It should be an available state to the governor and it shou=
-ld
->>> treat it like any other.
->>
->> The governors are just ignoring it, except for a small timer optimiz=
-ation in
->> menu.c (and I am still not convinced it is worth to have it). I don'=
-t see
->> the point to add a state we don't want to use.
->
-> The ignoring it is _wrong_. Make that go away and you'll get rid of m=
-ost
-> of the STATE_START crap.
->
-> The governors are the place where we combine the QoS constraints with
-> idle predictors and pick an idle state, polling is a valid state to
-> pick, and given QoS constraints it might be the only state to pick.
+Hi,
 
-Well, I understand your point of view but I still disagree. IMO, the=20
-poll loop shouldn't be considered as a valid idle state for different=20
-reasons:
+Changes since v10:
+==================
+1. Bring back wrapper pm_runtime_is_irq_safe() (patch 1/6). This
+   replaces patch 1/5 from v9 (moving dev->power.irq_safe out of
+   CONFIG_PM_RUNTIME).
+2. Patch 3/6 amba: Don't store current irq_safe during runtime suspend
+   (suggested by Rafael J. Wysocki).
+   Because of this change I dropped reviewed-by tags from this patch.
+3. Patch 4/6 pl330: Add only runtime PM, without system PM (minor
+   changes to the patch so I retained the revewed/acked tags).
+   Add ack from Vinod.
+4. Add patch 5/6 pl330: Add system PM to the pl330 which *does not*
+   depends on runtime PM. I followed the discusions on LKML trying to
+   reach consensus.
+   Reasons tosplit previous patch into two patches (1st: runtime,
+   2nd: system PM):
+    - easier review,
+    - the first part (runtime PM) could be applied independently to
+      system PM support.
+6. Patch 6/6 amba: reworked the amba_pclk_* macros into inlines. Previously
+   they were not used but now patch 5/6 depends on them.
+7. Rebase on next-20141112.
 
-0. thermal issue if wrongly selected from any of the governor
+Changes since v9:
+=================
+1. Add patch 1/5: Move dev->power.irq_safe out of CONFIG_PM_RUNTIME.
+   If CONFIG_PM_RUNTIME is not set, amba bus driver must still know
+   whether child driver set irq_safe or not. Suggested by Ulf Hansson.
 
-1. a polling loop does not have a valid time measurements even if the=20
-TIME_VALID flag has been added
+Changes since v8:
+=================
+1. Remove the pm_runtime_is_irq_safe() wrapper (patch 1).
+2. Patch 2/4 (amba): Store current irq_safe during runtime suspend.
+   Resume will mirror suspend's work. Add a macro for
+   safe access of irq_safe if CONFIG_PM_RUNTIME is unset.
+   Dropped reviewed-by Ulf Hansson (major changes in patch).
 
-2. entering the idle governors is not free, especially the menu=20
-governor, which is contradictory with zero latency req
+Changes since v7:
+=================
+1. Add reviewed-by Ulf Hansson (patches 3, 4 and 5).
+2. Patch 2/5: Fix missing return in amba_pclk_prepare() (suggested by
+   Ulf Hansson).
+3. Rebased on next-20141020.
 
-3. what is the meaning of having a zero latency (target + exit) idle=20
-state ? We know it will always succeed if the other fails
+Changes since v6:
+=================
+1. Add patch 5 removing the amba_pclk_*able macros.
+2. Patch 2/5: Remove IS_ERR, use static inline functions instead
+   of macros.
+3. Patch 4/5: Force runtime suspend/resume in system sleep
+   callbacks. Put with autosuspend at end of probe instead of no_idle.
+   Suggested by Ulf Hansson.
 
-4. IIUC, you are suggesting to add the poll loop for all the cpuidle=20
-drivers. This is a *lot* of changes, I am not afraid about the work to=20
-do but there is a significant code impact and the entire behavior of th=
-e=20
-cpuidle framework for all the arch will be changed.
+Changes since v5:
+=================
+1. Patch 1/4: Add Ulf Hansson's reviewed-by.
+2. Patch 4/4: Use PM runtime autosuspend (suggested by Ulf Hansson).
+3. Rebase on next-20140922. 
 
-So given the points above, why not have one poll function, generic, and=
-=20
-if we fail to find an idle state or if the req is zero, then fallback t=
-o=20
-the poll loop ?
+Changes since v4:
+1. Patch 3/4: Explicitly initialize amba_device.irq_safe field after
+   probing driver (suggested by Russell King).
 
+Changes since v3:
+1. Patch 1/4: Document new API in Documentation/power/runtime_pm.txt
+   (pointed by Alan Stern).
 
->> Eg. on my server it was called 2 times over 1313856 times.
->>
->>> I don't tihnk the whole ARCH_HAS_CPU_RELAX thing makes any kind of
->>> sense, _every_ arch has some definition of it, the generic polling =
-loop
->>> is always a valid idle implementation.
->>>
->>> What we can do is always populate the idle state table with it befo=
-re
->>> calling the regular drivers.
->>
->> I am not sure to understand. You want to add the poll idle loop in a=
-ll the
->> drivers ?
->>
->> What about "safe_halt()" ? (arch_cpu_idle() for x86). It is also an =
-idle
->> state. Why not add it in the idle state table also ?
->
-> Because the latter is actually arch specific, whereas the idle pollin=
-g
-> thing is not.
-> You can _always_ poll idle, its generic, its valid, and
-> its guaranteed the most responsive method.
+Changes since v2:
+1. Add patch 1 (PM / Runtime: Add getter for querying the IRQ safe option)
+2. Add patch 2 (amba: Add helper macros for (un)preparing AMBA clock)
+3. Patch 3/4: Rewrite the idea. If IRQ safe runtime PM is set then
+   do not unprepare/prepare the clocks. Suggested by Russell King.
+4. Patch 4/4: During system sleep unprepare the clock.
 
-I agree with this point but this kind of loop is hardware optimized for=
-=20
-x86. On the other arch, where today this loop is never used, if we=20
-change the behavior of the cpuidle framework and introduces this loop,=20
-it may be selected and stay on this state for a long time (resulting=20
-from a bad prediction), I am afraid that can lead to some thermal issue=
-s.
-
-> The arch drivers get to add arch specific idle states; if a x86 cpuid=
-le
-> driver wants to add hlt they can.
+Changes since v1:
+1. Add patch 1 (amba: Allow AMBA drivers to use their own runtime PM).
+2. Patch 2/2: Apply Michal Simek's suggestions.
+3. Patch 2/2: Fix atomic context safeness in pl330_issue_pending().
 
 
+Description:
+============
+This patchset adds runtime and system PM to the pl330 driver.
+
+The runtime PM of pl330 driver requires interrupt safe suspend/resume
+callbacks which is in conflict with current amba bus driver.
+The latter also unprepares and prepares the AMBA bus clock which
+is not safe for atomic context.
+
+The patchset solves this in patch 3/6 by handling clocks in different
+way if device driver set interrupt safe runtime PM.
+
+Comments are welcome.
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+Tested on board with pl330 DMA driver:
+ - Trats2 (Exynos4212)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+
+Best regards,
+Krzysztof Kozlowski
+
+Krzysztof Kozlowski (6):
+  PM / Runtime: Add getter for querying the IRQ safe option
+  amba: Add helpers for (un)preparing AMBA clock
+  amba: Don't unprepare the clocks if device driver wants IRQ safe
+    runtime PM
+  dmaengine: pl330: Add runtime Power Management support
+  dmaengine: pl330: Add PM sleep support
+  amba: Use inlines instead of macros for amba_pclk_enable/disable
+
+ Documentation/power/runtime_pm.txt |  4 ++
+ drivers/amba/bus.c                 | 15 ++++--
+ drivers/dma/pl330.c                | 95 ++++++++++++++++++++++++++++++++++++--
+ include/linux/amba/bus.h           | 22 +++++++--
+ include/linux/pm_runtime.h         |  6 +++
+ 5 files changed, 130 insertions(+), 12 deletions(-)
+
+-- 
+1.9.1
 
