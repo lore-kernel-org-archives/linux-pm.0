@@ -1,38 +1,141 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v2 2/5] regulator: rt5033: Add RT5033 Regulator device
- driver
-Date: Wed, 12 Nov 2014 10:25:31 +0900
-Message-ID: <5462B70B.5090400@samsung.com>
-References: <1415603987-32475-1-git-send-email-beomho.seo@samsung.com>
- <1415603987-32475-3-git-send-email-beomho.seo@samsung.com>
- <20141110190403.GH3815@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Remove architecture specific menu entries
+Date: Wed, 12 Nov 2014 09:40:43 +0530
+Message-ID: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:52965 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbaKLBZe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 20:25:34 -0500
-In-reply-to: <20141110190403.GH3815@sirena.org.uk>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:55236 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753937AbaKLELD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 23:11:03 -0500
+Received: by mail-pd0-f180.google.com with SMTP id ft15so11424712pdb.11
+        for <linux-pm@vger.kernel.org>; Tue, 11 Nov 2014 20:11:03 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Liam Girdwood <lgirdwood@gmail.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Sorry, I will include your e-mail address next revision all patch-set.
+CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
+all included from the main Kconfig file using a menu entry. This creates another
+level of (unnecessary) hierarchy within the menuconfig entries.
 
-On 11/11/2014 04:04 AM, Mark Brown wrote:
-> On Mon, Nov 10, 2014 at 04:19:44PM +0900, Beomho Seo wrote:
->> This patch add device driver of Richtek RT5033 PMIC.
->> The driver support multiple regulator like LDO and synchronous Buck.
->> The integrated synchronous buck converter is designed to provide 0.6 A
->> application with high efficiency. Two LDOs are integrated. One safe LDO is
->> for 60mA and the other one LDO is for 150 mA.
-> 
-> I'm missing all the other patches in this series...
-> 
+The problem occurs when there are drivers usable across architectures. Either
+their config entry is duplicated in all the supported architectures or is put
+into the main Kconfig entry. With the later one, we have menuconfig entries for
+drivers at two levels then.
 
-Regards,
-Beomho Seo
+Fix these issues by getting rid of another level of menuconfig entries and
+populate all drivers within the main cpufreq menu.
+
+Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Suggested-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/Kconfig | 48 +++++++++++++++++-------------------------------
+ 1 file changed, 17 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 3489f8f..a24d678 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -196,19 +196,19 @@ config CPUFREQ_DT
+ 
+ 	  If in doubt, say N.
+ 
+-menu "x86 CPU frequency scaling drivers"
+-depends on X86
++if X86
+ source "drivers/cpufreq/Kconfig.x86"
+-endmenu
++endif
+ 
+-menu "ARM CPU frequency scaling drivers"
+-depends on ARM || ARM64
++if ARM || ARM64
+ source "drivers/cpufreq/Kconfig.arm"
+-endmenu
++endif
+ 
+-menu "AVR32 CPU frequency scaling drivers"
+-depends on AVR32
++if PPC32 || PPC64
++source "drivers/cpufreq/Kconfig.powerpc"
++endif
+ 
++if AVR32
+ config AVR32_AT32AP_CPUFREQ
+ 	bool "CPU frequency driver for AT32AP"
+ 	depends on PLATFORM_AT32AP
+@@ -216,12 +216,9 @@ config AVR32_AT32AP_CPUFREQ
+ 	help
+ 	  This enables the CPU frequency driver for AT32AP processors.
+ 	  If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "CPUFreq processor drivers"
+-depends on IA64
+-
++if IA64
+ config IA64_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	depends on ACPI_PROCESSOR
+@@ -232,12 +229,9 @@ config IA64_ACPI_CPUFREQ
+ 	For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "MIPS CPUFreq processor drivers"
+-depends on MIPS
+-
++if MIPS
+ config LOONGSON2_CPUFREQ
+ 	tristate "Loongson2 CPUFreq Driver"
+ 	help
+@@ -249,16 +243,9 @@ config LOONGSON2_CPUFREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "PowerPC CPU frequency scaling drivers"
+-depends on PPC32 || PPC64
+-source "drivers/cpufreq/Kconfig.powerpc"
+-endmenu
+-
+-menu "SPARC CPU frequency scaling drivers"
+-depends on SPARC64
++if SPARC64
+ config SPARC_US3_CPUFREQ
+ 	tristate "UltraSPARC-III CPU Frequency driver"
+ 	help
+@@ -276,10 +263,9 @@ config SPARC_US2E_CPUFREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If in doubt, say N.
+-endmenu
++endif
+ 
+-menu "SH CPU Frequency scaling"
+-depends on SUPERH
++if SUPERH
+ config SH_CPU_FREQ
+ 	tristate "SuperH CPU Frequency driver"
+ 	help
+@@ -293,7 +279,7 @@ config SH_CPU_FREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If unsure, say N.
+-endmenu
++endif
+ 
+ endif
+ endmenu
+-- 
+2.0.3.693.g996b0fd
 
