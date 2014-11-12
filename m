@@ -1,109 +1,78 @@
-From: Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 3/3] mfd: max8997: change irq names to upper case
-Date: Wed, 12 Nov 2014 08:23:16 +0100
-Message-ID: <1415776996-11569-4-git-send-email-r.baldyga@samsung.com>
-References: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lee.jones@linaro.org
-Cc: sameo@linux.intel.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, dmitry.torokhov@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, lgirdwood@gmail.com, broonie@kernel.org, a.zummo@towertech.it, paul.gortmaker@windriver.com, sachin.kamat@linaro.org, k.kozlowski@samsung.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com, Robert Baldyga <r.baldyga@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
+ PM_RUNTIME
+Date: Wed, 12 Nov 2014 09:56:38 +0100
+Message-ID: <1415782598.4247.2.camel@AMDC1943>
+References: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:20602 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbaKLI4q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 03:56:46 -0500
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout4.w1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0NEX007804Z5DT00@mailout4.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 12 Nov 2014 08:59:29 +0000 (GMT)
+In-reply-to: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This patch changes naming convention of MUIC interrupts form CamelCase
-to upper case. It makes names more readable and consistent with another
-interrupt names in max8997 driver.
+On pon, 2014-11-10 at 13:59 -0500, Alan Stern wrote:
+> [CC: list severely trimmed]
+> 
+> On Mon, 10 Nov 2014, Ulf Hansson wrote:
+> 
+> > >> There are an important advantage of using the pm_runtime_force_suspend() here.
+> > >>
+> > >> For the driver to handle clock gating at system PM suspend, it first
+> > >> needs to bring the device into full power, through
+> > >> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
+> > >> since it may already be gated.
+> > >
+> > > That's fine, but it has nothing to do with pm_runtime_force_suspend().
+> > >
+> > > Besides, if the real question is whether or not to gate the clock (or
+> > > in other words, has the clock already been gated), why not just store a
+> > > "clock_is_gated" flag somewhere?
+> > 
+> > You could do that, but it's easier to not.
+> 
+> I'm not convinced.  And you haven't said how this is related to
+> pm_runtime_force_suspend().
+> 
+> > You will need to update the runtime PM status and disable runtime PM
+> > anyway, done by the API.
+> 
+> So what?  And what API are you referring to: the runtime PM API or 
+> something else?
+> 
+> I get the feeling that I'm missing a lot of important points here.  
+> What have you left out?
+> 
+> As I understand the problem, you've got a bus type where some of the
+> drivers have IRQ-safe runtime PM (and therefore carry out their
+> suspend/resume operations in interrupt context) and others don't.  The
+> subsystem core wants to maximize the power saving by deconfiguring some
+> clocks whenever a device is suspended, but this requires a process
+> context and so it can't be done directly when IRQ-safe runtime PM is
+> used.
+> 
+> Is that a good summary?  If it is, there are ways of dealing with this 
+> that don't involve messing around with the runtime PM internals, or 
+> using pm_runtime_force_suspend().
 
-Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Thank you all for this precious feedback. I'll try the way with skipping
+runtime PM stack completely during system suspend. Probably that will
+add some complexity to the amba/bus and pl330 but there shouldn't be any
+changes to PM core.
 
-[For the mfd part]
-Acked-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/extcon/extcon-max8997.c     | 32 ++++++++++++++++----------------
- include/linux/mfd/max8997-private.h | 16 ++++++++--------
- 2 files changed, 24 insertions(+), 24 deletions(-)
+Best regards,
+Krzysztof
 
-diff --git a/drivers/extcon/extcon-max8997.c b/drivers/extcon/extcon-max8997.c
-index 172dbd6..834b72f 100644
---- a/drivers/extcon/extcon-max8997.c
-+++ b/drivers/extcon/extcon-max8997.c
-@@ -46,15 +46,15 @@ struct max8997_muic_irq {
- };
- 
- static struct max8997_muic_irq muic_irqs[] = {
--	{ MAX8997_MUICIRQ_ADCError,	"muic-ADCERROR" },
--	{ MAX8997_MUICIRQ_ADCLow,	"muic-ADCLOW" },
--	{ MAX8997_MUICIRQ_ADC,		"muic-ADC" },
--	{ MAX8997_MUICIRQ_VBVolt,	"muic-VBVOLT" },
--	{ MAX8997_MUICIRQ_DBChg,	"muic-DBCHG" },
--	{ MAX8997_MUICIRQ_DCDTmr,	"muic-DCDTMR" },
--	{ MAX8997_MUICIRQ_ChgDetRun,	"muic-CHGDETRUN" },
--	{ MAX8997_MUICIRQ_ChgTyp,	"muic-CHGTYP" },
--	{ MAX8997_MUICIRQ_OVP,		"muic-OVP" },
-+	{ MAX8997_MUICIRQ_ADCERROR,	"MUIC-ADCERROR" },
-+	{ MAX8997_MUICIRQ_ADCLOW,	"MUIC-ADCLOW" },
-+	{ MAX8997_MUICIRQ_ADC,		"MUIC-ADC" },
-+	{ MAX8997_MUICIRQ_VBVOLT,	"MUIC-VBVOLT" },
-+	{ MAX8997_MUICIRQ_DBCHG,	"MUIC-DBCHG" },
-+	{ MAX8997_MUICIRQ_DCDTMR,	"MUIC-DCDTMR" },
-+	{ MAX8997_MUICIRQ_CHGDETRUN,	"MUIC-CHGDETRUN" },
-+	{ MAX8997_MUICIRQ_CHGTYP,	"MUIC-CHGTYP" },
-+	{ MAX8997_MUICIRQ_OVP,		"MUIC-OVP" },
- };
- 
- /* Define supported cable type */
-@@ -553,17 +553,17 @@ static void max8997_muic_irq_work(struct work_struct *work)
- 	}
- 
- 	switch (irq_type) {
--	case MAX8997_MUICIRQ_ADCError:
--	case MAX8997_MUICIRQ_ADCLow:
-+	case MAX8997_MUICIRQ_ADCERROR:
-+	case MAX8997_MUICIRQ_ADCLOW:
- 	case MAX8997_MUICIRQ_ADC:
- 		/* Handle all of cable except for charger cable */
- 		ret = max8997_muic_adc_handler(info);
- 		break;
--	case MAX8997_MUICIRQ_VBVolt:
--	case MAX8997_MUICIRQ_DBChg:
--	case MAX8997_MUICIRQ_DCDTmr:
--	case MAX8997_MUICIRQ_ChgDetRun:
--	case MAX8997_MUICIRQ_ChgTyp:
-+	case MAX8997_MUICIRQ_VBVOLT:
-+	case MAX8997_MUICIRQ_DBCHG:
-+	case MAX8997_MUICIRQ_DCDTMR:
-+	case MAX8997_MUICIRQ_CHGDETRUN:
-+	case MAX8997_MUICIRQ_CHGTYP:
- 		/* Handle charger cable */
- 		ret = max8997_muic_chg_handler(info);
- 		break;
-diff --git a/include/linux/mfd/max8997-private.h b/include/linux/mfd/max8997-private.h
-index f42ea22..2817fa6 100644
---- a/include/linux/mfd/max8997-private.h
-+++ b/include/linux/mfd/max8997-private.h
-@@ -411,14 +411,14 @@ enum max8997_irq {
- 
- enum max8997_irq_muic {
- 	MAX8997_MUICIRQ_ADC,
--	MAX8997_MUICIRQ_ADCLow,
--	MAX8997_MUICIRQ_ADCError,
--
--	MAX8997_MUICIRQ_ChgTyp,
--	MAX8997_MUICIRQ_ChgDetRun,
--	MAX8997_MUICIRQ_DCDTmr,
--	MAX8997_MUICIRQ_DBChg,
--	MAX8997_MUICIRQ_VBVolt,
-+	MAX8997_MUICIRQ_ADCLOW,
-+	MAX8997_MUICIRQ_ADCERROR,
-+
-+	MAX8997_MUICIRQ_CHGTYP,
-+	MAX8997_MUICIRQ_CHGDETRUN,
-+	MAX8997_MUICIRQ_DCDTMR,
-+	MAX8997_MUICIRQ_DBCHG,
-+	MAX8997_MUICIRQ_VBVOLT,
- 
- 	MAX8997_MUICIRQ_OVP,
- 
--- 
-1.9.1
+
