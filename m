@@ -1,63 +1,39 @@
-From: =?UTF-8?q?Eric=20B=C3=A9nard?= <eric@eukrea.com>
-Subject: [PATCH] bq27x00_battery: fix register offset for bq27425
-Date: Wed, 12 Nov 2014 23:04:08 +0100
-Message-ID: <1415829848-29730-1-git-send-email-eric@eukrea.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: core: ignore invalid trip temperature
+Date: Wed, 12 Nov 2014 15:43:29 -0800
+Message-ID: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:28952 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753645AbaKLXns (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Nov 2014 18:43:48 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-- SOC is at 0x1C so we must add 0x4 as stated in the comment to read th=
-e
-  right value.
-- DCAP is at 0x3c so we also must use a value with the right offset to =
-get
-  the correct design capacity.
+Ignore invalid trip temperature less or equal to zero. Some
+buggy systems have invalid trips, causing system shutdown.
 
-Actually testing on a bq27410 which has the same register map as bq2742=
-5
-(but adds new registers).
-
-Signed-off-by: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/power/bq27x00_battery.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/thermal/thermal_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_ba=
-ttery.c
-index e3bacfe..ab18e96 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -76,7 +76,8 @@
-=20
- /* bq27425 register addresses are same as bq27x00 addresses minus 4 */
- #define BQ27425_REG_OFFSET		0x04
--#define BQ27425_REG_SOC			0x18 /* Register address plus offset */
-+#define BQ27425_REG_SOC		(0x1C + BQ27425_REG_OFFSET)
-+#define BQ27425_REG_DCAP		(0x3C + BQ27425_REG_OFFSET)
-=20
- #define BQ27000_RS			20 /* Resistor sense */
- #define BQ27x00_POWER_CONSTANT		(256 * 29200 / 1000)
-@@ -282,9 +283,12 @@ static int bq27x00_battery_read_ilmd(struct bq27x0=
-0_device_info *di)
- {
- 	int ilmd;
-=20
--	if (bq27xxx_is_chip_version_higher(di))
--		ilmd =3D bq27x00_read(di, BQ27500_REG_DCAP, false);
--	else
-+	if (bq27xxx_is_chip_version_higher(di)) {
-+		if (di->chip =3D=3D BQ27425)
-+			ilmd =3D bq27x00_read(di, BQ27425_REG_DCAP, false);
-+		else
-+			ilmd =3D bq27x00_read(di, BQ27500_REG_DCAP, false);
-+	} else
- 		ilmd =3D bq27x00_read(di, BQ27000_REG_ILMD, true);
-=20
- 	if (ilmd < 0) {
---=20
-2.1.1
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 9bf10aa..fbf301a 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -368,7 +368,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+ 
+ 	/* If we have not crossed the trip_temp, we do not care. */
+-	if (tz->temperature < trip_temp)
++	if (trip_temp <= 0 || tz->temperature < trip_temp)
+ 		return;
+ 
+ 	trace_thermal_zone_trip(tz, trip, trip_type);
+-- 
+1.9.1
+
