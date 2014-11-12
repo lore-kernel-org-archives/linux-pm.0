@@ -1,70 +1,43 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 1/3] mfd: max8997: use regmap to access registers
-Date: Wed, 12 Nov 2014 18:01:44 +0100
-Message-ID: <20141112170144.GB27681@earth.universe>
-References: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
- <1415776996-11569-2-git-send-email-r.baldyga@samsung.com>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [V2 PATCH 3/4] scsi:stex.c Add reboot support
+Date: Wed, 12 Nov 2014 09:27:50 -0800
+Message-ID: <20141112172750.GB18862@infradead.org>
+References: <5462D62C.50602@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qcHopEYAB45HaUaB"
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1415776996-11569-2-git-send-email-r.baldyga@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Robert Baldyga <r.baldyga@samsung.com>
-Cc: lee.jones@linaro.org, sameo@linux.intel.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, dmitry.torokhov@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, dbaryshkov@gmail.com, dwmw2@infradead.org, lgirdwood@gmail.com, broonie@kernel.org, a.zummo@towertech.it, paul.gortmaker@windriver.com, sachin.kamat@linaro.org, k.kozlowski@samsung.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
+In-Reply-To: <5462D62C.50602@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Charles Chiou <ch1102chiou@gmail.com>
+Cc: JBottomley@parallels.com, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+> +static int stex_reboot_callback(struct notifier_block *self,
+> +							  unsigned long val,
+> +							  void *data)
+> +{
+> +	if (val == SYS_RESTART)
+> +		isRestart = 1;
+> +	return NOTIFY_OK;
+> +}
+> 
+> @@ -1832,7 +1859,14 @@ static void stex_shutdown(struct pci_dev *pdev)
+>  {
+>  	struct st_hba *hba = pci_get_drvdata(pdev);
+> 
+> -	stex_hba_stop(hba);
+> +	if (hba->yellowstone == 1)
+> +		stex_hba_stop(hba, ST_IGNORED);
+> +	else {
+> +		if (isRestart)
+> +			stex_hba_stop(hba, ST_S6);
+> +		else
+> +			stex_hba_stop(hba, ST_S5);
+> +	}
 
---qcHopEYAB45HaUaB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This sort of check for reboot vs restart isn't really something
+we want in drivers.  I don't really know how we could find this
+out assuming we even want drivers to behave differently.
 
-Hi,
-
-On Wed, Nov 12, 2014 at 08:23:14AM +0100, Robert Baldyga wrote:
-> This patch modifies max8997 driver and each associated function driver,
-> to use regmap instead of operating directly on i2c bus. It will allow to
-> simplify IRQ handling using regmap-irq.
->=20
-> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->=20
-> [For extcon part]
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
->=20
-> [For leds part]
-> Acked-by: Bryan Wu <cooloney@gmail.com>
->=20
-> [For the mfd part]
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-
-[For the power supply part]
-Acked-By: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
---qcHopEYAB45HaUaB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUY5J4AAoJENju1/PIO/qa1/UQAJcZ1SQq0B1MUjO/YKl3l+qz
-NjW8NVf6aZZP1jcHILJZCdb7vafFKVbin4LJgx4B60vVejyy7VEqFtxtl2TgRmlG
-YpnIGVjIDteIVQGO2sOPNJZQCkmwXcojnLUpmDusQ1mf1BOf8RonCy5IHfGnp3EE
-2vZ+8EOJ47mGqK0cuD08W7kvGqwQtcBq/M4pvTmzmPcBSUnaZjv2Wp7e6+MUmp6k
-+LBjgiOerlkAnKWZmuDRl+a7D6MhPW8lI5u/Kk9Qzw+WFtiO0HllkXy26+VSB5uI
-3TpeOUQuk5mRilqtiQdNIqrVJLUH2BVEDil6JxGGa3TU7eOQrkg8hZCEW+/FDWW9
-hOCZG3VxsWHNPfOhpdlhGZ7SXTh9Z2oxjftxZYer7CwC9XS7PHUeLCczqIyFchY/
-j86cBXreb6uUOE4icedZDBePNkSvT3oY63Q13VmauXfL5X5LVpp3jANFPszI4QSl
-LxrllmqpSCqCJegctxq+v95g/4YC/+ZpM/m4eWbNrzyvKgJZQ/iVNH3xNUKdoaWr
-cQTfjdZ+7ma298uIS0IIdo/12QVYaQ9hFqKU/Oy+VNfQxmEHVjcWYIZcO6eIcUFf
-1L91G7lLpXz2H9L8u/zAY0LL+RKY8f3aH20VKI3jbXDG/tW7sai5p0C2WnWIlWDA
-gx/ysKjHSMuUhi2tHf40
-=r5Wi
------END PGP SIGNATURE-----
-
---qcHopEYAB45HaUaB--
+Maybe Greg or someone on lkml has an idea how to best handle this case.
