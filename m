@@ -1,7 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v11 2/6] amba: Add helpers for (un)preparing AMBA clock
-Date: Wed, 12 Nov 2014 15:32:24 +0100
-Message-ID: <1415802748-30530-3-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v11 6/6] amba: Use inlines instead of macros for
+ amba_pclk_enable/disable
+Date: Wed, 12 Nov 2014 15:32:28 +0100
+Message-ID: <1415802748-30530-7-git-send-email-k.kozlowski@samsung.com>
 References: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
@@ -10,35 +11,38 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pa
 Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add amba_pclk_prepare() and amba_pclk_unprepare() inline functions for
-handling the AMBA bus clock by device drivers.
+Replace the amba_pclk_enable and amba_pclk_disable macros with static
+inline functions and remove checks for IS_ERR. The amba bus clock won't
+be ERR because probe would fail before the use of these functions.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- include/linux/amba/bus.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ include/linux/amba/bus.h | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-index d024bd9c9d9b..2afc618b15ce 100644
+index 2afc618b15ce..7daba00ddabd 100644
 --- a/include/linux/amba/bus.h
 +++ b/include/linux/amba/bus.h
-@@ -98,6 +98,16 @@ void amba_release_regions(struct amba_device *);
- #define amba_pclk_disable(d)	\
- 	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
+@@ -92,11 +92,15 @@ struct amba_device *amba_find_device(const char *, struct device *, unsigned int
+ int amba_request_regions(struct amba_device *, const char *);
+ void amba_release_regions(struct amba_device *);
  
-+static inline int amba_pclk_prepare(struct amba_device *dev)
+-#define amba_pclk_enable(d)	\
+-	(IS_ERR((d)->pclk) ? 0 : clk_enable((d)->pclk))
++static inline int amba_pclk_enable(struct amba_device *dev)
 +{
-+	return clk_prepare(dev->pclk);
++	return clk_enable(dev->pclk);
 +}
-+
-+static inline void amba_pclk_unprepare(struct amba_device *dev)
+ 
+-#define amba_pclk_disable(d)	\
+-	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
++static inline void amba_pclk_disable(struct amba_device *dev)
 +{
-+	clk_unprepare(dev->pclk);
++	clk_disable(dev->pclk);
 +}
-+
- /* Some drivers don't use the struct amba_device */
- #define AMBA_CONFIG_BITS(a) (((a) >> 24) & 0xff)
- #define AMBA_REV_BITS(a) (((a) >> 20) & 0x0f)
+ 
+ static inline int amba_pclk_prepare(struct amba_device *dev)
+ {
 -- 
 1.9.1
