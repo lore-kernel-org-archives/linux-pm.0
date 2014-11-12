@@ -1,58 +1,38 @@
-From: "Tc, Jenny" <jenny.tc@intel.com>
-Subject: RE: [PATCH 2/3] power: core: Add variables related temperature to
- power_supply_info.
-Date: Wed, 12 Nov 2014 03:45:03 +0000
-Message-ID: <20ADAB092842284E95860F279283C5642EDCE099@BGSMSX104.gar.corp.intel.com>
-References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
- <1412679518-21499-3-git-send-email-jonghwa3.lee@samsung.com>
- <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
- <546158A0.5000707@samsung.com>
- <20ADAB092842284E95860F279283C5642EDB8431@BGSMSX104.gar.corp.intel.com>
- <20141111204219.GA1347@amd>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v2 2/5] regulator: rt5033: Add RT5033 Regulator device
+ driver
+Date: Wed, 12 Nov 2014 10:25:31 +0900
+Message-ID: <5462B70B.5090400@samsung.com>
+References: <1415603987-32475-1-git-send-email-beomho.seo@samsung.com>
+ <1415603987-32475-3-git-send-email-beomho.seo@samsung.com>
+ <20141110190403.GH3815@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141111204219.GA1347@amd>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:52965 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbaKLBZe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Nov 2014 20:25:34 -0500
+In-reply-to: <20141110190403.GH3815@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Liam Girdwood <lgirdwood@gmail.com>
 
-> > The CC/CV for each battery temperature zone is defined as part of battery spec.
-> This is
-> > as per the JEITA/PSE standards. So IMO, this is a battery charging information
-> > (charging object) rather than a thermal throttling information.
-> >
-> > Also the battery information may not fit into a standard format. Different standards
-> have
-> > different format for charging object. So I would suggest to make it flexible enough to
-> > support different charging object format. For example MIPI BIF charging object
-> format
-> > (https://members.mipi.org/wg/BIF/document/11518) and MIPI BIF Rule based
-> charging algorithm
-> > (http://mipi.org/sites/default/files/mipi_BIF_rule-based-charging_white-paper_1.pdf)
-> > has different charging object format. This is why the patch
-> https://lkml.org/lkml/2014/8/13/355
-> > has option to support different charging objects and different charging algorithms.
+Sorry, I will include your e-mail address next revision all patch-set.
+
+On 11/11/2014 04:04 AM, Mark Brown wrote:
+> On Mon, Nov 10, 2014 at 04:19:44PM +0900, Beomho Seo wrote:
+>> This patch add device driver of Richtek RT5033 PMIC.
+>> The driver support multiple regulator like LDO and synchronous Buck.
+>> The integrated synchronous buck converter is designed to provide 0.6 A
+>> application with high efficiency. Two LDOs are integrated. One safe LDO is
+>> for 60mA and the other one LDO is for 150 mA.
 > 
-> Yes, and this is also why your patches are not being
-> merged. Overengineered, too complex. Citing standards will not improve
-> the patches.
+> I'm missing all the other patches in this series...
 > 
-> And yes, adding cc/cv to the thermal interface seems like a good idea
-> to me.
 
-Sorry to disagree with you. IMHO it's a charging profile and not a thermal profile. The
-cc/cv information is defined as part of battery spec. If the intention here is to provide a
-place for battery info, then cc/cv should be part of battery info. The latest charger chips
-allows to configure CC/CV for different temperature zone. IMHO adding these information
-to thermal profile doesn't seems to be the right approach since the thermal subsystem
-need to be aware of the charging subsystem constraints.
+Regards,
+Beomho Seo
 
-The standards were cited to point where the industry is moving. Anyway let the maintainer
-take a final call -  should we align with industry standards or stick to legacy charging
-methodologies?
-
--Jenny
