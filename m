@@ -1,193 +1,149 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v11 4/6] dmaengine: pl330: Add runtime Power Management support
-Date: Wed, 12 Nov 2014 15:32:26 +0100
-Message-ID: <1415802748-30530-5-git-send-email-k.kozlowski@samsung.com>
-References: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req
+ before idle
+Date: Wed, 12 Nov 2014 16:02:54 +0100
+Message-ID: <20141112150254.GD21343@twins.programming.kicks-ass.net>
+References: <20141110124111.GN3337@twins.programming.kicks-ass.net>
+ <5460D5EF.2000805@linaro.org>
+ <20141110152803.GX10501@worktop.programming.kicks-ass.net>
+ <5460E0A5.9040508@linaro.org>
+ <20141110161530.GB10501@worktop.programming.kicks-ass.net>
+ <5460F386.1050109@linaro.org>
+ <20141110194820.GD10501@worktop.programming.kicks-ass.net>
+ <54613A5F.7060107@linaro.org>
+ <20141111102058.GI10501@worktop.programming.kicks-ass.net>
+ <54636646.6080709@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <54636646.6080709@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds runtime PM support to pl330 DMA engine driver.
+On Wed, Nov 12, 2014 at 02:53:10PM +0100, Daniel Lezcano wrote:
 
-The runtime power management for pl330 DMA driver allows gating of AMBA
-clock (PDMA) in FSYS clock domain, when the device is not processing any
-requests. This is necessary to enter low power modes on Exynos SoCs
-(e.g. LPA on Exynos4x12 or W-AFTR on Exynos3250).
+> >>The governors are just ignoring it, except for a small timer optimization in
+> >>menu.c (and I am still not convinced it is worth to have it). I don't see
+> >>the point to add a state we don't want to use.
+> >
+> >The ignoring it is _wrong_. Make that go away and you'll get rid of most
+> >of the STATE_START crap.
+> >
+> >The governors are the place where we combine the QoS constraints with
+> >idle predictors and pick an idle state, polling is a valid state to
+> >pick, and given QoS constraints it might be the only state to pick.
+> 
+> Well, I understand your point of view but I still disagree. IMO, the poll
+> loop shouldn't be considered as a valid idle state for different reasons:
+> 
+> 0. thermal issue if wrongly selected from any of the governor
 
-Runtime PM resuming of the device may happen in atomic context (during
-call device_issue_pending()) so pm_runtime_irq_safe() is used. This will
-lead only to disabling/enabling of the clock but this is sufficient for
-gating the clock and for reducing energy usage.
+That seems like a QoS issue and should be fixed there, no?
 
-Driver uses runtime PM callbacks from amba/bus.c driver only.
+> 1. a polling loop does not have a valid time measurements even if the
+> TIME_VALID flag has been added
 
-Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Vinod Koul <vinod.koul@intel.com>
+Ah, right you are. It does not. We _could_ fix that, not sure its worth
+the hassle but see below.
+
+> 2. entering the idle governors is not free, especially the menu governor,
+> which is contradictory with zero latency req
+
+Well, you could add this 'fast' path to the cpuidle code (before calling
+into the actual governors) too. Also, since the governors actually use
+this state it makes sense for it to be available.
+
+> 3. what is the meaning of having a zero latency (target + exit) idle state ?
+> We know it will always succeed if the other fails
+
+Not quite sure I follow; you seem to have answered your own question?
+
+> 4. IIUC, you are suggesting to add the poll loop for all the cpuidle
+> drivers. This is a *lot* of changes, I am not afraid about the work to do
+> but there is a significant code impact and the entire behavior of the
+> cpuidle framework for all the arch will be changed.
+
+I'm not sure it would be a lot of work, add it in the common cpuidle
+code before calling the driver init?
+
+> So given the points above, why not have one poll function, generic, and if
+> we fail to find an idle state or if the req is zero, then fallback to the
+> poll loop ?
+
+I could agree but only if we keep the poll loop generic, we cannot go
+add yet more arch hooks there.
+
+> >Because the latter is actually arch specific, whereas the idle
+> >polling thing is not.  You can _always_ poll idle, its generic, its
+> >valid, and its guaranteed the most responsive method.
+> 
+> I agree with this point but this kind of loop is hardware optimized for x86.
+
+well 'optimized' is a strong word there, the rep nop, or pause
+instruction isn't really much at all and is mostly a SMT hint afaik.
+ia64, sparc64 and ppc64 have similar magic and s390 and hexagon use a vm
+yield like construct.
+
+> On the other arch, where today this loop is never used, if we change the
+> behavior of the cpuidle framework and introduces this loop, it may be
+> selected and stay on this state for a long time (resulting from a bad
+> prediction), I am afraid that can lead to some thermal issues.
+
+Because of 1), right? Yes that's a problem.
+
+
 ---
- drivers/dma/pl330.c | 58 +++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 54 insertions(+), 4 deletions(-)
+ kernel/sched/idle.c | 6 +++++-
+ kernel/softirq.c    | 7 +++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-index 83e2257c324a..c3bd3584f261 100644
---- a/drivers/dma/pl330.c
-+++ b/drivers/dma/pl330.c
-@@ -27,6 +27,7 @@
- #include <linux/of.h>
- #include <linux/of_dma.h>
- #include <linux/err.h>
-+#include <linux/pm_runtime.h>
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index c47fce75e666..9c76ae92650f 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -42,12 +42,16 @@ static int __init cpu_idle_nopoll_setup(char *__unused)
+ __setup("hlt", cpu_idle_nopoll_setup);
+ #endif
  
- #include "dmaengine.h"
- #define PL330_MAX_CHAN		8
-@@ -265,6 +266,9 @@ static unsigned cmd_line;
- 
- #define NR_DEFAULT_DESC	16
- 
-+/* Delay for runtime PM autosuspend, ms */
-+#define PL330_AUTOSUSPEND_DELAY 20
++DEFINE_PER_CPU(unsigned int, int_seq);
 +
- /* Populated by the PL330 core driver for DMA API driver's info */
- struct pl330_config {
- 	u32	periph_id;
-@@ -1958,6 +1962,7 @@ static void pl330_tasklet(unsigned long data)
- 	struct dma_pl330_chan *pch = (struct dma_pl330_chan *)data;
- 	struct dma_pl330_desc *desc, *_dt;
- 	unsigned long flags;
-+	bool power_down = false;
- 
- 	spin_lock_irqsave(&pch->lock, flags);
- 
-@@ -1972,10 +1977,17 @@ static void pl330_tasklet(unsigned long data)
- 	/* Try to submit a req imm. next to the last completed cookie */
- 	fill_queue(pch);
- 
--	/* Make sure the PL330 Channel thread is active */
--	spin_lock(&pch->thread->dmac->lock);
--	_start(pch->thread);
--	spin_unlock(&pch->thread->dmac->lock);
-+	if (list_empty(&pch->work_list)) {
-+		spin_lock(&pch->thread->dmac->lock);
-+		_stop(pch->thread);
-+		spin_unlock(&pch->thread->dmac->lock);
-+		power_down = true;
-+	} else {
-+		/* Make sure the PL330 Channel thread is active */
-+		spin_lock(&pch->thread->dmac->lock);
-+		_start(pch->thread);
-+		spin_unlock(&pch->thread->dmac->lock);
-+	}
- 
- 	while (!list_empty(&pch->completed_list)) {
- 		dma_async_tx_callback callback;
-@@ -1990,6 +2002,12 @@ static void pl330_tasklet(unsigned long data)
- 		if (pch->cyclic) {
- 			desc->status = PREP;
- 			list_move_tail(&desc->node, &pch->work_list);
-+			if (power_down) {
-+				spin_lock(&pch->thread->dmac->lock);
-+				_start(pch->thread);
-+				spin_unlock(&pch->thread->dmac->lock);
-+				power_down = false;
-+			}
- 		} else {
- 			desc->status = FREE;
- 			list_move_tail(&desc->node, &pch->dmac->desc_pool);
-@@ -2004,6 +2022,12 @@ static void pl330_tasklet(unsigned long data)
- 		}
- 	}
- 	spin_unlock_irqrestore(&pch->lock, flags);
+ static inline int cpu_idle_poll(void)
+ {
++	unsigned int seq = this_cpu_read(int_seq);
 +
-+	/* If work list empty, power down */
-+	if (power_down) {
-+		pm_runtime_mark_last_busy(pch->dmac->ddma.dev);
-+		pm_runtime_put_autosuspend(pch->dmac->ddma.dev);
-+	}
+ 	rcu_idle_enter();
+ 	trace_cpu_idle_rcuidle(0, smp_processor_id());
+ 	local_irq_enable();
+-	while (!tif_need_resched())
++	while (!tif_need_resched() && seq == this_cpu_read(int_seq))
+ 		cpu_relax();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+ 	rcu_idle_exit();
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 0699add19164..bc8d43545964 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -370,6 +370,8 @@ static inline void tick_irq_exit(void)
+ #endif
  }
  
- bool pl330_filter(struct dma_chan *chan, void *param)
-@@ -2073,6 +2097,7 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
- 
- 	switch (cmd) {
- 	case DMA_TERMINATE_ALL:
-+		pm_runtime_get_sync(pl330->ddma.dev);
- 		spin_lock_irqsave(&pch->lock, flags);
- 
- 		spin_lock(&pl330->lock);
-@@ -2099,10 +2124,15 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
- 			dma_cookie_complete(&desc->txd);
- 		}
- 
-+		if (!list_empty(&pch->work_list))
-+			pm_runtime_put(pl330->ddma.dev);
++DECLARE_PER_CPU(unsigned int, int_seq);
 +
- 		list_splice_tail_init(&pch->submitted_list, &pl330->desc_pool);
- 		list_splice_tail_init(&pch->work_list, &pl330->desc_pool);
- 		list_splice_tail_init(&pch->completed_list, &pl330->desc_pool);
- 		spin_unlock_irqrestore(&pch->lock, flags);
-+		pm_runtime_mark_last_busy(pl330->ddma.dev);
-+		pm_runtime_put_autosuspend(pl330->ddma.dev);
- 		break;
- 	case DMA_SLAVE_CONFIG:
- 		slave_config = (struct dma_slave_config *)arg;
-@@ -2138,6 +2168,7 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
+ /*
+  * Exit an interrupt context. Process softirqs if needed and possible:
+  */
+@@ -386,6 +388,11 @@ void irq_exit(void)
+ 	if (!in_interrupt() && local_softirq_pending())
+ 		invoke_softirq();
  
- 	tasklet_kill(&pch->task);
- 
-+	pm_runtime_get_sync(pch->dmac->ddma.dev);
- 	spin_lock_irqsave(&pch->lock, flags);
- 
- 	pl330_release_channel(pch->thread);
-@@ -2147,6 +2178,8 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
- 		list_splice_tail_init(&pch->work_list, &pch->dmac->desc_pool);
- 
- 	spin_unlock_irqrestore(&pch->lock, flags);
-+	pm_runtime_mark_last_busy(pch->dmac->ddma.dev);
-+	pm_runtime_put_autosuspend(pch->dmac->ddma.dev);
- }
- 
- static enum dma_status
-@@ -2162,6 +2195,15 @@ static void pl330_issue_pending(struct dma_chan *chan)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&pch->lock, flags);
-+	if (list_empty(&pch->work_list)) {
-+		/*
-+		 * Warn on nothing pending. Empty submitted_list may
-+		 * break our pm_runtime usage counter as it is
-+		 * updated on work_list emptiness status.
-+		 */
-+		WARN_ON(list_empty(&pch->submitted_list));
-+		pm_runtime_get_sync(pch->dmac->ddma.dev);
-+	}
- 	list_splice_tail_init(&pch->submitted_list, &pch->work_list);
- 	spin_unlock_irqrestore(&pch->lock, flags);
- 
-@@ -2739,6 +2781,12 @@ pl330_probe(struct amba_device *adev, const struct amba_id *id)
- 		pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg->num_chan,
- 		pcfg->num_peri, pcfg->num_events);
- 
-+	pm_runtime_irq_safe(&adev->dev);
-+	pm_runtime_use_autosuspend(&adev->dev);
-+	pm_runtime_set_autosuspend_delay(&adev->dev, PL330_AUTOSUSPEND_DELAY);
-+	pm_runtime_mark_last_busy(&adev->dev);
-+	pm_runtime_put_autosuspend(&adev->dev);
++#ifdef TIG_POLLING_NRFLAG
++	if (test_thread_flag(TIF_POLLING_NRFLAG))
++#endif
++		this_cpu_inc(int_seq);
 +
- 	return 0;
- probe_err3:
- 	/* Idle the DMAC */
-@@ -2765,6 +2813,8 @@ static int pl330_remove(struct amba_device *adev)
- 	struct pl330_dmac *pl330 = amba_get_drvdata(adev);
- 	struct dma_pl330_chan *pch, *_p;
- 
-+	pm_runtime_get_noresume(pl330->ddma.dev);
-+
- 	if (adev->dev.of_node)
- 		of_dma_controller_free(adev->dev.of_node);
- 
--- 
-1.9.1
+ 	tick_irq_exit();
+ 	rcu_irq_exit();
+ 	trace_hardirq_exit(); /* must be last! */
