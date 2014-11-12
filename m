@@ -1,78 +1,44 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
- PM_RUNTIME
-Date: Wed, 12 Nov 2014 09:56:38 +0100
-Message-ID: <1415782598.4247.2.camel@AMDC1943>
-References: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
+From: Robin Gong <b38343@freescale.com>
+Subject: [PATCH v4 0/3] add power off driver for i.mx6
+Date: Wed, 12 Nov 2014 16:20:36 +0800
+Message-ID: <1415780439-29728-1-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:20602 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbaKLI4q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 03:56:46 -0500
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout4.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0NEX007804Z5DT00@mailout4.w1.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 12 Nov 2014 08:59:29 +0000 (GMT)
-In-reply-to: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: shawn.guo@linaro.org, kernel@pengutronix.de, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, smoch@web.de
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On pon, 2014-11-10 at 13:59 -0500, Alan Stern wrote:
-> [CC: list severely trimmed]
-> 
-> On Mon, 10 Nov 2014, Ulf Hansson wrote:
-> 
-> > >> There are an important advantage of using the pm_runtime_force_suspend() here.
-> > >>
-> > >> For the driver to handle clock gating at system PM suspend, it first
-> > >> needs to bring the device into full power, through
-> > >> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
-> > >> since it may already be gated.
-> > >
-> > > That's fine, but it has nothing to do with pm_runtime_force_suspend().
-> > >
-> > > Besides, if the real question is whether or not to gate the clock (or
-> > > in other words, has the clock already been gated), why not just store a
-> > > "clock_is_gated" flag somewhere?
-> > 
-> > You could do that, but it's easier to not.
-> 
-> I'm not convinced.  And you haven't said how this is related to
-> pm_runtime_force_suspend().
-> 
-> > You will need to update the runtime PM status and disable runtime PM
-> > anyway, done by the API.
-> 
-> So what?  And what API are you referring to: the runtime PM API or 
-> something else?
-> 
-> I get the feeling that I'm missing a lot of important points here.  
-> What have you left out?
-> 
-> As I understand the problem, you've got a bus type where some of the
-> drivers have IRQ-safe runtime PM (and therefore carry out their
-> suspend/resume operations in interrupt context) and others don't.  The
-> subsystem core wants to maximize the power saving by deconfiguring some
-> clocks whenever a device is suspended, but this requires a process
-> context and so it can't be done directly when IRQ-safe runtime PM is
-> used.
-> 
-> Is that a good summary?  If it is, there are ways of dealing with this 
-> that don't involve messing around with the runtime PM internals, or 
-> using pm_runtime_force_suspend().
+Resend the patchset  with the latest MAINTAINERS
+Add simple power off driver for i.mx6, including:
+- add basic imx-snvs-poweroff driver in drivers/power/reset
+- add device node in all dts files of i.mx6.
+- enable in config file
 
-Thank you all for this precious feedback. I'll try the way with skipping
-runtime PM stack completely during system suspend. Probably that will
-add some complexity to the amba/bus and pl330 but there shouldn't be any
-changes to PM core.
+Change from v3:
+- disable poweroff driver in soc level dts and enable it in board level dts
+- replace 'EIO' with 'ENODEV' while of_iomap fail.
+Change from v2:
+- remove useless included head files
+- split device binding doc from dts patch
+- add description for the case that PMIC_ON_REQ not used as external power
+  control
 
-Best regards,
-Krzysztof
+Robin Gong (3):
+  ARM: dts: imx6: add pm_power_off support for i.mx6 chips
+  power: reset: imx-snvs-poweroff: add power off driver for i.mx6
+  ARM: configs: imx_v6_v7_defconfig: add power off driver
 
+ arch/arm/boot/dts/imx6qdl.dtsi          |  5 +++
+ arch/arm/boot/dts/imx6sl.dtsi           |  5 +++
+ arch/arm/boot/dts/imx6sx.dtsi           |  5 +++
+ arch/arm/configs/imx_v6_v7_defconfig    |  3 ++
+ drivers/power/reset/Kconfig             |  5 +++
+ drivers/power/reset/Makefile            |  1 +
+ drivers/power/reset/imx-snvs-poweroff.c | 69 +++++++++++++++++++++++++++++++++
+ 7 files changed, 93 insertions(+)
+ create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
 
+-- 
+1.9.1
