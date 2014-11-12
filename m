@@ -1,52 +1,39 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: [RFC 4/4] OOM: thaw the OOM victim if it is frozen
-Date: Wed, 12 Nov 2014 19:58:52 +0100
-Message-ID: <1415818732-27712-5-git-send-email-mhocko@suse.cz>
-References: <20141110163055.GC18373@dhcp22.suse.cz>
- <1415818732-27712-1-git-send-email-mhocko@suse.cz>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1415818732-27712-1-git-send-email-mhocko@suse.cz>
-Sender: owner-linux-mm@kvack.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-mm@kvack.org, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH] powercap/rapl: fix build dependency on iosf_mbi
+Date: Wed, 12 Nov 2014 10:50:36 -0800
+Message-ID: <1415818236-21741-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:10085 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753244AbaKLTEW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Nov 2014 14:04:22 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-oom_kill_process only sets TIF_MEMDIE flag and sends a signal to the
-victim. This is basically noop when the task is frozen though because
-the task sleeps in uninterruptible sleep. The victim is eventually
-thawed later when oom_scan_process_thread meets the task again in a
-later OOM invocation so the OOM killer doesn't live lock. But this is
-less than optimal. Let's add the frozen check and thaw the task right
-before we send SIGKILL to the victim.
+RAPL on Atom depends on IOSF_MBI driver for setting
+floor frequency. This patch adds explicit dependency on
+CONFIG_IOSF_MB.
 
-The check and thawing in oom_scan_process_thread has to stay because the
-task might got access to memory reserves even without an explicit
-SIGKILL from oom_kill_process (e.g. it already has fatal signal pending
-or it is exiting already).
-
-Signed-off-by: Michal Hocko <mhocko@suse.cz>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- mm/oom_kill.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/powercap/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 39a591092ca0..67ea7fb70fa4 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -511,6 +511,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 	rcu_read_unlock();
- 
- 	set_tsk_thread_flag(victim, TIF_MEMDIE);
-+	if (frozen(victim))
-+		__thaw_task(victim);
- 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
- 	put_task_struct(victim);
- }
+diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
+index a7c81b5..85727ef 100644
+--- a/drivers/powercap/Kconfig
++++ b/drivers/powercap/Kconfig
+@@ -17,7 +17,7 @@ if POWERCAP
+ # Client driver configurations go here.
+ config INTEL_RAPL
+ 	tristate "Intel RAPL Support"
+-	depends on X86
++	depends on X86 && IOSF_MBI
+ 	default n
+ 	---help---
+ 	  This enables support for the Intel Running Average Power Limit (RAPL)
 -- 
-2.1.1
+1.9.1
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
