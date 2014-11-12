@@ -1,39 +1,262 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] powercap/rapl: fix build dependency on iosf_mbi
-Date: Wed, 12 Nov 2014 10:50:36 -0800
-Message-ID: <1415818236-21741-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
+Date: Wed, 12 Nov 2014 22:09:47 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1411121558280.3935@nanos>
+References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027074419.GE10501@worktop.programming.kicks-ass.net> <544F4B31.7050308@linux.intel.com>
+ <20141028082503.GN3337@twins.programming.kicks-ass.net> <5450253B.5020802@linux.intel.com> <20141029082432.GV3337@twins.programming.kicks-ass.net> <5451A94F.1090200@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:10085 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbaKLTEW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Nov 2014 14:04:22 -0500
+Received: from www.linutronix.de ([62.245.132.108]:43331 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbaKLVKG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 16:10:06 -0500
+In-Reply-To: <5451A94F.1090200@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-RAPL on Atom depends on IOSF_MBI driver for setting
-floor frequency. This patch adds explicit dependency on
-CONFIG_IOSF_MB.
+On Thu, 30 Oct 2014, Li, Aubrey wrote:
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Freeze is a general power saving state that processes are frozen, devices
+> are suspended and CPUs are in idle state. However, when the system enters
+> freeze state, there are a few timers keep ticking and hence consumes more
+> power unnecessarily. The observed timer events in freeze state are:
+> - tick_sched_timer
+> - watchdog lockup detector
+> - realtime scheduler period timer
+> 
+> The system power consumption in freeze state will be reduced significantly
+> if we quiesce these timers.
 
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index a7c81b5..85727ef 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -17,7 +17,7 @@ if POWERCAP
- # Client driver configurations go here.
- config INTEL_RAPL
- 	tristate "Intel RAPL Support"
--	depends on X86
-+	depends on X86 && IOSF_MBI
- 	default n
- 	---help---
- 	  This enables support for the Intel Running Average Power Limit (RAPL)
--- 
-1.9.1
+So the obvious question is why dont we quiesce these timers by telling
+the subsystems which manage these timers to shut them down?
+
+I really want a proper answer for this in the first place, but let me
+look at the proposed "solution" as well.
+
+> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+> index 6776027..f2bb645 100644
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -917,6 +917,14 @@ static void local_apic_timer_interrupt(void)
+>  	 */
+>  	inc_irq_stat(apic_timer_irqs);
+>  
+> +	/*
+> +	 * if timekeeping is suspended, the clock event device will be
+> +	 * suspended as well, so we are not supposed to invoke the event
+> +	 * handler of clock event device.
+> +	 */
+> +	if (unlikely(timekeeping_suspended))
+> +		return;
+
+Why do you need that if you already suspended the clock event device?
+The above comment does not explain that at all.
+
+So if there is a proper reason to do so, we rather do the following in
+tick_suspend():
+
+	td->evtdev.real_handler = td->evtdev.event_handler;
+	td->evtdev.event_handler = clockevents_handle_noop;
+
+and restore that on resume instead of sprinkling if (tk_suspended)
+checks all over the place. x86/apic is probably not the only one which
+wants that treatment.
+
+But before we do that we want a proper explanation why the interrupt
+fires at all. The lack of explanation cleary documents that this is a
+'hacked it into submission' approach.
+
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 4ca9a33..660fd15 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -28,16 +28,20 @@
+>  #include <linux/ftrace.h>
+>  #include <trace/events/power.h>
+>  #include <linux/compiler.h>
+> +#include <linux/stop_machine.h>
+> +#include <linux/clockchips.h>
+> +#include <linux/hrtimer.h>
+>  
+>  #include "power.h"
+> +#include "../time/tick-internal.h"
+> +#include "../time/timekeeping_internal.h"
+
+Eew.
+  
+> +static void freezer_pick_tk(int cpu)
+> +{
+> +	if (tick_do_timer_cpu == TICK_DO_TIMER_NONE) {
+> +		static DEFINE_SPINLOCK(lock);
+> +
+> +		spin_lock(&lock);
+> +		if (tick_do_timer_cpu == TICK_DO_TIMER_NONE)
+> +			tick_do_timer_cpu = cpu;
+> +		spin_unlock(&lock);
+> +	}
+> +}
+> +static void freezer_suspend_clkevt(int cpu)
+> +{
+> +	if (tick_do_timer_cpu == cpu)
+> +		return;
+> +
+> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+> +}
+> +
+> +static void freezer_suspend_tk(int cpu)
+> +{
+> +	if (tick_do_timer_cpu != cpu)
+> +		return;
+> +
+> +	timekeeping_suspend();
+> +
+> +}
+
+So you export the world and some more from timekeeping and the tick
+code and fiddle with it randomly just to do:
+
+1) Suspend clock event devices
+2) Suspend timekeeping
+3) Resume timekeeping
+4) Resume clock event devices
+
+And for that you kick the frozen cpus out of idle into the
+stomp_machine task and let them enter deep idle from there.
+
+stomp_machine() is in 99% of all use cases a clear indicator for a
+complete design failure.
+
+It's not that hard to solve that problem, w/o stomp_machine and w/o
+all the tick_do_timer_cpu mess.
+
+1) Run the freeze code until freeze_enter()
+
+2) Prevent CPU hotplug and switch state.
+
+   That tells the cpu idle code to enter the deepest idle state and
+   also tells the clock events code about the desire to freeze
+   everything.
+
+   clock_events_set_freeze_state(true);
+
+   And let that be:
+
+   clock_events_set_freeze_state(bool on)
+   {
+	raw_spin_lock_irq(&clockevents_lock);
+	if (on)
+		tobefrozen_cpus = num_online_cpus();
+	idle_freeze = on;
+	raw_spin_unlock_irq(&clockevents_lock);
+   }
+
+   So the generic idle task needs a check like this:
+
+   if (idle_should_freeze())
+      	frozen_idle();
+
+   with the implementation:
+
+   bool idle_should_freeze()
+   {
+	return clock_events_get_freeze_state();
+   }
+
+   which resolves to:
+
+   bool clock_events_get_freeze_state()
+   {
+        /*
+	 * Lockfree access because it does not matter.
+	 *
+	 * See below at CLOCK_EVT_NOTIFY_FREEZE
+	 */
+	return idle_freeze;
+   }
+
+4) Kick all cpus out of idle, so they enter the deep idle state via
+   frozen_idle()
+
+   frozen_idle()
+   {
+   	if (clock_events_notify(CLOCK_EVT_NOTIFY_FREEZE))
+	      return;
+
+	while (idle_should_freeze())
+	      magic_frozen_idle();
+
+	clock_events_notify(CLOCK_EVT_NOTIFY_UNFREEZE);
+   }
+
+   Let clock_events_notify() have these new cases:
+
+   CLOCK_EVT_NOTIFY_FREEZE:
+	ret = tick_freeze();
+	break;
+
+   CLOCK_EVT_NOTIFY_UNFREEZE:
+	tick_unfreeze();
+	break;
+
+   and
+
+   tick_freeze()
+   {
+	/*
+	 * This is serialized against a concurrent wakeup
+	 * via clockevents_lock!
+	 */
+	if (!idle_freeze)
+	   return -EBUSY;
+
+	if (--tobefrozen_cpus) {
+	   tick_suspend();
+	} else
+	   /*
+	    * Needs to be a seperate interface due to
+	    * clockevents_lock being held in clock_events_notify()
+	    */
+	   timekeeping_freeze();
+        }
+   }
+
+   and
+
+   tick_unfreeze()
+   {
+	if (!timekeeping_frozen)
+	   tick_resume();
+	else
+	   timekeeping_unfreeze();
+   }
+
+   and the wakeup notification wants to have a proper interface as
+   well:
+
+   wakeup_the_whole_thing()
+   {
+	do_whatever_unfreeze_needs();
+
+	clock_events_set_freeze_state(false);
+   }
+
+5) Reenable cpu hotplug when the freezer task returns.
+
+No stomp_machine, no tick_do_timer_cpu() abuse. All nicely serialized
+via clockevents_lock.
+
+All abortable at any given point in time and not dependend on running
+through another state machine nested into the stomp_machine() state
+machine.
+
+Thoughts?
+
+Thanks,
+
+	tglx
+
+
 
