@@ -1,92 +1,99 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v18 4/5] ARM: dts: add main Thermal info to rk3288
-Date: Wed, 12 Nov 2014 13:02:41 +0800
-Message-ID: <1415768562-9155-5-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v18 1/5] dt-bindings: document Rockchip thermal
+Date: Wed, 12 Nov 2014 13:02:38 +0800
+Message-ID: <1415768562-9155-2-git-send-email-caesar.wang@rock-chips.com>
 References: <1415768562-9155-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415768562-9155-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-doc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
 Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, fzf@rock-chips.com, caesar.wang@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch is depend on rk3288-thermal.dtsi,or
-it will compile error.
+This add the necessary binding documentation for the thermal
+found on Rockchip SoCs
 
-If for some reason we are unable to shut it down
-in orderly fashion (kernel is stuck holding a lock or
-similar), then hardware TSHUT will reset it.
-
-If the temperature over a period of time High,over 95C
-the resulting TSHUT gave CRU module,let it reset
-the entire chip,or via GPIO give PMIC.
-
+Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
 Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
- arch/arm/boot/dts/rk3288.dtsi | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ .../bindings/thermal/rockchip-thermal.txt          | 68 ++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 
-diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 9cd269a..c7a2691 100644
---- a/arch/arm/boot/dts/rk3288.dtsi
-+++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -15,6 +15,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
- #include <dt-bindings/clock/rk3288-cru.h>
-+#include <dt-bindings/thermal/thermal.h>
- #include "skeleton.dtsi"
- 
- / {
-@@ -66,6 +67,7 @@
- 				 216000  900000
- 				 126000  900000
- 			>;
-+			#cooling-cells = <2>; /* min followed by max */
- 			clock-latency = <40000>;
- 			clocks = <&cru ARMCLK>;
- 		};
-@@ -346,6 +348,25 @@
- 		status = "disabled";
- 	};
- 
-+	thermal-zones {
-+		#include "rk3288-thermal.dtsi"
-+	};
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+new file mode 100644
+index 0000000..ef802de
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+@@ -0,0 +1,68 @@
++* Temperature Sensor ADC (TSADC) on rockchip SoCs
 +
-+	tsadc: tsadc@ff280000 {
-+		compatible = "rockchip,rk3288-tsadc";
-+		reg = <0xff280000 0x100>;
-+		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+		clock-names = "tsadc", "apb_pclk";
-+		resets = <&cru SRST_TSADC>;
-+		reset-names = "tsadc-apb";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&otp_out>;
-+		#thermal-sensor-cells = <1>;
-+		rockchip,hw-tshut-temp = <95000>;
-+		status = "disabled";
-+	};
++Required properties:
++- compatible : "rockchip,rk3288-tsadc"
++- reg : physical base address of the controller and length of memory mapped
++	region.
++- interrupts : The interrupt number to the cpu. The interrupt specifier format
++	       depends on the interrupt controller.
++- clocks : Must contain an entry for each entry in clock-names.
++- clock-names : Shall be "tsadc" for the converter-clock, and "apb_pclk" for
++		the peripheral clock.
++- resets : Must contain an entry for each entry in reset-names.
++	   See ../reset/reset.txt for details.
++- reset-names : Must include the name "tsadc-apb".
++- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
++- rockchip,hw-tshut-temp : The hardware-controlled shutdown temperature value.
++- rockchip,hw-tshut-mode : The hardware-controlled shutdown mode 0:CRU 1:GPIO.
++- rockchip,hw-tshut-polarity : The hardware-controlled active polarity 0:LOW
++			       1:HIGH.
 +
- 	usb_host0_ehci: usb@ff500000 {
- 		compatible = "generic-ehci";
- 		reg = <0xff500000 0x100>;
-@@ -965,6 +986,12 @@
- 			};
- 		};
- 
-+		tsadc {
-+			otp_out: otp-out {
-+				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_none>;
++Exiample:
++tsadc: tsadc@ff280000 {
++	compatible = "rockchip,rk3288-tsadc";
++	reg = <0xff280000 0x100>;
++	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
++	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
++	clock-names = "tsadc", "apb_pclk";
++	resets = <&cru SRST_TSADC>;
++	reset-names = "tsadc-apb";
++	pinctrl-names = "default";
++	pinctrl-0 = <&otp_out>;
++	#thermal-sensor-cells = <1>;
++	rockchip,hw-tshut-temp = <95000>;
++	rockchip,hw-tshut-mode = <0>;
++	rockchip,hw-tshut-polarity = <0>;
++};
++
++Example: referring to thermal sensors:
++thermal-zones {
++	cpu_thermal: cpu_thermal {
++		polling-delay-passive = <1000>; /* milliseconds */
++		polling-delay = <5000>; /* milliseconds */
++
++		/* sensor	ID */
++		thermal-sensors = <&tsadc	1>;
++
++		trips {
++			cpu_alert0: cpu_alert {
++				temperature = <70000>; /* millicelsius */
++				hysteresis = <2000>; /* millicelsius */
++				type = "passive";
++			};
++			cpu_crit: cpu_crit {
++				temperature = <90000>; /* millicelsius */
++				hysteresis = <2000>; /* millicelsius */
++				type = "critical";
 +			};
 +		};
 +
- 		pwm0 {
- 			pwm0_pin: pwm0-pin {
- 				rockchip,pins = <7 0 RK_FUNC_1 &pcfg_pull_none>;
++		cooling-maps {
++			map0 {
++				trip = <&cpu_alert0>;
++				cooling-device =
++				    <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++			};
++		};
++	};
++};
 -- 
 1.9.1
-
-
