@@ -1,66 +1,42 @@
-From: Lenny Szubowicz <lszubowi@redhat.com>
-Subject: [PATCH] cpufreq: pcc: Enable autoload of pcc-cpufreq for ACPI processors
-Date: Thu, 13 Nov 2014 13:51:52 -0500
-Message-ID: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the need_restore
+ flag
+Date: Thu, 13 Nov 2014 21:07:43 +0200
+Message-ID: <5465017F.5070303@ti.com>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org> <20141107215751.GA4439@dtor-ws> <CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com> <2882656.Dm8xnxDtKM@vostro.rjw.lan> <5464EF7B.6080402@ti.com> <20141113175449.GK3815@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:38968 "EHLO mx1.redhat.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:51500 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753906AbaKMSwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Nov 2014 13:52:01 -0500
+	id S1754023AbaKMTII (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Nov 2014 14:08:08 -0500
+In-Reply-To: <20141113175449.GK3815@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Joseph.Szczypek@hp.com, lszubowi@redhat.com
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-The pcc-cpufreq driver is not automatically loaded on systems where
-the platform's power management setting requires this driver.
-Instead, on those systems no CPU frequency driver is registered and
-active.
+On 11/13/2014 07:54 PM, Mark Brown wrote:
+> On Thu, Nov 13, 2014 at 07:50:51PM +0200, Grygorii Strashko wrote:
+> 
+>> I've checked few folders and below few drivers i found which rely or may rely on their
+>> .runtime_resume callback to be executed (It very hard to identify dependency for some of drivers):
+> 
+>> arizona-core.c
+> 
+> No, it doesn't - probe() leaves the device powered (you can see the
+> driver interacting with the device before it enables runtime PM).
+> 
 
-Make the autoloading matching criteria for loading the pcc-cpufreq
-driver the same as done in acpi-cpufreq by commit c655affbd524d01
-("ACPI / cpufreq: Add ACPI processor device IDs to acpi-cpufreq").
+What I've found there is:
+arizona_dev_init()
+ |- arizona_clk32k_enable()
+    |-pm_runtime_get_sync() if arizona->pdata.clk32k_src == ARIZONA_32KZ_MCLK1
 
-x86 CPU frequency drivers are now typically autoloaded by specifying
-MODULE_DEVICE_TABLE entries and x86cpu model specific matching.
-But pcc-cpufreq was omitted when acpi-cpufreq and other drivers were
-changed to use this approach.
+so it's added as "may rely"
 
-Both acpi-cpufreq and pcc-cpufreq depend on a distinct and mutually
-exclusive set of ACPI methods which are not directly tied to specific
-processor model numbers. Both of these drivers have init routines
-which look for their required ACPI methods. As a result, only the
-appropriate driver registers as the cpu frequency driver and the other
-one ends up being unloaded.
-
-Tested on various systems where acpi-cpufreq, intel_pstate, and
-pcc-cpufreq are the expected cpu frequency drivers.
-
-Signed-off-by: Lenny Szubowicz <lszubowi@redhat.com>
-Signed-off-by: Joseph Szczypek <joseph.szczypek@hp.com>
-Reported-by: Trinh Dao <trinh.dao@hp.com>
----
- drivers/cpufreq/pcc-cpufreq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 4d2c8e8..2a0d589 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -603,6 +603,13 @@ static void __exit pcc_cpufreq_exit(void)
- 	free_percpu(pcc_cpu_info);
- }
- 
-+static const struct acpi_device_id processor_device_ids[] = {
-+	{ACPI_PROCESSOR_OBJECT_HID, },
-+	{ACPI_PROCESSOR_DEVICE_HID, },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(acpi, processor_device_ids);
-+
- MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
- MODULE_VERSION(PCC_VERSION);
- MODULE_DESCRIPTION("Processor Clocking Control interface driver");
--- 
-1.8.3.1
+regards,
+-grygorii
 
