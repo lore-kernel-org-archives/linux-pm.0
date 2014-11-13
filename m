@@ -1,34 +1,30 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
-Date: Thu, 13 Nov 2014 15:05:12 +0100
-Message-ID: <20141113140512.GB18995@amd>
-References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
- <2024276.CFr3nVUAlA@vostro.rjw.lan>
- <CAPDyKFp=T8Luomeaoz5Y=eLAuFaOfdb+-aoU3QVnpjoDYVKPjg@mail.gmail.com>
- <17707586.6KbjDf5Kep@vostro.rjw.lan>
- <CAPDyKFo-On2MfqHk081o_JZvwbrbi0=n9h6o7A9dJ+X4c8goKg@mail.gmail.com>
- <545D0074.7060205@ti.com>
+Subject: Re: [PATCH v2] PM / Domains: Make genpd parameter of
+ pm_genpd_present() const
+Date: Thu, 13 Nov 2014 15:09:13 +0100
+Message-ID: <20141113140913.GC18995@amd>
+References: <1415644659-2531-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59607 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932756AbaKMOJP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 09:09:15 -0500
 Content-Disposition: inline
-In-Reply-To: <545D0074.7060205@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Jack Dai <jack.dai@rock-chips.com>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jinkun Hong <jinkun.hong@rock-chips.com>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Aaron Lu <aaron.lu@intel.com>, Greg
+In-Reply-To: <1415644659-2531-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+On Mon 2014-11-10 19:37:39, Geert Uytterhoeven wrote:
+> The PM domain pointed to by the genpd parameter is never modified.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
 
-> 2) There are no requirements for arch/platforms/drivers to work in both cases
-> CONFIG_PM_RUNTIME=y/n. But they must be built without errors/warning for both
-> cases.
-
-I don't think where you got that. They are config options, they should
-work.
-
-It is prefer not to compile than to compile but not work.
-									Pavel
+Acked-by: Pavel Machek <apvel@ucw.cz>
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
