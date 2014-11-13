@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 1/8] thermal:cpu cooling:armada: Provide deferred probing for
- armada driver
-Date: Thu, 13 Nov 2014 18:02:38 +0100
-Message-ID: <1415898165-27406-2-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 3/8] thermal:cpu cooling:rcar: Provide deferred probing for
+ rcar driver
+Date: Thu, 13 Nov 2014 18:02:40 +0100
+Message-ID: <1415898165-27406-4-git-send-email-l.majewski@samsung.com>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -19,24 +19,24 @@ This code is similar to the one already available in imx_thermal.c file.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- drivers/thermal/armada_thermal.c | 7 +++++++
+ drivers/thermal/rcar_thermal.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 9d1420a..1b5d15d 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -23,6 +23,7 @@
- #include <linux/platform_device.h>
- #include <linux/of_device.h>
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 8803e69..b268b4d 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -29,6 +29,7 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
  #include <linux/thermal.h>
 +#include <linux/cpufreq.h>
  
- #define THERMAL_VALID_MASK		0x1
+ #define IDLE_INTERVAL	5000
  
-@@ -280,6 +281,12 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 	struct armada_thermal_priv *priv;
- 	struct resource *res;
+@@ -373,6 +374,12 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	int ret = -ENODEV;
+ 	int idle = IDLE_INTERVAL;
  
 +#ifdef CONFIG_CPU_THERMAL
 +	if (!cpufreq_get_current_driver()) {
@@ -44,8 +44,8 @@ index 9d1420a..1b5d15d 100644
 +		return -EPROBE_DEFER;
 +	}
 +#endif
- 	match = of_match_device(armada_thermal_id_table, &pdev->dev);
- 	if (!match)
- 		return -ENODEV;
+ 	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
+ 	if (!common)
+ 		return -ENOMEM;
 -- 
 2.0.0.rc2
