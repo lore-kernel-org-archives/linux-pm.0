@@ -1,72 +1,102 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
-Date: Thu, 13 Nov 2014 10:23:11 +0100
-Message-ID: <20141113102311.64331d60@amdc2363>
-References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
+Date: Thu, 13 Nov 2014 11:22:51 +0100
+Message-ID: <CAPDyKFrATXiiTCeK8A5NBB6K5TPgb9xG5CCKHTHCqdEW_i7qKA@mail.gmail.com>
+References: <CAPDyKFqzWvcr7qrnBed=atbtGoUTJ5-8URvn7ZMYJZoZk2+dYw@mail.gmail.com>
+	<Pine.LNX.4.44L0.1411121124420.1676-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:40021 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932164AbaKMKKF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Nov 2014 05:10:05 -0500
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1XorLm-0001G8-Nd
-	for linux-pm@vger.kernel.org; Thu, 13 Nov 2014 11:10:02 +0100
-Received: from 217-67-201-162.itsa.net.pl ([217.67.201.162])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 11:10:02 +0100
-Received: from l.majewski by 217-67-201-162.itsa.net.pl with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 11:10:02 +0100
-In-Reply-To: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-qc0-f178.google.com ([209.85.216.178]:41392 "EHLO
+	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932241AbaKMKWw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 05:22:52 -0500
+Received: by mail-qc0-f178.google.com with SMTP id b13so12310966qcw.9
+        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 02:22:52 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1411121124420.1676-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Srinivas,
+On 12 November 2014 17:34, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Wed, 12 Nov 2014, Ulf Hansson wrote:
+>
+>> Since AMBA bus/drivers are handling runtime PM resources like
+>> clocks/pinctrl/etc from their runtime PM callbacks, using
+>> pm_runtime_force_suspen|resume() from their system PM callbacks makes
+>> perfect sense to me.
+>
+> This sounds like a case of misdesign.  If clocks/pinctrl/etc are all
+> purely _runtime_ PM resources then the _system_ PM callbacks should
+> have nothing to do with them.  On the other hand, if they are general
+> PM resources then they should be handled from a general-purpose routine
+> that can be invoked by both the runtime-PM and system-PM callbacks.
+>
+> It makes very little sense to have a special-purpose routine manage a
+> general-purpose resource.
 
-> Ignore invalid trip temperature less or equal to zero. Some
-> buggy systems have invalid trips, causing system shutdown.
-> 
-> Signed-off-by: Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
-> <rui.zhang@intel.com> ---
->  drivers/thermal/thermal_core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c
-> b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
-> thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip, &trip_temp);
->  
->  	/* If we have not crossed the trip_temp, we do not care. */
-> -	if (tz->temperature < trip_temp)
-> +	if (trip_temp <= 0 || tz->temperature < trip_temp)
+I don't agree and thought you also were of the opposite opinion. :-)
 
-To be honest, I regard this as a feature :-), not bug.
+If I remember correctly, it was you who came up with the really
+brilliant idea to reuse the runtime PM callbacks for this matter!?
 
-In this way I know that on some systems the regulator for thermal unit
-is not enabled (which results in read temp of 0xFF).
+>From that, we ended up in adding the SET_PM_RUNTIME_PM_OPS macro.
 
-I'd prefer to keep this as is.
+>
+>> > As I understand the problem, you've got a bus type where some of the
+>> > drivers have IRQ-safe runtime PM (and therefore carry out their
+>> > suspend/resume operations in interrupt context) and others don't.  The
+>> > subsystem core wants to maximize the power saving by deconfiguring some
+>> > clocks whenever a device is suspended, but this requires a process
+>> > context and so it can't be done directly when IRQ-safe runtime PM is
+>> > used.
+>> >
+>> > Is that a good summary?  If it is, there are ways of dealing with this
+>>
+>> Yes.
+>>
+>> > that don't involve messing around with the runtime PM internals, or
+>> > using pm_runtime_force_suspend().
+>>
+>> The logic to handle that would in principle mean to keep track of the
+>> device's runtime PM status. That doesn't make sense, it's the job of
+>> the runtime PM core to do that!?
+>
+> Why do think we have pm_runtime_suspended() and related routines?  They
+> are there so that your code can make decisions based on the runtime PM
+> status without having to keep track of it.
 
->  		return;
->  
->  	trace_thermal_zone_trip(tz, trip, trip_type);
+Those runtime PM routines your refer to, are exactly what the
+pm_runtime_force_suspend|resume() helpers make use of. It seems like a
+bad idea to duplicate similar code into each an every bus/driver to
+handle the same issue.
 
+If we shouldn't use pm_runtime_force_suspend|resume() helpers for
+these cases, when do you think it would be appropriate to use them?
 
+>
+>> Additionally, you would also need to protect the runtime PM resume
+>> callback from doing clock enable during system PM, unless you also
+>> disable runtime PM.
+>>
+>> To me, pm_runtime_force_suspend|resume() will do exactly what we need
+>> for the AMBA case.
+>
+> Your description leaves out large parts of the design.  Please list the
+> relevant resources, together with an explanation of exactly how each
+> one is handled by the system- and runtime-PM callback routines, in your
+> scheme.
 
--- 
-Best regards,
+The runtime PM resources depends on what AMBA device/driver is being
+used, typically clocks and pinctrls.
 
-Lukasz Majewski
+Simplified described, these bus/drivers PM support are designed in a
+runtime PM centric manner. It means at system PM suspend, the
+bus/driver wants to make sure the runtime PM resources are in a
+runtime PM suspend state.
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Does that answer your question?
 
-
+Kind regards
+Uffe
