@@ -1,99 +1,51 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
-Date: Thu, 13 Nov 2014 02:37:07 +0100
-Message-ID: <20141113013707.GQ29390@twins.programming.kicks-ass.net>
-References: <5446787E.60202@linux.intel.com>
- <20141024153656.GM12706@worktop.programming.kicks-ass.net>
- <544DE5CF.9040501@linux.intel.com>
- <20141027074419.GE10501@worktop.programming.kicks-ass.net>
- <544F4B31.7050308@linux.intel.com>
- <20141028082503.GN3337@twins.programming.kicks-ass.net>
- <5450253B.5020802@linux.intel.com>
- <20141029082432.GV3337@twins.programming.kicks-ass.net>
- <5451A94F.1090200@linux.intel.com>
- <alpine.DEB.2.11.1411121558280.3935@nanos>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] cpufreq: Remove architecture specific menu entries
+Date: Wed, 12 Nov 2014 19:43:28 -0600
+Message-ID: <1415843008.15957.45.camel@freescale.com>
+References: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
+	 <2888462.gyjhHfUy7m@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:58407 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbaKMBhY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 20:37:24 -0500
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.11.1411121558280.3935@nanos>
+Received: from mail-bn1on0114.outbound.protection.outlook.com ([157.56.110.114]:59941
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753647AbaKMBnl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Nov 2014 20:43:41 -0500
+In-Reply-To: <2888462.gyjhHfUy7m@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Yuantian.Tang@freescale.com
 
-On Wed, Nov 12, 2014 at 10:09:47PM +0100, Thomas Gleixner wrote:
-> On Thu, 30 Oct 2014, Li, Aubrey wrote:
-> 
-> > Freeze is a general power saving state that processes are frozen, devices
-> > are suspended and CPUs are in idle state. However, when the system enters
-> > freeze state, there are a few timers keep ticking and hence consumes more
-> > power unnecessarily. The observed timer events in freeze state are:
-> > - tick_sched_timer
-> > - watchdog lockup detector
-> > - realtime scheduler period timer
+On Thu, 2014-11-13 at 02:47 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, November 12, 2014 09:40:43 AM Viresh Kumar wrote:
+> > CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
+> > all included from the main Kconfig file using a menu entry. This creates another
+> > level of (unnecessary) hierarchy within the menuconfig entries.
 > > 
-> > The system power consumption in freeze state will be reduced significantly
-> > if we quiesce these timers.
+> > The problem occurs when there are drivers usable across architectures. Either
+> > their config entry is duplicated in all the supported architectures or is put
+> > into the main Kconfig entry. With the later one, we have menuconfig entries for
+> > drivers at two levels then.
+> > 
+> > Fix these issues by getting rid of another level of menuconfig entries and
+> > populate all drivers within the main cpufreq menu.
 > 
-> So the obvious question is why dont we quiesce these timers by telling
-> the subsystems which manage these timers to shut them down?
-> 
-> I really want a proper answer for this in the first place, but let me
-> look at the proposed "solution" as well.
+> Won't this be confusing?
 
-Two arguments here:
+Why would it be confusing?  It's already in a not-too-large "CPU
+Frequency scaling" menu, the names of the individual options should be
+clear enough, and they'd all be grouped at the end of the menu.
 
- 1) the current suspend modes don't care, so if this suspend mode starts
- to care, its likely to 'break' in the future simply because people
- never cared about timers.
+FWIW, there's already "Generic DT based cpufreq driver" under that menu.
 
- 2) there could be userland timers, userland is frozen but they'll still
- have their timers set and those can and will fire.
+> Can we at least have a "CPU frequency scaling drivers" menu for drivers
+> the *contents* of which will depend on the architecture?
 
-But sure, we can add suspend notifiers to stuff to shut down timers; I
-should have a patch for at least one of the offenders somewhere. But I
-really think that we should not be looking at the individual timers for
-this, none of the other suspend modes care about active timers.
+That works too -- I just don't see the confusion aspect.
 
-> But before we do that we want a proper explanation why the interrupt
-> fires at all. The lack of explanation cleary documents that this is a
-> 'hacked it into submission' approach.
+-Scott
 
->From what I remember its the waking interrupt that ends up in the
-timekeeping code, Li should have a backtrace somwhere.
 
-> > +#include "../time/tick-internal.h"
-> > +#include "../time/timekeeping_internal.h"
-> 
-> Eew.
-
-I knew you'd love that :-)
-
-> So you export the world and some more from timekeeping and the tick
-> code and fiddle with it randomly just to do:
-> 
-> 1) Suspend clock event devices
-> 2) Suspend timekeeping
-> 3) Resume timekeeping
-> 4) Resume clock event devices
-
-Sure, we can add some exports and clean that up, but..
-
-> stomp_machine() is in 99% of all use cases a clear indicator for a
-> complete design failure.
-
->    So the generic idle task needs a check like this:
-> 
->    if (idle_should_freeze())
->       	frozen_idle();
-
-So that is adding extra code to fairly common/hot paths just for this
-one extra special case. I tried to avoid doing that.
-
-But I suppose we can try and merge that with the offline case and guard
-both special cases with a single variable or so.
