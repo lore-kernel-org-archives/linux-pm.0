@@ -1,30 +1,198 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] PM / Domains: Make genpd parameter of
- pm_genpd_present() const
-Date: Thu, 13 Nov 2014 15:09:13 +0100
-Message-ID: <20141113140913.GC18995@amd>
-References: <1415644659-2531-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH] PM / Domains: Extract code to power off/on a PM domain
+Date: Thu, 13 Nov 2014 15:10:07 +0100
+Message-ID: <20141113141007.GD18995@amd>
+References: <1415644759-2616-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59607 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932756AbaKMOJP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 09:09:15 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1415644659-2531-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1415644759-2616-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Mon 2014-11-10 19:37:39, Geert Uytterhoeven wrote:
-> The PM domain pointed to by the genpd parameter is never modified.
+On Mon 2014-11-10 19:39:19, Geert Uytterhoeven wrote:
+> PM domains are powered on/off from various places. Some callers do
+> latency measurements, others don't. Consolidate using two helper
+> functions, which always measure the latencies, and update the stored
+> latencies when needed.
+> 
+> Other minor changes:
+>   - Use pr_warn() instead of pr_warning(),
+>   - There's no need to check genpd->name, %s handles NULL pointers fine,
+>   - Make the warning format strings identical, to save memory.
 > 
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Kevin Hilman <khilman@linaro.org>
 
-Acked-by: Pavel Machek <apvel@ucw.cz>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index a841bab441147b3d..2fccf2c2575e4fa3 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -151,6 +151,59 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
+>  	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
+>  }
+>  
+> +static int genpd_power_on(struct generic_pm_domain *genpd)
+> +{
+> +	ktime_t time_start;
+> +	s64 elapsed_ns;
+> +	int ret;
+> +
+> +	if (!genpd->power_on)
+> +		return 0;
+> +
+> +	time_start = ktime_get();
+> +	ret = genpd->power_on(genpd);
+> +	if (ret)
+> +		return ret;
+> +
+> +	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+> +	if (elapsed_ns <= genpd->power_on_latency_ns)
+> +		return ret;
+> +
+> +	genpd->power_on_latency_ns = elapsed_ns;
+> +	genpd->max_off_time_changed = true;
+> +	genpd_recalc_cpu_exit_latency(genpd);
+> +	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
+> +		genpd->name, "on", elapsed_ns);
+> +
+> +	return ret;
+> +}
+> +
+> +static int genpd_power_off(struct generic_pm_domain *genpd)
+> +{
+> +	ktime_t time_start;
+> +	s64 elapsed_ns;
+> +	int ret;
+> +
+> +	if (!genpd->power_off)
+> +		return 0;
+> +
+> +	time_start = ktime_get();
+> +	ret = genpd->power_off(genpd);
+> +	if (ret == -EBUSY)
+> +		return ret;
+> +
+> +	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+> +	if (elapsed_ns <= genpd->power_off_latency_ns)
+> +		return ret;
+> +
+> +	genpd->power_off_latency_ns = elapsed_ns;
+> +	genpd->max_off_time_changed = true;
+> +	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
+> +		genpd->name, "off", elapsed_ns);
+> +
+> +	return ret;
+> +}
+> +
+>  /**
+>   * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
+>   * @genpd: PM domain to power up.
+> @@ -222,25 +275,9 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
+>  		}
+>  	}
+>  
+> -	if (genpd->power_on) {
+> -		ktime_t time_start = ktime_get();
+> -		s64 elapsed_ns;
+> -
+> -		ret = genpd->power_on(genpd);
+> -		if (ret)
+> -			goto err;
+> -
+> -		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+> -		if (elapsed_ns > genpd->power_on_latency_ns) {
+> -			genpd->power_on_latency_ns = elapsed_ns;
+> -			genpd->max_off_time_changed = true;
+> -			genpd_recalc_cpu_exit_latency(genpd);
+> -			if (genpd->name)
+> -				pr_warning("%s: Power-on latency exceeded, "
+> -					"new value %lld ns\n", genpd->name,
+> -					elapsed_ns);
+> -		}
+> -	}
+> +	ret = genpd_power_on(genpd);
+> +	if (ret)
+> +		goto err;
+>  
+>   out:
+>  	genpd_set_active(genpd);
+> @@ -529,16 +566,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+>  	}
+>  
+>  	if (genpd->power_off) {
+> -		ktime_t time_start;
+> -		s64 elapsed_ns;
+> -
+>  		if (atomic_read(&genpd->sd_count) > 0) {
+>  			ret = -EBUSY;
+>  			goto out;
+>  		}
+>  
+> -		time_start = ktime_get();
+> -
+>  		/*
+>  		 * If sd_count > 0 at this point, one of the subdomains hasn't
+>  		 * managed to call pm_genpd_poweron() for the master yet after
+> @@ -547,21 +579,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+>  		 * the pm_genpd_poweron() restore power for us (this shouldn't
+>  		 * happen very often).
+>  		 */
+> -		ret = genpd->power_off(genpd);
+> +		ret = genpd_power_off(genpd);
+>  		if (ret == -EBUSY) {
+>  			genpd_set_active(genpd);
+>  			goto out;
+>  		}
+> -
+> -		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+> -		if (elapsed_ns > genpd->power_off_latency_ns) {
+> -			genpd->power_off_latency_ns = elapsed_ns;
+> -			genpd->max_off_time_changed = true;
+> -			if (genpd->name)
+> -				pr_warning("%s: Power-off latency exceeded, "
+> -					"new value %lld ns\n", genpd->name,
+> -					elapsed_ns);
+> -		}
+>  	}
+>  
+>  	genpd->status = GPD_STATE_POWER_OFF;
+> @@ -796,8 +818,7 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
+>  	    || atomic_read(&genpd->sd_count) > 0)
+>  		return;
+>  
+> -	if (genpd->power_off)
+> -		genpd->power_off(genpd);
+> +	genpd_power_off(genpd);
+>  
+>  	genpd->status = GPD_STATE_POWER_OFF;
+>  
+> @@ -828,8 +849,7 @@ static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
+>  		genpd_sd_counter_inc(link->master);
+>  	}
+>  
+> -	if (genpd->power_on)
+> -		genpd->power_on(genpd);
+> +	genpd_power_on(genpd);
+>  
+>  	genpd->status = GPD_STATE_ACTIVE;
+>  }
+> @@ -1251,8 +1271,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
+>  			 * If the domain was off before the hibernation, make
+>  			 * sure it will be off going forward.
+>  			 */
+> -			if (genpd->power_off)
+> -				genpd->power_off(genpd);
+> +			genpd_power_off(genpd);
+>  
+>  			return 0;
+>  		}
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
