@@ -1,41 +1,64 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
-Date: Thu, 13 Nov 2014 14:06:11 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1411131405370.3935@nanos>
-References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027074419.GE10501@worktop.programming.kicks-ass.net> <544F4B31.7050308@linux.intel.com>
- <20141028082503.GN3337@twins.programming.kicks-ass.net> <5450253B.5020802@linux.intel.com> <20141029082432.GV3337@twins.programming.kicks-ass.net> <5451A94F.1090200@linux.intel.com> <alpine.DEB.2.11.1411121558280.3935@nanos> <20141113013707.GQ29390@twins.programming.kicks-ass.net>
- <alpine.DEB.2.11.1411131008280.3935@nanos> <54648C50.2060104@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Auto Configured <romain.perier@gmail.com>
+Subject: [PATCH v4 0/2] poweroff-source DT property renaming
+Date: Thu, 13 Nov 2014 13:34:57 +0000
+Message-ID: <1415885699-1465-1-git-send-email-user@radxa>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:46877 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbaKMNGY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 08:06:24 -0500
-In-Reply-To: <54648C50.2060104@linux.intel.com>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:33400 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933028AbaKMNfF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 08:35:05 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: heiko@sntech.de
+Cc: grant.likely@linaro.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, broonie@kernel.org, johan@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com
 
-On Thu, 13 Nov 2014, Li, Aubrey wrote:
+The goal of this serie is to rename the property "poweroff-source" to
+"system-power-controller". After discussions, it makes more sense to rename back
+to the old established property name. This patches serie reverts
+commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
 
-> On 2014/11/13 17:10, Thomas Gleixner wrote:
-> > On Thu, 13 Nov 2014, Peter Zijlstra wrote:
-> >> On Wed, Nov 12, 2014 at 10:09:47PM +0100, Thomas Gleixner wrote:
-> >> But sure, we can add suspend notifiers to stuff to shut down timers; I
-> >> should have a patch for at least one of the offenders somewhere. But I
-> >> really think that we should not be looking at the individual timers for
-> >> this, none of the other suspend modes care about active timers.
-> > 
-> > Fair enough.
-> >  
-> 
-> If you are okay with the current method to suspend timekeeping entirely,
-> then we can go further to fix the rest concerns.
+Changes since v3:
+  - Move backward compatibility from of_is_system_power_controller to
+    tps65910, as it was only required for this driver.
 
-I'm fine with that when it's done proper :)
+Changes since v2:
+  - of_is_system_power_controller is inline in of.h and only supports
+    backward compatibility with device drivers which used this helper
+    (which is tps65910)
+  - Quashed all changes into a single patch (except documentation)
+  - Add a separated commit to fix typos and mispellings in documentation
 
-Thanks,
+Changes since v1:
 
-	tglx
+  - The first patch defines "of_is_system_power_controller" which is compatible
+    with both "vendor,system-power-controller" and "system-power-controller"
+    properties. Also, It keeps the old helper function of_system_has_poweroff_source
+    for source compatibility until everything is renamed (in this way, bisections
+    are not broken and change is made "atomically" between each commit)
+
+    Note: the property "poweroff-source" itself is not used in dts files yet.
+    Before this patch tps65910 was broken due to missing backward compatibility
+    with "vendor,system-power-controller". As the old helper uses the new one,
+    it works again.
+
+  - act8865 and tps65910 are ported to the new helper function
+  - The last commit removes the olf helper which was only used for source compatibility
+
+Romain Perier (2):
+  of: Rename "poweroff-source" property to "system-power-controller"
+  dt-bindings: Update documentation for "system-power-controller" and
+    fix misspellings
+
+ .../devicetree/bindings/power/power-controller.txt     | 18 ++++++++++++++++++
+ Documentation/devicetree/bindings/power/poweroff.txt   | 18 ------------------
+ .../bindings/regulator/act8865-regulator.txt           |  4 ++--
+ drivers/mfd/tps65910.c                                 |  9 ++++++++-
+ drivers/regulator/act8865-regulator.c                  |  2 +-
+ include/linux/of.h                                     |  6 +++---
+ 6 files changed, 32 insertions(+), 25 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
+
+-- 
+1.9.1
+
