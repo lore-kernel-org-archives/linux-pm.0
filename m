@@ -1,199 +1,86 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Domains: Extract code to power off/on a PM domain
-Date: Thu, 13 Nov 2014 15:10:07 +0100
-Message-ID: <20141113141007.GD18995@amd>
-References: <1415644759-2616-1-git-send-email-geert+renesas@glider.be>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Subject: Re: [PATCH] ARM: at91: move sdramc/ddrsdr header to
+ include/soc/at91
+Date: Thu, 13 Nov 2014 15:53:43 +0100
+Message-ID: <20141113155343.5c92c2d6@bbrezillon>
+References: <1415393901-18469-1-git-send-email-alexandre.belloni@free-electrons.com>
+	<54649221.9060307@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1415644759-2616-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:40837 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753948AbaKMOxs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 09:53:48 -0500
+In-Reply-To: <54649221.9060307@atmel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@deeprootsystems.com>
 
-On Mon 2014-11-10 19:39:19, Geert Uytterhoeven wrote:
-> PM domains are powered on/off from various places. Some callers do
-> latency measurements, others don't. Consolidate using two helper
-> functions, which always measure the latencies, and update the stored
-> latencies when needed.
+On Thu, 13 Nov 2014 12:12:33 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+
+> On 07/11/2014 21:58, Alexandre Belloni :
+> > Move the (DDR) SDRAM controller headers to include/soc/at91 to remove the
+> > dependency on mach/ headers from the at91-reset driver.
+> > 
+> > Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> > ---
+> > As my previous attempts were not popular, solve the mach/ headers issue by
+> > simply moving them. I'll get back to better driver separation when it will be
+> > possible to map the SRAM as executable memory.
+> > 
+> >  MAINTAINERS                                        |   1 +
+> >  arch/arm/mach-at91/include/mach/at91_ramc.h        |   6 +-
+> >  .../arm/mach-at91/include/mach/at91rm9200_sdramc.h |  63 -----------
+> >  arch/arm/mach-at91/include/mach/at91sam9_ddrsdr.h  | 124 ---------------------
+> >  arch/arm/mach-at91/include/mach/at91sam9_sdramc.h  |  85 --------------
+> >  arch/arm/mach-at91/pm.h                            |   1 -
+> >  drivers/power/reset/at91-reset.c                   |   4 +-
+> >  include/soc/at91/at91rm9200_sdramc.h               |  63 +++++++++++
+> >  include/soc/at91/at91sam9_ddrsdr.h                 | 124 +++++++++++++++++++++
+> >  include/soc/at91/at91sam9_sdramc.h                 |  85 ++++++++++++++
+> >  10 files changed, 278 insertions(+), 278 deletions(-)
+> >  delete mode 100644 arch/arm/mach-at91/include/mach/at91rm9200_sdramc.h
+> >  delete mode 100644 arch/arm/mach-at91/include/mach/at91sam9_ddrsdr.h
+> >  delete mode 100644 arch/arm/mach-at91/include/mach/at91sam9_sdramc.h
+> >  create mode 100644 include/soc/at91/at91rm9200_sdramc.h
+> >  create mode 100644 include/soc/at91/at91sam9_ddrsdr.h
+> >  create mode 100644 include/soc/at91/at91sam9_sdramc.h
 > 
-> Other minor changes:
->   - Use pr_warn() instead of pr_warning(),
->   - There's no need to check genpd->name, %s handles NULL pointers fine,
->   - Make the warning format strings identical, to save memory.
+> This would have been cleaner and easier to understand with
+> git format-patch -M
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> --8<--------------------------------
+>  MAINTAINERS                                                         | 1 +
+>  arch/arm/mach-at91/include/mach/at91_ramc.h                         | 6 +++---
+>  arch/arm/mach-at91/pm.h                                             | 1 -
+>  drivers/power/reset/at91-reset.c                                    | 4 ++--
+>  .../mach-at91/include/mach => include/soc/at91}/at91rm9200_sdramc.h | 0
+>  .../mach-at91/include/mach => include/soc/at91}/at91sam9_ddrsdr.h   | 0
+>  .../mach-at91/include/mach => include/soc/at91}/at91sam9_sdramc.h   | 0
+>  7 files changed, 6 insertions(+), 6 deletions(-)
+>  rename {arch/arm/mach-at91/include/mach => include/soc/at91}/at91rm9200_sdramc.h (100%)
+>  rename {arch/arm/mach-at91/include/mach => include/soc/at91}/at91sam9_ddrsdr.h (100%)
+>  rename {arch/arm/mach-at91/include/mach => include/soc/at91}/at91sam9_sdramc.h (100%)
+> --8<--------------------------------
+> 
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> 
+> and queued for at91-3.19-cleanup
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index a841bab441147b3d..2fccf2c2575e4fa3 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -151,6 +151,59 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
->  	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
->  }
->  
-> +static int genpd_power_on(struct generic_pm_domain *genpd)
-> +{
-> +	ktime_t time_start;
-> +	s64 elapsed_ns;
-> +	int ret;
-> +
-> +	if (!genpd->power_on)
-> +		return 0;
-> +
-> +	time_start = ktime_get();
-> +	ret = genpd->power_on(genpd);
-> +	if (ret)
-> +		return ret;
-> +
-> +	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> +	if (elapsed_ns <= genpd->power_on_latency_ns)
-> +		return ret;
-> +
-> +	genpd->power_on_latency_ns = elapsed_ns;
-> +	genpd->max_off_time_changed = true;
-> +	genpd_recalc_cpu_exit_latency(genpd);
-> +	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-> +		genpd->name, "on", elapsed_ns);
-> +
-> +	return ret;
-> +}
-> +
-> +static int genpd_power_off(struct generic_pm_domain *genpd)
-> +{
-> +	ktime_t time_start;
-> +	s64 elapsed_ns;
-> +	int ret;
-> +
-> +	if (!genpd->power_off)
-> +		return 0;
-> +
-> +	time_start = ktime_get();
-> +	ret = genpd->power_off(genpd);
-> +	if (ret == -EBUSY)
-> +		return ret;
-> +
-> +	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> +	if (elapsed_ns <= genpd->power_off_latency_ns)
-> +		return ret;
-> +
-> +	genpd->power_off_latency_ns = elapsed_ns;
-> +	genpd->max_off_time_changed = true;
-> +	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-> +		genpd->name, "off", elapsed_ns);
-> +
-> +	return ret;
-> +}
-> +
->  /**
->   * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
->   * @genpd: PM domain to power up.
-> @@ -222,25 +275,9 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
->  		}
->  	}
->  
-> -	if (genpd->power_on) {
-> -		ktime_t time_start = ktime_get();
-> -		s64 elapsed_ns;
-> -
-> -		ret = genpd->power_on(genpd);
-> -		if (ret)
-> -			goto err;
-> -
-> -		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> -		if (elapsed_ns > genpd->power_on_latency_ns) {
-> -			genpd->power_on_latency_ns = elapsed_ns;
-> -			genpd->max_off_time_changed = true;
-> -			genpd_recalc_cpu_exit_latency(genpd);
-> -			if (genpd->name)
-> -				pr_warning("%s: Power-on latency exceeded, "
-> -					"new value %lld ns\n", genpd->name,
-> -					elapsed_ns);
-> -		}
-> -	}
-> +	ret = genpd_power_on(genpd);
-> +	if (ret)
-> +		goto err;
->  
->   out:
->  	genpd_set_active(genpd);
-> @@ -529,16 +566,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->  	}
->  
->  	if (genpd->power_off) {
-> -		ktime_t time_start;
-> -		s64 elapsed_ns;
-> -
->  		if (atomic_read(&genpd->sd_count) > 0) {
->  			ret = -EBUSY;
->  			goto out;
->  		}
->  
-> -		time_start = ktime_get();
-> -
->  		/*
->  		 * If sd_count > 0 at this point, one of the subdomains hasn't
->  		 * managed to call pm_genpd_poweron() for the master yet after
-> @@ -547,21 +579,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->  		 * the pm_genpd_poweron() restore power for us (this shouldn't
->  		 * happen very often).
->  		 */
-> -		ret = genpd->power_off(genpd);
-> +		ret = genpd_power_off(genpd);
->  		if (ret == -EBUSY) {
->  			genpd_set_active(genpd);
->  			goto out;
->  		}
-> -
-> -		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> -		if (elapsed_ns > genpd->power_off_latency_ns) {
-> -			genpd->power_off_latency_ns = elapsed_ns;
-> -			genpd->max_off_time_changed = true;
-> -			if (genpd->name)
-> -				pr_warning("%s: Power-off latency exceeded, "
-> -					"new value %lld ns\n", genpd->name,
-> -					elapsed_ns);
-> -		}
->  	}
->  
->  	genpd->status = GPD_STATE_POWER_OFF;
-> @@ -796,8 +818,7 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
->  	    || atomic_read(&genpd->sd_count) > 0)
->  		return;
->  
-> -	if (genpd->power_off)
-> -		genpd->power_off(genpd);
-> +	genpd_power_off(genpd);
->  
->  	genpd->status = GPD_STATE_POWER_OFF;
->  
-> @@ -828,8 +849,7 @@ static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
->  		genpd_sd_counter_inc(link->master);
->  	}
->  
-> -	if (genpd->power_on)
-> -		genpd->power_on(genpd);
-> +	genpd_power_on(genpd);
->  
->  	genpd->status = GPD_STATE_ACTIVE;
->  }
-> @@ -1251,8 +1271,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
->  			 * If the domain was off before the hibernation, make
->  			 * sure it will be off going forward.
->  			 */
-> -			if (genpd->power_off)
-> -				genpd->power_off(genpd);
-> +			genpd_power_off(genpd);
->  
->  			return 0;
->  		}
+I'm getting back to this patch because I'd like understand what exactly
+should be put in include/soc/<soc-name> and what should be put in the
+subsystem directory (include/linux/<subsystem>) ?
+
+Regards,
+
+Boris
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
