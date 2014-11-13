@@ -1,56 +1,142 @@
 From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] PM / Domains: restore calling of .suspend/resume_noirq()
- callbacks
-Date: Thu, 13 Nov 2014 21:30:57 +0200
-Message-ID: <546506F1.1020306@ti.com>
-References: <1415808047-23455-1-git-send-email-grygorii.strashko@ti.com>	<2997289.NEH22PNoYM@vostro.rjw.lan>	<5464FBCC.7060307@ti.com> <CAMuHMdV2JdEhvMsOahaMH8RUO12sit_39AfcWUFD9eGCYCCKGA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Thu, 13 Nov 2014 22:13:03 +0200
+Message-ID: <546510CF.7060004@ti.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+ <CAPDyKFo-On2MfqHk081o_JZvwbrbi0=n9h6o7A9dJ+X4c8goKg@mail.gmail.com>
+ <545D0074.7060205@ti.com> <7390758.7nHkBpm2Zh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdV2JdEhvMsOahaMH8RUO12sit_39AfcWUFD9eGCYCCKGA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <7390758.7nHkBpm2Zh@vostro.rjw.lan>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Simon Horman <horms@verge.net.au>, Ulf Hansson <ulf.hansson@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Tomasz Figa <tomasz.figa@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Jack Dai <jack.dai@rock-chips.com>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jinkun Hong <jinkun.hong@rock-chips.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Aaron Lu <aaron.lu@intel.com>, Greg Kroah-Hartman <gregkh>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/13/2014 09:11 PM, Geert Uytterhoeven wrote:
-> On Thu, Nov 13, 2014 at 7:43 PM, Grygorii Strashko
-> <grygorii.strashko@ti.com> wrote:
->> On 11/13/2014 03:33 AM, Rafael J. Wysocki wrote:
->>> On Wednesday, November 12, 2014 06:00:47 PM Grygorii Strashko wrote:
->>>> Now .suspend/resume_noirq() callbacks will not be called during
->>>> system wide suspend/resume for devices which belongs to some GPD.
->>>> It seems, that this change was accidentally introduced by
->>>> commit d23b9b00cdde ("PM / Domains: Rework system suspend callback
->>>>    routines (v2)").
->>>
->>> I'm not sure if that was really accidentally.
->>>
->>> Can you describe the problem that the change below is attempting to
->>> address, without going to much into the history?  IOW, what's that
->>> doesn't work right now?
+On 11/13/2014 04:07 AM, Rafael J. Wysocki wrote:
+> On Friday, November 07, 2014 07:25:08 PM Grygorii Strashko wrote:
+> 
+> [cut]
+> 
 >>
->> There are no real issues - now in Kernel there are no users of GPD
->> which use "noirq" callbacks.
+>> 4) I've copied here comment from Rafael:
+>>   >>>> Of course, if ->probe() is to call pm_runtime_resume() for this purpose,
+>>   >>>> it must take the fact that the driver's own ->runtime_resume() may be called
+>>   >>>> as a result of this into account.
+>>   Agree, that's a little bit annoying, but we are living with that for more then
+>>   5 years already (I'm 3 years) - so, I am, as driver developer, expecting above behavior
+>>   (just walk through the drivers and you will see how many drivers expecting the same).
+>>
+>> So, any volunteers to check and fix ~500 drivers.
 > 
-> Indeed.
+> Where did you get that number from?
+
+Sry, my bad. Rechecked - found 289 occurrences of pm_runtime_enable().
+Number of Runtime PM enabled drivers = at about 289 +-10%.
+- headers, suspend/resume,..
++ buses like amba and spmi 
+
 > 
-> But as the .suspend_noirq() and .resume_noirq() callbacks are not called
-> when using the generic PM domain, I had to manually handle interrupt
-> disable/enable in commit a00d91ea264f974b ("fbdev: sh_mobile_hdmi:
-> Re-init regs before irq re-enable on resume").
+> Also please note that some bus types don't have this problem by design (e.g. PCI,
+> as pointed to by Alan).
 
-^ Honestly, this is very useful practice, because with SMP enabled
-the IRQ can be triggered after .suspend() and before .suspend_noirq()
-which, in turn, may schedule some kthread/work or even threaded_irq_handler
-on secondary cpus (disable_nonboot_cpus() is called after suspend_noirq stage).
+Right. I worry about Platform bus first of all, because HW PM implementation
+(at least for ARM SoCs) can be very different there.
 
-Funny things may happen after that :P like: some work/thread which is 
-servicing request from I2C device (for example) will be frozen in the middle of
-its execution and then it will be resumed right after enable_nonboot_cpus().
+> 
+> [cut]
+> 
+>>>
+>>>>
+>>>> - Runtime PM (if compiled in) needs to be enabled for all devices in power
+>>>>     domains by default.  Otherwise devices may lose power as a result for
+>>>>     power management of the other devices in the same domain.
+>>
+>> It should prevent enabling/disabling of RPM from sys_fs too.
+> 
+> It looks like you're confusing disable/enable with auto/on.  These are different
+> things.
+> 
+>>>>
+>>>> - The core should try to power up domains before calling really_probe() both
+>>>>     for CONFIG_PM_RUNTIME set and unset, so ->probe() can always make the
+>>>>     "device is accessible" assumption.
+>>
+>> Here I'm still think that pm_runtime_get_sync() (or similar) API should work.
+>> Another way, PM domain should decide what to do when the first device attached to it
+>> - power up and stay powered on for example
+>>   (It will work if devices are attached before ->probe();
+>>    it will not work if devices will be attached once they've been created, but this is different
+>>    question)
+> 
+> The PM domain itself can't do that.  The only place that has enough knowledge
+> is the code that enumerates devices (DT, ACPI or board-specific).
+> 
+>>>
+>>> And how exactly will you then power up the PM domain when
+>>> CONFIG_PM_RUNTIME is unset?
+>>>
+>>>>
+>>>> - Bus types may need to do more on top of that in their ->probe(), so the
+>>>>     driver's ->probe() can make that assumption too in all cases.
+>>>>
+>>>> Does that make sense to you?
+>>>
+>>
+>> I would like to take the liberty to add a couple of points from me:
+>>   - it seems reasonable to have ability to disable Runtime PM globally from sys_fs:
+>>     once disabled - "get" should power on device, "put" should do nothing all the
+>>     time except when ->remove() is called.
+> 
+> This is how the "power/control" file works and you can easily have this by writing
+> "on" to that file for every device.
+> 
+>>   
+>>   - It might be reasonable to add API like pm_runtime_probe_getXXX() which will do
+>>     everything what standard pm_runtime_get_sync() is doing with one exception:
+>>     it will not call driver's .runtime_resume() callback.
+> 
+> Use case?
 
-^Issue from real life.
+This is just a different view (RFC) on your idea to call pm_runtime_get_sync()
+ before dev->driver is initialized
+("(b) bypassing the driver callbacks somehow".
+  http://marc.info/?l=linux-pm&m=141505768026211&w=2)
+
+- add some flag like dev->is_probing
+- in pm_runtime_probe_get_sync() do
+  dev->is_probing = true;
+  pm_runtime_get_sync();
+  dev->is_probing = false;
+  
+- update 3 places in code pm_generic_runtime_resume, pm_genpd_default_save_state and
+  __rpm_get_callback like below (only for .runtime_resume):
+
++++ b/drivers/base/power/generic_ops.c
+@@ -42,6 +42,9 @@ int pm_generic_runtime_resume(struct device *dev)
+ {
+        const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+        int ret;
++       
++       if (dev->is_probing)
++               pm = NULL;
+
+Then drivers (at least platform drivers) will be able to call
+  pm_runtime_enable(dev);
+  pm_runtime_probe_get_sync(dev);
+at any time they think is right (no problem with parent devices,
+Power domain will be enabled, class/type/bus callback will be called,
+no need to use pm_runtime_set_active()).
 
 regards,
 -grygorii
