@@ -1,7 +1,7 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 32/33] thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
-Date: Thu, 13 Nov 2014 16:01:27 +0100
-Message-ID: <1415890888-8881-33-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 33/33] thermal: exynos: remove exynos_tmu_data.h include
+Date: Thu, 13 Nov 2014 16:01:28 +0100
+Message-ID: <1415890888-8881-34-git-send-email-b.zolnierkie@samsung.com>
 References: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
@@ -10,8 +10,11 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-__EXYNOS5420_TMU_DATA macro is now identical to __EXYNOS5260_TMU_DATA
-one and can be removed.
+There is no longer need to share defines between exynos_tmu.c
+and exynos_tmu_data.c (as they are now only used by the former
+file) so move them accordingly.  Then move externs for struct
+exynos_tmu_init_data instances to exynos_tmu.h and remove no
+longer needed exynos_tmu_data.h include.
 
 There should be no functional changes caused by this patch.
 
@@ -22,63 +25,255 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu_data.c | 40 ++-----------------------------
- 1 file changed, 2 insertions(+), 38 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      |  82 ++++++++++++++++++++-
+ drivers/thermal/samsung/exynos_tmu.h      |   8 +++
+ drivers/thermal/samsung/exynos_tmu_data.c |   1 -
+ drivers/thermal/samsung/exynos_tmu_data.h | 115 ------------------------------
+ 4 files changed, 89 insertions(+), 117 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 02a1c34..592c470 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -216,48 +216,12 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
- 	.tmu_count = 5,
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 6cc6b6e..2a1c4c7 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -33,7 +33,87 @@
+ 
+ #include "exynos_thermal_common.h"
+ #include "exynos_tmu.h"
+-#include "exynos_tmu_data.h"
++
++/* Exynos generic registers */
++#define EXYNOS_TMU_REG_TRIMINFO		0x0
++#define EXYNOS_TMU_REG_CONTROL		0x20
++#define EXYNOS_TMU_REG_STATUS		0x28
++#define EXYNOS_TMU_REG_CURRENT_TEMP	0x40
++#define EXYNOS_TMU_REG_INTEN		0x70
++#define EXYNOS_TMU_REG_INTSTAT		0x74
++#define EXYNOS_TMU_REG_INTCLEAR		0x78
++
++#define EXYNOS_TMU_TEMP_MASK		0xff
++#define EXYNOS_TMU_REF_VOLTAGE_SHIFT	24
++#define EXYNOS_TMU_REF_VOLTAGE_MASK	0x1f
++#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK	0xf
++#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT	8
++#define EXYNOS_TMU_CORE_EN_SHIFT	0
++
++/* Exynos3250 specific registers */
++#define EXYNOS_TMU_TRIMINFO_CON1	0x10
++
++/* Exynos4210 specific registers */
++#define EXYNOS4210_TMU_REG_THRESHOLD_TEMP	0x44
++#define EXYNOS4210_TMU_REG_TRIG_LEVEL0	0x50
++
++/* Exynos5250, Exynos4412, Exynos3250 specific registers */
++#define EXYNOS_TMU_TRIMINFO_CON2	0x14
++#define EXYNOS_THD_TEMP_RISE		0x50
++#define EXYNOS_THD_TEMP_FALL		0x54
++#define EXYNOS_EMUL_CON		0x80
++
++#define EXYNOS_TRIMINFO_RELOAD_ENABLE	1
++#define EXYNOS_TRIMINFO_25_SHIFT	0
++#define EXYNOS_TRIMINFO_85_SHIFT	8
++#define EXYNOS_TMU_TRIP_MODE_SHIFT	13
++#define EXYNOS_TMU_TRIP_MODE_MASK	0x7
++#define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
++
++#define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
++#define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
++#define EXYNOS_TMU_INTEN_RISE2_SHIFT	8
++#define EXYNOS_TMU_INTEN_RISE3_SHIFT	12
++#define EXYNOS_TMU_INTEN_FALL0_SHIFT	16
++
++#define EXYNOS_EMUL_TIME	0x57F0
++#define EXYNOS_EMUL_TIME_MASK	0xffff
++#define EXYNOS_EMUL_TIME_SHIFT	16
++#define EXYNOS_EMUL_DATA_SHIFT	8
++#define EXYNOS_EMUL_DATA_MASK	0xFF
++#define EXYNOS_EMUL_ENABLE	0x1
++
++/* Exynos5260 specific */
++#define EXYNOS5260_TMU_REG_INTEN		0xC0
++#define EXYNOS5260_TMU_REG_INTSTAT		0xC4
++#define EXYNOS5260_TMU_REG_INTCLEAR		0xC8
++#define EXYNOS5260_EMUL_CON			0x100
++
++/* Exynos4412 specific */
++#define EXYNOS4412_MUX_ADDR_VALUE          6
++#define EXYNOS4412_MUX_ADDR_SHIFT          20
++
++/*exynos5440 specific registers*/
++#define EXYNOS5440_TMU_S0_7_TRIM		0x000
++#define EXYNOS5440_TMU_S0_7_CTRL		0x020
++#define EXYNOS5440_TMU_S0_7_DEBUG		0x040
++#define EXYNOS5440_TMU_S0_7_TEMP		0x0f0
++#define EXYNOS5440_TMU_S0_7_TH0			0x110
++#define EXYNOS5440_TMU_S0_7_TH1			0x130
++#define EXYNOS5440_TMU_S0_7_TH2			0x150
++#define EXYNOS5440_TMU_S0_7_IRQEN		0x210
++#define EXYNOS5440_TMU_S0_7_IRQ			0x230
++/* exynos5440 common registers */
++#define EXYNOS5440_TMU_IRQ_STATUS		0x000
++#define EXYNOS5440_TMU_PMIN			0x004
++
++#define EXYNOS5440_TMU_INTEN_RISE0_SHIFT	0
++#define EXYNOS5440_TMU_INTEN_RISE1_SHIFT	1
++#define EXYNOS5440_TMU_INTEN_RISE2_SHIFT	2
++#define EXYNOS5440_TMU_INTEN_RISE3_SHIFT	3
++#define EXYNOS5440_TMU_INTEN_FALL0_SHIFT	4
++#define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
++#define EXYNOS5440_EFUSE_SWAP_OFFSET		8
+ 
+ /**
+  * struct exynos_tmu_data : A structure to hold the private data of the TMU
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 8de0f82..da3009b 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -133,4 +133,12 @@ struct exynos_tmu_init_data {
+ 	struct exynos_tmu_platform_data tmu_data[];
  };
  
--#define __EXYNOS5420_TMU_DATA	\
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 85, \
--	.trigger_levels[1] = 103, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50, \
--	.freq_tab[0] = { \
--		.freq_clip_max = 800 * 1000, \
--		.temp_level = 85, \
--	}, \
--	.freq_tab[1] = { \
--		.freq_clip_max = 200 * 1000, \
--		.temp_level = 103, \
--	}, \
--	.freq_tab_count = 2, \
++extern struct exynos_tmu_init_data const exynos3250_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos4412_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos5260_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos5420_default_tmu_data;
++extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
++
+ #endif /* _EXYNOS_TMU_H */
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+index 592c470..b239100 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ b/drivers/thermal/samsung/exynos_tmu_data.c
+@@ -22,7 +22,6 @@
+ 
+ #include "exynos_thermal_common.h"
+ #include "exynos_tmu.h"
+-#include "exynos_tmu_data.h"
+ 
+ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
+ 	.tmu_data = {
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+deleted file mode 100644
+index 0bfbbf2..0000000
+--- a/drivers/thermal/samsung/exynos_tmu_data.h
++++ /dev/null
+@@ -1,115 +0,0 @@
+-/*
+- * exynos_tmu_data.h - Samsung EXYNOS tmu data header file
+- *
+- *  Copyright (C) 2013 Samsung Electronics
+- *  Amit Daniel Kachhap <amit.daniel@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- */
 -
- #define EXYNOS5420_TMU_DATA \
--	__EXYNOS5420_TMU_DATA \
-+	__EXYNOS5260_TMU_DATA \
- 	.type = SOC_ARCH_EXYNOS5420
- 
- #define EXYNOS5420_TMU_DATA_SHARED \
--	__EXYNOS5420_TMU_DATA \
-+	__EXYNOS5260_TMU_DATA \
- 	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
- 
- struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
+-#ifndef _EXYNOS_TMU_DATA_H
+-#define _EXYNOS_TMU_DATA_H
+-
+-/* Exynos generic registers */
+-#define EXYNOS_TMU_REG_TRIMINFO		0x0
+-#define EXYNOS_TMU_REG_CONTROL		0x20
+-#define EXYNOS_TMU_REG_STATUS		0x28
+-#define EXYNOS_TMU_REG_CURRENT_TEMP	0x40
+-#define EXYNOS_TMU_REG_INTEN		0x70
+-#define EXYNOS_TMU_REG_INTSTAT		0x74
+-#define EXYNOS_TMU_REG_INTCLEAR		0x78
+-
+-#define EXYNOS_TMU_TEMP_MASK		0xff
+-#define EXYNOS_TMU_REF_VOLTAGE_SHIFT	24
+-#define EXYNOS_TMU_REF_VOLTAGE_MASK	0x1f
+-#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK	0xf
+-#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT	8
+-#define EXYNOS_TMU_CORE_EN_SHIFT	0
+-
+-/* Exynos3250 specific registers */
+-#define EXYNOS_TMU_TRIMINFO_CON1	0x10
+-
+-/* Exynos4210 specific registers */
+-#define EXYNOS4210_TMU_REG_THRESHOLD_TEMP	0x44
+-#define EXYNOS4210_TMU_REG_TRIG_LEVEL0	0x50
+-
+-/* Exynos5250, Exynos4412, Exynos3250 specific registers */
+-#define EXYNOS_TMU_TRIMINFO_CON2	0x14
+-#define EXYNOS_THD_TEMP_RISE		0x50
+-#define EXYNOS_THD_TEMP_FALL		0x54
+-#define EXYNOS_EMUL_CON		0x80
+-
+-#define EXYNOS_TRIMINFO_RELOAD_ENABLE	1
+-#define EXYNOS_TRIMINFO_25_SHIFT	0
+-#define EXYNOS_TRIMINFO_85_SHIFT	8
+-#define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+-#define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+-#define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
+-
+-#define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
+-#define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
+-#define EXYNOS_TMU_INTEN_RISE2_SHIFT	8
+-#define EXYNOS_TMU_INTEN_RISE3_SHIFT	12
+-#define EXYNOS_TMU_INTEN_FALL0_SHIFT	16
+-
+-#define EXYNOS_EMUL_TIME	0x57F0
+-#define EXYNOS_EMUL_TIME_MASK	0xffff
+-#define EXYNOS_EMUL_TIME_SHIFT	16
+-#define EXYNOS_EMUL_DATA_SHIFT	8
+-#define EXYNOS_EMUL_DATA_MASK	0xFF
+-#define EXYNOS_EMUL_ENABLE	0x1
+-
+-/* Exynos5260 specific */
+-#define EXYNOS5260_TMU_REG_INTEN		0xC0
+-#define EXYNOS5260_TMU_REG_INTSTAT		0xC4
+-#define EXYNOS5260_TMU_REG_INTCLEAR		0xC8
+-#define EXYNOS5260_EMUL_CON			0x100
+-
+-/* Exynos4412 specific */
+-#define EXYNOS4412_MUX_ADDR_VALUE          6
+-#define EXYNOS4412_MUX_ADDR_SHIFT          20
+-
+-/*exynos5440 specific registers*/
+-#define EXYNOS5440_TMU_S0_7_TRIM		0x000
+-#define EXYNOS5440_TMU_S0_7_CTRL		0x020
+-#define EXYNOS5440_TMU_S0_7_DEBUG		0x040
+-#define EXYNOS5440_TMU_S0_7_TEMP		0x0f0
+-#define EXYNOS5440_TMU_S0_7_TH0			0x110
+-#define EXYNOS5440_TMU_S0_7_TH1			0x130
+-#define EXYNOS5440_TMU_S0_7_TH2			0x150
+-#define EXYNOS5440_TMU_S0_7_IRQEN		0x210
+-#define EXYNOS5440_TMU_S0_7_IRQ			0x230
+-/* exynos5440 common registers */
+-#define EXYNOS5440_TMU_IRQ_STATUS		0x000
+-#define EXYNOS5440_TMU_PMIN			0x004
+-
+-#define EXYNOS5440_TMU_INTEN_RISE0_SHIFT	0
+-#define EXYNOS5440_TMU_INTEN_RISE1_SHIFT	1
+-#define EXYNOS5440_TMU_INTEN_RISE2_SHIFT	2
+-#define EXYNOS5440_TMU_INTEN_RISE3_SHIFT	3
+-#define EXYNOS5440_TMU_INTEN_FALL0_SHIFT	4
+-#define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
+-#define EXYNOS5440_EFUSE_SWAP_OFFSET		8
+-
+-extern struct exynos_tmu_init_data const exynos3250_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos4412_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos5260_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos5420_default_tmu_data;
+-extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
+-
+-#endif /*_EXYNOS_TMU_DATA_H*/
 -- 
 1.8.2.3
