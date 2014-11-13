@@ -1,619 +1,1431 @@
-From: Huacai Chen <chenhc@lemote.com>
-Subject: [PATCH V4 6/6] MIPS: Loongson: Make CPUFreq usable for Loongson-3
-Date: Thu, 13 Nov 2014 23:14:15 +0800
-Message-ID: <1415891655-10391-1-git-send-email-chenhc@lemote.com>
-Return-path: <linux-mips-bounce@linux-mips.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: John Crispin <john@phrozen.org>, "Steven J. Hill" <Steven.Hill@imgtec.com>, linux-mips@linux-mips.org, Fuxin Zhang <zhangfx@lemote.com>, Zhangjin Wu <wuzhangjin@gmail.com>, linux-pm@vger.kernel.org, Huacai Chen <chenhc@lemote.com>, Hongliang Tao <taohl@lemote.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: Invert CPUIDLE_FLAG_TIME_VALID logic
+Date: Thu, 13 Nov 2014 16:14:33 +0100
+Message-ID: <5464CAD9.1070905@linaro.org>
+References: <1415804630-5055-1-git-send-email-daniel.lezcano@linaro.org> <20141113145609.GA9726@red-moon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141113145609.GA9726@red-moon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>, "nsekhar@ti.com" <nsekhar@ti.com>, "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "tony@atomide.com" <tony@atomide.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "horms@verge.net.au" <horms@verge.net.au>, "magnus.damm@gmail.com" <magnus.damm@gmail.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "ralf@linux-mips.org" <ralf@linux-mips.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "michal.simek@xilinx.com" <michal.simek@xilinx.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Loongson-3A/3B support frequency scaling. But due to hardware
-limitation, Loongson-3A's frequency scaling is not independent for
-each core, we suggest enable Loongson-3A's CPUFreq only when there is
-one core online. Loongson-3B can adjust frequency independently for
-each core, so it can be always enabled.
+On 11/13/2014 03:56 PM, Lorenzo Pieralisi wrote:
+> On Wed, Nov 12, 2014 at 03:03:50PM +0000, Daniel Lezcano wrote:
+>> The only place where the time is invalid is when the ACPI_CSTATE_FFH=
+ entry
+>> method is not set. Otherwise for all the drivers, the time can be co=
+rrectly
+>> measured.
+>>
+>> Instead of duplicating the CPUIDLE_FLAG_TIME_VALID flag in all the d=
+rivers
+>> for all the states, just invert the logic by replacing it by the fla=
+g
+>> CPUIDLE_FLAG_TIME_INVALID, hence we can set this flag only for the a=
+cpi idle
+>> driver, remove the former flag from all the drivers and invert the l=
+ogic with
+>> this flag in the different governor.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>
+> Are we sure that ACPI C1 invalid residency time is *still* an issue a=
+fter
+> we moved the residency accounting to the idle core ?
 
-Each package has only one register (ChipConfig or FreqCtrl) to control
-frequency, so we need spinlocks to protect register access for multi-
-cores. However, we cannot use spinlock when a core becomes into "wait"
-status (frequency = 0), so we only enable "wait" when there is one core
-in a package online.
+Ah good point !
 
-arch/mips/kernel/smp.c is modified to guarantee udelay_val has the
-correct value while both CPU hotplug and CPUFreq are enabled.
+> I have a feeling you can remove this flag entirely, but I will let x8=
+6
+> guys speak for themselves.
 
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
-Signed-off-by: Hongliang Tao <taohl@lemote.com>
----
- arch/mips/include/asm/mach-loongson/loongson.h |    1 +
- arch/mips/kernel/smp.c                         |    3 +-
- arch/mips/loongson/Kconfig                     |    1 +
- arch/mips/loongson/common/platform.c           |   13 +-
- arch/mips/loongson/loongson-3/Makefile         |    2 +-
- arch/mips/loongson/loongson-3/clock.c          |  191 +++++++++++++++++++
- drivers/cpufreq/Kconfig                        |   14 ++
- drivers/cpufreq/Makefile                       |    1 +
- drivers/cpufreq/loongson3_cpufreq.c            |  240 ++++++++++++++++++++++++
- 9 files changed, 461 insertions(+), 5 deletions(-)
- create mode 100644 arch/mips/loongson/loongson-3/clock.c
- create mode 100644 drivers/cpufreq/loongson3_cpufreq.c
+If this flag can be removed, that will help to do a lot more cleanups.=20
+That will be great.
 
-diff --git a/arch/mips/include/asm/mach-loongson/loongson.h b/arch/mips/include/asm/mach-loongson/loongson.h
-index 9783103..ee18a50 100644
---- a/arch/mips/include/asm/mach-loongson/loongson.h
-+++ b/arch/mips/include/asm/mach-loongson/loongson.h
-@@ -278,6 +278,7 @@ extern u64 loongson_freqctrl[MAX_PACKAGES];
- #ifdef CONFIG_CPU_SUPPORTS_CPUFREQ
- #include <linux/cpufreq.h>
- extern struct cpufreq_frequency_table loongson2_clockmod_table[];
-+extern struct cpufreq_frequency_table loongson3_clockmod_table[];
- #endif
- 
- /*
-diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-index c94c4e9..01d676a 100644
---- a/arch/mips/kernel/smp.c
-+++ b/arch/mips/kernel/smp.c
-@@ -136,7 +136,8 @@ asmlinkage void start_secondary(void)
- 	calibrate_delay();
- 	preempt_disable();
- 	cpu = smp_processor_id();
--	cpu_data[cpu].udelay_val = loops_per_jiffy;
-+	if (!cpu_data[cpu].udelay_val)
-+		cpu_data[cpu].udelay_val = loops_per_jiffy;
- 
- 	cpu_set(cpu, cpu_coherent_mask);
- 	notify_cpu_starting(cpu);
-diff --git a/arch/mips/loongson/Kconfig b/arch/mips/loongson/Kconfig
-index 156de85..58a926a 100644
---- a/arch/mips/loongson/Kconfig
-+++ b/arch/mips/loongson/Kconfig
-@@ -69,6 +69,7 @@ config LOONGSON_MACH3X
- 	select CSRC_R4K
- 	select CEVT_R4K
- 	select CPU_HAS_WB
-+	select HAVE_CLK
- 	select HW_HAS_PCI
- 	select ISA
- 	select HT_PCI
-diff --git a/arch/mips/loongson/common/platform.c b/arch/mips/loongson/common/platform.c
-index 0ed3832..7dd5ed4 100644
---- a/arch/mips/loongson/common/platform.c
-+++ b/arch/mips/loongson/common/platform.c
-@@ -17,15 +17,22 @@ static struct platform_device loongson2_cpufreq_device = {
- 	.id = -1,
- };
- 
--static int __init loongson2_cpufreq_init(void)
-+static struct platform_device loongson3_cpufreq_device = {
-+	.name = "loongson3_cpufreq",
-+	.id = -1,
-+};
-+
-+static int __init loongson_cpufreq_init(void)
+> Other than that, it makes sense to me:
+>
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+Thanks Lorenzo for the review.
+
+   -- Daniel
+
+>> ---
+>>   arch/arm/include/asm/cpuidle.h         |   1 -
+>>   arch/arm/mach-davinci/cpuidle.c        |   1 -
+>>   arch/arm/mach-imx/cpuidle-imx5.c       |   1 -
+>>   arch/arm/mach-imx/cpuidle-imx6q.c      |   3 +-
+>>   arch/arm/mach-imx/cpuidle-imx6sl.c     |   3 +-
+>>   arch/arm/mach-omap2/cpuidle34xx.c      |   7 ---
+>>   arch/arm/mach-omap2/cpuidle44xx.c      |   5 +-
+>>   arch/arm/mach-s3c64xx/cpuidle.c        |   1 -
+>>   arch/arm/mach-shmobile/pm-sh7372.c     |   4 --
+>>   arch/arm/mach-tegra/cpuidle-tegra114.c |   1 -
+>>   arch/arm/mach-tegra/cpuidle-tegra20.c  |   3 +-
+>>   arch/arm/mach-tegra/cpuidle-tegra30.c  |   1 -
+>>   arch/mips/include/asm/idle.h           |   1 -
+>>   arch/sh/kernel/cpu/shmobile/cpuidle.c  |   3 -
+>>   arch/x86/kernel/apm_32.c               |   1 -
+>>   drivers/acpi/processor_idle.c          |   6 +-
+>>   drivers/cpuidle/cpuidle-arm64.c        |   1 -
+>>   drivers/cpuidle/cpuidle-at91.c         |   1 -
+>>   drivers/cpuidle/cpuidle-big_little.c   |   6 +-
+>>   drivers/cpuidle/cpuidle-calxeda.c      |   1 -
+>>   drivers/cpuidle/cpuidle-cps.c          |   7 +--
+>>   drivers/cpuidle/cpuidle-exynos.c       |   1 -
+>>   drivers/cpuidle/cpuidle-kirkwood.c     |   1 -
+>>   drivers/cpuidle/cpuidle-mvebu-v7.c     |   8 +--
+>>   drivers/cpuidle/cpuidle-powernv.c      |   6 +-
+>>   drivers/cpuidle/cpuidle-pseries.c      |   3 -
+>>   drivers/cpuidle/cpuidle-ux500.c        |   3 +-
+>>   drivers/cpuidle/cpuidle-zynq.c         |   1 -
+>>   drivers/cpuidle/driver.c               |   1 -
+>>   drivers/cpuidle/dt_idle_states.c       |   2 +-
+>>   drivers/cpuidle/governors/ladder.c     |   2 +-
+>>   drivers/cpuidle/governors/menu.c       |   2 +-
+>>   drivers/idle/intel_idle.c              | 108 ++++++++++++++++-----=
+------------
+>>   include/linux/cpuidle.h                |   4 +-
+>>   34 files changed, 75 insertions(+), 125 deletions(-)
+>>
+>> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/c=
+puidle.h
+>> index 2fca60a..af319ac 100644
+>> --- a/arch/arm/include/asm/cpuidle.h
+>> +++ b/arch/arm/include/asm/cpuidle.h
+>> @@ -15,7 +15,6 @@ static inline int arm_cpuidle_simple_enter(struct =
+cpuidle_device *dev,
+>>          .exit_latency           =3D 1,\
+>>          .target_residency       =3D 1,\
+>>          .power_usage            =3D p,\
+>> -       .flags                  =3D CPUIDLE_FLAG_TIME_VALID,\
+>>          .name                   =3D "WFI",\
+>>          .desc                   =3D "ARM WFI",\
+>>   }
+>> diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci=
+/cpuidle.c
+>> index f1ac1c9..b4675fc 100644
+>> --- a/arch/arm/mach-davinci/cpuidle.c
+>> +++ b/arch/arm/mach-davinci/cpuidle.c
+>> @@ -66,7 +66,6 @@ static struct cpuidle_driver davinci_idle_driver =3D=
  {
- 	struct cpuinfo_mips *c = &current_cpu_data;
- 
- 	/* Only 2F revision and it's successors support CPUFreq */
--	if ((c->processor_id & PRID_REV_MASK) >= PRID_REV_LOONGSON2F)
-+	if ((c->processor_id & PRID_REV_MASK) == PRID_REV_LOONGSON2F)
- 		return platform_device_register(&loongson2_cpufreq_device);
-+	if ((c->processor_id & PRID_REV_MASK) >= PRID_REV_LOONGSON3A)
-+		return platform_device_register(&loongson3_cpufreq_device);
- 
- 	return -ENODEV;
- }
- 
--arch_initcall(loongson2_cpufreq_init);
-+arch_initcall(loongson_cpufreq_init);
-diff --git a/arch/mips/loongson/loongson-3/Makefile b/arch/mips/loongson/loongson-3/Makefile
-index 622fead..1be6a0c 100644
---- a/arch/mips/loongson/loongson-3/Makefile
-+++ b/arch/mips/loongson/loongson-3/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for Loongson-3 family machines
- #
--obj-y			+= irq.o cop2-ex.o platform.o
-+obj-y			+= irq.o cop2-ex.o platform.o clock.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
- 
-diff --git a/arch/mips/loongson/loongson-3/clock.c b/arch/mips/loongson/loongson-3/clock.c
-new file mode 100644
-index 0000000..13dc471
---- /dev/null
-+++ b/arch/mips/loongson/loongson-3/clock.c
-@@ -0,0 +1,191 @@
-+/*
-+ * Copyright (C) 2008 - 2014 Lemote Inc.
-+ * Author: Yan Hua, yanh@lemote.com
-+ *         Chen Huacai, chenhc@lemote.com
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/cpufreq.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/clock.h>
-+
-+#include <loongson.h>
-+
-+static LIST_HEAD(clock_list);
-+static DEFINE_SPINLOCK(clock_lock);
-+static DEFINE_MUTEX(clock_list_sem);
-+
-+/* Minimum CLK support */
-+enum {
-+	DC_ZERO, DC_25PT = 2, DC_37PT, DC_50PT, DC_62PT, DC_75PT,
-+	DC_87PT, DC_DISABLE, DC_RESV
-+};
-+
-+struct cpufreq_frequency_table loongson3_clockmod_table[] = {
-+	{0, DC_RESV, CPUFREQ_ENTRY_INVALID},
-+	{0, DC_ZERO, CPUFREQ_ENTRY_INVALID},
-+	{0, DC_25PT, 0},
-+	{0, DC_37PT, 0},
-+	{0, DC_50PT, 0},
-+	{0, DC_62PT, 0},
-+	{0, DC_75PT, 0},
-+	{0, DC_87PT, 0},
-+	{0, DC_DISABLE, 0},
-+	{0, DC_RESV, CPUFREQ_TABLE_END},
-+};
-+EXPORT_SYMBOL_GPL(loongson3_clockmod_table);
-+
-+static struct clk cpu_clks[NR_CPUS];
-+static char clk_names[NR_CPUS][10];
-+
-+struct clk *cpu_clk_get(int cpu)
-+{
-+	return &cpu_clks[cpu];
-+}
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	int i;
-+	struct clk *clk;
-+
-+	if (!id)
-+		return NULL;
-+
-+	for_each_possible_cpu(i) {
-+		clk = &cpu_clks[i];
-+		if (strcmp(clk->name, id) == 0)
-+			return clk;
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+static void propagate_rate(struct clk *clk)
-+{
-+	struct clk *clkp;
-+
-+	list_for_each_entry(clkp, &clock_list, node) {
-+		if (likely(clkp->parent != clk))
-+			continue;
-+		if (likely(clkp->ops && clkp->ops->recalc))
-+			clkp->ops->recalc(clkp);
-+		if (unlikely(clkp->flags & CLK_RATE_PROPAGATES))
-+			propagate_rate(clkp);
-+	}
-+}
-+
-+int clk_enable(struct clk *clk)
-+{
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	if (!clk)
-+		return 0;
-+
-+	return (unsigned long)clk->rate;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+void clk_put(struct clk *clk)
-+{
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_set_rate(struct clk *clk, unsigned long rate)
-+{
-+	int regval, ret = 0;
-+	struct cpufreq_frequency_table *pos;
-+	int cpu = clk - cpu_clks;
-+	uint64_t core_id = cpu_data[cpu].core;
-+	uint64_t package_id = cpu_data[cpu].package;
-+
-+	if (likely(clk->ops && clk->ops->set_rate)) {
-+		unsigned long flags;
-+
-+		spin_lock_irqsave(&clock_lock, flags);
-+		ret = clk->ops->set_rate(clk, rate, 0);
-+		spin_unlock_irqrestore(&clock_lock, flags);
-+	}
-+
-+	if (unlikely(clk->flags & CLK_RATE_PROPAGATES))
-+		propagate_rate(clk);
-+
-+	cpufreq_for_each_valid_entry(pos, loongson3_clockmod_table)
-+		if (rate == pos->frequency)
-+			break;
-+	if (rate != pos->frequency)
-+		return -ENOTSUPP;
-+
-+	clk->rate = rate;
-+
-+	if (loongson_sysconf.cputype == Loongson_3A) {
-+		regval = LOONGSON_CHIPCFG(package_id);
-+		regval = (regval & ~0x7) | (pos->driver_data - 1);
-+		LOONGSON_CHIPCFG(package_id) = regval;
-+	} else if (loongson_sysconf.cputype == Loongson_3B) {
-+		regval = LOONGSON_FREQCTRL(package_id);
-+		regval = (regval & ~(0x7 << (core_id*4))) |
-+			((pos->driver_data - 1) << (core_id*4));
-+		LOONGSON_FREQCTRL(package_id) = regval;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(clk_set_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (likely(clk->ops && clk->ops->round_rate)) {
-+		unsigned long flags, rounded;
-+
-+		spin_lock_irqsave(&clock_lock, flags);
-+		rounded = clk->ops->round_rate(clk, rate);
-+		spin_unlock_irqrestore(&clock_lock, flags);
-+
-+		return rounded;
-+	}
-+
-+	return rate;
-+}
-+EXPORT_SYMBOL_GPL(clk_round_rate);
-+
-+static int loongson3_clock_init(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		sprintf(clk_names[i], "cpu%d_clk", i);
-+		cpu_clks[i].name = clk_names[i];
-+		cpu_clks[i].flags = CLK_ALWAYS_ENABLED | CLK_RATE_PROPAGATES;
-+		cpu_clks[i].rate = cpu_clock_freq / 1000;
-+	}
-+
-+	/* clock table init */
-+	for (i = 2;
-+	     (loongson3_clockmod_table[i].frequency != CPUFREQ_TABLE_END);
-+	     i++)
-+		loongson3_clockmod_table[i].frequency = ((cpu_clock_freq / 1000) * i) / 8;
-+
-+	return 0;
-+}
-+arch_initcall(loongson3_clock_init);
-+
-+MODULE_AUTHOR("Huacai Chen <chenhc@lemote.com>");
-+MODULE_DESCRIPTION("CPUFreq driver for Loongson 3A/3B");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 3489f8f..f96ef5c 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -240,6 +240,7 @@ depends on MIPS
- 
- config LOONGSON2_CPUFREQ
- 	tristate "Loongson2 CPUFreq Driver"
-+	depends on CPU_LOONGSON2
- 	help
- 	  This option adds a CPUFreq driver for loongson processors which
- 	  support software configurable cpu frequency.
-@@ -250,6 +251,19 @@ config LOONGSON2_CPUFREQ
- 
- 	  If in doubt, say N.
- 
-+config LOONGSON3_CPUFREQ
-+	tristate "Loongson3 CPUFreq Driver"
-+	depends on CPU_LOONGSON3
-+	help
-+	  This option adds a CPUFreq driver for loongson processors which
-+	  support software configurable cpu frequency.
-+
-+	  Loongson-3A and it's successors support this feature.
-+
-+	  For details, take a look at <file:Documentation/cpu-freq/>.
-+
-+	  If in doubt, say N.
-+
- endmenu
- 
- menu "PowerPC CPU frequency scaling drivers"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 40c53dc..1078930 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -98,6 +98,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
- obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
-+obj-$(CONFIG_LOONGSON3_CPUFREQ)		+= loongson3_cpufreq.o
- obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
- obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
- obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
-diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loongson3_cpufreq.c
-new file mode 100644
-index 0000000..3345002
---- /dev/null
-+++ b/drivers/cpufreq/loongson3_cpufreq.c
-@@ -0,0 +1,240 @@
-+/*
-+ * CPUFreq driver for the loongson-3 processors
-+ *
-+ * All revisions of Loongson-3 processor support this feature.
-+ *
-+ * Copyright (C) 2008 - 2014 Lemote Inc.
-+ * Author: Yan Hua, yanh@lemote.com
-+ *         Chen Huacai, chenhc@lemote.com
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+#include <linux/module.h>
-+#include <linux/time.h>
-+#include <linux/delay.h>
-+#include <linux/cpufreq.h>
-+#include <linux/platform_device.h>
-+#include <asm/idle.h>
-+#include <asm/clock.h>
-+#include <asm/cevt-r4k.h>
-+
-+#include <loongson.h>
-+
-+static uint nowait;
-+static spinlock_t cpufreq_reg_lock[MAX_PACKAGES];
-+
-+static void (*saved_cpu_wait)(void);
-+extern struct clk *cpu_clk_get(int cpu);
-+
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data);
-+
-+static struct notifier_block loongson3_cpufreq_notifier_block = {
-+	.notifier_call = loongson3_cpu_freq_notifier
-+};
-+
-+#ifdef CONFIG_SMP
-+static void set_shared_udelay_val(int cpu, unsigned long lpj)
-+{
-+	int i;
-+	cpumask_t *mask;
-+
-+	if (loongson_sysconf.cputype != Loongson_3A)
-+		cpu_data[cpu].udelay_val = lpj;
-+	else {
-+		mask = topology_core_cpumask(cpu);
-+		for_each_cpu(i, mask)
-+			cpu_data[i].udelay_val = lpj;
-+	}
-+}
-+
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data)
-+{
-+	struct cpufreq_freqs *freqs = (struct cpufreq_freqs *)data;
-+	unsigned long lpj, cpu = freqs->cpu;
-+	struct clock_event_device *cd = &per_cpu(mips_clockevent_device, cpu);
-+
-+	if (val == CPUFREQ_POSTCHANGE) {
-+		lpj = cpufreq_scale(loops_per_jiffy,
-+				cpu_clock_freq / 1000, freqs->new);
-+		set_shared_udelay_val(cpu, lpj);
-+		clockevent_set_clock(cd, freqs->new * 1000 / 2);
-+	}
-+
-+	return 0;
-+}
-+#else
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data)
-+{
-+	if (val == CPUFREQ_POSTCHANGE)
-+		current_cpu_data.udelay_val = loops_per_jiffy;
-+
-+	return 0;
-+}
-+#endif
-+
-+static unsigned int loongson3_cpufreq_get(unsigned int cpu)
-+{
-+	return clk_get_rate(cpu_clk_get(cpu));
-+}
-+
-+/*
-+ * Here we notify other drivers of the proposed change and the final change.
-+ */
-+static int loongson3_cpufreq_target(struct cpufreq_policy *policy,
-+				     unsigned int index)
-+{
-+	unsigned int freq;
-+	unsigned int cpu = policy->cpu;
-+	unsigned int package = cpu_data[cpu].package;
-+
-+	if (!cpu_online(cpu))
-+		return -ENODEV;
-+
-+	freq =
-+	    ((cpu_clock_freq / 1000) *
-+	     loongson3_clockmod_table[index].driver_data) / 8;
-+
-+	/* setting the cpu frequency */
-+	spin_lock(&cpufreq_reg_lock[package]);
-+	clk_set_rate(policy->clk, freq);
-+	spin_unlock(&cpufreq_reg_lock[package]);
-+
-+	return 0;
-+}
-+
-+static int loongson3_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	if (!cpu_online(policy->cpu))
-+		return -ENODEV;
-+
-+	policy->clk = cpu_clk_get(policy->cpu);
-+	policy->cur = loongson3_cpufreq_get(policy->cpu);
-+
-+	policy->cpuinfo.transition_latency = 1000;
-+
-+	/* Loongson-3A: all cores in a package share one clock */
-+	if (loongson_sysconf.cputype == Loongson_3A)
-+		cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
-+
-+	return cpufreq_table_validate_and_show(policy,
-+			&loongson3_clockmod_table[0]);
-+}
-+
-+static int loongson3_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	return 0;
-+}
-+
-+static struct cpufreq_driver loongson3_cpufreq_driver = {
-+	.name = "loongson3",
-+	.init = loongson3_cpufreq_cpu_init,
-+	.verify = cpufreq_generic_frequency_table_verify,
-+	.target_index = loongson3_cpufreq_target,
-+	.get = loongson3_cpufreq_get,
-+	.exit = loongson3_cpufreq_exit,
-+	.attr = cpufreq_generic_attr,
-+};
-+
-+static struct platform_device_id platform_device_ids[] = {
-+	{
-+		.name = "loongson3_cpufreq",
-+	},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(platform, platform_device_ids);
-+
-+static struct platform_driver platform_driver = {
-+	.driver = {
-+		.name = "loongson3_cpufreq",
-+		.owner = THIS_MODULE,
-+	},
-+	.id_table = platform_device_ids,
-+};
-+
-+/*
-+ * This is the simple version of Loongson-3 wait, Maybe we need do this in
-+ * interrupt disabled content
-+ */
-+
-+void loongson3_cpu_wait(void)
-+{
-+	u32 cpu_freq, shared_cpus = 0;
-+	int i, cpu = smp_processor_id();
-+	uint64_t core_id = cpu_data[cpu].core;
-+	uint64_t package_id = cpu_data[cpu].package;
-+
-+	for_each_online_cpu(i)
-+		if (cpu_data[i].package == package_id)
-+			shared_cpus++;
-+
-+	if (shared_cpus > 1)
-+		goto out;
-+
-+	if (loongson_sysconf.cputype == Loongson_3A) {
-+		cpu_freq = LOONGSON_CHIPCFG(package_id);
-+		LOONGSON_CHIPCFG(package_id) &= ~0x7;    /* Put CPU into wait mode */
-+		LOONGSON_CHIPCFG(package_id) = cpu_freq; /* Restore CPU state */
-+	} else if (loongson_sysconf.cputype == Loongson_3B) {
-+		cpu_freq = LOONGSON_FREQCTRL(package_id);
-+		LOONGSON_FREQCTRL(package_id) &= ~(0x7 << (core_id*4)); /* Put CPU into wait mode */
-+		LOONGSON_FREQCTRL(package_id) = cpu_freq;               /* Restore CPU state */
-+	}
-+
-+out:
-+	local_irq_enable();
-+}
-+EXPORT_SYMBOL_GPL(loongson3_cpu_wait);
-+
-+static int __init cpufreq_init(void)
-+{
-+	int i, ret;
-+
-+	/* Register platform stuff */
-+	ret = platform_driver_register(&platform_driver);
-+	if (ret)
-+		return ret;
-+
-+	pr_info("cpufreq: Loongson-3 CPU frequency driver.\n");
-+
-+	for (i = 0; i < MAX_PACKAGES; i++)
-+		spin_lock_init(&cpufreq_reg_lock[i]);
-+
-+	cpufreq_register_notifier(&loongson3_cpufreq_notifier_block,
-+				  CPUFREQ_TRANSITION_NOTIFIER);
-+
-+	ret = cpufreq_register_driver(&loongson3_cpufreq_driver);
-+
-+	if (!ret && !nowait) {
-+		saved_cpu_wait = cpu_wait;
-+		cpu_wait = loongson3_cpu_wait;
-+	}
-+
-+	return ret;
-+}
-+
-+static void __exit cpufreq_exit(void)
-+{
-+	if (!nowait && saved_cpu_wait)
-+		cpu_wait = saved_cpu_wait;
-+	cpufreq_unregister_driver(&loongson3_cpufreq_driver);
-+	cpufreq_unregister_notifier(&loongson3_cpufreq_notifier_block,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+
-+	platform_driver_unregister(&platform_driver);
-+}
-+
-+module_init(cpufreq_init);
-+module_exit(cpufreq_exit);
-+
-+module_param(nowait, uint, 0644);
-+MODULE_PARM_DESC(nowait, "Disable Loongson-3A/3B specific wait");
-+
-+MODULE_AUTHOR("Huacai Chen <chenhc@lemote.com>");
-+MODULE_DESCRIPTION("CPUFreq driver for Loongson-3A/3B");
-+MODULE_LICENSE("GPL");
--- 
-1.7.7.3
+>>                  .enter                  =3D davinci_enter_idle,
+>>                  .exit_latency           =3D 10,
+>>                  .target_residency       =3D 10000,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "DDR SR",
+>>                  .desc                   =3D "WFI and DDR Self Refre=
+sh",
+>>          },
+>> diff --git a/arch/arm/mach-imx/cpuidle-imx5.c b/arch/arm/mach-imx/cp=
+uidle-imx5.c
+>> index 5a47e3c..3feca52 100644
+>> --- a/arch/arm/mach-imx/cpuidle-imx5.c
+>> +++ b/arch/arm/mach-imx/cpuidle-imx5.c
+>> @@ -24,7 +24,6 @@ static struct cpuidle_driver imx5_cpuidle_driver =3D=
+ {
+>>                  .enter            =3D imx5_cpuidle_enter,
+>>                  .exit_latency     =3D 2,
+>>                  .target_residency =3D 1,
+>> -               .flags            =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name             =3D "IMX5 SRPG",
+>>                  .desc             =3D "CPU state retained,powered o=
+ff",
+>>          },
+>> diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/c=
+puidle-imx6q.c
+>> index aa93578..d76d086 100644
+>> --- a/arch/arm/mach-imx/cpuidle-imx6q.c
+>> +++ b/arch/arm/mach-imx/cpuidle-imx6q.c
+>> @@ -53,8 +53,7 @@ static struct cpuidle_driver imx6q_cpuidle_driver =
+=3D {
+>>                  {
+>>                          .exit_latency =3D 50,
+>>                          .target_residency =3D 75,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>> -                                CPUIDLE_FLAG_TIMER_STOP,
+>> +                       .flags =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                          .enter =3D imx6q_enter_wait,
+>>                          .name =3D "WAIT",
+>>                          .desc =3D "Clock off",
+>> diff --git a/arch/arm/mach-imx/cpuidle-imx6sl.c b/arch/arm/mach-imx/=
+cpuidle-imx6sl.c
+>> index d4b6b81..7d92e65 100644
+>> --- a/arch/arm/mach-imx/cpuidle-imx6sl.c
+>> +++ b/arch/arm/mach-imx/cpuidle-imx6sl.c
+>> @@ -40,8 +40,7 @@ static struct cpuidle_driver imx6sl_cpuidle_driver=
+ =3D {
+>>                  {
+>>                          .exit_latency =3D 50,
+>>                          .target_residency =3D 75,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>> -                               CPUIDLE_FLAG_TIMER_STOP,
+>> +                       .flags =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                          .enter =3D imx6sl_enter_wait,
+>>                          .name =3D "WAIT",
+>>                          .desc =3D "Clock off",
+>> diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2=
+/cpuidle34xx.c
+>> index e18709d..aa7b379 100644
+>> --- a/arch/arm/mach-omap2/cpuidle34xx.c
+>> +++ b/arch/arm/mach-omap2/cpuidle34xx.c
+>> @@ -265,7 +265,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 2 + 2,
+>>                          .target_residency =3D 5,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C1",
+>>                          .desc             =3D "MPU ON + CORE ON",
+>>                  },
+>> @@ -273,7 +272,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 10 + 10,
+>>                          .target_residency =3D 30,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C2",
+>>                          .desc             =3D "MPU ON + CORE ON",
+>>                  },
+>> @@ -281,7 +279,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 50 + 50,
+>>                          .target_residency =3D 300,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C3",
+>>                          .desc             =3D "MPU RET + CORE ON",
+>>                  },
+>> @@ -289,7 +286,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 1500 + 1800,
+>>                          .target_residency =3D 4000,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C4",
+>>                          .desc             =3D "MPU OFF + CORE ON",
+>>                  },
+>> @@ -297,7 +293,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 2500 + 7500,
+>>                          .target_residency =3D 12000,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C5",
+>>                          .desc             =3D "MPU RET + CORE RET",
+>>                  },
+>> @@ -305,7 +300,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 3000 + 8500,
+>>                          .target_residency =3D 15000,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C6",
+>>                          .desc             =3D "MPU OFF + CORE RET",
+>>                  },
+>> @@ -313,7 +307,6 @@ static struct cpuidle_driver omap3_idle_driver =3D=
+ {
+>>                          .enter            =3D omap3_enter_idle_bm,
+>>                          .exit_latency     =3D 10000 + 30000,
+>>                          .target_residency =3D 30000,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "C7",
+>>                          .desc             =3D "MPU OFF + CORE OFF",
+>>                  },
+>> diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2=
+/cpuidle44xx.c
+>> index 2498ab0..01e398a 100644
+>> --- a/arch/arm/mach-omap2/cpuidle44xx.c
+>> +++ b/arch/arm/mach-omap2/cpuidle44xx.c
+>> @@ -196,7 +196,6 @@ static struct cpuidle_driver omap4_idle_driver =3D=
+ {
+>>                          /* C1 - CPU0 ON + CPU1 ON + MPU ON */
+>>                          .exit_latency =3D 2 + 2,
+>>                          .target_residency =3D 5,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .enter =3D omap_enter_idle_simple,
+>>                          .name =3D "C1",
+>>                          .desc =3D "CPUx ON, MPUSS ON"
+>> @@ -205,7 +204,7 @@ static struct cpuidle_driver omap4_idle_driver =3D=
+ {
+>>                          /* C2 - CPU0 OFF + CPU1 OFF + MPU CSWR */
+>>                          .exit_latency =3D 328 + 440,
+>>                          .target_residency =3D 960,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE=
+_FLAG_COUPLED,
+>> +                       .flags =3D CPUIDLE_FLAG_COUPLED,
+>>                          .enter =3D omap_enter_idle_coupled,
+>>                          .name =3D "C2",
+>>                          .desc =3D "CPUx OFF, MPUSS CSWR",
+>> @@ -214,7 +213,7 @@ static struct cpuidle_driver omap4_idle_driver =3D=
+ {
+>>                          /* C3 - CPU0 OFF + CPU1 OFF + MPU OSWR */
+>>                          .exit_latency =3D 460 + 518,
+>>                          .target_residency =3D 1100,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE=
+_FLAG_COUPLED,
+>> +                       .flags =3D CPUIDLE_FLAG_COUPLED,
+>>                          .enter =3D omap_enter_idle_coupled,
+>>                          .name =3D "C3",
+>>                          .desc =3D "CPUx OFF, MPUSS OSWR",
+>> diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx=
+/cpuidle.c
+>> index 3c8ab07..2eb0724 100644
+>> --- a/arch/arm/mach-s3c64xx/cpuidle.c
+>> +++ b/arch/arm/mach-s3c64xx/cpuidle.c
+>> @@ -48,7 +48,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_drive=
+r =3D {
+>>                          .enter            =3D s3c64xx_enter_idle,
+>>                          .exit_latency     =3D 1,
+>>                          .target_residency =3D 1,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D,
+>>                          .name             =3D "IDLE",
+>>                          .desc             =3D "System active, ARM g=
+ated",
+>>                  },
+>> diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmo=
+bile/pm-sh7372.c
+>> index 7e5c267..0e37da6 100644
+>> --- a/arch/arm/mach-shmobile/pm-sh7372.c
+>> +++ b/arch/arm/mach-shmobile/pm-sh7372.c
+>> @@ -423,7 +423,6 @@ static struct cpuidle_driver sh7372_cpuidle_driv=
+er =3D {
+>>                  .desc =3D "Core Standby Mode",
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20 + 10,
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .enter =3D sh7372_enter_core_standby,
+>>          },
+>>          .states[2] =3D {
+>> @@ -431,7 +430,6 @@ static struct cpuidle_driver sh7372_cpuidle_driv=
+er =3D {
+>>                  .desc =3D "A3SM PLL ON",
+>>                  .exit_latency =3D 20,
+>>                  .target_residency =3D 30 + 20,
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .enter =3D sh7372_enter_a3sm_pll_on,
+>>          },
+>>          .states[3] =3D {
+>> @@ -439,7 +437,6 @@ static struct cpuidle_driver sh7372_cpuidle_driv=
+er =3D {
+>>                  .desc =3D "A3SM PLL OFF",
+>>                  .exit_latency =3D 120,
+>>                  .target_residency =3D 30 + 120,
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .enter =3D sh7372_enter_a3sm_pll_off,
+>>          },
+>>          .states[4] =3D {
+>> @@ -447,7 +444,6 @@ static struct cpuidle_driver sh7372_cpuidle_driv=
+er =3D {
+>>                  .desc =3D "A4S PLL OFF",
+>>                  .exit_latency =3D 240,
+>>                  .target_residency =3D 30 + 240,
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .enter =3D sh7372_enter_a4s,
+>>                  .disabled =3D true,
+>>          },
+>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-=
+tegra/cpuidle-tegra114.c
+>> index e3ebdce..b309082 100644
+>> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+>> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+>> @@ -75,7 +75,6 @@ static struct cpuidle_driver tegra_idle_driver =3D=
+ {
+>>                          .exit_latency           =3D 500,
+>>                          .target_residency       =3D 1000,
+>>                          .power_usage            =3D 0,
+>> -                       .flags                  =3D CPUIDLE_FLAG_TIM=
+E_VALID,
+>>                          .name                   =3D "powered-down",
+>>                          .desc                   =3D "CPU power gate=
+d",
+>>                  },
+>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-t=
+egra/cpuidle-tegra20.c
+>> index b30bf5c..4f25a7c 100644
+>> --- a/arch/arm/mach-tegra/cpuidle-tegra20.c
+>> +++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
+>> @@ -59,8 +59,7 @@ static struct cpuidle_driver tegra_idle_driver =3D=
+ {
+>>                          .exit_latency     =3D 5000,
+>>                          .target_residency =3D 10000,
+>>                          .power_usage      =3D 0,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D |
+>> -                       CPUIDLE_FLAG_COUPLED,
+>> +                       .flags            =3D CPUIDLE_FLAG_COUPLED,
+>>                          .name             =3D "powered-down",
+>>                          .desc             =3D "CPU power gated",
+>>                  },
+>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-t=
+egra/cpuidle-tegra30.c
+>> index 3556127..f8815ed 100644
+>> --- a/arch/arm/mach-tegra/cpuidle-tegra30.c
+>> +++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
+>> @@ -56,7 +56,6 @@ static struct cpuidle_driver tegra_idle_driver =3D=
+ {
+>>                          .exit_latency           =3D 2000,
+>>                          .target_residency       =3D 2200,
+>>                          .power_usage            =3D 0,
+>> -                       .flags                  =3D CPUIDLE_FLAG_TIM=
+E_VALID,
+>>                          .name                   =3D "powered-down",
+>>                          .desc                   =3D "CPU power gate=
+d",
+>>                  },
+>> diff --git a/arch/mips/include/asm/idle.h b/arch/mips/include/asm/id=
+le.h
+>> index 1c967ab..a2d18ab 100644
+>> --- a/arch/mips/include/asm/idle.h
+>> +++ b/arch/mips/include/asm/idle.h
+>> @@ -22,7 +22,6 @@ extern int mips_cpuidle_wait_enter(struct cpuidle_=
+device *dev,
+>>          .exit_latency           =3D 1,\
+>>          .target_residency       =3D 1,\
+>>          .power_usage            =3D UINT_MAX,\
+>> -       .flags                  =3D CPUIDLE_FLAG_TIME_VALID,\
+>>          .name                   =3D "wait",\
+>>          .desc                   =3D "MIPS wait",\
+>>   }
+>> diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/=
+cpu/shmobile/cpuidle.c
+>> index e3abfd4..53b8eeb 100644
+>> --- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
+>> +++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
+>> @@ -59,7 +59,6 @@ static struct cpuidle_driver cpuidle_driver =3D {
+>>                          .exit_latency =3D 1,
+>>                          .target_residency =3D 1 * 2,
+>>                          .power_usage =3D 3,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .enter =3D cpuidle_sleep_enter,
+>>                          .name =3D "C1",
+>>                          .desc =3D "SuperH Sleep Mode",
+>> @@ -68,7 +67,6 @@ static struct cpuidle_driver cpuidle_driver =3D {
+>>                          .exit_latency =3D 100,
+>>                          .target_residency =3D 1 * 2,
+>>                          .power_usage =3D 1,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .enter =3D cpuidle_sleep_enter,
+>>                          .name =3D "C2",
+>>                          .desc =3D "SuperH Sleep Mode [SF]",
+>> @@ -78,7 +76,6 @@ static struct cpuidle_driver cpuidle_driver =3D {
+>>                          .exit_latency =3D 2300,
+>>                          .target_residency =3D 1 * 2,
+>>                          .power_usage =3D 1,
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .enter =3D cpuidle_sleep_enter,
+>>                          .name =3D "C3",
+>>                          .desc =3D "SuperH Mobile Standby Mode [SF]"=
+,
+>> diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+>> index 5848744..927ec92 100644
+>> --- a/arch/x86/kernel/apm_32.c
+>> +++ b/arch/x86/kernel/apm_32.c
+>> @@ -378,7 +378,6 @@ static struct cpuidle_driver apm_idle_driver =3D=
+ {
+>>                  { /* entry 1 is for APM idle */
+>>                          .name =3D "APM",
+>>                          .desc =3D "APM idle",
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .exit_latency =3D 250,    /* WAG */
+>>                          .target_residency =3D 500,        /* WAG */
+>>                          .enter =3D &apm_cpu_idle
+>> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_=
+idle.c
+>> index 17f9ec5..380b4b4 100644
+>> --- a/drivers/acpi/processor_idle.c
+>> +++ b/drivers/acpi/processor_idle.c
+>> @@ -985,8 +985,8 @@ static int acpi_processor_setup_cpuidle_states(s=
+truct acpi_processor *pr)
+>>                  state->flags =3D 0;
+>>                  switch (cx->type) {
+>>                          case ACPI_STATE_C1:
+>> -                       if (cx->entry_method =3D=3D ACPI_CSTATE_FFH)
+>> -                               state->flags |=3D CPUIDLE_FLAG_TIME_=
+VALID;
+>> +                       if (cx->entry_method !=3D ACPI_CSTATE_FFH)
+>> +                               state->flags |=3D CPUIDLE_FLAG_TIME_=
+INVALID;
+>>
+>>                          state->enter =3D acpi_idle_enter_c1;
+>>                          state->enter_dead =3D acpi_idle_play_dead;
+>> @@ -994,14 +994,12 @@ static int acpi_processor_setup_cpuidle_states=
+(struct acpi_processor *pr)
+>>                          break;
+>>
+>>                          case ACPI_STATE_C2:
+>> -                       state->flags |=3D CPUIDLE_FLAG_TIME_VALID;
+>>                          state->enter =3D acpi_idle_enter_simple;
+>>                          state->enter_dead =3D acpi_idle_play_dead;
+>>                          drv->safe_state_index =3D count;
+>>                          break;
+>>
+>>                          case ACPI_STATE_C3:
+>> -                       state->flags |=3D CPUIDLE_FLAG_TIME_VALID;
+>>                          state->enter =3D pr->flags.bm_check ?
+>>                                          acpi_idle_enter_bm :
+>>                                          acpi_idle_enter_simple;
+>> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuid=
+le-arm64.c
+>> index 50997ea..87320e6 100644
+>> --- a/drivers/cpuidle/cpuidle-arm64.c
+>> +++ b/drivers/cpuidle/cpuidle-arm64.c
+>> @@ -73,7 +73,6 @@ static struct cpuidle_driver arm64_idle_driver =3D=
+ {
+>>                  .exit_latency           =3D 1,
+>>                  .target_residency       =3D 1,
+>>                  .power_usage            =3D UINT_MAX,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "WFI",
+>>                  .desc                   =3D "ARM64 WFI",
+>>          }
+>> diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidl=
+e-at91.c
+>> index a077437..1964ff0 100644
+>> --- a/drivers/cpuidle/cpuidle-at91.c
+>> +++ b/drivers/cpuidle/cpuidle-at91.c
+>> @@ -43,7 +43,6 @@ static struct cpuidle_driver at91_idle_driver =3D =
+{
+>>                  .enter                  =3D at91_enter_idle,
+>>                  .exit_latency           =3D 10,
+>>                  .target_residency       =3D 10000,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "RAM_SR",
+>>                  .desc                   =3D "WFI and DDR Self Refre=
+sh",
+>>          },
+>> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/=
+cpuidle-big_little.c
+>> index fbc00a1..e3e225f 100644
+>> --- a/drivers/cpuidle/cpuidle-big_little.c
+>> +++ b/drivers/cpuidle/cpuidle-big_little.c
+>> @@ -67,8 +67,7 @@ static struct cpuidle_driver bl_idle_little_driver=
+ =3D {
+>>                  .enter                  =3D bl_enter_powerdown,
+>>                  .exit_latency           =3D 700,
+>>                  .target_residency       =3D 2500,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID =
+|
+>> -                                         CPUIDLE_FLAG_TIMER_STOP,
+>> +               .flags                  =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                  .name                   =3D "C1",
+>>                  .desc                   =3D "ARM little-cluster pow=
+er down",
+>>          },
+>> @@ -89,8 +88,7 @@ static struct cpuidle_driver bl_idle_big_driver =3D=
+ {
+>>                  .enter                  =3D bl_enter_powerdown,
+>>                  .exit_latency           =3D 500,
+>>                  .target_residency       =3D 2000,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID =
+|
+>> -                                         CPUIDLE_FLAG_TIMER_STOP,
+>> +               .flags                  =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                  .name                   =3D "C1",
+>>                  .desc                   =3D "ARM big-cluster power =
+down",
+>>          },
+>> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpu=
+idle-calxeda.c
+>> index 6e51114..6541b0b 100644
+>> --- a/drivers/cpuidle/cpuidle-calxeda.c
+>> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+>> @@ -55,7 +55,6 @@ static struct cpuidle_driver calxeda_idle_driver =3D=
+ {
+>>                  {
+>>                          .name =3D "PG",
+>>                          .desc =3D "Power Gate",
+>> -                       .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .exit_latency =3D 30,
+>>                          .power_usage =3D 50,
+>>                          .target_residency =3D 200,
+>> diff --git a/drivers/cpuidle/cpuidle-cps.c b/drivers/cpuidle/cpuidle=
+-cps.c
+>> index fc7b627..1adb698 100644
+>> --- a/drivers/cpuidle/cpuidle-cps.c
+>> +++ b/drivers/cpuidle/cpuidle-cps.c
+>> @@ -79,7 +79,6 @@ static struct cpuidle_driver cps_driver =3D {
+>>                          .enter  =3D cps_nc_enter,
+>>                          .exit_latency           =3D 200,
+>>                          .target_residency       =3D 450,
+>> -                       .flags  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                          .name   =3D "nc-wait",
+>>                          .desc   =3D "non-coherent MIPS wait",
+>>                  },
+>> @@ -87,8 +86,7 @@ static struct cpuidle_driver cps_driver =3D {
+>>                          .enter  =3D cps_nc_enter,
+>>                          .exit_latency           =3D 300,
+>>                          .target_residency       =3D 700,
+>> -                       .flags  =3D CPUIDLE_FLAG_TIME_VALID |
+>> -                                 CPUIDLE_FLAG_TIMER_STOP,
+>> +                       .flags  =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                          .name   =3D "clock-gated",
+>>                          .desc   =3D "core clock gated",
+>>                  },
+>> @@ -96,8 +94,7 @@ static struct cpuidle_driver cps_driver =3D {
+>>                          .enter  =3D cps_nc_enter,
+>>                          .exit_latency           =3D 600,
+>>                          .target_residency       =3D 1000,
+>> -                       .flags  =3D CPUIDLE_FLAG_TIME_VALID |
+>> -                                 CPUIDLE_FLAG_TIMER_STOP,
+>> +                       .flags  =3D CPUIDLE_FLAG_TIMER_STOP,
+>>                          .name   =3D "power-gated",
+>>                          .desc   =3D "core power gated",
+>>                  },
+>> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpui=
+dle-exynos.c
+>> index ba9b34b..64d12a8 100644
+>> --- a/drivers/cpuidle/cpuidle-exynos.c
+>> +++ b/drivers/cpuidle/cpuidle-exynos.c
+>> @@ -47,7 +47,6 @@ static struct cpuidle_driver exynos_idle_driver =3D=
+ {
+>>                          .enter                  =3D exynos_enter_lo=
+wpower,
+>>                          .exit_latency           =3D 300,
+>>                          .target_residency       =3D 100000,
+>> -                       .flags                  =3D CPUIDLE_FLAG_TIM=
+E_VALID,
+>>                          .name                   =3D "C1",
+>>                          .desc                   =3D "ARM power down=
+",
+>>                  },
+>> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cp=
+uidle-kirkwood.c
+>> index 41ba843..d88f8d7 100644
+>> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+>> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+>> @@ -47,7 +47,6 @@ static struct cpuidle_driver kirkwood_idle_driver =
+=3D {
+>>                  .enter                  =3D kirkwood_enter_idle,
+>>                  .exit_latency           =3D 10,
+>>                  .target_residency       =3D 100000,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "DDR SR",
+>>                  .desc                   =3D "WFI and DDR Self Refre=
+sh",
+>>          },
+>> diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cp=
+uidle-mvebu-v7.c
+>> index 45371bb..dd4c176 100644
+>> --- a/drivers/cpuidle/cpuidle-mvebu-v7.c
+>> +++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+>> @@ -53,7 +53,6 @@ static struct cpuidle_driver armadaxp_idle_driver =
+=3D {
+>>                  .exit_latency           =3D 10,
+>>                  .power_usage            =3D 50,
+>>                  .target_residency       =3D 100,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "MV CPU IDLE",
+>>                  .desc                   =3D "CPU power down",
+>>          },
+>> @@ -62,8 +61,7 @@ static struct cpuidle_driver armadaxp_idle_driver =
+=3D {
+>>                  .exit_latency           =3D 100,
+>>                  .power_usage            =3D 5,
+>>                  .target_residency       =3D 1000,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID =
+|
+>> -                                               MVEBU_V7_FLAG_DEEP_I=
+DLE,
+>> +               .flags                  =3D MVEBU_V7_FLAG_DEEP_IDLE,
+>>                  .name                   =3D "MV CPU DEEP IDLE",
+>>                  .desc                   =3D "CPU and L2 Fabric powe=
+r down",
+>>          },
+>> @@ -78,8 +76,7 @@ static struct cpuidle_driver armada370_idle_driver=
+ =3D {
+>>                  .exit_latency           =3D 100,
+>>                  .power_usage            =3D 5,
+>>                  .target_residency       =3D 1000,
+>> -               .flags                  =3D (CPUIDLE_FLAG_TIME_VALID=
+ |
+>> -                                          MVEBU_V7_FLAG_DEEP_IDLE),
+>> +               .flags                  =3D MVEBU_V7_FLAG_DEEP_IDLE,
+>>                  .name                   =3D "Deep Idle",
+>>                  .desc                   =3D "CPU and L2 Fabric powe=
+r down",
+>>          },
+>> @@ -94,7 +91,6 @@ static struct cpuidle_driver armada38x_idle_driver=
+ =3D {
+>>                  .exit_latency           =3D 10,
+>>                  .power_usage            =3D 5,
+>>                  .target_residency       =3D 100,
+>> -               .flags                  =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .name                   =3D "Idle",
+>>                  .desc                   =3D "CPU and SCU power down=
+",
+>>          },
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpu=
+idle-powernv.c
+>> index 7d3a349..e9248bb 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -93,7 +93,6 @@ static struct cpuidle_state powernv_states[MAX_POW=
+ERNV_IDLE_STATES] =3D {
+>>          { /* Snooze */
+>>                  .name =3D "snooze",
+>>                  .desc =3D "snooze",
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .exit_latency =3D 0,
+>>                  .target_residency =3D 0,
+>>                  .enter =3D &snooze_loop },
+>> @@ -202,7 +201,7 @@ static int powernv_add_idle_states(void)
+>>                          /* Add NAP state */
+>>                          strcpy(powernv_states[nr_idle_states].name,=
+ "Nap");
+>>                          strcpy(powernv_states[nr_idle_states].desc,=
+ "Nap");
+>> -                       powernv_states[nr_idle_states].flags =3D CPU=
+IDLE_FLAG_TIME_VALID;
+>> +                       powernv_states[nr_idle_states].flags =3D 0;
+>>                          powernv_states[nr_idle_states].exit_latency=
+ =3D
+>>                                          ((unsigned int)latency_ns) =
+/ 1000;
+>>                          powernv_states[nr_idle_states].target_resid=
+ency =3D
+>> @@ -215,8 +214,7 @@ static int powernv_add_idle_states(void)
+>>                          /* Add FASTSLEEP state */
+>>                          strcpy(powernv_states[nr_idle_states].name,=
+ "FastSleep");
+>>                          strcpy(powernv_states[nr_idle_states].desc,=
+ "FastSleep");
+>> -                       powernv_states[nr_idle_states].flags =3D
+>> -                               CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FL=
+AG_TIMER_STOP;
+>> +                       powernv_states[nr_idle_states].flags =3D CPU=
+IDLE_FLAG_TIMER_STOP;
+>>                          powernv_states[nr_idle_states].exit_latency=
+ =3D
+>>                                          ((unsigned int)latency_ns) =
+/ 1000;
+>>                          powernv_states[nr_idle_states].target_resid=
+ency =3D
+>> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpu=
+idle-pseries.c
+>> index 6f7b019..bb9e2b6 100644
+>> --- a/drivers/cpuidle/cpuidle-pseries.c
+>> +++ b/drivers/cpuidle/cpuidle-pseries.c
+>> @@ -142,14 +142,12 @@ static struct cpuidle_state dedicated_states[]=
+ =3D {
+>>          { /* Snooze */
+>>                  .name =3D "snooze",
+>>                  .desc =3D "snooze",
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .exit_latency =3D 0,
+>>                  .target_residency =3D 0,
+>>                  .enter =3D &snooze_loop },
+>>          { /* CEDE */
+>>                  .name =3D "CEDE",
+>>                  .desc =3D "CEDE",
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 100,
+>>                  .enter =3D &dedicated_cede_loop },
+>> @@ -162,7 +160,6 @@ static struct cpuidle_state shared_states[] =3D =
+{
+>>          { /* Shared Cede */
+>>                  .name =3D "Shared Cede",
+>>                  .desc =3D "Shared Cede",
+>> -               .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>                  .exit_latency =3D 0,
+>>                  .target_residency =3D 0,
+>>                  .enter =3D &shared_cede_loop },
+>> diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuid=
+le-ux500.c
+>> index 5e35804..292e65a 100644
+>> --- a/drivers/cpuidle/cpuidle-ux500.c
+>> +++ b/drivers/cpuidle/cpuidle-ux500.c
+>> @@ -101,8 +101,7 @@ static struct cpuidle_driver ux500_idle_driver =3D=
+ {
+>>                          .enter            =3D ux500_enter_idle,
+>>                          .exit_latency     =3D 70,
+>>                          .target_residency =3D 260,
+>> -                       .flags            =3D CPUIDLE_FLAG_TIME_VALI=
+D |
+>> -                                           CPUIDLE_FLAG_TIMER_STOP,
+>> +                       .flags            =3D CPUIDLE_FLAG_TIMER_STO=
+P,
+>>                          .name             =3D "ApIdle",
+>>                          .desc             =3D "ARM Retention",
+>>                  },
+>> diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidl=
+e-zynq.c
+>> index c61b8b2..022dec8 100644
+>> --- a/drivers/cpuidle/cpuidle-zynq.c
+>> +++ b/drivers/cpuidle/cpuidle-zynq.c
+>> @@ -52,7 +52,6 @@ static struct cpuidle_driver zynq_idle_driver =3D =
+{
+>>                          .enter                  =3D zynq_enter_idle=
+,
+>>                          .exit_latency           =3D 10,
+>>                          .target_residency       =3D 10000,
+>> -                       .flags                  =3D CPUIDLE_FLAG_TIM=
+E_VALID,
+>>                          .name                   =3D "RAM_SR",
+>>                          .desc                   =3D "WFI and RAM Se=
+lf Refresh",
+>>                  },
+>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>> index e431d11..2697e87 100644
+>> --- a/drivers/cpuidle/driver.c
+>> +++ b/drivers/cpuidle/driver.c
+>> @@ -201,7 +201,6 @@ static void poll_idle_init(struct cpuidle_driver=
+ *drv)
+>>          state->exit_latency =3D 0;
+>>          state->target_residency =3D 0;
+>>          state->power_usage =3D -1;
+>> -       state->flags =3D CPUIDLE_FLAG_TIME_VALID;
+>>          state->enter =3D poll_idle;
+>>          state->disabled =3D false;
+>>   }
+>> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_i=
+dle_states.c
+>> index 52f4d11..6e6f0b2 100644
+>> --- a/drivers/cpuidle/dt_idle_states.c
+>> +++ b/drivers/cpuidle/dt_idle_states.c
+>> @@ -73,7 +73,7 @@ static int init_state_node(struct cpuidle_state *i=
+dle_state,
+>>                  return -EINVAL;
+>>          }
+>>
+>> -       idle_state->flags =3D CPUIDLE_FLAG_TIME_VALID;
+>> +       idle_state->flags =3D 0;
+>>          if (of_property_read_bool(state_node, "local-timer-stop"))
+>>                  idle_state->flags |=3D CPUIDLE_FLAG_TIMER_STOP;
+>>          /*
+>> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/go=
+vernors/ladder.c
+>> index 06b57c4..37263d9 100644
+>> --- a/drivers/cpuidle/governors/ladder.c
+>> +++ b/drivers/cpuidle/governors/ladder.c
+>> @@ -79,7 +79,7 @@ static int ladder_select_state(struct cpuidle_driv=
+er *drv,
+>>
+>>          last_state =3D &ldev->states[last_idx];
+>>
+>> -       if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+>> +       if (!(drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_INVALI=
+D)) {
+>>                  last_residency =3D cpuidle_get_last_residency(dev) =
+- \
+>>                                           drv->states[last_idx].exit=
+_latency;
+>>          }
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
+rnors/menu.c
+>> index 710a233..659d7b0 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -405,7 +405,7 @@ static void menu_update(struct cpuidle_driver *d=
+rv, struct cpuidle_device *dev)
+>>           * the measured amount of time is less than the exit latenc=
+y,
+>>           * assume the state was never reached and the exit latency =
+is 0.
+>>           */
+>> -       if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
+>> +       if (unlikely(target->flags & CPUIDLE_FLAG_TIME_INVALID)) {
+>>                  /* Use timer value as is */
+>>                  measured_us =3D data->next_timer_us;
+>>
+>> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> index 9b7ee7e..9cceacb 100644
+>> --- a/drivers/idle/intel_idle.c
+>> +++ b/drivers/idle/intel_idle.c
+>> @@ -128,28 +128,28 @@ static struct cpuidle_state nehalem_cstates[] =
+=3D {
+>>          {
+>>                  .name =3D "C1-NHM",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 3,
+>>                  .target_residency =3D 6,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-NHM",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-NHM",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 20,
+>>                  .target_residency =3D 80,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-NHM",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 200,
+>>                  .target_residency =3D 800,
+>>                  .enter =3D &intel_idle },
+>> @@ -161,35 +161,35 @@ static struct cpuidle_state snb_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-SNB",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 2,
+>>                  .target_residency =3D 2,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-SNB",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-SNB",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 80,
+>>                  .target_residency =3D 211,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-SNB",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 104,
+>>                  .target_residency =3D 345,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7-SNB",
+>>                  .desc =3D "MWAIT 0x30",
+>> -               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 109,
+>>                  .target_residency =3D 345,
+>>                  .enter =3D &intel_idle },
+>> @@ -201,42 +201,42 @@ static struct cpuidle_state byt_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-BYT",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 1,
+>>                  .target_residency =3D 1,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-BYT",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 15,
+>>                  .target_residency =3D 30,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6N-BYT",
+>>                  .desc =3D "MWAIT 0x58",
+>> -               .flags =3D MWAIT2flg(0x58) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x58) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 40,
+>>                  .target_residency =3D 275,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6S-BYT",
+>>                  .desc =3D "MWAIT 0x52",
+>> -               .flags =3D MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x52) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 140,
+>>                  .target_residency =3D 560,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7-BYT",
+>>                  .desc =3D "MWAIT 0x60",
+>> -               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 1200,
+>>                  .target_residency =3D 1500,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7S-BYT",
+>>                  .desc =3D "MWAIT 0x64",
+>> -               .flags =3D MWAIT2flg(0x64) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x64) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 10000,
+>>                  .target_residency =3D 20000,
+>>                  .enter =3D &intel_idle },
+>> @@ -248,35 +248,35 @@ static struct cpuidle_state ivb_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-IVB",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 1,
+>>                  .target_residency =3D 1,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-IVB",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-IVB",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 59,
+>>                  .target_residency =3D 156,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-IVB",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 80,
+>>                  .target_residency =3D 300,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7-IVB",
+>>                  .desc =3D "MWAIT 0x30",
+>> -               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 87,
+>>                  .target_residency =3D 300,
+>>                  .enter =3D &intel_idle },
+>> @@ -288,28 +288,28 @@ static struct cpuidle_state ivt_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-IVT",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 1,
+>>                  .target_residency =3D 1,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-IVT",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 80,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-IVT",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 59,
+>>                  .target_residency =3D 156,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-IVT",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 82,
+>>                  .target_residency =3D 300,
+>>                  .enter =3D &intel_idle },
+>> @@ -321,28 +321,28 @@ static struct cpuidle_state ivt_cstates_4s[] =3D=
+ {
+>>          {
+>>                  .name =3D "C1-IVT-4S",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 1,
+>>                  .target_residency =3D 1,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-IVT-4S",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 250,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-IVT-4S",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 59,
+>>                  .target_residency =3D 300,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-IVT-4S",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 84,
+>>                  .target_residency =3D 400,
+>>                  .enter =3D &intel_idle },
+>> @@ -354,28 +354,28 @@ static struct cpuidle_state ivt_cstates_8s[] =3D=
+ {
+>>          {
+>>                  .name =3D "C1-IVT-8S",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 1,
+>>                  .target_residency =3D 1,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-IVT-8S",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 500,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-IVT-8S",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 59,
+>>                  .target_residency =3D 600,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-IVT-8S",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 88,
+>>                  .target_residency =3D 700,
+>>                  .enter =3D &intel_idle },
+>> @@ -387,56 +387,56 @@ static struct cpuidle_state hsw_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-HSW",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 2,
+>>                  .target_residency =3D 2,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-HSW",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-HSW",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 33,
+>>                  .target_residency =3D 100,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-HSW",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 133,
+>>                  .target_residency =3D 400,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7s-HSW",
+>>                  .desc =3D "MWAIT 0x32",
+>> -               .flags =3D MWAIT2flg(0x32) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 166,
+>>                  .target_residency =3D 500,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C8-HSW",
+>>                  .desc =3D "MWAIT 0x40",
+>> -               .flags =3D MWAIT2flg(0x40) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 300,
+>>                  .target_residency =3D 900,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C9-HSW",
+>>                  .desc =3D "MWAIT 0x50",
+>> -               .flags =3D MWAIT2flg(0x50) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 600,
+>>                  .target_residency =3D 1800,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C10-HSW",
+>>                  .desc =3D "MWAIT 0x60",
+>> -               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 2600,
+>>                  .target_residency =3D 7700,
+>>                  .enter =3D &intel_idle },
+>> @@ -447,56 +447,56 @@ static struct cpuidle_state bdw_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-BDW",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 2,
+>>                  .target_residency =3D 2,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C1E-BDW",
+>>                  .desc =3D "MWAIT 0x01",
+>> -               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x01),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C3-BDW",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 40,
+>>                  .target_residency =3D 100,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-BDW",
+>>                  .desc =3D "MWAIT 0x20",
+>> -               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 133,
+>>                  .target_residency =3D 400,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C7s-BDW",
+>>                  .desc =3D "MWAIT 0x32",
+>> -               .flags =3D MWAIT2flg(0x32) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 166,
+>>                  .target_residency =3D 500,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C8-BDW",
+>>                  .desc =3D "MWAIT 0x40",
+>> -               .flags =3D MWAIT2flg(0x40) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 300,
+>>                  .target_residency =3D 900,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C9-BDW",
+>>                  .desc =3D "MWAIT 0x50",
+>> -               .flags =3D MWAIT2flg(0x50) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 600,
+>>                  .target_residency =3D 1800,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C10-BDW",
+>>                  .desc =3D "MWAIT 0x60",
+>> -               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 2600,
+>>                  .target_residency =3D 7700,
+>>                  .enter =3D &intel_idle },
+>> @@ -508,28 +508,28 @@ static struct cpuidle_state atom_cstates[] =3D=
+ {
+>>          {
+>>                  .name =3D "C1E-ATM",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 10,
+>>                  .target_residency =3D 20,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C2-ATM",
+>>                  .desc =3D "MWAIT 0x10",
+>> -               .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x10),
+>>                  .exit_latency =3D 20,
+>>                  .target_residency =3D 80,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C4-ATM",
+>>                  .desc =3D "MWAIT 0x30",
+>> -               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 100,
+>>                  .target_residency =3D 400,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-ATM",
+>>                  .desc =3D "MWAIT 0x52",
+>> -               .flags =3D MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x52) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 140,
+>>                  .target_residency =3D 560,
+>>                  .enter =3D &intel_idle },
+>> @@ -540,14 +540,14 @@ static struct cpuidle_state avn_cstates[] =3D =
+{
+>>          {
+>>                  .name =3D "C1-AVN",
+>>                  .desc =3D "MWAIT 0x00",
+>> -               .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID=
+,
+>> +               .flags =3D MWAIT2flg(0x00),
+>>                  .exit_latency =3D 2,
+>>                  .target_residency =3D 2,
+>>                  .enter =3D &intel_idle },
+>>          {
+>>                  .name =3D "C6-AVN",
+>>                  .desc =3D "MWAIT 0x51",
+>> -               .flags =3D MWAIT2flg(0x51) | CPUIDLE_FLAG_TIME_VALID=
+ | CPUIDLE_FLAG_TLB_FLUSHED,
+>> +               .flags =3D MWAIT2flg(0x51) | CPUIDLE_FLAG_TLB_FLUSHE=
+D,
+>>                  .exit_latency =3D 15,
+>>                  .target_residency =3D 45,
+>>                  .enter =3D &intel_idle },
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index 25e0df6..a07e087 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -53,7 +53,7 @@ struct cpuidle_state {
+>>   };
+>>
+>>   /* Idle State Flags */
+>> -#define CPUIDLE_FLAG_TIME_VALID        (0x01) /* is residency time =
+measurable? */
+>> +#define CPUIDLE_FLAG_TIME_INVALID      (0x01) /* is residency time =
+measurable? */
+>>   #define CPUIDLE_FLAG_COUPLED   (0x02) /* state applies to multiple=
+ cpus */
+>>   #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on thi=
+s state */
+>>
+>> @@ -90,7 +90,7 @@ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev=
+);
+>>    * cpuidle_get_last_residency - retrieves the last state's residen=
+cy time
+>>    * @dev: the target CPU
+>>    *
+>> - * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_VALID isn't set
+>> + * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_INVALID is set
+>>    */
+>>   static inline int cpuidle_get_last_residency(struct cpuidle_device=
+ *dev)
+>>   {
+>> --
+>> 1.9.1
+>>
+>>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
