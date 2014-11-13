@@ -1,57 +1,66 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] PM / Domains: restore calling of .suspend/resume_noirq()
- callbacks
-Date: Thu, 13 Nov 2014 20:43:24 +0200
-Message-ID: <5464FBCC.7060307@ti.com>
-References: <1415808047-23455-1-git-send-email-grygorii.strashko@ti.com> <2997289.NEH22PNoYM@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2997289.NEH22PNoYM@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, khilman@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, k.kozlowski@samsung.com
+From: Lenny Szubowicz <lszubowi@redhat.com>
+Subject: [PATCH] cpufreq: pcc: Enable autoload of pcc-cpufreq for ACPI processors
+Date: Thu, 13 Nov 2014 13:51:52 -0500
+Message-ID: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:38968 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753906AbaKMSwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Nov 2014 13:52:01 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Joseph.Szczypek@hp.com, lszubowi@redhat.com
 
-Hi Rafael,
+The pcc-cpufreq driver is not automatically loaded on systems where
+the platform's power management setting requires this driver.
+Instead, on those systems no CPU frequency driver is registered and
+active.
 
-On 11/13/2014 03:33 AM, Rafael J. Wysocki wrote:
-> On Wednesday, November 12, 2014 06:00:47 PM Grygorii Strashko wrote:
->> Now .suspend/resume_noirq() callbacks will not be called during
->> system wide suspend/resume for devices which belongs to some GPD.
->> It seems, that this change was accidentally introduced by
->> commit d23b9b00cdde ("PM / Domains: Rework system suspend callback
->>   routines (v2)").
-> 
-> I'm not sure if that was really accidentally.
-> 
-> Can you describe the problem that the change below is attempting to
-> address, without going to much into the history?  IOW, what's that
-> doesn't work right now?
+Make the autoloading matching criteria for loading the pcc-cpufreq
+driver the same as done in acpi-cpufreq by commit c655affbd524d01
+("ACPI / cpufreq: Add ACPI processor device IDs to acpi-cpufreq").
 
-There are no real issues - now in Kernel there are no users of GPD
-which use "noirq" callbacks.
+x86 CPU frequency drivers are now typically autoloaded by specifying
+MODULE_DEVICE_TABLE entries and x86cpu model specific matching.
+But pcc-cpufreq was omitted when acpi-cpufreq and other drivers were
+changed to use this approach.
 
-As of now, I'm trying to use GPD for Keyatone2, so 
-I'm studying it and playing with it to understand all benefits and 
-disadvantages of such solution.
+Both acpi-cpufreq and pcc-cpufreq depend on a distinct and mutually
+exclusive set of ACPI methods which are not directly tied to specific
+processor model numbers. Both of these drivers have init routines
+which look for their required ACPI methods. As a result, only the
+appropriate driver registers as the cpu frequency driver and the other
+one ends up being unloaded.
 
-So, I've found this issue, but not found any description of why
-calls of these callbacks have been removed.
-I'd very appreciate if can point me on?
+Tested on various systems where acpi-cpufreq, intel_pstate, and
+pcc-cpufreq are the expected cpu frequency drivers.
 
-> 
->> This patch restores calling of .suspend/resume_noirq() callbacks
->> for devices from GPD during system wide suspend/resume.
->>
->> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->> ---
->>   drivers/base/power/domain.c | 14 +++++++++++---
->>   1 file changed, 11 insertions(+), 3 deletions(-)
->>
-...
+Signed-off-by: Lenny Szubowicz <lszubowi@redhat.com>
+Signed-off-by: Joseph Szczypek <joseph.szczypek@hp.com>
+Reported-by: Trinh Dao <trinh.dao@hp.com>
+---
+ drivers/cpufreq/pcc-cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Regards,
--grygorii
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index 4d2c8e8..2a0d589 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -603,6 +603,13 @@ static void __exit pcc_cpufreq_exit(void)
+ 	free_percpu(pcc_cpu_info);
+ }
  
++static const struct acpi_device_id processor_device_ids[] = {
++	{ACPI_PROCESSOR_OBJECT_HID, },
++	{ACPI_PROCESSOR_DEVICE_HID, },
++	{},
++};
++MODULE_DEVICE_TABLE(acpi, processor_device_ids);
++
+ MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
+ MODULE_VERSION(PCC_VERSION);
+ MODULE_DESCRIPTION("Processor Clocking Control interface driver");
+-- 
+1.8.3.1
+
