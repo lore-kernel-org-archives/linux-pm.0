@@ -1,152 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Remove architecture specific menu entries
-Date: Thu, 13 Nov 2014 02:47:30 +0100
-Message-ID: <2888462.gyjhHfUy7m@vostro.rjw.lan>
-References: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
+Date: Thu, 13 Nov 2014 02:37:07 +0100
+Message-ID: <20141113013707.GQ29390@twins.programming.kicks-ass.net>
+References: <5446787E.60202@linux.intel.com>
+ <20141024153656.GM12706@worktop.programming.kicks-ass.net>
+ <544DE5CF.9040501@linux.intel.com>
+ <20141027074419.GE10501@worktop.programming.kicks-ass.net>
+ <544F4B31.7050308@linux.intel.com>
+ <20141028082503.GN3337@twins.programming.kicks-ass.net>
+ <5450253B.5020802@linux.intel.com>
+ <20141029082432.GV3337@twins.programming.kicks-ass.net>
+ <5451A94F.1090200@linux.intel.com>
+ <alpine.DEB.2.11.1411121558280.3935@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54690 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753136AbaKMB0e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 20:26:34 -0500
-In-Reply-To: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:58407 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753325AbaKMBhY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 20:37:24 -0500
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1411121558280.3935@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-On Wednesday, November 12, 2014 09:40:43 AM Viresh Kumar wrote:
-> CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
-> all included from the main Kconfig file using a menu entry. This creates another
-> level of (unnecessary) hierarchy within the menuconfig entries.
+On Wed, Nov 12, 2014 at 10:09:47PM +0100, Thomas Gleixner wrote:
+> On Thu, 30 Oct 2014, Li, Aubrey wrote:
 > 
-> The problem occurs when there are drivers usable across architectures. Either
-> their config entry is duplicated in all the supported architectures or is put
-> into the main Kconfig entry. With the later one, we have menuconfig entries for
-> drivers at two levels then.
+> > Freeze is a general power saving state that processes are frozen, devices
+> > are suspended and CPUs are in idle state. However, when the system enters
+> > freeze state, there are a few timers keep ticking and hence consumes more
+> > power unnecessarily. The observed timer events in freeze state are:
+> > - tick_sched_timer
+> > - watchdog lockup detector
+> > - realtime scheduler period timer
+> > 
+> > The system power consumption in freeze state will be reduced significantly
+> > if we quiesce these timers.
 > 
-> Fix these issues by getting rid of another level of menuconfig entries and
-> populate all drivers within the main cpufreq menu.
-
-Won't this be confusing?
-
-Can we at least have a "CPU frequency scaling drivers" menu for drivers
-the *contents* of which will depend on the architecture?
-
-> Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Suggested-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig | 48 +++++++++++++++++-------------------------------
->  1 file changed, 17 insertions(+), 31 deletions(-)
+> So the obvious question is why dont we quiesce these timers by telling
+> the subsystems which manage these timers to shut them down?
 > 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 3489f8f..a24d678 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -196,19 +196,19 @@ config CPUFREQ_DT
->  
->  	  If in doubt, say N.
->  
-> -menu "x86 CPU frequency scaling drivers"
-> -depends on X86
-> +if X86
->  source "drivers/cpufreq/Kconfig.x86"
-> -endmenu
-> +endif
->  
-> -menu "ARM CPU frequency scaling drivers"
-> -depends on ARM || ARM64
-> +if ARM || ARM64
->  source "drivers/cpufreq/Kconfig.arm"
-> -endmenu
-> +endif
->  
-> -menu "AVR32 CPU frequency scaling drivers"
-> -depends on AVR32
-> +if PPC32 || PPC64
-> +source "drivers/cpufreq/Kconfig.powerpc"
-> +endif
->  
-> +if AVR32
->  config AVR32_AT32AP_CPUFREQ
->  	bool "CPU frequency driver for AT32AP"
->  	depends on PLATFORM_AT32AP
-> @@ -216,12 +216,9 @@ config AVR32_AT32AP_CPUFREQ
->  	help
->  	  This enables the CPU frequency driver for AT32AP processors.
->  	  If in doubt, say N.
-> +endif
->  
-> -endmenu
-> -
-> -menu "CPUFreq processor drivers"
-> -depends on IA64
-> -
-> +if IA64
->  config IA64_ACPI_CPUFREQ
->  	tristate "ACPI Processor P-States driver"
->  	depends on ACPI_PROCESSOR
-> @@ -232,12 +229,9 @@ config IA64_ACPI_CPUFREQ
->  	For details, take a look at <file:Documentation/cpu-freq/>.
->  
->  	If in doubt, say N.
-> +endif
->  
-> -endmenu
-> -
-> -menu "MIPS CPUFreq processor drivers"
-> -depends on MIPS
-> -
-> +if MIPS
->  config LOONGSON2_CPUFREQ
->  	tristate "Loongson2 CPUFreq Driver"
->  	help
-> @@ -249,16 +243,9 @@ config LOONGSON2_CPUFREQ
->  	  For details, take a look at <file:Documentation/cpu-freq/>.
->  
->  	  If in doubt, say N.
-> +endif
->  
-> -endmenu
-> -
-> -menu "PowerPC CPU frequency scaling drivers"
-> -depends on PPC32 || PPC64
-> -source "drivers/cpufreq/Kconfig.powerpc"
-> -endmenu
-> -
-> -menu "SPARC CPU frequency scaling drivers"
-> -depends on SPARC64
-> +if SPARC64
->  config SPARC_US3_CPUFREQ
->  	tristate "UltraSPARC-III CPU Frequency driver"
->  	help
-> @@ -276,10 +263,9 @@ config SPARC_US2E_CPUFREQ
->  	  For details, take a look at <file:Documentation/cpu-freq>.
->  
->  	  If in doubt, say N.
-> -endmenu
-> +endif
->  
-> -menu "SH CPU Frequency scaling"
-> -depends on SUPERH
-> +if SUPERH
->  config SH_CPU_FREQ
->  	tristate "SuperH CPU Frequency driver"
->  	help
-> @@ -293,7 +279,7 @@ config SH_CPU_FREQ
->  	  For details, take a look at <file:Documentation/cpu-freq>.
->  
->  	  If unsure, say N.
-> -endmenu
-> +endif
->  
->  endif
->  endmenu
-> 
+> I really want a proper answer for this in the first place, but let me
+> look at the proposed "solution" as well.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Two arguments here:
+
+ 1) the current suspend modes don't care, so if this suspend mode starts
+ to care, its likely to 'break' in the future simply because people
+ never cared about timers.
+
+ 2) there could be userland timers, userland is frozen but they'll still
+ have their timers set and those can and will fire.
+
+But sure, we can add suspend notifiers to stuff to shut down timers; I
+should have a patch for at least one of the offenders somewhere. But I
+really think that we should not be looking at the individual timers for
+this, none of the other suspend modes care about active timers.
+
+> But before we do that we want a proper explanation why the interrupt
+> fires at all. The lack of explanation cleary documents that this is a
+> 'hacked it into submission' approach.
+
+>From what I remember its the waking interrupt that ends up in the
+timekeeping code, Li should have a backtrace somwhere.
+
+> > +#include "../time/tick-internal.h"
+> > +#include "../time/timekeeping_internal.h"
+> 
+> Eew.
+
+I knew you'd love that :-)
+
+> So you export the world and some more from timekeeping and the tick
+> code and fiddle with it randomly just to do:
+> 
+> 1) Suspend clock event devices
+> 2) Suspend timekeeping
+> 3) Resume timekeeping
+> 4) Resume clock event devices
+
+Sure, we can add some exports and clean that up, but..
+
+> stomp_machine() is in 99% of all use cases a clear indicator for a
+> complete design failure.
+
+>    So the generic idle task needs a check like this:
+> 
+>    if (idle_should_freeze())
+>       	frozen_idle();
+
+So that is adding extra code to fairly common/hot paths just for this
+one extra special case. I tried to avoid doing that.
+
+But I suppose we can try and merge that with the offline case and guard
+both special cases with a single variable or so.
