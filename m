@@ -1,36 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] PM / Domains: Make genpd parameter of
- pm_genpd_present() const
-Date: Thu, 13 Nov 2014 16:26:51 +0100
-Message-ID: <20141113152651.GA834@amd>
-References: <1415644659-2531-1-git-send-email-geert+renesas@glider.be>
- <20141113140913.GC18995@amd>
- <CAMuHMdUAN_CgWcTFz+LrRODHtBkKscG2iy0p=zZfgTJMu6ES9Q@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
+ PM_RUNTIME
+Date: Thu, 13 Nov 2014 10:55:19 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411131021340.1209-100000@iolanthe.rowland.org>
+References: <CAPDyKFrATXiiTCeK8A5NBB6K5TPgb9xG5CCKHTHCqdEW_i7qKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34268 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753737AbaKMP0x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 10:26:53 -0500
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUAN_CgWcTFz+LrRODHtBkKscG2iy0p=zZfgTJMu6ES9Q@mail.gmail.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:44307 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753913AbaKMPzV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 10:55:21 -0500
+In-Reply-To: <CAPDyKFrATXiiTCeK8A5NBB6K5TPgb9xG5CCKHTHCqdEW_i7qKA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu 2014-11-13 16:12:25, Geert Uytterhoeven wrote:
-> Hi Pavel,
+On Thu, 13 Nov 2014, Ulf Hansson wrote:
+
+> The runtime PM resources depends on what AMBA device/driver is being
+> used, typically clocks and pinctrls.
 > 
-> On Thu, Nov 13, 2014 at 3:09 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Acked-by: Pavel Machek <apvel@ucw.cz>
+> Simplified described, these bus/drivers PM support are designed in a
+> runtime PM centric manner. It means at system PM suspend, the
+> bus/driver wants to make sure the runtime PM resources are in a
+> runtime PM suspend state.
 > 
-> You've got a new email address? ;-)
+> Does that answer your question?
 
-Yes, I decided to typo-squat myself :-). Just kidding.
+Yes, pretty much.  It sounds like pm_runtime_force_suspend does do want 
+you want, provided you don't have to worry about wakeup settings.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And I guess if you're going to take this runtime-PM-centric approach,
+and if you're also going to rely on some drivers being IRQ-safe and
+others not, then the irq_safe flag needs to exist even when runtime PM
+is not configured.
+
+It still feels like a backward approach, not the way I would have done
+it.  But never mind...
+
+Alan Stern
+
