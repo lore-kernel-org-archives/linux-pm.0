@@ -1,51 +1,48 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 4/8] thermal:cpu cooling:spear: Provide deferred probing for
- spear driver
-Date: Thu, 13 Nov 2014 18:02:41 +0100
-Message-ID: <1415898165-27406-5-git-send-email-l.majewski@samsung.com>
+From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 8/8] thermal:core:fix: Check return code of the
+ ->get_max_state() callback
+Date: Thu, 13 Nov 2014 18:02:45 +0100
+Message-ID: <1415898165-27406-9-git-send-email-l.majewski@samsung.com>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincenzo Frascino <vincenzo.frascino@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1415898165-27406-1-git-send-email-l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincenzo Frascino <vincenzo.frascino-qxv4g6HH51o@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-When CPU freq is used as a thermal zone cooling device, one needs to wait
-until cpufreq subsystem is properly initialized.
+Without this check it was possible to execute cooling device binding code
+even when wrong max cooling state was read.
 
-This code is similar to the one already available in imx_thermal.c file.
-
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/thermal/spear_thermal.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/thermal/thermal_core.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
-index 1e2193f..fd8fadf5 100644
---- a/drivers/thermal/spear_thermal.c
-+++ b/drivers/thermal/spear_thermal.c
-@@ -24,6 +24,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/thermal.h>
-+#include <linux/cpufreq.h>
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 413daa4..c1ddef1 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	struct thermal_zone_device *pos1;
+ 	struct thermal_cooling_device *pos2;
+ 	unsigned long max_state = 0;
+-	int result;
++	int result, ret;
  
- #define MD_FACTOR	1000
- 
-@@ -107,6 +108,12 @@ static int spear_thermal_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	int ret = 0, val;
- 
-+#ifdef CONFIG_CPU_THERMAL
-+	if (!cpufreq_get_current_driver()) {
-+		dev_dbg(&pdev->dev, "no cpufreq driver!");
-+		return -EPROBE_DEFER;
-+	}
-+#endif
- 	if (!np || !of_property_read_u32(np, "st,thermal-flags", &val)) {
- 		dev_err(&pdev->dev, "Failed: DT Pdata not passed\n");
+ 	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
  		return -EINVAL;
+@@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (tz != pos1 || cdev != pos2)
+ 		return -EINVAL;
+ 
+-	cdev->ops->get_max_state(cdev, &max_state);
++	ret = cdev->ops->get_max_state(cdev, &max_state);
++	if (ret)
++		return ret;
+ 
+ 	/* lower default 0, upper default max_state */
+ 	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
 -- 
 2.0.0.rc2
