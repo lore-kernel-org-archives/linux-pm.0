@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 3/8] thermal:cpu cooling:rcar: Provide deferred probing for
- rcar driver
-Date: Thu, 13 Nov 2014 18:02:40 +0100
-Message-ID: <1415898165-27406-4-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 5/8] thermal:cpu cooling:tegra: Provide deferred probing for
+ tegra driver
+Date: Thu, 13 Nov 2014 18:02:42 +0100
+Message-ID: <1415898165-27406-6-git-send-email-l.majewski@samsung.com>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -19,24 +19,24 @@ This code is similar to the one already available in imx_thermal.c file.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- drivers/thermal/rcar_thermal.c | 7 +++++++
+ drivers/thermal/tegra_soctherm.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 8803e69..b268b4d 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -29,6 +29,7 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
+diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_soctherm.c
+index 70f7e9e..9c5aaa4 100644
+--- a/drivers/thermal/tegra_soctherm.c
++++ b/drivers/thermal/tegra_soctherm.c
+@@ -26,6 +26,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/reset.h>
  #include <linux/thermal.h>
 +#include <linux/cpufreq.h>
  
- #define IDLE_INTERVAL	5000
+ #include <soc/tegra/fuse.h>
  
-@@ -373,6 +374,12 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	int ret = -ENODEV;
- 	int idle = IDLE_INTERVAL;
+@@ -346,6 +347,12 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 
+ 	const struct tegra_tsensor *tsensors = t124_tsensors;
  
 +#ifdef CONFIG_CPU_THERMAL
 +	if (!cpufreq_get_current_driver()) {
@@ -44,8 +44,8 @@ index 8803e69..b268b4d 100644
 +		return -EPROBE_DEFER;
 +	}
 +#endif
- 	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
- 	if (!common)
+ 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+ 	if (!tegra)
  		return -ENOMEM;
 -- 
 2.0.0.rc2
