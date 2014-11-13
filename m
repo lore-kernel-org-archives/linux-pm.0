@@ -1,23 +1,19 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 27/33] thermal: exynos: remove TMU_SUPPORT_EMULATION flag
-Date: Thu, 13 Nov 2014 16:01:22 +0100
-Message-ID: <1415890888-8881-28-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 26/33] thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
+Date: Thu, 13 Nov 2014 16:01:21 +0100
+Message-ID: <1415890888-8881-27-git-send-email-b.zolnierkie@samsung.com>
 References: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:50539 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933261AbaKMPGr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 10:06:47 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
-Replace TMU_SUPPORT_EMULATION flag check in exynos_tmu_set_emulation()
-by an explicit check for a SoC type (all SoC types except Exynos4210
-have TMU_SUPPORT_EMULATION flag set in their struct exynos_tmu_init_data
-instances).
+Replace TMU_SUPPORT_EMUL_TIME flag check in get_emul_con_reg()
+by an explicit check for a SoC type (all SoC types except
+Exynos4210 and Exynos5440 have TMU_SUPPORT_EMUL_TIME flag set
+in their struct exynos_tmu_init_data instances).
 
 There should be no functional changes caused by this patch.
 
@@ -28,108 +24,97 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      |  2 +-
- drivers/thermal/samsung/exynos_tmu.h      |  7 ++-----
- drivers/thermal/samsung/exynos_tmu_data.c | 17 ++++++-----------
- 3 files changed, 9 insertions(+), 17 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      |  4 +---
+ drivers/thermal/samsung/exynos_tmu.h      |  5 +----
+ drivers/thermal/samsung/exynos_tmu_data.c | 11 +++++------
+ 3 files changed, 7 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 209221f..51d8cc7 100644
+index 6795ddc..209221f 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -476,7 +476,7 @@ static int exynos_tmu_set_emulation(void *drv_data, unsigned long temp)
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
- 	int ret = -EINVAL;
+@@ -427,12 +427,10 @@ static int exynos_tmu_read(struct exynos_tmu_data *data)
+ static u32 get_emul_con_reg(struct exynos_tmu_data *data, unsigned int val,
+ 			    unsigned long temp)
+ {
+-	struct exynos_tmu_platform_data *pdata = data->pdata;
+-
+ 	if (temp) {
+ 		temp /= MCELSIUS;
  
--	if (!TMU_SUPPORTS(pdata, EMULATION))
-+	if (data->soc == SOC_ARCH_EXYNOS4210)
- 		goto out;
- 
- 	if (temp && temp < MCELSIUS)
+-		if (TMU_SUPPORTS(pdata, EMUL_TIME)) {
++		if (data->soc != SOC_ARCH_EXYNOS5440) {
+ 			val &= ~(EXYNOS_EMUL_TIME_MASK << EXYNOS_EMUL_TIME_SHIFT);
+ 			val |= (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT);
+ 		}
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index d90852a..5ad3f3f 100644
+index ed83d3d..d90852a 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -47,17 +47,14 @@ enum soc_type {
- 
- /**
-  * EXYNOS TMU supported features.
-- * TMU_SUPPORT_EMULATION - This features is used to set user defined
-- *			temperature to the TMU controller.
+@@ -51,16 +51,13 @@ enum soc_type {
+  *			temperature to the TMU controller.
   * TMU_SUPPORT_MULTI_INST - This features denotes that the soc
   *			has many instances of TMU.
+- * TMU_SUPPORT_EMUL_TIME - This features allows to set next temp emulation
+- *			sample time.
   * TMU_SUPPORT_ADDRESS_MULTIPLE - This feature tells that the different TMU
   *			sensors shares some common registers.
   * TMU_SUPPORT - macro to compare the above features with the supplied.
   */
--#define TMU_SUPPORT_EMULATION			BIT(0)
--#define TMU_SUPPORT_MULTI_INST			BIT(1)
--#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(2)
-+#define TMU_SUPPORT_MULTI_INST			BIT(0)
-+#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(1)
+ #define TMU_SUPPORT_EMULATION			BIT(0)
+ #define TMU_SUPPORT_MULTI_INST			BIT(1)
+-#define TMU_SUPPORT_EMUL_TIME			BIT(2)
+-#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(3)
++#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(2)
  
  #define TMU_SUPPORTS(a, b)	(a->features & TMU_SUPPORT_ ## b)
  
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 82f1cba..4dd8d1c 100644
+index 39b9651..82f1cba 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -100,8 +100,7 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
- 		.freq_clip_max = 400 * 1000, \
+@@ -101,7 +101,7 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
  		.temp_level = 95, \
  	}, \
--	.freq_tab_count = 2, \
--	.features = TMU_SUPPORT_EMULATION
-+	.freq_tab_count = 2
+ 	.freq_tab_count = 2, \
+-	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_EMUL_TIME)
++	.features = TMU_SUPPORT_EMULATION
  #endif
  
  #if defined(CONFIG_SOC_EXYNOS3250)
-@@ -152,8 +151,7 @@ struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
- 		.freq_clip_max = 400 * 1000, \
+@@ -153,7 +153,7 @@ struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
  		.temp_level = 95, \
  	}, \
--	.freq_tab_count = 2, \
--	.features = TMU_SUPPORT_EMULATION
-+	.freq_tab_count = 2
+ 	.freq_tab_count = 2, \
+-	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_EMUL_TIME)
++	.features = TMU_SUPPORT_EMULATION
  #endif
  
  #if defined(CONFIG_SOC_EXYNOS4412)
-@@ -220,8 +218,7 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
- 
+@@ -221,7 +221,7 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
  #define EXYNOS5260_TMU_DATA \
  	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5260, \
--	.features = TMU_SUPPORT_EMULATION
-+	.type = SOC_ARCH_EXYNOS5260
+ 	.type = SOC_ARCH_EXYNOS5260, \
+-	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_EMUL_TIME)
++	.features = TMU_SUPPORT_EMULATION
  
  struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
  	.tmu_data = {
-@@ -274,13 +271,12 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
- 
+@@ -275,13 +275,12 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
  #define EXYNOS5420_TMU_DATA \
  	__EXYNOS5420_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5420, \
--	.features = TMU_SUPPORT_EMULATION
-+	.type = SOC_ARCH_EXYNOS5420
+ 	.type = SOC_ARCH_EXYNOS5420, \
+-	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_EMUL_TIME)
++	.features = TMU_SUPPORT_EMULATION
  
  #define EXYNOS5420_TMU_DATA_SHARED \
  	__EXYNOS5420_TMU_DATA \
  	.type = SOC_ARCH_EXYNOS5420_TRIMINFO, \
--	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_ADDRESS_MULTIPLE)
-+	.features = TMU_SUPPORT_ADDRESS_MULTIPLE
+-	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_EMUL_TIME | \
+-			TMU_SUPPORT_ADDRESS_MULTIPLE)
++	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_ADDRESS_MULTIPLE)
  
  struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
  	.tmu_data = {
-@@ -314,8 +310,7 @@ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
- 	.second_point_trim = 70, \
- 	.default_temp_offset = 25, \
- 	.type = SOC_ARCH_EXYNOS5440, \
--	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_MULTI_INST | \
--			TMU_SUPPORT_ADDRESS_MULTIPLE),
-+	.features = (TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_ADDRESS_MULTIPLE),
- 
- struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
- 	.tmu_data = {
 -- 
 1.8.2.3
-
