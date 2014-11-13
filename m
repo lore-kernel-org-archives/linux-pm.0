@@ -1,7 +1,8 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 29/33] thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
-Date: Thu, 13 Nov 2014 16:01:24 +0100
-Message-ID: <1415890888-8881-30-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 28/33] thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE
+ flag
+Date: Thu, 13 Nov 2014 16:01:23 +0100
+Message-ID: <1415890888-8881-29-git-send-email-b.zolnierkie@samsung.com>
 References: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
@@ -10,9 +11,14 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Remove unused TMU_SUPPORT_MULTI_INST flag, no longer
-needed TMU_SUPPORTS() macro and features field from
-struct exynos_tmu_platform_data.
+Replace TMU_SUPPORT_ADDRESS_MULTIPLE flag check in exynos_map_dt_data()
+by an explicit check for a SoC type (only Exynos5420 with TRIMINFO
+quirk and Exynos5440 have TMU_SUPPORT_ADDRESS_MULTIPLE flag set in
+their struct exynos_tmu_init_data instances).
+
+Please note that this requires moving SoC type assignment and verification
+from exynos_tmu_probe() to exynos_map_dt_data() so it happens earlier
+(which is a good thing in itself).
 
 There should be no functional changes caused by this patch.
 
@@ -23,59 +29,150 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.h      | 13 -------------
- drivers/thermal/samsung/exynos_tmu_data.c |  3 +--
- 2 files changed, 1 insertion(+), 15 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      | 72 +++++++++++++++----------------
+ drivers/thermal/samsung/exynos_tmu.h      |  3 --
+ drivers/thermal/samsung/exynos_tmu_data.c |  5 +--
+ 3 files changed, 38 insertions(+), 42 deletions(-)
 
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 51d8cc7..65eeecc 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -473,7 +473,6 @@ static void exynos5440_tmu_set_emulation(struct exynos_tmu_data *data,
+ static int exynos_tmu_set_emulation(void *drv_data, unsigned long temp)
+ {
+ 	struct exynos_tmu_data *data = drv_data;
+-	struct exynos_tmu_platform_data *pdata = data->pdata;
+ 	int ret = -EINVAL;
+ 
+ 	if (data->soc == SOC_ARCH_EXYNOS4210)
+@@ -696,12 +695,47 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "No platform init data supplied.\n");
+ 		return -ENODEV;
+ 	}
++
+ 	data->pdata = pdata;
++	data->soc = pdata->type;
++
++	switch (data->soc) {
++	case SOC_ARCH_EXYNOS4210:
++		data->tmu_initialize = exynos4210_tmu_initialize;
++		data->tmu_control = exynos4210_tmu_control;
++		data->tmu_read = exynos4210_tmu_read;
++		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		break;
++	case SOC_ARCH_EXYNOS3250:
++	case SOC_ARCH_EXYNOS4412:
++	case SOC_ARCH_EXYNOS5250:
++	case SOC_ARCH_EXYNOS5260:
++	case SOC_ARCH_EXYNOS5420:
++	case SOC_ARCH_EXYNOS5420_TRIMINFO:
++		data->tmu_initialize = exynos4412_tmu_initialize;
++		data->tmu_control = exynos4210_tmu_control;
++		data->tmu_read = exynos4412_tmu_read;
++		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
++		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		break;
++	case SOC_ARCH_EXYNOS5440:
++		data->tmu_initialize = exynos5440_tmu_initialize;
++		data->tmu_control = exynos5440_tmu_control;
++		data->tmu_read = exynos5440_tmu_read;
++		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
++		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
++		break;
++	default:
++		dev_err(&pdev->dev, "Platform not supported\n");
++		return -EINVAL;
++	}
++
+ 	/*
+ 	 * Check if the TMU shares some registers and then try to map the
+ 	 * memory of common registers.
+ 	 */
+-	if (!TMU_SUPPORTS(pdata, ADDRESS_MULTIPLE))
++	if (data->soc != SOC_ARCH_EXYNOS5420_TRIMINFO &&
++	    data->soc != SOC_ARCH_EXYNOS5440)
+ 		return 0;
+ 
+ 	if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
+@@ -768,40 +802,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		goto err_clk_sec;
+ 	}
+ 
+-	data->soc = pdata->type;
+-
+-	switch (data->soc) {
+-	case SOC_ARCH_EXYNOS4210:
+-		data->tmu_initialize = exynos4210_tmu_initialize;
+-		data->tmu_control = exynos4210_tmu_control;
+-		data->tmu_read = exynos4210_tmu_read;
+-		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+-		break;
+-	case SOC_ARCH_EXYNOS3250:
+-	case SOC_ARCH_EXYNOS4412:
+-	case SOC_ARCH_EXYNOS5250:
+-	case SOC_ARCH_EXYNOS5260:
+-	case SOC_ARCH_EXYNOS5420:
+-	case SOC_ARCH_EXYNOS5420_TRIMINFO:
+-		data->tmu_initialize = exynos4412_tmu_initialize;
+-		data->tmu_control = exynos4210_tmu_control;
+-		data->tmu_read = exynos4412_tmu_read;
+-		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+-		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+-		break;
+-	case SOC_ARCH_EXYNOS5440:
+-		data->tmu_initialize = exynos5440_tmu_initialize;
+-		data->tmu_control = exynos5440_tmu_control;
+-		data->tmu_read = exynos5440_tmu_read;
+-		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
+-		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
+-		break;
+-	default:
+-		ret = -EINVAL;
+-		dev_err(&pdev->dev, "Platform not supported\n");
+-		goto err_clk;
+-	}
+-
+ 	ret = exynos_tmu_initialize(pdev);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to initialize TMU\n");
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 54f018d..2eb4cb9 100644
+index 5ad3f3f..54f018d 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -46,16 +46,6 @@ enum soc_type {
- };
- 
- /**
-- * EXYNOS TMU supported features.
-- * TMU_SUPPORT_MULTI_INST - This features denotes that the soc
-- *			has many instances of TMU.
-- * TMU_SUPPORT - macro to compare the above features with the supplied.
-- */
--#define TMU_SUPPORT_MULTI_INST			BIT(0)
--
--#define TMU_SUPPORTS(a, b)	(a->features & TMU_SUPPORT_ ## b)
--
--/**
-  * struct exynos_tmu_platform_data
-  * @threshold: basic temperature for generating interrupt
-  *	       25 <= threshold <= 125 [unit: degree Celsius]
-@@ -104,8 +94,6 @@ enum soc_type {
-  * @freq_clip_table: Table representing frequency reduction percentage.
-  * @freq_tab_count: Count of the above table as frequency reduction may
-  *	applicable to only some of the trigger levels.
-- * @features: a bitfield value indicating the features supported in SOC like
-- *	emulation, multi instance etc
-  *
-  * This structure is required for configuration of exynos_tmu driver.
+@@ -49,12 +49,9 @@ enum soc_type {
+  * EXYNOS TMU supported features.
+  * TMU_SUPPORT_MULTI_INST - This features denotes that the soc
+  *			has many instances of TMU.
+- * TMU_SUPPORT_ADDRESS_MULTIPLE - This feature tells that the different TMU
+- *			sensors shares some common registers.
+  * TMU_SUPPORT - macro to compare the above features with the supplied.
   */
-@@ -133,7 +121,6 @@ struct exynos_tmu_platform_data {
- 	enum soc_type type;
- 	struct freq_clip_table freq_tab[4];
- 	unsigned int freq_tab_count;
--	unsigned int features;
- };
+ #define TMU_SUPPORT_MULTI_INST			BIT(0)
+-#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(1)
  
- /**
+ #define TMU_SUPPORTS(a, b)	(a->features & TMU_SUPPORT_ ## b)
+ 
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 13ac00b..d90b050 100644
+index 4dd8d1c..13ac00b 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -308,8 +308,7 @@ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
- 	.first_point_trim = 25, \
+@@ -275,8 +275,7 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
+ 
+ #define EXYNOS5420_TMU_DATA_SHARED \
+ 	__EXYNOS5420_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5420_TRIMINFO, \
+-	.features = TMU_SUPPORT_ADDRESS_MULTIPLE
++	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
+ 
+ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
+ 	.tmu_data = {
+@@ -310,7 +309,7 @@ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
  	.second_point_trim = 70, \
  	.default_temp_offset = 25, \
--	.type = SOC_ARCH_EXYNOS5440, \
--	.features = TMU_SUPPORT_MULTI_INST,
-+	.type = SOC_ARCH_EXYNOS5440
+ 	.type = SOC_ARCH_EXYNOS5440, \
+-	.features = (TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_ADDRESS_MULTIPLE),
++	.features = TMU_SUPPORT_MULTI_INST,
  
  struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
  	.tmu_data = {
