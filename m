@@ -1,54 +1,35 @@
-From: Auto Configured <romain.perier@gmail.com>
-Subject: [PATCH v4 2/2] dt-bindings: Update documentation for "system-power-controller" and fix misspellings
-Date: Thu, 13 Nov 2014 13:34:59 +0000
-Message-ID: <1415885699-1465-3-git-send-email-user@radxa>
-References: <1415885699-1465-1-git-send-email-user@radxa>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415885699-1465-1-git-send-email-user@radxa>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: grant.likely@linaro.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, broonie@kernel.org, johan@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com, Romain Perier <romain.perier@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Thu, 13 Nov 2014 15:05:12 +0100
+Message-ID: <20141113140512.GB18995@amd>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+ <2024276.CFr3nVUAlA@vostro.rjw.lan>
+ <CAPDyKFp=T8Luomeaoz5Y=eLAuFaOfdb+-aoU3QVnpjoDYVKPjg@mail.gmail.com>
+ <17707586.6KbjDf5Kep@vostro.rjw.lan>
+ <CAPDyKFo-On2MfqHk081o_JZvwbrbi0=n9h6o7A9dJ+X4c8goKg@mail.gmail.com>
+ <545D0074.7060205@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <545D0074.7060205@ti.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Jack Dai <jack.dai@rock-chips.com>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jinkun Hong <jinkun.hong@rock-chips.com>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Aaron Lu <aaron.lu@intel.com>, Greg
 List-Id: linux-pm@vger.kernel.org
 
-From: Romain Perier <romain.perier@gmail.com>
+Hi!
 
-Signed-off-by: Romain Perier <romain.perier@gmail.com>
----
- .../devicetree/bindings/power/power-controller.txt   | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+> 2) There are no requirements for arch/platforms/drivers to work in both cases
+> CONFIG_PM_RUNTIME=y/n. But they must be built without errors/warning for both
+> cases.
 
-diff --git a/Documentation/devicetree/bindings/power/power-controller.txt b/Documentation/devicetree/bindings/power/power-controller.txt
-index 845868b..9afa847 100644
---- a/Documentation/devicetree/bindings/power/power-controller.txt
-+++ b/Documentation/devicetree/bindings/power/power-controller.txt
-@@ -1,18 +1,18 @@
--* Generic Poweroff capability
-+* Generic system power control capability
- 
--Power-management integrated circuits or miscellaneous harware components are
--sometimes able to control the system power. The device driver associated to these
--components might needs to define poweroff capability, which tells to the kernel
--how to switch off the system. The corresponding driver must have the standard
--property "poweroff-source" in its device node. This property marks the device as
--able to shutdown the system. In order to test if this property is found
--programmatically, use the helper function "of_system_has_poweroff_source" from
--of.h .
-+Power-management integrated circuits or miscellaneous hardware components are
-+sometimes able to control the system power. The device driver associated with these
-+components might need to define this capability, which tells the kernel that
-+it can be used to switch off the system. The corresponding device must have the
-+standard property "system-power-controller" in its device node. This property
-+marks the device as able to control the system power. In order to test if this
-+property is found programmatically, use the helper function
-+"of_is_system_power_controller" from of.h .
- 
- Example:
- 
- act8846: act8846@5 {
- 	 compatible = "active-semi,act8846";
- 	 status = "okay";
--	 poweroff-source;
-+	 system-power-controller;
- }
+I don't think where you got that. They are config options, they should
+work.
+
+It is prefer not to compile than to compile but not work.
+									Pavel
+
 -- 
-1.9.1
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
