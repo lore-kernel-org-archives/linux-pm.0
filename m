@@ -1,87 +1,150 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v11 5/6] dmaengine: pl330: Add PM sleep support
-Date: Thu, 13 Nov 2014 02:37:52 +0100
-Message-ID: <1642105.slZZIy9b79@vostro.rjw.lan>
-References: <1415802748-30530-1-git-send-email-k.kozlowski@samsung.com> <1415802748-30530-6-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH] cpufreq: Remove architecture specific menu entries
+Date: Thu, 13 Nov 2014 02:47:30 +0100
+Message-ID: <2888462.gyjhHfUy7m@vostro.rjw.lan>
+References: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415802748-30530-6-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54690 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753136AbaKMB0e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Nov 2014 20:26:34 -0500
+In-Reply-To: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com
 
-On Wednesday, November 12, 2014 03:32:27 PM Krzysztof Kozlowski wrote:
-> Add system suspend/resume capabilities to the pl330 driver so the amba
-> bus clock could be also unprepared to conserve energy.
+On Wednesday, November 12, 2014 09:40:43 AM Viresh Kumar wrote:
+> CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
+> all included from the main Kconfig file using a menu entry. This creates another
+> level of (unnecessary) hierarchy within the menuconfig entries.
 > 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> The problem occurs when there are drivers usable across architectures. Either
+> their config entry is duplicated in all the supported architectures or is put
+> into the main Kconfig entry. With the later one, we have menuconfig entries for
+> drivers at two levels then.
+> 
+> Fix these issues by getting rid of another level of menuconfig entries and
+> populate all drivers within the main cpufreq menu.
+
+Won't this be confusing?
+
+Can we at least have a "CPU frequency scaling drivers" menu for drivers
+the *contents* of which will depend on the architecture?
+
+> Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Suggested-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/dma/pl330.c | 37 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 37 insertions(+)
+>  drivers/cpufreq/Kconfig | 48 +++++++++++++++++-------------------------------
+>  1 file changed, 17 insertions(+), 31 deletions(-)
 > 
-> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> index c3bd3584f261..fd71777fc565 100644
-> --- a/drivers/dma/pl330.c
-> +++ b/drivers/dma/pl330.c
-> @@ -2627,6 +2627,42 @@ static int pl330_dma_device_slave_caps(struct dma_chan *dchan,
->  	return 0;
->  }
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 3489f8f..a24d678 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -196,19 +196,19 @@ config CPUFREQ_DT
 >  
-> +/*
-> + * Runtime PM callbacks are provided by amba/bus.c driver.
-> + *
-> + * It is assumed here that IRQ safe runtime PM is chosen in probe and amba
-> + * bus driver will only disable/enable the clock in runtime PM callbacks.
-> + */
-> +static int __maybe_unused pl330_suspend(struct device *dev)
-> +{
-> +	struct amba_device *pcdev = to_amba_device(dev);
-> +
-> +	if (!pm_runtime_status_suspended(dev)) {
-
-It generally isn't safe to call that in .suspend(), because the status may still
-change in theory.  On the other hand, if you do that in .suspend_late(), you'll
-be safe from that.
-
-> +		/* amba did not disable the clock */
-> +		amba_pclk_disable(pcdev);
-> +	}
-> +	amba_pclk_unprepare(pcdev);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __maybe_unused pl330_resume(struct device *dev)
-> +{
-> +	struct amba_device *pcdev = to_amba_device(dev);
-> +	int ret;
-> +
-> +	ret = amba_pclk_prepare(pcdev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (!pm_runtime_status_suspended(dev))
-> +		ret = amba_pclk_enable(pcdev);
-> +
-> +	return ret;
-> +}
-> +
-> +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
-> +
->  static int
->  pl330_probe(struct amba_device *adev, const struct amba_id *id)
->  {
-> @@ -2853,6 +2889,7 @@ static struct amba_driver pl330_driver = {
->  	.drv = {
->  		.owner = THIS_MODULE,
->  		.name = "dma-pl330",
-> +		.pm = &pl330_pm,
->  	},
->  	.id_table = pl330_ids,
->  	.probe = pl330_probe,
+>  	  If in doubt, say N.
+>  
+> -menu "x86 CPU frequency scaling drivers"
+> -depends on X86
+> +if X86
+>  source "drivers/cpufreq/Kconfig.x86"
+> -endmenu
+> +endif
+>  
+> -menu "ARM CPU frequency scaling drivers"
+> -depends on ARM || ARM64
+> +if ARM || ARM64
+>  source "drivers/cpufreq/Kconfig.arm"
+> -endmenu
+> +endif
+>  
+> -menu "AVR32 CPU frequency scaling drivers"
+> -depends on AVR32
+> +if PPC32 || PPC64
+> +source "drivers/cpufreq/Kconfig.powerpc"
+> +endif
+>  
+> +if AVR32
+>  config AVR32_AT32AP_CPUFREQ
+>  	bool "CPU frequency driver for AT32AP"
+>  	depends on PLATFORM_AT32AP
+> @@ -216,12 +216,9 @@ config AVR32_AT32AP_CPUFREQ
+>  	help
+>  	  This enables the CPU frequency driver for AT32AP processors.
+>  	  If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "CPUFreq processor drivers"
+> -depends on IA64
+> -
+> +if IA64
+>  config IA64_ACPI_CPUFREQ
+>  	tristate "ACPI Processor P-States driver"
+>  	depends on ACPI_PROCESSOR
+> @@ -232,12 +229,9 @@ config IA64_ACPI_CPUFREQ
+>  	For details, take a look at <file:Documentation/cpu-freq/>.
+>  
+>  	If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "MIPS CPUFreq processor drivers"
+> -depends on MIPS
+> -
+> +if MIPS
+>  config LOONGSON2_CPUFREQ
+>  	tristate "Loongson2 CPUFreq Driver"
+>  	help
+> @@ -249,16 +243,9 @@ config LOONGSON2_CPUFREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq/>.
+>  
+>  	  If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "PowerPC CPU frequency scaling drivers"
+> -depends on PPC32 || PPC64
+> -source "drivers/cpufreq/Kconfig.powerpc"
+> -endmenu
+> -
+> -menu "SPARC CPU frequency scaling drivers"
+> -depends on SPARC64
+> +if SPARC64
+>  config SPARC_US3_CPUFREQ
+>  	tristate "UltraSPARC-III CPU Frequency driver"
+>  	help
+> @@ -276,10 +263,9 @@ config SPARC_US2E_CPUFREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq>.
+>  
+>  	  If in doubt, say N.
+> -endmenu
+> +endif
+>  
+> -menu "SH CPU Frequency scaling"
+> -depends on SUPERH
+> +if SUPERH
+>  config SH_CPU_FREQ
+>  	tristate "SuperH CPU Frequency driver"
+>  	help
+> @@ -293,7 +279,7 @@ config SH_CPU_FREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq>.
+>  
+>  	  If unsure, say N.
+> -endmenu
+> +endif
+>  
+>  endif
+>  endmenu
 > 
 
 -- 
