@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 6/8] thermal:cpu cooling:ti: Provide deferred probing for ti
- drivers
-Date: Thu, 13 Nov 2014 18:02:43 +0100
-Message-ID: <1415898165-27406-7-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 4/8] thermal:cpu cooling:spear: Provide deferred probing for
+ spear driver
+Date: Thu, 13 Nov 2014 18:02:41 +0100
+Message-ID: <1415898165-27406-5-git-send-email-l.majewski@samsung.com>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -19,24 +19,24 @@ This code is similar to the one already available in imx_thermal.c file.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 7 +++++++
+ drivers/thermal/spear_thermal.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 634b6ce..0ac5ead 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -40,6 +40,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_gpio.h>
- #include <linux/io.h>
+diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
+index 1e2193f..fd8fadf5 100644
+--- a/drivers/thermal/spear_thermal.c
++++ b/drivers/thermal/spear_thermal.c
+@@ -24,6 +24,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/thermal.h>
 +#include <linux/cpufreq.h>
  
- #include "ti-bandgap.h"
+ #define MD_FACTOR	1000
  
-@@ -1196,6 +1197,12 @@ int ti_bandgap_probe(struct platform_device *pdev)
- 	struct ti_bandgap *bgp;
- 	int clk_rate, ret = 0, i;
+@@ -107,6 +108,12 @@ static int spear_thermal_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	int ret = 0, val;
  
 +#ifdef CONFIG_CPU_THERMAL
 +	if (!cpufreq_get_current_driver()) {
@@ -44,8 +44,8 @@ index 634b6ce..0ac5ead 100644
 +		return -EPROBE_DEFER;
 +	}
 +#endif
- 	bgp = ti_bandgap_build(pdev);
- 	if (IS_ERR(bgp)) {
- 		dev_err(&pdev->dev, "failed to fetch platform data\n");
+ 	if (!np || !of_property_read_u32(np, "st,thermal-flags", &val)) {
+ 		dev_err(&pdev->dev, "Failed: DT Pdata not passed\n");
+ 		return -EINVAL;
 -- 
 2.0.0.rc2
