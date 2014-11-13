@@ -1,107 +1,73 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT
- calls
-Date: Thu, 13 Nov 2014 13:58:36 -0800
-Message-ID: <5465298C.4090400@codeaurora.org>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-3-git-send-email-prarit@redhat.com> <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com> <5460AF02.9010907@redhat.com> <CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com> <5461FDE1.2080302@redhat.com> <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the
+ need_restore flag
+Date: Thu, 13 Nov 2014 22:59:16 +0100
+Message-ID: <CAPDyKFq1KOGEZgEADownDyh33=7ffpGu59+wxx9=pemVh_D7bQ@mail.gmail.com>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
+	<20141107215751.GA4439@dtor-ws>
+	<CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com>
+	<2882656.Dm8xnxDtKM@vostro.rjw.lan>
+	<CAPDyKFry2QCBrEWJW-CVVzvpjKu9bYyaQs8o3b-nYfu9=ezpqA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:48297 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934261AbaKMV6i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 16:58:38 -0500
-In-Reply-To: <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:37521 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934044AbaKMV7R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 16:59:17 -0500
+Received: by mail-qg0-f51.google.com with SMTP id j5so11340509qga.10
+        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 13:59:16 -0800 (PST)
+In-Reply-To: <CAPDyKFry2QCBrEWJW-CVVzvpjKu9bYyaQs8o3b-nYfu9=ezpqA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Mark Brown <broonie@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 11/11/2014 05:07 AM, Viresh Kumar wrote:
-> On 11 November 2014 17:45, Prarit Bhargava <prarit@redhat.com> wrote:
->> the deadlock in commit 955ef4833574636819cd269cfbae12f79cbde63a
->>
->> [   75.471265]        CPU0                    CPU1
->> [   75.476327]        ----                    ----
->> [   75.481385]   lock(&policy->rwsem);
->> [   75.485307]                                lock(s_active#219);
->> [   75.491857]                                lock(&policy->rwsem);
->> [   75.498592]   lock(s_active#219);
->> [   75.502331]
->> [   75.502331]  *** DEADLOCK ***
+[...]
+
+>> Essentially, the "power up" operation will depend on the PM domain and
+>> bus type, so they'll need to provide callbacks that will most likely
+>> duplicate runtime PM callbacks.  And those callbacks need to be available
+>> when we do the "power up" thing.
 >
-> I wanted to understand how this deadlock is prevented by a simple change
-> to trylock..
+> In principle what you suggest me to do is this, right?
 >
->>> And also your changelog talks about accessing invalid pointers
->>> without the trylock change, how can that be possible? After the read
->>> lock is taken,
->>> all the pointers should be valid.
->>
->> consider the following very simple case:
->>
->> the governor is ondemand.  cpu 0 reads cpuinfo_cur_freq. cpu0 expects to get the
->> current cpu freq for the ondemand governor.
+> 1. Re-design how the device gets attached to its PM domain. That will
+> also change the ACPI PM domain, which I have limited knowledge about.
+> :-) In principle we want the PM domain pointer to be assigned to the
+> device at device enumeration. This is needed since you think we should
+> do the "power up" thing from the driver core.
 >
-> Name it A.
+> 2. Add "pm_power_up|down()" APIs with corresponding ->"power
+> up|down"() callbacks in the struct dev_pm_domain. Similar as done in
+> patch "[PATCH v3 1/9] PM / Domains: Add dev_pm_domain_get|put() APIs"
+> [2]. Since the callbacks will be unique per PM domain those will be
+> assigned at PM domain initialization.
 >
->>
->> simultaneously, cpu1 changes the governor from ondemand to userspace.
+> 3. Invoke the new APIs, pm_power_up|down() around really_probe() in driver core.
 >
-> Name it B.
->
->>
->> the two threads will race for the policy->mutex
->>
->> suppose cpu0 gets it first.  then there is no problem.  the userspace program
->> for cpu0 gets exactly the data it is expecting.
->>
->> Now suppose cpu1 gets the lock and starts to write ... cpu0 is blocked.
->>
->> cpu1 completes the governor change, and cpu0 gets the mutex ... and returns
->> bogus data at this point.
->
-> What do you mean by bogus here? That userspace wouldn't be able to know if
-> the value is for which governor?
->
-> If that's the case than it can still happen. Issue both above commands at almost
-> the same time. You will never be able to differentiate if the sequence is:
->
-> - A followed by B
-> - B followed by A
-> - A waited for B and so returned -EBUSY (Only this will be clear)
->
-> And the value read can still be bogus. So, we haven't solved the problem at all.
 
-Ah, we are on this topic again I see. I didn't read the patch/thread 
-fully, but I can guess where this is going by reading the partial set of 
-patches.
+Answering my own email, I guess am starting to be paranoid. :-)
 
-Prarit,
+I assume that the above solution is close to what you had in mind. If
+not, please just ignore this response.
 
-You can't just try lock to avoid the deadlock. If you do, then the 
-userspace API becomes a mess. Writes to scaling_governor (or anything 
-else) will no longer by guaranteed to work. Userspace will have to read 
-back, check and retry. That would break a ton of existing userpace scripts.
+As I stated earlier, the 1) could be a bit tricky to sort out.
+Especially since there are SOC specific patchsets that's been queued
+for 3.19 already which adds genpd support. I am not saying that we
+can't do it, but I am bit concerned that we wont solve the _real_
+problem before the issues really starts to show up for several SOCs.
 
-Viresh,
+Therefore, I wonder if you could consider the following somewhat
+intermediate step, instead of going directly towards 1):
 
-The deadlock scenario is read. That's why the code is what it is today.
+- Move the calls to dev_pm_domain_attach/detach() from the various
+buses ->probe(), into the driver core (really_probe()). In that way,
+we will be able to power up the PM domain from the driver core, since
+the device's PM domain pointer would be assigned.
 
-All,
+I do realize that you rejected this approach earlier, but I guess we
+have some new "data" to consider!? :-)
 
-IMO, the right way to fix this is to have the governor have over it's 
-list of attributes it want to expose thru sysfs to the cpufreq 
-framework. Then the framework can add/remove this in the right order 
-when the governors are changed. The framework can do this outside of the 
-policy lock being held when the governors are switched. This would allow 
-avoid the original deadlock between sysfs locks and the policy lock 
-without just ever having to fail userspace writes to scaling_governor.
-
--Saravana
-
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Kind regards
+Uffe
