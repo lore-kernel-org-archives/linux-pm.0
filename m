@@ -1,99 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Remove architecture specific menu entries
-Date: Thu, 13 Nov 2014 23:17:38 +0100
-Message-ID: <1453735.aQt8yDaY5N@vostro.rjw.lan>
-References: <92d6fb45a43b8d800cbcdf690bbf6f8e4713b95e.1415765396.git.viresh.kumar@linaro.org> <1415843008.15957.45.camel@freescale.com> <CAKohpokMgHNUWX8s9Vfow+JdRsnF3LDpS4Erqks5RznyXDDBFw@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT
+ calls
+Date: Thu, 13 Nov 2014 13:58:36 -0800
+Message-ID: <5465298C.4090400@codeaurora.org>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-3-git-send-email-prarit@redhat.com> <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com> <5460AF02.9010907@redhat.com> <CAKohpomeRivb3TwkeWALL_xsf4gOBPYOnfCNdz2oVvZSAGBP4g@mail.gmail.com> <5461FDE1.2080302@redhat.com> <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52649 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933492AbaKMV4m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 16:56:42 -0500
-In-Reply-To: <CAKohpokMgHNUWX8s9Vfow+JdRsnF3LDpS4Erqks5RznyXDDBFw@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.11.231]:48297 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934261AbaKMV6i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 16:58:38 -0500
+In-Reply-To: <CAKohponGMGzYnDEjto2tP1_kXNRQOgxqDW__s3kNOJWhFas8sw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Scott Wood <scottwood@freescale.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
+Cc: Prarit Bhargava <prarit@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thursday, November 13, 2014 10:56:53 AM Viresh Kumar wrote:
-> On 13 November 2014 07:13, Scott Wood <scottwood@freescale.com> wrote:
-> > On Thu, 2014-11-13 at 02:47 +0100, Rafael J. Wysocki wrote:
-> >> On Wednesday, November 12, 2014 09:40:43 AM Viresh Kumar wrote:
-> >> > CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
-> >> > all included from the main Kconfig file using a menu entry. This creates another
-> >> > level of (unnecessary) hierarchy within the menuconfig entries.
-> >> >
-> >> > The problem occurs when there are drivers usable across architectures. Either
-> >> > their config entry is duplicated in all the supported architectures or is put
-> >> > into the main Kconfig entry. With the later one, we have menuconfig entries for
-> >> > drivers at two levels then.
-> >> >
-> >> > Fix these issues by getting rid of another level of menuconfig entries and
-> >> > populate all drivers within the main cpufreq menu.
-> >>
-> >> Won't this be confusing?
-> >
-> > Why would it be confusing?  It's already in a not-too-large "CPU
-> > Frequency scaling" menu, the names of the individual options should be
-> > clear enough, and they'd all be grouped at the end of the menu.
-> >
-> > FWIW, there's already "Generic DT based cpufreq driver" under that menu.
-> >
-> >> Can we at least have a "CPU frequency scaling drivers" menu for drivers
-> >> the *contents* of which will depend on the architecture?
-> >
-> > That works too -- I just don't see the confusion aspect.
-> 
-> After thinking a bit about the concerns raised by both of you, I decided to look
-> at what others are doing about this. And this is the best I came around:
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index a24d678..230a912 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -183,6 +183,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
-> 
->           If in doubt, say N.
-> 
-> +comment "CPU frequency scaling drivers"
-> +
->  config CPUFREQ_DT
->         tristate "Generic DT based cpufreq driver"
->         depends on HAVE_CLK && OF
-> 
-> 
-> And this is how it looks in menuconfig now:
-> 
->         [*] CPU Frequency scaling
->         <*>   CPU frequency translation statistics (NEW)
->         [ ]     CPU frequency translation statistics details (NEW)
->               Default CPUFreq governor (performance)  --->
->         -*-   'performance' governor
->         < >   'powersave' governor (NEW)
->         < >   'userspace' governor for userspace frequency scaling
-> (NEW)
->         < >   'ondemand' cpufreq policy governor (NEW)
->         < >   'conservative' cpufreq governor (NEW)
->               *** CPU frequency scaling drivers ***
->         < >   Generic DT based cpufreq driver (NEW)
->         < >   Generic ARM big LITTLE CPUfreq driver (NEW)
->         [*]   SAMSUNG EXYNOS4210 (NEW)
->         [*]   SAMSUNG EXYNOS4x12 (NEW)
->         [*]   SAMSUNG EXYNOS5250 (NEW)
->         [*]   SAMSUNG EXYNOS5440 (NEW)
->         [ ]   EXYNOS Frequency Overclocking - Software (NEW)
-> 
-> 
-> Good enough ?
+On 11/11/2014 05:07 AM, Viresh Kumar wrote:
+> On 11 November 2014 17:45, Prarit Bhargava <prarit@redhat.com> wrote:
+>> the deadlock in commit 955ef4833574636819cd269cfbae12f79cbde63a
+>>
+>> [   75.471265]        CPU0                    CPU1
+>> [   75.476327]        ----                    ----
+>> [   75.481385]   lock(&policy->rwsem);
+>> [   75.485307]                                lock(s_active#219);
+>> [   75.491857]                                lock(&policy->rwsem);
+>> [   75.498592]   lock(s_active#219);
+>> [   75.502331]
+>> [   75.502331]  *** DEADLOCK ***
+>
+> I wanted to understand how this deadlock is prevented by a simple change
+> to trylock..
+>
+>>> And also your changelog talks about accessing invalid pointers
+>>> without the trylock change, how can that be possible? After the read
+>>> lock is taken,
+>>> all the pointers should be valid.
+>>
+>> consider the following very simple case:
+>>
+>> the governor is ondemand.  cpu 0 reads cpuinfo_cur_freq. cpu0 expects to get the
+>> current cpu freq for the ondemand governor.
+>
+> Name it A.
+>
+>>
+>> simultaneously, cpu1 changes the governor from ondemand to userspace.
+>
+> Name it B.
+>
+>>
+>> the two threads will race for the policy->mutex
+>>
+>> suppose cpu0 gets it first.  then there is no problem.  the userspace program
+>> for cpu0 gets exactly the data it is expecting.
+>>
+>> Now suppose cpu1 gets the lock and starts to write ... cpu0 is blocked.
+>>
+>> cpu1 completes the governor change, and cpu0 gets the mutex ... and returns
+>> bogus data at this point.
+>
+> What do you mean by bogus here? That userspace wouldn't be able to know if
+> the value is for which governor?
+>
+> If that's the case than it can still happen. Issue both above commands at almost
+> the same time. You will never be able to differentiate if the sequence is:
+>
+> - A followed by B
+> - B followed by A
+> - A waited for B and so returned -EBUSY (Only this will be clear)
+>
+> And the value read can still be bogus. So, we haven't solved the problem at all.
 
-Yes, that works too.
+Ah, we are on this topic again I see. I didn't read the patch/thread 
+fully, but I can guess where this is going by reading the partial set of 
+patches.
 
-That "EXYNOS Frequency Overclocking" item looks odd, but that's a different
-matter ...
+Prarit,
+
+You can't just try lock to avoid the deadlock. If you do, then the 
+userspace API becomes a mess. Writes to scaling_governor (or anything 
+else) will no longer by guaranteed to work. Userspace will have to read 
+back, check and retry. That would break a ton of existing userpace scripts.
+
+Viresh,
+
+The deadlock scenario is read. That's why the code is what it is today.
+
+All,
+
+IMO, the right way to fix this is to have the governor have over it's 
+list of attributes it want to expose thru sysfs to the cpufreq 
+framework. Then the framework can add/remove this in the right order 
+when the governors are changed. The framework can do this outside of the 
+policy lock being held when the governors are switched. This would allow 
+avoid the original deadlock between sysfs locks and the policy lock 
+without just ever having to fail userspace writes to scaling_governor.
+
+-Saravana
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
