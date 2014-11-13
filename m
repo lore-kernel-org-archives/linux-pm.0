@@ -1,73 +1,53 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Fix initial default state of the
- need_restore flag
-Date: Thu, 13 Nov 2014 22:59:16 +0100
-Message-ID: <CAPDyKFq1KOGEZgEADownDyh33=7ffpGu59+wxx9=pemVh_D7bQ@mail.gmail.com>
-References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
-	<20141107215751.GA4439@dtor-ws>
-	<CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com>
-	<2882656.Dm8xnxDtKM@vostro.rjw.lan>
-	<CAPDyKFry2QCBrEWJW-CVVzvpjKu9bYyaQs8o3b-nYfu9=ezpqA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f51.google.com ([209.85.192.51]:37521 "EHLO
-	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934044AbaKMV7R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 16:59:17 -0500
-Received: by mail-qg0-f51.google.com with SMTP id j5so11340509qga.10
-        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 13:59:16 -0800 (PST)
-In-Reply-To: <CAPDyKFry2QCBrEWJW-CVVzvpjKu9bYyaQs8o3b-nYfu9=ezpqA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+From: Kevin Hilman <khilman@kernel.org>
+Subject: [PATCH] PM / Runtime: Kconfig: move ia64 dependency to arch/ia64/Kconfig
+Date: Thu, 13 Nov 2014 14:28:20 -0800
+Message-ID: <1415917702-6742-1-git-send-email-khilman@kernel.org>
+Return-path: <linux-ia64-owner@vger.kernel.org>
+Sender: linux-ia64-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Mark Brown <broonie@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Kevin Hilman <khilman@linaro.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "open list:IA64 Itanium PL..." <linux-ia64@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-[...]
+From: Kevin Hilman <khilman@linaro.org>
 
->> Essentially, the "power up" operation will depend on the PM domain and
->> bus type, so they'll need to provide callbacks that will most likely
->> duplicate runtime PM callbacks.  And those callbacks need to be available
->> when we do the "power up" thing.
->
-> In principle what you suggest me to do is this, right?
->
-> 1. Re-design how the device gets attached to its PM domain. That will
-> also change the ACPI PM domain, which I have limited knowledge about.
-> :-) In principle we want the PM domain pointer to be assigned to the
-> device at device enumeration. This is needed since you think we should
-> do the "power up" thing from the driver core.
->
-> 2. Add "pm_power_up|down()" APIs with corresponding ->"power
-> up|down"() callbacks in the struct dev_pm_domain. Similar as done in
-> patch "[PATCH v3 1/9] PM / Domains: Add dev_pm_domain_get|put() APIs"
-> [2]. Since the callbacks will be unique per PM domain those will be
-> assigned at PM domain initialization.
->
-> 3. Invoke the new APIs, pm_power_up|down() around really_probe() in driver core.
->
+The IA64_HP_SIM dependency on PM_RUNTIME should be done in the arch
+Kconfig instead of in the PM core.  Move it accordingly.
 
-Answering my own email, I guess am starting to be paranoid. :-)
+NOTE: arch/ia64/Kconfig currently does a 'select PM', which since
+commit 1eb208aea317 (PM: Make CONFIG_PM depend on (CONFIG_PM_SLEEP ||
+CONFIG_PM_RUNTIME)) is effectively a noop unless PM_SLEEP or
+PM_RUNTIME are set elsewhere.
 
-I assume that the above solution is close to what you had in mind. If
-not, please just ignore this response.
+Signed-off-by: Kevin Hilman <khilman@linaro.org>
+---
+ arch/ia64/Kconfig    | 1 +
+ kernel/power/Kconfig | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-As I stated earlier, the 1) could be a bit tricky to sort out.
-Especially since there are SOC specific patchsets that's been queued
-for 3.19 already which adds genpd support. I am not saying that we
-can't do it, but I am bit concerned that we wont solve the _real_
-problem before the issues really starts to show up for several SOCs.
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index c84c88bbbbd7..55bc92ca2ce6 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -233,6 +233,7 @@ config IA64_SGI_UV
+ config IA64_HP_SIM
+ 	bool "Ski-simulator"
+ 	select SWIOTLB
++	depends on !PM_RUNTIME
+ 
+ endchoice
+ 
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index bbef57f5bdfd..3d39cc0228e9 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -131,7 +131,6 @@ config PM_WAKELOCKS_GC
+ 
+ config PM_RUNTIME
+ 	bool "Run-time PM core functionality"
+-	depends on !IA64_HP_SIM
+ 	---help---
+ 	  Enable functionality allowing I/O devices to be put into energy-saving
+ 	  (low power) states at run time (or autosuspended) after a specified
+-- 
+2.1.3
 
-Therefore, I wonder if you could consider the following somewhat
-intermediate step, instead of going directly towards 1):
-
-- Move the calls to dev_pm_domain_attach/detach() from the various
-buses ->probe(), into the driver core (really_probe()). In that way,
-we will be able to power up the PM domain from the driver core, since
-the device's PM domain pointer would be assigned.
-
-I do realize that you rejected this approach earlier, but I guess we
-have some new "data" to consider!? :-)
-
-Kind regards
-Uffe
