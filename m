@@ -1,42 +1,61 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd enabled
-Date: Thu, 13 Nov 2014 14:28:21 -0800
-Message-ID: <1415917702-6742-2-git-send-email-khilman@kernel.org>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [ANNOUNCE] ##thermal channel at freenode
+Date: Thu, 13 Nov 2014 20:11:47 -0400
+Message-ID: <20141114001145.GA8259@developer>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:51325 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbaKNAL7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 19:11:59 -0500
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, Lukasz Majewski <l.majewski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Caesar Wang <caesar.wang@rock-chips.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-From: Kevin Hilman <khilman@linaro.org>
 
-It makes little sense to use generic power domains without runtime PM.
-Also, since the complexities of handling the !PM_RUNTIME case are
-causing more trouble and confusion than they're worth, let's simplify
-the world by making genpd always enable runtime PM.
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-Signed-off-by: Kevin Hilman <khilman@linaro.org>
----
- kernel/power/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Folks,
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 3d39cc0228e9..2a8c64d0a43c 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -271,7 +271,7 @@ config PM_CLK
- 
- config PM_GENERIC_DOMAINS
- 	bool
--	depends on PM
-+	select PM_RUNTIME
- 
- config WQ_POWER_EFFICIENT_DEFAULT
- 	bool "Enable workqueue power-efficient mode by default"
--- 
-2.1.3
+As the audience interested in the thermal topic has grown, I find
+interesting to have an IRC channel to discuss the topic in a more
+interactive way. Some of you has already suggested to have this, so here
+it is.
+
+server: irc.freenode.net
+channel: ##thermal
+
+As I mentioned, the idea is to discuss the current work on the Linux
+kernel thermal framework, its drivers, and its relations to other parts
+of Linux.
+
+I hope this help to speed things a little bit.
+
+All the best,
+
+Eduardo Valentin
+
+
+--gKMricLos+KVdGMg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUZUi1AAoJEMLUO4d9pOJWg74H/1JEZleBPiZdEasHCdJeYPZU
+YgVnt5d73Qm46gH7+B7qDZ+swhTOn/PTStf7zHgutOmTWCaMA/JFQcEI8YcU2u8x
+ztpcZYqmnKKANEQK6LnVRw2+gT1VO54zJmrZOqBSzaNMTXiW8XLvxuuVo9W9xFeR
+aJfOnEnMp5wnfkKoZxhrQs1/Bpd2oK38XnWna5GXeBEBn6b+xnCXxfNZJIFnw+Mu
+i5Pv6sgaDF0ZQvDkRBcltcCKm6vqdfHdyF+dY2InnzOL8k0E5XhFP/HEEImoWtns
+w1wOlnQfW4xQI3AsXjAf2O0txLVfAvsGqMjJAyuGavbp0pRUCYXznjGKl3Bp2e8=
+=5uQC
+-----END PGP SIGNATURE-----
+
+--gKMricLos+KVdGMg--
