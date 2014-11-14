@@ -1,95 +1,67 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 5/8] thermal:cpu cooling:tegra: Provide deferred probing
- for tegra driver
-Date: Fri, 14 Nov 2014 12:24:37 +0100
-Message-ID: <20141114122437.6742ea68@amdc2363>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
- <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
- <1415898165-27406-6-git-send-email-l.majewski@samsung.com>
- <5465DDC5.6090301@kapsi.fi>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 0/4] Add TMU support for Exynos7
+Date: Fri, 14 Nov 2014 13:19:42 +0100
+Message-ID: <2756804.O2Zby5SkUf@amdc1032>
+References: <1415963882-3460-1-git-send-email-a.kesavan@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:58181 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965074AbaKNLYs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 06:24:48 -0500
-In-reply-to: <5465DDC5.6090301@kapsi.fi>
+Received: from mailout4.samsung.com ([203.254.224.34]:58158 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbaKNMTr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 07:19:47 -0500
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0NF10088N3KXFY60@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 14 Nov 2014 21:19:45 +0900 (KST)
+In-reply-to: <1415963882-3460-1-git-send-email-a.kesavan@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincenzo Frascino <vincenzo.frascino@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, amit.daniel@samsung.com, kesavan.abhilash@gmail.com, l.majewski@samsung.com
 
-Hi Mikko,
 
-> Tested-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Hi,
 
-Thanks for testing.
-
+On Friday, November 14, 2014 04:47:58 PM Abhilash Kesavan wrote:
+> The Thermal Management Unit (TMU) in Exynos7 provides software-controlled
+> (thermal throttling) and hardware-controlled (thermal tripping) management
+> schemes.
+> There are several changes in terms of the register and bit offsets in the
+> Exynos7 TMU from that in older SoCs. There are also new bits, more trigger
+> levels and a special clock for TMU that has been introduced in Exynos7.
+> This patchset modifies the thermal driver to handle all these changes.
 > 
-> One potential issue I can see is that if the cpufreq driver fails to 
-> probe then you'll never get the thermal driver either. For example, 
-> Tegra124 currently has no cpufreq driver, so if CONFIG_CPU_THERMAL
-> was enabled, then the soctherm driver would never be able to probe.
+> This series is based on linux-next(20141114) and tested on an Exynos7-based
+> espresso board.
 
-Yes, this is a potential issue. However, this option in tegra_defconfig
-is by default disabled when thermal is enabled.
+Please rebase your patchset on top of:
 
-> But I don't really have a solution for this either.
+  http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg38717.html
 
-Ok. I see.
+There is also ongoing work to convert Exynos thermal driver to use device
+tree but Lukasz Majewski (added to Cc:) knows better the current state of
+the work.
 
+> Abhilash Kesavan (4):
+>   thermal: exynos: add optional sclk support
+>   thermal: exynos: add a triminfo_mask field in exynos_tmu_register
+>     structure
+>   thermal: exynos: modify the prototype for code_to_temp function
+>   thermal: exynos: Add TMU support for Exynos7 SoC
 > 
-> Cheers,
-> Mikko
-> 
-> On 11/13/2014 07:02 PM, Lukasz Majewski wrote:
-> > When CPU freq is used as a thermal zone cooling device, one needs
-> > to wait until cpufreq subsystem is properly initialized.
-> >
-> > This code is similar to the one already available in imx_thermal.c
-> > file.
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> >   drivers/thermal/tegra_soctherm.c | 7 +++++++
-> >   1 file changed, 7 insertions(+)
-> >
-> > diff --git a/drivers/thermal/tegra_soctherm.c
-> > b/drivers/thermal/tegra_soctherm.c index 70f7e9e..9c5aaa4 100644
-> > --- a/drivers/thermal/tegra_soctherm.c
-> > +++ b/drivers/thermal/tegra_soctherm.c
-> > @@ -26,6 +26,7 @@
-> >   #include <linux/platform_device.h>
-> >   #include <linux/reset.h>
-> >   #include <linux/thermal.h>
-> > +#include <linux/cpufreq.h>
-> >
-> >   #include <soc/tegra/fuse.h>
-> >
-> > @@ -346,6 +347,12 @@ static int tegra_soctherm_probe(struct
-> > platform_device *pdev)
-> >
-> >   	const struct tegra_tsensor *tsensors = t124_tsensors;
-> >
-> > +#ifdef CONFIG_CPU_THERMAL
-> > +	if (!cpufreq_get_current_driver()) {
-> > +		dev_dbg(&pdev->dev, "no cpufreq driver!");
-> > +		return -EPROBE_DEFER;
-> > +	}
-> > +#endif
-> >   	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra),
-> > GFP_KERNEL); if (!tegra)
-> >   		return -ENOMEM;
-> >
-> 
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 +
+>  drivers/thermal/samsung/exynos_tmu.c               |  106 ++++++++++++++----
+>  drivers/thermal/samsung/exynos_tmu.h               |   13 ++-
+>  drivers/thermal/samsung/exynos_tmu_data.c          |  117 ++++++++++++++++++++
+>  drivers/thermal/samsung/exynos_tmu_data.h          |   27 +++++
+>  5 files changed, 247 insertions(+), 20 deletions(-)
 
-
-
--- 
 Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
