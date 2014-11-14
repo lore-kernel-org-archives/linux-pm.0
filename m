@@ -1,72 +1,45 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when
  genpd enabled
-Date: Fri, 14 Nov 2014 08:28:19 +0100
-Message-ID: <CAPDyKFpAXX+QPZm1AoTOQk5C7fdR8HcVRwvCHH-veWMDP9_4_w@mail.gmail.com>
+Date: Fri, 14 Nov 2014 08:29:06 +0100
+Message-ID: <CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
 References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
 	<1415917702-6742-2-git-send-email-khilman@kernel.org>
-	<CAPDyKFou5iwX2Oe9K6n=2u6xRAqUtVNRrDn736oo0kGf0GgaLQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFou5iwX2Oe9K6n=2u6xRAqUtVNRrDn736oo0kGf0GgaLQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f45.google.com ([209.85.215.45]:64469 "EHLO
+	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280AbaKNH3I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 02:29:08 -0500
+In-Reply-To: <1415917702-6742-2-git-send-email-khilman@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
 
-On 14 November 2014 08:26, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 13 November 2014 23:28, Kevin Hilman <khilman@kernel.org> wrote:
->> From: Kevin Hilman <khilman@linaro.org>
->>
->> It makes little sense to use generic power domains without runtime PM.
->> Also, since the complexities of handling the !PM_RUNTIME case are
->> causing more trouble and confusion than they're worth, let's simplify
->> the world by making genpd always enable runtime PM.
->
-> I do agree that your above statement seems reasonable, even if can't
-> really tell if that would break some SOCs use-cases.
->
-> My concern is though, that I fear we will be taking short-cuts in
-> genpd that might bite us later on, but I might be wrong.
->
-> The reason for my concern is that on every other place, like in the
-> subsystem level, driver core, PM core and of course in drivers -  we
-> need to cope with all the combinations of CONFIG_PM_SLEEP and
-> CONFIG_PM_SLEEP.  So theoretically, why shouldn't genpd be able to do
+Hi Kevin,
 
-/s /CONFIG_PM_SLEEP /CONFIG_PM_RUNTIME
+On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> It makes little sense to use generic power domains without runtime PM.
 
-> that as well?
->
->>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
->> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
->> Signed-off-by: Kevin Hilman <khilman@linaro.org>
->> ---
->>  kernel/power/Kconfig | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
->> index 3d39cc0228e9..2a8c64d0a43c 100644
->> --- a/kernel/power/Kconfig
->> +++ b/kernel/power/Kconfig
->> @@ -271,7 +271,7 @@ config PM_CLK
->>
->>  config PM_GENERIC_DOMAINS
->>         bool
->> -       depends on PM
->> +       select PM_RUNTIME
->
-> Shouldn't we actually depend on PM_RUNTIME instead?
->
->>
->>  config WQ_POWER_EFFICIENT_DEFAULT
->>         bool "Enable workqueue power-efficient mode by default"
->> --
->> 2.1.3
->>
->
-> Kind regards
-> Uffe
+Does it?
+It still powers down the PM domains on system suspend (at least on my
+boards ;-)
+
+> Also, since the complexities of handling the !PM_RUNTIME case are
+> causing more trouble and confusion than they're worth, let's simplify
+> the world by making genpd always enable runtime PM.
+
+What do other people think?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
