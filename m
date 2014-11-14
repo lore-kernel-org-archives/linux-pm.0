@@ -1,61 +1,61 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [ANNOUNCE] ##thermal channel at freenode
-Date: Thu, 13 Nov 2014 20:11:47 -0400
-Message-ID: <20141114001145.GA8259@developer>
+From: Charles Chiou <ch1102chiou@gmail.com>
+Subject: Re: [V2 PATCH 3/4] scsi:stex.c Add reboot support
+Date: Fri, 14 Nov 2014 10:23:10 +0800
+Message-ID: <5465678E.3070604@gmail.com>
+References: <5462D62C.50602@gmail.com> <20141112172750.GB18862@infradead.org> <546482FC.2090207@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f41.google.com ([209.85.216.41]:51325 "EHLO
-	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbaKNAL7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 19:11:59 -0500
-Content-Disposition: inline
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:62038 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933888AbaKNCXM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 21:23:12 -0500
+In-Reply-To: <546482FC.2090207@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, Lukasz Majewski <l.majewski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Caesar Wang <caesar.wang@rock-chips.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: JBottomley@parallels.com, linux-pm@vger.kernel.org
 
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Folks,
+On 11/13/2014 06:07 PM, Charles Chiou wrote:
+>
+>
+> On 11/13/2014 01:27 AM, Christoph Hellwig wrote:
+>>> +static int stex_reboot_callback(struct notifier_block *self,
+>>> +                              unsigned long val,
+>>> +                              void *data)
+>>> +{
+>>> +    if (val == SYS_RESTART)
+>>> +        isRestart = 1;
+>>> +    return NOTIFY_OK;
+>>> +}
+>>>
+>>> @@ -1832,7 +1859,14 @@ static void stex_shutdown(struct pci_dev *pdev)
+>>>   {
+>>>       struct st_hba *hba = pci_get_drvdata(pdev);
+>>>
+>>> -    stex_hba_stop(hba);
+>>> +    if (hba->yellowstone == 1)
+>>> +        stex_hba_stop(hba, ST_IGNORED);
+>>> +    else {
+>>> +        if (isRestart)
+>>> +            stex_hba_stop(hba, ST_S6);
+>>> +        else
+>>> +            stex_hba_stop(hba, ST_S5);
+>>> +    }
+>>
+>> This sort of check for reboot vs restart isn't really something
+>> we want in drivers.  I don't really know how we could find this
+>> out assuming we even want drivers to behave differently.
+>>
+>> Maybe Greg or someone on lkml has an idea how to best handle this case.
 
-As the audience interested in the thermal topic has grown, I find
-interesting to have an IRC channel to discuss the topic in a more
-interactive way. Some of you has already suggested to have this, so here
-it is.
 
-server: irc.freenode.net
-channel: ##thermal
+Hi, we don't attempt to check for restart vs reboot,
+sorry for confusing. When host is going to restart/reboot, Pegasus need 
+to restart too. Pegasus use same flow for restart and reboot.
 
-As I mentioned, the idea is to discuss the current work on the Linux
-kernel thermal framework, its drivers, and its relations to other parts
-of Linux.
+Maybe I could change variable name "isRestart" to "isReboot"?
 
-I hope this help to speed things a little bit.
-
-All the best,
-
-Eduardo Valentin
-
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUZUi1AAoJEMLUO4d9pOJWg74H/1JEZleBPiZdEasHCdJeYPZU
-YgVnt5d73Qm46gH7+B7qDZ+swhTOn/PTStf7zHgutOmTWCaMA/JFQcEI8YcU2u8x
-ztpcZYqmnKKANEQK6LnVRw2+gT1VO54zJmrZOqBSzaNMTXiW8XLvxuuVo9W9xFeR
-aJfOnEnMp5wnfkKoZxhrQs1/Bpd2oK38XnWna5GXeBEBn6b+xnCXxfNZJIFnw+Mu
-i5Pv6sgaDF0ZQvDkRBcltcCKm6vqdfHdyF+dY2InnzOL8k0E5XhFP/HEEImoWtns
-w1wOlnQfW4xQI3AsXjAf2O0txLVfAvsGqMjJAyuGavbp0pRUCYXznjGKl3Bp2e8=
-=5uQC
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
