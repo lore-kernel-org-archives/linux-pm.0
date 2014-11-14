@@ -1,40 +1,60 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd enabled
-Date: Fri, 14 Nov 2014 09:36:17 -0800
-Message-ID: <7ha93t8z1q.fsf@deeprootsystems.com>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-	<1415917702-6742-2-git-send-email-khilman@kernel.org>
-	<CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC 1/4] OOM, PM: Do not miss OOM killed frozen tasks
+Date: Fri, 14 Nov 2014 12:55:34 -0500
+Message-ID: <20141114175534.GH25889@htj.dyndns.org>
+References: <20141110163055.GC18373@dhcp22.suse.cz>
+ <1415818732-27712-1-git-send-email-mhocko@suse.cz>
+ <1415818732-27712-2-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Fri, 14 Nov 2014 08:29:06 +0100")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1415818732-27712-2-git-send-email-mhocko@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Hello, Michal.
 
-> Hi Kevin,
->
-> On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> It makes little sense to use generic power domains without runtime PM.
->
-> Does it?
-> It still powers down the PM domains on system suspend (at least on my
-> boards ;-)
+On Wed, Nov 12, 2014 at 07:58:49PM +0100, Michal Hocko wrote:
+> Also change the return value semantic as the current one is little bit
+> awkward. There is just one caller (try_to_freeze_tasks) which checks
+> the return value and it is only interested whether the request was
+> successful or the task blocks the freezing progress. It is natural to
+> reflect the success by true rather than false.
 
-Sure, but your devices are also using runtime PM, so I'm not sure how
-does that change my statement above?
+I don't know about this.  It's also customary to return %true when
+further action needs to be taken.  I don't think either is
+particularly wrong but the flip seems gratuitous.
 
->> Also, since the complexities of handling the !PM_RUNTIME case are
->> causing more trouble and confusion than they're worth, let's simplify
->> the world by making genpd always enable runtime PM.
->
-> What do other people think?
+>  bool freeze_task(struct task_struct *p)
+>  {
+> @@ -129,12 +130,20 @@ bool freeze_task(struct task_struct *p)
+>  	 * normally.
+>  	 */
+>  	if (freezer_should_skip(p))
+> +		return true;
+> +
+> +	/*
+> +	 * Do not check freezing state or attempt to freeze a task
+> +	 * which has been killed by OOM killer. We are just waiting
+> +	 * for the task to wake up and die.
 
-Yes, I'm curious also.  This patch was supposed to be marked RFC.
+Maybe saying sth like "consider the task freezing as ...." is a
+clearer way to put it?
 
-Kevin
+> +	 */
+> +	if (!test_tsk_thread_flag(p, TIF_MEMDIE))
+>  		return false;
+
+Thanks.
+
+-- 
+tejun
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
