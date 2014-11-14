@@ -1,129 +1,160 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v12 5/6] dmaengine: pl330: Add PM sleep support
-Date: Fri, 14 Nov 2014 15:50:46 +0100
-Message-ID: <1415976646.5705.8.camel@AMDC1943>
-References: <1415955033-29093-1-git-send-email-k.kozlowski@samsung.com>
- <1415955033-29093-6-git-send-email-k.kozlowski@samsung.com>
- <CAPDyKFr+DVd0qZ=ra5W-HxHDqauX6ZwBK8S8t_fboJfk_BUTaA@mail.gmail.com>
- <1415972831.25433.3.camel@AMDC1943>
- <CAPDyKFpfZZ95s-4XW-tXnD2YgEC_UECxsAdfKbMTokADWEL8hw@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 0/4] Add TMU support for Exynos7
+Date: Fri, 14 Nov 2014 15:50:50 +0100
+Message-ID: <20141114155050.67412201@amdc2363>
+References: <1415963882-3460-1-git-send-email-a.kesavan@samsung.com>
+ <2756804.O2Zby5SkUf@amdc1032>
+ <CAM4voannFHau+TSufpN-rsp4TpSFSK0kKx6QtccNtFW9hO5i+Q@mail.gmail.com>
+ <20141114140202.014e1b82@amdc2363>
+ <CAM4voanZz-q4d7TXQdcTGYkvYGxBmCjHMbpK29rMwoPS6L_c8A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:21623 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934763AbaKNOuv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 09:50:51 -0500
-In-reply-to: <CAPDyKFpfZZ95s-4XW-tXnD2YgEC_UECxsAdfKbMTokADWEL8hw@mail.gmail.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:13583 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934763AbaKNOu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 09:50:57 -0500
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0NF1001Q8AKVT230@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 14 Nov 2014 23:50:55 +0900 (KST)
+In-reply-to: <CAM4voanZz-q4d7TXQdcTGYkvYGxBmCjHMbpK29rMwoPS6L_c8A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rui.zhang@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, amit.daniel@samsung.com
 
-On pi=C4=85, 2014-11-14 at 15:22 +0100, Ulf Hansson wrote:
-> On 14 November 2014 14:47, Krzysztof Kozlowski <k.kozlowski@samsung.c=
-om> wrote:
-> > On pi=C4=85, 2014-11-14 at 14:31 +0100, Ulf Hansson wrote:
-> >> On 14 November 2014 09:50, Krzysztof Kozlowski <k.kozlowski@samsun=
-g.com> wrote:
-> >> > Add system suspend/resume capabilities to the pl330 driver so th=
-e amba
-> >> > bus clock could be also unprepared to conserve energy.
-> >> >
-> >> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >> > ---
-> >> >  drivers/dma/pl330.c | 41 ++++++++++++++++++++++++++++++++++++++=
-+++
-> >> >  1 file changed, 41 insertions(+)
-> >> >
-> >> > diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> >> > index c3bd3584f261..e499bb118f0a 100644
-> >> > --- a/drivers/dma/pl330.c
-> >> > +++ b/drivers/dma/pl330.c
-> >> > @@ -2627,6 +2627,46 @@ static int pl330_dma_device_slave_caps(st=
-ruct dma_chan *dchan,
-> >> >         return 0;
-> >> >  }
-> >> >
-> >> > +/*
-> >> > + * Runtime PM callbacks are provided by amba/bus.c driver.
-> >> > + *
-> >> > + * It is assumed here that IRQ safe runtime PM is chosen in pro=
-be and amba
-> >> > + * bus driver will only disable/enable the clock in runtime PM =
-callbacks.
-> >> > + */
-> >> > +static int __maybe_unused pl330_suspend(struct device *dev)
-> >> > +{
-> >> > +       struct amba_device *pcdev =3D to_amba_device(dev);
-> >> > +
-> >> > +       pm_runtime_disable(dev);
-> >> > +
-> >> > +       if (!pm_runtime_status_suspended(dev)) {
-> >> > +               /* amba did not disable the clock */
-> >> > +               amba_pclk_disable(pcdev);
-> >> > +       }
-> >> > +       amba_pclk_unprepare(pcdev);
-> >>
-> >> I would also invoke pm_runtime_set_suspended() here, to reflect th=
-at's
-> >> the current runtime PM state of the device.
+Hi Abhilash,
+
+> Hi Lukasz,
+> 
+> On Fri, Nov 14, 2014 at 6:32 PM, Lukasz Majewski
+> <l.majewski@samsung.com> wrote:
+> > Hi Abhilash,
 > >
-> > Strictly speaking the device is not runtime suspended in that momen=
-t. PM
-> > runtime callbacks were not called. Although the device status looks=
- like
-> > runtime suspended (clocks disabled) but I think the whole goal here=
- was
-> > to avoid touching runtime PM because this is system sleep.
->=20
-> If someone outside, like a PM domain monitors the runtime PM status o=
-f
-> the device it would get the wrong impression of the device.
->=20
-> This is quite similar to why the amba bus needs to update the runtime
-> PM status during probe(), using pm_runtime_set_active(). Shouldn't we
-> do that either?
-
-Hmm... I got your point. However now device is not runtime resumed if i=
-t
-was runtime suspended before (clock is not enabled). The runtime status
-is preserved between system sleep.
-
-Going your way I would have to either:
-1. store runtime status somewhere and use it during resume,
-2. always runtime resume during resuming (which would be error-prone
-because there won't be a real runtime resume).
-
-Current solution looks nice and simple to me.
-
-> >> I guess I sounds like broken record :-), but using
-> >> pm_runtime_force_suspend() would help to prevent some code duplica=
-tion
-> >> here.
+> >> Hi Bartlomiej,
 > >>
-> >> Something like this:
+> >> On Fri, Nov 14, 2014 at 5:49 PM, Bartlomiej Zolnierkiewicz
+> >> <b.zolnierkie@samsung.com> wrote:
+> >> >
+> >> > Hi,
+> >> >
+> >> > On Friday, November 14, 2014 04:47:58 PM Abhilash Kesavan wrote:
+> >> >> The Thermal Management Unit (TMU) in Exynos7 provides
+> >> >> software-controlled (thermal throttling) and hardware-controlled
+> >> >> (thermal tripping) management schemes.
+> >> >> There are several changes in terms of the register and bit
+> >> >> offsets in the Exynos7 TMU from that in older SoCs. There are
+> >> >> also new bits, more trigger levels and a special clock for TMU
+> >> >> that has been introduced in Exynos7. This patchset modifies the
+> >> >> thermal driver to handle all these changes.
+> >> >>
+> >> >> This series is based on linux-next(20141114) and tested on an
+> >> >> Exynos7-based espresso board.
+> >> >
+> >> > Please rebase your patchset on top of:
+> >> >
+> >> >   http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg38717.html
 > >>
-> >> pm_runtime_force_suspend()
-> >> if (pm_runtime_is_irq_safe())
-> >>    amba_pclk_unprepare(pcdev);
+> >> Sure, will rebase on top of your patchset. Is this patchset going
+> >> to be merged into Eduardo's tree soon ?
+> >>
+> >> >
+> >> > There is also ongoing work to convert Exynos thermal driver to
+> >> > use device tree but Lukasz Majewski (added to Cc:) knows better
+> >> > the current state of the work.
+> >>
+> >> Lukasz, are you in the process of making changes to the existing
+> >> exynos tmu bindings ?
 > >
-> > With !CONFIG_PM_RUNTIME this would leave clocks prepared...
->=20
-> No.
->=20
-> pm_runtime_is_irq_safe() returns false, and thus the amba bus do a
-> clk_disable_unprepare() from it's runtime PM suspend callback when
-> it's invoked via pm_runtime_force_suspend().
+> > Yes. I'm working on them.
+> >
+> > Please consider following patches [1]:
+> > http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+> >
+> > They are based on top of Bartek's work.
+> > Patch set status:
+> > 1. Fixes for thermal_core (with -EPROBE_DEFER) - v2 posted
+> > yesterday.
+> > http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+> >
+> > 2. of-thermal rework - I'm working on it now (to export common data
+> > from of-thermal.c and provide structure with ops).
+> >
+> > Patches [1] replace configuration available in exynos_tmu_data.c to
+> > the one from device tree. Also it handles setting cpu cooling
+> > frequencies per CPUs via device tree.
+> >
+> >
+> > I think that it is Eduardo's decision about how Exynos patches
+> > should be serialized.
+> >
+> > I can only say that after Bartek's and my [1] patch sets the exynos
+> > TMU driver is much simpler with significant code base reduction.
+> >
+> > Personally I think that it may be far more easier to add Exynos7 TMU
+> > support to reworked driver.
+> 
+> Thanks for the details. I am OK with rebasing my patches over
+> Bartlomiej and your patch sets. 
 
-Aaa, right! But during system resume that would leave the device always
-runtime resumed. Now we can avoid this :). Anyway this is a conceptual
-discussion. I don't mind the force-suspend way but I got an impression
-that current way was preferred (separated sleep and runtime paths).
+Thanks.
 
+> Do you have any public tree with both
+> these patch sets merged ?
+
+We will try to setup a GitHub repository with combined code.
+
+> >
+> >
+> >>
+> >> Regards,
+> >> Abhilash
+> >> >
+> >> >> Abhilash Kesavan (4):
+> >> >>   thermal: exynos: add optional sclk support
+> >> >>   thermal: exynos: add a triminfo_mask field in
+> >> >> exynos_tmu_register structure
+> >> >>   thermal: exynos: modify the prototype for code_to_temp
+> >> >> function thermal: exynos: Add TMU support for Exynos7 SoC
+> >> >>
+> >> >>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 +
+> >> >>  drivers/thermal/samsung/exynos_tmu.c               |  106
+> >> >> ++++++++++++++----
+> >> >> drivers/thermal/samsung/exynos_tmu.h               |   13 ++-
+> >> >> drivers/thermal/samsung/exynos_tmu_data.c          |  117
+> >> >> ++++++++++++++++++++
+> >> >> drivers/thermal/samsung/exynos_tmu_data.h          |   27 +++++
+> >> >> 5 files changed, 247 insertions(+), 20 deletions(-)
+> >> >
+> >> > Best regards,
+> >> > --
+> >> > Bartlomiej Zolnierkiewicz
+> >> > Samsung R&D Institute Poland
+> >> > Samsung Electronics
+> >> >
+> >
+> >
+> >
+> > --
+> > Best regards,
+> >
+> > Lukasz Majewski
+> >
+> > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
+
+-- 
 Best regards,
-Krzysztof
 
+Lukasz Majewski
 
-
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
