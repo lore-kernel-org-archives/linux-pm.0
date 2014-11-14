@@ -1,70 +1,97 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v12 3/6] amba: Don't unprepare the clocks if device driver
- wants IRQ safe runtime PM
-Date: Fri, 14 Nov 2014 09:50:30 +0100
-Message-ID: <1415955033-29093-4-git-send-email-k.kozlowski@samsung.com>
-References: <1415955033-29093-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415955033-29093-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 5/5] ARM: dts: exynos4412-trats2: Enable TMU support at
+ Trats2
+Date: Fri, 14 Nov 2014 10:26:03 +0100
+Message-ID: <20141114102603.2b15d1f8@amdc2363>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
+ <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
+ <1381300194-13134-6-git-send-email-l.majewski@samsung.com>
+ <20131015082935.3d33eee7@amdc308.digital.local>
+ <20131127081242.0591f911@amdc308.digital.local>
+ <004d01ceeb64$da648200$8f2d8600$@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <004d01ceeb64$da648200$8f2d8600$@kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: kgene@kernel.org
+Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The AMBA bus driver defines runtime Power Management functions which
-disable and unprepare AMBA bus clock. This is problematic for runtime PM
-because unpreparing a clock might sleep so it is not interrupt safe.
+Hi Kukjin,
 
-However some drivers may want to implement runtime PM functions in
-interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
-bus driver should only disable/enable the clock in runtime suspend and
-resume callbacks.
+> Lukasz Majewski wrote:
+> > 
+> > Hi Kukjin,
+> > 
+> > > Hi Kukjin,
+> > >
+> > > > This patch enables support for TMU at Exynos4412 based Trats2
+> > > > board.
+> > > >
+> > > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > > Reviewed-by: Bartlomiej Zolnierkiewicz
+> > > > <b.zolnierkie@samsung.com> Reviewed-by: Tomasz Figa
+> > > > <t.figa@samsung.com>
+> > > >
+> > > > ---
+> > > > Changes for v2:
+> > > > - None
+> > > >
+> > > >  arch/arm/boot/dts/exynos4412-trats2.dts |    5 +++++
+> > > >  1 file changed, 5 insertions(+)
+> > > >
+> > > > diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > > b/arch/arm/boot/dts/exynos4412-trats2.dts index fb7b9ae..57136f8
+> > > > 100644 --- a/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > > +++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > > @@ -467,6 +467,11 @@
+> > > >  		status = "okay";
+> > > >  	};
+> > > >
+> > > > +	tmu@100C0000 {
+> > > > +		vtmu-supply = <&ldo10_reg>;
+> > > > +		status = "okay";
+> > > > +	};
+> > > > +
+> > > >  	i2c_ak8975: i2c-gpio-0 {
+> > > >  		compatible = "i2c-gpio";
+> > > >  		gpios = <&gpy2 4 0>, <&gpy2 5 0>;
+> > >
+> > > Can you pull this DT node definition for TMU (as a fix to v3.12)?
+> > >
+> > > It is crucial for Exynos4412. Other patches from this patch set
+> > > were already pulled as v3.12 fixes.
+> > >
+> > 
+> > Kukjin, could you pull this patch?
+> > 
+> Applied, thanks.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/amba/bus.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+It is strange, but it seems like this patch hasn't found its way to
+mainline (3.18-rc3).
 
-diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-index a4ac490dd784..c2153a1d1981 100644
---- a/drivers/amba/bus.c
-+++ b/drivers/amba/bus.c
-@@ -95,8 +95,12 @@ static int amba_pm_runtime_suspend(struct device *dev)
- 	struct amba_device *pcdev = to_amba_device(dev);
- 	int ret = pm_generic_runtime_suspend(dev);
- 
--	if (ret == 0 && dev->driver)
--		clk_disable_unprepare(pcdev->pclk);
-+	if (ret == 0 && dev->driver) {
-+		if (pm_runtime_is_irq_safe(dev))
-+			clk_disable(pcdev->pclk);
-+		else
-+			clk_disable_unprepare(pcdev->pclk);
-+	}
- 
- 	return ret;
- }
-@@ -107,7 +111,10 @@ static int amba_pm_runtime_resume(struct device *dev)
- 	int ret;
- 
- 	if (dev->driver) {
--		ret = clk_prepare_enable(pcdev->pclk);
-+		if (pm_runtime_is_irq_safe(dev))
-+			ret = clk_enable(pcdev->pclk);
-+		else
-+			ret = clk_prepare_enable(pcdev->pclk);
- 		/* Failure is probably fatal to the system, but... */
- 		if (ret)
- 			return ret;
-@@ -115,7 +122,7 @@ static int amba_pm_runtime_resume(struct device *dev)
- 
- 	return pm_generic_runtime_resume(dev);
- }
--#endif
-+#endif /* CONFIG_PM */
- 
- static const struct dev_pm_ops amba_pm = {
- 	.suspend	= pm_generic_suspend,
+This patch should be applied with the following one:
+"[PATCH v2 4/5] ARM: dts: exynos4x12: Device tree node definition for
+TMU on Exynos4x12"
+
+Anyway, I will resend them. If possible, please add them to your tree
+ASAP.
+
+> Kukjin
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
+
 -- 
-1.9.1
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
