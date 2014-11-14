@@ -1,42 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/3] Intel RAPL updates for Atom CPUs
-Date: Sat, 15 Nov 2014 00:52:57 +0100
-Message-ID: <3477591.WIIFIZbsqP@vostro.rjw.lan>
-References: <1415381367-16693-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 0/2] intel_pstate: Add support for hardware managed P states (HWP)
+Date: Sat, 15 Nov 2014 00:54:14 +0100
+Message-ID: <1503544.Me07i8iiBH@vostro.rjw.lan>
+References: <1415295647-4063-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64173 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51253 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422670AbaKNXb6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 18:31:58 -0500
-In-Reply-To: <1415381367-16693-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	with SMTP id S1422885AbaKNXdP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 18:33:15 -0500
+In-Reply-To: <1415295647-4063-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Noor U Mubeen <noor.u.mubeen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: dirk.brandewie@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandweie@gmail.com, robert.a.kasten@intel.com, charles.d.prestopine@intel.com, x86@kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Friday, November 07, 2014 09:29:24 AM Jacob Pan wrote:
-> Running Average Power Limit (RAPL) is supported in Atom processors
-> with a slightly different implementation. This patchset abstracts the
-> differences and add support for newer ATOM CPUs.
+On Thursday, November 06, 2014 09:40:45 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> Intel Software Developers Manual has also been updated with many changes
-> and clarifications on how RAPL units and power limits are calculated.
+> This patch set adds support for HWP. When HWP is enabled the CPU will
+> do P state autonomously and intel_pstate simply provides an interface
+> to forward user preferences to the CPU while maintaining the
+> interfaces required by the cpufreq core. 
 > 
-> Changes:
-> 	v2: fix 32 bit divide in time window calculation  
+> Dirk Brandewie (2):
+>   x86: Add support for Intel HWP feature detection.
+>   intel_pstate: Add support for HWP
 > 
-> Jacob Pan (3):
->   powercap/rapl: abstract per cpu type functions
->   powercap/rapl: handle atom and core differences
->   powercap/rapl: add new model ids
-> 
->  drivers/powercap/intel_rapl.c | 264 ++++++++++++++++++++++++++++--------------
->  1 file changed, 177 insertions(+), 87 deletions(-)
+>  Documentation/cpu-freq/intel-pstate.txt |  37 ++++++++----
+>  Documentation/kernel-parameters.txt     |   3 +
+>  arch/x86/include/asm/cpufeature.h       |   5 ++
+>  arch/x86/include/uapi/asm/msr-index.h   |  41 +++++++++++++
+>  arch/x86/kernel/cpu/scattered.c         |   5 ++
+>  drivers/cpufreq/intel_pstate.c          | 102 +++++++++++++++++++++++++++++++-
+>  6 files changed, 178 insertions(+), 15 deletions(-)
 
-Series queued up for 3.19 (along with the later build fix), thanks!
+Both patches queued up for 3.19 (with assorted fixups), thanks!
 
 -- 
 I speak only for myself.
