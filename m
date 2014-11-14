@@ -1,43 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] intel_pstate: Add support for hardware managed P states (HWP)
-Date: Sat, 15 Nov 2014 00:54:14 +0100
-Message-ID: <1503544.Me07i8iiBH@vostro.rjw.lan>
-References: <1415295647-4063-1-git-send-email-dirk.j.brandewie@intel.com>
+Subject: Re: [PATCH] intel_pstate: Add CPUID for BDW-H CPU
+Date: Sat, 15 Nov 2014 00:54:36 +0100
+Message-ID: <1543234.jn62GexWHC@vostro.rjw.lan>
+References: <1415296245-4368-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51253 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64542 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422885AbaKNXdP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 18:33:15 -0500
-In-Reply-To: <1415295647-4063-1-git-send-email-dirk.j.brandewie@intel.com>
+	with SMTP id S1422746AbaKNXdh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 18:33:37 -0500
+In-Reply-To: <1415296245-4368-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: dirk.brandewie@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandweie@gmail.com, robert.a.kasten@intel.com, charles.d.prestopine@intel.com, x86@kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thursday, November 06, 2014 09:40:45 AM dirk.brandewie@gmail.com wrote:
+On Thursday, November 06, 2014 09:50:45 AM dirk.brandewie@gmail.com wrote:
 > From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> This patch set adds support for HWP. When HWP is enabled the CPU will
-> do P state autonomously and intel_pstate simply provides an interface
-> to forward user preferences to the CPU while maintaining the
-> interfaces required by the cpufreq core. 
+> Add BDW-H to the list of supported processors.
 > 
-> Dirk Brandewie (2):
->   x86: Add support for Intel HWP feature detection.
->   intel_pstate: Add support for HWP
-> 
->  Documentation/cpu-freq/intel-pstate.txt |  37 ++++++++----
->  Documentation/kernel-parameters.txt     |   3 +
->  arch/x86/include/asm/cpufeature.h       |   5 ++
->  arch/x86/include/uapi/asm/msr-index.h   |  41 +++++++++++++
->  arch/x86/kernel/cpu/scattered.c         |   5 ++
->  drivers/cpufreq/intel_pstate.c          | 102 +++++++++++++++++++++++++++++++-
->  6 files changed, 178 insertions(+), 15 deletions(-)
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Both patches queued up for 3.19 (with assorted fixups), thanks!
+Queued up for 3.19, thanks!
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 27bb6d3..6dafd4f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -730,6 +730,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>  	ICPU(0x3f, core_params),
+>  	ICPU(0x45, core_params),
+>  	ICPU(0x46, core_params),
+> +	ICPU(0x47, core_params),
+>  	ICPU(0x4c, byt_params),
+>  	ICPU(0x4f, core_params),
+>  	ICPU(0x56, core_params),
+> 
 
 -- 
 I speak only for myself.
