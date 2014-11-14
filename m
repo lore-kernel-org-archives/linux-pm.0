@@ -1,61 +1,38 @@
-From: Charles Chiou <ch1102chiou@gmail.com>
-Subject: Re: [V2 PATCH 3/4] scsi:stex.c Add reboot support
-Date: Fri, 14 Nov 2014 10:23:10 +0800
-Message-ID: <5465678E.3070604@gmail.com>
-References: <5462D62C.50602@gmail.com> <20141112172750.GB18862@infradead.org> <546482FC.2090207@gmail.com>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Fri, 14 Nov 2014 08:22:41 +0100
+Message-ID: <CABgxDoL-N9bitxTU0=pD_69DLBovXPSKhHjmArVOHFdokvnEJA@mail.gmail.com>
+References: <1415885699-1465-1-git-send-email-user@radxa>
+	<1415885699-1465-2-git-send-email-user@radxa>
+	<20141113205528.77414C40BC2@trevor.secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:62038 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933888AbaKNCXM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Nov 2014 21:23:12 -0500
-In-Reply-To: <546482FC.2090207@gmail.com>
+Received: from mail-qa0-f44.google.com ([209.85.216.44]:42658 "EHLO
+	mail-qa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280AbaKNHWm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 02:22:42 -0500
+In-Reply-To: <20141113205528.77414C40BC2@trevor.secretlab.ca>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: JBottomley@parallels.com, linux-pm@vger.kernel.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Johan Hovold <johan@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
+Hi,
 
+Who should merge this serie ? as Mark merged the previous one it would
+probably make sense to do the same here (at least, in my opinion)
 
-On 11/13/2014 06:07 PM, Charles Chiou wrote:
+Thanks for your feedbacks.
+
+Have a nice day,
+Romain
+
+2014-11-13 21:55 GMT+01:00 Grant Likely <grant.likely@linaro.org>:
+igned-off-by: Romain Perier <romain.perier@gmail.com>
 >
+> Acked-by: Grant Likely <grant.likely@linaro.org>
 >
-> On 11/13/2014 01:27 AM, Christoph Hellwig wrote:
->>> +static int stex_reboot_callback(struct notifier_block *self,
->>> +                              unsigned long val,
->>> +                              void *data)
->>> +{
->>> +    if (val == SYS_RESTART)
->>> +        isRestart = 1;
->>> +    return NOTIFY_OK;
->>> +}
->>>
->>> @@ -1832,7 +1859,14 @@ static void stex_shutdown(struct pci_dev *pdev)
->>>   {
->>>       struct st_hba *hba = pci_get_drvdata(pdev);
->>>
->>> -    stex_hba_stop(hba);
->>> +    if (hba->yellowstone == 1)
->>> +        stex_hba_stop(hba, ST_IGNORED);
->>> +    else {
->>> +        if (isRestart)
->>> +            stex_hba_stop(hba, ST_S6);
->>> +        else
->>> +            stex_hba_stop(hba, ST_S5);
->>> +    }
->>
->> This sort of check for reboot vs restart isn't really something
->> we want in drivers.  I don't really know how we could find this
->> out assuming we even want drivers to behave differently.
->>
->> Maybe Greg or someone on lkml has an idea how to best handle this case.
-
-
-Hi, we don't attempt to check for restart vs reboot,
-sorry for confusing. When host is going to restart/reboot, Pegasus need 
-to restart too. Pegasus use same flow for restart and reboot.
-
-Maybe I could change variable name "isRestart" to "isReboot"?
-
+> Please merge via whichever tree needs this change.
+>
+> g.
