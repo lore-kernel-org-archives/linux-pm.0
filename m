@@ -1,90 +1,134 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
-Date: Fri, 14 Nov 2014 09:17:40 +0100
-Message-ID: <CAMuHMdWR=o+JAN=ogbqeUR+8Ye=VG+Dri+D0Nmhd5mruYEzUtA@mail.gmail.com>
-References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
-	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
-	<7hsihx1bvo.fsf@deeprootsystems.com>
-	<6900237.LSPrkZ5QMk@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v9 1/9] qcom: scm: scm_set_warm_boot_addr() to set the
+ warmboot address
+Date: Fri, 14 Nov 2014 09:30:15 +0100
+Message-ID: <5465BD97.5070506@linaro.org>
+References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org> <1414194024-55547-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f52.google.com ([209.85.215.52]:43978 "EHLO
-	mail-la0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754440AbaKNIRl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 03:17:41 -0500
-In-Reply-To: <6900237.LSPrkZ5QMk@vostro.rjw.lan>
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:57828 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754716AbaKNIaT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 03:30:19 -0500
+Received: by mail-wi0-f179.google.com with SMTP id ex7so1929416wid.0
+        for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2014 00:30:18 -0800 (PST)
+In-Reply-To: <1414194024-55547-2-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Ji
+To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-Hi Rafael,
+On 10/25/2014 01:40 AM, Lina Iyer wrote:
+> Set the warmboot address using an SCM call, only if the new address i=
+s
+> different than the old one.
 
-On Thu, Nov 6, 2014 at 1:54 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, November 05, 2014 03:11:23 PM Kevin Hilman wrote:
->> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->> > On Wednesday, November 05, 2014 02:43:31 PM Kevin Hilman wrote:
->> >> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
->> >> > On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
->> >> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->> >> >> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
->> >> >> >> Convert the prototype to return and int. This is just an initial step,
->> >> >> >> needed to support error handling.
->> >> >> >>
->> >> >> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >> >>
->> >> >> Acked-by: Kevin Hilman <khilman@linaro.org>
->> >> >>
->> >> >> >> This patch is intended as fix for 3.18 rc[n]. Why?
->> >> >> >>
->> >> >> >> There are other SOC specific patches around that adds genpd support and which
->> >> >> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
->> >> >> >> during the next release cycle, let's change the prototype now instead.
->> >> >> >>
->> >> >> >> Further patches will add the actual error handling in genpd and these can then
->> >> >> >> be reviewed and tested thoroughly.
->> >> >> >
->> >> >> > So we have no users of ->attach_dev at the moment, right?
->> >> >>
->> >> >> Not in mainline, but there are a couple getting ready to hit -next, so
->> >> >> we wanted to fix this before they arrive so that adding the error
->> >> >> handling will be easier.
->> >> >
->> >> > BTW, while we are at it, can we also pass the domain itself to
->> >> > attach_dev() and detach_dev()? If anything it helps with debugging (you
->> >> > can print domain name from the callbacks).
->> >>
->> >> Agreed, and it makes it match the other callbacks (power_off, power_on)
->> >> which currently take struct generic_pm_domain *domain.
->> >>
->> >> Updated version of $SUBJECT patch below.
->> >
->> > The subject and changelog need to be updated too IMO.
->> >
->>
->> Right.  Here you go.
+Please could you elaborate why a new address can be changed ?
+
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>   drivers/soc/qcom/scm-boot.c | 22 ++++++++++++++++++++++
+>   include/soc/qcom/scm-boot.h |  1 +
+>   2 files changed, 23 insertions(+)
 >
-> I've replaced the Ulf's original with this one, thanks!
+> diff --git a/drivers/soc/qcom/scm-boot.c b/drivers/soc/qcom/scm-boot.=
+c
+> index 60ff7b4..5710967 100644
+> --- a/drivers/soc/qcom/scm-boot.c
+> +++ b/drivers/soc/qcom/scm-boot.c
+> @@ -37,3 +37,25 @@ int scm_set_boot_addr(phys_addr_t addr, int flags)
+>   			&cmd, sizeof(cmd), NULL, 0);
+>   }
+>   EXPORT_SYMBOL(scm_set_boot_addr);
+> +
+> +
 
-When do you plan to send a pull request for this to Linus?
+extra line.
 
-There are PM domain drivers blocked on entering -next due to this
-dependency. As they have to pass through arm-soc first, and the arm-soc
-merge window will close soon, time is running out.
+> +int scm_set_warm_boot_addr(void *entry, int cpu)
+> +{
+> +	static int flags[NR_CPUS] =3D {
+> +		SCM_FLAG_WARMBOOT_CPU0,
+> +		SCM_FLAG_WARMBOOT_CPU1,
+> +		SCM_FLAG_WARMBOOT_CPU2,
+> +		SCM_FLAG_WARMBOOT_CPU3,
+> +	};
 
-Alternatively, you could provide an immutable branch containing this fix
-to unblock dependents.
+Please do not do that, you don't know what NR_CPUS value could be in th=
+e=20
+future with the single kernel image and that could lead to a bug very=20
+hard to find. The kernel stack is 4096.
 
-Thanks for your understanding.
+Move this out of the function:
 
-Gr{oetje,eeting}s,
+static int scm_flags[] =3D {
+	SCM_FLAG_WARMBOOT_CPU0,
+	SCM_FLAG_WARMBOOT_CPU1,
+	SCM_FLAG_WARMBOOT_CPU2,
+	SCM_FLAG_WARMBOOT_CPU3,
+};
 
-                        Geert
+> +	static DEFINE_PER_CPU(void *, last_known_entry);
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+It sounds odd to add those static declaration here even if I understand=
+=20
+that is to encapsulate them.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> +	int ret;
+> +
+> +	if (entry =3D=3D per_cpu(last_known_entry, cpu))
+> +		return 0;
+
+My question is: why scm_set_warm_boot_addr could be called with=20
+different addresses ?
+
+If this is really needed, please replace the per_cpu variable by:
+
+struct scm_boot_addr {
+	int flag;
+	phys_addr_t entry;
+};
+
+static struct scm_boot_addr scm_flags[] =3D {
+	{ SCM_FLAG_WARMBOOT_CPU0, },
+	{ SCM_FLAG_WARMBOOT_CPU1, },
+	{ SCM_FLAG_WARMBOOT_CPU2, },
+	{ SCM_FLAG_WARMBOOT_CPU3, },
+};
+
+> +	ret =3D scm_set_boot_addr(virt_to_phys(entry), flags[cpu]);
+> +	if (!ret)
+> +		per_cpu(last_known_entry, cpu) =3D entry;
+> +
+> +	return ret;
+> +}
+> diff --git a/include/soc/qcom/scm-boot.h b/include/soc/qcom/scm-boot.=
+h
+> index 02b445c..100938b 100644
+> --- a/include/soc/qcom/scm-boot.h
+> +++ b/include/soc/qcom/scm-boot.h
+> @@ -22,5 +22,6 @@
+>   #define SCM_FLAG_WARMBOOT_CPU3		0x40
+
+By the way, if you look for encapsulation, perhaps these macros could b=
+e=20
+moved into scm-boot.c, no ?
+
+>   int scm_set_boot_addr(phys_addr_t addr, int flags);
+> +int scm_set_warm_boot_addr(void *entry, int cpu);
+>
+>   #endif
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
