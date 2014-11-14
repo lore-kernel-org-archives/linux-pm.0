@@ -1,54 +1,220 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd enabled
-Date: Fri, 14 Nov 2014 23:41:15 +0100
-Message-ID: <5229811.LXthdvUIfI@vostro.rjw.lan>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org> <CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com> <7ha93t8z1q.fsf@deeprootsystems.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
+Date: Fri, 14 Nov 2014 14:46:20 -0800
+Message-ID: <20141114224620.GD11808@codeaurora.org>
+References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>
+ <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58482 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422682AbaKNWUQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 17:20:16 -0500
-In-Reply-To: <7ha93t8z1q.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
 
-On Friday, November 14, 2014 09:36:17 AM Kevin Hilman wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> 
-> > Hi Kevin,
-> >
-> > On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> >> It makes little sense to use generic power domains without runtime PM.
-> >
-> > Does it?
-> > It still powers down the PM domains on system suspend (at least on my
-> > boards ;-)
-> 
-> Sure, but your devices are also using runtime PM, so I'm not sure how
-> does that change my statement above?
+On 10/24, Lina Iyer wrote:
+> diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+> new file mode 100644
+> index 0000000..ee2e3ca
+> --- /dev/null
+> +++ b/drivers/soc/qcom/spm.c
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/delay.h>
 
-Questions here are (1) how many users will actually want to disable PM_RUNTIME
-for systems using genpd (my sort of educated guess is "none") and (2) whether
-or not we need to power up stuff dynamically during initialization on systems
-using genpd (and several recent discussions indicate that the answer here is
-"yes, we need to do that").
+Is this used?
 
-> >> Also, since the complexities of handling the !PM_RUNTIME case are
-> >> causing more trouble and confusion than they're worth, let's simplify
-> >> the world by making genpd always enable runtime PM.
-> >
-> > What do other people think?
-> 
-> Yes, I'm curious also.  This patch was supposed to be marked RFC.
+> +#include <linux/init.h>
+> +#include <linux/io.h>
+> +#include <linux/slab.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_device.h>
+> +#include <linux/err.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/cpu_pm.h>
+> +
+> +#include <asm/proc-fns.h>
+> +#include <asm/suspend.h>
+> +
+> +#include <soc/qcom/pm.h>
+> +#include <soc/qcom/pm.h>
+> +#include <soc/qcom/scm.h>
+> +#include <soc/qcom/scm-boot.h>
+> +
+> +
+> +#define SCM_CMD_TERMINATE_PC	(0x2)
+> +#define SCM_FLUSH_FLAG_MASK	(0x3)
+> +#define SCM_L2_ON		(0x0)
+> +#define SCM_L2_OFF		(0x1)
+> +#define MAX_PMIC_DATA 2
+> +#define MAX_SEQ_DATA 64
+> +
+> +#define SPM_CTL_INDEX 0x7f
+> +#define SPM_CTL_INDEX_SHIFT 4
+> +#define SPM_CTL_EN BIT(0)
 
-I'm totally for making this change and I'm going to queue up this patch for
-3.19, so if anyone sees a really good reason for not doing this, please let
-me know what that reason is as soon as you can.
+Nitpick, why aren't these also tabbed out?
 
-Rafael
+> +
+> +/**
+> + * spm_set_low_power_mode() - Configure SPM start address for low power mode
+> + * @mode: SPM LPM mode to enter
+> + */
+> +int qcom_spm_set_low_power_mode(enum pm_sleep_mode mode)
 
+static?
+
+> +{
+> +	struct spm_driver_data *drv = this_cpu_ptr(&cpu_spm_drv);
+> +	u32 start_index;
+> +	u32 ctl_val;
+> +
+> +	if (!drv->available)
+> +		return -ENXIO;
+
+It would be nice if we didn't need this by only registering the
+cpuidle device for this CPU once we've initialized the SPM
+hardware.
+
+> +
+> +	start_index = drv->reg_data->start_index[mode];
+> +
+> +	ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
+> +	ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
+> +	ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
+> +	ctl_val |= SPM_CTL_EN;
+> +	spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+> +
+> +	/* Ensure we have written the start address */
+> +	wmb();
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_pm_collapse(unsigned long int unused)
+> +{
+> +	int ret;
+> +	u32 flag;
+> +	int cpu = smp_processor_id();
+> +
+> +	ret = scm_set_warm_boot_addr(cpu_resume, cpu);
+> +	if (ret) {
+> +		pr_err("Failed to set warm boot address for cpu %d\n", cpu);
+
+Do we want this print? Won't it start spamming the log if we go
+idle and we can't set the flag? Maybe we should just be silent
+and return an error.
+
+> +		return ret;
+> +	}
+> +
+> +	flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
+> +	scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
+> +
+> +	/**
+> +	 *  Returns here only if there was a pending interrupt and we did not
+> +	 *  power down as a result.
+> +	 */
+> +	return 0;
+> +}
+[...]
+> +
+> +static struct qcom_cpu_pm_ops lpm_ops = {
+
+const?
+
+> +	.standby = qcom_cpu_standby,
+> +	.spc = qcom_cpu_spc,
+> +};
+> +
+> +struct platform_device qcom_cpuidle_device = {
+> +	.name              = "qcom_cpuidle",
+> +	.id                = -1,
+> +	.dev.platform_data = &lpm_ops,
+> +};
+
+This can be created dynamically instead of living statically.
+
+> +
+> +static int spm_dev_probe(struct platform_device *pdev)
+> +{
+[...]
+> +
+> +	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
+> +	if (!match_id)
+> +		return -ENODEV;
+> +
+> +	drv->reg_data = match_id->data;
+> +	if (!drv->reg_data)
+> +		return -EINVAL;
+
+This check seems useless. We control the .data field right above
+this function so there better be some reg_data.
+
+> +
+> +	/* Write the SPM sequences, first.. */
+> +	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
+> +	seq_data = (const u32 *)drv->reg_data->seq;
+
+Why do we need a cast?
+
+> +	__iowrite32_copy(addr, seq_data, ARRAY_SIZE(drv->reg_data->seq)/4);
+
+nitpick: space around that / please.
+
+> +
+> +	/* ..and then, the control registers.
+> +	 * On some SoC's if the control registers are written first and if the
+> +	 * CPU was held in reset, the reset signal could trigger the SPM state
+> +	 * machine, before the sequences are completely written.
+> +	 */
+> +	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
+> +	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
+> +	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
+> +
+> +	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
+> +				drv->reg_data->pmic_data[0]);
+> +	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
+> +				drv->reg_data->pmic_data[1]);
+> +
+> +	/**
+> +	 * Ensure all observers see the above register writes before the
+> +	 * cpuidle driver is allowed to use the SPM.
+> +	 */
+> +	wmb();
+> +	drv->available = true;
+> +
+> +	if ((cpu > -1) && !cpuidle_drv_init) {
+
+Nitpick: () are unnecessary.
+
+> +		platform_device_register(&qcom_cpuidle_device);
+> +		cpuidle_drv_init = true;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver spm_driver = {
+> +	.probe = spm_dev_probe,
+> +	.driver = {
+> +		.name = "qcom,spm",
+
+This is an odd driver name with the "qcom," part. Maybe call it "spm" or "saw"?
+
+> +		.of_match_table = spm_match_table,
+> +	},
+> +};
+> +
+> +module_platform_driver(spm_driver);
+
+MODULE_LICENSE()?
+MODULE_ALIAS()?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
