@@ -1,61 +1,61 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Runtime: Kconfig: move ia64 dependency to arch/ia64/Kconfig
-Date: Fri, 14 Nov 2014 08:30:01 +0100
-Message-ID: <CAPDyKFraCAVKL8cas79p_K6g-mbu-BuSPUqF0jfMw2Rz3DBrRQ@mail.gmail.com>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "open list:IA64 (Itanium) PL..." <linux-ia64@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PM / Domains: Move struct pm_domain_data to pm_domain.h
+Date: Fri, 14 Nov 2014 08:41:32 +0100
+Message-ID: <1415950892-4213-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f50.google.com ([209.85.215.50]:48566 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754299AbaKNHlv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 02:41:51 -0500
+Received: by mail-la0-f50.google.com with SMTP id hs14so8258801lab.23
+        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2014 23:41:49 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 13 November 2014 23:28, Kevin Hilman <khilman@kernel.org> wrote:
-> From: Kevin Hilman <khilman@linaro.org>
->
-> The IA64_HP_SIM dependency on PM_RUNTIME should be done in the arch
-> Kconfig instead of in the PM core.  Move it accordingly.
->
-> NOTE: arch/ia64/Kconfig currently does a 'select PM', which since
-> commit 1eb208aea317 (PM: Make CONFIG_PM depend on (CONFIG_PM_SLEEP ||
-> CONFIG_PM_RUNTIME)) is effectively a noop unless PM_SLEEP or
-> PM_RUNTIME are set elsewhere.
->
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+The definition of the struct pm_domain_data better belongs in the
+header for the PM domains, let's move it there.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ include/linux/pm.h        | 6 +-----
+ include/linux/pm_domain.h | 5 +++++
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-> ---
->  arch/ia64/Kconfig    | 1 +
->  kernel/power/Kconfig | 1 -
->  2 files changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index c84c88bbbbd7..55bc92ca2ce6 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -233,6 +233,7 @@ config IA64_SGI_UV
->  config IA64_HP_SIM
->         bool "Ski-simulator"
->         select SWIOTLB
-> +       depends on !PM_RUNTIME
->
->  endchoice
->
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index bbef57f5bdfd..3d39cc0228e9 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -131,7 +131,6 @@ config PM_WAKELOCKS_GC
->
->  config PM_RUNTIME
->         bool "Run-time PM core functionality"
-> -       depends on !IA64_HP_SIM
->         ---help---
->           Enable functionality allowing I/O devices to be put into energy-saving
->           (low power) states at run time (or autosuspended) after a specified
-> --
-> 2.1.3
->
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 383fd68..45e3e78 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -538,11 +538,7 @@ enum rpm_request {
+ };
+ 
+ struct wakeup_source;
+-
+-struct pm_domain_data {
+-	struct list_head list_node;
+-	struct device *dev;
+-};
++struct pm_domain_data;
+ 
+ struct pm_subsys_data {
+ 	spinlock_t lock;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 2e0e06d..9d254e2 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -100,6 +100,11 @@ struct gpd_timing_data {
+ 	bool cached_stop_ok;
+ };
+ 
++struct pm_domain_data {
++	struct list_head list_node;
++	struct device *dev;
++};
++
+ struct generic_pm_domain_data {
+ 	struct pm_domain_data base;
+ 	struct gpd_timing_data td;
+-- 
+1.9.1
+
