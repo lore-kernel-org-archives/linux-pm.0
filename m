@@ -1,49 +1,112 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when
- genpd enabled
-Date: Sat, 15 Nov 2014 13:32:01 +0100
-Message-ID: <CAMuHMdVrpwg2pYxUhA5oRgd1g2DmLuSb2jR3ywz8hkjms7UBcw@mail.gmail.com>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-	<1415917702-6742-2-git-send-email-khilman@kernel.org>
-	<CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
-	<7ha93t8z1q.fsf@deeprootsystems.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
+Date: Sat, 15 Nov 2014 09:24:46 -0800
+Message-ID: <1416072286.2865.14.camel@spandruv-hsb-test>
+References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20141113102311.64331d60@amdc2363>
+	 <1415892544.4581.17.camel@spandruv-hsb-test>
+	 <20141114125054.64e93e5b@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f49.google.com ([209.85.215.49]:39204 "EHLO
-	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753621AbaKOMcD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 07:32:03 -0500
-In-Reply-To: <7ha93t8z1q.fsf@deeprootsystems.com>
+Received: from mga14.intel.com ([192.55.52.115]:63305 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754138AbaKORYr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 15 Nov 2014 12:24:47 -0500
+In-Reply-To: <20141114125054.64e93e5b@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: linux-pm@vger.kernel.org
 
-Hi Kevin,
+On Fri, 2014-11-14 at 12:50 +0100, Lukasz Majewski wrote:
+> Hi Srinivas,
+> 
+> > Hi Lukasz,
+> > 
+> > Thanks for your review and comment.
+> > 
+> > On Thu, 2014-11-13 at 10:23 +0100, Lukasz Majewski wrote:
+> > > Hi Srinivas,
+> > > 
+> > > > Ignore invalid trip temperature less or equal to zero. Some
+> > > > buggy systems have invalid trips, causing system shutdown.
+> > > > 
+> > > > Signed-off-by: Srinivas Pandruvada
+> > > > <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
+> > > > <rui.zhang@intel.com> ---
+> > > >  drivers/thermal/thermal_core.c | 2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > 
+> > > > diff --git a/drivers/thermal/thermal_core.c
+> > > > b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
+> > > > --- a/drivers/thermal/thermal_core.c
+> > > > +++ b/drivers/thermal/thermal_core.c
+> > > > @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
+> > > > thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip,
+> > > > &trip_temp); 
+> > > >  	/* If we have not crossed the trip_temp, we do not care.
+> > > > */
+> > > > -	if (tz->temperature < trip_temp)
+> > > > +	if (trip_temp <= 0 || tz->temperature < trip_temp)
+> > > 
+> > > To be honest, I regard this as a feature :-), not bug.
+> > 
+> > I am not saying bug is in the code, saying buggy system with invalid
+> > configuration of critical trip.
+> > 
+> > > In this way I know that on some systems the regulator for thermal
+> > > unit is not enabled (which results in read temp of 0xFF).
+> > > 
+> > So are you saying that trip temp of <= 0 is a valid trip in your
+> > system?
+> 
+> No. Please find below explanation.
+> 
+> I have 4 available trip points in my system (e.g. Eynos4/5). The last
+> trip point is critical (e.g. 120 C degrees).
+So this change will still work for you, since your trip > 0.
+> 
+> When everything is properly configured (i.e. power supply is provided
+> to thermal unit, clocks are setup) and we pass the critical trip point
+> then interrupt is triggered and my board is shut down unconditionally by
+> internal SoC's power management IP block.
+> 
+> However, when something is misconfigured, wrong value of temperature is
+> read (max possible value - 0xFF) and passed to the driver.
+> 
+> In such a situation, I see that something is wrong, since I cannot fully
+> boot up my system.
+> 
+> I don't mind the patch, but please pay a note that on some systems
+> value of -1 is also expected.
+If critical trip is -1, then this change will simply return as no need
+to evaluate temp for trip for a given temp change.
 
-On Fri, Nov 14, 2014 at 6:36 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
->>> It makes little sense to use generic power domains without runtime PM.
->>
->> Does it?
->> It still powers down the PM domains on system suspend (at least on my
->> boards ;-)
->
-> Sure, but your devices are also using runtime PM, so I'm not sure how
-> does that change my statement above?
+I am forwarding this to linux-pm list, let me see if others have a
+problem.
 
-I do mean with CONFIG_PM_RUNTIME turned off.
+Thanks,
+Srinivas
 
-If PM domain support is disabled, s2ram will not power down the PM domains.
+> 
+> > 
+> > Thanks,
+> > Srinivas
+> > 
+> > > I'd prefer to keep this as is.
+> > > 
+> > > >  		return;
+> > > >  
+> > > >  	trace_thermal_zone_trip(tz, trip, trip_type);
+> > > 
+> > > 
+> > > 
+> > 
+> > 
+> 
+> 
+> 
 
-Gr{oetje,eeting}s,
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
