@@ -1,112 +1,52 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
-Date: Sat, 15 Nov 2014 09:24:46 -0800
-Message-ID: <1416072286.2865.14.camel@spandruv-hsb-test>
-References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20141113102311.64331d60@amdc2363>
-	 <1415892544.4581.17.camel@spandruv-hsb-test>
-	 <20141114125054.64e93e5b@amdc2363>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when
+ genpd enabled
+Date: Sat, 15 Nov 2014 21:54:45 +0100
+Message-ID: <20141115205445.GA21240@amd>
+References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
+ <CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
+ <7ha93t8z1q.fsf@deeprootsystems.com>
+ <5229811.LXthdvUIfI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:63305 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754138AbaKORYr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 15 Nov 2014 12:24:47 -0500
-In-Reply-To: <20141114125054.64e93e5b@amdc2363>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36886 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567AbaKOUys (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 15:54:48 -0500
+Content-Disposition: inline
+In-Reply-To: <5229811.LXthdvUIfI@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-On Fri, 2014-11-14 at 12:50 +0100, Lukasz Majewski wrote:
-> Hi Srinivas,
-> 
-> > Hi Lukasz,
+On Fri 2014-11-14 23:41:15, Rafael J. Wysocki wrote:
+> On Friday, November 14, 2014 09:36:17 AM Kevin Hilman wrote:
+> > Geert Uytterhoeven <geert@linux-m68k.org> writes:
 > > 
-> > Thanks for your review and comment.
+> > > Hi Kevin,
+> > >
+> > > On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> > >> It makes little sense to use generic power domains without runtime PM.
+> > >
+> > > Does it?
+> > > It still powers down the PM domains on system suspend (at least on my
+> > > boards ;-)
 > > 
-> > On Thu, 2014-11-13 at 10:23 +0100, Lukasz Majewski wrote:
-> > > Hi Srinivas,
-> > > 
-> > > > Ignore invalid trip temperature less or equal to zero. Some
-> > > > buggy systems have invalid trips, causing system shutdown.
-> > > > 
-> > > > Signed-off-by: Srinivas Pandruvada
-> > > > <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
-> > > > <rui.zhang@intel.com> ---
-> > > >  drivers/thermal/thermal_core.c | 2 +-
-> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/drivers/thermal/thermal_core.c
-> > > > b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
-> > > > --- a/drivers/thermal/thermal_core.c
-> > > > +++ b/drivers/thermal/thermal_core.c
-> > > > @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
-> > > > thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip,
-> > > > &trip_temp); 
-> > > >  	/* If we have not crossed the trip_temp, we do not care.
-> > > > */
-> > > > -	if (tz->temperature < trip_temp)
-> > > > +	if (trip_temp <= 0 || tz->temperature < trip_temp)
-> > > 
-> > > To be honest, I regard this as a feature :-), not bug.
-> > 
-> > I am not saying bug is in the code, saying buggy system with invalid
-> > configuration of critical trip.
-> > 
-> > > In this way I know that on some systems the regulator for thermal
-> > > unit is not enabled (which results in read temp of 0xFF).
-> > > 
-> > So are you saying that trip temp of <= 0 is a valid trip in your
-> > system?
+> > Sure, but your devices are also using runtime PM, so I'm not sure how
+> > does that change my statement above?
 > 
-> No. Please find below explanation.
-> 
-> I have 4 available trip points in my system (e.g. Eynos4/5). The last
-> trip point is critical (e.g. 120 C degrees).
-So this change will still work for you, since your trip > 0.
-> 
-> When everything is properly configured (i.e. power supply is provided
-> to thermal unit, clocks are setup) and we pass the critical trip point
-> then interrupt is triggered and my board is shut down unconditionally by
-> internal SoC's power management IP block.
-> 
-> However, when something is misconfigured, wrong value of temperature is
-> read (max possible value - 0xFF) and passed to the driver.
-> 
-> In such a situation, I see that something is wrong, since I cannot fully
-> boot up my system.
-> 
-> I don't mind the patch, but please pay a note that on some systems
-> value of -1 is also expected.
-If critical trip is -1, then this change will simply return as no need
-to evaluate temp for trip for a given temp change.
+> Questions here are (1) how many users will actually want to disable PM_RUNTIME
+> for systems using genpd (my sort of educated guess is "none") and
 
-I am forwarding this to linux-pm list, let me see if others have a
-problem.
+Well. Developers sometimes want to disable power management so that
+they don't have to debug it just now... disabling PM_RUNTIME is a way
+to do that.
 
-Thanks,
-Srinivas
-
-> 
-> > 
-> > Thanks,
-> > Srinivas
-> > 
-> > > I'd prefer to keep this as is.
-> > > 
-> > > >  		return;
-> > > >  
-> > > >  	trace_thermal_zone_trip(tz, trip, trip_type);
-> > > 
-> > > 
-> > > 
-> > 
-> > 
-> 
-> 
-> 
-
-
+OTOH making code more complex to make new board bring-up easier may
+not be good idea..
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
