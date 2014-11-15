@@ -1,71 +1,153 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ACPI / sleep: Drain outstanding events after disabling multiple GPEs
-Date: Sat, 15 Nov 2014 02:37:49 +0100
-Message-ID: <1704297.D90U7pFiof@vostro.rjw.lan>
-References: <2087711.53EgqR6vL6@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: Remove architecture specific menu entries
+Date: Sat, 15 Nov 2014 08:50:44 +0530
+Message-ID: <5fa0e88cfecffe8ae45f2bde0aceb96cd65407e7.1416021588.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61356 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754470AbaKOBQv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 20:16:51 -0500
-In-Reply-To: <2087711.53EgqR6vL6@vostro.rjw.lan>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:36926 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934378AbaKODVB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 22:21:01 -0500
+Received: by mail-pa0-f48.google.com with SMTP id rd3so5122622pab.21
+        for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2014 19:21:01 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lv Zheng <lv.zheng@intel.com>, Robert Moore <robert.moore@intel.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Saturday, November 15, 2014 02:30:51 AM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After multiple GPEs have been disabled at the low level in one go,
-> like when acpi_disable_all_gpes() is called, we should always drain
-> all of the outstanding events from them, or the ACPICA's GPE handling
-> code may re-enable one of them as a result of a race condition.
+CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
+all included from the main Kconfig file using a menu entry. This creates another
+level of (unnecessary) hierarchy within the menuconfig entries.
 
-Scratch the last part.
+The problem occurs when there are drivers usable across architectures. Either
+their config entry is duplicated in all the supported architectures or is put
+into the main Kconfig entry. With the later one, we have menuconfig entries for
+drivers at two levels then.
 
-We simply need to drain them to prevent the GPE handling code from
-being executed in parallel with whatever happens after the GPEs have
-been disabled.
+Fix these issues by getting rid of another level of menuconfig hierarchy and
+populate all drivers within the main cpufreq menu. To clearly distinguish where
+the drivers start from, also add a comment that will appear in menuconfig.
 
-> For this reason, call acpi_os_wait_events_complete() after
-> acpi_enable_all_wakeup_gpes() and acpi_disable_all_gpes() in
-> acpi_freeze_prepare() and acpi_power_off_prepare(), respectively.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/acpi/sleep.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: linux-pm/drivers/acpi/sleep.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/sleep.c
-> +++ linux-pm/drivers/acpi/sleep.c
-> @@ -630,6 +630,7 @@ static int acpi_freeze_begin(void)
->  static int acpi_freeze_prepare(void)
->  {
->  	acpi_enable_all_wakeup_gpes();
-> +	acpi_os_wait_events_complete();
->  	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
->  	return 0;
->  }
-> @@ -825,6 +826,7 @@ static void acpi_power_off_prepare(void)
->  	/* Prepare to power off the system */
->  	acpi_sleep_prepare(ACPI_STATE_S5);
->  	acpi_disable_all_gpes();
-> +	acpi_os_wait_events_complete();
->  }
->  
->  static void acpi_power_off(void)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Suggested-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2: Add: comment "CPU frequency scaling drivers"
 
+ drivers/cpufreq/Kconfig | 50 +++++++++++++++++++------------------------------
+ 1 file changed, 19 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 3489f8f..230a912 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -183,6 +183,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
+ 
+ 	  If in doubt, say N.
+ 
++comment "CPU frequency scaling drivers"
++
+ config CPUFREQ_DT
+ 	tristate "Generic DT based cpufreq driver"
+ 	depends on HAVE_CLK && OF
+@@ -196,19 +198,19 @@ config CPUFREQ_DT
+ 
+ 	  If in doubt, say N.
+ 
+-menu "x86 CPU frequency scaling drivers"
+-depends on X86
++if X86
+ source "drivers/cpufreq/Kconfig.x86"
+-endmenu
++endif
+ 
+-menu "ARM CPU frequency scaling drivers"
+-depends on ARM || ARM64
++if ARM || ARM64
+ source "drivers/cpufreq/Kconfig.arm"
+-endmenu
++endif
+ 
+-menu "AVR32 CPU frequency scaling drivers"
+-depends on AVR32
++if PPC32 || PPC64
++source "drivers/cpufreq/Kconfig.powerpc"
++endif
+ 
++if AVR32
+ config AVR32_AT32AP_CPUFREQ
+ 	bool "CPU frequency driver for AT32AP"
+ 	depends on PLATFORM_AT32AP
+@@ -216,12 +218,9 @@ config AVR32_AT32AP_CPUFREQ
+ 	help
+ 	  This enables the CPU frequency driver for AT32AP processors.
+ 	  If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "CPUFreq processor drivers"
+-depends on IA64
+-
++if IA64
+ config IA64_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	depends on ACPI_PROCESSOR
+@@ -232,12 +231,9 @@ config IA64_ACPI_CPUFREQ
+ 	For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "MIPS CPUFreq processor drivers"
+-depends on MIPS
+-
++if MIPS
+ config LOONGSON2_CPUFREQ
+ 	tristate "Loongson2 CPUFreq Driver"
+ 	help
+@@ -249,16 +245,9 @@ config LOONGSON2_CPUFREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
++endif
+ 
+-endmenu
+-
+-menu "PowerPC CPU frequency scaling drivers"
+-depends on PPC32 || PPC64
+-source "drivers/cpufreq/Kconfig.powerpc"
+-endmenu
+-
+-menu "SPARC CPU frequency scaling drivers"
+-depends on SPARC64
++if SPARC64
+ config SPARC_US3_CPUFREQ
+ 	tristate "UltraSPARC-III CPU Frequency driver"
+ 	help
+@@ -276,10 +265,9 @@ config SPARC_US2E_CPUFREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If in doubt, say N.
+-endmenu
++endif
+ 
+-menu "SH CPU Frequency scaling"
+-depends on SUPERH
++if SUPERH
+ config SH_CPU_FREQ
+ 	tristate "SuperH CPU Frequency driver"
+ 	help
+@@ -293,7 +281,7 @@ config SH_CPU_FREQ
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If unsure, say N.
+-endmenu
++endif
+ 
+ endif
+ endmenu
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2.0.3.693.g996b0fd
+
