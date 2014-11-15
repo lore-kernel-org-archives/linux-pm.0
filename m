@@ -1,59 +1,50 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [V2 PATCH 3/4] scsi:stex.c Add reboot support
-Date: Fri, 14 Nov 2014 17:03:42 -0800
-Message-ID: <20141115010342.GA5933@kroah.com>
-References: <5462D62C.50602@gmail.com>
- <20141112172750.GB18862@infradead.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / sleep: Drain outstanding events after disabling multiple GPEs
+Date: Sat, 15 Nov 2014 02:30:51 +0100
+Message-ID: <2087711.53EgqR6vL6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:55934 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbaKOBDo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 20:03:44 -0500
-Content-Disposition: inline
-In-Reply-To: <20141112172750.GB18862@infradead.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lv Zheng <lv.zheng@intel.com>, Robert Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Charles Chiou <ch1102chiou@gmail.com>, JBottomley@parallels.com, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Nov 12, 2014 at 09:27:50AM -0800, Christoph Hellwig wrote:
-> > +static int stex_reboot_callback(struct notifier_block *self,
-> > +							  unsigned long val,
-> > +							  void *data)
-> > +{
-> > +	if (val == SYS_RESTART)
-> > +		isRestart = 1;
-> > +	return NOTIFY_OK;
-> > +}
-> > 
-> > @@ -1832,7 +1859,14 @@ static void stex_shutdown(struct pci_dev *pdev)
-> >  {
-> >  	struct st_hba *hba = pci_get_drvdata(pdev);
-> > 
-> > -	stex_hba_stop(hba);
-> > +	if (hba->yellowstone == 1)
-> > +		stex_hba_stop(hba, ST_IGNORED);
-> > +	else {
-> > +		if (isRestart)
-> > +			stex_hba_stop(hba, ST_S6);
-> > +		else
-> > +			stex_hba_stop(hba, ST_S5);
-> > +	}
-> 
-> This sort of check for reboot vs restart isn't really something
-> we want in drivers.  I don't really know how we could find this
-> out assuming we even want drivers to behave differently.
-> 
-> Maybe Greg or someone on lkml has an idea how to best handle this case.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-What is "this case"?
+After multiple GPEs have been disabled at the low level in one go,
+like when acpi_disable_all_gpes() is called, we should always drain
+all of the outstanding events from them, or the ACPICA's GPE handling
+code may re-enable one of them as a result of a race condition.
 
-And yes, I agree, we shouldn't care, in drivers, about reboot vs.
-restart, as they should both be the same thing, along with "disconnect",
-right?
+For this reason, call acpi_os_wait_events_complete() after
+acpi_enable_all_wakeup_gpes() and acpi_disable_all_gpes() in
+acpi_freeze_prepare() and acpi_power_off_prepare(), respectively.
 
-thanks,
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/sleep.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-greg k-h
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -630,6 +630,7 @@ static int acpi_freeze_begin(void)
+ static int acpi_freeze_prepare(void)
+ {
+ 	acpi_enable_all_wakeup_gpes();
++	acpi_os_wait_events_complete();
+ 	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
+ 	return 0;
+ }
+@@ -825,6 +826,7 @@ static void acpi_power_off_prepare(void)
+ 	/* Prepare to power off the system */
+ 	acpi_sleep_prepare(ACPI_STATE_S5);
+ 	acpi_disable_all_gpes();
++	acpi_os_wait_events_complete();
+ }
+ 
+ static void acpi_power_off(void)
+
