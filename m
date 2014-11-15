@@ -1,153 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] cpufreq: Remove architecture specific menu entries
-Date: Sat, 15 Nov 2014 08:50:44 +0530
-Message-ID: <5fa0e88cfecffe8ae45f2bde0aceb96cd65407e7.1416021588.git.viresh.kumar@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Sat, 15 Nov 2014 12:32:00 +0100
+Message-ID: <CAMuHMdXHhcvar2RWVVXKwvqr1dbTnnZqbBYic53U3E8-EkcAjw@mail.gmail.com>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
+	<7hsihx1bvo.fsf@deeprootsystems.com>
+	<1442757.2EcII903db@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36926 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934378AbaKODVB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Nov 2014 22:21:01 -0500
-Received: by mail-pa0-f48.google.com with SMTP id rd3so5122622pab.21
-        for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2014 19:21:01 -0800 (PST)
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:48086 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbaKOLcD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 06:32:03 -0500
+In-Reply-To: <1442757.2EcII903db@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Ji
 
-CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
-all included from the main Kconfig file using a menu entry. This creates another
-level of (unnecessary) hierarchy within the menuconfig entries.
+Hi Rafael,
 
-The problem occurs when there are drivers usable across architectures. Either
-their config entry is duplicated in all the supported architectures or is put
-into the main Kconfig entry. With the later one, we have menuconfig entries for
-drivers at two levels then.
+On Sat, Nov 15, 2014 at 12:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
+>>  callbacks
+>>
+>> Convert the prototypes to return an int in order to support error
+>> handling in these callbacks.
+>>
+>> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
+>> inside the callbacks, and so that they match the existing
+>> power_on/power_off callbacks which currently take the domain pointer.
+>>
+>> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+>
+> That's in the Linus' tree now.
 
-Fix these issues by getting rid of another level of menuconfig hierarchy and
-populate all drivers within the main cpufreq menu. To clearly distinguish where
-the drivers start from, also add a comment that will appear in menuconfig.
+Thank you very much.
 
-Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Suggested-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2: Add: comment "CPU frequency scaling drivers"
+Gr{oetje,eeting}s,
 
- drivers/cpufreq/Kconfig | 50 +++++++++++++++++++------------------------------
- 1 file changed, 19 insertions(+), 31 deletions(-)
+                        Geert
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 3489f8f..230a912 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -183,6 +183,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- 	  If in doubt, say N.
- 
-+comment "CPU frequency scaling drivers"
-+
- config CPUFREQ_DT
- 	tristate "Generic DT based cpufreq driver"
- 	depends on HAVE_CLK && OF
-@@ -196,19 +198,19 @@ config CPUFREQ_DT
- 
- 	  If in doubt, say N.
- 
--menu "x86 CPU frequency scaling drivers"
--depends on X86
-+if X86
- source "drivers/cpufreq/Kconfig.x86"
--endmenu
-+endif
- 
--menu "ARM CPU frequency scaling drivers"
--depends on ARM || ARM64
-+if ARM || ARM64
- source "drivers/cpufreq/Kconfig.arm"
--endmenu
-+endif
- 
--menu "AVR32 CPU frequency scaling drivers"
--depends on AVR32
-+if PPC32 || PPC64
-+source "drivers/cpufreq/Kconfig.powerpc"
-+endif
- 
-+if AVR32
- config AVR32_AT32AP_CPUFREQ
- 	bool "CPU frequency driver for AT32AP"
- 	depends on PLATFORM_AT32AP
-@@ -216,12 +218,9 @@ config AVR32_AT32AP_CPUFREQ
- 	help
- 	  This enables the CPU frequency driver for AT32AP processors.
- 	  If in doubt, say N.
-+endif
- 
--endmenu
--
--menu "CPUFreq processor drivers"
--depends on IA64
--
-+if IA64
- config IA64_ACPI_CPUFREQ
- 	tristate "ACPI Processor P-States driver"
- 	depends on ACPI_PROCESSOR
-@@ -232,12 +231,9 @@ config IA64_ACPI_CPUFREQ
- 	For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	If in doubt, say N.
-+endif
- 
--endmenu
--
--menu "MIPS CPUFreq processor drivers"
--depends on MIPS
--
-+if MIPS
- config LOONGSON2_CPUFREQ
- 	tristate "Loongson2 CPUFreq Driver"
- 	help
-@@ -249,16 +245,9 @@ config LOONGSON2_CPUFREQ
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say N.
-+endif
- 
--endmenu
--
--menu "PowerPC CPU frequency scaling drivers"
--depends on PPC32 || PPC64
--source "drivers/cpufreq/Kconfig.powerpc"
--endmenu
--
--menu "SPARC CPU frequency scaling drivers"
--depends on SPARC64
-+if SPARC64
- config SPARC_US3_CPUFREQ
- 	tristate "UltraSPARC-III CPU Frequency driver"
- 	help
-@@ -276,10 +265,9 @@ config SPARC_US2E_CPUFREQ
- 	  For details, take a look at <file:Documentation/cpu-freq>.
- 
- 	  If in doubt, say N.
--endmenu
-+endif
- 
--menu "SH CPU Frequency scaling"
--depends on SUPERH
-+if SUPERH
- config SH_CPU_FREQ
- 	tristate "SuperH CPU Frequency driver"
- 	help
-@@ -293,7 +281,7 @@ config SH_CPU_FREQ
- 	  For details, take a look at <file:Documentation/cpu-freq>.
- 
- 	  If unsure, say N.
--endmenu
-+endif
- 
- endif
- endmenu
--- 
-2.0.3.693.g996b0fd
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
