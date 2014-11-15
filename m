@@ -1,47 +1,49 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Possible bug: Duplicate OPPs warning after reloading cpufreq-dt
-Date: Sat, 15 Nov 2014 12:54:50 +0100 (CET)
-Message-ID: <1973548224.143005.1416052490232.JavaMail.open-xchange@oxbaltgw05.schlund.de>
-Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when
+ genpd enabled
+Date: Sat, 15 Nov 2014 13:32:01 +0100
+Message-ID: <CAMuHMdVrpwg2pYxUhA5oRgd1g2DmLuSb2jR3ywz8hkjms7UBcw@mail.gmail.com>
+References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
+	<1415917702-6742-2-git-send-email-khilman@kernel.org>
+	<CAMuHMdXB-7vBqGZ_iMaZdDWDnnzpHZa4ECkDnojbDw=ds5eTWg@mail.gmail.com>
+	<7ha93t8z1q.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:59577 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbaKOLyw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 06:54:52 -0500
+Received: from mail-la0-f49.google.com ([209.85.215.49]:39204 "EHLO
+	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753621AbaKOMcD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 07:32:03 -0500
+In-Reply-To: <7ha93t8z1q.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
 
-Hi,
- 
-in the case cpufreq-dt is compiled as module, reloading cpufreq-dt gives a poor
-warning about duplicate OPPs:
- 
-root@duckbill:~# modprobe cpufreq-dt
-root@duckbill:~# modprobe -r cpufreq-dt
-root@duckbill:~# modprobe cpufreq-dt
-[   53.824262] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
-freq: 261819000, volt: 1350000, enabled: 1. New: freq: 261819000, volt: 1350000,
-enabled: 1
-[   53.881680] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
-freq: 360000000, volt: 1350000, enabled: 1. New: freq: 360000000, volt: 1350000,
-enabled: 1
-[   53.921576] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
-freq: 392728000, volt: 1450000, enabled: 1. New: freq: 392728000, volt: 1450000,
-enabled: 1
-[   53.964054] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
-freq: 454737000, volt: 1550000, enabled: 1. New: freq: 454737000, volt: 1550000,
-enabled: 1
+Hi Kevin,
 
-I think these warnings are misleading and should be avoided. Unfortunately i
-don't have a idea to fix it the right way.
+On Fri, Nov 14, 2014 at 6:36 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>> On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>> It makes little sense to use generic power domains without runtime PM.
+>>
+>> Does it?
+>> It still powers down the PM domains on system suspend (at least on my
+>> boards ;-)
+>
+> Sure, but your devices are also using runtime PM, so I'm not sure how
+> does that change my statement above?
 
-Test platform: Freescale i.MX28 (ARM9)
-Kernel: 3.18.0-rc3
+I do mean with CONFIG_PM_RUNTIME turned off.
 
-Best regards
-Stefan
+If PM domain support is disabled, s2ram will not power down the PM domains.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
