@@ -1,53 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
-Date: Sat, 15 Nov 2014 12:32:00 +0100
-Message-ID: <CAMuHMdXHhcvar2RWVVXKwvqr1dbTnnZqbBYic53U3E8-EkcAjw@mail.gmail.com>
-References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
-	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
-	<7hsihx1bvo.fsf@deeprootsystems.com>
-	<1442757.2EcII903db@vostro.rjw.lan>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Possible bug: Duplicate OPPs warning after reloading cpufreq-dt
+Date: Sat, 15 Nov 2014 12:54:50 +0100 (CET)
+Message-ID: <1973548224.143005.1416052490232.JavaMail.open-xchange@oxbaltgw05.schlund.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:48086 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbaKOLcD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 06:32:03 -0500
-In-Reply-To: <1442757.2EcII903db@vostro.rjw.lan>
+Received: from mout.kundenserver.de ([212.227.126.187]:59577 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbaKOLyw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Nov 2014 06:54:52 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Ji
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Hi,
+ 
+in the case cpufreq-dt is compiled as module, reloading cpufreq-dt gives a poor
+warning about duplicate OPPs:
+ 
+root@duckbill:~# modprobe cpufreq-dt
+root@duckbill:~# modprobe -r cpufreq-dt
+root@duckbill:~# modprobe cpufreq-dt
+[   53.824262] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 261819000, volt: 1350000, enabled: 1. New: freq: 261819000, volt: 1350000,
+enabled: 1
+[   53.881680] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 360000000, volt: 1350000, enabled: 1. New: freq: 360000000, volt: 1350000,
+enabled: 1
+[   53.921576] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 392728000, volt: 1450000, enabled: 1. New: freq: 392728000, volt: 1450000,
+enabled: 1
+[   53.964054] cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 454737000, volt: 1550000, enabled: 1. New: freq: 454737000, volt: 1550000,
+enabled: 1
 
-On Sat, Nov 15, 2014 at 12:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
->>  callbacks
->>
->> Convert the prototypes to return an int in order to support error
->> handling in these callbacks.
->>
->> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
->> inside the callbacks, and so that they match the existing
->> power_on/power_off callbacks which currently take the domain pointer.
->>
->> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Kevin Hilman <khilman@linaro.org>
->
-> That's in the Linus' tree now.
+I think these warnings are misleading and should be avoided. Unfortunately i
+don't have a idea to fix it the right way.
 
-Thank you very much.
+Test platform: Freescale i.MX28 (ARM9)
+Kernel: 3.18.0-rc3
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best regards
+Stefan
