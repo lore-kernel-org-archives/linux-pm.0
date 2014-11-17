@@ -1,63 +1,82 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when
- genpd enabled
-Date: Mon, 17 Nov 2014 09:01:35 +0100
-Message-ID: <CAMuHMdUB_ESDe7xXn_-Zd--pKfOv31wwtj=whwDF5YrvQ98yig@mail.gmail.com>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-	<7ha93t8z1q.fsf@deeprootsystems.com>
-	<CAMuHMdVrpwg2pYxUhA5oRgd1g2DmLuSb2jR3ywz8hkjms7UBcw@mail.gmail.com>
-	<6465990.KKns6W8hQE@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
+Date: Mon, 17 Nov 2014 13:38:00 +0530
+Message-ID: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f170.google.com ([209.85.217.170]:46723 "EHLO
-	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750723AbaKQIBi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 03:01:38 -0500
-In-Reply-To: <6465990.KKns6W8hQE@vostro.rjw.lan>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:43533 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbaKQII2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 03:08:28 -0500
+Received: by mail-pa0-f43.google.com with SMTP id kx10so1542495pab.2
+        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 00:08:28 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, stefan.wahren@i2se.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, Nov 17, 2014 at 2:22 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Saturday, November 15, 2014 01:32:01 PM Geert Uytterhoeven wrote:
->> On Fri, Nov 14, 2014 at 6:36 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> >> On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> >>> It makes little sense to use generic power domains without runtime PM.
->> >>
->> >> Does it?
->> >> It still powers down the PM domains on system suspend (at least on my
->> >> boards ;-)
->> >
->> > Sure, but your devices are also using runtime PM, so I'm not sure how
->> > does that change my statement above?
->>
->> I do mean with CONFIG_PM_RUNTIME turned off.
->>
->> If PM domain support is disabled, s2ram will not power down the PM domains.
->
-> But if PM_RUNTIME is enabled along with it, I don't think it will make much
-> of a different, will it?
+Giving a warning in case we add duplicate OPPs doesn't workout that great. For
+example just playing with cpufreq-dt driver as a module results in this:
 
-That's true.
+$ modprobe cpufreq-dt
+$ modprobe -r cpufreq-dt
+$ modprobe cpufreq-dt
 
-> Building the kernel with genpd and without PM_RUNTIME is possible today,
-> but is it really useful?  To me, it only seems to make people try to
-> reinvent the wheel "because PM_RUNTIME may be unset".
->
-> I have to say I'm seriously considering to make PM_SLEEP select
-> PM_RUNTIME too as that would make quite a few things a *lot* simpler.
+cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 261819000, volt: 1350000, enabled: 1. New: freq: 261819000, volt: 1350000,
+enabled: 1
+cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 360000000, volt: 1350000, enabled: 1. New: freq: 360000000, volt: 1350000,
+enabled: 1
+cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 392728000, volt: 1450000, enabled: 1. New: freq: 392728000, volt: 1450000,
+enabled: 1
+cpu cpu0: dev_pm_opp_add: duplicate OPPs detected. Existing:
+freq: 454737000, volt: 1550000, enabled: 1. New: freq: 454737000, volt: 1550000,
+enabled: 1
 
-I agree that it would simplify things, a reduce testing efforts.
+This happens because we don't destroy OPPs (created during ->init()) while
+unloading modules.
 
-Gr{oetje,eeting}s,
+Now the question is: Should we destroy these OPPs?
 
-                        Geert
+Logically kernel drivers *must* free resources they acquired. But in this
+particular case, the OPPs are created using a static list present in device
+tree. Destroying and then allocating them again isn't of much benefit. The only
+benefit of removing OPPs is to save some space if the driver isn't loaded again.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+This has its own complications. OPPs can be created either from DT (static) or
+platform code (dynamic). Driver should only remove static OPPs and not the
+dynamic ones as they are controlled from platform code. But there is no field in
+'struct dev_pm_opp' which has this information to distinguish between different
+kind of OPPs.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Because of all this, I wasn't sure if drivers should remove static OPPs during
+their removal. And so just fixing the reported issue by issuing a dev_dbg()
+instead of dev_warn().
+
+Reported-by: Stefan Wahren <stefan.wahren@i2se.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 89ced95..490e9db 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -466,9 +466,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 		int ret = opp->available && new_opp->u_volt == opp->u_volt ?
+ 			0 : -EEXIST;
+ 
+-		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+-			 __func__, opp->rate, opp->u_volt, opp->available,
+-			 new_opp->rate, new_opp->u_volt, new_opp->available);
++		dev_dbg(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
++			__func__, opp->rate, opp->u_volt, opp->available,
++			new_opp->rate, new_opp->u_volt, new_opp->available);
+ 		mutex_unlock(&dev_opp_list_lock);
+ 		kfree(new_opp);
+ 		return ret;
+-- 
+2.0.3.693.g996b0fd
+
