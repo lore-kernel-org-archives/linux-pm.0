@@ -1,62 +1,59 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH 5/8] thermal:cpu cooling:tegra: Provide deferred probing
- for tegra driver
-Date: Mon, 17 Nov 2014 15:24:08 +0200
-Message-ID: <5469F6F8.3060102@kapsi.fi>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com> <1415898165-27406-1-git-send-email-l.majewski@samsung.com> <1415898165-27406-6-git-send-email-l.majewski@samsung.com> <5465DDC5.6090301@kapsi.fi> <20141117114341.GF25699@ulmo> <5469EF4C.1050007@kapsi.fi> <20141117130856.GB18767@ulmo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v5 4/8] ARM: shmobile: R-Mobile: Enable module clocks if !CONFIG_PM_RUNTIME
+Date: Mon, 17 Nov 2014 14:30:40 +0100
+Message-ID: <1416231044-1903-5-git-send-email-geert+renesas@glider.be>
+References: <1416231044-1903-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kapsi.fi ([217.30.184.167]:56098 "EHLO mail.kapsi.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbaKQNYU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Nov 2014 08:24:20 -0500
-In-Reply-To: <20141117130856.GB18767@ulmo>
+Received: from michel.telenet-ops.be ([195.130.137.88]:53491 "EHLO
+	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbaKQNa5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 08:30:57 -0500
+In-Reply-To: <1416231044-1903-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincenzo Frascino <vincenzo.frascino@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On 11/17/2014 03:08 PM, Thierry Reding wrote:
-> On Mon, Nov 17, 2014 at 02:51:24PM +0200, Mikko Perttunen wrote:
->> On 11/17/2014 01:43 PM, Thierry Reding wrote:
->>> On Fri, Nov 14, 2014 at 12:47:33PM +0200, Mikko Perttunen wrote:
->>>> Tested-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
->>>>
->>>> One potential issue I can see is that if the cpufreq driver fails to probe
->>>> then you'll never get the thermal driver either. For example, Tegra124
->>>> currently has no cpufreq driver, so if CONFIG_CPU_THERMAL was enabled, then
->>>> the soctherm driver would never be able to probe. But I don't really have a
->>>> solution for this either.
->>>
->>> It doesn't seem like there's any code whatsoever to deal with cpufreq
->>> within the soctherm driver, so deferring probe based on something we're
->>> not using anyway seems rather useless.
->>>
->>> Thierry
->>>
->>
->> My understanding is that there needs to be no code inside soctherm to handle
->> it, as the cpufreq driver (cpufreq-dt) will register a cooling device that
->> will then be bound to the soctherm sensors using the of-thermal device tree
->> properties. At this moment, however, we don't have that cpufreq driver so
->> this patch is still useless for Tegra.
->
-> But if the cpufreq driver will automatically do this already, why do we
-> even need to check for it in the soctherm driver?
->
-> Thierry
->
+If CONFIG_PM_RUNTIME is not set, the clocks must be enabled before the
+devices can be used.
 
-Indeed, we shouldn't. Unless I am mistaken, the issue is then that the 
-cpufreq cooling device calls thermal_cooling_device_register before 
-being ready to handle callbacks, which clearly would be an issue in the 
-cpufreq driver.
+Currently these clocks are enabled by the !CONFIG_PM_RUNTIME version of
+pm_clk_notify, activated by the hack in drivers/sh/pm_runtime.c, but
+this will go away soon (at least for DT).
 
-The thermal core seems to able to handle registrations of thermal zones 
-and cooling devices in any order; AFAICT it defers binding the tz<->cdev 
-mapping until both have registered themselves to the thermal core.
+On detach, disabling the clocks is already handled by pm_clk_destroy().
+On system suspend/resume, disabling/enabling clocks is already handled
+from the genpd->dev_ops.{start,stop}() callbacks.
 
-Mikko
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v5:
+  - No changes,
+v4:
+  - New.
+---
+ arch/arm/mach-shmobile/pm-rmobile.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 168046c355fc8368..6d912ce801aa88bd 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -118,6 +118,14 @@ static int rmobile_pd_attach_dev(struct generic_pm_domain *domain,
+ 		goto fail;
+ 	}
+ 
++	if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
++		error = pm_clk_resume(dev);
++		if (error) {
++			dev_err(dev, "pm_clk_resume failed %d\n", error);
++			goto fail;
++		}
++	}
++
+ 	return 0;
+ 
+ fail:
+-- 
+1.9.1
 
