@@ -1,124 +1,50 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Mon, 17 Nov 2014 13:11:17 -0800
-Message-ID: <20141117211117.GD5258@dtor-ws>
-References: <20141117202855.GB5258@dtor-ws>
- <Pine.LNX.4.44L0.1411171542001.1747-100000@iolanthe.rowland.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
+Date: Mon, 17 Nov 2014 22:32:18 +0100
+Message-ID: <546A6962.9090801@linaro.org>
+References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org> <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1411171542001.1747-100000@iolanthe.rowland.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 17, 2014 at 03:49:14PM -0500, Alan Stern wrote:
-> On Mon, 17 Nov 2014, Dmitry Torokhov wrote:
-> 
-> > On Mon, Nov 17, 2014 at 02:54:53PM -0500, Alan Stern wrote:
-> > > On Mon, 17 Nov 2014, Dmitry Torokhov wrote:
-> > > 
-> > > > > For devices that aren't part of a power domain, things are simpler.
-> > > > > The bus does _get_noresume() to make sure the device won't be runtime
-> > > > > suspended while the probe routine is running.  It doesn't do
-> > > > > _get_sync(), because that would end up calling the driver's
-> > > > > runtime_resume routine before the driver was bound to the device.  (The
-> > > > > bus could prevent that from happening by taking special precautions,
-> > > > > like PCI does, but in general it's a nuisance.)
-> > > > 
-> > > > That's why I think we need some new call that would mean "make sure the
-> > > > device is powered" which would properly handle power domain and bus, but
-> > > > ignore all driver stuff since it may not be initialized yet. And similar
-> > > > call for asking to put device and maybe domain in powered down state in
-> > > > case probing failed.
-> > > 
-> > > I can't imagine how such a call would work.
-> > > 
-> > > The PM core invokes the subsystem's runtime_suspend/resume callback, 
-> > > and then the subsystem's routine is responsible for invoking the 
-> > > driver's callback (or _not_ invoking it, in this case).
-> > > 
-> > > Thus, the PM core has no way to tell the subsystem's callback not to
-> > > invoke the driver's routine, and adding a new runtime PM call wouldn't
-> > > change that.  You'd have to add a new pair of callbacks instead, which 
-> > > IMO would be a tremendous waste.
-> > > 
-> > > Furthermore, the subsystem already _knows_ when the driver gets probed, 
-> > > because probing works in the same sort of way: The subsystem's probe 
-> > > routine gets invoked, and it is responsible for invoking the driver's 
-> > > probe routine.  Therefore the PM core doesn't _need_ to provide this 
-> > > extra information to the subsystem.  Rather, the subsystem just needs 
-> > > to keep track of the information it already has available.
-> > 
-> > You are missing concept of power domains in this picture. True,
-> > subsystem knows when it probes but power domain does not. Subsystem has
-> > no knowledge of power domain (devices in the same subsystem can come
-> > from different domains).
-> 
-> Okay, I take your point.
-> 
-> > We need to have either subsystem or device core to indicate to power
-> > management core that we do not need "full" runtime resume, but rather a
-> > "partial" one since driver is not ready yet.
-> > 
-> > We would not need new callbacks here I think, we just need to be able to
-> > select appropriate set of callbacks, depending on the binding state.
-> 
-> When the runtime PM core invokes a power domain's callback routine,
-> what does the domain's routine usually do?  Does it go ahead and invoke
-> the driver's callback?  Or does it try to invoke the subsystem's
-> callback?
-> 
-> Obviously this depends on how the power domain code is written.  But
-> suppose every power domain would always use the same strategy as the PM
-> core: Invoke the subsystem's callback if there is one; otherwise invoke
-> the driver's callback.
-> 
-> Then there wouldn't be a problem.  Even when a runtime-resume went via
-> the power domain, the subsystem would still be able to protect the
-> not-yet-bound driver from being called.
-> 
-> (... Unless the subsystem itself was incapable of doing this the right 
-> way.  But subsystems can be fixed.)
+On 10/25/2014 01:40 AM, Lina Iyer wrote:
 
-The genpd code currently starts by powering on the domain (if it is not
-on already) and then does "device restore" which is:
+Hi Lina,
 
-/**
- * pm_genpd_default_restore_state - Default PM domians "restore device state".
- * @dev: Device to handle.
- */
-static int pm_genpd_default_restore_state(struct device *dev)
-{
-	int (*cb)(struct device *__dev);
+[ ... ]
 
-	cb = dev_gpd_data(dev)->ops.restore_state;
-	if (cb)
-		return cb(dev);
+> +static inline void spm_register_write(struct spm_driver_data *drv,
+> +					enum spm_reg reg, u32 val)
+> +{
+> +	if (drv->reg_data->reg_offset[reg])
+> +		writel_relaxed(val, drv->reg_base +
+> +				drv->reg_data->reg_offset[reg]);
 
-	if (dev->type && dev->type->pm)
-		cb = dev->type->pm->runtime_resume;
-	else if (dev->class && dev->class->pm)
-		cb = dev->class->pm->runtime_resume;
-	else if (dev->bus && dev->bus->pm)
-		cb = dev->bus->pm->runtime_resume;
-	else
-		cb = NULL;
+Why not use writel and don't use 'wmb' below ?
 
-	if (!cb && dev->driver && dev->driver->pm)
-		cb = dev->driver->pm->runtime_resume;
+> +}
+> +
 
-	return cb ? cb(dev) : 0;
-}
+[ ... ]
 
-So I guess bus (or class or type) can take care of it. Except buses
-usually call pm_generic_runtime_resume() which ends up fetching driver's
-callbacks. Maybe pm_generic_runtime_*() need be a bit smarter?
+> +	spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+> +
+> +	/* Ensure we have written the start address */
+> +	wmb();
 
-Thanks.
 
--- 
-Dmitry
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
