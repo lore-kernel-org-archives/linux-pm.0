@@ -1,60 +1,43 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd enabled
-Date: Mon, 17 Nov 2014 10:25:58 -0800
-Message-ID: <7hioid3cqx.fsf@deeprootsystems.com>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
-	<7ha93t8z1q.fsf@deeprootsystems.com>
-	<CAMuHMdVrpwg2pYxUhA5oRgd1g2DmLuSb2jR3ywz8hkjms7UBcw@mail.gmail.com>
-	<6465990.KKns6W8hQE@vostro.rjw.lan>
+Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
+Date: Mon, 17 Nov 2014 10:28:56 -0800
+Message-ID: <7hd28l3clz.fsf@deeprootsystems.com>
+References: <1416237550-31092-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:34943 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbaKQS0C (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 13:26:02 -0500
-Received: by mail-pa0-f52.google.com with SMTP id eu11so1908873pac.11
-        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 10:26:01 -0800 (PST)
-In-Reply-To: <6465990.KKns6W8hQE@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Mon, 17 Nov 2014 02:22:52 +0100")
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:55177 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbaKQS27 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 13:28:59 -0500
+Received: by mail-pa0-f51.google.com with SMTP id ey11so5924879pad.38
+        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 10:28:58 -0800 (PST)
+In-Reply-To: <1416237550-31092-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Mon, 17 Nov 2014 16:19:10 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, open list <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-> On Saturday, November 15, 2014 01:32:01 PM Geert Uytterhoeven wrote:
->> Hi Kevin,
->> 
->> On Fri, Nov 14, 2014 at 6:36 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> >> On Thu, Nov 13, 2014 at 11:28 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> >>> It makes little sense to use generic power domains without runtime PM.
->> >>
->> >> Does it?
->> >> It still powers down the PM domains on system suspend (at least on my
->> >> boards ;-)
->> >
->> > Sure, but your devices are also using runtime PM, so I'm not sure how
->> > does that change my statement above?
->> 
->> I do mean with CONFIG_PM_RUNTIME turned off.
->> 
->> If PM domain support is disabled, s2ram will not power down the PM domains.
+> The amba bus, amba drivers and a vast amount of platform drivers which
+> enables runtime PM, don't invoke a pm_runtime_get_sync() while probing
+> their devices.
 >
-> But if PM_RUNTIME is enabled along with it, I don't think it will make much
-> of a different, will it?
+> Instead, once they have turned on their PM resourses during ->probe()
+> and are ready to handle I/O, these invokes pm_runtime_set_active() to
+> synchronize its state towards the runtime PM core.
 >
-> Building the kernel with genpd and without PM_RUNTIME is possible today,
-> but is it really useful?  To me, it only seems to make people try to
-> reinvent the wheel "because PM_RUNTIME may be unset".
->
-> I have to say I'm seriously considering to make PM_SLEEP select
-> PM_RUNTIME too as that would make quite a few things a *lot* simpler.
+> From a runtime PM point of view this behavior is perfectly acceptable,
 
-Yes.  
+In the context of PM domains that can be dynamically powered on/off, I'm
+not so sure it's perfectly acceptable anymore.
 
-If that were the case, we woudn't need the pm_runtime_force_* calls
-either.
+Why doesn't the bus do a _get_sync() instead of a _get_noresume()
+followed by a _set_active().  
+
+By using the _get_noresume() you're bypassing the paths that would bring
+up your PM domain.
 
 Kevin
