@@ -1,67 +1,88 @@
-From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Thierry Reding <thierry.reding@gmail.com>
 Subject: Re: [PATCH 5/8] thermal:cpu cooling:tegra: Provide deferred probing
  for tegra driver
-Date: Mon, 17 Nov 2014 14:02:45 +0100
-Message-ID: <20141117140245.51837653@amdc2363>
+Date: Mon, 17 Nov 2014 14:08:58 +0100
+Message-ID: <20141117130856.GB18767@ulmo>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
  <1415898165-27406-6-git-send-email-l.majewski@samsung.com>
- <5465DDC5.6090301@kapsi.fi> <20141117114341.GF25699@ulmo>
- <20141117125013.3493a3a1@amdc2363> <20141117120105.GH25699@ulmo>
+ <5465DDC5.6090301@kapsi.fi>
+ <20141117114341.GF25699@ulmo>
+ <5469EF4C.1050007@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20141117120105.GH25699@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincenzo Frascino <vincenzo.frascino-qxv4g6HH51o@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pvezYHf7grwyp3Bc"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f52.google.com ([74.125.82.52]:34462 "EHLO
+	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbaKQNJB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 08:09:01 -0500
+Content-Disposition: inline
+In-Reply-To: <5469EF4C.1050007@kapsi.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincenzo Frascino <vincenzo.frascino@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Thierry,
 
-> On Mon, Nov 17, 2014 at 12:50:13PM +0100, Lukasz Majewski wrote:
-> > Hi Thierry,
-> > 
-> > > On Fri, Nov 14, 2014 at 12:47:33PM +0200, Mikko Perttunen wrote:
-> > > > Tested-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-> > > > 
-> > > > One potential issue I can see is that if the cpufreq driver
-> > > > fails to probe then you'll never get the thermal driver either.
-> > > > For example, Tegra124 currently has no cpufreq driver, so if
-> > > > CONFIG_CPU_THERMAL was enabled, then the soctherm driver would
-> > > > never be able to probe. But I don't really have a solution for
-> > > > this either.
-> > > 
-> > > It doesn't seem like there's any code whatsoever to deal with
-> > > cpufreq within the soctherm driver, so deferring probe based on
-> > > something we're not using anyway seems rather useless.
-> > 
-> > So, If I understood you correctly - this patch is not needed in the 
-> > /tegra_soctherm.c:[tegra_defconfig] driver and can be safely
-> > omitted in v2 of this driver.
-> 
-> What I'm saying is that I don't think doing this mass conversion
-> wholesale is useful since none of the drivers register a cooling
-> device based on cpufreq. In other words: if you're not going to use a
-> feature there's no use testing for it.
-> 
+--pvezYHf7grwyp3Bc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It seems, like one option here would be to add deferred proble to
-cpufreq_cooling_register() or check which driver in its thermal probe
-is calling cpufreq_cooling_register() function.
+On Mon, Nov 17, 2014 at 02:51:24PM +0200, Mikko Perttunen wrote:
+> On 11/17/2014 01:43 PM, Thierry Reding wrote:
+> >On Fri, Nov 14, 2014 at 12:47:33PM +0200, Mikko Perttunen wrote:
+> >>Tested-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+> >>
+> >>One potential issue I can see is that if the cpufreq driver fails to pr=
+obe
+> >>then you'll never get the thermal driver either. For example, Tegra124
+> >>currently has no cpufreq driver, so if CONFIG_CPU_THERMAL was enabled, =
+then
+> >>the soctherm driver would never be able to probe. But I don't really ha=
+ve a
+> >>solution for this either.
+> >
+> >It doesn't seem like there's any code whatsoever to deal with cpufreq
+> >within the soctherm driver, so deferring probe based on something we're
+> >not using anyway seems rather useless.
+> >
+> >Thierry
+> >
+>=20
+> My understanding is that there needs to be no code inside soctherm to han=
+dle
+> it, as the cpufreq driver (cpufreq-dt) will register a cooling device that
+> will then be bound to the soctherm sensors using the of-thermal device tr=
+ee
+> properties. At this moment, however, we don't have that cpufreq driver so
+> this patch is still useless for Tegra.
 
-The latter option explains why in the imx_thermal.c file we check for
-deferred probe without #ifdefs for CONFIG_CPU_THERMAL.
+But if the cpufreq driver will automatically do this already, why do we
+even need to check for it in the soctherm driver?
 
-If no objections, I would like to stick to the code already available
-in imx_thermal.c.
+Thierry
 
-> Thierry
+--pvezYHf7grwyp3Bc
+Content-Type: application/pgp-signature
 
--- 
-Best regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Lukasz Majewski
+iQIcBAEBAgAGBQJUafNoAAoJEN0jrNd/PrOhS5QQAJp82TtAus+a48UB9FClXq+j
+Ybl9po7+2cVZyhZuSbTwIyYy5hXWsnXf/dBDzqP2YG4E7Iw9xjwOVB1dcHZwi5dO
+282D+mTKVYE9jCZaw1U7nNIGDBGu/mWFTUZyR9xJulszNE74Am5F0AZEKX4kc2fH
+XXCTEuAFUYFzeia9HbhO5S6oVBic6DM50spyd9WskUCvND//SyZsIHS0ie390Fdr
+Q+CtKCQVprqzNWhIifrzDeVXR9hPP6SE9kSyAhyGYcQvIcrTHKzwTLZ6Mn0/f/UL
+oUzAzhSl2ehPSc4qLg/3MuuDTsgSkcn9uk7nSP7C2fDO74biKDb5Dl7nnNhfXXef
+A9DOaEON5Bms2LSyvMcuWXhLmt3LOeXyybIB6wU8BuUJ+YIG/xoDtUFekPfRGA9W
+QsHeHTfAgA3iAiYzTWA3G2tCxnpeo6OezuXR2C8eQJz2wtVahrbzSkqoFfAa6gpt
+3z98Db3SDCN5I+8V+X2yAQ6mxu616z4iOVT8ceXqfmK06Kl5G2yxsapoRHOUV+pV
+TJbIAsDphrP5CeQ3ZR5qPn2y/sxofGvo+pI4xabPCmPgPRNa2nDg/FBlq4qhzs5g
+jd7Fb34X93nN5N9P9xUyzwtKs0200qkbP49RK0tJ1IXz+TaURGPDtZKZj0kQrr9A
+dP1i3E4bkofY/czQQRqG
+=V5SQ
+-----END PGP SIGNATURE-----
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+--pvezYHf7grwyp3Bc--
