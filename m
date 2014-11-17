@@ -1,72 +1,58 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Mon, 17 Nov 2014 12:28:55 -0800
-Message-ID: <20141117202855.GB5258@dtor-ws>
-References: <20141117191755.GA5258@dtor-ws>
- <Pine.LNX.4.44L0.1411171447390.851-100000@iolanthe.rowland.org>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 17 Nov 2014 21:37:37 +0100
+Message-ID: <1618855.DXsjWXLqau@wuerfel>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <1600093.60yAP0Qpua@wuerfel> <7h389h3aif.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:51027 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbaKQU3A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 15:29:00 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1411171447390.851-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <7h389h3aif.fsf-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Mon, Nov 17, 2014 at 02:54:53PM -0500, Alan Stern wrote:
-> On Mon, 17 Nov 2014, Dmitry Torokhov wrote:
+On Monday 17 November 2014 11:14:16 Kevin Hilman wrote:
+> >> 
+> >> So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
+> >> device and Generic clock manipulation PM callbacks.
+> >> It fills per-device clock list when device is attached to GPD and
+> >> ensures that all clocks from that list enabled/disabled when device is
+> >> started/stopped.
+> >
+> > The idea of such a generic power domain implementation sounds useful, but
+> > it has absolutely no business in platform specific code.
 > 
-> > > For devices that aren't part of a power domain, things are simpler.
-> > > The bus does _get_noresume() to make sure the device won't be runtime
-> > > suspended while the probe routine is running.  It doesn't do
-> > > _get_sync(), because that would end up calling the driver's
-> > > runtime_resume routine before the driver was bound to the device.  (The
-> > > bus could prevent that from happening by taking special precautions,
-> > > like PCI does, but in general it's a nuisance.)
-> > 
-> > That's why I think we need some new call that would mean "make sure the
-> > device is powered" which would properly handle power domain and bus, but
-> > ignore all driver stuff since it may not be initialized yet. And similar
-> > call for asking to put device and maybe domain in powered down state in
-> > case probing failed.
+> Yes it does.  This isn't a generic power domain implementation, but
+> rather just the platform-specific glue that hooks up the clocks to the
+> right devices and power-domains so that the generic power-domain and
+> generic pm_clocks code does the right thing.
+
+How would you do this on an arm64 version of keystone then? With
+the current approach, you'd need to add a machine specific directory,
+and that seems completely pointless since this is not even about
+a hardware requirement.
+
+> > I suggest you either remove the power domain proxy from your drivers
+> > and use the clocks directly, 
 > 
-> I can't imagine how such a call would work.
+> No.  That's a step in the wrong direction.  This change isn't affecting
+> drivers directly.  It's the runtime PM and generic power domain layers
+> that handle this, and runtime PM adapted drivers don't need any changes.
+>  
+> > or come up with an implementation that can be used across other
+> > platforms and CPU architectures.
 > 
-> The PM core invokes the subsystem's runtime_suspend/resume callback, 
-> and then the subsystem's routine is responsible for invoking the 
-> driver's callback (or _not_ invoking it, in this case).
-> 
-> Thus, the PM core has no way to tell the subsystem's callback not to
-> invoke the driver's routine, and adding a new runtime PM call wouldn't
-> change that.  You'd have to add a new pair of callbacks instead, which 
-> IMO would be a tremendous waste.
-> 
-> Furthermore, the subsystem already _knows_ when the driver gets probed, 
-> because probing works in the same sort of way: The subsystem's probe 
-> routine gets invoked, and it is responsible for invoking the driver's 
-> probe routine.  Therefore the PM core doesn't _need_ to provide this 
-> extra information to the subsystem.  Rather, the subsystem just needs 
-> to keep track of the information it already has available.
+> We already have those in the generic power domain and the pm_clock
+> layers.  This series is just hooking those up for Keystone.
 
-You are missing concept of power domains in this picture. True,
-subsystem knows when it probes but power domain does not. Subsystem has
-no knowledge of power domain (devices in the same subsystem can come
-from different domains).
+Then why not add the missing piece to the generic power domain
+code to avoid having to add infrastructure to the platform
+for it?
 
-We need to have either subsystem or device core to indicate to power
-management core that we do not need "full" runtime resume, but rather a
-"partial" one since driver is not ready yet.
-
-We would not need new callbacks here I think, we just need to be able to
-select appropriate set of callbacks, depending on the binding state.
-
-Thanks.
-
--- 
-Dmitry
+	Arnd
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
