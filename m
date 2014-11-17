@@ -1,52 +1,50 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Mon, 17 Nov 2014 14:17:00 -0800
-Message-ID: <20141117221700.GA2049@dtor-ws>
-References: <20141117220238.GE5258@dtor-ws>
- <Pine.LNX.4.44L0.1411171708010.4838-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1411171708010.4838-100000@iolanthe.rowland.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 0/1] of-thermal API change
+Date: Mon, 17 Nov 2014 18:36:08 -0400
+Message-ID: <1416263769-6578-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:37744 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbaKQXE2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 18:04:28 -0500
+Received: by mail-qc0-f170.google.com with SMTP id x3so2518054qcv.29
+        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 15:04:27 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Caesar Wang <caesar.wang@rock-chips.com>, Wei Ni <wni@nvidia.com>, Lukasz Majewski <l.majewski@samsung.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Eduardo Valentin <edubezval@gmail.com>
 
-On Mon, Nov 17, 2014 at 05:12:35PM -0500, Alan Stern wrote:
-> On Mon, 17 Nov 2014, Dmitry Torokhov wrote:
-> 
-> > > >  Except buses
-> > > > usually call pm_generic_runtime_resume() which ends up fetching driver's
-> > > > callbacks. Maybe pm_generic_runtime_*() need be a bit smarter?
-> > > 
-> > > No, the bus subsystem needs to be smarter.  It shouldn't call 
-> > > pm_generic_runtime_resume() if the driver hasn't been probed yet, or if 
-> > > the driver has already been unbound from the device.
-> > 
-> > But that code wold be exactly the same for all buses, right? So why
-> > can't pm_generic_runtime_resume() be smarter?
-> 
-> It would not be the same for all buses.  Each bus will have its own way 
-> of recognizing whether or not a driver has been probed (i.e., by 
-> checking some field in the bus-specific part of the device structure).
-> 
-> > However, is it allowed to call pm_runtime_get_sync() on devices that
-> > didn't issue pm_runtime_enable()?
-> 
-> Yes.  But the bus has to issue pm_runtime_enable() before probing the 
-> driver, because the driver will expect runtime PM to work properly 
-> while its probe routine runs.  For example, the probe routine might 
-> want to leave the device in a runtime-suspended state.  It can't do 
-> that if the device isn't enabled for runtime PM.
+Hello guys,
 
-That means that runtime PM will be enabled for all devices on given bus
-while up till now drivers were deciding if their devices should be
-runtime-pm-managed or not. I do not think we are quite ready for this.
+I am proposing this change in the of-thermal API to sensors. The only
+single change is how we represent the callbacks between sensor drivers
+and of-thermal.
 
-Thanks.
+Essentially, instead of passing callbacks as parameters of the registration
+function, now of-thermal users will pass an ops. It is a simple way of
+growing the callback API smoothly. 
+
+There are already proposals to grow this API. Thus I would like to change
+this before we start to introduce new callbacks here.
+
+I changed the existing of-thermal users to adapt accordingly.
+
+Let me know if you have objections.
+
+BR,
+
+Eduardo Valentin (1):
+  thermal: of: improve of-thermal sensor registration API
+
+ drivers/hwmon/lm75.c                               |  9 +++--
+ drivers/hwmon/ntc_thermistor.c                     |  6 +++-
+ drivers/hwmon/tmp102.c                             |  6 +++-
+ drivers/thermal/of-thermal.c                       | 42 +++++++++-------------
+ drivers/thermal/tegra_soctherm.c                   |  7 ++--
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  8 +++--
+ include/linux/thermal.h                            | 24 +++++++++----
+ 7 files changed, 61 insertions(+), 41 deletions(-)
 
 -- 
-Dmitry
+2.1.3
+
