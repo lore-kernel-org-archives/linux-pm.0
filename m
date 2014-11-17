@@ -1,73 +1,55 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 1/8] PM / Domains: Add DT bindings for power-on/off latencies
-Date: Mon, 17 Nov 2014 14:30:37 +0100
-Message-ID: <1416231044-1903-2-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v5 8/8] drivers: sh: Disable PM runtime for multi-platform r8a7740 with genpd
+Date: Mon, 17 Nov 2014 14:30:44 +0100
+Message-ID: <1416231044-1903-9-git-send-email-geert+renesas@glider.be>
 References: <1416231044-1903-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:53486 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbaKQNa5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 08:30:57 -0500
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1416231044-1903-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-PM domain power on/off-latencies are properties of the hardware.
-In legacy code, they're specified from platform code.
-On DT platforms, their values should come from DT.
+If the default PM domain using PM_CLK is used for PM runtime, the real PM
+domain(s) cannot be registered from DT later.
+
+Hence do not enable it when running a multi-platform kernel with genpd
+support on an r8a7740. The R-Mobile PM domain driver will take care of
+PM runtime management of the module clocks.
+
+The default PM domain is still needed for:
+  - platforms without genpd support,
+  - the legacy (non-DT) case, where genpd may take over later, except
+    for the C5 "always on" PM domain.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 v5:
   - No changes,
 v4:
-  - Add Reviewed-by,
-  - Replace single latency value by list of latencies,
-v3:
   - No changes,
+v3:
+  - Reword,
 v2:
-  - Add Acked-by.
+  - New.
 ---
- Documentation/devicetree/bindings/power/power_domain.txt | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/sh/pm_runtime.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 98c16672ab5f49e0..c4a4afb2ac3b0500 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -19,16 +19,26 @@ Required properties:
-    providing multiple PM domains (e.g. power controllers), but can be any value
-    as specified by device tree binding documentation of particular provider.
- 
-+Optional properties:
-+ - power-on-latency: List of power-on latencies (in ns), one for each PM
-+   domain. If all power-on latencies are identical, the list may be shortened
-+   to a single value.
-+ - power-off-latency: List of power-off latencies (in ns), one for each PM
-+   domain. If all power-off latencies are identical, the list may be shortened
-+   to a single value.
-+
- Example:
- 
- 	power: power-controller@12340000 {
- 		compatible = "foo,power-controller";
- 		reg = <0x12340000 0x1000>;
- 		#power-domain-cells = <1>;
-+		power-on-latency = <250000 400000 180000>;
-+		power-off-latency = <250000 400000 300000>;
- 	};
- 
--The node above defines a power controller that is a PM domain provider and
--expects one cell as its phandle argument.
-+The node above defines a power controller that is a PM domain provider for
-+3 PM domains, and expects one cell as its phandle argument.
- 
- ==PM domain consumers==
- 
+diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
+index fe2c2d595f599b2f..85cc89fd3e7d7cb7 100644
+--- a/drivers/sh/pm_runtime.c
++++ b/drivers/sh/pm_runtime.c
+@@ -81,7 +81,9 @@ static int __init sh_pm_runtime_init(void)
+ 		if (!of_machine_is_compatible("renesas,emev2") &&
+ 		    !of_machine_is_compatible("renesas,r7s72100") &&
+ 		    !of_machine_is_compatible("renesas,r8a73a4") &&
++#ifndef CONFIG_PM_GENERIC_DOMAINS_OF
+ 		    !of_machine_is_compatible("renesas,r8a7740") &&
++#endif
+ 		    !of_machine_is_compatible("renesas,r8a7778") &&
+ 		    !of_machine_is_compatible("renesas,r8a7779") &&
+ 		    !of_machine_is_compatible("renesas,r8a7790") &&
 -- 
 1.9.1
 
