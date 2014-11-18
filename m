@@ -1,262 +1,163 @@
 From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH v4 2/4] power: rt5033_battery: Add RT5033 Fuel gauge device
- driver
-Date: Tue, 18 Nov 2014 22:29:15 +0900
-Message-ID: <1416317357-7538-3-git-send-email-beomho.seo@samsung.com>
+Subject: [PATCH v4 4/4] Documentation: Add documentation for rt5033
+ multifunction device
+Date: Tue, 18 Nov 2014 22:29:17 +0900
+Message-ID: <1416317357-7538-5-git-send-email-beomho.seo@samsung.com>
 References: <1416317357-7538-1-git-send-email-beomho.seo@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:17766 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754231AbaKRN3W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 08:29:22 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1416317357-7538-1-git-send-email-beomho.seo@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 Cc: sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds device driver of Richtek PMIC.
-The driver support battery fuel gange. Fuel gauge calculates and determines the
-battery state of charge(SOC) according to battery open circuit voltage(OCV).
-Also, this driver provides battery average voltage, voltage and bettery present
-property.
+This patch device tree binding documentation for rt5033 multifunction device.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
 Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
 Changes in v4:
+Changes in v3:
 - none.
 
-Changes in v3:
-- Add author information the top of driver.
-
 Changes in v2:
-- Remove volatile_reg callback. Because this driver not in use regmap cache.
-- Fix wrong register name.
+- Revise binding documentation.
 ---
- drivers/power/Kconfig          |    8 ++
- drivers/power/Makefile         |    1 +
- drivers/power/rt5033_battery.c |  177 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 186 insertions(+)
- create mode 100644 drivers/power/rt5033_battery.c
+Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 ++++++++++++++++++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ 2 files changed, 109 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 0108c2a..da6981f 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -397,6 +397,14 @@ config BATTERY_GOLDFISH
- 	  Say Y to enable support for the battery and AC power in the
- 	  Goldfish emulator.
- 
-+config BATTERY_RT5033
-+	tristate "RT5033 fuel gauge support"
-+	depends on MFD_RT5033
-+	help
-+	  This adds support for battery fuel gauge in Richtek RT5033 PMIC.
-+	  The fuelgauge calculates and determines the battery state of charge
-+	  according to battery open circuit voltage.
-+
- source "drivers/power/reset/Kconfig"
- 
- endif # POWER_SUPPLY
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index dfa8942..b83a0c7 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
- obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
- obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
-+obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
- obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
-diff --git a/drivers/power/rt5033_battery.c b/drivers/power/rt5033_battery.c
+diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Documentation/devicetree/bindings/mfd/rt5033.txt
 new file mode 100644
-index 0000000..7b898f4
+index 0000000..52a6d33
 --- /dev/null
-+++ b/drivers/power/rt5033_battery.c
-@@ -0,0 +1,177 @@
-+/*
-+ * Fuel gauge driver for Richtek RT5033
-+ *
-+ * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
-+ * Author: Beomho Seo <beomho.seo@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published bythe Free Software Foundation.
-+ */
++++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
+@@ -0,0 +1,108 @@
++Richtek RT5033 Power management Integrated Circuit
 +
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/mfd/rt5033-private.h>
-+#include <linux/mfd/rt5033.h>
++RT5033 is a Multifunction device which includes battery charger, fuel gauge,
++flash LED current source, LDO and synchronous Buck converter for portable
++applications. It is interfaced to host controller using i2c interface.
 +
-+static int rt5033_battery_get_capacity(struct i2c_client *client)
-+{
-+	struct rt5033_battery *battery = i2c_get_clientdata(client);
-+	u32 msb;
++Required properties:
++- compatible : Must be "richtek,rt5033"
++- reg : Specifies the i2c slave address of general part.
++- interrupts : This i2c devices has an IRQ line connected to the main SoC.
++- interrupt-parent : The parent interrupt controller.
 +
-+	regmap_read(battery->regmap, RT5033_FUEL_REG_SOC_H, &msb);
++Optional node:
++Regulators: The regulators of RT5033 have to be instantiated under sub-node
++named "regulators" usinge the following format.
 +
-+	return msb;
-+}
++	regulators {
++		regulator-name {
++			regulator-name = LDO/BUCK
++			regulator subnodes called X, Y and Z
++		};
++	};
++	refer Documentation/devicetree/bindings/regulator/regulator.txt
 +
-+static int rt5033_battery_get_present(struct i2c_client *client)
-+{
-+	struct rt5033_battery *battery = i2c_get_clientdata(client);
-+	u32 val;
 +
-+	regmap_read(battery->regmap, RT5033_FUEL_REG_CONFIG_L, &val);
++Battery charger: There battery charger of RT5033 have to be instantiated under
++sub-node named "charger" using the following format.
 +
-+	return (val & RT5033_FUEL_BAT_PRESENT) ? true : false;
-+}
++Required properties:
++- compatible : Must be "richtek,rt5033-charger".
++- richtek,pre-uamp : Current of pre-charge mode. The pre-charge current levels
++  are 350 mA to 650 mA programmed by I2C per 100 mA.
++- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode. Battery
++  voltage is below pre-charge threshold voltage, the charger is in pre-charge
++  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V programmed
++  by I2C per 0.1 V.
++- richtek,fast-uamp : Current of fast-charge mode. The fast-charge current
++  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
++- richtek,const-uvolt :  Battery regulation voltage of constant voltage mode.
++  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
++- richtek,eoc-uamp : This property is end of charge current. Its level 150 mA
++  to 200 mA.
 +
-+static int rt5033_battery_get_watt_prop(struct i2c_client *client,
-+		enum power_supply_property psp)
-+{
-+	struct rt5033_battery *battery = i2c_get_clientdata(client);
-+	unsigned int regh, regl;
-+	int ret;
-+	u32 msb, lsb;
++	charger {
++		compatible = "richtek,rt5033-charger";
++		richtek,pre-uamp = <350000>;
++		richtek,pre-threshold-uvolt = <3400000>;
++		richtek,fast-uamp = <2000000>;
++		richtek,const-uvolt = <4350000>;
++		richtek,eoc-uamp = <250000>;
++	};
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		regh = RT5033_FUEL_REG_VBAT_H;
-+		regl = RT5033_FUEL_REG_VBAT_L;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-+		regh = RT5033_FUEL_REG_AVG_VOLT_H;
-+		regl = RT5033_FUEL_REG_AVG_VOLT_L;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
-+		regh = RT5033_FUEL_REG_OCV_H;
-+		regl = RT5033_FUEL_REG_OCV_L;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
 +
-+	regmap_read(battery->regmap, regh, &msb);
-+	regmap_read(battery->regmap, regl, &lsb);
++Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "fuelgauge"
++using the following format.
 +
-+	ret = ((msb << 4) + (lsb >> 4)) * 1250 / 1000;
++Required properties:
++- compatible = Must be "richtek,rt5033-battery".
 +
-+	return ret;
-+}
++	i2c_fuel: i2c@1 {
++		compatible = "i2c-gpio";
++		standard i2c-gpio constraints...
++		fuelgauge {
++			compatible = "richtek,rt5033-battery".
++		};
++	};
 +
-+static int rt5033_battery_get_property(struct power_supply *psy,
-+		enum power_supply_property psp,
-+		union power_supply_propval *val)
-+{
-+	struct rt5033_battery *battery = container_of(psy,
-+				struct rt5033_battery, psy);
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-+	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
-+		val->intval = rt5033_battery_get_watt_prop(battery->client,
-+									psp);
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = rt5033_battery_get_present(battery->client);
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		val->intval = rt5033_battery_get_capacity(battery->client);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
++Example:
 +
-+static enum power_supply_property rt5033_battery_props[] = {
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_AVG,
-+	POWER_SUPPLY_PROP_VOLTAGE_OCV,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+};
++		rt5033@34 {
++			compatible = "richtek,rt5033";
++			reg = <0x34>;
++			interrupt-parent = <&gpx1>;
++			interrupts = <5 0>;
 +
-+static struct regmap_config rt5033_battery_regmap_config = {
-+	.reg_bits	= 8,
-+	.val_bits	= 8,
-+	.max_register	= RT5033_FUEL_REG_END,
-+};
++			regulators {
++				buck_reg: BUCK {
++					regulator-name = "BUCK";
++					regulator-min-microvolt = <1200000>;
++					regulator-max-microvolt = <1200000>;
++					regulator-always-on;
++				};
++			};
 +
-+static int rt5033_battery_probe(struct i2c_client *client,
-+		const struct i2c_device_id *id)
-+{
-+	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-+	struct rt5033_battery *battery;
-+	u32 ret;
++			charger {
++				compatible = "richtek,rt5033-charger";
++				richtek,pre-uamp = <350000>;
++				richtek,pre-threshold-uvolt = <3400000>;
++				richtek,fast-uamp = <2000000>;
++				richtek,const-uvolt = <4350000>;
++				richtek,eoc-uamp = <250000>;
++			};
 +
-+	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
-+		return -EIO;
++		};
 +
-+	battery = devm_kzalloc(&client->dev, sizeof(*battery), GFP_KERNEL);
-+	if (!battery)
-+		return -EINVAL;
++		i2c_fuel: i2c@10 {
++			compatible = "i2c-gpio";
++			gpios = <&gpm3 1 0
++				&gpm3 0 0>;
 +
-+	battery->client = client;
-+	battery->regmap = devm_regmap_init_i2c(client,
-+			&rt5033_battery_regmap_config);
-+	if (IS_ERR(battery->regmap)) {
-+		dev_err(&client->dev, "Failed to initialize regmap\n");
-+		return -EINVAL;
-+	}
-+
-+	i2c_set_clientdata(client, battery);
-+
-+	battery->psy.name		= "rt5033-battery";
-+	battery->psy.type		= POWER_SUPPLY_TYPE_BATTERY;
-+	battery->psy.get_property	= rt5033_battery_get_property;
-+	battery->psy.properties		= rt5033_battery_props;
-+	battery->psy.num_properties	= ARRAY_SIZE(rt5033_battery_props);
-+
-+	ret = power_supply_register(&client->dev, &battery->psy);
-+	if (ret) {
-+		dev_err(&client->dev, "Failed to register power supply\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int rt5033_battery_remove(struct i2c_client *client)
-+{
-+	struct rt5033_battery *battery = i2c_get_clientdata(client);
-+
-+	power_supply_unregister(&battery->psy);
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id rt5033_battery_id[] = {
-+	{ "rt5033-battery", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, rt5033_battery_id);
-+
-+static struct i2c_driver rt5033_battery_driver = {
-+	.driver = {
-+		.name = "rt5033-battery",
-+	},
-+	.probe = rt5033_battery_probe,
-+	.remove = rt5033_battery_remove,
-+	.id_table = rt5033_battery_id,
-+};
-+module_i2c_driver(rt5033_battery_driver);
-+
-+MODULE_DESCRIPTION("Richtek RT5033 fuel gauge driver");
-+MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
-+MODULE_LICENSE("GPL");
++			fuel: rt5033-battery@35 {
++				compatible = "richtek,rt5033-battery";
++				interrupt-parent = <&gpx2>;
++				interrupts = <3 0>;
++				reg = <0x35>;
++			};
++		};
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index 723999d..611b543 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -124,6 +124,7 @@ ralink	Mediatek/Ralink Technology Corp.
+ ramtron	Ramtron International
+ realtek Realtek Semiconductor Corp.
+ renesas	Renesas Electronics Corporation
++richtek	Richtek Technology Corporation
+ ricoh	Ricoh Co. Ltd.
+ rockchip	Fuzhou Rockchip Electronics Co., Ltd
+ samsung	Samsung Semiconductor
 -- 
 1.7.9.5
-
