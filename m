@@ -1,47 +1,61 @@
-From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 17 Nov 2014 18:18:24 -0800
-Message-ID: <546AAC70.4070905@oracle.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <1600093.60yAP0Qpua@wuerfel> <7h389h3aif.fsf@deeprootsystems.com> <1618855.DXsjWXLqau@wuerfel>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
+Date: Tue, 18 Nov 2014 08:38:14 +0530
+Message-ID: <CAKohpomgci3S+PZUhm3svuxX+V+pNvHxQqX4m=QmPzd00sxPwg@mail.gmail.com>
+References: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org>
+	<2808463.UGmrrQ79Aq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1618855.DXsjWXLqau@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:35927 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbaKRDIP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 22:08:15 -0500
+Received: by mail-ob0-f175.google.com with SMTP id wp4so4961982obc.6
+        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 19:08:15 -0800 (PST)
+In-Reply-To: <2808463.UGmrrQ79Aq@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Stefan Wahren <stefan.wahren@i2se.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 11/17/14 12:37 PM, Arnd Bergmann wrote:
-> On Monday 17 November 2014 11:14:16 Kevin Hilman wrote:
->>>>
->>>> So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
->>>> device and Generic clock manipulation PM callbacks.
->>>> It fills per-device clock list when device is attached to GPD and
->>>> ensures that all clocks from that list enabled/disabled when device is
->>>> started/stopped.
->>>
->>> The idea of such a generic power domain implementation sounds useful, but
->>> it has absolutely no business in platform specific code.
+On 18 November 2014 05:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, November 17, 2014 01:38:00 PM Viresh Kumar wrote:
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> index 89ced95..490e9db 100644
+>> --- a/drivers/base/power/opp.c
+>> +++ b/drivers/base/power/opp.c
+>> @@ -466,9 +466,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>>               int ret = opp->available && new_opp->u_volt == opp->u_volt ?
+>>                       0 : -EEXIST;
 >>
->> Yes it does.  This isn't a generic power domain implementation, but
->> rather just the platform-specific glue that hooks up the clocks to the
->> right devices and power-domains so that the generic power-domain and
->> generic pm_clocks code does the right thing.
+>> -             dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+>> -                      __func__, opp->rate, opp->u_volt, opp->available,
+>> -                      new_opp->rate, new_opp->u_volt, new_opp->available);
+>> +             dev_dbg(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+>> +                     __func__, opp->rate, opp->u_volt, opp->available,
+>> +                     new_opp->rate, new_opp->u_volt, new_opp->available);
+>>               mutex_unlock(&dev_opp_list_lock);
+>>               kfree(new_opp);
+>>               return ret;
 >
-> How would you do this on an arm64 version of keystone then? With
-> the current approach, you'd need to add a machine specific directory,
-> and that seems completely pointless since this is not even about
-> a hardware requirement.
->
-The Keystone PM domain code actually doesn't have to be under machine
-code. Infact my first patch I added that under drivers/bus/ and later
-based on Kevin's suggestion moved under machine. That time the Keystone
-64 bit arch point I couldn't bring up for other reasons.
+> Don't you think that this may hide real bugs?
 
-But the code itself can be easily moved to drivers/power/ without
-any issue if thats what is the concern here.
+What kind of bugs exactly?
 
-Regards,
-Santosh
+We are allowing addition of duplicate OPPs as a standard thing right now
+as cpufreq drivers don't get rid of the OPPs they create with DT. So, that
+shouldn't complain, isn't it ?
+
+For example, what Stefan was doing was absolutely normal procedure
+and that complained for him..
+
+The only thing we don't allow is when the existing OPP isn't available
+and we are trying to add a duplicate one. In that case we do return
+-EEXIST and so we will get errors from the upper layer.
+
+Or do we want to destroy OPPs created with help of DT while the
+driver unloads ?
+
+--
+viresh
