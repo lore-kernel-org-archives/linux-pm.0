@@ -1,9 +1,11 @@
 From: Ethan Zhao <ethan.zhao@oracle.com>
 Subject: [PATCH 0/3] intel_pstate: allow to be built as module and handle Sun server power capping.
-Date: Tue, 18 Nov 2014 17:36:59 +0900
-Message-ID: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-Sender: linux-doc-owner@vger.kernel.org
+Date: Tue, 18 Nov 2014 17:37:03 +0900
+Message-ID: <1416299826-15813-5-git-send-email-ethan.zhao@oracle.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
@@ -42,4 +44,3 @@ Ethan Zhao (2):
 
 -- 
 1.8.3.1
-
