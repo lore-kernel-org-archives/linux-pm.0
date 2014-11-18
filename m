@@ -1,74 +1,67 @@
-From: Ethan Zhao <ethan.zhao@oracle.com>
-Subject: [PATCH] intel_pstate: skip the driver if Sun server has ACPI _PPC method
-Date: Tue, 18 Nov 2014 17:27:27 +0900
-Message-ID: <1416299253-14912-2-git-send-email-ethan.zhao@oracle.com>
-References: <1416299253-14912-1-git-send-email-ethan.zhao@oracle.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is selected
+Date: Tue, 18 Nov 2014 09:32:17 +0100
+Message-ID: <CAMuHMdW2o4HKfRei56ntT9h1wYAs+cyaW14C9wtBVXvooLbpsQ@mail.gmail.com>
+References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
+	<6465990.KKns6W8hQE@vostro.rjw.lan>
+	<7hioid3cqx.fsf@deeprootsystems.com>
+	<1452958.d0yJE5gVgq@vostro.rjw.lan>
+	<7h61edyxkq.fsf@deeprootsystems.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416299253-14912-1-git-send-email-ethan.zhao@oracle.com>
+In-Reply-To: <7h61edyxkq.fsf@deeprootsystems.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Oracle Sun X86 servers have dynamic power capping capability that works via
-ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-enabled.
+On Tue, Nov 18, 2014 at 4:52 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> The number of and dependencies between high-level power management
+>> Kconfig options make life much harder than necessary.  Several
+>> conbinations of them have to be tested and supported, even though
+>> some of those combinations are very rarely used in practice (it
+>> they are used in practice at all).  Moreover, the fact that we
+>> have separate independent Kconfig options for runtime PM and
+>> system suspend is a serious obscacle for integration between
+>> the two frameworks.
+>>
+>> To overcome these difficulties, always select PM_RUNTIME if PM_SLEEP
+>> is set.  Among other things, this will allow system suspend callbacks
+>> provided by bus types and device drivers to rely on the runtime PM
+>> framework regardless of the kernel configuration.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>> As a follow up.
+>>
+>> Note that we won't need the patch making genpd select PM_RUNTIME with this,
+>> because genpd already depends on PM.
+>>
+>> Thoughts, comments?
+>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
 
-Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
----
- drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+This gets rid of
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 27bb6d3..5498eb0 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
- 	return true;
- }
- 
-+static bool intel_pstate_has_acpi_ppc(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		struct acpi_processor *pr = per_cpu(processors, i);
-+
-+		if (!pr)
-+			continue;
-+		if (acpi_has_method(pr->handle, "_PPC"))
-+			return true;
-+	}
-+	return false;
-+}
-+
- struct hw_vendor_info {
- 	u16  valid;
- 	char oem_id[ACPI_OEM_ID_SIZE];
-@@ -952,6 +967,7 @@ struct hw_vendor_info {
- /* Hardware vendor-specific info that has its own power management modes */
- static struct hw_vendor_info vendor_info[] = {
- 	{1, "HP    ", "ProLiant"},
-+	{1, "ORACLE", ""},
- 	{0, "", ""},
- };
- 
-@@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
- 		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
- 		    intel_pstate_no_acpi_pss())
- 			return true;
-+		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-+			intel_pstate_has_acpi_ppc())
-+			return true;
- 	}
- 
- 	return false;
- }
- #else /* CONFIG_ACPI not enabled */
- static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-+static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
- #endif /* CONFIG_ACPI */
- 
- static int __init intel_pstate_init(void)
--- 
-1.8.3.1
+kernel/power/Kconfig:132:error: recursive dependency detected!
+kernel/power/Kconfig:132: symbol PM_RUNTIME is selected by PM_GENERIC_DOMAINS
+kernel/power/Kconfig:272: symbol PM_GENERIC_DOMAINS is selected by PM_RUNTIME
+
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
