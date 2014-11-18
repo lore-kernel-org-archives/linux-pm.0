@@ -1,64 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is selected (was: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd enabled)
-Date: Tue, 18 Nov 2014 01:39:06 +0100
-Message-ID: <1452958.d0yJE5gVgq@vostro.rjw.lan>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org> <6465990.KKns6W8hQE@vostro.rjw.lan> <7hioid3cqx.fsf@deeprootsystems.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCHv2 1/1] thermal: of: improve of-thermal sensor
+ registration API
+Date: Mon, 17 Nov 2014 20:01:36 -0400
+Message-ID: <20141118000133.GA10027@developer>
+References: <1416263769-6578-2-git-send-email-edubezval@gmail.com>
+ <1416264255-10083-1-git-send-email-edubezval@gmail.com>
+ <546A8EA9.5070001@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50176 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751464AbaKRASC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Nov 2014 19:18:02 -0500
-In-Reply-To: <7hioid3cqx.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <546A8EA9.5070001-/1wQRMveznE@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The number of and dependencies between high-level power management
-Kconfig options make life much harder than necessary.  Several
-conbinations of them have to be tested and supported, even though
-some of those combinations are very rarely used in practice (it
-they are used in practice at all).  Moreover, the fact that we
-have separate independent Kconfig options for runtime PM and
-system suspend is a serious obscacle for integration between
-the two frameworks.
+--G4iJoqBmSsgzjUCe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-To overcome these difficulties, always select PM_RUNTIME if PM_SLEEP
-is set.  Among other things, this will allow system suspend callbacks
-provided by bus types and device drivers to rely on the runtime PM
-framework regardless of the kernel configuration.
+Mikko,
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+On Tue, Nov 18, 2014 at 02:11:21AM +0200, Mikko Perttunen wrote:
 
-As a follow up.
+<big cut>
 
-Note that we won't need the patch making genpd select PM_RUNTIME with this,
-because genpd already depends on PM.
+> > diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_s=
+octherm.c
+> > index 70f7e9e..893c39c 100644
+> > --- a/drivers/thermal/tegra_soctherm.c
+> > +++ b/drivers/thermal/tegra_soctherm.c
+> > @@ -317,6 +317,10 @@ static int tegra_thermctl_get_temp(void *data, lon=
+g *out_temp)
+> >   	return 0;
+> >   }
+> >
+> > +static const struct thermal_zone_of_device_ops tegra_of_thermal_ops =
+=3D {
+> > +	.get_trend =3D tegra_thermctl_get_temp,
+> > +};
+>=20
+> This should probably read ".get_temp =3D tegra_thermctl_get_temp" instead=
+=20
+> of .get_trend :)
 
-Thoughts, comments?
+Indeed. Sending in v3.
 
-Rafael
+>=20
+> > ...
+>=20
+> Cheers,
+> Mikko
+>=20
 
----
- kernel/power/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+--G4iJoqBmSsgzjUCe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Index: linux-pm/kernel/power/Kconfig
-===================================================================
---- linux-pm.orig/kernel/power/Kconfig
-+++ linux-pm/kernel/power/Kconfig
-@@ -94,6 +94,7 @@ config PM_STD_PARTITION
- config PM_SLEEP
- 	def_bool y
- 	depends on SUSPEND || HIBERNATE_CALLBACKS
-+	select PM_RUNTIME
- 
- config PM_SLEEP_SMP
- 	def_bool y
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQEcBAEBAgAGBQJUaoxTAAoJEMLUO4d9pOJWJAAH/2qZa9BRjOyRJafxzuMVJsPq
+n7vOsR67hXnAL0EI44g6GB6EWHT9dKlFz9P/9oQsdnVxwYJJdyX4w956ZW3Lu2XO
+uPc+6hwtkd/iFNs9weunfNG1UzRR/N+F4EDZJZwui8cCqstnhQKwp95LXxCxsj/S
+pcEjKbntS12X24HB759xsfKRE5YFlZ2HzBL5MDOBSR71Y583lya5vwShJQ+uuwRc
+7ZWaHV26Wy0wiBnAbdDwlXSnkLPt/1E4rsFpM/gfGK5H0aXwpDaOzLHbvllIYrqO
+obXnaciSf0t1tODk1U6LrQiN944jbY4iSpaugwRx8g3ndNqPDzHT6E/paexIazs=
+=KoFZ
+-----END PGP SIGNATURE-----
+
+--G4iJoqBmSsgzjUCe--
