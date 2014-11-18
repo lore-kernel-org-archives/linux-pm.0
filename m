@@ -1,81 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
-Date: Tue, 18 Nov 2014 03:16:31 +0100
-Message-ID: <1787068.2MCH8czsD4@vostro.rjw.lan>
-References: <20141117220238.GE5258@dtor-ws> <20141117232604.GB2049@dtor-ws> <3008804.zFmDfsDlAH@vostro.rjw.lan>
+From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 17 Nov 2014 18:18:24 -0800
+Message-ID: <546AAC70.4070905@oracle.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <1600093.60yAP0Qpua@wuerfel> <7h389h3aif.fsf@deeprootsystems.com> <1618855.DXsjWXLqau@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <3008804.zFmDfsDlAH@vostro.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1618855.DXsjWXLqau@wuerfel>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, November 18, 2014 01:26:38 AM Rafael J. Wysocki wrote:
-> On Monday, November 17, 2014 03:26:04 PM Dmitry Torokhov wrote:
-> > On Tue, Nov 18, 2014 at 12:28:26AM +0100, Rafael J. Wysocki wrote:
-> > > On Monday, November 17, 2014 02:17:00 PM Dmitry Torokhov wrote:
-> > > > On Mon, Nov 17, 2014 at 05:12:35PM -0500, Alan Stern wrote:
-> > > > > On Mon, 17 Nov 2014, Dmitry Torokhov wrote:
-> > > > > 
-> > > > > > > >  Except buses
-> > > > > > > > usually call pm_generic_runtime_resume() which ends up fetching driver's
-> > > > > > > > callbacks. Maybe pm_generic_runtime_*() need be a bit smarter?
-> > > > > > > 
-> > > > > > > No, the bus subsystem needs to be smarter.  It shouldn't call 
-> > > > > > > pm_generic_runtime_resume() if the driver hasn't been probed yet, or if 
-> > > > > > > the driver has already been unbound from the device.
-> > > > > > 
-> > > > > > But that code wold be exactly the same for all buses, right? So why
-> > > > > > can't pm_generic_runtime_resume() be smarter?
-> > > > > 
-> > > > > It would not be the same for all buses.  Each bus will have its own way 
-> > > > > of recognizing whether or not a driver has been probed (i.e., by 
-> > > > > checking some field in the bus-specific part of the device structure).
-> > > > > 
-> > > > > > However, is it allowed to call pm_runtime_get_sync() on devices that
-> > > > > > didn't issue pm_runtime_enable()?
-> > > > > 
-> > > > > Yes.  But the bus has to issue pm_runtime_enable() before probing the 
-> > > > > driver, because the driver will expect runtime PM to work properly 
-> > > > > while its probe routine runs.  For example, the probe routine might 
-> > > > > want to leave the device in a runtime-suspended state.  It can't do 
-> > > > > that if the device isn't enabled for runtime PM.
-> > > > 
-> > > > That means that runtime PM will be enabled for all devices on given bus
-> > > > while up till now drivers were deciding if their devices should be
-> > > > runtime-pm-managed or not.
-> > > 
-> > > That's not the case for PCI drivers.
-> > > 
-> > > > I do not think we are quite ready for this.
-> > > 
-> > > We have to do that if power domains are in use, however, because if at least
-> > > one device in a power domain in enabled for runtime PM, that will affect the
-> > > other devices in that domain.
-> > > 
-> > > We could make a rule to keep a domail always up if at least one device in it
-> > > has runtime PM disabled, but that is equivalent to enabling runtime PM for
-> > > that device, powering the domain up and bumping up the device's usage counter.
-> > 
-> > What will driver will see if it tries to check pm_runtime_active()?
-> > Would not it get unexpected result if the driver did not call
-> > pm_runtime_enable() on it's device?
-> 
-> Well, that part was supposed to depend on the bus type.  For example, it
-> won't be unexpected for PCI drivers, because runtime PM is always enabled
-> for PCI devices (although it may be blocked as I described).
-> 
-> A problem arises if a power domain is used along with a bus type that doesn't
-> enable runtime PM for devices by default and drivers are expected to do that.
-> That could be addressed by powering up a PM domain (and bumping up its usage
-> counter) when adding a device to it and keeping it up until all of the devices
-> in it are runtime suspended, but then it also should be turned off eventually
-> if there are no drivers for any of those devices.
+On 11/17/14 12:37 PM, Arnd Bergmann wrote:
+> On Monday 17 November 2014 11:14:16 Kevin Hilman wrote:
+>>>>
+>>>> So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
+>>>> device and Generic clock manipulation PM callbacks.
+>>>> It fills per-device clock list when device is attached to GPD and
+>>>> ensures that all clocks from that list enabled/disabled when device is
+>>>> started/stopped.
+>>>
+>>> The idea of such a generic power domain implementation sounds useful, but
+>>> it has absolutely no business in platform specific code.
+>>
+>> Yes it does.  This isn't a generic power domain implementation, but
+>> rather just the platform-specific glue that hooks up the clocks to the
+>> right devices and power-domains so that the generic power-domain and
+>> generic pm_clocks code does the right thing.
+>
+> How would you do this on an arm64 version of keystone then? With
+> the current approach, you'd need to add a machine specific directory,
+> and that seems completely pointless since this is not even about
+> a hardware requirement.
+>
+The Keystone PM domain code actually doesn't have to be under machine
+code. Infact my first patch I added that under drivers/bus/ and later
+based on Kevin's suggestion moved under machine. That time the Keystone
+64 bit arch point I couldn't bring up for other reasons.
 
-In other words, I agree with the Ulf's approach in the $subject patch, although
-the changelog needs to be updated.
+But the code itself can be easily moved to drivers/power/ without
+any issue if thats what is the concern here.
 
-Rafael
+Regards,
+Santosh
