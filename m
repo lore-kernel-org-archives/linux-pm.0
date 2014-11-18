@@ -1,266 +1,243 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v3 1/5] mfd: rt5033: Add Richtek RT5033 driver core.
-Date: Tue, 18 Nov 2014 16:25:37 +0000
-Message-ID: <20141118162537.GE13959@x1>
-References: <1415794082-30277-1-git-send-email-beomho.seo@samsung.com>
- <1415794082-30277-2-git-send-email-beomho.seo@samsung.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
+Date: Tue, 18 Nov 2014 09:56:14 -0700
+Message-ID: <20141118165614.GB770@linaro.org>
+References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>
+ <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
+ <20141114224620.GD11808@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1415794082-30277-2-git-send-email-beomho.seo@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+In-Reply-To: <20141114224620.GD11808@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 12 Nov 2014, Beomho Seo wrote:
-
-> This patch adds a new driver for Richtek RT5033 driver.
-> RT5033 is a Multifunction device which includes battery charger, fuel=
- gauge,
-> flash LED current source, LDO and synchronous Buck converter. It is i=
-nterfaced
-> to host controller using I2C interface.
->=20
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> Cc: Lee Jones <lee.jone@linaro.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
-> Changes in v3
-> - Correct sentence errors.
-> - Add author information the top of each drivers.
-> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and b=
-link.
-> - Change some return check.
-> - Use bool and of_match_ptr().
->=20
-> Changes in v2
-> - Remove volatile_reg callback. Because this driver not in use regmap=
- cache.
-> - Revmoe unnecessary subnode of_compatible.
-> - Add define for set_high impedance mode of charger.
-> ---
->=20
->  drivers/mfd/Kconfig                |   12 ++
->  drivers/mfd/Makefile               |    1 +
->  drivers/mfd/rt5033.c               |  141 +++++++++++++++++++
->  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++=
-++++++++++
->  include/linux/mfd/rt5033.h         |   62 +++++++++
->  5 files changed, 476 insertions(+)
->  create mode 100644 drivers/mfd/rt5033.c
->  create mode 100644 include/linux/mfd/rt5033-private.h
->  create mode 100644 include/linux/mfd/rt5033.h
->=20
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 72d3808..55b6551 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -618,6 +618,18 @@ config MFD_RTSX_PCI
->  	  types of memory cards, such as Memory Stick, Memory Stick Pro,
->  	  Secure Digital and MultiMediaCard.
-> =20
-> +config MFD_RT5033
-> +	bool "Richtek RT5033 Power Management IC"
-> +	depends on I2C=3Dy
-> +	select MFD_CORE
-> +	select REGMAP_I2C
-> +	help
-> +	  This driver provides for the Richtek RT5033 Power Management IC,
-> +	  which includes the I2C driver and the Core APIs. This driver prov=
-ides
-> +	  common support for accessing the device. The device supports mult=
-iple
-> +	  sub-devices like charger, fuel gauge, flash LED, current source,
-> +	  LDO and Buck.
-
-What's stopping this from being built as a module?
-
->  config MFD_RTSX_USB
->  	tristate "Realtek USB card reader"
->  	depends on USB
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 53467e2..4059c24 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -176,6 +176,7 @@ obj-$(CONFIG_MFD_IPAQ_MICRO)	+=3D ipaq-micro.o
->  obj-$(CONFIG_MFD_MENF21BMC)	+=3D menf21bmc.o
->  obj-$(CONFIG_MFD_HI6421_PMIC)	+=3D hi6421-pmic-core.o
->  obj-$(CONFIG_MFD_DLN2)		+=3D dln2.o
-> +obj-$(CONFIG_MFD_RT5033)	+=3D rt5033.o
-> =20
->  intel-soc-pmic-objs		:=3D intel_soc_pmic_core.o intel_soc_pmic_crc.o
->  obj-$(CONFIG_INTEL_SOC_PMIC)	+=3D intel-soc-pmic.o
-> diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
-> new file mode 100644
-> index 0000000..e29c6d9
-> --- /dev/null
-> +++ b/drivers/mfd/rt5033.c
-> @@ -0,0 +1,141 @@
-> +/*
-> + * MFD core driver for the Richtek RT5033.
-> + *
-> + * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
-> + * Author: Beomho Seo <beomho.seo@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published bythe Free Software Foundation.
-> + */
-> +
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-
-Why have you included this if you can't build as a module?
-
-> +#include <linux/interrupt.h>
-> +#include <linux/of_device.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/mfd/rt5033.h>
-> +#include <linux/mfd/rt5033-private.h>
-> +
-> +static const struct regmap_irq rt5033_irqs[] =3D {
-> +	{ .mask =3D RT5033_PMIC_IRQ_BUCKOCP, },
-> +	{ .mask =3D RT5033_PMIC_IRQ_BUCKLV, },
-> +	{ .mask =3D RT5033_PMIC_IRQ_SAFELDOLV, },
-> +	{ .mask =3D RT5033_PMIC_IRQ_LDOLV, },
-> +	{ .mask =3D RT5033_PMIC_IRQ_OT, },
-> +	{ .mask =3D RT5033_PMIC_IRQ_VDDA_UV, },
-> +};
-> +
-> +static const struct regmap_irq_chip rt5033_irq_chip =3D {
-> +	.name		=3D "rt5033",
-> +	.status_base	=3D RT5033_REG_PMIC_IRQ_STAT,
-> +	.mask_base	=3D RT5033_REG_PMIC_IRQ_CTRL,
-> +	.mask_invert	=3D true,
-> +	.num_regs	=3D 1,
-> +	.irqs		=3D rt5033_irqs,
-> +	.num_irqs	=3D ARRAY_SIZE(rt5033_irqs),
-> +};
-> +
-> +static const struct mfd_cell rt5033_devs[] =3D {
-> +	{
-> +		.name =3D "rt5033-regulator",
-> +	}, {
-
-Place this entry on one line.  Like you did in rt5033_irqs.
-
-> +		.name =3D "rt5033-charger",
-> +		.of_compatible =3D "richtek,rt5033-charger",
-> +	}, {
-> +		.name =3D "rt5033-battery",
-> +		.of_compatible =3D "richtek,rt5033-battery",
-> +	},
-> +};
-> +
-> +static const struct of_device_id rt5033_dt_match[] =3D {
-> +	{ .compatible =3D "richtek,rt5033", },
-> +	{ }
-> +};
-> +
-> +static const struct regmap_config rt5033_regmap_config =3D {
-> +	.reg_bits	=3D 8,
-> +	.val_bits	=3D 8,
-> +	.max_register	=3D RT5033_REG_END,
-> +};
-> +
-> +static int rt5033_i2c_probe(struct i2c_client *i2c,
-> +				const struct i2c_device_id *id)
-> +{
-> +	struct rt5033_dev *rt5033;
-> +	unsigned int data;
-> +	int ret;
-> +
-> +	rt5033 =3D devm_kzalloc(&i2c->dev, sizeof(*rt5033), GFP_KERNEL);
-> +	if (!rt5033)
-> +		return -ENOMEM;
-> +
-> +	i2c_set_clientdata(i2c, rt5033);
-> +	rt5033->dev =3D &i2c->dev;
-> +	rt5033->irq =3D i2c->irq;
-> +	rt5033->wakeup =3D true;
-> +
-> +	rt5033->regmap =3D devm_regmap_init_i2c(i2c, &rt5033_regmap_config)=
-;
-> +	if (IS_ERR(rt5033->regmap)) {
-> +		dev_err(&i2c->dev, "Failed to allocate register map.\n");
-> +		return PTR_ERR(rt5033->regmap);
-> +	}
-> +
-> +	ret =3D regmap_read(rt5033->regmap, RT5033_REG_DEVICE_ID, &data);
-> +	if (ret) {
-> +		dev_err(&i2c->dev, "Device not found\n");
-> +		return -ENODEV;
-> +	}
-> +	dev_info(&i2c->dev, "Device found Device ID: %04x\n", data);
-> +
-> +	ret =3D regmap_add_irq_chip(rt5033->regmap, rt5033->irq,
-> +			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-> +			0, &rt5033_irq_chip, &rt5033->irq_data);
-> +	if (ret) {
-> +		dev_err(&i2c->dev, "Failed to request IRQ %d: %d\n",
-> +							rt5033->irq, ret);
-> +		return ret;
-> +	}
-> +
-> +	ret =3D mfd_add_devices(rt5033->dev, -1, rt5033_devs,
-> +			ARRAY_SIZE(rt5033_devs), NULL, 0,
-> +			regmap_irq_get_domain(rt5033->irq_data));
-> +	if (ret < 0) {
-> +		dev_err(&i2c->dev, "Failed to add RT5033 child device.\n");
-
-s/device/devices/
-
-> +		return ret;
-> +	}
-> +
-> +	device_init_wakeup(rt5033->dev, rt5033->wakeup);
-> +
-> +	return 0;
-> +}
-> +
-> +static int rt5033_i2c_remove(struct i2c_client *i2c)
-> +{
-> +	struct rt5033_dev *rt5033 =3D i2c_get_clientdata(i2c);
-> +
-> +	mfd_remove_devices(rt5033->dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id rt5033_i2c_id[] =3D {
-> +	{ "rt5033", },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, rt5033_i2c_id);
-
-Why do you need to export this if you're not building as a module?
-
-> +static struct i2c_driver rt5033_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "rt5033",
-> +		.of_match_table =3D of_match_ptr(rt5033_dt_match),
-> +	},
-> +	.probe =3D rt5033_i2c_probe,
-> +	.remove =3D rt5033_i2c_remove,
-> +	.id_table =3D rt5033_i2c_id,
-> +};
-> +module_i2c_driver(rt5033_driver);
+On Fri, Nov 14 2014 at 15:46 -0700, Stephen Boyd wrote:
+>On 10/24, Lina Iyer wrote:
+>> diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+>> new file mode 100644
+>> index 0000000..ee2e3ca
+>> --- /dev/null
+>> +++ b/drivers/soc/qcom/spm.c
+>> +#include <linux/module.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/delay.h>
 >
-> +MODULE_DESCRIPTION("Richtek RT5033 multi-function core driver");
-> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
-> +MODULE_LICENSE("GPL");
+>Is this used?
+>
+OK. Will check and remove.
+>> +#include <linux/init.h>
+>> +#include <linux/io.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/err.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/cpuidle.h>
+>> +#include <linux/cpu_pm.h>
+>> +
+>> +#include <asm/proc-fns.h>
+>> +#include <asm/suspend.h>
+>> +
+>> +#include <soc/qcom/pm.h>
+>> +#include <soc/qcom/pm.h>
+>> +#include <soc/qcom/scm.h>
+>> +#include <soc/qcom/scm-boot.h>
+>> +
+>> +
+>> +#define SCM_CMD_TERMINATE_PC	(0x2)
+>> +#define SCM_FLUSH_FLAG_MASK	(0x3)
+>> +#define SCM_L2_ON		(0x0)
+>> +#define SCM_L2_OFF		(0x1)
+>> +#define MAX_PMIC_DATA 2
+>> +#define MAX_SEQ_DATA 64
+>> +
+>> +#define SPM_CTL_INDEX 0x7f
+>> +#define SPM_CTL_INDEX_SHIFT 4
+>> +#define SPM_CTL_EN BIT(0)
+>
+>Nitpick, why aren't these also tabbed out?
+>
+Ok
+>> +
+>> +/**
+>> + * spm_set_low_power_mode() - Configure SPM start address for low power mode
+>> + * @mode: SPM LPM mode to enter
+>> + */
+>> +int qcom_spm_set_low_power_mode(enum pm_sleep_mode mode)
+>
+>static?
+>
+Yeah, seem to have noticed and fixed.
 
-More module stuff?
+>> +{
+>> +	struct spm_driver_data *drv = this_cpu_ptr(&cpu_spm_drv);
+>> +	u32 start_index;
+>> +	u32 ctl_val;
+>> +
+>> +	if (!drv->available)
+>> +		return -ENXIO;
+>
+>It would be nice if we didn't need this by only registering the
+>cpuidle device for this CPU once we've initialized the SPM
+>hardware.
+>
+I did explore it. It strays our cpuidle code away from the standard code
+that we are trying to go towards with idle-states framework.
 
-[...]
+>> +
+>> +	start_index = drv->reg_data->start_index[mode];
+>> +
+>> +	ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
+>> +	ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
+>> +	ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
+>> +	ctl_val |= SPM_CTL_EN;
+>> +	spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+>> +
+>> +	/* Ensure we have written the start address */
+>> +	wmb();
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int qcom_pm_collapse(unsigned long int unused)
+>> +{
+>> +	int ret;
+>> +	u32 flag;
+>> +	int cpu = smp_processor_id();
+>> +
+>> +	ret = scm_set_warm_boot_addr(cpu_resume, cpu);
+>> +	if (ret) {
+>> +		pr_err("Failed to set warm boot address for cpu %d\n", cpu);
+>
+>Do we want this print? Won't it start spamming the log if we go
+>idle and we can't set the flag? Maybe we should just be silent
+>and return an error.
+>
+OK. removed.
+I can remove it..
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+>> +		return ret;
+>> +	}
+>> +
+>> +	flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
+>> +	scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
+>> +
+>> +	/**
+>> +	 *  Returns here only if there was a pending interrupt and we did not
+>> +	 *  power down as a result.
+>> +	 */
+>> +	return 0;
+>> +}
+>[...]
+>> +
+>> +static struct qcom_cpu_pm_ops lpm_ops = {
+>
+>const?
+>
+Ok
+>> +	.standby = qcom_cpu_standby,
+>> +	.spc = qcom_cpu_spc,
+>> +};
+>> +
+>> +struct platform_device qcom_cpuidle_device = {
+>> +	.name              = "qcom_cpuidle",
+>> +	.id                = -1,
+>> +	.dev.platform_data = &lpm_ops,
+>> +};
+>
+>This can be created dynamically instead of living statically.
+>
+Done.
+>> +
+>> +static int spm_dev_probe(struct platform_device *pdev)
+>> +{
+>[...]
+>> +
+>> +	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
+>> +	if (!match_id)
+>> +		return -ENODEV;
+>> +
+>> +	drv->reg_data = match_id->data;
+>> +	if (!drv->reg_data)
+>> +		return -EINVAL;
+>
+>This check seems useless. We control the .data field right above
+>this function so there better be some reg_data.
+>
+Removed.
+>> +
+>> +	/* Write the SPM sequences, first.. */
+>> +	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
+>> +	seq_data = (const u32 *)drv->reg_data->seq;
+>
+>Why do we need a cast?
+>
+Compiler warns otherwise.
+
+>> +	__iowrite32_copy(addr, seq_data, ARRAY_SIZE(drv->reg_data->seq)/4);
+>
+>nitpick: space around that / please.
+>
+>> +
+>> +	/* ..and then, the control registers.
+>> +	 * On some SoC's if the control registers are written first and if the
+>> +	 * CPU was held in reset, the reset signal could trigger the SPM state
+>> +	 * machine, before the sequences are completely written.
+>> +	 */
+>> +	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
+>> +	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
+>> +	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
+>> +
+>> +	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
+>> +				drv->reg_data->pmic_data[0]);
+>> +	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
+>> +				drv->reg_data->pmic_data[1]);
+>> +
+>> +	/**
+>> +	 * Ensure all observers see the above register writes before the
+>> +	 * cpuidle driver is allowed to use the SPM.
+>> +	 */
+>> +	wmb();
+>> +	drv->available = true;
+>> +
+>> +	if ((cpu > -1) && !cpuidle_drv_init) {
+>
+>Nitpick: () are unnecessary.
+>
+OK
+
+>> +		platform_device_register(&qcom_cpuidle_device);
+>> +		cpuidle_drv_init = true;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static struct platform_driver spm_driver = {
+>> +	.probe = spm_dev_probe,
+>> +	.driver = {
+>> +		.name = "qcom,spm",
+>
+>This is an odd driver name with the "qcom," part. Maybe call it "spm" or "saw"?
+>
+Sure.
+
+>> +		.of_match_table = spm_match_table,
+>> +	},
+>> +};
+>> +
+>> +module_platform_driver(spm_driver);
+>
+>MODULE_LICENSE()?
+>MODULE_ALIAS()?
+>
+MODULE_DESCRIPTION() would work?
+
+Thanks Stephen for your time.
+
+Lina
