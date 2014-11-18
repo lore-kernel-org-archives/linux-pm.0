@@ -1,155 +1,67 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/1] thermal: of: improve of-thermal sensor registration
- API
-Date: Tue, 18 Nov 2014 08:50:31 -0400
-Message-ID: <20141118125029.GA15239@developer>
-References: <1416264255-10083-1-git-send-email-edubezval@gmail.com>
- <1416269103-14149-1-git-send-email-edubezval@gmail.com>
- <20141118083857.18e07130@amdc2363>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141118083857.18e07130@amdc2363>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Caesar Wang <caesar.wang@rock-chips.com>, Wei Ni <wni@nvidia.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Alexandre Courbot <gnurou@gmail.com>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.de>, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, lm-sensors@lm-sensors.org, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: [PATCH v4 0/4] mfd: rt5033: Add Richtek RT5033 drivers
+Date: Tue, 18 Nov 2014 22:29:13 +0900
+Message-ID: <1416317357-7538-1-git-send-email-beomho.seo@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:36123 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbaKRN3V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 08:29:21 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
 
+ This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge, regulators.
+This patchset provides common support for accessing the device.
+This patchset have been tested base on exynos board.
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes in v4
+- rt5033 regulator patch is applied by Mark Brown.
 
+Changes in v3
+- Correct sentence errors.
+- Add author information the top of each drivers.
+- Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
+- Change some return check.
+- Use bool and of_match_ptr().
 
-Hey Lukasz,
+Changes in v2:
+- Remove volatile_reg callback. Because this driver not in use regmap cache.
+- Remove unnecessary subnode of_compatible.
+- Add definde for set high impedance mode of charger.
+- Remove unnecessary device specific code.
+- Fix wrong register name.
+- Fix wrong error message.
+- Fix return vallue at error case.
+- Revise binding documentation.
 
-On Tue, Nov 18, 2014 at 08:38:57AM +0100, Lukasz Majewski wrote:
-> Hi Eduardo,
->=20
-> In the mail topic we have PATCH 1/1 but I think that it should be PATCH
-> v3 1/1.
->=20
+Beomho Seo (4):
+  mfd: rt5033: Add Richtek RT5033 driver core.
+  power: rt5033_battery: Add RT5033 Fuel gauge device driver
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
 
-Yeah, sent it without checking that. Fixing in V4, no issues.
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 +++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/mfd/Kconfig                                |   12 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/rt5033.c                               |  141 ++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/rt5033_battery.c                     |  177 +++++++
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ include/linux/mfd/rt5033-private.h                 |  260 +++++++++++
+ include/linux/mfd/rt5033.h                         |   62 +++
+ 11 files changed, 1265 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/mfd/rt5033.c
+ create mode 100644 drivers/power/rt5033_battery.c
+ create mode 100644 drivers/power/rt5033_charger.c
+ create mode 100644 include/linux/mfd/rt5033-private.h
+ create mode 100644 include/linux/mfd/rt5033.h
 
-<big cut>
+-- 
+1.7.9.5
 
-> > @@ -107,10 +106,7 @@ static int of_thermal_get_temp(struct
-> > thermal_zone_device *tz, {
-> >  	struct __thermal_zone *data =3D tz->devdata;
-> > =20
-> > -	if (!data->get_temp)
-> > -		return -EINVAL;
->=20
-> To be consistent, I think that we should keep the above check [1].=20
->=20
-> 	if (!data->ops->get_temp)
-> 		return -EINVAL;
->=20
-> The same check is done with get_trend callback.
->=20
-
-OK. I agree, and disagree, :-). Now that you mention here, I will resend
-with your request applied. The reasoning is to, yes, keep the
-consistency. However, not to be the same as .get_trend, but in fact, to
-keep same behavior as the code as it is currently. The thing is
-=2Eget_temp is required field, while .get_trend is not. So, checking for
-required fields in the registration makes more sense than checking it
-only when the field is needed.
-
-However, as I mentioned, to keep the same behavior, before and after the
-patch, it makes sense we keep the checks as they are. I will send v4
-with this amendment.
-
-
-> > -
-> > -	return data->get_temp(data->sensor_data, temp);
-> > +	return data->ops->get_temp(data->sensor_data, temp);
-> >  }
-> > =20
-> >  static int of_thermal_get_trend(struct thermal_zone_device *tz, int
-> > trip, @@ -120,10 +116,10 @@ static int of_thermal_get_trend(struct
-> > thermal_zone_device *tz, int trip, long dev_trend;
-> >  	int r;
-> > =20
-> > -	if (!data->get_trend)
-> > +	if (!data->ops->get_trend)
-> >  		return -EINVAL;
-> > =20
-> > -	r =3D data->get_trend(data->sensor_data, &dev_trend);
-> > +	r =3D data->ops->get_trend(data->sensor_data, &dev_trend);
-> >  	if (r)
-> >  		return r;
-> > =20
-> > @@ -324,8 +320,7 @@ static struct thermal_zone_device_ops
-> > of_thermal_ops =3D { static struct thermal_zone_device *
-> >  thermal_zone_of_add_sensor(struct device_node *zone,
-> >  			   struct device_node *sensor, void *data,
-> > -			   int (*get_temp)(void *, long *),
-> > -			   int (*get_trend)(void *, long *))
-> > +			   const struct thermal_zone_of_device_ops
-> > *ops) {
-> >  	struct thermal_zone_device *tzd;
-> >  	struct __thermal_zone *tz;
-> > @@ -336,9 +331,11 @@ thermal_zone_of_add_sensor(struct device_node
-> > *zone,=20
-> >  	tz =3D tzd->devdata;
-> > =20
-> > +	if (!(ops && ops->get_temp))
-> > +		return ERR_PTR(-EINVAL);
->=20
-> IMHO, here we should only check:
-> 	if (!ops)
-> 		return ERR_PTR(-EINVAL);
->=20
-> 	And check if specific callbacks are available in other
-> 	functions (like [1])
->=20
-
-
-OK. For the sake of this change only, I agree. However, I might be
-sending patches on top of this one to keep the checks of required fields in=
- the
-registration itself.
-
-
-Cheers,
-> >  }
->=20
-> Despite this minor comments, feel free to add :-)
->=20
-> Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
-
-OK. Thanks.
-
->=20
-> --=20
-> Best regards,
->=20
-> Lukasz Majewski
->=20
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
-
-
-Eduardo Valentin
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUa0CMAAoJEMLUO4d9pOJWdEgH/jM2BxYeN9sJi6SgxDrnfpsf
-XvPh75erC/6x9B5vCNN/RM0jQm+oucjdPAljDq+jeBqXxXV/jQH1mFXt4Eyg6rjQ
-GwbzvdVXQVjVbrGPQAzd2dtOFrh49pOyO3GnHO8gXftWnYbD3XSDugj9K+EVw/RD
-+Agq3sTIGaX6AHbf7uNb9vJk0osI557JPoQpP/GB+qFeeFLeB/eVrZPTWfZxaPj5
-iO5Y3UydcBijEnCTX/sR9MbWKoaDg/IZlwn4TkD6xVfcMoc187xtox9BUY53P2eo
-8wz+DXU64zJ6E7aYfhbzBjovOCzE9Qfc6M+9cTXDi0cwnS5AB3fxY8ebwBamWwg=
-=SARx
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
