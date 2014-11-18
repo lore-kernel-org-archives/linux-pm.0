@@ -1,7 +1,7 @@
 From: Ethan Zhao <ethan.zhao@oracle.com>
 Subject: [PATCH] intel_pstate: add module and kernel command line parameter to ignore ACPI _PPC
-Date: Tue, 18 Nov 2014 17:27:33 +0900
-Message-ID: <1416299253-14912-8-git-send-email-ethan.zhao@oracle.com>
+Date: Tue, 18 Nov 2014 17:27:29 +0900
+Message-ID: <1416299253-14912-4-git-send-email-ethan.zhao@oracle.com>
 References: <1416299253-14912-1-git-send-email-ethan.zhao@oracle.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1416299253-14912-1-git-send-email-ethan.zhao@oracle.com>
