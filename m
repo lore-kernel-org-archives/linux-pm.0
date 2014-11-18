@@ -1,87 +1,45 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is selected
- (was: Re: [PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd
- enabled)
-Date: Tue, 18 Nov 2014 09:34:11 +0100
-Message-ID: <20141118083411.GB4059@amd>
-References: <1415917702-6742-1-git-send-email-khilman@kernel.org>
- <6465990.KKns6W8hQE@vostro.rjw.lan>
- <7hioid3cqx.fsf@deeprootsystems.com>
- <1452958.d0yJE5gVgq@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43759 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbaKRIeN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 03:34:13 -0500
-Content-Disposition: inline
-In-Reply-To: <1452958.d0yJE5gVgq@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH 0/3] intel_pstate: allow to be built as module and handle Sun server power capping.
+Date: Tue, 18 Nov 2014 17:36:59 +0900
+Message-ID: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Tue 2014-11-18 01:39:06, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The number of and dependencies between high-level power management
-> Kconfig options make life much harder than necessary.  Several
-> conbinations of them have to be tested and supported, even though
-> some of those combinations are very rarely used in practice (it
-> they are used in practice at all).  Moreover, the fact that we
-> have separate independent Kconfig options for runtime PM and
-> system suspend is a serious obscacle for integration between
-> the two frameworks.
-> 
-> To overcome these difficulties, always select PM_RUNTIME if PM_SLEEP
-> is set.  Among other things, this will allow system suspend callbacks
-> provided by bus types and device drivers to rely on the runtime PM
-> framework regardless of the kernel configuration.
+  Oracle Sun servers(X86) have power capping features that work via ACPI _PPC method,
+patch No.1 is used to skip this driver if Oracle Sun server and _PPC detected. patch
+No.2 is used to allow the driver to be configured and built as a module, so provide
+the flexibility of configuration by userland. patch No.3 introduce a module parameter
+and a kernel command line parameter, let user could force it loaded even on Oracle Sun
+Servers(X86), that will be useful for debug\test\workaround etc purpose.
 
-3.18-rc5 still has:
+These patches have been tested on Oracle Sun server X4-2 series with following
+cases on stable v3.18-rc3.
 
-config PM_RUNTIME
-        bool "Run-time PM core functionality"
-        depends on !IA64_HP_SIM
-        ---help---
+  a. Configure and build  intel_pstate as builtin.
+     Boot without any kernel line parameter.
+     Boot with intel_pstate=ignore_acpi_ppc.
+  b. Configure and build intel_pstate as module.
+     Load intel_pstate drive without any module parameter.
+     Load intel_pstate driver with ignore_acpi_ppc=1
 
-So I assume this patch is against tree where PM_RUNTIME does not
-depend on anything?
+These cases passed and work fine.
+--
+Brian Maly (1):
+  intel_pstate: allow driver to be built as a module
 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> As a follow up.
-> 
-> Note that we won't need the patch making genpd select PM_RUNTIME with this,
-> because genpd already depends on PM.
+Ethan Zhao (2):
+  intel_pstate: skip the driver if Sun server has ACPI _PPC method
+  intel_pstate: add module and kernel command line parameter to ignore
+    ACPI _PPC
 
-Looking through the config file, there are more config options that
-should be stripped.
+ Documentation/kernel-parameters.txt |  3 +++
+ drivers/cpufreq/Kconfig.x86         |  2 +-
+ drivers/cpufreq/intel_pstate.c      | 32 ++++++++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+), 1 deletion(-)
 
-config SUSPEND_FREEZER
-        bool "Enable freezer for suspend to RAM/standby" \
-"Turning OFF this setting is NOT recommended! If in doubt, say Y."
-
-config HIBERNATE_CALLBACKS
-       bool
-
-...can we just use CONFIG_HIBERNATE, instead?
-
-> ===================================================================
-> --- linux-pm.orig/kernel/power/Kconfig
-> +++ linux-pm/kernel/power/Kconfig
-> @@ -94,6 +94,7 @@ config PM_STD_PARTITION
->  config PM_SLEEP
->  	def_bool y
->  	depends on SUSPEND || HIBERNATE_CALLBACKS
-> +	select PM_RUNTIME
->  
->  config PM_SLEEP_SMP
->  	def_bool y
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.8.3.1
+
