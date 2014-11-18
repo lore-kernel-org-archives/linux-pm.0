@@ -1,67 +1,64 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Tue, 18 Nov 2014 09:55:15 -0800
-Message-ID: <20141118175515.GD3003@dtor-ws>
-References: <20141118171831.GC3003@dtor-ws>
- <Pine.LNX.4.44L0.1411181234210.892-100000@iolanthe.rowland.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
+Date: Tue, 18 Nov 2014 11:00:49 -0700
+Message-ID: <20141118180049.GC770@linaro.org>
+References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>
+ <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
+ <546A6962.9090801@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:65515 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753949AbaKRSAw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 13:00:52 -0500
+Received: by mail-pd0-f181.google.com with SMTP id z10so6534813pdj.12
+        for <linux-pm@vger.kernel.org>; Tue, 18 Nov 2014 10:00:52 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1411181234210.892-100000@iolanthe.rowland.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+In-Reply-To: <546A6962.9090801@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-On Tue, Nov 18, 2014 at 12:44:22PM -0500, Alan Stern wrote:
-> On Tue, 18 Nov 2014, Dmitry Torokhov wrote:
-> 
-> > OK. Another question then: pm_runtime_get_noresume() does literally this:
-> > 
-> > 	atomic_inc(&dev->power.usage_count);
-> > 
-> > So who is responsible for actually waking up parent device and/or power
-> > domain? Is it simply missing because we did not really have PM domains
-> > before?
-> 
-> Ths bus is responsible for making sure that all the standard resources
-> are available -- that is, all the resources that would be needed by a
-> normal device on that bus.  Anything beyond that (such as
-> special-purpose clocks) has to be set up by the driver.
-> 
-> Thus the bus would insure that the device was powered, its parent was
-> resumed, and the usual clock inputs were enabled.  And of course, one
-> mechanism for doing this is to runtime-resume the power domain.
-
-This does not sound like anything bus-specific. Can we move powering on
-the domain before probing into the driver core, similarly to the default
-pin selection by pinctrl? I do not see why we want to have every
-individual bus to implement this. I guess right now we can't because we
-assign the domain to device in individual bus's probe function, but I do
-not think this is proper place for that either: bus and pm domain are
-orthogonal concepts IMO.
-
-> 
-> Often the bus doesn't have to do anything special to resume the
-> device's parent.  This is because the device gets probed when it is
-> registered, which happens when it is discovered, and the discovery is
-> done by the parent's driver as part of its normal activity.  Since the
-> parent has to be powered up to carry out this normal activity, nothing 
-> more is needed.
-
-I think this only true for buses that support discovery.
-
-> 
-> (Of course, devices can get probed at other times too, not just when
-> they are discovered.  For example, a device might get probed when a
-> driver module is loaded, and that can occur at any time.  So in general
-> it might indeed be necessary for the bus to wake up the parent before
-> calling the driver's probe routine.)
+On Mon, Nov 17 2014 at 14:32 -0700, Daniel Lezcano wrote:
+>On 10/25/2014 01:40 AM, Lina Iyer wrote:
 >
+>Hi Lina,
+>
+>[ ... ]
+>
+>>+static inline void spm_register_write(struct spm_driver_data *drv,
+>>+					enum spm_reg reg, u32 val)
+>>+{
+>>+	if (drv->reg_data->reg_offset[reg])
+>>+		writel_relaxed(val, drv->reg_base +
+>>+				drv->reg_data->reg_offset[reg]);
+>
+>Why not use writel and don't use 'wmb' below ?
+>
+>>+}
+>>+
+>
+>[ ... ]
+>
+Took the opportunity for optimization here, since I am writing to
+essentially the same page. I dont have to barrier after every write.
 
-Thanks.
-
--- 
-Dmitry
+>>+	spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+>>+
+>>+	/* Ensure we have written the start address */
+>>+	wmb();
+>
+>
+>
+>--=20
+> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+>
+>Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+><http://twitter.com/#!/linaroorg> Twitter |
+><http://www.linaro.org/linaro-blog/> Blog
+>
