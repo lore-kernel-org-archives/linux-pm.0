@@ -1,18 +1,14 @@
 From: Ethan Zhao <ethan.zhao@oracle.com>
 Subject: [PATCH 3/3] intel_pstate: add module and kernel command line parameter to ignore ACPI _PPC
-Date: Tue, 18 Nov 2014 17:37:02 +0900
-Message-ID: <1416299826-15813-4-git-send-email-ethan.zhao@oracle.com>
+Date: Tue, 18 Nov 2014 17:37:06 +0900
+Message-ID: <1416299826-15813-8-git-send-email-ethan.zhao@oracle.com>
 References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:42788 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbaKRIhj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 03:37:39 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
+List-Id: linux-pm@vger.kernel.org
 
 Add kernel command line parameter
  intel_pstate = ignore_acpi_ppc
@@ -81,4 +77,3 @@ index 7c5faea..388387b 100644
  MODULE_LICENSE("GPL");
 -- 
 1.8.3.1
-
