@@ -1,75 +1,160 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: pcc: Enable autoload of pcc-cpufreq for ACPI processors
-Date: Wed, 19 Nov 2014 00:30:32 +0100
-Message-ID: <2494503.pmLurATttt@vostro.rjw.lan>
-References: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
+Subject: Re: [PATCH V2] cpufreq: Remove architecture specific menu entries
+Date: Wed, 19 Nov 2014 00:31:27 +0100
+Message-ID: <1469681.jS4gM4LGBu@vostro.rjw.lan>
+References: <5fa0e88cfecffe8ae45f2bde0aceb96cd65407e7.1416021588.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52533 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:54892 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932472AbaKRXJ1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 18:09:27 -0500
-In-Reply-To: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
+	with SMTP id S932532AbaKRXKW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 18:10:22 -0500
+In-Reply-To: <5fa0e88cfecffe8ae45f2bde0aceb96cd65407e7.1416021588.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lenny Szubowicz <lszubowi@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Joseph.Szczypek@hp.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, scottwood@freescale.com, Yuantian.Tang@freescale.com
 
-On Thursday, November 13, 2014 01:51:52 PM Lenny Szubowicz wrote:
-> The pcc-cpufreq driver is not automatically loaded on systems where
-> the platform's power management setting requires this driver.
-> Instead, on those systems no CPU frequency driver is registered and
-> active.
+On Saturday, November 15, 2014 08:50:44 AM Viresh Kumar wrote:
+> CPUFreq driver's Kconfig entries are added in Kconfig.<arch> files and they are
+> all included from the main Kconfig file using a menu entry. This creates another
+> level of (unnecessary) hierarchy within the menuconfig entries.
 > 
-> Make the autoloading matching criteria for loading the pcc-cpufreq
-> driver the same as done in acpi-cpufreq by commit c655affbd524d01
-> ("ACPI / cpufreq: Add ACPI processor device IDs to acpi-cpufreq").
+> The problem occurs when there are drivers usable across architectures. Either
+> their config entry is duplicated in all the supported architectures or is put
+> into the main Kconfig entry. With the later one, we have menuconfig entries for
+> drivers at two levels then.
 > 
-> x86 CPU frequency drivers are now typically autoloaded by specifying
-> MODULE_DEVICE_TABLE entries and x86cpu model specific matching.
-> But pcc-cpufreq was omitted when acpi-cpufreq and other drivers were
-> changed to use this approach.
+> Fix these issues by getting rid of another level of menuconfig hierarchy and
+> populate all drivers within the main cpufreq menu. To clearly distinguish where
+> the drivers start from, also add a comment that will appear in menuconfig.
 > 
-> Both acpi-cpufreq and pcc-cpufreq depend on a distinct and mutually
-> exclusive set of ACPI methods which are not directly tied to specific
-> processor model numbers. Both of these drivers have init routines
-> which look for their required ACPI methods. As a result, only the
-> appropriate driver registers as the cpu frequency driver and the other
-> one ends up being unloaded.
-> 
-> Tested on various systems where acpi-cpufreq, intel_pstate, and
-> pcc-cpufreq are the expected cpu frequency drivers.
-> 
-> Signed-off-by: Lenny Szubowicz <lszubowi@redhat.com>
-> Signed-off-by: Joseph Szczypek <joseph.szczypek@hp.com>
-> Reported-by: Trinh Dao <trinh.dao@hp.com>
+> Reported-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Suggested-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Queued up for 3.19-rc1, thanks!
 
 > ---
->  drivers/cpufreq/pcc-cpufreq.c | 7 +++++++
->  1 file changed, 7 insertions(+)
+> V2: Add: comment "CPU frequency scaling drivers"
 > 
-> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-> index 4d2c8e8..2a0d589 100644
-> --- a/drivers/cpufreq/pcc-cpufreq.c
-> +++ b/drivers/cpufreq/pcc-cpufreq.c
-> @@ -603,6 +603,13 @@ static void __exit pcc_cpufreq_exit(void)
->  	free_percpu(pcc_cpu_info);
->  }
+>  drivers/cpufreq/Kconfig | 50 +++++++++++++++++++------------------------------
+>  1 file changed, 19 insertions(+), 31 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 3489f8f..230a912 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -183,6 +183,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
 >  
-> +static const struct acpi_device_id processor_device_ids[] = {
-> +	{ACPI_PROCESSOR_OBJECT_HID, },
-> +	{ACPI_PROCESSOR_DEVICE_HID, },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(acpi, processor_device_ids);
+>  	  If in doubt, say N.
+>  
+> +comment "CPU frequency scaling drivers"
 > +
->  MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
->  MODULE_VERSION(PCC_VERSION);
->  MODULE_DESCRIPTION("Processor Clocking Control interface driver");
+>  config CPUFREQ_DT
+>  	tristate "Generic DT based cpufreq driver"
+>  	depends on HAVE_CLK && OF
+> @@ -196,19 +198,19 @@ config CPUFREQ_DT
+>  
+>  	  If in doubt, say N.
+>  
+> -menu "x86 CPU frequency scaling drivers"
+> -depends on X86
+> +if X86
+>  source "drivers/cpufreq/Kconfig.x86"
+> -endmenu
+> +endif
+>  
+> -menu "ARM CPU frequency scaling drivers"
+> -depends on ARM || ARM64
+> +if ARM || ARM64
+>  source "drivers/cpufreq/Kconfig.arm"
+> -endmenu
+> +endif
+>  
+> -menu "AVR32 CPU frequency scaling drivers"
+> -depends on AVR32
+> +if PPC32 || PPC64
+> +source "drivers/cpufreq/Kconfig.powerpc"
+> +endif
+>  
+> +if AVR32
+>  config AVR32_AT32AP_CPUFREQ
+>  	bool "CPU frequency driver for AT32AP"
+>  	depends on PLATFORM_AT32AP
+> @@ -216,12 +218,9 @@ config AVR32_AT32AP_CPUFREQ
+>  	help
+>  	  This enables the CPU frequency driver for AT32AP processors.
+>  	  If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "CPUFreq processor drivers"
+> -depends on IA64
+> -
+> +if IA64
+>  config IA64_ACPI_CPUFREQ
+>  	tristate "ACPI Processor P-States driver"
+>  	depends on ACPI_PROCESSOR
+> @@ -232,12 +231,9 @@ config IA64_ACPI_CPUFREQ
+>  	For details, take a look at <file:Documentation/cpu-freq/>.
+>  
+>  	If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "MIPS CPUFreq processor drivers"
+> -depends on MIPS
+> -
+> +if MIPS
+>  config LOONGSON2_CPUFREQ
+>  	tristate "Loongson2 CPUFreq Driver"
+>  	help
+> @@ -249,16 +245,9 @@ config LOONGSON2_CPUFREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq/>.
+>  
+>  	  If in doubt, say N.
+> +endif
+>  
+> -endmenu
+> -
+> -menu "PowerPC CPU frequency scaling drivers"
+> -depends on PPC32 || PPC64
+> -source "drivers/cpufreq/Kconfig.powerpc"
+> -endmenu
+> -
+> -menu "SPARC CPU frequency scaling drivers"
+> -depends on SPARC64
+> +if SPARC64
+>  config SPARC_US3_CPUFREQ
+>  	tristate "UltraSPARC-III CPU Frequency driver"
+>  	help
+> @@ -276,10 +265,9 @@ config SPARC_US2E_CPUFREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq>.
+>  
+>  	  If in doubt, say N.
+> -endmenu
+> +endif
+>  
+> -menu "SH CPU Frequency scaling"
+> -depends on SUPERH
+> +if SUPERH
+>  config SH_CPU_FREQ
+>  	tristate "SuperH CPU Frequency driver"
+>  	help
+> @@ -293,7 +281,7 @@ config SH_CPU_FREQ
+>  	  For details, take a look at <file:Documentation/cpu-freq>.
+>  
+>  	  If unsure, say N.
+> -endmenu
+> +endif
+>  
+>  endif
+>  endmenu
 > 
 
 -- 
