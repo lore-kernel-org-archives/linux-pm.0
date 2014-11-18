@@ -1,108 +1,49 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 18 Nov 2014 20:54:36 +0200
-Message-ID: <546B95EC.5000705@ti.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>	<1600093.60yAP0Qpua@wuerfel> <7h389h3aif.fsf@deeprootsystems.com>	<1618855.DXsjWXLqau@wuerfel> <7hsihhzecq.fsf@deeprootsystems.com>
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
+Date: Tue, 18 Nov 2014 21:07:51 +0200
+Message-ID: <9508464.Rg48i9FdUc@spock>
+References: <4708675.eITUXPv8Ih@spock> <CAKohponLC=NqTUG-mENuJ5Tomx6xgCYEBocj2P5RXXZumZaPZQ@mail.gmail.com> <1767434.385ncFoNtj@spock>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7hsihhzecq.fsf@deeprootsystems.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1767434.385ncFoNtj@spock>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+Hmmm, weird, acpi=off as well as disabling ASPM and NMI watchdog didn't help :
+(.
 
-Thank you for your comments.
+Now trying to update BIOS.
 
-On 11/17/2014 11:50 PM, Kevin Hilman wrote:
-> Arnd Bergmann <arnd@arndb.de> writes:
+P.S. Still affected while using 3.17.2 kernel.
+
+On Tuesday 11 November 2014 12:41:18 Oleksandr Natalenko wrote:
+> It seems that this bug has nothing to do with acpi-cpufreq code but with
+> another ACPI area.
 > 
->> On Monday 17 November 2014 11:14:16 Kevin Hilman wrote:
->>>>>
->>>>> So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
->>>>> device and Generic clock manipulation PM callbacks.
->>>>> It fills per-device clock list when device is attached to GPD and
->>>>> ensures that all clocks from that list enabled/disabled when device is
->>>>> started/stopped.
->>>>
->>>> The idea of such a generic power domain implementation sounds useful, but
->>>> it has absolutely no business in platform specific code.
->>>
->>> Yes it does.  This isn't a generic power domain implementation, but
->>> rather just the platform-specific glue that hooks up the clocks to the
->>> right devices and power-domains so that the generic power-domain and
->>> generic pm_clocks code does the right thing.
->>
->> How would you do this on an arm64 version of keystone then? With
->> the current approach, you'd need to add a machine specific directory,
->> and that seems completely pointless since this is not even about
->> a hardware requirement.
+> With ACPI enabled kernel may hang in a day or in a week (never survived more
+> than approx. 2 weeks). With acpi=off it seems to work OK. For instance, I
+> had to boot Ubuntu installer with acpi disabled to finish it successfully.
 > 
-> Yeah, you're right.  I misunderstood you're original comment.
+> Usually, hanging is not accompanied by panic log. Only small vertical red
+> lines appear on the screen near letters (tried to use plaintext 80x25
+> console without radeon and got the same issue).
 > 
->>>> I suggest you either remove the power domain proxy from your drivers
->>>> and use the clocks directly,
-
-Hm. I've been thinking about this, but the problem is that Keystone 2
-reuses a lot of IPs from Davinci and PM for Davinci is based on Generic clock
-manipulation PM callbacks framework, but for non-DT case. So, I can't simply
-use clocks directly.
-
->>>
->>> No.  That's a step in the wrong direction.  This change isn't affecting
->>> drivers directly.  It's the runtime PM and generic power domain layers
->>> that handle this, and runtime PM adapted drivers don't need any changes.
->>>   
->>>> or come up with an implementation that can be used across other
->>>> platforms and CPU architectures.
->>>
->>> We already have those in the generic power domain and the pm_clock
->>> layers.  This series is just hooking those up for Keystone.
->>
->> Then why not add the missing piece to the generic power domain
->> code to avoid having to add infrastructure to the platform
->> for it?
+> Still observing this for 3.16 kernel.
 > 
-> Yes, good point.  There is nothing keystone-specific in this glue.
+> On Wednesday 13 August 2014 10:12:06 Viresh Kumar wrote:
+> > On 13 August 2014 00:24, Oleksandr Natalenko <oleksandr@natalenko.name>
 > 
-> Grygorii, what about adding a feature to the generic domain parsing so
-> that it can get clocks from device nodes that are part of the domain,
-> and so it sets up pm_clk accordingly.
-
-I'd like to mention few points here:
-1)  not all platforms may need this
-
-2)  not all platforms may allow to add ALL clocks from "clocks" property
-   to pm_clk as some of them can be optional or have to be controlled by drivers only
-   (for example, initially, it was the case for SH-mobile https://lkml.org/lkml/2014/4/24/197
-    also now, last implementation for shmobile add only first clock from "clocks" property
-    to pm_clk https://lkml.org/lkml/2014/11/17/272).
-
-3)  such functionality have to be enabled for devices selectively, for example
-   now we are going to enable it for devices which a ready for runtime PM.
-
-Current implementation cover 1 & 3, but also it allows to cover 2 too, because
-it's platform specific implementation and .attach_dev() can be updated to skip some 
-clocks or devices if needed.
-
-> 
-> I've recently seen other SoCs doing very similar, so this really should
-> be generalized.
-> 
-> I've been looking at this primarily as a right incremental improvement
-> from what is there for Keystone today, but Arnd is right.  This should
-> be moved out of platform code.
-
-I'm ready to do what ever you want, but I don't fully understand what exactly to do :(
-Should I create some generic_pm_clk_domain.c?
-- or - Do you mean to integrate it in domain.c (see no way to do it:()?
-- or - smth. else
-
-What about introduced DT bindings? For example, How will devices be selected for attachment 
-to Generic pm_clk domain if I'll introduce generic_pm_clk_domain.c?
-
-Regards,
--grygorii
+> wrote:
+> > > Updated logs.
+> > 
+> > Also will it be possible for you to find the last working kernel after
+> > which this
+> > happened?
+-- 
+Oleksandr post-factum Natalenko, MSc
+pf-kernel community
+https://natalenko.name/
