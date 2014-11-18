@@ -1,68 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Move struct pm_domain_data to pm_domain.h
-Date: Wed, 19 Nov 2014 00:14:16 +0100
-Message-ID: <2046094.7iVdopz3eL@vostro.rjw.lan>
-References: <1415950892-4213-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] cpufreq: pcc: Enable autoload of pcc-cpufreq for ACPI processors
+Date: Wed, 19 Nov 2014 00:30:32 +0100
+Message-ID: <2494503.pmLurATttt@vostro.rjw.lan>
+References: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51053 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52533 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932244AbaKRWxN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 17:53:13 -0500
-In-Reply-To: <1415950892-4213-1-git-send-email-ulf.hansson@linaro.org>
+	with SMTP id S932472AbaKRXJ1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 18:09:27 -0500
+In-Reply-To: <1415904712-12521-1-git-send-email-lszubowi@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Lenny Szubowicz <lszubowi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Joseph.Szczypek@hp.com
 
-On Friday, November 14, 2014 08:41:32 AM Ulf Hansson wrote:
-> The definition of the struct pm_domain_data better belongs in the
-> header for the PM domains, let's move it there.
+On Thursday, November 13, 2014 01:51:52 PM Lenny Szubowicz wrote:
+> The pcc-cpufreq driver is not automatically loaded on systems where
+> the platform's power management setting requires this driver.
+> Instead, on those systems no CPU frequency driver is registered and
+> active.
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Make the autoloading matching criteria for loading the pcc-cpufreq
+> driver the same as done in acpi-cpufreq by commit c655affbd524d01
+> ("ACPI / cpufreq: Add ACPI processor device IDs to acpi-cpufreq").
+> 
+> x86 CPU frequency drivers are now typically autoloaded by specifying
+> MODULE_DEVICE_TABLE entries and x86cpu model specific matching.
+> But pcc-cpufreq was omitted when acpi-cpufreq and other drivers were
+> changed to use this approach.
+> 
+> Both acpi-cpufreq and pcc-cpufreq depend on a distinct and mutually
+> exclusive set of ACPI methods which are not directly tied to specific
+> processor model numbers. Both of these drivers have init routines
+> which look for their required ACPI methods. As a result, only the
+> appropriate driver registers as the cpu frequency driver and the other
+> one ends up being unloaded.
+> 
+> Tested on various systems where acpi-cpufreq, intel_pstate, and
+> pcc-cpufreq are the expected cpu frequency drivers.
+> 
+> Signed-off-by: Lenny Szubowicz <lszubowi@redhat.com>
+> Signed-off-by: Joseph Szczypek <joseph.szczypek@hp.com>
+> Reported-by: Trinh Dao <trinh.dao@hp.com>
 
-Queued up for 3.19, thanks!
+Queued up for 3.19-rc1, thanks!
 
 > ---
->  include/linux/pm.h        | 6 +-----
->  include/linux/pm_domain.h | 5 +++++
->  2 files changed, 6 insertions(+), 5 deletions(-)
+>  drivers/cpufreq/pcc-cpufreq.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 383fd68..45e3e78 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -538,11 +538,7 @@ enum rpm_request {
->  };
+> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+> index 4d2c8e8..2a0d589 100644
+> --- a/drivers/cpufreq/pcc-cpufreq.c
+> +++ b/drivers/cpufreq/pcc-cpufreq.c
+> @@ -603,6 +603,13 @@ static void __exit pcc_cpufreq_exit(void)
+>  	free_percpu(pcc_cpu_info);
+>  }
 >  
->  struct wakeup_source;
-> -
-> -struct pm_domain_data {
-> -	struct list_head list_node;
-> -	struct device *dev;
-> -};
-> +struct pm_domain_data;
->  
->  struct pm_subsys_data {
->  	spinlock_t lock;
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 2e0e06d..9d254e2 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -100,6 +100,11 @@ struct gpd_timing_data {
->  	bool cached_stop_ok;
->  };
->  
-> +struct pm_domain_data {
-> +	struct list_head list_node;
-> +	struct device *dev;
+> +static const struct acpi_device_id processor_device_ids[] = {
+> +	{ACPI_PROCESSOR_OBJECT_HID, },
+> +	{ACPI_PROCESSOR_DEVICE_HID, },
+> +	{},
 > +};
+> +MODULE_DEVICE_TABLE(acpi, processor_device_ids);
 > +
->  struct generic_pm_domain_data {
->  	struct pm_domain_data base;
->  	struct gpd_timing_data td;
+>  MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
+>  MODULE_VERSION(PCC_VERSION);
+>  MODULE_DESCRIPTION("Processor Clocking Control interface driver");
 > 
 
 -- 
