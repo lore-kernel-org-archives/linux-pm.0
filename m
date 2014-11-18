@@ -1,77 +1,72 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
- affinity notification
-Date: Mon, 17 Nov 2014 23:22:05 -0700
-Message-ID: <20141118062205.GA770@linaro.org>
-References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org>
- <1409170479-29955-4-git-send-email-lina.iyer@linaro.org>
- <alpine.DEB.2.10.1408272239190.3323@nanos>
- <20140902184305.GB91995@ilina-mac.local>
- <alpine.DEB.2.10.1409022109050.3333@nanos>
- <20140925155027.GG1004@ilina-mac.local>
- <alpine.DEB.2.11.1410081623210.4292@nanos>
- <20141010151106.GC2128@ilina-mac.qualcomm.com>
- <alpine.DEB.2.11.1410170926220.2806@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH v4/RFC 0/4] per-cpu PM QoS
+Date: Tue, 18 Nov 2014 00:31:46 -0700
+Message-ID: <1416295910-40433-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f176.google.com ([209.85.213.176]:59459 "EHLO
-	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbaKRGWK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 01:22:10 -0500
-Received: by mail-ig0-f176.google.com with SMTP id l13so508770iga.15
-        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 22:22:09 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.11.1410170926220.2806@nanos>
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:55084 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbaKRHc6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 02:32:58 -0500
+Received: by mail-ig0-f177.google.com with SMTP id uq10so5347612igb.4
+        for <linux-pm@vger.kernel.org>; Mon, 17 Nov 2014 23:32:58 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+To: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: Lina Iyer <lina.iyer@linaro.org>
 
-Hi Thomas,
+PM QoS constraints like the CPU_DMA_LATENCY, when set, apply to all cpus. The
+QoS guarantees performance, at the expense of power. There is an opportunity to
+save power on the cpus, if a subset of cpus need not participate in honoring
+the QoS request.
 
-On Fri, Oct 17 2014 at 01:29 -0600, Thomas Gleixner wrote:
->On Fri, 10 Oct 2014, Lina Iyer wrote:
->> On Wed, Oct 08 2014 at 09:03 -0600, Thomas Gleixner wrote:
->> > On Thu, 25 Sep 2014, Lina Iyer wrote:
->> > > > How would a general "keep track of the targets of all interrupts in
->> > > > the system" mechanism make use of this?
->> > > Sorry, I do not understand your question.
->> > > PM QoS is only interested in the IRQs specified in the QoS request. If
->> > > there are no requests that need to be associated with an IRQ, then PM
->> > > QoS will not register for an affinity change notification.
->> >
->> > Right, and I really hate the whole per irq notifier. It's a rats nest
->> > of life time issues and other problems.
->> >
->> > It also does not tell you whether an irq is disabled, reenabled or
->> > removed, which will change the qos constraints as well unless you
->> > plaster all drivers with updates to qos for those cases.
->> >
->> > So what about adding a qos field to irq_data itself, have a function
->> > to update it and let the irq core keep track of the per cpu irq
->> > relevant qos constraints and provide an evaluation function or a
->> > notifier for the PM/idle code?
->>
->> If that isnt intrusive in the IRQ core, then we can make it work for PM
->> QoS. The issue that I am concerned is that, it might result in back and
->> forth between IRQ and PM QoS frameworks. If that doesnt happen, then we
->> are good with this approach.
->
->I can't tell that upfront, but I think it's worth to explore it.
->
-I was able to review the options and I attempted a few methods, but
-off-loading the QoS onto the IRQ framework, made it quite complex to
-manage it. QoS values for each of the four constraints and the
-constraints could be one of 3 types - min, max or sum, makes it a whole
-lot of mess handling it in IRQ code.
+The patches do the following - 
 
-I was able to get QoS to be notified of IRQ affinity changes without
-using notifiers, but, I still am yet to find a way to modify QoS
-requests on enable/disable of IRQ.
+- Add "type" member to the QoS request data structure. Drivers requesting PM
+  QoS, can qualify the type of the QoS request. Request could be either of
+  all-cpus (default) or a cpumask or the cpus associated by smp-affinity to a
+  device IRQ.
 
-I will send the RFC of the new patchset, would be interested in taking a
-look and let me know what you think.
+- QoS requests can supply an cpumask or an IRQ.
+
+- Each constraint has a per-cpu target variable, to hold the QoS value for the
+  constraint.
+
+- When updating the QoS constraint target value, update the per-cpu target
+  value of the constraint.
+
+- Export the IRQ smp-affinity information from the IRQ framework.
+
+- When the IRQ smp-affinity changes, notify PM QoS framework, which would update
+  the target value for each of the constraint affected by the change in the
+  smp-affinity of the IRQ.
+
+TODO:
+
+- Update the QoS constraint, when the IRQ is enabled/disabled.
+
+- The IRQ affinity is an expected affinity, but the actual affinity is
+  architecture dependent. Explore possibility of optimizations.
+
+- Update cpuidle to use the per-cpu PM QoS to query the QoS value of the cpus
+  interested.
 
 Thanks,
 Lina
+
+Lina Iyer (4):
+  QoS: Modify data structures and function arguments for scalability.
+  QoS: Enhance PM QoS framework to support per-cpu QoS request
+  irq: Add irq_get_affinity() api
+  QoS: Enable PM QoS requests to apply only on smp_affinity of an IRQ
+
+ Documentation/power/pm_qos_interface.txt |  18 +++
+ drivers/base/power/qos.c                 |  14 +--
+ include/linux/interrupt.h                |   8 ++
+ include/linux/pm_qos.h                   |  22 +++-
+ kernel/irq/manage.c                      |  21 ++++
+ kernel/power/qos.c                       | 183 +++++++++++++++++++++++++++++--
+ 6 files changed, 249 insertions(+), 17 deletions(-)
+
+-- 
+2.1.0
+
