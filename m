@@ -1,7 +1,7 @@
 From: Ethan Zhao <ethan.zhao@oracle.com>
-Subject: [PATCH 3/3] intel_pstate: add module and kernel command line parameter to ignore ACPI _PPC
-Date: Tue, 18 Nov 2014 17:37:06 +0900
-Message-ID: <1416299826-15813-8-git-send-email-ethan.zhao@oracle.com>
+Subject: [PATCH 2/3] intel_pstate: allow driver to be built as a module
+Date: Tue, 18 Nov 2014 17:37:05 +0900
+Message-ID: <1416299826-15813-7-git-send-email-ethan.zhao@oracle.com>
 References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com>
@@ -10,70 +10,75 @@ To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corb
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add kernel command line parameter
- intel_pstate = ignore_acpi_ppc
-and module parameter
- ignore_acpi_ppc = 1
-to allow driver to ignore the ACPI _PPC existence even for Sun x86 servers.
-These parameter could be used for debug\test\workaround etc purpose.
+From: Brian Maly <brian.maly@oracle.com>
 
+To provide the flexibility of module, allow this driver to
+be configured and built as a module.
+
+Signed-off-by: Brian Maly <brian.maly@oracle.com>
 Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 ---
- Documentation/kernel-parameters.txt | 3 +++
- drivers/cpufreq/intel_pstate.c      | 8 +++++++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ drivers/cpufreq/Kconfig.x86    | 2 +-
+ drivers/cpufreq/intel_pstate.c | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 4c81a86..f502b85 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1446,6 +1446,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 		       disable
- 		         Do not enable intel_pstate as the default
- 		         scaling driver for the supported processors
-+		       ignore_acpi_ppc
-+			 Ignore the existence of ACPI method _PPC for Sun x86 servers
-+			 and load the driver.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 89ae88f..94c9e6b 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -3,7 +3,7 @@
+ #
  
- 	intremap=	[X86-64, Intel-IOMMU]
- 			on	enable Interrupt Remapping (default)
+ config X86_INTEL_PSTATE
+-       bool "Intel P state control"
++       tristate "Intel P state control"
+        depends on X86
+        help
+           This driver provides a P state for Intel core processors.
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 7c5faea..388387b 100644
+index 5498eb0..7c5faea 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -870,6 +870,7 @@ static struct cpufreq_driver intel_pstate_driver = {
- };
+@@ -590,7 +590,9 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+ 	if (pstate == cpu->pstate.current_pstate)
+ 		return;
  
- static int __initdata no_load;
-+static unsigned int  ignore_acpi_ppc;
++#ifndef MODULE
+ 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
++#endif
  
- static int intel_pstate_msrs_not_valid(void)
+ 	cpu->pstate.current_pstate = pstate;
+ 
+@@ -705,12 +707,14 @@ static void intel_pstate_timer_func(unsigned long __data)
+ 
+ 	intel_pstate_adjust_busy_pstate(cpu);
+ 
++#ifndef MODULE
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+ 			fp_toint(intel_pstate_get_scaled_busy(cpu)),
+ 			cpu->pstate.current_pstate,
+ 			sample->mperf,
+ 			sample->aperf,
+ 			sample->freq);
++#endif
+ 
+ 	intel_pstate_set_sample_time(cpu);
+ }
+@@ -1054,6 +1058,7 @@ out:
+ }
+ device_initcall(intel_pstate_init);
+ 
++#ifndef MODULE
+ static int __init intel_pstate_setup(char *str)
  {
-@@ -990,7 +991,7 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
- 		    intel_pstate_no_acpi_pss())
- 			return true;
- 		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
--			intel_pstate_has_acpi_ppc())
-+			intel_pstate_has_acpi_ppc() && !ignore_acpi_ppc)
- 			return true;
- 	}
- 
-@@ -1066,11 +1067,16 @@ static int __init intel_pstate_setup(char *str)
- 
- 	if (!strcmp(str, "disable"))
- 		no_load = 1;
-+	if (!strcmp(str, "ignore_acpi_ppc"))
-+		ignore_acpi_ppc = 1;
+ 	if (!str)
+@@ -1064,6 +1069,7 @@ static int __init intel_pstate_setup(char *str)
  	return 0;
  }
  early_param("intel_pstate", intel_pstate_setup);
- #endif
++#endif
  
-+module_param(ignore_acpi_ppc, uint, 0644);
-+MODULE_PARM_DESC(ignore_acpi_ppc,
-+	"value 0 or non-zero. non-zero -> ignore ACPI _PPC and load this driver");
  MODULE_AUTHOR("Dirk Brandewie <dirk.j.brandewie@intel.com>");
  MODULE_DESCRIPTION("'intel_pstate' - P state driver Intel Core processors");
- MODULE_LICENSE("GPL");
 -- 
 1.8.3.1
