@@ -1,67 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
-Date: Tue, 18 Nov 2014 21:51:57 +0100
-Message-ID: <1714555.tu97zMrOn0@vostro.rjw.lan>
-References: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org> <2808463.UGmrrQ79Aq@vostro.rjw.lan> <CAKohpomgci3S+PZUhm3svuxX+V+pNvHxQqX4m=QmPzd00sxPwg@mail.gmail.com>
+Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
+Date: Tue, 18 Nov 2014 22:03:18 +0100
+Message-ID: <2754178.FqqgMV0o1J@vostro.rjw.lan>
+References: <20141118171831.GC3003@dtor-ws> <4282972.midaRTeXMU@vostro.rjw.lan> <20141118200438.GG3003@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59753 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61329 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754508AbaKRUax (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 15:30:53 -0500
-In-Reply-To: <CAKohpomgci3S+PZUhm3svuxX+V+pNvHxQqX4m=QmPzd00sxPwg@mail.gmail.com>
+	with SMTP id S1755210AbaKRUmO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 15:42:14 -0500
+In-Reply-To: <20141118200438.GG3003@dtor-ws>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stefan Wahren <stefan.wahren@i2se.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Tuesday, November 18, 2014 08:38:14 AM Viresh Kumar wrote:
-> On 18 November 2014 05:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, November 17, 2014 01:38:00 PM Viresh Kumar wrote:
-> >> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> >> index 89ced95..490e9db 100644
-> >> --- a/drivers/base/power/opp.c
-> >> +++ b/drivers/base/power/opp.c
-> >> @@ -466,9 +466,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
-> >>               int ret = opp->available && new_opp->u_volt == opp->u_volt ?
-> >>                       0 : -EEXIST;
-> >>
-> >> -             dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
-> >> -                      __func__, opp->rate, opp->u_volt, opp->available,
-> >> -                      new_opp->rate, new_opp->u_volt, new_opp->available);
-> >> +             dev_dbg(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
-> >> +                     __func__, opp->rate, opp->u_volt, opp->available,
-> >> +                     new_opp->rate, new_opp->u_volt, new_opp->available);
-> >>               mutex_unlock(&dev_opp_list_lock);
-> >>               kfree(new_opp);
-> >>               return ret;
-> >
-> > Don't you think that this may hide real bugs?
+On Tuesday, November 18, 2014 12:04:38 PM Dmitry Torokhov wrote:
+> On Tue, Nov 18, 2014 at 09:14:56PM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, November 18, 2014 09:55:15 AM Dmitry Torokhov wrote:
+> > > On Tue, Nov 18, 2014 at 12:44:22PM -0500, Alan Stern wrote:
+> > > > On Tue, 18 Nov 2014, Dmitry Torokhov wrote:
+> > > > 
+> > > > > OK. Another question then: pm_runtime_get_noresume() does literally this:
+> > > > > 
+> > > > > 	atomic_inc(&dev->power.usage_count);
+> > > > > 
+> > > > > So who is responsible for actually waking up parent device and/or power
+> > > > > domain? Is it simply missing because we did not really have PM domains
+> > > > > before?
+> > > > 
+> > > > Ths bus is responsible for making sure that all the standard resources
+> > > > are available -- that is, all the resources that would be needed by a
+> > > > normal device on that bus.  Anything beyond that (such as
+> > > > special-purpose clocks) has to be set up by the driver.
+> > > > 
+> > > > Thus the bus would insure that the device was powered, its parent was
+> > > > resumed, and the usual clock inputs were enabled.  And of course, one
+> > > > mechanism for doing this is to runtime-resume the power domain.
+> > > 
+> > > This does not sound like anything bus-specific. Can we move powering on
+> > > the domain before probing into the driver core, similarly to the default
+> > > pin selection by pinctrl?
+> > 
+> > We could do that for genpd if devices were added to domains before registering
+> > (those devices).  Otherwise, there's no guarantee that all has been set up yet.
+> > 
+> > Note that this would only be the case for genpd, not for the ACPI PM domain
+> > in particular, for example.  The reason why is that the ACPI PM domain cannot
+> > be used along with bus types that provide non-trivial PM callbacks, so pretty
+> > much the bus type's ->probe needs to decide whether or not to use it.
 > 
-> What kind of bugs exactly?
-> 
-> We are allowing addition of duplicate OPPs as a standard thing right now
-> as cpufreq drivers don't get rid of the OPPs they create with DT. So, that
-> shouldn't complain, isn't it ?
+> In genpd code there is a notion of providers that match devices and
+> domains. Can we do the same for ACPI and stuff all that knowledge into
+> it's "provider"?
 
-Is cpufreq the only user of OPP?  I thought there were other users, so what
-about them?
+It is in ACPI like that too, but not in the form of the ACPI PM domain.
 
-> For example, what Stefan was doing was absolutely normal procedure
-> and that complained for him..
-> 
-> The only thing we don't allow is when the existing OPP isn't available
-> and we are trying to add a duplicate one. In that case we do return
-> -EEXIST and so we will get errors from the upper layer.
-> 
-> Or do we want to destroy OPPs created with help of DT while the
-> driver unloads ?
+> IOW why ACPI is that special?
 
-I'm not sure about that.  If they aren't useful for anything after
-that, what's the benefit of keeping them around?
+The ACPI PM domain is there specifically for bus types that don't provide
+non-trivial PM callbacks to avoid duplication of code (if it didn't exist,
+all of the bus types in question would need to provide callbacks with
+optional ACPI handling in them).  That's all about it.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+And there are bus types that provide non-trivial PM callbacks *and* use
+ACPI in them, like PCI, and that is more interleaved with the native PM
+in there.  For those bus types we can't add devices to the ACPI PM domain
+just because they have ACPI companion objects.
+
+I'm not really sure why it is important here, though.  We're talking about
+genpd, aren't we?
+
+I just wanted to indicate that the PM domains concept is not only about
+handling power domains and not all of its use cases can be shoehorned into
+the same scheme.
+
+Rafael
+
