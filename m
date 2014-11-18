@@ -1,27 +1,23 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Tue, 18 Nov 2014 13:44:33 -0800
-Message-ID: <20141118214433.GJ3003@dtor-ws>
-References: <20141118171831.GC3003@dtor-ws>
- <2942471.O5C3bMgcxl@vostro.rjw.lan>
- <20141118210229.GI3003@dtor-ws>
- <1824493.p8QbHUZx3Z@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
+Date: Tue, 18 Nov 2014 23:10:18 +0100
+Message-ID: <2146731.F0GMumVzg0@vostro.rjw.lan>
+References: <20141118171831.GC3003@dtor-ws> <20141118210229.GI3003@dtor-ws> <1824493.p8QbHUZx3Z@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f180.google.com ([209.85.223.180]:48021 "EHLO
-	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754178AbaKRVoj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 16:44:39 -0500
-Content-Disposition: inline
+Received: from v094114.home.net.pl ([79.96.170.134]:57473 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753300AbaKRVtO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 16:49:14 -0500
 In-Reply-To: <1824493.p8QbHUZx3Z@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Tue, Nov 18, 2014 at 10:58:17PM +0100, Rafael J. Wysocki wrote:
+On Tuesday, November 18, 2014 10:58:17 PM Rafael J. Wysocki wrote:
 > On Tuesday, November 18, 2014 01:02:29 PM Dmitry Torokhov wrote:
 > > On Tue, Nov 18, 2014 at 10:17:46PM +0100, Rafael J. Wysocki wrote:
 > > > On Tuesday, November 18, 2014 10:03:18 PM Rafael J. Wysocki wrote:
@@ -113,9 +109,29 @@ On Tue, Nov 18, 2014 at 10:58:17PM +0100, Rafael J. Wysocki wrote:
 > definition of it AFAICS).
 > 
 > genpd is all about proper power domains, like you said.
+> 
+> That's why I'm saying that they are different and clamping them both
+> together was a mistake.  I overlooked that, my bad.
 
-OK, thank you for explaining this. Up until now I was blissfully
-oblivious to the majority of PM intricacies :)
+For completeness, please let me quote the changelog of commit
+564b905ab10d (PM / Domains: Rename struct dev_power_domain to struct dev_pm_domain)
+dealing with this particular thing:
 
--- 
-Dmitry
+    The naming convention used by commit 7538e3db6e015e890825fbd9f86599b
+    (PM: Add support for device power domains), which introduced the
+    struct dev_power_domain type for representing device power domains,
+    evidently confuses some developers who tend to think that objects
+    of this type must correspond to "power domains" as defined by
+    hardware, which is not the case.  Namely, at the kernel level, a
+    struct dev_power_domain object can represent arbitrary set of devices
+    that are mutually dependent power management-wise and need not belong
+    to one hardware power domain.  To avoid that confusion, rename struct
+    dev_power_domain to struct dev_pm_domain and rename the related
+    pointers in struct device and struct pm_clk_notifier_block from
+    pwr_domain to pm_domain.
+
+And that should be explicitly explained in the PM documentation which I'm going
+to do.
+
+Rafael
+
