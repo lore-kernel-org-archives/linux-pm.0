@@ -1,191 +1,200 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 03/21] thermal: of: Extend of-thermal.c to provide number
- of non critical trip points
-Date: Tue, 18 Nov 2014 11:20:26 -0400
-Message-ID: <20141118152024.GA18674@developer>
+Subject: Re: [PATCH 04/21] thermal: of: Extend current of-thermal.c code to
+ allow setting emulated temp
+Date: Tue, 18 Nov 2014 11:23:29 -0400
+Message-ID: <20141118152327.GB18674@developer>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1412872737-624-4-git-send-email-l.majewski@samsung.com>
- <20141107014152.GD10180@developer>
- <20141107110551.5316836f@amdc2363>
- <20141107160630.GA23549@developer>
- <20141112104241.50f644a4@amdc2363>
+ <1412872737-624-5-git-send-email-l.majewski@samsung.com>
+ <20141107014448.GE10180@developer>
+ <20141107122035.2973ad20@amdc2363>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:33807 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754898AbaKRPXl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Nov 2014 10:23:41 -0500
 Content-Disposition: inline
-In-Reply-To: <20141112104241.50f644a4@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20141107122035.2973ad20@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
 
---dDRMvlgZJXvWKvBx
+--yEPQxsgoJgBvi8ip
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello Lukasz,
+Lukasz,
 
-On Wed, Nov 12, 2014 at 10:42:41AM +0100, Lukasz Majewski wrote:
+
+On Fri, Nov 07, 2014 at 12:20:35PM +0100, Lukasz Majewski wrote:
 > Hi Eduardo,
 >=20
+> > Hello,
 > >=20
-> > Hello Lukasz,
+> > On Thu, Oct 09, 2014 at 06:38:40PM +0200, Lukasz Majewski wrote:
+> > > Before this change it was only possible to set get_temp() and
+> > > get_trend() methods to be used in the common code handling passing
+> > > parameters via device tree to "cpu-thermal" CPU thermal zone device.
+> > >=20
+> > > Now it is possible to also set emulated value of temperature for
+> > > debug purposes.
+> > >=20
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > ---
+> > >  drivers/thermal/of-thermal.c | 25 ++++++++++++++++++++++---
+> > >  include/linux/thermal.h      |  6 ++++--
+> > >  2 files changed, 26 insertions(+), 5 deletions(-)
+> > >=20
+> > > diff --git a/drivers/thermal/of-thermal.c
+> > > b/drivers/thermal/of-thermal.c index cd74e64..f206375 100644
+> > > --- a/drivers/thermal/of-thermal.c
+> > > +++ b/drivers/thermal/of-thermal.c
+> > > @@ -98,10 +98,22 @@ struct __thermal_zone {
+> > >  	void *sensor_data;
+> > >  	int (*get_temp)(void *, long *);
+> > >  	int (*get_trend)(void *, long *);
+> > > +	int (*set_emul_temp)(void *, unsigned long);
+> > >  };
+> > > =20
+> > >  /***   DT thermal zone device callbacks   ***/
+> > > =20
+> > > +static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
+> > > +				    unsigned long temp)
+> > > +{
+> > > +	struct __thermal_zone *data =3D tz->devdata;
+> > > +
+> > > +	if (!data->set_emul_temp)
+> > > +		return -EINVAL;
+> > > +
+> > > +	return data->set_emul_temp(data->sensor_data, temp);
+> > > +}
+> > > +
+> > >  static int of_thermal_get_temp(struct thermal_zone_device *tz,
+> > >  			       unsigned long *temp)
+> > >  {
+> > > @@ -352,7 +364,8 @@ static struct thermal_zone_device *
+> > >  thermal_zone_of_add_sensor(struct device_node *zone,
+> > >  			   struct device_node *sensor, void *data,
+> > >  			   int (*get_temp)(void *, long *),
+> > > -			   int (*get_trend)(void *, long *))
+> > > +			   int (*get_trend)(void *, long *),
+> > > +			   int (*set_emul_temp)(void *, unsigned
+> > > long))
 > >=20
-> > On Fri, Nov 07, 2014 at 11:05:51AM +0100, Lukasz Majewski wrote:
-> > > Hi Eduardo,
-> > >=20
-> > > > On Thu, Oct 09, 2014 at 06:38:39PM +0200, Lukasz Majewski wrote:
-> > > > > This patch extends the of-thermal.c to provide information about
-> > > > > number of available non critical (i.e. non HW) trip points in
-> > > > > the system.
-> > > > >=20
-> > > > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > > > > ---
-> > > > >  drivers/thermal/of-thermal.c   | 12 ++++++++++++
-> > > > >  drivers/thermal/thermal_core.h |  5 +++++
-> > > > >  2 files changed, 17 insertions(+)
-> > > > >=20
-> > > > > diff --git a/drivers/thermal/of-thermal.c
-> > > > > b/drivers/thermal/of-thermal.c index 23c8d6c..cd74e64 100644
-> > > > > --- a/drivers/thermal/of-thermal.c
-> > > > > +++ b/drivers/thermal/of-thermal.c
-> > > > > @@ -128,6 +128,18 @@ int of_thermal_is_trip_en(struct
-> > > > > thermal_zone_device *tz, int trip) return 1;
-> > > > >  }
-> > > > > =20
-> > > > > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device
-> > > > > *tz) +{
-> > > > > +	struct __thermal_zone *data =3D tz->devdata;
-> > > > > +	int i;
-> > > > > +
-> > > > > +	for (i =3D 0; i < data->ntrips; i++)
-> > > > > +		if (data->trips[i].type !=3D
-> > > > > THERMAL_TRIP_CRITICAL)
-> > > > > +			continue;
-> > > > > +
-> > > > > +	return --i;
-> > > > > +}
-> > > > > +
-> > > >=20
-> > > >=20
-> > > >=20
-> > > > I am not against this addition. But looks like we start to spread
-> > > > some specific APIs that may not be used to other drivers.
-> > >=20
-> > > Why do you think that this is a specific API? In the thermal OF we
-> > > can define trip point as "active", "passive", "hot" and "critical".
-> > >=20
-> > > With the first three we can handle them and properly react. For the
-> > > last one SoC's PMU will power down the board.
-> > >=20
-> > > Do you know if any board (e.g. from TI) is NOT supposed to shut down
-> > > when "critical" temperature is passed?
-> > >=20
-> >=20
-> > So, my point is not really about the usage of trip points. It is just
-> > that the of-thermal  API will grow with in a wide way with specific
-> > functions to check some property on the trip point array. And not all
-> > drivers may be using these function, e.g. the above proposal.
-> >=20
-> > > The real problem here is the accessibility to __thermal_trip and
-> > > __thermal_bind arrays.
-> > >=20
-> > > Use case:
-> > > In the Exynos driver we do need to initialize TMU registers with
-> > > threshold temperatures.
-> > > The temperature is read via tz->ops->get_trip_temp() [1] (from
-> > > of-thermal.c).
-> > > Unfortunately, the current API is not exporting the number of
-> > > non-critical trip points to know how many times call [1].
-> > > Of course we could by hand instantiate [1] n times, but this looks
-> > > for me a bit clumsy.
-> >=20
-> >=20
-> > I understand your use case. My point was simply that this use case may
-> > be specific to your driver (or few drivers).
-> > >=20
-> > > Additionally, we now have implicit assumption about the order of
-> > > defined temperatures for trip points, but I think this is not a big
-> > > issue.
-> > >=20
-> > > > Maybe having a
-> > > > single API to provide a read-only copy the list / array of trips
-> > > > might be a better approach. I will think of a better way.
-> > >=20
-> > > Definitely. Exporting available trip points is crucial.
-> > >=20
-> >=20
-> > Yeah, I think it is the best thing to do. Share a read-only array /
-> > copy of the needed data, and then drivers would check what ever
-> > property they need from the array. Just make sure you document that
-> > this is a read-only array (i.e. any possible change they do, won't
-> > affect the original array).
+> > Thanks for improving the API. However, looking at what is above, it
+> > starts to be pretty ugly. And for sure, this is not the last callback
+> > to be added.
 >=20
-> So I assume that you don't mind that I will prepare such of-thermal.c
-> modification?
-
-No, please, feel free to send the proposal along with your patchset. To
-me, it makes sense you do it, because you will also present a real use
-case of this required change.
-
+> Presumably there would be some more callbacks.
 >=20
+> > I believe it is time to add a .ops in the of-thermal.
+> > While in here, do you mind adding the .ops in a separated patch, then
+> > add the .set_emul_temp in the .ops field?
+>=20
+> I will add an option to pass .ops with thermal_zone_of_add_sensor().
+>=20
+> I'm only concerned a bit about testing other users of of-thermal.=20
+> I have only beaglebone black (BBB) for testing, which on-soc bandgap
+> thermal sensor is very inaccurate and hence not supported even at BBB
+> github linux kernel repository (v3.14).
+>=20
+> Because of above I would need your support for testing.
+>=20
+
+I did the .ops part that is required for your patch:
+https://patchwork.kernel.org/patch/5329801/
+
+As you already reviewed it. Do you mind refreshing your series on top of
+it?
+
+Cheers,
+
+
 > >=20
-> > > >=20
-> > > > I also request you to document it accordingly.
-> > >=20
-> > > Ok, I will do that.
-> >=20
-> > Cool!
-> >=20
-> >=20
-> >=20
-> > >=20
-> > > >=20
-> > > >=20
-> > > > >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
-> > > > > int trip, enum thermal_trend *trend)
-> > > > >  {
-> > > > > diff --git a/drivers/thermal/thermal_core.h
-> > > > > b/drivers/thermal/thermal_core.h index ed8ff05..334a7be 100644
-> > > > > --- a/drivers/thermal/thermal_core.h
-> > > > > +++ b/drivers/thermal/thermal_core.h
-> > > > > @@ -83,6 +83,7 @@ int of_parse_thermal_zones(void);
-> > > > >  void of_thermal_destroy_zones(void);
-> > > > >  int of_thermal_get_ntrips(struct thermal_zone_device *);
-> > > > >  int of_thermal_is_trip_en(struct thermal_zone_device *, int);
-> > > > > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device
-> > > > > *); #else
-> > > > >  static inline int of_parse_thermal_zones(void) { return 0; }
-> > > > >  static inline void of_thermal_destroy_zones(void) { }
-> > > > > @@ -94,6 +95,10 @@ int of_thermal_is_trip_en(struct
-> > > > > thermal_zone_device *, int) {
-> > > > >  	return 0;
-> > > > >  }
-> > > > > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device
-> > > > > *)
-> > > > here, it is supposed to be static inline.
-> > > >=20
-> > > > > +{
-> > > > > +	return 0;
-> > > > > +}
-> > > > >  #endif
-> > > > > =20
-> > > > >  #endif /* __THERMAL_CORE_H__ */
-> > > > > --=20
-> > > > > 2.0.0.rc2
-> > > > >=20
-> > >=20
-> > >=20
-> > >=20
+> > >  {
+> > >  	struct thermal_zone_device *tzd;
+> > >  	struct __thermal_zone *tz;
+> > > @@ -366,10 +379,12 @@ thermal_zone_of_add_sensor(struct device_node
+> > > *zone, mutex_lock(&tzd->lock);
+> > >  	tz->get_temp =3D get_temp;
+> > >  	tz->get_trend =3D get_trend;
+> > > +	tz->set_emul_temp =3D set_emul_temp;
+> > >  	tz->sensor_data =3D data;
+> > > =20
+> > >  	tzd->ops->get_temp =3D of_thermal_get_temp;
+> > >  	tzd->ops->get_trend =3D of_thermal_get_trend;
+> > > +	tzd->ops->set_emul_temp =3D of_thermal_set_emul_temp;
+> > >  	mutex_unlock(&tzd->lock);
+> > > =20
+> > >  	return tzd;
+> > > @@ -411,7 +426,8 @@ thermal_zone_of_add_sensor(struct device_node
+> > > *zone, struct thermal_zone_device *
+> > >  thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+> > >  				void *data, int (*get_temp)(void
+> > > *, long *),
+> > > -				int (*get_trend)(void *, long *))
+> > > +				int (*get_trend)(void *, long *),
+> > > +				int (*set_emul_temp)(void *,
+> > > unsigned long)) {
+> > >  	struct device_node *np, *child, *sensor_np;
+> > > =20
+> > > @@ -453,7 +469,8 @@ thermal_zone_of_sensor_register(struct device
+> > > *dev, int sensor_id, return thermal_zone_of_add_sensor(child,
+> > > sensor_np, data,
+> > >  							  get_temp,
+> > > -
+> > > get_trend);
+> > > +
+> > > get_trend,
+> > > +
+> > > set_emul_temp); }
+> > >  	}
+> > >  	of_node_put(np);
+> > > @@ -494,9 +511,11 @@ void thermal_zone_of_sensor_unregister(struct
+> > > device *dev, mutex_lock(&tzd->lock);
+> > >  	tzd->ops->get_temp =3D NULL;
+> > >  	tzd->ops->get_trend =3D NULL;
+> > > +	tzd->ops->set_emul_temp =3D NULL;
+> > > =20
+> > >  	tz->get_temp =3D NULL;
+> > >  	tz->get_trend =3D NULL;
+> > > +	tz->set_emul_temp =3D NULL;
+> > >  	tz->sensor_data =3D NULL;
+> > >  	mutex_unlock(&tzd->lock);
+> > >  }
+> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > > index 0305cde..36010e9 100644
+> > > --- a/include/linux/thermal.h
+> > > +++ b/include/linux/thermal.h
+> > > @@ -290,14 +290,16 @@ struct thermal_genl_event {
+> > >  struct thermal_zone_device *
+> > >  thermal_zone_of_sensor_register(struct device *dev, int id,
+> > >  				void *data, int (*get_temp)(void
+> > > *, long *),
+> > > -				int (*get_trend)(void *, long *));
+> > > +				int (*get_trend)(void *, long *),
+> > > +				int (*set_emul_temp)(void *,
+> > > unsigned long)); void thermal_zone_of_sensor_unregister(struct
+> > > device *dev, struct thermal_zone_device *tz);
+> > >  #else
+> > >  static inline struct thermal_zone_device *
+> > >  thermal_zone_of_sensor_register(struct device *dev, int id,
+> > >  				void *data, int (*get_temp)(void
+> > > *, long *),
+> > > -				int (*get_trend)(void *, long *))
+> > > +				int (*get_trend)(void *, long *),
+> > > +				int (*set_emul_temp)(void *,
+> > > unsigned long)) {
+> > >  	return NULL;
+> > >  }
 > > > --=20
-> > > Best regards,
+> > > 2.0.0.rc2
 > > >=20
-> > > Lukasz Majewski
-> > >=20
-> > > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
 >=20
 >=20
 >=20
@@ -196,20 +205,20 @@ case of this required change.
 >=20
 > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
 
---dDRMvlgZJXvWKvBx
+--yEPQxsgoJgBvi8ip
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUa2OwAAoJEMLUO4d9pOJW1T0IAJSJsLV6bPFEimZUlpdDFX+n
-DU/+mEyMDkKQGA6cIzY1+DWuGUYqbhveVcYahM4qSeSNyvO42S5sohk43tXt+Qrm
-MQqurHftZtJPSESn7qtFY8wBWjPSwYgsVU6/RK83HY1es9joRQTtVRLJtUqs/bjf
-QNOnLUCmCfdJxtD/+eDAdgm3YL+jWvG32td0BXISoCS68Inm29voVoNfXLWXKsSM
-xbsEv8GgGv1egSahQoOsmhWq766rzwC84T3QdDMQShCCbga8ndGgp5YEj4BmFpLM
-1ZuDVpk16U9kbcC4bk5E8N2yINj0eHWsWwcZ7QKQrCt/7tQO5aA6Xb23GpczAy8=
-=wGgm
+iQEcBAEBAgAGBQJUa2RlAAoJEMLUO4d9pOJWUoIH/3t+oN9xb9nDHSqfcd/ejmTy
+8R7FQ53X3zKPwPB9EZ4k7SSJ3IvrxgGtXf3v4H5ZgU6psIUP9uCLQZ4jOddCdtos
+FmhlKh0NikPJ2E0xkbepZfLfsgp1Suqhxkm1uehyj/n+xNWzP74FiNuT6Dqed4VE
+m8dGj+RyZt66PtAZfmyKY4am28VFJsaWb4CdCVvvEqFNaKKZ/xJj8qrV/Nhpk8lV
+tt+FQoiOgSCdh9JB6sWioEg13r0qJ4GpLkG3NbyaWWcOi3JHHl3usfgAFIgRHj14
+QxFJYiKzDXlj9Xv/EosN731J3VEvVUMB9OChe/vOW+OlF74krCpF/D6Htqggki4=
+=bA99
 -----END PGP SIGNATURE-----
 
---dDRMvlgZJXvWKvBx--
+--yEPQxsgoJgBvi8ip--
