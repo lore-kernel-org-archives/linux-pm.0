@@ -1,407 +1,82 @@
-From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCHv4 1/1] thermal: of: improve of-thermal sensor registration
- API
-Date: Wed, 19 Nov 2014 09:21:39 +0100
-Message-ID: <20141119092139.1965e44e@amdc2363>
-References: <1416321575-18348-1-git-send-email-edubezval@gmail.com>
- <1416321575-18348-2-git-send-email-edubezval@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] Thermal/int340x: avoid unnecessary pointer casting
+Date: Wed, 19 Nov 2014 16:31:32 +0800
+Message-ID: <1416385892.2352.20.camel@rzhang1-toshiba>
+References: <1415145214-2986-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1416321575-18348-2-git-send-email-edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:29392 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbaKSIbV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 19 Nov 2014 03:31:21 -0500
+In-Reply-To: <1415145214-2986-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Dan Carpenter <dan.carpenter@oracle.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
-Hi Eduardo,
+On Tue, 2014-11-04 at 15:53 -0800, Jacob Pan wrote:
+> Avoid pointer casting which may also lead to problems on big endian
+> 64 bit systems.
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-> Different drivers request API extensions in of-thermal. For this
-> reason, additional callbacks are required to fit the new drivers
-> needs.
-> 
-> The current API implementation expects the registering sensor driver
-> to provide a get_temp and get_trend callbacks as function parameters.
-> As the amount of callbacks is growing, this patch changes the existing
-> implementation to use a .ops field to hold all the of thermal
-> callbacks to sensor drivers.
-> 
-> This patch also changes the existing of-thermal users to fit the new
-> API design. No functional change is introduced in this patch.
-> 
-> Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-> Cc: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
-> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
-> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-> Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Reviewed-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Patch queued for 3.19.
+
+thanks,
+rui
 > ---
->  drivers/hwmon/lm75.c                               |  9 +++--
->  drivers/hwmon/ntc_thermistor.c                     |  6 +++-
->  drivers/hwmon/tmp102.c                             |  6 +++-
->  drivers/thermal/of-thermal.c                       | 40
-> ++++++++++------------
-> drivers/thermal/tegra_soctherm.c                   |  7 ++--
-> drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  8 +++--
-> include/linux/thermal.h                            | 24 +++++++++----
-> 7 files changed, 63 insertions(+), 37 deletions(-) ---
-> Difference from V3:
->   - Keep the same behavior regarding callback checks.
->     Change in behavior may be sent in a separate patch.
-> Difference from V2:
->   - Fix wrong assignment in tegra driver.
-> Difference from V1:
->   - Fix error handling when .get_trend is not provided.
+>  drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-> index d16dbb3..e7c8bf9 100644
-> --- a/drivers/hwmon/lm75.c
-> +++ b/drivers/hwmon/lm75.c
-> @@ -176,6 +176,10 @@ static struct attribute *lm75_attrs[] = {
->  };
->  ATTRIBUTE_GROUPS(lm75);
->  
-> +static const struct thermal_zone_of_device_ops lm75_of_thermal_ops =
-> {
-> +	.get_temp = lm75_read_temp,
-> +};
-> +
->  /*-----------------------------------------------------------------------*/
->  
->  /* device probe and removal */
-> @@ -291,10 +295,9 @@ lm75_probe(struct i2c_client *client, const
-> struct i2c_device_id *id) if (IS_ERR(data->hwmon_dev))
->  		return PTR_ERR(data->hwmon_dev);
->  
-> -	data->tz = thermal_zone_of_sensor_register(data->hwmon_dev,
-> -						   0,
-> +	data->tz = thermal_zone_of_sensor_register(data->hwmon_dev,
-> 0, data->hwmon_dev,
-> -						   lm75_read_temp,
-> NULL);
-> +
-> &lm75_of_thermal_ops); if (IS_ERR(data->tz))
->  		data->tz = NULL;
->  
-> diff --git a/drivers/hwmon/ntc_thermistor.c
-> b/drivers/hwmon/ntc_thermistor.c index 4ff89b2..bca8521c8 100644
-> --- a/drivers/hwmon/ntc_thermistor.c
-> +++ b/drivers/hwmon/ntc_thermistor.c
-> @@ -486,6 +486,10 @@ static const struct attribute_group
-> ntc_attr_group = { .attrs = ntc_attributes,
->  };
->  
-> +static const struct thermal_zone_of_device_ops ntc_of_thermal_ops = {
-> +	.get_temp = ntc_read_temp,
-> +};
-> +
->  static int ntc_thermistor_probe(struct platform_device *pdev)
+> diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> index 0d8db80..ac5c405 100644
+> --- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> +++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> @@ -317,21 +317,21 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
 >  {
->  	const struct of_device_id *of_id =
-> @@ -579,7 +583,7 @@ static int ntc_thermistor_probe(struct
-> platform_device *pdev) pdev_id->name);
+>  	int ret = 0;
+>  	unsigned long length = 0;
+> -	unsigned long count = 0;
+> +	int count = 0;
+>  	char __user *arg = (void __user *)__arg;
+>  	struct trt *trts;
+>  	struct art *arts;
 >  
->  	data->tz = thermal_zone_of_sensor_register(data->dev, 0,
-> data->dev,
-> -						ntc_read_temp, NULL);
-> +
-> &ntc_of_thermal_ops); if (IS_ERR(data->tz)) {
->  		dev_dbg(&pdev->dev, "Failed to register to thermal
-> fw.\n"); data->tz = NULL;
-> diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
-> index 5171995..ba9f478 100644
-> --- a/drivers/hwmon/tmp102.c
-> +++ b/drivers/hwmon/tmp102.c
-> @@ -158,6 +158,10 @@ ATTRIBUTE_GROUPS(tmp102);
->  #define TMP102_CONFIG  (TMP102_CONF_TM | TMP102_CONF_EM |
-> TMP102_CONF_CR1) #define TMP102_CONFIG_RD_ONLY (TMP102_CONF_R0 |
-> TMP102_CONF_R1 | TMP102_CONF_AL) 
-> +static const struct thermal_zone_of_device_ops tmp102_of_thermal_ops
-> = {
-> +	.get_temp = tmp102_read_temp,
-> +};
-> +
->  static int tmp102_probe(struct i2c_client *client,
->  				  const struct i2c_device_id *id)
->  {
-> @@ -215,7 +219,7 @@ static int tmp102_probe(struct i2c_client *client,
->  	}
->  	tmp102->hwmon_dev = hwmon_dev;
->  	tmp102->tz = thermal_zone_of_sensor_register(hwmon_dev, 0,
-> hwmon_dev,
-> -
-> tmp102_read_temp, NULL);
-> +
-> &tmp102_of_thermal_ops); if (IS_ERR(tmp102->tz))
->  		tmp102->tz = NULL;
->  
-> diff --git a/drivers/thermal/of-thermal.c
-> b/drivers/thermal/of-thermal.c index f8eb625..e87ccdb 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -30,6 +30,7 @@
->  #include <linux/err.h>
->  #include <linux/export.h>
->  #include <linux/string.h>
-> +#include <linux/thermal.h>
->  
->  #include "thermal_core.h"
->  
-> @@ -77,8 +78,7 @@ struct __thermal_bind_params {
->   * @num_tbps: number of thermal bind params
->   * @tbps: an array of thermal bind params (0..num_tbps - 1)
->   * @sensor_data: sensor private data used while reading temperature
-> and trend
-> - * @get_temp: sensor callback to read temperature
-> - * @get_trend: sensor callback to read temperature trend
-> + * @ops: set of callbacks to handle the thermal zone based on DT
->   */
->  
->  struct __thermal_zone {
-> @@ -96,8 +96,7 @@ struct __thermal_zone {
->  
->  	/* sensor interface */
->  	void *sensor_data;
-> -	int (*get_temp)(void *, long *);
-> -	int (*get_trend)(void *, long *);
-> +	const struct thermal_zone_of_device_ops *ops;
->  };
->  
->  /***   DT thermal zone device callbacks   ***/
-> @@ -107,10 +106,10 @@ static int of_thermal_get_temp(struct
-> thermal_zone_device *tz, {
->  	struct __thermal_zone *data = tz->devdata;
->  
-> -	if (!data->get_temp)
-> +	if (!data->ops->get_temp)
->  		return -EINVAL;
->  
-> -	return data->get_temp(data->sensor_data, temp);
-> +	return data->ops->get_temp(data->sensor_data, temp);
->  }
->  
->  static int of_thermal_get_trend(struct thermal_zone_device *tz, int
-> trip, @@ -120,10 +119,10 @@ static int of_thermal_get_trend(struct
-> thermal_zone_device *tz, int trip, long dev_trend;
->  	int r;
->  
-> -	if (!data->get_trend)
-> +	if (!data->ops->get_trend)
->  		return -EINVAL;
->  
-> -	r = data->get_trend(data->sensor_data, &dev_trend);
-> +	r = data->ops->get_trend(data->sensor_data, &dev_trend);
->  	if (r)
->  		return r;
->  
-> @@ -324,8 +323,7 @@ static struct thermal_zone_device_ops
-> of_thermal_ops = { static struct thermal_zone_device *
->  thermal_zone_of_add_sensor(struct device_node *zone,
->  			   struct device_node *sensor, void *data,
-> -			   int (*get_temp)(void *, long *),
-> -			   int (*get_trend)(void *, long *))
-> +			   const struct thermal_zone_of_device_ops
-> *ops) {
->  	struct thermal_zone_device *tzd;
->  	struct __thermal_zone *tz;
-> @@ -336,9 +334,11 @@ thermal_zone_of_add_sensor(struct device_node
-> *zone, 
->  	tz = tzd->devdata;
->  
-> +	if (!ops)
-> +		return ERR_PTR(-EINVAL);
-> +
->  	mutex_lock(&tzd->lock);
-> -	tz->get_temp = get_temp;
-> -	tz->get_trend = get_trend;
-> +	tz->ops = ops;
->  	tz->sensor_data = data;
->  
->  	tzd->ops->get_temp = of_thermal_get_temp;
-> @@ -356,8 +356,8 @@ thermal_zone_of_add_sensor(struct device_node
-> *zone,
->   *             than one sensors
->   * @data: a private pointer (owned by the caller) that will be passed
->   *        back, when a temperature reading is needed.
-> - * @get_temp: a pointer to a function that reads the sensor
-> temperature.
-> - * @get_trend: a pointer to a function that reads the sensor
-> temperature trend.
-> + * @ops: struct thermal_zone_of_device *. Must contain at
-> least .get_trend and
-> + *       .get_temp.
->   *
->   * This function will search the list of thermal zones described in
-> device
->   * tree and look for the zone that refer to the sensor device
-> pointed by @@ -382,9 +382,8 @@ thermal_zone_of_add_sensor(struct
-> device_node *zone,
->   * check the return value with help of IS_ERR() helper.
->   */
->  struct thermal_zone_device *
-> -thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
-> -				void *data, int (*get_temp)(void *,
-> long *),
-> -				int (*get_trend)(void *, long *))
-> +thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
-> void *data,
-> +				const struct
-> thermal_zone_of_device_ops *ops) {
->  	struct device_node *np, *child, *sensor_np;
->  
-> @@ -424,9 +423,7 @@ thermal_zone_of_sensor_register(struct device
-> *dev, int sensor_id, if (sensor_specs.np == sensor_np && id ==
-> sensor_id) { of_node_put(np);
->  			return thermal_zone_of_add_sensor(child,
-> sensor_np,
-> -							  data,
-> -							  get_temp,
-> -							  get_trend);
-> +							  data, ops);
->  		}
->  	}
->  	of_node_put(np);
-> @@ -468,8 +465,7 @@ void thermal_zone_of_sensor_unregister(struct
-> device *dev, tzd->ops->get_temp = NULL;
->  	tzd->ops->get_trend = NULL;
->  
-> -	tz->get_temp = NULL;
-> -	tz->get_trend = NULL;
-> +	tz->ops = NULL;
->  	tz->sensor_data = NULL;
->  	mutex_unlock(&tzd->lock);
->  }
-> diff --git a/drivers/thermal/tegra_soctherm.c
-> b/drivers/thermal/tegra_soctherm.c index 70f7e9e..9197fc0 100644
-> --- a/drivers/thermal/tegra_soctherm.c
-> +++ b/drivers/thermal/tegra_soctherm.c
-> @@ -317,6 +317,10 @@ static int tegra_thermctl_get_temp(void *data,
-> long *out_temp) return 0;
->  }
->  
-> +static const struct thermal_zone_of_device_ops tegra_of_thermal_ops
-> = {
-> +	.get_temp = tegra_thermctl_get_temp,
-> +};
-> +
->  static const struct of_device_id tegra_soctherm_of_match[] = {
->  	{ .compatible = "nvidia,tegra124-soctherm" },
->  	{ },
-> @@ -416,8 +420,7 @@ static int tegra_soctherm_probe(struct
-> platform_device *pdev) zone->shift =
-> t124_thermctl_temp_zones[i].shift; 
->  		tz = thermal_zone_of_sensor_register(&pdev->dev, i,
-> zone,
-> -
-> tegra_thermctl_get_temp,
-> -						     NULL);
-> +
-> &tegra_of_thermal_ops); if (IS_ERR(tz)) {
->  			err = PTR_ERR(tz);
->  			dev_err(&pdev->dev, "failed to register
-> sensor: %d\n", diff --git
-> a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c index
-> 9eec26d..5fd0386 100644 ---
-> a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c +++
-> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c @@ -286,6
-> +286,11 @@ static int ti_thermal_get_crit_temp(struct
-> thermal_zone_device *thermal, return
-> ti_thermal_get_trip_temp(thermal, OMAP_TRIP_NUMBER - 1, temp); }
-> +static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
-> +	.get_temp = __ti_thermal_get_temp,
-> +	.get_trend = __ti_thermal_get_trend,
-> +};
-> +
->  static struct thermal_zone_device_ops ti_thermal_ops = {
->  	.get_temp = ti_thermal_get_temp,
->  	.get_trend = ti_thermal_get_trend,
-> @@ -333,8 +338,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap
-> *bgp, int id, 
->  	/* in case this is specified by DT */
->  	data->ti_thermal = thermal_zone_of_sensor_register(bgp->dev,
-> id,
-> -					data, __ti_thermal_get_temp,
-> -					__ti_thermal_get_trend);
-> +					data, &ti_of_thermal_ops);
->  	if (IS_ERR(data->ti_thermal)) {
->  		/* Create thermal zone */
->  		data->ti_thermal =
-> thermal_zone_device_register(domain, diff --git
-> a/include/linux/thermal.h b/include/linux/thermal.h index
-> ef90838..b565964 100644 --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -289,19 +289,31 @@ struct thermal_genl_event {
->  	enum events event;
->  };
->  
-> +/**
-> + * struct thermal_zone_of_device_ops - scallbacks for handling DT
-> based zones
-> + *
-> + * Mandatory:
-> + * @get_temp: a pointer to a function that reads the sensor
-> temperature.
-> + *
-> + * Optional:
-> + * @get_trend: a pointer to a function that reads the sensor
-> temperature trend.
-> + */
-> +struct thermal_zone_of_device_ops {
-> +	int (*get_temp)(void *, long *);
-> +	int (*get_trend)(void *, long *);
-> +};
-> +
->  /* Function declarations */
->  #ifdef CONFIG_THERMAL_OF
->  struct thermal_zone_device *
-> -thermal_zone_of_sensor_register(struct device *dev, int id,
-> -				void *data, int (*get_temp)(void *,
-> long *),
-> -				int (*get_trend)(void *, long *));
-> +thermal_zone_of_sensor_register(struct device *dev, int id, void
-> *data,
-> +				const struct
-> thermal_zone_of_device_ops *); void
-> thermal_zone_of_sensor_unregister(struct device *dev, struct
-> thermal_zone_device *tz); #else
->  static inline struct thermal_zone_device *
-> -thermal_zone_of_sensor_register(struct device *dev, int id,
-> -				void *data, int (*get_temp)(void *,
-> long *),
-> -				int (*get_trend)(void *, long *))
-> +thermal_zone_of_sensor_register(struct device *dev, int id, void
-> *data,
-> +				const struct
-> thermal_zone_of_device_ops *) {
->  	return NULL;
->  }
-
-On which branch should I apply this patch?
-
-I've tried to apply this patch on top of newest linux-soc-thermal/next:
-git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-branch: next
-SHA1:4027494124fd88e5d51127eebba315de5d8d57c8
-
-Unfortunately, it conflicts with:
-"thermal: fix multiple disbalanced device node counters"
-c2aad93c Vladimir Zapolskiy
+>  	switch (cmd) {
+>  	case ACPI_THERMAL_GET_TRT_COUNT:
+> -		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
+> +		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
+>  				&trts, false);
+>  		kfree(trts);
+>  		if (!ret)
+>  			return put_user(count, (unsigned long __user *)__arg);
+>  		return ret;
+>  	case ACPI_THERMAL_GET_TRT_LEN:
+> -		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
+> +		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
+>  				&trts, false);
+>  		kfree(trts);
+>  		length = count * sizeof(union trt_object);
+> @@ -341,14 +341,14 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
+>  	case ACPI_THERMAL_GET_TRT:
+>  		return fill_trt(arg);
+>  	case ACPI_THERMAL_GET_ART_COUNT:
+> -		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
+> +		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
+>  				&arts, false);
+>  		kfree(arts);
+>  		if (!ret)
+>  			return put_user(count, (unsigned long __user *)__arg);
+>  		return ret;
+>  	case ACPI_THERMAL_GET_ART_LEN:
+> -		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
+> +		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
+>  				&arts, false);
+>  		kfree(arts);
+>  		length = count * sizeof(union art_object);
 
 
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
