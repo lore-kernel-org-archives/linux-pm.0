@@ -1,91 +1,87 @@
-From: Linda Knippers <linda.knippers@hp.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
- _PPC method
-Date: Wed, 19 Nov 2014 15:22:06 -0500
-Message-ID: <546CFBEE.6090103@hp.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: [PATCH v3 0/2] CPPC as a PID backend
+Date: Wed, 19 Nov 2014 15:34:51 -0500
+Message-ID: <1416429293-3798-1-git-send-email-ashwin.chaugule@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g4t3426.houston.hp.com ([15.201.208.54]:7472 "EHLO
-	g4t3426.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756189AbaKSUWP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 15:22:15 -0500
-In-Reply-To: <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:49645 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756132AbaKSUfC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 15:35:02 -0500
+Received: by mail-pd0-f175.google.com with SMTP id y10so1560562pdj.6
+        for <linux-pm@vger.kernel.org>; Wed, 19 Nov 2014 12:35:02 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+To: viresh.kumar@linaro.org
+Cc: rwells@codeaurora.org, linda.knippers@hp.com, linux-pm@vger.kernel.org, Catalin.Marinas@arm.com, dirk.brandewie@gmail.com, patches@linaro.org, linaro-acpi@list.linaro.org, rjw@rjwysocki.net, Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-On 11/18/2014 3:37 AM, Ethan Zhao wrote:
-> Oracle Sun X86 servers have dynamic power capping capability that works via
-> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-> enabled.
-> 
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 27bb6d3..5498eb0 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->  	return true;
->  }
->  
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct acpi_processor *pr = per_cpu(processors, i);
-> +
-> +		if (!pr)
-> +			continue;
-> +		if (acpi_has_method(pr->handle, "_PPC"))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
->  struct hw_vendor_info {
->  	u16  valid;
->  	char oem_id[ACPI_OEM_ID_SIZE];
-> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->  /* Hardware vendor-specific info that has its own power management modes */
->  static struct hw_vendor_info vendor_info[] = {
->  	{1, "HP    ", "ProLiant"},
-> +	{1, "ORACLE", ""},
->  	{0, "", ""},
->  };
->  
-> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->  		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
->  		    intel_pstate_no_acpi_pss())
->  			return true;
-> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> +			intel_pstate_has_acpi_ppc())
+This patchset introduces CPPC(Collaborative Processor Performance Control) as a backend
+to the PID governor. The PID governor from intel_pstate.c maps cleanly onto some CPPC
+interfaces.
+e.g. The CPU performance requests are made on a continuous scale as against discrete pstate
+levels. The CPU performance feedback over an interval is gauged using platform specific
+counters which are also described by CPPC.
 
-We need try this on a few platforms to make sure this patch doesn't break the
-HP platforms that may or may not need this driver, depending on the BIOS settings.
+Although CPPC describes several other registers to provide more hints to the platform,
+Linux as of today does not have the infrastructure to make use of those registers.
+Some of the CPPC specific information could be made available from the scheduler as
+part of the CPUfreq and Scheduler intergration work. Until then PID can be used as the
+front end for CPPC.
 
-I don't suppose you tested on a ProLiant too?
+This implementation was tested using a Thinkpad X240 Laptop which enumerates CPPC and PCC
+tables in its ACPI firmware.
 
--- ljk
+This patchset builds on top of the PCC driver which is being reviewed separately[3].
 
-> +			return true;
->  	}
->  
->  	return false;
->  }
->  #else /* CONFIG_ACPI not enabled */
->  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->  #endif /* CONFIG_ACPI */
->  
->  static int __init intel_pstate_init(void)
-> 
+Changes since V2:
+- Select driver if !X86, since intel_pstate will use HWP extensions instead.
+- Added more comments.
+- Added Freq domain awareness and PSD parsing.
+
+Changes since V1:
+- Create a new driver based on Dirks suggestion.
+- Fold in CPPC backend hooks into main driver.
+
+Changes since V0: [1]
+- Split intel_pstate.c into a generic PID governor and platform specific backend.
+- Add CPPC accessors as PID backend.
+
+CPPC:
+====
+
+CPPC (Collaborative Processor Performance Control) is a new way to control CPU
+performance using an abstract continous scale as against a discretized P-state scale
+which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
+the basic operation involves:
+- OS makes a CPU performance request. (Can provide min and max tolerable bounds)
+
+- Platform (such as BMC) is free to optimize request within requested bounds depending
+on power/thermal budgets etc.
+
+- Platform conveys its decision back to OS
+
+The communication between OS and platform occurs through another medium called (PCC)
+Platform communication Channel. This is a generic mailbox like mechanism which includes
+doorbell semantics to indicate register updates. The PCC driver is being discussed in a
+separate patchset [3] and is not included here, since CPPC is only one client of PCC.
+
+Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+specification.[2]
+
+[1] - http://lwn.net/Articles/608715/
+[2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
+[3] - https://patches.linaro.org/40705/
+
+
+Ashwin Chaugule (2):
+  CPPC as a PID controller backend
+  ACPI PID: Add frequency domain awareness.
+
+ drivers/cpufreq/Kconfig    |   12 +
+ drivers/cpufreq/Makefile   |    1 +
+ drivers/cpufreq/acpi_pid.c | 1230 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1243 insertions(+)
+ create mode 100644 drivers/cpufreq/acpi_pid.c
+
+-- 
+1.9.1
 
