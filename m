@@ -1,281 +1,141 @@
-From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v3 1/5] mfd: rt5033: Add Richtek RT5033 driver core.
-Date: Wed, 19 Nov 2014 09:39:11 +0900
-Message-ID: <546BE6AF.8030601@samsung.com>
-References: <1415794082-30277-1-git-send-email-beomho.seo@samsung.com>
- <1415794082-30277-2-git-send-email-beomho.seo@samsung.com>
- <20141118162537.GE13959@x1>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 1/3] ARM: dts: imx6: add pm_power_off support for i.mx6
+ chips
+Date: Wed, 19 Nov 2014 11:18:24 +0800
+Message-ID: <20141119031823.GC27759@dragon>
+References: <1415780439-29728-1-git-send-email-b38343@freescale.com>
+ <1415780439-29728-2-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20141118162537.GE13959@x1>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jone-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, geunsik.lim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1415780439-29728-2-git-send-email-b38343@freescale.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Robin Gong <b38343@freescale.com>
+Cc: kernel@pengutronix.de, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, smoch@web.de
 List-Id: linux-pm@vger.kernel.org
 
-Thank you for review.
-
-On 11/19/2014 01:25 AM, Lee Jones wrote:
-> On Wed, 12 Nov 2014, Beomho Seo wrote:
+On Wed, Nov 12, 2014 at 04:20:37PM +0800, Robin Gong wrote:
+> All chips of i.mx6 can be powered off by programming SNVS.
+> For example :
+> On i.mx6q-sabresd board, PMIC_ON_REQ connect with external
+> pmic ON/OFF pin, that will cause the whole PMIC powered off
+> except VSNVS. And system can restart once PMIC_ON_REQ goes
+> high by push POWRER key.
 > 
->> This patch adds a new driver for Richtek RT5033 driver.
->> RT5033 is a Multifunction device which includes battery charger, fuel gauge,
->> flash LED current source, LDO and synchronous Buck converter. It is interfaced
->> to host controller using I2C interface.
->>
->> Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
->> Cc: Lee Jones <lee.jone-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> Acked-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> ---
->> Changes in v3
->> - Correct sentence errors.
->> - Add author information the top of each drivers.
->> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
->> - Change some return check.
->> - Use bool and of_match_ptr().
->>
->> Changes in v2
->> - Remove volatile_reg callback. Because this driver not in use regmap cache.
->> - Revmoe unnecessary subnode of_compatible.
->> - Add define for set_high impedance mode of charger.
->> ---
->>
->>  drivers/mfd/Kconfig                |   12 ++
->>  drivers/mfd/Makefile               |    1 +
->>  drivers/mfd/rt5033.c               |  141 +++++++++++++++++++
->>  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++++++++++++
->>  include/linux/mfd/rt5033.h         |   62 +++++++++
->>  5 files changed, 476 insertions(+)
->>  create mode 100644 drivers/mfd/rt5033.c
->>  create mode 100644 include/linux/mfd/rt5033-private.h
->>  create mode 100644 include/linux/mfd/rt5033.h
->>
->> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
->> index 72d3808..55b6551 100644
->> --- a/drivers/mfd/Kconfig
->> +++ b/drivers/mfd/Kconfig
->> @@ -618,6 +618,18 @@ config MFD_RTSX_PCI
->>  	  types of memory cards, such as Memory Stick, Memory Stick Pro,
->>  	  Secure Digital and MultiMediaCard.
->>  
->> +config MFD_RT5033
->> +	bool "Richtek RT5033 Power Management IC"
->> +	depends on I2C=y
->> +	select MFD_CORE
->> +	select REGMAP_I2C
->> +	help
->> +	  This driver provides for the Richtek RT5033 Power Management IC,
->> +	  which includes the I2C driver and the Core APIs. This driver provides
->> +	  common support for accessing the device. The device supports multiple
->> +	  sub-devices like charger, fuel gauge, flash LED, current source,
->> +	  LDO and Buck.
+> Signed-off-by: Robin Gong <b38343@freescale.com>
+> ---
+>  arch/arm/boot/dts/imx6qdl-sabresd.dtsi |    4 ++++
+>  arch/arm/boot/dts/imx6qdl.dtsi         |    6 ++++++
+>  arch/arm/boot/dts/imx6sl-evk.dts       |    4 ++++
+>  arch/arm/boot/dts/imx6sl.dtsi          |    6 ++++++
+>  arch/arm/boot/dts/imx6sx-sdb.dts       |    4 ++++
+>  arch/arm/boot/dts/imx6sx.dtsi          |    6 ++++++
+>  6 files changed, 30 insertions(+)
 > 
-> What's stopping this from being built as a module?
+> diff --git a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> index 07fb302..ba12cc6 100644
+> --- a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> +++ b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> @@ -531,6 +531,10 @@
+>  	status = "okay";
+>  };
+>  
+> +&snvs-poweroff {
+> +	status = "okay";
+> +};
+> +
+>  &ssi2 {
+>  	status = "okay";
+>  };
+> diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+> index c701af9..3a032d1 100644
+> --- a/arch/arm/boot/dts/imx6qdl.dtsi
+> +++ b/arch/arm/boot/dts/imx6qdl.dtsi
+> @@ -645,6 +645,12 @@
+>  					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
+>  						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
+>  				};
+> +
+> +				snvs-poweroff: snvs-poweroff@38 {
+
+I'm not sure if it's because my DTC version is too low or you didn't
+test, the DTC reports error in label name 'snvs-poweroff'.  IIRC, hyphen
+'-' cannot be used in label name, but underscore '_' can.
+
+Shawn
+
+> +					compatible = "fsl,sec-v4.0-poweroff";
+> +					reg = <0x38 0x4>;
+> +					status = "disabled";
+> +				};
+>  			};
+>  
+>  			epit1: epit@020d0000 { /* EPIT1 */
+> diff --git a/arch/arm/boot/dts/imx6sl-evk.dts b/arch/arm/boot/dts/imx6sl-evk.dts
+> index 3f9e041..dab588f 100644
+> --- a/arch/arm/boot/dts/imx6sl-evk.dts
+> +++ b/arch/arm/boot/dts/imx6sl-evk.dts
+> @@ -488,6 +488,10 @@
+>  	status = "okay";
+>  };
+>  
+> +&snvs-poweroff {
+> +	status = "okay";
+> +};
+> +
+>  &ssi2 {
+>  	status = "okay";
+>  };
+> diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
+> index 505da9e..5e5ed07 100644
+> --- a/arch/arm/boot/dts/imx6sl.dtsi
+> +++ b/arch/arm/boot/dts/imx6sl.dtsi
+> @@ -565,6 +565,12 @@
+>  					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
+>  						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
+>  				};
+> +
+> +				snvs-poweroff: snvs-poweroff@38 {
+> +					compatible = "fsl,sec-v4.0-poweroff";
+> +					reg = <0x38 0x4>;
+> +					status = "disabled";
+> +				};
+>  			};
+>  
+>  			epit1: epit@020d0000 {
+> diff --git a/arch/arm/boot/dts/imx6sx-sdb.dts b/arch/arm/boot/dts/imx6sx-sdb.dts
+> index a3980d9..78dc031 100644
+> --- a/arch/arm/boot/dts/imx6sx-sdb.dts
+> +++ b/arch/arm/boot/dts/imx6sx-sdb.dts
+> @@ -251,6 +251,10 @@
+>  	};
+>  };
+>  
+> +&snvs-poweroff {
+> +	status = "okay";
+> +};
+> +
+>  &ssi2 {
+>  	status = "okay";
+>  };
+> diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
+> index f4b9da6..652be9f 100644
+> --- a/arch/arm/boot/dts/imx6sx.dtsi
+> +++ b/arch/arm/boot/dts/imx6sx.dtsi
+> @@ -668,6 +668,12 @@
+>  					reg = <0x34 0x58>;
+>  					interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+>  				};
+> +
+> +				snvs-poweroff: snvs-poweroff@38 {
+> +					compatible = "fsl,sec-v4.0-poweroff";
+> +					reg = <0x38 0x4>;
+> +					status = "disabled";
+> +				};
+>  			};
+>  
+>  			epit1: epit@020d0000 {
+> -- 
+> 1.7.9.5
 > 
-
-I will change to possible building as a module.
-
->>  config MFD_RTSX_USB
->>  	tristate "Realtek USB card reader"
->>  	depends on USB
->> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
->> index 53467e2..4059c24 100644
->> --- a/drivers/mfd/Makefile
->> +++ b/drivers/mfd/Makefile
->> @@ -176,6 +176,7 @@ obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
->>  obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
->>  obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
->>  obj-$(CONFIG_MFD_DLN2)		+= dln2.o
->> +obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
->>  
->>  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
->>  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
->> diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
->> new file mode 100644
->> index 0000000..e29c6d9
->> --- /dev/null
->> +++ b/drivers/mfd/rt5033.c
->> @@ -0,0 +1,141 @@
->> +/*
->> + * MFD core driver for the Richtek RT5033.
->> + *
->> + * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
->> + * Author: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published bythe Free Software Foundation.
->> + */
->> +
->> +#include <linux/err.h>
->> +#include <linux/module.h>
-> 
-> Why have you included this if you can't build as a module?
-> 
-
-I will change that driver can build as a module.
-
->> +#include <linux/interrupt.h>
->> +#include <linux/of_device.h>
->> +#include <linux/mfd/core.h>
->> +#include <linux/mfd/rt5033.h>
->> +#include <linux/mfd/rt5033-private.h>
->> +
->> +static const struct regmap_irq rt5033_irqs[] = {
->> +	{ .mask = RT5033_PMIC_IRQ_BUCKOCP, },
->> +	{ .mask = RT5033_PMIC_IRQ_BUCKLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_SAFELDOLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_LDOLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_OT, },
->> +	{ .mask = RT5033_PMIC_IRQ_VDDA_UV, },
->> +};
->> +
->> +static const struct regmap_irq_chip rt5033_irq_chip = {
->> +	.name		= "rt5033",
->> +	.status_base	= RT5033_REG_PMIC_IRQ_STAT,
->> +	.mask_base	= RT5033_REG_PMIC_IRQ_CTRL,
->> +	.mask_invert	= true,
->> +	.num_regs	= 1,
->> +	.irqs		= rt5033_irqs,
->> +	.num_irqs	= ARRAY_SIZE(rt5033_irqs),
->> +};
->> +
->> +static const struct mfd_cell rt5033_devs[] = {
->> +	{
->> +		.name = "rt5033-regulator",
->> +	}, {
-> 
-> Place this entry on one line.  Like you did in rt5033_irqs.
->
-
-OK, I will fix it like rt5033_irqs style.
-
->> +		.name = "rt5033-charger",
->> +		.of_compatible = "richtek,rt5033-charger",
->> +	}, {
->> +		.name = "rt5033-battery",
->> +		.of_compatible = "richtek,rt5033-battery",
->> +	},
->> +};
->> +
->> +static const struct of_device_id rt5033_dt_match[] = {
->> +	{ .compatible = "richtek,rt5033", },
->> +	{ }
->> +};
->> +
->> +static const struct regmap_config rt5033_regmap_config = {
->> +	.reg_bits	= 8,
->> +	.val_bits	= 8,
->> +	.max_register	= RT5033_REG_END,
->> +};
->> +
->> +static int rt5033_i2c_probe(struct i2c_client *i2c,
->> +				const struct i2c_device_id *id)
->> +{
->> +	struct rt5033_dev *rt5033;
->> +	unsigned int data;
->> +	int ret;
->> +
->> +	rt5033 = devm_kzalloc(&i2c->dev, sizeof(*rt5033), GFP_KERNEL);
->> +	if (!rt5033)
->> +		return -ENOMEM;
->> +
->> +	i2c_set_clientdata(i2c, rt5033);
->> +	rt5033->dev = &i2c->dev;
->> +	rt5033->irq = i2c->irq;
->> +	rt5033->wakeup = true;
->> +
->> +	rt5033->regmap = devm_regmap_init_i2c(i2c, &rt5033_regmap_config);
->> +	if (IS_ERR(rt5033->regmap)) {
->> +		dev_err(&i2c->dev, "Failed to allocate register map.\n");
->> +		return PTR_ERR(rt5033->regmap);
->> +	}
->> +
->> +	ret = regmap_read(rt5033->regmap, RT5033_REG_DEVICE_ID, &data);
->> +	if (ret) {
->> +		dev_err(&i2c->dev, "Device not found\n");
->> +		return -ENODEV;
->> +	}
->> +	dev_info(&i2c->dev, "Device found Device ID: %04x\n", data);
->> +
->> +	ret = regmap_add_irq_chip(rt5033->regmap, rt5033->irq,
->> +			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
->> +			0, &rt5033_irq_chip, &rt5033->irq_data);
->> +	if (ret) {
->> +		dev_err(&i2c->dev, "Failed to request IRQ %d: %d\n",
->> +							rt5033->irq, ret);
->> +		return ret;
->> +	}
->> +
->> +	ret = mfd_add_devices(rt5033->dev, -1, rt5033_devs,
->> +			ARRAY_SIZE(rt5033_devs), NULL, 0,
->> +			regmap_irq_get_domain(rt5033->irq_data));
->> +	if (ret < 0) {
->> +		dev_err(&i2c->dev, "Failed to add RT5033 child device.\n");
-> 
-> s/device/devices/
-> 
-
-OK. I will fix it.
-
->> +		return ret;
->> +	}
->> +
->> +	device_init_wakeup(rt5033->dev, rt5033->wakeup);
->> +
->> +	return 0;
->> +}
->> +
->> +static int rt5033_i2c_remove(struct i2c_client *i2c)
->> +{
->> +	struct rt5033_dev *rt5033 = i2c_get_clientdata(i2c);
->> +
->> +	mfd_remove_devices(rt5033->dev);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct i2c_device_id rt5033_i2c_id[] = {
->> +	{ "rt5033", },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(i2c, rt5033_i2c_id);
-> 
-> Why do you need to export this if you're not building as a module?
-> 
-
-I will change possible building as a module.
-
->> +static struct i2c_driver rt5033_driver = {
->> +	.driver = {
->> +		.name = "rt5033",
->> +		.of_match_table = of_match_ptr(rt5033_dt_match),
->> +	},
->> +	.probe = rt5033_i2c_probe,
->> +	.remove = rt5033_i2c_remove,
->> +	.id_table = rt5033_i2c_id,
->> +};
->> +module_i2c_driver(rt5033_driver);
->>
->> +MODULE_DESCRIPTION("Richtek RT5033 multi-function core driver");
->> +MODULE_AUTHOR("Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>");
->> +MODULE_LICENSE("GPL");
-> 
-> More module stuff?
-> 
-> [...]
-> 
-OK. I will revise this patch on your advice.
-
-Again Thank you for your advice.
-I will submit next revision patch set.
-
-Regards,
-Beomho Seo
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
