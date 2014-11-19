@@ -1,37 +1,49 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/3] ARM: shmobile: Convert to genpd flags for PM clocks for R-mobile
-Date: Wed, 19 Nov 2014 15:00:38 +0100
-Message-ID: <1416405638-18812-4-git-send-email-ulf.hansson@linaro.org>
-References: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: NULL derefs after failed suspend (i915, pm, ext4, slub)
+Date: Wed, 19 Nov 2014 15:05:46 +0100
+Message-ID: <20141119140546.GG7857@localhost>
+References: <20141028142910.GU2006@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:62229 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbaKSOFv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 09:05:51 -0500
+Content-Disposition: inline
+In-Reply-To: <20141028142910.GU2006@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-ext4@vger.kernel.org
 
-Instead of using the dev_ops ->stop|start() callbacks for genpd, let's
-convert to use genpd's flag field and set it to PM_DOMAIN_PM_CLK.
+On Tue, Oct 28, 2014 at 03:29:10PM +0100, Johan Hovold wrote:
+> Hi, 
+> 
+> I have had some problems with crashes involving suspend-to-disk after
+> updating to v3.16.
+> 
+> Below is a log with 3.16.6 from a failed suspend attempt after which I
+> get a NULL deref in ext4 code.
+> 
+> A couple of weeks ago I got something similar, with backtraces from 
+> ext4 (ext4_alloc_inode) and NULL-derefs in vfs (vfs_get_attr_nosec) when
+> trying to do IO after resuming from suspend. That was with 3.16.3 and I
+> was hoping that whatever it was would have been fixed in 3.16.6 (there
+> were some ext4 error handling patches in there). I only got photos of
+> those oopses but it involved kmem_cache_alloc (slub) and a NULL-deref in
+> vfs_get_attr_nosec. I can put the photos up somewhere. That time I also
+> got back to X and could issue a dmesg in an xterm, but any process trying
+> to do IO died.
+> 
+> Something similar happened with 3.16.1 but unfortunately I do not have
+> any logs from that.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- arch/arm/mach-shmobile/pm-rmobile.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+For the record, it seems this problem went away with 3.17 (.2 and .3).
+Been suspending daily now for almost three weeks without triggering this
+again.
 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 717e641..42af9bd 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -106,9 +106,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
- 	struct dev_power_governor *gov = rmobile_pd->gov;
- 
-+	genpd->flags = PM_DOMAIN_PM_CLK;
- 	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
--	genpd->dev_ops.stop		= pm_clk_suspend;
--	genpd->dev_ops.start		= pm_clk_resume;
- 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
- 	genpd->power_off		= rmobile_pd_power_down;
- 	genpd->power_on			= rmobile_pd_power_up;
--- 
-1.9.1
+Since 3.16 is EOL (and 3.15 did not suffer from this) I guess there's no
+need to track it down for stable.
+
+Johan
