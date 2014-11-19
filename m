@@ -1,141 +1,73 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/3] ARM: dts: imx6: add pm_power_off support for i.mx6
- chips
-Date: Wed, 19 Nov 2014 11:18:24 +0800
-Message-ID: <20141119031823.GC27759@dragon>
-References: <1415780439-29728-1-git-send-email-b38343@freescale.com>
- <1415780439-29728-2-git-send-email-b38343@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1415780439-29728-2-git-send-email-b38343@freescale.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Robin Gong <b38343@freescale.com>
-Cc: kernel@pengutronix.de, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, smoch@web.de
+From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v5 0/4] mfd: rt5033: Add Richtek RT5033 drivers
+Date: Wed, 19 Nov 2014 13:52:36 +0900
+Message-ID: <1416372760-2090-1-git-send-email-beomho.seo@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jone-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, geunsik.lim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 12, 2014 at 04:20:37PM +0800, Robin Gong wrote:
-> All chips of i.mx6 can be powered off by programming SNVS.
-> For example :
-> On i.mx6q-sabresd board, PMIC_ON_REQ connect with external
-> pmic ON/OFF pin, that will cause the whole PMIC powered off
-> except VSNVS. And system can restart once PMIC_ON_REQ goes
-> high by push POWRER key.
-> 
-> Signed-off-by: Robin Gong <b38343@freescale.com>
-> ---
->  arch/arm/boot/dts/imx6qdl-sabresd.dtsi |    4 ++++
->  arch/arm/boot/dts/imx6qdl.dtsi         |    6 ++++++
->  arch/arm/boot/dts/imx6sl-evk.dts       |    4 ++++
->  arch/arm/boot/dts/imx6sl.dtsi          |    6 ++++++
->  arch/arm/boot/dts/imx6sx-sdb.dts       |    4 ++++
->  arch/arm/boot/dts/imx6sx.dtsi          |    6 ++++++
->  6 files changed, 30 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
-> index 07fb302..ba12cc6 100644
-> --- a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
-> +++ b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
-> @@ -531,6 +531,10 @@
->  	status = "okay";
->  };
->  
-> +&snvs-poweroff {
-> +	status = "okay";
-> +};
-> +
->  &ssi2 {
->  	status = "okay";
->  };
-> diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-> index c701af9..3a032d1 100644
-> --- a/arch/arm/boot/dts/imx6qdl.dtsi
-> +++ b/arch/arm/boot/dts/imx6qdl.dtsi
-> @@ -645,6 +645,12 @@
->  					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
->  						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
->  				};
-> +
-> +				snvs-poweroff: snvs-poweroff@38 {
+ This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge, regulators.
+This patchset provides common support for accessing the device.
+This patchset have been tested base on exynos board.
 
-I'm not sure if it's because my DTC version is too low or you didn't
-test, the DTC reports error in label name 'snvs-poweroff'.  IIRC, hyphen
-'-' cannot be used in label name, but underscore '_' can.
+Changes in v5
+- Change possible built as a module.
+- Revise rt5033_dev mfd cell entry.
+- Fix incorrect typo.
+- Add module alias.
 
-Shawn
+Changes in v4
+- rt5033 regulator patch is applied by Mark Brown.
 
-> +					compatible = "fsl,sec-v4.0-poweroff";
-> +					reg = <0x38 0x4>;
-> +					status = "disabled";
-> +				};
->  			};
->  
->  			epit1: epit@020d0000 { /* EPIT1 */
-> diff --git a/arch/arm/boot/dts/imx6sl-evk.dts b/arch/arm/boot/dts/imx6sl-evk.dts
-> index 3f9e041..dab588f 100644
-> --- a/arch/arm/boot/dts/imx6sl-evk.dts
-> +++ b/arch/arm/boot/dts/imx6sl-evk.dts
-> @@ -488,6 +488,10 @@
->  	status = "okay";
->  };
->  
-> +&snvs-poweroff {
-> +	status = "okay";
-> +};
-> +
->  &ssi2 {
->  	status = "okay";
->  };
-> diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-> index 505da9e..5e5ed07 100644
-> --- a/arch/arm/boot/dts/imx6sl.dtsi
-> +++ b/arch/arm/boot/dts/imx6sl.dtsi
-> @@ -565,6 +565,12 @@
->  					interrupts = <0 19 IRQ_TYPE_LEVEL_HIGH>,
->  						     <0 20 IRQ_TYPE_LEVEL_HIGH>;
->  				};
-> +
-> +				snvs-poweroff: snvs-poweroff@38 {
-> +					compatible = "fsl,sec-v4.0-poweroff";
-> +					reg = <0x38 0x4>;
-> +					status = "disabled";
-> +				};
->  			};
->  
->  			epit1: epit@020d0000 {
-> diff --git a/arch/arm/boot/dts/imx6sx-sdb.dts b/arch/arm/boot/dts/imx6sx-sdb.dts
-> index a3980d9..78dc031 100644
-> --- a/arch/arm/boot/dts/imx6sx-sdb.dts
-> +++ b/arch/arm/boot/dts/imx6sx-sdb.dts
-> @@ -251,6 +251,10 @@
->  	};
->  };
->  
-> +&snvs-poweroff {
-> +	status = "okay";
-> +};
-> +
->  &ssi2 {
->  	status = "okay";
->  };
-> diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-> index f4b9da6..652be9f 100644
-> --- a/arch/arm/boot/dts/imx6sx.dtsi
-> +++ b/arch/arm/boot/dts/imx6sx.dtsi
-> @@ -668,6 +668,12 @@
->  					reg = <0x34 0x58>;
->  					interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
->  				};
-> +
-> +				snvs-poweroff: snvs-poweroff@38 {
-> +					compatible = "fsl,sec-v4.0-poweroff";
-> +					reg = <0x38 0x4>;
-> +					status = "disabled";
-> +				};
->  			};
->  
->  			epit1: epit@020d0000 {
-> -- 
-> 1.7.9.5
-> 
+Changes in v3
+- Correct sentence errors.
+- Add author information the top of each drivers.
+- Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
+- Change some return check.
+- Use bool and of_match_ptr().
+
+Changes in v2:
+- Remove volatile_reg callback. Because this driver not in use regmap cache.
+- Remove unnecessary subnode of_compatible.
+- Add definde for set high impedance mode of charger.
+- Remove unnecessary device specific code.
+- Fix wrong register name.
+- Fix wrong error message.
+- Fix return vallue at error case.
+- Revise binding documentation.
+
+Beomho Seo (4):
+  mfd: rt5033: Add Richtek RT5033 driver core.
+  power: rt5033_battery: Add RT5033 Fuel gauge device driver
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
+
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 +++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/mfd/Kconfig                                |   12 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/rt5033.c                               |  136 ++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/rt5033_battery.c                     |  177 +++++++
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ include/linux/mfd/rt5033-private.h                 |  260 +++++++++++
+ include/linux/mfd/rt5033.h                         |   62 +++
+ 11 files changed, 1260 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/mfd/rt5033.c
+ create mode 100644 drivers/power/rt5033_battery.c
+ create mode 100644 drivers/power/rt5033_charger.c
+ create mode 100644 include/linux/mfd/rt5033-private.h
+ create mode 100644 include/linux/mfd/rt5033.h
+
+-- 
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
