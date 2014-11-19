@@ -1,53 +1,42 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH] thermal: sti: Ignore suspend/resume functions when !PM
-Date: Wed, 19 Nov 2014 13:48:59 +0000
-Message-ID: <1416404939-365-1-git-send-email-lee.jones@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: lee.jones@linaro.org, kernel@stlinux.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/3] PM / Domains: Add initial PM clock support to genpd
+Date: Wed, 19 Nov 2014 15:00:35 +0100
+Message-ID: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Prevents build warning:
+It's quite common for PM domains to use PM clocks. Typically from SOC specific
+code, the per device PM clock list is created and pm_clk_suspend|resume() are
+invoked to handle clock gating/ungating.
 
-st_thermal.c:278:12:
-    warning: =E2=80=98st_thermal_suspend=E2=80=99 defined but not used =
-[-Wunused-function]
-st_thermal.c:286:12:
-    warning: =E2=80=98st_thermal_resume=E2=80=99 defined but not used [=
--Wunused-function]
+A step towards consolidation is to integrate PM clock support into genpd, which
+is what this patchset does.
 
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/thermal/st/st_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+In this initial step, the calls to the pm_clk_suspend|resume() are handled
+within genpd, but the per device PM clock list still needs to be created from
+SOC specific code. It seems reasonable to have gendp to handle that as well, but
+that left to future patchsets to address.
 
-diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_th=
-ermal.c
-index 90163b3..9841488 100644
---- a/drivers/thermal/st/st_thermal.c
-+++ b/drivers/thermal/st/st_thermal.c
-@@ -275,6 +275,7 @@ int st_thermal_unregister(struct platform_device *p=
-dev)
- }
- EXPORT_SYMBOL_GPL(st_thermal_unregister);
-=20
-+#ifdef CONFIG_PM
- static int st_thermal_suspend(struct device *dev)
- {
- 	struct platform_device *pdev =3D to_platform_device(dev);
-@@ -305,6 +306,8 @@ static int st_thermal_resume(struct device *dev)
-=20
- 	return 0;
- }
-+#endif
-+
- SIMPLE_DEV_PM_OPS(st_thermal_pm_ops, st_thermal_suspend, st_thermal_re=
-sume);
- EXPORT_SYMBOL_GPL(st_thermal_pm_ops);
-=20
---=20
+It's not every users of genpd that are keen on using PM clocks thus we need
+to provide this a configuration option for genpd.
+
+In patch 2 and patch 3, we convert some of the SH-MOBILE SOCs to start using the
+new PM clock support in genpd.
+
+
+Ulf Hansson (3):
+  PM / Domains: Initial PM clock support for genpd
+  ARM: shmobile: Convert to genpd flags for PM clocks for r8a7779
+  ARM: shmobile: Convert to genpd flags for PM clocks for R-mobile
+
+ arch/arm/mach-shmobile/pm-r8a7779.c | 3 +--
+ arch/arm/mach-shmobile/pm-rmobile.c | 3 +--
+ drivers/base/power/domain.c         | 7 +++++++
+ include/linux/pm_domain.h           | 3 +++
+ 4 files changed, 12 insertions(+), 4 deletions(-)
+
+-- 
 1.9.1
