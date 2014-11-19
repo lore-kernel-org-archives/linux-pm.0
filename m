@@ -1,48 +1,83 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] thermal: sti: Ignore suspend/resume functions when !PM
-Date: Wed, 19 Nov 2014 12:57:44 -0200
-Message-ID: <CAOMZO5Dz-vz=zV1r3O_Pv0=WS+_Pk=kaBiK1hb2ttxy_BPwLnQ@mail.gmail.com>
-References: <1416404939-365-1-git-send-email-lee.jones@linaro.org>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
+ _PPC method
+Date: Wed, 19 Nov 2014 06:59:35 -0800
+Message-ID: <546CB057.7040902@intel.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-6-git-send-email-ethan.zhao@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:53535 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754627AbaKSO5p convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 09:57:45 -0500
-In-Reply-To: <1416404939-365-1-git-send-email-lee.jones@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1416299826-15813-6-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ethan Zhao <ethan.zhao@oracle.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, edubezval@gmail.com, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Nov 19, 2014 at 11:48 AM, Lee Jones <lee.jones@linaro.org> wrot=
-e:
-> Prevents build warning:
+On 11/18/2014 12:37 AM, Ethan Zhao wrote:
+> Oracle Sun X86 servers have dynamic power capping capability that works via
+> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+> enabled.
 >
-> st_thermal.c:278:12:
->     warning: =E2=80=98st_thermal_suspend=E2=80=99 defined but not use=
-d [-Wunused-function]
-> st_thermal.c:286:12:
->     warning: =E2=80=98st_thermal_resume=E2=80=99 defined but not used=
- [-Wunused-function]
->
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 > ---
->  drivers/thermal/st/st_thermal.c | 3 +++
->  1 file changed, 3 insertions(+)
+>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
+>   1 file changed, 20 insertions(+)
 >
-> diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_=
-thermal.c
-> index 90163b3..9841488 100644
-> --- a/drivers/thermal/st/st_thermal.c
-> +++ b/drivers/thermal/st/st_thermal.c
-> @@ -275,6 +275,7 @@ int st_thermal_unregister(struct platform_device =
-*pdev)
->  }
->  EXPORT_SYMBOL_GPL(st_thermal_unregister);
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 27bb6d3..5498eb0 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
+>   	return true;
+>   }
 >
-> +#ifdef CONFIG_PM
+> +static bool intel_pstate_has_acpi_ppc(void)
+> +{
+> +	int i;
+> +
+> +	for_each_possible_cpu(i) {
+> +		struct acpi_processor *pr = per_cpu(processors, i);
+> +
+> +		if (!pr)
+> +			continue;
+> +		if (acpi_has_method(pr->handle, "_PPC"))
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
+>   struct hw_vendor_info {
+>   	u16  valid;
+>   	char oem_id[ACPI_OEM_ID_SIZE];
+> @@ -952,6 +967,7 @@ struct hw_vendor_info {
+>   /* Hardware vendor-specific info that has its own power management modes */
+>   static struct hw_vendor_info vendor_info[] = {
+>   	{1, "HP    ", "ProLiant"},
+> +	{1, "ORACLE", ""},
+>   	{0, "", ""},
+>   };
+>
 
-Actually this should be #ifdef CONFIG_PM_SLEEP instead
+Does this apply to ALL oracle systems?
+
+Is the presence or absense of the _PPC method configurable in the oracle BIOS?
+
+> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>   		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+>   		    intel_pstate_no_acpi_pss())
+>   			return true;
+> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+> +			intel_pstate_has_acpi_ppc())
+> +			return true;
+>   	}
+>
+>   	return false;
+>   }
+>   #else /* CONFIG_ACPI not enabled */
+>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>   #endif /* CONFIG_ACPI */
+>
+>   static int __init intel_pstate_init(void)
+>
