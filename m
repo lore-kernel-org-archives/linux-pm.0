@@ -1,30 +1,41 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Subject: Re: [PATCHv4 1/1] thermal: of: improve of-thermal sensor registration API
-Date: Wed, 19 Nov 2014 17:06:24 +0900
-Message-ID: <CAAVeFu+aUdpV_hj50TAZDO_5JgRmPH2RtJuP7Qozx4RNEzO-6A@mail.gmail.com>
-References: <1416321575-18348-1-git-send-email-edubezval@gmail.com> <1416321575-18348-2-git-send-email-edubezval@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH/TRIVIAL 1/4] cpufreq: cpufreq-dt: Move newline to end of
+ error message
+Date: Wed, 19 Nov 2014 13:36:51 +0530
+Message-ID: <CAOh2x=kB2QMTXbNg7gCdHoo9QWUG-vc_VQ77iGKz-gfqMd1+KQ@mail.gmail.com>
+References: <1414057977-4191-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416321575-18348-2-git-send-email-edubezval@gmail.com>
+In-Reply-To: <1414057977-4191-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Caesar Wang <caesar.wang@rock-chips.com>, Wei Ni <wni@nvidia.com>, Lukasz Majewski <l.majewski@samsung.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, lm-sensors@lm-sensors.org, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Jiri Kosina <trivial@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 18, 2014 at 11:39 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> Different drivers request API extensions in of-thermal. For this reason,
-> additional callbacks are required to fit the new drivers needs.
+On Thu, Oct 23, 2014 at 3:22 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Currently the error message is needlessly splitted across two lines.
 >
-> The current API implementation expects the registering sensor driver
-> to provide a get_temp and get_trend callbacks as function parameters.
-> As the amount of callbacks is growing, this patch changes the existing
-> implementation to use a .ops field to hold all the of thermal callbacks
-> to sensor drivers.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> This patch also changes the existing of-thermal users to fit the new
-> API design. No functional change is introduced in this patch.
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 92c162af5045a2da..685f59598137ea03 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -192,7 +192,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>
+>         ret = allocate_resources(policy->cpu, &cpu_dev, &cpu_reg, &cpu_clk);
+>         if (ret) {
+> -               pr_err("%s: Failed to allocate resources\n: %d", __func__, ret);
+> +               pr_err("%s: Failed to allocate resources: %d\n", __func__, ret);
+>                 return ret;
+>         }
 
-A good idea even if no ops were to be added!
+Please add me and linux-pm in cc next time.
 
-Reviewed-by: Alexandre Courbot <acourbot@nvidia.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
