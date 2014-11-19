@@ -1,49 +1,68 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: NULL derefs after failed suspend (i915, pm, ext4, slub)
-Date: Wed, 19 Nov 2014 15:05:46 +0100
-Message-ID: <20141119140546.GG7857@localhost>
-References: <20141028142910.GU2006@localhost>
+From: Maxime Coquelin <maxime.coquelin@st.com>
+Subject: Re: [STLinux Kernel] [PATCH] thermal: sti: Ignore suspend/resume
+ functions when !PM
+Date: Wed, 19 Nov 2014 15:43:30 +0100
+Message-ID: <546CAC92.3020504@st.com>
+References: <1416404939-365-1-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:62229 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbaKSOFv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 09:05:51 -0500
-Content-Disposition: inline
-In-Reply-To: <20141028142910.GU2006@localhost>
+Received: from mx08-00178001.pphosted.com ([91.207.212.93]:50698 "EHLO
+	mx08-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753459AbaKSOoI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 09:44:08 -0500
+In-Reply-To: <1416404939-365-1-git-send-email-lee.jones@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-ext4@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: edubezval@gmail.com, kernel@stlinux.com, linux-pm@vger.kernel.org
 
-On Tue, Oct 28, 2014 at 03:29:10PM +0100, Johan Hovold wrote:
-> Hi, 
-> 
-> I have had some problems with crashes involving suspend-to-disk after
-> updating to v3.16.
-> 
-> Below is a log with 3.16.6 from a failed suspend attempt after which I
-> get a NULL deref in ext4 code.
-> 
-> A couple of weeks ago I got something similar, with backtraces from 
-> ext4 (ext4_alloc_inode) and NULL-derefs in vfs (vfs_get_attr_nosec) when
-> trying to do IO after resuming from suspend. That was with 3.16.3 and I
-> was hoping that whatever it was would have been fixed in 3.16.6 (there
-> were some ext4 error handling patches in there). I only got photos of
-> those oopses but it involved kmem_cache_alloc (slub) and a NULL-deref in
-> vfs_get_attr_nosec. I can put the photos up somewhere. That time I also
-> got back to X and could issue a dmesg in an xterm, but any process trying
-> to do IO died.
-> 
-> Something similar happened with 3.16.1 but unfortunately I do not have
-> any logs from that.
 
-For the record, it seems this problem went away with 3.17 (.2 and .3).
-Been suspending daily now for almost three weeks without triggering this
-again.
+On 11/19/2014 02:48 PM, Lee Jones wrote:
+> Prevents build warning:
+>
+> st_thermal.c:278:12:
+>      warning: =E2=80=98st_thermal_suspend=E2=80=99 defined but not us=
+ed [-Wunused-function]
+> st_thermal.c:286:12:
+>      warning: =E2=80=98st_thermal_resume=E2=80=99 defined but not use=
+d [-Wunused-function]
+>
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+You can add my:
+Acked-by: Maxime Coquelin <maxime.coquelin@st.com>
 
-Since 3.16 is EOL (and 3.15 did not suffer from this) I guess there's no
-need to track it down for stable.
+Thanks,
+Maxime
 
-Johan
+> ---
+>   drivers/thermal/st/st_thermal.c | 3 +++
+>   1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_=
+thermal.c
+> index 90163b3..9841488 100644
+> --- a/drivers/thermal/st/st_thermal.c
+> +++ b/drivers/thermal/st/st_thermal.c
+> @@ -275,6 +275,7 @@ int st_thermal_unregister(struct platform_device =
+*pdev)
+>   }
+>   EXPORT_SYMBOL_GPL(st_thermal_unregister);
+>  =20
+> +#ifdef CONFIG_PM
+>   static int st_thermal_suspend(struct device *dev)
+>   {
+>   	struct platform_device *pdev =3D to_platform_device(dev);
+> @@ -305,6 +306,8 @@ static int st_thermal_resume(struct device *dev)
+>  =20
+>   	return 0;
+>   }
+> +#endif
+> +
+>   SIMPLE_DEV_PM_OPS(st_thermal_pm_ops, st_thermal_suspend, st_thermal=
+_resume);
+>   EXPORT_SYMBOL_GPL(st_thermal_pm_ops);
+>  =20
+
