@@ -1,38 +1,90 @@
-From: walter harms <wharms@bfs.de>
-Subject: Re: [PATCH 1/1] PM-wakeup: Deletion of an unnecessary check before
- the function call "wakeup_source_unregister"
-Date: Wed, 19 Nov 2014 14:39:37 +0100
-Message-ID: <546C9D99.3080001@bfs.de>
-References: <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <546C7E75.9080301@users.sourceforge.net> <20141119120915.GM4905@mwanda> <546C9319.4040205@bfs.de> <20141119130553.GN4956@mwanda>
-Reply-To: wharms@bfs.de
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCHv4 1/1] thermal: of: improve of-thermal sensor
+ registration API
+Date: Wed, 19 Nov 2014 08:03:22 -0400
+Message-ID: <20141119120320.GA10180@developer>
+References: <1416321575-18348-1-git-send-email-edubezval@gmail.com>
+ <1416321575-18348-2-git-send-email-edubezval@gmail.com>
+ <20141119092139.1965e44e@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141119130553.GN4956@mwanda>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20141119092139.1965e44e@amdc2363>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Am 19.11.2014 14:05, schrieb Dan Carpenter:
-> On Wed, Nov 19, 2014 at 01:54:49PM +0100, walter harms wrote:
->> device_wakeup_detach returns dev->power.wakeup what is never NULL in this case.
->> (not visible here but a few line before exactly this is checked)
-> 
-> Huh?  I don't see a NULL check.
-> 
-> I think you may be confusing "dev->power.can_wakeup" with
-> "dev->power.wakeup"?
-> 
->
 
-mea culpa,
-you are right  dev->power.can_wakeup != dev->power.wakeup
+Hey Lukasz,
 
-therefore device_wakeup_detach(dev) CAN return NULL
+On Wed, Nov 19, 2014 at 09:21:39AM +0100, Lukasz Majewski wrote:
+> Hi Eduardo,
+>=20
 
-re,
- wh
+<big cut>=20
+
+> >  }
+>=20
+> On which branch should I apply this patch?
+>=20
+
+This is based in my -linus branch. That means I will send this for the
+next major window, not rc. The branch -fixes of thermal-soc include
+patches for rc windows.
+
+> I've tried to apply this patch on top of newest linux-soc-thermal/next:
+> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.=
+git
+> branch: next
+> SHA1:4027494124fd88e5d51127eebba315de5d8d57c8
+>=20
+> Unfortunately, it conflicts with:
+> "thermal: fix multiple disbalanced device node counters"
+> c2aad93c Vladimir Zapolskiy
+
+The -next branch is intended to contain patches for linux-next testing.
+I include the content of -linus and -fixes together to be tested in
+linux-next.
+
+However, as this patch has not been merged yet into -linus, I haven't
+rebuilt my -next branch.
+
+>=20
+>=20
+> --=20
+> Best regards,
+>=20
+> Lukasz Majewski
+>=20
+> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+
+--YiEDa0DAkWCtVeE4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUbIb8AAoJEMLUO4d9pOJWkwgIAJVX3QS2UiIRUV9KeE20LzYW
+cMcbbGVEbqn6Vib/XW9zarPN5djBUTmXU+qTUM6Z4794uRME53/rXtUaCwbocKtZ
+fTjHnVMDHWQ//LDdXkwSgrfhbG8iYklo8MD4T6Er3Joec3BMv1JCo/GcM9n1d2Nr
+1dm6CiKWIbLKAim+3kZhCQmEFLXIWB5lH9ZAPTCLfn9jXN156UHPUc5tKij01S9D
+hIzhFFJ2mx7oQpiW3Ecj2Pq7zxHsvGTibi5RlWA3RcBTqYA3rAi50DTF0HWXvtCq
+ydWgShJxpTGd/oKjyvyEd+6u9PstW8mxFpQ4zG3zcNFlLWMy7HwO85hVBlTfGXc=
+=qst+
+-----END PGP SIGNATURE-----
+
+--YiEDa0DAkWCtVeE4--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
