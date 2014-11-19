@@ -1,83 +1,50 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
- _PPC method
-Date: Wed, 19 Nov 2014 06:59:35 -0800
-Message-ID: <546CB057.7040902@intel.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-6-git-send-email-ethan.zhao@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416299826-15813-6-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] dmaengine: shdma: Runtime-resume device in .shutdown()
+Date: Wed, 19 Nov 2014 16:15:46 +0100
+Message-ID: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from xavier.telenet-ops.be ([195.130.132.52]:50025 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752950AbaKSPPv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 10:15:51 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
+Cc: dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On 11/18/2014 12:37 AM, Ethan Zhao wrote:
-> Oracle Sun X86 servers have dynamic power capping capability that works via
-> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-> enabled.
->
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> ---
->   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->   1 file changed, 20 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 27bb6d3..5498eb0 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->   	return true;
->   }
->
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct acpi_processor *pr = per_cpu(processors, i);
-> +
-> +		if (!pr)
-> +			continue;
-> +		if (acpi_has_method(pr->handle, "_PPC"))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
->   struct hw_vendor_info {
->   	u16  valid;
->   	char oem_id[ACPI_OEM_ID_SIZE];
-> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->   /* Hardware vendor-specific info that has its own power management modes */
->   static struct hw_vendor_info vendor_info[] = {
->   	{1, "HP    ", "ProLiant"},
-> +	{1, "ORACLE", ""},
->   	{0, "", ""},
->   };
->
+During system reboot, the sh-dma-engine device may be runtime-suspended,
+causing a crash:
 
-Does this apply to ALL oracle systems?
+    Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+    Internal error: : 1406 [#1] SMP ARM
+    ...
+    PC is at sh_dmae_ctl_stop+0x28/0x64
+    LR is at sh_dmae_ctl_stop+0x24/0x64
 
-Is the presence or absense of the _PPC method configurable in the oracle BIOS?
+If the sh-dma-engine is runtime-suspended, its module clock is turned
+off, and its registers cannot be accessed. Runtime-resume the device in
+the driver's .shutdown() callback to fix this.
 
-> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->   		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
->   		    intel_pstate_no_acpi_pss())
->   			return true;
-> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> +			intel_pstate_has_acpi_ppc())
-> +			return true;
->   	}
->
->   	return false;
->   }
->   #else /* CONFIG_ACPI not enabled */
->   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->   #endif /* CONFIG_ACPI */
->
->   static int __init intel_pstate_init(void)
->
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/dma/sh/shdmac.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+index b65317c6ea4e722c..a13c6ba7468f12a6 100644
+--- a/drivers/dma/sh/shdmac.c
++++ b/drivers/dma/sh/shdmac.c
+@@ -585,7 +585,10 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+ static void sh_dmae_shutdown(struct platform_device *pdev)
+ {
+ 	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
++
++	pm_runtime_get_sync(&pdev->dev);
+ 	sh_dmae_ctl_stop(shdev);
++	pm_runtime_put(&pdev->dev);
+ }
+ 
+ static int sh_dmae_runtime_suspend(struct device *dev)
+-- 
+1.9.1
+
