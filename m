@@ -1,82 +1,158 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] Thermal/int340x: avoid unnecessary pointer casting
-Date: Wed, 19 Nov 2014 16:31:32 +0800
-Message-ID: <1416385892.2352.20.camel@rzhang1-toshiba>
-References: <1415145214-2986-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
+Date: Wed, 19 Nov 2014 09:54:00 +0100
+Message-ID: <CAPDyKFoiEMO5E3nMJDZkFkuio-5sh99m55k-yM=fuqrHUXbhZw@mail.gmail.com>
+References: <20141117220238.GE5258@dtor-ws>
+	<1787068.2MCH8czsD4@vostro.rjw.lan>
+	<CAPDyKFoMftvKs8tyBaYCu1zTK_JYiXeXMiq86OrwAAHZoRO_Pw@mail.gmail.com>
+	<3492523.qBADTmdTqo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:29392 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbaKSIbV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 19 Nov 2014 03:31:21 -0500
-In-Reply-To: <1415145214-2986-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <3492523.qBADTmdTqo@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Dan Carpenter <dan.carpenter@oracle.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
-On Tue, 2014-11-04 at 15:53 -0800, Jacob Pan wrote:
-> Avoid pointer casting which may also lead to problems on big endian
-> 64 bit systems.
-> 
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+[...]
 
-Patch queued for 3.19.
+>>
+>> Scenario 5), a platform driver with/without runtime PM callbacks.
+>> ->probe()
+>> - do some initialization
+>> - may fetch handles to runtime PM resources
+>> - pm_runtime_enable()
+>
+> Well, and now how the driver knows if the device is "on" before acces=
+sing it?
 
-thanks,
-rui
-> ---
->  drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-> index 0d8db80..ac5c405 100644
-> --- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-> +++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-> @@ -317,21 +317,21 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
->  {
->  	int ret = 0;
->  	unsigned long length = 0;
-> -	unsigned long count = 0;
-> +	int count = 0;
->  	char __user *arg = (void __user *)__arg;
->  	struct trt *trts;
->  	struct art *arts;
->  
->  	switch (cmd) {
->  	case ACPI_THERMAL_GET_TRT_COUNT:
-> -		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-> +		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
->  				&trts, false);
->  		kfree(trts);
->  		if (!ret)
->  			return put_user(count, (unsigned long __user *)__arg);
->  		return ret;
->  	case ACPI_THERMAL_GET_TRT_LEN:
-> -		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-> +		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
->  				&trts, false);
->  		kfree(trts);
->  		length = count * sizeof(union trt_object);
-> @@ -341,14 +341,14 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
->  	case ACPI_THERMAL_GET_TRT:
->  		return fill_trt(arg);
->  	case ACPI_THERMAL_GET_ART_COUNT:
-> -		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-> +		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
->  				&arts, false);
->  		kfree(arts);
->  		if (!ret)
->  			return put_user(count, (unsigned long __user *)__arg);
->  		return ret;
->  	case ACPI_THERMAL_GET_ART_LEN:
-> -		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-> +		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
->  				&arts, false);
->  		kfree(arts);
->  		length = count * sizeof(union art_object);
+In this case the driver don't need to access the device during
+->probe(). That's postponed until sometime later.
 
+>
+>> Note 1)
+>> Scenario 1) and 2), both relies on the approach to power on the PM
+>> domain by using pm_runtime_get_sync(). That approach didn't work whe=
+n
+>> CONFIG_PM_RUNTIME was unset, but we recently decided to fixed that b=
+y
+>> the below patch, so that's good!
+>> "[PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genpd =
+enabled"
+>>
+>> Note 2)
+>> Scenario 3) and 4) use the same principles for managing runtime PM.
+>> These scenarios needs a way to power on the generic PM domain prior
+>> probing the device. The call to pm_runtime_set_active(), prevents an
+>> already powered PM domain from power off until after probe, but that=
+'s
+>> not enough.
+>>
+>> Note 3)
+>> The $subject patch, tried to address the issues for scenario 3) and
+>> 4). It does so, but will affect scenario 5) which was working nicely
+>> before. In scenario 5), the $subject patch will cause the generic PM
+>> domain to potentially stay powered after ->probe() even if the devic=
+e
+>> is runtime PM suspended.
+>
+> Why would it?  If the device is runtime-suspended, the domain will kn=
+ow
+> that, because its callbacks will be used for that.  At least, that's
+> what I'd expect to happen, so is there a problem here?
 
+Genpd do knows about the device but it doesn=E2=80=99t get a "notificat=
+ion" to
+power off. There are no issues whatsoever for driver.
+
+This is a somewhat special case. Let's go through an example.
+
+1. The PM domain is initially in powered off state.
+2. The bus ->probe() invokes dev_pm_domain_attach() and then the PM
+domain gets attached to the device.
+3. $subject patch causes the PM domain to power on.
+4. A driver ->probe() sequence start, following the Scenario 5).
+5. The device is initially in runtime PM suspended state and it will
+remain so during ->probe().
+6. The pm_request_idle() invoked after really_probe() in driver core,
+won't trigger a runtime PM suspend callback to be invoked. In other
+words, genpd don't get a "notification" that it may power off.
+
+In this state, genpd will either power off from the late_initcall,
+genpd_poweroff_unused() (depending on when the driver was probed) or
+wait until some device's runtime PM suspend callback is invoked at any
+later point.
+
+>
+>> I see three options going forward.
+>>
+>> Option 1)
+>> Convert scenario 3) and 4) into using the pm_runtime_get_sync()
+>> approach. There are no theoretical obstacles to do this, but pure
+>> practical. There are a lot of drivers that needs to be converted and
+>> we also need to teach driver authors future wise to not use
+>> pm_runtime_set_active() in this manner.
+>
+> I'd say we need to do something like this anyway.  That is, standardi=
+ze on
+> *one* approach.  I'm actually not sure what approach is the most usef=
+ul,
+> but the pm_runtime_get_sync() one seems to be the most popular to me.
+>
+>> Option 2)
+>> Add some kind of get/put API for PM domains. The buses invokes it to
+>> control the power to the PM domain. From what I understand, that's
+>> also what Dmitry think is needed!?
+>> Anyway, that somehow means to proceed with the approach I took in th=
+e
+>> below patchset.
+>> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+>> http://marc.info/?t=3D141320907000003&r=3D1&w=3D2
+>
+> I don't like that.  The API is already quite complicated in my view a=
+nd
+> adding even more complexity to it is not going to help in the long ru=
+n.
+
+I absolutely agree that we shouldn't add unnecessary APIs and keep
+APIs as simple as possible.
+
+In that context, I think the effect from proceeding with Option 2)
+also means there are no need for the below APIs any more.
+pm_genpd_poweron()
+pm_genpd_name_poweron() (requires some additional work though)
+pm_genpd_poweroff_unused()
+pm_genpd_dev_need_restore()
+
+I guess you figured out that I am in favour of Option 2). :-)
+Especially since it cover all scenarios and we don't have to go a fix
+a vast amount of drivers.
+
+>
+>> Option 3)
+>> Live we the limitation this $subject patch introduces for scenario 5=
+).
+>
+> I'd say, 3) for now and 1) going forward.
+
+This could work!
+
+The hardest part is to know when we should revert $subject patch, to
+fix the regression introduced for scenario 5).
+
+>
+>> Is there maybe any additional options, that I didn't think of?
+>>
+>> Apologize for the long email, I hope I didn't bored you too much.
+>
+> That's fine, thanks for taking the time to lay out all of the cases, =
+that's
+> always helpful.
+>
+> Rafael
+>
+
+Kind regards
+Uffe
