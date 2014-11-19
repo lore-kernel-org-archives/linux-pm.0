@@ -1,64 +1,91 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Wed, 19 Nov 2014 19:28:33 +0000
-Message-ID: <546CEF61.4050105@arm.com>
-References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com> <1413805281-6269-2-git-send-email-thomas.ab@samsung.com> <1413805281-6269-3-git-send-email-thomas.ab@samsung.com> <1413805281-6269-4-git-send-email-thomas.ab@samsung.com> <1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
+From: Linda Knippers <linda.knippers@hp.com>
+Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
+ _PPC method
+Date: Wed, 19 Nov 2014 15:22:06 -0500
+Message-ID: <546CFBEE.6090103@hp.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from g4t3426.houston.hp.com ([15.201.208.54]:7472 "EHLO
+	g4t3426.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756189AbaKSUWP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 15:22:15 -0500
+In-Reply-To: <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
 
-
-
-On 20/10/14 12:41, Thomas Abraham wrote:
-> The new CPU clock type allows the use of generic CPUfreq drivers. So for
-> Exynos4210/5250, switch to using generic cpufreq driver. For Exynos5420,
-> which did not have CPUfreq driver support, enable the use of generic
-> CPUfreq driver.
->
-> Suggested-by: Tomasz Figa <tomasz.figa@gmail.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
-> Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Tested-by: Chander Kashyap <k.chander@samsung.com>
+On 11/18/2014 3:37 AM, Ethan Zhao wrote:
+> Oracle Sun X86 servers have dynamic power capping capability that works via
+> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+> enabled.
+> 
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 > ---
->   arch/arm/mach-exynos/exynos.c |   24 +++++++++++++++++++++++-
->   1 files changed, 23 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-> index 6b283eb..a1be294 100644
-> --- a/arch/arm/mach-exynos/exynos.c
-> +++ b/arch/arm/mach-exynos/exynos.c
-> @@ -282,6 +282,28 @@ static void __init exynos_init_irq(void)
->   	exynos_map_pmu();
->   }
->
-> +static const struct of_device_id exynos_cpufreq_matches[] = {
-> +	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
+>  drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 27bb6d3..5498eb0 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
+>  	return true;
+>  }
+>  
+> +static bool intel_pstate_has_acpi_ppc(void)
+> +{
+> +	int i;
+> +
+> +	for_each_possible_cpu(i) {
+> +		struct acpi_processor *pr = per_cpu(processors, i);
+> +
+> +		if (!pr)
+> +			continue;
+> +		if (acpi_has_method(pr->handle, "_PPC"))
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
+>  struct hw_vendor_info {
+>  	u16  valid;
+>  	char oem_id[ACPI_OEM_ID_SIZE];
+> @@ -952,6 +967,7 @@ struct hw_vendor_info {
+>  /* Hardware vendor-specific info that has its own power management modes */
+>  static struct hw_vendor_info vendor_info[] = {
+>  	{1, "HP    ", "ProLiant"},
+> +	{1, "ORACLE", ""},
+>  	{0, "", ""},
+>  };
+>  
+> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>  		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+>  		    intel_pstate_no_acpi_pss())
+>  			return true;
+> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+> +			intel_pstate_has_acpi_ppc())
 
-Sorry for raising this issue always with Exynos cpufreq drivers. IMO the
-bindings for "arm-bL-cpufreq-dt" is broken. Currently no one is using it
-and it's better to fix it before we have a real user of it.
+We need try this on a few platforms to make sure this patch doesn't break the
+HP platforms that may or may not need this driver, depending on the BIOS settings.
 
-If you look at the binding document for it[1], it has a fixme which
-shouldn't have been there at first place. It assumes the ordering of
-CPU's specified in the DT and the logical index allocation to them.
+I don't suppose you tested on a ProLiant too?
 
-It even breaks for hotplug especially if you hotplug-in back in
-different order. We can work around that probably, but it's better to
-fix the binding. I failed to grab much attention in my previous attempts
-to address this[2]. Viresh also started a discussion more recently[3].
+-- ljk
 
-Regards,
-Sudeep
+> +			return true;
+>  	}
+>  
+>  	return false;
+>  }
+>  #else /* CONFIG_ACPI not enabled */
+>  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>  #endif /* CONFIG_ACPI */
+>  
+>  static int __init intel_pstate_init(void)
+> 
 
-[1] Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
-[2] http://www.spinics.net/lists/arm-kernel/msg303977.html
-[3] https://lkml.org/lkml/2014/6/25/152
