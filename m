@@ -1,63 +1,46 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 3/3] drivers: cpuidle: Remove cpuidle-arm64 duplicate error messages
-Date: Wed, 19 Nov 2014 11:17:58 +0100
-Message-ID: <1416392278-18397-3-git-send-email-daniel.lezcano@linaro.org>
-References: <546C6DEB.8060204@linaro.org>
- <1416392278-18397-1-git-send-email-daniel.lezcano@linaro.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 1/1] PM-wakeup: Deletion of an unnecessary check before the
+ function call "wakeup_source_unregister"
+Date: Wed, 19 Nov 2014 12:26:45 +0100
+Message-ID: <546C7E75.9080301@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
+ urceforge.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416392278-18397-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: Lorenzo.Pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 19 Nov 2014 12:21:24 +0100
 
-Current CPUidle driver for arm64 machines spits errors upon idle
-state initialization and cpuidle driver registration failures.
-These error messages are already printed in core code so there is
-no need to print them again.
+The wakeup_source_unregister() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
 
-This patch removes the duplicate print messages from the cpuidle-arm64
-driver.
+This issue was detected by using the Coccinelle software.
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/cpuidle/cpuidle-arm64.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/base/power/wakeup.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 50997ea..1b10f92e 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -104,11 +104,8 @@ static int __init arm64_idle_init(void)
- 	 * reason to initialize the idle driver if only wfi is supported.
- 	 */
- 	ret = dt_init_idle_driver(drv, arm64_idle_state_match, 1);
--	if (ret <= 0) {
--		if (ret)
--			pr_err("failed to initialize idle states\n");
-+	if (ret <= 0)
- 		return ret ? : -ENODEV;
--	}
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index eb1bd2e..87dfc1d 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -267,8 +267,7 @@ int device_wakeup_disable(struct device *dev)
+ 		return -EINVAL;
  
- 	/*
- 	 * Call arch CPU operations in order to initialize
-@@ -122,12 +119,6 @@ static int __init arm64_idle_init(void)
- 		}
- 	}
+ 	ws = device_wakeup_detach(dev);
+-	if (ws)
+-		wakeup_source_unregister(ws);
++	wakeup_source_unregister(ws);
  
--	ret = cpuidle_register(drv, NULL);
--	if (ret) {
--		pr_err("failed to register cpuidle driver\n");
--		return ret;
--	}
--
--	return 0;
-+	return cpuidle_register(drv, NULL);
+ 	return 0;
  }
- device_initcall(arm64_idle_init);
 -- 
-1.9.1
+2.1.3
