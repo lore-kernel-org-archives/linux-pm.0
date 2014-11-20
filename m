@@ -1,57 +1,100 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Thu, 20 Nov 2014 09:18:14 +0530
-Message-ID: <CAKohponEHqHYCLibVc8OHN49+4YW5qw89ny4ycTBL1xN-p9qtA@mail.gmail.com>
-References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
-	<546CEF61.4050105@arm.com>
+Subject: Re: [PATCH] cpufreq: Ref the policy object sooner
+Date: Thu, 20 Nov 2014 10:10:09 +0530
+Message-ID: <CAKohponxpSoUXHc9S-y_zgo=T44-6Ayk4vRbW=jRHqQRsdbrGQ@mail.gmail.com>
+References: <1416403291-7722-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <546CEF61.4050105@arm.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1416403291-7722-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Oh, you are still alive? I thought you were about to get married :)
-Just kidding !!
+On 19 November 2014 18:51, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> Do it before it's assigned to cpufreq_cpu_data, otherwise we can get
+> this warning when a driver tries to get the cpu frequency during
+> initialization:
+>
+> ------------[ cut here ]------------
+> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
+> Modules linked in:
+> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
+> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
+> [<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
+> [<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
+> [<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
+> [<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
+> [<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
+> [<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
+> [<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
+> [<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
+> [<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
+> [<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
+> [<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
+> ---[ end trace b7bd64a81b340c59 ]---
+>
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4473eba..954cb2f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -898,12 +898,6 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+>         struct freq_attr **drv_attr;
+>         int ret = 0;
+>
+> -       /* prepare interface data */
+> -       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+> -                                  &dev->kobj, "cpufreq");
+> -       if (ret)
+> -               return ret;
+> -
+>         /* set up files for this cpu device */
+>         drv_attr = cpufreq_driver->attr;
+>         while ((drv_attr) && (*drv_attr)) {
+> @@ -1211,6 +1205,15 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>         }
+>
+>         down_write(&policy->rwsem);
+> +
+> +       /* prepare interface data */
+> +       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+> +                                  &dev->kobj, "cpufreq");
 
-On 20 November 2014 00:58, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> Sorry for raising this issue always with Exynos cpufreq drivers. IMO the
-> bindings for "arm-bL-cpufreq-dt" is broken. Currently no one is using it
-> and it's better to fix it before we have a real user of it.
+This should be done only when (!recover_policy) and so you can merge
+it with the 'if' block just above down_write. Actually you can move down_write()
+a little bit up as well, just after ->init()
 
-Hmm, yeah if we can. I haven't found a easy way to go ahead and then
-got caught in other activities.
+> +       if (ret) {
+> +               pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
+> +               goto err_init_policy_kobj;
+> +       }
+> +
+>         write_lock_irqsave(&cpufreq_driver_lock, flags);
+>         for_each_cpu(j, policy->cpus)
+>                 per_cpu(cpufreq_cpu_data, j) = policy;
+> @@ -1301,6 +1304,7 @@ err_get_freq:
+>                 per_cpu(cpufreq_cpu_data, j) = NULL;
+>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+> +err_init_policy_kobj:
 
-> If you look at the binding document for it[1], it has a fixme which
-> shouldn't have been there at first place. It assumes the ordering of
-> CPU's specified in the DT and the logical index allocation to them.
+Oh, that's not enough and you need to get the relevant bits out from
+the add_dev_interface() routine as well:
 
-Ok, I believe the FIXME is a bit outdated. From the code I can see only
-this limitation.
+err_out_kobj_put:
+kobject_put(&policy->kobj);
+wait_for_completion(&policy->kobj_unregister);
 
-- For every cluster, the cpu which boots up first should carry the OPPs.
-Otherwise there is no restriction on ordering of CPUs.
 
-- I believe CPUs boot in the order they are present in DT except for the
-boot CPU. So, the first node for every cluster should have it.
-
-Correct ? Then we can update the fixme.
-
-> It even breaks for hotplug especially if you hotplug-in back in
-> different order.
-
-Hmm, I never thought about it. But yes the CPU with the OPPs should
-be the first one to come back.
-
-> We can work around that probably, but it's better to
-> fix the binding. I failed to grab much attention in my previous attempts
-> to address this[2]. Viresh also started a discussion more recently[3].
-
-They are just stuck and went nowhere :(
+>         up_write(&policy->rwsem);
+>
+>         if (cpufreq_driver->exit)
+> --
+> 1.9.3
+>
