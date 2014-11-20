@@ -1,140 +1,218 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
-Date: Thu, 20 Nov 2014 14:01:53 +0100
-Message-ID: <CAPDyKFrssg8wTr7e+EDrrgvHCndq8hcoNJb8TQGc_tt4ePpdEw@mail.gmail.com>
-References: <20141117220238.GE5258@dtor-ws>
-	<1787068.2MCH8czsD4@vostro.rjw.lan>
-	<CAPDyKFoMftvKs8tyBaYCu1zTK_JYiXeXMiq86OrwAAHZoRO_Pw@mail.gmail.com>
-	<3492523.qBADTmdTqo@vostro.rjw.lan>
-	<CAPDyKFoiEMO5E3nMJDZkFkuio-5sh99m55k-yM=fuqrHUXbhZw@mail.gmail.com>
-	<546DDBCF.205@ti.com>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH 0/4] Add TMU support for Exynos7
+Date: Thu, 20 Nov 2014 18:35:30 +0530
+Message-ID: <CAM4voanO=2ewsSjX_YqW7ZPWFJKe8_f3DD5SFytozaooBVKNMw@mail.gmail.com>
+References: <1415963882-3460-1-git-send-email-a.kesavan@samsung.com>
+	<2756804.O2Zby5SkUf@amdc1032>
+	<CAM4voannFHau+TSufpN-rsp4TpSFSK0kKx6QtccNtFW9hO5i+Q@mail.gmail.com>
+	<20141114140202.014e1b82@amdc2363>
+	<CAM4voanZz-q4d7TXQdcTGYkvYGxBmCjHMbpK29rMwoPS6L_c8A@mail.gmail.com>
+	<20141118090826.26056436@amdc2363>
+	<CAM4voanQJsQnQJjyo5e7vJ4jSkPY1ZYSDV68x-UDq5vtbFFgbA@mail.gmail.com>
+	<20141119131826.GA10406@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <546DDBCF.205@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:34780 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755979AbaKTNFb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 08:05:31 -0500
+Received: by mail-qg0-f51.google.com with SMTP id l89so2029422qgf.10
+        for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2014 05:05:31 -0800 (PST)
+In-Reply-To: <20141119131826.GA10406@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rui.zhang@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, amit.daniel@samsung.com
 
-On 20 November 2014 13:17, Grygorii Strashko <grygorii.strashko@ti.com>=
- wrote:
-> On 11/19/2014 10:54 AM, Ulf Hansson wrote:
->> [...]
->>
->>>>
->>>> Scenario 5), a platform driver with/without runtime PM callbacks.
->>>> ->probe()
->>>> - do some initialization
->>>> - may fetch handles to runtime PM resources
->>>> - pm_runtime_enable()
->>>
->>> Well, and now how the driver knows if the device is "on" before acc=
-essing it?
->>
->> In this case the driver don't need to access the device during
->> ->probe(). That's postponed until sometime later.
->>
->>>
->>>> Note 1)
->>>> Scenario 1) and 2), both relies on the approach to power on the PM
->>>> domain by using pm_runtime_get_sync(). That approach didn't work w=
-hen
->>>> CONFIG_PM_RUNTIME was unset, but we recently decided to fixed that=
- by
->>>> the below patch, so that's good!
->>>> "[PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genp=
-d enabled"
->>>>
->>>> Note 2)
->>>> Scenario 3) and 4) use the same principles for managing runtime PM=
-=2E
->>>> These scenarios needs a way to power on the generic PM domain prio=
-r
->>>> probing the device. The call to pm_runtime_set_active(), prevents =
-an
->>>> already powered PM domain from power off until after probe, but th=
-at's
->>>> not enough.
->>>>
->>>> Note 3)
->>>> The $subject patch, tried to address the issues for scenario 3) an=
-d
->>>> 4). It does so, but will affect scenario 5) which was working nice=
-ly
->>>> before. In scenario 5), the $subject patch will cause the generic =
-PM
->>>> domain to potentially stay powered after ->probe() even if the dev=
-ice
->>>> is runtime PM suspended.
->>>
->>> Why would it?  If the device is runtime-suspended, the domain will =
-know
->>> that, because its callbacks will be used for that.  At least, that'=
-s
->>> what I'd expect to happen, so is there a problem here?
->>
->> Genpd do knows about the device but it doesn=E2=80=99t get a "notifi=
-cation" to
->> power off. There are no issues whatsoever for driver.
->>
->> This is a somewhat special case. Let's go through an example.
->>
->> 1. The PM domain is initially in powered off state.
->> 2. The bus ->probe() invokes dev_pm_domain_attach() and then the PM
->> domain gets attached to the device.
->> 3. $subject patch causes the PM domain to power on.
->> 4. A driver ->probe() sequence start, following the Scenario 5).
->> 5. The device is initially in runtime PM suspended state and it will
->> remain so during ->probe().
->> 6. The pm_request_idle() invoked after really_probe() in driver core=
-,
->> won't trigger a runtime PM suspend callback to be invoked. In other
->> words, genpd don't get a "notification" that it may power off.
->>
->> In this state, genpd will either power off from the late_initcall,
->> genpd_poweroff_unused() (depending on when the driver was probed) or
->> wait until some device's runtime PM suspend callback is invoked at a=
-ny
->> later point.
->
-> if I understand things right (thanks to Russell), the Power domain ma=
-y not
->  be powered off not only in above case, but also in some cases when
-> driver is unloaded.
->
-> AMBA bus for example:
-> static int amba_remove(struct device *dev)
-> {
->         pm_runtime_get_sync(dev); <---------- GPD=3Don, dev is active=
-, usage_count >=3D 1
->         ret =3D drv->remove(pcdev); <----------- GPD=3Don, should do =
-balancing put() to compensate all get() made by driver, usage_count =3D=
-=3D 1
->                                   <----------- GPD=3Don, should do ba=
-lancing get() to compensate put() in probe, usage_count =3D=3D 2
->         pm_runtime_put_noidle(dev); <---------- GPD=3Don, dev is acti=
-ve, usage_count =3D=3D 1
->
->         /* Undo the runtime PM settings in amba_probe() */
->         pm_runtime_disable(dev);  <---------- GPD=3Don, dev is active=
-, usage_count =3D=3D 1
->         pm_runtime_set_suspended(dev); <---------- GPD=3Don, dev is s=
-uspended, usage_count =3D=3D 1
->         pm_runtime_put_noidle(dev); <---------- GPD=3Don, dev is susp=
-ended, usage_count =3D=3D 0
->
->         amba_put_disable_pclk(pcdev);
->         dev_pm_domain_detach(dev, true); <---------- GPD=3Don, dev is=
- suspended, usage_count =3D=3D 0
+Hi,
 
-=46or the generic OF-based PM domain look-up case:
-->dev_pm_domain_detach()
-    ->genpd_dev_pm_detach() - to remove the device from the PM domain.
-       ->genpd_queue_power_off_work() - to power off unused PM domains.
+On Wed, Nov 19, 2014 at 6:48 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> Abhilash,
+>
+> On Tue, Nov 18, 2014 at 01:44:16PM +0530, Abhilash Kesavan wrote:
+>> Hi Lukasz,
+>>
+>> On Tue, Nov 18, 2014 at 1:38 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> > Hi Abhilash,
+>> >
+>> >> Hi Lukasz,
+>> >>
+>> >> On Fri, Nov 14, 2014 at 6:32 PM, Lukasz Majewski
+>> >> <l.majewski@samsung.com> wrote:
+>> >> > Hi Abhilash,
+>> >> >
+>> >> >> Hi Bartlomiej,
+>> >> >>
+>> >> >> On Fri, Nov 14, 2014 at 5:49 PM, Bartlomiej Zolnierkiewicz
+>> >> >> <b.zolnierkie@samsung.com> wrote:
+>> >> >> >
+>> >> >> > Hi,
+>> >> >> >
+>> >> >> > On Friday, November 14, 2014 04:47:58 PM Abhilash Kesavan wrote:
+>> >> >> >> The Thermal Management Unit (TMU) in Exynos7 provides
+>> >> >> >> software-controlled (thermal throttling) and hardware-controlled
+>> >> >> >> (thermal tripping) management schemes.
+>> >> >> >> There are several changes in terms of the register and bit
+>> >> >> >> offsets in the Exynos7 TMU from that in older SoCs. There are
+>> >> >> >> also new bits, more trigger levels and a special clock for TMU
+>> >> >> >> that has been introduced in Exynos7. This patchset modifies the
+>> >> >> >> thermal driver to handle all these changes.
+>> >> >> >>
+>> >> >> >> This series is based on linux-next(20141114) and tested on an
+>> >> >> >> Exynos7-based espresso board.
+>> >> >> >
+>> >> >> > Please rebase your patchset on top of:
+>> >> >> >
+>> >> >> >   http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg38717.html
+>> >> >>
+>> >> >> Sure, will rebase on top of your patchset. Is this patchset going
+>> >> >> to be merged into Eduardo's tree soon ?
+>> >> >>
+>> >> >> >
+>> >> >> > There is also ongoing work to convert Exynos thermal driver to
+>> >> >> > use device tree but Lukasz Majewski (added to Cc:) knows better
+>> >> >> > the current state of the work.
+>> >> >>
+>> >> >> Lukasz, are you in the process of making changes to the existing
+>> >> >> exynos tmu bindings ?
+>> >> >
+>> >> > Yes. I'm working on them.
+>> >> >
+>> >> > Please consider following patches [1]:
+>> >> > http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+>> >> >
+>> >> > They are based on top of Bartek's work.
+>
+> Bartlomiej work is in linux-next already. I am planning to send his
+> refactoring work for 3.19. But I do require more testing
+> to cover for all supported chips, because it is a big change.
+> Can you please also try his series in different boards to see if all
+> chip support is still in one piece?
 
-That does the trick, right!?
+I have tested the exynos TMU driver in linux-next (20141119), which
+has Bartlomiej's patch series applied, on an SMDK5420 and Exynos5800
+based chromebook. Both the boards are working fine (saw the
+temperature vary in sysfs and the board shutdown when it hit the s/w
+trip temperature).
 
-Kind regards
-Uffe
+>
+>> >> > Patch set status:
+>> >> > 1. Fixes for thermal_core (with -EPROBE_DEFER) - v2 posted
+>> >> > yesterday.
+>> >> > http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+>> >> >
+>> >> > 2. of-thermal rework - I'm working on it now (to export common data
+>> >> > from of-thermal.c and provide structure with ops).
+>> >> >
+>> >> > Patches [1] replace configuration available in exynos_tmu_data.c to
+>> >> > the one from device tree. Also it handles setting cpu cooling
+>> >> > frequencies per CPUs via device tree.
+>> >> >
+>> >> >
+>> >> > I think that it is Eduardo's decision about how Exynos patches
+>> >> > should be serialized.
+>> >> >
+>
+> This is correct. We need some serialization to have a proper flow into
+> Linus tree.
+>
+>> >> > I can only say that after Bartek's and my [1] patch sets the exynos
+>> >> > TMU driver is much simpler with significant code base reduction.
+>> >> >
+>> >> > Personally I think that it may be far more easier to add Exynos7 TMU
+>> >> > support to reworked driver.
+>> >>
+>> >> Thanks for the details. I am OK with rebasing my patches over
+>> >> Bartlomiej and your patch sets. Do you have any public tree with both
+>> >> these patch sets merged ?
+>> >
+>> > I've managed to export my ongoing Exynos TMU work to a public tree.
+>> > You can find it at:
+>> > https://git.linaro.org/people/marek.szyprowski/linux-srpol.git/shortlog/refs/heads/v3.18-ti-soc-thermal
+>> >
+>> >
+>> > Please be aware that this code is under development (and review) and
+>> > some parts may be changed.
+>> >
+>> > However, this shows how the Exynos TMU driver would look like after the
+>> > rework.
+>> >
+>> > If in any doubts, please ask.
+>>
+>> Thanks a lot for this. I will start rebasing my exynos7 patches on your tree.
+>>
+>
+> Good! Please rebase your work on top of Bart's and Lukasz's work.
+>
+> New Exynos chip support, at this point, makes sense to hold until we get
+> the rework done. The proposals for change in of-thermal are more or less
+> alined. The rework at the exynos driver as well. So, things should go
+> smoothly, from my perspective.
+
+Sure I will wait for Lukasz's consolidation to get in. However, there
+is a patch in my series [1] which adds support for an optional special
+clock. Could that be picked up independently now if I rebase it over
+Bartlomiej's patchset ?
+
+[1] http://permalink.gmane.org/gmane.linux.power-management.general/52826
+>
+> One point I want you, Abhilash, is to check Bartlomiej series. He has ripped
+> several things in his refactoring, like register abstraction, etc. It would
+> be good if you check the impact of those changes in your new chip
+> support, before we send his series for merge. Please have a word there.
+
+Lukasz,  I tested the tree with your patches applied on a SMDK5420 and
+5800-Peach-Pi. However, the boards hang at boot-up after failing to
+get the trip points ("get_th_reg: Cannot get trip points from
+of-thermal.c!"). I have not debugged this yet and was wondering if you
+have noticed similar issues or have already fixed this.
+
+I am currently in the process of porting the Exynos7 changes over
+yours, will let you know if I have any other questions.
+
+Regards,
+Abhilash
+
+>> >> >> >> Abhilash Kesavan (4):
+>> >> >> >>   thermal: exynos: add optional sclk support
+>> >> >> >>   thermal: exynos: add a triminfo_mask field in
+>> >> >> >> exynos_tmu_register structure
+>> >> >> >>   thermal: exynos: modify the prototype for code_to_temp
+>> >> >> >> function thermal: exynos: Add TMU support for Exynos7 SoC
+>> >> >> >>
+>> >> >> >>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 +
+>> >> >> >>  drivers/thermal/samsung/exynos_tmu.c               |  106
+>> >> >> >> ++++++++++++++----
+>> >> >> >> drivers/thermal/samsung/exynos_tmu.h               |   13 ++-
+>> >> >> >> drivers/thermal/samsung/exynos_tmu_data.c          |  117
+>> >> >> >> ++++++++++++++++++++
+>> >> >> >> drivers/thermal/samsung/exynos_tmu_data.h          |   27 +++++
+>> >> >> >> 5 files changed, 247 insertions(+), 20 deletions(-)
+>> >> >> >
+>> >> >> > Best regards,
+>> >> >> > --
+>> >> >> > Bartlomiej Zolnierkiewicz
+>> >> >> > Samsung R&D Institute Poland
+>> >> >> > Samsung Electronics
+>> >> >> >
+>> >> >
+>> >> >
+>> >> >
+>> >> > --
+>> >> > Best regards,
+>> >> >
+>> >> > Lukasz Majewski
+>> >> >
+>> >> > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+>> >
+>> >
+>> >
+>> > --
+>> > Best regards,
+>> >
+>> > Lukasz Majewski
+>> >
+>> > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+>
+>
