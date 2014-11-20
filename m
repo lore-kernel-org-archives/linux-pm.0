@@ -1,166 +1,97 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: [PATCH v2] thermal: provide an UAPI header file
-Date: Thu, 20 Nov 2014 08:32:57 -0800
-Message-ID: <1416501177-17504-1-git-send-email-f.fainelli@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:55833 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754127AbaKTQdd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 11:33:33 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
+ _PPC method
+Date: Thu, 20 Nov 2014 08:50:06 -0800
+Message-ID: <546E1BBE.7050906@intel.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <546CFBEE.6090103@hp.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Linda Knippers <linda.knippers@hp.com>, Ethan Zhao <ethan.zhao@oracle.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, rui.zhang@intel.com, computersforpeace@gmail.com, Florian Fainelli <f.fainelli@gmail.com>
 
-include/linux/thermal.h contains definitions for the Thermal generic
-netlink family, but none of the valuable information relevant to
-user-space such as the Genl family name, multicast group, version or
-command set and data types is exported to user-space.
+On 11/19/2014 12:22 PM, Linda Knippers wrote:
+> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
+>> Oracle Sun X86 servers have dynamic power capping capability that works via
+>> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+>> enabled.
+>>
+>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>> ---
+>>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
+>>   1 file changed, 20 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index 27bb6d3..5498eb0 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
+>>   	return true;
+>>   }
+>>
+>> +static bool intel_pstate_has_acpi_ppc(void)
+>> +{
+>> +	int i;
+>> +
+>> +	for_each_possible_cpu(i) {
+>> +		struct acpi_processor *pr = per_cpu(processors, i);
+>> +
+>> +		if (!pr)
+>> +			continue;
+>> +		if (acpi_has_method(pr->handle, "_PPC"))
+>> +			return true;
+>> +	}
+>> +	return false;
+>> +}
+>> +
+>>   struct hw_vendor_info {
+>>   	u16  valid;
+>>   	char oem_id[ACPI_OEM_ID_SIZE];
+>> @@ -952,6 +967,7 @@ struct hw_vendor_info {
+>>   /* Hardware vendor-specific info that has its own power management modes */
+>>   static struct hw_vendor_info vendor_info[] = {
+>>   	{1, "HP    ", "ProLiant"},
+>> +	{1, "ORACLE", ""},
+>>   	{0, "", ""},
+>>   };
+>>
+>> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>>   		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+>>   		    intel_pstate_no_acpi_pss())
+>>   			return true;
+>> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+>> +			intel_pstate_has_acpi_ppc())
+>
+> We need try this on a few platforms to make sure this patch doesn't break the
+> HP platforms that may or may not need this driver, depending on the BIOS settings.
+>
 
-Export all the relevant generic netlink information to user-space to
-make this genl family usable by user-space, and while at it, export
-THERMAL_NAME_LENGTH since it limits name length for thermal_hwmon
-devices.
+It looks like HP systems would get swept up in this check too if they have _PPC
 
-Kbuild and MAINTAINERS are also updated accordingly to reflect this new
-file: include/uapi/linux/thermal.h.
+What about extending the hw_vendor_info struct to include whether _PSS or
+_PPC should be done for the platform since it appears that oracle and HP
+have implemented similar functionality using two different methods.
 
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
-Changes in v2:
-- rebase against Eduardo's thermal/next tree
 
- MAINTAINERS                  |  1 +
- include/linux/thermal.h      | 31 +------------------------------
- include/uapi/linux/Kbuild    |  1 +
- include/uapi/linux/thermal.h | 35 +++++++++++++++++++++++++++++++++++
- 4 files changed, 38 insertions(+), 30 deletions(-)
- create mode 100644 include/uapi/linux/thermal.h
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c444907ccd69..790752a4fad2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9294,6 +9294,7 @@ Q:	https://patchwork.kernel.org/project/linux-pm/list/
- S:	Supported
- F:	drivers/thermal/
- F:	include/linux/thermal.h
-+F:	include/uapi/linux/thermal.h
- F:	include/linux/cpu_cooling.h
- F:	Documentation/devicetree/bindings/thermal/
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5bc28a70014e..be959e9df06c 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -29,10 +29,10 @@
- #include <linux/idr.h>
- #include <linux/device.h>
- #include <linux/workqueue.h>
-+#include <uapi/linux/thermal.h>
- 
- #define THERMAL_TRIPS_NONE	-1
- #define THERMAL_MAX_TRIPS	12
--#define THERMAL_NAME_LENGTH	20
- 
- /* invalid cooling state */
- #define THERMAL_CSTATE_INVALID -1UL
-@@ -49,11 +49,6 @@
- #define MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, off) (((t) / 100) + (off))
- #define MILLICELSIUS_TO_DECI_KELVIN(t) MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, 2732)
- 
--/* Adding event notification support elements */
--#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
--#define THERMAL_GENL_VERSION                    0x01
--#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
--
- /* Default Thermal Governor */
- #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
- #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
-@@ -86,30 +81,6 @@ enum thermal_trend {
- 	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
- };
- 
--/* Events supported by Thermal Netlink */
--enum events {
--	THERMAL_AUX0,
--	THERMAL_AUX1,
--	THERMAL_CRITICAL,
--	THERMAL_DEV_FAULT,
--};
--
--/* attributes of thermal_genl_family */
--enum {
--	THERMAL_GENL_ATTR_UNSPEC,
--	THERMAL_GENL_ATTR_EVENT,
--	__THERMAL_GENL_ATTR_MAX,
--};
--#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
--
--/* commands supported by the thermal_genl_family */
--enum {
--	THERMAL_GENL_CMD_UNSPEC,
--	THERMAL_GENL_CMD_EVENT,
--	__THERMAL_GENL_CMD_MAX,
--};
--#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
--
- struct thermal_zone_device_ops {
- 	int (*bind) (struct thermal_zone_device *,
- 		     struct thermal_cooling_device *);
-diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
-index 4c94f31a8c99..a1943e2d1264 100644
---- a/include/uapi/linux/Kbuild
-+++ b/include/uapi/linux/Kbuild
-@@ -383,6 +383,7 @@ header-y += tcp.h
- header-y += tcp_metrics.h
- header-y += telephony.h
- header-y += termios.h
-+header-y += thermal.h
- header-y += time.h
- header-y += times.h
- header-y += timex.h
-diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
-new file mode 100644
-index 000000000000..ac5535855982
---- /dev/null
-+++ b/include/uapi/linux/thermal.h
-@@ -0,0 +1,35 @@
-+#ifndef _UAPI_LINUX_THERMAL_H
-+#define _UAPI_LINUX_THERMAL_H
-+
-+#define THERMAL_NAME_LENGTH	20
-+
-+/* Adding event notification support elements */
-+#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
-+#define THERMAL_GENL_VERSION                    0x01
-+#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
-+
-+/* Events supported by Thermal Netlink */
-+enum events {
-+	THERMAL_AUX0,
-+	THERMAL_AUX1,
-+	THERMAL_CRITICAL,
-+	THERMAL_DEV_FAULT,
-+};
-+
-+/* attributes of thermal_genl_family */
-+enum {
-+	THERMAL_GENL_ATTR_UNSPEC,
-+	THERMAL_GENL_ATTR_EVENT,
-+	__THERMAL_GENL_ATTR_MAX,
-+};
-+#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
-+
-+/* commands supported by the thermal_genl_family */
-+enum {
-+	THERMAL_GENL_CMD_UNSPEC,
-+	THERMAL_GENL_CMD_EVENT,
-+	__THERMAL_GENL_CMD_MAX,
-+};
-+#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
-+
-+#endif /* _UAPI_LINUX_THERMAL_H */
--- 
-1.9.1
+> I don't suppose you tested on a ProLiant too?
+>
+> -- ljk
+>
+>> +			return true;
+>>   	}
+>>
+>>   	return false;
+>>   }
+>>   #else /* CONFIG_ACPI not enabled */
+>>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+>> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>>   #endif /* CONFIG_ACPI */
+>>
+>>   static int __init intel_pstate_init(void)
+>>
+>
 
