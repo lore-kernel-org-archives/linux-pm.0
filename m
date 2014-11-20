@@ -1,145 +1,48 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach
- completes
-Date: Thu, 20 Nov 2014 17:06:30 +0200
-Message-ID: <546E0376.3030300@ti.com>
-References: <20141117220238.GE5258@dtor-ws>	<1787068.2MCH8czsD4@vostro.rjw.lan>	<CAPDyKFoMftvKs8tyBaYCu1zTK_JYiXeXMiq86OrwAAHZoRO_Pw@mail.gmail.com>	<3492523.qBADTmdTqo@vostro.rjw.lan>	<CAPDyKFoiEMO5E3nMJDZkFkuio-5sh99m55k-yM=fuqrHUXbhZw@mail.gmail.com>	<546DDBCF.205@ti.com> <CAPDyKFrssg8wTr7e+EDrrgvHCndq8hcoNJb8TQGc_tt4ePpdEw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrssg8wTr7e+EDrrgvHCndq8hcoNJb8TQGc_tt4ePpdEw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/4] ARM: EXYNOS: cpuidle: add AFTR mode support for Exynos3250
+Date: Thu, 20 Nov 2014 16:11:45 +0100
+Message-ID: <1416496309-27602-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 11/20/2014 03:01 PM, Ulf Hansson wrote:
-> On 20 November 2014 13:17, Grygorii Strashko <grygorii.strashko@ti.co=
-m> wrote:
->> On 11/19/2014 10:54 AM, Ulf Hansson wrote:
->>> [...]
->>>
->>>>>
->>>>> Scenario 5), a platform driver with/without runtime PM callbacks.
->>>>> ->probe()
->>>>> - do some initialization
->>>>> - may fetch handles to runtime PM resources
->>>>> - pm_runtime_enable()
->>>>
->>>> Well, and now how the driver knows if the device is "on" before ac=
-cessing it?
->>>
->>> In this case the driver don't need to access the device during
->>> ->probe(). That's postponed until sometime later.
->>>
->>>>
->>>>> Note 1)
->>>>> Scenario 1) and 2), both relies on the approach to power on the P=
-M
->>>>> domain by using pm_runtime_get_sync(). That approach didn't work =
-when
->>>>> CONFIG_PM_RUNTIME was unset, but we recently decided to fixed tha=
-t by
->>>>> the below patch, so that's good!
->>>>> "[PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when gen=
-pd enabled"
->>>>>
->>>>> Note 2)
->>>>> Scenario 3) and 4) use the same principles for managing runtime P=
-M.
->>>>> These scenarios needs a way to power on the generic PM domain pri=
-or
->>>>> probing the device. The call to pm_runtime_set_active(), prevents=
- an
->>>>> already powered PM domain from power off until after probe, but t=
-hat's
->>>>> not enough.
->>>>>
->>>>> Note 3)
->>>>> The $subject patch, tried to address the issues for scenario 3) a=
-nd
->>>>> 4). It does so, but will affect scenario 5) which was working nic=
-ely
->>>>> before. In scenario 5), the $subject patch will cause the generic=
- PM
->>>>> domain to potentially stay powered after ->probe() even if the de=
-vice
->>>>> is runtime PM suspended.
->>>>
->>>> Why would it?  If the device is runtime-suspended, the domain will=
- know
->>>> that, because its callbacks will be used for that.  At least, that=
-'s
->>>> what I'd expect to happen, so is there a problem here?
->>>
->>> Genpd do knows about the device but it doesn=E2=80=99t get a "notif=
-ication" to
->>> power off. There are no issues whatsoever for driver.
->>>
->>> This is a somewhat special case. Let's go through an example.
->>>
->>> 1. The PM domain is initially in powered off state.
->>> 2. The bus ->probe() invokes dev_pm_domain_attach() and then the PM
->>> domain gets attached to the device.
->>> 3. $subject patch causes the PM domain to power on.
->>> 4. A driver ->probe() sequence start, following the Scenario 5).
->>> 5. The device is initially in runtime PM suspended state and it wil=
-l
->>> remain so during ->probe().
->>> 6. The pm_request_idle() invoked after really_probe() in driver cor=
-e,
->>> won't trigger a runtime PM suspend callback to be invoked. In other
->>> words, genpd don't get a "notification" that it may power off.
->>>
->>> In this state, genpd will either power off from the late_initcall,
->>> genpd_poweroff_unused() (depending on when the driver was probed) o=
-r
->>> wait until some device's runtime PM suspend callback is invoked at =
-any
->>> later point.
->>
->> if I understand things right (thanks to Russell), the Power domain m=
-ay not
->>   be powered off not only in above case, but also in some cases when
->> driver is unloaded.
->>
->> AMBA bus for example:
->> static int amba_remove(struct device *dev)
->> {
->>          pm_runtime_get_sync(dev); <---------- GPD=3Don, dev is acti=
-ve, usage_count >=3D 1
->>          ret =3D drv->remove(pcdev); <----------- GPD=3Don, should d=
-o balancing put() to compensate all get() made by driver, usage_count =3D=
-=3D 1
->>                                    <----------- GPD=3Don, should do =
-balancing get() to compensate put() in probe, usage_count =3D=3D 2
->>          pm_runtime_put_noidle(dev); <---------- GPD=3Don, dev is ac=
-tive, usage_count =3D=3D 1
->>
->>          /* Undo the runtime PM settings in amba_probe() */
->>          pm_runtime_disable(dev);  <---------- GPD=3Don, dev is acti=
-ve, usage_count =3D=3D 1
->>          pm_runtime_set_suspended(dev); <---------- GPD=3Don, dev is=
- suspended, usage_count =3D=3D 1
->>          pm_runtime_put_noidle(dev); <---------- GPD=3Don, dev is su=
-spended, usage_count =3D=3D 0
->>
->>          amba_put_disable_pclk(pcdev);
->>          dev_pm_domain_detach(dev, true); <---------- GPD=3Don, dev =
-is suspended, usage_count =3D=3D 0
->
-> For the generic OF-based PM domain look-up case:
-> ->dev_pm_domain_detach()
->      ->genpd_dev_pm_detach() - to remove the device from the PM domai=
-n.
->         ->genpd_queue_power_off_work() - to power off unused PM domai=
-ns.
->
-> That does the trick, right!?
+Hi,
 
-True. Thanks a lot for pointing me on right place.
+This patch series adds support for AFTR idle mode on boards with
+Exynos3250 SoC and allows EXYNOS cpuidle driver usage on these
+boards.
 
-regards,
--grygorii
+It has been tested on Samsung Rinato board (Gear 2).
+
+Depends on:
+- for-next branch of linux-samsung.git kernel tree
+  (or next-20141114 branch of linux-next kernel tree)
+- [PATCH v5] ARM: EXYNOS: add Exynos3250 PMU support
+  (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg39109.html)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (4):
+  ARM: EXYNOS: fix CPU1 hotplug for AFTR mode on Exynos3250
+  ARM: EXYNOS: add code for setting/clearing boot flag
+  ARM: EXYNOS: cpuidle: add AFTR mode support for Exynos3250
+  ARM: EXYNOS: cpuidle: allow driver usage on Exynos3250 SoC
+
+ arch/arm/mach-exynos/common.h   |  6 ++++++
+ arch/arm/mach-exynos/exynos.c   | 26 ++++++++++++++++++++++++++
+ arch/arm/mach-exynos/firmware.c |  8 +++++++-
+ arch/arm/mach-exynos/platsmp.c  | 19 +++++++++++++++++--
+ arch/arm/mach-exynos/pm.c       | 12 +++++++++++-
+ arch/arm/mach-exynos/regs-pmu.h |  2 ++
+ arch/arm/mach-exynos/smc.h      |  9 +++++++++
+ 7 files changed, 78 insertions(+), 4 deletions(-)
+
+-- 
+1.8.2.3
