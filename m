@@ -1,50 +1,109 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 0/3] PM / Domains: Add initial PM clock support to genpd
-Date: Wed, 19 Nov 2014 16:33:32 -0800
-Message-ID: <7hk32qu2w3.fsf@deeprootsystems.com>
-References: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:55917 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756355AbaKTAdf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 19:33:35 -0500
-Received: by mail-pd0-f171.google.com with SMTP id v10so1911048pde.30
-        for <linux-pm@vger.kernel.org>; Wed, 19 Nov 2014 16:33:34 -0800 (PST)
-In-Reply-To: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Wed, 19 Nov 2014 15:00:35 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+From: ethan <ethan.kernel@gmail.com>
+Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI _PPC method
+Date: Thu, 20 Nov 2014 08:52:02 +0800
+Message-ID: <901EE838-D37C-462D-B6FD-E94A2F7AE4F2@gmail.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <546CFBEE.6090103@hp.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Linda Knippers <linda.knippers@hp.com>
+Cc: Ethan Zhao <ethan.zhao@oracle.com>, "dirk.j.brandewie@intel.com" <dirk.j.brandewie@intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "corbet@lwn.net" <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "joe.jin@oracle.com" <joe.jin@oracle.com>, "brian.maly@oracle.com" <brian.maly@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+Linda=A3=AC
 
-> It's quite common for PM domains to use PM clocks. Typically from SOC specific
-> code, the per device PM clock list is created and pm_clk_suspend|resume() are
-> invoked to handle clock gating/ungating.
->
-> A step towards consolidation is to integrate PM clock support into genpd, which
-> is what this patchset does.
->
-> In this initial step, the calls to the pm_clk_suspend|resume() are handled
-> within genpd, but the per device PM clock list still needs to be created from
-> SOC specific code. It seems reasonable to have gendp to handle that as well, but
-> that left to future patchsets to address.
+> =D4=DA 2014=C4=EA11=D4=C220=C8=D5=A3=AC04:22=A3=ACLinda Knippers <lin=
+da.knippers@hp.com> =D0=B4=B5=C0=A3=BA
+>=20
+>> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
+>> Oracle Sun X86 servers have dynamic power capping capability that wo=
+rks via
+>> ACPI _PPC method etc, so skip loading this driver if Sun server has =
+ACPI _PPC
+>> enabled.
+>>=20
+>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>> ---
+>> drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
+>> 1 file changed, 20 insertions(+)
+>>=20
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_=
+pstate.c
+>> index 27bb6d3..5498eb0 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
+>>    return true;
+>> }
+>>=20
+>> +static bool intel_pstate_has_acpi_ppc(void)
+>> +{
+>> +    int i;
+>> +
+>> +    for_each_possible_cpu(i) {
+>> +        struct acpi_processor *pr =3D per_cpu(processors, i);
+>> +
+>> +        if (!pr)
+>> +            continue;
+>> +        if (acpi_has_method(pr->handle, "_PPC"))
+>> +            return true;
+>> +    }
+>> +    return false;
+>> +}
+>> +
+>> struct hw_vendor_info {
+>>    u16  valid;
+>>    char oem_id[ACPI_OEM_ID_SIZE];
+>> @@ -952,6 +967,7 @@ struct hw_vendor_info {
+>> /* Hardware vendor-specific info that has its own power management m=
+odes */
+>> static struct hw_vendor_info vendor_info[] =3D {
+>>    {1, "HP    ", "ProLiant"},
+>> +    {1, "ORACLE", ""},
+>>    {0, "", ""},
+>> };
+>>=20
+>> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exi=
+sts(void)
+>>            !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM=
+_TABLE_ID_SIZE) &&
+>>            intel_pstate_no_acpi_pss())
+>>            return true;
+>> +        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) =
+&&
+>> +            intel_pstate_has_acpi_ppc())
+>=20
+> We need try this on a few platforms to make sure this patch doesn't b=
+reak the
+> HP platforms that may or may not need this driver, depending on the B=
+IOS settings.
+>=20
+> I don't suppose you tested on a ProLiant too?
+I  am very glad you could catch this though I missed to CC you.
+The code only touch oem_id 'ORACLE' platform, wouldn't break HP's.
+But it is good you could test on ProLiant.(not find one around yet)
 
-I think we need to get rid of the SoC specific code already.  For
-example, we're already seeing SoCs where the arm32 core is being
-replaced by an arm64 core but the other IPs, and power-domain logic is
-staying more or less the same.  
+Thanks,
+Ethan
 
-> It's not every users of genpd that are keen on using PM clocks thus we need
-> to provide this a configuration option for genpd.
-
-Or more likely, probably some compatible string, or property in the
-domain node.  Grygorii, Arnd and myself were discussing this elsewhere
-in the context of the TI Keystone2 PM domain support[1].
-
-Kevin
-
-[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/304099.html
+>=20
+> -- ljk
+>=20
+>> +            return true;
+>>    }
+>>=20
+>>    return false;
+>> }
+>> #else /* CONFIG_ACPI not enabled */
+>> static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { ret=
+urn false; }
+>> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; =
+}
+>> #endif /* CONFIG_ACPI */
+>>=20
+>> static int __init intel_pstate_init(void)
+>>=20
+>=20
