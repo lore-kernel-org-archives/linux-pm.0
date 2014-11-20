@@ -1,113 +1,76 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 20 Nov 2014 14:12:41 +0100
-Message-ID: <CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
-	<1709760.E0jX3Myv0h@wuerfel>
-	<546C7FDD.7030906@ti.com>
-	<2900095.WIocOu7ue2@wuerfel>
-	<CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
-	<546DD87B.3080806@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <546DD87B.3080806@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: [PATCH v6 0/4] mfd: rt5033: Add Richtek RT5033 drivers
+Date: Thu, 20 Nov 2014 22:16:42 +0900
+Message-ID: <1416489406-12416-1-git-send-email-beomho.seo@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:56922 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbaKTNQu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 08:16:50 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
 
-On 20 November 2014 13:03, Grygorii Strashko <grygorii.strashko@ti.com> wrote:
-> On 11/20/2014 01:34 PM, Ulf Hansson wrote:
->> On 19 November 2014 14:47, Arnd Bergmann <arnd@arndb.de> wrote:
->>> On Wednesday 19 November 2014 13:32:45 Grygorii Strashko wrote:
->>>> On 11/18/2014 09:32 PM, Arnd Bergmann wrote:
->>>>> On Tuesday 18 November 2014 20:54:36 Grygorii Strashko wrote:
->>>>>
->>>>> Have one pmdomain driver in the generic code that knows about clocks,
->>>>> possibly also regulators and pins and just turns them on when needed.
->>>>> You can have a "simple-pmdomain" or "generic-pmdomain" compatible
->>>>> string.
->>>>>
->>>>> I'm a bit surprised that your pmdomain code looks up the clocks from the
->>>>> respective device, rather than know about the clocks itself. There is
->>>>> probably a good reason for this, but I don't see it yet.
->>>>
->>>> The keystone 2 uses simple PM schema based on clocks only:
->>>> - clocks enabled -> dev is active
->>>> - clocks disabled -> dev is suspended
->>>>
->>>> To achieve explained above the Generic clock manipulation PM callbacks framework (pm_clk) is used.
->>>> - list of managed clocks is filled for each device (for non-DT case the con_id list
->>>>    is specified by platform code like:
->>>>        .con_ids = { "fck", "master", "slave", NULL },
->>>>          - or -
->>>>        .con_ids = { }, <-- in this case only first clock will be added to pm_clk
->>>>    )
->>
->> According to earlier comments in this thread, device's clocks are
->> split into "functional" and "PM" clocks.
->>
->> If I understand correctly, a typical platform driver will enable it's
->> "functional" clocks during ->probe() and you want the PM domain to
->> take care of the "PM" clocks, when the device changes runtime PM
->> status.
->>
->> How will you describe these different set of device clocks in DT?
->
-> True :(  You can dig deeper in the history of this series if you wish.
-> - first Geert Uytterhoeven proposed to use CLK_RUNTIME_PM there
->   https://lkml.org/lkml/2014/11/6/319
-> - second I proposed to introduce smth. like "clkops-clocks", "pm-clocks" there
->   https://lkml.org/lkml/2014/6/12/436
->  or "fck-clocks"/"opt-clocks" later.
->
-> ^failed.
->
-> So, this implementation picks up all clocks for each device, which is ok for
-> Keystone 2 and, because it's platform specific.
->
->>>
->>> Yes, it would definitely solve the problem that I see with the infrastructure
->>> code that the current version adds into the platform directory.
->>>
->>> The exact binding of course should be reviewed by the pmdomain and
->>> DT maintainers, to ensure that it is done the best possible way, because
->>> I assume we will end up using it a lot, and it would be a shame to get
->>> it slightly wrong.
->>>
->>> One possible variation I can think of would be to just use "simple-pmdomain"
->>> as the compatible string, and use properties in the node itself to decide
->>> what the domain should control, e.g.
->>>
->>>          clk_pmdomain: pmdomain {
->>>                  compatible = "simple-pmdomain";
->>>                  pmdomain-enable-clocks;
->>>                  #power-domain-cells = <0>;
->>>          };
->>>          clk_regulator_pmdomain: pmdomain {
->>>                  compatible = "simple-pmdomain";
->>>                  pmdomain-enable-clocks;
->>>                  pmdomain-enable-regulators;
->>>                  #power-domain-cells = <0>;
->>>          };
->>>
->>> and then have each device link to one of the nodes as the pmdomain.
->>>
->>
->> That's seems like a good approach to me.
->
-> Yes, but your previous comment is still actual :(
+ This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge, regulators.
+This patchset provides common support for accessing the device.
+This patchset have been tested base on exynos board.
 
-Agree!
+Changes in v6
+- Fix white space issue in mfd cell struct.
 
-So I really think we need to decide on how to address the split of the
-device clocks. Before that's done, I don't think it make sense to add
-a "simple-pmdomain" compatible, since it will likely not be that many
-SoC that can use it.
+Changes in v5
+- Change possible built as a module.
+- Revise rt5033_dev mfd cell entry.
+- Fix incorrect typo.
+- Add module alias.
 
-So, does anyone have a suggestion on how to deal with the split of the
-device clocks into "functional" clocks and into "PM" clocks?
+Changes in v4
+- rt5033 regulator patch is applied by Mark Brown.
 
-Kind regards
-Uffe
+Changes in v3
+- Correct sentence errors.
+- Add author information the top of each drivers.
+- Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
+- Change some return check.
+- Use bool and of_match_ptr().
+
+Changes in v2:
+- Remove volatile_reg callback. Because this driver not in use regmap cache.
+- Remove unnecessary subnode of_compatible.
+- Add definde for set high impedance mode of charger.
+- Remove unnecessary device specific code.
+- Fix wrong register name.
+- Fix wrong error message.
+- Fix return vallue at error case.
+- Revise binding documentation.
+
+Beomho Seo (4):
+  mfd: rt5033: Add Richtek RT5033 driver core.
+  power: rt5033_battery: Add RT5033 Fuel gauge device driver
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
+
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 +++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/mfd/Kconfig                                |   12 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/rt5033.c                               |  141 ++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/rt5033_battery.c                     |  177 +++++++
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ include/linux/mfd/rt5033-private.h                 |  260 +++++++++++
+ include/linux/mfd/rt5033.h                         |   62 +++
+ 11 files changed, 1265 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/mfd/rt5033.c
+ create mode 100644 drivers/power/rt5033_battery.c
+ create mode 100644 drivers/power/rt5033_charger.c
+ create mode 100644 include/linux/mfd/rt5033-private.h
+ create mode 100644 include/linux/mfd/rt5033.h
+
+-- 
+1.7.9.5
+
