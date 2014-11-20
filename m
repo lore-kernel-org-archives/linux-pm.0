@@ -1,63 +1,57 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
-Date: Thu, 20 Nov 2014 10:25:31 +0800
-Message-ID: <1416450331.5808.3.camel@rzhang1-toshiba>
-References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Thu, 20 Nov 2014 09:18:14 +0530
+Message-ID: <CAKohponEHqHYCLibVc8OHN49+4YW5qw89ny4ycTBL1xN-p9qtA@mail.gmail.com>
+References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
+	<546CEF61.4050105@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:21468 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756174AbaKTCZS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 19 Nov 2014 21:25:18 -0500
-In-Reply-To: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <546CEF61.4050105@arm.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org
 
+Oh, you are still alive? I thought you were about to get married :)
+Just kidding !!
 
-For some reason, I did not see the discussion between Lukasz and you via
-email. I can only see it via patchwork.
+On 20 November 2014 00:58, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> Sorry for raising this issue always with Exynos cpufreq drivers. IMO the
+> bindings for "arm-bL-cpufreq-dt" is broken. Currently no one is using it
+> and it's better to fix it before we have a real user of it.
 
-Lukasz,
+Hmm, yeah if we can. I haven't found a easy way to go ahead and then
+got caught in other activities.
 
-if the regulator for thermal unit is not enabled, what will you get?
-temperature 0xFF + trip point -1? or Just temperature 0xFF?
-I don't think this patch makes any difference in the second case.
+> If you look at the binding document for it[1], it has a fixme which
+> shouldn't have been there at first place. It assumes the ordering of
+> CPU's specified in the DT and the logical index allocation to them.
 
-BTW, if you expect some indicator when the thermal unit is not enabled,
-system critical shutdown is not a proper one, we can either check the
-sysfs I/F, and we can add a warning message here, telling that invalid
-trip point is found.
+Ok, I believe the FIXME is a bit outdated. From the code I can see only
+this limitation.
 
-thanks,
-rui
+- For every cluster, the cpu which boots up first should carry the OPPs.
+Otherwise there is no restriction on ordering of CPUs.
 
-On Wed, 2014-11-12 at 15:43 -0800, Srinivas Pandruvada wrote:
-> Ignore invalid trip temperature less or equal to zero. Some
-> buggy systems have invalid trips, causing system shutdown.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Acked-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/thermal/thermal_core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 9bf10aa..fbf301a 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -368,7 +368,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
->  	tz->ops->get_trip_temp(tz, trip, &trip_temp);
->  
->  	/* If we have not crossed the trip_temp, we do not care. */
-> -	if (tz->temperature < trip_temp)
-> +	if (trip_temp <= 0 || tz->temperature < trip_temp)
->  		return;
->  
->  	trace_thermal_zone_trip(tz, trip, trip_type);
+- I believe CPUs boot in the order they are present in DT except for the
+boot CPU. So, the first node for every cluster should have it.
 
+Correct ? Then we can update the fixme.
 
+> It even breaks for hotplug especially if you hotplug-in back in
+> different order.
 
+Hmm, I never thought about it. But yes the CPU with the OPPs should
+be the first one to come back.
+
+> We can work around that probably, but it's better to
+> fix the binding. I failed to grab much attention in my previous attempts
+> to address this[2]. Viresh also started a discussion more recently[3].
+
+They are just stuck and went nowhere :(
