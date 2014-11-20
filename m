@@ -1,100 +1,81 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Ref the policy object sooner
-Date: Thu, 20 Nov 2014 10:10:09 +0530
-Message-ID: <CAKohponxpSoUXHc9S-y_zgo=T44-6Ayk4vRbW=jRHqQRsdbrGQ@mail.gmail.com>
-References: <1416403291-7722-1-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: How many frequencies would cpufreq optimally like to manage?
+Date: Thu, 20 Nov 2014 14:43:29 +0530
+Message-ID: <CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
+References: <546D26AE.50601@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416403291-7722-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <546D26AE.50601@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mason <mpeg.blue@free.fr>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 November 2014 18:51, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
-> Do it before it's assigned to cpufreq_cpu_data, otherwise we can get
-> this warning when a driver tries to get the cpu frequency during
-> initialization:
->
-> ------------[ cut here ]------------
-> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
-> Modules linked in:
-> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
-> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
-> [<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
-> [<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
-> [<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
-> [<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
-> [<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
-> [<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
-> [<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
-> [<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
-> [<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
-> [<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
-> [<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
-> ---[ end trace b7bd64a81b340c59 ]---
->
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 16 ++++++++++------
->  1 file changed, 10 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 4473eba..954cb2f 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -898,12 +898,6 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
->         struct freq_attr **drv_attr;
->         int ret = 0;
->
-> -       /* prepare interface data */
-> -       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-> -                                  &dev->kobj, "cpufreq");
-> -       if (ret)
-> -               return ret;
-> -
->         /* set up files for this cpu device */
->         drv_attr = cpufreq_driver->attr;
->         while ((drv_attr) && (*drv_attr)) {
-> @@ -1211,6 +1205,15 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->         }
->
->         down_write(&policy->rwsem);
-> +
-> +       /* prepare interface data */
-> +       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-> +                                  &dev->kobj, "cpufreq");
+On Thu, Nov 20, 2014 at 4:54 AM, Mason <mpeg.blue@free.fr> wrote:
+> Hello everyone,
 
-This should be done only when (!recover_policy) and so you can merge
-it with the 'if' block just above down_write. Actually you can move down_write()
-a little bit up as well, just after ->init()
+Hi,
 
-> +       if (ret) {
-> +               pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
-> +               goto err_init_policy_kobj;
-> +       }
-> +
->         write_lock_irqsave(&cpufreq_driver_lock, flags);
->         for_each_cpu(j, policy->cpus)
->                 per_cpu(cpufreq_cpu_data, j) = policy;
-> @@ -1301,6 +1304,7 @@ err_get_freq:
->                 per_cpu(cpufreq_cpu_data, j) = NULL;
->         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+The right list is linux-pm and try to cc maintainers from MAINTAINERS
+file as they can respond quickly then.
+
+> I'm running kernel 3.14 on an ARM Cortex-A9 based SoC.
+> The baseline frequency for the ARM CPU is 999 MHz.
 >
-> +err_init_policy_kobj:
-
-Oh, that's not enough and you need to get the relevant bits out from
-the add_dev_interface() routine as well:
-
-err_out_kobj_put:
-kobject_put(&policy->kobj);
-wait_for_completion(&policy->kobj_unregister);
-
-
->         up_write(&policy->rwsem);
+> The SoC provides a way to dynamically change the CPU frequency,
+> dividing it by N/16 (N=32..4095) [Actually, I think there are
+> also ways to divide by 1.x, but I need to read the docs again.]
 >
->         if (cpufreq_driver->exit)
-> --
-> 1.9.3
+> I'm writing the platform-specific cpufreq driver.
+> I could expose hundreds of frequencies to cpufreq, but I don't
+> think that would be very productive. Correct?
+> (Note: I can't offer ANY frequency.)
 >
+> My question is: how many frequencies should I expose for "optimal"
+> behavior of cpufreq?
+
+You can specify as many number of frequencies as you want. The framework
+doesn't have any upper cap on that. But there is no point specifying
+500 MHz and 510 MHz, you wouldn't save much power with 500 :)
+
+So, just gap them smartly. Normally people gap them to 100 MHz. But
+if there is a voltage change required at some specific freq, suppose 550 MHz,
+then its better you specific that as well..
+
+> I'm thinking I would only expose div={2,3,5} meaning the available
+> scaled frequencies would be {500,333,200} MHz. Are these enough?
+
+I thought you can goto 1 GHz.. Why not the upper ones then?
+
+> Should there be more? Should I go lower than 200 MHz?
+
+If that really saves power.
+
+> I'm also wondering about the cpuinfo_transition_latency variable.
+> It seems to be a constant. On my SoC, the latency depends on the
+> "width" of the frequency jump. Specifically, the CPU will change
+> frequency at 15 MHz/us. So if we're jumping from 1000 to 500 MHz,
+> it will take 33 us. From 500 to 333 will take 11 us.
+>
+> Should I document the max latency? (i.e. for the "widest" jump)
+
+Yes.
+
+> Can the governor request to jump from cpuinfo_min_freq to
+> cpuinfo_max_freq directly, skipping intermediate frequencies?
+
+Yes, its a normal case for ondemand governor.
+
+> If so, should I just program
+>
+> cpuinfo_transition_latency =
+>   (((cpuinfo_max_freq - cpuinfo_min_freq) / 1000) / 15) * 1000
+>
+> = (cpuinfo_max_freq - cpuinfo_min_freq) / 15 (in ns)
+> = 53280 ns in my example
+>
+> Since governors.txt suggests a sampling rate of 10 ms, I suppose
+> a transition_latency of 50 us is acceptable?
+
+Yes.
