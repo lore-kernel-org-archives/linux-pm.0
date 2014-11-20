@@ -1,67 +1,48 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCHv4 1/1] thermal: of: improve of-thermal sensor
- registration API
-Date: Thu, 20 Nov 2014 09:52:32 -0400
-Message-ID: <20141120135155.GB24778@developer>
-References: <1416321575-18348-1-git-send-email-edubezval@gmail.com>
- <1416321575-18348-2-git-send-email-edubezval@gmail.com>
- <CAAVeFu+aUdpV_hj50TAZDO_5JgRmPH2RtJuP7Qozx4RNEzO-6A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="c3bfwLpm8qysLVxt"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAAVeFu+aUdpV_hj50TAZDO_5JgRmPH2RtJuP7Qozx4RNEzO-6A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv5 0/1] of-thermal API change
+Date: Thu, 20 Nov 2014 10:12:12 -0400
+Message-ID: <1416492733-1624-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f41.google.com ([209.85.192.41]:58958 "EHLO
+	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757053AbaKTOMN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 09:12:13 -0500
+Received: by mail-qg0-f41.google.com with SMTP id j5so2130164qga.14
+        for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2014 06:12:13 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Caesar Wang <caesar.wang@rock-chips.com>, Wei Ni <wni@nvidia.com>, Lukasz Majewski <l.majewski@samsung.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Eduardo Valentin <edubezval@gmail.com>
 
+I am proposing this change in the of-thermal API to sensors. The only
+single change is how we represent the callbacks between sensor drivers
+and of-thermal.
 
---c3bfwLpm8qysLVxt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Essentially, instead of passing callbacks as parameters of the registration
+function, now of-thermal users will pass an ops. It is a simple way of
+growing the callback API smoothly.
 
-Alexander,
+There are already proposals to grow this API. Thus I would like to change
+this before we start to introduce new callbacks here.
 
-On Wed, Nov 19, 2014 at 05:06:24PM +0900, Alexandre Courbot wrote:
-> On Tue, Nov 18, 2014 at 11:39 PM, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> =
-wrote:
-> > Different drivers request API extensions in of-thermal. For this reason,
-> > additional callbacks are required to fit the new drivers needs.
-> >
-> > The current API implementation expects the registering sensor driver
-> > to provide a get_temp and get_trend callbacks as function parameters.
-> > As the amount of callbacks is growing, this patch changes the existing
-> > implementation to use a .ops field to hold all the of thermal callbacks
-> > to sensor drivers.
-> >
-> > This patch also changes the existing of-thermal users to fit the new
-> > API design. No functional change is introduced in this patch.
->=20
-> A good idea even if no ops were to be added!
->=20
-> Reviewed-by: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+I changed the existing of-thermal users to adapt accordingly.
 
-Thanks for reviewing.
+Let me know if you have objections.
 
-Eduardo Valentin
+BR,
 
---c3bfwLpm8qysLVxt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Eduardo Valentin (1):
+  thermal: of: improve of-thermal sensor registration API
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+ drivers/hwmon/lm75.c                               |  9 +++--
+ drivers/hwmon/ntc_thermistor.c                     |  6 +++-
+ drivers/hwmon/tmp102.c                             |  6 +++-
+ drivers/thermal/of-thermal.c                       | 39 ++++++++++------------
+ drivers/thermal/tegra_soctherm.c                   |  7 ++--
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  8 +++--
+ include/linux/thermal.h                            | 24 +++++++++----
+ 7 files changed, 62 insertions(+), 37 deletions(-)
 
-iQEcBAEBAgAGBQJUbfIeAAoJEMLUO4d9pOJWV48H/0hSblonH5J96HEdJgx5O5y9
-NBKK0ulyOQMn5xGoD6cvowht+oF3ViTFDpq0/Uvjg2I5QMMyB8JOGNUPlIS58Eq4
-OlMz4VGEh77l6HFosEeeXDiOslb+sLZi79LBfaCp4vkPuifRnT6WUAc+QYSXUjuc
-5QyL8aXypQr98Vu6YOlnpLNSC0KjkFJcdTviXY7kO3r78MNm1Htt3VGCoW/X5FR9
-jXDZWX/P0bq4Kvu5+j+ADPuZjSkAmEUc6Jm5RPQo0nXtVDHGfLojNYHc2kVIlVH8
-bXYJXik+Wt5KpAWivF3lTvj6NIMhis5oWJHhZARLz/uL30UjX2Im+wVD1jSAtcc=
-=Kf2R
------END PGP SIGNATURE-----
+-- 
+2.1.3
 
---c3bfwLpm8qysLVxt--
