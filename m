@@ -1,110 +1,146 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 20 Nov 2014 14:32:41 +0100
-Message-ID: <CAMuHMdWtHT7QX3Kpa-GCLa49ToGODwjnNVgfxDzJzcM-FU1ffg@mail.gmail.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
-	<1709760.E0jX3Myv0h@wuerfel>
-	<546C7FDD.7030906@ti.com>
-	<2900095.WIocOu7ue2@wuerfel>
-	<CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
-	<546DD87B.3080806@ti.com>
-	<CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv4 1/1] thermal: of: improve of-thermal sensor
+ registration API
+Date: Thu, 20 Nov 2014 09:49:52 -0400
+Message-ID: <20141120134950.GA24778@developer>
+References: <1416321575-18348-1-git-send-email-edubezval@gmail.com>
+ <1416321575-18348-2-git-send-email-edubezval@gmail.com>
+ <546CBA3C.9020709@kapsi.fi>
+ <546CBA98.1040607@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f50.google.com ([209.85.192.50]:56251 "EHLO
+	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756396AbaKTNty (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 08:49:54 -0500
+Content-Disposition: inline
+In-Reply-To: <546CBA98.1040607@kapsi.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Caesar Wang <caesar.wang@rock-chips.com>, Wei Ni <wni@nvidia.com>, Lukasz Majewski <l.majewski@samsung.com>, Alexandre Courbot <gnurou@gmail.com>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.de>, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, lm-sensors@lm-sensors.org, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Thu, Nov 20, 2014 at 2:12 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> According to earlier comments in this thread, device's clocks are
->>> split into "functional" and "PM" clocks.
->>>
->>> If I understand correctly, a typical platform driver will enable it's
->>> "functional" clocks during ->probe() and you want the PM domain to
->>> take care of the "PM" clocks, when the device changes runtime PM
->>> status.
->>>
->>> How will you describe these different set of device clocks in DT?
->>
->> True :(  You can dig deeper in the history of this series if you wish.
->> - first Geert Uytterhoeven proposed to use CLK_RUNTIME_PM there
->>   https://lkml.org/lkml/2014/11/6/319
->> - second I proposed to introduce smth. like "clkops-clocks", "pm-clocks" there
->>   https://lkml.org/lkml/2014/6/12/436
->>  or "fck-clocks"/"opt-clocks" later.
->>
->> ^failed.
->>
->> So, this implementation picks up all clocks for each device, which is ok for
->> Keystone 2 and, because it's platform specific.
->>
->>>>
->>>> Yes, it would definitely solve the problem that I see with the infrastructure
->>>> code that the current version adds into the platform directory.
->>>>
->>>> The exact binding of course should be reviewed by the pmdomain and
->>>> DT maintainers, to ensure that it is done the best possible way, because
->>>> I assume we will end up using it a lot, and it would be a shame to get
->>>> it slightly wrong.
->>>>
->>>> One possible variation I can think of would be to just use "simple-pmdomain"
->>>> as the compatible string, and use properties in the node itself to decide
->>>> what the domain should control, e.g.
->>>>
->>>>          clk_pmdomain: pmdomain {
->>>>                  compatible = "simple-pmdomain";
->>>>                  pmdomain-enable-clocks;
->>>>                  #power-domain-cells = <0>;
->>>>          };
->>>>          clk_regulator_pmdomain: pmdomain {
->>>>                  compatible = "simple-pmdomain";
->>>>                  pmdomain-enable-clocks;
->>>>                  pmdomain-enable-regulators;
->>>>                  #power-domain-cells = <0>;
->>>>          };
->>>>
->>>> and then have each device link to one of the nodes as the pmdomain.
->>>>
->>>
->>> That's seems like a good approach to me.
->>
->> Yes, but your previous comment is still actual :(
->
-> Agree!
->
-> So I really think we need to decide on how to address the split of the
-> device clocks. Before that's done, I don't think it make sense to add
-> a "simple-pmdomain" compatible, since it will likely not be that many
-> SoC that can use it.
->
-> So, does anyone have a suggestion on how to deal with the split of the
-> device clocks into "functional" clocks and into "PM" clocks?
 
-That's indeed the tricky part.
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On shmobile, we just use the "NULL" clock, i.e. the first clock, for historical
-reasons.
+Mikko,
 
-Using clock-names (e.g. "fck" and "pm") will conflict with existing bindings
-for devices that already mandate specific clock names.
+On Wed, Nov 19, 2014 at 05:43:20PM +0200, Mikko Perttunen wrote:
+> On 11/19/2014 05:41 PM, Mikko Perttunen wrote:
+> > On 11/18/2014 04:39 PM, Eduardo Valentin wrote:
+> >> Different drivers request API extensions in of-thermal. For this reaso=
+n,
+> >> additional callbacks are required to fit the new drivers needs.
+> >>
+> >> The current API implementation expects the registering sensor driver
+> >> to provide a get_temp and get_trend callbacks as function parameters.
+> >> As the amount of callbacks is growing, this patch changes the existing
+> >> implementation to use a .ops field to hold all the of thermal callbacks
+> >> to sensor drivers.
+> >>
+> >> This patch also changes the existing of-thermal users to fit the new
+> >> API design. No functional change is introduced in this patch.
+> >>
+> >> Cc: Alexandre Courbot <gnurou@gmail.com>
+> >> Cc: devicetree@vger.kernel.org
+> >> Cc: Grant Likely <grant.likely@linaro.org>
+> >> Cc: Guenter Roeck <linux@roeck-us.net>
+> >> Cc: Jean Delvare <jdelvare@suse.de>
+> >> Cc: linux-kernel@vger.kernel.org
+> >> Cc: linux-pm@vger.kernel.org
+> >> Cc: linux-tegra@vger.kernel.org
+> >> Cc: lm-sensors@lm-sensors.org
+> >> Cc: Rob Herring <robh+dt@kernel.org>
+> >> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> >> Cc: Thierry Reding <thierry.reding@gmail.com>
+> >> Cc: Zhang Rui <rui.zhang@intel.com>
+> >> Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
+> >> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> >> ---
+> >>   drivers/hwmon/lm75.c                               |  9 +++--
+> >>   drivers/hwmon/ntc_thermistor.c                     |  6 +++-
+> >>   drivers/hwmon/tmp102.c                             |  6 +++-
+> >>   drivers/thermal/of-thermal.c                       | 40
+> >> ++++++++++------------
+> >>   drivers/thermal/tegra_soctherm.c                   |  7 ++--
+> >>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  8 +++--
+> >>   include/linux/thermal.h                            | 24 +++++++++----
+> >>   7 files changed, 63 insertions(+), 37 deletions(-)
+> >> ---
+> >> Difference from V3:
+> >>    - Keep the same behavior regarding callback checks.
+> >>      Change in behavior may be sent in a separate patch.
+> >> Difference from V2:
+> >>    - Fix wrong assignment in tegra driver.
+> >> Difference from V1:
+> >>    - Fix error handling when .get_trend is not provided.
+> >>
+> >> @@ -356,8 +356,8 @@ thermal_zone_of_add_sensor(struct device_node *zon=
+e,
+> >>    *             than one sensors
+> >>    * @data: a private pointer (owned by the caller) that will be passed
+> >>    *        back, when a temperature reading is needed.
+> >> - * @get_temp: a pointer to a function that reads the sensor temperatu=
+re.
+> >> - * @get_trend: a pointer to a function that reads the sensor
+> >> temperature trend.
+> >> + * @ops: struct thermal_zone_of_device *. Must contain at least
+> >> .get_trend and
+> >> + *       .get_temp.
+> >
+> > This comment seems to be incorrect, as .get_trend is optional.
+>=20
+> Also, the parameter is of type struct thermal_zone_of_device_ops *, not=
+=20
+> just thermal_zone_of_device.
+>=20
+> >
+> >>    *
+> >>    * This function will search the list of thermal zones described in
+> >> device
+> >>    * tree and look for the zone that refer to the sensor device
+> >> pointed by
+> >
+> > With that minor one fixed,
+> >
+> > Tested-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+> > Reviewed-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
 
-As the clock being a "PM" clock is a property of the clock provider
-(at last on shmobile), I originally came up with not handling it in DT,
-but advertising it in the clock provider driver:
+All the comments fixed now. Thanks for reviewing and testing.
 
-> > - first Geert Uytterhoeven proposed to use CLK_RUNTIME_PM there
-> >   https://lkml.org/lkml/2014/11/6/319
+> >
+> > Cheers,
+> > Mikko
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-tegra" =
+in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
 
-Gr{oetje,eeting}s,
+Cheers,
 
-                        Geert
+Eduardo Valentin
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUbfF+AAoJEMLUO4d9pOJW8IEIAJvMZe9zKr47JQ8oKOHRurmp
+rcR9eLeTW1spgbpXC4IOtOz6wzVbkUHsc3rODShgjXx17w7bCS/3zRXlWQ9b8teF
+Hh3U8+7u1vFK7Pw0EM6kiKYXiL+pNyUdAXOKpUKyJlCG7oQRNS47LGGkvIpCPZoU
+fJCXWC033V9ZyYY53kZe9e15Vj7nHYb9XwEu80H8ncaJ0KjcEZO6f/DHlZxoA98v
+UUkhsPLsZ5TURJiM4EPikFaqLKjpsKoJvsSB2pzjeiZfpiASVem3+mLuu7vYYRBT
+ZNkCkJY18s41Tz10OxVmUxLQcA6xId0jPXIBLqV77e/m3Bg3/oPe3jVGdMSpq7A=
+=VrjL
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
