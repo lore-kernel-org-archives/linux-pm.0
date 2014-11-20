@@ -1,127 +1,102 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 00/33] thermal: exynos: convert the driver to use
- per-SoC type operations
-Date: Thu, 20 Nov 2014 12:58:04 +0100
-Message-ID: <20141120125804.5248eb61@amdc2363>
-References: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Thu, 20 Nov 2014 14:03:07 +0200
+Message-ID: <546DD87B.3080806@ti.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>	<1709760.E0jX3Myv0h@wuerfel>	<546C7FDD.7030906@ti.com>	<2900095.WIocOu7ue2@wuerfel> <CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:33108 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbaKTMDy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 20 Nov 2014 07:03:54 -0500
+In-Reply-To: <CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Kevin Hilman <khilman@kernel.org>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Hi Eduardo,
-
-> Hi,
+On 11/20/2014 01:34 PM, Ulf Hansson wrote:
+> On 19 November 2014 14:47, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Wednesday 19 November 2014 13:32:45 Grygorii Strashko wrote:
+>>> On 11/18/2014 09:32 PM, Arnd Bergmann wrote:
+>>>> On Tuesday 18 November 2014 20:54:36 Grygorii Strashko wrote:
+>>>>
+>>>> Have one pmdomain driver in the generic code that knows about clocks,
+>>>> possibly also regulators and pins and just turns them on when needed.
+>>>> You can have a "simple-pmdomain" or "generic-pmdomain" compatible
+>>>> string.
+>>>>
+>>>> I'm a bit surprised that your pmdomain code looks up the clocks from the
+>>>> respective device, rather than know about the clocks itself. There is
+>>>> probably a good reason for this, but I don't see it yet.
+>>>
+>>> The keystone 2 uses simple PM schema based on clocks only:
+>>> - clocks enabled -> dev is active
+>>> - clocks disabled -> dev is suspended
+>>>
+>>> To achieve explained above the Generic clock manipulation PM callbacks framework (pm_clk) is used.
+>>> - list of managed clocks is filled for each device (for non-DT case the con_id list
+>>>    is specified by platform code like:
+>>>        .con_ids = { "fck", "master", "slave", NULL },
+>>>          - or -
+>>>        .con_ids = { }, <-- in this case only first clock will be added to pm_clk
+>>>    )
 > 
-> This patch series replaces the hardware registers abstractions in
-> the Exynos thermal driver by the usage of per-SoC type operations.
-> Such solution provides simpler, easier to understand code and
-> allows removal of ~250 LOCs (~11% of the whole source code) from
-> the driver.  Some other driver improvements are now also possible
-> thanks to these changes but are scheduled at later time (like
-> consolidating code for clearing IRQs using INTCLEAR register).
+> According to earlier comments in this thread, device's clocks are
+> split into "functional" and "PM" clocks.
 > 
-> The patchset should not cause any functionality changes.  This
-> means that unless there are some bugs in the patches itself there
-> should be no behavior changes for the driver (this also includes
-> lack of changes in the way hardware is accessed by the driver).
+> If I understand correctly, a typical platform driver will enable it's
+> "functional" clocks during ->probe() and you want the PM domain to
+> take care of the "PM" clocks, when the device changes runtime PM
+> status.
 > 
-> All testing was done on (Exynos4412 SoC based) ODROID U3 board
-> (some additional patches are needed to make the Exynos thermal
-> driver work on this hardware).
+> How will you describe these different set of device clocks in DT?
 
-For the whole patch series:
+True :(  You can dig deeper in the history of this series if you wish.
+- first Geert Uytterhoeven proposed to use CLK_RUNTIME_PM there 
+  https://lkml.org/lkml/2014/11/6/319
+- second I proposed to introduce smth. like "clkops-clocks", "pm-clocks" there
+  https://lkml.org/lkml/2014/6/12/436
+ or "fck-clocks"/"opt-clocks" later. 
 
-Repository:
-kernel_linux-soc-thermal/next
-SHA1: 4027494124fd88e5d51127eebba315de5d8d57c8
+^failed.
 
-Test HW:
+So, this implementation picks up all clocks for each device, which is ok for
+Keystone 2 and, because it's platform specific.
 
-Trats2 - Exynos4412
-Tested-by: Lukasz Majewski <l.majewski@samsung.com>
-
-Trats - Exynos4210
-Tested-by: Lukasz Majewski <l.majewski@samsung.com>
-
-ARNDALE(SMDK) - Exynos5250
-Tested-by: Lukasz Majewski <l.majewski@samsung.com>
-
-ARNDALE OCTA - Exynos5420
-Tested-by: Lukasz Majewski <l.majewski@samsung.com>
-
-
+>>
+>> Yes, it would definitely solve the problem that I see with the infrastructure
+>> code that the current version adds into the platform directory.
+>>
+>> The exact binding of course should be reviewed by the pmdomain and
+>> DT maintainers, to ensure that it is done the best possible way, because
+>> I assume we will end up using it a lot, and it would be a shame to get
+>> it slightly wrong.
+>>
+>> One possible variation I can think of would be to just use "simple-pmdomain"
+>> as the compatible string, and use properties in the node itself to decide
+>> what the domain should control, e.g.
+>>
+>>          clk_pmdomain: pmdomain {
+>>                  compatible = "simple-pmdomain";
+>>                  pmdomain-enable-clocks;
+>>                  #power-domain-cells = <0>;
+>>          };
+>>          clk_regulator_pmdomain: pmdomain {
+>>                  compatible = "simple-pmdomain";
+>>                  pmdomain-enable-clocks;
+>>                  pmdomain-enable-regulators;
+>>                  #power-domain-cells = <0>;
+>>          };
+>>
+>> and then have each device link to one of the nodes as the pmdomain.
+>>
 > 
-> Depends on:
-> - 'next' branch of linux-soc-thermal.git kernel tree from Eduardo
-> 
-> Changes since v1 (https://lkml.org/lkml/2014/9/18/305):
-> - rebased on top of the current linux-soc-thermal kernel
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (33):
->   thermal: exynos: remove needless triminfo_data abstraction
->   thermal: exynos: remove needless tmu_status abstraction
->   thermal: exynos: remove needless threshold_temp abstraction
->   thermal: exynos: remove needless triminfo_ctrl abstraction
->   thermal: exynos: remove needless test_mux_addr_shift abstraction
->   thermal: exynos: remove needless therm_trip_[mode,mask]_shift
->     abstractions
->   thermal: exynos: remove needless therm_trip_en_shift abstraction
->   thermal: exynos: remove needless emul_temp_shift abstraction
->   thermal: exynos: remove needless emul_time_shift abstraction
->   thermal: exynos: replace tmu_irqstatus check by Exynos5440 one
->   thermal: exynos: replace tmu_pmin check by Exynos5440 one
->   thermal: exynos: simplify HW_TRIP level setting
->   thermal: exynos: replace threshold_falling check by Exynos SoC type
->     one
->   thermal: exynos: remove TMU_SUPPORT_READY_STATUS flag
->   thermal: exynos: remove TMU_SUPPORT_TRIM_RELOAD flag
->   thermal: exynos: add sanitize_temp_error() helper
->   thermal: exynos: add get_th_reg() helper
->   thermal: exynos: add ->tmu_initialize method
->   thermal: exynos: add get_con_reg() helper
->   thermal: exynos: add ->tmu_control method
->   thermal: exynos: add ->tmu_read method
->   thermal: exynos: add get_emul_con_reg() helper
->   thermal: exynos: add ->tmu_set_emulation method
->   thermal: exynos: add ->tmu_clear_irqs method
->   thermal: exynos: remove TMU_SUPPORT_FALLING_TRIP flag
->   thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
->   thermal: exynos: remove TMU_SUPPORT_EMULATION flag
->   thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE flag
->   thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
->   thermal: exynos: remove test_mux pdata field
->   thermal: exynos: remove SoC type ifdefs
->   thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
->   thermal: exynos: remove exynos_tmu_data.h include
-> 
->  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
->  drivers/thermal/samsung/exynos_tmu.c            | 692
-> ++++++++++++++++--------
-> drivers/thermal/samsung/exynos_tmu.h            | 123 +----
-> drivers/thermal/samsung/exynos_tmu_data.c       | 239 +-------
-> drivers/thermal/samsung/exynos_tmu_data.h       | 159 ------ 5 files
-> changed, 485 insertions(+), 729 deletions(-) delete mode 100644
-> drivers/thermal/samsung/exynos_tmu_data.h
-> 
+> That's seems like a good approach to me.
+ 
+Yes, but your previous comment is still actual :(
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Regards,
+-grygorii
