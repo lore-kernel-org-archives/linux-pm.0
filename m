@@ -1,106 +1,274 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
-Date: Thu, 20 Nov 2014 09:13:10 -0800
-Message-ID: <1416503590.2043.172.camel@spandruv-desktop.jf.intel.com>
-References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1416450331.5808.3.camel@rzhang1-toshiba>
-	 <20141120112534.7187a21d@amdc2363>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 0/8] thermal:cpu cooling:fix: Provide thermal core fixes
+ with deferred probe for several drivers
+Date: Thu, 20 Nov 2014 14:54:27 -0400
+Message-ID: <20141120185420.GA26794@developer>
+References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
+ <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:12116 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755664AbaKTRNY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 20 Nov 2014 12:13:24 -0500
-In-Reply-To: <20141120112534.7187a21d@amdc2363>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1415898165-27406-1-git-send-email-l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincenzo Frascino <vincenzo.frascino-qxv4g6HH51o@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
-
-On Thu, 2014-11-20 at 11:25 +0100, Lukasz Majewski wrote: 
-> Hi Zhang,
-> 
-> > 
-> > For some reason, I did not see the discussion between Lukasz and you
-> > via email. I can only see it via patchwork.
-> 
-> It is strange. However I'd appreciate to be in CC of this e-mail :-)
-> 
-> > 
-> > Lukasz,
-> > 
-> > if the regulator for thermal unit is not enabled, what will you get?
-> > temperature 0xFF + trip point -1? or Just temperature 0xFF?
-> 
-> Just 0xFF temperature.
-> 
-> Since 0xFF is larger than SW_TRIP point (mapped to
-> THERMAL_TRIP_CRITICAL), the code at handle_critical_trips() is executed.
-> 
-> From my standpoint 0xFF is a possible and valid temperature in Exynos.
-> 
-> Srinivas, what is your error/use case that you need this check?
-critical trip point < 0 because buggy FW and temp read is more than trip
-temp.
-
-Thanks,
-Srinivas 
-> 
-> > I don't think this patch makes any difference in the second case.
-> > 
-> > BTW, if you expect some indicator when the thermal unit is not
-> > enabled, 
-> 
-> Actually, the TMU is enabled and configured, 
-> Lack of proper regulator (vtmu) for TMU is the culprit of this
-> situation.
-> 
-> > system critical shutdown is not a proper one, we can either
-> > check the sysfs I/F, and we can add a warning message here, telling
-> > that invalid trip point is found.
-> 
-> I think that, it would be a good idea to abort Exynos TMU probe when
-> "vtmu" regulator is not found.
-> 
-> > 
-> > thanks,
-> > rui
-> > 
-> > On Wed, 2014-11-12 at 15:43 -0800, Srinivas Pandruvada wrote:
-> > > Ignore invalid trip temperature less or equal to zero. Some
-> > > buggy systems have invalid trips, causing system shutdown.
-> > > 
-> > > Signed-off-by: Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
-> > > <rui.zhang@intel.com> ---
-> > >  drivers/thermal/thermal_core.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
-> > > thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip,
-> > > &trip_temp); 
-> > >  	/* If we have not crossed the trip_temp, we do not care. */
-> > > -	if (tz->temperature < trip_temp)
-> > > +	if (trip_temp <= 0 || tz->temperature < trip_temp)
-> > >  		return;
-> > >  
-> > >  	trace_thermal_zone_trip(tz, trip, trip_type);
-> > 
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> 
-> 
-> 
 
 
+--/04w6evG8XlLl3ft
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Lukasz,
+
+Thanks for the keeping this up. And apologize for late answer.
+
+On Thu, Nov 13, 2014 at 06:02:37PM +0100, Lukasz Majewski wrote:
+> Presented fixes are a response for problem described below:
+> http://thread.gmane.org/gmane.linux.kernel/1793821/match=3Dthermal+core+f=
+ix+initialize+max_state+variable+0
+>=20
+> In short - it turned out that two trivial fixes (included in this patch s=
+et)
+> require support for deferred probe in thermal drivers.
+>=20
+> This situation shows up when CPU frequency reduction is used as a thermal=
+ cooling
+> device for a thermal zone.
+> It happens that during initialization, the call to thermal probe will be =
+executed
+> before cpufreq probe (it can be observed at ./drivers/Makefile).
+> In such a situation thermal will not be properly configured until cpufreq=
+ policy
+> is setup.
+>=20
+> In the current code (without included fixes) there is a time window in wh=
+ich thermal
+> can try to use not configured cpufreq and possibly crash the system.
+>=20
+>=20
+> Proposed solution was based on the code already available in the imx_ther=
+mal.c file.
+>=20
+> /db8500_thermal.c:                      -> NOT NEEDED
+> /intel_powerclamp.c:                    -> NOT NEEDED - INTEL (x86)
+> /intel_powerclamp.c:                    -> NOT NEEDED - INTEL (x86)
+> /ti-soc-thermal/ti-bandgap.c:           -> FIXED  [omap2plus_defconfig]
+> /dove_thermal.c:                        -> NOT NEEDED - CPU_COOLING NOT A=
+VAILABLE
+>                                                         [dove_defconfig]
+> /spear_thermal.c:                       -> FIXED  [spear3xx_defconfig]
+> /samsung/exynos_tmu.c:                  -> NOT NEEDED (nasty hack - will =
+be reworked in later patches)
+> /imx_thermal.c:                         -> OK (deferred probe already in =
+place)
+> /int340x_thermal/int3402_thermal.c:     -> NOT NEEDED - ACPI x86 - Intel =
+specific
+> /int340x_thermal/int3400_thermal.c:     -> NOT NEEDED - ACPI x86 - Intel =
+specific
+> /tegra_soctherm.c:                      -> FIXED  [tegra_defconfig]
+> /kirkwood_thermal.c:                    -> FIXED  [multi_v5_defconfig]
+> /armada_thermal.c:                      -> FIXED  [multi_v7_defconfig]
+> /rcar_thermal.c:                        -> FIXED  [shmobile_defconfig]
+> /db8500_cpufreq_cooling.c:              -> OK (deferred probe already in =
+place) [multi_v7_defconfig]
+> /st/st_thermal_syscfg.c:                -> NOT NEEDED (Those two are enab=
+led by e.g. ARMADA)
+> /st/st_thermal_memmap.c:
+>=20
+>=20
+
+
+Instead of doing the same check on all drivers in the need for cpu
+cooling looks like a promiscuous solution. What if we do this check in
+cpu cooling itself and we propagate the error in callers code?=20
+
+=46rom what I see, only exynos does not propagate the error. And we would
+need a tweak in the cpufreq-dt code. Something like the following
+(not tested):
+
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index f657c57..f139247 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -181,7 +181,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_dt_platform_data *pd;
+ 	struct cpufreq_frequency_table *freq_table;
+-	struct thermal_cooling_device *cdev;
+ 	struct device_node *np;
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+@@ -264,20 +263,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		goto out_free_priv;
+ 	}
+=20
+-	/*
+-	 * For now, just loading the cooling device;
+-	 * thermal DT code takes care of matching them.
+-	 */
+-	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
+-		if (IS_ERR(cdev))
+-			dev_err(cpu_dev,
+-				"running cpufreq without cooling device: %ld\n",
+-				PTR_ERR(cdev));
+-		else
+-			priv->cdev =3D cdev;
+-	}
+-
+ 	priv->cpu_dev =3D cpu_dev;
+ 	priv->cpu_reg =3D cpu_reg;
+ 	policy->driver_data =3D priv;
+@@ -287,7 +272,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	if (ret) {
+ 		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+ 			ret);
+-		goto out_cooling_unregister;
++		goto free_table;
+ 	}
+=20
+ 	policy->cpuinfo.transition_latency =3D transition_latency;
+@@ -300,8 +285,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+=20
+ 	return 0;
+=20
+-out_cooling_unregister:
+-	cpufreq_cooling_unregister(priv->cdev);
++free_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_free_priv:
+ 	kfree(priv);
+@@ -342,11 +326,14 @@ static struct cpufreq_driver dt_cpufreq_driver =3D {
+=20
+ static int dt_cpufreq_probe(struct platform_device *pdev)
+ {
++	struct device_node *np;
+ 	struct device *cpu_dev;
+ 	struct regulator *cpu_reg;
+ 	struct clk *cpu_clk;
+ 	int ret;
+=20
++	/* at this point we checked the pointer already right? */
++	np =3D of_node_get(pdev->dev.of_node);
+ 	/*
+ 	 * All per-cluster (CPUs sharing clock/voltages) initialization is done
+ 	 * from ->init(). In probe(), we just need to make sure that clk and
+@@ -368,6 +355,28 @@ static int dt_cpufreq_probe(struct platform_device *pd=
+ev)
+ 	if (ret)
+ 		dev_err(cpu_dev, "failed register driver: %d\n", ret);
+=20
++	/*
++	 * For now, just loading the cooling device;
++	 * thermal DT code takes care of matching them.
++	 */
++	if (of_find_property(np, "#cooling-cells", NULL)) {
++		struct cpufreq_policy policy;
++		struct private_data *priv;
++		struct thermal_cooling_device *cdev;
++
++		/* TODO: can cpu0 be always used ? */
++		cpufreq_get_policy(&policy, 0);
++		priv =3D policy.driver_data;
++		cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
++		if (IS_ERR(cdev))
++			dev_err(cpu_dev,
++				"running cpufreq without cooling device: %ld\n",
++				PTR_ERR(cdev));
++		else
++			priv->cdev =3D cdev;
++	}
++	of_node_put(np);
++
+ 	return ret;
+ }
+=20
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 1ab0018..342eb9e 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -440,6 +440,11 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	int ret =3D 0, i;
+ 	struct cpufreq_policy policy;
+=20
++	if (!cpufreq_get_current_driver()) {
++		dev_warn(&pdev->dev, "no cpufreq driver, deferring.");
++		return -EPROBE_DEFER;
++	}
++
+ 	/* Verify that all the clip cpus have same freq_min, freq_max limit */
+ 	for_each_cpu(i, clip_cpus) {
+ 		/* continue if cpufreq policy not found and not return error */
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/ther=
+mal/samsung/exynos_thermal_common.c
+index 3f5ad25..f84975e 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -373,7 +373,7 @@ int exynos_register_thermal(struct thermal_sensor_conf =
+*sensor_conf)
+ 		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
+ 			dev_err(sensor_conf->dev,
+ 				"Failed to register cpufreq cooling device\n");
+-			ret =3D -EINVAL;
++			ret =3D PTR_ERR(th_zone->cool_dev[th_zone->cool_dev_size]);
+ 			goto err_unregister;
+ 		}
+ 		th_zone->cool_dev_size++;
+
+
+The above way, we avoid having same test in every driver that needs it.
+Besides, it makes sense the cpu_cooling code takes care of this check,
+as it is the very first part that has direct dependency with cpufreq.
+
+> I only possess Exynos boards and Beagle Bone Black, so I'd be grateful for
+> testing proposed solution on other boards. The posted code is compile tes=
+ted.
+>=20
+> This code applies on Eduardo's ti-soc-thermal-next tree:
+> SHA1: 208a97042d66d9bfbcfab0d4a00c9fe317bb73d3
+>=20
+> Lukasz Majewski (8):
+>   thermal:cpu cooling:armada: Provide deferred probing for armada driver
+>   thermal:cpu cooling:kirkwood: Provide deferred probing for kirkwood
+>     driver
+>   thermal:cpu cooling:rcar: Provide deferred probing for rcar driver
+>   thermal:cpu cooling:spear: Provide deferred probing for spear driver
+>   thermal:cpu cooling:tegra: Provide deferred probing for tegra driver
+>   thermal:cpu cooling:ti: Provide deferred probing for ti drivers
+>   thermal:core:fix: Initialize the max_state variable to 0
+>   thermal:core:fix: Check return code of the ->get_max_state() callback
+>=20
+>  drivers/thermal/armada_thermal.c            | 7 +++++++
+>  drivers/thermal/kirkwood_thermal.c          | 7 +++++++
+>  drivers/thermal/rcar_thermal.c              | 7 +++++++
+>  drivers/thermal/spear_thermal.c             | 7 +++++++
+>  drivers/thermal/tegra_soctherm.c            | 7 +++++++
+>  drivers/thermal/thermal_core.c              | 8 +++++---
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 7 +++++++
+>  7 files changed, 47 insertions(+), 3 deletions(-)
+>=20
+> --=20
+> 2.0.0.rc2
+>=20
+
+--/04w6evG8XlLl3ft
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUbjjcAAoJEMLUO4d9pOJWfAsH/1pVVxzSR5mMW1eF4M1s6nvM
+sxEPSSqu7S8l9Z2SZ4hEXSdPB0g9ZOzxkmoz8aT5amo+lxuzv7LLFmwcnushFYll
+YyI4AeGROKwMXEAVqYsczrSM0PfrC5v1VAMZ5nlrfU4qy+xLD8vdY23P+9x/6pKo
+Iv1SiLVZUQ+bNXL4Bs5sXcqhaY6l2JimcQT6+mXeZpAEJccucUMzrlzq4EtK8sbE
+eGe/G1m9/FNJI+AGIR3E/asJhTqhfiJWuEF0NMHgnPnAIAA1uS9Q/ESaWVfKvm/v
+DJmTWynlw75UOYRAME269As8ME1WaJYqTMmm8JCyAuBSRDF4DJNfZGwINvS+WUU=
+=ySdp
+-----END PGP SIGNATURE-----
+
+--/04w6evG8XlLl3ft--
