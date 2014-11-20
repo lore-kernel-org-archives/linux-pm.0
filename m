@@ -1,93 +1,100 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 20 Nov 2014 12:34:00 +0100
-Message-ID: <CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
-	<1709760.E0jX3Myv0h@wuerfel>
-	<546C7FDD.7030906@ti.com>
-	<2900095.WIocOu7ue2@wuerfel>
+Subject: Re: [PATCH 1/3] PM / Domains: Initial PM clock support for genpd
+Date: Thu, 20 Nov 2014 12:53:31 +0100
+Message-ID: <CAPDyKFoL-bv1+xon-BK9yt_QMp2tdBNQME-4iaaUff=a2U5oSw@mail.gmail.com>
+References: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
+	<1416405638-18812-2-git-send-email-ulf.hansson@linaro.org>
+	<20141119172501.GA37989@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f177.google.com ([209.85.216.177]:65445 "EHLO
-	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbaKTLeB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 06:34:01 -0500
-Received: by mail-qc0-f177.google.com with SMTP id x3so1889566qcv.8
-        for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2014 03:34:00 -0800 (PST)
-In-Reply-To: <2900095.WIocOu7ue2@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20141119172501.GA37989@dtor-ws>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Kevin Hilman <khilman@kernel.org>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On 19 November 2014 14:47, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 19 November 2014 13:32:45 Grygorii Strashko wrote:
->> On 11/18/2014 09:32 PM, Arnd Bergmann wrote:
->> > On Tuesday 18 November 2014 20:54:36 Grygorii Strashko wrote:
->> >
->> > Have one pmdomain driver in the generic code that knows about clocks,
->> > possibly also regulators and pins and just turns them on when needed.
->> > You can have a "simple-pmdomain" or "generic-pmdomain" compatible
->> > string.
->> >
->> > I'm a bit surprised that your pmdomain code looks up the clocks from the
->> > respective device, rather than know about the clocks itself. There is
->> > probably a good reason for this, but I don't see it yet.
+On 19 November 2014 18:25, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> On Wed, Nov 19, 2014 at 03:00:36PM +0100, Ulf Hansson wrote:
+>> It's quite common for PM domains to use PM clocks. Typically from SOC
+>> specific code, the per device PM clock list is created and
+>> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
 >>
->> The keystone 2 uses simple PM schema based on clocks only:
->> - clocks enabled -> dev is active
->> - clocks disabled -> dev is suspended
+>> A step towards consolidation is to integrate PM clock support into
+>> genpd, which is what this patch does.
 >>
->> To achieve explained above the Generic clock manipulation PM callbacks framework (pm_clk) is used.
->> - list of managed clocks is filled for each device (for non-DT case the con_id list
->>   is specified by platform code like:
->>       .con_ids = { "fck", "master", "slave", NULL },
->>         - or -
->>       .con_ids = { }, <-- in this case only first clock will be added to pm_clk
->>   )
+>> In this initial step, the calls to the pm_clk_suspend|resume() are
+>> handled within genpd, but the per device PM clock list still needs to
+>> be created from SOC specific code. It seems reasonable to have gendp to
+>> handle that as well, but that left to future patches to address.
+>>
+>> It's not every users of genpd that are keen on using PM clocks thus we
+>> need to provide this a configuration option for genpd. Therefore let's
+>> add flag field in the genpd struct to keep this information and define
+>> a new PM_DOMAIN_PM_CLK bit can then be set at initialization.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/base/power/domain.c | 7 +++++++
+>>  include/linux/pm_domain.h   | 3 +++
+>>  2 files changed, 10 insertions(+)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 3989eb6..42e328c 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -12,6 +12,7 @@
+>>  #include <linux/pm_runtime.h>
+>>  #include <linux/pm_domain.h>
+>>  #include <linux/pm_qos.h>
+>> +#include <linux/pm_clock.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/err.h>
+>>  #include <linux/sched.h>
+>> @@ -1948,6 +1949,12 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>>       genpd->domain.ops.complete = pm_genpd_complete;
+>>       genpd->dev_ops.save_state = pm_genpd_default_save_state;
+>>       genpd->dev_ops.restore_state = pm_genpd_default_restore_state;
+>> +
+>> +     if (genpd->flags & PM_DOMAIN_PM_CLK) {
+>> +             genpd->dev_ops.stop = pm_clk_suspend;
+>> +             genpd->dev_ops.start = pm_clk_suspend;
+>
+> The 2nd one is wrong.
 
-According to earlier comments in this thread, device's clocks are
-split into "functional" and "PM" clocks.
-
-If I understand correctly, a typical platform driver will enable it's
-"functional" clocks during ->probe() and you want the PM domain to
-take care of the "PM" clocks, when the device changes runtime PM
-status.
-
-How will you describe these different set of device clocks in DT?
-
-[...]
+Huh, thanks for spotting this.
 
 >
-> Yes, it would definitely solve the problem that I see with the infrastructure
-> code that the current version adds into the platform directory.
+>> +     }
+>> +
+>>       mutex_lock(&gpd_list_lock);
+>>       list_add(&genpd->gpd_list_node, &gpd_list);
+>>       mutex_unlock(&gpd_list_lock);
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 9d254e2..44c6931 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -14,6 +14,7 @@
+>>  #include <linux/pm.h>
+>>  #include <linux/err.h>
+>>  #include <linux/of.h>
+>> +#include <linux/bitops.h>
+>>  #include <linux/notifier.h>
+>>  #include <linux/cpuidle.h>
+>>
+>> @@ -76,6 +77,8 @@ struct generic_pm_domain {
+>>                         struct device *dev);
+>>       void (*detach_dev)(struct generic_pm_domain *domain,
+>>                          struct device *dev);
+>> +     unsigned int flags;             /* Bit field of configs for genpd */
+>> +#define PM_DOMAIN_PM_CLK     BIT(0)  /* PM domain use PM clk */
 >
-> The exact binding of course should be reviewed by the pmdomain and
-> DT maintainers, to ensure that it is done the best possible way, because
-> I assume we will end up using it a lot, and it would be a shame to get
-> it slightly wrong.
+> s/use/uses ?
 >
-> One possible variation I can think of would be to just use "simple-pmdomain"
-> as the compatible string, and use properties in the node itself to decide
-> what the domain should control, e.g.
->
->         clk_pmdomain: pmdomain {
->                 compatible = "simple-pmdomain";
->                 pmdomain-enable-clocks;
->                 #power-domain-cells = <0>;
->         };
->         clk_regulator_pmdomain: pmdomain {
->                 compatible = "simple-pmdomain";
->                 pmdomain-enable-clocks;
->                 pmdomain-enable-regulators;
->                 #power-domain-cells = <0>;
->         };
->
-> and then have each device link to one of the nodes as the pmdomain.
->
+> Are you planning on adding a separate flag for collecting clocks from OF
+> on attach/detach?
 
-That's seems like a good approach to me.
+Yes, I am thinking on that approach. Do you have any suggestions around this?
 
 Kind regards
 Uffe
