@@ -1,104 +1,163 @@
-From: ethan <ethan.kernel@gmail.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI _PPC method
-Date: Thu, 20 Nov 2014 09:07:51 +0800
-Message-ID: <90C55A7F-F1E6-486E-BEA7-9619A67BC7CF@gmail.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-6-git-send-email-ethan.zhao@oracle.com> <546CB057.7040902@intel.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <546CB057.7040902@intel.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Ethan Zhao <ethan.zhao@oracle.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "corbet@lwn.net" <corbet@lwn.net>, "dirk.j.brandewie@intel.com" <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "joe.jin@oracle.com" <joe.jin@oracle.com>, "brian.maly@oracle.com" <brian.maly@oracle.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: [PATCH] thermal: provide an UAPI header file
+Date: Wed, 19 Nov 2014 18:11:00 -0800
+Message-ID: <1416449460-6161-1-git-send-email-f.fainelli@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:34442 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754183AbaKTCLN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 21:11:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com, computersforpeace@gmail.com, Florian Fainelli <f.fainelli@gmail.com>
 
-Dirk,
+include/linux/thermal.h contains definitions for the Thermal generic
+netlink family, but none of the valuable information relevant to
+user-space such as the Genl family name, multicast group, version or
+command set and data types is exported to user-space.
 
-> =D4=DA 2014=C4=EA11=D4=C219=C8=D5=A3=AC22:59=A3=ACDirk Brandewie <dir=
-k.brandewie@gmail.com> =D0=B4=B5=C0=A3=BA
->=20
->> On 11/18/2014 12:37 AM, Ethan Zhao wrote:
->> Oracle Sun X86 servers have dynamic power capping capability that wo=
-rks via
->> ACPI _PPC method etc, so skip loading this driver if Sun server has =
-ACPI _PPC
->> enabled.
->>=20
->> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->> ---
->>  drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->>  1 file changed, 20 insertions(+)
->>=20
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_=
-pstate.c
->> index 27bb6d3..5498eb0 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->>      return true;
->>  }
->>=20
->> +static bool intel_pstate_has_acpi_ppc(void)
->> +{
->> +    int i;
->> +
->> +    for_each_possible_cpu(i) {
->> +        struct acpi_processor *pr =3D per_cpu(processors, i);
->> +
->> +        if (!pr)
->> +            continue;
->> +        if (acpi_has_method(pr->handle, "_PPC"))
->> +            return true;
->> +    }
->> +    return false;
->> +}
->> +
->>  struct hw_vendor_info {
->>      u16  valid;
->>      char oem_id[ACPI_OEM_ID_SIZE];
->> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->>  /* Hardware vendor-specific info that has its own power management =
-modes */
->>  static struct hw_vendor_info vendor_info[] =3D {
->>      {1, "HP    ", "ProLiant"},
->> +    {1, "ORACLE", ""},
->>      {0, "", ""},
->>  };
->=20
-> Does this apply to ALL oracle systems?
-Yes, as I know, all recent oracle x86 servers have power capping functi=
-ons.
->=20
-> Is the presence or absense of the _PPC method configurable in the ora=
-cle BIOS?
-There is no option in BIOS to enable or disable _PPC. But they configur=
-e power limit
-=46unctions via SP(service processors).
+Export all the relevant generic netlink information to user-space to
+make this genl family usable by user-space, and while at it, export
+THERMAL_NAME_LENGTH since it limits name length for thermal_hwmon
+devices.
 
-Thanks,
-Ethan
->=20
->> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exi=
-sts(void)
->>              !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_O=
-EM_TABLE_ID_SIZE) &&
->>              intel_pstate_no_acpi_pss())
->>              return true;
->> +        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) =
-&&
->> +            intel_pstate_has_acpi_ppc())
->> +            return true;
->>      }
->>=20
->>      return false;
->>  }
->>  #else /* CONFIG_ACPI not enabled */
->>  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { re=
-turn false; }
->> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; =
-}
->>  #endif /* CONFIG_ACPI */
->>=20
->>  static int __init intel_pstate_init(void)
->=20
+Kbuild and MAINTAINERS are also updated accordingly to reflect this new
+file: include/uapi/linux/thermal.h.
+
+Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+---
+ MAINTAINERS                  |  1 +
+ include/linux/thermal.h      | 31 +------------------------------
+ include/uapi/linux/Kbuild    |  1 +
+ include/uapi/linux/thermal.h | 35 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 38 insertions(+), 30 deletions(-)
+ create mode 100644 include/uapi/linux/thermal.h
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3d7782b9f90d..462cfbe3c893 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8036,6 +8036,7 @@ Q:      https://patchwork.kernel.org/project/linux-pm/list/
+ S:      Supported
+ F:      drivers/thermal/
+ F:      include/linux/thermal.h
++F:      include/uapi/linux/thermal.h
+ F:      include/linux/cpu_cooling.h
+ 
+ THINGM BLINK(1) USB RGB LED DRIVER
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index a386a1cbb6e1..1a0773e4c557 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -28,10 +28,10 @@
+ #include <linux/idr.h>
+ #include <linux/device.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/thermal.h>
+ 
+ #define THERMAL_TRIPS_NONE	-1
+ #define THERMAL_MAX_TRIPS	12
+-#define THERMAL_NAME_LENGTH	20
+ 
+ /* invalid cooling state */
+ #define THERMAL_CSTATE_INVALID -1UL
+@@ -44,11 +44,6 @@
+ 				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+ #define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
+ 
+-/* Adding event notification support elements */
+-#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+-#define THERMAL_GENL_VERSION                    0x01
+-#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
+-
+ /* Default Thermal Governor */
+ #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+ #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+@@ -81,30 +76,6 @@ enum thermal_trend {
+ 	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
+ };
+ 
+-/* Events supported by Thermal Netlink */
+-enum events {
+-	THERMAL_AUX0,
+-	THERMAL_AUX1,
+-	THERMAL_CRITICAL,
+-	THERMAL_DEV_FAULT,
+-};
+-
+-/* attributes of thermal_genl_family */
+-enum {
+-	THERMAL_GENL_ATTR_UNSPEC,
+-	THERMAL_GENL_ATTR_EVENT,
+-	__THERMAL_GENL_ATTR_MAX,
+-};
+-#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
+-
+-/* commands supported by the thermal_genl_family */
+-enum {
+-	THERMAL_GENL_CMD_UNSPEC,
+-	THERMAL_GENL_CMD_EVENT,
+-	__THERMAL_GENL_CMD_MAX,
+-};
+-#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+-
+ struct thermal_zone_device_ops {
+ 	int (*bind) (struct thermal_zone_device *,
+ 		     struct thermal_cooling_device *);
+diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
+index ab5d4992e568..95d5e69273fa 100644
+--- a/include/uapi/linux/Kbuild
++++ b/include/uapi/linux/Kbuild
+@@ -367,6 +367,7 @@ header-y += tcp.h
+ header-y += tcp_metrics.h
+ header-y += telephony.h
+ header-y += termios.h
++header-y += thermal.h
+ header-y += time.h
+ header-y += times.h
+ header-y += timex.h
+diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
+new file mode 100644
+index 000000000000..ac5535855982
+--- /dev/null
++++ b/include/uapi/linux/thermal.h
+@@ -0,0 +1,35 @@
++#ifndef _UAPI_LINUX_THERMAL_H
++#define _UAPI_LINUX_THERMAL_H
++
++#define THERMAL_NAME_LENGTH	20
++
++/* Adding event notification support elements */
++#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
++#define THERMAL_GENL_VERSION                    0x01
++#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
++
++/* Events supported by Thermal Netlink */
++enum events {
++	THERMAL_AUX0,
++	THERMAL_AUX1,
++	THERMAL_CRITICAL,
++	THERMAL_DEV_FAULT,
++};
++
++/* attributes of thermal_genl_family */
++enum {
++	THERMAL_GENL_ATTR_UNSPEC,
++	THERMAL_GENL_ATTR_EVENT,
++	__THERMAL_GENL_ATTR_MAX,
++};
++#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
++
++/* commands supported by the thermal_genl_family */
++enum {
++	THERMAL_GENL_CMD_UNSPEC,
++	THERMAL_GENL_CMD_EVENT,
++	__THERMAL_GENL_CMD_MAX,
++};
++#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
++
++#endif /* _UAPI_LINUX_THERMAL_H */
+-- 
+1.9.1
+
