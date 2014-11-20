@@ -1,97 +1,106 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
- _PPC method
-Date: Thu, 20 Nov 2014 08:50:06 -0800
-Message-ID: <546E1BBE.7050906@intel.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
+Date: Thu, 20 Nov 2014 09:13:10 -0800
+Message-ID: <1416503590.2043.172.camel@spandruv-desktop.jf.intel.com>
+References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1416450331.5808.3.camel@rzhang1-toshiba>
+	 <20141120112534.7187a21d@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <546CFBEE.6090103@hp.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Linda Knippers <linda.knippers@hp.com>, Ethan Zhao <ethan.zhao@oracle.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:12116 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755664AbaKTRNY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 20 Nov 2014 12:13:24 -0500
+In-Reply-To: <20141120112534.7187a21d@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
 
-On 11/19/2014 12:22 PM, Linda Knippers wrote:
-> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
->> Oracle Sun X86 servers have dynamic power capping capability that works via
->> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
->> enabled.
->>
->> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->> ---
->>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->>   1 file changed, 20 insertions(+)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index 27bb6d3..5498eb0 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->>   	return true;
->>   }
->>
->> +static bool intel_pstate_has_acpi_ppc(void)
->> +{
->> +	int i;
->> +
->> +	for_each_possible_cpu(i) {
->> +		struct acpi_processor *pr = per_cpu(processors, i);
->> +
->> +		if (!pr)
->> +			continue;
->> +		if (acpi_has_method(pr->handle, "_PPC"))
->> +			return true;
->> +	}
->> +	return false;
->> +}
->> +
->>   struct hw_vendor_info {
->>   	u16  valid;
->>   	char oem_id[ACPI_OEM_ID_SIZE];
->> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->>   /* Hardware vendor-specific info that has its own power management modes */
->>   static struct hw_vendor_info vendor_info[] = {
->>   	{1, "HP    ", "ProLiant"},
->> +	{1, "ORACLE", ""},
->>   	{0, "", ""},
->>   };
->>
->> @@ -969,12 +985,16 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->>   		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
->>   		    intel_pstate_no_acpi_pss())
->>   			return true;
->> +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
->> +			intel_pstate_has_acpi_ppc())
->
-> We need try this on a few platforms to make sure this patch doesn't break the
-> HP platforms that may or may not need this driver, depending on the BIOS settings.
->
+On Thu, 2014-11-20 at 11:25 +0100, Lukasz Majewski wrote: 
+> Hi Zhang,
+> 
+> > 
+> > For some reason, I did not see the discussion between Lukasz and you
+> > via email. I can only see it via patchwork.
+> 
+> It is strange. However I'd appreciate to be in CC of this e-mail :-)
+> 
+> > 
+> > Lukasz,
+> > 
+> > if the regulator for thermal unit is not enabled, what will you get?
+> > temperature 0xFF + trip point -1? or Just temperature 0xFF?
+> 
+> Just 0xFF temperature.
+> 
+> Since 0xFF is larger than SW_TRIP point (mapped to
+> THERMAL_TRIP_CRITICAL), the code at handle_critical_trips() is executed.
+> 
+> From my standpoint 0xFF is a possible and valid temperature in Exynos.
+> 
+> Srinivas, what is your error/use case that you need this check?
+critical trip point < 0 because buggy FW and temp read is more than trip
+temp.
 
-It looks like HP systems would get swept up in this check too if they have _PPC
+Thanks,
+Srinivas 
+> 
+> > I don't think this patch makes any difference in the second case.
+> > 
+> > BTW, if you expect some indicator when the thermal unit is not
+> > enabled, 
+> 
+> Actually, the TMU is enabled and configured, 
+> Lack of proper regulator (vtmu) for TMU is the culprit of this
+> situation.
+> 
+> > system critical shutdown is not a proper one, we can either
+> > check the sysfs I/F, and we can add a warning message here, telling
+> > that invalid trip point is found.
+> 
+> I think that, it would be a good idea to abort Exynos TMU probe when
+> "vtmu" regulator is not found.
+> 
+> > 
+> > thanks,
+> > rui
+> > 
+> > On Wed, 2014-11-12 at 15:43 -0800, Srinivas Pandruvada wrote:
+> > > Ignore invalid trip temperature less or equal to zero. Some
+> > > buggy systems have invalid trips, causing system shutdown.
+> > > 
+> > > Signed-off-by: Srinivas Pandruvada
+> > > <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
+> > > <rui.zhang@intel.com> ---
+> > >  drivers/thermal/thermal_core.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/thermal/thermal_core.c
+> > > b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
+> > > thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip,
+> > > &trip_temp); 
+> > >  	/* If we have not crossed the trip_temp, we do not care. */
+> > > -	if (tz->temperature < trip_temp)
+> > > +	if (trip_temp <= 0 || tz->temperature < trip_temp)
+> > >  		return;
+> > >  
+> > >  	trace_thermal_zone_trip(tz, trip, trip_type);
+> > 
+> > 
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> 
+> 
+> 
 
-What about extending the hw_vendor_info struct to include whether _PSS or
-_PPC should be done for the platform since it appears that oracle and HP
-have implemented similar functionality using two different methods.
-
-
-> I don't suppose you tested on a ProLiant too?
->
-> -- ljk
->
->> +			return true;
->>   	}
->>
->>   	return false;
->>   }
->>   #else /* CONFIG_ACPI not enabled */
->>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
->> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->>   #endif /* CONFIG_ACPI */
->>
->>   static int __init intel_pstate_init(void)
->>
->
 
