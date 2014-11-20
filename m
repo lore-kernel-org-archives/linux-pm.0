@@ -1,35 +1,85 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 0/4] thermal: of: of-thermal.c API extensions
-Date: Thu, 20 Nov 2014 17:21:24 +0100
-Message-ID: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v2 2/4] thermal: of: Extend of-thermal.c to provide check if
+ trip point is enabled
+Date: Thu, 20 Nov 2014 17:21:26 +0100
+Message-ID: <1416500488-7232-3-git-send-email-l.majewski@samsung.com>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+In-reply-to: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Provided patch series extend of-thermal.c file API. It is necessary 
-for ongoing Exynos TMU rework.
-First version of this code can be found at:
-http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+This patch extends the of-thermal.c to provide check if trip point is
+enabled.
 
-This code provides some methods to access some of-thermal local data.
-Moreover it provides a read only copy of trip points.
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+---
+Changes for v2:
+- Replace int with bool
+- Replace 1/0 with true/false
+- Add check if data pointer is not NULL
+- Add missing doxygen style comment for the function
+---
+ drivers/thermal/of-thermal.c   | 20 ++++++++++++++++++++
+ drivers/thermal/thermal_core.h |  5 +++++
+ 2 files changed, 25 insertions(+)
 
-Lukasz Majewski (4):
-  thermal: of: Extend of-thermal.c to provide number of trip points
-  thermal: of: Extend of-thermal.c to provide check if trip point is
-    enabled
-  thermal: of: Extend of-thermal to export table of trip points
-  thermal: of: Extend current of-thermal.c code to allow setting
-    emulated temp
-
- drivers/thermal/of-thermal.c   | 97 ++++++++++++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_core.h | 17 ++++++++
- include/linux/thermal.h        | 15 +++++++
- 3 files changed, 129 insertions(+)
-
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 7170822..336af7f 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -132,6 +132,26 @@ int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+ 	return data->ntrips;
+ }
+ 
++/**
++ * of_thermal_is_trip_en - function to check if trip point is enabled
++ *
++ * @tz:	pointer to a thermal zone
++ * @trip:	trip point to evaluate
++ *
++ * This function is responsible for checking if passed trip point is enabled
++ *
++ * Return: true if trip point is enabled, false otherwise
++ */
++bool of_thermal_is_trip_en(struct thermal_zone_device *tz, int trip)
++{
++	struct __thermal_zone *data = tz->devdata;
++
++	if (!data || trip >= data->ntrips || trip < 0)
++		return false;
++
++	return true;
++}
++
+ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+ 				enum thermal_trend *trend)
+ {
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index c3c7b82..466208c 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -90,6 +90,7 @@ static inline void thermal_gov_user_space_unregister(void) {}
+ int of_parse_thermal_zones(void);
+ void of_thermal_destroy_zones(void);
+ int of_thermal_get_ntrips(struct thermal_zone_device *);
++bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
+ #else
+ static inline int of_parse_thermal_zones(void) { return 0; }
+ static inline void of_thermal_destroy_zones(void) { }
+@@ -97,6 +98,10 @@ static inline int of_thermal_get_ntrips(struct thermal_zone_device *)
+ {
+ 	return 0;
+ }
++static inline bool of_thermal_is_trip_en(struct thermal_zone_device *, int)
++{
++	return 0;
++}
+ #endif
+ 
+ #endif /* __THERMAL_CORE_H__ */
 -- 
 2.0.0.rc2
