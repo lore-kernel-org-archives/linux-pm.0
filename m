@@ -1,165 +1,205 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v5 1/4] mfd: rt5033: Add Richtek RT5033 driver core.
-Date: Thu, 20 Nov 2014 08:46:08 +0900
-Message-ID: <546D2BC0.8020208@samsung.com>
-References: <1416372760-2090-1-git-send-email-beomho.seo@samsung.com>
- <1416372760-2090-2-git-send-email-beomho.seo@samsung.com>
- <20141119163702.GF1875@x1>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Domains: Power on the PM domain right after attach completes
+Date: Thu, 20 Nov 2014 01:35:49 +0100
+Message-ID: <4182833.JTef00bpdk@vostro.rjw.lan>
+References: <20141117220238.GE5258@dtor-ws> <3492523.qBADTmdTqo@vostro.rjw.lan> <CAPDyKFoiEMO5E3nMJDZkFkuio-5sh99m55k-yM=fuqrHUXbhZw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:54711 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756318AbaKSXqM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 18:46:12 -0500
-In-reply-to: <20141119163702.GF1875@x1>
+Received: from v094114.home.net.pl ([79.96.170.134]:55981 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756964AbaKTAOo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 19:14:44 -0500
+In-Reply-To: <CAPDyKFoiEMO5E3nMJDZkFkuio-5sh99m55k-yM=fuqrHUXbhZw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, beomho.seo@samsung.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On 11/20/2014 01:37 AM, Lee Jones wrote:
-> On Wed, 19 Nov 2014, Beomho Seo wrote:
-> 
->> This patch adds a new driver for Richtek RT5033 driver.
->> RT5033 is a Multifunction device which includes battery charger, fuel gauge,
->> flash LED current source, LDO and synchronous Buck converter. It is interfaced
->> to host controller using I2C interface.
->>
->> Cc: Samuel Ortiz <sameo@linux.intel.com>
->> Cc: Lee Jones <lee.jone@linaro.org>
->> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
->> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->> Changes in v5
->> - Change possible built as a module.
->> - Revise rt5033_dev mfd cell entry.
->> - Fix incorrect typo.
->> - Add module alias.
->>
->> Changes in v4
->> - none.
->>
->> Changes in v3
->> - Correct sentence errors.
->> - Add author information the top of each drivers.
->> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
->> - Change some return check.
->> - Use bool and of_match_ptr().
->>
->> Changes in v2
->> - Remove volatile_reg callback. Because this driver not in use regmap cache.
->> - Revmoe unnecessary subnode of_compatible.
->> - Add define for set_high impedance mode of charger.
->> ---
->>  drivers/mfd/Kconfig                |   12 ++
->>  drivers/mfd/Makefile               |    1 +
->>  drivers/mfd/rt5033.c               |  136 +++++++++++++++++++
->>  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++++++++++++
->>  include/linux/mfd/rt5033.h         |   62 +++++++++
->>  5 files changed, 471 insertions(+)
->>  create mode 100644 drivers/mfd/rt5033.c
->>  create mode 100644 include/linux/mfd/rt5033-private.h
->>  create mode 100644 include/linux/mfd/rt5033.h
->>
->> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
->> index 72d3808..9c13170 100644
->> --- a/drivers/mfd/Kconfig
->> +++ b/drivers/mfd/Kconfig
->> @@ -618,6 +618,18 @@ config MFD_RTSX_PCI
->>  	  types of memory cards, such as Memory Stick, Memory Stick Pro,
->>  	  Secure Digital and MultiMediaCard.
->>  
->> +config MFD_RT5033
->> +	tristate "Richtek RT5033 Power Management IC"
->> +	depends on I2C=y
->> +	select MFD_CORE
->> +	select REGMAP_I2C
->> +	help
->> +	  This driver provides for the Richtek RT5033 Power Management IC,
->> +	  which includes the I2C driver and the Core APIs. This driver provides
->> +	  common support for accessing the device. The device supports multiple
->> +	  sub-devices like charger, fuel gauge, flash LED, current source,
->> +	  LDO and Buck.
->> +
->>  config MFD_RTSX_USB
->>  	tristate "Realtek USB card reader"
->>  	depends on USB
->> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
->> index 53467e2..4059c24 100644
->> --- a/drivers/mfd/Makefile
->> +++ b/drivers/mfd/Makefile
->> @@ -176,6 +176,7 @@ obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
->>  obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
->>  obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
->>  obj-$(CONFIG_MFD_DLN2)		+= dln2.o
->> +obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
->>  
->>  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
->>  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
->> diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
->> new file mode 100644
->> index 0000000..4d289b9
->> --- /dev/null
->> +++ b/drivers/mfd/rt5033.c
->> @@ -0,0 +1,136 @@
->> +/*
->> + * MFD core driver for the Richtek RT5033.
->> + *
->> + * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
->> + * Author: Beomho Seo <beomho.seo@samsung.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published bythe Free Software Foundation.
->> + */
->> +
->> +#include <linux/err.h>
->> +#include <linux/module.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/of_device.h>
->> +#include <linux/mfd/core.h>
->> +#include <linux/mfd/rt5033.h>
->> +#include <linux/mfd/rt5033-private.h>
->> +
->> +static const struct regmap_irq rt5033_irqs[] = {
->> +	{ .mask = RT5033_PMIC_IRQ_BUCKOCP, },
->> +	{ .mask = RT5033_PMIC_IRQ_BUCKLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_SAFELDOLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_LDOLV, },
->> +	{ .mask = RT5033_PMIC_IRQ_OT, },
->> +	{ .mask = RT5033_PMIC_IRQ_VDDA_UV, },
->> +};
->> +
->> +static const struct regmap_irq_chip rt5033_irq_chip = {
->> +	.name		= "rt5033",
->> +	.status_base	= RT5033_REG_PMIC_IRQ_STAT,
->> +	.mask_base	= RT5033_REG_PMIC_IRQ_CTRL,
->> +	.mask_invert	= true,
->> +	.num_regs	= 1,
->> +	.irqs		= rt5033_irqs,
->> +	.num_irqs	= ARRAY_SIZE(rt5033_irqs),
->> +};
->> +
->> +static const struct mfd_cell rt5033_devs[] = {
->> +	{ .name = "rt5033-regulator", },
->> +	{ .name = "rt5033-charger", .of_compatible = "richtek,rt5033-charger",},
->> +	{ .name = "rt5033-battery", .of_compatible = "richtek,rt5033-battery",},
->> +};
-> 
-> Perhaps I wasn't clear enough in my previous review -- sorry for
-> that.  I only want to see the single entry on one line i.e. one with
-> .name, but no .of_compatible.  I probably wouldn't have requested a
-> re-spin, but you have white space issues at the end of those two lines
-> too.
-> 
+On Wednesday, November 19, 2014 09:54:00 AM Ulf Hansson wrote:
+> [...]
+>=20
+> >>
+> >> Scenario 5), a platform driver with/without runtime PM callbacks.
+> >> ->probe()
+> >> - do some initialization
+> >> - may fetch handles to runtime PM resources
+> >> - pm_runtime_enable()
+> >
+> > Well, and now how the driver knows if the device is "on" before acc=
+essing it?
+>=20
+> In this case the driver don't need to access the device during
+> ->probe(). That's postponed until sometime later.
 
-I will follow your previous review. I will only change the single entry
- on one line. You said that you wouldn't have requested a re-spin.
-But If fix white space issues at the end of those two lines, those
-over 80 characters. So I will defer to your previous review.
-I will fix it and send v6 patch soon.
+If this is a platform driver, it rather does need to access the device,
+precisely because it doesn't know what power state the device is in oth=
+erwise.
+See below.
 
-Thanks,
-Beomho Seo
+> >> Note 1)
+> >> Scenario 1) and 2), both relies on the approach to power on the PM
+> >> domain by using pm_runtime_get_sync(). That approach didn't work w=
+hen
+> >> CONFIG_PM_RUNTIME was unset, but we recently decided to fixed that=
+ by
+> >> the below patch, so that's good!
+> >> "[PATCH] PM / domains: Kconfig: always enable PM_RUNTIME when genp=
+d enabled"
+> >>
+> >> Note 2)
+> >> Scenario 3) and 4) use the same principles for managing runtime PM=
+=2E
+> >> These scenarios needs a way to power on the generic PM domain prio=
+r
+> >> probing the device. The call to pm_runtime_set_active(), prevents =
+an
+> >> already powered PM domain from power off until after probe, but th=
+at's
+> >> not enough.
+> >>
+> >> Note 3)
+> >> The $subject patch, tried to address the issues for scenario 3) an=
+d
+> >> 4). It does so, but will affect scenario 5) which was working nice=
+ly
+> >> before. In scenario 5), the $subject patch will cause the generic =
+PM
+> >> domain to potentially stay powered after ->probe() even if the dev=
+ice
+> >> is runtime PM suspended.
+> >
+> > Why would it?  If the device is runtime-suspended, the domain will =
+know
+> > that, because its callbacks will be used for that.  At least, that'=
+s
+> > what I'd expect to happen, so is there a problem here?
+>=20
+> Genpd do knows about the device but it doesn=E2=80=99t get a "notific=
+ation" to
+> power off. There are no issues whatsoever for driver.
+
+Except that the driver is arguably buggy.
+
+> This is a somewhat special case. Let's go through an example.
+>=20
+> 1. The PM domain is initially in powered off state.
+> 2. The bus ->probe() invokes dev_pm_domain_attach() and then the PM
+> domain gets attached to the device.
+> 3. $subject patch causes the PM domain to power on.
+> 4. A driver ->probe() sequence start, following the Scenario 5).
+> 5. The device is initially in runtime PM suspended state and it will
+> remain so during ->probe().
+
+But is it physically suspended?
+
+The runtime PM status of the device after ->probe is required to reflec=
+t its
+real state if runtime PM is enabled.  If that's not the case, it is a b=
+ug.
+
+Now, for platform drivers, the driver can't really assume anything in
+particular about the current power state of the device at ->probe time,
+because different platforms including devices handled by that driver ma=
+y
+behave differently.
+
+A good example would be two platforms A and B where the same device X i=
+s in a
+power domain such that A boots with the domain (physically) "on", while=
+ B boots
+with the domain "off".  If the driver for X assumes anything about the =
+initial
+power state of the device, it may not work on either A or B.
+
+> 6. The pm_request_idle() invoked after really_probe() in driver core,
+> won't trigger a runtime PM suspend callback to be invoked. In other
+> words, genpd don't get a "notification" that it may power off.
+>=20
+> In this state, genpd will either power off from the late_initcall,
+> genpd_poweroff_unused() (depending on when the driver was probed) or
+> wait until some device's runtime PM suspend callback is invoked at an=
+y
+> later point.
+
+Which sounds OK to me, so why is it a problem?
+
+> >> I see three options going forward.
+> >>
+> >> Option 1)
+> >> Convert scenario 3) and 4) into using the pm_runtime_get_sync()
+> >> approach. There are no theoretical obstacles to do this, but pure
+> >> practical. There are a lot of drivers that needs to be converted a=
+nd
+> >> we also need to teach driver authors future wise to not use
+> >> pm_runtime_set_active() in this manner.
+> >
+> > I'd say we need to do something like this anyway.  That is, standar=
+dize on
+> > *one* approach.  I'm actually not sure what approach is the most us=
+eful,
+> > but the pm_runtime_get_sync() one seems to be the most popular to m=
+e.
+> >
+> >> Option 2)
+> >> Add some kind of get/put API for PM domains. The buses invokes it =
+to
+> >> control the power to the PM domain. From what I understand, that's
+> >> also what Dmitry think is needed!?
+> >> Anyway, that somehow means to proceed with the approach I took in =
+the
+> >> below patchset.
+> >> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+> >> http://marc.info/?t=3D141320907000003&r=3D1&w=3D2
+> >
+> > I don't like that.  The API is already quite complicated in my view=
+ and
+> > adding even more complexity to it is not going to help in the long =
+run.
+>=20
+> I absolutely agree that we shouldn't add unnecessary APIs and keep
+> APIs as simple as possible.
+>=20
+> In that context, I think the effect from proceeding with Option 2)
+> also means there are no need for the below APIs any more.
+> pm_genpd_poweron()
+> pm_genpd_name_poweron() (requires some additional work though)
+> pm_genpd_poweroff_unused()
+> pm_genpd_dev_need_restore()
+>=20
+> I guess you figured out that I am in favour of Option 2). :-)
+> Especially since it cover all scenarios and we don't have to go a fix
+> a vast amount of drivers.
+
+Adding more callbacks to struct dev_pm_domain just in order to handle s=
+ome
+genpd-specific use case is out of the question.  If you find a way with=
+in
+genpd to address this the way you like, I'm open for ideas.  Otherwise,
+let's just do what I said.
+
+> >
+> >> Option 3)
+> >> Live we the limitation this $subject patch introduces for scenario=
+ 5).
+> >
+> > I'd say, 3) for now and 1) going forward.
+>=20
+> This could work!
+>=20
+> The hardest part is to know when we should revert $subject patch, to
+> fix the regression introduced for scenario 5).
+
+Well, I don't think so.
+
+=46irst of all, there is a (very) limited number of platforms using gen=
+pd today
+and it should be perfectly possible to go through the platform drivers =
+used
+by them and see which of those drivers are affected.  Fixing them shoul=
+d not
+be too hard either.
+
+Rafael
+
