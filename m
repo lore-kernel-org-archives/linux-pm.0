@@ -1,147 +1,178 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 3/4] thermal: of: Extend of-thermal to export table of trip
- points
-Date: Thu, 20 Nov 2014 17:21:27 +0100
-Message-ID: <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH] thermal: provide an UAPI header file
+Date: Thu, 20 Nov 2014 08:27:23 -0800
+Message-ID: <546E166B.2030307@gmail.com>
+References: <1416449460-6161-1-git-send-email-f.fainelli@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:43172 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbaKTQ1e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 11:27:34 -0500
+In-Reply-To: <1416449460-6161-1-git-send-email-f.fainelli@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, rui.zhang@intel.com, computersforpeace@gmail.com
 
-This patch extends the of-thermal.c to export copy of trip points for
-a given thermal zone.
+On 11/19/2014 06:11 PM, Florian Fainelli wrote:
+> include/linux/thermal.h contains definitions for the Thermal generic
+> netlink family, but none of the valuable information relevant to
+> user-space such as the Genl family name, multicast group, version or
+> command set and data types is exported to user-space.
+> 
+> Export all the relevant generic netlink information to user-space to
+> make this genl family usable by user-space, and while at it, export
+> THERMAL_NAME_LENGTH since it limits name length for thermal_hwmon
+> devices.
+> 
+> Kbuild and MAINTAINERS are also updated accordingly to reflect this new
+> file: include/uapi/linux/thermal.h.
 
-Thermal drivers should use of_thermal_get_trip_points() method to get
-pointer to table of thermal trip points.
+Fixing Eduardo's email, I will resubmit that against Eduardo's
+thermal/next branch since the MAINTAINERS file has a conflict here due
+to me using Rui's thermal tree.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- New patch - as suggested by Eduardo Valentin
----
- drivers/thermal/of-thermal.c   | 33 +++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_core.h |  7 +++++++
- include/linux/thermal.h        | 14 ++++++++++++++
- 3 files changed, 54 insertions(+)
+BTW, which of one of the two git trees listed in MAINTAINERS is the
+authoritative one?
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 336af7f..33921c5 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -89,6 +89,7 @@ struct __thermal_zone {
- 	/* trip data */
- 	int ntrips;
- 	struct __thermal_trip *trips;
-+	struct thermal_trip *gtrips;
- 
- 	/* cooling binding data */
- 	int num_tbps;
-@@ -152,6 +153,27 @@ bool of_thermal_is_trip_en(struct thermal_zone_device *tz, int trip)
- 	return true;
- }
- 
-+/**
-+ * of_thermal_get_trip_points - function to get access to a globally exported
-+ *				trip points
-+ *
-+ * @tz:	pointer to a thermal zone
-+ *
-+ * This function provides a pointer to the copy of trip points table
-+ *
-+ * Return: pointer to trip points table, NULL otherwise
-+ */
-+const struct thermal_trip * const
-+of_thermal_get_trip_points(struct thermal_zone_device *tz)
-+{
-+	struct __thermal_zone *data = tz->devdata;
-+
-+	if (!data)
-+		return NULL;
-+
-+	return data->gtrips;
-+}
-+
- static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
- 				enum thermal_trend *trend)
- {
-@@ -767,6 +789,16 @@ thermal_of_build_thermal_zone(struct device_node *np)
- 			goto free_tbps;
- 	}
- 
-+	tz->gtrips = kcalloc(tz->ntrips, sizeof(*tz->gtrips), GFP_KERNEL);
-+	if (!tz->gtrips) {
-+		ret = -ENOMEM;
-+		goto free_tbps;
-+	}
-+
-+	for (i = 0; i < tz->ntrips; i++)
-+		memcpy(&(tz->gtrips[i]), &(tz->trips[i].temperature),
-+		       sizeof(*tz->gtrips));
-+
- finish:
- 	of_node_put(child);
- 	tz->mode = THERMAL_DEVICE_DISABLED;
-@@ -793,6 +825,7 @@ static inline void of_thermal_free_zone(struct __thermal_zone *tz)
- {
- 	int i;
- 
-+	kfree(tz->gtrips);
- 	for (i = 0; i < tz->num_tbps; i++)
- 		of_node_put(tz->tbps[i].cooling_device);
- 	kfree(tz->tbps);
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 466208c..a9580ca 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -91,6 +91,8 @@ int of_parse_thermal_zones(void);
- void of_thermal_destroy_zones(void);
- int of_thermal_get_ntrips(struct thermal_zone_device *);
- bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
-+const struct thermal_trip * const
-+of_thermal_get_trip_points(struct thermal_zone_device *);
- #else
- static inline int of_parse_thermal_zones(void) { return 0; }
- static inline void of_thermal_destroy_zones(void) { }
-@@ -102,6 +104,11 @@ static inline bool of_thermal_is_trip_en(struct thermal_zone_device *, int)
- {
- 	return 0;
- }
-+static inline const struct thermal_trip * const
-+of_thermal_get_trip_points(struct thermal_zone_device *)
-+{
-+	return NULL;
-+}
- #endif
- 
- #endif /* __THERMAL_CORE_H__ */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5bc28a7..88d7249 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -303,6 +303,20 @@ struct thermal_zone_of_device_ops {
- 	int (*get_trend)(void *, long *);
- };
- 
-+/**
-+ * struct thermal_trip - Structure representing themal trip points exported from
-+ *                       of-thermal
-+ *
-+ * @temperature:	trip point temperature
-+ * @hysteresis:		trip point hysteresis
-+ * @type:		trip point type
-+ */
-+struct thermal_trip {
-+	unsigned long int temperature;
-+	unsigned long int hysteresis;
-+	enum thermal_trip_type type;
-+};
-+
- /* Function declarations */
- #ifdef CONFIG_THERMAL_OF
- struct thermal_zone_device *
--- 
-2.0.0.rc2
+Thanks!
+
+> 
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> ---
+>  MAINTAINERS                  |  1 +
+>  include/linux/thermal.h      | 31 +------------------------------
+>  include/uapi/linux/Kbuild    |  1 +
+>  include/uapi/linux/thermal.h | 35 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 38 insertions(+), 30 deletions(-)
+>  create mode 100644 include/uapi/linux/thermal.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 3d7782b9f90d..462cfbe3c893 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8036,6 +8036,7 @@ Q:      https://patchwork.kernel.org/project/linux-pm/list/
+>  S:      Supported
+>  F:      drivers/thermal/
+>  F:      include/linux/thermal.h
+> +F:      include/uapi/linux/thermal.h
+>  F:      include/linux/cpu_cooling.h
+>  
+>  THINGM BLINK(1) USB RGB LED DRIVER
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index a386a1cbb6e1..1a0773e4c557 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -28,10 +28,10 @@
+>  #include <linux/idr.h>
+>  #include <linux/device.h>
+>  #include <linux/workqueue.h>
+> +#include <uapi/linux/thermal.h>
+>  
+>  #define THERMAL_TRIPS_NONE	-1
+>  #define THERMAL_MAX_TRIPS	12
+> -#define THERMAL_NAME_LENGTH	20
+>  
+>  /* invalid cooling state */
+>  #define THERMAL_CSTATE_INVALID -1UL
+> @@ -44,11 +44,6 @@
+>  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+>  #define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
+>  
+> -/* Adding event notification support elements */
+> -#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> -#define THERMAL_GENL_VERSION                    0x01
+> -#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
+> -
+>  /* Default Thermal Governor */
+>  #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+>  #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+> @@ -81,30 +76,6 @@ enum thermal_trend {
+>  	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
+>  };
+>  
+> -/* Events supported by Thermal Netlink */
+> -enum events {
+> -	THERMAL_AUX0,
+> -	THERMAL_AUX1,
+> -	THERMAL_CRITICAL,
+> -	THERMAL_DEV_FAULT,
+> -};
+> -
+> -/* attributes of thermal_genl_family */
+> -enum {
+> -	THERMAL_GENL_ATTR_UNSPEC,
+> -	THERMAL_GENL_ATTR_EVENT,
+> -	__THERMAL_GENL_ATTR_MAX,
+> -};
+> -#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
+> -
+> -/* commands supported by the thermal_genl_family */
+> -enum {
+> -	THERMAL_GENL_CMD_UNSPEC,
+> -	THERMAL_GENL_CMD_EVENT,
+> -	__THERMAL_GENL_CMD_MAX,
+> -};
+> -#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+> -
+>  struct thermal_zone_device_ops {
+>  	int (*bind) (struct thermal_zone_device *,
+>  		     struct thermal_cooling_device *);
+> diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
+> index ab5d4992e568..95d5e69273fa 100644
+> --- a/include/uapi/linux/Kbuild
+> +++ b/include/uapi/linux/Kbuild
+> @@ -367,6 +367,7 @@ header-y += tcp.h
+>  header-y += tcp_metrics.h
+>  header-y += telephony.h
+>  header-y += termios.h
+> +header-y += thermal.h
+>  header-y += time.h
+>  header-y += times.h
+>  header-y += timex.h
+> diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
+> new file mode 100644
+> index 000000000000..ac5535855982
+> --- /dev/null
+> +++ b/include/uapi/linux/thermal.h
+> @@ -0,0 +1,35 @@
+> +#ifndef _UAPI_LINUX_THERMAL_H
+> +#define _UAPI_LINUX_THERMAL_H
+> +
+> +#define THERMAL_NAME_LENGTH	20
+> +
+> +/* Adding event notification support elements */
+> +#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> +#define THERMAL_GENL_VERSION                    0x01
+> +#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
+> +
+> +/* Events supported by Thermal Netlink */
+> +enum events {
+> +	THERMAL_AUX0,
+> +	THERMAL_AUX1,
+> +	THERMAL_CRITICAL,
+> +	THERMAL_DEV_FAULT,
+> +};
+> +
+> +/* attributes of thermal_genl_family */
+> +enum {
+> +	THERMAL_GENL_ATTR_UNSPEC,
+> +	THERMAL_GENL_ATTR_EVENT,
+> +	__THERMAL_GENL_ATTR_MAX,
+> +};
+> +#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
+> +
+> +/* commands supported by the thermal_genl_family */
+> +enum {
+> +	THERMAL_GENL_CMD_UNSPEC,
+> +	THERMAL_GENL_CMD_EVENT,
+> +	__THERMAL_GENL_CMD_MAX,
+> +};
+> +#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+> +
+> +#endif /* _UAPI_LINUX_THERMAL_H */
+> 
+
