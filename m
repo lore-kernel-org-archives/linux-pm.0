@@ -1,100 +1,127 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/3] PM / Domains: Initial PM clock support for genpd
-Date: Thu, 20 Nov 2014 12:53:31 +0100
-Message-ID: <CAPDyKFoL-bv1+xon-BK9yt_QMp2tdBNQME-4iaaUff=a2U5oSw@mail.gmail.com>
-References: <1416405638-18812-1-git-send-email-ulf.hansson@linaro.org>
-	<1416405638-18812-2-git-send-email-ulf.hansson@linaro.org>
-	<20141119172501.GA37989@dtor-ws>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 00/33] thermal: exynos: convert the driver to use
+ per-SoC type operations
+Date: Thu, 20 Nov 2014 12:58:04 +0100
+Message-ID: <20141120125804.5248eb61@amdc2363>
+References: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20141119172501.GA37989@dtor-ws>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1415890888-8881-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19 November 2014 18:25, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Wed, Nov 19, 2014 at 03:00:36PM +0100, Ulf Hansson wrote:
->> It's quite common for PM domains to use PM clocks. Typically from SOC
->> specific code, the per device PM clock list is created and
->> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
->>
->> A step towards consolidation is to integrate PM clock support into
->> genpd, which is what this patch does.
->>
->> In this initial step, the calls to the pm_clk_suspend|resume() are
->> handled within genpd, but the per device PM clock list still needs to
->> be created from SOC specific code. It seems reasonable to have gendp to
->> handle that as well, but that left to future patches to address.
->>
->> It's not every users of genpd that are keen on using PM clocks thus we
->> need to provide this a configuration option for genpd. Therefore let's
->> add flag field in the genpd struct to keep this information and define
->> a new PM_DOMAIN_PM_CLK bit can then be set at initialization.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/base/power/domain.c | 7 +++++++
->>  include/linux/pm_domain.h   | 3 +++
->>  2 files changed, 10 insertions(+)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 3989eb6..42e328c 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -12,6 +12,7 @@
->>  #include <linux/pm_runtime.h>
->>  #include <linux/pm_domain.h>
->>  #include <linux/pm_qos.h>
->> +#include <linux/pm_clock.h>
->>  #include <linux/slab.h>
->>  #include <linux/err.h>
->>  #include <linux/sched.h>
->> @@ -1948,6 +1949,12 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->>       genpd->domain.ops.complete = pm_genpd_complete;
->>       genpd->dev_ops.save_state = pm_genpd_default_save_state;
->>       genpd->dev_ops.restore_state = pm_genpd_default_restore_state;
->> +
->> +     if (genpd->flags & PM_DOMAIN_PM_CLK) {
->> +             genpd->dev_ops.stop = pm_clk_suspend;
->> +             genpd->dev_ops.start = pm_clk_suspend;
->
-> The 2nd one is wrong.
+Hi Eduardo,
 
-Huh, thanks for spotting this.
+> Hi,
+> 
+> This patch series replaces the hardware registers abstractions in
+> the Exynos thermal driver by the usage of per-SoC type operations.
+> Such solution provides simpler, easier to understand code and
+> allows removal of ~250 LOCs (~11% of the whole source code) from
+> the driver.  Some other driver improvements are now also possible
+> thanks to these changes but are scheduled at later time (like
+> consolidating code for clearing IRQs using INTCLEAR register).
+> 
+> The patchset should not cause any functionality changes.  This
+> means that unless there are some bugs in the patches itself there
+> should be no behavior changes for the driver (this also includes
+> lack of changes in the way hardware is accessed by the driver).
+> 
+> All testing was done on (Exynos4412 SoC based) ODROID U3 board
+> (some additional patches are needed to make the Exynos thermal
+> driver work on this hardware).
 
->
->> +     }
->> +
->>       mutex_lock(&gpd_list_lock);
->>       list_add(&genpd->gpd_list_node, &gpd_list);
->>       mutex_unlock(&gpd_list_lock);
->> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->> index 9d254e2..44c6931 100644
->> --- a/include/linux/pm_domain.h
->> +++ b/include/linux/pm_domain.h
->> @@ -14,6 +14,7 @@
->>  #include <linux/pm.h>
->>  #include <linux/err.h>
->>  #include <linux/of.h>
->> +#include <linux/bitops.h>
->>  #include <linux/notifier.h>
->>  #include <linux/cpuidle.h>
->>
->> @@ -76,6 +77,8 @@ struct generic_pm_domain {
->>                         struct device *dev);
->>       void (*detach_dev)(struct generic_pm_domain *domain,
->>                          struct device *dev);
->> +     unsigned int flags;             /* Bit field of configs for genpd */
->> +#define PM_DOMAIN_PM_CLK     BIT(0)  /* PM domain use PM clk */
->
-> s/use/uses ?
->
-> Are you planning on adding a separate flag for collecting clocks from OF
-> on attach/detach?
+For the whole patch series:
 
-Yes, I am thinking on that approach. Do you have any suggestions around this?
+Repository:
+kernel_linux-soc-thermal/next
+SHA1: 4027494124fd88e5d51127eebba315de5d8d57c8
 
-Kind regards
-Uffe
+Test HW:
+
+Trats2 - Exynos4412
+Tested-by: Lukasz Majewski <l.majewski@samsung.com>
+
+Trats - Exynos4210
+Tested-by: Lukasz Majewski <l.majewski@samsung.com>
+
+ARNDALE(SMDK) - Exynos5250
+Tested-by: Lukasz Majewski <l.majewski@samsung.com>
+
+ARNDALE OCTA - Exynos5420
+Tested-by: Lukasz Majewski <l.majewski@samsung.com>
+
+
+> 
+> Depends on:
+> - 'next' branch of linux-soc-thermal.git kernel tree from Eduardo
+> 
+> Changes since v1 (https://lkml.org/lkml/2014/9/18/305):
+> - rebased on top of the current linux-soc-thermal kernel
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (33):
+>   thermal: exynos: remove needless triminfo_data abstraction
+>   thermal: exynos: remove needless tmu_status abstraction
+>   thermal: exynos: remove needless threshold_temp abstraction
+>   thermal: exynos: remove needless triminfo_ctrl abstraction
+>   thermal: exynos: remove needless test_mux_addr_shift abstraction
+>   thermal: exynos: remove needless therm_trip_[mode,mask]_shift
+>     abstractions
+>   thermal: exynos: remove needless therm_trip_en_shift abstraction
+>   thermal: exynos: remove needless emul_temp_shift abstraction
+>   thermal: exynos: remove needless emul_time_shift abstraction
+>   thermal: exynos: replace tmu_irqstatus check by Exynos5440 one
+>   thermal: exynos: replace tmu_pmin check by Exynos5440 one
+>   thermal: exynos: simplify HW_TRIP level setting
+>   thermal: exynos: replace threshold_falling check by Exynos SoC type
+>     one
+>   thermal: exynos: remove TMU_SUPPORT_READY_STATUS flag
+>   thermal: exynos: remove TMU_SUPPORT_TRIM_RELOAD flag
+>   thermal: exynos: add sanitize_temp_error() helper
+>   thermal: exynos: add get_th_reg() helper
+>   thermal: exynos: add ->tmu_initialize method
+>   thermal: exynos: add get_con_reg() helper
+>   thermal: exynos: add ->tmu_control method
+>   thermal: exynos: add ->tmu_read method
+>   thermal: exynos: add get_emul_con_reg() helper
+>   thermal: exynos: add ->tmu_set_emulation method
+>   thermal: exynos: add ->tmu_clear_irqs method
+>   thermal: exynos: remove TMU_SUPPORT_FALLING_TRIP flag
+>   thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
+>   thermal: exynos: remove TMU_SUPPORT_EMULATION flag
+>   thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE flag
+>   thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
+>   thermal: exynos: remove test_mux pdata field
+>   thermal: exynos: remove SoC type ifdefs
+>   thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
+>   thermal: exynos: remove exynos_tmu_data.h include
+> 
+>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+>  drivers/thermal/samsung/exynos_tmu.c            | 692
+> ++++++++++++++++--------
+> drivers/thermal/samsung/exynos_tmu.h            | 123 +----
+> drivers/thermal/samsung/exynos_tmu_data.c       | 239 +-------
+> drivers/thermal/samsung/exynos_tmu_data.h       | 159 ------ 5 files
+> changed, 485 insertions(+), 729 deletions(-) delete mode 100644
+> drivers/thermal/samsung/exynos_tmu_data.h
+> 
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
