@@ -1,163 +1,63 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: [PATCH] thermal: provide an UAPI header file
-Date: Wed, 19 Nov 2014 18:11:00 -0800
-Message-ID: <1416449460-6161-1-git-send-email-f.fainelli@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
+Date: Thu, 20 Nov 2014 10:25:31 +0800
+Message-ID: <1416450331.5808.3.camel@rzhang1-toshiba>
+References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:34442 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbaKTCLN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Nov 2014 21:11:13 -0500
+Received: from mga11.intel.com ([192.55.52.93]:21468 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756174AbaKTCZS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 19 Nov 2014 21:25:18 -0500
+In-Reply-To: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com, computersforpeace@gmail.com, Florian Fainelli <f.fainelli@gmail.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org
 
-include/linux/thermal.h contains definitions for the Thermal generic
-netlink family, but none of the valuable information relevant to
-user-space such as the Genl family name, multicast group, version or
-command set and data types is exported to user-space.
 
-Export all the relevant generic netlink information to user-space to
-make this genl family usable by user-space, and while at it, export
-THERMAL_NAME_LENGTH since it limits name length for thermal_hwmon
-devices.
+For some reason, I did not see the discussion between Lukasz and you via
+email. I can only see it via patchwork.
 
-Kbuild and MAINTAINERS are also updated accordingly to reflect this new
-file: include/uapi/linux/thermal.h.
+Lukasz,
 
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
- MAINTAINERS                  |  1 +
- include/linux/thermal.h      | 31 +------------------------------
- include/uapi/linux/Kbuild    |  1 +
- include/uapi/linux/thermal.h | 35 +++++++++++++++++++++++++++++++++++
- 4 files changed, 38 insertions(+), 30 deletions(-)
- create mode 100644 include/uapi/linux/thermal.h
+if the regulator for thermal unit is not enabled, what will you get?
+temperature 0xFF + trip point -1? or Just temperature 0xFF?
+I don't think this patch makes any difference in the second case.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3d7782b9f90d..462cfbe3c893 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8036,6 +8036,7 @@ Q:      https://patchwork.kernel.org/project/linux-pm/list/
- S:      Supported
- F:      drivers/thermal/
- F:      include/linux/thermal.h
-+F:      include/uapi/linux/thermal.h
- F:      include/linux/cpu_cooling.h
- 
- THINGM BLINK(1) USB RGB LED DRIVER
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index a386a1cbb6e1..1a0773e4c557 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -28,10 +28,10 @@
- #include <linux/idr.h>
- #include <linux/device.h>
- #include <linux/workqueue.h>
-+#include <uapi/linux/thermal.h>
- 
- #define THERMAL_TRIPS_NONE	-1
- #define THERMAL_MAX_TRIPS	12
--#define THERMAL_NAME_LENGTH	20
- 
- /* invalid cooling state */
- #define THERMAL_CSTATE_INVALID -1UL
-@@ -44,11 +44,6 @@
- 				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
- #define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
- 
--/* Adding event notification support elements */
--#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
--#define THERMAL_GENL_VERSION                    0x01
--#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
--
- /* Default Thermal Governor */
- #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
- #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
-@@ -81,30 +76,6 @@ enum thermal_trend {
- 	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
- };
- 
--/* Events supported by Thermal Netlink */
--enum events {
--	THERMAL_AUX0,
--	THERMAL_AUX1,
--	THERMAL_CRITICAL,
--	THERMAL_DEV_FAULT,
--};
--
--/* attributes of thermal_genl_family */
--enum {
--	THERMAL_GENL_ATTR_UNSPEC,
--	THERMAL_GENL_ATTR_EVENT,
--	__THERMAL_GENL_ATTR_MAX,
--};
--#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
--
--/* commands supported by the thermal_genl_family */
--enum {
--	THERMAL_GENL_CMD_UNSPEC,
--	THERMAL_GENL_CMD_EVENT,
--	__THERMAL_GENL_CMD_MAX,
--};
--#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
--
- struct thermal_zone_device_ops {
- 	int (*bind) (struct thermal_zone_device *,
- 		     struct thermal_cooling_device *);
-diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
-index ab5d4992e568..95d5e69273fa 100644
---- a/include/uapi/linux/Kbuild
-+++ b/include/uapi/linux/Kbuild
-@@ -367,6 +367,7 @@ header-y += tcp.h
- header-y += tcp_metrics.h
- header-y += telephony.h
- header-y += termios.h
-+header-y += thermal.h
- header-y += time.h
- header-y += times.h
- header-y += timex.h
-diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
-new file mode 100644
-index 000000000000..ac5535855982
---- /dev/null
-+++ b/include/uapi/linux/thermal.h
-@@ -0,0 +1,35 @@
-+#ifndef _UAPI_LINUX_THERMAL_H
-+#define _UAPI_LINUX_THERMAL_H
-+
-+#define THERMAL_NAME_LENGTH	20
-+
-+/* Adding event notification support elements */
-+#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
-+#define THERMAL_GENL_VERSION                    0x01
-+#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
-+
-+/* Events supported by Thermal Netlink */
-+enum events {
-+	THERMAL_AUX0,
-+	THERMAL_AUX1,
-+	THERMAL_CRITICAL,
-+	THERMAL_DEV_FAULT,
-+};
-+
-+/* attributes of thermal_genl_family */
-+enum {
-+	THERMAL_GENL_ATTR_UNSPEC,
-+	THERMAL_GENL_ATTR_EVENT,
-+	__THERMAL_GENL_ATTR_MAX,
-+};
-+#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
-+
-+/* commands supported by the thermal_genl_family */
-+enum {
-+	THERMAL_GENL_CMD_UNSPEC,
-+	THERMAL_GENL_CMD_EVENT,
-+	__THERMAL_GENL_CMD_MAX,
-+};
-+#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
-+
-+#endif /* _UAPI_LINUX_THERMAL_H */
--- 
-1.9.1
+BTW, if you expect some indicator when the thermal unit is not enabled,
+system critical shutdown is not a proper one, we can either check the
+sysfs I/F, and we can add a warning message here, telling that invalid
+trip point is found.
+
+thanks,
+rui
+
+On Wed, 2014-11-12 at 15:43 -0800, Srinivas Pandruvada wrote:
+> Ignore invalid trip temperature less or equal to zero. Some
+> buggy systems have invalid trips, causing system shutdown.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Acked-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/thermal_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 9bf10aa..fbf301a 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -368,7 +368,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+>  	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+>  
+>  	/* If we have not crossed the trip_temp, we do not care. */
+> -	if (tz->temperature < trip_temp)
+> +	if (trip_temp <= 0 || tz->temperature < trip_temp)
+>  		return;
+>  
+>  	trace_thermal_zone_trip(tz, trip, trip_type);
+
+
 
