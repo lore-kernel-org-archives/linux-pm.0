@@ -1,93 +1,106 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: sti: Ignore suspend/resume functions when !PM
-Date: Fri, 21 Nov 2014 14:31:07 -0400
-Message-ID: <20141121183105.GA10652@developer>
-References: <1416412231-2752-1-git-send-email-lee.jones@linaro.org>
- <CAOMZO5CwFSRUoVb2j=X=fzaqVN1gUyRki70ewrGrwqLWSHMoAg@mail.gmail.com>
- <20141119164040.GG1875@x1>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Fri, 21 Nov 2014 20:58:01 +0200
+Message-ID: <546F8B39.1080106@ti.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>	<1709760.E0jX3Myv0h@wuerfel>	<546C7FDD.7030906@ti.com>	<2900095.WIocOu7ue2@wuerfel>	<CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>	<546DD87B.3080806@ti.com>	<CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>	<CAMuHMdWtHT7QX3Kpa-GCLa49ToGODwjnNVgfxDzJzcM-FU1ffg@mail.gmail.com>	<546E0970.5090301@ti.com>	<7hh9xtr5ac.fsf@deeprootsystems.com>	<CAMuHMdV7zASj8_NtLRir1VubXEKTkq0vBGMXeYXDACu8UC2tZA@mail.gmail.com>	<7hbno1r1af.fsf@deeprootsystems.com>	<CAMuHMdVXGPu7x706NxqO3rn3KuRbPbD_ZQsJtDH4Hf31AaRR+Q@mail.gmail.com>	<7hppchpcfm.fsf@deeprootsystems.com> <CAMuHMdU6G35SP-P7bt6RJQk59CrGcKE2XM4N3o8Dv3qxZU7gxA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f46.google.com ([209.85.216.46]:44039 "EHLO
-	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbaKUSbQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 13:31:16 -0500
-Content-Disposition: inline
-In-Reply-To: <20141119164040.GG1875@x1>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:55434 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbaKUS6s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Nov 2014 13:58:48 -0500
+In-Reply-To: <CAMuHMdU6G35SP-P7bt6RJQk59CrGcKE2XM4N3o8Dv3qxZU7gxA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
+Hi Kevin,
+On 11/21/2014 10:06 AM, Geert Uytterhoeven wrote:
+> On Fri, Nov 21, 2014 at 2:30 AM, Kevin Hilman <khilman@kernel.org> wrote:
+>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>>> On Thu, Nov 20, 2014 at 10:48 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>>>> So what exactly are we talking about with "PM" clocks, and why are they
+>>>>>> "special" when it comes to PM domains?  IOW, why are the clocks to be
+>>>>>> managed during PM domain transitions for a given device any different
+>>>>>> than the clocks that need to be managed for a runtime suspend/resume (or
+>>>>>> system suspend/resume) sequence for the same device?
+>>>>>
+>>>>> (Speaking for my case, shmobile)
+>>>>>
+>>>>> They're not. The clocks to be managed during PM domain transitions are the
+>>>>> same as the clocks that need to be managed for a runtime suspend/resume
+>>>>> (or system suspend/resume) sequence.
+>>>>>
+>>>>> The special thing is that this is more a platform than a driver thing: the same
+>>>>> module may have a "PM/functional" clock (that is documented to enable/disable
+>>>>> the module) on one Soc, but noet on another.
+>>>>
+>>>> So why isn't the presence or absence of the clock described in the .dtsi
+>>>> for the SoC instead of being handled by special PM domain logic?
+>>>
+>>> It is. Cfr. the presence/absence of clocks for renesas,rcar-gpio nodes.
+>>
+>> Hmm, OK, Good.
+>>
+>> So now I'm confused about why the PM domain has to do anything special
+>> if the presence/absence of the clocks is already handled by the DT.
+> 
+> Just adding a clock property to a device node in DT doesn't enable the clock
+> automatically, nor make it runtime-managed automatically.
+> Compare this to e.g. pinctrl, where adding pinctrl properties to DT does enable
+> them automatically, without the driver for the device having to care about it.
+> 
+> Drivers interfacing external hardware typically do care about clocks, as they
+> have to program clock generators for the external hardware interface (e.g.
+> driving spi or i2c buses at specific frequencies).
+> 
+> Other random drivers don't care about clocks, so they don't handle them.
+> But as long as they make basic pm_runtime_{enable,get_sync,put}() calls,
+> the (optional) clocks (and hardware PM domains) will "work" fine, if handled
+> by the PM (clock) domain.
 
---Dxnq1zWXvFF0Q93v
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Personally, I don't see problems with "functional" clocks.
+The problem, in my opinion, is that we can't specify in DT that some clock is
+"optional", so no one should touch such clock except driver.
+For example:
+Keystone 2 NETCP module has 3 clocks:
+	clocks = <&papllclk>, <&clkcpgmac>, <&chipclk12>;
+	clock-names = "clk_pa", "clk_cpgmac", "cpsw_cpts_rft_clk";
+ and CPTS functionality is optional (in general) and can be enabled/disabled.
+Also, usual example is MMC hosts 
+- OMAP hsmmc has "functional" clock "hsmmc1_fclk", and may have
+"optional" clock "mmchsdb_fck". As you may remember, PM runtime
+for OMAP2+ implemented by OMAP PM domain which performs many things,
+but one thing which is done always is enabling/disabling of "fck"
+when get/put() are called.
 
+Actually, pm_clk is very simple case of OMAP PM domain which should only
+handle clocks.
 
-Hello Lee,
+In non-DT case, we have possibility to divide clocks on "fck" and "opt"
+(The way it can be done is not convenient, but it is - .con_id).
 
-On Wed, Nov 19, 2014 at 04:40:40PM +0000, Lee Jones wrote:
-> On Wed, 19 Nov 2014, Fabio Estevam wrote:
->=20
-> > On Wed, Nov 19, 2014 at 1:50 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> > > Prevents build warning:
-> > >
-> > > st_thermal.c:278:12:
-> > >     warning: =E2=80=98st_thermal_suspend=E2=80=99 defined but not use=
-d [-Wunused-function]
-> > > st_thermal.c:286:12:
-> > >     warning: =E2=80=98st_thermal_resume=E2=80=99 defined but not used=
- [-Wunused-function]
-> > >
-> > > Signed-off-by: Lee Jones <lee.jones@linaro.org>
-> > > ---
-> > >
-> > > v1 =3D> v2:
-> > >  - CONFIG_PM =3D> CONFIG_PM_SLEEP suggested by David Paris.
-> >=20
-> > You should also update the Subject to 'when !PM_SLEEP'
->=20
-> I guess we should, yes.
->=20
-> Zhang, Eduardo,
->=20
-> Are you happy to do that, or would you like me to re-spin again?
->=20
+For DT-case - no way now. Also, PM domains are not physically present on
+Keystone 2 and GPD was selected as glue layer to integrate DT, pm_clk and
+PM runtime all together (one big-fat-global PM domain :).
 
-I can edit the patch for you this time.
+So, I was able to find only following way to define "fck" clocks in DT:
+	clocks = <&papllclk>, <&clkcpgmac>, <&chipclk12>;
+	clock-names = "clk_pa", "clk_cpgmac", "cpsw_cpts_rft_clk";
+	fck-clocks = <&papllclk>, <&clkcpgmac>;
+As you can see - this will lead to data duplication in DT (
 
-Next time, when sending new versions, a couple of advices:
-(1) add the Ack's/Reviewed's/Tested's -by  you get along the way.
-(2) please, version you patches, it easies maintainter's life while
-reviewing / applying your patches.
+Any propositions are welcome?
 
-Thanks for sending the fix.
+Unfortunately, It seems that if we would not able to find DT solution
+then there will be following ways to move forward:
+- "remove the power domain proxy from your drivers and use the clocks directly" 
+((c) Arnd Bergmann).
+[As possibility - It can be allowed to use clk_pm APIs by drivers]
+- continue using platform specific implementations.
 
-Eduardo Valentin
-
-> --=20
-> Lee Jones
-> Linaro STMicroelectronics Landing Team Lead
-> Linaro.org =E2=94=82 Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
-
---Dxnq1zWXvFF0Q93v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUb4TgAAoJEMLUO4d9pOJWDcwIAJZewN586xi4vRykZ4e9kREn
-JXAECsD7UTQlHWjw2NCnAcHycfzwp6DOYxGhKrI7Zx77YX38FzHDS+082K16MUnu
-LqURdzy37e9ycFE3s/750iTaWqf8EKTLCvkvttPDMc+GCOsGCCw0GX9EFeuBnDQE
-b93qKuURcD/PDo3Ckula6CFKt453sacbFJNgbsvua/AQj/OwS0F2paf260WQyGVO
-Fo6vuebsqZTXfZTJ8GHA0/2R2K/KD6T4LExNZxia69IYdqGefEupZGJrNmecn5Yw
-/z2neO5wksOWZ2Oyl38LFn85EjF9Mpvs4xqz1ivp6nzcanqo1HZi6kQf5xOMB2c=
-=S/iJ
------END PGP SIGNATURE-----
-
---Dxnq1zWXvFF0Q93v--
+regards,
+-grygorii
