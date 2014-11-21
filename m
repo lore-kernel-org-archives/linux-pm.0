@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v10 10/10] arm: dts: qcom: Add idle state device nodes for 8064
-Date: Fri, 21 Nov 2014 11:03:57 -0700
-Message-ID: <1416593037-27527-11-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v10 04/10] arm: dts: qcom: Add power-controller device node for 8074 Krait CPUs
+Date: Fri, 21 Nov 2014 11:03:51 -0700
+Message-ID: <1416593037-27527-5-git-send-email-lina.iyer@linaro.org>
 References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
@@ -10,75 +10,79 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add ARM common idle state device bindings for cpuidle support for APQ
-8064.
-
-Support Standby and Standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+Each Krait CPU in the QCOM 8074/8974 SoC has an SAW power controller to
+regulate the power to the cpu and aide the core in entering idle states.
+Reference the SAW instance and associate the instance with the CPU core.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-apq8064.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
-index 9fd24bc..3eaf242 100644
---- a/arch/arm/boot/dts/qcom-apq8064.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
-@@ -23,6 +23,7 @@
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index e265ec1..80a4467 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -21,6 +21,7 @@
+ 			reg = <0>;
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
++			qcom,saw = <&saw0>;
  		};
  
  		cpu@1 {
-@@ -33,6 +34,7 @@
+@@ -30,6 +31,7 @@
+ 			reg = <1>;
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
++			qcom,saw = <&saw1>;
  		};
  
  		cpu@2 {
-@@ -43,6 +45,7 @@
+@@ -39,6 +41,7 @@
+ 			reg = <2>;
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
++			qcom,saw = <&saw2>;
  		};
  
  		cpu@3 {
-@@ -53,12 +56,30 @@
+@@ -48,6 +51,7 @@
+ 			reg = <3>;
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
++			qcom,saw = <&saw3>;
  		};
  
  		L2: l2-cache {
- 			compatible = "cache";
- 			cache-level = <2>;
+@@ -144,7 +148,27 @@
+ 			};
  		};
-+
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <400>;
-+				exit-latency-us = <900>;
-+				min-residency-us = <3000>;
-+			};
+ 
+-		saw_l2: regulator@f9012000 {
++		saw0: power-controller@f9089000 {
++			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			reg = <0xf9089000 0x1000>;
 +		};
 +
- 	};
- 
- 	cpu-pmu {
++		saw1: power-controller@f9099000 {
++			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			reg = <0xf9099000 0x1000>;
++		};
++
++		saw2: power-controller@f90a9000 {
++			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			reg = <0xf90a9000 0x1000>;
++		};
++
++		saw3: power-controller@f90b9000 {
++			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			reg = <0xf90b9000 0x1000>;
++		};
++
++		saw_l2: power-controller@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
+ 			regulator;
 -- 
 2.1.0
