@@ -1,60 +1,54 @@
-From: Jason Cooper <jason@lakedaemon.net>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 Subject: Re: [PATCH 1/2] thermal: armada: Remove support for A375-Z1 SoC
-Date: Fri, 21 Nov 2014 15:18:58 -0500
-Message-ID: <20141121201858.GB22670@titan.lakedaemon.net>
+Date: Fri, 21 Nov 2014 22:51:22 +0100
+Message-ID: <20141121225122.1165b466@free-electrons.com>
 References: <1415116839-4323-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com>
- <20141120193804.GA7252@developer>
+	<1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com>
+	<20141120193804.GA7252@developer>
+	<20141121201858.GB22670@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:20810 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbaKUUTM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 15:19:12 -0500
-Content-Disposition: inline
-In-Reply-To: <20141120193804.GA7252@developer>
+Received: from down.free-electrons.com ([37.187.137.238]:58915 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751705AbaKUVvZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 16:51:25 -0500
+In-Reply-To: <20141121201858.GB22670@titan.lakedaemon.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 20, 2014 at 03:38:06PM -0400, Eduardo Valentin wrote:
-> Ezequiel and Jason,
+Dear Jason Cooper,
+
+On Fri, 21 Nov 2014 15:18:58 -0500, Jason Cooper wrote:
+
+> > First of, I would like to mention that best thing to avoid such
+> > situation is to be careful when documenting dt entries that represent hw
+> > that no one has access to (except internal people).
 > 
-> On Sat, Nov 08, 2014 at 10:16:46PM -0500, Jason Cooper wrote:
-> > On Tue, Nov 04, 2014 at 01:00:38PM -0300, Ezequiel Garcia wrote:
-> > > The Armada 375 Z1 SoC revision is no longer supported. This commit
-> > > removes the quirk needed for the thermal sensor.
-> > > 
-> > > Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> > > ---
-> > >  .../devicetree/bindings/thermal/armada-thermal.txt   |  8 --------
-> > >  drivers/thermal/armada_thermal.c                     | 20 --------------------
-> > >  2 files changed, 28 deletions(-)
-> > 
-> > As Thomas and Ezequiel rightfully mentioned, the compatible string below
-> > has never been in a dts file.  Our arch code detected the Z1, and
-> > changed the compatible on the fly.  As a result, there shouldn't be any
-> > dtbs in the wild with this compatible string.  If there are, it will be
-> > held by the few developers (Marvell, partners) that know what they are
-> > doing.
-> 
-> First of, I would like to mention that best thing to avoid such
-> situation is to be careful when documenting dt entries that represent hw
-> that no one has access to (except internal people).
+> Agreed, mainline support for an SoC so early in it's lifetime was new
+> for all of us.  Lesson learned.
 
-Agreed, mainline support for an SoC so early in it's lifetime was new
-for all of us.  Lesson learned.
+So the suggestion would be to not document the DT bindings at all,
+until we reach a "stable" hardware that is distributed externally?
 
-> > 
-> > Acked-by: Jason Cooper <jason@lakedaemon.net>
-> > 
-> 
-> OK Jason. I saw you picked patch 2. Does it mean I can queue this one? 
+Note that the Z1 stepping is not completely internal: a small
+selection of early customers have access to it. But it normally never
+ends up in final products, it's aimed at allowing those early customers
+to start their development soon.
 
-Yep.  Take it away.
+I don't mind adjusting how DT bindings are documented for such early
+SoCs stepping. But I really believe it's important to have a way to
+handle this situation nicely: we've been asking for years SoC vendors
+to start upstreaming their code early. Now that they start to do it, we
+shouldn't complain and instead adapt to this situation :-)
 
-thx,
+Best regards,
 
-Jason.
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
