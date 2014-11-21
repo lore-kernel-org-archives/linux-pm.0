@@ -1,66 +1,69 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH 1/1] thermal: Exynos: Deletion of unnecessary checks
- before two function calls
-Date: Fri, 21 Nov 2014 11:17:15 +0100 (CET)
-Message-ID: <alpine.DEB.2.10.1411211116580.2554@hadrien>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <546F1017.5080403@users.sourceforge.net>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to
+ "system-power-controller"
+Date: Fri, 21 Nov 2014 11:59:51 +0100
+Message-ID: <20141121105951.GA20679@localhost>
+References: <1415885699-1465-1-git-send-email-user@radxa>
+ <1415885699-1465-2-git-send-email-user@radxa>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:46227
-	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758422AbaKUKRk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 05:17:40 -0500
-In-Reply-To: <546F1017.5080403@users.sourceforge.net>
+Received: from mail-la0-f50.google.com ([209.85.215.50]:46849 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbaKUK7w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 05:59:52 -0500
+Content-Disposition: inline
+In-Reply-To: <1415885699-1465-2-git-send-email-user@radxa>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Auto Configured <romain.perier@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Cc: heiko@sntech.de, grant.likely@linaro.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, broonie@kernel.org, johan@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com
 
-On Fri, 21 Nov 2014, SF Markus Elfring wrote:
+On Thu, Nov 13, 2014 at 01:34:58PM +0000, Auto Configured wrote:
+> From: Romain Perier <romain.perier@gmail.com>
+> 
+> It reverts commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
+> As discussed on the mailing list, it makes more sense to rename back to the
+> old established property name, without the vendor prefix. Problem being that
+> the word "source" usually tends to be used for inputs and that is out of control
+> of the OS. The poweroff capability is an output which simply turns the
+> system-power off. Also, this property might be used by drivers which power-off
+> the system and power back on subsequent RTC alarms. This seems to suggest to
+> remove "poweroff" from the property name and to choose "system-power-controller"
+> as the more generic name. This patchs adds the required renaming changes and
+> defines an helper function which is compatible with both properties, the old one
+> which was only used by tps65910 and the new one without vendor-prefix.
 
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 21 Nov 2014 11:06:33 +0100
->
-> The functions cpufreq_cooling_unregister() and thermal_zone_device_unregister()
-> test whether their argument is NULL and then return immediately.
-> Thus the test around the call is not needed.
->
-> This issue was detected by using the Coccinelle software.
->
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Now this is a bit of a mess.
+
+There's a commit in the mfd tree, 25f833c1171d ("mfd: tps65910: Convert
+ti,system-power-controller DT property to poweroff-source"), which
+breaks all dts using tps65910 since these are never updated to the now
+retracted property name ("poweroff-source").
+
+This one should simply be reverted ASAP.
+
+> Signed-off-by: Romain Perier <romain.perier@gmail.com>
 > ---
->  drivers/thermal/samsung/exynos_thermal_common.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
-> index 3f5ad25..1cbb9d0 100644
-> --- a/drivers/thermal/samsung/exynos_thermal_common.c
-> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
-> @@ -417,12 +417,10 @@ void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
->
->  	th_zone = sensor_conf->pzone_data;
->
-> -	if (th_zone->therm_dev)
-> -		thermal_zone_device_unregister(th_zone->therm_dev);
-> +	thermal_zone_device_unregister(th_zone->therm_dev);
->
->  	for (i = 0; i < th_zone->cool_dev_size; i++) {
-> -		if (th_zone->cool_dev[i])
-> -			cpufreq_cooling_unregister(th_zone->cool_dev[i]);
-> +		cpufreq_cooling_unregister(th_zone->cool_dev[i]);
->  	}
+>  .../bindings/power/{poweroff.txt => power-controller.txt}        | 0
+>  .../devicetree/bindings/regulator/act8865-regulator.txt          | 4 ++--
+>  drivers/mfd/tps65910.c                                           | 9 ++++++++-
+>  drivers/regulator/act8865-regulator.c                            | 2 +-
+>  include/linux/of.h                                               | 6 +++---
+>  5 files changed, 14 insertions(+), 7 deletions(-)
 
-Now you have unnecessary {}
+Romain, what tree is this patch against? The changes to the tps65910
+driver appears not to even be in the regulator tree, yet you asked Mark
+to merge this. And the MFD maintainer is not even on CC.
 
-julia
+Let's fix the breakage by reverting the offending commit in mfd. Then the
+new standard name can be introduced in regulator alone (e.g. this patch
+without the tps65910 bits) as nothing outside of regulator should be
+using the new power-off feature (or binding) for act8865. Then other
+drivers and dts can be converted to use the new property name (while
+retaining backwards compatibility) for 3.20.
 
->
->  	dev_info(sensor_conf->dev,
-> --
-> 2.1.3
->
->
+[ We should probably also consider adding an "of_device_is_" prefix to
+the helper name for consistency. ]
+
+Johan
