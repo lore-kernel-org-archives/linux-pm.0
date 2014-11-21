@@ -1,33 +1,31 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: Re: thermal: Exynos: Deletion of unnecessary checks before two function
- calls
-Date: Fri, 21 Nov 2014 14:25:45 +0100
-Message-ID: <546F3D59.2060504@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
- urceforge.net> <546F1017.5080403@users.sourceforge.net> <alpine.DEB.2.10.1411211116580.2554@hadrien>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH RFC 3/3] ARM: dts: enable power subsystem for i.MX28
+Date: Fri, 21 Nov 2014 11:55:29 -0200
+Message-ID: <CAOMZO5ALfkFzA7arhx7+gkS8R_eCjM3=2HnaVn2sAhniEL_1ng@mail.gmail.com>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
+	<1416514477-19190-4-git-send-email-stefan.wahren@i2se.com>
+	<CAOMZO5AWOs8ODsru+ySsLb=R4ezDL19nK_z0zAXdbrDfPT8KhA@mail.gmail.com>
+	<1167895673.64469.1416524223868.JavaMail.open-xchange@oxbaltgw04.schlund.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.10.1411211116580.2554@hadrien>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:59730 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757904AbaKUNza (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 08:55:30 -0500
+In-Reply-To: <1167895673.64469.1416524223868.JavaMail.open-xchange@oxbaltgw04.schlund.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
->>  	for (i = 0; i < th_zone->cool_dev_size; i++) {
->> -		if (th_zone->cool_dev[i])
->> -			cpufreq_cooling_unregister(th_zone->cool_dev[i]);
->> +		cpufreq_cooling_unregister(th_zone->cool_dev[i]);
->>  	}
-> 
-> Now you have unnecessary {}
+On Thu, Nov 20, 2014 at 8:57 PM, Stefan Wahren <stefan.wahren@i2se.com> wrote:
 
-How are the chances that your source code transformation tool
-can also consider the deletion of curly brackets in such an use case?
+>> Or ''fsl,mxs-power' could be used for both?
+>
+> I think that would be a bad idea. I can't believe that all PMU register of
+> i.MX23 and i.MX28 are identical. So in the future we will have to distinguish
+> between them. It's better to do it now like most of the mxs driver does.
 
-Can any more pretty-printing rules be integrated from a specific
-coding style configuration?
 
-Regards,
-Markus
+Ok, sounds good then.
