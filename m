@@ -1,42 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Fri, 21 Nov 2014 09:06:53 +0530
-Message-ID: <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
-References: <546D26AE.50601@free.fr>
-	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
-	<546DF891.2050401@free.fr>
+Subject: Re: Question about FIX ME in cpufreq-dt.c
+Date: Fri, 21 Nov 2014 09:18:10 +0530
+Message-ID: <CAKohpo=k3uTNAak=ejompWe5jW=dTbQS3M2zx=eCwgFJpu_ekw@mail.gmail.com>
+References: <546E24CC.2040402@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <546DF891.2050401@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:64970 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757054AbaKUDsL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 22:48:11 -0500
+Received: by mail-oi0-f45.google.com with SMTP id a141so3090207oig.18
+        for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2014 19:48:10 -0800 (PST)
+In-Reply-To: <546E24CC.2040402@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: nick <xerofoify@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 20 November 2014 19:50, Mason <mpeg.blue@free.fr> wrote:
-> On 20/11/2014 10:13, Viresh Kumar wrote:
-> Suppose I expose 100 frequencies. Aside from wasting memory, isn't
-> there also a risk that cpufreq will take time, ramping up/down
-> through similar frequencies? (Or does it just say "jump to THAT
-> frequency" skipping useless intermediate frequencies?)
+On 20 November 2014 22:58, nick <xerofoify@gmail.com> wrote:
+> Greetings Rafael and the other maintainers,
 
-Some time might be wasted for similar frequencies, moreover for every
-change we have to traverse 100 frequencies to see which one fits best.
+Hi.
 
-> There is a trade-off, tough.
->
-> My concern is this: suppose the CPU cores are set to e.g. 54 MHz.
-> Suddenly, the driver for an important subsystem needs to speak with
-> the corresponding device, with hard deadlines in the comms protocol.
-> Will the CPU ramp up fast enough (assuming ondemand governor).
+> I am curious about the FIX ME in cpufreq-dt.c about not using a for loop or running this part of the code on all
+> CPUs.
 
-All current governors depend on background timers for their functionality.
-These timers run at some sampling rate (in ms) and that time we change
-CPU's frequency depending on existing load on system.. So, that might
-not be fast enough.
+In case this isn't enough then the loop should be run for any one CPU
+from each cluster.
+That will guarantee that we have completed regulator/clk
+initialization for all the clusters..
+But checking for all CPUs might be fine as well..
 
-> And the end of this message is as good a place as any to thank you
-> for having answered my many questions.
+> If not can I remove the FIX ME or if it's valid can one of the maintainers send me so advice on to fix it
+> as I will write a patch if need be to fix it.
 
-Your welcome :)
+The deal is that we aren't yet sure if we are really required to check
+this for all CPUs.
+So, we are waiting for the first platform to break and can be fixed
+then. So, just leave it
+as is for now :)
+
+Thanks for caring for it :)
