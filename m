@@ -1,62 +1,56 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Fri, 21 Nov 2014 10:04:47 +0100
-Message-ID: <CAMuHMdWLU7seisSE3bgDFi4-0qKpyLHJfZ1GO37ZUMVFwNV9gg@mail.gmail.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
-	<1709760.E0jX3Myv0h@wuerfel>
-	<546C7FDD.7030906@ti.com>
-	<2900095.WIocOu7ue2@wuerfel>
-	<CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
-	<546DD87B.3080806@ti.com>
-	<CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>
-	<CAMuHMdWtHT7QX3Kpa-GCLa49ToGODwjnNVgfxDzJzcM-FU1ffg@mail.gmail.com>
-	<546E0970.5090301@ti.com>
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+Subject: RE: [PATCH 2/2] cpufreq: qoriq: rename the driver
+Date: Fri, 21 Nov 2014 09:16:23 +0000
+Message-ID: <dedc11e3150d44ee89bb1e96b5447687@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1416554882-16566-1-git-send-email-Yuantian.Tang@freescale.com>
+	<1416554882-16566-2-git-send-email-Yuantian.Tang@freescale.com>
+ <CAKohpo=xLOxXrCJNO0LmrVxMDNsFy2Kxg6bNzHm=vQCJnBvSaw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <546E0970.5090301-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bon0147.outbound.protection.outlook.com ([157.56.111.147]:51072
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751174AbaKUJQ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Nov 2014 04:16:27 -0500
+In-Reply-To: <CAKohpo=xLOxXrCJNO0LmrVxMDNsFy2Kxg6bNzHm=vQCJnBvSaw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
 
-On Thu, Nov 20, 2014 at 4:32 PM, Grygorii Strashko
-<grygorii.strashko-l0cyMroinI0@public.gmane.org> wrote:
->> That's indeed the tricky part.
->>
->> On shmobile, we just use the "NULL" clock, i.e. the first clock, for historical
->> reasons.
->>
->> Using clock-names (e.g. "fck" and "pm") will conflict with existing bindings
->> for devices that already mandate specific clock names.
->>
->> As the clock being a "PM" clock is a property of the clock provider
->> (at last on shmobile), I originally came up with not handling it in DT,
->> but advertising it in the clock provider driver:
->>
->>>> - first Geert Uytterhoeven proposed to use CLK_RUNTIME_PM there
->>>>    https://lkml.org/lkml/2014/11/6/319
->
-> As I mentioned previously I don't like it, because in many cases one driver is used for
-> all/set_of clocks which support gating function. As result, some sort of tables will
-> need to be created and maintained in code by these drivers per each SoC
-> (or even per each SoC revision) for identification that clock is "PM clock".
-
-That depends. On shmobile, there's a separate hardware module for those
-clocks, hence all clocks provided by drivers/clk/shmobile/clk-mstp.c are "PM"
-clocks.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGVsbG8gVmlyZXNoLA0KDQpXaGVuIEkgdXNlIC1DIC1NIG9wdGlvbnMsIGNoZWNrcGF0Y2ggcmVw
+b3J0cyBlcnJvcjoNCg0KW3Rhbmd5dEB0aXRhbiBsaW51eC1wbV0kIC4vc2NyaXB0cy9jaGVja3Bh
+dGNoLnBsIDAwMDItY3B1ZnJlcS1xb3JpcS1yZW5hbWUtdGhlLWRyaXZlci5wYXRjaCANCldBUk5J
+Tkc6IGFkZGVkLCBtb3ZlZCBvciBkZWxldGVkIGZpbGUocyksIGRvZXMgTUFJTlRBSU5FUlMgbmVl
+ZCB1cGRhdGluZz8NCiMxNTogDQogZHJpdmVycy9jcHVmcmVxL3twcGMtY29yZW5ldC1jcHVmcmVx
+LmMgPT4gcW9yaXEtY3B1ZnJlcS5jfSB8IDANCg0KRVJST1I6IERvZXMgbm90IGFwcGVhciB0byBi
+ZSBhIHVuaWZpZWQtZGlmZiBmb3JtYXQgcGF0Y2gNCg0KdG90YWw6IDEgZXJyb3JzLCAxIHdhcm5p
+bmdzLCAwIGxpbmVzIGNoZWNrZWQNCg0KMDAwMi1jcHVmcmVxLXFvcmlxLXJlbmFtZS10aGUtZHJp
+dmVyLnBhdGNoIGhhcyBzdHlsZSBwcm9ibGVtcywgcGxlYXNlIHJldmlldy4NCg0KSSBqdXN0IHJl
+bmFtZSBpdCBhbmQgZG8gbm90IGNoYW5nZSBhbnl0aW5nLiBJc24ndCB0aGF0IGFsbG93ZWQ/DQoN
+ClRoYW5rcywNCll1YW50aWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
+bTogVmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+IFNlbnQ6
+IEZyaWRheSwgTm92ZW1iZXIgMjEsIDIwMTQgMzo1NiBQTQ0KPiBUbzogVGFuZyBZdWFudGlhbi1C
+Mjk5ODMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0
+OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBK
+aW4gWmhlbmd4aW9uZy1SNjQxODgNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIGNwdWZyZXE6
+IHFvcmlxOiByZW5hbWUgdGhlIGRyaXZlcg0KPiANCj4gT24gMjEgTm92ZW1iZXIgMjAxNCAxMjo1
+OCwgVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tPg0KPiB3cm90ZToN
+Cj4gPiBUaGlzIGRyaXZlciB3b3JrcyBvbiBhbGwgUW9ySVEgcGxhdGZvcm1zIHdoaWNoIGluY2x1
+ZGUgQVJNLWJhc2VkIGNvcmVzDQo+ID4gYW5kIFBQQy1iYXNlZCBjb3Jlcy4NCj4gPiBSZW5hbWUg
+aXQgaW4gb3JkZXIgdG8gcmVwcmVzZW50IGJldHRlci4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
+IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
+PiAgZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYyB8IDM3MSAtLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVm
+cmVxLmMgICAgICAgfCAzNzENCj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0K
+PiA+ICAyIGZpbGVzIGNoYW5nZWQsIDM3MSBpbnNlcnRpb25zKCspLCAzNzEgZGVsZXRpb25zKC0p
+ICBkZWxldGUgbW9kZQ0KPiA+IDEwMDY0NCBkcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1
+ZnJlcS5jDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1
+ZnJlcS5jDQo+IA0KPiBUaGlzIGlzIG5vdCByZXZpZXdhYmxlIGF0IGFsbC4uIEhvdyBkbyBJIHZl
+cmlmeSB0aGF0IHlvdSBoYXZlbid0IGNoYW5nZWQgc29tZXRoaW5nDQo+IGluIHRoZSBmaWxlcyBh
+cyB3ZWxsID8NCj4gDQo+IFRvIG1ha2UgbGlmZSBlYXN5IGFsd2F5cyBjcmVhdGUgcGF0Y2hlcyB3
+aXRoOg0KPiANCj4gZ2l0IGZvcm1hdC1wYXRjaCAtQyAtTQ0KPiANCj4gQWJvdmUgb3B0aW9ucyBo
+YW5kbGUgcmVuYW1lcyBwcmV0dHkgd2VsbC4NCg==
