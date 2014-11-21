@@ -1,31 +1,77 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Fri, 21 Nov 2014 14:22:42 +0100
-Message-ID: <CABgxDoJkprh7GgXbjAQjvbYUanVQWxZo1M4TiiWDQr_TG40UCQ@mail.gmail.com>
-References: <1415885699-1465-1-git-send-email-user@radxa>
-	<1415885699-1465-2-git-send-email-user@radxa>
-	<20141121105951.GA20679@localhost>
-	<CABgxDoLy-+a7TAm7VWo5pYF7xZv4SM9=Zjcd1V6khnRqZbsFAw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f176.google.com ([209.85.216.176]:60160 "EHLO
-	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755095AbaKUNWq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 08:22:46 -0500
-In-Reply-To: <CABgxDoLy-+a7TAm7VWo5pYF7xZv4SM9=Zjcd1V6khnRqZbsFAw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v12 4/6] ARM: Exynos: switch to using generic cpufreq driver
+ for Exynos4210/5250/5420
+Date: Fri, 21 Nov 2014 19:01:20 +0530
+Message-ID: <1416576682-5255-5-git-send-email-thomas.ab@samsung.com>
+References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
+ <1416576682-5255-2-git-send-email-thomas.ab@samsung.com>
+ <1416576682-5255-3-git-send-email-thomas.ab@samsung.com>
+ <1416576682-5255-4-git-send-email-thomas.ab@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1416576682-5255-4-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com, khilman@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
-2014-11-21 14:18 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
+The new CPU clock type allows the use of generic CPUfreq drivers. So for
+Exynos4210/5250, switch to using generic cpufreq driver. For Exynos5420,
+which did not have CPUfreq driver support, enable the use of generic
+CPUfreq driver.
 
-> it was merged by Lee Jones (so it was merged onto
-> the mfd tree)
+Suggested-by: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
+Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Tested-by: Chander Kashyap <k.chander@samsung.com>
+---
+ arch/arm/mach-exynos/exynos.c |   26 +++++++++++++++++++++++++-
+ 1 files changed, 25 insertions(+), 1 deletions(-)
 
-It was done, for a previous serie, not this one . This is  when I
-proposed to update the dts too (for all boards using the custom
-property) until the discussion turned into a troll.
-
-Romain
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 6b283eb..402a2ae 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -282,6 +282,30 @@ static void __init exynos_init_irq(void)
+ 	exynos_map_pmu();
+ }
+ 
++static const struct of_device_id exynos_cpufreq_matches[] = {
++	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
++	{ .compatible = "samsung,exynos5422", .data = "arm-bL-cpufreq-dt" },
++	{ .compatible = "samsung,exynos5800", .data = "arm-bL-cpufreq-dt" },
++	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
++	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
++	{ .compatible = "samsung,exynos5440", .data = "exynos5440-cpufreq" },
++	{ /* sentinel */ }
++};
++
++static void __init exynos_cpufreq_init(void)
++{
++	struct device_node *root = of_find_node_by_path("/");
++	const struct of_device_id *match;
++
++	match = of_match_node(exynos_cpufreq_matches, root);
++	if (!match) {
++		platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
++		return;
++	}
++
++	platform_device_register_simple(match->data, -1, NULL, 0);
++}
++
+ static void __init exynos_dt_machine_init(void)
+ {
+ 	struct device_node *i2c_np;
+@@ -321,7 +345,7 @@ static void __init exynos_dt_machine_init(void)
+ 			of_machine_is_compatible("samsung,exynos5250"))
+ 		platform_device_register(&exynos_cpuidle);
+ 
+-	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
++	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+-- 
+1.6.6.rc2
