@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v10 02/10] qcom: scm: Add SCM warmboot support for quad core SoCs
-Date: Fri, 21 Nov 2014 11:03:49 -0700
-Message-ID: <1416593037-27527-3-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v10 05/10] arm: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+Date: Fri, 21 Nov 2014 11:03:52 -0700
+Message-ID: <1416593037-27527-6-git-send-email-lina.iyer@linaro.org>
 References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
@@ -10,79 +10,79 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quad core SoCs like APQ8074, APQ8064, APQ8084 need SCM support set up
-warm boot addresses in the Secure Monitor. Extend the SCM flags to
-support warm boot addresses for secondary cores.
-
-We do not need to export the warmboot flags. Move them into the
-implementation file.
+Each Krait CPU in the QCOM 8084 SoC has an SAW power controller to
+regulate the power to the cpu and aide the core in entering idle states.
+Reference the SAW instance and associate the instance with the CPU core.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/soc/qcom/scm-boot.c | 31 +++++++++++++++++++++++++++++++
- include/soc/qcom/scm-boot.h |  3 +--
- 2 files changed, 32 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/soc/qcom/scm-boot.c b/drivers/soc/qcom/scm-boot.c
-index 60ff7b4..0871659 100644
---- a/drivers/soc/qcom/scm-boot.c
-+++ b/drivers/soc/qcom/scm-boot.c
-@@ -21,6 +21,23 @@
- #include <soc/qcom/scm.h>
- #include <soc/qcom/scm-boot.h>
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 1f130bc..4466b9e 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -21,6 +21,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
++			qcom,saw = <&saw0>;
+ 		};
  
-+#define SCM_FLAG_WARMBOOT_CPU0		0x04
-+#define SCM_FLAG_WARMBOOT_CPU1		0x02
-+#define SCM_FLAG_WARMBOOT_CPU2		0x10
-+#define SCM_FLAG_WARMBOOT_CPU3		0x40
-+
-+struct scm_warmboot {
-+	int flag;
-+	void *entry;
-+};
-+
-+static struct scm_warmboot scm_flags[] = {
-+	{ .flag = SCM_FLAG_WARMBOOT_CPU0 },
-+	{ .flag = SCM_FLAG_WARMBOOT_CPU1 },
-+	{ .flag = SCM_FLAG_WARMBOOT_CPU2 },
-+	{ .flag = SCM_FLAG_WARMBOOT_CPU3 },
-+};
-+
- /*
-  * Set the cold/warm boot address for one of the CPU cores.
-  */
-@@ -37,3 +54,17 @@ int scm_set_boot_addr(phys_addr_t addr, int flags)
- 			&cmd, sizeof(cmd), NULL, 0);
- }
- EXPORT_SYMBOL(scm_set_boot_addr);
-+
-+int scm_set_warm_boot_addr(void *entry, int cpu)
-+{
-+	int ret;
-+
-+	if (entry == scm_flags[cpu].entry)
-+		return 0;
-+
-+	ret = scm_set_boot_addr(virt_to_phys(entry), scm_flags[cpu].flag);
-+	if (!ret)
-+		scm_flags[cpu].entry  = entry;
-+
-+	return ret;
-+}
-diff --git a/include/soc/qcom/scm-boot.h b/include/soc/qcom/scm-boot.h
-index 6aabb24..529f55a 100644
---- a/include/soc/qcom/scm-boot.h
-+++ b/include/soc/qcom/scm-boot.h
-@@ -16,9 +16,8 @@
- #define SCM_FLAG_COLDBOOT_CPU1		0x01
- #define SCM_FLAG_COLDBOOT_CPU2		0x08
- #define SCM_FLAG_COLDBOOT_CPU3		0x20
--#define SCM_FLAG_WARMBOOT_CPU0		0x04
--#define SCM_FLAG_WARMBOOT_CPU1		0x02
+ 		cpu@1 {
+@@ -30,6 +31,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
++			qcom,saw = <&saw1>;
+ 		};
  
- int scm_set_boot_addr(phys_addr_t addr, int flags);
-+int scm_set_warm_boot_addr(void *entry, int cpu);
+ 		cpu@2 {
+@@ -39,6 +41,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
++			qcom,saw = <&saw2>;
+ 		};
  
- #endif
+ 		cpu@3 {
+@@ -48,6 +51,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
++			qcom,saw = <&saw3>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -144,7 +148,27 @@
+ 			};
+ 		};
+ 
+-		saw_l2: regulator@f9012000 {
++		saw0: power-controller@f9089000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf9089000 0x1000>;
++		};
++
++		saw1: power-controller@f9099000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf9099000 0x1000>;
++		};
++
++		saw2: power-controller@f90a9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf90a9000 0x1000>;
++		};
++
++		saw3: power-controller@f90b9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf90b9000 0x1000>;
++		};
++
++		saw_l2: power-controller@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
+ 			regulator;
 -- 
 2.1.0
