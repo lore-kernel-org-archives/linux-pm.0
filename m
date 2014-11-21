@@ -1,157 +1,107 @@
-From: Linda Knippers <ljklists@gmail.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
- _PPC method
-Date: Thu, 20 Nov 2014 23:44:56 -0500
-Message-ID: <546EC348.1000001@gmail.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com> <546E1BBE.7050906@intel.com> <546E892C.8000209@oracle.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Race condition in cpufreq
+Date: Fri, 21 Nov 2014 10:18:59 +0530
+Message-ID: <CAOh2x=kcpe1RC2L_P8g=gzKP+T-v+w4sYicCtXFAp_mM2uc_VQ@mail.gmail.com>
+References: <CAKZGPAMLm0iHRgfojbxP+Tzbt4eUFovM3NYz83Lnexw3G2QiYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:57196 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757203AbaKUEo7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Nov 2014 23:44:59 -0500
-In-Reply-To: <546E892C.8000209@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKZGPAMLm0iHRgfojbxP+Tzbt4eUFovM3NYz83Lnexw3G2QiYA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Arun KS <arunks.linux@gmail.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: ethan zhao <ethan.zhao@oracle.com>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linda Knippers <linda.knippers@hp.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
 
+please use the right list for cpufreq stuff. Also, cc maintainers if
+you want quick replies to your mail.
 
+On Wed, Nov 19, 2014 at 11:25 AM, Arun KS <arunks.linux@gmail.com> wrote:
+> Hello,
+>
+> Seen a race condition in cpufrequency driver.
+>
+> cpu2 is being hot-plugged out. And this started at say, 20th msec.
+> -000|context_switch(inline)
+> -000|need_resched()
+> -001|preempt_schedule(inline)
+> -001|preempt_schedule()
+> -002|static_key_false(inline)
+> -002|trace_sched_cpu_hotplug(inline)
+> -002|cpu_down(cpu = 2, ?)
+> -003|cpu_down(cpu = 2)
+> -004|update_offline_cores(?)
+> -005|do_hotplug(?)
+> -006|kthread(_create = 0xEE85BEBC)
+>
+> cpu1 is updating the governor at say 60th msec.
+> echo "some_governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> at 60th msec, cpu2 is already hot-plugged but CPU_POST_DEAD has not
+> called because __cpu_down was scheduled out at cpu_hotplug_done(while
+> unlocking mutex)
+>
+> now store_scaling_governor calls cpufreq_set_policy
+> CPUFREQ_GOV_START iterates through all cpus in policy->cpus(which is
+> not the correct one now, because cpu2 is already hot-plugged out(DEAD)
+> but not updated in policy->cpus).
+>
+> One suggestion is to use CPU_DEAD instead of CPU_POST_DEAD in cpufreq.c
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 644b54e..5fdaf06 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2325,7 +2325,7 @@ static int cpufreq_cpu_callback(struct
+> notifier_block *nfb,
+>                         __cpufreq_remove_dev_prepare(dev, NULL);
+>                         break;
+>
+> -               case CPU_POST_DEAD:
+> +               case CPU_DEAD:
+>                         __cpufreq_remove_dev_finish(dev, NULL);
+>                         break;
+>
+> Or add a mutex to serialize the context.
+> Appreciate your valuable comments.
 
-On 11/20/2014 07:37 PM, ethan zhao wrote:
-> Dirk,
-> 
-> On 2014/11/21 0:50, Dirk Brandewie wrote:
->> On 11/19/2014 12:22 PM, Linda Knippers wrote:
->>> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
->>>> Oracle Sun X86 servers have dynamic power capping capability that
->>>> works via
->>>> ACPI _PPC method etc, so skip loading this driver if Sun server has
->>>> ACPI _PPC
->>>> enabled.
->>>>
->>>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->>>> ---
->>>>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->>>>   1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/drivers/cpufreq/intel_pstate.c
->>>> b/drivers/cpufreq/intel_pstate.c
->>>> index 27bb6d3..5498eb0 100644
->>>> --- a/drivers/cpufreq/intel_pstate.c
->>>> +++ b/drivers/cpufreq/intel_pstate.c
->>>> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->>>>       return true;
->>>>   }
->>>>
->>>> +static bool intel_pstate_has_acpi_ppc(void)
->>>> +{
->>>> +    int i;
->>>> +
->>>> +    for_each_possible_cpu(i) {
->>>> +        struct acpi_processor *pr = per_cpu(processors, i);
->>>> +
->>>> +        if (!pr)
->>>> +            continue;
->>>> +        if (acpi_has_method(pr->handle, "_PPC"))
->>>> +            return true;
->>>> +    }
->>>> +    return false;
->>>> +}
->>>> +
->>>>   struct hw_vendor_info {
->>>>       u16  valid;
->>>>       char oem_id[ACPI_OEM_ID_SIZE];
->>>> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->>>>   /* Hardware vendor-specific info that has its own power management
->>>> modes */
->>>>   static struct hw_vendor_info vendor_info[] = {
->>>>       {1, "HP    ", "ProLiant"},
->>>> +    {1, "ORACLE", ""},
->>>>       {0, "", ""},
->>>>   };
->>>>
->>>> @@ -969,12 +985,16 @@ static bool
->>>> intel_pstate_platform_pwr_mgmt_exists(void)
->>>>               !strncmp(hdr.oem_table_id, v_info->oem_table_id,
->>>> ACPI_OEM_TABLE_ID_SIZE) &&
->>>>               intel_pstate_no_acpi_pss())
->>>>               return true;
->>>> +        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
->>>> +            intel_pstate_has_acpi_ppc())
->>>
->>> We need try this on a few platforms to make sure this patch doesn't
->>> break the
->>> HP platforms that may or may not need this driver, depending on the
->>> BIOS settings.
->>>
->>
->> It looks like HP systems would get swept up in this check too if they
->> have _PPC
+What kernel version are you using? Sometime back this patch
+addressed this problem:
 
-Right.  This patch breaks HP ProLiant platforms when they are
-configured to have the OS do power management.  In that case,
-the firmware exposes _PPC information.
+commit 4f750c930822b92df74327a4d1364eff87701360
+Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Date:   Sat Sep 7 01:23:43 2013 +0530
 
->    No , this patch checks the oem_id against 'ORACLE" first, will not
-> affect other vendors even they have _PPC.
+    cpufreq: Synchronize the cpufreq store_*() routines with CPU hotplug
 
-I don't think that's how your code works.  This patch will match any
-vendor that is in the table, not just "ORACLE".
-> 
->>
->> What about extending the hw_vendor_info struct to include whether _PSS or
->  Except refer to ACPI DSDT, I don't know how to fill such info.
->> _PPC should be done for the platform since it appears that oracle and HP
->> have implemented similar functionality using two different methods.
->   Maybe Linda could answer this whether HP also has _PPC and should be
-> wept out.
->   But that doesn't happen with on the same box at the same time.
+    The functions that are used to write to cpufreq sysfs files (such as
+    store_scaling_max_freq()) are not hotplug safe. They can race with CPU
+    hotplug tasks and lead to problems such as trying to acquire an already
+    destroyed timer-mutex etc.
 
-I don't know how an Oracle box works but on a ProLiant, customers can
-choose to have platform power management or OS power management.
-When the platform is managing the power, we don't provide the _PSS
-information.  Since our oem information is in the table and there is
-no _PSS, the intel_pstate driver doesn't stay loaded.  That's what we want.
+    Eg:
 
-When the platform configured to have the OS do the power management,
-the firmware has _PSS and _PPC and we want the intel_pstate driver,
-That's what your patch breaks.  With your patch, the driver won't
-stay loaded because our platform is in the table and the check for
-_PPC passes.
+        __cpufreq_remove_dev()
+         __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+           policy->governor->governor(policy, CPUFREQ_GOV_STOP);
+            cpufreq_governor_dbs()
+             case CPUFREQ_GOV_STOP:
+              mutex_destroy(&cpu_cdbs->timer_mutex)
+              cpu_cdbs->cur_policy = NULL;
+          <PREEMPT>
+        store()
+         __cpufreq_set_policy()
+          __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+            policy->governor->governor(policy, CPUFREQ_GOV_LIMITS);
+             case CPUFREQ_GOV_LIMITS:
+              mutex_lock(&cpu_cdbs->timer_mutex); <-- Warning (destroyed mutex)
+               if (policy->max < cpu_cdbs->cur_policy->cur) <-
+cur_policy == NULL
 
-How does an Oracle box work?
-
--- ljk
-
-> 
->   Thanks,
->   Ethan
->>
->>
->>> I don't suppose you tested on a ProLiant too?
->>>
->>> -- ljk
->>>
->>>> +            return true;
->>>>       }
->>>>
->>>>       return false;
->>>>   }
->>>>   #else /* CONFIG_ACPI not enabled */
->>>>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) {
->>>> return false; }
->>>> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->>>>   #endif /* CONFIG_ACPI */
->>>>
->>>>   static int __init intel_pstate_init(void)
->>>>
->>>
->>
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+    So use get_online_cpus()/put_online_cpus() in the store_*() functions, to
+    synchronize with CPU hotplug. However, there is an additional point to note
+    here: some parts of the CPU teardown in the cpufreq subsystem are done in
+    the CPU_POST_DEAD stage, with cpu_hotplug.lock *released*. So, using the
+    get/put_online_cpus() functions alone is insufficient; we should also ensure
+    that we don't race with those latter steps in the hotplug sequence. We can
+    easily achieve this by checking if the CPU is online before proceeding with
+    the store, since the CPU would have been marked offline by the time the
+    CPU_POST_DEAD notifiers are executed.
