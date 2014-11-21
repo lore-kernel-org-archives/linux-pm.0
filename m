@@ -1,83 +1,62 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Fri, 21 Nov 2014 14:18:21 +0100
-Message-ID: <CABgxDoLy-+a7TAm7VWo5pYF7xZv4SM9=Zjcd1V6khnRqZbsFAw@mail.gmail.com>
-References: <1415885699-1465-1-git-send-email-user@radxa>
-	<1415885699-1465-2-git-send-email-user@radxa>
-	<20141121105951.GA20679@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:34158 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755104AbaKUNSW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 08:18:22 -0500
-In-Reply-To: <20141121105951.GA20679@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Fri, 21 Nov 2014 19:01:16 +0530
+Message-ID: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com, khilman@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
-2014-11-21 11:59 GMT+01:00 Johan Hovold <johan@kernel.org>:
-> On Thu, Nov 13, 2014 at 01:34:58PM +0000, Auto Configured wrote:
->> From: Romain Perier <romain.perier@gmail.com>
->>
->> It reverts commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
->> As discussed on the mailing list, it makes more sense to rename back to the
->> old established property name, without the vendor prefix. Problem being that
->> the word "source" usually tends to be used for inputs and that is out of control
->> of the OS. The poweroff capability is an output which simply turns the
->> system-power off. Also, this property might be used by drivers which power-off
->> the system and power back on subsequent RTC alarms. This seems to suggest to
->> remove "poweroff" from the property name and to choose "system-power-controller"
->> as the more generic name. This patchs adds the required renaming changes and
->> defines an helper function which is compatible with both properties, the old one
->> which was only used by tps65910 and the new one without vendor-prefix.
->
-> Now this is a bit of a mess.
->
-> There's a commit in the mfd tree, 25f833c1171d ("mfd: tps65910: Convert
-> ti,system-power-controller DT property to poweroff-source"), which
-> breaks all dts using tps65910 since these are never updated to the now
-> retracted property name ("poweroff-source").
+Changes since v11:
+- Rebased on top of git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
 
-No seriously ? yes, this is why I ask for feedbacks since 3 weeks... ^^
+This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+drivers and enables the use of cpufreq-dt driver for these platforms. This
+series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+driver.
 
->
-> This one should simply be reverted ASAP.
->
->> Signed-off-by: Romain Perier <romain.perier@gmail.com>
->> ---
->>  .../bindings/power/{poweroff.txt => power-controller.txt}        | 0
->>  .../devicetree/bindings/regulator/act8865-regulator.txt          | 4 ++--
->>  drivers/mfd/tps65910.c                                           | 9 ++++++++-
->>  drivers/regulator/act8865-regulator.c                            | 2 +-
->>  include/linux/of.h                                               | 6 +++---
->>  5 files changed, 14 insertions(+), 7 deletions(-)
->
-> Romain, what tree is this patch against? The changes to the tps65910
-> driver appears not to even be in the regulator tree, yet you asked Mark
-> to merge this. And the MFD maintainer is not even on CC.
+This series is based on the following branch.
+git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
 
+This series depends on the following patch which can be picked from
+git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git samsung/dt
+e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
 
-I work with linux-next, this patch is present in that tree. If I
-remember correctly, it was merged by Lee Jones (so it was merged onto
-the mfd tree)
+This patch series has been tested on Exynos4210/5250/5420 based boards.
+Tomasz Figa had plans to take this in the Samsung clock tree for v3.19
+(http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
+Sylwester, could you consider to merge this in your tree?
 
->
-> Let's fix the breakage by reverting the offending commit in mfd. Then the
-> new standard name can be introduced in regulator alone (e.g. this patch
-> without the tps65910 bits) as nothing outside of regulator should be
-> using the new power-off feature (or binding) for act8865. Then other
-> drivers and dts can be converted to use the new property name (while
-> retaining backwards compatibility) for 3.20.
->
-> [ We should probably also consider adding an "of_device_is_" prefix to
-> the helper name for consistency. ]
->
-> Johan
+Thomas Abraham (6):
+  clk: samsung: add infrastructure to register cpu clocks
+  clk: samsung: add cpu clock configuration data and instantiate cpu clock
+  ARM: dts: Exynos: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+  cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+  clk: samsung: remove unused clock aliases and update clock flags
 
-Maintainers, Mark, Grant, Lee, what do you think ?
-
-Thanks,
-Romain
+ arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+ arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+ arch/arm/boot/dts/exynos4210.dtsi               |   14 ++-
+ arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+ arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+ arch/arm/boot/dts/exynos5250.dtsi               |   25 +++-
+ arch/arm/boot/dts/exynos5420.dtsi               |   38 ++++
+ arch/arm/mach-exynos/exynos.c                   |   26 +++-
+ drivers/clk/samsung/Makefile                    |    2 +-
+ drivers/clk/samsung/clk-exynos4.c               |   63 +++++---
+ drivers/clk/samsung/clk-exynos5250.c            |   44 ++++-
+ drivers/clk/samsung/clk-exynos5420.c            |   72 +++++++-
+ drivers/cpufreq/Kconfig.arm                     |   22 ---
+ drivers/cpufreq/Makefile                        |    2 -
+ drivers/cpufreq/exynos4210-cpufreq.c            |  184 --------------------
+ drivers/cpufreq/exynos5250-cpufreq.c            |  210 -----------------------
+ include/dt-bindings/clock/exynos5250.h          |    1 +
+ include/dt-bindings/clock/exynos5420.h          |    2 +
+ 20 files changed, 266 insertions(+), 463 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
