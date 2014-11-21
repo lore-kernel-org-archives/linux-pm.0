@@ -1,117 +1,61 @@
-From: =?ISO-8859-15?Q?Andreas_F=E4rber?= <afaerber@suse.de>
-Subject: Re: [PATCH v12 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply
- property
-Date: Fri, 21 Nov 2014 15:11:11 +0100
-Message-ID: <546F47FF.2030608@suse.de>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com> <1416576682-5255-2-git-send-email-thomas.ab@samsung.com> <1416576682-5255-3-git-send-email-thomas.ab@samsung.com> <1416576682-5255-4-git-send-email-thomas.ab@samsung.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Fri, 21 Nov 2014 23:31:20 +0900
+Message-ID: <CAJuA9agpbDZrtmiQYexuAcS5GZeeB2YY22HTFQRPxnA+CLWb3Q@mail.gmail.com>
+References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
+	<CAMAWPa_V2rO9Ymezf0xPqeQNykCFq9QwLsNOG3EgPZfP-8MRBQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1416576682-5255-4-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com, linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com, khilman@linaro.org, Sachin Kamat <sachin.kamat@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f176.google.com ([209.85.217.176]:36179 "EHLO
+	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758361AbaKUObW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 09:31:22 -0500
+In-Reply-To: <CAMAWPa_V2rO9Ymezf0xPqeQNykCFq9QwLsNOG3EgPZfP-8MRBQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Javier, Doug,
+Hi Kevin,
 
-Am 21.11.2014 um 14:31 schrieb Thomas Abraham:
-> diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot=
-/dts/exynos5250-arndale.dts
-> index 3acd97e..da2b3e1 100644
-> --- a/arch/arm/boot/dts/exynos5250-arndale.dts
-> +++ b/arch/arm/boot/dts/exynos5250-arndale.dts
-> @@ -563,3 +563,7 @@
->  		};
->  	};
->  };
-> +
-> +&cpu0 {
-> +	cpu0-supply =3D <&buck2_reg>;
-> +};
-> diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boo=
-t/dts/exynos5250-smdk5250.dts
-> index 6a0f4c0..0eedb88 100644
-> --- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
-> +++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-> @@ -406,3 +406,7 @@
->  		};
->  	};
->  };
-> +
-> +&cpu0 {
-> +	cpu0-supply =3D <&buck2_reg>;
-> +};
-> diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dt=
-s/exynos5250-snow.dts
-> index e51fcef..865f68a 100644
-> --- a/arch/arm/boot/dts/exynos5250-snow.dts
-> +++ b/arch/arm/boot/dts/exynos5250-snow.dts
-> @@ -345,6 +345,10 @@
->  	};
->  };
-> =20
-> +&cpu0 {
-> +	cpu0-supply =3D <&buck2_reg>;
-> +};
-> +
->  &i2c_0 {
->  	status =3D "okay";
->  	samsung,i2c-sda-delay =3D <100>;
+On Thu, Nov 20, 2014 at 2:30 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> Hi Thomas,
+>
+> On Mon, Oct 20, 2014 at 4:41 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+>> The new CPU clock type allows the use of generic CPUfreq drivers. So for
+>> Exynos4210/5250, switch to using generic cpufreq driver. For Exynos5420,
+>> which did not have CPUfreq driver support, enable the use of generic
+>> CPUfreq driver.
+>>
+>> Suggested-by: Tomasz Figa <tomasz.figa@gmail.com>
+>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
+>> Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+>> Tested-by: Chander Kashyap <k.chander@samsung.com>
+>
+> What's the status of the exynos5 CPUfreq support for upstream?  This
+> was pretty broadly reviewed and tested, but I still don't see this
+> either in linux-next or Kukjin's for-next.
 
-Not sure whether I've asked before... Do you know what needs to be
-specified for exynos5250-spring.dts, which has in the meantime landed i=
-n
-kgene/for-next?
+The rebased version of the patches have been posted [1]. My apologies
+for the delay in following up on this patch series.
 
-Regards,
-Andreas
+Thanks,
+Thomas.
 
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/ex=
-ynos5250.dtsi
-> index f21b9aa..d4b418e 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -58,11 +58,34 @@
->  		#address-cells =3D <1>;
->  		#size-cells =3D <0>;
-> =20
-> -		cpu@0 {
-> +		cpu0: cpu@0 {
->  			device_type =3D "cpu";
->  			compatible =3D "arm,cortex-a15";
->  			reg =3D <0>;
->  			clock-frequency =3D <1700000000>;
-> +
-> +			clocks =3D <&clock CLK_ARM_CLK>;
-> +			clock-names =3D "cpu";
-> +			clock-latency =3D <140000>;
-> +
-> +			operating-points =3D <
-> +				1700000 1300000
-> +				1600000 1250000
-> +				1500000 1225000
-> +				1400000 1200000
-> +				1300000 1150000
-> +				1200000 1125000
-> +				1100000 1100000
-> +				1000000 1075000
-> +				 900000 1050000
-> +				 800000 1025000
-> +				 700000 1012500
-> +				 600000 1000000
-> +				 500000  975000
-> +				 400000  950000
-> +				 300000  937500
-> +				 200000  925000
-> +			>;
->  		};
->  		cpu@1 {
->  			device_type =3D "cpu";
-[snip]
+[1] http://www.spinics.net/lists/arm-kernel/msg380011.html
 
---=20
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffer; HRB 21284 AG N=FCrn=
-berg
+>
+> Kevin
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
