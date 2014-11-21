@@ -1,54 +1,53 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 1/2] cpuidle: acpi: Remove TIME_INVALID flag from acpi
-Date: Fri, 21 Nov 2014 10:29:51 +0100
-Message-ID: <1416562192-14114-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:36021 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbaKUJaB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 04:30:01 -0500
-Received: by mail-wi0-f170.google.com with SMTP id bs8so2061852wib.1
-        for <linux-pm@vger.kernel.org>; Fri, 21 Nov 2014 01:29:57 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 1/1] thermal: Exynos: Deletion of unnecessary checks before
+ two function calls
+Date: Fri, 21 Nov 2014 11:12:39 +0100
+Message-ID: <546F1017.5080403@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
+ urceforge.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-acpi@vger.kernel.org
 
-The commit 8e92b6605d introduced the TIME_VALID flag for the C1 state
-if this one is a mwait state assuming the interrupt will be enabled
-before reading the end time of the idle state.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 21 Nov 2014 11:06:33 +0100
 
-The changelog of this commit mention a potential problem with the menu
-governor but not a real observation and I assume it described an old
-code as the commit is from 2008.
+The functions cpufreq_cooling_unregister() and thermal_zone_device_unregister()
+test whether their argument is NULL and then return immediately.
+Thus the test around the call is not needed.
 
-I have been digging through the code and I didn't find any place where the
-interrupts are enabled before reading the time. Moreover with the changes
-in the meantime, we moved the time measurements in the cpuidle core as well
-as the interrupts enabling making sure the time is measured before the
-interrupt are enabled again in a single place.
+This issue was detected by using the Coccinelle software.
 
-Remove this test as the time measurement is always valid for this
-state.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/acpi/processor_idle.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/thermal/samsung/exynos_thermal_common.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 380b4b4..7afba40 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -985,8 +985,6 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
- 		state->flags = 0;
- 		switch (cx->type) {
- 			case ACPI_STATE_C1:
--			if (cx->entry_method != ACPI_CSTATE_FFH)
--				state->flags |= CPUIDLE_FLAG_TIME_INVALID;
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+index 3f5ad25..1cbb9d0 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -417,12 +417,10 @@ void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
  
- 			state->enter = acpi_idle_enter_c1;
- 			state->enter_dead = acpi_idle_play_dead;
+ 	th_zone = sensor_conf->pzone_data;
+ 
+-	if (th_zone->therm_dev)
+-		thermal_zone_device_unregister(th_zone->therm_dev);
++	thermal_zone_device_unregister(th_zone->therm_dev);
+ 
+ 	for (i = 0; i < th_zone->cool_dev_size; i++) {
+-		if (th_zone->cool_dev[i])
+-			cpufreq_cooling_unregister(th_zone->cool_dev[i]);
++		cpufreq_cooling_unregister(th_zone->cool_dev[i]);
+ 	}
+ 
+ 	dev_info(sensor_conf->dev,
 -- 
-1.9.1
+2.1.3
 
