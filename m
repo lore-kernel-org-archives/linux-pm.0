@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v10 04/10] arm: dts: qcom: Add power-controller device node for 8074 Krait CPUs
-Date: Fri, 21 Nov 2014 11:03:51 -0700
-Message-ID: <1416593037-27527-5-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v10 09/10] arm: dts: qcom: Add idle states device nodes for 8084
+Date: Fri, 21 Nov 2014 11:03:56 -0700
+Message-ID: <1416593037-27527-10-git-send-email-lina.iyer@linaro.org>
 References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
@@ -10,79 +10,75 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Each Krait CPU in the QCOM 8074/8974 SoC has an SAW power controller to
-regulate the power to the cpu and aide the core in entering idle states.
-Reference the SAW instance and associate the instance with the CPU core.
+Add ARM common idle states device bindings for cpuidle support for APQ
+8084.
+
+Support standby and standalone power collapse (power down that does not
+affect any SoC idle states) for each cpu.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index e265ec1..80a4467 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -21,6 +21,7 @@
- 			reg = <0>;
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 4466b9e..207be15 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -22,6 +22,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
-+			qcom,saw = <&saw0>;
+ 			qcom,saw = <&saw0>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@1 {
-@@ -30,6 +31,7 @@
- 			reg = <1>;
+@@ -32,6 +33,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
-+			qcom,saw = <&saw1>;
+ 			qcom,saw = <&saw1>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@2 {
-@@ -39,6 +41,7 @@
- 			reg = <2>;
+@@ -42,6 +44,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
-+			qcom,saw = <&saw2>;
+ 			qcom,saw = <&saw2>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@3 {
-@@ -48,6 +51,7 @@
- 			reg = <3>;
+@@ -52,6 +55,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
-+			qcom,saw = <&saw3>;
+ 			qcom,saw = <&saw3>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		L2: l2-cache {
-@@ -144,7 +148,27 @@
- 			};
+@@ -59,6 +63,22 @@
+ 			cache-level = <2>;
+ 			qcom,saw = <&saw_l2>;
  		};
++
++		idle-states {
++			CPU_STBY: standby {
++				compatible = "qcom,idle-state-stby", "arm,idle-state";
++				entry-latency-us = <1>;
++				exit-latency-us = <1>;
++				min-residency-us = <2>;
++			};
++
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc", "arm,idle-state";
++				entry-latency-us = <150>;
++				exit-latency-us = <200>;
++				min-residency-us = <2000>;
++			};
++		};
+ 	};
  
--		saw_l2: regulator@f9012000 {
-+		saw0: power-controller@f9089000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9089000 0x1000>;
-+		};
-+
-+		saw1: power-controller@f9099000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9099000 0x1000>;
-+		};
-+
-+		saw2: power-controller@f90a9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90a9000 0x1000>;
-+		};
-+
-+		saw3: power-controller@f90b9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90b9000 0x1000>;
-+		};
-+
-+		saw_l2: power-controller@f9012000 {
- 			compatible = "qcom,saw2";
- 			reg = <0xf9012000 0x1000>;
- 			regulator;
+ 	cpu-pmu {
 -- 
 2.1.0
