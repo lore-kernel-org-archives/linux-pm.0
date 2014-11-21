@@ -1,89 +1,134 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v10 08/10] arm: dts: qcom: Add idle states device nodes for 8074
-Date: Fri, 21 Nov 2014 11:03:55 -0700
-Message-ID: <1416593037-27527-9-git-send-email-lina.iyer@linaro.org>
-References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1416593037-27527-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2] thermal:core:fix: Check return code of the
+ ->get_max_state() callback
+Date: Fri, 21 Nov 2014 14:08:28 -0400
+Message-ID: <20141121180826.GA3331@developer>
+References: <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
+ <1416305790-27746-1-git-send-email-l.majewski@samsung.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1416305790-27746-1-git-send-email-l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincenzo Frascino <vincenzo.frascino-qxv4g6HH51o@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8074/8974.
 
-Support Standby and Standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 80a4467..e68b40f 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -22,6 +22,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@1 {
-@@ -32,6 +33,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@2 {
-@@ -42,6 +44,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@3 {
-@@ -52,6 +55,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -59,6 +63,22 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
-+
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
--- 
-2.1.0
+Lukasz,
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue, Nov 18, 2014 at 11:16:30AM +0100, Lukasz Majewski wrote:
+> The return code from ->get_max_state() callback was not checked during
+> binding cooling device to thermal zone device.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+> Changes for v2:
+> - It turned out that patches from 1 to 6 from v1 are not needed, since
+>   they either already solve the problem (like imx_thermal.c) or not use
+>   cpufreq as a thermal cooling device.
+> - The patch 7 from v1 is also not needed since this patch on error exits
+>   this function without using max_state variable.
+> - In thermal driver probe the cpufreq_cooling_register() method presence
+>   is crucial to evaluate if the thermal driver needs any actions with=20
+>   -EPROBE_DEFER.
+
+Have you tried this patch with of-thermal based systems?
+
+The above proposal works if the thermal driver is dealing with loading
+cpu_cooling. But for of-thermal based drivers, the idea is to leave to
+cpufreq code to load it.=20
+
+As an example, I am taking the ti-soc-thermal, but we already have other
+of-thermal based drivers. Booting with this patch ti-soc-thermal
+(of-based boot) loads fine, but the cpu_cooling never gets bound to the
+thermal zone.
+
+The thing is that the bind may happen before cpufreq-dt code loads the
+cpufreq driver, and when cpu_cooling is checking what is the max freq,
+by using cpufreq table, it won't be able to do it, as there is no table.
+
+While, without the patch, it will use wrong in the binding, but after
+it gets bound, and cpufreq loads, the max will be used correctly.
+
+And in this case, the system still works besides this bug. The reasoning
+is because the max state comes from DT (2) and lower and upper wont be
+equal to THERMAL_NO_LIMIT. Then, the following check will use the
+parameter, instead of max_state:
+
+        cdev->ops->get_max_state(cdev, &max_state);
+
+	/* lower default 0, upper default max_state */
+	lower =3D lower =3D=3D THERMAL_NO_LIMIT ? 0 : lower;
+	upper =3D upper =3D=3D THERMAL_NO_LIMIT ?
+				max_state : upper;
+
+In summary, introducing this patch, although it fix a problem, will
+introduce regressions, in of-thermal based drivers.
+
+I believe, to have this fix, you need to provide a way to have probing
+deferring also in cpu_cooling. That needs also the change in the cpufreq
+driver, as I mentioned in the other thread.
+
+Cheers,
+
+> ---
+>  drivers/thermal/thermal_core.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 43b9070..8567929 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct thermal_z=
+one_device *tz,
+>  	struct thermal_zone_device *pos1;
+>  	struct thermal_cooling_device *pos2;
+>  	unsigned long max_state;
+> -	int result;
+> +	int result, ret;
+> =20
+>  	if (trip >=3D tz->trips || (trip < 0 && trip !=3D THERMAL_TRIPS_NONE))
+>  		return -EINVAL;
+> @@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct thermal_z=
+one_device *tz,
+>  	if (tz !=3D pos1 || cdev !=3D pos2)
+>  		return -EINVAL;
+> =20
+> -	cdev->ops->get_max_state(cdev, &max_state);
+> +	ret =3D cdev->ops->get_max_state(cdev, &max_state);
+> +	if (ret)
+> +		return ret;
+> =20
+>  	/* lower default 0, upper default max_state */
+>  	lower =3D lower =3D=3D THERMAL_NO_LIMIT ? 0 : lower;
+> --=20
+> 2.0.0.rc2
+>=20
+
+--a8Wt8u1KmwUX3Y2C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUb3+RAAoJEMLUO4d9pOJWltoH/3EpKRfWaTs1Ygt4XnRLDAiJ
+1kt/tiOHZcNx5A9E/QIMmR4MGZ4KZ93UbLiWjIe2vU/63xpJjSFkd7Gr9u6bfrl8
+BJCvt85Tsk9cflmAZzZsLJPDgRB8vJNx6usSj8HQ/R8ggZTK8Ef8lU7nHvy0krSK
+iub1UHAjMkaFvo38mPSnsdDOj6ToxIvv04wl8RVG9BZzUSEzjy+aQSknwc6sHMkI
+6G6yowKQ7N0c0xeWW7uSpA55sK2eB1bjqnWV1Vi3f0InRvYS5gihAZN46B3bqznf
+jATFi200E690ELIUROqffNQevOaqaLde7DQUsAM1IyzFGbYAqI5eSYdrkXj1E0g=
+=11im
+-----END PGP SIGNATURE-----
+
+--a8Wt8u1KmwUX3Y2C--
