@@ -1,122 +1,62 @@
-From: ethan zhao <ethan.zhao@oracle.com>
-Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI
- _PPC method
-Date: Fri, 21 Nov 2014 08:37:00 +0800
-Message-ID: <546E892C.8000209@oracle.com>
-References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com> <546E1BBE.7050906@intel.com>
+From: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Thu, 20 Nov 2014 17:30:53 -0800
+Message-ID: <7hppchpcfm.fsf@deeprootsystems.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
+	<1709760.E0jX3Myv0h@wuerfel> <546C7FDD.7030906@ti.com>
+	<2900095.WIocOu7ue2@wuerfel>
+	<CAPDyKFqeZ3YU2OEN4tCOdcQ0pAho67Q8U_eCEOroG9aS0mp+-Q@mail.gmail.com>
+	<546DD87B.3080806@ti.com>
+	<CAPDyKFrBhZyqozM98_4pPdW0EMFt5W6VX1X7cz6Z=yNhW4vYTA@mail.gmail.com>
+	<CAMuHMdWtHT7QX3Kpa-GCLa49ToGODwjnNVgfxDzJzcM-FU1ffg@mail.gmail.com>
+	<546E0970.5090301@ti.com> <7hh9xtr5ac.fsf@deeprootsystems.com>
+	<CAMuHMdV7zASj8_NtLRir1VubXEKTkq0vBGMXeYXDACu8UC2tZA@mail.gmail.com>
+	<7hbno1r1af.fsf@deeprootsystems.com>
+	<CAMuHMdVXGPu7x706NxqO3rn3KuRbPbD_ZQsJtDH4Hf31AaRR+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <546E1BBE.7050906@intel.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linda Knippers <linda.knippers@hp.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMuHMdVXGPu7x706NxqO3rn3KuRbPbD_ZQsJtDH4Hf31AaRR+Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+	(Geert Uytterhoeven's message of "Thu, 20 Nov 2014 22:54:07 +0100")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Cc: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm@vger.kernel.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel@vger.kernel.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree@vger.kernel.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dirk,
+Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> writes:
 
-On 2014/11/21 0:50, Dirk Brandewie wrote:
-> On 11/19/2014 12:22 PM, Linda Knippers wrote:
->> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
->>> Oracle Sun X86 servers have dynamic power capping capability that 
->>> works via
->>> ACPI _PPC method etc, so skip loading this driver if Sun server has 
->>> ACPI _PPC
->>> enabled.
+> On Thu, Nov 20, 2014 at 10:48 PM, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>>> So what exactly are we talking about with "PM" clocks, and why are they
+>>>> "special" when it comes to PM domains?  IOW, why are the clocks to be
+>>>> managed during PM domain transitions for a given device any different
+>>>> than the clocks that need to be managed for a runtime suspend/resume (or
+>>>> system suspend/resume) sequence for the same device?
 >>>
->>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->>> ---
->>>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
->>>   1 file changed, 20 insertions(+)
+>>> (Speaking for my case, shmobile)
 >>>
->>> diff --git a/drivers/cpufreq/intel_pstate.c 
->>> b/drivers/cpufreq/intel_pstate.c
->>> index 27bb6d3..5498eb0 100644
->>> --- a/drivers/cpufreq/intel_pstate.c
->>> +++ b/drivers/cpufreq/intel_pstate.c
->>> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
->>>       return true;
->>>   }
+>>> They're not. The clocks to be managed during PM domain transitions are the
+>>> same as the clocks that need to be managed for a runtime suspend/resume
+>>> (or system suspend/resume) sequence.
 >>>
->>> +static bool intel_pstate_has_acpi_ppc(void)
->>> +{
->>> +    int i;
->>> +
->>> +    for_each_possible_cpu(i) {
->>> +        struct acpi_processor *pr = per_cpu(processors, i);
->>> +
->>> +        if (!pr)
->>> +            continue;
->>> +        if (acpi_has_method(pr->handle, "_PPC"))
->>> +            return true;
->>> +    }
->>> +    return false;
->>> +}
->>> +
->>>   struct hw_vendor_info {
->>>       u16  valid;
->>>       char oem_id[ACPI_OEM_ID_SIZE];
->>> @@ -952,6 +967,7 @@ struct hw_vendor_info {
->>>   /* Hardware vendor-specific info that has its own power management 
->>> modes */
->>>   static struct hw_vendor_info vendor_info[] = {
->>>       {1, "HP    ", "ProLiant"},
->>> +    {1, "ORACLE", ""},
->>>       {0, "", ""},
->>>   };
->>>
->>> @@ -969,12 +985,16 @@ static bool 
->>> intel_pstate_platform_pwr_mgmt_exists(void)
->>>               !strncmp(hdr.oem_table_id, v_info->oem_table_id, 
->>> ACPI_OEM_TABLE_ID_SIZE) &&
->>>               intel_pstate_no_acpi_pss())
->>>               return true;
->>> +        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
->>> +            intel_pstate_has_acpi_ppc())
+>>> The special thing is that this is more a platform than a driver thing: the same
+>>> module may have a "PM/functional" clock (that is documented to enable/disable
+>>> the module) on one Soc, but noet on another.
 >>
->> We need try this on a few platforms to make sure this patch doesn't 
->> break the
->> HP platforms that may or may not need this driver, depending on the 
->> BIOS settings.
->>
+>> So why isn't the presence or absence of the clock described in the .dtsi
+>> for the SoC instead of being handled by special PM domain logic?
 >
-> It looks like HP systems would get swept up in this check too if they 
-> have _PPC
-    No , this patch checks the oem_id against 'ORACLE" first, will not 
-affect other vendors
-   even they have _PPC.
+> It is. Cfr. the presence/absence of clocks for renesas,rcar-gpio nodes.
 
->
-> What about extending the hw_vendor_info struct to include whether _PSS or
-  Except refer to ACPI DSDT, I don't know how to fill such info.
-> _PPC should be done for the platform since it appears that oracle and HP
-> have implemented similar functionality using two different methods.
-   Maybe Linda could answer this whether HP also has _PPC and should be 
-wept out.
-   But that doesn't happen with on the same box at the same time.
+Hmm, OK, Good.  
 
-   Thanks,
-   Ethan
->
->
->> I don't suppose you tested on a ProLiant too?
->>
->> -- ljk
->>
->>> +            return true;
->>>       }
->>>
->>>       return false;
->>>   }
->>>   #else /* CONFIG_ACPI not enabled */
->>>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { 
->>> return false; }
->>> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->>>   #endif /* CONFIG_ACPI */
->>>
->>>   static int __init intel_pstate_init(void)
->>>
->>
->
+So now I'm confused about why the PM domain has to do anything special
+if the presence/absence of the clocks is already handled by the DT.
 
+Kevin
+
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
