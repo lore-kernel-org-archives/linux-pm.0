@@ -1,81 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [GIT PULL] cpuidle: A few improvements for ARM cpuidle via DT
-Date: Fri, 21 Nov 2014 17:13:45 +0100
-Message-ID: <546F64B9.8060300@linaro.org>
-References: <546C6DEB.8060204@linaro.org> <17509116.2bjC4d8bef@vostro.rjw.lan>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH v2] thermal: Exynos: Deletion of unnecessary checks before
+ two function calls
+Date: Fri, 21 Nov 2014 17:17:26 +0100
+Message-ID: <546F6596.6010103@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
+ urceforge.net> <546F1017.5080403@users.sourceforge.net> <alpine.DEB.2.10.1411211116580.2554@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <17509116.2bjC4d8bef@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm >> Linux PM mailing list" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.web.de ([212.227.17.12]:62578 "EHLO mout.web.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755412AbaKUQSN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Nov 2014 11:18:13 -0500
+In-Reply-To: <alpine.DEB.2.10.1411211116580.2554@hadrien>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On 11/21/2014 04:56 PM, Rafael J. Wysocki wrote:
-> On Wednesday, November 19, 2014 11:16:11 AM Daniel Lezcano wrote:
->>
->> Hi Rafael,
->>
->> this pull request, based on 3.18-rc5, contains a set of changes from
->> Lorenzo Pieralisi.
->>
->>    * Added a 'status' definition flag in the DT to specify the
->> unsupported firmware idle states and ignore those states in the pars=
-ing
->> code when initializing the cpuidle driver
->>
->>    * Added an idle state description in the DT. As the idle states a=
-re
->> not standardized on ARM, the description gives information about the
->> idle state
->>
->>    * Removed duplicate error message in the arm64 cpuidle drivers
->>
->> Thanks !
->>
->>     -- Daniel
->>
->>
->> The following changes since commit fc14f9c1272f62c3e8d01300f52467c0d=
-9af50f9:
->>
->>     Linux 3.18-rc5 (2014-11-16 16:36:20 -0800)
->>
->> are available in the git repository at:
->>
->>     http://git.linaro.org/git-ro/people/daniel.lezcano/linux.git cpu=
-idle/3.19
->>
->> for you to fetch changes up to 18f95a3640dbf421ab9532e517070a0c1cd4d=
-582:
->>
->>     drivers: cpuidle: Remove cpuidle-arm64 duplicate error messages
->> (2014-11-19 10:16:28 +0100)
->
-> Pulled, but I had a conflict with one patch from you I'd already queu=
-ed up for
-> 3.19-rc1.
->
-> Can you please have a look at my bleeding-edge branch and check if I =
-resolved
-> the conflict correctly?
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 21 Nov 2014 17:11:49 +0100
 
-Hi Rafael,
+The functions cpufreq_cooling_unregister() and thermal_zone_device_unregister()
+test whether their argument is NULL and then return immediately.
+Thus the test around the call is not needed.
 
-yes the conflict is correctly resolved.
+This issue was detected by using the Coccinelle software.
 
-Thanks
-   -- Daniel
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/thermal/samsung/exynos_thermal_common.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+index 3f5ad25..b6be572 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -417,13 +417,10 @@ void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
+ 
+ 	th_zone = sensor_conf->pzone_data;
+ 
+-	if (th_zone->therm_dev)
+-		thermal_zone_device_unregister(th_zone->therm_dev);
++	thermal_zone_device_unregister(th_zone->therm_dev);
+ 
+-	for (i = 0; i < th_zone->cool_dev_size; i++) {
+-		if (th_zone->cool_dev[i])
+-			cpufreq_cooling_unregister(th_zone->cool_dev[i]);
+-	}
++	for (i = 0; i < th_zone->cool_dev_size; ++i)
++		cpufreq_cooling_unregister(th_zone->cool_dev[i]);
+ 
+ 	dev_info(sensor_conf->dev,
+ 		"Exynos: Kernel Thermal management unregistered\n");
+-- 
+2.1.3
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
