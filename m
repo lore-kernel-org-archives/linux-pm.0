@@ -1,120 +1,175 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH] usb: dwc2: Fix build warning when CONFIG_PM_SLEEP=n
-Date: Sat, 22 Nov 2014 02:18:14 +0100
-Message-ID: <546FE456.5030302@intel.com>
-References: <1416407873-18166-1-git-send-email-fabio.estevam@freescale.com> <20141119150148.GA5202@saruman>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v2] thermal: provide an UAPI header file
+Date: Fri, 21 Nov 2014 17:52:06 -0800
+Message-ID: <546FEC46.8010406@gmail.com>
+References: <1416501177-17504-1-git-send-email-f.fainelli@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:51157 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbaKVBST (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 21 Nov 2014 20:18:19 -0500
-In-Reply-To: <20141119150148.GA5202@saruman>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:48106 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbaKVBwT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Nov 2014 20:52:19 -0500
+In-Reply-To: <1416501177-17504-1-git-send-email-f.fainelli@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: balbi@ti.com, Fabio Estevam <fabio.estevam@freescale.com>
-Cc: paulz@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, rui.zhang@intel.com, computersforpeace@gmail.com
 
-On 11/19/2014 4:01 PM, Felipe Balbi wrote:
-> HI,
->
-> On Wed, Nov 19, 2014 at 12:37:53PM -0200, Fabio Estevam wrote:
->> Building with bcm2835_defconfig, which has CONFIG_PM_SLEEP=n causes the
->> following build warning:
->>
->> drivers/usb/dwc2/platform.c:227:12: warning: 'dwc2_suspend' defined but not used [-Wunused-function]
->> drivers/usb/dwc2/platform.c:237:12: warning: 'dwc2_resume' defined but not used [-Wunused-function]
->>
->> Annotate these functions with '__maybe_unused' to prevent the warnings.
->>
->> Reported-by: Olof's autobuilder <build@lixom.net>
->> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
->> ---
->>   drivers/usb/dwc2/platform.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/usb/dwc2/platform.c b/drivers/usb/dwc2/platform.c
->> index 57eb8a3..ff0ed0b 100644
->> --- a/drivers/usb/dwc2/platform.c
->> +++ b/drivers/usb/dwc2/platform.c
->> @@ -224,7 +224,7 @@ static int dwc2_driver_probe(struct platform_device *dev)
->>   	return retval;
->>   }
->>   
->> -static int dwc2_suspend(struct device *dev)
->> +static int __maybe_unused dwc2_suspend(struct device *dev)
-> that SET_SYSTEM_SLEEP_PM_OPS again.
->
-> Rafael, do you mind taking a patch like below:
+On 11/20/2014 08:32 AM, Florian Fainelli wrote:
+> include/linux/thermal.h contains definitions for the Thermal generic
+> netlink family, but none of the valuable information relevant to
+> user-space such as the Genl family name, multicast group, version or
+> command set and data types is exported to user-space.
+> 
+> Export all the relevant generic netlink information to user-space to
+> make this genl family usable by user-space, and while at it, export
+> THERMAL_NAME_LENGTH since it limits name length for thermal_hwmon
+> devices.
+> 
+> Kbuild and MAINTAINERS are also updated accordingly to reflect this new
+> file: include/uapi/linux/thermal.h.
 
-I might, but ->
+I forgot to include the definition for the thermal_event structure which
+is multi-casted through netlink, will resubmit with that.
 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 383fd68..928e295 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -318,7 +318,6 @@ struct dev_pm_ops {
->   	int (*runtime_idle)(struct device *dev);
->   };
->   
-> -#ifdef CONFIG_PM_SLEEP
->   #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
->   	.suspend = suspend_fn, \
->   	.resume = resume_fn, \
-> @@ -326,11 +325,7 @@ struct dev_pm_ops {
->   	.thaw = resume_fn, \
->   	.poweroff = suspend_fn, \
->   	.restore = resume_fn,
-> -#else
-> -#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> -#endif
->   
-> -#ifdef CONFIG_PM_SLEEP
->   #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
->   	.suspend_late = suspend_fn, \
->   	.resume_early = resume_fn, \
-> @@ -338,27 +333,16 @@ struct dev_pm_ops {
->   	.thaw_early = resume_fn, \
->   	.poweroff_late = suspend_fn, \
->   	.restore_early = resume_fn,
-> -#else
-> -#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> -#endif
->   
-> -#ifdef CONFIG_PM_RUNTIME
->   #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
->   	.runtime_suspend = suspend_fn, \
->   	.runtime_resume = resume_fn, \
->   	.runtime_idle = idle_fn,
-> -#else
-> -#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-> -#endif
->   
-> -#ifdef CONFIG_PM
->   #define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
->   	.runtime_suspend = suspend_fn, \
->   	.runtime_resume = resume_fn, \
->   	.runtime_idle = idle_fn,
-> -#else
-> -#define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-> -#endif
->   
->   /*
->    * Use this if you want to use the same suspend and resume callbacks for suspend
->
-> nobody will ever build a kernel without CONFIG_PM
-
--> that is not true.  The "tiny kernel" people what to be able to unset 
-CONFIG_PM in particular.
-
-> or any of its friends anyway and all that ifdeferry or __maybe_unused just to silence
-> compilers warnings are very annoying.
->
-
-We are modifying the power Kconfig in 3.19-rc1 so that PM_SLEEP will 
-always select PM_RUNTIME, so some of the #ifdefs can safely go away.
-
-Rafael
+> 
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> ---
+> Changes in v2:
+> - rebase against Eduardo's thermal/next tree
+> 
+>  MAINTAINERS                  |  1 +
+>  include/linux/thermal.h      | 31 +------------------------------
+>  include/uapi/linux/Kbuild    |  1 +
+>  include/uapi/linux/thermal.h | 35 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 38 insertions(+), 30 deletions(-)
+>  create mode 100644 include/uapi/linux/thermal.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c444907ccd69..790752a4fad2 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -9294,6 +9294,7 @@ Q:	https://patchwork.kernel.org/project/linux-pm/list/
+>  S:	Supported
+>  F:	drivers/thermal/
+>  F:	include/linux/thermal.h
+> +F:	include/uapi/linux/thermal.h
+>  F:	include/linux/cpu_cooling.h
+>  F:	Documentation/devicetree/bindings/thermal/
+>  
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 5bc28a70014e..be959e9df06c 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -29,10 +29,10 @@
+>  #include <linux/idr.h>
+>  #include <linux/device.h>
+>  #include <linux/workqueue.h>
+> +#include <uapi/linux/thermal.h>
+>  
+>  #define THERMAL_TRIPS_NONE	-1
+>  #define THERMAL_MAX_TRIPS	12
+> -#define THERMAL_NAME_LENGTH	20
+>  
+>  /* invalid cooling state */
+>  #define THERMAL_CSTATE_INVALID -1UL
+> @@ -49,11 +49,6 @@
+>  #define MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, off) (((t) / 100) + (off))
+>  #define MILLICELSIUS_TO_DECI_KELVIN(t) MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, 2732)
+>  
+> -/* Adding event notification support elements */
+> -#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> -#define THERMAL_GENL_VERSION                    0x01
+> -#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
+> -
+>  /* Default Thermal Governor */
+>  #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+>  #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+> @@ -86,30 +81,6 @@ enum thermal_trend {
+>  	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
+>  };
+>  
+> -/* Events supported by Thermal Netlink */
+> -enum events {
+> -	THERMAL_AUX0,
+> -	THERMAL_AUX1,
+> -	THERMAL_CRITICAL,
+> -	THERMAL_DEV_FAULT,
+> -};
+> -
+> -/* attributes of thermal_genl_family */
+> -enum {
+> -	THERMAL_GENL_ATTR_UNSPEC,
+> -	THERMAL_GENL_ATTR_EVENT,
+> -	__THERMAL_GENL_ATTR_MAX,
+> -};
+> -#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
+> -
+> -/* commands supported by the thermal_genl_family */
+> -enum {
+> -	THERMAL_GENL_CMD_UNSPEC,
+> -	THERMAL_GENL_CMD_EVENT,
+> -	__THERMAL_GENL_CMD_MAX,
+> -};
+> -#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+> -
+>  struct thermal_zone_device_ops {
+>  	int (*bind) (struct thermal_zone_device *,
+>  		     struct thermal_cooling_device *);
+> diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
+> index 4c94f31a8c99..a1943e2d1264 100644
+> --- a/include/uapi/linux/Kbuild
+> +++ b/include/uapi/linux/Kbuild
+> @@ -383,6 +383,7 @@ header-y += tcp.h
+>  header-y += tcp_metrics.h
+>  header-y += telephony.h
+>  header-y += termios.h
+> +header-y += thermal.h
+>  header-y += time.h
+>  header-y += times.h
+>  header-y += timex.h
+> diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
+> new file mode 100644
+> index 000000000000..ac5535855982
+> --- /dev/null
+> +++ b/include/uapi/linux/thermal.h
+> @@ -0,0 +1,35 @@
+> +#ifndef _UAPI_LINUX_THERMAL_H
+> +#define _UAPI_LINUX_THERMAL_H
+> +
+> +#define THERMAL_NAME_LENGTH	20
+> +
+> +/* Adding event notification support elements */
+> +#define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> +#define THERMAL_GENL_VERSION                    0x01
+> +#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grp"
+> +
+> +/* Events supported by Thermal Netlink */
+> +enum events {
+> +	THERMAL_AUX0,
+> +	THERMAL_AUX1,
+> +	THERMAL_CRITICAL,
+> +	THERMAL_DEV_FAULT,
+> +};
+> +
+> +/* attributes of thermal_genl_family */
+> +enum {
+> +	THERMAL_GENL_ATTR_UNSPEC,
+> +	THERMAL_GENL_ATTR_EVENT,
+> +	__THERMAL_GENL_ATTR_MAX,
+> +};
+> +#define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
+> +
+> +/* commands supported by the thermal_genl_family */
+> +enum {
+> +	THERMAL_GENL_CMD_UNSPEC,
+> +	THERMAL_GENL_CMD_EVENT,
+> +	__THERMAL_GENL_CMD_MAX,
+> +};
+> +#define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+> +
+> +#endif /* _UAPI_LINUX_THERMAL_H */
+> 
 
