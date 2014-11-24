@@ -1,116 +1,43 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
-Date: Mon, 24 Nov 2014 08:14:35 -0800
-Message-ID: <20141124161435.GE5050@linux.vnet.ibm.com>
-References: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org>
- <5171628.FRGslOuEb6@vostro.rjw.lan>
- <CAKohpomz_UiRErSsDPLWcmU4e7ocXZZu7bwCF8TvoSJupikd7A@mail.gmail.com>
- <42965945.ST26GKfzPz@vostro.rjw.lan>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: thermal sensor numbering change intended ?
+Date: Mon, 24 Nov 2014 17:37:16 +0100
+Message-ID: <54735EBC.4060409@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e37.co.us.ibm.com ([32.97.110.158]:41220 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbaKXQOl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 11:14:41 -0500
-Received: from /spool/local
-	by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Mon, 24 Nov 2014 09:14:41 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
-	by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C066719D8039
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 09:03:17 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id sAOGF4hP16121904
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 09:15:04 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id sAOGJVqd030828
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 09:19:32 -0700
-Content-Disposition: inline
-In-Reply-To: <42965945.ST26GKfzPz@vostro.rjw.lan>
+Received: from mout.gmx.net ([212.227.15.15]:63991 "EHLO mout.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbaKXQhV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 24 Nov 2014 11:37:21 -0500
+Received: from [192.168.178.21] ([85.177.144.159]) by mail.gmx.com (mrgmx003)
+ with ESMTPSA (Nemesis) id 0LsTge-1Y42QY1AW8-0121yg for
+ <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 17:37:18 +0100
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stefan Wahren <stefan.wahren@i2se.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-On Mon, Nov 24, 2014 at 04:09:54PM +0100, Rafael J. Wysocki wrote:
-> On Monday, November 24, 2014 04:10:00 PM Viresh Kumar wrote:
-> > On 21 November 2014 at 21:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > What about @dynamic instead of @from_dt?  That may apply to more use cases if
-> > > need be.
-> > 
-> > @Paul: I am stuck at a point and need help on RCUs :)
-> > 
-> > File: drivers/base/power/opp.c
-> > 
-> > We are trying to remove OPPs created from static data present in DT on
-> > cpufreq driver's removal (when configured as module).
-> > 
-> > opp core uses RCUs internally and it looks like I need to implement:
-> > list_for_each_entry_safe_rcu()
-> > 
-> > But, I am not sure because of these:
-> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2005-10/6280.html
-> > http://patchwork.ozlabs.org/patch/48989/
-> > 
-> > So, wanted to ask you if I really need that or the OPP code is
-> > buggy somewhere.
-> > 
-> > The code removing OPPs is:
-> > 
-> >         list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
-> >                 srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_REMOVE, opp);
-> >                 list_del_rcu(&opp->node);
-> > 
-> >                 kfree(opp);
+At a dedicated server (i3770) I'm realized today that the sensors # hav=
+e been switched between 3.17.3 and .4.
 
-As Rafael says, if opp is reachable by RCU readers, you cannot just
-immediately kfree() it.  Immediately kfree()ing it like this -will-
-cause your RCU readers to see freed memory, which, as you noted, can
-cause crashes.
+With 4 I do have :
+# tail -v /sys/devices/virtual/thermal/thermal_zone?/temp
+=3D=3D> /sys/devices/virtual/thermal/thermal_zone0/temp <=3D=3D
+64000
 
-> >         }
-> > 
-> > Because we are freeing opp at the end, list_for_each_entry_rcu()
-> > is trying to read the already freed opp to find opp->node.next
-> > and that results in a crash.
-> > 
-> > What am I doing wrong ?
-> 
-> I hope that doesn't happen under rcu_read_lock()?
-> 
-> The modification needs to be done under dev_opp_list_lock in the first place
-> in which case you don't need the _rcu version of list walking, so you simply
-> can use list_for_each_entry_safe() here. The mutex is sufficient for the
-> synchronization with other writers (if any).  The freeing, though, has to be
-> deferred until all readers drop their references to the old entry.  You can
-> use kfree_rcu() for that.
+=3D=3D> /sys/devices/virtual/thermal/thermal_zone1/temp <=3D=3D
+27800
 
-Except that srcu_notifier_call_chain() involves SRCU readers.  So,
-unless I am confused, you instead need something like this:
+=3D=3D> /sys/devices/virtual/thermal/thermal_zone2/temp <=3D=3D
+29800
 
-static void kfree_opp_rcu(struct rcu_head *rhp)
-{
-	struct device_opp *opp = container_of(rhp, struct device_opp, opp_list);
 
-	kfree(opp);
-}
+whereas with with 3.17.3 the highest temperature (about 60=C2=B0) was s=
+hown at sensor 2.
 
-Then replace the above kfree() by:
+Intended or a regression ?
 
-	call_srcu(&opp->rcu, kfree_opp_rcu);
-
-This will require adding the following to struct device_opp:
-
-	struct rcu_head rcu;
-
-And yes, this would be simpler if there was a kfree_srcu().  If a few
-more uses like this show up, I will create one.
-
-All that said, I do not claim to understand the OPP code, so please take
-the above suggested changes with a grain of salt.  And if you let me know
-where I am confused, I should be able to offer better suggestions.
-
-							Thanx, Paul
+--=20
+Toralf
+pgp key: 0076 E94E
 
