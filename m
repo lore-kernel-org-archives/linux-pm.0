@@ -1,47 +1,107 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 1/3] ARM: shmobile: sh73a0 dtsi: Add Bus State Controller node
-Date: Mon, 24 Nov 2014 21:10:06 +0100
-Message-ID: <1416859808-18503-2-git-send-email-geert+renesas@glider.be>
-References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH RFC 0/3] Add "Simple" / Renesas Bus State Controller Driver
+Date: Mon, 24 Nov 2014 21:10:05 +0100
+Message-ID: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Add a node for the Bus State Controller (BSC) on sh73a0, to which
-multiple external devices can be connected.
+	Hi all,
 
-The BSC is driven by the ZB clock, and located in PM domain A4S.
+The Renesas Bus State Controller (BSC) provides an external bus for
+connecting multiple external devices to an SoC, driving several chip
+select lines, for e.g. NOR FLASH, Ethernet and USB.
+On the kzm9g development board, an smsc9220 Ethernet controller is
+connnected to the BSC of the SH-Mobile AG5 (sh73a0) SoC.
 
-For now no device tree bindings have been defined yet. All of its
-properties follow standard conventions.
+The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+compatibility seems suitable.  However, the BSC is special in two ways:
+  1. It is part of a PM domain (A4S),
+  2. It has a gateable functional clock (ZB).
+Before a device connected to the BSC can be accessed, the PM domain
+containing the BSC must be powered on, and the functional clock driving
+the BSC must be enabled.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/boot/dts/sh73a0.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Both special properties can be described in DT in a standardized way
+("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. patch 1).
+Externally connected devices are described as children of the BSC node
+(cfr. patch 2).
 
-diff --git a/arch/arm/boot/dts/sh73a0.dtsi b/arch/arm/boot/dts/sh73a0.dtsi
-index 87e7d5ef904bde89..b8d4c557c85eca0c 100644
---- a/arch/arm/boot/dts/sh73a0.dtsi
-+++ b/arch/arm/boot/dts/sh73a0.dtsi
-@@ -997,4 +997,15 @@
- 				"intca0";
- 		};
- 	};
-+
-+	bsc: bus@fec10000 {
-+		compatible = "renesas,bsc-sh73a0", "renesas,bsc", "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0xfec10000 0x400>;
-+		ranges = <0 0 0x20000000>;
-+		interrupts = <0 39 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&zb_clk>;
-+		power-domains = <&pd_a4s>;
-+	};
- };
+Unfortunately this doesn't mean everything will work out-of-the-box.
+There are two problems:
+  1. Without a device driver bound to the BSC device, this device is not
+     attached to the PM domain. And although a child device is present
+     and active, the PM domain may be powered down, as it's considered
+     unused by the PM domain core.
+  2. Without a device driver calling pm_runtime_enable(), its functional
+     clock is not enabled. Once runtime PM is enabled, the R-Mobile PM
+     domain platform driver manages the functional clock using runtime
+     PM.
+
+Hence patch 3 adds a very simple BSC driver, matching against
+"renesas-bsc", and enabling runtime PM for the BSC device.
+
+Due to the child-parent relationship of devices connected to the BSC, as
+long as the device drivers for the child devices are runtime PM enabled
+(see dependency 1), the BSC's PM domain will be powered, and the BSC's
+clock will be enabled automatically when needed.
+If any child device driver lacks runtime PM support, the BSC driver also
+has to call pm_runtime_get_sync() in its .probe() function.
+System suspend and resume (s2ram) also works fine.
+
+As this minimal BSC driver isn't hardware-specific at all, I'm wondering
+if there's a simpler way to do this?
+  - Should the driver be renamed to "simple-bus", and match "simple-bus"?
+  - Should this be moved to core code, without an explicit driver for
+    "simple-bus"? I.e. should the driver core just enable runtime PM for
+    all devices not bound to a driver, as they may represent buses with
+    child devices that do rely on runtime PM?
+
+Thanks for your comments and suggestions!
+
+Dependencies:
+  1. [PATCH] net/smsc911x: Add minimal runtime PM support
+     (https://lkml.org/lkml/2014/11/24/610),
+  2. [PATCH] clk: shmobile: div6: Avoid changing divisor in .disable()
+     (http://marc.info/?l=linux-sh&m=141684607012727&w=2),
+  3. [PATCH v6 0/6] sh73a0 common clock framework implementation
+     (http://marc.info/?l=linux-sh&m=141650048308960&w=2),
+  4. sh73a0 DT PM domain support (not yet posted),
+  5. Alphabetical sorting of drivers/bus/{Kconfig,Makefile) (not yet
+     posted).
+
+References:
+  1. [PATCH v3 7/7] ARM: shmobile: kzm9g-reference: require ZB clock for
+     Ethernet controller (http://www.spinics.net/lists/linux-sh/msg36601.html)
+     is an earlier workaround for getting the functional clock enabled, by
+     letting the smc911x driver handle it. This predates sh73a0 PM domain
+     support.
+
+Patches:
+  1. ARM: shmobile: sh73a0 dtsi: Add Bus State Controller node
+  2. ARM: shmobile: kzm9g-reference dts: Move Ethernet node to BSC
+  3. drivers: bus: Add Renesas Bus State Controller Driver
+
+ arch/arm/boot/dts/sh73a0-kzm9g.dts | 28 +++++++++++----------
+ arch/arm/boot/dts/sh73a0.dtsi      | 11 ++++++++
+ drivers/bus/Kconfig                |  8 ++++++
+ drivers/bus/Makefile               |  1 +
+ drivers/bus/renesas-bsc.c          | 51 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 86 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/bus/renesas-bsc.c
+
 -- 
 1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
