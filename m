@@ -1,109 +1,171 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to
- "system-power-controller"
-Date: Mon, 24 Nov 2014 10:24:56 +0000
-Message-ID: <20141124102456.GE4241@x1>
-References: <1415885699-1465-1-git-send-email-user@radxa>
- <1415885699-1465-2-git-send-email-user@radxa>
- <20141121105951.GA20679@localhost>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2] thermal:core:fix: Check return code of the
+ ->get_max_state() callback
+Date: Mon, 24 Nov 2014 11:38:54 +0100
+Message-ID: <20141124113854.36975fb2@amdc2363>
+References: <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
+ <1416305790-27746-1-git-send-email-l.majewski@samsung.com>
+ <20141121180826.GA3331@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f181.google.com ([209.85.213.181]:47814 "EHLO
-	mail-ig0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbaKXKZE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 05:25:04 -0500
-Received: by mail-ig0-f181.google.com with SMTP id l13so3072493iga.8
-        for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 02:25:03 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20141121105951.GA20679@localhost>
+Received: from mailout1.samsung.com ([203.254.224.24]:19855 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbaKXKjE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 05:39:04 -0500
+In-reply-to: <20141121180826.GA3331@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Auto Configured <romain.perier@gmail.com>, Mark Brown <broonie@kernel.org>, heiko@sntech.de, grant.likely@linaro.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincenzo Frascino <vincenzo.frascino@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, 21 Nov 2014, Johan Hovold wrote:
+Hi Eduardo,
 
-> On Thu, Nov 13, 2014 at 01:34:58PM +0000, Auto Configured wrote:
-> > From: Romain Perier <romain.perier@gmail.com>
-> >=20
-> > It reverts commit a4b4e0461ec5 ("of: Add standard property for powe=
-roff capability").
-> > As discussed on the mailing list, it makes more sense to rename bac=
-k to the
-> > old established property name, without the vendor prefix. Problem b=
-eing that
-> > the word "source" usually tends to be used for inputs and that is o=
-ut of control
-> > of the OS. The poweroff capability is an output which simply turns =
-the
-> > system-power off. Also, this property might be used by drivers whic=
-h power-off
-> > the system and power back on subsequent RTC alarms. This seems to s=
-uggest to
-> > remove "poweroff" from the property name and to choose "system-powe=
-r-controller"
-> > as the more generic name. This patchs adds the required renaming ch=
-anges and
-> > defines an helper function which is compatible with both properties=
-, the old one
-> > which was only used by tps65910 and the new one without vendor-pref=
-ix.
->=20
-> Now this is a bit of a mess.
->=20
-> There's a commit in the mfd tree, 25f833c1171d ("mfd: tps65910: Conve=
-rt
-> ti,system-power-controller DT property to poweroff-source"), which
-> breaks all dts using tps65910 since these are never updated to the no=
-w
-> retracted property name ("poweroff-source").
-
-My word!
-
-Romain, what conversation on the MLs are you talking about?
-
-> This one should simply be reverted ASAP.
-
-No need to revert, I can just remove the patch from the MFD tree.
-
-> > Signed-off-by: Romain Perier <romain.perier@gmail.com>
+> 
+> Lukasz,
+> 
+> On Tue, Nov 18, 2014 at 11:16:30AM +0100, Lukasz Majewski wrote:
+> > The return code from ->get_max_state() callback was not checked
+> > during binding cooling device to thermal zone device.
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > > ---
-> >  .../bindings/power/{poweroff.txt =3D> power-controller.txt}       =
- | 0
-> >  .../devicetree/bindings/regulator/act8865-regulator.txt          |=
- 4 ++--
-> >  drivers/mfd/tps65910.c                                           |=
- 9 ++++++++-
-> >  drivers/regulator/act8865-regulator.c                            |=
- 2 +-
-> >  include/linux/of.h                                               |=
- 6 +++---
-> >  5 files changed, 14 insertions(+), 7 deletions(-)
->=20
-> Romain, what tree is this patch against? The changes to the tps65910
-> driver appears not to even be in the regulator tree, yet you asked Ma=
-rk
-> to merge this. And the MFD maintainer is not even on CC.
->=20
-> Let's fix the breakage by reverting the offending commit in mfd. Then=
- the
-> new standard name can be introduced in regulator alone (e.g. this pat=
-ch
-> without the tps65910 bits) as nothing outside of regulator should be
-> using the new power-off feature (or binding) for act8865. Then other
-> drivers and dts can be converted to use the new property name (while
-> retaining backwards compatibility) for 3.20.
->=20
-> [ We should probably also consider adding an "of_device_is_" prefix t=
-o
-> the helper name for consistency. ]
->=20
-> Johan
+> > Changes for v2:
+> > - It turned out that patches from 1 to 6 from v1 are not needed,
+> > since they either already solve the problem (like imx_thermal.c) or
+> > not use cpufreq as a thermal cooling device.
+> > - The patch 7 from v1 is also not needed since this patch on error
+> > exits this function without using max_state variable.
+> > - In thermal driver probe the cpufreq_cooling_register() method
+> > presence is crucial to evaluate if the thermal driver needs any
+> > actions with -EPROBE_DEFER.
+> 
+> Have you tried this patch with of-thermal based systems?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Yes. I did try it with Exynos (after the rework). And there weren't
+any regressions.
+
+To be precise - do you refer to of_cpufreq_cooling_register() [1] or
+cpufreq_cooling_register() [2]?
+
+For the latter [2] - drivers like imx_thermal.c are fully prepared for
+-EDEFER_PROBE.
+
+For the former [1] - only cpufreq-dt.c uses it (and Exynos SoC after
+the rework).
+
+> 
+> The above proposal works if the thermal driver is dealing with loading
+> cpu_cooling. But for of-thermal based drivers, the idea is to leave to
+> cpufreq code to load it. 
+
+I assume, that you mean case [1]?
+
+> 
+> As an example, I am taking the ti-soc-thermal, but we already have
+> other of-thermal based drivers. Booting with this patch ti-soc-thermal
+> (of-based boot) loads fine, but the cpu_cooling never gets bound to
+> the thermal zone.
+
+Could you share the exact SoC/board/_defconfig setup to reproduce this
+behavior? I possess Beagle Bone Black, but it doesn't have thermal
+support (perhaps because its lack of accuracy).
+
+With my Exynos setup I didn't experience any problems with this patch.
+
+> 
+> The thing is that the bind may happen before cpufreq-dt code loads the
+> cpufreq driver, and when cpu_cooling is checking what is the max freq,
+> by using cpufreq table, it won't be able to do it, as there is no
+> table.
+
+As I look into the cpufreq-dt.c driver - in the cpufreq_init()
+function, the call to of_cpufreq_cooling_register() is performed just
+before cpufreq_table_validate_and_show().
+It looks like a mistake in the cpufreq-dt.c code.
+
+> 
+> While, without the patch, it will use wrong in the binding, but after
+> it gets bound, and cpufreq loads, the max will be used correctly.
+
+Correct. Such _wrong_ behavior was the original motivation to prepare
+this patch.
+
+> 
+> And in this case, the system still works besides this bug. 
+
+Unfortunately there is also a "window" in which the driver is not
+properly configured and can cause system crash, although it is unlikely.
+
+
+> The
+> reasoning is because the max state comes from DT (2) and lower and
+> upper wont be equal to THERMAL_NO_LIMIT. Then, the following check
+> will use the parameter, instead of max_state:
+> 
+>         cdev->ops->get_max_state(cdev, &max_state);
+> 
+> 	/* lower default 0, upper default max_state */
+> 	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
+> 	upper = upper == THERMAL_NO_LIMIT ?
+> 				max_state : upper;
+> 
+> In summary, introducing this patch, although it fix a problem, will
+> introduce regressions, in of-thermal based drivers.
+
+To be more precise - it will affect systems, which use of-thermal.c and
+cpufreq-dt.c in the same time, due to wrong ordering in the latter file.
+
+Could you give me a hint about the exact affected system? I've grep'ed
+for CPUFREQ_DT in the ./arch/arm/configs with no success.
+
+> 
+> I believe, to have this fix, you need to provide a way to have probing
+> deferring also in cpu_cooling. That needs also the change in the
+> cpufreq driver, as I mentioned in the other thread.
+
+I will think about possible solution and refer to previous discussion. 
+
+> 
+> Cheers,
+> 
+> > ---
+> >  drivers/thermal/thermal_core.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c index 43b9070..8567929 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct
+> > thermal_zone_device *tz, struct thermal_zone_device *pos1;
+> >  	struct thermal_cooling_device *pos2;
+> >  	unsigned long max_state;
+> > -	int result;
+> > +	int result, ret;
+> >  
+> >  	if (trip >= tz->trips || (trip < 0 && trip !=
+> > THERMAL_TRIPS_NONE)) return -EINVAL;
+> > @@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct
+> > thermal_zone_device *tz, if (tz != pos1 || cdev != pos2)
+> >  		return -EINVAL;
+> >  
+> > -	cdev->ops->get_max_state(cdev, &max_state);
+> > +	ret = cdev->ops->get_max_state(cdev, &max_state);
+> > +	if (ret)
+> > +		return ret;
+> >  
+> >  	/* lower default 0, upper default max_state */
+> >  	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
+> > -- 
+> > 2.0.0.rc2
+> > 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
