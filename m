@@ -1,110 +1,78 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH RFC v2 01/12] arm: exynos: Add platform driver support for
- power domain driver
-Date: Mon, 24 Nov 2014 18:34:05 +0530
-Message-ID: <1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH RFC v2 02/12] soc: exynos: Move exynos power domain file to
+ driver/soc/samsung folder
+Date: Mon, 24 Nov 2014 18:34:06 +0530
+Message-ID: <1416834256-11225-2-git-send-email-amit.daniel@samsung.com>
 References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+ <1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:35630 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751786AbaKXNMj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 08:12:39 -0500
+In-reply-to: <1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 Cc: kgene.kim@samsung.com, linux-kernel@vger.kernel.org, s.nawrocki@samsung.com, pankaj.dubey@samsung.com, ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch modifies Exynos Power Domain driver initialization
-implementation in following way:
-
-   - Added platform driver support and probe function where Exynos PM
-     Domain driver will finally register itself as MFD PMU client driver.
-     In this way,all the Exynos power domains are probed once and registered
-     with the power domain subsystem.
-   - Existing DT bindings are used.
+This patch moves arch/arm/mach-exynos/pm_domains.c to driver/soc/samsung
+folder. In this way it can be used for both arm and arm64 platforms.
+This file is moved in this directory as this driver is soc specific and
+only used by exynos platforms.
 
 Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- arch/arm/mach-exynos/pm_domains.c |   40 +++++++++++++++++++++++--------------
- 1 file changed, 25 insertions(+), 15 deletions(-)
+ arch/arm/mach-exynos/Makefile                      |    1 -
+ drivers/soc/samsung/Kconfig                        |    9 +++++++++
+ drivers/soc/samsung/Makefile                       |    3 ++-
+ .../soc/samsung}/pm_domains.c                      |    0
+ 4 files changed, 11 insertions(+), 2 deletions(-)
+ rename {arch/arm/mach-exynos => drivers/soc/samsung}/pm_domains.c (100%)
 
-diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-index 20f2671..5cb5440 100644
---- a/arch/arm/mach-exynos/pm_domains.c
-+++ b/arch/arm/mach-exynos/pm_domains.c
-@@ -105,25 +105,17 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
- 	return exynos_pd_power(domain, false);
- }
+diff --git a/arch/arm/mach-exynos/Makefile b/arch/arm/mach-exynos/Makefile
+index b91b382..9ea6c54 100644
+--- a/arch/arm/mach-exynos/Makefile
++++ b/arch/arm/mach-exynos/Makefile
+@@ -13,7 +13,6 @@ obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o exynos-smc.o firmware.o
  
--static __init int exynos4_pm_init_power_domain(void)
-+static int exynos_power_domain_probe(struct platform_device *pdev)
- {
--	struct platform_device *pdev;
- 	struct device_node *np;
+ obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
+ obj-$(CONFIG_PM_SLEEP)		+= suspend.o
+-obj-$(CONFIG_PM_GENERIC_DOMAINS) += pm_domains.o
  
- 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
- 		struct exynos_pm_domain *pd;
- 		int on, i;
--		struct device *dev;
+ obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
  
--		pdev = of_find_device_by_node(np);
--		dev = &pdev->dev;
--
--		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
--		if (!pd) {
--			pr_err("%s: failed to allocate memory for domain\n",
--					__func__);
-+		pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
-+		if (!pd)
- 			return -ENOMEM;
--		}
+diff --git a/drivers/soc/samsung/Kconfig b/drivers/soc/samsung/Kconfig
+index 6855cc4..2bb33e7 100644
+--- a/drivers/soc/samsung/Kconfig
++++ b/drivers/soc/samsung/Kconfig
+@@ -17,4 +17,13 @@ config EXYNOS_PMU
+ 	  functionality like initialisation and transition to various low power
+ 	  states.
  
- 		pd->pd.name = kstrdup(np->name, GFP_KERNEL);
- 		pd->name = pd->pd.name;
-@@ -131,7 +123,7 @@ static __init int exynos4_pm_init_power_domain(void)
- 		pd->pd.power_off = exynos_pd_power_off;
- 		pd->pd.power_on = exynos_pd_power_on;
- 
--		pd->oscclk = clk_get(dev, "oscclk");
-+		pd->oscclk = of_clk_get_by_name(np, "oscclk");
- 		if (IS_ERR(pd->oscclk))
- 			goto no_clk;
- 
-@@ -139,11 +131,11 @@ static __init int exynos4_pm_init_power_domain(void)
- 			char clk_name[8];
- 
- 			snprintf(clk_name, sizeof(clk_name), "clk%d", i);
--			pd->clk[i] = clk_get(dev, clk_name);
-+			pd->clk[i] = of_clk_get_by_name(np, clk_name);
- 			if (IS_ERR(pd->clk[i]))
- 				break;
- 			snprintf(clk_name, sizeof(clk_name), "pclk%d", i);
--			pd->pclk[i] = clk_get(dev, clk_name);
-+			pd->pclk[i] = of_clk_get_by_name(np, clk_name);
- 			if (IS_ERR(pd->pclk[i])) {
- 				clk_put(pd->clk[i]);
- 				pd->clk[i] = ERR_PTR(-EINVAL);
-@@ -163,4 +155,22 @@ no_clk:
- 
- 	return 0;
- }
--arch_initcall(exynos4_pm_init_power_domain);
++config EXYNOS_POWER_DOMAIN
++	tristate "Support Exynos PM Power Domain"
++	depends on ARCH_EXYNOS && PM_GENERIC_DOMAINS
++	default y
++	help
++	  Exynos SOC have power domain gating support. This driver implements
++	  that functionality and registers all the necessary hooks to the
++	  generic power domain core kernel infrastructure.
 +
-+static const struct platform_device_id exynos_power_domain_id[] = {
-+	{ "exynos-pmu-pd"},
-+	{ },
-+};
-+
-+static struct platform_driver exynos_power_domain_driver = {
-+	.driver  = {
-+		.name   = "exynos-pd",
-+	},
-+	.probe = exynos_power_domain_probe,
-+	.id_table = exynos_power_domain_id,
-+};
-+
-+static int __init exynos_power_domain_init(void)
-+{
-+	return platform_driver_register(&exynos_power_domain_driver);
-+}
-+postcore_initcall(exynos_power_domain_init);
+ endmenu
+diff --git a/drivers/soc/samsung/Makefile b/drivers/soc/samsung/Makefile
+index 5a879c6..61ccd51 100644
+--- a/drivers/soc/samsung/Makefile
++++ b/drivers/soc/samsung/Makefile
+@@ -1 +1,2 @@
+-obj-$(CONFIG_EXYNOS_PMU)	+= exynos-pmu.o
++obj-$(CONFIG_EXYNOS_PMU)		+= exynos-pmu.o
++obj-$(CONFIG_EXYNOS_POWER_DOMAIN)	+= pm_domains.o
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+similarity index 100%
+rename from arch/arm/mach-exynos/pm_domains.c
+rename to drivers/soc/samsung/pm_domains.c
 -- 
 1.7.9.5
+
