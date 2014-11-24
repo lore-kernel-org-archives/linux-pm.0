@@ -1,73 +1,131 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] net/smsc911x: Add minimal runtime PM support
-Date: Mon, 24 Nov 2014 19:58:17 +0100
-Message-ID: <1416855497-6479-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Glendinning <steve.glendinning@shawell.net>, "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 3/3] drivers: bus: Add Renesas Bus State Controller Driver
+Date: Mon, 24 Nov 2014 21:10:08 +0100
+Message-ID: <1416859808-18503-4-git-send-email-geert+renesas@glider.be>
+References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Add minimal runtime PM support (enable on probe, disable on remove), to
-ensure proper operation with a parent device that uses runtime PM.
+Add a driver for the Renesas Bus State Controller (BSC, sometimes called
+"LBSC within Bus Bridge", or "External Bus Interface") found on several
+Renesas ARM SoCs.
 
-This is needed on systems where the external bus controller module of
-the SoC is contained in a PM domain and/or has a gateable functional
-clock. In such cases, before accessing any device connected to the
-external bus, the PM domain must be powered up, and/or the functional
-clock must be enabled, which is typically handled through runtime PM by
-the bus controller driver.
+The sole purpose of this driver is to enable its clock and PM domain (if
+exist(s)), which are specified in the DT and managed from platform and
+PM domain code.  The BSC clock and PM domain must be enabled for
+external devices connected to the BSC (e.g. NOR FLASH or Ethernet) to
+work.
 
-An example of this is the kzm9g development board, where an smsc9220
-Ethernet controller is connected to the Bus State Controller (BSC) of a
-Renesas sh73a0 SoC.
+Due to the child-parent relationship with devices connected to the BSC,
+PM domain and clock state transitions are handled in the correct order.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/net/ethernet/smsc/smsc911x.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+  - Is there a simpler way to do this?
+  - As none of this code is really hardware-specific, should the driver
+    be renamed to simple-bus, and match against "simple-bus"?
+  - Should this be moved to core code, without an explicit driver for
+    "simple-bus"?
+Please reply to the cover letter!
 
-diff --git a/drivers/net/ethernet/smsc/smsc911x.c b/drivers/net/ethernet/smsc/smsc911x.c
-index 77ed74561e5fe815..f9c87624a0afb08b 100644
---- a/drivers/net/ethernet/smsc/smsc911x.c
-+++ b/drivers/net/ethernet/smsc/smsc911x.c
-@@ -59,6 +59,8 @@
- #include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/of_net.h>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/bus/Kconfig       |  8 ++++++++
+ drivers/bus/Makefile      |  1 +
+ drivers/bus/renesas-bsc.c | 51 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+)
+ create mode 100644 drivers/bus/renesas-bsc.c
+
+diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+index 7697fc8903f62d07..7e901480ba67dcad 100644
+--- a/drivers/bus/Kconfig
++++ b/drivers/bus/Kconfig
+@@ -58,6 +58,14 @@ config OMAP_OCP2SCP
+ 	  OCP2SCP and in OMAP5, both USB PHY and SATA PHY is connected via
+ 	  OCP2SCP.
+ 
++config RENESAS_BSC
++	bool "Renesas Bus State Controller"
++	depends on ARCH_SHMOBILE && OF
++	help
++	  Driver for the Renesas Bus State Controller (BSC, sometimes called
++	  "LBSC within Bus Bridge", or "External Bus Interface") found on
++	  several Renesas ARM SoCs.
++
+ config VEXPRESS_CONFIG
+ 	bool "Versatile Express configuration bus"
+ 	default y if ARCH_VEXPRESS
+diff --git a/drivers/bus/Makefile b/drivers/bus/Makefile
+index 2eb1f668c7fbc00d..b1ac67cfa9d5663c 100644
+--- a/drivers/bus/Makefile
++++ b/drivers/bus/Makefile
+@@ -14,4 +14,5 @@ obj-$(CONFIG_MVEBU_MBUS) += mvebu-mbus.o
+ obj-$(CONFIG_OMAP_INTERCONNECT)	+= omap_l3_smx.o omap_l3_noc.o
+ 
+ obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
++obj-$(CONFIG_RENESAS_BSC)	+= renesas-bsc.o
+ obj-$(CONFIG_VEXPRESS_CONFIG)	+= vexpress-config.o
+diff --git a/drivers/bus/renesas-bsc.c b/drivers/bus/renesas-bsc.c
+new file mode 100644
+index 0000000000000000..ca35aae266d3365a
+--- /dev/null
++++ b/drivers/bus/renesas-bsc.c
+@@ -0,0 +1,51 @@
++/*
++ * Renesas Bus State Controller Driver
++ *
++ * Copyright (C) 2014 Glider bvba
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
 +#include <linux/pm_runtime.h>
 +
- #include "smsc911x.h"
- 
- #define SMSC_CHIPNAME		"smsc911x"
-@@ -2338,6 +2340,9 @@ static int smsc911x_drv_remove(struct platform_device *pdev)
- 
- 	free_netdev(dev);
- 
-+	pm_runtime_put(&pdev->dev);
-+	pm_runtime_disable(&pdev->dev);
 +
- 	return 0;
- }
- 
-@@ -2491,6 +2496,9 @@ static int smsc911x_drv_probe(struct platform_device *pdev)
- 	if (pdata->config.shift)
- 		pdata->ops = &shifted_smsc911x_ops;
- 
++static int renesas_bsc_probe(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
 +	pm_runtime_enable(&pdev->dev);
-+	pm_runtime_get_sync(&pdev->dev);
++	return 0;
++}
 +
- 	retval = smsc911x_init(dev);
- 	if (retval < 0)
- 		goto out_disable_resources;
-@@ -2572,6 +2580,8 @@ out_unregister_netdev_5:
- out_free_irq:
- 	free_irq(dev->irq, dev);
- out_disable_resources:
-+	pm_runtime_put(&pdev->dev);
++static int renesas_bsc_remove(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
 +	pm_runtime_disable(&pdev->dev);
- 	(void)smsc911x_disable_resources(pdev);
- out_enable_resources_fail:
- 	smsc911x_free_resources(pdev);
++	return 0;
++}
++
++static const struct of_device_id renesas_bsc_of_match[] = {
++	{ .compatible = "renesas,bsc", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, renesas_bsc_of_match);
++
++static struct platform_driver renesas_bsc_driver = {
++	.probe = renesas_bsc_probe,
++	.remove = renesas_bsc_remove,
++	.driver = {
++		.name = "renesas-bsc",
++		.of_match_table = renesas_bsc_of_match,
++	},
++};
++
++module_platform_driver(renesas_bsc_driver);
++
++MODULE_DESCRIPTION("Renesas Bus State Controller Driver");
++MODULE_AUTHOR("Geert Uytterhoeven <geert@linux-m68k.org>");
++MODULE_LICENSE("GPL");
 -- 
 1.9.1
+
