@@ -1,59 +1,84 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v2 3/3] ARM: tegra: Add Tegra124 ACTMON support
-Date: Mon, 24 Nov 2014 13:28:18 +0100
-Message-ID: <1416832111-367-4-git-send-email-tomeu.vizoso@collabora.com>
-References: <1416832111-367-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Mon, 24 Nov 2014 13:58:50 +0100
+Message-ID: <CABgxDoLA=QL6vzU-v1w4vMZ3qhorjRdYOWFFMrjJE6xvZ7QO3g@mail.gmail.com>
+References: <1415885699-1465-1-git-send-email-user@radxa>
+	<1415885699-1465-2-git-send-email-user@radxa>
+	<20141121105951.GA20679@localhost>
+	<20141124102456.GE4241@x1>
+	<20141124113518.GC6875@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416832111-367-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <20141124113518.GC6875@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add device node for the ACTMON block to the Tegra124 device tree.
+2014-11-24 12:35 GMT+01:00 Johan Hovold <johan@kernel.org>:
+> On Mon, Nov 24, 2014 at 10:24:56AM +0000, Lee Jones wrote:
+>> On Fri, 21 Nov 2014, Johan Hovold wrote:
+>> > On Thu, Nov 13, 2014 at 01:34:58PM +0000, Auto Configured wrote:
+>> > > From: Romain Perier <romain.perier@gmail.com>
+>> > >
+>> > > It reverts commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
+>> > > As discussed on the mailing list, it makes more sense to rename back to the
+>> > > old established property name, without the vendor prefix. Problem being that
+>> > > the word "source" usually tends to be used for inputs and that is out of control
+>> > > of the OS. The poweroff capability is an output which simply turns the
+>> > > system-power off. Also, this property might be used by drivers which power-off
+>> > > the system and power back on subsequent RTC alarms. This seems to suggest to
+>> > > remove "poweroff" from the property name and to choose "system-power-controller"
+>> > > as the more generic name. This patchs adds the required renaming changes and
+>> > > defines an helper function which is compatible with both properties, the old one
+>> > > which was only used by tps65910 and the new one without vendor-prefix.
+>> >
+>> > Now this is a bit of a mess.
+>> >
+>> > There's a commit in the mfd tree, 25f833c1171d ("mfd: tps65910: Convert
+>> > ti,system-power-controller DT property to poweroff-source"), which
+>> > breaks all dts using tps65910 since these are never updated to the now
+>> > retracted property name ("poweroff-source").
+>>
+>> My word!
+>>
+>> Romain, what conversation on the MLs are you talking about?
+>
+> I think Romain is referring to this thread:
+>
+>         https://lkml.org/lkml/2014/10/23/161
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Yes, this is this one.
 
----
+>
+>> > This one should simply be reverted ASAP.
+>>
+>> No need to revert, I can just remove the patch from the MFD tree.
+>
+> Ok, good. Then this is limited to the regulator tree, and we could
+> proceed as I outlined below.
+>
+>
+> Romain, care to resend this patch without the tps65910 chunks?
 
-v2:     * Add operating-points property
----
- arch/arm/boot/dts/tegra124.dtsi | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+If you can just drop the patch from mfd tree Lee, please do.
+Yes Johan, np, what I want is that we find a smart solution, nothing more.
 
-diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
-index dfc476b..8b19f4c 100644
---- a/arch/arm/boot/dts/tegra124.dtsi
-+++ b/arch/arm/boot/dts/tegra124.dtsi
-@@ -215,6 +215,29 @@
- 		reg = <0x0 0x60007000 0x0 0x1000>;
- 	};
- 
-+	actmon@0,6000c800 {
-+		compatible = "nvidia,tegra124-actmon";
-+		reg = <0x0 0x6000c800 0x0 0x400>;
-+		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&tegra_car TEGRA124_CLK_ACTMON>,
-+			 <&tegra_car TEGRA124_CLK_EMC>;
-+		clock-names = "actmon", "emc";
-+		resets = <&tegra_car 119>;
-+		reset-names = "actmon";
-+		operating-points = <
-+			/* KHz	uV */
-+			/* TODO: Add more points below 102 MHz */
-+			102000	800000
-+			204000	800000
-+			300000	820000
-+			396000	850000
-+			528000	880000
-+			600000	910000
-+			792000	980000
-+			924000	1010000
-+		>;
-+	};
-+
- 	gpio: gpio@0,6000d000 {
- 		compatible = "nvidia,tegra124-gpio", "nvidia,tegra30-gpio";
- 		reg = <0x0 0x6000d000 0x0 0x1000>;
--- 
-1.9.3
+>
+> You should also fix the commit message, which claims to define a "helper
+> function which is compatible with both properties", something which was
+> no longer the case.
+>
+> Thanks,
+> Johan
+
+So I need to resend this patch which would only introduce an helper
+function which checks for "system-power-controller" property (it would
+also have a new commit message).
+As you suggested, this helper might be named
+"of_device_is_system_power_controller" ?
+
+Everything is okay ?
+
+Romain
