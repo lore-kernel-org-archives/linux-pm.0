@@ -1,35 +1,110 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v4 1/2] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Mon, 24 Nov 2014 14:12:19 +0100
-Message-ID: <1651776.uhbV5BHLKC@diego>
-References: <1415885699-1465-1-git-send-email-user@radxa> <CABgxDoLA=QL6vzU-v1w4vMZ3qhorjRdYOWFFMrjJE6xvZ7QO3g@mail.gmail.com> <CABgxDo+t1DUMHwWygibR-w=FL458N6k0G68HM2M7R76gJugyVg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:53949 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbaKXNIi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 24 Nov 2014 08:08:38 -0500
-In-Reply-To: <CABgxDo+t1DUMHwWygibR-w=FL458N6k0G68HM2M7R76gJugyVg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH RFC v2 01/12] arm: exynos: Add platform driver support for
+ power domain driver
+Date: Mon, 24 Nov 2014 18:34:05 +0530
+Message-ID: <1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: kgene.kim@samsung.com, linux-kernel@vger.kernel.org, s.nawrocki@samsung.com, pankaj.dubey@samsung.com, ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: Johan Hovold <johan@kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
-Am Montag, 24. November 2014, 14:01:02 schrieb Romain Perier:
-> 2014-11-24 13:58 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
-> > So I need to resend this patch which would only introduce an helper
-> > function which checks for "system-power-controller" property (it would
-> > also have a new commit message).
-> > As you suggested, this helper might be named
-> > "of_device_is_system_power_controller" ?
-> 
-> I mean, the backward compatibility can be handled directly from the
-> device driver which would use the new property, no ?
+This patch modifies Exynos Power Domain driver initialization
+implementation in following way:
 
-yep, that is what Grant asked for ... to have drivers that need backward-
-compatibility (like with the "ti,"-prefix) to do this themselfs.
+   - Added platform driver support and probe function where Exynos PM
+     Domain driver will finally register itself as MFD PMU client driver.
+     In this way,all the Exynos power domains are probed once and registered
+     with the power domain subsystem.
+   - Existing DT bindings are used.
 
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ arch/arm/mach-exynos/pm_domains.c |   40 +++++++++++++++++++++++--------------
+ 1 file changed, 25 insertions(+), 15 deletions(-)
 
-Heiko
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+index 20f2671..5cb5440 100644
+--- a/arch/arm/mach-exynos/pm_domains.c
++++ b/arch/arm/mach-exynos/pm_domains.c
+@@ -105,25 +105,17 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+ 	return exynos_pd_power(domain, false);
+ }
+ 
+-static __init int exynos4_pm_init_power_domain(void)
++static int exynos_power_domain_probe(struct platform_device *pdev)
+ {
+-	struct platform_device *pdev;
+ 	struct device_node *np;
+ 
+ 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
+ 		struct exynos_pm_domain *pd;
+ 		int on, i;
+-		struct device *dev;
+ 
+-		pdev = of_find_device_by_node(np);
+-		dev = &pdev->dev;
+-
+-		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+-		if (!pd) {
+-			pr_err("%s: failed to allocate memory for domain\n",
+-					__func__);
++		pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
++		if (!pd)
+ 			return -ENOMEM;
+-		}
+ 
+ 		pd->pd.name = kstrdup(np->name, GFP_KERNEL);
+ 		pd->name = pd->pd.name;
+@@ -131,7 +123,7 @@ static __init int exynos4_pm_init_power_domain(void)
+ 		pd->pd.power_off = exynos_pd_power_off;
+ 		pd->pd.power_on = exynos_pd_power_on;
+ 
+-		pd->oscclk = clk_get(dev, "oscclk");
++		pd->oscclk = of_clk_get_by_name(np, "oscclk");
+ 		if (IS_ERR(pd->oscclk))
+ 			goto no_clk;
+ 
+@@ -139,11 +131,11 @@ static __init int exynos4_pm_init_power_domain(void)
+ 			char clk_name[8];
+ 
+ 			snprintf(clk_name, sizeof(clk_name), "clk%d", i);
+-			pd->clk[i] = clk_get(dev, clk_name);
++			pd->clk[i] = of_clk_get_by_name(np, clk_name);
+ 			if (IS_ERR(pd->clk[i]))
+ 				break;
+ 			snprintf(clk_name, sizeof(clk_name), "pclk%d", i);
+-			pd->pclk[i] = clk_get(dev, clk_name);
++			pd->pclk[i] = of_clk_get_by_name(np, clk_name);
+ 			if (IS_ERR(pd->pclk[i])) {
+ 				clk_put(pd->clk[i]);
+ 				pd->clk[i] = ERR_PTR(-EINVAL);
+@@ -163,4 +155,22 @@ no_clk:
+ 
+ 	return 0;
+ }
+-arch_initcall(exynos4_pm_init_power_domain);
++
++static const struct platform_device_id exynos_power_domain_id[] = {
++	{ "exynos-pmu-pd"},
++	{ },
++};
++
++static struct platform_driver exynos_power_domain_driver = {
++	.driver  = {
++		.name   = "exynos-pd",
++	},
++	.probe = exynos_power_domain_probe,
++	.id_table = exynos_power_domain_id,
++};
++
++static int __init exynos_power_domain_init(void)
++{
++	return platform_driver_register(&exynos_power_domain_driver);
++}
++postcore_initcall(exynos_power_domain_init);
+-- 
+1.7.9.5
