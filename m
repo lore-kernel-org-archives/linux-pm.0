@@ -1,229 +1,166 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2] thermal:core:fix: Check return code of the
- ->get_max_state() callback
-Date: Mon, 24 Nov 2014 14:02:25 -0400
-Message-ID: <20141124180222.GA1449@developer>
-References: <1415898165-27406-1-git-send-email-l.majewski@samsung.com>
- <1416305790-27746-1-git-send-email-l.majewski@samsung.com>
- <20141121180826.GA3331@developer>
- <20141124113854.36975fb2@amdc2363>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
+ cpufreq table
+Date: Mon, 24 Nov 2014 14:10:51 -0400
+Message-ID: <20141124181049.GB1449@developer>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZGiS0Q5IWpPtfppv"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f52.google.com ([209.85.192.52]:63071 "EHLO
+	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753908AbaKXSKd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 13:10:33 -0500
+Received: by mail-qg0-f52.google.com with SMTP id a108so7033992qge.39
+        for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 10:10:32 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20141124113854.36975fb2@amdc2363>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincenzo Frascino <vincenzo.frascino-qxv4g6HH51o@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com
 
 
---ZGiS0Q5IWpPtfppv
+--PmA2V3Z32TCmWXqI
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
+Viresh
 
-Hello Lukasz,
+On Mon, Nov 24, 2014 at 04:29:13PM +0530, Viresh Kumar wrote:
+> of_cpufreq_cooling_register() can use frequency values from
+> policy->min/max/cpuinfo.min_freq/cpuinfo.max_freq, which are available on=
+ly
+> after calling cpufreq_table_validate_and_show().
+>=20
+> The right order of calling should be: cpufreq_table_validate_and_show() f=
+ollowed
+> by of_cpufreq_cooling_register(). Fix it.
+>=20
+> Reported-by: Lukasz Majewski <l.majewski@samsung.com>
+> Reported-by: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>=20
+> ---
+> For 3.18.
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 35 +++++++++++++++++------------------
+>  1 file changed, 17 insertions(+), 18 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 8cba13d..22eb6e5 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -186,7 +186,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  {
+>  	struct cpufreq_dt_platform_data *pd;
+>  	struct cpufreq_frequency_table *freq_table;
+> -	struct thermal_cooling_device *cdev;
+>  	struct device_node *np;
+>  	struct private_data *priv;
+>  	struct device *cpu_dev;
+> @@ -269,20 +268,6 @@ static int cpufreq_init(struct cpufreq_policy *polic=
+y)
+>  		goto out_free_priv;
+>  	}
+> =20
+> -	/*
+> -	 * For now, just loading the cooling device;
+> -	 * thermal DT code takes care of matching them.
+> -	 */
+> -	if (of_find_property(np, "#cooling-cells", NULL)) {
+> -		cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
+> -		if (IS_ERR(cdev))
+> -			dev_err(cpu_dev,
+> -				"running cpufreq without cooling device: %ld\n",
+> -				PTR_ERR(cdev));
+> -		else
+> -			priv->cdev =3D cdev;
+> -	}
+> -
+>  	priv->cpu_dev =3D cpu_dev;
+>  	priv->cpu_reg =3D cpu_reg;
+>  	policy->driver_data =3D priv;
+> @@ -292,7 +277,22 @@ static int cpufreq_init(struct cpufreq_policy *polic=
+y)
+>  	if (ret) {
+>  		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+>  			ret);
+> -		goto out_cooling_unregister;
+> +		goto out_free_cpufreq_table;
+> +	}
+> +
+> +	/*
+> +	 * For now, just loading the cooling device;
+> +	 * thermal DT code takes care of matching them.
+> +	 */
+> +	if (of_find_property(np, "#cooling-cells", NULL)) {
+> +		priv->cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
+> +		if (IS_ERR(priv->cdev)) {
+> +			dev_err(cpu_dev,
+> +				"running cpufreq without cooling device: %ld\n",
+> +				PTR_ERR(priv->cdev));
+> +
+> +			priv->cdev =3D NULL;
+> +		}
 
-On Mon, Nov 24, 2014 at 11:38:54AM +0100, Lukasz Majewski wrote:
-> Hi Eduardo,
->=20
-> >=20
-> > Lukasz,
-> >=20
-> > On Tue, Nov 18, 2014 at 11:16:30AM +0100, Lukasz Majewski wrote:
-> > > The return code from ->get_max_state() callback was not checked
-> > > during binding cooling device to thermal zone device.
-> > >=20
-> > > Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> > > ---
-> > > Changes for v2:
-> > > - It turned out that patches from 1 to 6 from v1 are not needed,
-> > > since they either already solve the problem (like imx_thermal.c) or
-> > > not use cpufreq as a thermal cooling device.
-> > > - The patch 7 from v1 is also not needed since this patch on error
-> > > exits this function without using max_state variable.
-> > > - In thermal driver probe the cpufreq_cooling_register() method
-> > > presence is crucial to evaluate if the thermal driver needs any
-> > > actions with -EPROBE_DEFER.
-> >=20
-> > Have you tried this patch with of-thermal based systems?
->=20
-> Yes. I did try it with Exynos (after the rework). And there weren't
-> any regressions.
->=20
-> To be precise - do you refer to of_cpufreq_cooling_register() [1] or
-> cpufreq_cooling_register() [2]?
->=20
+Is it possible to have this registration only when we have a
+cpufreq driver up and running? The reasoning is that only after we have
+a way to control cpu frequencies, it makes sense to have the cpu_cooling
+device.
 
-[1]
+I am planing to have the following check in the cpu cooling code:
+	if (!cpufreq_get_current_driver()) {
+		dev_dbg(bgp->dev, "no cpufreq driver yet\n");
+		return -EPROBE_DEFER;
+	}
 
-> For the latter [2] - drivers like imx_thermal.c are fully prepared for
-> -EDEFER_PROBE.
->=20
-> For the former [1] - only cpufreq-dt.c uses it (and Exynos SoC after
-> the rework).
->=20
-> >=20
-> > The above proposal works if the thermal driver is dealing with loading
-> > cpu_cooling. But for of-thermal based drivers, the idea is to leave to
-> > cpufreq code to load it.=20
->=20
-> I assume, that you mean case [1]?
->=20
+that is the way I think of checking if the cpufreq layer is ready to
+have a cpu cooling on top of it. Currently, thermal drivers check this
+before calling cpu cooling registration. But instead of having this
+check in every driver, I would like to move it to cpu cooling.
 
-yup
+However, for cpufreq-dt, the registration currently happens in the
+init phase, not in probe, so cpufreq driver is not registered, and thus
+the check won't work.
 
-> >=20
-> > As an example, I am taking the ti-soc-thermal, but we already have
-> > other of-thermal based drivers. Booting with this patch ti-soc-thermal
-> > (of-based boot) loads fine, but the cpu_cooling never gets bound to
-> > the thermal zone.
->=20
-> Could you share the exact SoC/board/_defconfig setup to reproduce this
-> behavior? I possess Beagle Bone Black, but it doesn't have thermal
-> support (perhaps because its lack of accuracy).
->
-
-Well, it may happen any system a driver with of-thermal + cpufreq-dt.
-
-One board that is easily available is OMAP4460 panda board (tried
-myself, the problem is there).
-
-> With my Exynos setup I didn't experience any problems with this patch.
->=20
-> >=20
-> > The thing is that the bind may happen before cpufreq-dt code loads the
-> > cpufreq driver, and when cpu_cooling is checking what is the max freq,
-> > by using cpufreq table, it won't be able to do it, as there is no
-> > table.
->=20
-> As I look into the cpufreq-dt.c driver - in the cpufreq_init()
-> function, the call to of_cpufreq_cooling_register() is performed just
-> before cpufreq_table_validate_and_show().
-> It looks like a mistake in the cpufreq-dt.c code.
->=20
-
-Well, I believe for our case, better would be if the cpu_cooling could
-be done after cpufreq driver registration call.
-
-
-> >=20
-> > While, without the patch, it will use wrong in the binding, but after
-> > it gets bound, and cpufreq loads, the max will be used correctly.
->=20
-> Correct. Such _wrong_ behavior was the original motivation to prepare
-> this patch.
->=20
-> >=20
-> > And in this case, the system still works besides this bug.=20
->=20
-> Unfortunately there is also a "window" in which the driver is not
-> properly configured and can cause system crash, although it is unlikely.
->=20
-
-Agreed.
-
->=20
-> > The
-> > reasoning is because the max state comes from DT (2) and lower and
-> > upper wont be equal to THERMAL_NO_LIMIT. Then, the following check
-> > will use the parameter, instead of max_state:
-> >=20
-> >         cdev->ops->get_max_state(cdev, &max_state);
-> >=20
-> > 	/* lower default 0, upper default max_state */
-> > 	lower =3D lower =3D=3D THERMAL_NO_LIMIT ? 0 : lower;
-> > 	upper =3D upper =3D=3D THERMAL_NO_LIMIT ?
-> > 				max_state : upper;
-> >=20
-> > In summary, introducing this patch, although it fix a problem, will
-> > introduce regressions, in of-thermal based drivers.
->=20
-> To be more precise - it will affect systems, which use of-thermal.c and
-> cpufreq-dt.c in the same time, due to wrong ordering in the latter file.
->=20
-
-Exactly.
-
-> Could you give me a hint about the exact affected system? I've grep'ed
-> for CPUFREQ_DT in the ./arch/arm/configs with no success.
->=20
-
-Yeah, the grepping is correct. But well, just because it is not in
-defconfigs does not mean it won't be used.=20
-
-> >=20
-> > I believe, to have this fix, you need to provide a way to have probing
-> > deferring also in cpu_cooling. That needs also the change in the
-> > cpufreq driver, as I mentioned in the other thread.
->=20
-> I will think about possible solution and refer to previous discussion.=20
->=20
-
-Good. For your patch, it is still sane to have it. But needs to be taken
-after fixing the ordering between cpufreq-dt and cpu_cooling.
+In this way, I believe the sequencing between cpu cooling and cpufreq-dt
+would work fine.
 
 
-> >=20
-> > Cheers,
-> >=20
-> > > ---
-> > >  drivers/thermal/thermal_core.c | 6 ++++--
-> > >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > >=20
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c index 43b9070..8567929 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct
-> > > thermal_zone_device *tz, struct thermal_zone_device *pos1;
-> > >  	struct thermal_cooling_device *pos2;
-> > >  	unsigned long max_state;
-> > > -	int result;
-> > > +	int result, ret;
-> > > =20
-> > >  	if (trip >=3D tz->trips || (trip < 0 && trip !=3D
-> > > THERMAL_TRIPS_NONE)) return -EINVAL;
-> > > @@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct
-> > > thermal_zone_device *tz, if (tz !=3D pos1 || cdev !=3D pos2)
-> > >  		return -EINVAL;
-> > > =20
-> > > -	cdev->ops->get_max_state(cdev, &max_state);
-> > > +	ret =3D cdev->ops->get_max_state(cdev, &max_state);
-> > > +	if (ret)
-> > > +		return ret;
-> > > =20
-> > >  	/* lower default 0, upper default max_state */
-> > >  	lower =3D lower =3D=3D THERMAL_NO_LIMIT ? 0 : lower;
-> > > --=20
-> > > 2.0.0.rc2
-> > >=20
->=20
->=20
+>  	}
+> =20
+>  	policy->cpuinfo.transition_latency =3D transition_latency;
+> @@ -305,8 +305,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> =20
+>  	return 0;
+> =20
+> -out_cooling_unregister:
+> -	cpufreq_cooling_unregister(priv->cdev);
+> +out_free_cpufreq_table:
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+>  out_free_priv:
+>  	kfree(priv);
 > --=20
-> Best regards,
+> 2.0.3.693.g996b0fd
 >=20
-> Lukasz Majewski
->=20
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
 
---ZGiS0Q5IWpPtfppv
+--PmA2V3Z32TCmWXqI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUc3KmAAoJEMLUO4d9pOJW6+MH/2OtzuPuyRglPkTJIhtHdZRt
-9xEAK/5Rf5HtMFqAFCD7SdKnO0Qt6lkFlXgq0mpCyT6p0FWrUwEm1Axsus5MIKv0
-iCMhpAflxYanY06x2uwVbLXlzc+JP9ngJXJjlNlt8PCPn4+jr951Xul2aMf5ixDO
-Jwtbx6OqCIg3pP1FEh3ln7U7gXMv6+pRC5Nizjh6mn0/LM9T5EW8lnF3nnEh3Qvb
-OUEgZA/MaK3nxCGRCQLBfU9FijCSdrKjM8Du5KYsJ1pIxx1MipT0uEj6vDT5Flal
-ImpBwvXp+ivaoOnVySyThYgVnGlArZ1u/Hw94agD2OELG/v9JTQTi0VgwnSf+r0=
-=pWWw
+iQEcBAEBAgAGBQJUc3SgAAoJEMLUO4d9pOJWxjMH/3Nb3UZgYE+4TE1AFv/MlkqY
+VnoVAdq8/8JgE8inXcVJ99nrGWZ7yIxmnWfikNTRzsDAMvenOSBDgXWm+1XFAOrW
+fRz5uTM+dxoFX65FKY6ekvOrDNnlIgMXr+GMq8RiGpgo14Gwd9xOPvfZUqc+eIhl
+1iXRPclBqi33O2xx5EzePIeOufqSyblLUrGXehlmLTEaReu3yN9NMQNein6R37sj
+MaaGePMj0RcqTOL5QMeDQQoZtQ730IC9ZxfQElZwDlNVweDtssO/yQFd/Kjlw4uB
+/aE0mfpv9bEertwcmxIlPfq7KL02ZA6cTks1zXEXy82Bi3+ki/SgW/Rl9wEX/vQ=
+=hMDz
 -----END PGP SIGNATURE-----
 
---ZGiS0Q5IWpPtfppv--
+--PmA2V3Z32TCmWXqI--
