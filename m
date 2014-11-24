@@ -1,39 +1,39 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] net/smsc911x: Add minimal runtime PM support
-Date: Mon, 24 Nov 2014 16:42:04 -0500 (EST)
-Message-ID: <20141124.164204.382324382412456341.davem@davemloft.net>
-References: <1416855497-6479-1-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 2/3] ARM: shmobile: kzm9g-reference dts: Move Ethernet
+ node to BSC
+Date: Mon, 24 Nov 2014 22:43:10 +0100
+Message-ID: <CAMuHMdW3WNywUPwOk=JEX5EURr28xgjojmO8E6tBL+uvkukkJA@mail.gmail.com>
+References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+	<1416859808-18503-3-git-send-email-geert+renesas@glider.be>
+	<54739F0C.7040802@cogentembedded.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shards.monkeyblade.net ([149.20.54.216]:54018 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbaKXVmH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 16:42:07 -0500
-In-Reply-To: <1416855497-6479-1-git-send-email-geert+renesas@glider.be>
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:63899 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbaKXVnM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 16:43:12 -0500
+In-Reply-To: <54739F0C.7040802@cogentembedded.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: geert+renesas@glider.be
-Cc: steve.glendinning@shawell.net, netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Mon, 24 Nov 2014 19:58:17 +0100
+On Mon, Nov 24, 2014 at 10:11 PM, Sergei Shtylyov
+<sergei.shtylyov@cogentembedded.com> wrote:
+>> Also rename the node's name from "lan9220" to "ethernet", to confirm to
+>
+>    s/confirm/comply/, you mean?
 
-> Add minimal runtime PM support (enable on probe, disable on remove), to
-> ensure proper operation with a parent device that uses runtime PM.
-> 
-> This is needed on systems where the external bus controller module of
-> the SoC is contained in a PM domain and/or has a gateable functional
-> clock. In such cases, before accessing any device connected to the
-> external bus, the PM domain must be powered up, and/or the functional
-> clock must be enabled, which is typically handled through runtime PM by
-> the bus controller driver.
-> 
-> An example of this is the kzm9g development board, where an smsc9220
-> Ethernet controller is connected to the Bus State Controller (BSC) of a
-> Renesas sh73a0 SoC.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Sorry, conform.
 
-Applied to net-next, thanks!
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
