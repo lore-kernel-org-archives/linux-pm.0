@@ -1,48 +1,235 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v19 0/5] Rockchip soc thermal driver
-Date: Tue, 25 Nov 2014 00:39:43 +0100
-Message-ID: <1771961.FfLxNDNiti@diego>
-References: <1416805142-27304-1-git-send-email-caesar.wang@rock-chips.com> <20141124201807.GA20404@developer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141124201807.GA20404@developer>
-Sender: linux-doc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Caesar Wang <caesar.wang@rock-chips.com>, rui.zhang@intel.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, fzf@rock-chips.com
+From: ethan <ethan.kernel@gmail.com>
+Subject: Re: [PATCH 1/3] intel_pstate: skip the driver if Sun server has ACPI _PPC method
+Date: Tue, 25 Nov 2014 08:33:08 +0800
+Message-ID: <8B34F33D-6850-402A-8089-F60D132C2C87@gmail.com>
+References: <1416299826-15813-1-git-send-email-ethan.zhao@oracle.com> <1416299826-15813-2-git-send-email-ethan.zhao@oracle.com> <546CFBEE.6090103@hp.com> <546E1BBE.7050906@intel.com> <546E892C.8000209@oracle.com> <546EC348.1000001@gmail.com> <54728CC0.1030708@oracle.com> <547354AD.3010609@hp.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:57570 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbaKYAdQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 19:33:16 -0500
+In-Reply-To: <547354AD.3010609@hp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linda Knippers <linda.knippers@hp.com>
+Cc: ethan zhao <ethan.zhao@oracle.com>, Linda Knippers <ljklists@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "corbet@lwn.net" <corbet@lwn.net>, "dirk.j.brandewie@intel.com" <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "joe.jin@oracle.com" <joe.jin@oracle.com>, "brian.maly@oracle.com" <brian.maly@oracle.com>
 
-Hi Caesar,
+Linda=A3=AC
+> =D4=DA 2014=C4=EA11=D4=C224=C8=D5=A3=AC23:54=A3=ACLinda Knippers <lin=
+da.knippers@hp.com> =D0=B4=B5=C0=A3=BA
+>=20
+>> On 11/23/2014 8:41 PM, ethan zhao wrote:
+>> Linda,
+>>=20
+>>> On 2014/11/21 12:44, Linda Knippers wrote:
+>>>=20
+>>>> On 11/20/2014 07:37 PM, ethan zhao wrote:
+>>>> Dirk,
+>>>>=20
+>>>>> On 2014/11/21 0:50, Dirk Brandewie wrote:
+>>>>>> On 11/19/2014 12:22 PM, Linda Knippers wrote:
+>>>>>>> On 11/18/2014 3:37 AM, Ethan Zhao wrote:
+>>>>>>> Oracle Sun X86 servers have dynamic power capping capability th=
+at
+>>>>>>> works via
+>>>>>>> ACPI _PPC method etc, so skip loading this driver if Sun server=
+ has
+>>>>>>> ACPI _PPC
+>>>>>>> enabled.
+>>>>>>>=20
+>>>>>>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>>>>>>> ---
+>>>>>>>   drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++++
+>>>>>>>   1 file changed, 20 insertions(+)
+>>>>>>>=20
+>>>>>>> diff --git a/drivers/cpufreq/intel_pstate.c
+>>>>>>> b/drivers/cpufreq/intel_pstate.c
+>>>>>>> index 27bb6d3..5498eb0 100644
+>>>>>>> --- a/drivers/cpufreq/intel_pstate.c
+>>>>>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>>>>>> @@ -943,6 +943,21 @@ static bool intel_pstate_no_acpi_pss(void)
+>>>>>>>       return true;
+>>>>>>>   }
+>>>>>>>=20
+>>>>>>> +static bool intel_pstate_has_acpi_ppc(void)
+>>>>>>> +{
+>>>>>>> +    int i;
+>>>>>>> +
+>>>>>>> +    for_each_possible_cpu(i) {
+>>>>>>> +        struct acpi_processor *pr =3D per_cpu(processors, i);
+>>>>>>> +
+>>>>>>> +        if (!pr)
+>>>>>>> +            continue;
+>>>>>>> +        if (acpi_has_method(pr->handle, "_PPC"))
+>>>>>>> +            return true;
+>>>>>>> +    }
+>>>>>>> +    return false;
+>>>>>>> +}
+>>>>>>> +
+>>>>>>>   struct hw_vendor_info {
+>>>>>>>       u16  valid;
+>>>>>>>       char oem_id[ACPI_OEM_ID_SIZE];
+>>>>>>> @@ -952,6 +967,7 @@ struct hw_vendor_info {
+>>>>>>>   /* Hardware vendor-specific info that has its own power manag=
+ement
+>>>>>>> modes */
+>>>>>>>   static struct hw_vendor_info vendor_info[] =3D {
+>>>>>>>       {1, "HP    ", "ProLiant"},
+>>>>>>> +    {1, "ORACLE", ""},
+>>>>>>>       {0, "", ""},
+>>>>>>>   };
+>>>>>>>=20
+>>>>>>> @@ -969,12 +985,16 @@ static bool
+>>>>>>> intel_pstate_platform_pwr_mgmt_exists(void)
+>>>>>>>               !strncmp(hdr.oem_table_id, v_info->oem_table_id,
+>>>>>>> ACPI_OEM_TABLE_ID_SIZE) &&
+>>>>>>>               intel_pstate_no_acpi_pss())
+>>>>>>>               return true;
+>>>>>>> +        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_S=
+IZE) &&
+>>>>>>> +            intel_pstate_has_acpi_ppc())
+>>>>>> We need try this on a few platforms to make sure this patch does=
+n't
+>>>>>> break the
+>>>>>> HP platforms that may or may not need this driver, depending on =
+the
+>>>>>> BIOS settings.
+>>>>> It looks like HP systems would get swept up in this check too if =
+they
+>>>>> have _PPC
+>>> Right.  This patch breaks HP ProLiant platforms when they are
+>>> configured to have the OS do power management.  In that case,
+>>> the firmware exposes _PPC information.
+>>  Okay, got it, The HP ProLiant has an option in BIOS could be enable=
+d to "OS
+>> PM", so
+>> will export _PSS, _PPC, and  this patch break this case.
+>>=20
+>>>=20
+>>>>    No , this patch checks the oem_id against 'ORACLE" first, will =
+not
+>>>> affect other vendors even they have _PPC.
+>>> I don't think that's how your code works.  This patch will match an=
+y
+>>> vendor that is in the table, not just "ORACLE".
+>> Will change patch to match the oem-id out of the loop, such as follo=
+wing , how
+>> about it ?
+>>=20
+>> static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>> {
+>>        struct acpi_table_header hdr;
+>>        struct hw_vendor_info *v_info;
+>>=20
+>>        if (acpi_disabled
+>>            || ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &=
+hdr)))
+>>                return false;
+>>=20
+>>        for (v_info =3D vendor_info; v_info->valid; v_info++) {
+>>                if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_=
+SIZE)
+>>                    && !strncmp(hdr.oem_table_id, v_info->oem_table_i=
+d,
+>> ACPI_OEM_TABLE_ID_SIZE)
+>>                    && intel_pstate_no_acpi_pss())
+>>                        return true;
+>>        }
+>>=20
+>>   if (!strncmp(hdr.oem_id, v_info[1]->oem_id, ACPI_OEM_ID_SIZE) &&
+>>          intel_pstate_has_acpi_ppc())
+>=20
+> I really don't think you want to hard code a 1 there.
+>=20
+> I think you need to do what Dirk suggested, which is to expand the
+> hw_vendor_info structure to specify the check that needs to be done
+> for each entry.  For a ProLiant, it would be to call intel_pstate_no_=
+acpi_pss()
+> and for an Oracle box, it would be to call intel_pstate_has_acpi_ppc(=
+).
+>=20
 
-Am Montag, 24. November 2014, 16:18:12 schrieb Eduardo Valentin:
-> Hello Caesar,
-> 
-> On Mon, Nov 24, 2014 at 12:58:57PM +0800, Caesar Wang wrote:
-> > This series patchs tested on rk3288 SDK board and pinky-v1,v2 board.
-> > I believe the driver can be used on the rk3288-evb board.
-> > 
-> > Add this driver, The system will shutdown when
-> > the thermal temperture over 100C.If for some reason we are unable to
-> > shut it down in orderly fashion (kernel is stuck holding a lock or
-> > similar)
-> > then hardware will reset it.
-> > 
-> > The patchs 1/5,2/5 can applay Eduardo's Branch
-> > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.g
-> > it [branch "next-kernel"]
-> > 
-> > 	remote = origin
-> > 	merge = refs/heads/next
-> 
-> I applied your patches 1 and 2 in my -linus branch, and luckily will be
-> accepted for 3.19.
+thanks=A3=ACwill do that.
+Ethan
 
-and I've taken patches 3, 4 and 5 into my dts branch for 3.19 .
-
-I've adapted the commit messages in some places and removed the
-	/* sensor		ID */
-comments from the rk3288-thermal.dtsi.
-
-
-Heiko
+> -- ljk
+>=20
+>>           return true;
+>>=20
+>>        return false;
+>> }
+>>=20
+>>>>> What about extending the hw_vendor_info struct to include whether=
+ _PSS or
+>>>>  Except refer to ACPI DSDT, I don't know how to fill such info.
+>>>>> _PPC should be done for the platform since it appears that oracle=
+ and HP
+>>>>> have implemented similar functionality using two different method=
+s.
+>>>>   Maybe Linda could answer this whether HP also has _PPC and shoul=
+d be
+>>>> wept out.
+>>>>   But that doesn't happen with on the same box at the same time.
+>>> I don't know how an Oracle box works but on a ProLiant, customers c=
+an
+>>> choose to have platform power management or OS power management.
+>>> When the platform is managing the power, we don't provide the _PSS
+>>> information.  Since our oem information is in the table and there i=
+s
+>>> no _PSS, the intel_pstate driver doesn't stay loaded.  That's what =
+we want.
+>>>=20
+>>> When the platform configured to have the OS do the power management=
+,
+>>> the firmware has _PSS and _PPC and we want the intel_pstate driver,
+>>> That's what your patch breaks.  With your patch, the driver won't
+>>> stay loaded because our platform is in the table and the check for
+>>> _PPC passes.
+>>>=20
+>>> How does an Oracle box work?
+>>  Oracle Sun servers (X86) don't have the option in BIOS to change th=
+e PM mode
+>> to firmware/OS,
+>>  The BIOS always has _PSS and _PPC exported to OS whatever 'soft pow=
+er capping'
+>> or 'hard power capping' enabled
+>>  in SP configuration web page. if the power policy violation happene=
+d, firmware
+>> will notify OS via SCI with the changed _PPC
+>>  number.
+>>=20
+>>  Thanks,
+>>  Ethan
+>>>=20
+>>> -- ljk
+>>>=20
+>>>>   Thanks,
+>>>>   Ethan
+>>>>>=20
+>>>>>> I don't suppose you tested on a ProLiant too?
+>>>>>>=20
+>>>>>> -- ljk
+>>>>>>=20
+>>>>>>> +            return true;
+>>>>>>>       }
+>>>>>>>=20
+>>>>>>>       return false;
+>>>>>>>   }
+>>>>>>>   #else /* CONFIG_ACPI not enabled */
+>>>>>>>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void=
+) {
+>>>>>>> return false; }
+>>>>>>> +static inline bool intel_pstate_has_acpi_ppc(void) { return fa=
+lse; }
+>>>>>>>   #endif /* CONFIG_ACPI */
+>>>>>>>=20
+>>>>>>>   static int __init intel_pstate_init(void)
+>>>> --=20
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-pm=
+" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
