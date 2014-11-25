@@ -1,45 +1,225 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2 2/3] PM / devfreq: tegra: add devfreq driver for Tegra
- Activity Monitor
-Date: Tue, 25 Nov 2014 07:07:33 +0000 (GMT)
-Message-ID: <715439136.113681416899252854.JavaMail.weblogic@epmlwas08c>
-Reply-To: myungjoo.ham@samsung.com
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH RFC v2 06/12] driver: soc: exynos-pmu: Add exynos7 power
+ domain on/off ops
+Date: Tue, 25 Nov 2014 08:30:24 +0100
+Message-ID: <CAPDyKFpGjeWx8LkhN9BRLEczGSehXQBAB7A_M1DtCFN9tZOtYg@mail.gmail.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-6-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:13038 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbaKYHHi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 02:07:38 -0500
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NFL006Q22GLCJ00@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 25 Nov 2014 16:07:33 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1416834256-11225-6-git-send-email-amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, pankaj.dubey-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-PiBUaGUgQUNUTU9OIGJsb2NrIGNhbiBtb25pdG9yIHNldmVyYWwgY291bnRlcnMsIHByb3ZpZGlu
-ZyBhdmVyYWdpbmcgYW5kIGZpcmluZw0KPiBpbnRlcnJ1cHRzIGJhc2VkIG9uIHdhdGVybWFya2lu
-ZyBjb25maWd1cmF0aW9uLiBUaGlzIGltcGxlbWVudGF0aW9uIG1vbml0b3JzDQo+IHRoZSBNQ0FM
-TCBhbmQgTUNDUFUgY291bnRlcnMgdG8gY2hvb3NlIGFuIGFwcHJvcHJpYXRlIGZyZXF1ZW5jeSBm
-b3IgdGhlDQo+IGV4dGVybmFsIG1lbW9yeSBjbG9jay4NCj4gDQo+IFRoaXMgcGF0Y2ggaXMgYmFz
-ZWQgb24gd29yayBieSBBbGV4IEZyaWQgPGFmcmlkQG52aWRpYS5jb20+IGFuZCBNaWtrbw0KPiBQ
-ZXJ0dHVuZW4gPG1pa2tvLnBlcnR0dW5lbkBrYXBzaS5maT4uDQo+IA0KPiBTaWduZWQtb2ZmLWJ5
-OiBUb21ldSBWaXpvc28gPHRvbWV1LnZpem9zb0Bjb2xsYWJvcmEuY29tPg0KDQpTaWduZWQtb2Zm
-LWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCg0KSG93IGFyZSB5
-b3UgZ29pbmcgdG8gaW50ZWdyYXRlIG90aGVyIHR3byBwYXRjaGVzPw0KTWF5IEkganVzdCBnbyBh
-aGVhZCB3aXRoIHRoaXMgcGF0Y2ggb25seT8NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KPiAN
-Cj4gLS0tDQo+IA0KPiB2MjoJKiBVc2UgZGV2ZnJlcQ0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJl
-cS9LY29uZmlnICAgICAgICAgfCAgMTAgKw0KPiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAg
-ICAgICB8ICAgMSArDQo+ICBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jIHwgNzE4ICsr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIDMgZmlsZXMgY2hhbmdl
-ZCwgNzI5IGluc2VydGlvbnMoKykNCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZy
-ZXEvdGVncmEtZGV2ZnJlcS5jDQo+IA0K
+On 24 November 2014 at 14:04, Amit Daniel Kachhap
+<amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
+> This patch uses the restructuring done in PD handlers and adds PD
+> on/off/status handlers for exynos7. In this SoC, some extra settings
+> need to be done prior to turning on/off power domains. Some of those
+> settings are also different from different power domains so is uses
+> the power domain compatible name feature to distinguish between power
+> domains.
+>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/soc/samsung/exynos-pmu.c            |  105 +++++++++++++++++++++++++++
+>  include/linux/soc/samsung/exynos-regs-pmu.h |   17 +++++
+>  2 files changed, 122 insertions(+)
+>
+> diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
+> index e690f65..b9631d5 100644
+> --- a/drivers/soc/samsung/exynos-pmu.c
+> +++ b/drivers/soc/samsung/exynos-pmu.c
+> @@ -1202,6 +1202,104 @@ static void exynos7_pmu_init(void)
+>         }
+>  }
+>
+> +static int exynos7_pd_extraconf_base(const char *pd_name)
+> +{
+> +       if (!pd_name)
+> +               return -EINVAL;
+> +
+> +       if (!strcmp("samsung,exynos7-pd-mfc", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_MFC_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-hevc", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_HEVC_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-mscl", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_MSCL_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-g2d", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_G2D_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-fsys0", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_FSYS0_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-fsys1", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_FSYS1_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-aud", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_AUD_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-disp", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_DISP_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-vpp", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_VPP_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-vpp", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_VPP_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-isp0", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_ISP0_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-isp1", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_ISP1_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-cam0", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_CAM0_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-cam1", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_CAM1_SYS_PWR_REG;
+> +       else if (!strcmp("samsung,exynos7-pd-g3d", pd_name))
+> +               return EXYNOS7_CLKRUN_CMU_CAM1_SYS_PWR_REG;
 
+I think we should move away from using strings to find a matching PM
+domain. Instead we should use a enum/define pointing to the PM domain
+in an array of PM domains, or similar.
 
+The UX500 SOC initial support for PM domains is queued for 3.19 and is
+currently available in linux-next. You may want to get some
+inspiration from that approach.
+
+> +
+> +       pr_err("%s: Unsupported power domain\n", pd_name);
+> +       return 0;
+> +}
+> +
+> +static int exynos7_pd_powerdown(const char *pd_name, void __iomem *pd_addr)
+> +{
+
+Considering the suggestion above and to move away from using strings
+like this; this function could take a pointer to the PM domain instead
+of a string and the __iomem, right!?
+
+> +       int off_base = exynos7_pd_extraconf_base(pd_name);
+> +
+> +       if (!off_base)
+> +               return -EINVAL;
+> +
+> +       /* Initialise the pd extraconf registers */
+> +       pmu_raw_writel(0, off_base + EXYNOS7_CLKRUN_CMU_PD_SYS_PWR_REG);
+> +       pmu_raw_writel(0, off_base + EXYNOS7_CLKSTOP_CMU_PD_SYS_PWR_REG);
+> +       pmu_raw_writel(0, off_base + EXYNOS7_DISABLE_PLL_CMU_PD_SYS_PWR_REG);
+> +       pmu_raw_writel(0, off_base + EXYNOS7_RESET_LOGIC_PD_SYS_PWR_REG);
+> +       pmu_raw_writel(0, off_base + EXYNOS7_MEMORY_PD_SYS_PWR_REG);
+> +       pmu_raw_writel(0, off_base + EXYNOS7_RESET_CMU_PD_SYS_PWR_REG);
+> +
+> +       if (!strcmp("samsung,exynos7-pd-fsys0", pd_name) ||
+> +                       !strcmp("samsung,exynos7-pd-fsys1", pd_name))
+> +               pmu_raw_writel(1,
+> +                               off_base + EXYNOS7_RESET_SLEEP_PD_SYS_PWR_REG);
+> +
+> +       if (!strcmp("samsung,exynos7-pd-aud", pd_name)) {
+> +               pmu_raw_writel(0, EXYNOS7_PAD_RETENTION_AUD_SYS_PWR_REG);
+> +               pmu_raw_writel(0, EXYNOS7_GPIO_MODE_AUD_SYS_PWR_REG);
+> +       }
+> +
+> +       writel_relaxed((EXYNOS7_USE_PROLONGED_LOGIC_RESET |
+> +                       EXYNOS7_USE_SC_FEEDBACK), pd_addr + EXYNOS_PD_OPTION);
+> +
+> +       return 0;
+> +}
+> +
+> +static int exynos7_pd_poweron(const char *pd_name, void __iomem *pd_addr)
+> +{
+> +       if (exynos7_pd_powerdown(pd_name, pd_addr))
+> +               return -EINVAL;
+> +
+> +       return __exynos_pd_poweron_off(true, pd_name, pd_addr,
+> +                       EXYNOS7_INT_LOCAL_PWR_EN);
+> +}
+> +
+> +static int exynos7_pd_poweroff(const char *pd_name, void __iomem *pd_addr)
+> +{
+> +       if (exynos7_pd_powerdown(pd_name, pd_addr))
+> +               return -EINVAL;
+> +
+> +       return __exynos_pd_poweron_off(false, pd_name, pd_addr,
+> +                       EXYNOS7_INT_LOCAL_PWR_EN);
+> +}
+> +
+> +static bool exynos7_pd_status(void __iomem *pd_addr)
+> +{
+> +       unsigned int val;
+> +
+> +       val = readl_relaxed(pd_addr + EXYNOS_PD_STATUS) &
+> +                               EXYNOS7_INT_LOCAL_PWR_EN;
+> +       return  val ? true : false;
+> +}
+> +
+>  static struct exynos_pmu_pd_ops exynos_pd_ops = {
+>         .pd_on          = exynos_pd_poweron,
+>         .pd_off         = exynos_pd_poweroff,
+> @@ -1238,12 +1336,19 @@ static struct exynos_pmu_data exynos5420_pmu_data = {
+>         .pd_ops         = &exynos_pd_ops,
+>  };
+>
+> +static struct exynos_pmu_pd_ops exynos7_pd_ops = {
+> +       .pd_on          = exynos7_pd_poweron,
+> +       .pd_off         = exynos7_pd_poweroff,
+> +       .pd_status      = exynos7_pd_status,
+> +};
+> +
+>  static const struct exynos_pmu_data exynos7_pmu_data = {
+>         .pmu_config             = exynos7_pmu_config,
+>         .pmu_init               = exynos7_pmu_init,
+>         .pmu_config_extra       = exynos7_pmu_config_extra,
+>         .powerdown_conf         = exynos7_powerdown_conf,
+>         .powerup_conf           = exynos7_powerup_conf,
+> +       .pd_ops                 = &exynos7_pd_ops,
+>  };
+>
+>  /*
+> diff --git a/include/linux/soc/samsung/exynos-regs-pmu.h b/include/linux/soc/samsung/exynos-regs-pmu.h
+> index c61f91a..520595f 100644
+> --- a/include/linux/soc/samsung/exynos-regs-pmu.h
+> +++ b/include/linux/soc/samsung/exynos-regs-pmu.h
+> @@ -680,6 +680,8 @@ static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
+>  #define EXYNOS7_VPP_SYS_PWR_REG                                        (0x1438)
+>  #define EXYNOS7_CLKRUN_CMU_AUD_SYS_PWR_REG                     (0x1440)
+>  #define EXYNOS7_CLKRUN_CMU_BUS0_SYS_PWR_REG                    (0x1444)
+> +#define EXYNOS7_CLKRUN_CMU_CAM0_SYS_PWR_REG                    (0x1448)
+> +#define EXYNOS7_CLKRUN_CMU_CAM1_SYS_PWR_REG                    (0x144C)
+>  #define EXYNOS7_CLKRUN_CMU_DISP_SYS_PWR_REG                    (0x1450)
+>  #define EXYNOS7_CLKRUN_CMU_FSYS0_SYS_PWR_REG                   (0x1454)
+>  #define EXYNOS7_CLKRUN_CMU_FSYS1_SYS_PWR_REG                   (0x1458)
+> @@ -824,6 +826,7 @@ static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
+>  #define EXYNOS7_USE_STANDBYWFI                                 (0x1 << 16)
+>  #define EXYNOS7_USE_SC_FEEDBACK                                        (0x1 << 1)
+>  #define EXYNOS7_USE_SC_COUNTER                                 (0x1 << 0)
+> +#define EXYNOS7_USE_PROLONGED_LOGIC_RESET                      (0x1 << 8)
+>
+>  /* EXYNOS7_PAD_RETENTION_AUD_OPTION */
+>  #define PAD_INITIATE_WAKEUP                                    (0x1 << 28)
+> @@ -841,4 +844,18 @@ static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
+>
+>  #define EXYNOS7_CORE_ARMCLK_STOPCTRL           (0x1000)
+>
+> +#define EXYNOS7_INT_LOCAL_PWR_EN               0xF
+> +
+> +/*
+> + * Power domain register offsets from the EXYNOS7
+> + * CLKRUN_CMU_HEVC_SYS_PWR_REG configuration register.
+> + */
+> +#define EXYNOS7_CLKRUN_CMU_PD_SYS_PWR_REG      (0x0)
+> +#define EXYNOS7_CLKSTOP_CMU_PD_SYS_PWR_REG     (0x40)
+> +#define EXYNOS7_DISABLE_PLL_CMU_PD_SYS_PWR_REG (0x80)
+> +#define EXYNOS7_RESET_LOGIC_PD_SYS_PWR_REG     (0xC0)
+> +#define EXYNOS7_MEMORY_PD_SYS_PWR_REG          (0x100)
+> +#define EXYNOS7_RESET_CMU_PD_SYS_PWR_REG       (0x140)
+> +#define EXYNOS7_RESET_SLEEP_PD_SYS_PWR_REG     (0x180)
+> +
+>  #endif /* __ASM_ARCH_REGS_PMU_H */
+> --
+> 1.7.9.5
+>
+
+Kind regards
+Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
