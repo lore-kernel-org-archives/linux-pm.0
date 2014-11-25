@@ -1,53 +1,60 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to
- "system-power-controller"
-Date: Tue, 25 Nov 2014 15:54:10 +0100
-Message-ID: <20141125145410.GD19910@localhost>
-References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
- <1416918506-9366-2-git-send-email-romain.perier@gmail.com>
- <20141125144007.9904BC44343@trevor.secretlab.ca>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Tue, 25 Nov 2014 16:53:56 +0200
+Message-ID: <54749804.8070400@ti.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <15074721.IbfeeI3ajE@wuerfel> <54746349.3000306@ti.com> <2301239.aDOlWg3gEs@wuerfel> <5474846C.2000308@ti.com> <20141125140440.GF3836@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:35447 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbaKYOyN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 09:54:13 -0500
-Content-Disposition: inline
-In-Reply-To: <20141125144007.9904BC44343@trevor.secretlab.ca>
+Received: from bear.ext.ti.com ([192.94.94.41]:55455 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbaKYOy6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Nov 2014 09:54:58 -0500
+In-Reply-To: <20141125140440.GF3836@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grant Likely <grant.likely@linaro.org>
-Cc: Romain Perier <romain.perier@gmail.com>, heiko@sntech.de, johan@kernel.org, lee.jones@linaro.org, broonie@kernel.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mike Turquette <mturquette@linaro.org>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, ssantosh@kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Nov 25, 2014 at 02:40:07PM +0000, Grant Likely wrote:
-> On Tue, 25 Nov 2014 12:28:25 +0000
-> , Romain Perier <romain.perier@gmail.com>
->  wrote:
-> > It reverts commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
-> > As discussed on the mailing list, it makes more sense to rename back to the
-> > old established property name, without the vendor prefix. Problem being that
-> > the word "source" usually tends to be used for inputs and that is out of control
-> > of the OS. The poweroff capability is an output which simply turns the
-> > system-power off. Also, this property might be used by drivers which power-off
-> > the system and power back on subsequent RTC alarms. This seems to suggest to
-> > remove "poweroff" from the property name and to choose "system-power-controller"
-> > as the more generic name. This patchs adds the required renaming changes and
-> > defines an helper function which checks if this property is set.
-> > 
-> > Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Hi Russell,
+
+On 11/25/2014 04:04 PM, Russell King - ARM Linux wrote:
+> On Tue, Nov 25, 2014 at 03:30:20PM +0200, Grygorii Strashko wrote:
+>> On 11/25/2014 02:09 PM, Arnd Bergmann wrote:
+>>> It might be possible to do this implicitly if the driver calls clk_get(),
+>>> basically doing clk_get() (or another call if necessary) would prevent the
+>>> simple pmdomain from turning it off during suspend.
+>>
+>> Unfortunately, clk_get() will not work, because drivers still need to use it
+>> to get functional clocks even if they are not going to control them explicitly.
+>> For example, if it need to know clock's rate.
 > 
-> For both patches:
-> Acked-by: Grant Likely <grant.likely@linaro.org>
+> If you don't want a clock to be turned off, then clk_get() it, then
+> clk_prepare() it, and finally clk_enable() it.
 > 
-> Let me know if I need to take this series through my tree. Also, does it
-> need to go into v3.18 and be backported to stable? Or just v3.19.
+> Even if someone else gets it, the only time that a clock is turned off
+> is when _all_ users of it mutually agree that it can be turned off - by
+> every user disabling (and possibly unpreparing) it.
+> 
+> So, if the PM domain code gets a clock, prepares and enables it, then
+> a driver gets the same clock, prepares and enables it also, it won't
+> be disabled until _both_ the PM domain code _and_ the driver disable
+> and unprepare the clock.
+> 
 
-It's only needed in the regulator tree for 3.19, and does not need to be
-backported.
+All 100% true :)
 
-We could convert the drivers (and dts) that currently use
-"<vendor>,system-power-controller" to use the new helper (while
-maintaining backward compatibility) after 3.19-rc1 is out.
+But the question here is how prevent pm_clk domain (clock_ops.c) from
+getting the control on clock if this particular clock is optional from driver's
+perspective. So, only driver should control it. As opposite, all other clocks
+should be controlled by pm-domain (in case of GPD from .start/stop callbacks).
 
-Johan
+You can find more detailed description of problem which this patch was
+created to solve here:
+https://lkml.org/lkml/2014/11/19/225
+
+Thanks for your time.
+
+regards,
+-grygorii
