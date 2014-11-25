@@ -1,108 +1,358 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: core: ignore invalid trip temperature
-Date: Tue, 25 Nov 2014 13:34:53 +0800
-Message-ID: <1416893693.6123.4.camel@rzhang1-toshiba>
-References: <1415835809-23376-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1416450331.5808.3.camel@rzhang1-toshiba>
-	 <20141120112534.7187a21d@amdc2363>
+From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Subject: [PATCH v6] cpufreq: Add SFI based cpufreq driver support
+Date: Tue, 25 Nov 2014 11:12:33 +0530
+Message-ID: <20141125054226.GA20738@intel-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:59076 "EHLO mga01.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:18758 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbaKYFfO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Nov 2014 00:35:14 -0500
-In-Reply-To: <20141120112534.7187a21d@amdc2363>
+	id S1750770AbaKYFlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Nov 2014 00:41:36 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, len.brown@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com, lenb@kernel.org
 
-On Thu, 2014-11-20 at 11:25 +0100, Lukasz Majewski wrote:
-> Hi Zhang,
-> 
-> > 
-> > For some reason, I did not see the discussion between Lukasz and you
-> > via email. I can only see it via patchwork.
-> 
-> It is strange. However I'd appreciate to be in CC of this e-mail :-)
-> 
-> > 
-> > Lukasz,
-> > 
-> > if the regulator for thermal unit is not enabled, what will you get?
-> > temperature 0xFF + trip point -1? or Just temperature 0xFF?
-> 
-> Just 0xFF temperature.
-> 
-> Since 0xFF is larger than SW_TRIP point (mapped to
-> THERMAL_TRIP_CRITICAL), the code at handle_critical_trips() is executed.
-> 
-> From my standpoint 0xFF is a possible and valid temperature in Exynos.
-> 
-sorry, but I still don't see why this patch breaks that.
-The patch doesn't make any difference, as long as the trip_temp is a
-positive value, no matter what the temperature is.
+This adds the SFI based cpu freq driver for some of the Intel's
+Silvermont based Atom architectures like Z34xx and Z35xx.
 
-thanks,
-rui
+Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
+Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+---
+v2:
+(v2-v3: comments from Viresh)
+* rephrase the Kconfig text
+* merge the header file as its not being shared with anyone
+* remove the unnecessary checks in sfi_cpufreq_target
+* style changes in kzalloc
+* fix the potential memory leak sfi_cpufreq_cpu_init
+* move the cpufreq driver flag to the structure definition
+* remove the redundant init of policy->cpu and policy->cur
+* remove the unnecessary check while init the freq table
+* merge the for loops in cpu_init
+* use cpufreq_generic_attr rather than the custom one
 
-> Srinivas, what is your error/use case that you need this check?
-> 
-> > I don't think this patch makes any difference in the second case.
-> > 
-> > BTW, if you expect some indicator when the thermal unit is not
-> > enabled, 
-> 
-> Actually, the TMU is enabled and configured, 
-> Lack of proper regulator (vtmu) for TMU is the culprit of this
-> situation.
-> 
-> > system critical shutdown is not a proper one, we can either
-> > check the sysfs I/F, and we can add a warning message here, telling
-> > that invalid trip point is found.
-> 
-> I think that, it would be a good idea to abort Exynos TMU probe when
-> "vtmu" regulator is not found.
-> 
-> > 
-> > thanks,
-> > rui
-> > 
-> > On Wed, 2014-11-12 at 15:43 -0800, Srinivas Pandruvada wrote:
-> > > Ignore invalid trip temperature less or equal to zero. Some
-> > > buggy systems have invalid trips, causing system shutdown.
-> > > 
-> > > Signed-off-by: Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com> Acked-by: Zhang Rui
-> > > <rui.zhang@intel.com> ---
-> > >  drivers/thermal/thermal_core.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c index 9bf10aa..fbf301a 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -368,7 +368,7 @@ static void handle_critical_trips(struct
-> > > thermal_zone_device *tz, tz->ops->get_trip_temp(tz, trip,
-> > > &trip_temp); 
-> > >  	/* If we have not crossed the trip_temp, we do not care. */
-> > > -	if (tz->temperature < trip_temp)
-> > > +	if (trip_temp <= 0 || tz->temperature < trip_temp)
-> > >  		return;
-> > >  
-> > >  	trace_thermal_zone_trip(tz, trip, trip_type);
-> > 
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> 
-> 
-> 
+v3:
+* Add this change log
+* remove the left over not used cached_freq var
+* merge yet another for loop in cpu_init
+
+v4:
+* remove unnecessary pr_debug
+* rephrase Kconfig text
+* remove unused macro SFI_CPU_MAX
+* Add Viresh's Acked-by
+
+v5:
+(comments from Len Brown)
+* rename few private functions with sfi_cpufreq_ prefix
+* move the PERF_CTL_MASK to msr-index.h
+* make the driver.get current freq to refer PERF_CTRL
+* remove sfi_processor_px, rather reuse sfi_freq_table_entry
+* remove unnecessary memcpy, rather just point to the freq table
+* consolidate get_performance_states with parse_freq
+* remove extract_freq and make get_cur_freq to read from MSR directly
+* move the state_count check while registering the perf states
+
+v6:
+* release the mutex in case of error in register_performance
+(comments from Viresh)
+* drop local perf pointer in ->target and ->init
+* fix the order of freeing memories in the error path of ->init
+* remove alloc_percpu, rather allocate it at runtime in ->init
+
+ arch/x86/include/uapi/asm/msr-index.h |    1 +
+ drivers/cpufreq/Kconfig.x86           |   10 ++
+ drivers/cpufreq/Makefile              |    1 +
+ drivers/cpufreq/sfi-cpufreq.c         |  230 +++++++++++++++++++++++++++++++++
+ 4 files changed, 242 insertions(+)
+ create mode 100644 drivers/cpufreq/sfi-cpufreq.c
+
+diff --git a/arch/x86/include/uapi/asm/msr-index.h b/arch/x86/include/uapi/asm/msr-index.h
+index e21331ce368f..4f6dae67dd10 100644
+--- a/arch/x86/include/uapi/asm/msr-index.h
++++ b/arch/x86/include/uapi/asm/msr-index.h
+@@ -318,6 +318,7 @@
+ 
+ #define MSR_IA32_PERF_STATUS		0x00000198
+ #define MSR_IA32_PERF_CTL		0x00000199
++#define INTEL_PERF_CTL_MASK		0xffff
+ #define MSR_AMD_PSTATE_DEF_BASE		0xc0010064
+ #define MSR_AMD_PERF_STATUS		0xc0010063
+ #define MSR_AMD_PERF_CTL		0xc0010062
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 89ae88f91895..dd2b6f541f33 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -57,6 +57,16 @@ config X86_ACPI_CPUFREQ_CPB
+ 	  By enabling this option the acpi_cpufreq driver provides the old
+ 	  entry in addition to the new boost ones, for compatibility reasons.
+ 
++config X86_SFI_CPUFREQ
++	tristate "SFI P-States driver"
++	depends on X86_INTEL_MID && SFI
++	help
++	  This adds a CPUFreq driver for some Silvermont based Intel Atom
++	  architectures like Z34xx and Z35xx which enumerate processor
++	  performance states through SFI.
++
++	  If in doubt, say N.
++
+ config ELAN_CPUFREQ
+ 	tristate "AMD Elan SC400 and SC410"
+ 	depends on MELAN
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index db6d9a2fea4d..c3b51efd4a85 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
+ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
+ obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
++obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
+ 
+ ##################################################################################
+ # ARM SoC drivers
+diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
+new file mode 100644
+index 000000000000..bbab318bde4e
+--- /dev/null
++++ b/drivers/cpufreq/sfi-cpufreq.c
+@@ -0,0 +1,230 @@
++/*
++ *  SFI Processor P-States Driver
++ *  Based on ACPI Processor P-States Driver
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  Author: Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>
++ *  Author: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/sfi.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++
++#include <asm/msr.h>
++#include <asm/processor.h>
++
++#define SFI_FREQ_MASK		0xff00
++
++static DEFINE_PER_CPU(struct sfi_cpufreq_data *, drv_data);
++static DEFINE_MUTEX(performance_mutex);
++
++static struct sfi_freq_table_entry *f_entry;
++static int sfi_cpufreq_num;
++
++struct sfi_cpufreq_performance {
++	unsigned int state;
++	unsigned int state_count;
++	struct sfi_freq_table_entry *states;
++};
++
++struct sfi_cpufreq_data {
++	struct sfi_cpufreq_performance *sfi_data;
++	struct cpufreq_frequency_table *freq_table;
++};
++
++static int parse_freq(struct sfi_table_header *table)
++{
++	struct sfi_table_simple *sb;
++
++	sb = (struct sfi_table_simple *)table;
++
++	sfi_cpufreq_num = SFI_GET_NUM_ENTRIES(sb, struct sfi_freq_table_entry);
++	f_entry = (struct sfi_freq_table_entry *)sb->pentry;
++
++	return 0;
++}
++
++static int sfi_cpufreq_register_performance(struct sfi_cpufreq_performance *pr)
++{
++	int ret = 0;
++
++	mutex_lock(&performance_mutex);
++
++	/* parse the freq table from SFI */
++	sfi_table_parse(SFI_SIG_FREQ, NULL, NULL, parse_freq);
++
++	pr->state_count = sfi_cpufreq_num;
++	if (pr->state_count <= 1) {
++		pr_err("No p-states discovered\n");
++		ret = -ENODEV;
++		goto err;
++	}
++	pr->states = f_entry;
++err:
++	mutex_unlock(&performance_mutex);
++
++	return ret;
++}
++
++static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
++{
++	u32 lo, hi, sfi_ctrl;
++	struct cpufreq_frequency_table *pos;
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, cpu);
++
++	rdmsr_on_cpu(cpu, MSR_IA32_PERF_CTL, &lo, &hi);
++	lo &= SFI_FREQ_MASK;
++
++	cpufreq_for_each_entry(pos, data->freq_table) {
++		sfi_ctrl = data->sfi_data->states[pos->driver_data].ctrl_val
++			& SFI_FREQ_MASK;
++		if (sfi_ctrl == lo)
++			return pos->frequency;
++	}
++	return data->freq_table[0].frequency;
++}
++
++static int sfi_cpufreq_target(struct cpufreq_policy *policy,
++				unsigned int index)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++	unsigned int next_perf_state = 0; /* Index into perf table */
++	u32 lo, hi;
++
++	next_perf_state = data->freq_table[index].driver_data;
++
++	rdmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, &lo, &hi);
++	lo = (lo & ~INTEL_PERF_CTL_MASK) |
++		((u32) data->sfi_data->states[next_perf_state].ctrl_val &
++			INTEL_PERF_CTL_MASK);
++	wrmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, lo, hi);
++
++	data->sfi_data->state = next_perf_state;
++
++	return 0;
++}
++
++static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int i, result = 0, valid_states = 0;
++	unsigned int cpu = policy->cpu;
++	struct sfi_cpufreq_data *data;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->sfi_data = kzalloc(sizeof(*data->sfi_data), GFP_KERNEL);
++	if (!data->sfi_data) {
++		result = -ENOMEM;
++		goto err_free1;
++	}
++
++	per_cpu(drv_data, cpu) = data;
++
++	result = sfi_cpufreq_register_performance(data->sfi_data);
++	if (result)
++		goto err_free2;
++
++	policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
++
++	data->freq_table = kzalloc(sizeof(*data->freq_table) *
++			(data->sfi_data->state_count+1), GFP_KERNEL);
++	if (!data->freq_table) {
++		result = -ENOMEM;
++		goto err_free2;
++	}
++
++	policy->cpuinfo.transition_latency = 0;
++	for (i = 0; i < data->sfi_data->state_count; i++) {
++		/* detect transition latency */
++		if ((data->sfi_data->states[i].latency * 1000) >
++		    policy->cpuinfo.transition_latency)
++			policy->cpuinfo.transition_latency =
++				data->sfi_data->states[i].latency * 1000;
++
++		/* initialize the freq table */
++		data->freq_table[valid_states].driver_data = i;
++		data->freq_table[valid_states].frequency =
++				data->sfi_data->states[i].freq_mhz * 1000;
++		valid_states++;
++
++		pr_debug("     %cP%d: %d MHz, %d uS\n",
++			(i == data->sfi_data->state ? '*' : ' '), i,
++			(u32) data->sfi_data->states[i].freq_mhz,
++			(u32) data->sfi_data->states[i].latency);
++	}
++
++	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
++	data->sfi_data->state = 0;
++
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
++	if (result)
++		goto err_freqfree;
++
++	pr_debug("CPU%u - SFI performance management activated.\n", cpu);
++
++	return result;
++
++err_freqfree:
++	kfree(data->freq_table);
++err_free2:
++	per_cpu(drv_data, cpu) = NULL;
++	kfree(data->sfi_data);
++err_free1:
++	kfree(data);
++
++	return result;
++}
++
++static int sfi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++
++	kfree(data->freq_table);
++	per_cpu(drv_data, policy->cpu) = NULL;
++	kfree(data->sfi_data);
++	kfree(data);
++
++	return 0;
++}
++
++static struct cpufreq_driver sfi_cpufreq_driver = {
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.get		= get_cur_freq_on_cpu,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= sfi_cpufreq_target,
++	.init		= sfi_cpufreq_cpu_init,
++	.exit		= sfi_cpufreq_cpu_exit,
++	.name		= "sfi-cpufreq",
++	.attr		= cpufreq_generic_attr,
++};
++
++static int __init sfi_cpufreq_init(void)
++{
++	return cpufreq_register_driver(&sfi_cpufreq_driver);
++}
++late_initcall(sfi_cpufreq_init);
++
++static void __exit sfi_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&sfi_cpufreq_driver);
++}
++module_exit(sfi_cpufreq_exit);
++
++MODULE_AUTHOR("Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>");
++MODULE_DESCRIPTION("SFI P-States Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
 
 
+-- 
