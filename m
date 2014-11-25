@@ -1,108 +1,66 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part3 v4 36/38] ACPI, irq, x86: Kill private function mp_register_gsi()/ mp_unregister_gsi()
-Date: Tue, 25 Nov 2014 15:50:00 +0800
-Message-ID: <1416901802-24211-37-git-send-email-jiang.liu@linux.intel.com>
-References: <1416901802-24211-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1416901802-24211-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC v2 08/12] soc: samsung: pm_domain: Add support for
+ parent power domain
+Date: Tue, 25 Nov 2014 08:59:29 +0100
+Message-ID: <CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ@mail.gmail.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f174.google.com ([209.85.216.174]:35880 "EHLO
+	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbaKYH73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 02:59:29 -0500
+Received: by mail-qc0-f174.google.com with SMTP id c9so38271qcz.5
+        for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2014 23:59:29 -0800 (PST)
+In-Reply-To: <1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, pankaj.dubey@samsung.com, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Function mp_register_gsi() is only called once, so fold it into caller
-acpi_register_gsi_ioapic(). Do the same for mp_unregister_gsi().
+On 24 November 2014 at 14:04, Amit Daniel Kachhap
+<amit.daniel@samsung.com> wrote:
+> This patch adds supports for parent power domain. This will ensure
+> invoking of parent/child power domain on/off in a correct sequence.
+> In exynos7 SOC's, power domain controllers have parent and child
+> hierarchy.
+>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  .../bindings/arm/exynos/power_domain.txt           |    2 +
+>  drivers/soc/samsung/pm_domains.c                   |   43 +++++++++++++++++++-
+>  2 files changed, 44 insertions(+), 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> index 00ebda1..0160bdc 100644
+> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> @@ -24,6 +24,7 @@ Optional Properties:
+>         - pclkN, clkN: Pairs of parent of input clock and input clock to the
+>                 devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
+>                 are supported currently.
+> +- parents: phandle of parent power domains.
+>
+>  Node of a device using power domains must have a samsung,power-domain property
+>  defined with a phandle to respective power domain.
+> @@ -48,6 +49,7 @@ Example:
+>         mfc_pd: power-domain@10044060 {
+>                 compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
+>                 reg = <0x10044060 0x20>;
+> +               parents = <&pd_top>;
+>                 #power-domain-cells = <0>;
+>         };
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-Tested-by: Joerg Roedel <jroedel@suse.de>
----
- arch/x86/kernel/acpi/boot.c |   57 ++++++++++++++-----------------------------
- 1 file changed, 18 insertions(+), 39 deletions(-)
+This seems like a good and generic approach to describe that a PM
+domain could have a parent. I would suggest to rename it, such it
+reflects its a PM domain binding though.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 509a48f49fc7..e54a8d72ae6e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -400,42 +400,6 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
- 	return 0;
- }
- 
--static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
--			   int polarity)
--{
--	int irq, node;
--	struct irq_alloc_info info;
--
--	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
--		return gsi;
--
--	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
--	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
--	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
--	ioapic_set_alloc_attr(&info, node, trigger, polarity);
--	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
--	if (irq < 0)
--		return irq;
--
--	/* Don't set up the ACPI SCI because it's already set up */
--	if (enable_update_mptable && acpi_gbl_FADT.sci_interrupt != gsi)
--		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
--
--	return irq;
--}
--
--static void mp_unregister_gsi(u32 gsi)
--{
--	int irq;
--
--	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
--		return;
--
--	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
--	if (irq > 0)
--		mp_unmap_irq(irq);
--}
--
- static struct irq_domain_ops acpi_irqdomain_ops = {
- 	.alloc = mp_irqdomain_alloc,
- 	.free = mp_irqdomain_free,
-@@ -657,10 +621,21 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- 				    int trigger, int polarity)
- {
- 	int irq = gsi;
--
- #ifdef CONFIG_X86_IO_APIC
-+	int node;
-+	struct irq_alloc_info info;
-+
-+	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
-+	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
-+	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
-+	ioapic_set_alloc_attr(&info, node, trigger, polarity);
-+
- 	mutex_lock(&acpi_ioapic_lock);
--	irq = mp_register_gsi(dev, gsi, trigger, polarity);
-+	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
-+	/* Don't set up the ACPI SCI because it's already set up */
-+	if (irq >= 0 && enable_update_mptable &&
-+	    acpi_gbl_FADT.sci_interrupt != gsi)
-+		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
- 	mutex_unlock(&acpi_ioapic_lock);
- #endif
- 
-@@ -670,8 +645,12 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- static void acpi_unregister_gsi_ioapic(u32 gsi)
- {
- #ifdef CONFIG_X86_IO_APIC
-+	int irq;
-+
- 	mutex_lock(&acpi_ioapic_lock);
--	mp_unregister_gsi(gsi);
-+	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
-+	if (irq > 0)
-+		mp_unmap_irq(irq);
- 	mutex_unlock(&acpi_ioapic_lock);
- #endif
- }
--- 
-1.7.10.4
+So, maybe we can add this as a common DT binding for the generic PM
+domain instead of having it as Exynos specific?
+
+Kind regards
+Uffe
