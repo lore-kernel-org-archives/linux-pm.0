@@ -1,50 +1,61 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
- cpufreq table
-Date: Tue, 25 Nov 2014 16:27:44 +0530
-Message-ID: <CAKohpokF8qFUz-bmKT61L879L60GYzsc3X3BRHofLYWAdHa3rg@mail.gmail.com>
-References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
-	<20141124181049.GB1449@developer>
+Subject: Re: [PATCH v11 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Tue, 25 Nov 2014 16:32:10 +0530
+Message-ID: <CAKohpo=CovQ0h_7yyhPg2AVrC+SDZm3+N-_WNWZXfowKFNdrDw@mail.gmail.com>
+References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
+	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
+	<546CEF61.4050105@arm.com>
+	<CAKohponEHqHYCLibVc8OHN49+4YW5qw89ny4ycTBL1xN-p9qtA@mail.gmail.com>
+	<5473364C.3010102@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:48482 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbaKYK5p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 05:57:45 -0500
-Received: by mail-ob0-f171.google.com with SMTP id uz6so233456obc.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 02:57:45 -0800 (PST)
-In-Reply-To: <20141124181049.GB1449@developer>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:46043 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932101AbaKYLCL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 06:02:11 -0500
+Received: by mail-oi0-f52.google.com with SMTP id h136so210285oig.39
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 03:02:10 -0800 (PST)
+In-Reply-To: <5473364C.3010102@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On 24 November 2014 at 23:40, Eduardo Valentin <edubezval@gmail.com> wrote:
-> Is it possible to have this registration only when we have a
-> cpufreq driver up and running? The reasoning is that only after we have
-> a way to control cpu frequencies, it makes sense to have the cpu_cooling
-> device.
+On 24 November 2014 at 19:14, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On 20/11/14 03:48, Viresh Kumar wrote:
+>> - I believe CPUs boot in the order they are present in DT except for the
+>> boot CPU. So, the first node for every cluster should have it.
+>>
+>> Correct ? Then we can update the fixme.
+>>
 >
-> I am planing to have the following check in the cpu cooling code:
->         if (!cpufreq_get_current_driver()) {
->                 dev_dbg(bgp->dev, "no cpufreq driver yet\n");
->                 return -EPROBE_DEFER;
->         }
->
-> that is the way I think of checking if the cpufreq layer is ready to
-> have a cpu cooling on top of it. Currently, thermal drivers check this
-> before calling cpu cooling registration. But instead of having this
-> check in every driver, I would like to move it to cpu cooling.
->
-> However, for cpufreq-dt, the registration currently happens in the
-> init phase, not in probe, so cpufreq driver is not registered, and thus
-> the check won't work.
+> No, I disagree as you trying to implicitly depend on the logic Linux uses to
+> assign logical index. It can be changed any time, and depending
+> on it might break things in future which can't be fixed easily later
+> especially if it's DT related.
 
-This is how the phases are present in cpufreq drivers:
--> platform_init
-    -> probe()
-        ->cpufreq_driver->init()
+Yeah, correct.
 
-And the cooling device is registered in cpufreq_driver->init() and by
-the time ->init() is called, cpufreq_driver is valid.
+>> Hmm, I never thought about it. But yes the CPU with the OPPs should
+>> be the first one to come back.
+>>
+>
+> How can you assume that ? I can write a simple test which hot-plugs out
+> all the CPUs in the (esp. multi-cluster) system in ascending order of
+> logical index and hot-plug back in descending order. Then the above
+> logic fails.
+
+What I said is: Yes the CPU with the OPPs should be the first one to come
+back, if this has to work correctly. Otherwise it will break..
+
+And you repeated the same :)
+
+> The platforms needing it have to get involved in such discussions to
+> make any progress.
+
+Yes there were people involved. I hope I cc'd you as well...
