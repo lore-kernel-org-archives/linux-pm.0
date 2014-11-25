@@ -1,100 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Ref the policy object sooner
-Date: Tue, 25 Nov 2014 23:13:26 +0100
-Message-ID: <1971756.fuSemXHy0C@vostro.rjw.lan>
-References: <CAKohponxpSoUXHc9S-y_zgo=T44-6Ayk4vRbW=jRHqQRsdbrGQ@mail.gmail.com> <1416820083-20902-1-git-send-email-tomeu.vizoso@collabora.com> <CAKohponYcoFkbezPjjUbedzZRgbyROJVgKhecALPH+O2yKQfow@mail.gmail.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: How many frequencies would cpufreq optimally like to manage?
+Date: Tue, 25 Nov 2014 22:52:31 +0100
+Message-ID: <5474FA1F.50603@free.fr>
+References: <546D26AE.50601@free.fr>
+	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
+	<546DF891.2050401@free.fr>
+	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+	<54747DFA.3040802@free.fr>
+	<CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponYcoFkbezPjjUbedzZRgbyROJVgKhecALPH+O2yKQfow@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, November 25, 2014 04:40:23 PM Viresh Kumar wrote:
-> On 24 November 2014 at 14:38, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
-> > Do it before it's assigned to cpufreq_cpu_data, otherwise when a driver
-> > tries to get the cpu frequency during initialization the policy kobj is
-> > referenced and we get this warning:
-> >
-> > ------------[ cut here ]------------
-> > WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
-> > Modules linked in:
-> > CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
-> > [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
-> > [<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
-> > [<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
-> > [<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
-> > [<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
-> > [<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
-> > [<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
-> > [<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
-> > [<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
-> > [<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
-> > [<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
-> > [<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
-> > ---[ end trace b7bd64a81b340c59 ]---
-> >
-> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> >
-> > ---
-> >
-> > v2:     * Properly unwind when erroring out.
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 42 +++++++++++++++++++++---------------------
-> >  1 file changed, 21 insertions(+), 21 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 4473eba..ae27ea6 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -898,46 +898,31 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
-> >         struct freq_attr **drv_attr;
-> >         int ret = 0;
-> >
-> > -       /* prepare interface data */
-> > -       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-> > -                                  &dev->kobj, "cpufreq");
-> > -       if (ret)
-> > -               return ret;
-> > -
-> >         /* set up files for this cpu device */
-> >         drv_attr = cpufreq_driver->attr;
-> >         while ((drv_attr) && (*drv_attr)) {
-> >                 ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
-> >                 if (ret)
-> > -                       goto err_out_kobj_put;
-> > +                       return ret;
-> >                 drv_attr++;
-> >         }
-> >         if (cpufreq_driver->get) {
-> >                 ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
-> >                 if (ret)
-> > -                       goto err_out_kobj_put;
-> > +                       return ret;
-> >         }
-> >
-> >         ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
-> >         if (ret)
-> > -               goto err_out_kobj_put;
-> > +               return ret;
-> >
-> >         if (cpufreq_driver->bios_limit) {
-> >                 ret = sysfs_create_file(&policy->kobj, &bios_limit.attr);
-> >                 if (ret)
-> > -                       goto err_out_kobj_put;
-> > +                       return ret;
-> >         }
-> 
-> We should add proper handling for error returned from sysfs_create_file()
-> someday, but its obviously not what you are trying to fix.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 25/11/2014 16:19, Viresh Kumar wrote:
 
-Patch queued up for 3.19-rc1, thanks!
+> On 25 November 2014 at 18:32, Mason <mpeg.blue@free.fr> wrote:
+>
+>> As far as I can tell, on my SoC, the timer runs at 27 MHz.
+>> But I have no idea how often it fires an interrupt.
+> 
+> 27 MHz is the freq it runs at, but we get interrupt based on the value
+> programmed in the timer counter.
+> 
+> Look for CONFIG_HZ in your .config, that will tell you number of ticks
+> you are getting per second.
+> 
+> But cpufreq works in another level and so it doesn't depend on both
+> these.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+If I remember correctly (please correct me if I am mistaken),
+the kernel keeps a list of timers, ordered by deadline, and
+dynamically configures the system timer to fire at the next
+deadline.
+
+> Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+> this is the rate at which cpufreq core checks if cpu's freq require revisiting.
+
+I think setting the sampling rate to 50 ms should make the
+system reactive enough to load swings?
+
+>> This 'struct clk' is an elusive beast.
+>> Where is it defined? I only run into forward declarations.
+> 
+> Its architecture specific. What's the architecture you are working on?
+> You may implement your own routine instead of cpufreq_generic_get().
+
+The SoC is made by Sigma Designs. It is based on the ARM Cortex-A9.
+
+> Yes. Documentation/clk.txt.
+
+Oh boy! platform, device tree, cpu-freq, cpuidle, clk, ... so much
+to learn, so few hours in a day.
+
+> Yeah. You should be able to get some call from your architecture.
+
+OK, I have to fix that function along with the cpufreq update.
+
+Regards.
