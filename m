@@ -1,131 +1,112 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: (bisected) Lock up on sh73a0/kzm9g on cpuidle initialization
-Date: Tue, 25 Nov 2014 22:27:49 +0100
-Message-ID: <CAMuHMdUMpmdYe+ED=M8FVvMMWNmrs8o4WzQ-uc2nFHNdL99HNQ@mail.gmail.com>
-References: <CAMuHMdXaaa2t6+sH2egGacVxkAPeTUkAgwdYsOnMnEPnuLdB5Q@mail.gmail.com>
-	<545BE1DE.6060900@linaro.org>
-	<CAMuHMdXQr65g4He0D0ZRN923OJ2A7WNgwbiTru_1dGWnvbvCJA@mail.gmail.com>
-	<CAMuHMdUjYMC8i2F9n6fWdPBOQVSohKA3ZxJJyq8h808Z9tEypw@mail.gmail.com>
-	<20141125180159.GI5050@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating cpufreq table
+Date: Tue, 25 Nov 2014 22:49:32 +0100
+Message-ID: <2189780.D9n5NYrXn8@vostro.rjw.lan>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141125180159.GI5050@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55074 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750984AbaKYV2R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 16:28:17 -0500
+In-Reply-To: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com, edubezval@gmail.com
 
-Hi Paul,
+On Monday, November 24, 2014 04:29:13 PM Viresh Kumar wrote:
+> of_cpufreq_cooling_register() can use frequency values from
+> policy->min/max/cpuinfo.min_freq/cpuinfo.max_freq, which are available only
+> after calling cpufreq_table_validate_and_show().
+> 
+> The right order of calling should be: cpufreq_table_validate_and_show() followed
+> by of_cpufreq_cooling_register(). Fix it.
+> 
+> Reported-by: Lukasz Majewski <l.majewski@samsung.com>
+> Reported-by: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> ---
+> For 3.18.
 
-On Tue, Nov 25, 2014 at 7:01 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Tue, Nov 25, 2014 at 06:49:16PM +0100, Geert Uytterhoeven wrote:
->> On Fri, Nov 7, 2014 at 8:59 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> > On Thu, Nov 6, 2014 at 10:02 PM, Daniel Lezcano
->> > <daniel.lezcano@linaro.org> wrote:
->> >> On 11/06/2014 09:38 PM, Geert Uytterhoeven wrote:
->> >>> When CONFIG_CPU_IDLE=y, the kernel locks up during cpuidle initialization
->> >>> on Renesas sh73a0/kzm9g-reference, which has a dual-core Cortex-A9.
->> >>>
->> >>> Last message is:
->> >>>
->> >>>      DMA: preallocated 256 KiB pool for atomic coherent allocations
->> >>>
->> >>> After this it's supposed to print:
->> >>>
->> >>>      cpuidle: using governor ladder
->> >>>      cpuidle: using governor menu
->> >>>
->> >>> I've bisected this to commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc
->> >>> ("sched: Let the scheduler see CPU idle states").
->> >>>
->> >>> Reverting that commit, and commit 83a0a96a5f26d974580fd7251043ff70c8f1823d
->> >>> ("sched/fair: Leverage the idle state info when choosing the "idlest"
->> >>> cpu") which
->> >>> depends on it, fixes the problem.
->> >>>
->> >>> I saw the discussion "lockdep splat in CPU hotplug", so I enabled lockdep
->> >>> debugging, but didn't see a lockdep splat.
->> >>
->> >> Did you try the fix attached ?
->> >>
->> >> https://lkml.org/lkml/2014/10/22/722
->> >
->> > Thanks, I didn't try that.
->> >
->> > However, this patch seems to be in v3.18-rc3, so I'm already using it.
->> > Hence it doesn't fix the problem for me.
->> >
->> > On another board, with a dual Cortex-A15, the problem doesn't show up.
->>
->> This problem (regression introduced in v3.18-rc1) is still present in v3.18-rc6.
->>
->> I did some more investigations, and it's hanging in the call to
->> synchronize_rcu() in cpuidle_uninstall_idle_handler(), which was added in
->> commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc.
->> More specificailly, it's blocked on the wait_for_completion(&rcu.completion)
->> in kernel/rcu/update.c:void wait_rcu_gp(call_rcu_func_t crf).
->
-> You didn't disable RCU CPU stall warnings, did you?  If you did, please
-> re-enable them, as the stall warning messages will likely help to debug
-> this.  The soft-lockup checks can also be quite valuable.
->
-> If you haven't run with CONFIG_PROVE_RCU=y, please try that.  For example,
-> if you have CONFIG_PREEMPT=y and you do synchronize_rcu() from within
-> an RCU read-side critical section (don't do that, it will hang!!!),
-> then you will get a lockdep splat.
->
-> Does any sort of system activity (keyboard, network, etc.) unstick the
-> system?
+Plus "stable" I suppose?  Which ones?
 
-Thanks! Unfortunately none of the above helped.
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 35 +++++++++++++++++------------------
+>  1 file changed, 17 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 8cba13d..22eb6e5 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -186,7 +186,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  {
+>  	struct cpufreq_dt_platform_data *pd;
+>  	struct cpufreq_frequency_table *freq_table;
+> -	struct thermal_cooling_device *cdev;
+>  	struct device_node *np;
+>  	struct private_data *priv;
+>  	struct device *cpu_dev;
+> @@ -269,20 +268,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  		goto out_free_priv;
+>  	}
+>  
+> -	/*
+> -	 * For now, just loading the cooling device;
+> -	 * thermal DT code takes care of matching them.
+> -	 */
+> -	if (of_find_property(np, "#cooling-cells", NULL)) {
+> -		cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
+> -		if (IS_ERR(cdev))
+> -			dev_err(cpu_dev,
+> -				"running cpufreq without cooling device: %ld\n",
+> -				PTR_ERR(cdev));
+> -		else
+> -			priv->cdev = cdev;
+> -	}
+> -
+>  	priv->cpu_dev = cpu_dev;
+>  	priv->cpu_reg = cpu_reg;
+>  	policy->driver_data = priv;
+> @@ -292,7 +277,22 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	if (ret) {
+>  		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+>  			ret);
+> -		goto out_cooling_unregister;
+> +		goto out_free_cpufreq_table;
+> +	}
+> +
+> +	/*
+> +	 * For now, just loading the cooling device;
+> +	 * thermal DT code takes care of matching them.
+> +	 */
+> +	if (of_find_property(np, "#cooling-cells", NULL)) {
+> +		priv->cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
+> +		if (IS_ERR(priv->cdev)) {
+> +			dev_err(cpu_dev,
+> +				"running cpufreq without cooling device: %ld\n",
+> +				PTR_ERR(priv->cdev));
+> +
+> +			priv->cdev = NULL;
+> +		}
+>  	}
+>  
+>  	policy->cpuinfo.transition_latency = transition_latency;
+> @@ -305,8 +305,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  
+>  	return 0;
+>  
+> -out_cooling_unregister:
+> -	cpufreq_cooling_unregister(priv->cdev);
+> +out_free_cpufreq_table:
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+>  out_free_priv:
+>  	kfree(priv);
+> 
 
-However, I found the culprit. It turned out to be a platform issue, not an
-issue in the generic cpu idle or RCU code. Read on below if you're
-interested in the gory details. Else just skip, and sleep well again tonight ;-)
-
-> If you have tried all those things without good effect, could you please
-> send along your .config and an alt-sysrq-t dump of all tasks' stacks?
-
-As I didn't manage to trigger a sysrq dump over the serial console,
-I just called __handle_sysrq() right before the wait_for_completion(), after
-a small delay. The dump didn't show anything suspicious. Everything
-looked the same as on the dual-core Cortex A15, where the problem
-doesn't manifest.
-
-Then I noticed the sched debug output on the A15, which was missing
-on the CA9 build. Enabling it on the A9 gave:
-
-Sched Debug Version: v0.11,
-3.18.0-rc6-kzm9g-reference-04913-gedc89a2a2059c7ff-dirty #101
-ktime                                   : 0.000000
-sched_clk                               : 0.000000
-cpu_clk                                 : 0.000000
-jiffies                                 : 4294928896
-
-Oops, time is not advancing?
-
-Dmesg also shows (early):
-
-    clocksource_of_init: no matching clocksources found
-
-and the timer is only initialized much later, after cpu idle initialization:
-
-    sh_cmt e6138000.timer: ch0: used for periodic clock events
-
-Hacking up a timer node for "arm,cortex-a9-twd-timer" in sh73a0.dtsi
-(with some "guessed" values) made it work.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
