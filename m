@@ -1,75 +1,92 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Tue, 25 Nov 2014 14:02:50 +0100
-Message-ID: <54747DFA.3040802@free.fr>
-References: <546D26AE.50601@free.fr>	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>	<546DF891.2050401@free.fr> <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Tue, 25 Nov 2014 15:30:20 +0200
+Message-ID: <5474846C.2000308@ti.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <15074721.IbfeeI3ajE@wuerfel> <54746349.3000306@ti.com> <2301239.aDOlWg3gEs@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:45548 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752451AbaKYNbI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Nov 2014 08:31:08 -0500
+In-Reply-To: <2301239.aDOlWg3gEs@wuerfel>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Mike Turquette <mturquette@linaro.org>, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <robh+dt@kernel.org>, ssantosh@kernel.org
 
-On 21/11/2014 04:36, Viresh Kumar wrote:
+On 11/25/2014 02:09 PM, Arnd Bergmann wrote:
+> On Tuesday 25 November 2014 13:08:57 Grygorii Strashko wrote:
+>> On 11/25/2014 12:33 PM, Arnd Bergmann wrote:
+>>> On Monday 24 November 2014 22:44:06 Mike Turquette wrote:
+>>>> Quoting Arnd Bergmann (2014-11-24 02:50:28)
+>>>>>
+>>>
+>>> I'm not sure I even understand what you intended the example to look
+>>> like, it does't parse
+>>>
+>>> My point above was completely different, the suggestion I made was
+>>> to not classify the clocks in DT at all, but to leave it all in
+>>> the client driver.
+>>
+>> I slept with this idea  From one side it sounds good. Pls, Correct me if I'm wrong:
+>> - there still will be "simple-pmdomain" and all devices will be attached to it by
+>>     default (or as specified in DT power-domains = <&simple_pmdomain>;);
+> 
+> I would assume only devices that set "power-domains = <&simple_pmdomain>"
+> 
+>> - drivers will use smth. like pm_clk_remove() to remove optional clocks from pm_clk;
+> 
+> Right. Regarding the naming of the function, I would pick something other
+> than remove, since the main purpose is not to have that clock abandoned
+> by the pm-domain code (this is still a side-effect), but to have the
+> clock put under control of the driver itself.
 
-> All current governors depend on background timers for their functionality.
-> These timers run at some sampling rate (in ms) and that time we change
-> CPU's frequency depending on existing load on system.. So, that might
-> not be fast enough.
+pm_clk_remove() is implemented already.
 
-As far as I can tell, on my SoC, the timer runs at 27 MHz.
-But I have no idea how often it fires an interrupt.
+> 
+> It might be possible to do this implicitly if the driver calls clk_get(),
+> basically doing clk_get() (or another call if necessary) would prevent the
+> simple pmdomain from turning it off during suspend.
 
-I've been studying other cpufreq drivers, especially the OMAP driver.
-I noticed that there is a lot of generic infrastructure that our driver
-wasn't using, such as...
+Unfortunately, clk_get() will not work, because drivers still need to use it
+to get functional clocks even if they are not going to control them explicitly.
+For example, if it need to know clock's rate.
 
-   cpufreq_generic_init
-   cpufreq_generic_exit
-   cpufreq_generic_frequency_table_verify
-   cpufreq_generic_attr
+> 
+>>  From another side:
+>> - drivers will get dependency from pm_clk;
+> 
+> There are three cases here:
+> 
+> - A device that is always used with a pm-domain, the driver doesn't
+>    have to worry about it but do need the dependency on having the
+>    simple-pmdomain code enabled.
+> 
+> - A device that may or may not have clocks, but if it has them, they
+>    are managed through a pm-domain. In this case, it's platform dependent
+>    whether we have the dependency. We may want to prevent the device from
+>    being probed if a power-domain property is present but no driver
+>    for the domain.
 
-I've changed our driver to use those.
+Seems, solved by PM core - .probe() will be deferred forever if pm-domain is
+not ready.
 
-I'm still confused about cpufreq_generic_get.
-This is not a typical get/put type function, right?
+> 
+> - A device that uses the pm-domain on some machines but not on others:
+>    this is a bit tricky, because the driver will still have to know
+>    about all the clocks, although we could choose not to turn off the
+>    clocks during suspend if the power-domain is not set.
+> 
+>> - HW limitations can't be taken into account - it's possible that some clocks should
+>>    not be enabled until it's allowed. And only driver know when it's allowed.
+>>    Otherwise, HW state may become unspecified or wrong output can be generated.
+> 
+> Correct: if you have a device that you don't want to be handled by a simple
+> pm-domain, then you have to connect it to a different pm-domain, e.g. one that
+> manages a fixed set of clocks itself.
 
-What is it supposed to get?
-Apparently, the actual frequency of the 'cpu-th' CPU?
-I see that it calls clk_get_rate(policy->clk)
-
-This 'struct clk' is an elusive beast.
-Where is it defined? I only run into forward declarations.
-
-On my platform, clk_get_accuracy returns -524 unconditionally,
-and clk_prepare just returns 0.
-
-of_clk_get and of_clk_get_by_name both return ERR_PTR(-2)
-
-I suppose all this means I can't use this infrastructure "as-is",
-correct? Where can I read more about it?
-
-How is the kernel supposed to know what frequency each core is running at?
-I imagine that's what the .get method override is for?
-
-One more question (for now). Is the .get method supposed to return numbers
-that match in freq_table, or can they be slightly different? For example,
-I've defined my freq_table like this:
-
-static struct cpufreq_frequency_table freq_table[] = {
-	{ .driver_data = REG_VAL(1,0), .frequency = 999000 },
-	{ .driver_data = REG_VAL(1,8), .frequency = 750000 },
-	{ .driver_data = REG_VAL(2,0), .frequency = 500000 },
-	{ .driver_data = REG_VAL(4,0), .frequency = 250000 },
-	{ .driver_data = REG_VAL(8,0), .frequency = 125000 },
-	{ .frequency = CPUFREQ_TABLE_END },
-};
-
-but the 3rd frequency is actually 999/2 MHz, not 500 MHz, etc.
-Will that be a problem?
-
-Regards.
-
+regards,
+-grygorii
