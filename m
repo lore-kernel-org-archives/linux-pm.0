@@ -1,70 +1,105 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v19 0/5] Rockchip soc thermal driver
-Date: Tue, 25 Nov 2014 08:46:27 +0800
-Message-ID: <5473D163.9070708@rock-chips.com>
-References: <1416805142-27304-1-git-send-email-caesar.wang@rock-chips.com> <20141124201807.GA20404@developer> <1771961.FfLxNDNiti@diego>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
+Date: Tue, 25 Nov 2014 02:27:28 +0100
+Message-ID: <2464825.iuDYbaTYCE@vostro.rjw.lan>
+References: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org> <42965945.ST26GKfzPz@vostro.rjw.lan> <20141124161435.GE5050@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.137]:36554 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbaKYAqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 19:46:38 -0500
-In-Reply-To: <1771961.FfLxNDNiti@diego>
+Received: from v094114.home.net.pl ([79.96.170.134]:51516 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750830AbaKYBGP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Nov 2014 20:06:15 -0500
+In-Reply-To: <20141124161435.GE5050@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, fzf@rock-chips.com
+To: paulmck@linux.vnet.ibm.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stefan Wahren <stefan.wahren@i2se.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Heiko,
+On Monday, November 24, 2014 08:14:35 AM Paul E. McKenney wrote:
+> On Mon, Nov 24, 2014 at 04:09:54PM +0100, Rafael J. Wysocki wrote:
+> > On Monday, November 24, 2014 04:10:00 PM Viresh Kumar wrote:
+> > > On 21 November 2014 at 21:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > > What about @dynamic instead of @from_dt?  That may apply to more use cases if
+> > > > need be.
+> > > 
+> > > @Paul: I am stuck at a point and need help on RCUs :)
+> > > 
+> > > File: drivers/base/power/opp.c
+> > > 
+> > > We are trying to remove OPPs created from static data present in DT on
+> > > cpufreq driver's removal (when configured as module).
+> > > 
+> > > opp core uses RCUs internally and it looks like I need to implement:
+> > > list_for_each_entry_safe_rcu()
+> > > 
+> > > But, I am not sure because of these:
+> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2005-10/6280.html
+> > > http://patchwork.ozlabs.org/patch/48989/
+> > > 
+> > > So, wanted to ask you if I really need that or the OPP code is
+> > > buggy somewhere.
+> > > 
+> > > The code removing OPPs is:
+> > > 
+> > >         list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+> > >                 srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_REMOVE, opp);
+> > >                 list_del_rcu(&opp->node);
+> > > 
+> > >                 kfree(opp);
+> 
+> As Rafael says, if opp is reachable by RCU readers, you cannot just
+> immediately kfree() it.  Immediately kfree()ing it like this -will-
+> cause your RCU readers to see freed memory, which, as you noted, can
+> cause crashes.
+> 
+> > >         }
+> > > 
+> > > Because we are freeing opp at the end, list_for_each_entry_rcu()
+> > > is trying to read the already freed opp to find opp->node.next
+> > > and that results in a crash.
+> > > 
+> > > What am I doing wrong ?
+> > 
+> > I hope that doesn't happen under rcu_read_lock()?
+> > 
+> > The modification needs to be done under dev_opp_list_lock in the first place
+> > in which case you don't need the _rcu version of list walking, so you simply
+> > can use list_for_each_entry_safe() here. The mutex is sufficient for the
+> > synchronization with other writers (if any).  The freeing, though, has to be
+> > deferred until all readers drop their references to the old entry.  You can
+> > use kfree_rcu() for that.
+> 
+> Except that srcu_notifier_call_chain() involves SRCU readers.  So,
+> unless I am confused, you instead need something like this:
 
-=E5=9C=A8 2014=E5=B9=B411=E6=9C=8825=E6=97=A5 07:39, Heiko St=C3=BCbner=
- =E5=86=99=E9=81=93:
-> Hi Caesar,
->
-> Am Montag, 24. November 2014, 16:18:12 schrieb Eduardo Valentin:
->> Hello Caesar,
->>
->> On Mon, Nov 24, 2014 at 12:58:57PM +0800, Caesar Wang wrote:
->>> This series patchs tested on rk3288 SDK board and pinky-v1,v2 board=
-=2E
->>> I believe the driver can be used on the rk3288-evb board.
->>>
->>> Add this driver, The system will shutdown when
->>> the thermal temperture over 100C.If for some reason we are unable t=
-o
->>> shut it down in orderly fashion (kernel is stuck holding a lock or
->>> similar)
->>> then hardware will reset it.
->>>
->>> The patchs 1/5,2/5 can applay Eduardo's Branch
->>> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-th=
-ermal.g
->>> it [branch "next-kernel"]
->>>
->>> 	remote =3D origin
->>> 	merge =3D refs/heads/next
->> I applied your patches 1 and 2 in my -linus branch, and luckily will=
- be
->> accepted for 3.19.
-> and I've taken patches 3, 4 and 5 into my dts branch for 3.19 .
->
-> I've adapted the commit messages in some places and removed the
-> 	/* sensor		ID */
-> comments from the rk3288-thermal.dtsi.
->
-OK,
-Thanks!
-
-> Heiko
->
->
->
-
---=20
-Best regards,
-Caesar
+Correct, that's SRCU.  Sorry for my confusion.
 
 
+> static void kfree_opp_rcu(struct rcu_head *rhp)
+> {
+> 	struct device_opp *opp = container_of(rhp, struct device_opp, opp_list);
+> 
+> 	kfree(opp);
+> }
+> 
+> Then replace the above kfree() by:
+> 
+> 	call_srcu(&opp->rcu, kfree_opp_rcu);
+> 
+> This will require adding the following to struct device_opp:
+> 
+> 	struct rcu_head rcu;
+> 
+> And yes, this would be simpler if there was a kfree_srcu().  If a few
+> more uses like this show up, I will create one.
+> 
+> All that said, I do not claim to understand the OPP code, so please take
+> the above suggested changes with a grain of salt.  And if you let me know
+> where I am confused, I should be able to offer better suggestions.
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
