@@ -1,36 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6] cpufreq: Add SFI based cpufreq driver support
-Date: Tue, 25 Nov 2014 16:44:16 +0530
-Message-ID: <CAKohpomC=54PDxf+ry4LRGr6mJfAvGe3PnX+iy=TzBq1yF_4FA@mail.gmail.com>
-References: <20141125054226.GA20738@intel-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f43.google.com ([209.85.216.43]:58656 "EHLO
-	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbaKYLOR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 06:14:17 -0500
-Received: by mail-qa0-f43.google.com with SMTP id bm13so199780qab.16
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 03:14:16 -0800 (PST)
-In-Reply-To: <20141125054226.GA20738@intel-desktop>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/4] powernv: cpuidle: Redesign idle states management
+Date: Tue, 25 Nov 2014 16:47:55 +0530
+Message-ID: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>, Len Brown <lenb@kernel.org>
 
-On 25 November 2014 at 11:12, Srinidhi Kasagar
-<srinidhi.kasagar@intel.com> wrote:
-> This adds the SFI based cpu freq driver for some of the Intel's
-> Silvermont based Atom architectures like Z34xx and Z35xx.
->
-> Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
-> Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Deep idle states like sleep and winkle are per core idle states. A core
+enters these states only when all the threads enter either the particular
+idle state or a deeper one. There are tasks like fastsleep hardware bug
+workaround and hypervisor core state save which have to be done only by
+the last thread of the core entering deep idle state and similarly tasks
+like timebase resync, hypervisor core register restore that have to be
+done only by the first thread waking up from these states. 
 
-> v6:
-> * release the mutex in case of error in register_performance
-> (comments from Viresh)
-> * drop local perf pointer in ->target and ->init
-> * fix the order of freeing memories in the error path of ->init
-> * remove alloc_percpu, rather allocate it at runtime in ->init
+The current idle state management does not have a way to distinguish the
+first/last thread of the core waking/entering idle states. Tasks like
+timebase resync are done for all the threads. This is not only is suboptimal,
+but can cause functionality issues when subcores are involved.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Winkle is deeper idle state compared to fastsleep. In this state the power
+supply to the chiplet, i.e core, private L2 and private L3 is turned off.
+This results in a total hypervisor state loss. This patch set adds support
+for winkle and provides a way to track the idle states of the threads of the
+core and use it for idle state management of idle states sleep and winkle.
+
+
+Changes in v2:
+--------------
+-Using PNV_THREAD_NAP/SLEEP defines while calling power7_powersave_common
+-Comment changes based on review
+-Rebased on top of 3.18-rc6
+
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+Paul Mackerras (1):
+  powerpc: powernv: Switch off MMU before entering nap/sleep/rvwinkle
+    mode
+
+Preeti U. Murthy (1):
+  powerpc/powernv: Enable Offline CPUs to enter deep idle states
+
+Shreyas B. Prabhu (2):
+  powernv: cpuidle: Redesign idle states management
+  powernv: powerpc: Add winkle support for offline cpus
+
+ arch/powerpc/include/asm/cpuidle.h             |  14 ++
+ arch/powerpc/include/asm/opal.h                |  13 +
+ arch/powerpc/include/asm/paca.h                |   6 +
+ arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+ arch/powerpc/include/asm/processor.h           |   1 +
+ arch/powerpc/include/asm/reg.h                 |   4 +
+ arch/powerpc/kernel/asm-offsets.c              |   6 +
+ arch/powerpc/kernel/cpu_setup_power.S          |   4 +
+ arch/powerpc/kernel/exceptions-64s.S           |  30 ++-
+ arch/powerpc/kernel/idle_power7.S              | 332 +++++++++++++++++++++----
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  39 +++
+ arch/powerpc/platforms/powernv/powernv.h       |   2 +
+ arch/powerpc/platforms/powernv/setup.c         | 160 ++++++++++++
+ arch/powerpc/platforms/powernv/smp.c           |  10 +-
+ arch/powerpc/platforms/powernv/subcore.c       |  34 +++
+ arch/powerpc/platforms/powernv/subcore.h       |   1 +
+ drivers/cpuidle/cpuidle-powernv.c              |  10 +-
+ 17 files changed, 608 insertions(+), 60 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/cpuidle.h
+
+-- 
+1.9.3
