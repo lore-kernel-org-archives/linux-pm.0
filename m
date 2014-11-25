@@ -1,77 +1,67 @@
-From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 25 Nov 2014 13:09:40 +0100
-Message-ID: <2301239.aDOlWg3gEs@wuerfel>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <15074721.IbfeeI3ajE@wuerfel> <54746349.3000306@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v5 0/2] poweroff-source DT property renaming
+Date: Tue, 25 Nov 2014 12:28:24 +0000
+Message-ID: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <54746349.3000306-l0cyMroinI0@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, balbi-l0cyMroinI0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 November 2014 13:08:57 Grygorii Strashko wrote:
-> On 11/25/2014 12:33 PM, Arnd Bergmann wrote:
-> > On Monday 24 November 2014 22:44:06 Mike Turquette wrote:
-> >> Quoting Arnd Bergmann (2014-11-24 02:50:28)
-> >>>
-> > 
-> > I'm not sure I even understand what you intended the example to look
-> > like, it does't parse 
-> > 
-> > My point above was completely different, the suggestion I made was
-> > to not classify the clocks in DT at all, but to leave it all in
-> > the client driver.
-> 
-> I slept with this idea  From one side it sounds good. Pls, Correct me if I'm wrong:
-> - there still will be "simple-pmdomain" and all devices will be attached to it by
->    default (or as specified in DT power-domains = <&simple_pmdomain>;);
+The goal of this serie is to rename the property "poweroff-source" to
+"system-power-controller". After discussions, it makes more sense to rename back
+to the old established property name. This patches serie reverts
+commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
 
-I would assume only devices that set "power-domains = <&simple_pmdomain>"
+Changes since v4:
+  - Renamed the helper function to of_device_is_system_power_controller
+  - Removed changes in tps65910, as this commit will be removed from the mfd tree
+  - Updated doc
 
-> - drivers will use smth. like pm_clk_remove() to remove optional clocks from pm_clk;
+Changes since v3:
+  - Move backward compatibility from of_is_system_power_controller to
+    tps65910, as it was only required for this driver.
 
-Right. Regarding the naming of the function, I would pick something other
-than remove, since the main purpose is not to have that clock abandoned
-by the pm-domain code (this is still a side-effect), but to have the
-clock put under control of the driver itself.
+Changes since v2:
+  - of_is_system_power_controller is inline in of.h and only supports
+    backward compatibility with device drivers which used this helper
+    (which is tps65910)
+  - Quashed all changes into a single patch (except documentation)
+  - Add a separated commit to fix typos and mispellings in documentation
 
-It might be possible to do this implicitly if the driver calls clk_get(),
-basically doing clk_get() (or another call if necessary) would prevent the
-simple pmdomain from turning it off during suspend.
+Changes since v1:
 
-> From another side:
-> - drivers will get dependency from pm_clk;
+  - The first patch defines "of_is_system_power_controller" which is compatible
+    with both "vendor,system-power-controller" and "system-power-controller"
+    properties. Also, It keeps the old helper function of_system_has_poweroff_source
+    for source compatibility until everything is renamed (in this way, bisections
+    are not broken and change is made "atomically" between each commit)
 
-There are three cases here:
+    Note: the property "poweroff-source" itself is not used in dts files yet.
+    Before this patch tps65910 was broken due to missing backward compatibility
+    with "vendor,system-power-controller". As the old helper uses the new one,
+    it works again.
 
-- A device that is always used with a pm-domain, the driver doesn't
-  have to worry about it but do need the dependency on having the
-  simple-pmdomain code enabled.
+  - act8865 and tps65910 are ported to the new helper function
+  - The last commit removes the olf helper which was only used for source compatibility
 
-- A device that may or may not have clocks, but if it has them, they
-  are managed through a pm-domain. In this case, it's platform dependent
-  whether we have the dependency. We may want to prevent the device from
-  being probed if a power-domain property is present but no driver
-  for the domain.
+Romain Perier (2):
+  of: Rename "poweroff-source" property to "system-power-controller"
+  dt-bindings: Update documentation for "system-power-controller" and
+    fix misspellings
 
-- A device that uses the pm-domain on some machines but not on others:
-  this is a bit tricky, because the driver will still have to know
-  about all the clocks, although we could choose not to turn off the
-  clocks during suspend if the power-domain is not set.
+ .../devicetree/bindings/power/power-controller.txt     | 18 ++++++++++++++++++
+ Documentation/devicetree/bindings/power/poweroff.txt   | 18 ------------------
+ .../bindings/regulator/act8865-regulator.txt           |  4 ++--
+ drivers/regulator/act8865-regulator.c                  |  2 +-
+ include/linux/of.h                                     |  6 +++---
+ 5 files changed, 24 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
 
-> - HW limitations can't be taken into account - it's possible that some clocks should
->   not be enabled until it's allowed. And only driver know when it's allowed.
->   Otherwise, HW state may become unspecified or wrong output can be generated.
+-- 
+1.9.1
 
-Correct: if you have a device that you don't want to be handled by a simple
-pm-domain, then you have to connect it to a different pm-domain, e.g. one that
-manages a fixed set of clocks itself.
-
-	Arnd
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
