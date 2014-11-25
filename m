@@ -1,141 +1,226 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/8] opp: mark OPPs as 'static' or 'dynamic'
-Date: Tue, 25 Nov 2014 16:04:18 +0530
-Message-ID: <4b873db57c0c57933cea1be97ba6fe128f3925c5.1416910766.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/8] opp: Introduce APIs to remove OPPs
+Date: Tue, 25 Nov 2014 16:04:19 +0530
+Message-ID: <f815d0855c1bd28d8389554176acd2620e56b3c8.1416910766.git.viresh.kumar@linaro.org>
 References: <cover.1416910766.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:33350 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbaKYKfX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 05:35:23 -0500
-Received: by mail-pa0-f41.google.com with SMTP id rd3so332010pab.14
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 02:35:22 -0800 (PST)
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:38412 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbaKYKfj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 05:35:39 -0500
+Received: by mail-pa0-f47.google.com with SMTP id kq14so338069pab.6
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 02:35:39 -0800 (PST)
 In-Reply-To: <cover.1416910766.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1416910766.git.viresh.kumar@linaro.org>
 References: <cover.1416910766.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stefan.wahren@i2se.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stefan.wahren@i2se.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-Static OPPs are the ones created from Device Tree entries and dynamic are the
-ones created at runtime by calling dev_pm_opp_add().
+OPPs are created statically (from DT) or dynamically. Currently we don't free
+OPPs that are created statically, when the module unloads. And so if the module
+is inserted back again, we get warning for duplicate OPPs as the same were
+already present.
 
-There is a need to distinguish them as we need to free static OPPs from cpufreq
-drivers when they are removed.
+Also, there might be a need to remove dynamic OPPs in future and so API for that
+is also added.
 
-So, add another field 'dynamic' in 'struct dev_pm_opp' to keep this information.
+This patch adds helper APIs to remove/free existing static and dynamic OPPs.
 
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 ---
- drivers/base/power/opp.c | 59 ++++++++++++++++++++++++++++--------------------
- 1 file changed, 34 insertions(+), 25 deletions(-)
+@Paul/Rafael: Do we need to use call_srcu() instead of kfree_rcu() in
+opp_set_availability()? I left it as it looked a bit different.
+srcu_notifier_call_chain() is getting called after deleting the node.
+
+ drivers/base/power/opp.c | 102 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h   |  12 +++++-
+ 2 files changed, 113 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index a333e2ef..b249b01 100644
+index b249b01..7ae4db5 100644
 --- a/drivers/base/power/opp.c
 +++ b/drivers/base/power/opp.c
-@@ -49,6 +49,7 @@
-  *		are protected by the dev_opp_list_lock for integrity.
-  *		IMPORTANT: the opp nodes should be maintained in increasing
-  *		order.
-+ * @dynamic:	not-created from static DT entries.
-  * @available:	true/false - marks if this OPP as available or not
-  * @rate:	Frequency in hertz
-  * @u_volt:	Nominal voltage in microvolts corresponding to this OPP
-@@ -61,6 +62,7 @@ struct dev_pm_opp {
- 	struct list_head node;
+@@ -79,6 +79,7 @@ struct dev_pm_opp {
+  *		however addition is possible and is secured by dev_opp_list_lock
+  * @dev:	device pointer
+  * @srcu_head:	notifier head to notify the OPP availability changes.
++ * @rcu_head:	RCU callback head used for deferred freeing
+  * @opp_list:	list of opps
+  *
+  * This is an internal data structure maintaining the link to opps attached to
+@@ -90,6 +91,7 @@ struct device_opp {
  
- 	bool available;
-+	bool dynamic;
- 	unsigned long rate;
- 	unsigned long u_volt;
+ 	struct device *dev;
+ 	struct srcu_notifier_head srcu_head;
++	struct rcu_head rcu_head;
+ 	struct list_head opp_list;
+ };
  
-@@ -378,30 +380,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+@@ -498,6 +500,76 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
--/**
-- * dev_pm_opp_add()  - Add an OPP table from a table definitions
-- * @dev:	device for which we do this operation
-- * @freq:	Frequency in Hz for this OPP
-- * @u_volt:	Voltage in uVolts for this OPP
-- *
-- * This function adds an opp definition to the opp list and returns status.
-- * The opp is made available by default and it can be controlled using
-- * dev_pm_opp_enable/disable functions.
-- *
-- * Locking: The internal device_opp and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-- *
-- * Return:
-- * 0:		On success OR
-- *		Duplicate OPPs (both freq and volt are same) and opp->available
-- * -EEXIST:	Freq are same and volt are different OR
-- *		Duplicate OPPs (both freq and volt are same) and !opp->available
-- * -ENOMEM:	Memory allocation failure
-- */
--int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
-+static int dev_pm_opp_add_dynamic(struct device *dev, unsigned long freq,
-+				  unsigned long u_volt, bool dynamic)
- {
- 	struct device_opp *dev_opp = NULL;
- 	struct dev_pm_opp *opp, *new_opp;
-@@ -422,6 +402,7 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	new_opp->rate = freq;
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
-+	new_opp->dynamic = dynamic;
- 
- 	/* Check for existing list for 'dev' */
- 	dev_opp = find_device_opp(dev);
-@@ -487,6 +468,34 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_ADD, new_opp);
- 	return 0;
- }
-+
-+/**
-+ * dev_pm_opp_add()  - Add an OPP table from a table definitions
-+ * @dev:	device for which we do this operation
-+ * @freq:	Frequency in Hz for this OPP
-+ * @u_volt:	Voltage in uVolts for this OPP
-+ *
-+ * This function adds an opp definition to the opp list and returns status.
-+ * The opp is made available by default and it can be controlled using
-+ * dev_pm_opp_enable/disable functions.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ *
-+ * Return:
-+ * 0:		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST:	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM:	Memory allocation failure
-+ */
-+int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
-+{
-+	return dev_pm_opp_add_dynamic(dev, freq, u_volt, true);
-+}
  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
  
++static void kfree_opp_rcu(struct rcu_head *head)
++{
++	struct dev_pm_opp *opp = container_of(head, struct dev_pm_opp, rcu_head);
++
++	kfree(opp);
++}
++
++static void kfree_device_rcu(struct rcu_head *head)
++{
++	struct device_opp *device_opp = container_of(head, struct device_opp, rcu_head);
++
++	kfree(device_opp);
++}
++
++void __dev_pm_opp_remove(struct device_opp *dev_opp, struct dev_pm_opp *opp)
++{
++	/*
++	 * Notify the changes in the availability of the operable
++	 * frequency/voltage list.
++	 */
++	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
++	list_del_rcu(&opp->node);
++	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, kfree_opp_rcu);
++
++	if (list_empty(&dev_opp->opp_list)) {
++		list_del_rcu(&dev_opp->node);
++		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
++			  kfree_device_rcu);
++	}
++}
++
++/**
++ * dev_pm_opp_remove()  - Remove an OPP from OPP list
++ * @dev:	device for which we do this operation
++ * @freq:	OPP to remove with matching 'freq'
++ *
++ * This function removes an opp from the opp list.
++ */
++void dev_pm_opp_remove(struct device *dev, unsigned long freq)
++{
++	struct dev_pm_opp *opp;
++	struct device_opp *dev_opp;
++	bool found = false;
++
++	/* Hold our list modification lock here */
++	mutex_lock(&dev_opp_list_lock);
++
++	dev_opp = find_device_opp(dev);
++	if (IS_ERR(dev_opp))
++		goto unlock;
++
++	list_for_each_entry(opp, &dev_opp->opp_list, node) {
++		if (opp->rate == freq) {
++			found = true;
++			break;
++		}
++	}
++
++	if (!found) {
++		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
++			 __func__, freq);
++		goto unlock;
++	}
++
++	__dev_pm_opp_remove(dev_opp, opp);
++unlock:
++	mutex_unlock(&dev_opp_list_lock);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
++
  /**
-@@ -669,7 +678,7 @@ int of_init_opp_table(struct device *dev)
- 		unsigned long freq = be32_to_cpup(val++) * 1000;
- 		unsigned long volt = be32_to_cpup(val++);
+  * opp_set_availability() - helper to set the availability of an opp
+  * @dev:		device for which we do this operation
+@@ -687,4 +759,34 @@ int of_init_opp_table(struct device *dev)
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
++
++/**
++ * of_free_opp_table() - Free OPP table entries created from static DT entries
++ * @dev:	device pointer used to lookup device OPPs.
++ *
++ * Free OPPs created using static entries present in DT.
++ */
++void of_free_opp_table(struct device *dev)
++{
++	struct device_opp *dev_opp = find_device_opp(dev);
++	struct dev_pm_opp *opp, *tmp;
++
++	/* Check for existing list for 'dev' */
++	dev_opp = find_device_opp(dev);
++	if (WARN(IS_ERR(dev_opp), "%s: dev_opp: %ld\n", dev_name(dev),
++		 PTR_ERR(dev_opp)))
++		return;
++
++	/* Hold our list modification lock here */
++	mutex_lock(&dev_opp_list_lock);
++
++	/* Free static OPPs */
++	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
++		if (!opp->dynamic)
++			__dev_pm_opp_remove(dev_opp, opp);
++	}
++
++	mutex_unlock(&dev_opp_list_lock);
++}
++EXPORT_SYMBOL_GPL(of_free_opp_table);
+ #endif
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 0330217..cec2d45 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -21,7 +21,7 @@ struct dev_pm_opp;
+ struct device;
  
--		if (dev_pm_opp_add(dev, freq, volt))
-+		if (dev_pm_opp_add_dynamic(dev, freq, volt, false))
- 			dev_warn(dev, "%s: Failed to add OPP %ld\n",
- 				 __func__, freq);
- 		nr -= 2;
+ enum dev_pm_opp_event {
+-	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
++	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
+ };
+ 
+ #if defined(CONFIG_PM_OPP)
+@@ -44,6 +44,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+ 
+ int dev_pm_opp_add(struct device *dev, unsigned long freq,
+ 		   unsigned long u_volt);
++void dev_pm_opp_remove(struct device *dev, unsigned long freq);
+ 
+ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+ 
+@@ -90,6 +91,10 @@ static inline int dev_pm_opp_add(struct device *dev, unsigned long freq,
+ 	return -EINVAL;
+ }
+ 
++static inline void dev_pm_opp_remove(struct device *dev, unsigned long freq)
++{
++}
++
+ static inline int dev_pm_opp_enable(struct device *dev, unsigned long freq)
+ {
+ 	return 0;
+@@ -109,11 +114,16 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+ int of_init_opp_table(struct device *dev);
++void of_free_opp_table(struct device *dev);
+ #else
+ static inline int of_init_opp_table(struct device *dev)
+ {
+ 	return -EINVAL;
+ }
++
++static inline void of_free_opp_table(struct device *dev)
++{
++}
+ #endif
+ 
+ #endif		/* __LINUX_OPP_H__ */
 -- 
 2.0.3.693.g996b0fd
 
