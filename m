@@ -1,65 +1,93 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Tue, 25 Nov 2014 22:52:31 +0100
-Message-ID: <5474FA1F.50603@free.fr>
-References: <546D26AE.50601@free.fr>
-	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
-	<546DF891.2050401@free.fr>
-	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
-	<54747DFA.3040802@free.fr>
-	<CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: (bisected) Lock up on sh73a0/kzm9g on cpuidle initialization
+Date: Tue, 25 Nov 2014 23:23:04 +0100
+Message-ID: <54750148.207@linaro.org>
+References: <CAMuHMdXaaa2t6+sH2egGacVxkAPeTUkAgwdYsOnMnEPnuLdB5Q@mail.gmail.com>	<545BE1DE.6060900@linaro.org>	<CAMuHMdXQr65g4He0D0ZRN923OJ2A7WNgwbiTru_1dGWnvbvCJA@mail.gmail.com>	<CAMuHMdUjYMC8i2F9n6fWdPBOQVSohKA3ZxJJyq8h808Z9tEypw@mail.gmail.com>	<20141125180159.GI5050@linux.vnet.ibm.com> <CAMuHMdUMpmdYe+ED=M8FVvMMWNmrs8o4WzQ-uc2nFHNdL99HNQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f50.google.com ([74.125.82.50]:52403 "EHLO
+	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbaKYWXJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 17:23:09 -0500
+Received: by mail-wg0-f50.google.com with SMTP id k14so2119179wgh.37
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 14:23:08 -0800 (PST)
+In-Reply-To: <CAMuHMdUMpmdYe+ED=M8FVvMMWNmrs8o4WzQ-uc2nFHNdL99HNQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 
-On 25/11/2014 16:19, Viresh Kumar wrote:
+On 11/25/2014 10:27 PM, Geert Uytterhoeven wrote:
 
-> On 25 November 2014 at 18:32, Mason <mpeg.blue@free.fr> wrote:
+[ ... ]
+
+>> Does any sort of system activity (keyboard, network, etc.) unstick t=
+he
+>> system?
 >
->> As far as I can tell, on my SoC, the timer runs at 27 MHz.
->> But I have no idea how often it fires an interrupt.
-> 
-> 27 MHz is the freq it runs at, but we get interrupt based on the value
-> programmed in the timer counter.
-> 
-> Look for CONFIG_HZ in your .config, that will tell you number of ticks
-> you are getting per second.
-> 
-> But cpufreq works in another level and so it doesn't depend on both
-> these.
+> Thanks! Unfortunately none of the above helped.
+>
+> However, I found the culprit. It turned out to be a platform issue, n=
+ot an
+> issue in the generic cpu idle or RCU code. Read on below if you're
+> interested in the gory details. Else just skip, and sleep well again =
+tonight ;-)
+>
+>> If you have tried all those things without good effect, could you pl=
+ease
+>> send along your .config and an alt-sysrq-t dump of all tasks' stacks=
+?
+>
+> As I didn't manage to trigger a sysrq dump over the serial console,
+> I just called __handle_sysrq() right before the wait_for_completion()=
+, after
+> a small delay. The dump didn't show anything suspicious. Everything
+> looked the same as on the dual-core Cortex A15, where the problem
+> doesn't manifest.
+>
+> Then I noticed the sched debug output on the A15, which was missing
+> on the CA9 build. Enabling it on the A9 gave:
+>
+> Sched Debug Version: v0.11,
+> 3.18.0-rc6-kzm9g-reference-04913-gedc89a2a2059c7ff-dirty #101
+> ktime                                   : 0.000000
+> sched_clk                               : 0.000000
+> cpu_clk                                 : 0.000000
+> jiffies                                 : 4294928896
+>
+> Oops, time is not advancing?
+>
+> Dmesg also shows (early):
+>
+>      clocksource_of_init: no matching clocksources found
+>
+> and the timer is only initialized much later, after cpu idle initiali=
+zation:
+>
+>      sh_cmt e6138000.timer: ch0: used for periodic clock events
+>
+> Hacking up a timer node for "arm,cortex-a9-twd-timer" in sh73a0.dtsi
+> (with some "guessed" values) made it work.
+>
+> Thanks!
+>
+> Gr{oetje,eeting}s,
 
-If I remember correctly (please correct me if I am mistaken),
-the kernel keeps a list of timers, ordered by deadline, and
-dynamically configures the system timer to fire at the next
-deadline.
+Hi Geert,
 
-> Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-> this is the rate at which cpufreq core checks if cpu's freq require revisiting.
+thanks for sharing this information.
 
-I think setting the sampling rate to 50 ms should make the
-system reactive enough to load swings?
+   -- Daniel
 
->> This 'struct clk' is an elusive beast.
->> Where is it defined? I only run into forward declarations.
-> 
-> Its architecture specific. What's the architecture you are working on?
-> You may implement your own routine instead of cpufreq_generic_get().
 
-The SoC is made by Sigma Designs. It is based on the ARM Cortex-A9.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> Yes. Documentation/clk.txt.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Oh boy! platform, device tree, cpu-freq, cpuidle, clk, ... so much
-to learn, so few hours in a day.
-
-> Yeah. You should be able to get some call from your architecture.
-
-OK, I have to fix that function along with the cpufreq update.
-
-Regards.
