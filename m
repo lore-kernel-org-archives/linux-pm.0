@@ -1,52 +1,40 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Tue, 25 Nov 2014 11:57:47 -0800
-Message-ID: <CAMAWPa87AFhtFaCo3RSY_qD+1DSmvhU8idOLvYwadkk5GLwaOQ@mail.gmail.com>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
-	<7hioi4l92v.fsf@deeprootsystems.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 6/8] cpufreq-dt: free OPP table created during ->init()
+Date: Tue, 25 Nov 2014 21:15:45 +0100 (CET)
+Message-ID: <2021992776.218020.1416946545852.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+References: <cover.1416910766.git.viresh.kumar@linaro.org> <1ac3e8c67c7bd2a962aed6561693d16ca5cd9db9.1416910766.git.viresh.kumar@linaro.org>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7hioi4l92v.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.10]:53520 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbaKYUP5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:15:57 -0500
+In-Reply-To: <1ac3e8c67c7bd2a962aed6561693d16ca5cd9db9.1416910766.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: nm@ti.com, linux-pm@vger.kernel.org, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org
 
-Hi Thomas,
+Hi Viresh,
 
-On Mon, Nov 24, 2014 at 10:58 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> hat am 25. November 2014 um 11:34
+> geschrieben:
+>
+>
+> OPP layer now supports freeing of OPPs and we should free them once they
+> aren't
+> useful anymore.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-[...]
+i applied the complete patch series to my repository and tested successfully the
+cpufreq-dt with my i.MX28 board.
 
-> Second, as with earlier versions of this series, I'm still seeing lots
-> of "wait_until_divider_stable: timeout in divider stablization" messages
-> coming out when running powertop.
+Tested-by: Stefan Wahren <stefan.wahren@i2se.com>
 
-I found a simpler way to reproduce these messages.  If I simply use
-the userspace governor and cycle through all the A7 OPPs, I'll hit
-this message (script below[1]).  Note that I'm also using my DTS
-change that fixes the vdd_arm and vdd_kfc voltages to a voltage that
-is high enough for all the OPPs.
+Thanks
 
-Kevin
-
-[1]
-#!/bin/sh
-cpu=cpu4
-reg_name=vdd_kfc
-cpu_reg=$(dirname `find /sys/class/regulator/regulator.*/ -name name
--exec grep -l $reg_name {} \;`)
-echo $cpu_reg
-
-# Cycle through frequencies (and check voltage)
-cd /sys/devices/system/cpu/$cpu/cpufreq
-echo userspace > scaling_governor
-for freq in `cat scaling_available_frequencies`; do
-  echo ${freq} > scaling_setspeed
-  echo -n "current freq: "
-  cat scaling_cur_freq
-  echo -n "current voltage: "
-  cat ${cpu_reg}/microvolts
-  sleep 1
-done
+Stefan
