@@ -1,103 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Tue, 25 Nov 2014 20:49:32 +0530
-Message-ID: <CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
-References: <546D26AE.50601@free.fr>
-	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
-	<546DF891.2050401@free.fr>
-	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
-	<54747DFA.3040802@free.fr>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
+ cpufreq table
+Date: Tue, 25 Nov 2014 20:56:00 +0530
+Message-ID: <CAKohpomFOJWc4C9rWbCmcW7e1kUO=C=awO9RFvBVA0-H2dHjZQ@mail.gmail.com>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
+	<20141124181049.GB1449@developer>
+	<CAKohpokF8qFUz-bmKT61L879L60GYzsc3X3BRHofLYWAdHa3rg@mail.gmail.com>
+	<20141125014435.GA28906@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54747DFA.3040802@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f53.google.com ([209.85.192.53]:49400 "EHLO
+	mail-qg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbaKYP0B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 10:26:01 -0500
+Received: by mail-qg0-f53.google.com with SMTP id q108so554116qgd.26
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 07:26:00 -0800 (PST)
+In-Reply-To: <20141125014435.GA28906@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-On 25 November 2014 at 18:32, Mason <mpeg.blue@free.fr> wrote:
-> As far as I can tell, on my SoC, the timer runs at 27 MHz.
-> But I have no idea how often it fires an interrupt.
+On 25 November 2014 at 07:14, Eduardo Valentin <edubezval@gmail.com> wrote:
+> You are right! I got confused because even with your patch, the
+> sequencing is not working. Looking to that behavior I, somehow, thought
+> the _init function in cpufreq-dt was about init() calls. But in fact, it
+> is driver initialization callback.
 
-27 MHz is the freq it runs at, but we get interrupt based on the value
-programmed in the timer counter.
+:)
 
-Look for CONFIG_HZ in your .config, that will tell you number of ticks
-you are getting per second.
+> However, by the time of ->init() the cpufreq_driver is not really ready.
 
-But cpufreq works in another level and so it doesn't depend on both
-these.
+I agree.
 
-Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-
-this is the rate at which cpufreq core checks if cpu's freq require revisiting.
-
-> I've been studying other cpufreq drivers, especially the OMAP driver.
-> I noticed that there is a lot of generic infrastructure that our driver
-> wasn't using, such as...
+> Or at least, the cpufreq layer is not ready. A call to
 >
->   cpufreq_generic_init
->   cpufreq_generic_exit
->   cpufreq_generic_frequency_table_verify
->   cpufreq_generic_attr
+> cpufreq_frequency_get_table()
 >
-> I've changed our driver to use those.
+> for instance, it is not working.
 
-Gud.
+I know the story you pasted here :)
 
-> I'm still confused about cpufreq_generic_get.
-> This is not a typical get/put type function, right?
+> The cpufreq-dt would need to add the of based cpufreq cooling only when
+> cpufreq layer is ready. Any other better cpufreq driver callback to add
+> the cpu cooling?
 
-Correct, this should return the current frequency the CPU is running at.
+There is nothing as of now atleast.
 
-> What is it supposed to get?
-> Apparently, the actual frequency of the 'cpu-th' CPU?
-> I see that it calls clk_get_rate(policy->clk)
+> We could sort this out by polling in thermal layer for the cpufreq table
+> until it gets ready, but I believe that would be a dirty hack.
 
-Yes.
-
-> This 'struct clk' is an elusive beast.
-> Where is it defined? I only run into forward declarations.
-
-Its architecture specific. What's the architecture you are working on?
-You may implement your own routine instead of cpufreq_generic_get().
-
-> On my platform, clk_get_accuracy returns -524 unconditionally,
-
-That might be an error.
-
-> and clk_prepare just returns 0.
->
-> of_clk_get and of_clk_get_by_name both return ERR_PTR(-2)
->
-> I suppose all this means I can't use this infrastructure "as-is",
-> correct? Where can I read more about it?
-
-Yes. Documentation/clk.txt.
-
-> How is the kernel supposed to know what frequency each core is running at?
-> I imagine that's what the .get method override is for?
-
-Yeah. You should be able to get some call from your architecture.
-
-> One more question (for now). Is the .get method supposed to return numbers
-> that match in freq_table, or can they be slightly different? For example,
-
-They should match.
-
-> I've defined my freq_table like this:
->
-> static struct cpufreq_frequency_table freq_table[] = {
->         { .driver_data = REG_VAL(1,0), .frequency = 999000 },
->         { .driver_data = REG_VAL(1,8), .frequency = 750000 },
->         { .driver_data = REG_VAL(2,0), .frequency = 500000 },
->         { .driver_data = REG_VAL(4,0), .frequency = 250000 },
->         { .driver_data = REG_VAL(8,0), .frequency = 125000 },
->         { .frequency = CPUFREQ_TABLE_END },
-> };
->
-> but the 3rd frequency is actually 999/2 MHz, not 500 MHz, etc.
-> Will that be a problem?
-
-Maybe, but it depends on what your ->get() returns.
+Yeah. Probably we can add a notifier for cpufreq-driver addition/removal.
+That's the best we can do I believe.
