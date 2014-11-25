@@ -1,84 +1,52 @@
-From: amit daniel kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH RFC v2 08/12] soc: samsung: pm_domain: Add support for
- parent power domain
-Date: Tue, 25 Nov 2014 14:27:58 +0530
-Message-ID: <CADGdYn4Vi2wV1y3Y0cTbPL0cFR2EEV7jT=82fHNYu+=xwZ7mBA@mail.gmail.com>
-References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
-	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
-	<1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
-	<CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH v2 2/3] PM / devfreq: tegra: add devfreq driver for
+ Tegra Activity Monitor
+Date: Tue, 25 Nov 2014 09:06:59 +0000 (GMT)
+Message-ID: <12372901.124221416906419323.JavaMail.weblogic@epmlwas08c>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pankaj Dubey <pankaj.dubey-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:32812 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbaKYJHC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 04:07:02 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NFL00AA17ZODYC0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 25 Nov 2014 18:07:00 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Tue, Nov 25, 2014 at 1:29 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 24 November 2014 at 14:04, Amit Daniel Kachhap
-> <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
->> This patch adds supports for parent power domain. This will ensure
->> invoking of parent/child power domain on/off in a correct sequence.
->> In exynos7 SOC's, power domain controllers have parent and child
->> hierarchy.
->>
->> Cc: Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> ---
->>  .../bindings/arm/exynos/power_domain.txt           |    2 +
->>  drivers/soc/samsung/pm_domains.c                   |   43 +++++++++++++++++++-
->>  2 files changed, 44 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
->> index 00ebda1..0160bdc 100644
->> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
->> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
->> @@ -24,6 +24,7 @@ Optional Properties:
->>         - pclkN, clkN: Pairs of parent of input clock and input clock to the
->>                 devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
->>                 are supported currently.
->> +- parents: phandle of parent power domains.
->>
->>  Node of a device using power domains must have a samsung,power-domain property
->>  defined with a phandle to respective power domain.
->> @@ -48,6 +49,7 @@ Example:
->>         mfc_pd: power-domain@10044060 {
->>                 compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
->>                 reg = <0x10044060 0x20>;
->> +               parents = <&pd_top>;
->>                 #power-domain-cells = <0>;
->>         };
->
-> This seems like a good and generic approach to describe that a PM
-> domain could have a parent. I would suggest to rename it, such it
-> reflects its a PM domain binding though.
-I am not sure if this is generic. I guess PD's represented like below
-are more generic.
-PD1 {
-        PD2 {
-                PD3 {
-                };
-        };
-};
+PiBPbiAyNSBOb3ZlbWJlciAyMDE0IGF0IDA4OjA3LCBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhh
+bUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+ID4+IFRoZSBBQ1RNT04gYmxvY2sgY2FuIG1vbml0b3Ig
+c2V2ZXJhbCBjb3VudGVycywgcHJvdmlkaW5nIGF2ZXJhZ2luZyBhbmQgZmlyaW5nDQo+ID4+IGlu
+dGVycnVwdHMgYmFzZWQgb24gd2F0ZXJtYXJraW5nIGNvbmZpZ3VyYXRpb24uIFRoaXMgaW1wbGVt
+ZW50YXRpb24gbW9uaXRvcnMNCj4gPj4gdGhlIE1DQUxMIGFuZCBNQ0NQVSBjb3VudGVycyB0byBj
+aG9vc2UgYW4gYXBwcm9wcmlhdGUgZnJlcXVlbmN5IGZvciB0aGUNCj4gPj4gZXh0ZXJuYWwgbWVt
+b3J5IGNsb2NrLg0KPiA+Pg0KPiA+PiBUaGlzIHBhdGNoIGlzIGJhc2VkIG9uIHdvcmsgYnkgQWxl
+eCBGcmlkIDxhZnJpZEBudmlkaWEuY29tPiBhbmQgTWlra28NCj4gPj4gUGVydHR1bmVuIDxtaWtr
+by5wZXJ0dHVuZW5Aa2Fwc2kuZmk+Lg0KPiA+Pg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBUb21ldSBW
+aXpvc28gPHRvbWV1LnZpem9zb0Bjb2xsYWJvcmEuY29tPg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
+eTogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+ID4NCj4gPiBIb3cg
+YXJlIHlvdSBnb2luZyB0byBpbnRlZ3JhdGUgb3RoZXIgdHdvIHBhdGNoZXM/DQo+IA0KPiBJIHRo
+aW5rIHRoZXkgc2hvdWxkIGdvIHRocm91Z2ggdGhlIFRlZ3JhIHRyZWUuDQo+IA0KPiA+IE1heSBJ
+IGp1c3QgZ28gYWhlYWQgd2l0aCB0aGlzIHBhdGNoIG9ubHk/DQo+IA0KPiBZZXMsIEkgdGhpbmsg
+dGhhdCB3b3VsZCBiZSBmaW5lIGFzIHRoZSBvdGhlciBwYXRjaGVzIGFyZW4ndCBhY3R1YWwNCj4g
+YnVpbGQgb3IgcnVudGltZSBkZXBlbmRlbmNpZXMuIFRoaXMgZHJpdmVyIHNob3VsZG4ndCBjYXVz
+ZSBwcm9ibGVtcw0KPiBlaXRoZXIgaWYgaXQncyByYW4gd2l0aG91dCB0aGUgRU1DIGFuZCBDUFVG
+cmVxIHBhdGNoZXMgKHRob3VnaCB3b24ndA0KPiBiZSBmdWxseSBmdW5jdGlvbmFsLCBvZiBjb3Vy
+c2UpLg0KDQpPaywgdGhlbiwgYXMgbG9uZyBhcyB0aGUgb3RoZXIgdHdvIHBhdGNoZXMgKGZvciBE
+VCBzdXBwb3J0KSBnZXQNCkFDS2VkIChzZWVtcyBmYWlybHkgc3RyYWlnaHRmb3J3YXJkIGFzIHdl
+bGwpIG9yIFNpZ25lZC1vZmYgYnkNCmNvcnJlc3BvbmRpbmcgdHJlZSBtYWludGFpbmVycywgSSBm
+ZWVsIGZpbmUgdG8NCnNlbmQgdGhpcyBwYXRjaCBhbG9uZyB3aXRoIHRoZSBuZXh0IHB1bGwgcmVx
+dWVzdC4NCg0KVGhhbmsgeW91Lg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQo+IA0KPiBSZWdhcmRz
+LA0KPiANCj4gVG9tZXUNCj4gDQo+ID4gQ2hlZXJzLA0KPiA+IE15dW5nSm9vLg0KPiA+DQo+IA0K
 
->
-> So, maybe we can add this as a common DT binding for the generic PM
-> domain instead of having it as Exynos specific?
-Yes sure.
 
-Regards,
-Amit D
->
-> Kind regards
-> Uffe
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
