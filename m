@@ -1,69 +1,57 @@
-From: santosh shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 25 Nov 2014 08:28:33 -0800
-Message-ID: <5474AE31.8080901@oracle.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <15074721.IbfeeI3ajE@wuerfel> <54746349.3000306@ti.com> <2301239.aDOlWg3gEs@wuerfel> <5474846C.2000308@ti.com> <20141125140440.GF3836@n2100.arm.linux.org.uk> <54749804.8070400@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to
+ "system-power-controller"
+Date: Tue, 25 Nov 2014 17:12:34 +0000
+Message-ID: <20141125171234.GH7712@sirena.org.uk>
+References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
+ <1416918506-9366-2-git-send-email-romain.perier@gmail.com>
+ <20141125144007.9904BC44343@trevor.secretlab.ca>
+ <20141125145410.GD19910@localhost>
+ <CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jLmGyUepE/aZfh+l"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:19169 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbaKYQ3p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 11:29:45 -0500
-In-Reply-To: <54749804.8070400@ti.com>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38271 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbaKYRO7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 12:14:59 -0500
+Content-Disposition: inline
+In-Reply-To: <CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mike Turquette <mturquette@linaro.org>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, ssantosh@kernel.org, linux-arm-kernel@lists.infradead.org
+To: Romain Perier <romain.perier@gmail.com>
+Cc: Johan Hovold <johan@kernel.org>, Grant Likely <grant.likely@linaro.org>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
 
-Grygorii,
 
-On 11/25/2014 6:53 AM, Grygorii Strashko wrote:
-> Hi Russell,
->
-> On 11/25/2014 04:04 PM, Russell King - ARM Linux wrote:
->> On Tue, Nov 25, 2014 at 03:30:20PM +0200, Grygorii Strashko wrote:
->>> On 11/25/2014 02:09 PM, Arnd Bergmann wrote:
->>>> It might be possible to do this implicitly if the driver calls clk_get(),
->>>> basically doing clk_get() (or another call if necessary) would prevent the
->>>> simple pmdomain from turning it off during suspend.
->>>
->>> Unfortunately, clk_get() will not work, because drivers still need to use it
->>> to get functional clocks even if they are not going to control them explicitly.
->>> For example, if it need to know clock's rate.
->>
->> If you don't want a clock to be turned off, then clk_get() it, then
->> clk_prepare() it, and finally clk_enable() it.
->>
->> Even if someone else gets it, the only time that a clock is turned off
->> is when _all_ users of it mutually agree that it can be turned off - by
->> every user disabling (and possibly unpreparing) it.
->>
->> So, if the PM domain code gets a clock, prepares and enables it, then
->> a driver gets the same clock, prepares and enables it also, it won't
->> be disabled until _both_ the PM domain code _and_ the driver disable
->> and unprepare the clock.
->>
->
-> All 100% true :)
->
-> But the question here is how prevent pm_clk domain (clock_ops.c) from
-> getting the control on clock if this particular clock is optional from driver's
-> perspective. So, only driver should control it. As opposite, all other clocks
-> should be controlled by pm-domain (in case of GPD from .start/stop callbacks).
->
-I know there has been lot of back and forth, we have done on getting
-multiple clock handling and from the thread looks like we are converging
-with simple power domain approach. Since we have already made several
-different attempt to solve the problem and some how stumbled, I suggest
-you to do a new RFC with new $subject so that we can get rest of the
-folks eyes on it.
+--jLmGyUepE/aZfh+l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The reason I say that because may be just because of $subject, some
-folks might ignore the thread ;-) and later raise objections.
+On Tue, Nov 25, 2014 at 04:57:56PM +0100, Romain Perier wrote:
 
-Thanks for persisting with it.
+> Thanks for your feedbacks.  I think that Mark will probably wait until
+> there are more reviews on this serie. (this is exactly what he asked
+> for the previous one)
 
-Regards,
-Santosh
+Yeah, given the amount of often late arriving disagreement I'd rather
+let things cook for a while unless there are a lot of people being vocal
+about this being what we want to go with.
+
+--jLmGyUepE/aZfh+l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUdLiBAAoJECTWi3JdVIfQRL4IAIT4N24elGdFDrN0pdCuPxOm
+rfkI6Qp8RmEHCZqaU2O/lpjYGYfZ6yB+CggQb8Nxx52QBZ6w79nEQ+3RN8lWyadG
+ZuJNl5m63kXILtCAtkgEgvJlfSeN+8yth0aQY5/mAcLxzmpnwuOt3/f3D+r7nw5z
+Ux2rKzk7CyqDsh3J+4SNL3z0WAQhDs8TYxTpt7BbWsa4niMSU1S0wXwChXjXR6E7
+eul+LaY4DdaL+jmvrYA/4oZZtrHNtrFkOj8WcGhdhAFprTqEkYM5LmcAA2vEueAd
+Q5KcXntuqecXDgWq5moSHSzDH9ivhTJhhqOOUX7dFD7u34hHYL2sXM4tkt55iUA=
+=PQ9m
+-----END PGP SIGNATURE-----
+
+--jLmGyUepE/aZfh+l--
