@@ -1,87 +1,53 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 2/2 v3] intel_pstate: add kernel parameter to enable loading
- on  Sun X86 servers.
-Date: Tue, 25 Nov 2014 06:51:35 -0800
-Message-ID: <54749777.7020802@intel.com>
-References: <1416891578-14171-1-git-send-email-ethan.zhao@oracle.com> <1416891578-14171-3-git-send-email-ethan.zhao@oracle.com>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to
+ "system-power-controller"
+Date: Tue, 25 Nov 2014 15:54:10 +0100
+Message-ID: <20141125145410.GD19910@localhost>
+References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
+ <1416918506-9366-2-git-send-email-romain.perier@gmail.com>
+ <20141125144007.9904BC44343@trevor.secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1416891578-14171-3-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ethan.kernel@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f173.google.com ([209.85.217.173]:35447 "EHLO
+	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbaKYOyN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 09:54:13 -0500
+Content-Disposition: inline
+In-Reply-To: <20141125144007.9904BC44343@trevor.secretlab.ca>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: Romain Perier <romain.perier@gmail.com>, heiko@sntech.de, johan@kernel.org, lee.jones@linaro.org, broonie@kernel.org, robh@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, balbi@ti.com
 
-On 11/24/2014 08:59 PM, Ethan Zhao wrote:
-> To force loading on Oracle Sun X86 servers, provide one kernel command line
-> parameter
->
->    intel_pstate = onora
->
-> For those who be aware of the risk doing so.
->
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> ---
->   v2: change to hardware vendor specific naming parameter.
->
->   Documentation/kernel-parameters.txt | 3 +++
->   drivers/cpufreq/intel_pstate.c      | 6 +++++-
->   2 files changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 479f332..e4b1b81 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1446,6 +1446,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->   		       disable
->   		         Do not enable intel_pstate as the default
->   		         scaling driver for the supported processors
-> +		       onora
-> +		         Enable loading intel_pstate on Oracle Sun Servers(X86).
-> +			 only for those who be aware of the risk.
+On Tue, Nov 25, 2014 at 02:40:07PM +0000, Grant Likely wrote:
+> On Tue, 25 Nov 2014 12:28:25 +0000
+> , Romain Perier <romain.perier@gmail.com>
+>  wrote:
+> > It reverts commit a4b4e0461ec5 ("of: Add standard property for poweroff capability").
+> > As discussed on the mailing list, it makes more sense to rename back to the
+> > old established property name, without the vendor prefix. Problem being that
+> > the word "source" usually tends to be used for inputs and that is out of control
+> > of the OS. The poweroff capability is an output which simply turns the
+> > system-power off. Also, this property might be used by drivers which power-off
+> > the system and power back on subsequent RTC alarms. This seems to suggest to
+> > remove "poweroff" from the property name and to choose "system-power-controller"
+> > as the more generic name. This patchs adds the required renaming changes and
+> > defines an helper function which checks if this property is set.
+> > 
+> > Signed-off-by: Romain Perier <romain.perier@gmail.com>
+> 
+> For both patches:
+> Acked-by: Grant Likely <grant.likely@linaro.org>
+> 
+> Let me know if I need to take this series through my tree. Also, does it
+> need to go into v3.18 and be backported to stable? Or just v3.19.
 
-What are the risks?  What is the behaviour if platform power management is
-enabled and intel_pstate is trying to control P state selection as well?
+It's only needed in the regulator tree for 3.19, and does not need to be
+backported.
 
-If intel_pstate will be able to successfully control P state selection
-with platform power management enabled then how about the name "oracle_force"?
-Also the documentation should say what the risks are.
+We could convert the drivers (and dts) that currently use
+"<vendor>,system-power-controller" to use the new helper (while
+maintaining backward compatibility) after 3.19-rc1 is out.
 
->
->   	intremap=	[X86-64, Intel-IOMMU]
->   			on	enable Interrupt Remapping (default)
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index fa67fb3..e49b050 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->   };
->
->   static int __initdata no_load;
-> +static unsigned int  load_on_sun;
->
->   static int intel_pstate_msrs_not_valid(void)
->   {
-> @@ -1005,7 +1006,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->   		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
->   			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
->   				ACPI_OEM_TABLE_ID_SIZE) &&
-> -			intel_pstate_has_acpi_ppc())
-> +			intel_pstate_has_acpi_ppc() &&
-> +			!load_on_sun)
->   			return true;
->   	}
->
-> @@ -1080,6 +1082,8 @@ static int __init intel_pstate_setup(char *str)
->
->   	if (!strcmp(str, "disable"))
->   		no_load = 1;
-> +	if (!strcmp(str, "onora"))
-> +		load_on_sun = 1;
->   	return 0;
->   }
->   early_param("intel_pstate", intel_pstate_setup);
->
-
+Johan
