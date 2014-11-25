@@ -1,19 +1,19 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH v2 3/4] thermal: of: Extend of-thermal to export table of
  trip points
-Date: Tue, 25 Nov 2014 16:36:31 -0400
-Message-ID: <20141125203629.GA14292@developer>
+Date: Tue, 25 Nov 2014 16:38:47 -0400
+Message-ID: <20141125203845.GB14292@developer>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
+	protocol="application/pgp-signature"; boundary="K8nIJk4ghYZn606h"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f50.google.com ([209.85.192.50]:33287 "EHLO
-	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbaKYUgn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:36:43 -0500
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:34035 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbaKYUi6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:38:58 -0500
 Content-Disposition: inline
 In-Reply-To: <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -22,12 +22,10 @@ To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
 
 
---17pEHd4RhPHOinZp
+--K8nIJk4ghYZn606h
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-
-Hello Lukasz,
 
 On Thu, Nov 20, 2014 at 05:21:27PM +0100, Lukasz Majewski wrote:
 > This patch extends the of-thermal.c to export copy of trip points for
@@ -76,6 +74,14 @@ orted
 > + */
 > +const struct thermal_trip * const
 > +of_thermal_get_trip_points(struct thermal_zone_device *tz)
+
+Another thing, can you please check why scripts/kernel-doc does not like
+this prototype? It throws an warn:
+Warning(drivers/thermal/of-thermal.c:168): cannot understand function
+prototype: 'const struct thermal_trip * const
+of_thermal_get_trip_points(struct thermal_zone_device *tz) '
+
+
 > +{
 > +	struct __thermal_zone *data =3D tz->devdata;
 > +
@@ -85,9 +91,6 @@ orted
 > +	return data->gtrips;
 > +}
 > +
-
-EXPORT_SYMBOL_GPL(of_thermal_get_trip_points);
-
 >  static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
 >  				enum thermal_trend *trend)
 >  {
@@ -134,10 +137,6 @@ e.h
 > @@ -102,6 +104,11 @@ static inline bool of_thermal_is_trip_en(struct ther=
 mal_zone_device *, int)
 >  {
-
-This produces compilation error when CONFIG_THERMAL_OF is not set. Name
-the parameters to fix.
-
 >  	return 0;
 >  }
 > +static inline const struct thermal_trip * const
@@ -161,11 +160,6 @@ the parameters to fix.
 ted from
 > + *                       of-thermal
 > + *
-
-The only problem I have with this name is that would look like it is in
-use in all thermal framework, which is not really the case. But I do
-think having a type here is a good thing. So, not sure :-)
-
 > + * @temperature:	trip point temperature
 > + * @hysteresis:		trip point hysteresis
 > + * @type:		trip point type
@@ -183,20 +177,20 @@ think having a type here is a good thing. So, not sure :-)
 > 2.0.0.rc2
 >=20
 
---17pEHd4RhPHOinZp
+--K8nIJk4ghYZn606h
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUdOhCAAoJEMLUO4d9pOJW/MsH/2mkqHxROgwKtjuZILnn5HIc
-FW9m6U3rWHqjS8nTvj41M2AoEFsadc8qBT66GoX25bQH8hjeDDi6kiCWHOJ1bHq2
-xe+LQKno4bzOc/3jNiPyTkGxexUDsdmx5pfSDcqhFCuvc+U6DdHKECrwigBWujzI
-JHoW+7P5RGd/jwBjmAma8VqQ+1jpa6eUjlFcWBnruz9Oh/8KLHGEzG+P/pcnj71V
-UIPPWnL13tuz9dEpezMQEl/CDctVlu0h4IEIo7/zPcF2uyKrrT0+1MeBWPV9Vz2U
-uy2AwgVtgffmiC9z2VJYK930akGjSuZnDOxlBCngObSqM2Dz/9A+qsJ1YZre6fw=
-=fm2i
+iQEcBAEBAgAGBQJUdOjMAAoJEMLUO4d9pOJWxbAH/izuIdWp33DbP5Rj5hg+mVau
+u2omjJFwFFuyy2KQMo46pi9WSKzZ4RL0qcp0JGQfUDabhDJhOW0fhgwbdk3Wntxd
+S2NIIZEuWolYAwQdSUQ3R1ys5VJ250zRi0yR10f+WdGnJRDqie7dnR46lEmwaiza
+bQ9Y/SgL+UGQvX9UcXzoZGNqDIGRENktw6KcPLDBPuoJIUYpnVPNcQP9JVsoQWeO
+5E4DSYMDFYatP6idIrobIaNPXx5t+GTWOE6HnPqzdMWiLMJtCvEyTO09qaVR70ka
+3QHC+aSE4D18NrI3GFumS373fk3iKE2UX/lPWgv2RV1ysLyY8yFvhmgAjqvGnwY=
+=u5UC
 -----END PGP SIGNATURE-----
 
---17pEHd4RhPHOinZp--
+--K8nIJk4ghYZn606h--
