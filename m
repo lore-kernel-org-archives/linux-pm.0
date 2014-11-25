@@ -1,142 +1,131 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 4/4] thermal: of: Extend current of-thermal.c code to
- allow setting emulated temp
-Date: Tue, 25 Nov 2014 16:44:03 -0400
-Message-ID: <20141125204401.GC14292@developer>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-5-git-send-email-l.majewski@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: (bisected) Lock up on sh73a0/kzm9g on cpuidle initialization
+Date: Tue, 25 Nov 2014 22:27:49 +0100
+Message-ID: <CAMuHMdUMpmdYe+ED=M8FVvMMWNmrs8o4WzQ-uc2nFHNdL99HNQ@mail.gmail.com>
+References: <CAMuHMdXaaa2t6+sH2egGacVxkAPeTUkAgwdYsOnMnEPnuLdB5Q@mail.gmail.com>
+	<545BE1DE.6060900@linaro.org>
+	<CAMuHMdXQr65g4He0D0ZRN923OJ2A7WNgwbiTru_1dGWnvbvCJA@mail.gmail.com>
+	<CAMuHMdUjYMC8i2F9n6fWdPBOQVSohKA3ZxJJyq8h808Z9tEypw@mail.gmail.com>
+	<20141125180159.GI5050@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="CblX+4bnyfN0pR09"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f50.google.com ([209.85.216.50]:43802 "EHLO
-	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbaKYUoP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:44:15 -0500
-Content-Disposition: inline
-In-Reply-To: <1416500488-7232-5-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141125180159.GI5050@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
 
+Hi Paul,
 
---CblX+4bnyfN0pR09
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 25, 2014 at 7:01 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> On Tue, Nov 25, 2014 at 06:49:16PM +0100, Geert Uytterhoeven wrote:
+>> On Fri, Nov 7, 2014 at 8:59 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> > On Thu, Nov 6, 2014 at 10:02 PM, Daniel Lezcano
+>> > <daniel.lezcano@linaro.org> wrote:
+>> >> On 11/06/2014 09:38 PM, Geert Uytterhoeven wrote:
+>> >>> When CONFIG_CPU_IDLE=y, the kernel locks up during cpuidle initialization
+>> >>> on Renesas sh73a0/kzm9g-reference, which has a dual-core Cortex-A9.
+>> >>>
+>> >>> Last message is:
+>> >>>
+>> >>>      DMA: preallocated 256 KiB pool for atomic coherent allocations
+>> >>>
+>> >>> After this it's supposed to print:
+>> >>>
+>> >>>      cpuidle: using governor ladder
+>> >>>      cpuidle: using governor menu
+>> >>>
+>> >>> I've bisected this to commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc
+>> >>> ("sched: Let the scheduler see CPU idle states").
+>> >>>
+>> >>> Reverting that commit, and commit 83a0a96a5f26d974580fd7251043ff70c8f1823d
+>> >>> ("sched/fair: Leverage the idle state info when choosing the "idlest"
+>> >>> cpu") which
+>> >>> depends on it, fixes the problem.
+>> >>>
+>> >>> I saw the discussion "lockdep splat in CPU hotplug", so I enabled lockdep
+>> >>> debugging, but didn't see a lockdep splat.
+>> >>
+>> >> Did you try the fix attached ?
+>> >>
+>> >> https://lkml.org/lkml/2014/10/22/722
+>> >
+>> > Thanks, I didn't try that.
+>> >
+>> > However, this patch seems to be in v3.18-rc3, so I'm already using it.
+>> > Hence it doesn't fix the problem for me.
+>> >
+>> > On another board, with a dual Cortex-A15, the problem doesn't show up.
+>>
+>> This problem (regression introduced in v3.18-rc1) is still present in v3.18-rc6.
+>>
+>> I did some more investigations, and it's hanging in the call to
+>> synchronize_rcu() in cpuidle_uninstall_idle_handler(), which was added in
+>> commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc.
+>> More specificailly, it's blocked on the wait_for_completion(&rcu.completion)
+>> in kernel/rcu/update.c:void wait_rcu_gp(call_rcu_func_t crf).
+>
+> You didn't disable RCU CPU stall warnings, did you?  If you did, please
+> re-enable them, as the stall warning messages will likely help to debug
+> this.  The soft-lockup checks can also be quite valuable.
+>
+> If you haven't run with CONFIG_PROVE_RCU=y, please try that.  For example,
+> if you have CONFIG_PREEMPT=y and you do synchronize_rcu() from within
+> an RCU read-side critical section (don't do that, it will hang!!!),
+> then you will get a lockdep splat.
+>
+> Does any sort of system activity (keyboard, network, etc.) unstick the
+> system?
 
-On Thu, Nov 20, 2014 at 05:21:28PM +0100, Lukasz Majewski wrote:
-> Before this change it was only possible to set get_temp() and get_trend()
-> methods to be used in the common code handling passing parameters via
-> device tree to "cpu-thermal" CPU thermal zone device.
->=20
-> Now it is possible to also set emulated value of temperature for debug
-> purposes.
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - Rework the emulated temperature setting code to use of_thermal_sensor_o=
-ps
-> structure
-> ---
->  drivers/thermal/of-thermal.c | 24 ++++++++++++++++++++++++
->  include/linux/thermal.h      |  1 +
->  2 files changed, 25 insertions(+)
->=20
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 33921c5..ad7dc2b 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -174,6 +174,28 @@ of_thermal_get_trip_points(struct thermal_zone_devic=
-e *tz)
->  	return data->gtrips;
->  }
-> =20
-> +/**
-> + * of_thermal_set_emul_temp - function to set emulated temperature
-> + *
-> + * @tz:	pointer to a thermal zone
-> + * @temp:	temperature to set
-> + *
-> + * This function gives the ability to set emulated value of temperature,
-> + * which is handy for debugging
-> + *
-> + * Return: zero on success, error code otherwise
-> + */
-> +static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
-> +				    unsigned long temp)
-> +{
-> +	struct __thermal_zone *data =3D tz->devdata;
-> +
-> +	if (!data->ops || !data->ops->set_emul_temp)
-> +		return -EINVAL;
-> +
-> +	return data->ops->set_emul_temp(data->sensor_data, temp);
-> +}
-> +
->  static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
->  				enum thermal_trend *trend)
->  {
-> @@ -405,6 +427,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
-> =20
->  	tzd->ops->get_temp =3D of_thermal_get_temp;
->  	tzd->ops->get_trend =3D of_thermal_get_trend;
-> +	tzd->ops->set_emul_temp =3D of_thermal_set_emul_temp;
->  	mutex_unlock(&tzd->lock);
-> =20
->  	return tzd;
-> @@ -533,6 +556,7 @@ void thermal_zone_of_sensor_unregister(struct device =
-*dev,
->  	mutex_lock(&tzd->lock);
->  	tzd->ops->get_temp =3D NULL;
->  	tzd->ops->get_trend =3D NULL;
-> +	tzd->ops->set_emul_temp =3D NULL;
-> =20
->  	tz->ops =3D NULL;
->  	tz->sensor_data =3D NULL;
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 88d7249..5eb9d44 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -301,6 +301,7 @@ struct thermal_genl_event {
->  struct thermal_zone_of_device_ops {
->  	int (*get_temp)(void *, long *);
->  	int (*get_trend)(void *, long *);
-> +	int (*set_emul_temp)(void *, unsigned long);
+Thanks! Unfortunately none of the above helped.
 
-Please add it in the list of Optional functions in the comment above
-this struct.
+However, I found the culprit. It turned out to be a platform issue, not an
+issue in the generic cpu idle or RCU code. Read on below if you're
+interested in the gory details. Else just skip, and sleep well again tonight ;-)
 
-Apart from that:
+> If you have tried all those things without good effect, could you please
+> send along your .config and an alt-sysrq-t dump of all tasks' stacks?
 
+As I didn't manage to trigger a sysrq dump over the serial console,
+I just called __handle_sysrq() right before the wait_for_completion(), after
+a small delay. The dump didn't show anything suspicious. Everything
+looked the same as on the dual-core Cortex A15, where the problem
+doesn't manifest.
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Then I noticed the sched debug output on the A15, which was missing
+on the CA9 build. Enabling it on the A9 gave:
 
+Sched Debug Version: v0.11,
+3.18.0-rc6-kzm9g-reference-04913-gedc89a2a2059c7ff-dirty #101
+ktime                                   : 0.000000
+sched_clk                               : 0.000000
+cpu_clk                                 : 0.000000
+jiffies                                 : 4294928896
 
->  };
-> =20
->  /**
-> --=20
-> 2.0.0.rc2
->=20
+Oops, time is not advancing?
 
---CblX+4bnyfN0pR09
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Dmesg also shows (early):
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+    clocksource_of_init: no matching clocksources found
 
-iQEcBAEBAgAGBQJUdOoGAAoJEMLUO4d9pOJW3xwH/1Zqr6x/YBIxgI/C3F+nUMJd
-DIM+167vjltatdqCxPuw8KxjFNPd8LI6XmKC+RMlgFByEejX+dXAcKUMGVblEhSv
-FasH2yIak21Ofw9wBcQcrOB+9sMyFa8bTzVLNuzZKS5deQDQfoiVuVuZeJUlIula
-SuTkvzYQGYT/tJy/kA8FzuRF2Dui3rLeDjrXzeXDQWNfUPByQFgeOVvXVSLjfH9w
-VOaydBbXKXhYT0465QIvID6uDpzCUd600xLabWB24A8MJexUPFZZ81AlPwqu6Lms
-gUhAX1MPNuIpKTHopkQIyFi25BUf7M6SHgAV9DMNeSPUvS38NHZmarxwnXS7iKs=
-=KpoC
------END PGP SIGNATURE-----
+and the timer is only initialized much later, after cpu idle initialization:
 
---CblX+4bnyfN0pR09--
+    sh_cmt e6138000.timer: ch0: used for periodic clock events
+
+Hacking up a timer node for "arm,cortex-a9-twd-timer" in sh73a0.dtsi
+(with some "guessed" values) made it work.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
