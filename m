@@ -1,57 +1,84 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH v2 2/3] PM / devfreq: tegra: add devfreq driver for Tegra
- Activity Monitor
-Date: Tue, 25 Nov 2014 09:56:34 +0100
-Message-ID: <CAAObsKDYuEhX_mJ-ae0w6+zVPx26QCotb6StGY5U1JBPttPa4A@mail.gmail.com>
-References: <715439136.113681416899252854.JavaMail.weblogic@epmlwas08c>
+From: amit daniel kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH RFC v2 08/12] soc: samsung: pm_domain: Add support for
+ parent power domain
+Date: Tue, 25 Nov 2014 14:27:58 +0530
+Message-ID: <CADGdYn4Vi2wV1y3Y0cTbPL0cFR2EEV7jT=82fHNYu+=xwZ7mBA@mail.gmail.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
+	<CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <715439136.113681416899252854.JavaMail.weblogic@epmlwas08c>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pankaj Dubey <pankaj.dubey-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25 November 2014 at 08:07, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
->> The ACTMON block can monitor several counters, providing averaging and firing
->> interrupts based on watermarking configuration. This implementation monitors
->> the MCALL and MCCPU counters to choose an appropriate frequency for the
->> external memory clock.
+On Tue, Nov 25, 2014 at 1:29 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 24 November 2014 at 14:04, Amit Daniel Kachhap
+> <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
+>> This patch adds supports for parent power domain. This will ensure
+>> invoking of parent/child power domain on/off in a correct sequence.
+>> In exynos7 SOC's, power domain controllers have parent and child
+>> hierarchy.
 >>
->> This patch is based on work by Alex Frid <afrid-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> and Mikko
->> Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>.
+>> Cc: Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>> ---
+>>  .../bindings/arm/exynos/power_domain.txt           |    2 +
+>>  drivers/soc/samsung/pm_domains.c                   |   43 +++++++++++++++++++-
+>>  2 files changed, 44 insertions(+), 1 deletion(-)
 >>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+>> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>> index 00ebda1..0160bdc 100644
+>> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>> @@ -24,6 +24,7 @@ Optional Properties:
+>>         - pclkN, clkN: Pairs of parent of input clock and input clock to the
+>>                 devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
+>>                 are supported currently.
+>> +- parents: phandle of parent power domains.
+>>
+>>  Node of a device using power domains must have a samsung,power-domain property
+>>  defined with a phandle to respective power domain.
+>> @@ -48,6 +49,7 @@ Example:
+>>         mfc_pd: power-domain@10044060 {
+>>                 compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
+>>                 reg = <0x10044060 0x20>;
+>> +               parents = <&pd_top>;
+>>                 #power-domain-cells = <0>;
+>>         };
 >
-> Signed-off-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> This seems like a good and generic approach to describe that a PM
+> domain could have a parent. I would suggest to rename it, such it
+> reflects its a PM domain binding though.
+I am not sure if this is generic. I guess PD's represented like below
+are more generic.
+PD1 {
+        PD2 {
+                PD3 {
+                };
+        };
+};
+
 >
-> How are you going to integrate other two patches?
-
-I think they should go through the Tegra tree.
-
-> May I just go ahead with this patch only?
-
-Yes, I think that would be fine as the other patches aren't actual
-build or runtime dependencies. This driver shouldn't cause problems
-either if it's ran without the EMC and CPUFreq patches (though won't
-be fully functional, of course).
+> So, maybe we can add this as a common DT binding for the generic PM
+> domain instead of having it as Exynos specific?
+Yes sure.
 
 Regards,
-
-Tomeu
-
-> Cheers,
-> MyungJoo.
+Amit D
 >
->>
->> ---
->>
->> v2:   * Use devfreq
->> ---
->>  drivers/devfreq/Kconfig         |  10 +
->>  drivers/devfreq/Makefile        |   1 +
->>  drivers/devfreq/tegra-devfreq.c | 718 ++++++++++++++++++++++++++++++++++++++++
->>  3 files changed, 729 insertions(+)
->>  create mode 100644 drivers/devfreq/tegra-devfreq.c
->>
+> Kind regards
+> Uffe
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
