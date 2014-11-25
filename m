@@ -1,57 +1,70 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to
- "system-power-controller"
-Date: Tue, 25 Nov 2014 17:12:34 +0000
-Message-ID: <20141125171234.GH7712@sirena.org.uk>
-References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
- <1416918506-9366-2-git-send-email-romain.perier@gmail.com>
- <20141125144007.9904BC44343@trevor.secretlab.ca>
- <20141125145410.GD19910@localhost>
- <CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/8] opp: Introduce APIs to remove OPPs
+Date: Tue, 25 Nov 2014 22:46:29 +0530
+Message-ID: <CAKohponBNOm_0_rZqbVKQSoOa81CjnKb8vcfzA6gbm1+Gxn+gg@mail.gmail.com>
+References: <cover.1416910766.git.viresh.kumar@linaro.org>
+	<f815d0855c1bd28d8389554176acd2620e56b3c8.1416910766.git.viresh.kumar@linaro.org>
+	<20141125162434.GC5050@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jLmGyUepE/aZfh+l"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38271 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbaKYRO7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 12:14:59 -0500
-Content-Disposition: inline
-In-Reply-To: <CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:35504 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbaKYRQa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 12:16:30 -0500
+Received: by mail-ob0-f174.google.com with SMTP id m8so784738obr.5
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 09:16:30 -0800 (PST)
+In-Reply-To: <20141125162434.GC5050@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: Johan Hovold <johan@kernel.org>, Grant Likely <grant.likely@linaro.org>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, robh <robh@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Felipe Balbi <balbi@ti.com>
+To: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stefan Wahren <stefan.wahren@i2se.com>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>
 
+On 25 November 2014 at 21:54, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> If the data is alway accessed under an SRCU read-side critical section,
+> then you do need call_srcu() when freeing it -- as you pointed out,
+> -with- the srcu_struct included.  ;-)
 
---jLmGyUepE/aZfh+l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+:)
 
-On Tue, Nov 25, 2014 at 04:57:56PM +0100, Romain Perier wrote:
+> If the data is accessed under both SRCU and RCU, then things get a bit
+> more involved.
 
-> Thanks for your feedbacks.  I think that Mark will probably wait until
-> there are more reviews on this serie. (this is exactly what he asked
-> for the previous one)
+Yes, that is always the case here.
 
-Yeah, given the amount of often late arriving disagreement I'd rather
-let things cook for a while unless there are a lot of people being vocal
-about this being what we want to go with.
+>> +void __dev_pm_opp_remove(struct device_opp *dev_opp, struct dev_pm_opp *opp)
+>> +{
+>> +     /*
+>> +      * Notify the changes in the availability of the operable
+>> +      * frequency/voltage list.
+>> +      */
+>> +     srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
+>> +     list_del_rcu(&opp->node);
+>> +     call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, kfree_opp_rcu);
+>
+> I am guessing that opp->node is being removed from the list traversed
+> by srcu_notifier_call_chain()...  (Looks that way below.)
 
---jLmGyUepE/aZfh+l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+I couldn't find any code in kernel which is registered for this notifier chain
+yet. And so don't know what that code will do. It may not traverse the list
+or it may :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I couldn't understand this comment of yours, sorry: (Looks that way below.)
 
-iQEcBAEBAgAGBQJUdLiBAAoJECTWi3JdVIfQRL4IAIT4N24elGdFDrN0pdCuPxOm
-rfkI6Qp8RmEHCZqaU2O/lpjYGYfZ6yB+CggQb8Nxx52QBZ6w79nEQ+3RN8lWyadG
-ZuJNl5m63kXILtCAtkgEgvJlfSeN+8yth0aQY5/mAcLxzmpnwuOt3/f3D+r7nw5z
-Ux2rKzk7CyqDsh3J+4SNL3z0WAQhDs8TYxTpt7BbWsa4niMSU1S0wXwChXjXR6E7
-eul+LaY4DdaL+jmvrYA/4oZZtrHNtrFkOj8WcGhdhAFprTqEkYM5LmcAA2vEueAd
-Q5KcXntuqecXDgWq5moSHSzDH9ivhTJhhqOOUX7dFD7u34hHYL2sXM4tkt55iUA=
-=PQ9m
------END PGP SIGNATURE-----
+>> +
+>> +     if (list_empty(&dev_opp->opp_list)) {
+>
+> Does the above want to be "if (!list_empty(&dev_opp->opp_list)) {"?
 
---jLmGyUepE/aZfh+l--
+No. dev_opp contains list of all OPPs. When all OPPs are gone, we don't
+want dev_opp anymore and so freeing it.
+
+>> +             list_del_rcu(&dev_opp->node);
+>> +             call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
+>> +                       kfree_device_rcu);
+>> +     }
+>> +}
+
+So, I am still not sure what we need to do here as we have readers with
+both rcu and srcu critical regions.
