@@ -1,87 +1,69 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] opp: convert dev_warn() to dev_dbg() for duplicate OPPs
-Date: Tue, 25 Nov 2014 08:25:22 -0800
-Message-ID: <20141125162522.GD5050@linux.vnet.ibm.com>
-References: <7017fa592bdaf73c260ad001a2b7abdc8d14f08a.1416211616.git.viresh.kumar@linaro.org>
- <5171628.FRGslOuEb6@vostro.rjw.lan>
- <CAKohpomz_UiRErSsDPLWcmU4e7ocXZZu7bwCF8TvoSJupikd7A@mail.gmail.com>
- <42965945.ST26GKfzPz@vostro.rjw.lan>
- <20141124161435.GE5050@linux.vnet.ibm.com>
- <CAKohpo=dDTAV=B0CvCqD1H-QGuQ+i2w5Lfr3egpWzrvRYVNWmw@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: santosh shilimkar <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Tue, 25 Nov 2014 08:28:33 -0800
+Message-ID: <5474AE31.8080901@oracle.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <15074721.IbfeeI3ajE@wuerfel> <54746349.3000306@ti.com> <2301239.aDOlWg3gEs@wuerfel> <5474846C.2000308@ti.com> <20141125140440.GF3836@n2100.arm.linux.org.uk> <54749804.8070400@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e38.co.us.ibm.com ([32.97.110.159]:58918 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbaKYQZ1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 11:25:27 -0500
-Received: from /spool/local
-	by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Tue, 25 Nov 2014 09:25:27 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
-	by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C2FD93E4003B
-	for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 09:18:20 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id sAPGPOSM54853674
-	for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 09:25:24 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id sAPGUJ8n003743
-	for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 09:30:19 -0700
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=dDTAV=B0CvCqD1H-QGuQ+i2w5Lfr3egpWzrvRYVNWmw@mail.gmail.com>
+Received: from aserp1040.oracle.com ([141.146.126.69]:19169 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbaKYQ3p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 11:29:45 -0500
+In-Reply-To: <54749804.8070400@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stefan Wahren <stefan.wahren@i2se.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mike Turquette <mturquette@linaro.org>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, ssantosh@kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Nov 25, 2014 at 04:07:35PM +0530, Viresh Kumar wrote:
-> On 24 November 2014 at 21:44, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > As Rafael says, if opp is reachable by RCU readers, you cannot just
-> > immediately kfree() it.  Immediately kfree()ing it like this -will-
-> > cause your RCU readers to see freed memory, which, as you noted, can
-> > cause crashes.
-> 
-> In order to reply you at some level, I tried going through RCU documentation
-> today before replying anymore. And yes I understood this part.
-> 
-> > Except that srcu_notifier_call_chain() involves SRCU readers.  So,
-> > unless I am confused, you instead need something like this:
-> >
-> > static void kfree_opp_rcu(struct rcu_head *rhp)
-> > {
-> >         struct device_opp *opp = container_of(rhp, struct device_opp, opp_list);
-> >
-> >         kfree(opp);
-> > }
-> >
-> > Then replace the above kfree() by:
-> >
-> >         call_srcu(&opp->rcu, kfree_opp_rcu);
-> 
-> Correct. But you missed the srcu which should be the first argument here :)
+Grygorii,
 
-Indeed I did!  ;-)
+On 11/25/2014 6:53 AM, Grygorii Strashko wrote:
+> Hi Russell,
+>
+> On 11/25/2014 04:04 PM, Russell King - ARM Linux wrote:
+>> On Tue, Nov 25, 2014 at 03:30:20PM +0200, Grygorii Strashko wrote:
+>>> On 11/25/2014 02:09 PM, Arnd Bergmann wrote:
+>>>> It might be possible to do this implicitly if the driver calls clk_get(),
+>>>> basically doing clk_get() (or another call if necessary) would prevent the
+>>>> simple pmdomain from turning it off during suspend.
+>>>
+>>> Unfortunately, clk_get() will not work, because drivers still need to use it
+>>> to get functional clocks even if they are not going to control them explicitly.
+>>> For example, if it need to know clock's rate.
+>>
+>> If you don't want a clock to be turned off, then clk_get() it, then
+>> clk_prepare() it, and finally clk_enable() it.
+>>
+>> Even if someone else gets it, the only time that a clock is turned off
+>> is when _all_ users of it mutually agree that it can be turned off - by
+>> every user disabling (and possibly unpreparing) it.
+>>
+>> So, if the PM domain code gets a clock, prepares and enables it, then
+>> a driver gets the same clock, prepares and enables it also, it won't
+>> be disabled until _both_ the PM domain code _and_ the driver disable
+>> and unprepare the clock.
+>>
+>
+> All 100% true :)
+>
+> But the question here is how prevent pm_clk domain (clock_ops.c) from
+> getting the control on clock if this particular clock is optional from driver's
+> perspective. So, only driver should control it. As opposite, all other clocks
+> should be controlled by pm-domain (in case of GPD from .start/stop callbacks).
+>
+I know there has been lot of back and forth, we have done on getting
+multiple clock handling and from the thread looks like we are converging
+with simple power domain approach. Since we have already made several
+different attempt to solve the problem and some how stumbled, I suggest
+you to do a new RFC with new $subject so that we can get rest of the
+folks eyes on it.
 
-> > This will require adding the following to struct device_opp:
-> >
-> >         struct rcu_head rcu;
-> 
-> We were freeing struct dev_pm_opp, and so I believe you
-> wanted me to add it there? Its already there.
+The reason I say that because may be just because of $subject, some
+folks might ignore the thread ;-) and later raise objections.
 
-Fair enough!
+Thanks for persisting with it.
 
-> > All that said, I do not claim to understand the OPP code, so please take
-> > the above suggested changes with a grain of salt.  And if you let me know
-> > where I am confused, I should be able to offer better suggestions.
-> 
-> Thanks for your suggestions. I have sent the patch to list and cc'd you on
-> the relevant ones. Would be great if you can review the rcu part there.
-
-Done!
-
-							Thanx, Paul
-
+Regards,
+Santosh
