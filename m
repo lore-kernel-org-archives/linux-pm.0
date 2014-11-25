@@ -1,128 +1,107 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] thermal: Don't call thermal_zone_device_update inside
- spinlock
-Date: Tue, 25 Nov 2014 09:56:39 -0800
-Message-ID: <1416938199.2043.234.camel@spandruv-desktop.jf.intel.com>
-References: <1415875624-587-1-git-send-email-mauricex.r.petallo@intel.com>
-	 <20141125052258.GB29240@developer>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: (bisected) Lock up on sh73a0/kzm9g on cpuidle initialization
+Date: Tue, 25 Nov 2014 10:01:59 -0800
+Message-ID: <20141125180159.GI5050@linux.vnet.ibm.com>
+References: <CAMuHMdXaaa2t6+sH2egGacVxkAPeTUkAgwdYsOnMnEPnuLdB5Q@mail.gmail.com>
+ <545BE1DE.6060900@linaro.org>
+ <CAMuHMdXQr65g4He0D0ZRN923OJ2A7WNgwbiTru_1dGWnvbvCJA@mail.gmail.com>
+ <CAMuHMdUjYMC8i2F9n6fWdPBOQVSohKA3ZxJJyq8h808Z9tEypw@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:3666 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbaKYR5K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Nov 2014 12:57:10 -0500
-In-Reply-To: <20141125052258.GB29240@developer>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:40546 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbaKYSCF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 13:02:05 -0500
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Tue, 25 Nov 2014 11:02:04 -0700
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdUjYMC8i2F9n6fWdPBOQVSohKA3ZxJJyq8h808Z9tEypw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Maurice Petallo <mauricex.r.petallo@intel.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, 2014-11-25 at 01:23 -0400, Eduardo Valentin wrote:
-Hi, 
-> Hi,
-> 
-> A minor thing. Your patch title makes us think this fix affects the
-> thermal subsystem completely, whereas it affects a specific driver.
-> 
-Good point. I overlooked this.
-
-Maurice,
-Change the title to something like
-"thermal: Intel SoC DTS: Don't call thermal_zone_device_update inside
-spinlock"
-
-Thanks,
-Srinivas 
-> 
-> On Thu, Nov 13, 2014 at 06:47:04PM +0800, Maurice Petallo wrote:
-> > The driver calls spin_lock_irqsave during DTS interrupt. The interrupt
-> > handle then calls thermal_zone_device_update which implicitly calls
-> > a sleep function and produce the following bug:
+On Tue, Nov 25, 2014 at 06:49:16PM +0100, Geert Uytterhoeven wrote:
+> On Fri, Nov 7, 2014 at 8:59 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Thu, Nov 6, 2014 at 10:02 PM, Daniel Lezcano
+> > <daniel.lezcano@linaro.org> wrote:
+> >> On 11/06/2014 09:38 PM, Geert Uytterhoeven wrote:
+> >>> When CONFIG_CPU_IDLE=y, the kernel locks up during cpuidle initialization
+> >>> on Renesas sh73a0/kzm9g-reference, which has a dual-core Cortex-A9.
+> >>>
+> >>> Last message is:
+> >>>
+> >>>      DMA: preallocated 256 KiB pool for atomic coherent allocations
+> >>>
+> >>> After this it's supposed to print:
+> >>>
+> >>>      cpuidle: using governor ladder
+> >>>      cpuidle: using governor menu
+> >>>
+> >>> I've bisected this to commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc
+> >>> ("sched: Let the scheduler see CPU idle states").
+> >>>
+> >>> Reverting that commit, and commit 83a0a96a5f26d974580fd7251043ff70c8f1823d
+> >>> ("sched/fair: Leverage the idle state info when choosing the "idlest"
+> >>> cpu") which
+> >>> depends on it, fixes the problem.
+> >>>
+> >>> I saw the discussion "lockdep splat in CPU hotplug", so I enabled lockdep
+> >>> debugging, but didn't see a lockdep splat.
+> >>
+> >> Did you try the fix attached ?
+> >>
+> >> https://lkml.org/lkml/2014/10/22/722
 > >
->  
-> > BUG: sleeping function called from invalid context at kernel/locking/mutex.c:97
-> > in_atomic(): 1, irqs_disabled(): 1, pid: 920, name: irq/86-soc_dts
-> > CPU: 0 PID: 920 Comm: irq/86-soc_dts Tainted: G            E  3.17.0-rc2+ #1
-> > Hardware name: Intel Corp. VALLEYVIEW B3 PLATFORM/NOTEBOOK, BIOS BYTICRB1.86C.0092.R31.1408290850 08/29/2014
-> >  00000000 00000000 c25dbe74 c1818cfd f3cc488c c25dbe9c c1059305 c1b4063b
-> >  00000001 00000001 00000398 f3cc488c f6817644 f6817644 f3ecc6c0 c25dbea8
-> >  c18208f2 f6817400 c25dbebc c159b0bb c25dbedc f6817400 f32a2300 c25dbee8
-> > Call Trace:
-> >  [<c1818cfd>] dump_stack+0x48/0x60
-> >  [<c1059305>] __might_sleep+0xec/0xf4
-> >  [<c18208f2>] mutex_lock+0x1c/0x34
-> >  [<c159b0bb>] thermal_zone_get_temp+0x34/0x59
-> >  [<c159bde5>] thermal_zone_device_update+0x2d/0xcb
-> >  [<f85da16a>] ? iosf_mbi_write+0x6c/0x74 [iosf_mbi]
-> >  [<f7c7445d>] soc_irq_thread_fn+0x10c/0x163 [intel_soc_dts_thermal]
-> >  [<c107b72b>] irq_thread_fn+0x18/0x2a
-> >  [<c107bedb>] irq_thread+0x81/0x11f
-> >  [<c107b713>] ? irq_finalize_oneshot+0x7c/0x7c
-> >  [<c107bf79>] ? irq_thread+0x11f/0x11f
-> >  [<c107be5a>] ? wake_threads_waitq+0x31/0x31
-> >  [<c1054217>] kthread+0x87/0x8c
-> >  [<c1821e41>] ret_from_kernel_thread+0x21/0x30
-> >  [<c1054190>] ? __kthread_parkme+0x55/0x55
-> > 
-> > Signed-off-by: Maurice Petallo <mauricex.r.petallo@intel.com>
-> > Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/thermal/intel_soc_dts_thermal.c |   12 +++++++-----
-> >  1 file changed, 7 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/intel_soc_dts_thermal.c b/drivers/thermal/intel_soc_dts_thermal.c
-> > index a6a0a18..5580f5b 100644
-> > --- a/drivers/thermal/intel_soc_dts_thermal.c
-> > +++ b/drivers/thermal/intel_soc_dts_thermal.c
-> > @@ -360,6 +360,9 @@ static void proc_thermal_interrupt(void)
-> >  	u32 sticky_out;
-> >  	int status;
-> >  	u32 ptmc_out;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&intr_notify_lock, flags);
-> >  
-> >  	/* Clear APIC interrupt */
-> >  	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-> > @@ -378,21 +381,20 @@ static void proc_thermal_interrupt(void)
-> >  		/* reset sticky bit */
-> >  		status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-> >  					SOC_DTS_OFFSET_PTTSS, sticky_out);
-> > +		spin_unlock_irqrestore(&intr_notify_lock, flags);
-> > +
-> >  		for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
-> >  			pr_debug("TZD update for zone %d\n", i);
-> >  			thermal_zone_device_update(soc_dts[i]->tzone);
-> >  		}
-> > -	}
-> > +	} else
-> > +		spin_unlock_irqrestore(&intr_notify_lock, flags);
-> >  
-> >  }
-> >  
-> >  static irqreturn_t soc_irq_thread_fn(int irq, void *dev_data)
-> >  {
-> > -	unsigned long flags;
-> > -
-> > -	spin_lock_irqsave(&intr_notify_lock, flags);
-> >  	proc_thermal_interrupt();
-> > -	spin_unlock_irqrestore(&intr_notify_lock, flags);
-> >  	pr_debug("proc_thermal_interrupt\n");
-> >  
-> >  	return IRQ_HANDLED;
+> > Thanks, I didn't try that.
+> >
+> > However, this patch seems to be in v3.18-rc3, so I'm already using it.
+> > Hence it doesn't fix the problem for me.
+> >
+> > On another board, with a dual Cortex-A15, the problem doesn't show up.
 > 
-> A part from the minor thing I mentioned before, you can add my:
+> This problem (regression introduced in v3.18-rc1) is still present in v3.18-rc6.
 > 
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> 
-> > -- 
-> > 1.7.9.5
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I did some more investigations, and it's hanging in the call to
+> synchronize_rcu() in cpuidle_uninstall_idle_handler(), which was added in
+> commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc.
+> More specificailly, it's blocked on the wait_for_completion(&rcu.completion)
+> in kernel/rcu/update.c:void wait_rcu_gp(call_rcu_func_t crf).
 
+You didn't disable RCU CPU stall warnings, did you?  If you did, please
+re-enable them, as the stall warning messages will likely help to debug
+this.  The soft-lockup checks can also be quite valuable.
+
+If you haven't run with CONFIG_PROVE_RCU=y, please try that.  For example,
+if you have CONFIG_PREEMPT=y and you do synchronize_rcu() from within
+an RCU read-side critical section (don't do that, it will hang!!!),
+then you will get a lockdep splat.
+
+Does any sort of system activity (keyboard, network, etc.) unstick the
+system?
+
+If you have tried all those things without good effect, could you please
+send along your .config and an alt-sysrq-t dump of all tasks' stacks?
+
+							Thanx, Paul
+
+> Anyone with a clue?
+> 
+> Thanks again!
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
 
