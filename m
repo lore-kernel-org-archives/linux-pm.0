@@ -1,80 +1,93 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 25 Nov 2014 13:08:57 +0200
-Message-ID: <54746349.3000306@ti.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <2997659.fTX2lvxXfH@wuerfel> <20141125064406.12298.57929@quantum> <15074721.IbfeeI3ajE@wuerfel>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: Ref the policy object sooner
+Date: Tue, 25 Nov 2014 16:40:23 +0530
+Message-ID: <CAKohponYcoFkbezPjjUbedzZRgbyROJVgKhecALPH+O2yKQfow@mail.gmail.com>
+References: <CAKohponxpSoUXHc9S-y_zgo=T44-6Ayk4vRbW=jRHqQRsdbrGQ@mail.gmail.com>
+	<1416820083-20902-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <15074721.IbfeeI3ajE@wuerfel>
+In-Reply-To: <1416820083-20902-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Mike Turquette <mturquette@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <robh+dt@kernel.org>, ssantosh@kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Arnd,
+On 24 November 2014 at 14:38, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> Do it before it's assigned to cpufreq_cpu_data, otherwise when a driver
+> tries to get the cpu frequency during initialization the policy kobj is
+> referenced and we get this warning:
+>
+> ------------[ cut here ]------------
+> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
+> Modules linked in:
+> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
+> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
+> [<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
+> [<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
+> [<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
+> [<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
+> [<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
+> [<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
+> [<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
+> [<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
+> [<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
+> [<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
+> [<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
+> ---[ end trace b7bd64a81b340c59 ]---
+>
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>
+> ---
+>
+> v2:     * Properly unwind when erroring out.
+> ---
+>  drivers/cpufreq/cpufreq.c | 42 +++++++++++++++++++++---------------------
+>  1 file changed, 21 insertions(+), 21 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4473eba..ae27ea6 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -898,46 +898,31 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+>         struct freq_attr **drv_attr;
+>         int ret = 0;
+>
+> -       /* prepare interface data */
+> -       ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+> -                                  &dev->kobj, "cpufreq");
+> -       if (ret)
+> -               return ret;
+> -
+>         /* set up files for this cpu device */
+>         drv_attr = cpufreq_driver->attr;
+>         while ((drv_attr) && (*drv_attr)) {
+>                 ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
+>                 if (ret)
+> -                       goto err_out_kobj_put;
+> +                       return ret;
+>                 drv_attr++;
+>         }
+>         if (cpufreq_driver->get) {
+>                 ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
+>                 if (ret)
+> -                       goto err_out_kobj_put;
+> +                       return ret;
+>         }
+>
+>         ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
+>         if (ret)
+> -               goto err_out_kobj_put;
+> +               return ret;
+>
+>         if (cpufreq_driver->bios_limit) {
+>                 ret = sysfs_create_file(&policy->kobj, &bios_limit.attr);
+>                 if (ret)
+> -                       goto err_out_kobj_put;
+> +                       return ret;
+>         }
 
-On 11/25/2014 12:33 PM, Arnd Bergmann wrote:
-> On Monday 24 November 2014 22:44:06 Mike Turquette wrote:
->> Quoting Arnd Bergmann (2014-11-24 02:50:28)
->>>
->>> Could the driver maybe identify the clocks that it wants to manage itself
->>> to the pm-domain code? If it's safe for a device to have the clock turned
->>> on at the default rate before loading the driver, any device that is connected
->>> to the simple clk-pm-domain code could have all its clocks start out as
->>> owned by the pm-domain, but then claim the clocks it needs to reprogram for
->>> itself and take them out of the pmdomain.
->>
->> I was thinking along similar lines. The functional versus optional stuff
->> is really a property of the consuming device, not the clock signal
->> itself.
->>
->> Instead of adding a new property to the clock binding (e.g. fck-clocks
->> or optional-clocks), could we simply wrap those lists of clocks in
->> another node? E.g:
->>
->> mandatory-clocks {
->>         clocks = <&papllclk>, <&clkcpgmac>;
->>         clock-names = "clk_pa", "clk_cpgmac";
->> }
->>
->> clocks = <&papllclk>, <&clkcpgmac>, <&chipclk12>;
+We should add proper handling for error returned from sysfs_create_file()
+someday, but its obviously not what you are trying to fix.
 
-optional-clocks { ?
->>         clocks = <&clkcpgmac>;         
-
-	   clocks = <&chipclk12>; ?
-
->>         clock-names = "cpsw_cpts_rft_clk";
->> }
->>
->> I'm showing my DT ignorance on this one. I haven't really thought
->> through how these sub-nodes would work with of_clk_* handlers in
->> drivers/clk/clkdev.c.
-
-As I remember, there was nack for sub-nodes approach from Olof :(
-"[RFC 0/2] pwrseq: Add subsystem for power sequences"
-http://thread.gmane.org/gmane.linux.power-management.general/46635
-
-> 
-> I'm not sure I even understand what you intended the example to look
-> like, it does't parse ;-)
-> 
-> My point above was completely different, the suggestion I made was
-> to not classify the clocks in DT at all, but to leave it all in
-> the client driver.
-
-I slept with this idea :) From one side it sounds good. Pls, Correct me if I'm wrong:
-- there still will be "simple-pmdomain" and all devices will be attached to it by
-   default (or as specified in DT power-domains = <&simple_pmdomain>;);
-- drivers will use smth. like pm_clk_remove() to remove optional clocks from pm_clk;
-
->From another side:
-- drivers will get dependency from pm_clk;
-- HW limitations can't be taken into account - it's possible that some clocks should
-  not be enabled until it's allowed. And only driver know when it's allowed.
-  Otherwise, HW state may become unspecified or wrong output can be generated.
-
-regards,
--grygorii
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
