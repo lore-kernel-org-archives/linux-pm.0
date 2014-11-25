@@ -1,52 +1,73 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH v2 2/3] PM / devfreq: tegra: add devfreq driver for
- Tegra Activity Monitor
-Date: Tue, 25 Nov 2014 09:06:59 +0000 (GMT)
-Message-ID: <12372901.124221416906419323.JavaMail.weblogic@epmlwas08c>
-Reply-To: myungjoo.ham@samsung.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH RFC v2 08/12] soc: samsung: pm_domain: Add support for
+ parent power domain
+Date: Tue, 25 Nov 2014 10:19:28 +0100
+Message-ID: <CAMuHMdX+rcmUM+_4c72b16Zs_c5KMhO3bYSH5-AUp087cwGdeA@mail.gmail.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+	<1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
+	<CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ@mail.gmail.com>
+	<CADGdYn4Vi2wV1y3Y0cTbPL0cFR2EEV7jT=82fHNYu+=xwZ7mBA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:32812 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbaKYJHC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 04:07:02 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NFL00AA17ZODYC0@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 25 Nov 2014 18:07:00 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADGdYn4Vi2wV1y3Y0cTbPL0cFR2EEV7jT=82fHNYu+=xwZ7mBA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Kevin Hilman <khilman@kernel.org>, Pankaj Dubey <pankaj.dubey@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-PiBPbiAyNSBOb3ZlbWJlciAyMDE0IGF0IDA4OjA3LCBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhh
-bUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+ID4+IFRoZSBBQ1RNT04gYmxvY2sgY2FuIG1vbml0b3Ig
-c2V2ZXJhbCBjb3VudGVycywgcHJvdmlkaW5nIGF2ZXJhZ2luZyBhbmQgZmlyaW5nDQo+ID4+IGlu
-dGVycnVwdHMgYmFzZWQgb24gd2F0ZXJtYXJraW5nIGNvbmZpZ3VyYXRpb24uIFRoaXMgaW1wbGVt
-ZW50YXRpb24gbW9uaXRvcnMNCj4gPj4gdGhlIE1DQUxMIGFuZCBNQ0NQVSBjb3VudGVycyB0byBj
-aG9vc2UgYW4gYXBwcm9wcmlhdGUgZnJlcXVlbmN5IGZvciB0aGUNCj4gPj4gZXh0ZXJuYWwgbWVt
-b3J5IGNsb2NrLg0KPiA+Pg0KPiA+PiBUaGlzIHBhdGNoIGlzIGJhc2VkIG9uIHdvcmsgYnkgQWxl
-eCBGcmlkIDxhZnJpZEBudmlkaWEuY29tPiBhbmQgTWlra28NCj4gPj4gUGVydHR1bmVuIDxtaWtr
-by5wZXJ0dHVuZW5Aa2Fwc2kuZmk+Lg0KPiA+Pg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBUb21ldSBW
-aXpvc28gPHRvbWV1LnZpem9zb0Bjb2xsYWJvcmEuY29tPg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+ID4NCj4gPiBIb3cg
-YXJlIHlvdSBnb2luZyB0byBpbnRlZ3JhdGUgb3RoZXIgdHdvIHBhdGNoZXM/DQo+IA0KPiBJIHRo
-aW5rIHRoZXkgc2hvdWxkIGdvIHRocm91Z2ggdGhlIFRlZ3JhIHRyZWUuDQo+IA0KPiA+IE1heSBJ
-IGp1c3QgZ28gYWhlYWQgd2l0aCB0aGlzIHBhdGNoIG9ubHk/DQo+IA0KPiBZZXMsIEkgdGhpbmsg
-dGhhdCB3b3VsZCBiZSBmaW5lIGFzIHRoZSBvdGhlciBwYXRjaGVzIGFyZW4ndCBhY3R1YWwNCj4g
-YnVpbGQgb3IgcnVudGltZSBkZXBlbmRlbmNpZXMuIFRoaXMgZHJpdmVyIHNob3VsZG4ndCBjYXVz
-ZSBwcm9ibGVtcw0KPiBlaXRoZXIgaWYgaXQncyByYW4gd2l0aG91dCB0aGUgRU1DIGFuZCBDUFVG
-cmVxIHBhdGNoZXMgKHRob3VnaCB3b24ndA0KPiBiZSBmdWxseSBmdW5jdGlvbmFsLCBvZiBjb3Vy
-c2UpLg0KDQpPaywgdGhlbiwgYXMgbG9uZyBhcyB0aGUgb3RoZXIgdHdvIHBhdGNoZXMgKGZvciBE
-VCBzdXBwb3J0KSBnZXQNCkFDS2VkIChzZWVtcyBmYWlybHkgc3RyYWlnaHRmb3J3YXJkIGFzIHdl
-bGwpIG9yIFNpZ25lZC1vZmYgYnkNCmNvcnJlc3BvbmRpbmcgdHJlZSBtYWludGFpbmVycywgSSBm
-ZWVsIGZpbmUgdG8NCnNlbmQgdGhpcyBwYXRjaCBhbG9uZyB3aXRoIHRoZSBuZXh0IHB1bGwgcmVx
-dWVzdC4NCg0KVGhhbmsgeW91Lg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQo+IA0KPiBSZWdhcmRz
-LA0KPiANCj4gVG9tZXUNCj4gDQo+ID4gQ2hlZXJzLA0KPiA+IE15dW5nSm9vLg0KPiA+DQo+IA0K
+On Tue, Nov 25, 2014 at 9:57 AM, amit daniel kachhap
+<amit.daniel@samsung.com> wrote:
+>>> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>> index 00ebda1..0160bdc 100644
+>>> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>> @@ -24,6 +24,7 @@ Optional Properties:
+>>>         - pclkN, clkN: Pairs of parent of input clock and input clock to the
+>>>                 devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
+>>>                 are supported currently.
+>>> +- parents: phandle of parent power domains.
 
+Why not using just "power-domains = <&pd_top>"?
+This is consistent with how clocks refer to their parent clocks.
 
+>>>  Node of a device using power domains must have a samsung,power-domain property
+>>>  defined with a phandle to respective power domain.
+>>> @@ -48,6 +49,7 @@ Example:
+>>>         mfc_pd: power-domain@10044060 {
+>>>                 compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
+>>>                 reg = <0x10044060 0x20>;
+>>> +               parents = <&pd_top>;
+>>>                 #power-domain-cells = <0>;
+>>>         };
+>>
+>> This seems like a good and generic approach to describe that a PM
+>> domain could have a parent. I would suggest to rename it, such it
+>> reflects its a PM domain binding though.
+> I am not sure if this is generic. I guess PD's represented like below
+> are more generic.
+> PD1 {
+>         PD2 {
+>                 PD3 {
+>                 };
+>         };
+> };
+
+Such a representation is not always possible.
+If you have one power-controller for a hierarchy of PM domains, you can
+use it.
+If you have multiple power-controllers, the power controller nodes are at the
+same level in DT, so you'll have to use "power-domains" properties to link
+them together.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
