@@ -1,158 +1,202 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 2/4] thermal: of: Extend of-thermal.c to provide check
- if trip point is enabled
-Date: Tue, 25 Nov 2014 04:25:26 -0400
-Message-ID: <20141125082524.GA13924@developer>
+Subject: Re: [PATCH v2 3/4] thermal: of: Extend of-thermal to export table of
+ trip points
+Date: Tue, 25 Nov 2014 16:36:31 -0400
+Message-ID: <20141125203629.GA14292@developer>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-3-git-send-email-l.majewski@samsung.com>
+ <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f42.google.com ([209.85.192.42]:51599 "EHLO
-	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbaKYU1h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:27:37 -0500
+Received: from mail-qg0-f50.google.com ([209.85.192.50]:33287 "EHLO
+	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbaKYUgn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 15:36:43 -0500
 Content-Disposition: inline
-In-Reply-To: <1416500488-7232-3-git-send-email-l.majewski@samsung.com>
+In-Reply-To: <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
 
 
---HlL+5n6rz5pIUxbD
+--17pEHd4RhPHOinZp
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
+Hello Lukasz,
 
-Lukasz,
-
-Same stuff here.
-
-On Thu, Nov 20, 2014 at 05:21:26PM +0100, Lukasz Majewski wrote:
-> This patch extends the of-thermal.c to provide check if trip point is
-> enabled.
+On Thu, Nov 20, 2014 at 05:21:27PM +0100, Lukasz Majewski wrote:
+> This patch extends the of-thermal.c to export copy of trip points for
+> a given thermal zone.
+>=20
+> Thermal drivers should use of_thermal_get_trip_points() method to get
+> pointer to table of thermal trip points.
 >=20
 > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > ---
 > Changes for v2:
-> - Replace int with bool
-> - Replace 1/0 with true/false
-> - Add check if data pointer is not NULL
-> - Add missing doxygen style comment for the function
+> - New patch - as suggested by Eduardo Valentin
 > ---
->  drivers/thermal/of-thermal.c   | 20 ++++++++++++++++++++
->  drivers/thermal/thermal_core.h |  5 +++++
->  2 files changed, 25 insertions(+)
+>  drivers/thermal/of-thermal.c   | 33 +++++++++++++++++++++++++++++++++
+>  drivers/thermal/thermal_core.h |  7 +++++++
+>  include/linux/thermal.h        | 14 ++++++++++++++
+>  3 files changed, 54 insertions(+)
 >=20
 > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 7170822..336af7f 100644
+> index 336af7f..33921c5 100644
 > --- a/drivers/thermal/of-thermal.c
 > +++ b/drivers/thermal/of-thermal.c
-> @@ -132,6 +132,26 @@ int of_thermal_get_ntrips(struct thermal_zone_device=
- *tz)
->  	return data->ntrips;
+> @@ -89,6 +89,7 @@ struct __thermal_zone {
+>  	/* trip data */
+>  	int ntrips;
+>  	struct __thermal_trip *trips;
+> +	struct thermal_trip *gtrips;
+> =20
+>  	/* cooling binding data */
+>  	int num_tbps;
+> @@ -152,6 +153,27 @@ bool of_thermal_is_trip_en(struct thermal_zone_devic=
+e *tz, int trip)
+>  	return true;
 >  }
 > =20
 > +/**
-> + * of_thermal_is_trip_en - function to check if trip point is enabled
+> + * of_thermal_get_trip_points - function to get access to a globally exp=
+orted
+> + *				trip points
 > + *
 > + * @tz:	pointer to a thermal zone
-> + * @trip:	trip point to evaluate
 > + *
-> + * This function is responsible for checking if passed trip point is ena=
-bled
+> + * This function provides a pointer to the copy of trip points table
 > + *
-> + * Return: true if trip point is enabled, false otherwise
+> + * Return: pointer to trip points table, NULL otherwise
 > + */
-> +bool of_thermal_is_trip_en(struct thermal_zone_device *tz, int trip)
-
-This one looks more like "is this trip point valid?" than "is this trip
-point enabled?", isn't it?
-
-By having such a function to check if a trip is enabled, one would
-expect to have functions to enable / disable trips points.
-
-What do you think of naming it:
-of_thermal_is_trip_valid()
-?
-
+> +const struct thermal_trip * const
+> +of_thermal_get_trip_points(struct thermal_zone_device *tz)
 > +{
 > +	struct __thermal_zone *data =3D tz->devdata;
 > +
-> +	if (!data || trip >=3D data->ntrips || trip < 0)
-
-Even your check is about looking if the trip value is within a range,
-telling the caller if the trip is valid or not, right?
-
-> +		return false;
+> +	if (!data)
+> +		return NULL;
 > +
-> +	return true;
+> +	return data->gtrips;
 > +}
 > +
 
-Missing:
-EXPORT_SYMBOL_GPL(of_thermal_is_trip_en);
-
-or
-
-EXPORT_SYMBOL_GPL(of_thermal_is_trip_valid);
+EXPORT_SYMBOL_GPL(of_thermal_get_trip_points);
 
 >  static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
 >  				enum thermal_trend *trend)
 >  {
+> @@ -767,6 +789,16 @@ thermal_of_build_thermal_zone(struct device_node *np)
+>  			goto free_tbps;
+>  	}
+> =20
+> +	tz->gtrips =3D kcalloc(tz->ntrips, sizeof(*tz->gtrips), GFP_KERNEL);
+> +	if (!tz->gtrips) {
+> +		ret =3D -ENOMEM;
+> +		goto free_tbps;
+> +	}
+> +
+> +	for (i =3D 0; i < tz->ntrips; i++)
+> +		memcpy(&(tz->gtrips[i]), &(tz->trips[i].temperature),
+> +		       sizeof(*tz->gtrips));
+> +
+>  finish:
+>  	of_node_put(child);
+>  	tz->mode =3D THERMAL_DEVICE_DISABLED;
+> @@ -793,6 +825,7 @@ static inline void of_thermal_free_zone(struct __ther=
+mal_zone *tz)
+>  {
+>  	int i;
+> =20
+> +	kfree(tz->gtrips);
+>  	for (i =3D 0; i < tz->num_tbps; i++)
+>  		of_node_put(tz->tbps[i].cooling_device);
+>  	kfree(tz->tbps);
 > diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_cor=
 e.h
-> index c3c7b82..466208c 100644
+> index 466208c..a9580ca 100644
 > --- a/drivers/thermal/thermal_core.h
 > +++ b/drivers/thermal/thermal_core.h
-> @@ -90,6 +90,7 @@ static inline void thermal_gov_user_space_unregister(vo=
-id) {}
->  int of_parse_thermal_zones(void);
+> @@ -91,6 +91,8 @@ int of_parse_thermal_zones(void);
 >  void of_thermal_destroy_zones(void);
 >  int of_thermal_get_ntrips(struct thermal_zone_device *);
-> +bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
+>  bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
+> +const struct thermal_trip * const
+> +of_thermal_get_trip_points(struct thermal_zone_device *);
 >  #else
 >  static inline int of_parse_thermal_zones(void) { return 0; }
 >  static inline void of_thermal_destroy_zones(void) { }
-> @@ -97,6 +98,10 @@ static inline int of_thermal_get_ntrips(struct thermal=
-_zone_device *)
+> @@ -102,6 +104,11 @@ static inline bool of_thermal_is_trip_en(struct ther=
+mal_zone_device *, int)
 >  {
+
+This produces compilation error when CONFIG_THERMAL_OF is not set. Name
+the parameters to fix.
+
 >  	return 0;
 >  }
-> +static inline bool of_thermal_is_trip_en(struct thermal_zone_device *, i=
-nt)
-
-Same as in patch 01, this produces compilation error. Please, name your
-parameters.
-
+> +static inline const struct thermal_trip * const
+> +of_thermal_get_trip_points(struct thermal_zone_device *)
 > +{
-> +	return 0;
+> +	return NULL;
 > +}
 >  #endif
 > =20
 >  #endif /* __THERMAL_CORE_H__ */
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 5bc28a7..88d7249 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -303,6 +303,20 @@ struct thermal_zone_of_device_ops {
+>  	int (*get_trend)(void *, long *);
+>  };
+> =20
+> +/**
+> + * struct thermal_trip - Structure representing themal trip points expor=
+ted from
+> + *                       of-thermal
+> + *
+
+The only problem I have with this name is that would look like it is in
+use in all thermal framework, which is not really the case. But I do
+think having a type here is a good thing. So, not sure :-)
+
+> + * @temperature:	trip point temperature
+> + * @hysteresis:		trip point hysteresis
+> + * @type:		trip point type
+> + */
+> +struct thermal_trip {
+> +	unsigned long int temperature;
+> +	unsigned long int hysteresis;
+> +	enum thermal_trip_type type;
+> +};
+> +
+>  /* Function declarations */
+>  #ifdef CONFIG_THERMAL_OF
+>  struct thermal_zone_device *
 > --=20
 > 2.0.0.rc2
 >=20
 
---HlL+5n6rz5pIUxbD
+--17pEHd4RhPHOinZp
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUdDzoAAoJEMLUO4d9pOJW9XMIAJMR5IDoWHWkd41TW8BmEeyf
-QipUFbwkQ7g1vYBKEFmfkGfq8aOAoTlTsvSb1rHMs3TDXHv/TZGzn4rmXkk6JnrQ
-Le/L5ccT0IgnaXP62NzRp+D1qRnzeGd6mK5RdSv21q+ZCbSPlVOMpgX0hanLl4D4
-00vBuW7Fo1FSV485PpMkEoEByz9ClcKwDN6BOYKSJzdytJvQCCRoBoTsR2fUD48H
-6DoUjCyN66g4TOIZsvwm01EC77p+bD7h3JV++1buh05tp8CHiH0hVzeVvgAWHBR7
-923JgRdJ8XfiLJ95TNknSlrlAO6yHxwGgjYnE696a4+xzxPhderqaGirN6V/Tg4=
-=a3ci
+iQEcBAEBAgAGBQJUdOhCAAoJEMLUO4d9pOJW/MsH/2mkqHxROgwKtjuZILnn5HIc
+FW9m6U3rWHqjS8nTvj41M2AoEFsadc8qBT66GoX25bQH8hjeDDi6kiCWHOJ1bHq2
+xe+LQKno4bzOc/3jNiPyTkGxexUDsdmx5pfSDcqhFCuvc+U6DdHKECrwigBWujzI
+JHoW+7P5RGd/jwBjmAma8VqQ+1jpa6eUjlFcWBnruz9Oh/8KLHGEzG+P/pcnj71V
+UIPPWnL13tuz9dEpezMQEl/CDctVlu0h4IEIo7/zPcF2uyKrrT0+1MeBWPV9Vz2U
+uy2AwgVtgffmiC9z2VJYK930akGjSuZnDOxlBCngObSqM2Dz/9A+qsJ1YZre6fw=
+=fm2i
 -----END PGP SIGNATURE-----
 
---HlL+5n6rz5pIUxbD--
+--17pEHd4RhPHOinZp--
