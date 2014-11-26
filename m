@@ -1,93 +1,105 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 26 Nov 2014 08:22:06 -0700
-Message-ID: <20141126152206.GD594@linaro.org>
-References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>
- <1414194024-55547-3-git-send-email-lina.iyer@linaro.org>
- <54662622.2020307@linaro.org>
- <20141119174339.GA891@linaro.org>
- <5475B724.80202@linaro.org>
- <20141126152003.GC594@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] thermal-soc updates for v3.18-rc7
+Date: Wed, 26 Nov 2014 11:27:38 -0400
+Message-ID: <20141126152736.GD3925@developer>
+References: <20141124212506.GA1685@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="g7w8+K/95kPelPD2"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:57895 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbaKZPWJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 10:22:09 -0500
-Received: by mail-pa0-f49.google.com with SMTP id eu11so3032080pac.36
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 07:22:08 -0800 (PST)
+Received: from mail-qg0-f52.google.com ([209.85.192.52]:54044 "EHLO
+	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753700AbaKZP1r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 10:27:47 -0500
 Content-Disposition: inline
-In-Reply-To: <20141126152003.GC594@linaro.org>
+In-Reply-To: <20141124212506.GA1685@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Wed, Nov 26 2014 at 08:20 -0700, Lina Iyer wrote:
->On Wed, Nov 26 2014 at 04:19 -0700, Daniel Lezcano wrote:
->>On 11/19/2014 06:43 PM, Lina Iyer wrote:
->>>On Fri, Nov 14 2014 at 08:56 -0700, Daniel Lezcano wrote:
->>>>On 10/25/2014 01:40 AM, Lina Iyer wrote:
->>>
->>
->>>>>+
->>>>>+    if ((cpu > -1) && !cpuidle_drv_init) {
->>>>>+        platform_device_register(&qcom_cpuidle_device);
->>>>>+        cpuidle_drv_init = true;
->>>>>+    }
->>>>
->>>>'cpu' is always > -1.
->>>>
->>>OK. I was hoping to use -1 for not a cpu (i.e, L2) SPM. For now, I will
->>>change.
->>>
->>>
->>>>If the 'spm_get_drv' succeed, cpu is no longer equal to -EINVAL.
->>>>Otherwise we do not reach this point because we return right after
->>>>spm_get_drv with an error.
->>>>
->>>>Adding the platform_device_register depending in a static variable is
->>>>not very nice. Why not add it explicitely in a separate init routine
->>>>we know it will be called one time (eg. at the same place than cpufreq
->>>>is) ?
->>>>
->>>We want to register the cpuidle device only if any of the SPM devices
->>>have been probed.
->>>
->>>Ideally, Stephen and I would like to register cpuidle device separately
->>>for each CPU SPM, when it is probed, so we would invoke cpuidle driver
->>>and thereby the low power modes only for those cpus. However, the
->>>complexity to do that, AFAICS, is very complex. I would need to change
->>>quite a bit of the framework and in the cpuidle driver, I may have to
->>>stray from the recommended format.
->>>
->>>Here I set up cpuidle device, when I know atleast 1 cpu is ready to
->>>allow low power modes.
->>
->>Yes, instead of using the generic cpuidle_register function, you can 
->>use the low level functions for that.
->>
->>One call to cpuidle_register_driver in a single place and then 
->>cpuidle_register_device for each spm probe.
->>
->>Wouldn't make sense ?
->
->Yes, but there are some assumptions if we dont use
->MULTIPLE_CPUIDLE_DRIVERS like this -
->
->static void __cpuidle_driver_init(struct cpuidle_driver *drv)
->{
->       int i;
->	
->	drv->refcnt = 0; // Overwrites any cpuidle_driver_get()
->
->
->The clean way was to use MULTIPLE_CPUIDLE_DRIVERS, which seems like an
->incorrect use for this SoC.
->
-Also, I probe and parse the cpuidle dt states for every SPM, which seems
-redundant and any optimization looks as hackish as this check.
 
->Thanks,
->Lina
+--g7w8+K/95kPelPD2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Rui,
+
+
+On Mon, Nov 24, 2014 at 05:25:06PM -0400, Eduardo Valentin wrote:
+>=20
+> Hello Rui,
+>=20
+> Please pull from
+>=20
+>   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-therma=
+l.git fixes
+>=20
+
+
+Have you had the time to have a look in this pull request? I am not sure
+if you got your environment working yet.
+
+> to receive thermal-soc updates for v3.18-rc7 with top-most
+>=20
+> d3e19567fa85e1a0dab02205b89b2908084ecadd:
+>=20
+>   thermal: Exynos: Deletion of unnecessary checks before two function cal=
+ls (2014-11-21 15:20:17 -0400)
+>=20
+> on top of commit fc14f9c1272f62c3e8d01300f52467c0d9af50f9:
+>=20
+>   Linux 3.18-rc5 (2014-11-16 16:36:20 -0800)
+>=20
+> Specifics:
+>=20
+> In this -rc still very minor changes:
+>  - Lee Jones fixes compilation warning in sti thermal driver;
+>  - Marjus Elfring removes unnecessary checks in exynos thermal driver
+>    (as per coccinelle); and
+>  - Now we always update cpufreq policies, and thus get (hopefully) always=
+ in sync with cpufreq,
+>    thanks to Yadwinder.=20
+>=20
+> BR,
+>=20
+> Eduardo Valentin
+>=20
+> ----------------------------------------------------------------
+> Lee Jones (1):
+>       thermal: sti: Ignore suspend/resume functions when !PM_SLEEP
+>=20
+> Markus Elfring (1):
+>       thermal: Exynos: Deletion of unnecessary checks before two function=
+ calls
+>=20
+> Yadwinder Singh Brar (1):
+>       thermal: cpu_cooling: Update always cpufreq policy with thermal con=
+straints
+>=20
+>  drivers/thermal/cpu_cooling.c                   | 37 ++++++++++++++-----=
+------
+>  drivers/thermal/samsung/exynos_thermal_common.c |  9 ++----
+>  drivers/thermal/st/st_thermal.c                 |  3 ++
+>  3 files changed, 27 insertions(+), 22 deletions(-)
+
+
+
+--g7w8+K/95kPelPD2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUdfFfAAoJEMLUO4d9pOJWk3wIAJ4i5/yjOUCa/kNLLcMFAdAB
+nXlh3QeZAcG9xhmVkbuxEKHVpoMjha+QLCQMfHSoF6pc8TXAGbLxGyqYQ5qqNkY6
+9AICoxmCbtXd7QoZrfqaDufZGsIdnUMgZdN4HgocdOEg0McmTvXMkLlhvCdZgY17
+7AW1/QBC94TckuhlgvMOyFfhy6jrgCSQtYyH5PpvcBb3QK+TGt0mt7o04LZTi+DQ
+oRSTPI9h0ZP1RV27HIAHh8RmPOKTCtmgcNUsY1Fquij1V1PrUtSytarN8HiPHxm2
+2VQp8y00QibiF4NHh2LR4SgPQnAhE0XqgW7ebDVK1FcOJi0so8h43xF7G9ciM5c=
+=DYM+
+-----END PGP SIGNATURE-----
+
+--g7w8+K/95kPelPD2--
