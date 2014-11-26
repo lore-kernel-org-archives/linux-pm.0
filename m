@@ -1,91 +1,131 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Subject: Re: [PATCH 9/9] usb: {ohci,ehci}-platform: Use new OF big-endian
- helper function
-Date: Wed, 26 Nov 2014 17:15:13 +1300
-Message-ID: <547553D1.3070908@prisktech.co.nz>
-References: <1416962994-27095-1-git-send-email-cernekee@gmail.com> <1416962994-27095-10-git-send-email-cernekee@gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/4] powernv: cpuidle: Redesign idle states management
+Date: Wed, 26 Nov 2014 10:45:03 +0530
+Message-ID: <547561D7.1050605@linux.vnet.ibm.com>
+References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <1416962994-27095-10-git-send-email-cernekee@gmail.com>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Kevin Cernekee <cernekee@gmail.com>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, arnd@arndb.de, stern@rowland.harvard.edu, gregkh@linuxfoundation.org, f.fainelli@gmail.com
-Cc: grant.likely@linaro.org, robh+dt@kernel.org, computersforpeace@gmail.com, marc.ceeeee@gmail.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-mips@linux-mips.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38177 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751231AbaKZFP3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Nov 2014 00:15:29 -0500
+Received: from /spool/local
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 26 Nov 2014 00:15:28 -0500
+In-Reply-To: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
+Hi,
 
-On 26/11/14 13:49, Kevin Cernekee wrote:
-> This handles the existing "big-endian" case, and in addition, it also does
-> the right thing when "native-endian" is specified.
->
-> Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
-> ---
->   Documentation/devicetree/bindings/usb/usb-ehci.txt | 2 ++
->   Documentation/devicetree/bindings/usb/usb-ohci.txt | 2 ++
->   drivers/usb/host/ehci-platform.c                   | 2 +-
->   drivers/usb/host/ohci-platform.c                   | 2 +-
->   4 files changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/usb/usb-ehci.txt b/Documentation/devicetree/bindings/usb/usb-ehci.txt
-> index 43c1a4e..9505c31 100644
-> --- a/Documentation/devicetree/bindings/usb/usb-ehci.txt
-> +++ b/Documentation/devicetree/bindings/usb/usb-ehci.txt
-> @@ -12,6 +12,8 @@ Optional properties:
->    - big-endian-regs : boolean, set this for hcds with big-endian registers
->    - big-endian-desc : boolean, set this for hcds with big-endian descriptors
->    - big-endian : boolean, for hcds with big-endian-regs + big-endian-desc
-> + - native-endian : boolean, enables big-endian-regs + big-endian-desc
-> +   iff the kernel was compiled for big endian
-s/iff/if
->    - clocks : a list of phandle + clock specifier pairs
->    - phys : phandle + phy specifier pair
->    - phy-names : "usb"
-> diff --git a/Documentation/devicetree/bindings/usb/usb-ohci.txt b/Documentation/devicetree/bindings/usb/usb-ohci.txt
-> index 19233b7..3bb9673 100644
-> --- a/Documentation/devicetree/bindings/usb/usb-ohci.txt
-> +++ b/Documentation/devicetree/bindings/usb/usb-ohci.txt
-> @@ -9,6 +9,8 @@ Optional properties:
->   - big-endian-regs : boolean, set this for hcds with big-endian registers
->   - big-endian-desc : boolean, set this for hcds with big-endian descriptors
->   - big-endian : boolean, for hcds with big-endian-regs + big-endian-desc
-> +- native-endian : boolean, enables big-endian-regs + big-endian-desc
-> +  iff the kernel was compiled for big endian
-s/iff/if
->   - no-big-frame-no : boolean, set if frame_no lives in bits [15:0] of HCCA
->   - num-ports : u32, to override the detected port count
->   - clocks : a list of phandle + clock specifier pairs
-> diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
-> index 2f5b9ce..0da9d70 100644
-> --- a/drivers/usb/host/ehci-platform.c
-> +++ b/drivers/usb/host/ehci-platform.c
-> @@ -187,7 +187,7 @@ static int ehci_platform_probe(struct platform_device *dev)
->   		if (of_property_read_bool(dev->dev.of_node, "big-endian-desc"))
->   			ehci->big_endian_desc = 1;
->   
-> -		if (of_property_read_bool(dev->dev.of_node, "big-endian"))
-> +		if (of_device_is_big_endian(dev->dev.of_node))
->   			ehci->big_endian_mmio = ehci->big_endian_desc = 1;
->   
->   		priv->phy = devm_phy_get(&dev->dev, "usb");
-> diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
-> index 7793c3c..029a606 100644
-> --- a/drivers/usb/host/ohci-platform.c
-> +++ b/drivers/usb/host/ohci-platform.c
-> @@ -157,7 +157,7 @@ static int ohci_platform_probe(struct platform_device *dev)
->   		if (of_property_read_bool(dev->dev.of_node, "big-endian-desc"))
->   			ohci->flags |= OHCI_QUIRK_BE_DESC;
->   
-> -		if (of_property_read_bool(dev->dev.of_node, "big-endian"))
-> +		if (of_device_is_big_endian(dev->dev.of_node))
->   			ohci->flags |= OHCI_QUIRK_BE_MMIO | OHCI_QUIRK_BE_DESC;
->   
->   		if (of_property_read_bool(dev->dev.of_node, "no-big-frame-no"))
+I ran hackbench to evaluate this patchset and found good improvements in
+the results.
+
+I modified hackbench to take in a 'loops' parameter along with
+num_groups which ensures that the test runs long enough to observe and
+debug issues. The idea was to find out how latency sensitive workloads
+can get affected by modification in cpuidle heuristics since it is easy
+to measure the impact on these workloads.
+
+The experiment was conducted on a Power8 system with 1 socket and 6
+cores on it.
+
+The first experiment was carried out by pinning hackbench to the first
+thread in each core while the rest of the smt threads were idle and
+below are the results. This would ensure the core entered deep idle
+states more often.
+
+num_grps     %improvement with patchset
+3                    3.6
+6                   10.6
+12                   5.0
+24                   5.0
+
+The second experiment was carried out by allowing hackbench to run on
+the smt threads of two cores and % improvement with the patchset was in
+range of 4-7%.
+
+I ran the experiments on the vanilla kernel. This means the performance
+improvements is primarily due to avoiding having to do a timebase sync
+by every thread in the core. The power numbers have very little
+variation between the runs with and without the patchset.
+
+Thanks
+
+Regards
+Preeti U Murthy
+
+On 11/25/2014 04:47 PM, Shreyas B. Prabhu wrote:
+> Deep idle states like sleep and winkle are per core idle states. A core
+> enters these states only when all the threads enter either the particular
+> idle state or a deeper one. There are tasks like fastsleep hardware bug
+> workaround and hypervisor core state save which have to be done only by
+> the last thread of the core entering deep idle state and similarly tasks
+> like timebase resync, hypervisor core register restore that have to be
+> done only by the first thread waking up from these states. 
+> 
+> The current idle state management does not have a way to distinguish the
+> first/last thread of the core waking/entering idle states. Tasks like
+> timebase resync are done for all the threads. This is not only is suboptimal,
+> but can cause functionality issues when subcores are involved.
+> 
+> Winkle is deeper idle state compared to fastsleep. In this state the power
+> supply to the chiplet, i.e core, private L2 and private L3 is turned off.
+> This results in a total hypervisor state loss. This patch set adds support
+> for winkle and provides a way to track the idle states of the threads of the
+> core and use it for idle state management of idle states sleep and winkle.
+> 
+> 
+> Changes in v2:
+> --------------
+> -Using PNV_THREAD_NAP/SLEEP defines while calling power7_powersave_common
+> -Comment changes based on review
+> -Rebased on top of 3.18-rc6
+> 
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> Paul Mackerras (1):
+>   powerpc: powernv: Switch off MMU before entering nap/sleep/rvwinkle
+>     mode
+> 
+> Preeti U. Murthy (1):
+>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+> 
+> Shreyas B. Prabhu (2):
+>   powernv: cpuidle: Redesign idle states management
+>   powernv: powerpc: Add winkle support for offline cpus
+> 
+>  arch/powerpc/include/asm/cpuidle.h             |  14 ++
+>  arch/powerpc/include/asm/opal.h                |  13 +
+>  arch/powerpc/include/asm/paca.h                |   6 +
+>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+>  arch/powerpc/include/asm/processor.h           |   1 +
+>  arch/powerpc/include/asm/reg.h                 |   4 +
+>  arch/powerpc/kernel/asm-offsets.c              |   6 +
+>  arch/powerpc/kernel/cpu_setup_power.S          |   4 +
+>  arch/powerpc/kernel/exceptions-64s.S           |  30 ++-
+>  arch/powerpc/kernel/idle_power7.S              | 332 +++++++++++++++++++++----
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |  39 +++
+>  arch/powerpc/platforms/powernv/powernv.h       |   2 +
+>  arch/powerpc/platforms/powernv/setup.c         | 160 ++++++++++++
+>  arch/powerpc/platforms/powernv/smp.c           |  10 +-
+>  arch/powerpc/platforms/powernv/subcore.c       |  34 +++
+>  arch/powerpc/platforms/powernv/subcore.h       |   1 +
+>  drivers/cpuidle/cpuidle-powernv.c              |  10 +-
+>  17 files changed, 608 insertions(+), 60 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/cpuidle.h
+> 
+
