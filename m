@@ -1,105 +1,62 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] thermal-soc updates for v3.18-rc7
-Date: Wed, 26 Nov 2014 11:27:38 -0400
-Message-ID: <20141126152736.GD3925@developer>
-References: <20141124212506.GA1685@developer>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
+ "actual frequency"
+Date: Wed, 26 Nov 2014 07:29:46 -0800
+Message-ID: <5475F1EA.7020003@intel.com>
+References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com> <CAKohpom1=k=KP3csObfBPRqDQSWGyRrJUjw69NW04YB5RppcMw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="g7w8+K/95kPelPD2"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f52.google.com ([209.85.192.52]:54044 "EHLO
-	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753700AbaKZP1r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 10:27:47 -0500
-Content-Disposition: inline
-In-Reply-To: <20141124212506.GA1685@developer>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom1=k=KP3csObfBPRqDQSWGyRrJUjw69NW04YB5RppcMw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Magdalena Dobosz <maj.dobosz@gmail.com>
+Cc: dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
+On 11/25/2014 10:07 PM, Viresh Kumar wrote:
+> On 25 November 2014 at 22:51, Magdalena Dobosz <maj.dobosz@gmail.com> wrote:
+>> Hi,
+>> I was analyzing the code and behaviour of cpufrequtils (kernel 3.13).
+>> I noticed that the value reported by cpufreq-info as the frequency
+>> "asserted by call to hardware" (exported to sysfs as
+>> "cpuinfo_cur_freq") is always the same as the value reported as the
+>> frequency requested by a governor (exported to sysfs as "freq", stored
+>> in policy->cur).
+>> It was not the case for kernel 3.2 (these two values tend to differ).
+>>
+>> I found a reason: while using acpi-cpufreq driver, the value reported
+>> as hardware frequency is retrieved using  get_cur_freq_on_cpu function
+>> (defined in acpi-cpufreq). Now, in kernel version 3.2 this function
+>> reads a value from MSR_IA32_PERF_STATUS, while in kernel 3.13 it reads
+>> MSR_IA32_PERF_CTL.
+>> It is a result of the patch shown below:
+>> https://lists.ubuntu.com/archives/kernel-team/2013-June/029493.html
+>>
+>> It looks like a bug for me - we take a requested frequency (control
+>> register) and we report it as "cpuinfo_cur_freq - Current frequency of
+>> the CPU as obtained from the hardware, in KHz. This is the frequency
+>> the CPU actually runs at." (as desribed in cpufrequtils documentation:
+>> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt". I
+>> believe we should read status register (MSR_IA32_PERF_STATUS) instead.
+>
+> Fixed list and cc'd few more.
+>
+> This is what Len Brown said to that patch:
+>
+> Ack -- MSR_IA32_PERF_STATUS is ill-conceived.  It is un-reliable
+> by its very definition.  Any code that depends on it should be questioned...
+>
+> @Dirk: Can you help ?
 
---g7w8+K/95kPelPD2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Not really. This issue is one of the reasons that intel_pstate returns a
+measured/effective frequency.  There is no way that I know of to get the
+instantaneous frequency that the core is running at in the presence of
+hardware coordination and idle.  The best you can do is measure the effective
+frequency over a sample time.  This is what turbostat and intel_pstate
+report.
 
-Rui,
+--Dirk
 
+>
 
-On Mon, Nov 24, 2014 at 05:25:06PM -0400, Eduardo Valentin wrote:
->=20
-> Hello Rui,
->=20
-> Please pull from
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-therma=
-l.git fixes
->=20
-
-
-Have you had the time to have a look in this pull request? I am not sure
-if you got your environment working yet.
-
-> to receive thermal-soc updates for v3.18-rc7 with top-most
->=20
-> d3e19567fa85e1a0dab02205b89b2908084ecadd:
->=20
->   thermal: Exynos: Deletion of unnecessary checks before two function cal=
-ls (2014-11-21 15:20:17 -0400)
->=20
-> on top of commit fc14f9c1272f62c3e8d01300f52467c0d9af50f9:
->=20
->   Linux 3.18-rc5 (2014-11-16 16:36:20 -0800)
->=20
-> Specifics:
->=20
-> In this -rc still very minor changes:
->  - Lee Jones fixes compilation warning in sti thermal driver;
->  - Marjus Elfring removes unnecessary checks in exynos thermal driver
->    (as per coccinelle); and
->  - Now we always update cpufreq policies, and thus get (hopefully) always=
- in sync with cpufreq,
->    thanks to Yadwinder.=20
->=20
-> BR,
->=20
-> Eduardo Valentin
->=20
-> ----------------------------------------------------------------
-> Lee Jones (1):
->       thermal: sti: Ignore suspend/resume functions when !PM_SLEEP
->=20
-> Markus Elfring (1):
->       thermal: Exynos: Deletion of unnecessary checks before two function=
- calls
->=20
-> Yadwinder Singh Brar (1):
->       thermal: cpu_cooling: Update always cpufreq policy with thermal con=
-straints
->=20
->  drivers/thermal/cpu_cooling.c                   | 37 ++++++++++++++-----=
-------
->  drivers/thermal/samsung/exynos_thermal_common.c |  9 ++----
->  drivers/thermal/st/st_thermal.c                 |  3 ++
->  3 files changed, 27 insertions(+), 22 deletions(-)
-
-
-
---g7w8+K/95kPelPD2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUdfFfAAoJEMLUO4d9pOJWk3wIAJ4i5/yjOUCa/kNLLcMFAdAB
-nXlh3QeZAcG9xhmVkbuxEKHVpoMjha+QLCQMfHSoF6pc8TXAGbLxGyqYQ5qqNkY6
-9AICoxmCbtXd7QoZrfqaDufZGsIdnUMgZdN4HgocdOEg0McmTvXMkLlhvCdZgY17
-7AW1/QBC94TckuhlgvMOyFfhy6jrgCSQtYyH5PpvcBb3QK+TGt0mt7o04LZTi+DQ
-oRSTPI9h0ZP1RV27HIAHh8RmPOKTCtmgcNUsY1Fquij1V1PrUtSytarN8HiPHxm2
-2VQp8y00QibiF4NHh2LR4SgPQnAhE0XqgW7ebDVK1FcOJi0so8h43xF7G9ciM5c=
-=DYM+
------END PGP SIGNATURE-----
-
---g7w8+K/95kPelPD2--
