@@ -1,84 +1,34 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v10 07/10] qcom: cpuidle: Add cpuidle driver for QCOM
- cpus
-Date: Wed, 26 Nov 2014 11:04:09 +0100
-Message-ID: <5475A599.1010601@linaro.org>
-References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org> <1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Wed, 26 Nov 2014 11:08:43 +0100
+Message-ID: <CABgxDoJoVNxXp0qXKKofbOywvMV-=4vBnABq+y6kwgCkaFWnQg@mail.gmail.com>
+References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
+	<1416918506-9366-2-git-send-email-romain.perier@gmail.com>
+	<20141125144007.9904BC44343@trevor.secretlab.ca>
+	<20141125145410.GD19910@localhost>
+	<CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
+	<20141125171234.GH7712@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f46.google.com ([209.85.192.46]:58485 "EHLO
+	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbaKZKIo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 05:08:44 -0500
+In-Reply-To: <20141125171234.GH7712@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, robh <robh@kernel.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Johan Hovold <johan@kernel.org>, Felipe Balbi <balbi@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Grant Likely <grant.likely@linaro.org>, Lee Jones <lee.jones@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 11/21/2014 07:03 PM, Lina Iyer wrote:
-> Add cpuidle driver interface to allow cpus to go into C-States. Use t=
-he
-> cpuidle DT interface, common across ARM architectures, to provide the
-> idle state information to the cpuidle framework.
->
-> Supported modes at this time are Standby and Standalone Power Collaps=
-e.
->
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+2014-11-25 18:12 GMT+01:00 Mark Brown <broonie@kernel.org>:
+> Yeah, given the amount of often late arriving disagreement I'd rather
+> let things cook for a while unless there are a lot of people being vocal
+> about this being what we want to go with.
 
-One nit and one comment below. Other than that:
+In other words, I need more reviews and more positives feedbacks about
+this serie (as far as people who were against the previous ones).
+For example, Feedbacks from Felipe Balbi and Lucas Stach would be welcome.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-[ ... ]
-
-> +static int qcom_cpu_stby(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv, int index)
-> +{
-> +	lpm_ops->standby(NULL);
-
-In my last comment I was referring about a check for entering=20
-successfully the idle state:
-
-	if (lpm_ops->standby(NULL))
-		return -1;
-
-> +	return index;
-> +}
-> +
-> +static int qcom_cpu_spc(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv, int index)
-> +{
-> +	lpm_ops->spc(NULL);
-> +
-> +	return index;
-> +}
-> +
-> +static struct cpuidle_driver qcom_cpuidle_driver =3D {
-> +	.name	=3D "qcom_cpuidle",
-> +};
-> +
-> +static const struct of_device_id qcom_idle_state_match[] =3D {
-> +	{ .compatible =3D "qcom,idle-state-stby", .data =3D qcom_cpu_stby},
-
-                                                                    ^^^=
-^
-		a missing space right before the closing bracket.
-
-> +	{ .compatible =3D "qcom,idle-state-spc", .data =3D qcom_cpu_spc },
-> +	{ },
-> +};
-> +
-
-Thanks!
-
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Romain
