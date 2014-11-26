@@ -1,34 +1,51 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v5 1/2] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Wed, 26 Nov 2014 11:08:43 +0100
-Message-ID: <CABgxDoJoVNxXp0qXKKofbOywvMV-=4vBnABq+y6kwgCkaFWnQg@mail.gmail.com>
-References: <1416918506-9366-1-git-send-email-romain.perier@gmail.com>
-	<1416918506-9366-2-git-send-email-romain.perier@gmail.com>
-	<20141125144007.9904BC44343@trevor.secretlab.ca>
-	<20141125145410.GD19910@localhost>
-	<CABgxDoKUecAd00X0znkGiQncF4MwnLAM4BFV2AV_oMPF=4G7UA@mail.gmail.com>
-	<20141125171234.GH7712@sirena.org.uk>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH RFC 0/3] power: mxs_power: add driver for mxs power subsystem
+Date: Wed, 26 Nov 2014 11:26:03 +0100
+Message-ID: <5475AABB.1050303@i2se.com>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f46.google.com ([209.85.192.46]:58485 "EHLO
-	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbaKZKIo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 05:08:44 -0500
-In-Reply-To: <20141125171234.GH7712@sirena.org.uk>
+Received: from mout.kundenserver.de ([212.227.126.187]:50520 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbaKZK1P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 05:27:15 -0500
+In-Reply-To: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, robh <robh@kernel.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Johan Hovold <johan@kernel.org>, Felipe Balbi <balbi@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Grant Likely <grant.likely@linaro.org>, Lee Jones <lee.jones@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <festevam@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-2014-11-25 18:12 GMT+01:00 Mark Brown <broonie@kernel.org>:
-> Yeah, given the amount of often late arriving disagreement I'd rather
-> let things cook for a while unless there are a lot of people being vocal
-> about this being what we want to go with.
+> This patch series adds support for Freescale i.MX23, i.xM28 power subsystem.
+>
+> The idea for this driver was born in the discussion with Mark Rutland
+> about the mxs-regulator driver [1].
+>
+> The main use is to trigger driver probing of the underlying DT child nodes
+> like on-chip regulators. But it's also the first step for cpufreq-dt support.
+>
+> [1] - https://lkml.org/lkml/2014/9/29/283
+>
+> Stefan Wahren (3):
+>   DT: add binding for mxs power subsystem
+>   power: mxs_power: add driver for mxs power subsystem
+>   ARM: dts: enable power subsystem for i.MX28
+>
+>  .../devicetree/bindings/power/mxs_power.txt        |   23 ++
+>  arch/arm/boot/dts/imx28.dtsi                       |    6 +-
+>  drivers/power/Kconfig                              |    8 +
+>  drivers/power/Makefile                             |    1 +
+>  drivers/power/mxs_power.c                          |  226 ++++++++++++++++++++
+>  5 files changed, 263 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/mxs_power.txt
+>  create mode 100644 drivers/power/mxs_power.c
+>
+> --
+> 1.7.9.5
+>
 
-In other words, I need more reviews and more positives feedbacks about
-this serie (as far as people who were against the previous ones).
-For example, Feedbacks from Felipe Balbi and Lucas Stach would be welcome.
+Are there any other questions or suggestions about these patch series?
 
-Thanks,
-Romain
+Stefan
+
