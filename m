@@ -1,178 +1,201 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 26 Nov 2014 12:19:00 +0100
-Message-ID: <5475B724.80202@linaro.org>
-References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org> <1414194024-55547-3-git-send-email-lina.iyer@linaro.org> <54662622.2020307@linaro.org> <20141119174339.GA891@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2] thermal: exynos: add special clock support
+Date: Wed, 26 Nov 2014 10:45:06 -0400
+Message-ID: <20141126144504.GA3808@developer>
+References: <1416963070-5806-1-git-send-email-a.kesavan@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:55043 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbaKZLTG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 06:19:06 -0500
-Received: by mail-wi0-f178.google.com with SMTP id hi2so4570413wib.11
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 03:19:04 -0800 (PST)
-In-Reply-To: <20141119174339.GA891@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1416963070-5806-1-git-send-email-a.kesavan@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, amit.daniel@samsung.com, kesavan.abhilash@gmail.com, l.majewski@samsung.com, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
-
-On 11/19/2014 06:43 PM, Lina Iyer wrote:
-> On Fri, Nov 14 2014 at 08:56 -0700, Daniel Lezcano wrote:
->> On 10/25/2014 01:40 AM, Lina Iyer wrote:
->
->>> +/**
->>> + * spm_set_low_power_mode() - Configure SPM start address for low
->>> power mode
->>> + * @mode: SPM LPM mode to enter
->>> + */
->>> +int qcom_spm_set_low_power_mode(enum pm_sleep_mode mode)
->>> +{
->>> +    struct spm_driver_data *drv =3D this_cpu_ptr(&cpu_spm_drv);
->>> +    u32 start_index;
->>> +    u32 ctl_val;
->>> +
->>> +    if (!drv->available)
->>> +        return -ENXIO;
->>
->> really weird how this was initialized.
->>
->> Are you sure 'drv' is not NULL if it is not available ? (see below)
->>
-> 'drv' has some data that I need to decode the register address. Hence
-> cant have that NULL. Therefore, the available flag.
->
-> ...
->
->> +static int spm_dev_probe(struct platform_device *pdev)
->>> +{
->>> +    struct spm_driver_data *drv;
->>> +    struct resource *res;
->>> +    const struct of_device_id *match_id;
->>> +    void __iomem *addr;
->>> +    const u32 *seq_data;
->>> +    int cpu =3D -EINVAL;
->>> +    static bool cpuidle_drv_init;
->>> +
->>> +    drv =3D spm_get_drv(pdev, &cpu);
->>> +    if (!drv)
->>> +        return -EINVAL;
->>> +
->>> +    res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>> +    drv->reg_base =3D devm_ioremap_resource(&pdev->dev, res);
->>> +    if (IS_ERR(drv->reg_base))
->>> +        return PTR_ERR(drv->reg_base);
->>> +
->>> +    match_id =3D of_match_node(spm_match_table, pdev->dev.of_node)=
-;
->>> +    if (!match_id)
->>> +        return -ENODEV;
->>> +
->>> +    drv->reg_data =3D match_id->data;
->>> +    if (!drv->reg_data)
->>> +        return -EINVAL;
->>> +
->>> +    /* Write the SPM sequences, first.. */
->>> +    addr =3D drv->reg_base +
->>> drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
->>> +    seq_data =3D (const u32 *)drv->reg_data->seq;
->>> +    __iowrite32_copy(addr, seq_data, ARRAY_SIZE(drv->reg_data->seq=
-)/4);
->>> +
->>> +    /* ..and then, the control registers.
->>> +     * On some SoC's if the control registers are written first an=
-d
->>> if the
->>> +     * CPU was held in reset, the reset signal could trigger the S=
-PM
->>> state
->>> +     * machine, before the sequences are completely written.
->>> +     */
->>> +    spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
->>> +    spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
->>> +    spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_=
-dly);
->>> +
->>> +    spm_register_write(drv, SPM_REG_PMIC_DATA_0,
->>> +                drv->reg_data->pmic_data[0]);
->>> +    spm_register_write(drv, SPM_REG_PMIC_DATA_1,
->>> +                drv->reg_data->pmic_data[1]);
->>> +
->>> +    /**
->>> +     * Ensure all observers see the above register writes before t=
-he
->>> +     * cpuidle driver is allowed to use the SPM.
->>> +     */
->>> +    wmb();
->>> +    drv->available =3D true;
->>
->> IMO if you have to do that, that means there is something wrong with
->> how is initialized the driver.
->>
->> It should be drv =3D=3D NULL =3D> not available
->>
-> drv has the register base that I dont want to pass seprately.
->
->>> +
->>> +    if ((cpu > -1) && !cpuidle_drv_init) {
->>> +        platform_device_register(&qcom_cpuidle_device);
->>> +        cpuidle_drv_init =3D true;
->>> +    }
->>
->> 'cpu' is always > -1.
->>
-> OK. I was hoping to use -1 for not a cpu (i.e, L2) SPM. For now, I wi=
-ll
-> change.
->
->
->> If the 'spm_get_drv' succeed, cpu is no longer equal to -EINVAL.
->> Otherwise we do not reach this point because we return right after
->> spm_get_drv with an error.
->>
->> Adding the platform_device_register depending in a static variable i=
-s
->> not very nice. Why not add it explicitely in a separate init routine
->> we know it will be called one time (eg. at the same place than cpufr=
-eq
->> is) ?
->>
-> We want to register the cpuidle device only if any of the SPM devices
-> have been probed.
->
-> Ideally, Stephen and I would like to register cpuidle device separate=
-ly
-> for each CPU SPM, when it is probed, so we would invoke cpuidle drive=
-r
-> and thereby the low power modes only for those cpus. However, the
-> complexity to do that, AFAICS, is very complex. I would need to chang=
-e
-> quite a bit of the framework and in the cpuidle driver, I may have to
-> stray from the recommended format.
->
-> Here I set up cpuidle device, when I know atleast 1 cpu is ready to
-> allow low power modes.
-
-Yes, instead of using the generic cpuidle_register function, you can us=
-e=20
-the low level functions for that.
-
-One call to cpuidle_register_driver in a single place and then=20
-cpuidle_register_device for each spm probe.
-
-Wouldn't make sense ?
-
-   -- Daniel
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
+Abhilash,
+
+On Wed, Nov 26, 2014 at 06:21:10AM +0530, Abhilash Kesavan wrote:
+> Exynos7 has a special clock required for the functional operation
+> of the TMU that is not present in earlier SoCs. Add support for
+> this clock and update the binding documentation.
+>=20
+> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> ---
+> Changes since v1:
+> 	- Added a per-soc flag to indicate the presence of special clock
+> 	- Changed the name of special clock from "tmu_sclk" to "sclk"
+> 	- Fixed the error handling for sclk
+>=20
+> Tested on 5420 and 5800 based chromebooks, no change in existing behavior.
+>=20
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |    3 ++
+>  drivers/thermal/samsung/exynos_tmu.c               |   31 ++++++++++++++=
+++----
+>  2 files changed, 29 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt=
+ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> index ae738f5..acf4705 100644
+> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> @@ -32,10 +32,13 @@
+>  - clocks : The main clocks for TMU device
+>  	-- 1. operational clock for TMU channel
+>  	-- 2. optional clock to access the shared registers of TMU channel
+> +	-- 3. optional special clock for functional operation
+>  - clock-names : Thermal system clock name
+>  	-- "tmu_apbif" operational clock for current TMU channel
+>  	-- "tmu_triminfo_apbif" clock to access the shared triminfo register
+>  		for current TMU channel
+> +	-- "sclk" clock for functional operation of the current TMU
+> +		channel
+>  - vtmu-supply: This entry is optional and provides the regulator node su=
+pplying
+>  		voltage to TMU. If needed this entry can be placed inside
+>  		board/platform specific dts file.
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsu=
+ng/exynos_tmu.c
+> index d44d91d..8ed8409 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -123,11 +123,14 @@
+>   * @base: base address of the single instance of the TMU controller.
+>   * @base_second: base address of the common registers of the TMU control=
+ler.
+>   * @irq: irq number of the TMU controller.
+> + * @needs_sclk: SoC specific flag indicating that sclk is required for
+> +	functional operation of the TMU controller.
+>   * @soc: id of the SOC type.
+>   * @irq_work: pointer to the irq work structure.
+>   * @lock: lock to implement synchronization.
+>   * @clk: pointer to the clock structure.
+>   * @clk_sec: pointer to the clock structure for accessing the base_secon=
+d.
+> + * @sclk: pointer to the clock structure for accessing the tmu special c=
+lock.
+>   * @temp_error1: fused value of the first point trim.
+>   * @temp_error2: fused value of the second point trim.
+>   * @regulator: pointer to the TMU regulator structure.
+> @@ -144,10 +147,11 @@ struct exynos_tmu_data {
+>  	void __iomem *base;
+>  	void __iomem *base_second;
+>  	int irq;
+> +	bool needs_sclk;
+>  	enum soc_type soc;
+>  	struct work_struct irq_work;
+>  	struct mutex lock;
+> -	struct clk *clk, *clk_sec;
+> +	struct clk *clk, *clk_sec, *sclk;
+>  	u8 temp_error1, temp_error2;
+>  	struct regulator *regulator;
+>  	struct thermal_sensor_conf *reg_conf;
+> @@ -883,10 +887,24 @@ static int exynos_tmu_probe(struct platform_device =
+*pdev)
+>  		goto err_clk_sec;
+>  	}
+> =20
+> +	if (data->needs_sclk) {
+
+Based on the trend we see from Bartlomiej's and Lukasz' works, you
+should be asking for SoC version, not adding a flag. Can you please
+crosscheck with them?
+
+Cheers,
+
+Eduardo Valentin
+
+> +		data->sclk =3D devm_clk_get(&pdev->dev, "sclk");
+> +		if (IS_ERR(data->sclk)) {
+> +			dev_err(&pdev->dev, "Failed to get sclk\n");
+> +			goto err_clk;
+> +		} else {
+> +			ret =3D clk_prepare_enable(data->sclk);
+> +			if (ret) {
+> +				dev_err(&pdev->dev, "Failed to enable sclk\n");
+> +				goto err_clk;
+> +			}
+> +		}
+> +	}
+> +
+>  	ret =3D exynos_tmu_initialize(pdev);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to initialize TMU\n");
+> -		goto err_clk;
+> +		goto err_sclk;
+>  	}
+> =20
+>  	exynos_tmu_control(pdev, true);
+> @@ -896,7 +914,7 @@ static int exynos_tmu_probe(struct platform_device *p=
+dev)
+>  				sizeof(struct thermal_sensor_conf), GFP_KERNEL);
+>  	if (!sensor_conf) {
+>  		ret =3D -ENOMEM;
+> -		goto err_clk;
+> +		goto err_sclk;
+>  	}
+>  	sprintf(sensor_conf->name, "therm_zone%d", data->id);
+>  	sensor_conf->read_temperature =3D (int (*)(void *))exynos_tmu_read;
+> @@ -928,7 +946,7 @@ static int exynos_tmu_probe(struct platform_device *p=
+dev)
+>  	ret =3D exynos_register_thermal(sensor_conf);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to register thermal interface\n");
+> -		goto err_clk;
+> +		goto err_sclk;
+>  	}
+>  	data->reg_conf =3D sensor_conf;
+> =20
+> @@ -936,10 +954,12 @@ static int exynos_tmu_probe(struct platform_device =
+*pdev)
+>  		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+> -		goto err_clk;
+> +		goto err_sclk;
+>  	}
+> =20
+>  	return 0;
+> +err_sclk:
+> +	clk_disable_unprepare(data->sclk);
+>  err_clk:
+>  	clk_unprepare(data->clk);
+>  err_clk_sec:
+> @@ -956,6 +976,7 @@ static int exynos_tmu_remove(struct platform_device *=
+pdev)
+> =20
+>  	exynos_tmu_control(pdev, false);
+> =20
+> +	clk_disable_unprepare(data->sclk);
+>  	clk_unprepare(data->clk);
+>  	if (!IS_ERR(data->clk_sec))
+>  		clk_unprepare(data->clk_sec);
+> --=20
+> 1.7.9.5
+>=20
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUdedmAAoJEMLUO4d9pOJW+44H/jNnu1Q76o+v1bZUOKDN08xW
+X8R0LiO9q0Pj/PgqLMClYRi0f4hVs3gQ2J0YR82oolpXYekn2wGiWG/ELVhhDEtd
+TETvKwmMqaN19GPNM5k710zNlavFrFxx3+i+ZgWauJkiEivCaDWjXxDXcMrJYI8N
+j9nWHDZtgnyU5aW0kbad9iqGEDg+4ge88VYUZfLB7CuCb7xfhFP3RWYbAvchAr2i
+B/gZIl+iveqhZterKKa+9tRLwAzsBPCl3hHR9EiQAW5mripXCHWDszdrCvg/VVgR
+FstWuq9mkTyt/a3Pj+n2rgNfX+blw1zvUXVZyF83hrqYDGklL8977dQ/iCdmEFk=
+=9p2F
+-----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
