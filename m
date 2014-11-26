@@ -1,31 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
- cpufreq table
-Date: Wed, 26 Nov 2014 11:32:17 +0530
-Message-ID: <CAKohpon=mHNae2ZC+Yi4yTv_Oy=yWHn2RrMBzrcdJVLyEW6W_w@mail.gmail.com>
-References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
-	<2189780.D9n5NYrXn8@vostro.rjw.lan>
-	<1447952.pbyqNN4RJG@vostro.rjw.lan>
-	<CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com>
+Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
+ "actual frequency"
+Date: Wed, 26 Nov 2014 11:37:30 +0530
+Message-ID: <CAKohpom1=k=KP3csObfBPRqDQSWGyRrJUjw69NW04YB5RppcMw@mail.gmail.com>
+References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:56159 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbaKZGCS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 01:02:18 -0500
-Received: by mail-oi0-f46.google.com with SMTP id h136so1541870oig.5
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 22:02:17 -0800 (PST)
-In-Reply-To: <CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Magdalena Dobosz <maj.dobosz@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On 26 November 2014 at 11:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 26 November 2014 at 03:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> And what bad things are going to happen if this is not pushed for 3.18?
+On 25 November 2014 at 22:51, Magdalena Dobosz <maj.dobosz@gmail.com> wrote:
+> Hi,
+> I was analyzing the code and behaviour of cpufrequtils (kernel 3.13).
+> I noticed that the value reported by cpufreq-info as the frequency
+> "asserted by call to hardware" (exported to sysfs as
+> "cpuinfo_cur_freq") is always the same as the value reported as the
+> frequency requested by a governor (exported to sysfs as "freq", stored
+> in policy->cur).
+> It was not the case for kernel 3.2 (these two values tend to differ).
 >
-> This is what Eduardo reported in one of the mails:
+> I found a reason: while using acpi-cpufreq driver, the value reported
+> as hardware frequency is retrieved using  get_cur_freq_on_cpu function
+> (defined in acpi-cpufreq). Now, in kernel version 3.2 this function
+> reads a value from MSR_IA32_PERF_STATUS, while in kernel 3.13 it reads
+> MSR_IA32_PERF_CTL.
+> It is a result of the patch shown below:
+> https://lists.ubuntu.com/archives/kernel-team/2013-June/029493.html
+>
+> It looks like a bug for me - we take a requested frequency (control
+> register) and we report it as "cpuinfo_cur_freq - Current frequency of
+> the CPU as obtained from the hardware, in KHz. This is the frequency
+> the CPU actually runs at." (as desribed in cpufrequtils documentation:
+> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt". I
+> believe we should read status register (MSR_IA32_PERF_STATUS) instead.
 
-https://lkml.org/lkml/2014/11/21/451
+Fixed list and cc'd few more.
+
+This is what Len Brown said to that patch:
+
+Ack -- MSR_IA32_PERF_STATUS is ill-conceived.  It is un-reliable
+by its very definition.  Any code that depends on it should be questioned...
+
+@Dirk: Can you help ?
