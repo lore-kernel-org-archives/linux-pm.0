@@ -1,92 +1,81 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 09/10] arm: dts: qcom: Add idle states device nodes for 8084
-Date: Wed, 26 Nov 2014 15:28:29 -0700
-Message-ID: <1417040910-43290-10-git-send-email-lina.iyer@linaro.org>
-References: <1417040910-43290-1-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating cpufreq table
+Date: Wed, 26 Nov 2014 23:57:04 +0100
+Message-ID: <2967826.8JoVzVls96@vostro.rjw.lan>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org> <CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com> <20141126151030.GA3925@developer>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:49470 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753225AbaKZW3D (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 17:29:03 -0500
-Received: by mail-pa0-f44.google.com with SMTP id et14so3690834pad.17
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 14:29:02 -0800 (PST)
-In-Reply-To: <1417040910-43290-1-git-send-email-lina.iyer@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64853 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750793AbaKZWft (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 17:35:49 -0500
+In-Reply-To: <20141126151030.GA3925@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8084.
+On Wednesday, November 26, 2014 11:10:32 AM Eduardo Valentin wrote:
+> 
+> --T4sUOijqQbZv57TR
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
+> 
+> 
+> Hello Viresh, Rafael,
+> 
+> On Wed, Nov 26, 2014 at 11:27:42AM +0530, Viresh Kumar wrote:
+> > On 26 November 2014 at 03:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > And what bad things are going to happen if this is not pushed for 3.18?
+> >=20
+> > This is what Eduardo reported in one of the mails:
+> >=20
+> > ---
+> >=20
+> > As an example, I am taking the ti-soc-thermal, but we already have other
+> > of-thermal based drivers. Booting with this patch ti-soc-thermal
+> > (of-based boot) loads fine, but the cpu_cooling never gets bound to the
+> > thermal zone.
+> >=20
+> > The thing is that the bind may happen before cpufreq-dt code loads the
+> > cpufreq driver, and when cpu_cooling is checking what is the max freq,
+> > by using cpufreq table, it won't be able to do it, as there is no table.
+> >=20
+> > While, without the patch, it will use wrong in the binding, but after
+> > it gets bound, and cpufreq loads, the max will be used correctly.
+> >=20
+> > ----
+> >=20
+> > And so it looked like things aren't going to work smoothly in 3.18
+> > and so I thought we should get it in.
+> >=20
+> 
+> The bug exists, it is there for 3.18. But also, as I explained in that
+> thread, the current code is able to initialize the of cooling device and
+> to register it in its thermal zone. But that works by lucky because we
+> do not have the proper return code checks in thermal core.
+> 
+> > But probably the problem will be worst only after applying Lukasz
+> > patchset?
+> 
+> The bug gets exposed by his patch.
+> 
+> >=20
+> > @Eduardo: Do you want Rafael to apply this for 3.18? or 3.19 will
+> > work as well ?
+> 
+> 
+> I believe, for this case, 3.19 is best option. Looks like we have a
+> possible API massage coming, so, targetting 3.18 would be rushy. I'd
+> rather think of a proper way to fix this, scalable and that makes
+> sense to everybody, even if takes extra merge window, than rushing for a
+> fix that we may need to revisit it again in near future.
 
-Support standby and standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+That's my view as well.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
----
- arch/arm/boot/dts/qcom-apq8084.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 71182bf..7172edf 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -22,6 +22,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@1 {
-@@ -32,6 +33,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@2 {
-@@ -42,6 +44,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@3 {
-@@ -52,6 +55,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -59,6 +63,22 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
-+
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
 -- 
-2.1.0
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
