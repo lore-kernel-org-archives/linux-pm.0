@@ -1,35 +1,134 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: CPUFreq platform device registration question
-Date: Wed, 26 Nov 2014 12:08:16 +0530
-Message-ID: <CAKohpon07w1HX7nGu2ZDBeZ-3r9bvgtS4z2JTQj0A9n3omaTPA@mail.gmail.com>
-References: <CAM4voamm0hw8h=XA1iBy62n3paY48G78bsG=hHf=4Cp+FoDPjg@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 1/4] thermal: of: Extend of-thermal.c to provide number
+ of trip points
+Date: Wed, 26 Nov 2014 09:28:29 +0100
+Message-ID: <20141126092829.41127e8b@amdc2363>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
+ <1416500488-7232-2-git-send-email-l.majewski@samsung.com>
+ <20141125060421.GA13591@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f175.google.com ([209.85.214.175]:57441 "EHLO
-	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbaKZGiR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 01:38:17 -0500
-Received: by mail-ob0-f175.google.com with SMTP id wp4so1727592obc.34
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 22:38:16 -0800 (PST)
-In-Reply-To: <CAM4voamm0hw8h=XA1iBy62n3paY48G78bsG=hHf=4Cp+FoDPjg@mail.gmail.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:50877 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbaKZI2m convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:28:42 -0500
+In-reply-to: <20141125060421.GA13591@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Chander Kashyap <k.chander@samsung.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
 
-On 26 November 2014 at 11:00, Abhilash Kesavan
-<kesavan.abhilash@gmail.com> wrote:
-> I am looking to add CPUFreq support for an arm64 based SoC (Exynos7).
-> I have been using the generic cpufreq dt driver and have a question
-> regarding this. For 32 bit platforms, we have been registering a dummy
-> platform device in machine specific directories (like
-> arch/arm/mach-exynos/exynos.c). However, since we do not have such
-> directories for arm64, can you tell me what the best way to handle
-> this would be.
+Hi Eduardo,
 
-We are doing rounds and rounds for these issues. We need to get this
-from DT someway.
+>=20
+> Lukasz,
+>=20
+> On Thu, Nov 20, 2014 at 05:21:25PM +0100, Lukasz Majewski wrote:
+> > This patch extends the of-thermal.c to provide information about
+> > number of available trip points.
+> >=20
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > ---
+> > Changes for v2:
+> > - Provide detailed (doxygen like) description of the
+> > of_thermal_get_ntrips() method
+> > - Check for data pointer not being NULL
+> > ---
+> >  drivers/thermal/of-thermal.c   | 20 ++++++++++++++++++++
+> >  drivers/thermal/thermal_core.h |  5 +++++
+> >  2 files changed, 25 insertions(+)
+> >=20
+> > diff --git a/drivers/thermal/of-thermal.c
+> > b/drivers/thermal/of-thermal.c index b7982f0..7170822 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -112,6 +112,26 @@ static int of_thermal_get_temp(struct
+> > thermal_zone_device *tz, return
+> > data->ops->get_temp(data->sensor_data, temp); }
+> > =20
+> > +/**
+> > + * of_thermal_get_ntrips - function to export number of available
+> > trip
+> > + *			   points.
+> > + * @tz: pointer to a thermal zone
+> > + *
+> > + * This function is a globally visible wrapper to get number of
+> > trip points
+> > + * stored in the local struct __thermal_zone
+> > + *
+> > + * Return: number of available trip points, -ENODEV when data not
+> > available
+> > + */
+> > +int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+> > +{
+> > +	struct __thermal_zone *data =3D tz->devdata;
+> > +
+> > +	if (!data || IS_ERR(data))
+> > +		return -ENODEV;
+> > +
+> > +	return data->ntrips;
+> > +}
+> > +
+>=20
+> Missing
+> EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
 
-The easiest is to create a file in drivers/cpufreq for exynos 7 to create this
-device for you.
+OK
+
+>=20
+> >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
+> > int trip, enum thermal_trend *trend)
+> >  {
+> > diff --git a/drivers/thermal/thermal_core.h
+> > b/drivers/thermal/thermal_core.h index d15d243..c3c7b82 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -89,9 +89,14 @@ static inline void
+> > thermal_gov_user_space_unregister(void) {} #ifdef CONFIG_THERMAL_OF
+> >  int of_parse_thermal_zones(void);
+> >  void of_thermal_destroy_zones(void);
+> > +int of_thermal_get_ntrips(struct thermal_zone_device *);
+> >  #else
+> >  static inline int of_parse_thermal_zones(void) { return 0; }
+> >  static inline void of_thermal_destroy_zones(void) { }
+> > +static inline int of_thermal_get_ntrips(struct thermal_zone_device
+> > *)
+>=20
+> You need to declare the parameter name with a name
+> ---------------^ .
+>=20
+> > +{
+>=20
+> This produces a compilation error if CONFIG_THERMAL_OF is not set:
+> In file included from drivers/thermal/step_wise.c:28:0:
+> drivers/thermal/thermal_core.h: In function =E2=80=98of_thermal_get_n=
+trips=E2=80=99:
+> drivers/thermal/thermal_core.h:96:48: error: parameter name omitted
+>  static inline int of_thermal_get_ntrips(struct thermal_zone_device *=
+)
+>=20
+
+Good point. Thanks for check.
+
+>=20
+>=20
+> > +	return 0;
+> > +}
+> >  #endif
+> > =20
+> >  #endif /* __THERMAL_CORE_H__ */
+> > --=20
+> > 2.0.0.rc2
+> >=20
+
+
+
+--=20
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
