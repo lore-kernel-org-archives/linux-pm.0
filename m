@@ -1,237 +1,182 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v10 07/10] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Wed, 26 Nov 2014 17:59:20 +0000
-Message-ID: <20141126175920.GB4809@red-moon>
-References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
- <1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 4/7] cpufreq-dt: register cooling device from ->usable()
+ callback
+Date: Wed, 26 Nov 2014 13:59:43 -0400
+Message-ID: <20141126175941.GE1826@developer>
+References: <cover.1416980447.git.viresh.kumar@linaro.org>
+ <89d112f34aaecd8c90486617d57ee5d605678d56.1416980448.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wchHw8dVAp53YPj8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40026 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753334AbaKZR7b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 12:59:31 -0500
+Received: from mail-qa0-f48.google.com ([209.85.216.48]:33907 "EHLO
+	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbaKZR7v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 12:59:51 -0500
+Received: by mail-qa0-f48.google.com with SMTP id v10so2288564qac.35
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 09:59:51 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
+In-Reply-To: <89d112f34aaecd8c90486617d57ee5d605678d56.1416980448.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com
 
-On Fri, Nov 21, 2014 at 06:03:54PM +0000, Lina Iyer wrote:
-> Add cpuidle driver interface to allow cpus to go into C-States. Use the
 
-"idle states" please.
+--wchHw8dVAp53YPj8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> cpuidle DT interface, common across ARM architectures, to provide the
-> idle state information to the cpuidle framework.
-> 
-> Supported modes at this time are Standby and Standalone Power Collapse.
-> 
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+On Wed, Nov 26, 2014 at 11:22:59AM +0530, Viresh Kumar wrote:
+> Currently we are calling of_cpufreq_cooling_register() from ->init() call=
+back.
+> At this point of time cpufreq driver's policy isn't completely ready to b=
+e used
+> as few of its fields/structure/pointers aren't yet initialized.
+>=20
+> Because of_cpufreq_cooling_register() tries to access policy with help of
+> cpufreq_cpu_get() and then tries to get freq-table as well, these calls f=
+ail.
+>=20
+> To fix this, register the cooling device after the policy is ready to be =
+used.
+> And the right callback for it is the newly added ->usable() one.
+>=20
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Reviewed-by: Eduardo Valentin <edubezval@gmail.com>
+Tested-by: Eduardo Valentin <edubezval@gmail.com>
+
 > ---
->  .../bindings/arm/msm/qcom,idle-state.txt           | 81 ++++++++++++++++++++++
->  drivers/cpuidle/Kconfig.arm                        |  7 ++
->  drivers/cpuidle/Makefile                           |  1 +
->  drivers/cpuidle/cpuidle-qcom.c                     | 72 +++++++++++++++++++
->  4 files changed, 161 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
->  create mode 100644 drivers/cpuidle/cpuidle-qcom.c
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
-> new file mode 100644
-> index 0000000..ae1b07f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
-> @@ -0,0 +1,81 @@
-> +QCOM Idle States for cpuidle driver
-> +
-> +ARM provides idle-state node to define the cpuidle states, as defined in [1].
-> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
-> +states. Idle states have different enter/exit latency and residency values.
-> +The idle states supported by the QCOM SoC are defined as -
-> +
-> +    * Standby
-> +    * Retention
-> +    * Standalone Power Collapse (Standalone PC or SPC)
-> +    * Power Collapse (PC)
-> +
-> +Standby: Standby does a little more in addition to architectural clock gating.
-> +When the WFI instruction is executed the ARM core would gate its internal
-> +clocks. In addition to gating the clocks, QCOM cpus use this instruction as a
-> +trigger to execute the SPM state machine. The SPM state machine waits for the
-> +interrupt to trigger the core back in to active. This triggers the cache
-> +hierarchy to enter standby states, when all cpus are idle. An interrupt brings
-> +the SPM state machine out of its wait, the next step is to ensure that the
-> +cache hierarchy is also out of standby, and then the cpu is allowed to resume
-> +execution.
-> +
-> +Retention: Retention is a low power state where the core is clock gated and
-> +the memory and the registers associated with the core are retained. The
-> +voltage may be reduced to the minimum value needed to keep the processor
-> +registers active. The SPM should be configured to execute the retention
-> +sequence and would wait for interrupt, before restoring the cpu to execution
-> +state. Retention may have a slightly higher latency than Standby.
-> +
-> +Standalone PC: A cpu can power down and warmboot if there is a sufficient time
-> +between the time it enters idle and the next known wake up. SPC mode is used
-> +to indicate a core entering a power down state without consulting any other
-> +cpu or the system resources. This helps save power only on that core.  The SPM
-> +sequence for this idle state is programmed to power down the supply to the
-> +core, wait for the interrupt, restore power to the core, and ensure the
-> +system state including cache hierarchy is ready before allowing core to
-> +resume. Applying power and resetting the core causes the core to warmboot
-> +back into Elevation Level (EL) which trampolines the control back to the
-> +kernel. Entering a power down state for the cpu, needs to be done by trapping
-> +into a EL. Failing to do so, would result in a crash enforced by the warm boot
-> +code in the EL for the SoC. On SoCs with write-back L1 cache, the cache has to
-> +be flushed in s/w, before powering down the core.
-> +
-> +Power Collapse: This state is similar to the SPC mode, but distinguishes
-> +itself in that the cpu acknowledges and permits the SoC to enter deeper sleep
-> +modes. In a hierarchical power domain SoC, this means L2 and other caches can
-> +be flushed, system bus, clocks - lowered, and SoC main XO clock gated and
-> +voltages reduced, provided all cpus enter this state.  Since the span of low
-> +power modes possible at this state is vast, the exit latency and the residency
-> +of this low power mode would be considered high even though at a cpu level,
-> +this essentially is cpu power down. The SPM in this state also may handshake
-> +with the Resource power manager processor in the SoC to indicate a complete
-> +application processor subsystem shut down.
-> +
-> +The idle-state for QCOM SoCs are distinguished by the compatible property of
-> +the idle-states device node.
-> +The devicetree representation of the idle state should be -
-> +
-> +Required properties:
-> +
-> +- compatible: Must be one of -
-> +			"qcom,idle-state-stby",
-> +			"qcom,idle-state-ret",
-> +			"qcom,idle-state-spc",
-> +			"qcom,idle-state-pc",
-> +		and "arm,idle-state".
-> +
-> +Other required and optional properties are specified in [1].
-> +
-> +Example:
-> +
-> +	idle-states {
-> +		CPU_SPC: spc {
-> +			compatible = "qcom,idle-state-spc", "arm,idle-state";
-> +			entry-latency-us = <150>;
-> +			exit-latency-us = <200>;
-> +			min-residency-us = <2000>;
-> +		};
-> +	};
-> +
-> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> index 8c16ab2..e98993c 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -63,3 +63,10 @@ config ARM_MVEBU_V7_CPUIDLE
->  	depends on ARCH_MVEBU
->  	help
->  	  Select this to enable cpuidle on Armada 370, 38x and XP processors.
-> +
-> +config ARM_QCOM_CPUIDLE
-> +	bool "CPU Idle drivers for Qualcomm processors"
-> +	depends on ARCH_QCOM
-> +	select DT_IDLE_STATES
-> +	help
-> +	  Select this to enable cpuidle for QCOM processors
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index 4d177b9..6c222d5 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -17,6 +17,7 @@ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
->  obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
->  obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
->  obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        += cpuidle-exynos.o
-> +obj-$(CONFIG_ARM_QCOM_CPUIDLE)		+= cpuidle-qcom.o
->  
->  ###############################################################################
->  # MIPS drivers
-> diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle-qcom.c
-> new file mode 100644
-> index 0000000..1c1dcbc
-> --- /dev/null
-> +++ b/drivers/cpuidle/cpuidle-qcom.c
-> @@ -0,0 +1,72 @@
-> +/*
-> + * Copyright (c) 2014, Linaro Limited.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/cpuidle.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <soc/qcom/pm.h>
-> +#include "dt_idle_states.h"
-> +
-> +static struct qcom_cpu_pm_ops *lpm_ops;
-> +
-> +static int qcom_cpu_stby(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv, int index)
+>  drivers/cpufreq/cpufreq-dt.c | 51 +++++++++++++++++++++++++++-----------=
+------
+>  1 file changed, 32 insertions(+), 19 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 7374fc4..f7af5c8 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -186,7 +186,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  {
+>  	struct cpufreq_dt_platform_data *pd;
+>  	struct cpufreq_frequency_table *freq_table;
+> -	struct thermal_cooling_device *cdev;
+>  	struct device_node *np;
+>  	struct private_data *priv;
+>  	struct device *cpu_dev;
+> @@ -269,20 +268,6 @@ static int cpufreq_init(struct cpufreq_policy *polic=
+y)
+>  		goto out_free_priv;
+>  	}
+> =20
+> -	/*
+> -	 * For now, just loading the cooling device;
+> -	 * thermal DT code takes care of matching them.
+> -	 */
+> -	if (of_find_property(np, "#cooling-cells", NULL)) {
+> -		cdev =3D of_cpufreq_cooling_register(np, policy->related_cpus);
+> -		if (IS_ERR(cdev))
+> -			dev_err(cpu_dev,
+> -				"running cpufreq without cooling device: %ld\n",
+> -				PTR_ERR(cdev));
+> -		else
+> -			priv->cdev =3D cdev;
+> -	}
+> -
+>  	priv->cpu_dev =3D cpu_dev;
+>  	priv->cpu_reg =3D cpu_reg;
+>  	policy->driver_data =3D priv;
+> @@ -292,7 +277,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	if (ret) {
+>  		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+>  			ret);
+> -		goto out_cooling_unregister;
+> +		goto out_free_cpufreq_table;
+>  	}
+> =20
+>  	policy->cpuinfo.transition_latency =3D transition_latency;
+> @@ -305,8 +290,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> =20
+>  	return 0;
+> =20
+> -out_cooling_unregister:
+> -	cpufreq_cooling_unregister(priv->cdev);
+> +out_free_cpufreq_table:
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+>  out_free_priv:
+>  	kfree(priv);
+> @@ -324,7 +308,8 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
+>  {
+>  	struct private_data *priv =3D policy->driver_data;
+> =20
+> -	cpufreq_cooling_unregister(priv->cdev);
+> +	if (priv->cdev)
+> +		cpufreq_cooling_unregister(priv->cdev);
+>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+>  	clk_put(policy->clk);
+>  	if (!IS_ERR(priv->cpu_reg))
+> @@ -334,6 +319,33 @@ static int cpufreq_exit(struct cpufreq_policy *polic=
+y)
+>  	return 0;
+>  }
+> =20
+> +static void cpufreq_usable(struct cpufreq_policy *policy)
 > +{
-> +	lpm_ops->standby(NULL);
+> +	struct private_data *priv =3D policy->driver_data;
+> +	struct device_node *np =3D of_node_get(priv->cpu_dev->of_node);
 > +
-> +	return index;
+> +	if (WARN_ON(!np))
+> +		return;
+> +
+> +	/*
+> +	 * For now, just loading the cooling device;
+> +	 * thermal DT code takes care of matching them.
+> +	 */
+> +	if (of_find_property(np, "#cooling-cells", NULL)) {
+> +		priv->cdev =3D of_cpufreq_cooling_register(np,
+> +							 policy->related_cpus);
+> +		if (IS_ERR(priv->cdev)) {
+> +			dev_err(priv->cpu_dev,
+> +				"running cpufreq without cooling device: %ld\n",
+> +				PTR_ERR(priv->cdev));
+> +
+> +			priv->cdev =3D NULL;
+> +		}
+> +	}
+> +
+> +	of_node_put(np);
 > +}
 > +
-> +static int qcom_cpu_spc(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv, int index)
-> +{
-> +	lpm_ops->spc(NULL);
-> +
-> +	return index;
-> +}
+>  static struct cpufreq_driver dt_cpufreq_driver =3D {
+>  	.flags =3D CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+>  	.verify =3D cpufreq_generic_frequency_table_verify,
+> @@ -341,6 +353,7 @@ static struct cpufreq_driver dt_cpufreq_driver =3D {
+>  	.get =3D cpufreq_generic_get,
+>  	.init =3D cpufreq_init,
+>  	.exit =3D cpufreq_exit,
+> +	.usable =3D cpufreq_usable,
+>  	.name =3D "cpufreq-dt",
+>  	.attr =3D cpufreq_generic_attr,
+>  };
+> --=20
+> 2.0.3.693.g996b0fd
+>=20
 
-Check power down functions return codes please as Daniel already
-pointed out, this might skew stats and prevent debugging.
+--wchHw8dVAp53YPj8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> +static struct cpuidle_driver qcom_cpuidle_driver = {
-> +	.name	= "qcom_cpuidle",
-> +};
-> +
-> +static const struct of_device_id qcom_idle_state_match[] = {
-> +	{ .compatible = "qcom,idle-state-stby", .data = qcom_cpu_stby},
-> +	{ .compatible = "qcom,idle-state-spc", .data = qcom_cpu_spc },
-> +	{ },
-> +};
-> +
-> +static int qcom_cpuidle_probe(struct platform_device *pdev)
-> +{
-> +	struct cpuidle_driver *drv = &qcom_cpuidle_driver;
-> +	int ret;
-> +
-> +	lpm_ops = pdev->dev.platform_data;
-> +
-> +	/* Probe for other states, including standby */
-> +	ret = dt_init_idle_driver(drv, qcom_idle_state_match, 0);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return cpuidle_register(drv, NULL);
-> +}
-> +
-> +static struct platform_driver qcom_cpuidle_plat_driver = {
-> +	.probe	= qcom_cpuidle_probe,
-> +	.driver = {
-> +		.name = "qcom_cpuidle",
-> +	},
-> +};
-> +
-> +module_platform_driver(qcom_cpuidle_plat_driver);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+iQEcBAEBAgAGBQJUdhUEAAoJEMLUO4d9pOJW6FsH/0bNSlb7Fr3MR7CXVRrLeSdI
+TKbAOa35p0ehxMAn3Fju4eca4VBElDVU9atyuRJ1IIEPNZ8NzWNTXJu1mM7NAMpv
+UgZsOZSfWycQO8mDY86vPPB1unNObpeLIcj0QGz6gNlFs3QgKBaW+t7y1ENYViaj
+HkH0GJcNdQlNEA/EGslr0/m+yNRPPZHlRJv3lbkB+Y07XGTbUFb0J9mIRIIo9Ywb
+ZSczX2SRRiHBjhAoAxEMYYdEqF2kA1wt0/shj4iJ2OBOSeq/Gewd0Ji5dwD0/ef8
+Gd27dxm3wxN/sudR/YyNL2JPDUFLcDl70CK3lqlDZ/VFzSdi5onkEZmZcy2srqk=
+=6Jxb
+-----END PGP SIGNATURE-----
+
+--wchHw8dVAp53YPj8--
