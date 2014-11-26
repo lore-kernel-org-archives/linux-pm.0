@@ -1,62 +1,205 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
- "actual frequency"
-Date: Wed, 26 Nov 2014 07:29:46 -0800
-Message-ID: <5475F1EA.7020003@intel.com>
-References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com> <CAKohpom1=k=KP3csObfBPRqDQSWGyRrJUjw69NW04YB5RppcMw@mail.gmail.com>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH v2] thermal: exynos: add special clock support
+Date: Wed, 26 Nov 2014 21:01:01 +0530
+Message-ID: <CAM4voam99ONvnov98fYk+8srJ27ySvsBKL4CAf-9gWUiWcpgwQ@mail.gmail.com>
+References: <1416963070-5806-1-git-send-email-a.kesavan@samsung.com>
+	<20141126144504.GA3808@developer>
+	<CAM4voa=OidszVoxRCnXPTKTyGZn5QXv7YWgGRF+JyHmHi+SCPw@mail.gmail.com>
+	<20141126151435.GB3925@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom1=k=KP3csObfBPRqDQSWGyRrJUjw69NW04YB5RppcMw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Magdalena Dobosz <maj.dobosz@gmail.com>
-Cc: dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141126151435.GB3925@developer>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, =?UTF-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/25/2014 10:07 PM, Viresh Kumar wrote:
-> On 25 November 2014 at 22:51, Magdalena Dobosz <maj.dobosz@gmail.com> wrote:
->> Hi,
->> I was analyzing the code and behaviour of cpufrequtils (kernel 3.13).
->> I noticed that the value reported by cpufreq-info as the frequency
->> "asserted by call to hardware" (exported to sysfs as
->> "cpuinfo_cur_freq") is always the same as the value reported as the
->> frequency requested by a governor (exported to sysfs as "freq", stored
->> in policy->cur).
->> It was not the case for kernel 3.2 (these two values tend to differ).
+Hi Eduardo,
+
+On Wed, Nov 26, 2014 at 8:44 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> Abhilash,
+>
+> On Wed, Nov 26, 2014 at 08:34:19PM +0530, Abhilash Kesavan wrote:
+>> Hi Eduardo,
 >>
->> I found a reason: while using acpi-cpufreq driver, the value reported
->> as hardware frequency is retrieved using  get_cur_freq_on_cpu function
->> (defined in acpi-cpufreq). Now, in kernel version 3.2 this function
->> reads a value from MSR_IA32_PERF_STATUS, while in kernel 3.13 it reads
->> MSR_IA32_PERF_CTL.
->> It is a result of the patch shown below:
->> https://lists.ubuntu.com/archives/kernel-team/2013-June/029493.html
+>> On Wed, Nov 26, 2014 at 8:15 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+>> >
+>> > Abhilash,
+>> >
+>> > On Wed, Nov 26, 2014 at 06:21:10AM +0530, Abhilash Kesavan wrote:
+>> >> Exynos7 has a special clock required for the functional operation
+>> >> of the TMU that is not present in earlier SoCs. Add support for
+>> >> this clock and update the binding documentation.
+>> >>
+>> >> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+>> >> ---
+>> >> Changes since v1:
+>> >>       - Added a per-soc flag to indicate the presence of special clock
+>> >>       - Changed the name of special clock from "tmu_sclk" to "sclk"
+>> >>       - Fixed the error handling for sclk
+>> >>
+>> >> Tested on 5420 and 5800 based chromebooks, no change in existing behavior.
+>> >>
+>> >>  .../devicetree/bindings/thermal/exynos-thermal.txt |    3 ++
+>> >>  drivers/thermal/samsung/exynos_tmu.c               |   31 ++++++++++++++++----
+>> >>  2 files changed, 29 insertions(+), 5 deletions(-)
+>> >>
+>> >> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> >> index ae738f5..acf4705 100644
+>> >> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> >> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> >> @@ -32,10 +32,13 @@
+>> >>  - clocks : The main clocks for TMU device
+>> >>       -- 1. operational clock for TMU channel
+>> >>       -- 2. optional clock to access the shared registers of TMU channel
+>> >> +     -- 3. optional special clock for functional operation
+>> >>  - clock-names : Thermal system clock name
+>> >>       -- "tmu_apbif" operational clock for current TMU channel
+>> >>       -- "tmu_triminfo_apbif" clock to access the shared triminfo register
+>> >>               for current TMU channel
+>> >> +     -- "sclk" clock for functional operation of the current TMU
+>> >> +             channel
+>> >>  - vtmu-supply: This entry is optional and provides the regulator node supplying
+>> >>               voltage to TMU. If needed this entry can be placed inside
+>> >>               board/platform specific dts file.
+>> >> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> >> index d44d91d..8ed8409 100644
+>> >> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> >> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> >> @@ -123,11 +123,14 @@
+>> >>   * @base: base address of the single instance of the TMU controller.
+>> >>   * @base_second: base address of the common registers of the TMU controller.
+>> >>   * @irq: irq number of the TMU controller.
+>> >> + * @needs_sclk: SoC specific flag indicating that sclk is required for
+>> >> +     functional operation of the TMU controller.
+>> >>   * @soc: id of the SOC type.
+>> >>   * @irq_work: pointer to the irq work structure.
+>> >>   * @lock: lock to implement synchronization.
+>> >>   * @clk: pointer to the clock structure.
+>> >>   * @clk_sec: pointer to the clock structure for accessing the base_second.
+>> >> + * @sclk: pointer to the clock structure for accessing the tmu special clock.
+>> >>   * @temp_error1: fused value of the first point trim.
+>> >>   * @temp_error2: fused value of the second point trim.
+>> >>   * @regulator: pointer to the TMU regulator structure.
+>> >> @@ -144,10 +147,11 @@ struct exynos_tmu_data {
+>> >>       void __iomem *base;
+>> >>       void __iomem *base_second;
+>> >>       int irq;
+>> >> +     bool needs_sclk;
+>> >>       enum soc_type soc;
+>> >>       struct work_struct irq_work;
+>> >>       struct mutex lock;
+>> >> -     struct clk *clk, *clk_sec;
+>> >> +     struct clk *clk, *clk_sec, *sclk;
+>> >>       u8 temp_error1, temp_error2;
+>> >>       struct regulator *regulator;
+>> >>       struct thermal_sensor_conf *reg_conf;
+>> >> @@ -883,10 +887,24 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>> >>               goto err_clk_sec;
+>> >>       }
+>> >>
+>> >> +     if (data->needs_sclk) {
+>> >
+>> > Based on the trend we see from Bartlomiej's and Lukasz' works, you
+>> > should be asking for SoC version, not adding a flag. Can you please
+>> > crosscheck with them?
 >>
->> It looks like a bug for me - we take a requested frequency (control
->> register) and we report it as "cpuinfo_cur_freq - Current frequency of
->> the CPU as obtained from the hardware, in KHz. This is the frequency
->> the CPU actually runs at." (as desribed in cpufrequtils documentation:
->> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt". I
->> believe we should read status register (MSR_IA32_PERF_STATUS) instead.
+>> I planned to populate this flag as true for Exynos7 in
+>> exynos_map_dt_data() where other soc specific methods are being setup.
 >
-> Fixed list and cc'd few more.
->
-> This is what Len Brown said to that patch:
->
-> Ack -- MSR_IA32_PERF_STATUS is ill-conceived.  It is un-reliable
-> by its very definition.  Any code that depends on it should be questioned...
->
-> @Dirk: Can you help ?
+> Well, that I wouldn't expect different, otherwise how your code is
+> supposed to work, right?
 
-Not really. This issue is one of the reasons that intel_pstate returns a
-measured/effective frequency.  There is no way that I know of to get the
-instantaneous frequency that the core is running at in the presence of
-hardware coordination and idle.  The best you can do is measure the effective
-frequency over a sample time.  This is what turbostat and intel_pstate
-report.
-
---Dirk
+yes :)
 
 >
+>>
+>> Bartlomiej/Lukasz can you kindly comment on if you would prefer the
+>> check to be based on the SoC version.
+>>
+>
+>
+> Have a look on how Bartz has removed the flag based code in my -linus
+> branch. Here is an example:
+> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=linus&id=ef3f80fc7f79c32a1b015afcbffce2a2630011a4
 
+OK, I see what you mean. I'll wait for Bartlomiej and Lukasz to weigh
+in as well. If they are in favor of using the SoC version then I will
+fold this into the patch adding support for Exynos7 (to be posted
+after all of Lukasz' patches are in)
+
+Thanks,
+Abhilash
+>
+>> Regards,
+>> Abhilash
+>> >
+>> > Cheers,
+>> >
+>> > Eduardo Valentin
+>> >
+>> >> +             data->sclk = devm_clk_get(&pdev->dev, "sclk");
+>> >> +             if (IS_ERR(data->sclk)) {
+>> >> +                     dev_err(&pdev->dev, "Failed to get sclk\n");
+>> >> +                     goto err_clk;
+>> >> +             } else {
+>> >> +                     ret = clk_prepare_enable(data->sclk);
+>> >> +                     if (ret) {
+>> >> +                             dev_err(&pdev->dev, "Failed to enable sclk\n");
+>> >> +                             goto err_clk;
+>> >> +                     }
+>> >> +             }
+>> >> +     }
+>> >> +
+>> >>       ret = exynos_tmu_initialize(pdev);
+>> >>       if (ret) {
+>> >>               dev_err(&pdev->dev, "Failed to initialize TMU\n");
+>> >> -             goto err_clk;
+>> >> +             goto err_sclk;
+>> >>       }
+>> >>
+>> >>       exynos_tmu_control(pdev, true);
+>> >> @@ -896,7 +914,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>> >>                               sizeof(struct thermal_sensor_conf), GFP_KERNEL);
+>> >>       if (!sensor_conf) {
+>> >>               ret = -ENOMEM;
+>> >> -             goto err_clk;
+>> >> +             goto err_sclk;
+>> >>       }
+>> >>       sprintf(sensor_conf->name, "therm_zone%d", data->id);
+>> >>       sensor_conf->read_temperature = (int (*)(void *))exynos_tmu_read;
+>> >> @@ -928,7 +946,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>> >>       ret = exynos_register_thermal(sensor_conf);
+>> >>       if (ret) {
+>> >>               dev_err(&pdev->dev, "Failed to register thermal interface\n");
+>> >> -             goto err_clk;
+>> >> +             goto err_sclk;
+>> >>       }
+>> >>       data->reg_conf = sensor_conf;
+>> >>
+>> >> @@ -936,10 +954,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>> >>               IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+>> >>       if (ret) {
+>> >>               dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+>> >> -             goto err_clk;
+>> >> +             goto err_sclk;
+>> >>       }
+>> >>
+>> >>       return 0;
+>> >> +err_sclk:
+>> >> +     clk_disable_unprepare(data->sclk);
+>> >>  err_clk:
+>> >>       clk_unprepare(data->clk);
+>> >>  err_clk_sec:
+>> >> @@ -956,6 +976,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>> >>
+>> >>       exynos_tmu_control(pdev, false);
+>> >>
+>> >> +     clk_disable_unprepare(data->sclk);
+>> >>       clk_unprepare(data->clk);
+>> >>       if (!IS_ERR(data->clk_sec))
+>> >>               clk_unprepare(data->clk_sec);
+>> >> --
+>> >> 1.7.9.5
+>> >>
