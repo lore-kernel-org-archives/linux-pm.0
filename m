@@ -1,23 +1,17 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 08/10] arm: dts: qcom: Add idle states device nodes for 8074
-Date: Wed, 26 Nov 2014 15:28:28 -0700
-Message-ID: <1417040910-43290-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH 10/10] arm: dts: qcom: Add idle state device nodes for 8064
+Date: Wed, 26 Nov 2014 15:28:30 -0700
+Message-ID: <1417040910-43290-11-git-send-email-lina.iyer@linaro.org>
 References: <1417040910-43290-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:58171 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbaKZW3B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 17:29:01 -0500
-Received: by mail-pa0-f42.google.com with SMTP id et14so3706536pad.29
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 14:29:00 -0800 (PST)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1417040910-43290-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8074/8974.
+Add ARM common idle state device bindings for cpuidle support for APQ
+8064.
 
 Support Standby and Standalone power collapse (power down that does not
 affect any SoC idle states) for each cpu.
@@ -25,14 +19,14 @@ affect any SoC idle states) for each cpu.
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 20 ++++++++++++++++++++
  1 file changed, 20 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 5a41f44..6942b46 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -22,6 +22,7 @@
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index 9fd24bc..ab21dba 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -23,6 +23,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
  			qcom,saw = <&saw0>;
@@ -40,7 +34,7 @@ index 5a41f44..6942b46 100644
  		};
  
  		cpu@1 {
-@@ -32,6 +33,7 @@
+@@ -33,6 +34,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
  			qcom,saw = <&saw1>;
@@ -48,7 +42,7 @@ index 5a41f44..6942b46 100644
  		};
  
  		cpu@2 {
-@@ -42,6 +44,7 @@
+@@ -43,6 +45,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
  			qcom,saw = <&saw2>;
@@ -56,7 +50,7 @@ index 5a41f44..6942b46 100644
  		};
  
  		cpu@3 {
-@@ -52,6 +55,7 @@
+@@ -53,12 +56,29 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
  			qcom,saw = <&saw3>;
@@ -64,9 +58,8 @@ index 5a41f44..6942b46 100644
  		};
  
  		L2: l2-cache {
-@@ -59,6 +63,22 @@
+ 			compatible = "cache";
  			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
  		};
 +
 +		idle-states {
@@ -79,9 +72,9 @@ index 5a41f44..6942b46 100644
 +
 +			CPU_SPC: spc {
 +				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
++				entry-latency-us = <400>;
++				exit-latency-us = <900>;
++				min-residency-us = <3000>;
 +			};
 +		};
  	};
@@ -89,4 +82,3 @@ index 5a41f44..6942b46 100644
  	cpu-pmu {
 -- 
 2.1.0
-
