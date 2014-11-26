@@ -1,180 +1,107 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH v2] thermal: exynos: add special clock support
-Date: Wed, 26 Nov 2014 20:34:19 +0530
-Message-ID: <CAM4voa=OidszVoxRCnXPTKTyGZn5QXv7YWgGRF+JyHmHi+SCPw@mail.gmail.com>
-References: <1416963070-5806-1-git-send-email-a.kesavan@samsung.com>
-	<20141126144504.GA3808@developer>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
+ cpufreq table
+Date: Wed, 26 Nov 2014 11:10:32 -0400
+Message-ID: <20141126151030.GA3925@developer>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
+ <2189780.D9n5NYrXn8@vostro.rjw.lan>
+ <1447952.pbyqNN4RJG@vostro.rjw.lan>
+ <CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f180.google.com ([209.85.216.180]:44248 "EHLO
-	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbaKZPEU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 10:04:20 -0500
-In-Reply-To: <20141126144504.GA3808@developer>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:59256 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbaKZPKm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 10:10:42 -0500
+Received: by mail-qa0-f50.google.com with SMTP id w8so1985563qac.23
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 07:10:41 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, =?UTF-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-Hi Eduardo,
 
-On Wed, Nov 26, 2014 at 8:15 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
->
-> Abhilash,
->
-> On Wed, Nov 26, 2014 at 06:21:10AM +0530, Abhilash Kesavan wrote:
->> Exynos7 has a special clock required for the functional operation
->> of the TMU that is not present in earlier SoCs. Add support for
->> this clock and update the binding documentation.
->>
->> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
->> ---
->> Changes since v1:
->>       - Added a per-soc flag to indicate the presence of special clock
->>       - Changed the name of special clock from "tmu_sclk" to "sclk"
->>       - Fixed the error handling for sclk
->>
->> Tested on 5420 and 5800 based chromebooks, no change in existing behavior.
->>
->>  .../devicetree/bindings/thermal/exynos-thermal.txt |    3 ++
->>  drivers/thermal/samsung/exynos_tmu.c               |   31 ++++++++++++++++----
->>  2 files changed, 29 insertions(+), 5 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> index ae738f5..acf4705 100644
->> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> @@ -32,10 +32,13 @@
->>  - clocks : The main clocks for TMU device
->>       -- 1. operational clock for TMU channel
->>       -- 2. optional clock to access the shared registers of TMU channel
->> +     -- 3. optional special clock for functional operation
->>  - clock-names : Thermal system clock name
->>       -- "tmu_apbif" operational clock for current TMU channel
->>       -- "tmu_triminfo_apbif" clock to access the shared triminfo register
->>               for current TMU channel
->> +     -- "sclk" clock for functional operation of the current TMU
->> +             channel
->>  - vtmu-supply: This entry is optional and provides the regulator node supplying
->>               voltage to TMU. If needed this entry can be placed inside
->>               board/platform specific dts file.
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index d44d91d..8ed8409 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -123,11 +123,14 @@
->>   * @base: base address of the single instance of the TMU controller.
->>   * @base_second: base address of the common registers of the TMU controller.
->>   * @irq: irq number of the TMU controller.
->> + * @needs_sclk: SoC specific flag indicating that sclk is required for
->> +     functional operation of the TMU controller.
->>   * @soc: id of the SOC type.
->>   * @irq_work: pointer to the irq work structure.
->>   * @lock: lock to implement synchronization.
->>   * @clk: pointer to the clock structure.
->>   * @clk_sec: pointer to the clock structure for accessing the base_second.
->> + * @sclk: pointer to the clock structure for accessing the tmu special clock.
->>   * @temp_error1: fused value of the first point trim.
->>   * @temp_error2: fused value of the second point trim.
->>   * @regulator: pointer to the TMU regulator structure.
->> @@ -144,10 +147,11 @@ struct exynos_tmu_data {
->>       void __iomem *base;
->>       void __iomem *base_second;
->>       int irq;
->> +     bool needs_sclk;
->>       enum soc_type soc;
->>       struct work_struct irq_work;
->>       struct mutex lock;
->> -     struct clk *clk, *clk_sec;
->> +     struct clk *clk, *clk_sec, *sclk;
->>       u8 temp_error1, temp_error2;
->>       struct regulator *regulator;
->>       struct thermal_sensor_conf *reg_conf;
->> @@ -883,10 +887,24 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>               goto err_clk_sec;
->>       }
->>
->> +     if (data->needs_sclk) {
->
-> Based on the trend we see from Bartlomiej's and Lukasz' works, you
-> should be asking for SoC version, not adding a flag. Can you please
-> crosscheck with them?
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I planned to populate this flag as true for Exynos7 in
-exynos_map_dt_data() where other soc specific methods are being setup.
 
-Bartlomiej/Lukasz can you kindly comment on if you would prefer the
-check to be based on the SoC version.
+Hello Viresh, Rafael,
 
-Regards,
-Abhilash
->
-> Cheers,
->
-> Eduardo Valentin
->
->> +             data->sclk = devm_clk_get(&pdev->dev, "sclk");
->> +             if (IS_ERR(data->sclk)) {
->> +                     dev_err(&pdev->dev, "Failed to get sclk\n");
->> +                     goto err_clk;
->> +             } else {
->> +                     ret = clk_prepare_enable(data->sclk);
->> +                     if (ret) {
->> +                             dev_err(&pdev->dev, "Failed to enable sclk\n");
->> +                             goto err_clk;
->> +                     }
->> +             }
->> +     }
->> +
->>       ret = exynos_tmu_initialize(pdev);
->>       if (ret) {
->>               dev_err(&pdev->dev, "Failed to initialize TMU\n");
->> -             goto err_clk;
->> +             goto err_sclk;
->>       }
->>
->>       exynos_tmu_control(pdev, true);
->> @@ -896,7 +914,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>                               sizeof(struct thermal_sensor_conf), GFP_KERNEL);
->>       if (!sensor_conf) {
->>               ret = -ENOMEM;
->> -             goto err_clk;
->> +             goto err_sclk;
->>       }
->>       sprintf(sensor_conf->name, "therm_zone%d", data->id);
->>       sensor_conf->read_temperature = (int (*)(void *))exynos_tmu_read;
->> @@ -928,7 +946,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>       ret = exynos_register_thermal(sensor_conf);
->>       if (ret) {
->>               dev_err(&pdev->dev, "Failed to register thermal interface\n");
->> -             goto err_clk;
->> +             goto err_sclk;
->>       }
->>       data->reg_conf = sensor_conf;
->>
->> @@ -936,10 +954,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>               IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
->>       if (ret) {
->>               dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
->> -             goto err_clk;
->> +             goto err_sclk;
->>       }
->>
->>       return 0;
->> +err_sclk:
->> +     clk_disable_unprepare(data->sclk);
->>  err_clk:
->>       clk_unprepare(data->clk);
->>  err_clk_sec:
->> @@ -956,6 +976,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
->>
->>       exynos_tmu_control(pdev, false);
->>
->> +     clk_disable_unprepare(data->sclk);
->>       clk_unprepare(data->clk);
->>       if (!IS_ERR(data->clk_sec))
->>               clk_unprepare(data->clk_sec);
->> --
->> 1.7.9.5
->>
+On Wed, Nov 26, 2014 at 11:27:42AM +0530, Viresh Kumar wrote:
+> On 26 November 2014 at 03:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > And what bad things are going to happen if this is not pushed for 3.18?
+>=20
+> This is what Eduardo reported in one of the mails:
+>=20
+> ---
+>=20
+> As an example, I am taking the ti-soc-thermal, but we already have other
+> of-thermal based drivers. Booting with this patch ti-soc-thermal
+> (of-based boot) loads fine, but the cpu_cooling never gets bound to the
+> thermal zone.
+>=20
+> The thing is that the bind may happen before cpufreq-dt code loads the
+> cpufreq driver, and when cpu_cooling is checking what is the max freq,
+> by using cpufreq table, it won't be able to do it, as there is no table.
+>=20
+> While, without the patch, it will use wrong in the binding, but after
+> it gets bound, and cpufreq loads, the max will be used correctly.
+>=20
+> ----
+>=20
+> And so it looked like things aren't going to work smoothly in 3.18
+> and so I thought we should get it in.
+>=20
+
+The bug exists, it is there for 3.18. But also, as I explained in that
+thread, the current code is able to initialize the of cooling device and
+to register it in its thermal zone. But that works by lucky because we
+do not have the proper return code checks in thermal core.
+
+> But probably the problem will be worst only after applying Lukasz
+> patchset?
+
+The bug gets exposed by his patch.
+
+>=20
+> @Eduardo: Do you want Rafael to apply this for 3.18? or 3.19 will
+> work as well ?
+
+
+I believe, for this case, 3.19 is best option. Looks like we have a
+possible API massage coming, so, targetting 3.18 would be rushy. I'd
+rather think of a proper way to fix this, scalable and that makes
+sense to everybody, even if takes extra merge window, than rushing for a
+fix that we may need to revisit it again in near future.
+
+
+BR,
+
+Eduardo Valentin
+>=20
+> --
+> viresh
+
+--T4sUOijqQbZv57TR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUde1cAAoJEMLUO4d9pOJWDnoH/j8nsuAesnM02jqnpWqVj9Q7
+gC3ZRQs/uezDVplnm9pJGiWyib6qusFwYhyLEKAIuaN4gEhemR5u4lr3r05B0gdh
+Ya1d6Jy77/jZ/WAZHvi4iiWzHBkitMK8iARVTbMRCQw9arZfWrKhhWc9viHQ5JBV
+ZC00jRCHSM/+XjNmnlmIah8iq3iVHVxK+LvCqYGfvCOaAbsVWHhQu1qyAwwyM5fy
+r31XmCtm4+IUMM3zja8cI3KZDSju2WA6Z/eVgtrCPY8IRhrYhJF/FIKA2W+8DPZD
+vEvCLWmSbYS+/sjizqjQXOuyjXau73VpNREEdJODGI+NeFMxvyRCbxPgdnAYq0U=
+=NEpA
+-----END PGP SIGNATURE-----
+
+--T4sUOijqQbZv57TR--
