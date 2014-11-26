@@ -1,21 +1,21 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 2/4] thermal: of: Extend of-thermal.c to provide check
- if trip point is enabled
-Date: Wed, 26 Nov 2014 09:31:09 +0100
-Message-ID: <20141126093109.0588c2c2@amdc2363>
+Subject: Re: [PATCH v2 3/4] thermal: of: Extend of-thermal to export table of
+ trip points
+Date: Wed, 26 Nov 2014 09:35:10 +0100
+Message-ID: <20141126093510.4233ff7f@amdc2363>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-3-git-send-email-l.majewski@samsung.com>
- <20141125082524.GA13924@developer>
+ <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
+ <20141125203629.GA14292@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:24662 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbaKZIbn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:31:43 -0500
-In-reply-to: <20141125082524.GA13924@developer>
+Received: from mailout4.samsung.com ([203.254.224.34]:52740 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbaKZIfX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:35:23 -0500
+In-reply-to: <20141125203629.GA14292@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
@@ -23,124 +23,169 @@ Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, T
 
 Hi Eduardo,
 
+> Hello Lukasz,
 > 
-> Lukasz,
-> 
-> Same stuff here.
-> 
-> On Thu, Nov 20, 2014 at 05:21:26PM +0100, Lukasz Majewski wrote:
-> > This patch extends the of-thermal.c to provide check if trip point
-> > is enabled.
+> On Thu, Nov 20, 2014 at 05:21:27PM +0100, Lukasz Majewski wrote:
+> > This patch extends the of-thermal.c to export copy of trip points
+> > for a given thermal zone.
+> > 
+> > Thermal drivers should use of_thermal_get_trip_points() method to
+> > get pointer to table of thermal trip points.
 > > 
 > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > > ---
 > > Changes for v2:
-> > - Replace int with bool
-> > - Replace 1/0 with true/false
-> > - Add check if data pointer is not NULL
-> > - Add missing doxygen style comment for the function
+> > - New patch - as suggested by Eduardo Valentin
 > > ---
-> >  drivers/thermal/of-thermal.c   | 20 ++++++++++++++++++++
-> >  drivers/thermal/thermal_core.h |  5 +++++
-> >  2 files changed, 25 insertions(+)
+> >  drivers/thermal/of-thermal.c   | 33
+> > +++++++++++++++++++++++++++++++++ drivers/thermal/thermal_core.h |
+> > 7 +++++++ include/linux/thermal.h        | 14 ++++++++++++++
+> >  3 files changed, 54 insertions(+)
 > > 
 > > diff --git a/drivers/thermal/of-thermal.c
-> > b/drivers/thermal/of-thermal.c index 7170822..336af7f 100644
+> > b/drivers/thermal/of-thermal.c index 336af7f..33921c5 100644
 > > --- a/drivers/thermal/of-thermal.c
 > > +++ b/drivers/thermal/of-thermal.c
-> > @@ -132,6 +132,26 @@ int of_thermal_get_ntrips(struct
-> > thermal_zone_device *tz) return data->ntrips;
+> > @@ -89,6 +89,7 @@ struct __thermal_zone {
+> >  	/* trip data */
+> >  	int ntrips;
+> >  	struct __thermal_trip *trips;
+> > +	struct thermal_trip *gtrips;
+> >  
+> >  	/* cooling binding data */
+> >  	int num_tbps;
+> > @@ -152,6 +153,27 @@ bool of_thermal_is_trip_en(struct
+> > thermal_zone_device *tz, int trip) return true;
 > >  }
 > >  
 > > +/**
-> > + * of_thermal_is_trip_en - function to check if trip point is
-> > enabled
+> > + * of_thermal_get_trip_points - function to get access to a
+> > globally exported
+> > + *				trip points
 > > + *
 > > + * @tz:	pointer to a thermal zone
-> > + * @trip:	trip point to evaluate
 > > + *
-> > + * This function is responsible for checking if passed trip point
-> > is enabled
+> > + * This function provides a pointer to the copy of trip points
+> > table
 > > + *
-> > + * Return: true if trip point is enabled, false otherwise
+> > + * Return: pointer to trip points table, NULL otherwise
 > > + */
-> > +bool of_thermal_is_trip_en(struct thermal_zone_device *tz, int
-> > trip)
-> 
-> This one looks more like "is this trip point valid?" than "is this
-> trip point enabled?", isn't it?
-> 
-> By having such a function to check if a trip is enabled, one would
-> expect to have functions to enable / disable trips points.
-> 
-> What do you think of naming it:
-> of_thermal_is_trip_valid()
-> ?
-> 
-
-Good point. I think that of_thermal_is_trip_valid() is a better name.
-
+> > +const struct thermal_trip * const
+> > +of_thermal_get_trip_points(struct thermal_zone_device *tz)
 > > +{
 > > +	struct __thermal_zone *data = tz->devdata;
 > > +
-> > +	if (!data || trip >= data->ntrips || trip < 0)
-> 
-> Even your check is about looking if the trip value is within a range,
-> telling the caller if the trip is valid or not, right?
-
-Yes. Correct. it justifies function rename to of_thermal_is_trip_valid()
-
-> 
-> > +		return false;
+> > +	if (!data)
+> > +		return NULL;
 > > +
-> > +	return true;
+> > +	return data->gtrips;
 > > +}
 > > +
 > 
-> Missing:
-> EXPORT_SYMBOL_GPL(of_thermal_is_trip_en);
-> 
-> or
-> 
-> EXPORT_SYMBOL_GPL(of_thermal_is_trip_valid);
+> EXPORT_SYMBOL_GPL(of_thermal_get_trip_points);
 
-I will add that, no problem.
+Ok.
 
 > 
 > >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
 > > int trip, enum thermal_trend *trend)
 > >  {
+> > @@ -767,6 +789,16 @@ thermal_of_build_thermal_zone(struct
+> > device_node *np) goto free_tbps;
+> >  	}
+> >  
+> > +	tz->gtrips = kcalloc(tz->ntrips, sizeof(*tz->gtrips),
+> > GFP_KERNEL);
+> > +	if (!tz->gtrips) {
+> > +		ret = -ENOMEM;
+> > +		goto free_tbps;
+> > +	}
+> > +
+> > +	for (i = 0; i < tz->ntrips; i++)
+> > +		memcpy(&(tz->gtrips[i]),
+> > &(tz->trips[i].temperature),
+> > +		       sizeof(*tz->gtrips));
+> > +
+> >  finish:
+> >  	of_node_put(child);
+> >  	tz->mode = THERMAL_DEVICE_DISABLED;
+> > @@ -793,6 +825,7 @@ static inline void of_thermal_free_zone(struct
+> > __thermal_zone *tz) {
+> >  	int i;
+> >  
+> > +	kfree(tz->gtrips);
+> >  	for (i = 0; i < tz->num_tbps; i++)
+> >  		of_node_put(tz->tbps[i].cooling_device);
+> >  	kfree(tz->tbps);
 > > diff --git a/drivers/thermal/thermal_core.h
-> > b/drivers/thermal/thermal_core.h index c3c7b82..466208c 100644
+> > b/drivers/thermal/thermal_core.h index 466208c..a9580ca 100644
 > > --- a/drivers/thermal/thermal_core.h
 > > +++ b/drivers/thermal/thermal_core.h
-> > @@ -90,6 +90,7 @@ static inline void
-> > thermal_gov_user_space_unregister(void) {} int
-> > of_parse_thermal_zones(void); void of_thermal_destroy_zones(void);
+> > @@ -91,6 +91,8 @@ int of_parse_thermal_zones(void);
+> >  void of_thermal_destroy_zones(void);
 > >  int of_thermal_get_ntrips(struct thermal_zone_device *);
-> > +bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
+> >  bool of_thermal_is_trip_en(struct thermal_zone_device *, int);
+> > +const struct thermal_trip * const
+> > +of_thermal_get_trip_points(struct thermal_zone_device *);
 > >  #else
 > >  static inline int of_parse_thermal_zones(void) { return 0; }
 > >  static inline void of_thermal_destroy_zones(void) { }
-> > @@ -97,6 +98,10 @@ static inline int of_thermal_get_ntrips(struct
-> > thermal_zone_device *) {
+> > @@ -102,6 +104,11 @@ static inline bool
+> > of_thermal_is_trip_en(struct thermal_zone_device *, int) {
+> 
+> This produces compilation error when CONFIG_THERMAL_OF is not set.
+> Name the parameters to fix.
+
+As all the other cases, I will fix that.
+
+> 
 > >  	return 0;
 > >  }
-> > +static inline bool of_thermal_is_trip_en(struct
-> > thermal_zone_device *, int)
-> 
-> Same as in patch 01, this produces compilation error. Please, name
-> your parameters.
-
-Ok.
-
-> 
+> > +static inline const struct thermal_trip * const
+> > +of_thermal_get_trip_points(struct thermal_zone_device *)
 > > +{
-> > +	return 0;
+> > +	return NULL;
 > > +}
 > >  #endif
 > >  
 > >  #endif /* __THERMAL_CORE_H__ */
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index 5bc28a7..88d7249 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -303,6 +303,20 @@ struct thermal_zone_of_device_ops {
+> >  	int (*get_trend)(void *, long *);
+> >  };
+> >  
+> > +/**
+> > + * struct thermal_trip - Structure representing themal trip points
+> > exported from
+> > + *                       of-thermal
+> > + *
+> 
+> The only problem I have with this name is that would look like it is
+> in use in all thermal framework, which is not really the case. But I
+> do think having a type here is a good thing. So, not sure :-)
+
+It can stay to be struct thermal_trip or we can rename it to
+struct of_thermal_trip.
+
+I'm fine with both names.
+
+> 
+> > + * @temperature:	trip point temperature
+> > + * @hysteresis:		trip point hysteresis
+> > + * @type:		trip point type
+> > + */
+> > +struct thermal_trip {
+> > +	unsigned long int temperature;
+> > +	unsigned long int hysteresis;
+> > +	enum thermal_trip_type type;
+> > +};
+> > +
+> >  /* Function declarations */
+> >  #ifdef CONFIG_THERMAL_OF
+> >  struct thermal_zone_device *
 > > -- 
 > > 2.0.0.rc2
 > > 
