@@ -1,96 +1,172 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
-Date: Wed, 26 Nov 2014 17:04:33 +0000
-Message-ID: <54760821.5020909@arm.com>
-References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org> <5476071B.1060705@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 1/1] thermal: cpu_cooling: check for the readiness of cpufreq layer
+Date: Wed, 26 Nov 2014 13:50:12 -0400
+Message-ID: <1417024212-1775-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38554 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750926AbaKZREg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 12:04:36 -0500
-In-Reply-To: <5476071B.1060705@arm.com>
+Received: from mail-qg0-f42.google.com ([209.85.192.42]:51278 "EHLO
+	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbaKZRuX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 12:50:23 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, "rob.herring@linaro.org" <rob.herring@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "kesavan.abhilash@gmail.com" <kesavan.abhilash@gmail.com>, Catalin Marinas <Catalin.Marinas@arm.com>, "k.chander@samsung.com" <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, "ta.omasab@gmail.com" <ta.omasab@gmail.com>
+To: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+
+In this patch, the cpu_cooling code checks for the usability of cpufreq
+layer before proceeding with the CPU cooling device registration. The
+main reason is: CPU cooling device is not usable if cpufreq cannot
+switch frequencies.
+
+Similar checks are spread in thermal drivers. Thus, the advantage now
+is to have the check in a single place: cpu cooling device registration.
+For this reason, this patch also updates the existing drivers that
+depend on CPU cooling to simply propagate the error code of the cpu
+cooling registration call. Therefore, in case cpufreq is not ready, the
+thermal drivers will still return -EPROBE_DEFER, in an attempt to try
+again when cpufreq layer gets ready.
+
+Cc: devicetree@vger.kernel.org
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/thermal/cpu_cooling.c                      | 5 +++++
+ drivers/thermal/db8500_cpufreq_cooling.c           | 5 -----
+ drivers/thermal/imx_thermal.c                      | 5 -----
+ drivers/thermal/samsung/exynos_thermal_common.c    | 2 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 ------
+ 5 files changed, 6 insertions(+), 17 deletions(-)
+---
+
+This is attempt to organize the cpu cooling vs. cpufreq boot sequencing.
+The main change in this patch, as in the commit log, is to have the check
+for the cpufreq layer in the cpu cooling device registration, instead of
+in thermal drivers. This way, drivers don't need to bother about it, they
+just need to propagate the error value.
+
+This change was tested on top of:
+(0) - Viresh's change in cpufreq layer and cpufreq-dt (up to patch 4):
+https://patchwork.kernel.org/patch/5384141/
+https://patchwork.kernel.org/patch/5384151/
+https://patchwork.kernel.org/patch/5384161/
+https://patchwork.kernel.org/patch/5384171/
+(1) - fix of thermal core:
+https://patchwork.kernel.org/patch/5326991/
+
+After Viresh's changes, cpufreq-dt is properly sequenced with cpu cooling
+registration. Non-of based drivers also should take advantage if these
+changes, as now they do not need to check for cpufreq layer. The check is
+where it belongs, in cpu cooling device registration.
+
+BR, Eduardo Valentin
 
 
-
-On 26/11/14 17:00, Sudeep Holla wrote:
-> Hi Viresh,
->
-
-[...]
-
->> diff --git a/Documentation/devicetree/bindings/cpufreq/drivers.txt b/Documentation/devicetree/bindings/cpufreq/drivers.txt
->> new file mode 100644
->> index 0000000..bd14917
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/drivers.txt
->> @@ -0,0 +1,53 @@
->> +Binding to select which cpufreq driver to register
->> +
->> +It is a generic DT binding for selecting which cpufreq-driver to register for
->> +any platform.
->> +
->> +The property  listed below must be defined under node /cpus/cpu@0 node. We don't
->> +support multiple CPUFreq driver currently for different cluster and so this
->> +information isn't required to be present in CPUs of all clusters.
->> +
->> +Required properties:
->> +- None
->> +
->> +Optional properties:
->> +- dvfs-method: CPUFreq driver to probe. For example: "arm-bL-cpufreq-dt",
->> +  "cpufreq-dt", etc
->> +
->
-> You should manage this with compatible rather than a new property as
-> it's not a real hardware property. IMHO Rob's suggestion[1] should work
-> fine.
->
-> IIUC, you can have the driver which create this platform device if DT
-> has generic compatible unconditionally(e.g "cpufreq-dt" as you have
-> chosen above). For all existing DT you can create a blacklist of
-> compatibles to match(as it doesn't have the generic compatible) covering
-> all the existing platforms using cpufreq-dt driver, there by you can
-> even remove the platform device creating from multiple places.
-> IMO something like the patch below should work(not tested, also
-> late_initcall is used just to demonstrate the idea)
->
-> Rob, please correct me if my understanding is wrong.
->
-> Regards,
-> Sudeep
->
-> [1]
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-May/256191.html
->
-> --->8
->
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index f657c571b18e..19a616e298e0 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -387,6 +387,32 @@ static struct platform_driver dt_cpufreq_platdrv = {
->    };
->    module_platform_driver(dt_cpufreq_platdrv);
->
-> +static const struct of_device_id compatible_machine_match[] = {
-> +       /* All new machines must have the below compatible to use this
-> driver */
-> +       { .compatible = "cpufreq-generic-dt" },
-> +       /* BLACKLIST of existing users of cpufreq-dt below */
-> +       { .compatible = "samsung,exynos5420" },
-> +       { .compatible = "samsung,exynos5800" },
-
-Please ignore the above 2 compatible values in this context, I just
-chose randomly 2 values but I now realize that there are big-little
-platforms and might not use this driver :(
-
-Regards,
-Sudeep
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 1ab0018..9e6945b 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -440,6 +440,11 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	int ret = 0, i;
+ 	struct cpufreq_policy policy;
+ 
++	if (!cpufreq_get_current_driver() || !cpufreq_frequency_get_table(0)) {
++		pr_err("cpu_cooling: cpufreq layer not ready! Deferring.\n");
++		return ERR_PTR(-EPROBE_DEFER);
++	}
++
+ 	/* Verify that all the clip cpus have same freq_min, freq_max limit */
+ 	for_each_cpu(i, clip_cpus) {
+ 		/* continue if cpufreq policy not found and not return error */
+diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
+index 786d192..1ac7ec6 100644
+--- a/drivers/thermal/db8500_cpufreq_cooling.c
++++ b/drivers/thermal/db8500_cpufreq_cooling.c
+@@ -18,7 +18,6 @@
+  */
+ 
+ #include <linux/cpu_cooling.h>
+-#include <linux/cpufreq.h>
+ #include <linux/err.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -30,10 +29,6 @@ static int db8500_cpufreq_cooling_probe(struct platform_device *pdev)
+ 	struct thermal_cooling_device *cdev;
+ 	struct cpumask mask_val;
+ 
+-	/* make sure cpufreq driver has been initialized */
+-	if (!cpufreq_frequency_get_table(0))
+-		return -EPROBE_DEFER;
+-
+ 	cpumask_set_cpu(0, &mask_val);
+ 	cdev = cpufreq_cooling_register(&mask_val);
+ 
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 5a1f107..16405b4 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -9,7 +9,6 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpu_cooling.h>
+-#include <linux/cpufreq.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+@@ -459,10 +458,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 	int measure_freq;
+ 	int ret;
+ 
+-	if (!cpufreq_get_current_driver()) {
+-		dev_dbg(&pdev->dev, "no cpufreq driver!");
+-		return -EPROBE_DEFER;
+-	}
+ 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+index 3f5ad25..f84975e 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -373,7 +373,7 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+ 		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
+ 			dev_err(sensor_conf->dev,
+ 				"Failed to register cpufreq cooling device\n");
+-			ret = -EINVAL;
++			ret = PTR_ERR(th_zone->cool_dev[th_zone->cool_dev_size]);
+ 			goto err_unregister;
+ 		}
+ 		th_zone->cool_dev_size++;
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 5fd0386..cf88585 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -28,7 +28,6 @@
+ #include <linux/kernel.h>
+ #include <linux/workqueue.h>
+ #include <linux/thermal.h>
+-#include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/of.h>
+@@ -407,11 +406,6 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+ 	if (!data)
+ 		return -EINVAL;
+ 
+-	if (!cpufreq_get_current_driver()) {
+-		dev_dbg(bgp->dev, "no cpufreq driver yet\n");
+-		return -EPROBE_DEFER;
+-	}
+-
+ 	/* Register cooling device */
+ 	data->cool_dev = cpufreq_cooling_register(cpu_present_mask);
+ 	if (IS_ERR(data->cool_dev)) {
+-- 
+2.1.3
 
