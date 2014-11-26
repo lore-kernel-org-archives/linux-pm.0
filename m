@@ -1,30 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
- cpufreq table
-Date: Wed, 26 Nov 2014 09:00:17 +0530
-Message-ID: <CAKohponNuLi8=h9u0MXBJfXKVoF4GHHxW=v502a5nFdCYs7gcg@mail.gmail.com>
-References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
-	<2189780.D9n5NYrXn8@vostro.rjw.lan>
+Subject: Re: How many frequencies would cpufreq optimally like to manage?
+Date: Wed, 26 Nov 2014 09:44:39 +0530
+Message-ID: <CAKohpo=8NU_CyJ-ZQrfFtov3TMGT=HzcuH8F_fnyw4dv4+dvmw@mail.gmail.com>
+References: <546D26AE.50601@free.fr>
+	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
+	<546DF891.2050401@free.fr>
+	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+	<54747DFA.3040802@free.fr>
+	<CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
+	<5474FA1F.50603@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:59591 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbaKZDaS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 22:30:18 -0500
-Received: by mail-oi0-f53.google.com with SMTP id x69so1425594oia.40
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 19:30:18 -0800 (PST)
-In-Reply-To: <2189780.D9n5NYrXn8@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5474FA1F.50603@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Mathieu Poirier <mathieu.poirier@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On 26 November 2014 at 03:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Plus "stable" I suppose?  Which ones?
+On 26 November 2014 at 03:22, Mason <mpeg.blue@free.fr> wrote:
+> If I remember correctly (please correct me if I am mistaken),
+> the kernel keeps a list of timers, ordered by deadline, and
+> dynamically configures the system timer to fire at the next
+> deadline.
 
-I haven't put stable tags intentionally as the driver was updated/renamed in
-3.18 and whatever patch we produce wouldn't get applied to any stable.
+Yes.
 
-So, if we want to fix this problem in 'stable' then we have to write another
-similar patch..
+>> Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>> this is the rate at which cpufreq core checks if cpu's freq require revisiting.
+>
+> I think setting the sampling rate to 50 ms should make the
+> system reactive enough to load swings?
+
+Depends on the kind of load system is under. If load changes quite frequently
+then 50 ms can be a very big value. If it doesn't then 50 ms might be good.
+But it has to be tuned properly based on how much load the system has
+and how much power it consumes.
+
+Some information about that tuning can be found here:
+https://www.youtube.com/watch?v=he1UO__K9ao
+
+This is an presentation given by Mathieu Poirier (Linaro) about the work
+done on ARM's big LITTLE architecture.
+
+Slides: http://events.linuxfoundation.org/images/stories/slides/elc2013_poirier.pdf
+
+>>> This 'struct clk' is an elusive beast.
+>>> Where is it defined? I only run into forward declarations.
+>>
+>> Its architecture specific. What's the architecture you are working on?
+>> You may implement your own routine instead of cpufreq_generic_get().
+>
+> The SoC is made by Sigma Designs. It is based on the ARM Cortex-A9.
+
+Okay, life should be easy then. Normally there will be few programmable
+PLLs on your platform. You need to write a clock driver for them similar
+to the ones present here: drivers/clk/
+
+And then you can reuse cpufreq-dt.c cpufreq driver, which is generic enough
+for everybody :)
+
+>> Yes. Documentation/clk.txt.
+>
+> Oh boy! platform, device tree, cpu-freq, cpuidle, clk, ... so much
+> to learn, so few hours in a day.
+
+:)
