@@ -1,118 +1,150 @@
-From: ethan <ethan.kernel@gmail.com>
-Subject: Re: [PATCH 1/2 v3] intel_pstate: skip this driver if Sun server has _PPC method
-Date: Wed, 26 Nov 2014 08:15:32 +0800
-Message-ID: <51EBF1F9-C972-4A40-BC44-944E4DD71CDD@gmail.com>
-References: <1416891578-14171-1-git-send-email-ethan.zhao@oracle.com> <1416891578-14171-2-git-send-email-ethan.zhao@oracle.com> <547498BC.9020704@intel.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <547498BC.9020704@intel.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Ethan Zhao <ethan.zhao@oracle.com>, "linda.knippers@hp.com" <linda.knippers@hp.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "corbet@lwn.net" <corbet@lwn.net>, "dirk.j.brandewie@intel.com" <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Abhilash Kesavan <a.kesavan@samsung.com>
+Subject: [PATCH v2] thermal: exynos: add special clock support
+Date: Wed, 26 Nov 2014 06:21:10 +0530
+Message-ID: <1416963070-5806-1-git-send-email-a.kesavan@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:13428 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbaKZAvQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Nov 2014 19:51:16 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, amit.daniel@samsung.com, kesavan.abhilash@gmail.com, l.majewski@samsung.com, cw00.choi@samsung.com
 
-Dirk,
+Exynos7 has a special clock required for the functional operation
+of the TMU that is not present in earlier SoCs. Add support for
+this clock and update the binding documentation.
 
-> =D4=DA 2014=C4=EA11=D4=C225=C8=D5=A3=AC22:57=A3=ACDirk Brandewie <dir=
-k.brandewie@gmail.com> =D0=B4=B5=C0=A3=BA
->=20
->> On 11/24/2014 08:59 PM, Ethan Zhao wrote:
->> Oracle Sun X86 servers have dynamic power capping capability that wo=
-rks via
->> ACPI _PPC method etc, so skip loading this driver if Sun server has =
-ACPI _PPC
->> enabled.
-> How about this patch? only compile tested.
->=20
-Looks good to me, and obviously my one is much simpler :)
-I will test it and give you feed back.
+Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+---
+Changes since v1:
+	- Added a per-soc flag to indicate the presence of special clock
+	- Changed the name of special clock from "tmu_sclk" to "sclk"
+	- Fixed the error handling for sclk
 
-Thanks,
-Ethan
+Tested on 5420 and 5800 based chromebooks, no change in existing behavior.
 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
-state.c
-> index 3468387..db7b8b2 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1025,15 +1025,46 @@ static bool intel_pstate_no_acpi_pss(void)
->    return true;
-> }
->=20
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +    int i;
-> +
-> +    for_each_possible_cpu(i) {
-> +        struct acpi_processor *pr =3D per_cpu(processors, i);
-> +
-> +        if (!pr)
-> +            continue;
-> +        if (acpi_has_method(pr->handle, "_PPC"))
-> +            return true;
-> +    }
-> +    return false;
-> +}
-> +
-> +enum {
-> +    PSS,
-> +    PCC,
-> +};
-> +
-> struct hw_vendor_info {
->    u16  valid;
->    char oem_id[ACPI_OEM_ID_SIZE];
->    char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +    int  oem_pwr_table;
-> };
->=20
-> /* Hardware vendor-specific info that has its own power management mo=
-des */
-> static struct hw_vendor_info vendor_info[] =3D {
-> -    {1, "HP    ", "ProLiant"},
-> +    {1, "HP    ", "ProLiant", PSS},
-> +    {1, "ORACLE", "X4-2    ", PCC},
-> +    {1, "ORACLE", "X4-2L   ", PCC},
-> +    {1, "ORACLE", "X4-2B   ", PCC},
-> +    {1, "ORACLE", "X3-2    ", PCC},
-> +    {1, "ORACLE", "X3-2L   ", PCC},
-> +    {1, "ORACLE", "X3-2B   ", PCC},
-> +    {1, "ORACLE", "X4470M2 ", PCC},
-> +    {1, "ORACLE", "X4270M3 ", PCC},
-> +    {1, "ORACLE", "X4270M2 ", PCC},
-> +    {1, "ORACLE", "X4170M2 ", PCC},
->    {0, "", ""},
-> };
->=20
-> @@ -1057,15 +1088,20 @@ static bool intel_pstate_platform_pwr_mgmt_ex=
-ists(void)
->=20
->    for (v_info =3D vendor_info; v_info->valid; v_info++) {
->        if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> -            !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OE=
-M_TABLE_ID_SIZE) &&
-> -            intel_pstate_no_acpi_pss())
-> -            return true;
-> +            !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OE=
-M_TABLE_ID_SIZE))
-> +            switch (v_info->oem_pwr_table) {
-> +            case PSS:
-> +                return intel_pstate_no_acpi_pss();
-> +            case PCC:
-> +                return intel_pstate_has_acpi_ppc();
-> +            }
->    }
->=20
->    return false;
-> }
-> #else /* CONFIG_ACPI not enabled */
-> static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { retu=
-rn false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
-> #endif /* CONFIG_ACPI */
->=20
-> static int __init intel_pstate_init(void)
->=20
->=20
+ .../devicetree/bindings/thermal/exynos-thermal.txt |    3 ++
+ drivers/thermal/samsung/exynos_tmu.c               |   31 ++++++++++++++++----
+ 2 files changed, 29 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+index ae738f5..acf4705 100644
+--- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+@@ -32,10 +32,13 @@
+ - clocks : The main clocks for TMU device
+ 	-- 1. operational clock for TMU channel
+ 	-- 2. optional clock to access the shared registers of TMU channel
++	-- 3. optional special clock for functional operation
+ - clock-names : Thermal system clock name
+ 	-- "tmu_apbif" operational clock for current TMU channel
+ 	-- "tmu_triminfo_apbif" clock to access the shared triminfo register
+ 		for current TMU channel
++	-- "sclk" clock for functional operation of the current TMU
++		channel
+ - vtmu-supply: This entry is optional and provides the regulator node supplying
+ 		voltage to TMU. If needed this entry can be placed inside
+ 		board/platform specific dts file.
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index d44d91d..8ed8409 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -123,11 +123,14 @@
+  * @base: base address of the single instance of the TMU controller.
+  * @base_second: base address of the common registers of the TMU controller.
+  * @irq: irq number of the TMU controller.
++ * @needs_sclk: SoC specific flag indicating that sclk is required for
++	functional operation of the TMU controller.
+  * @soc: id of the SOC type.
+  * @irq_work: pointer to the irq work structure.
+  * @lock: lock to implement synchronization.
+  * @clk: pointer to the clock structure.
+  * @clk_sec: pointer to the clock structure for accessing the base_second.
++ * @sclk: pointer to the clock structure for accessing the tmu special clock.
+  * @temp_error1: fused value of the first point trim.
+  * @temp_error2: fused value of the second point trim.
+  * @regulator: pointer to the TMU regulator structure.
+@@ -144,10 +147,11 @@ struct exynos_tmu_data {
+ 	void __iomem *base;
+ 	void __iomem *base_second;
+ 	int irq;
++	bool needs_sclk;
+ 	enum soc_type soc;
+ 	struct work_struct irq_work;
+ 	struct mutex lock;
+-	struct clk *clk, *clk_sec;
++	struct clk *clk, *clk_sec, *sclk;
+ 	u8 temp_error1, temp_error2;
+ 	struct regulator *regulator;
+ 	struct thermal_sensor_conf *reg_conf;
+@@ -883,10 +887,24 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		goto err_clk_sec;
+ 	}
+ 
++	if (data->needs_sclk) {
++		data->sclk = devm_clk_get(&pdev->dev, "sclk");
++		if (IS_ERR(data->sclk)) {
++			dev_err(&pdev->dev, "Failed to get sclk\n");
++			goto err_clk;
++		} else {
++			ret = clk_prepare_enable(data->sclk);
++			if (ret) {
++				dev_err(&pdev->dev, "Failed to enable sclk\n");
++				goto err_clk;
++			}
++		}
++	}
++
+ 	ret = exynos_tmu_initialize(pdev);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to initialize TMU\n");
+-		goto err_clk;
++		goto err_sclk;
+ 	}
+ 
+ 	exynos_tmu_control(pdev, true);
+@@ -896,7 +914,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 				sizeof(struct thermal_sensor_conf), GFP_KERNEL);
+ 	if (!sensor_conf) {
+ 		ret = -ENOMEM;
+-		goto err_clk;
++		goto err_sclk;
+ 	}
+ 	sprintf(sensor_conf->name, "therm_zone%d", data->id);
+ 	sensor_conf->read_temperature = (int (*)(void *))exynos_tmu_read;
+@@ -928,7 +946,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	ret = exynos_register_thermal(sensor_conf);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to register thermal interface\n");
+-		goto err_clk;
++		goto err_sclk;
+ 	}
+ 	data->reg_conf = sensor_conf;
+ 
+@@ -936,10 +954,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+-		goto err_clk;
++		goto err_sclk;
+ 	}
+ 
+ 	return 0;
++err_sclk:
++	clk_disable_unprepare(data->sclk);
+ err_clk:
+ 	clk_unprepare(data->clk);
+ err_clk_sec:
+@@ -956,6 +976,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	exynos_tmu_control(pdev, false);
+ 
++	clk_disable_unprepare(data->sclk);
+ 	clk_unprepare(data->clk);
+ 	if (!IS_ERR(data->clk_sec))
+ 		clk_unprepare(data->clk_sec);
+-- 
+1.7.9.5
+
