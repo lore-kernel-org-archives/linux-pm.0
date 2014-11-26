@@ -1,130 +1,122 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 4/4] thermal: of: Extend current of-thermal.c code to
- allow setting emulated temp
-Date: Wed, 26 Nov 2014 09:47:33 +0100
-Message-ID: <20141126094733.683a4099@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
- <1416500488-7232-5-git-send-email-l.majewski@samsung.com>
- <20141125204401.GC14292@developer>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
+Date: Wed, 26 Nov 2014 14:19:57 +0530
+Message-ID: <CAKohpomBijLiBgV31ZhZDTctsTLccBZ+93r+esG-WRZAS4sqww@mail.gmail.com>
+References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:13622 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbaKZIsU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:48:20 -0500
-In-reply-to: <20141125204401.GC14292@developer>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:39966 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbaKZIt6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:49:58 -0500
+Received: by mail-oi0-f52.google.com with SMTP id h136so1707696oig.11
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 00:49:57 -0800 (PST)
+In-Reply-To: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, Thomas Abraham <ta.omasab@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, santosh.shilimkar@oracle.com
 
-Hi Eduardo,
+Fixing Santosh's email id as he switched employer ..
 
-> On Thu, Nov 20, 2014 at 05:21:28PM +0100, Lukasz Majewski wrote:
-> > Before this change it was only possible to set get_temp() and
-> > get_trend() methods to be used in the common code handling passing
-> > parameters via device tree to "cpu-thermal" CPU thermal zone device.
-> > 
-> > Now it is possible to also set emulated value of temperature for
-> > debug purposes.
-> > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> > Changes for v2:
-> > - Rework the emulated temperature setting code to use
-> > of_thermal_sensor_ops structure
-> > ---
-> >  drivers/thermal/of-thermal.c | 24 ++++++++++++++++++++++++
-> >  include/linux/thermal.h      |  1 +
-> >  2 files changed, 25 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/of-thermal.c
-> > b/drivers/thermal/of-thermal.c index 33921c5..ad7dc2b 100644
-> > --- a/drivers/thermal/of-thermal.c
-> > +++ b/drivers/thermal/of-thermal.c
-> > @@ -174,6 +174,28 @@ of_thermal_get_trip_points(struct
-> > thermal_zone_device *tz) return data->gtrips;
-> >  }
-> >  
-> > +/**
-> > + * of_thermal_set_emul_temp - function to set emulated temperature
-> > + *
-> > + * @tz:	pointer to a thermal zone
-> > + * @temp:	temperature to set
-> > + *
-> > + * This function gives the ability to set emulated value of
-> > temperature,
-> > + * which is handy for debugging
-> > + *
-> > + * Return: zero on success, error code otherwise
-> > + */
-> > +static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
-> > +				    unsigned long temp)
-> > +{
-> > +	struct __thermal_zone *data = tz->devdata;
-> > +
-> > +	if (!data->ops || !data->ops->set_emul_temp)
-> > +		return -EINVAL;
-> > +
-> > +	return data->ops->set_emul_temp(data->sensor_data, temp);
-> > +}
-> > +
-> >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
-> > int trip, enum thermal_trend *trend)
-> >  {
-> > @@ -405,6 +427,7 @@ thermal_zone_of_add_sensor(struct device_node
-> > *zone, 
-> >  	tzd->ops->get_temp = of_thermal_get_temp;
-> >  	tzd->ops->get_trend = of_thermal_get_trend;
-> > +	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-> >  	mutex_unlock(&tzd->lock);
-> >  
-> >  	return tzd;
-> > @@ -533,6 +556,7 @@ void thermal_zone_of_sensor_unregister(struct
-> > device *dev, mutex_lock(&tzd->lock);
-> >  	tzd->ops->get_temp = NULL;
-> >  	tzd->ops->get_trend = NULL;
-> > +	tzd->ops->set_emul_temp = NULL;
-> >  
-> >  	tz->ops = NULL;
-> >  	tz->sensor_data = NULL;
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index 88d7249..5eb9d44 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -301,6 +301,7 @@ struct thermal_genl_event {
-> >  struct thermal_zone_of_device_ops {
-> >  	int (*get_temp)(void *, long *);
-> >  	int (*get_trend)(void *, long *);
-> > +	int (*set_emul_temp)(void *, unsigned long);
-> 
-> Please add it in the list of Optional functions in the comment above
-> this struct.
-
-I will add proper comment to struct thermal_zone_of_device_ops comment.
-
-> 
-> Apart from that:
-> 
-> 
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> 
-> 
-> >  };
-> >  
-> >  /**
-> > -- 
-> > 2.0.0.rc2
-> > 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+On 26 November 2014 at 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> DT based cpufreq drivers doesn't require much support from platform code now a
+> days as most of the stuff is moved behind generic APIs. Like clk APIs for
+> changing clock rates, regulator APIs for changing voltages, etc.
+>
+> One of the bottleneck still left was how to select which cpufreq driver to probe
+> for a given platform as there might be multiple drivers available.
+>
+> Traditionally, we used to create platform devices from machine specific code
+> which binds with a cpufreq driver. And while we moved towards DT based device
+> creation, these devices stayed as is.
+>
+> The problem is getting worse now as we have architectures now with Zero platform
+> specific code. Forcefully these platforms have to create a new file in
+> drivers/cpufreq/ to just add these platform devices in order to use the generic
+> drivers like cpufreq-dt.c.
+>
+> This has been discussed again and again, but with no solution yet. Last it was
+> discussed here:
+>
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-May/256154.html
+>
+> This patch is an attempt towards getting the bindings.
+>
+> We only need to have one entry in cpus@cpu0 node which will match with drivers
+> name.
+>
+> We can then add another file drivers/cpufreq/device_dt.c, which will add a
+> platform device with the name it finds from cpus@cpu0 node and existing drivers
+> will work without any change. Or something else if somebody have a better
+> proposal. But lets fix the bindings first.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  .../devicetree/bindings/cpufreq/drivers.txt        | 53 ++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/drivers.txt
+>
+> diff --git a/Documentation/devicetree/bindings/cpufreq/drivers.txt b/Documentation/devicetree/bindings/cpufreq/drivers.txt
+> new file mode 100644
+> index 0000000..bd14917
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/drivers.txt
+> @@ -0,0 +1,53 @@
+> +Binding to select which cpufreq driver to register
+> +
+> +It is a generic DT binding for selecting which cpufreq-driver to register for
+> +any platform.
+> +
+> +The property  listed below must be defined under node /cpus/cpu@0 node. We don't
+> +support multiple CPUFreq driver currently for different cluster and so this
+> +information isn't required to be present in CPUs of all clusters.
+> +
+> +Required properties:
+> +- None
+> +
+> +Optional properties:
+> +- dvfs-method: CPUFreq driver to probe. For example: "arm-bL-cpufreq-dt",
+> +  "cpufreq-dt", etc
+> +
+> +Examples:
+> +
+> +cpus {
+> +       #address-cells = <1>;
+> +       #size-cells = <0>;
+> +
+> +       cpu@0 {
+> +               compatible = "arm,cortex-a9";
+> +               reg = <0>;
+> +               next-level-cache = <&L2>;
+> +               operating-points = <
+> +                       /* kHz    uV */
+> +                       792000  1100000
+> +                       396000  950000
+> +                       198000  850000
+> +               >;
+> +               dvfs-method = "cpufreq-dt";
+> +       };
+> +
+> +       cpu@1 {
+> +               compatible = "arm,cortex-a9";
+> +               reg = <1>;
+> +               next-level-cache = <&L2>;
+> +       };
+> +
+> +       cpu@2 {
+> +               compatible = "arm,cortex-a9";
+> +               reg = <2>;
+> +               next-level-cache = <&L2>;
+> +       };
+> +
+> +       cpu@3 {
+> +               compatible = "arm,cortex-a9";
+> +               reg = <3>;
+> +               next-level-cache = <&L2>;
+> +       };
+> +};
+> --
+> 2.0.3.693.g996b0fd
+>
