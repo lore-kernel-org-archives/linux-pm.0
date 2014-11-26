@@ -1,33 +1,65 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v10 06/10] arm: dts: qcom: Update power-controller device
- node for 8064 Krait CPUs
-Date: Wed, 26 Nov 2014 12:06:53 -0800
-Message-ID: <547632DD.4030005@codeaurora.org>
-References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org> <1416593037-27527-7-git-send-email-lina.iyer@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH RFC 0/3] Add "Simple" / Renesas Bus State Controller Driver
+Date: Wed, 26 Nov 2014 12:11:12 -0800
+Message-ID: <7h4mtlen8f.fsf@deeprootsystems.com>
+References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+	<6261300.I132f1jLqB@wuerfel>
+	<CAMuHMdVjpL-QgS0aAdMo4EHXibhpKCJC73yY+HDY=+Ae=LMigA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:49333 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbaKZUGy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 15:06:54 -0500
-In-Reply-To: <1416593037-27527-7-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVjpL-QgS0aAdMo4EHXibhpKCJC73yY+HDY=+Ae=LMigA@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Mon, 24 Nov 2014 21:27:06 +0100")
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-On 11/21/2014 10:03 AM, Lina Iyer wrote:
-> Update the SAW2 DT bindings to add qcom,apq8064-saw2-v1.1-cpu compatible
-> binding string to configure SPM registers and allow the SPM to put the
-> core in deeper idle states when the core is idle.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
+
+> Hi Arnd,
 >
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> On Mon, Nov 24, 2014 at 9:15 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Monday 24 November 2014 21:10:05 Geert Uytterhoeven wrote:
+>>> As this minimal BSC driver isn't hardware-specific at all, I'm wondering
+>>> if there's a simpler way to do this?
+>>>   - Should the driver be renamed to "simple-bus", and match "simple-bus"?
+>>>   - Should this be moved to core code, without an explicit driver for
+>>>     "simple-bus"? I.e. should the driver core just enable runtime PM for
+>>>     all devices not bound to a driver, as they may represent buses with
+>>>     child devices that do rely on runtime PM?
+>>>
+>>> Thanks for your comments and suggestions!
+>>
+>> My understanding of simple-bus is that it's something that does
+>> not have any power-management capabilities, and I'd rather not
+>> add clocks or interrupts to it.
+>
+> OK.
+>
+>> What I think makes more sense is to have a bus driver for it
+>> in drivers/bus, remove the "simple-bus" compatibility value
+>> and have the driver take care of registering the power domain
+>> and probing the child devices using of_platform_populate on
+>> itself.
+>
+> Registering power domains is already handled by the core code.
+>
+> So compared to my RFC code, I only have to
+>   1. Drop "simple-bus" from the compatible property in the .dtsi,
+>   2. Call of_platform_populate() from renesas_bsc_probe(), to
+>      register the child devices, now the core code no longer does that.
+>
+> I find it a bit strange having to add _more_ code, as the core code handles
+> registering child devices fine. Doing it from my bus driver only protects
+> against people trying to run a kernel without my bus driver included
+> (which currently works fine, as long as no PM domain or clock is involved,
+>  e.g. if the clock is forgotten in the SoC's .dtsi :-).
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+I actually rather like the simple bus driver in it's current form, where
+the device and pm-domain registration is taken care of by the
+core. Since it's really not HW specific at all, maybe just rename it
+simple-pm-bus or something like that?
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Kevin
 
