@@ -1,7 +1,7 @@
 From: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 8/9] bus: brcmstb_gisb: Honor the "big-endian" and "native-endian" DT properties
-Date: Tue, 25 Nov 2014 16:49:53 -0800
-Message-ID: <1416962994-27095-9-git-send-email-cernekee@gmail.com>
+Subject: [PATCH 3/9] power/reset: brcmstb: Add support for old 65nm chips
+Date: Tue, 25 Nov 2014 16:49:48 -0800
+Message-ID: <1416962994-27095-4-git-send-email-cernekee@gmail.com>
 References: <1416962994-27095-1-git-send-email-cernekee@gmail.com>
 Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1416962994-27095-1-git-send-email-cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
@@ -10,59 +10,49 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx
 Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, marc.ceeeee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On chips strapped for BE, we'll need to use ioread32be/iowrite32be instead of
-ioread32/iowrite32.
+The register bit fields are a little different, so add an entry and a
+compatible string to accommodate them.
 
 Signed-off-by: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- drivers/bus/brcmstb_gisb.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/arm/brcm-brcmstb.txt | 4 +++-
+ drivers/power/reset/brcmstb-reboot.c                   | 6 ++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/bus/brcmstb_gisb.c b/drivers/bus/brcmstb_gisb.c
-index 172908d..969b992 100644
---- a/drivers/bus/brcmstb_gisb.c
-+++ b/drivers/bus/brcmstb_gisb.c
-@@ -90,6 +90,7 @@ static const int gisb_offsets_bcm7445[] = {
- struct brcmstb_gisb_arb_device {
- 	void __iomem	*base;
- 	const int	*gisb_offsets;
-+	bool		big_endian;
- 	struct mutex	lock;
- 	struct list_head next;
- 	u32 valid_mask;
-@@ -106,7 +107,10 @@ static u32 gisb_read(struct brcmstb_gisb_arb_device *gdev, int reg)
- 	if (offset == -1)
- 		return 1;
+diff --git a/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt b/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
+index 3c436cc..430608e 100644
+--- a/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
++++ b/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
+@@ -79,7 +79,9 @@ reboot
+ Required properties
  
--	return ioread32(gdev->base + offset);
-+	if (gdev->big_endian)
-+		return ioread32be(gdev->base + offset);
-+	else
-+		return ioread32(gdev->base + offset);
- }
+     - compatible
+-        The string property "brcm,brcmstb-reboot".
++        The string property "brcm,brcmstb-reboot" for 40nm/28nm chips with
++        the new SYS_CTRL interface, or "brcm,bcm7038-reboot" for 65nm
++        chips with the old SUN_TOP_CTRL interface.
  
- static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
-@@ -115,7 +119,11 @@ static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
+     - syscon
+         A phandle / integer array that points to the syscon node which describes
+diff --git a/drivers/power/reset/brcmstb-reboot.c b/drivers/power/reset/brcmstb-reboot.c
+index 4e61c3f..33af4f3 100644
+--- a/drivers/power/reset/brcmstb-reboot.c
++++ b/drivers/power/reset/brcmstb-reboot.c
+@@ -88,8 +88,14 @@ static const struct reset_reg_mask reset_bits_40nm = {
+ 	.sw_mstr_rst_mask = BIT(0),
+ };
  
- 	if (offset == -1)
- 		return;
--	iowrite32(val, gdev->base + reg);
++static const struct reset_reg_mask reset_bits_65nm = {
++	.rst_src_en_mask = BIT(3),
++	.sw_mstr_rst_mask = BIT(31),
++};
 +
-+	if (gdev->big_endian)
-+		iowrite32be(val, gdev->base + reg);
-+	else
-+		iowrite32(val, gdev->base + reg);
- }
+ static const struct of_device_id of_match[] = {
+ 	{ .compatible = "brcm,brcmstb-reboot", .data = &reset_bits_40nm },
++	{ .compatible = "brcm,bcm7038-reboot", .data = &reset_bits_65nm },
+ 	{},
+ };
  
- static ssize_t gisb_arb_get_timeout(struct device *dev,
-@@ -300,6 +308,7 @@ static int brcmstb_gisb_arb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 	gdev->gisb_offsets = of_id->data;
-+	gdev->big_endian = of_device_is_big_endian(dn);
- 
- 	err = devm_request_irq(&pdev->dev, timeout_irq,
- 				brcmstb_gisb_timeout_handler, 0, pdev->name,
 -- 
 2.1.0
 
