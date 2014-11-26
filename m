@@ -1,62 +1,36 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v10 07/10] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Wed, 26 Nov 2014 11:43:01 -0800
-Message-ID: <7hegspeoje.fsf@deeprootsystems.com>
-References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
-	<1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
-	<5475A599.1010601@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v10 02/10] qcom: scm: Add SCM warmboot support for quad
+ core SoCs
+Date: Wed, 26 Nov 2014 11:48:24 -0800
+Message-ID: <54762E88.50300@codeaurora.org>
+References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org> <1416593037-27527-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <5475A599.1010601@linaro.org> (Daniel Lezcano's message of "Wed,
-	26 Nov 2014 11:04:09 +0100")
+In-Reply-To: <1416593037-27527-3-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+On 11/21/2014 10:03 AM, Lina Iyer wrote:
+> @@ -37,3 +54,17 @@ int scm_set_boot_addr(phys_addr_t addr, int flags)
+>   			&cmd, sizeof(cmd), NULL, 0);
+>   }
+>   EXPORT_SYMBOL(scm_set_boot_addr);
+> +
+> +int scm_set_warm_boot_addr(void *entry, int cpu)
+> +{
+> +	int ret;
+> +
+> +	if (entry == scm_flags[cpu].entry)
+> +		return 0;
 
-> On 11/21/2014 07:03 PM, Lina Iyer wrote:
->> Add cpuidle driver interface to allow cpus to go into C-States. Use the
->> cpuidle DT interface, common across ARM architectures, to provide the
->> idle state information to the cpuidle framework.
->>
->> Supported modes at this time are Standby and Standalone Power Collapse.
->>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->
-> One nit and one comment below. Other than that:
->
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->
-> [ ... ]
->
->> +static int qcom_cpu_stby(struct cpuidle_device *dev,
->> +				struct cpuidle_driver *drv, int index)
->> +{
->> +	lpm_ops->standby(NULL);
->
-> In my last comment I was referring about a check for entering
-> successfully the idle state:
->
-> 	if (lpm_ops->standby(NULL))
-> 		return -1;
->
->> +	return index;
->> +}
->> +
->> +static int qcom_cpu_spc(struct cpuidle_device *dev,
->> +				struct cpuidle_driver *drv, int index)
->> +{
->> +	lpm_ops->spc(NULL);
->> +
->> +	return index;
- 
-Similar to Daniel's comment above.  if lpm_ops->spc() fails, do you want
-to fall back to standby.
+Is the entry going to be different at some point? I wonder why we can't 
+just call this function once when the SPM device probes to setup the 
+entry point to cpu_resume()?
 
-Hmm, using the DT idle states, it doesn't look as straight forward as it
-used to be to fall back to a "safe state."
-
-Kevin
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
