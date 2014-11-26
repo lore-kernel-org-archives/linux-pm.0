@@ -1,68 +1,91 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Wed, 26 Nov 2014 09:44:39 +0530
-Message-ID: <CAKohpo=8NU_CyJ-ZQrfFtov3TMGT=HzcuH8F_fnyw4dv4+dvmw@mail.gmail.com>
-References: <546D26AE.50601@free.fr>
-	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
-	<546DF891.2050401@free.fr>
-	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
-	<54747DFA.3040802@free.fr>
-	<CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
-	<5474FA1F.50603@free.fr>
+From: Tony Prisk <linux@prisktech.co.nz>
+Subject: Re: [PATCH 9/9] usb: {ohci,ehci}-platform: Use new OF big-endian
+ helper function
+Date: Wed, 26 Nov 2014 17:15:13 +1300
+Message-ID: <547553D1.3070908@prisktech.co.nz>
+References: <1416962994-27095-1-git-send-email-cernekee@gmail.com> <1416962994-27095-10-git-send-email-cernekee@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5474FA1F.50603@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Mathieu Poirier <mathieu.poirier@linaro.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mips-bounce@linux-mips.org>
+In-Reply-To: <1416962994-27095-10-git-send-email-cernekee@gmail.com>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Kevin Cernekee <cernekee@gmail.com>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, arnd@arndb.de, stern@rowland.harvard.edu, gregkh@linuxfoundation.org, f.fainelli@gmail.com
+Cc: grant.likely@linaro.org, robh+dt@kernel.org, computersforpeace@gmail.com, marc.ceeeee@gmail.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-mips@linux-mips.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26 November 2014 at 03:22, Mason <mpeg.blue@free.fr> wrote:
-> If I remember correctly (please correct me if I am mistaken),
-> the kernel keeps a list of timers, ordered by deadline, and
-> dynamically configures the system timer to fire at the next
-> deadline.
 
-Yes.
-
->> Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
->> this is the rate at which cpufreq core checks if cpu's freq require revisiting.
+On 26/11/14 13:49, Kevin Cernekee wrote:
+> This handles the existing "big-endian" case, and in addition, it also does
+> the right thing when "native-endian" is specified.
 >
-> I think setting the sampling rate to 50 ms should make the
-> system reactive enough to load swings?
-
-Depends on the kind of load system is under. If load changes quite frequently
-then 50 ms can be a very big value. If it doesn't then 50 ms might be good.
-But it has to be tuned properly based on how much load the system has
-and how much power it consumes.
-
-Some information about that tuning can be found here:
-https://www.youtube.com/watch?v=he1UO__K9ao
-
-This is an presentation given by Mathieu Poirier (Linaro) about the work
-done on ARM's big LITTLE architecture.
-
-Slides: http://events.linuxfoundation.org/images/stories/slides/elc2013_poirier.pdf
-
->>> This 'struct clk' is an elusive beast.
->>> Where is it defined? I only run into forward declarations.
->>
->> Its architecture specific. What's the architecture you are working on?
->> You may implement your own routine instead of cpufreq_generic_get().
+> Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+> ---
+>   Documentation/devicetree/bindings/usb/usb-ehci.txt | 2 ++
+>   Documentation/devicetree/bindings/usb/usb-ohci.txt | 2 ++
+>   drivers/usb/host/ehci-platform.c                   | 2 +-
+>   drivers/usb/host/ohci-platform.c                   | 2 +-
+>   4 files changed, 6 insertions(+), 2 deletions(-)
 >
-> The SoC is made by Sigma Designs. It is based on the ARM Cortex-A9.
-
-Okay, life should be easy then. Normally there will be few programmable
-PLLs on your platform. You need to write a clock driver for them similar
-to the ones present here: drivers/clk/
-
-And then you can reuse cpufreq-dt.c cpufreq driver, which is generic enough
-for everybody :)
-
->> Yes. Documentation/clk.txt.
->
-> Oh boy! platform, device tree, cpu-freq, cpuidle, clk, ... so much
-> to learn, so few hours in a day.
-
-:)
+> diff --git a/Documentation/devicetree/bindings/usb/usb-ehci.txt b/Documentation/devicetree/bindings/usb/usb-ehci.txt
+> index 43c1a4e..9505c31 100644
+> --- a/Documentation/devicetree/bindings/usb/usb-ehci.txt
+> +++ b/Documentation/devicetree/bindings/usb/usb-ehci.txt
+> @@ -12,6 +12,8 @@ Optional properties:
+>    - big-endian-regs : boolean, set this for hcds with big-endian registers
+>    - big-endian-desc : boolean, set this for hcds with big-endian descriptors
+>    - big-endian : boolean, for hcds with big-endian-regs + big-endian-desc
+> + - native-endian : boolean, enables big-endian-regs + big-endian-desc
+> +   iff the kernel was compiled for big endian
+s/iff/if
+>    - clocks : a list of phandle + clock specifier pairs
+>    - phys : phandle + phy specifier pair
+>    - phy-names : "usb"
+> diff --git a/Documentation/devicetree/bindings/usb/usb-ohci.txt b/Documentation/devicetree/bindings/usb/usb-ohci.txt
+> index 19233b7..3bb9673 100644
+> --- a/Documentation/devicetree/bindings/usb/usb-ohci.txt
+> +++ b/Documentation/devicetree/bindings/usb/usb-ohci.txt
+> @@ -9,6 +9,8 @@ Optional properties:
+>   - big-endian-regs : boolean, set this for hcds with big-endian registers
+>   - big-endian-desc : boolean, set this for hcds with big-endian descriptors
+>   - big-endian : boolean, for hcds with big-endian-regs + big-endian-desc
+> +- native-endian : boolean, enables big-endian-regs + big-endian-desc
+> +  iff the kernel was compiled for big endian
+s/iff/if
+>   - no-big-frame-no : boolean, set if frame_no lives in bits [15:0] of HCCA
+>   - num-ports : u32, to override the detected port count
+>   - clocks : a list of phandle + clock specifier pairs
+> diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+> index 2f5b9ce..0da9d70 100644
+> --- a/drivers/usb/host/ehci-platform.c
+> +++ b/drivers/usb/host/ehci-platform.c
+> @@ -187,7 +187,7 @@ static int ehci_platform_probe(struct platform_device *dev)
+>   		if (of_property_read_bool(dev->dev.of_node, "big-endian-desc"))
+>   			ehci->big_endian_desc = 1;
+>   
+> -		if (of_property_read_bool(dev->dev.of_node, "big-endian"))
+> +		if (of_device_is_big_endian(dev->dev.of_node))
+>   			ehci->big_endian_mmio = ehci->big_endian_desc = 1;
+>   
+>   		priv->phy = devm_phy_get(&dev->dev, "usb");
+> diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
+> index 7793c3c..029a606 100644
+> --- a/drivers/usb/host/ohci-platform.c
+> +++ b/drivers/usb/host/ohci-platform.c
+> @@ -157,7 +157,7 @@ static int ohci_platform_probe(struct platform_device *dev)
+>   		if (of_property_read_bool(dev->dev.of_node, "big-endian-desc"))
+>   			ohci->flags |= OHCI_QUIRK_BE_DESC;
+>   
+> -		if (of_property_read_bool(dev->dev.of_node, "big-endian"))
+> +		if (of_device_is_big_endian(dev->dev.of_node))
+>   			ohci->flags |= OHCI_QUIRK_BE_MMIO | OHCI_QUIRK_BE_DESC;
+>   
+>   		if (of_property_read_bool(dev->dev.of_node, "no-big-frame-no"))
