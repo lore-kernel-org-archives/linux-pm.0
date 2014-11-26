@@ -1,70 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 7/7] cpu_cooling: Don't check is_cpufreq_valid()
-Date: Wed, 26 Nov 2014 11:23:02 +0530
-Message-ID: <5cd24c81a5e23f68ac499605bd6647c0045f222a.1416980448.git.viresh.kumar@linaro.org>
-References: <cover.1416980447.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq-dt: register cooling device after validating
+ cpufreq table
+Date: Wed, 26 Nov 2014 11:27:42 +0530
+Message-ID: <CAKohpo=ZM8QstEOp1A86N2jzDEY5w2FmB7K0rtLPmzg+_iZdMw@mail.gmail.com>
+References: <b4a56cad08c5ef701cf268881697caabe5229994.1416826729.git.viresh.kumar@linaro.org>
+	<2189780.D9n5NYrXn8@vostro.rjw.lan>
+	<1447952.pbyqNN4RJG@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:44693 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbaKZFxp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 00:53:45 -0500
-Received: by mail-pa0-f52.google.com with SMTP id eu11so2154816pac.39
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 21:53:44 -0800 (PST)
-In-Reply-To: <cover.1416980447.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1416980447.git.viresh.kumar@linaro.org>
-References: <cover.1416980447.git.viresh.kumar@linaro.org>
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:47942 "EHLO
+	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbaKZF5m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 00:57:42 -0500
+Received: by mail-oi0-f42.google.com with SMTP id v63so1571824oia.1
+        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2014 21:57:42 -0800 (PST)
+In-Reply-To: <1447952.pbyqNN4RJG@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Because get_cpu_frequency() has returned a valid frequency, it means that the
-cpufreq policy is surely valid and so no point checking that again with
-is_cpufreq_valid(). Get rid of the routine as well as there are no more users.
+On 26 November 2014 at 03:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> And what bad things are going to happen if this is not pushed for 3.18?
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+This is what Eduardo reported in one of the mails:
+
 ---
- drivers/thermal/cpu_cooling.c | 20 +-------------------
- 1 file changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 41f5728..3740b61 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -98,23 +98,6 @@ static void release_idr(struct idr *idr, int id)
- 
- /* Below code defines functions to be used for cpufreq as cooling device */
- 
--/**
-- * is_cpufreq_valid - function to check frequency transitioning capability.
-- * @cpu: cpu for which check is needed.
-- *
-- * This function will check the current state of the system if
-- * it is capable of changing the frequency for a given @cpu.
-- *
-- * Return: 0 if the system is not currently capable of changing
-- * the frequency of given cpu. !0 in case the frequency is changeable.
-- */
--static int is_cpufreq_valid(int cpu)
--{
--	struct cpufreq_policy policy;
--
--	return !cpufreq_get_policy(&policy, cpu);
--}
--
- enum cpufreq_cooling_property {
- 	GET_LEVEL,
- 	GET_FREQ,
-@@ -288,8 +271,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
- 	cpufreq_device->cpufreq_val = clip_freq;
- 	notify_device = cpufreq_device;
- 
--	if (is_cpufreq_valid(cpu))
--		cpufreq_update_policy(cpu);
-+	cpufreq_update_policy(cpu);
- 
- 	notify_device = NOTIFY_INVALID;
- 
--- 
-2.0.3.693.g996b0fd
+As an example, I am taking the ti-soc-thermal, but we already have other
+of-thermal based drivers. Booting with this patch ti-soc-thermal
+(of-based boot) loads fine, but the cpu_cooling never gets bound to the
+thermal zone.
 
+The thing is that the bind may happen before cpufreq-dt code loads the
+cpufreq driver, and when cpu_cooling is checking what is the max freq,
+by using cpufreq table, it won't be able to do it, as there is no table.
+
+While, without the patch, it will use wrong in the binding, but after
+it gets bound, and cpufreq loads, the max will be used correctly.
+
+----
+
+And so it looked like things aren't going to work smoothly in 3.18
+and so I thought we should get it in.
+
+But probably the problem will be worst only after applying Lukasz
+patchset?
+
+@Eduardo: Do you want Rafael to apply this for 3.18? or 3.19 will
+work as well ?
+
+--
+viresh
