@@ -1,81 +1,57 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v9 2/9] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 26 Nov 2014 22:25:00 +0100
-Message-ID: <5476452C.9040107@linaro.org>
-References: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>	<1414194024-55547-3-git-send-email-lina.iyer@linaro.org> <7hy4qxet3c.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 4/8] opp: Introduce APIs to remove OPPs
+Date: Wed, 26 Nov 2014 23:32:26 +0100
+Message-ID: <11530150.5svHxl9OuM@vostro.rjw.lan>
+References: <cover.1416910766.git.viresh.kumar@linaro.org> <CAKohponz3MsgZNtm1i-aLx8kRRjJwUJjL=B3RE96EiivwXbF2A@mail.gmail.com> <CAKohpomKym9dqzQDmS-7ipze4jCYDU4_UN4a36VceHuGezoiVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f48.google.com ([74.125.82.48]:36914 "EHLO
-	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbaKZVZH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 16:25:07 -0500
-Received: by mail-wg0-f48.google.com with SMTP id y19so4821393wgg.35
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 13:25:05 -0800 (PST)
-In-Reply-To: <7hy4qxet3c.fsf@deeprootsystems.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:60808 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750770AbaKZWLK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 17:11:10 -0500
+In-Reply-To: <CAKohpomKym9dqzQDmS-7ipze4jCYDU4_UN4a36VceHuGezoiVw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>
-Cc: sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stefan Wahren <stefan.wahren@i2se.com>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 11/26/2014 07:04 PM, Kevin Hilman wrote:
-> Oops, I thought I had sent this, but it was sitting in the drafts
-> folder.  Sending anyways because it looks like most of these issues
-> still exist in v10.
+On Wednesday, November 26, 2014 02:47:47 PM Viresh Kumar wrote:
+> On 26 November 2014 at 11:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Also it looks like I should use call_srcu() with kfree_rcu() for
+> > opp_set_availability() case as well to avoid any corner cases.
+> 
+> This is the diff I would be adding to this patch:
 
-[ ... ]
+That should work if I'm not mistaken, but I'm wondering if we could
+settle on using one RCU type for this (later, though).
 
->> +	 * On some SoC's if the control registers are written first and if=
- the
->> +	 * CPU was held in reset, the reset signal could trigger the SPM s=
-tate
->> +	 * machine, before the sequences are completely written.
->> +	 */
->> +	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
->> +	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
->> +	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly)=
-;
->> +
->> +	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
->> +				drv->reg_data->pmic_data[0]);
->> +	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
->> +				drv->reg_data->pmic_data[1]);
->> +
->> +	/**
->> +	 * Ensure all observers see the above register writes before the
->> +	 * cpuidle driver is allowed to use the SPM.
->> +	 */
->> +	wmb();
->> +	drv->available =3D true;
->
-> Others have already commented on this, but I'll add my $0.02 that thi=
-s
-> suggest something is not right in the init sequence.
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index f9d80e6..3f728cd 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -506,7 +506,7 @@ static void kfree_opp_rcu(struct rcu_head *head)
+>         struct dev_pm_opp *opp = container_of(head, struct dev_pm_opp,
+> rcu_head);
+> 
+>         pr_info("%s: opp:%p, dynamic:%d\n", __func__, opp, opp->dynamic);
+> -       kfree(opp);
+> +       kfree_rcu(opp);
+>  }
+> 
+>  static void kfree_device_rcu(struct rcu_head *head)
+> @@ -644,7 +644,7 @@ static int opp_set_availability(struct device
+> *dev, unsigned long freq,
+> 
+>         list_replace_rcu(&opp->node, &new_opp->node);
+>         mutex_unlock(&dev_opp_list_lock);
+> -       kfree_rcu(opp, rcu_head);
+> +       call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, kfree_opp_rcu);
+> 
+>         /* Notify the change of the OPP availability */
+>         if (availability_req)
 
-Yep, I did the same comment. There is very likely something wrong in th=
-e=20
-init sequence somewhere.
-
-Lina, you really have to lean over that.
-
->> +	if ((cpu > -1) && !cpuidle_drv_init) {
->> +		platform_device_register(&qcom_cpuidle_device);
->> +		cpuidle_drv_init =3D true;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
-
-[ ... ]
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
