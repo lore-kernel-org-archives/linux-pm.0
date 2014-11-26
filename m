@@ -1,30 +1,24 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
 Subject: Re: [PATCH v2 3/4] thermal: of: Extend of-thermal to export table of
  trip points
-Date: Wed, 26 Nov 2014 09:35:10 +0100
-Message-ID: <20141126093510.4233ff7f@amdc2363>
+Date: Wed, 26 Nov 2014 09:39:43 +0100
+Message-ID: <20141126093943.362a084a@amdc2363>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
  <1416500488-7232-4-git-send-email-l.majewski@samsung.com>
- <20141125203629.GA14292@developer>
+ <20141125203845.GB14292@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:52740 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbaKZIfX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 03:35:23 -0500
-In-reply-to: <20141125203629.GA14292@developer>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20141125203845.GB14292@developer>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Eduardo,
 
-> Hello Lukasz,
-> 
 > On Thu, Nov 20, 2014 at 05:21:27PM +0100, Lukasz Majewski wrote:
 > > This patch extends the of-thermal.c to export copy of trip points
 > > for a given thermal zone.
@@ -72,6 +66,17 @@ Hi Eduardo,
 > > + */
 > > +const struct thermal_trip * const
 > > +of_thermal_get_trip_points(struct thermal_zone_device *tz)
+> 
+> Another thing, can you please check why scripts/kernel-doc does not
+> like this prototype? It throws an warn:
+> Warning(drivers/thermal/of-thermal.c:168): cannot understand function
+> prototype: 'const struct thermal_trip * const
+> of_thermal_get_trip_points(struct thermal_zone_device *tz) '
+> 
+
+I will check that. However the warning looks a bit strange.
+
+> 
 > > +{
 > > +	struct __thermal_zone *data = tz->devdata;
 > > +
@@ -81,12 +86,6 @@ Hi Eduardo,
 > > +	return data->gtrips;
 > > +}
 > > +
-> 
-> EXPORT_SYMBOL_GPL(of_thermal_get_trip_points);
-
-Ok.
-
-> 
 > >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
 > > int trip, enum thermal_trend *trend)
 > >  {
@@ -132,13 +131,6 @@ Ok.
 > >  static inline void of_thermal_destroy_zones(void) { }
 > > @@ -102,6 +104,11 @@ static inline bool
 > > of_thermal_is_trip_en(struct thermal_zone_device *, int) {
-> 
-> This produces compilation error when CONFIG_THERMAL_OF is not set.
-> Name the parameters to fix.
-
-As all the other cases, I will fix that.
-
-> 
 > >  	return 0;
 > >  }
 > > +static inline const struct thermal_trip * const
@@ -162,17 +154,6 @@ As all the other cases, I will fix that.
 > > exported from
 > > + *                       of-thermal
 > > + *
-> 
-> The only problem I have with this name is that would look like it is
-> in use in all thermal framework, which is not really the case. But I
-> do think having a type here is a good thing. So, not sure :-)
-
-It can stay to be struct thermal_trip or we can rename it to
-struct of_thermal_trip.
-
-I'm fine with both names.
-
-> 
 > > + * @temperature:	trip point temperature
 > > + * @hysteresis:		trip point hysteresis
 > > + * @type:		trip point type
