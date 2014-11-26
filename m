@@ -1,7 +1,7 @@
 From: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 3/9] power/reset: brcmstb: Add support for old 65nm chips
-Date: Tue, 25 Nov 2014 16:49:48 -0800
-Message-ID: <1416962994-27095-4-git-send-email-cernekee@gmail.com>
+Subject: [PATCH 5/9] bus: brcmstb_gisb: Introduce wrapper functions for MMIO accesses
+Date: Tue, 25 Nov 2014 16:49:50 -0800
+Message-ID: <1416962994-27095-6-git-send-email-cernekee@gmail.com>
 References: <1416962994-27095-1-git-send-email-cernekee@gmail.com>
 Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1416962994-27095-1-git-send-email-cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
@@ -10,49 +10,84 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx
 Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, marc.ceeeee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The register bit fields are a little different, so add an entry and a
-compatible string to accommodate them.
+These will be used to abstract out chip-to-chip differences.
 
 Signed-off-by: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- Documentation/devicetree/bindings/arm/brcm-brcmstb.txt | 4 +++-
- drivers/power/reset/brcmstb-reboot.c                   | 6 ++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/bus/brcmstb_gisb.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt b/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
-index 3c436cc..430608e 100644
---- a/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
-+++ b/Documentation/devicetree/bindings/arm/brcm-brcmstb.txt
-@@ -79,7 +79,9 @@ reboot
- Required properties
+diff --git a/drivers/bus/brcmstb_gisb.c b/drivers/bus/brcmstb_gisb.c
+index 5da935a..8ff403d 100644
+--- a/drivers/bus/brcmstb_gisb.c
++++ b/drivers/bus/brcmstb_gisb.c
+@@ -54,6 +54,16 @@ struct brcmstb_gisb_arb_device {
  
-     - compatible
--        The string property "brcm,brcmstb-reboot".
-+        The string property "brcm,brcmstb-reboot" for 40nm/28nm chips with
-+        the new SYS_CTRL interface, or "brcm,bcm7038-reboot" for 65nm
-+        chips with the old SUN_TOP_CTRL interface.
+ static LIST_HEAD(brcmstb_gisb_arb_device_list);
  
-     - syscon
-         A phandle / integer array that points to the syscon node which describes
-diff --git a/drivers/power/reset/brcmstb-reboot.c b/drivers/power/reset/brcmstb-reboot.c
-index 4e61c3f..33af4f3 100644
---- a/drivers/power/reset/brcmstb-reboot.c
-+++ b/drivers/power/reset/brcmstb-reboot.c
-@@ -88,8 +88,14 @@ static const struct reset_reg_mask reset_bits_40nm = {
- 	.sw_mstr_rst_mask = BIT(0),
- };
- 
-+static const struct reset_reg_mask reset_bits_65nm = {
-+	.rst_src_en_mask = BIT(3),
-+	.sw_mstr_rst_mask = BIT(31),
-+};
++static u32 gisb_read(struct brcmstb_gisb_arb_device *gdev, int reg)
++{
++	return ioread32(gdev->base + reg);
++}
 +
- static const struct of_device_id of_match[] = {
- 	{ .compatible = "brcm,brcmstb-reboot", .data = &reset_bits_40nm },
-+	{ .compatible = "brcm,bcm7038-reboot", .data = &reset_bits_65nm },
- 	{},
- };
++static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
++{
++	iowrite32(val, gdev->base + reg);
++}
++
+ static ssize_t gisb_arb_get_timeout(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    char *buf)
+@@ -63,7 +73,7 @@ static ssize_t gisb_arb_get_timeout(struct device *dev,
+ 	u32 timeout;
  
+ 	mutex_lock(&gdev->lock);
+-	timeout = ioread32(gdev->base + ARB_TIMER);
++	timeout = gisb_read(gdev, ARB_TIMER);
+ 	mutex_unlock(&gdev->lock);
+ 
+ 	return sprintf(buf, "%d", timeout);
+@@ -85,7 +95,7 @@ static ssize_t gisb_arb_set_timeout(struct device *dev,
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&gdev->lock);
+-	iowrite32(val, gdev->base + ARB_TIMER);
++	gisb_write(gdev, val, ARB_TIMER);
+ 	mutex_unlock(&gdev->lock);
+ 
+ 	return count;
+@@ -112,18 +122,18 @@ static int brcmstb_gisb_arb_decode_addr(struct brcmstb_gisb_arb_device *gdev,
+ 	const char *m_name;
+ 	char m_fmt[11];
+ 
+-	cap_status = ioread32(gdev->base + ARB_ERR_CAP_STATUS);
++	cap_status = gisb_read(gdev, ARB_ERR_CAP_STATUS);
+ 
+ 	/* Invalid captured address, bail out */
+ 	if (!(cap_status & ARB_ERR_CAP_STATUS_VALID))
+ 		return 1;
+ 
+ 	/* Read the address and master */
+-	arb_addr = ioread32(gdev->base + ARB_ERR_CAP_ADDR) & 0xffffffff;
++	arb_addr = gisb_read(gdev, ARB_ERR_CAP_ADDR) & 0xffffffff;
+ #if (IS_ENABLED(CONFIG_PHYS_ADDR_T_64BIT))
+-	arb_addr |= (u64)ioread32(gdev->base + ARB_ERR_CAP_HI_ADDR) << 32;
++	arb_addr |= (u64)gisb_read(gdev, ARB_ERR_CAP_HI_ADDR) << 32;
+ #endif
+-	master = ioread32(gdev->base + ARB_ERR_CAP_MASTER);
++	master = gisb_read(gdev, ARB_ERR_CAP_MASTER);
+ 
+ 	m_name = brcmstb_gisb_master_to_str(gdev, master);
+ 	if (!m_name) {
+@@ -138,7 +148,7 @@ static int brcmstb_gisb_arb_decode_addr(struct brcmstb_gisb_arb_device *gdev,
+ 		m_name);
+ 
+ 	/* clear the GISB error */
+-	iowrite32(ARB_ERR_CAP_CLEAR, gdev->base + ARB_ERR_CAP_CLR);
++	gisb_write(gdev, ARB_ERR_CAP_CLEAR, ARB_ERR_CAP_CLR);
+ 
+ 	return 0;
+ }
 -- 
 2.1.0
 
