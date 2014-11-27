@@ -1,112 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Add pm_genpd_lookup() API to lookup domain by device node
-Date: Thu, 27 Nov 2014 17:42:51 +0100
-Message-ID: <2598170.BNh0BBOOkI@vostro.rjw.lan>
-References: <1417097653-22599-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] PM: Use CONFIG_PM instead of CONFIG_PM_RUNTIME in core code
+Date: Thu, 27 Nov 2014 17:52:46 +0100
+Message-ID: <2907778.ZNoNjGGGYl@vostro.rjw.lan>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan> <CAPDyKFox8bXyFT0861Tc8YY5HLyq5uPVGkfN0G4fXDKqQynkYQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51813 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751222AbaK0QVi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 11:21:38 -0500
-In-Reply-To: <1417097653-22599-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFox8bXyFT0861Tc8YY5HLyq5uPVGkfN0G4fXDKqQynkYQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 27, 2014 03:14:13 PM Ulf Hansson wrote:
-> In a step to move away from using genpd's name based APIs, such as the
-> pm_genpd_add_subdomain_names(), provide an API to lookup an already
-> initialized generic PM domain by its device node.
+On Thursday, November 27, 2014 09:57:33 AM Ulf Hansson wrote:
+> On 27 November 2014 at 01:37, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Hi,
+> >
+> > After commit b2b49ccbdd54 "PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> > selected" (currently in Linux next) CONFIG_PM_RUNTIME is set whenever
+> > CONFIG_PM is set, so CONFIG_PM can be used in #ifdefs instead of
+> > CONFIG_PM_RUNTIME which simplifies things in quite a few cases.
+> >
+> > For this reason, the following patches modify some core code to use
+> > CONFIG_PM instead of CONFIG_PM_RUNTIME.
+> >
+> > [1/4] Drop a macro which is redundant after the above commit.
+> > [2/4] Use PM instead of PM_RUNTIME in the core device PM code.
+> > [3/4] Use PM instead of PM_RUNTIME in the ACPI core.
+> > [4/4] Use PM instead of PM_RUNTIME in the PCI core.
+> >
+> > They build for me for all of the relevant combinations of options (on x86),
+> > but more testing (on the other architectures) would be welcome.
 > 
-> This API would typically be a called from SOC specific code, to fetch a
-> handle to the domain. Especially convenient to configure subdomains and
-> when the hierarchy of the domains are described in DT.
+> I really like the looks of this patchset!
 > 
-> Do note, before pm_genpd_init() is invoked to initialize a generic PM
-> domain, it's the callers responsibility to assign the new ->dev_node
-> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
-> find the domain.
+> Noticed that you have applied it for your bleeding edge branch, I
+> suppose that means you will get some "free" testing in linux-next?
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
+> Anyway, I have tested it for ux500 (including the genpd support for
+> it, available in linux-next). It works nicely!
 > 
-> The background to why I propose this patch comes from a discussion around the
-> below patchset:
-> https://lkml.org/lkml/2014/11/24/290
+> I have also tested the two Kconfig options; CONFIG_PM_SLEEP (which
+> selects CONFIG_PM_RUNTIME) and for CONFIG_PM_RUNTIME (with
+> CONFIG_PM_SLEEP unset).
 > 
-> 
-> ---
->  drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  2 ++
->  2 files changed, 28 insertions(+)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 735c473..34555eb 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -75,6 +75,32 @@ struct generic_pm_domain *dev_to_genpd(struct device *dev)
->  	return pd_to_genpd(dev->pm_domain);
->  }
->  
-> +/**
-> + * pm_genpd_lookup - Fetch a generic PM domain object by device node
-> + * @node: Device node to a corresponding genpd.
-> + *
-> + * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
-> + * on failure.
-> + */
-> +struct generic_pm_domain *pm_genpd_lookup(struct device_node *node)
-> +{
-> +	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT), *gpd;
-> +
-> +	if (IS_ERR_OR_NULL(node))
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	mutex_lock(&gpd_list_lock);
-> +	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> +		if (gpd->dev_node == node) {
-> +			genpd = gpd;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&gpd_list_lock);
-> +	return genpd;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_genpd_lookup);
-> +
->  static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
->  {
->  	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 8cbd32e..322cb7c 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -53,6 +53,7 @@ struct generic_pm_domain {
->  	struct dev_power_governor *gov;
->  	struct work_struct power_off_work;
->  	const char *name;
-> +	struct device_node *dev_node;	/* Device node for the PM domain */
+> That brings me to a raise a question; why do we need to keep these two
+> configurations options? Couldn't we also have CONFIG_PM_RUNTIME to
+> select CONFIG_PM_SLEEP, that will further simplify things?
 
-Please don't add DT-specific members to generic data structures.
+My plan is different.  I'm going to eliminate PM_RUNTIME from the code
+and then replace it with PM as a selectable option.  Then, PM_SLEEP will
+select PM (directly) and PM_RUNTIME can be entirely dropped.
 
-You can use struct fwnode_handle (currently in linux-next) instead.
-
->  	unsigned int in_progress;	/* Number of devices being suspended now */
->  	atomic_t sd_count;	/* Number of subdomains with power "on" */
->  	enum gpd_status status;	/* Current state of the domain */
-> @@ -126,6 +127,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
->  }
->  
->  extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
-> +extern struct generic_pm_domain *pm_genpd_lookup(struct device_node *node);
->  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->  				 struct device *dev,
->  				 struct gpd_timing_data *td);
-> 
+So in the end we'll have one Kconfig option less, which is a win IMO.
 
 -- 
 I speak only for myself.
