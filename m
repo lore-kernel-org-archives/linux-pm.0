@@ -1,91 +1,111 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v12 10/10] arm: dts: qcom: Add idle state device nodes for 8064
-Date: Wed, 26 Nov 2014 17:13:15 -0700
-Message-ID: <1417047195-18978-11-git-send-email-lina.iyer@linaro.org>
-References: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:52792 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbaK0ANu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:13:50 -0500
-Received: by mail-pd0-f176.google.com with SMTP id y10so3759818pdj.21
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:13:50 -0800 (PST)
-In-Reply-To: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 4/4] PCI / PM: Drop CONFIG_PM_RUNTIME from the PCI core
+Date: Thu, 27 Nov 2014 01:40:53 +0100
+Message-ID: <2582138.zUe2QZynBg@vostro.rjw.lan>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <37310416.jZXoh5nfSC@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-Add ARM common idle state device bindings for cpuidle support for APQ
-8064.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Support Standby and Standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+selected) PM_RUNTIME is always set if PM is set, so quite a few
+#ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
+depend on CONFIG_PM.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Replace CONFIG_PM_RUNTIME with CONFIG_PM in the ACPI core code.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm/boot/dts/qcom-apq8064.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/pci/pci-driver.c |   20 +++++++-------------
+ drivers/pci/pci-sysfs.c  |    4 ++--
+ drivers/pci/pcie/Kconfig |    2 +-
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
-index 9fd24bc..ab21dba 100644
---- a/arch/arm/boot/dts/qcom-apq8064.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
-@@ -23,6 +23,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
+Index: linux-pm/drivers/pci/pcie/Kconfig
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/Kconfig
++++ linux-pm/drivers/pci/pcie/Kconfig
+@@ -79,4 +79,4 @@ endchoice
  
- 		cpu@1 {
-@@ -33,6 +34,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
+ config PCIE_PME
+ 	def_bool y
+-	depends on PCIEPORTBUS && PM_RUNTIME
++	depends on PCIEPORTBUS && PM
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1104,7 +1104,7 @@ static int pci_pm_restore(struct device
  
- 		cpu@2 {
-@@ -43,6 +45,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
+ #endif /* !CONFIG_HIBERNATE_CALLBACKS */
  
- 		cpu@3 {
-@@ -53,12 +56,29 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
  
- 		L2: l2-cache {
- 			compatible = "cache";
- 			cache-level = <2>;
- 		};
+ static int pci_pm_runtime_suspend(struct device *dev)
+ {
+@@ -1200,16 +1200,6 @@ static int pci_pm_runtime_idle(struct de
+ 	return ret;
+ }
+ 
+-#else /* !CONFIG_PM_RUNTIME */
+-
+-#define pci_pm_runtime_suspend	NULL
+-#define pci_pm_runtime_resume	NULL
+-#define pci_pm_runtime_idle	NULL
+-
+-#endif /* !CONFIG_PM_RUNTIME */
+-
+-#ifdef CONFIG_PM
+-
+ static const struct dev_pm_ops pci_dev_pm_ops = {
+ 	.prepare = pci_pm_prepare,
+ 	.suspend = pci_pm_suspend,
+@@ -1231,11 +1221,15 @@ static const struct dev_pm_ops pci_dev_p
+ 
+ #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
+ 
+-#else /* !COMFIG_PM_OPS */
++#else /* !CONFIG_PM */
 +
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <400>;
-+				exit-latency-us = <900>;
-+				min-residency-us = <3000>;
-+			};
-+		};
- 	};
++#define pci_pm_runtime_suspend	NULL
++#define pci_pm_runtime_resume	NULL
++#define pci_pm_runtime_idle	NULL
  
- 	cpu-pmu {
--- 
-2.1.0
-
+ #define PCI_PM_OPS_PTR	NULL
+ 
+-#endif /* !COMFIG_PM_OPS */
++#endif /* !CONFIG_PM */
+ 
+ /**
+  * __pci_register_driver - register a new pci driver
+Index: linux-pm/drivers/pci/pci-sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-sysfs.c
++++ linux-pm/drivers/pci/pci-sysfs.c
+@@ -385,7 +385,7 @@ static ssize_t dev_bus_rescan_store(stru
+ }
+ static DEVICE_ATTR(rescan, (S_IWUSR|S_IWGRP), NULL, dev_bus_rescan_store);
+ 
+-#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
++#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+ static ssize_t d3cold_allowed_store(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    const char *buf, size_t count)
+@@ -566,7 +566,7 @@ static struct attribute *pci_dev_attrs[]
+ 	&dev_attr_enable.attr,
+ 	&dev_attr_broken_parity_status.attr,
+ 	&dev_attr_msi_bus.attr,
+-#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
++#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+ 	&dev_attr_d3cold_allowed.attr,
+ #endif
+ #ifdef CONFIG_OF
