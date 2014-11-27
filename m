@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/4] cpufreq: Fix formatting issues in 'struct cpufreq_driver'
-Date: Thu, 27 Nov 2014 06:07:49 +0530
-Message-ID: <16a1b54a60fe1fda7b9f9a30336f952e62a5383b.1417048449.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 2/4] cpufreq-dt: pass 'policy->related_cpus' to of_cpufreq_cooling_register()
+Date: Thu, 27 Nov 2014 06:07:50 +0530
+Message-ID: <20dee4a7aa3e5fded99f93705bdf7b5623295815.1417048449.git.viresh.kumar@linaro.org>
 References: <cover.1417048449.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:42250 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbaK0AiY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:38:24 -0500
-Received: by mail-pd0-f178.google.com with SMTP id g10so3831961pdj.9
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:38:23 -0800 (PST)
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:59985 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbaK0Ai2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:38:28 -0500
+Received: by mail-pa0-f46.google.com with SMTP id lj1so3868715pab.33
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:38:27 -0800 (PST)
 In-Reply-To: <cover.1417048449.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1417048449.git.viresh.kumar@linaro.org>
 References: <cover.1417048449.git.viresh.kumar@linaro.org>
@@ -18,114 +18,35 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Adding any new callback to 'struct cpufreq_driver' gives following checkpatch
-warning:
+The second parameter of of_cpufreq_cooling_register() should be the CPUs to
+which the frequency constraint will apply. As the cpufreq-dt driver now supports
+platforms with multiple 'struct cpufreq_policy' instances (i.e. > 1 clock
+domains for CPUs), passing 'cpu_present_mask' isn't correct anymore. As every
+policy will have a set of CPUs and that may not be equal to 'cpu_present_mask'
+always.
 
-WARNING: Unnecessary space before function pointer arguments
-+	void	(*ready)	(struct cpufreq_policy *policy);
-
-This is because we have been using a tab spacing between function pointer name
-and its arguments and the new one tried to follow that.
-
-Though we normally don't try to fix every checkpatch warning, specially around
-formatting issues as that creates unnecessary noise over lists. But I thought we
-better fix this so that new additions don't generate these warnings plus it
-looks far better/symmetric now.
-
-So, remove these tab spacing issues in 'struct cpufreq_driver' only + fix
-alignment of all members.
+So, pass only mask of CPUs which are controlled by current policy.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Eduardo Valentin <edubezval@gmail.com>
 Tested-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- include/linux/cpufreq.h | 50 ++++++++++++++++++++++++-------------------------
- 1 file changed, 25 insertions(+), 25 deletions(-)
+ drivers/cpufreq/cpufreq-dt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 503b085..db3c130 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -217,26 +217,26 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
- 
- 
- struct cpufreq_driver {
--	char			name[CPUFREQ_NAME_LEN];
--	u8			flags;
--	void			*driver_data;
-+	char		name[CPUFREQ_NAME_LEN];
-+	u8		flags;
-+	void		*driver_data;
- 
- 	/* needed by all drivers */
--	int	(*init)		(struct cpufreq_policy *policy);
--	int	(*verify)	(struct cpufreq_policy *policy);
-+	int		(*init)(struct cpufreq_policy *policy);
-+	int		(*verify)(struct cpufreq_policy *policy);
- 
- 	/* define one out of two */
--	int	(*setpolicy)	(struct cpufreq_policy *policy);
-+	int		(*setpolicy)(struct cpufreq_policy *policy);
- 
- 	/*
- 	 * On failure, should always restore frequency to policy->restore_freq
- 	 * (i.e. old freq).
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 8cba13d..7374fc4 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -274,7 +274,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	 * thermal DT code takes care of matching them.
  	 */
--	int	(*target)	(struct cpufreq_policy *policy,	/* Deprecated */
--				 unsigned int target_freq,
--				 unsigned int relation);
--	int	(*target_index)	(struct cpufreq_policy *policy,
--				 unsigned int index);
-+	int		(*target)(struct cpufreq_policy *policy,
-+				  unsigned int target_freq,
-+				  unsigned int relation);	/* Deprecated */
-+	int		(*target_index)(struct cpufreq_policy *policy,
-+					unsigned int index);
- 	/*
- 	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
- 	 * unset.
-@@ -252,27 +252,27 @@ struct cpufreq_driver {
- 	 * wish to switch to intermediate frequency for some target frequency.
- 	 * In that case core will directly call ->target_index().
- 	 */
--	unsigned int (*get_intermediate)(struct cpufreq_policy *policy,
--					 unsigned int index);
--	int	(*target_intermediate)(struct cpufreq_policy *policy,
--				       unsigned int index);
-+	unsigned int	(*get_intermediate)(struct cpufreq_policy *policy,
-+					    unsigned int index);
-+	int		(*target_intermediate)(struct cpufreq_policy *policy,
-+					       unsigned int index);
- 
- 	/* should be defined, if possible */
--	unsigned int	(*get)	(unsigned int cpu);
-+	unsigned int	(*get)(unsigned int cpu);
- 
- 	/* optional */
--	int	(*bios_limit)	(int cpu, unsigned int *limit);
-+	int		(*bios_limit)(int cpu, unsigned int *limit);
- 
--	int	(*exit)		(struct cpufreq_policy *policy);
--	void	(*stop_cpu)	(struct cpufreq_policy *policy);
--	int	(*suspend)	(struct cpufreq_policy *policy);
--	int	(*resume)	(struct cpufreq_policy *policy);
--	struct freq_attr	**attr;
-+	int		(*exit)(struct cpufreq_policy *policy);
-+	void		(*stop_cpu)(struct cpufreq_policy *policy);
-+	int		(*suspend)(struct cpufreq_policy *policy);
-+	int		(*resume)(struct cpufreq_policy *policy);
-+	struct freq_attr **attr;
- 
- 	/* platform specific boost support code */
--	bool                    boost_supported;
--	bool                    boost_enabled;
--	int     (*set_boost)    (int state);
-+	bool		boost_supported;
-+	bool		boost_enabled;
-+	int		(*set_boost)(int state);
- };
- 
- /* flags */
+ 	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
++		cdev = of_cpufreq_cooling_register(np, policy->related_cpus);
+ 		if (IS_ERR(cdev))
+ 			dev_err(cpu_dev,
+ 				"running cpufreq without cooling device: %ld\n",
 -- 
 2.0.3.693.g996b0fd
 
