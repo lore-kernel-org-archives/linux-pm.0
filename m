@@ -1,90 +1,100 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v12 01/10] qcom: scm: Move scm-boot files to drivers/soc/qcom/ and include/soc/qcom
-Date: Wed, 26 Nov 2014 17:13:06 -0700
-Message-ID: <1417047195-18978-2-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v12 02/10] qcom: scm: Add SCM warmboot support for quad core SoCs
+Date: Wed, 26 Nov 2014 17:13:07 -0700
+Message-ID: <1417047195-18978-3-git-send-email-lina.iyer@linaro.org>
 References: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:63728 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbaK0ANc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:13:32 -0500
-Received: by mail-pa0-f45.google.com with SMTP id lj1so3823892pab.18
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:13:32 -0800 (PST)
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:48017 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbaK0ANe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:13:34 -0500
+Received: by mail-pd0-f176.google.com with SMTP id y10so3748214pdj.7
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:13:34 -0800 (PST)
 In-Reply-To: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-Follow the scm.c and move scm-boot files to drivers/soc/qcom. The
-guidance is to clean files out from mach-qcom and move to drivers/soc
-area.
+Quad core SoCs like APQ8074, APQ8064, APQ8084 need SCM support set up
+warm boot addresses in the Secure Monitor. Extend the SCM flags to
+support warm boot addresses for secondary cores.
+
+We do not need to export the warmboot flags. Move them into the
+implementation file.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-qcom/Makefile                         | 1 -
- arch/arm/mach-qcom/platsmp.c                        | 2 +-
- drivers/soc/qcom/Makefile                           | 2 +-
- {arch/arm/mach-qcom => drivers/soc/qcom}/scm-boot.c | 4 ++--
- {arch/arm/mach-qcom => include/soc/qcom}/scm-boot.h | 0
- 5 files changed, 4 insertions(+), 5 deletions(-)
- rename {arch/arm/mach-qcom => drivers/soc/qcom}/scm-boot.c (97%)
- rename {arch/arm/mach-qcom => include/soc/qcom}/scm-boot.h (100%)
+ drivers/soc/qcom/scm-boot.c | 35 +++++++++++++++++++++++++++++++++++
+ include/soc/qcom/scm-boot.h |  3 +--
+ 2 files changed, 36 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-qcom/Makefile b/arch/arm/mach-qcom/Makefile
-index db41e8c..e324375 100644
---- a/arch/arm/mach-qcom/Makefile
-+++ b/arch/arm/mach-qcom/Makefile
-@@ -1,3 +1,2 @@
- obj-y			:= board.o
- obj-$(CONFIG_SMP)	+= platsmp.o
--obj-$(CONFIG_QCOM_SCM)	+= scm-boot.o
-diff --git a/arch/arm/mach-qcom/platsmp.c b/arch/arm/mach-qcom/platsmp.c
-index d690856..a692bcb 100644
---- a/arch/arm/mach-qcom/platsmp.c
-+++ b/arch/arm/mach-qcom/platsmp.c
-@@ -20,7 +20,7 @@
- 
- #include <asm/smp_plat.h>
- 
--#include "scm-boot.h"
-+#include <soc/qcom/scm-boot.h>
- 
- #define VDD_SC1_ARRAY_CLAMP_GFS_CTL	0x35a0
- #define SCSS_CPU1CORE_RESET		0x2d80
-diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index a39446d..70d52ed 100644
---- a/drivers/soc/qcom/Makefile
-+++ b/drivers/soc/qcom/Makefile
-@@ -1,3 +1,3 @@
- obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
- CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
--obj-$(CONFIG_QCOM_SCM) += scm.o
-+obj-$(CONFIG_QCOM_SCM) += scm.o scm-boot.o
-diff --git a/arch/arm/mach-qcom/scm-boot.c b/drivers/soc/qcom/scm-boot.c
-similarity index 97%
-rename from arch/arm/mach-qcom/scm-boot.c
-rename to drivers/soc/qcom/scm-boot.c
-index 5add20e..60ff7b4 100644
---- a/arch/arm/mach-qcom/scm-boot.c
+diff --git a/drivers/soc/qcom/scm-boot.c b/drivers/soc/qcom/scm-boot.c
+index 60ff7b4..f653217a 100644
+--- a/drivers/soc/qcom/scm-boot.c
 +++ b/drivers/soc/qcom/scm-boot.c
-@@ -17,9 +17,9 @@
+@@ -21,6 +21,23 @@
+ #include <soc/qcom/scm.h>
+ #include <soc/qcom/scm-boot.h>
  
- #include <linux/module.h>
- #include <linux/slab.h>
--#include <soc/qcom/scm.h>
- 
--#include "scm-boot.h"
-+#include <soc/qcom/scm.h>
-+#include <soc/qcom/scm-boot.h>
- 
++#define SCM_FLAG_WARMBOOT_CPU0		0x04
++#define SCM_FLAG_WARMBOOT_CPU1		0x02
++#define SCM_FLAG_WARMBOOT_CPU2		0x10
++#define SCM_FLAG_WARMBOOT_CPU3		0x40
++
++struct scm_warmboot {
++	int flag;
++	void *entry;
++};
++
++static struct scm_warmboot scm_flags[] = {
++	{ .flag = SCM_FLAG_WARMBOOT_CPU0 },
++	{ .flag = SCM_FLAG_WARMBOOT_CPU1 },
++	{ .flag = SCM_FLAG_WARMBOOT_CPU2 },
++	{ .flag = SCM_FLAG_WARMBOOT_CPU3 },
++};
++
  /*
   * Set the cold/warm boot address for one of the CPU cores.
-diff --git a/arch/arm/mach-qcom/scm-boot.h b/include/soc/qcom/scm-boot.h
-similarity index 100%
-rename from arch/arm/mach-qcom/scm-boot.h
-rename to include/soc/qcom/scm-boot.h
+  */
+@@ -37,3 +54,21 @@ int scm_set_boot_addr(phys_addr_t addr, int flags)
+ 			&cmd, sizeof(cmd), NULL, 0);
+ }
+ EXPORT_SYMBOL(scm_set_boot_addr);
++
++int scm_set_warm_boot_addr(void *entry, int cpu)
++{
++	int ret;
++
++	/*
++	 * Reassign only if we are switching from hotplug entry point
++	 * to cpuidle entry point or vice versa.
++	 */
++	if (entry == scm_flags[cpu].entry)
++		return 0;
++
++	ret = scm_set_boot_addr(virt_to_phys(entry), scm_flags[cpu].flag);
++	if (!ret)
++		scm_flags[cpu].entry  = entry;
++
++	return ret;
++}
+diff --git a/include/soc/qcom/scm-boot.h b/include/soc/qcom/scm-boot.h
+index 6aabb24..529f55a 100644
+--- a/include/soc/qcom/scm-boot.h
++++ b/include/soc/qcom/scm-boot.h
+@@ -16,9 +16,8 @@
+ #define SCM_FLAG_COLDBOOT_CPU1		0x01
+ #define SCM_FLAG_COLDBOOT_CPU2		0x08
+ #define SCM_FLAG_COLDBOOT_CPU3		0x20
+-#define SCM_FLAG_WARMBOOT_CPU0		0x04
+-#define SCM_FLAG_WARMBOOT_CPU1		0x02
+ 
+ int scm_set_boot_addr(phys_addr_t addr, int flags);
++int scm_set_warm_boot_addr(void *entry, int cpu);
+ 
+ #endif
 -- 
 2.1.0
 
