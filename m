@@ -1,127 +1,113 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 5/7] cpu_cooling: Don't match min/max frequencies for all
- CPUs on cooling register
-Date: Thu, 27 Nov 2014 11:35:49 -0400
-Message-ID: <20141127153547.GB22851@developer>
-References: <cover.1416980447.git.viresh.kumar@linaro.org>
- <4bb7d02f8267ad9efd4dab070d72c2f2659bc752.1416980448.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Domains: Add pm_genpd_lookup() API to lookup domain by device node
+Date: Thu, 27 Nov 2014 17:42:51 +0100
+Message-ID: <2598170.BNh0BBOOkI@vostro.rjw.lan>
+References: <1417097653-22599-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rJwd6BRFiFCcLxzm"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f178.google.com ([209.85.216.178]:61606 "EHLO
-	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbaK0Pf6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 10:35:58 -0500
-Received: by mail-qc0-f178.google.com with SMTP id b13so4041268qcw.23
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 07:35:57 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <4bb7d02f8267ad9efd4dab070d72c2f2659bc752.1416980448.git.viresh.kumar@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51813 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751222AbaK0QVi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 11:21:38 -0500
+In-Reply-To: <1417097653-22599-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-
---rJwd6BRFiFCcLxzm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Nov 26, 2014 at 11:23:00AM +0530, Viresh Kumar wrote:
-> In __cpufreq_cooling_register() we try to match min/max frequencies for a=
-ll CPUs
-> passed in 'clip_cpus' mask. This mask is the cpumask of cpus where the fr=
-equency
-> constraints will be applied.
->=20
-> Same frequency constraint can be applied only to the CPUs belonging to th=
-e same
-> cluster (i.e. CPUs sharing clock line). For all such CPUs we have a single
-> 'struct cpufreq_policy' structure managing them and so getting policies f=
-or all
-> CPUs wouldn't make any sense as they will all return the same pointer.
->=20
-> So, remove this useless check of checking min/max for all CPUs. Also upda=
-te doc
-> comment to make this more obvious that clip_cpus should be same as
-> policy->related_cpus.
-
-Shall we also review the users of this API then? Simple to double check
-if they are passing the correct value?
-
-
->=20
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Thursday, November 27, 2014 03:14:13 PM Ulf Hansson wrote:
+> In a step to move away from using genpd's name based APIs, such as the
+> pm_genpd_add_subdomain_names(), provide an API to lookup an already
+> initialized generic PM domain by its device node.
+> 
+> This API would typically be a called from SOC specific code, to fetch a
+> handle to the domain. Especially convenient to configure subdomains and
+> when the hierarchy of the domains are described in DT.
+> 
+> Do note, before pm_genpd_init() is invoked to initialize a generic PM
+> domain, it's the callers responsibility to assign the new ->dev_node
+> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+> find the domain.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
-> Sorry if I don't understand cpu-cooling well, haven't done much work on i=
-t :(
->=20
->  drivers/thermal/cpu_cooling.c | 19 ++-----------------
->  1 file changed, 2 insertions(+), 17 deletions(-)
->=20
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 1ab0018..1193cc4 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -420,6 +420,7 @@ static struct notifier_block thermal_cpufreq_notifier=
-_block =3D {
->   * __cpufreq_cooling_register - helper function to create cpufreq coolin=
-g device
->   * @np: a valid struct device_node to the cooling device device tree node
->   * @clip_cpus: cpumask of cpus where the frequency constraints will happ=
-en.
-> + * Normally this should be same as cpufreq policy->related_cpus.
->   *
->   * This interface function registers the cpufreq cooling device with the=
- name
->   * "thermal-cpufreq-%x". This api can support multiple instances of cpuf=
-req
-> @@ -435,25 +436,9 @@ __cpufreq_cooling_register(struct device_node *np,
+> 
+> The background to why I propose this patch comes from a discussion around the
+> below patchset:
+> https://lkml.org/lkml/2014/11/24/290
+> 
+> 
+> ---
+>  drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  2 ++
+>  2 files changed, 28 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 735c473..34555eb 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -75,6 +75,32 @@ struct generic_pm_domain *dev_to_genpd(struct device *dev)
+>  	return pd_to_genpd(dev->pm_domain);
+>  }
+>  
+> +/**
+> + * pm_genpd_lookup - Fetch a generic PM domain object by device node
+> + * @node: Device node to a corresponding genpd.
+> + *
+> + * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
+> + * on failure.
+> + */
+> +struct generic_pm_domain *pm_genpd_lookup(struct device_node *node)
+> +{
+> +	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT), *gpd;
+> +
+> +	if (IS_ERR_OR_NULL(node))
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	mutex_lock(&gpd_list_lock);
+> +	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
+> +		if (gpd->dev_node == node) {
+> +			genpd = gpd;
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&gpd_list_lock);
+> +	return genpd;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_lookup);
+> +
+>  static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
 >  {
->  	struct thermal_cooling_device *cool_dev;
->  	struct cpufreq_cooling_device *cpufreq_dev =3D NULL;
-> -	unsigned int min =3D 0, max =3D 0;
->  	char dev_name[THERMAL_NAME_LENGTH];
-> -	int ret =3D 0, i;
-> -	struct cpufreq_policy policy;
-> +	int ret =3D 0;
-> =20
-> -	/* Verify that all the clip cpus have same freq_min, freq_max limit */
-> -	for_each_cpu(i, clip_cpus) {
-> -		/* continue if cpufreq policy not found and not return error */
-> -		if (!cpufreq_get_policy(&policy, i))
-> -			continue;
-> -		if (min =3D=3D 0 && max =3D=3D 0) {
-> -			min =3D policy.cpuinfo.min_freq;
-> -			max =3D policy.cpuinfo.max_freq;
-> -		} else {
-> -			if (min !=3D policy.cpuinfo.min_freq ||
-> -			    max !=3D policy.cpuinfo.max_freq)
-> -				return ERR_PTR(-EINVAL);
-> -		}
-> -	}
->  	cpufreq_dev =3D kzalloc(sizeof(struct cpufreq_cooling_device),
->  			      GFP_KERNEL);
->  	if (!cpufreq_dev)
-> --=20
-> 2.0.3.693.g996b0fd
->=20
+>  	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 8cbd32e..322cb7c 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -53,6 +53,7 @@ struct generic_pm_domain {
+>  	struct dev_power_governor *gov;
+>  	struct work_struct power_off_work;
+>  	const char *name;
+> +	struct device_node *dev_node;	/* Device node for the PM domain */
 
---rJwd6BRFiFCcLxzm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Please don't add DT-specific members to generic data structures.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+You can use struct fwnode_handle (currently in linux-next) instead.
 
-iQEcBAEBAgAGBQJUd0TLAAoJEMLUO4d9pOJWrdgH/0nasBDNwHo8UikgnswpoJNE
-lOWFmGA4xrxPB+3asqTv4H01kwaObCz5LW5iVIwEr0EbdvhQBAzuVoBdRDo/A0wT
-njBGKb3ne86YNBeFXMlcXpNkGR9RMTtuwarQi8xaZ/omPfQUcrkrPZW7idywiHVo
-/ppNmIk+byznnqo5ezr4KFcEdqXUcd2xI+ynS78rjTlRVdjIinJN6LGX9AxlL4/p
-NFrxcjnO81w9tCowkJ1GWvtjvwF9Guq96FgkpH9TPdugTUKubqP+mY/GXKpAlznf
-ncA4+4LirTzdfznmEH4gV+SXuhNQhd5E/vexLrhA2N7jItfi0pAJU5XQpQ10/8U=
-=lDbZ
------END PGP SIGNATURE-----
+>  	unsigned int in_progress;	/* Number of devices being suspended now */
+>  	atomic_t sd_count;	/* Number of subdomains with power "on" */
+>  	enum gpd_status status;	/* Current state of the domain */
+> @@ -126,6 +127,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+>  }
+>  
+>  extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
+> +extern struct generic_pm_domain *pm_genpd_lookup(struct device_node *node);
+>  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+>  				 struct device *dev,
+>  				 struct gpd_timing_data *td);
+> 
 
---rJwd6BRFiFCcLxzm--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
