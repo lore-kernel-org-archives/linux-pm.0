@@ -1,82 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 1/2] ARM: EXYNOS: apply S5P_CENTRAL_SEQ_OPTION fix only when
- necessary
-Date: Thu, 27 Nov 2014 17:51:24 +0100
-Message-ID: <1417107085-26159-2-git-send-email-b.zolnierkie@samsung.com>
-References: <1417107085-26159-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1417107085-26159-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/4] PM: Use CONFIG_PM instead of CONFIG_PM_RUNTIME in
+ core code
+Date: Thu, 27 Nov 2014 18:00:17 +0100
+Message-ID: <CAMuHMdVD7+GqgjhXEHYsema5uLPG4A4HANAKyGO2DSTnoskezA@mail.gmail.com>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
+	<CAPDyKFox8bXyFT0861Tc8YY5HLyq5uPVGkfN0G4fXDKqQynkYQ@mail.gmail.com>
+	<2907778.ZNoNjGGGYl@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2907778.ZNoNjGGGYl@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit c2dd114d2486 ("ARM: EXYNOS: fix register setup for AFTR mode
-code") added S5P_CENTRAL_SEQ_OPTION register setup fix for all
-Exynos SoCs to AFTR mode code-path.  It turned out that for coupled
-cpuidle AFTR mode on Exynos4210 (added by the next patch) applying
-this fix causes lockup so enable it in the AFTR mode code-path only
-on SoCs that require it (in the suspend code-path it can be always
-applied like it was before commit c2dd114d2486).
+Hi Rafael,
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Colin Cross <ccross@google.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-v2:
-- no changes
+On Thu, Nov 27, 2014 at 5:52 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> I have also tested the two Kconfig options; CONFIG_PM_SLEEP (which
+>> selects CONFIG_PM_RUNTIME) and for CONFIG_PM_RUNTIME (with
+>> CONFIG_PM_SLEEP unset).
+>>
+>> That brings me to a raise a question; why do we need to keep these two
+>> configurations options? Couldn't we also have CONFIG_PM_RUNTIME to
+>> select CONFIG_PM_SLEEP, that will further simplify things?
+>
+> My plan is different.  I'm going to eliminate PM_RUNTIME from the code
+> and then replace it with PM as a selectable option.  Then, PM_SLEEP will
+> select PM (directly) and PM_RUNTIME can be entirely dropped.
 
- arch/arm/mach-exynos/pm.c      | 11 +++++++----
- arch/arm/mach-exynos/suspend.c |  4 ++++
- 2 files changed, 11 insertions(+), 4 deletions(-)
+What's your rationale for keeping PM_SLEEP, and not consolidating both
+PM_RUNTIME and PM_SLEEP into PM? I.e. what am I missing, still
+considering myself a PM newbie?
 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index 86f3ecd8..159eb4c 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -97,10 +97,6 @@ void exynos_pm_central_suspend(void)
- 	tmp = pmu_raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
- 	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
- 	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
--
--	/* Setting SEQ_OPTION register */
--	pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
--		       S5P_CENTRAL_SEQ_OPTION);
- }
- 
- int exynos_pm_central_resume(void)
-@@ -164,6 +160,13 @@ void exynos_enter_aftr(void)
- 
- 	exynos_pm_central_suspend();
- 
-+	if (of_machine_is_compatible("samsung,exynos4212") ||
-+	    of_machine_is_compatible("samsung,exynos4412")) {
-+		/* Setting SEQ_OPTION register */
-+		pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
-+			       S5P_CENTRAL_SEQ_OPTION);
-+	}
-+
- 	cpu_suspend(0, exynos_aftr_finisher);
- 
- 	if (read_cpuid_part() == ARM_CPU_PART_CORTEX_A9) {
-diff --git a/arch/arm/mach-exynos/suspend.c b/arch/arm/mach-exynos/suspend.c
-index f8e7dcd..9c67a15 100644
---- a/arch/arm/mach-exynos/suspend.c
-+++ b/arch/arm/mach-exynos/suspend.c
-@@ -282,6 +282,10 @@ static int exynos_pm_suspend(void)
- {
- 	exynos_pm_central_suspend();
- 
-+	/* Setting SEQ_OPTION register */
-+	pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
-+		       S5P_CENTRAL_SEQ_OPTION);
-+
- 	if (read_cpuid_part() == ARM_CPU_PART_CORTEX_A9)
- 		exynos_cpu_save_register();
- 
--- 
-1.8.2.3
+> So in the end we'll have one Kconfig option less, which is a win IMO.
+
+Having two less may be a bigger win ;-)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
