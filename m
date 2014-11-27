@@ -1,464 +1,520 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 3/4] powernv: cpuidle: Redesign idle states management
-Date: Thu, 27 Nov 2014 11:37:58 +1100
-Message-ID: <1417048678.5089.71.camel@kernel.crashing.org>
-References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
-	 <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v12 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Wed, 26 Nov 2014 17:43:17 -0700
+Message-ID: <20141127004317.GC5137@linaro.org>
+References: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org>
+ <1417047195-18978-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gate.crashing.org ([63.228.1.57]:57481 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753281AbaK0AkZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 26 Nov 2014 19:40:25 -0500
-In-Reply-To: <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1417047195-18978-4-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-
->  
-> @@ -37,8 +38,7 @@
->  
->  /*
->   * Pass requested state in r3:
-> - * 	0 - nap
-> - * 	1 - sleep
-> + *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE
->   *
->   * To check IRQ_HAPPENED in r4
->   * 	0 - don't check
-> @@ -123,12 +123,62 @@ power7_enter_nap_mode:
->  	li	r4,KVM_HWTHREAD_IN_NAP
->  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
->  #endif
-> -	cmpwi	cr0,r3,1
-> -	beq	2f
-> +	stb	r3,PACA_THREAD_IDLE_STATE(r13)
-> +	cmpwi	cr1,r3,PNV_THREAD_SLEEP
-> +	bge	cr1,2f
->  	IDLE_STATE_ENTER_SEQ(PPC_NAP)
->  	/* No return */
-> -2:	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
-> -	/* No return */
-> +2:
-> +	/* Sleep or winkle */
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07			/* Get thread id into r8 */
-> +	rotld	r7,r7,r8
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-
-I assume we have already saved all non-volatile registers ? Because you
-are clobbering one here and more below.
-
-> +lwarx_loop1:
-> +	lwarx	r15,0,r14
-> +	andc	r15,r15,r7			/* Clear thread bit */
-> +
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	beq	last_thread
-> +
-> +	/* Not the last thread to goto sleep */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +	b	common_enter
-> +
-> +last_thread:
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-> +	bne	common_enter
-
-This looks wrong. If the workaround is 0, we don't do the stwcx. at
-all... Did you try with pnv_need_fastsleep_workaround set to 0 ? It
-should work most of the time as long as you don't hit the fairly
-rare race window :)
-
-Also it would be nice to make the above a dynamically patches feature
-section, though that means pnv_need_fastsleep_workaround needs to turn
-into a CPU feature bit and that needs to be done *very* early on.
-
-Another option is to patch out manually from the pnv code the pair:
-
-	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
- 	beq	last_thread
-
-To turn them into nops by hand rather than using the feature system.
-
-> +	/*
-> +	 * Last thread of the core entering sleep. Last thread needs to execute
-> +	 * the hardware bug workaround code. Before that, set the lock bit to
-> +	 * avoid the race of other threads waking up and undoing workaround
-> +	 * before workaround is applied.
-> +	 */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +
-> +	/* Fast sleep workaround */
-> +	li	r3,1
-> +	li	r4,1
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +
-> +	/* Clear Lock bit */
-
-It's a lock, I would add a lwsync here to be safe, and I would add an
-isync before the bne- above. Just to ensure that whatever is done
-inside that locked section remains in there.
-
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
-> +
-> +common_enter: /* common code for all the threads entering sleep */
-> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->  
->  _GLOBAL(power7_idle)
->  	/* Now check if user or arch enabled NAP mode */
-> @@ -141,49 +191,16 @@ _GLOBAL(power7_idle)
->  
->  _GLOBAL(power7_nap)
->  	mr	r4,r3
-> -	li	r3,0
-> +	li	r3,PNV_THREAD_NAP
->  	b	power7_powersave_common
->  	/* No return */
->  
->  _GLOBAL(power7_sleep)
-> -	li	r3,1
-> +	li	r3,PNV_THREAD_SLEEP
->  	li	r4,1
->  	b	power7_powersave_common
->  	/* No return */
->  
-> -/*
-> - * Make opal call in realmode. This is a generic function to be called
-> - * from realmode from reset vector. It handles endianess.
-> - *
-> - * r13 - paca pointer
-> - * r1  - stack pointer
-> - * r3  - opal token
-> - */
-> -opal_call_realmode:
-> -	mflr	r12
-> -	std	r12,_LINK(r1)
-> -	ld	r2,PACATOC(r13)
-> -	/* Set opal return address */
-> -	LOAD_REG_ADDR(r0,return_from_opal_call)
-> -	mtlr	r0
-> -	/* Handle endian-ness */
-> -	li	r0,MSR_LE
-> -	mfmsr	r12
-> -	andc	r12,r12,r0
-> -	mtspr	SPRN_HSRR1,r12
-> -	mr	r0,r3			/* Move opal token to r0 */
-> -	LOAD_REG_ADDR(r11,opal)
-> -	ld	r12,8(r11)
-> -	ld	r2,0(r11)
-> -	mtspr	SPRN_HSRR0,r12
-> -	hrfid
-> -
-> -return_from_opal_call:
-> -	FIXUP_ENDIAN
-> -	ld	r0,_LINK(r1)
-> -	mtlr	r0
-> -	blr
-> -
->  #define CHECK_HMI_INTERRUPT						\
->  	mfspr	r0,SPRN_SRR1;						\
->  BEGIN_FTR_SECTION_NESTED(66);						\
-> @@ -196,10 +213,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->  	/* Invoke opal call to handle hmi */				\
->  	ld	r2,PACATOC(r13);					\
->  	ld	r1,PACAR1(r13);						\
-> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
-> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
-> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->  	bl	opal_call_realmode;					\
-> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->  20:	nop;
->  
-> 
-> @@ -210,12 +225,91 @@ _GLOBAL(power7_wakeup_tb_loss)
->  BEGIN_FTR_SECTION
->  	CHECK_HMI_INTERRUPT
->  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> +
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
-
-I'd be more comfortable if we patched that instruction at boot with the
-right mask.
-
-> +	rotld	r7,r7,r8
-> +	/* r7 now has 'thread_id'th bit set */
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +lwarx_loop2:
-> +	lwarx	r15,0,r14
-> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	/*
-> +	 * Lock bit is set in one of the 2 cases-
-> +	 * a. In the sleep/winkle enter path, the last thread is executing
-> +	 * fastsleep workaround code.
-> +	 * b. In the wake up path, another thread is executing fastsleep
-> +	 * workaround undo code or resyncing timebase or restoring context
-> +	 * In either case loop until the lock bit is cleared.
-> +	 */
-> +	bne	lwarx_loop2
-
-We should do some smt priority games here otherwise the spinning threads
-are going to slow down the one with the lock. Basically, if we see the
-lock held, go out of line, smt_low, spin on a normal load, and when
-smt_medium and go back to lwarx
-
-> +	cmpwi	cr2,r15,0
-> +	or	r15,r15,r7		/* Set thread bit */
-> +
-> +	beq	cr2,first_thread
-> +
-> +	/* Not first thread in core to wake up */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +	b	common_exit
-> +
-> +first_thread:
-> +	/* First thread in core to wakeup */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-
-Same comment about dynamic patching.
-
-> +	/*  skip fastsleep workaround if its not needed */
-> +	bne	timebase_resync
-> +
-> +	/* Undo fast sleep workaround */
-> +	mfcr	r16	/* Backup CR into a non-volatile register */
-
-Why ? If you have your non-volatiles saved you can use an NV CR like CR2
-no ? You need to restore those anyway...
-
-Also same comments as on the way down vs barriers when doing
-lock/unlock.
-
-> +	li	r3,1
-> +	li	r4,0
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +	mtcr	r16	/* Restore CR */
-> +
-> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
-> +	 * set in exceptions-64s.S */
-> +	ble	cr1,clear_lock
-> +
-> +timebase_resync:
->  	/* Time base re-sync */
-> -	li	r3,OPAL_RESYNC_TIMEBASE
-> +	li	r0,OPAL_RESYNC_TIMEBASE
->  	bl	opal_call_realmode;
-> -
->  	/* TODO: Check r3 for failure */
->  
-> +clear_lock:
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
-> +
-> +common_exit:
-> +	li	r5,PNV_THREAD_RUNNING
-> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
-> +
-> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> +	li      r0,KVM_HWTHREAD_IN_KERNEL
-> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
-> +	/* Order setting hwthread_state vs. testing hwthread_req */
-> +	sync
-> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
-> +	cmpwi   r0,0
-> +	beq     6f
-> +	b       kvm_start_guest
-> +6:
-> +#endif
-> +
->  	REST_NVGPRS(r1)
->  	REST_GPR(2, r1)
->  	ld	r3,_CCR(r1)
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index feb549a..b2aa93b 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -158,6 +158,43 @@ opal_tracepoint_return:
->  	blr
->  #endif
->  
-> +/*
-> + * Make opal call in realmode. This is a generic function to be called
-> + * from realmode. It handles endianness.
-> + *
-> + * r13 - paca pointer
-> + * r1  - stack pointer
-> + * r0  - opal token
-> + */
-> +_GLOBAL(opal_call_realmode)
-> +	mflr	r12
-> +	std	r12,_LINK(r1)
-> +	ld	r2,PACATOC(r13)
-> +	/* Set opal return address */
-> +	LOAD_REG_ADDR(r12,return_from_opal_call)
-> +	mtlr	r12
-> +
-> +	mfmsr	r12
-> +#ifdef __LITTLE_ENDIAN__
-> +	/* Handle endian-ness */
-> +	li	r11,MSR_LE
-> +	andc	r12,r12,r11
-> +#endif
-> +	mtspr	SPRN_HSRR1,r12
-> +	LOAD_REG_ADDR(r11,opal)
-> +	ld	r12,8(r11)
-> +	ld	r2,0(r11)
-> +	mtspr	SPRN_HSRR0,r12
-> +	hrfid
-> +
-> +return_from_opal_call:
-> +#ifdef __LITTLE_ENDIAN__
-> +	FIXUP_ENDIAN
-> +#endif
-> +	ld	r12,_LINK(r1)
-> +	mtlr	r12
-> +	blr
-> +
->  OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
->  OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
->  OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index 34c6665..17fb98c 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -36,6 +36,8 @@
->  #include <asm/opal.h>
->  #include <asm/kexec.h>
->  #include <asm/smp.h>
-> +#include <asm/cputhreads.h>
-> +#include <asm/cpuidle.h>
->  
->  #include "powernv.h"
->  
-> @@ -292,11 +294,45 @@ static void __init pnv_setup_machdep_rtas(void)
->  
->  static u32 supported_cpuidle_states;
->  
-> +static void pnv_alloc_idle_core_states(void)
-> +{
-> +	int i, j;
-> +	int nr_cores = cpu_nr_cores();
-> +	u32 *core_idle_state;
-> +
-> +	/*
-> +	 * core_idle_state - First 8 bits track the idle state of each thread
-> +	 * of the core. The 8th bit is the lock bit. Initially all thread bits
-> +	 * are set. They are cleared when the thread enters deep idle state
-> +	 * like sleep and winkle. Initially the lock bit is cleared.
-> +	 * The lock bit has 2 purposes
-> +	 * a. While the first thread is restoring core state, it prevents
-> +	 * from other threads in the core from switching to prcoess context.
-> +	 * b. While the last thread in the core is saving the core state, it
-> +	 * prevent a different thread from waking up.
-> +	 */
-> +	for (i = 0; i < nr_cores; i++) {
-> +		int first_cpu = i * threads_per_core;
-> +		int node = cpu_to_node(first_cpu);
-> +
-> +		core_idle_state = kmalloc_node(sizeof(u32), GFP_KERNEL, node);
-> +		for (j = 0; j < threads_per_core; j++) {
-> +			int cpu = first_cpu + j;
-> +
-> +			paca[cpu].core_idle_state_ptr = core_idle_state;
-> +			paca[cpu].thread_idle_state = PNV_THREAD_RUNNING;
-> +
-> +		}
-> +	}
-> +}
-> +
->  u32 pnv_get_supported_cpuidle_states(void)
->  {
->  	return supported_cpuidle_states;
->  }
-> +EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
->  
-> +u8 pnv_need_fastsleep_workaround;
->  static int __init pnv_init_idle_states(void)
->  {
->  	struct device_node *power_mgt;
-> @@ -306,6 +342,7 @@ static int __init pnv_init_idle_states(void)
->  	int i;
->  
->  	supported_cpuidle_states = 0;
-> +	pnv_need_fastsleep_workaround = 0;
->  
->  	if (cpuidle_disable != IDLE_NO_OVERRIDE)
->  		return 0;
-> @@ -332,13 +369,14 @@ static int __init pnv_init_idle_states(void)
->  		flags = be32_to_cpu(idle_state_flags[i]);
->  		supported_cpuidle_states |= flags;
->  	}
-> -
-> +	if (supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)
-> +		pnv_need_fastsleep_workaround = 1;
-> +	pnv_alloc_idle_core_states();
->  	return 0;
->  }
->  
->  subsys_initcall(pnv_init_idle_states);
->  
-> -
->  static int __init pnv_probe(void)
->  {
->  	unsigned long root = of_get_flat_dt_root();
-> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-> index 3dc4cec..12b761a 100644
-> --- a/arch/powerpc/platforms/powernv/smp.c
-> +++ b/arch/powerpc/platforms/powernv/smp.c
-> @@ -167,7 +167,8 @@ static void pnv_smp_cpu_kill_self(void)
->  	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
->  	while (!generic_check_cpu_restart(cpu)) {
->  		ppc64_runlatch_off();
-> -		if (idle_states & OPAL_PM_SLEEP_ENABLED)
-> +		if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
-> +				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
->  			power7_sleep();
->  		else
->  			power7_nap(1);
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 0a7d827..a489b56 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -208,7 +208,8 @@ static int powernv_add_idle_states(void)
->  			nr_idle_states++;
->  		}
->  
-> -		if (flags & OPAL_PM_SLEEP_ENABLED) {
-> +		if (flags & OPAL_PM_SLEEP_ENABLED ||
-> +			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
->  			/* Add FASTSLEEP state */
->  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
->  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-
-
+On Wed, Nov 26 2014 at 17:13 -0700, Lina Iyer wrote:
+>SPM is a hardware block that controls the peripheral logic surrounding
+>the application cores (cpu/l$). When the core executes WFI instruction,
+>the SPM takes over the putting the core in low power state as
+>configured. The wake up for the SPM is an interrupt at the GIC, which
+>then completes the rest of low power mode sequence and brings the core
+>out of low power mode.
+>
+>The SPM has a set of control registers that configure the SPMs
+>individually based on the type of the core and the runtime conditions.
+>SPM is a finite state machine block to which a sequence is provided and
+>it interprets the bytes and executes them in sequence. Each low power
+>mode that the core can enter into is provided to the SPM as a sequence.
+>
+>Configure the SPM to set the core (cpu or L2) into its low power mode,
+>the index of the first command in the sequence is set in the SPM_CTL
+>register. When the core executes ARM wfi instruction, it triggers the
+>SPM state machine to start executing from that index. The SPM state
+>machine waits until the interrupt occurs and starts executing the rest
+>of the sequence until it hits the end of the sequence. The end of the
+>sequence jumps the core out of its low power mode.
+>
+>Add support for an idle driver to set up the SPM to place the core in
+>Standby or Standalone power collapse mode when the core is idle.
+>
+>Based on work by: Mahesh Sivasubramanian <msivasub@codeaurora.org>,
+>Ai Li <ali@codeaurora.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
+>Original tree available at -
+>git://codeaurora.org/quic/la/kernel/msm-3.10.git
+>
+>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>---
+> .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  31 +-
+> drivers/soc/qcom/Kconfig                           |   8 +
+> drivers/soc/qcom/Makefile                          |   1 +
+> drivers/soc/qcom/spm.c                             | 328 +++++++++++++++++++++
+> include/soc/qcom/pm.h                              |  31 ++
+> 5 files changed, 393 insertions(+), 6 deletions(-)
+> create mode 100644 drivers/soc/qcom/spm.c
+> create mode 100644 include/soc/qcom/pm.h
+>
+>diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+>index 1505fb8..690c3c0 100644
+>--- a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+>+++ b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+>@@ -2,11 +2,20 @@ SPM AVS Wrapper 2 (SAW2)
+>
+> The SAW2 is a wrapper around the Subsystem Power Manager (SPM) and the
+> Adaptive Voltage Scaling (AVS) hardware. The SPM is a programmable
+>-micro-controller that transitions a piece of hardware (like a processor or
+>+power-controller that transitions a piece of hardware (like a processor or
+> subsystem) into and out of low power modes via a direct connection to
+> the PMIC. It can also be wired up to interact with other processors in the
+> system, notifying them when a low power state is entered or exited.
+>
+>+Multiple revisions of the SAW hardware are supported using these Device Nodes.
+>+SAW2 revisions differ in the register offset and configuration data. Also, the
+>+same revision of the SAW in different SoCs may have different configuration
+>+data due the the differences in hardware capabilities. Hence the SoC name, the
+>+version of the SAW hardware in that SoC and the distinction between cpu (big
+>+or Little) or cache, may be needed to uniquely identify the SAW register
+>+configuration and initialization data. The compatible string is used to
+>+indicate this parameter.
+>+
+> PROPERTIES
+>
+> - compatible:
+>@@ -14,10 +23,13 @@ PROPERTIES
+> 	Value type: <string>
+> 	Definition: shall contain "qcom,saw2". A more specific value should be
+> 		    one of:
+>-			 "qcom,saw2-v1"
+>-			 "qcom,saw2-v1.1"
+>-			 "qcom,saw2-v2"
+>-			 "qcom,saw2-v2.1"
+>+			"qcom,saw2-v1"
+>+			"qcom,saw2-v1.1"
+>+			"qcom,saw2-v2"
+>+			"qcom,saw2-v2.1"
+>+			"qcom,apq8064-saw2-v1.1-cpu"
+>+			"qcom,msm8974-saw2-v2.1-cpu"
+>+			"qcom,apq8084-saw2-v2.1-cpu"
+>
+> - reg:
+> 	Usage: required
+>@@ -26,10 +38,17 @@ PROPERTIES
+> 		    the register region. An optional second element specifies
+> 		    the base address and size of the alias register region.
+>
+>+- regulator:
+>+	Usage: optional
+>+	Value type: boolean
+>+	Definition: Indicates that this SPM device acts as a regulator device
+>+			device for the core (CPU or Cache) the SPM is attached
+>+			to.
+>
+> Example:
+>
+>-	regulator@2099000 {
+>+	power-controller@2099000 {
+> 		compatible = "qcom,saw2";
+> 		reg = <0x02099000 0x1000>, <0x02009000 0x1000>;
+>+		regulator;
+> 	};
+>diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+>index 7dcd554..012fb37 100644
+>--- a/drivers/soc/qcom/Kconfig
+>+++ b/drivers/soc/qcom/Kconfig
+>@@ -11,3 +11,11 @@ config QCOM_GSBI
+>
+> config QCOM_SCM
+> 	bool
+>+
+>+config QCOM_PM
+>+	bool "Qualcomm Power Management"
+>+	depends on ARCH_QCOM
+>+	help
+>+	  QCOM Platform specific power driver to manage cores and L2 low power
+>+	  modes. It interface with various system drivers to put the cores in
+>+	  low power modes.
+>diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+>index 70d52ed..20b329f 100644
+>--- a/drivers/soc/qcom/Makefile
+>+++ b/drivers/soc/qcom/Makefile
+>@@ -1,3 +1,4 @@
+> obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
+>+obj-$(CONFIG_QCOM_PM)	+=	spm.o
+> CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
+> obj-$(CONFIG_QCOM_SCM) += scm.o scm-boot.o
+>diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+>new file mode 100644
+>index 0000000..e5d3ebd
+>--- /dev/null
+>+++ b/drivers/soc/qcom/spm.c
+>@@ -0,0 +1,328 @@
+>+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+>+ *
+>+ * This program is free software; you can redistribute it and/or modify
+>+ * it under the terms of the GNU General Public License version 2 and
+>+ * only version 2 as published by the Free Software Foundation.
+>+ *
+>+ * This program is distributed in the hope that it will be useful,
+>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>+ * GNU General Public License for more details.
+>+ *
+>+ */
+>+
+>+#include <linux/module.h>
+>+#include <linux/kernel.h>
+>+#include <linux/init.h>
+>+#include <linux/io.h>
+>+#include <linux/slab.h>
+>+#include <linux/of.h>
+>+#include <linux/of_address.h>
+>+#include <linux/of_device.h>
+>+#include <linux/err.h>
+>+#include <linux/platform_device.h>
+>+#include <linux/cpuidle.h>
+>+#include <linux/cpu_pm.h>
+>+
+>+#include <asm/proc-fns.h>
+>+#include <asm/suspend.h>
+>+
+>+#include <soc/qcom/pm.h>
+>+#include <soc/qcom/pm.h>
+>+#include <soc/qcom/scm.h>
+>+#include <soc/qcom/scm-boot.h>
+>+
+>+
+>+#define SCM_CMD_TERMINATE_PC	0x2
+>+#define SCM_FLUSH_FLAG_MASK	0x3
+>+#define SCM_L2_ON		0x0
+>+#define SCM_L2_OFF		0x1
+>+#define MAX_PMIC_DATA		2
+>+#define MAX_SEQ_DATA		64
+>+#define SPM_CTL_INDEX		0x7f
+>+#define SPM_CTL_INDEX_SHIFT	4
+>+#define SPM_CTL_EN		BIT(0)
+>+
+>+enum spm_reg {
+>+	SPM_REG_CFG,
+>+	SPM_REG_SPM_CTL,
+>+	SPM_REG_DLY,
+>+	SPM_REG_PMIC_DLY,
+>+	SPM_REG_PMIC_DATA_0,
+>+	SPM_REG_PMIC_DATA_1,
+>+	SPM_REG_VCTL,
+>+	SPM_REG_SEQ_ENTRY,
+>+	SPM_REG_SPM_STS,
+>+	SPM_REG_PMIC_STS,
+>+	SPM_REG_NR,
+>+};
+>+
+>+struct spm_reg_data {
+>+	const u8 *reg_offset;
+>+	u32 spm_cfg;
+>+	u32 spm_dly;
+>+	u32 pmic_dly;
+>+	u32 pmic_data[MAX_PMIC_DATA];
+>+	u8 seq[MAX_SEQ_DATA];
+>+	u8 start_index[PM_SLEEP_MODE_NR];
+>+};
+>+
+>+struct spm_driver_data {
+>+	void __iomem *reg_base;
+>+	const struct spm_reg_data *reg_data;
+>+	bool available;
+Remove this.
+>+};
+>+
+>+static const u8 spm_reg_offset_v2_1[SPM_REG_NR] = {
+>+	[SPM_REG_CFG]		= 0x08,
+>+	[SPM_REG_SPM_CTL]	= 0x30,
+>+	[SPM_REG_DLY]		= 0x34,
+>+	[SPM_REG_SEQ_ENTRY]	= 0x80,
+>+};
+>+
+>+/* SPM register data for 8974, 8084 */
+>+static const struct spm_reg_data spm_reg_8974_8084_cpu  = {
+>+	.reg_offset = spm_reg_offset_v2_1,
+>+	.spm_cfg = 0x1,
+>+	.spm_dly = 0x3C102800,
+>+	.seq = { 0x03, 0x0B, 0x0F, 0x00, 0x20, 0x80, 0x10, 0xE8, 0x5B, 0x03,
+>+		0x3B, 0xE8, 0x5B, 0x82, 0x10, 0x0B, 0x30, 0x06, 0x26, 0x30,
+>+		0x0F },
+>+	.start_index[PM_SLEEP_MODE_STBY] = 0,
+>+	.start_index[PM_SLEEP_MODE_SPC] = 3,
+>+};
+>+
+>+static const u8 spm_reg_offset_v1_1[SPM_REG_NR] = {
+>+	[SPM_REG_CFG]		= 0x08,
+>+	[SPM_REG_SPM_CTL]	= 0x20,
+>+	[SPM_REG_PMIC_DLY]	= 0x24,
+>+	[SPM_REG_PMIC_DATA_0]	= 0x28,
+>+	[SPM_REG_PMIC_DATA_1]	= 0x2C,
+>+	[SPM_REG_SEQ_ENTRY]	= 0x80,
+>+};
+>+
+>+/* SPM register data for 8064 */
+>+static const struct spm_reg_data spm_reg_8064_cpu = {
+>+	.reg_offset = spm_reg_offset_v1_1,
+>+	.spm_cfg = 0x1F,
+>+	.pmic_dly = 0x02020004,
+>+	.pmic_data[0] = 0x0084009C,
+>+	.pmic_data[1] = 0x00A4001C,
+>+	.seq = { 0x03, 0x0F, 0x00, 0x24, 0x54, 0x10, 0x09, 0x03, 0x01,
+>+		0x10, 0x54, 0x30, 0x0C, 0x24, 0x30, 0x0F },
+>+	.start_index[PM_SLEEP_MODE_STBY] = 0,
+>+	.start_index[PM_SLEEP_MODE_SPC] = 2,
+>+};
+>+
+>+static DEFINE_PER_CPU_SHARED_ALIGNED(struct spm_driver_data *, cpu_spm_drv);
+>+
+>+static inline void spm_register_write(struct spm_driver_data *drv,
+>+					enum spm_reg reg, u32 val)
+>+{
+>+	if (drv->reg_data->reg_offset[reg])
+>+		writel_relaxed(val, drv->reg_base +
+>+				drv->reg_data->reg_offset[reg]);
+>+}
+>+
+>+static inline u32 spm_register_read(struct spm_driver_data *drv,
+>+					enum spm_reg reg)
+>+{
+>+	return readl_relaxed(drv->reg_base + drv->reg_data->reg_offset[reg]);
+>+}
+>+
+>+static int spm_set_low_power_mode(enum pm_sleep_mode mode)
+>+{
+>+	struct spm_driver_data *drv = per_cpu(cpu_spm_drv,
+>+						smp_processor_id());
+>+	u32 start_index;
+>+	u32 ctl_val;
+>+
+>+	if (!drv)
+>+		return -ENXIO;
+>+
+>+	start_index = drv->reg_data->start_index[mode];
+>+
+>+	ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
+>+	ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
+>+	ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
+>+	ctl_val |= SPM_CTL_EN;
+>+	spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+>+
+>+	/* Ensure we have written the start address */
+>+	wmb();
+>+
+>+	return 0;
+>+}
+>+
+>+static int qcom_pm_collapse(unsigned long int unused)
+>+{
+>+	int ret;
+>+	u32 flag;
+>+	int cpu = smp_processor_id();
+>+
+>+	ret = scm_set_warm_boot_addr(cpu_resume, cpu);
+>+	if (ret)
+>+		return ret;
+>+
+>+	flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
+>+	scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
+>+
+>+	/*
+>+	 * Returns here only if there was a pending interrupt and we did not
+>+	 * power down as a result.
+>+	 */
+>+	return 0;
+>+}
+>+
+>+static int qcom_cpu_standby(void *unused)
+>+{
+>+	int ret;
+>+
+>+	ret = spm_set_low_power_mode(PM_SLEEP_MODE_STBY);
+>+	if (ret)
+>+		return ret;
+>+
+>+	cpu_do_idle();
+>+
+>+	return 0;
+>+}
+>+
+>+static int qcom_cpu_spc(void *unused)
+>+{	int ret;
+>+
+>+	ret = spm_set_low_power_mode(PM_SLEEP_MODE_STBY);
+>+	if (ret)
+>+		return ret;
+>+
+>+	cpu_pm_enter();
+>+	cpu_suspend(0, qcom_pm_collapse);
+>+	cpu_pm_exit();
+>+
+>+	return 0;
+>+}
+>+
+>+static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
+>+		int *spm_cpu)
+>+{
+>+	struct spm_driver_data *drv = NULL;
+>+	struct device_node *cpu_node, *saw_node;
+>+	int cpu;
+>+	bool found = false;
+>+
+>+	for_each_possible_cpu(cpu) {
+>+		cpu_node = of_cpu_device_node_get(cpu);
+>+		if (!cpu_node)
+>+			continue;
+>+		saw_node = of_parse_phandle(cpu_node, "qcom,saw", 0);
+>+		if (saw_node) {
+>+			if (saw_node == pdev->dev.of_node)
+>+				found = true;
+>+			of_node_put(saw_node);
+>+		}
+>+		of_node_put(cpu_node);
+>+		if (found)
+>+			break;
+>+	}
+>+
+>+	if (found) {
+>+		drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
+>+		if (drv)
+>+			*spm_cpu = cpu;
+>+	}
+>+
+>+	return drv;
+>+}
+>+
+>+static const struct of_device_id spm_match_table[] = {
+>+	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
+>+	  .data = &spm_reg_8974_8084_cpu },
+>+	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
+>+	  .data = &spm_reg_8974_8084_cpu },
+>+	{ .compatible = "qcom,apq8064-saw2-v1.1-cpu",
+>+	  .data = &spm_reg_8064_cpu },
+>+	{ },
+>+};
+>+
+>+static const struct qcom_cpu_pm_ops lpm_ops = {
+>+	.standby = qcom_cpu_standby,
+>+	.spc = qcom_cpu_spc,
+>+};
+>+
+>+static int spm_dev_probe(struct platform_device *pdev)
+>+{
+>+	struct spm_driver_data *drv;
+>+	struct resource *res;
+>+	const struct of_device_id *match_id;
+>+	void __iomem *addr;
+>+	int cpu = -EINVAL;
+>+	static bool cpuidle_drv_init;
+>+	const struct platform_device_info qcom_cpuidle_info = {
+>+		.name	= "qcom_cpuidle",
+>+		.id	= -1,
+>+		.data = &lpm_ops,
+>+		.size_data = sizeof(lpm_ops),
+>+	};
+>+
+>+	drv = spm_get_drv(pdev, &cpu);
+>+	if (!drv || cpu < 0)
+>+		return -EINVAL;
+>+
+>+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>+	drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
+>+	if (IS_ERR(drv->reg_base))
+>+		return PTR_ERR(drv->reg_base);
+>+
+>+	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
+>+	if (!match_id)
+>+		return -ENODEV;
+>+
+>+	drv->reg_data = match_id->data;
+>+
+>+	/* Write the SPM sequences first.. */
+>+	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
+>+	__iowrite32_copy(addr, drv->reg_data->seq,
+>+			ARRAY_SIZE(drv->reg_data->seq) / 4);
+>+
+>+	/*
+>+	 * ..and then the control registers.
+>+	 * On some SoC's if the control registers are written first and if the
+>+	 * CPU was held in reset, the reset signal could trigger the SPM state
+>+	 * machine, before the sequences are completely written.
+>+	 */
+>+	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
+>+	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
+>+	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
+>+
+>+	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
+>+				drv->reg_data->pmic_data[0]);
+>+	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
+>+				drv->reg_data->pmic_data[1]);
+>+
+>+	/*
+>+	 * Ensure all observers see the above register writes before the
+>+	 * cpuidle driver is allowed to use the SPM.
+>+	 */
+>+	wmb();
+>+	per_cpu(cpu_spm_drv, cpu) = drv;
+>+
+>+	if (!cpuidle_drv_init) {
+>+		platform_device_register_full(&qcom_cpuidle_info);
+>+		cpuidle_drv_init = true;
+>+	}
+>+
+>+	return 0;
+>+}
+>+
+>+static struct platform_driver spm_driver = {
+>+	.probe = spm_dev_probe,
+>+	.driver = {
+>+		.name = "saw",
+>+		.of_match_table = spm_match_table,
+>+	},
+>+};
+>+
+>+module_platform_driver(spm_driver);
+>+
+>+MODULE_LICENSE("GPL v2");
+>+MODULE_DESCRIPTION("SAW power controller driver");
+>+MODULE_ALIAS("platform:saw");
+>diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
+>new file mode 100644
+>index 0000000..d9a56d7
+>--- /dev/null
+>+++ b/include/soc/qcom/pm.h
+>@@ -0,0 +1,31 @@
+>+/*
+>+ * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+>+ *
+>+ * This software is licensed under the terms of the GNU General Public
+>+ * License version 2, as published by the Free Software Foundation, and
+>+ * may be copied, distributed, and modified under those terms.
+>+ *
+>+ * This program is distributed in the hope that it will be useful,
+>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>+ * GNU General Public License for more details.
+>+ *
+>+ */
+>+
+>+#ifndef __QCOM_PM_H
+>+#define __QCOM_PM_H
+>+
+>+enum pm_sleep_mode {
+>+	PM_SLEEP_MODE_STBY,
+>+	PM_SLEEP_MODE_RET,
+>+	PM_SLEEP_MODE_SPC,
+>+	PM_SLEEP_MODE_PC,
+>+	PM_SLEEP_MODE_NR,
+>+};
+>+
+>+struct qcom_cpu_pm_ops {
+>+	int (*standby)(void *data);
+>+	int (*spc)(void *data);
+>+};
+>+
+>+#endif  /* __QCOM_PM_H */
+>-- 
+>2.1.0
+>
