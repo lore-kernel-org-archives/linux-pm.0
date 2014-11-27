@@ -1,188 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/4] ACPI / PM: Drop CONFIG_PM_RUNTIME from the ACPI core
-Date: Thu, 27 Nov 2014 01:40:01 +0100
-Message-ID: <2305225.e81AdzJbgi@vostro.rjw.lan>
-References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/8] opp: Introduce APIs to remove OPPs
+Date: Thu, 27 Nov 2014 05:56:21 +0530
+Message-ID: <CAKohpomz-kekRU7YD8_TYbeVRRs7WmrqLFT0yALxXwFGjwqNOQ@mail.gmail.com>
+References: <cover.1416910766.git.viresh.kumar@linaro.org>
+	<CAKohponz3MsgZNtm1i-aLx8kRRjJwUJjL=B3RE96EiivwXbF2A@mail.gmail.com>
+	<CAKohpomKym9dqzQDmS-7ipze4jCYDU4_UN4a36VceHuGezoiVw@mail.gmail.com>
+	<11530150.5svHxl9OuM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <37310416.jZXoh5nfSC@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:49803 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbaK0A0W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:26:22 -0500
+Received: by mail-ob0-f169.google.com with SMTP id vb8so3050582obc.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:26:22 -0800 (PST)
+In-Reply-To: <11530150.5svHxl9OuM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stefan Wahren <stefan.wahren@i2se.com>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 27 November 2014 at 04:02, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> That should work if I'm not mistaken, but I'm wondering if we could
+> settle on using one RCU type for this (later, though).
 
-After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) PM_RUNTIME is always set if PM is set, so quite a few
-#ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
-depend on CONFIG_PM.
-
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in the ACPI core code.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c |    4 +---
- drivers/acpi/device_pm.c |    8 ++------
- drivers/acpi/pci_irq.c   |    2 +-
- include/linux/acpi.h     |   26 +++++++++++---------------
- 4 files changed, 15 insertions(+), 25 deletions(-)
-
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -588,7 +588,6 @@ static int acpi_lpss_resume_early(struct
- }
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
- static int acpi_lpss_runtime_suspend(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-@@ -631,11 +630,11 @@ static int acpi_lpss_runtime_resume(stru
- 
- 	return pm_generic_runtime_resume(dev);
- }
--#endif /* CONFIG_PM_RUNTIME */
- #endif /* CONFIG_PM */
- 
- static struct dev_pm_domain acpi_lpss_pm_domain = {
- 	.ops = {
-+#ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
- 		.complete = acpi_subsys_complete,
-@@ -647,7 +646,6 @@ static struct dev_pm_domain acpi_lpss_pm
- 		.poweroff_late = acpi_lpss_suspend_late,
- 		.restore_early = acpi_lpss_resume_early,
- #endif
--#ifdef CONFIG_PM_RUNTIME
- 		.runtime_suspend = acpi_lpss_runtime_suspend,
- 		.runtime_resume = acpi_lpss_runtime_resume,
- #endif
-Index: linux-pm/drivers/acpi/pci_irq.c
-===================================================================
---- linux-pm.orig/drivers/acpi/pci_irq.c
-+++ linux-pm/drivers/acpi/pci_irq.c
-@@ -484,7 +484,7 @@ void acpi_pci_irq_disable(struct pci_dev
- 	/* Keep IOAPIC pin configuration when suspending */
- 	if (dev->dev.power.is_prepared)
- 		return;
--#ifdef	CONFIG_PM_RUNTIME
-+#ifdef	CONFIG_PM
- 	if (dev->dev.power.runtime_status == RPM_SUSPENDING)
- 		return;
- #endif
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -692,7 +692,6 @@ static int acpi_device_wakeup(struct acp
- 	return 0;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
- /**
-  * acpi_pm_device_run_wake - Enable/disable remote wakeup for given device.
-  * @dev: Device to enable/disable the platform to wake up.
-@@ -714,7 +713,6 @@ int acpi_pm_device_run_wake(struct devic
- 	return acpi_device_wakeup(adev, ACPI_STATE_S0, enable);
- }
- EXPORT_SYMBOL(acpi_pm_device_run_wake);
--#endif /* CONFIG_PM_RUNTIME */
- 
- #ifdef CONFIG_PM_SLEEP
- /**
-@@ -773,7 +771,6 @@ static int acpi_dev_pm_full_power(struct
- 		acpi_device_set_power(adev, ACPI_STATE_D0) : 0;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
- /**
-  * acpi_dev_runtime_suspend - Put device into a low-power state using ACPI.
-  * @dev: Device to put into a low-power state.
-@@ -855,7 +852,6 @@ int acpi_subsys_runtime_resume(struct de
- 	return ret ? ret : pm_generic_runtime_resume(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
--#endif /* CONFIG_PM_RUNTIME */
- 
- #ifdef CONFIG_PM_SLEEP
- /**
-@@ -1023,10 +1019,9 @@ EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
- 
- static struct dev_pm_domain acpi_general_pm_domain = {
- 	.ops = {
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 		.runtime_suspend = acpi_subsys_runtime_suspend,
- 		.runtime_resume = acpi_subsys_runtime_resume,
--#endif
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
- 		.complete = acpi_subsys_complete,
-@@ -1038,6 +1033,7 @@ static struct dev_pm_domain acpi_general
- 		.poweroff_late = acpi_subsys_suspend_late,
- 		.restore_early = acpi_subsys_resume_early,
- #endif
-+#endif
- 	},
- };
- 
-Index: linux-pm/include/linux/acpi.h
-===================================================================
---- linux-pm.orig/include/linux/acpi.h
-+++ linux-pm/include/linux/acpi.h
-@@ -567,16 +567,26 @@ static inline void arch_reserve_mem_area
- #define acpi_os_set_prepare_sleep(func, pm1a_ctrl, pm1b_ctrl) do { } while (0)
- #endif
- 
--#if defined(CONFIG_ACPI) && defined(CONFIG_PM_RUNTIME)
-+#if defined(CONFIG_ACPI) && defined(CONFIG_PM)
- int acpi_dev_runtime_suspend(struct device *dev);
- int acpi_dev_runtime_resume(struct device *dev);
- int acpi_subsys_runtime_suspend(struct device *dev);
- int acpi_subsys_runtime_resume(struct device *dev);
-+struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
-+int acpi_dev_pm_attach(struct device *dev, bool power_on);
- #else
- static inline int acpi_dev_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_dev_runtime_resume(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
-+static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
-+{
-+	return NULL;
-+}
-+static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
-+{
-+	return -ENODEV;
-+}
- #endif
- 
- #if defined(CONFIG_ACPI) && defined(CONFIG_PM_SLEEP)
-@@ -599,20 +609,6 @@ static inline int acpi_subsys_suspend(st
- static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
- #endif
- 
--#if defined(CONFIG_ACPI) && defined(CONFIG_PM)
--struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
--int acpi_dev_pm_attach(struct device *dev, bool power_on);
--#else
--static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
--{
--	return NULL;
--}
--static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
--{
--	return -ENODEV;
--}
--#endif
--
- #ifdef CONFIG_ACPI
- __printf(3, 4)
- void acpi_handle_printk(const char *level, acpi_handle handle,
-
+We can convert all call sites to use SRCU then. Once we are sure about it.
