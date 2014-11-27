@@ -1,72 +1,75 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
-Date: Thu, 27 Nov 2014 11:15:20 +0000
-Message-ID: <547707C8.3080108@arm.com>
-References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>	<5476071B.1060705@arm.com>	<CAKohpomFE6xg+HfOicha4Ntkr9osqDK2gxdKce=BU_q35jfBxA@mail.gmail.com>	<5476F4ED.6040206@arm.com> <CAKohpok+M+HuuQBJ3EJ_3e+Uv-Me5za7EO2TVguU_tCXNtahvQ@mail.gmail.com>
+From: Dennis Wassenberg <dennis.wassenberg@secunet.com>
+Subject: Re: S0iX Ultra Low Power States
+Date: Thu, 27 Nov 2014 12:50:11 +0100
+Message-ID: <54770FF3.4000809@secunet.com>
+References: <54747B59.2080503@secunet.com> <20141125101359.088cdacf@kcaccard-desk.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:40784 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbaK0LPV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 06:15:21 -0500
-In-Reply-To: <CAKohpok+M+HuuQBJ3EJ_3e+Uv-Me5za7EO2TVguU_tCXNtahvQ@mail.gmail.com>
+Received: from a.mx.secunet.com ([195.81.216.161]:35920 "EHLO a.mx.secunet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753329AbaK0Luc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Nov 2014 06:50:32 -0500
+In-Reply-To: <20141125101359.088cdacf@kcaccard-desk.amr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, "rob.herring@linaro.org" <rob.herring@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "kesavan.abhilash@gmail.com" <kesavan.abhilash@gmail.com>, Catalin Marinas <Catalin.Marinas@arm.com>, "k.chander@samsung.com" <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, "ta.omasab@gmail.com" <ta.omasab@gmail.com>
+To: Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+Hi Kristen,
 
+thank you for these hints. Especially these regarding PCIe endpoint
+devices. I found that some of these was configured to be always on which
+prevents the system from entering the S0iX states. After changing this
+the power consumption reduced to approximately 0.5 Watt.
 
-On 27/11/14 10:22, Viresh Kumar wrote:
-> On 27 November 2014 at 15:24, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> No that won't suffice. You can't modify the DTs of the platforms using
->> cpufreq-dt.c as of today. They should continue to work, so either you
->> retain all the existing platform device creation in platform code as is
->> or do something like below with the blacklist for those platforms.
->
-> Is the meaning of "backward compatibility" for DTs mentioned somewhere?
-> I am not sure if we have to *always* follow the compatibility you are talking
-> about.
->
+Thank you & best regards,
 
-It's the general understanding, I am not sure if it's specified anywhere
-in the kernel Documentation, but I could find the below excerpts from [1]:
+Dennis
 
-"The compatibility rules say that new kernels must work with older
-device trees. If changes are required, they should be put into new
-properties; the old ones can then be deprecated but not removed. New
-properties should be optional, so that device trees lacking those
-properties continue to work. The device tree developers will provide a
-set of guidelines for the creation of future-proof bindings."
-
-> Probably we want new DTs to continue supporting older version of kernels.
-> Not that older DTs should work with new kernel changes.
->
-
-It's *exactly opposite* as DTs are considered as part of firmware that
-gets shipped with the boards and any kernel should work with that DT if
-it is compliance with the DT bindings(even old, as the DT bindings
-should never get changed only gets extended)
-
-> So, even with another field in cpuX node, we wouldn't break older kernels
-> as they will anyway get the device from platform code.
->
-
-Yes, but that's not what we want.
-
->> OK, in this way you still continue to work on existing platforms with
->> *old DT*.
->
-> Probably not.
->
-
-No, you *must* :). That's backward compatibility. Just consider a simple
-case where the bootloader is generating DT and we don't want to upgrade it.
-
-Regards,
-Sudeep
-
-[1] http://lwn.net/Articles/572114/
-
+On 25.11.2014 19:13, Kristen Carlson Accardi wrote:
+> On Tue, 25 Nov 2014 13:51:37 +0100
+> Dennis Wassenberg <dennis.wassenberg@secunet.com> wrote:
+> 
+>> Hi,
+>>
+>> I would like to know more about the Linux power management in
+>> correlation to the Intel S0iX Ultra Low Power States.
+>>
+>> Systems which have a Windows 8 Logo must support Connected Standby (or
+>> InstantGo, however it is called). One of the requirements getting this
+>> logo is that the ACPI firmware must not provide an S3 object in the root
+>> of the namespace. This means that Linux can not use the S3 mode.
+>>
+>> To archive a very low power consumption Microsoft uses the Ultra Low
+>> Power States S0i1 and S0i3. Is there a way to use these low power states
+>> in linux for Haswell/LynxPoint or Broadwell/Skylake platforms?
+>>
+>> I read something about these states. Such that they can be activated
+>> automatically but there are some preconditions (e.g. certain IO devices
+>> have to put into a low power state, graphics off, only one CPU online,
+>> ...). If I enter the S1 Low Power State (with additional
+>> disable_nonboot_cpus) all of these preconditions should be fulfilled?!
+>> But I can not observe that the there is a power consumption less than 1
+>> Watt.
+>>
+>> Thank you & Best regards,
+>>
+>> Dennis
+> 
+> Hi,
+> On haswell ULT and Broadwell ULT these states can be entered as part of
+> Linux's normal Idle flow if some preconditions are met.  You should run
+> powertop to ensure that all devices are tuned for low power.  The
+> embedded display must be off. (no external display connected).  You
+> should confirm that all PCIe endpoint devices on your platform support
+> ASPM and L1 substates (using lspci).  If they do not, you must ensure
+> they are in D3.  You should kill or freeze any processes that frequently
+> wake in order to improve your average battery life.  You can use
+> powertop or turbostat to confirm entry into pc8/pc9/pc10.
+> 
+> Good luck.
+> Kristen
+> 
+> 
