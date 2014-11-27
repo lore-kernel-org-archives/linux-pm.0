@@ -1,288 +1,142 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v13 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Thu, 27 Nov 2014 15:01:37 +0000
-Message-ID: <20141127150137.GA7889@red-moon>
-References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
- <1417065854-37745-4-git-send-email-lina.iyer@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 0/7] cpufreq: Register cooling device after policy is
+ usable
+Date: Thu, 27 Nov 2014 11:33:41 -0400
+Message-ID: <20141127153339.GA22851@developer>
+References: <cover.1416980447.git.viresh.kumar@linaro.org>
+ <20141126175429.GA1826@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40779 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbaK0PBx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 10:01:53 -0500
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:46327 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbaK0Pdv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 10:33:51 -0500
+Received: by mail-qa0-f50.google.com with SMTP id w8so3381796qac.37
+        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 07:33:50 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1417065854-37745-4-git-send-email-lina.iyer@linaro.org>
+In-Reply-To: <20141126175429.GA1826@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com
 
-On Thu, Nov 27, 2014 at 05:24:07AM +0000, Lina Iyer wrote:
 
-[...]
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +static int spm_set_low_power_mode(enum pm_sleep_mode mode)
-> +{
-> +       struct spm_driver_data *drv = per_cpu(cpu_spm_drv,
-> +                                               smp_processor_id());
-> +       u32 start_index;
-> +       u32 ctl_val;
-> +
-> +       if (!drv)
-> +               return -ENXIO;
-> +
-> +       start_index = drv->reg_data->start_index[mode];
-> +
-> +       ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
-> +       ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
-> +       ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
-> +       ctl_val |= SPM_CTL_EN;
-> +       spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
-> +
-> +       /* Ensure we have written the start address */
-> +       wmb();
+On Wed, Nov 26, 2014 at 01:54:31PM -0400, Eduardo Valentin wrote:
+> Hello Viresh,
+>=20
+> Thanks for providing a proposal.
+>=20
+> On Wed, Nov 26, 2014 at 11:22:55AM +0530, Viresh Kumar wrote:
+> > Hi Rafael/Eduardo,
+> >=20
+> > Currently there is no callback for cpufreq drivers which is called once=
+ the
+> > policy is ready to be used. There are some requirements where such a ca=
+llback is
+> > required.
+> >=20
+> > One of them is registering a cooling device with the help of
+> > of_cpufreq_cooling_register(). This routine tries to get 'struct cpufre=
+q_policy'
+> > for CPUs which isn't yet initialed at the time ->init() is called and s=
+o we face
+> > issues while registering the cooling device.
+> >=20
+> > Because we can't register cooling device from ->init(), we need a callb=
+ack that
+> > is called after the policy is ready to be used and hence ->usable() cal=
+lback.
+> >=20
+> > The first patch fixes few formatting issues, so that the third patch do=
+esn't
+> > throw any checkpatch warnings. Second one fixes a potential bug in cpuf=
+req-dt
+> > driver. Third one introduces ->usable() callback which will be used in =
+the
+> > fourth patch.
+> >=20
+> > Last three are fixes for cooling core, which may be applied separately =
+by
+> > Eduardo if he wants. Sent them in this series as they were sort of conn=
+ected
+> > with cpufreq in general.
+> >=20
+> > Let me know if it still doesn't work properly.
+>=20
+> For the series, the last three patches somehow breaks things. I didn't
+> not investigate the reason now, because, well, I think we should take
+> one thing at a time.
 
-Can you explain please what this wmb is meant to achieve ? If it is there
-to make sure the write made it to the SPM that's not a proper way
-to achieve it, the barrier ensures ordering, not write completion.
+It turns out that I could not reproduce the issue I saw. So, I am
+assuming that was an issue in my environment.
 
-> +
-> +       return 0;
-> +}
-> +
-> +static int qcom_pm_collapse(unsigned long int unused)
-> +{
-> +       int ret;
-> +       u32 flag;
-> +       int cpu = smp_processor_id();
-> +
-> +       ret = scm_set_warm_boot_addr(cpu_resume, cpu);
-> +       if (ret)
-> +               return ret;
-> +
-> +       flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
-> +       scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
-> +
-> +       /*
-> +        * Returns here only if there was a pending interrupt and we did not
-> +        * power down as a result.
-> +        */
-> +       return 0;
+Can you still post them separately? =20
 
-I know the return value is changed by the cpu_suspend implementation to
-signal error when not returning from cpu_resume, but you should not
-return 0 anyway.
 
-> +}
-> +
-> +static int qcom_cpu_standby(void *unused)
-> +{
-> +       int ret;
-> +
-> +       ret = spm_set_low_power_mode(PM_SLEEP_MODE_STBY);
-> +       if (ret)
-> +               return ret;
-> +
-> +       cpu_do_idle();
-> +
-> +       return 0;
-> +}
-> +
-> +static int qcom_cpu_spc(void *unused)
-> +{      int ret;
-> +
-> +       ret = spm_set_low_power_mode(PM_SLEEP_MODE_STBY);
-> +       if (ret)
-> +               return ret;
-> +
-> +       cpu_pm_enter();
-> +       cpu_suspend(0, qcom_pm_collapse);
+>=20
+> For the patches 1 to 4, I tried then and they do the trick. Now the
+> sequencing is correct between cpufreq-dt and cpu cooling. That means I
+> can also improve the thermal code by accepting the following patches:
+> https://patchwork.kernel.org/patch/5326991/
+> https://patchwork.kernel.org/patch/5387161/
+>=20
+> on top of the four first patches.
+>=20
+> Cheers,
+>=20
+> Eduardo Valentin
+>=20
+> >=20
+> > --
+> > viresh
+> >=20
+> > Viresh Kumar (7):
+> >   cpufreq: Fix formatting issues in 'struct cpufreq_driver'
+> >   cpufreq-dt: pass 'policy->related_cpus' to
+> >     of_cpufreq_cooling_register()
+> >   cpufreq: Introduce ->usable() callback for cpufreq drivers
+> >   cpufreq-dt: register cooling device from ->usable() callback
+> >   cpu_cooling: Don't match min/max frequencies for all CPUs on cooling
+> >     register
+> >   cpu_cooling: don't iterate over all allowed_cpus to update cpufreq
+> >     policy
+> >   cpu_cooling: No need to check is_cpufreq_valid()
+> >=20
+> >  drivers/cpufreq/cpufreq-dt.c  | 51 +++++++++++++++++++++++++----------=
+-----
+> >  drivers/cpufreq/cpufreq.c     |  5 ++++
+> >  drivers/thermal/cpu_cooling.c | 44 ++++-------------------------------
+> >  include/linux/cpufreq.h       | 54 +++++++++++++++++++++++------------=
+--------
+> >  4 files changed, 70 insertions(+), 84 deletions(-)
+> >=20
+> > --=20
+> > 2.0.3.693.g996b0fd
+> >=20
 
-You must stash the return value and propagate it.
 
-> +       cpu_pm_exit();
-> +
-> +       return 0;
-> +}
-> +
-> +static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
-> +               int *spm_cpu)
-> +{
-> +       struct spm_driver_data *drv = NULL;
-> +       struct device_node *cpu_node, *saw_node;
-> +       int cpu;
-> +       bool found = false;
-> +
-> +       for_each_possible_cpu(cpu) {
-> +               cpu_node = of_cpu_device_node_get(cpu);
-> +               if (!cpu_node)
-> +                       continue;
-> +               saw_node = of_parse_phandle(cpu_node, "qcom,saw", 0);
 
-+               if (saw_node) {
-+                       if (saw_node == pdev->dev.of_node)
-+                               found = true;
-+                       of_node_put(saw_node);
-+               }
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-can be:
-		found = (saw_node == pdev->dev.of_node);
-		of_node_put(saw_node);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Thanks,
-Lorenzo
+iQEcBAEBAgAGBQJUd0RLAAoJEMLUO4d9pOJWoeAH/3LDupG2175gXzAcMOWF6Nl4
+rWk0ybg+tOQBzlj6UHGx/GHzmfpf1dkY8NPizayGEnn88IZgMiy6STVP8xaVT7EN
+G/Xw8g9mj1A3hmAS9vGIjr92+ooFvfIRjfCeDeUiGLE/VbH4SMfdpnEDkrhq0p/6
+awzUykCUGYKKVIhvFrCF02TGX689QogG6nUUBcra7l98wRD5CmQziEN8pazswpFJ
+DlqZqCzToZwdqXNt417QnGegR7GEp23fT2gRgO1Rp4MJH6Ztx6MKPzHiEGC1SctA
+SQZkZUgcj48sQMl5VB5fRZHZKkeWLH9dimD+gdY8/KwEvTZfnlYluuho7EACxHc=
+=fxNV
+-----END PGP SIGNATURE-----
 
-> +               of_node_put(cpu_node);
-> +               if (found)
-> +                       break;
-> +       }
-> +
-> +       if (found) {
-> +               drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
-> +               if (drv)
-> +                       *spm_cpu = cpu;
-> +       }
-> +
-> +       return drv;
-> +}
-> +
-> +static const struct of_device_id spm_match_table[] = {
-> +       { .compatible = "qcom,msm8974-saw2-v2.1-cpu",
-> +         .data = &spm_reg_8974_8084_cpu },
-> +       { .compatible = "qcom,apq8084-saw2-v2.1-cpu",
-> +         .data = &spm_reg_8974_8084_cpu },
-> +       { .compatible = "qcom,apq8064-saw2-v1.1-cpu",
-> +         .data = &spm_reg_8064_cpu },
-> +       { },
-> +};
-> +
-> +static const struct qcom_cpu_pm_ops lpm_ops = {
-> +       .standby = qcom_cpu_standby,
-> +       .spc = qcom_cpu_spc,
-> +};
-> +
-> +static int spm_dev_probe(struct platform_device *pdev)
-> +{
-> +       struct spm_driver_data *drv;
-> +       struct resource *res;
-> +       const struct of_device_id *match_id;
-> +       void __iomem *addr;
-> +       int cpu = -EINVAL;
-> +       static bool cpuidle_drv_init;
-> +       const struct platform_device_info qcom_cpuidle_info = {
-> +               .name   = "qcom_cpuidle",
-> +               .id     = -1,
-> +               .data = &lpm_ops,
-> +               .size_data = sizeof(lpm_ops),
-> +       };
-> +
-> +       drv = spm_get_drv(pdev, &cpu);
-> +       if (!drv || cpu < 0)
-> +               return -EINVAL;
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
-> +       if (IS_ERR(drv->reg_base))
-> +               return PTR_ERR(drv->reg_base);
-> +
-> +       match_id = of_match_node(spm_match_table, pdev->dev.of_node);
-> +       if (!match_id)
-> +               return -ENODEV;
-> +
-> +       drv->reg_data = match_id->data;
-> +
-> +       /* Write the SPM sequences first.. */
-> +       addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
-> +       __iowrite32_copy(addr, drv->reg_data->seq,
-> +                       ARRAY_SIZE(drv->reg_data->seq) / 4);
-> +
-> +       /*
-> +        * ..and then the control registers.
-> +        * On some SoC's if the control registers are written first and if the
-> +        * CPU was held in reset, the reset signal could trigger the SPM state
-> +        * machine, before the sequences are completely written.
-> +        */
-> +       spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
-> +       spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
-> +       spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
-> +
-> +       spm_register_write(drv, SPM_REG_PMIC_DATA_0,
-> +                               drv->reg_data->pmic_data[0]);
-> +       spm_register_write(drv, SPM_REG_PMIC_DATA_1,
-> +                               drv->reg_data->pmic_data[1]);
-> +
-> +       /*
-> +        * Ensure all observers see the above register writes before the
-> +        * cpuidle driver is allowed to use the SPM.
-> +        */
-> +       wmb();
-> +       per_cpu(cpu_spm_drv, cpu) = drv;
-> +
-> +       if (!cpuidle_drv_init) {
-> +               platform_device_register_full(&qcom_cpuidle_info);
-> +               cpuidle_drv_init = true;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static struct platform_driver spm_driver = {
-> +       .probe = spm_dev_probe,
-> +       .driver = {
-> +               .name = "saw",
-> +               .of_match_table = spm_match_table,
-> +       },
-> +};
-> +
-> +module_platform_driver(spm_driver);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("SAW power controller driver");
-> +MODULE_ALIAS("platform:saw");
-> diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
-> new file mode 100644
-> index 0000000..d9a56d7
-> --- /dev/null
-> +++ b/include/soc/qcom/pm.h
-> @@ -0,0 +1,31 @@
-> +/*
-> + * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#ifndef __QCOM_PM_H
-> +#define __QCOM_PM_H
-> +
-> +enum pm_sleep_mode {
-> +       PM_SLEEP_MODE_STBY,
-> +       PM_SLEEP_MODE_RET,
-> +       PM_SLEEP_MODE_SPC,
-> +       PM_SLEEP_MODE_PC,
-> +       PM_SLEEP_MODE_NR,
-> +};
-> +
-> +struct qcom_cpu_pm_ops {
-> +       int (*standby)(void *data);
-> +       int (*spc)(void *data);
-> +};
-> +
-> +#endif  /* __QCOM_PM_H */
-> --
-> 2.1.0
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+--WIyZ46R2i8wDzkSu--
