@@ -1,15 +1,15 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v13 09/10] arm: dts: qcom: Add idle states device nodes for 8084
-Date: Wed, 26 Nov 2014 22:24:13 -0700
-Message-ID: <1417065854-37745-10-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v13 08/10] arm: dts: qcom: Add idle states device nodes for 8074
+Date: Wed, 26 Nov 2014 22:24:12 -0700
+Message-ID: <1417065854-37745-9-git-send-email-lina.iyer@linaro.org>
 References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:42558 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbaK0FYr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 00:24:47 -0500
-Received: by mail-pd0-f171.google.com with SMTP id y13so4233818pdi.2
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 21:24:47 -0800 (PST)
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:48624 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943AbaK0FYq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 00:24:46 -0500
+Received: by mail-pa0-f42.google.com with SMTP id et14so4326805pad.1
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 21:24:45 -0800 (PST)
 In-Reply-To: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -17,21 +17,21 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
 Add ARM common idle states device bindings for cpuidle support for APQ
-8084.
+8074/8974.
 
-Support standby and standalone power collapse (power down that does not
+Support Standby and Standalone power collapse (power down that does not
 affect any SoC idle states) for each cpu.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-apq8084.dtsi | 20 ++++++++++++++++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
  1 file changed, 20 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 71182bf..7172edf 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index 5a41f44..6942b46 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
 @@ -22,6 +22,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
