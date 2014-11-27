@@ -1,217 +1,121 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH 3/4] ACPI / PM: Drop CONFIG_PM_RUNTIME from the ACPI core
-Date: Thu, 27 Nov 2014 23:06:35 +0100
-Message-ID: <1861012.tSNCe7tbeK@vostro.rjw.lan>
-References: <37310416.jZXoh5nfSC@vostro.rjw.lan> <2305225.e81AdzJbgi@vostro.rjw.lan>
+Subject: [Update][PATCH 4/4] PCI / PM: Drop CONFIG_PM_RUNTIME from the PCI core
+Date: Thu, 27 Nov 2014 23:41:42 +0100
+Message-ID: <1665071.LpcEGj9O01@vostro.rjw.lan>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan> <2582138.zUe2QZynBg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2305225.e81AdzJbgi@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53069 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750784AbaK0WU0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 17:20:26 -0500
+In-Reply-To: <2582138.zUe2QZynBg@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: ACPI / PM: Drop CONFIG_PM_RUNTIME from the ACPI core
+Subject: PCI / PM: Drop CONFIG_PM_RUNTIME from the PCI core
 
 After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
 selected) PM_RUNTIME is always set if PM is set, so quite a few
 #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
 depend on CONFIG_PM.
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in the ACPI core code.
+Replace CONFIG_PM_RUNTIME with CONFIG_PM in the PCI core code.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-I missed include/acpi/acpi_bus.h in the previous version.
+Changelog fixup.
 
 ---
- drivers/acpi/acpi_lpss.c |    4 +---
- drivers/acpi/device_pm.c |    8 ++------
- drivers/acpi/pci_irq.c   |    2 +-
- include/acpi/acpi_bus.h  |    6 +-----
- include/linux/acpi.h     |   26 +++++++++++---------------
- 5 files changed, 16 insertions(+), 30 deletions(-)
+ drivers/pci/pci-driver.c |   20 +++++++-------------
+ drivers/pci/pci-sysfs.c  |    4 ++--
+ drivers/pci/pcie/Kconfig |    2 +-
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-Index: linux-pm/drivers/acpi/acpi_lpss.c
+Index: linux-pm/drivers/pci/pcie/Kconfig
 ===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -588,7 +588,6 @@ static int acpi_lpss_resume_early(struct
- }
- #endif /* CONFIG_PM_SLEEP */
+--- linux-pm.orig/drivers/pci/pcie/Kconfig
++++ linux-pm/drivers/pci/pcie/Kconfig
+@@ -79,4 +79,4 @@ endchoice
  
--#ifdef CONFIG_PM_RUNTIME
- static int acpi_lpss_runtime_suspend(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-@@ -631,11 +630,11 @@ static int acpi_lpss_runtime_resume(stru
- 
- 	return pm_generic_runtime_resume(dev);
- }
--#endif /* CONFIG_PM_RUNTIME */
- #endif /* CONFIG_PM */
- 
- static struct dev_pm_domain acpi_lpss_pm_domain = {
- 	.ops = {
-+#ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
- 		.complete = acpi_subsys_complete,
-@@ -647,7 +646,6 @@ static struct dev_pm_domain acpi_lpss_pm
- 		.poweroff_late = acpi_lpss_suspend_late,
- 		.restore_early = acpi_lpss_resume_early,
- #endif
--#ifdef CONFIG_PM_RUNTIME
- 		.runtime_suspend = acpi_lpss_runtime_suspend,
- 		.runtime_resume = acpi_lpss_runtime_resume,
- #endif
-Index: linux-pm/drivers/acpi/pci_irq.c
+ config PCIE_PME
+ 	def_bool y
+-	depends on PCIEPORTBUS && PM_RUNTIME
++	depends on PCIEPORTBUS && PM
+Index: linux-pm/drivers/pci/pci-driver.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/pci_irq.c
-+++ linux-pm/drivers/acpi/pci_irq.c
-@@ -484,7 +484,7 @@ void acpi_pci_irq_disable(struct pci_dev
- 	/* Keep IOAPIC pin configuration when suspending */
- 	if (dev->dev.power.is_prepared)
- 		return;
--#ifdef	CONFIG_PM_RUNTIME
-+#ifdef	CONFIG_PM
- 	if (dev->dev.power.runtime_status == RPM_SUSPENDING)
- 		return;
- #endif
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -692,7 +692,6 @@ static int acpi_device_wakeup(struct acp
- 	return 0;
- }
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1104,7 +1104,7 @@ static int pci_pm_restore(struct device
  
--#ifdef CONFIG_PM_RUNTIME
- /**
-  * acpi_pm_device_run_wake - Enable/disable remote wakeup for given device.
-  * @dev: Device to enable/disable the platform to wake up.
-@@ -714,7 +713,6 @@ int acpi_pm_device_run_wake(struct devic
- 	return acpi_device_wakeup(adev, ACPI_STATE_S0, enable);
- }
- EXPORT_SYMBOL(acpi_pm_device_run_wake);
--#endif /* CONFIG_PM_RUNTIME */
+ #endif /* !CONFIG_HIBERNATE_CALLBACKS */
  
- #ifdef CONFIG_PM_SLEEP
- /**
-@@ -773,7 +771,6 @@ static int acpi_dev_pm_full_power(struct
- 		acpi_device_set_power(adev, ACPI_STATE_D0) : 0;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
- /**
-  * acpi_dev_runtime_suspend - Put device into a low-power state using ACPI.
-  * @dev: Device to put into a low-power state.
-@@ -855,7 +852,6 @@ int acpi_subsys_runtime_resume(struct de
- 	return ret ? ret : pm_generic_runtime_resume(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
--#endif /* CONFIG_PM_RUNTIME */
- 
- #ifdef CONFIG_PM_SLEEP
- /**
-@@ -1023,10 +1019,9 @@ EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
- 
- static struct dev_pm_domain acpi_general_pm_domain = {
- 	.ops = {
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- 		.runtime_suspend = acpi_subsys_runtime_suspend,
- 		.runtime_resume = acpi_subsys_runtime_resume,
--#endif
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
- 		.complete = acpi_subsys_complete,
-@@ -1038,6 +1033,7 @@ static struct dev_pm_domain acpi_general
- 		.poweroff_late = acpi_subsys_suspend_late,
- 		.restore_early = acpi_subsys_resume_early,
- #endif
-+#endif
- 	},
- };
  
-Index: linux-pm/include/linux/acpi.h
-===================================================================
---- linux-pm.orig/include/linux/acpi.h
-+++ linux-pm/include/linux/acpi.h
-@@ -567,16 +567,26 @@ static inline void arch_reserve_mem_area
- #define acpi_os_set_prepare_sleep(func, pm1a_ctrl, pm1b_ctrl) do { } while (0)
- #endif
- 
--#if defined(CONFIG_ACPI) && defined(CONFIG_PM_RUNTIME)
-+#if defined(CONFIG_ACPI) && defined(CONFIG_PM)
- int acpi_dev_runtime_suspend(struct device *dev);
- int acpi_dev_runtime_resume(struct device *dev);
- int acpi_subsys_runtime_suspend(struct device *dev);
- int acpi_subsys_runtime_resume(struct device *dev);
-+struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
-+int acpi_dev_pm_attach(struct device *dev, bool power_on);
- #else
- static inline int acpi_dev_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_dev_runtime_resume(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
-+static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
-+{
-+	return NULL;
-+}
-+static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
-+{
-+	return -ENODEV;
-+}
- #endif
- 
- #if defined(CONFIG_ACPI) && defined(CONFIG_PM_SLEEP)
-@@ -599,20 +609,6 @@ static inline int acpi_subsys_suspend(st
- static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
- #endif
- 
--#if defined(CONFIG_ACPI) && defined(CONFIG_PM)
--struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
--int acpi_dev_pm_attach(struct device *dev, bool power_on);
--#else
--static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
--{
--	return NULL;
--}
--static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
--{
--	return -ENODEV;
--}
--#endif
--
- #ifdef CONFIG_ACPI
- __printf(3, 4)
- void acpi_handle_printk(const char *level, acpi_handle handle,
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -544,6 +544,7 @@ acpi_status acpi_add_pm_notifier(struct
- 				 void (*work_func)(struct work_struct *work));
- acpi_status acpi_remove_pm_notifier(struct acpi_device *adev);
- int acpi_pm_device_sleep_state(struct device *, int *, int);
-+int acpi_pm_device_run_wake(struct device *, bool);
- #else
- static inline acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
- 					       struct device *dev,
-@@ -563,11 +564,6 @@ static inline int acpi_pm_device_sleep_s
- 	return (m >= ACPI_STATE_D0 && m <= ACPI_STATE_D3_COLD) ?
- 		m : ACPI_STATE_D0;
- }
--#endif
--
--#ifdef CONFIG_PM_RUNTIME
--int acpi_pm_device_run_wake(struct device *, bool);
--#else
- static inline int acpi_pm_device_run_wake(struct device *dev, bool enable)
+ static int pci_pm_runtime_suspend(struct device *dev)
  {
- 	return -ENODEV;
+@@ -1200,16 +1200,6 @@ static int pci_pm_runtime_idle(struct de
+ 	return ret;
+ }
+ 
+-#else /* !CONFIG_PM_RUNTIME */
+-
+-#define pci_pm_runtime_suspend	NULL
+-#define pci_pm_runtime_resume	NULL
+-#define pci_pm_runtime_idle	NULL
+-
+-#endif /* !CONFIG_PM_RUNTIME */
+-
+-#ifdef CONFIG_PM
+-
+ static const struct dev_pm_ops pci_dev_pm_ops = {
+ 	.prepare = pci_pm_prepare,
+ 	.suspend = pci_pm_suspend,
+@@ -1231,11 +1221,15 @@ static const struct dev_pm_ops pci_dev_p
+ 
+ #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
+ 
+-#else /* !COMFIG_PM_OPS */
++#else /* !CONFIG_PM */
++
++#define pci_pm_runtime_suspend	NULL
++#define pci_pm_runtime_resume	NULL
++#define pci_pm_runtime_idle	NULL
+ 
+ #define PCI_PM_OPS_PTR	NULL
+ 
+-#endif /* !COMFIG_PM_OPS */
++#endif /* !CONFIG_PM */
+ 
+ /**
+  * __pci_register_driver - register a new pci driver
+Index: linux-pm/drivers/pci/pci-sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-sysfs.c
++++ linux-pm/drivers/pci/pci-sysfs.c
+@@ -385,7 +385,7 @@ static ssize_t dev_bus_rescan_store(stru
+ }
+ static DEVICE_ATTR(rescan, (S_IWUSR|S_IWGRP), NULL, dev_bus_rescan_store);
+ 
+-#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
++#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+ static ssize_t d3cold_allowed_store(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    const char *buf, size_t count)
+@@ -566,7 +566,7 @@ static struct attribute *pci_dev_attrs[]
+ 	&dev_attr_enable.attr,
+ 	&dev_attr_broken_parity_status.attr,
+ 	&dev_attr_msi_bus.attr,
+-#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
++#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+ 	&dev_attr_d3cold_allowed.attr,
+ #endif
+ #ifdef CONFIG_OF
+
