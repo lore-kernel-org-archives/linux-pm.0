@@ -1,34 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/7] cpufreq: Introduce ->usable() callback for cpufreq drivers
-Date: Thu, 27 Nov 2014 05:58:00 +0530
-Message-ID: <CAKohpokbT_8k=Gde34Jj-mQQta0jaySHSQghvRicHa7201eQ7w@mail.gmail.com>
-References: <cover.1416980447.git.viresh.kumar@linaro.org>
-	<95b84bb8af3d4d9667a79db520cfa37d9444d75b.1416980448.git.viresh.kumar@linaro.org>
-	<5490890.8GRTWn2e7b@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH V2 0/4] cpufreq: Register cooling device after policy is ready
+Date: Thu, 27 Nov 2014 06:07:48 +0530
+Message-ID: <cover.1417048449.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:33185 "EHLO
-	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbaK0A2B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:28:01 -0500
-Received: by mail-oi0-f48.google.com with SMTP id u20so2752043oif.7
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:28:00 -0800 (PST)
-In-Reply-To: <5490890.8GRTWn2e7b@vostro.rjw.lan>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:37763 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbaK0AiU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 19:38:20 -0500
+Received: by mail-pd0-f169.google.com with SMTP id fp1so3789661pdb.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 16:38:19 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 27 November 2014 at 05:55, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> +     void            (*usable)(struct cpufreq_policy *policy);
->
-> What about
->
->         void            (*ready)(struct cpufreq_policy *policy);
+Hi Rafael/Eduardo,
 
-That was the second option doing rounds in my thoughts :)
-As two people like it now (You and Me), lets move to that :)
+Currently there is no callback for cpufreq drivers which is called once the
+policy is ready to be used. There are some requirements where such a callback is
+required.
 
---
-viresh
+One of them is registering a cooling device with the help of
+of_cpufreq_cooling_register(). This routine tries to get 'struct cpufreq_policy'
+for CPUs which isn't yet initialed at the time ->init() is called and so we face
+issues while registering the cooling device.
+
+Because we can't register cooling device from ->init(), we need a callback that
+is called after the policy is ready to be used and hence ->ready() callback.
+
+The first patch fixes few formatting issues, so that the third patch doesn't
+throw any checkpatch warnings. Second one fixes a potential bug in cpufreq-dt
+driver. Third one introduces ->ready() callback which will be used in the
+fourth patch.
+
+V1->V2:
+- s/usable/ready
+- dropped last three patches that broke thermal somehow.
+
+Viresh Kumar (4):
+  cpufreq: Fix formatting issues in 'struct cpufreq_driver'
+  cpufreq-dt: pass 'policy->related_cpus' to
+    of_cpufreq_cooling_register()
+  cpufreq: Introduce ->ready() callback for cpufreq drivers
+  cpufreq-dt: register cooling device from ->ready() callback
+
+ drivers/cpufreq/cpufreq-dt.c | 51 +++++++++++++++++++++++++----------------
+ drivers/cpufreq/cpufreq.c    |  5 ++++
+ include/linux/cpufreq.h      | 54 ++++++++++++++++++++++++--------------------
+ 3 files changed, 66 insertions(+), 44 deletions(-)
+
+-- 
+2.0.3.693.g996b0fd
+
