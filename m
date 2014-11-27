@@ -1,48 +1,127 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V1 5/8] opp: replace kfree_rcu() with call_srcu() in opp_set_availability()
-Date: Thu, 27 Nov 2014 08:54:07 +0530
-Message-ID: <268325a89f657777924a52082749d8342e4ef79f.1417058376.git.viresh.kumar@linaro.org>
-References: <f815d0855c1bd28d8389554176acd2620e56b3c8.1416910766.git.viresh.kumar@linaro.org>
- <9a64eb3d9d11ff7379b7eb6d9207625175f28e47.1417058376.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:38532 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753426AbaK0DYt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Nov 2014 22:24:49 -0500
-Received: by mail-pd0-f170.google.com with SMTP id fp1so4059829pdb.1
-        for <linux-pm@vger.kernel.org>; Wed, 26 Nov 2014 19:24:48 -0800 (PST)
-In-Reply-To: <9a64eb3d9d11ff7379b7eb6d9207625175f28e47.1417058376.git.viresh.kumar@linaro.org>
-In-Reply-To: <1407c1d67e546a09f5dd122de943de45bcd3c846.1417058376.git.viresh.kumar@linaro.org>
-References: <1407c1d67e546a09f5dd122de943de45bcd3c846.1417058376.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: ethan zhao <ethan.zhao@oracle.com>
+Subject: Re: [PATCH 1/2 v3] intel_pstate: skip this driver if Sun server has
+ _PPC method
+Date: Thu, 27 Nov 2014 11:28:20 +0800
+Message-ID: <54769A54.3020304@oracle.com>
+References: <1416891578-14171-1-git-send-email-ethan.zhao@oracle.com> <1416891578-14171-2-git-send-email-ethan.zhao@oracle.com> <547498BC.9020704@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <547498BC.9020704@intel.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, dirk.j.brandewie@intel.com, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ethan.kernel@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stefan.wahren@i2se.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, paulmck@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-This existed before we introduced call_srcu() in opp layer to synchronize with
-srcu_notifier_call_chain() while removing OPPs. And is a potential bug which
-wasn't noticed earlier.
+Dirk,
 
-Let fix it as well by using the right API to free OPP.
+On 2014/11/25 22:57, Dirk Brandewie wrote:
+> On 11/24/2014 08:59 PM, Ethan Zhao wrote:
+>> Oracle Sun X86 servers have dynamic power capping capability that 
+>> works via
+>> ACPI _PPC method etc, so skip loading this driver if Sun server has 
+>> ACPI _PPC
+>> enabled.
+>>
+>
+> How about this patch? only compile tested.
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c 
+> b/drivers/cpufreq/intel_pstate.c
+> index 3468387..db7b8b2 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1025,15 +1025,46 @@ static bool intel_pstate_no_acpi_pss(void)
+>      return true;
+>  }
+>
+> +static bool intel_pstate_has_acpi_ppc(void)
+> +{
+> +    int i;
+> +
+> +    for_each_possible_cpu(i) {
+> +        struct acpi_processor *pr = per_cpu(processors, i);
+> +
+> +        if (!pr)
+> +            continue;
+> +        if (acpi_has_method(pr->handle, "_PPC"))
+> +            return true;
+> +    }
+> +    return false;
+> +}
+> +
+> +enum {
+> +    PSS,
+> +    PCC,
+> +};
+> +
+>  struct hw_vendor_info {
+>      u16  valid;
+>      char oem_id[ACPI_OEM_ID_SIZE];
+>      char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+> +    int  oem_pwr_table;
+>  };
+>
+>  /* Hardware vendor-specific info that has its own power management 
+> modes */
+>  static struct hw_vendor_info vendor_info[] = {
+> -    {1, "HP    ", "ProLiant"},
+> +    {1, "HP    ", "ProLiant", PSS},
+> +    {1, "ORACLE", "X4-2    ", PCC},
+> +    {1, "ORACLE", "X4-2L   ", PCC},
+> +    {1, "ORACLE", "X4-2B   ", PCC},
+> +    {1, "ORACLE", "X3-2    ", PCC},
+> +    {1, "ORACLE", "X3-2L   ", PCC},
+> +    {1, "ORACLE", "X3-2B   ", PCC},
+> +    {1, "ORACLE", "X4470M2 ", PCC},
+> +    {1, "ORACLE", "X4270M3 ", PCC},
+> +    {1, "ORACLE", "X4270M2 ", PCC},
+> +    {1, "ORACLE", "X4170M2 ", PCC},
+   But if someone would append line here and...
+     +    {1, "VENDOR","XXXIX", PPC},
+> {0, "", ""},
+>  };
+>
+> @@ -1057,15 +1088,20 @@ static bool 
+> intel_pstate_platform_pwr_mgmt_exists(void)
+>
+>      for (v_info = vendor_info; v_info->valid; v_info++) {
+>          if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+> -            !strncmp(hdr.oem_table_id, v_info->oem_table_id, 
+> ACPI_OEM_TABLE_ID_SIZE) &&
+> -            intel_pstate_no_acpi_pss())
+> -            return true;
+> +            !strncmp(hdr.oem_table_id, v_info->oem_table_id, 
+> ACPI_OEM_TABLE_ID_SIZE))
+> +            switch (v_info->oem_pwr_table) {
+> +            case PSS:
+> +                return intel_pstate_no_acpi_pss();
+> +            case PCC:
+> +                return intel_pstate_has_acpi_ppc();
+   All good till append the force loading parameter here, looks ugly if 
+someone would add one line to vendor_info[] as above.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+                       return intel_pstate_has_acpi_ppc() & (!load_on_sun);
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 977474a..2d195f3 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -641,7 +641,7 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
- 
- 	list_replace_rcu(&opp->node, &new_opp->node);
- 	mutex_unlock(&dev_opp_list_lock);
--	kfree_rcu(opp, rcu_head);
-+	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, kfree_opp_rcu);
- 
- 	/* Notify the change of the OPP availability */
- 	if (availability_req)
--- 
-2.0.3.693.g996b0fd
+Any idea ?
+
+Thanks,
+Ethan
+
+
+> + }
+>      }
+>
+>      return false;
+>  }
+>  #else /* CONFIG_ACPI not enabled */
+>  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { 
+> return false; }
+> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>  #endif /* CONFIG_ACPI */
+>
+>  static int __init intel_pstate_init(void)
+>
+>
 
