@@ -1,150 +1,95 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 1/1] thermal: cpu_cooling: check for the readiness of cpufreq layer
-Date: Thu, 27 Nov 2014 10:12:57 -0400
-Message-ID: <1417097577-3548-1-git-send-email-edubezval@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Add pm_genpd_lookup() API to lookup domain by device node
+Date: Thu, 27 Nov 2014 15:14:13 +0100
+Message-ID: <1417097653-22599-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-In this patch, the cpu_cooling code checks for the usability of cpufreq
-layer before proceeding with the CPU cooling device registration. The
-main reason is: CPU cooling device is not usable if cpufreq cannot
-switch frequencies.
+In a step to move away from using genpd's name based APIs, such as the
+pm_genpd_add_subdomain_names(), provide an API to lookup an already
+initialized generic PM domain by its device node.
 
-Similar checks are spread in thermal drivers. Thus, the advantage now
-is to have the check in a single place: cpu cooling device registration.
-For this reason, this patch also updates the existing drivers that
-depend on CPU cooling to simply propagate the error code of the cpu
-cooling registration call. Therefore, in case cpufreq is not ready, the
-thermal drivers will still return -EPROBE_DEFER, in an attempt to try
-again when cpufreq layer gets ready.
+This API would typically be a called from SOC specific code, to fetch a
+handle to the domain. Especially convenient to configure subdomains and
+when the hierarchy of the domains are described in DT.
 
-Cc: devicetree@vger.kernel.org
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+Do note, before pm_genpd_init() is invoked to initialize a generic PM
+domain, it's the callers responsibility to assign the new ->dev_node
+pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+find the domain.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c                      | 5 +++++
- drivers/thermal/db8500_cpufreq_cooling.c           | 5 -----
- drivers/thermal/imx_thermal.c                      | 5 -----
- drivers/thermal/samsung/exynos_thermal_common.c    | 2 +-
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 ------
- 5 files changed, 6 insertions(+), 17 deletions(-)
+
+The background to why I propose this patch comes from a discussion around the
+below patchset:
+https://lkml.org/lkml/2014/11/24/290
+
+
 ---
-(I'm sorry VireshK, I am still using my normal practice) :-)
+ drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  2 ++
+ 2 files changed, 28 insertions(+)
 
-Changes from V1:
- - As per Viresh K. suggestion's, the check for cpufreq layer readiness is now
-   only a simple fetch for cpufreq table.
-
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 1ab0018..bed3fa2 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -440,6 +440,11 @@ __cpufreq_cooling_register(struct device_node *np,
- 	int ret = 0, i;
- 	struct cpufreq_policy policy;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 735c473..34555eb 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -75,6 +75,32 @@ struct generic_pm_domain *dev_to_genpd(struct device *dev)
+ 	return pd_to_genpd(dev->pm_domain);
+ }
  
-+	if (!cpufreq_frequency_get_table(0)) {
-+		pr_err("cpu_cooling: cpufreq layer not ready! Deferring.\n");
-+		return ERR_PTR(-EPROBE_DEFER);
-+	}
++/**
++ * pm_genpd_lookup - Fetch a generic PM domain object by device node
++ * @node: Device node to a corresponding genpd.
++ *
++ * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
++ * on failure.
++ */
++struct generic_pm_domain *pm_genpd_lookup(struct device_node *node)
++{
++	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT), *gpd;
 +
- 	/* Verify that all the clip cpus have same freq_min, freq_max limit */
- 	for_each_cpu(i, clip_cpus) {
- 		/* continue if cpufreq policy not found and not return error */
-diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
-index 786d192..1ac7ec6 100644
---- a/drivers/thermal/db8500_cpufreq_cooling.c
-+++ b/drivers/thermal/db8500_cpufreq_cooling.c
-@@ -18,7 +18,6 @@
-  */
++	if (IS_ERR_OR_NULL(node))
++		return ERR_PTR(-EINVAL);
++
++	mutex_lock(&gpd_list_lock);
++	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++		if (gpd->dev_node == node) {
++			genpd = gpd;
++			break;
++		}
++	}
++	mutex_unlock(&gpd_list_lock);
++	return genpd;
++}
++EXPORT_SYMBOL_GPL(pm_genpd_lookup);
++
+ static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
+ {
+ 	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 8cbd32e..322cb7c 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -53,6 +53,7 @@ struct generic_pm_domain {
+ 	struct dev_power_governor *gov;
+ 	struct work_struct power_off_work;
+ 	const char *name;
++	struct device_node *dev_node;	/* Device node for the PM domain */
+ 	unsigned int in_progress;	/* Number of devices being suspended now */
+ 	atomic_t sd_count;	/* Number of subdomains with power "on" */
+ 	enum gpd_status status;	/* Current state of the domain */
+@@ -126,6 +127,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+ }
  
- #include <linux/cpu_cooling.h>
--#include <linux/cpufreq.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -30,10 +29,6 @@ static int db8500_cpufreq_cooling_probe(struct platform_device *pdev)
- 	struct thermal_cooling_device *cdev;
- 	struct cpumask mask_val;
- 
--	/* make sure cpufreq driver has been initialized */
--	if (!cpufreq_frequency_get_table(0))
--		return -EPROBE_DEFER;
--
- 	cpumask_set_cpu(0, &mask_val);
- 	cdev = cpufreq_cooling_register(&mask_val);
- 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 5a1f107..16405b4 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -9,7 +9,6 @@
- 
- #include <linux/clk.h>
- #include <linux/cpu_cooling.h>
--#include <linux/cpufreq.h>
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/init.h>
-@@ -459,10 +458,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	int measure_freq;
- 	int ret;
- 
--	if (!cpufreq_get_current_driver()) {
--		dev_dbg(&pdev->dev, "no cpufreq driver!");
--		return -EPROBE_DEFER;
--	}
- 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
-index 3f5ad25..f84975e 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.c
-+++ b/drivers/thermal/samsung/exynos_thermal_common.c
-@@ -373,7 +373,7 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
- 		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
- 			dev_err(sensor_conf->dev,
- 				"Failed to register cpufreq cooling device\n");
--			ret = -EINVAL;
-+			ret = PTR_ERR(th_zone->cool_dev[th_zone->cool_dev_size]);
- 			goto err_unregister;
- 		}
- 		th_zone->cool_dev_size++;
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 5fd0386..cf88585 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -28,7 +28,6 @@
- #include <linux/kernel.h>
- #include <linux/workqueue.h>
- #include <linux/thermal.h>
--#include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/cpu_cooling.h>
- #include <linux/of.h>
-@@ -407,11 +406,6 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
- 	if (!data)
- 		return -EINVAL;
- 
--	if (!cpufreq_get_current_driver()) {
--		dev_dbg(bgp->dev, "no cpufreq driver yet\n");
--		return -EPROBE_DEFER;
--	}
--
- 	/* Register cooling device */
- 	data->cool_dev = cpufreq_cooling_register(cpu_present_mask);
- 	if (IS_ERR(data->cool_dev)) {
+ extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
++extern struct generic_pm_domain *pm_genpd_lookup(struct device_node *node);
+ extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				 struct device *dev,
+ 				 struct gpd_timing_data *td);
 -- 
-2.1.3
+1.9.1
