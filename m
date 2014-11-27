@@ -1,45 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
-Date: Thu, 27 Nov 2014 15:52:59 +0530
-Message-ID: <CAKohpok+M+HuuQBJ3EJ_3e+Uv-Me5za7EO2TVguU_tCXNtahvQ@mail.gmail.com>
-References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>
-	<5476071B.1060705@arm.com>
-	<CAKohpomFE6xg+HfOicha4Ntkr9osqDK2gxdKce=BU_q35jfBxA@mail.gmail.com>
-	<5476F4ED.6040206@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v10 07/10] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Thu, 27 Nov 2014 10:23:08 +0000
+Message-ID: <20141127102308.GA6560@red-moon>
+References: <1416593037-27527-1-git-send-email-lina.iyer@linaro.org>
+ <1416593037-27527-8-git-send-email-lina.iyer@linaro.org>
+ <5475A599.1010601@linaro.org>
+ <7hegspeoje.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:64369 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752825AbaK0KXA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 05:23:00 -0500
-Received: by mail-oi0-f53.google.com with SMTP id x69so3274760oia.40
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 02:22:59 -0800 (PST)
-In-Reply-To: <5476F4ED.6040206@arm.com>
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40396 "EHLO
+	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751105AbaK0KXS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 05:23:18 -0500
+Content-Disposition: inline
+In-Reply-To: <7hegspeoje.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "rob.herring@linaro.org" <rob.herring@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "kesavan.abhilash@gmail.com" <kesavan.abhilash@gmail.com>, Catalin Marinas <Catalin.Marinas@arm.com>, "k.chander@samsung.com" <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, "ta.omasab@gmail.com" <ta.omasab@gmail.com>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 27 November 2014 at 15:24, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> No that won't suffice. You can't modify the DTs of the platforms using
-> cpufreq-dt.c as of today. They should continue to work, so either you
-> retain all the existing platform device creation in platform code as is
-> or do something like below with the blacklist for those platforms.
+Hi Kevin,
 
-Is the meaning of "backward compatibility" for DTs mentioned somewhere?
-I am not sure if we have to *always* follow the compatibility you are talking
-about.
+On Wed, Nov 26, 2014 at 07:43:01PM +0000, Kevin Hilman wrote:
+> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+> 
+> > On 11/21/2014 07:03 PM, Lina Iyer wrote:
+> >> Add cpuidle driver interface to allow cpus to go into C-States. Use the
+> >> cpuidle DT interface, common across ARM architectures, to provide the
+> >> idle state information to the cpuidle framework.
+> >>
+> >> Supported modes at this time are Standby and Standalone Power Collapse.
+> >>
+> >> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> >
+> > One nit and one comment below. Other than that:
+> >
+> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >
+> > [ ... ]
+> >
+> >> +static int qcom_cpu_stby(struct cpuidle_device *dev,
+> >> +				struct cpuidle_driver *drv, int index)
+> >> +{
+> >> +	lpm_ops->standby(NULL);
+> >
+> > In my last comment I was referring about a check for entering
+> > successfully the idle state:
+> >
+> > 	if (lpm_ops->standby(NULL))
+> > 		return -1;
+> >
+> >> +	return index;
+> >> +}
+> >> +
+> >> +static int qcom_cpu_spc(struct cpuidle_device *dev,
+> >> +				struct cpuidle_driver *drv, int index)
+> >> +{
+> >> +	lpm_ops->spc(NULL);
+> >> +
+> >> +	return index;
+>  
+> Similar to Daniel's comment above.  if lpm_ops->spc() fails, do you want
+> to fall back to standby.
+> 
+> Hmm, using the DT idle states, it doesn't look as straight forward as it
+> used to be to fall back to a "safe state."
 
-Probably we want new DTs to continue supporting older version of kernels.
-Not that older DTs should work with new kernel changes.
+What do you mean by "safe state" ? As in coupled idle states ?
 
-So, even with another field in cpuX node, we wouldn't break older kernels
-as they will anyway get the device from platform code.
+It is just for me to understand why DT makes things more complicated :)
 
-@Rob?
+If the idle state enter fails it might also be because there is an
+aborted power down owing to eg pending IRQ, there would be no reason
+why you would revert to standby instead of going back to the kernel, so
+error code must be explicit at least in that respect.
 
-> OK, in this way you still continue to work on existing platforms with
-> *old DT*.
-
-Probably not.
+Thanks,
+Lorenzo
