@@ -1,256 +1,259 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v13 00/10] cpuidle driver for QCOM SoCs: 8064, 8074, 8084
-Date: Thu, 27 Nov 2014 09:53:03 +0100
-Message-ID: <5476E66F.2080209@linaro.org>
-References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH v12 07/10] qcom: cpuidle: Add cpuidle driver for QCOM
+ cpus
+Date: Thu, 27 Nov 2014 09:55:12 +0100
+Message-ID: <5476E6F0.1080408@linaro.org>
+References: <1417047195-18978-1-git-send-email-lina.iyer@linaro.org> <1417047195-18978-8-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:61497 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754464AbaK0IxH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 03:53:07 -0500
-Received: by mail-wi0-f175.google.com with SMTP id l15so15026854wiw.8
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 00:53:06 -0800 (PST)
-In-Reply-To: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1417047195-18978-8-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-
-Lina,
-
-a night for me has passed and I have in the meantime 3 new versions of=20
-the patchset obviously done in the hurry and not tested.
-
-=46urthermore the change log fails to give the details, "Address review=
-=20
-comments on spm.c" is just a clue and when I look at the spm.c code all=
-=20
-the comments where not addressed.
-
-Please, have a look at the "static bool cpuidle_drv_init;", remove it=20
-and look closely at the idle callbacks error handling in the cpuidle dr=
-iver.
-
-Thanks
-
-   -- Daniel
-
-
-
-
-On 11/27/2014 06:24 AM, Lina Iyer wrote:
-> Dependent patchsets -
->          https://lkml.org/lkml/2014/8/4/767
->          http://www.spinics.net/lists/linux-arm-msm/msg10799.html
->          http://www.spinics.net/lists/linux-arm-msm/msg10795.html
+On 11/27/2014 01:13 AM, Lina Iyer wrote:
+> Add cpuidle driver interface to allow cpus to go into idle states. Us=
+e
+> the cpuidle DT interface, common across ARM architectures, to provide
+> the idle state information to the cpuidle framework.
 >
-> Changes since v12:
-> - Minor fixes
-> - Added Reviewed-by
+> Supported modes at this time are Standby and Standalone Power Collaps=
+e.
 >
-> Changes since v11:
-> - Address review comments on spm.c
-> - Commenting style fixes
-> - Added Reviewed-by
->
-> Changes since v10:
-> [ https://www.mail-archive.com/devicetree@vger.kernel.org/msg51880.ht=
-ml ]
-> - Address review comments
-> - Added Acked-by and Reviewed-by
->
-> Changes since v9:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11714=
-=2Ehtml ]
-> - Address review comments on v9
->
-> Changes since v8:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11473=
-=2Ehtml ]
-> - Flatten out the file structure - merge pm.c into spm.c after discus=
-sions
-> - Add a new function to set warm boot address, in scm-boot.c
-> - Support for 8064 (New)
-> - Tested on 8074, 8084. 8064 was tested with a WIP tree
-> - Address review comments from v8
-> - Looking into possiblility of  initializing the cpuidle device for a=
- cpu,
-> only when the corresponding spm device is probed successfully.
->
-> Changes since v7:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11199=
-=2Ehtml ]
-> - Address review comments
-> - Tested on 8974 but not 8084
-> - WFI renamed to Standby
-> - Update commit text with original author and link to the downstream =
-tree
->
-> Changes since v6:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11012=
-=2Ehtml ]
-> - SPM device nodes merged with existing SAW DT nodes
-> - SPM register information is handled within the driver
-> - Clean up from using 'msm' to 'qcom'
->          - Shorten some enumerations as well
-> - Review comments from v6 addressed
-> - New: Support for 8084 SoC
->          - Not tested. I do not have a board with this SoC, but the S=
-PM
->          configuration should be identical for WFI and SPC
->
-> Changes since v5:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10559=
-=2Ehtml ]
-> - Merge spm-devices.c and spm.c into one file and one patch
->          - Simplify implementation of the driver.
->          - Update documentation mapping the DT properties with corres=
-ponding
->            SPM register information.
-> - Removed scm-boot changes for quad core warmboot, its has been pulle=
-d in.
->
-> Changes since v4:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10327=
-=2Ehtml ]
-> - Update to the v8 of ARM generic idle states patches
-> - Use platform device model for cpuidle-qcom
-> - Clean up msm-pm.c to remove unnecessary include files and functions
-> - Update commit text and documentation for all idle states
-> - Remove scm-boot relocate patch from this series, submitted earlier
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10518=
-=2Ehtml ]
->
-> Changes since v3:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10288=
-=2Ehtml ]
-> - Fix CONFIG_QCOM_PM Kconfig as bool
-> - More clean ups in spm.c and spm-devices.c
->          - Removed and re-organized data structures to make initializ=
-ation simple
->          - Remove export of sequence flush functions
->          - Updated commit text
->          - Comments for use of barriers.
-> - Rebase on top of 3.17-rc1
->
-> Changes since v2:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10148=
-=2Ehtml ]
-> - Prune all the drivers to support basic WFI and power down cpuidle
->    functionality. Remove debug code.
-> - Integrate KConfig changes into the drivers' patches.
-> - Use Lorenzo's ARM idle-states patches as the basis for reading cpui=
-dle
->    c-states from DT.
->    [ http://marc.info/?l=3Dlinux-pm&m=3D140794514812383&w=3D2 ]
-> - Incorporate review comments
-> - Rebase on top of 3.16
->
-> Changes since v1/RFC:
-> [ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10065=
-=2Ehtml ]
-> - Remove hotplug from the patch series. Will submit it separately.
-> - Fix SPM drivers per the review comments
-> - Modify patch sequence to compile SPM drivers independent of msm-pm,=
- so as to
->    allow wfi() calls to use SPM even without SoC interface driver.
->
-> 8074/8084/8064 like any ARM SoC can do architectural clock gating, th=
-at helps save
-> on power, but not enough of leakage power.  Leakage power of the SoC =
-can be
-> further reduced by turning off power to the core. To aid this, every =
-core (cpu
-> and L2) is accompanied by a Sub-system Power Manager (SPM), that can =
-be
-> configured to indicate the low power mode, the core would be put into=
- and the
-> SPM programs the peripheral h/w accordingly to enter low power and tu=
-rn off the
-> power rail to the core.
->
-> The idle invocation hierarchy -
->
-> CPUIDLE
->          |
->          cpuidle-qcom.c [CPUIdle driver]
->          |
->          ------> spm.c [SPM driver]
->                  |
->                  ------> scm-boot.c [SCM interface layer]
->                          |
-> ------------------------|--------------------------
-> (EL)                    Secure Monitor Code
->                          |
->                          |
->                          wfi();
-> ------------------------|--------------------------
-> (HW)                    [CPU] {clock gate}
->                          |
->                          -----> [SPM] {statemachine}
->
->
-> The patchset does the following -
->
-> - Introduce the SPM driver to control power to the core
-> - Add device bindings for 8974, 8084, 8064 CPU SPM devices
-> - Add cpuidle driver for QCOM cpus, using ARM generic idle state defi=
-nitions.
-> - Add device bindings for 8974, 8084, 8064 idle-states - WFI and SPC
->
-> Thanks,
-> Lina
->
->
->
->
-> Lina Iyer (10):
->    qcom: scm: Move scm-boot files to drivers/soc/qcom/ and
->      include/soc/qcom
->    qcom: scm: Add SCM warmboot support for quad core SoCs
->    qcom: spm: Add Subsystem Power Manager driver
->    arm: dts: qcom: Add power-controller device node for 8074 Krait CP=
-Us
->    arm: dts: qcom: Add power-controller device node for 8084 Krait CP=
-Us
->    arm: dts: qcom: Update power-controller device node for 8064 Krait
->      CPUs
->    qcom: cpuidle: Add cpuidle driver for QCOM cpus
->    arm: dts: qcom: Add idle states device nodes for 8074
->    arm: dts: qcom: Add idle states device nodes for 8084
->    arm: dts: qcom: Add idle state device nodes for 8064
->
->   .../bindings/arm/msm/qcom,idle-state.txt           |  81 +++++
->   .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  31 +-
->   arch/arm/boot/dts/qcom-apq8064.dtsi                |  36 ++-
->   arch/arm/boot/dts/qcom-apq8084.dtsi                |  46 ++-
->   arch/arm/boot/dts/qcom-msm8974.dtsi                |  46 ++-
->   arch/arm/mach-qcom/Makefile                        |   1 -
->   arch/arm/mach-qcom/platsmp.c                       |   2 +-
->   drivers/cpuidle/Kconfig.arm                        |   7 +
->   drivers/cpuidle/Makefile                           |   1 +
->   drivers/cpuidle/cpuidle-qcom.c                     |  78 +++++
->   drivers/soc/qcom/Kconfig                           |   8 +
->   drivers/soc/qcom/Makefile                          |   3 +-
->   .../arm/mach-qcom =3D> drivers/soc/qcom}/scm-boot.c  |  37 ++-
->   drivers/soc/qcom/spm.c                             | 327 ++++++++++=
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> ---
+>   .../bindings/arm/msm/qcom,idle-state.txt           | 81 +++++++++++=
 +++++++++++
->   include/soc/qcom/pm.h                              |  31 ++
->   .../arm/mach-qcom =3D> include/soc/qcom}/scm-boot.h  |   3 +-
->   16 files changed, 716 insertions(+), 22 deletions(-)
+>   drivers/cpuidle/Kconfig.arm                        |  7 ++
+>   drivers/cpuidle/Makefile                           |  1 +
+>   drivers/cpuidle/cpuidle-qcom.c                     | 78 +++++++++++=
+++++++++++
+>   4 files changed, 167 insertions(+)
 >   create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,i=
 dle-state.txt
 >   create mode 100644 drivers/cpuidle/cpuidle-qcom.c
->   rename {arch/arm/mach-qcom =3D> drivers/soc/qcom}/scm-boot.c (59%)
->   create mode 100644 drivers/soc/qcom/spm.c
->   create mode 100644 include/soc/qcom/pm.h
->   rename {arch/arm/mach-qcom =3D> include/soc/qcom}/scm-boot.h (91%)
 >
+> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-stat=
+e.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> new file mode 100644
+> index 0000000..ae1b07f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> @@ -0,0 +1,81 @@
+> +QCOM Idle States for cpuidle driver
+> +
+> +ARM provides idle-state node to define the cpuidle states, as define=
+d in [1].
+> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these =
+idle
+> +states. Idle states have different enter/exit latency and residency =
+values.
+> +The idle states supported by the QCOM SoC are defined as -
+> +
+> +    * Standby
+> +    * Retention
+> +    * Standalone Power Collapse (Standalone PC or SPC)
+> +    * Power Collapse (PC)
+> +
+> +Standby: Standby does a little more in addition to architectural clo=
+ck gating.
+> +When the WFI instruction is executed the ARM core would gate its int=
+ernal
+> +clocks. In addition to gating the clocks, QCOM cpus use this instruc=
+tion as a
+> +trigger to execute the SPM state machine. The SPM state machine wait=
+s for the
+> +interrupt to trigger the core back in to active. This triggers the c=
+ache
+> +hierarchy to enter standby states, when all cpus are idle. An interr=
+upt brings
+> +the SPM state machine out of its wait, the next step is to ensure th=
+at the
+> +cache hierarchy is also out of standby, and then the cpu is allowed =
+to resume
+> +execution.
+> +
+> +Retention: Retention is a low power state where the core is clock ga=
+ted and
+> +the memory and the registers associated with the core are retained. =
+The
+> +voltage may be reduced to the minimum value needed to keep the proce=
+ssor
+> +registers active. The SPM should be configured to execute the retent=
+ion
+> +sequence and would wait for interrupt, before restoring the cpu to e=
+xecution
+> +state. Retention may have a slightly higher latency than Standby.
+> +
+> +Standalone PC: A cpu can power down and warmboot if there is a suffi=
+cient time
+> +between the time it enters idle and the next known wake up. SPC mode=
+ is used
+> +to indicate a core entering a power down state without consulting an=
+y other
+> +cpu or the system resources. This helps save power only on that core=
+=2E  The SPM
+> +sequence for this idle state is programmed to power down the supply =
+to the
+> +core, wait for the interrupt, restore power to the core, and ensure =
+the
+> +system state including cache hierarchy is ready before allowing core=
+ to
+> +resume. Applying power and resetting the core causes the core to war=
+mboot
+> +back into Elevation Level (EL) which trampolines the control back to=
+ the
+> +kernel. Entering a power down state for the cpu, needs to be done by=
+ trapping
+> +into a EL. Failing to do so, would result in a crash enforced by the=
+ warm boot
+> +code in the EL for the SoC. On SoCs with write-back L1 cache, the ca=
+che has to
+> +be flushed in s/w, before powering down the core.
+> +
+> +Power Collapse: This state is similar to the SPC mode, but distingui=
+shes
+> +itself in that the cpu acknowledges and permits the SoC to enter dee=
+per sleep
+> +modes. In a hierarchical power domain SoC, this means L2 and other c=
+aches can
+> +be flushed, system bus, clocks - lowered, and SoC main XO clock gate=
+d and
+> +voltages reduced, provided all cpus enter this state.  Since the spa=
+n of low
+> +power modes possible at this state is vast, the exit latency and the=
+ residency
+> +of this low power mode would be considered high even though at a cpu=
+ level,
+> +this essentially is cpu power down. The SPM in this state also may h=
+andshake
+> +with the Resource power manager processor in the SoC to indicate a c=
+omplete
+> +application processor subsystem shut down.
+> +
+> +The idle-state for QCOM SoCs are distinguished by the compatible pro=
+perty of
+> +the idle-states device node.
+> +The devicetree representation of the idle state should be -
+> +
+> +Required properties:
+> +
+> +- compatible: Must be one of -
+> +			"qcom,idle-state-stby",
+> +			"qcom,idle-state-ret",
+> +			"qcom,idle-state-spc",
+> +			"qcom,idle-state-pc",
+> +		and "arm,idle-state".
+> +
+> +Other required and optional properties are specified in [1].
+> +
+> +Example:
+> +
+> +	idle-states {
+> +		CPU_SPC: spc {
+> +			compatible =3D "qcom,idle-state-spc", "arm,idle-state";
+> +			entry-latency-us =3D <150>;
+> +			exit-latency-us =3D <200>;
+> +			min-residency-us =3D <2000>;
+> +		};
+> +	};
+> +
+> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 8c16ab2..e98993c 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -63,3 +63,10 @@ config ARM_MVEBU_V7_CPUIDLE
+>   	depends on ARCH_MVEBU
+>   	help
+>   	  Select this to enable cpuidle on Armada 370, 38x and XP processo=
+rs.
+> +
+> +config ARM_QCOM_CPUIDLE
+> +	bool "CPU Idle drivers for Qualcomm processors"
+> +	depends on ARCH_QCOM
+> +	select DT_IDLE_STATES
+> +	help
+> +	  Select this to enable cpuidle for QCOM processors
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 4d177b9..6c222d5 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -17,6 +17,7 @@ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+=3D cpuidle-zynq.o
+>   obj-$(CONFIG_ARM_U8500_CPUIDLE)         +=3D cpuidle-ux500.o
+>   obj-$(CONFIG_ARM_AT91_CPUIDLE)          +=3D cpuidle-at91.o
+>   obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuidle-exynos.o
+> +obj-$(CONFIG_ARM_QCOM_CPUIDLE)		+=3D cpuidle-qcom.o
+>
+>   ###################################################################=
+############
+>   # MIPS drivers
+> diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle=
+-qcom.c
+> new file mode 100644
+> index 0000000..5e54d9d
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-qcom.c
+> @@ -0,0 +1,78 @@
+> +/*
+> + * Copyright (c) 2014, Linaro Limited.
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 an=
+d
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <soc/qcom/pm.h>
+> +#include "dt_idle_states.h"
+> +
+> +static struct qcom_cpu_pm_ops *lpm_ops;
+> +
+> +static int qcom_cpu_stby(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv, int index)
+> +{
+> +	if (!lpm_ops->standby(NULL))
+> +		return -1;
+> +
+> +	return index;
+> +}
+> +
+> +static int qcom_cpu_spc(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv, int index)
+> +{
+> +	if (!lpm_ops->spc(NULL))
+> +		return -1;
+> +
+> +	return index;
+> +}
+
+
+Really ? the lpm_ops return NULL on error ?
+
+ret =3D lpm_ops->spc(NULL);
+if (ret)
+	return ret;
+
+
+
 
 
 --=20
@@ -260,4 +263,3 @@ r ARM SoCs
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
