@@ -1,29 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] USB / PM: Drop CONFIG_PM_RUNTIME from the USB core
-Date: Thu, 27 Nov 2014 23:46:36 +0100
-Message-ID: <3884361.r5D4k6hhsp@vostro.rjw.lan>
-References: <1736553.sGOphfkJmV@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] PM: Use CONFIG_PM instead of CONFIG_PM_RUNTIME in
+ core code
+Date: Thu, 27 Nov 2014 23:34:03 +0100
+Message-ID: <CAPDyKFpcHawZ8F+2QdDYO=+qbh=uQb+A+2Rq_M7g9VqMnFtM1A@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1411271216470.8104-100000@netrider.rowland.org>
+	<1803282.Wzz7IausxS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1736553.sGOphfkJmV@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, USB development list <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1803282.Wzz7IausxS@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 27, 2014 11:45:15 PM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so quite a few
-> #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
-> depend on CONFIG_PM (or even dropped in some cases).
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM in the USB core code.
+[...]
 
-Forgot to say, commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) is only in linux-next (via linux-pm) at the moment.
+> That said whether or not it is ever useful to set PM_RUNTIME alone is a good
+> question.  In my opinion it is useful today, at least on some platforms that
+> don't really support system suspend or hibernation in any form.  However, it
+> may not be the case any more when suspend-to-idle becomes mature enough,
+> because that should just work for any platform without any kind of special
+> support.  We're still missing some timekeeping bits there, but once that
+> gap has been covered, we may just eliminate PM_SLEEP as well if there's a
+> broad consensus on that.
 
-Rafael
+That's sounds like a good approach, thanks for sharing your ideas and plans.
+
+Feel free to add my reviewed-by tag to this patchset as well.
+
+Kind regards
+Uffe
