@@ -1,86 +1,119 @@
-From: Hui Zhu <teawater@gmail.com>
-Subject: Re: [PATCH 4/4] (CMA_AGGRESSIVE) Update page alloc function
-Date: Fri, 28 Nov 2014 11:45:04 +0800
-Message-ID: <CANFwon0CP6jA4oq0U2xC340MbFsws5NmhEMGEUDm983N=mT-Pg@mail.gmail.com>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
- <1413430551-22392-5-git-send-email-zhuhui@xiaomi.com> <20141024052849.GF15243@js1304-P5Q-DELUXE>
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [PATCH 1/2 V4] intel_pstate: skip this driver if Sun server has
+ _PPC method
+Date: Fri, 28 Nov 2014 14:20:13 +0900
+Message-ID: <5478060D.7000304@jp.fujitsu.com>
+References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com> <1417145777-21897-2-git-send-email-ethan.zhao@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:63884 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbaK1Dpp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 22:45:45 -0500
-In-Reply-To: <20141024052849.GF15243@js1304-P5Q-DELUXE>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1417145777-21897-2-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Dirk Brandewie <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, Andrew Morton <akpm@linux-foundation.org>, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, Rik van Riel <riel@redhat.com>, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, Hugh Dickins <hughd@google.com>, mingo@kernel.org, rientjes@google.com, Peter Zijlstra <peterz@infradead.org>, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, Paul McKenney <paulmck@linux.vnet.ibm.com>, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger
 
-On Fri, Oct 24, 2014 at 1:28 PM, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
-> On Thu, Oct 16, 2014 at 11:35:51AM +0800, Hui Zhu wrote:
->> If page alloc function __rmqueue try to get pages from MIGRATE_MOVABLE and
->> conditions (cma_alloc_counter, cma_aggressive_free_min, cma_alloc_counter)
->> allow, MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.
->>
->> Signed-off-by: Hui Zhu <zhuhui@xiaomi.com>
->> ---
->>  mm/page_alloc.c | 42 +++++++++++++++++++++++++++++++-----------
->>  1 file changed, 31 insertions(+), 11 deletions(-)
->>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index 736d8e1..87bc326 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -65,6 +65,10 @@
->>  #include <asm/div64.h>
->>  #include "internal.h"
->>
->> +#ifdef CONFIG_CMA_AGGRESSIVE
->> +#include <linux/cma.h>
->> +#endif
->> +
->>  /* prevent >1 _updater_ of zone percpu pageset ->high and ->batch fields */
->>  static DEFINE_MUTEX(pcp_batch_high_lock);
->>  #define MIN_PERCPU_PAGELIST_FRACTION (8)
->> @@ -1189,20 +1193,36 @@ static struct page *__rmqueue(struct zone *zone, unsigned int order,
->>  {
->>       struct page *page;
->>
->> -retry_reserve:
->> +#ifdef CONFIG_CMA_AGGRESSIVE
->> +     if (cma_aggressive_switch
->> +         && migratetype == MIGRATE_MOVABLE
->> +         && atomic_read(&cma_alloc_counter) == 0
->> +         && global_page_state(NR_FREE_CMA_PAGES) > cma_aggressive_free_min
->> +                                                     + (1 << order))
->> +             migratetype = MIGRATE_CMA;
->> +#endif
->> +retry:
->
-> I don't get it why cma_alloc_counter should be tested.
-> When cma alloc is progress, pageblock is isolated so that pages on that
-> pageblock cannot be allocated. Why should we prevent aggressive
-> allocation in this case?
->
+(2014/11/28 12:36), Ethan Zhao wrote:
+> Oracle Sun X86 servers have dynamic power capping capability that works via
+> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+> enabled.
+> 
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> Tested-by: Linda Knippers <linda.knippers@hp.com>
+> ---
+>    v2: fix break HP Proliant issue.
+>    v3: expand the hardware vendor list.
+>    v4: refine code.
+> 
+>   drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
+>   1 file changed, 41 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 27bb6d3..1bb62ca 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
+>   	return true;
+>   }
+>   
+> +static bool intel_pstate_has_acpi_ppc(void)
+> +{
+> +	int i;
+> +
+> +	for_each_possible_cpu(i) {
+> +		struct acpi_processor *pr = per_cpu(processors, i);
+> +
+> +		if (!pr)
+> +			continue;
+> +		if (acpi_has_method(pr->handle, "_PPC"))
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
 
-Hi Joonsoo,
+> +enum {
+> +	PSS,
+> +	PCC,
+> +};
 
-Even if the pageblock is isolated in the begin of function
-alloc_contig_range, it will unisolate if alloc_contig_range get some
-error for example "PFNs busy".  And the cma_alloc will keep call
-alloc_contig_range with another address if need.
-
-So it will decrease the contradiction between CMA allocation in
-cma_alloc and __rmqueue with  cma_alloc_counter.
+What does PCC stand for? Is it PPC?
 
 Thanks,
-Hui
+Yasuaki Ishimatsu
 
-> Thanks.
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> +
+>   struct hw_vendor_info {
+>   	u16  valid;
+>   	char oem_id[ACPI_OEM_ID_SIZE];
+>   	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+> +	int  oem_pwr_table;
+>   };
+>   
+>   /* Hardware vendor-specific info that has its own power management modes */
+>   static struct hw_vendor_info vendor_info[] = {
+> -	{1, "HP    ", "ProLiant"},
+> +	{1, "HP    ", "ProLiant", PSS},
+> +	{1, "ORACLE", "X4-2    ", PCC},
+> +	{1, "ORACLE", "X4-2L   ", PCC},
+> +	{1, "ORACLE", "X4-2B   ", PCC},
+> +	{1, "ORACLE", "X3-2    ", PCC},
+> +	{1, "ORACLE", "X3-2L   ", PCC},
+> +	{1, "ORACLE", "X3-2B   ", PCC},
+> +	{1, "ORACLE", "X4470M2 ", PCC},
+> +	{1, "ORACLE", "X4270M3 ", PCC},
+> +	{1, "ORACLE", "X4270M2 ", PCC},
+> +	{1, "ORACLE", "X4170M2 ", PCC},
+>   	{0, "", ""},
+>   };
+>   
+> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>   
+>   	for (v_info = vendor_info; v_info->valid; v_info++) {
+>   		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+> -		    intel_pstate_no_acpi_pss())
+> -			return true;
+> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
+> +						ACPI_OEM_TABLE_ID_SIZE))
+> +			switch (v_info->oem_pwr_table) {
+> +			case PSS:
+> +				return intel_pstate_no_acpi_pss();
+> +			case PCC:
+> +				return intel_pstate_has_acpi_ppc();
+> +			}
+>   	}
+>   
+>   	return false;
+>   }
+>   #else /* CONFIG_ACPI not enabled */
+>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>   #endif /* CONFIG_ACPI */
+>   
+>   static int __init intel_pstate_init(void)
+> 
+
+
