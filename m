@@ -1,104 +1,97 @@
-From: "Petallo, MauriceX R" <mauricex.r.petallo@intel.com>
-Subject: RE: [PATCH] thermal: Don't call thermal_zone_device_update inside
- spinlock
-Date: Fri, 28 Nov 2014 02:08:20 +0000
-Message-ID: <B48739867A236B498580AFF76C49038631FDE02A@PGSMSX107.gar.corp.intel.com>
-References: <1415875624-587-1-git-send-email-mauricex.r.petallo@intel.com>
-	 <20141125052258.GB29240@developer>
- <1416938199.2043.234.camel@spandruv-desktop.jf.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Maurice Petallo <mauricex.r.petallo@intel.com>
+Subject: [PATCH v2] thermal: Intel SoC DTS: Don't do thermal zone update inside spin_lock
+Date: Fri, 28 Nov 2014 10:11:41 +0800
+Message-ID: <1417140701-884-1-git-send-email-mauricex.r.petallo@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:56838 "EHLO mga09.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:15207 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750926AbaK1CIY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Nov 2014 21:08:24 -0500
-In-Reply-To: <1416938199.2043.234.camel@spandruv-desktop.jf.intel.com>
-Content-Language: en-US
+	id S1751141AbaK1CMM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Nov 2014 21:12:12 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kweh Hock Leong <hock.leong.kweh@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Maurice Petallo <mauricex.r.petallo@intel.com>
 
-SGksDQpPay4gSSB3aWxsIHVwZGF0ZSB0aGUgdGl0bGUuDQpUaGFua3MgZm9yIHRoZSBmZWVkYmFj
-a3MgYW5kIEFjay4NCg0KUmVnYXJkcywNCi1NYXVyaWNlDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQpGcm9tOiBTcmluaXZhcyBQYW5kcnV2YWRhIFttYWlsdG86c3Jpbml2YXMucGFuZHJ1
-dmFkYUBsaW51eC5pbnRlbC5jb21dIA0KU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyNiwgMjAx
-NCAxOjU3IEFNDQpUbzogRWR1YXJkbyBWYWxlbnRpbg0KQ2M6IFBldGFsbG8sIE1hdXJpY2VYIFI7
-IFpoYW5nLCBSdWk7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIu
-a2VybmVsLm9yZw0KU3ViamVjdDogUmU6IFtQQVRDSF0gdGhlcm1hbDogRG9uJ3QgY2FsbCB0aGVy
-bWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSBpbnNpZGUgc3BpbmxvY2sNCg0KT24gVHVlLCAyMDE0LTEx
-LTI1IGF0IDAxOjIzIC0wNDAwLCBFZHVhcmRvIFZhbGVudGluIHdyb3RlOg0KSGksIA0KPiBIaSwN
-Cj4gDQo+IEEgbWlub3IgdGhpbmcuIFlvdXIgcGF0Y2ggdGl0bGUgbWFrZXMgdXMgdGhpbmsgdGhp
-cyBmaXggYWZmZWN0cyB0aGUgDQo+IHRoZXJtYWwgc3Vic3lzdGVtIGNvbXBsZXRlbHksIHdoZXJl
-YXMgaXQgYWZmZWN0cyBhIHNwZWNpZmljIGRyaXZlci4NCj4gDQpHb29kIHBvaW50LiBJIG92ZXJs
-b29rZWQgdGhpcy4NCg0KTWF1cmljZSwNCkNoYW5nZSB0aGUgdGl0bGUgdG8gc29tZXRoaW5nIGxp
-a2UNCiJ0aGVybWFsOiBJbnRlbCBTb0MgRFRTOiBEb24ndCBjYWxsIHRoZXJtYWxfem9uZV9kZXZp
-Y2VfdXBkYXRlIGluc2lkZSBzcGlubG9jayINCg0KVGhhbmtzLA0KU3Jpbml2YXMgDQo+IA0KPiBP
-biBUaHUsIE5vdiAxMywgMjAxNCBhdCAwNjo0NzowNFBNICswODAwLCBNYXVyaWNlIFBldGFsbG8g
-d3JvdGU6DQo+ID4gVGhlIGRyaXZlciBjYWxscyBzcGluX2xvY2tfaXJxc2F2ZSBkdXJpbmcgRFRT
-IGludGVycnVwdC4gVGhlIA0KPiA+IGludGVycnVwdCBoYW5kbGUgdGhlbiBjYWxscyB0aGVybWFs
-X3pvbmVfZGV2aWNlX3VwZGF0ZSB3aGljaCANCj4gPiBpbXBsaWNpdGx5IGNhbGxzIGEgc2xlZXAg
-ZnVuY3Rpb24gYW5kIHByb2R1Y2UgdGhlIGZvbGxvd2luZyBidWc6DQo+ID4NCj4gIA0KPiA+IEJV
-Rzogc2xlZXBpbmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0IGF0IA0KPiA+
-IGtlcm5lbC9sb2NraW5nL211dGV4LmM6OTcNCj4gPiBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNh
-YmxlZCgpOiAxLCBwaWQ6IDkyMCwgbmFtZTogaXJxLzg2LXNvY19kdHMNCj4gPiBDUFU6IDAgUElE
-OiA5MjAgQ29tbTogaXJxLzg2LXNvY19kdHMgVGFpbnRlZDogRyAgICAgICAgICAgIEUgIDMuMTcu
-MC1yYzIrICMxDQo+ID4gSGFyZHdhcmUgbmFtZTogSW50ZWwgQ29ycC4gVkFMTEVZVklFVyBCMyBQ
-TEFURk9STS9OT1RFQk9PSywgQklPUyANCj4gPiBCWVRJQ1JCMS44NkMuMDA5Mi5SMzEuMTQwODI5
-MDg1MCAwOC8yOS8yMDE0DQo+ID4gIDAwMDAwMDAwIDAwMDAwMDAwIGMyNWRiZTc0IGMxODE4Y2Zk
-IGYzY2M0ODhjIGMyNWRiZTljIGMxMDU5MzA1IA0KPiA+IGMxYjQwNjNiDQo+ID4gIDAwMDAwMDAx
-IDAwMDAwMDAxIDAwMDAwMzk4IGYzY2M0ODhjIGY2ODE3NjQ0IGY2ODE3NjQ0IGYzZWNjNmMwIA0K
-PiA+IGMyNWRiZWE4DQo+ID4gIGMxODIwOGYyIGY2ODE3NDAwIGMyNWRiZWJjIGMxNTliMGJiIGMy
-NWRiZWRjIGY2ODE3NDAwIGYzMmEyMzAwIA0KPiA+IGMyNWRiZWU4IENhbGwgVHJhY2U6DQo+ID4g
-IFs8YzE4MThjZmQ+XSBkdW1wX3N0YWNrKzB4NDgvMHg2MA0KPiA+ICBbPGMxMDU5MzA1Pl0gX19t
-aWdodF9zbGVlcCsweGVjLzB4ZjQgIFs8YzE4MjA4ZjI+XSANCj4gPiBtdXRleF9sb2NrKzB4MWMv
-MHgzNCAgWzxjMTU5YjBiYj5dIHRoZXJtYWxfem9uZV9nZXRfdGVtcCsweDM0LzB4NTkgIA0KPiA+
-IFs8YzE1OWJkZTU+XSB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSsweDJkLzB4Y2INCj4gPiAg
-WzxmODVkYTE2YT5dID8gaW9zZl9tYmlfd3JpdGUrMHg2Yy8weDc0IFtpb3NmX21iaV0gIFs8Zjdj
-NzQ0NWQ+XSANCj4gPiBzb2NfaXJxX3RocmVhZF9mbisweDEwYy8weDE2MyBbaW50ZWxfc29jX2R0
-c190aGVybWFsXSAgWzxjMTA3YjcyYj5dIA0KPiA+IGlycV90aHJlYWRfZm4rMHgxOC8weDJhICBb
-PGMxMDdiZWRiPl0gaXJxX3RocmVhZCsweDgxLzB4MTFmICANCj4gPiBbPGMxMDdiNzEzPl0gPyBp
-cnFfZmluYWxpemVfb25lc2hvdCsweDdjLzB4N2MgIFs8YzEwN2JmNzk+XSA/IA0KPiA+IGlycV90
-aHJlYWQrMHgxMWYvMHgxMWYgIFs8YzEwN2JlNWE+XSA/IHdha2VfdGhyZWFkc193YWl0cSsweDMx
-LzB4MzEgIA0KPiA+IFs8YzEwNTQyMTc+XSBrdGhyZWFkKzB4ODcvMHg4YyAgWzxjMTgyMWU0MT5d
-IA0KPiA+IHJldF9mcm9tX2tlcm5lbF90aHJlYWQrMHgyMS8weDMwICBbPGMxMDU0MTkwPl0gPyAN
-Cj4gPiBfX2t0aHJlYWRfcGFya21lKzB4NTUvMHg1NQ0KPiA+IA0KPiA+IFNpZ25lZC1vZmYtYnk6
-IE1hdXJpY2UgUGV0YWxsbyA8bWF1cmljZXguci5wZXRhbGxvQGludGVsLmNvbT4NCj4gPiBBY2tl
-ZC1ieTogU3Jpbml2YXMgUGFuZHJ1dmFkYSA8c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRl
-bC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1hbC9pbnRlbF9zb2NfZHRzX3RoZXJt
-YWwuYyB8ICAgMTIgKysrKysrKy0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA3IGluc2VydGlv
-bnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhl
-cm1hbC9pbnRlbF9zb2NfZHRzX3RoZXJtYWwuYyANCj4gPiBiL2RyaXZlcnMvdGhlcm1hbC9pbnRl
-bF9zb2NfZHRzX3RoZXJtYWwuYw0KPiA+IGluZGV4IGE2YTBhMTguLjU1ODBmNWIgMTAwNjQ0DQo+
-ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL2ludGVsX3NvY19kdHNfdGhlcm1hbC5jDQo+ID4gKysr
-IGIvZHJpdmVycy90aGVybWFsL2ludGVsX3NvY19kdHNfdGhlcm1hbC5jDQo+ID4gQEAgLTM2MCw2
-ICszNjAsOSBAQCBzdGF0aWMgdm9pZCBwcm9jX3RoZXJtYWxfaW50ZXJydXB0KHZvaWQpDQo+ID4g
-IAl1MzIgc3RpY2t5X291dDsNCj4gPiAgCWludCBzdGF0dXM7DQo+ID4gIAl1MzIgcHRtY19vdXQ7
-DQo+ID4gKwl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+ICsNCj4gPiArCXNwaW5fbG9ja19pcnFz
-YXZlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIA0KPiA+ICAJLyogQ2xlYXIgQVBJ
-QyBpbnRlcnJ1cHQgKi8NCj4gPiAgCXN0YXR1cyA9IGlvc2ZfbWJpX3JlYWQoQlRfTUJJX1VOSVRf
-UE1DLCBCVF9NQklfQlVOSVRfUkVBRCwgQEAgDQo+ID4gLTM3OCwyMSArMzgxLDIwIEBAIHN0YXRp
-YyB2b2lkIHByb2NfdGhlcm1hbF9pbnRlcnJ1cHQodm9pZCkNCj4gPiAgCQkvKiByZXNldCBzdGlj
-a3kgYml0ICovDQo+ID4gIAkJc3RhdHVzID0gaW9zZl9tYmlfd3JpdGUoQlRfTUJJX1VOSVRfUE1D
-LCBCVF9NQklfQlVOSVRfV1JJVEUsDQo+ID4gIAkJCQkJU09DX0RUU19PRkZTRVRfUFRUU1MsIHN0
-aWNreV9vdXQpOw0KPiA+ICsJCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmludHJfbm90aWZ5X2xv
-Y2ssIGZsYWdzKTsNCj4gPiArDQo+ID4gIAkJZm9yIChpID0gMDsgaSA8IFNPQ19NQVhfRFRTX1NF
-TlNPUlM7ICsraSkgew0KPiA+ICAJCQlwcl9kZWJ1ZygiVFpEIHVwZGF0ZSBmb3Igem9uZSAlZFxu
-IiwgaSk7DQo+ID4gIAkJCXRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHNvY19kdHNbaV0tPnR6
-b25lKTsNCj4gPiAgCQl9DQo+ID4gLQl9DQo+ID4gKwl9IGVsc2UNCj4gPiArCQlzcGluX3VubG9j
-a19pcnFyZXN0b3JlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIA0KPiA+ICB9DQo+
-ID4gIA0KPiA+ICBzdGF0aWMgaXJxcmV0dXJuX3Qgc29jX2lycV90aHJlYWRfZm4oaW50IGlycSwg
-dm9pZCAqZGV2X2RhdGEpICB7DQo+ID4gLQl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+IC0NCj4g
-PiAtCXNwaW5fbG9ja19pcnFzYXZlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIAlw
-cm9jX3RoZXJtYWxfaW50ZXJydXB0KCk7DQo+ID4gLQlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZp
-bnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIAlwcl9kZWJ1ZygicHJvY190aGVybWFsX2lu
-dGVycnVwdFxuIik7DQo+ID4gIA0KPiA+ICAJcmV0dXJuIElSUV9IQU5ETEVEOw0KPiANCj4gQSBw
-YXJ0IGZyb20gdGhlIG1pbm9yIHRoaW5nIEkgbWVudGlvbmVkIGJlZm9yZSwgeW91IGNhbiBhZGQg
-bXk6DQo+IA0KPiBBY2tlZC1ieTogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNv
-bT4NCj4gDQo+ID4gLS0NCj4gPiAxLjcuOS41DQo+ID4gDQo+ID4gLS0NCj4gPiBUbyB1bnN1YnNj
-cmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0i
-IA0KPiA+IGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwu
-b3JnIE1vcmUgbWFqb3Jkb21vIA0KPiA+IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
-bWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCg==
+The driver calls spin_lock_irqsave during DTS interrupt. The interrupt
+handle then calls thermal_zone_device_update which implicitly calls
+a sleep function and produce the following bug:
+
+BUG: sleeping function called from invalid context at kernel/locking/mutex.c:97
+in_atomic(): 1, irqs_disabled(): 1, pid: 920, name: irq/86-soc_dts
+CPU: 0 PID: 920 Comm: irq/86-soc_dts Tainted: G            E  3.17.0-rc2+ #1
+Hardware name: Intel Corp. VALLEYVIEW B3 PLATFORM/NOTEBOOK, BIOS BYTICRB1.86C.0092.R31.1408290850 08/29/2014
+ 00000000 00000000 c25dbe74 c1818cfd f3cc488c c25dbe9c c1059305 c1b4063b
+ 00000001 00000001 00000398 f3cc488c f6817644 f6817644 f3ecc6c0 c25dbea8
+ c18208f2 f6817400 c25dbebc c159b0bb c25dbedc f6817400 f32a2300 c25dbee8
+Call Trace:
+ [<c1818cfd>] dump_stack+0x48/0x60
+ [<c1059305>] __might_sleep+0xec/0xf4
+ [<c18208f2>] mutex_lock+0x1c/0x34
+ [<c159b0bb>] thermal_zone_get_temp+0x34/0x59
+ [<c159bde5>] thermal_zone_device_update+0x2d/0xcb
+ [<f85da16a>] ? iosf_mbi_write+0x6c/0x74 [iosf_mbi]
+ [<f7c7445d>] soc_irq_thread_fn+0x10c/0x163 [intel_soc_dts_thermal]
+ [<c107b72b>] irq_thread_fn+0x18/0x2a
+ [<c107bedb>] irq_thread+0x81/0x11f
+ [<c107b713>] ? irq_finalize_oneshot+0x7c/0x7c
+ [<c107bf79>] ? irq_thread+0x11f/0x11f
+ [<c107be5a>] ? wake_threads_waitq+0x31/0x31
+ [<c1054217>] kthread+0x87/0x8c
+ [<c1821e41>] ret_from_kernel_thread+0x21/0x30
+ [<c1054190>] ? __kthread_parkme+0x55/0x55
+
+Signed-off-by: Maurice Petallo <mauricex.r.petallo@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+CC: Kweh, Hock Leong <hock.leong.kweh@intel.com>
+---
+Changelog v2:
+* Change subject to emphasize that this patch affects only Intel SoC DTS
+  (intel_soc_dts_thermal.c)
+
+ drivers/thermal/intel_soc_dts_thermal.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/thermal/intel_soc_dts_thermal.c b/drivers/thermal/intel_soc_dts_thermal.c
+index a6a0a18..5580f5b 100644
+--- a/drivers/thermal/intel_soc_dts_thermal.c
++++ b/drivers/thermal/intel_soc_dts_thermal.c
+@@ -360,6 +360,9 @@ static void proc_thermal_interrupt(void)
+ 	u32 sticky_out;
+ 	int status;
+ 	u32 ptmc_out;
++	unsigned long flags;
++
++	spin_lock_irqsave(&intr_notify_lock, flags);
+ 
+ 	/* Clear APIC interrupt */
+ 	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
+@@ -378,21 +381,20 @@ static void proc_thermal_interrupt(void)
+ 		/* reset sticky bit */
+ 		status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
+ 					SOC_DTS_OFFSET_PTTSS, sticky_out);
++		spin_unlock_irqrestore(&intr_notify_lock, flags);
++
+ 		for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
+ 			pr_debug("TZD update for zone %d\n", i);
+ 			thermal_zone_device_update(soc_dts[i]->tzone);
+ 		}
+-	}
++	} else
++		spin_unlock_irqrestore(&intr_notify_lock, flags);
+ 
+ }
+ 
+ static irqreturn_t soc_irq_thread_fn(int irq, void *dev_data)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&intr_notify_lock, flags);
+ 	proc_thermal_interrupt();
+-	spin_unlock_irqrestore(&intr_notify_lock, flags);
+ 	pr_debug("proc_thermal_interrupt\n");
+ 
+ 	return IRQ_HANDLED;
+-- 
+1.7.9.5
+
