@@ -1,44 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCHv2 1/1] thermal: cpu_cooling: check for the readiness of
- cpufreq layer
-Date: Fri, 28 Nov 2014 13:35:49 +0530
-Message-ID: <CAKohponu_PRrqsuMdCJDznhiO_-=iCaYPhCCad8F4WS3rNxo5A@mail.gmail.com>
-References: <1417097577-3548-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V3 0/3] PM / Domains: Add initial PM clock support to genpd
+Date: Fri, 28 Nov 2014 09:30:00 +0100
+Message-ID: <1417163403-7070-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1417097577-3548-1-git-send-email-edubezval@gmail.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, LKML <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 27 November 2014 at 19:42, Eduardo Valentin <edubezval@gmail.com> wrote:
-> (I'm sorry VireshK, I am still using my normal practice) :-)
+Changes in v3:
+	-Fixed comments from Rafael for patch 1.
+	-Change name of define, affects all patches.
 
-That's fine :)
+Changes in v2:
+	-Small fixes in patch 1.
 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 1ab0018..bed3fa2 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -440,6 +440,11 @@ __cpufreq_cooling_register(struct device_node *np,
->         int ret = 0, i;
->         struct cpufreq_policy policy;
->
-> +       if (!cpufreq_frequency_get_table(0)) {
-> +               pr_err("cpu_cooling: cpufreq layer not ready! Deferring.\n");
 
-Throwing an error here doesn't look to be the right thing. Ultimately
-we will register the cooling dev when probed again after some time.
+It's quite common for PM domains to use PM clocks. Typically from SOC specific
+code, the per device PM clock list is created and pm_clk_suspend|resume() are
+invoked to handle clock gating/ungating.
 
-So, a pr_debug() suits more here.
+A step towards consolidation is to integrate PM clock support into genpd, which
+is what this patchset does.
 
-Also, this breaks existing exynos thermal drivers as they don't handle
--EPROBE_DEFER well right now.
+In this initial step, the calls to the pm_clk_suspend|resume() are handled
+within genpd, but the per device PM clock list still needs to be created from
+SOC specific code. It seems reasonable to have gendp to handle that as well, but
+that left to future patchsets to address.
 
-I reached here, because one of my patches had something similar to what
-you wrote. Just for this file though, haven't updated any other drivers though.
+It's not every users of genpd that are keen on using PM clocks thus we need
+to provide this a configuration option for genpd.
 
-Will be sending you my small patchset by end of day today, please see if
-they make any sense at all..
+In patch 2 and patch 3, we convert some of the SH-MOBILE SOCs to start using the
+new PM clock support in genpd.
+
+
+Ulf Hansson (3):
+  PM / Domains: Initial PM clock support for genpd
+  ARM: shmobile: Convert to genpd flags for PM clocks for r8a7779
+  ARM: shmobile: Convert to genpd flags for PM clocks for R-mobile
+
+ arch/arm/mach-shmobile/pm-r8a7779.c | 3 +--
+ arch/arm/mach-shmobile/pm-rmobile.c | 3 +--
+ drivers/base/power/domain.c         | 7 +++++++
+ include/linux/pm_domain.h           | 4 ++++
+ 4 files changed, 13 insertions(+), 4 deletions(-)
+
+-- 
+1.9.1
