@@ -1,57 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
-Date: Fri, 28 Nov 2014 12:01:42 +0530
-Message-ID: <CAKohpokwKzJ1TJQu2YGS+veDPuGFKehWWbdYKrHyPz6vK-Vy3A@mail.gmail.com>
-References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>
-	<5476071B.1060705@arm.com>
-	<CAKohpomFE6xg+HfOicha4Ntkr9osqDK2gxdKce=BU_q35jfBxA@mail.gmail.com>
-	<5476F4ED.6040206@arm.com>
-	<CAKohpok+M+HuuQBJ3EJ_3e+Uv-Me5za7EO2TVguU_tCXNtahvQ@mail.gmail.com>
-	<547707C8.3080108@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 1/3] PM / Domains: Initial PM clock support for genpd
+Date: Fri, 28 Nov 2014 08:26:28 +0100
+Message-ID: <CAPDyKFp8sSCAt-oZTex-UG1RAFUYQBRPwbKuGmYiGP+0OtaTYw@mail.gmail.com>
+References: <1417099911-12688-1-git-send-email-ulf.hansson@linaro.org>
+	<1417099911-12688-2-git-send-email-ulf.hansson@linaro.org>
+	<3169286.RI9fuSo8ZA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f175.google.com ([209.85.214.175]:40924 "EHLO
-	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbaK1Gbn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 01:31:43 -0500
-Received: by mail-ob0-f175.google.com with SMTP id wp4so4665195obc.34
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 22:31:43 -0800 (PST)
-In-Reply-To: <547707C8.3080108@arm.com>
+Received: from mail-qa0-f42.google.com ([209.85.216.42]:38762 "EHLO
+	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbaK1H03 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 02:26:29 -0500
+Received: by mail-qa0-f42.google.com with SMTP id j7so4228076qaq.29
+        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 23:26:28 -0800 (PST)
+In-Reply-To: <3169286.RI9fuSo8ZA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "rob.herring@linaro.org" <rob.herring@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "kesavan.abhilash@gmail.com" <kesavan.abhilash@gmail.com>, Catalin Marinas <Catalin.Marinas@arm.com>, "k.chander@samsung.com" <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, "ta.omasab@gmail.com" <ta.omasab@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 
-On 27 November 2014 at 16:45, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> It's the general understanding, I am not sure if it's specified anywhere
-> in the kernel Documentation, but I could find the below excerpts from [1]:
 >
-> "The compatibility rules say that new kernels must work with older
-> device trees. If changes are required, they should be put into new
-> properties; the old ones can then be deprecated but not removed. New
-> properties should be optional, so that device trees lacking those
-> properties continue to work. The device tree developers will provide a
-> set of guidelines for the creation of future-proof bindings."
+> If you defined the flag as
 >
-> It's *exactly opposite* as DTs are considered as part of firmware that
-> gets shipped with the boards and any kernel should work with that DT if
-> it is compliance with the DT bindings(even old, as the DT bindings
-> should never get changed only gets extended)
+>         #define PM_DOMAIN_FLAGS_PM_CLK  (1U << 0)
+>
+> (which is a kind of usual way to do that), you wouldn't need the
+> bitops.h above.
+>
+> Moreover, I personally don't like #defines in struct definitions.
+>
+>>
+>> @@ -76,6 +77,8 @@ struct generic_pm_domain {
+>>                         struct device *dev);
+>>       void (*detach_dev)(struct generic_pm_domain *domain,
+>>                          struct device *dev);
+>> +     unsigned int flags;             /* Bit field of configs for genpd */
+>> +#define PM_DOMAIN_PM_CLK     BIT(0)  /* PM domain uses PM clk */
 
-Okay, I was completely wrong. :)
+While I fix your above comments, I wonder whether I actually also
+should change the prefix of the define as well.
+>From "PM_DOMAIN" to "GENPD". Cause I think it's a genpd specific
+define and not a "PM domain" define. Please tell me if you have any
+objections to that.
 
-> No, you *must* :). That's backward compatibility. Just consider a simple
-> case where the bootloader is generating DT and we don't want to upgrade it.
+>>  };
+>>
+>>  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+>>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
 
-Now these are the options we have for existing platforms:
 
-- Update those platforms to check if DT has "compatible" string in CPU node.
-If yes, don't create a device as this will be created by cpufreq-dt.
+Thanks for review!
 
-- Just remove the device creation from those paths if the Maintainers of
-those platforms want to cleanup their code, accepting the loss of backward
-compatibility..
-
---
-viresh
+Kind regards
+Uffe
