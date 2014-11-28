@@ -1,7 +1,7 @@
 From: Ethan Zhao <ethan.zhao@oracle.com>
 Subject: [PATCH 2/2 V6] intel_pstate: add kernel parameter to force loading on Sun X86 servers.
-Date: Fri, 28 Nov 2014 12:36:16 +0900
-Message-ID: <1417145777-21897-3-git-send-email-ethan.zhao@oracle.com>
+Date: Fri, 28 Nov 2014 12:36:17 +0900
+Message-ID: <1417145777-21897-4-git-send-email-ethan.zhao@oracle.com>
 References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com>
