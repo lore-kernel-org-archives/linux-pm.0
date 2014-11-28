@@ -1,102 +1,104 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Subject: Re: [PATCHv2 1/1] thermal: cpu_cooling: check for the readiness of
- cpufreq layer
-Date: Fri, 28 Nov 2014 11:18:24 +0100
-Message-ID: <20141128111824.533c4641@jawa>
-References: <1417097577-3548-1-git-send-email-edubezval@gmail.com>
- <CAKohponu_PRrqsuMdCJDznhiO_-=iCaYPhCCad8F4WS3rNxo5A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7202054068646201035=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohponu_PRrqsuMdCJDznhiO_-=iCaYPhCCad8F4WS3rNxo5A@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V2] PM / Domains: Add pm_genpd_lookup() API to lookup domain by firmware node
+Date: Fri, 28 Nov 2014 11:38:35 +0100
+Message-ID: <1417171115-5789-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7202054068646201035==
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/2y2TlDVtawGQDt5HAADLGWz"; protocol="application/pgp-signature"
+In a step to move away from using genpd's name based APIs, such as the
+pm_genpd_add_subdomain_names(), provide an API to lookup an already
+initialized generic PM domain by its firmware node.
 
---Sig_/2y2TlDVtawGQDt5HAADLGWz
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This API would typically be a called from SOC specific code, to fetch a
+handle to the domain. Especially convenient to configure subdomains and
+when the hierarchy of the domains are described in DT.
 
-On Fri, 28 Nov 2014 13:35:49 +0530
-Viresh Kumar <viresh.kumar@linaro.org> wrote:
+Do note, before pm_genpd_init() is invoked to initialize a generic PM
+domain, it's the callers responsibility to assign the new ->fwnode
+pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+find the domain.
 
-> On 27 November 2014 at 19:42, Eduardo Valentin <edubezval@gmail.com>
-> wrote:
-> > (I'm sorry VireshK, I am still using my normal practice) :-)
->=20
-> That's fine :)
->=20
-> > diff --git a/drivers/thermal/cpu_cooling.c
-> > b/drivers/thermal/cpu_cooling.c index 1ab0018..bed3fa2 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -440,6 +440,11 @@ __cpufreq_cooling_register(struct device_node
-> > *np, int ret =3D 0, i;
-> >         struct cpufreq_policy policy;
-> >
-> > +       if (!cpufreq_frequency_get_table(0)) {
-> > +               pr_err("cpu_cooling: cpufreq layer not ready!
-> > Deferring.\n");
->=20
-> Throwing an error here doesn't look to be the right thing. Ultimately
-> we will register the cooling dev when probed again after some time.
->=20
-> So, a pr_debug() suits more here.
->=20
-> Also, this breaks existing exynos thermal drivers as they don't handle
-> -EPROBE_DEFER well right now.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-Unfortunately Viresh is correct here. Current (before rework) Exynos
-TMU driver expects that cpu_cooling device will succeed.
+Changes in v2:
+	Change from using struct device_node to struct fwnode_handle.
+	Updated commit header accordingly.
 
->=20
-> I reached here, because one of my patches had something similar to
-> what you wrote. Just for this file though, haven't updated any other
-> drivers though.
->=20
-> Will be sending you my small patchset by end of day today, please see
-> if they make any sense at all..
+---
+ drivers/base/power/domain.c | 27 +++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  4 ++++
+ 2 files changed, 31 insertions(+)
 
-Best regards,
-=C5=81ukasz Majewski
-
---Sig_/2y2TlDVtawGQDt5HAADLGWz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlR4S/EACgkQf9/hG2YwgjEx1gCfRbftm8wzjq7xJwyC/PFISSNC
-dloAoMnOf3s6RAA95fkGjSsfp1md5fns
-=hgj5
------END PGP SIGNATURE-----
-
---Sig_/2y2TlDVtawGQDt5HAADLGWz--
-
-
---===============7202054068646201035==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============7202054068646201035==--
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 735c473..2d881d5 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -75,6 +75,33 @@ struct generic_pm_domain *dev_to_genpd(struct device *dev)
+ 	return pd_to_genpd(dev->pm_domain);
+ }
+ 
++/**
++ * pm_genpd_lookup - Fetch a generic PM domain object by firmware node.
++ * @node: Firmware node to a corresponding genpd.
++ *
++ * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
++ * on failure.
++ */
++struct generic_pm_domain *pm_genpd_lookup(struct fwnode_handle *node)
++{
++	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT), *gpd;
++
++	if (IS_ERR_OR_NULL(node))
++		return ERR_PTR(-EINVAL);
++
++	mutex_lock(&gpd_list_lock);
++	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++		if (gpd->fwnode == node) {
++			genpd = gpd;
++			break;
++		}
++	}
++	mutex_unlock(&gpd_list_lock);
++
++	return genpd;
++}
++EXPORT_SYMBOL_GPL(pm_genpd_lookup);
++
+ static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
+ {
+ 	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 8cbd32e..aa01050 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -43,6 +43,8 @@ struct gpd_cpuidle_data {
+ 	struct cpuidle_state *idle_state;
+ };
+ 
++struct fwnode_handle;
++
+ struct generic_pm_domain {
+ 	struct dev_pm_domain domain;	/* PM domain operations */
+ 	struct list_head gpd_list_node;	/* Node in the global PM domains list */
+@@ -53,6 +55,7 @@ struct generic_pm_domain {
+ 	struct dev_power_governor *gov;
+ 	struct work_struct power_off_work;
+ 	const char *name;
++	struct fwnode_handle *fwnode;	/* Firware node for the PM domain */
+ 	unsigned int in_progress;	/* Number of devices being suspended now */
+ 	atomic_t sd_count;	/* Number of subdomains with power "on" */
+ 	enum gpd_status status;	/* Current state of the domain */
+@@ -126,6 +129,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+ }
+ 
+ extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
++extern struct generic_pm_domain *pm_genpd_lookup(struct fwnode_handle *node);
+ extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				 struct device *dev,
+ 				 struct gpd_timing_data *td);
+-- 
+1.9.1
