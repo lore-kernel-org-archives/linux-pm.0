@@ -1,91 +1,97 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCHv3 1/1] thermal: cpu_cooling: check for the readiness of
- cpufreq layer
-Date: Fri, 28 Nov 2014 11:09:35 -0400
-Message-ID: <20141128150932.GA24720@developer>
-References: <1417186410-24551-1-git-send-email-edubezval@gmail.com>
- <20141128171024.GW3836@n2100.arm.linux.org.uk>
+Subject: [GIT PULL] thermal changes for v3.18-rc7
+Date: Fri, 28 Nov 2014 11:13:06 -0400
+Message-ID: <20141128151304.GB24720@developer>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="v9Ux+11Zm5mwPlX6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f45.google.com ([209.85.192.45]:37773 "EHLO
+	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbaK1RTE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 12:19:04 -0500
 Content-Disposition: inline
-In-Reply-To: <20141128171024.GW3836@n2100.arm.linux.org.uk>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, devicetree@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-samsung-soc@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-arm-kernel@lists.infradead.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
 
---a8Wt8u1KmwUX3Y2C
+--v9Ux+11Zm5mwPlX6
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Russel,
+Hello Linus,
 
-On Fri, Nov 28, 2014 at 05:10:24PM +0000, Russell King - ARM Linux wrote:
-> On Fri, Nov 28, 2014 at 10:53:30AM -0400, Eduardo Valentin wrote:
-> > diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/=
-thermal/samsung/exynos_thermal_common.c
-> > index 3f5ad25..d4eaa1b 100644
-> > --- a/drivers/thermal/samsung/exynos_thermal_common.c
-> > +++ b/drivers/thermal/samsung/exynos_thermal_common.c
-> > @@ -371,9 +371,10 @@ int exynos_register_thermal(struct thermal_sensor_=
-conf *sensor_conf)
-> >  		th_zone->cool_dev[th_zone->cool_dev_size] =3D
-> >  					cpufreq_cooling_register(&mask_val);
-> >  		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
-> > -			dev_err(sensor_conf->dev,
-> > -				"Failed to register cpufreq cooling device\n");
-> > -			ret =3D -EINVAL;
-> > +			ret =3D PTR_ERR(th_zone->cool_dev[th_zone->cool_dev_size]);
-> > +			if (ret !=3D -EPROBE_DEFER)
-> > +				dev_err(sensor_conf->dev,
-> > +					"Failed to register cpufreq cooling device\n");
->=20
-> Something which bugs me quite a lot is when there is an error code (which
-> tells you why something didn't work) and you have an error message, and
-> the error message doesn't bother printing the error code.
->=20
-> You might as well just print "Failed\n" and leave it at that, or md5sum
-> the error message and print the sum instead. :)
->=20
+Please pull from
 
-I like the md5sum better! :-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.=
+git fixes
 
+to receive thermal updates for v3.18-rc7 with top-most
 
-> Knowing why something failed allows you to read the source, and find
-> possible reasons for the failure (which could come down to one reason)
-> and allows faster resolution of the problem.
->=20
+d3e19567fa85e1a0dab02205b89b2908084ecadd:
 
-Sure. I will resend with the error codes in the error messages. Makes
-completely sense.
+  thermal: Exynos: Deletion of unnecessary checks before two function calls=
+ (2014-11-21 15:20:17 -0400)
 
-Thanks for taking the time and reviewing.
+on top of commit fc14f9c1272f62c3e8d01300f52467c0d9af50f9:
 
+  Linux 3.18-rc5 (2014-11-16 16:36:20 -0800)
+
+Specifics:
+
+=2E By now I expected Rui to be back already. However, he is still away
+http://marc.info/?l=3Dlinux-pm&m=3D141701567112573&w=3D2
+
+He might still be sorting things out on his side. Therefore, I am
+redirecting this pull to Linus.
+
+=2E In this -rc still very minor changes:
+ - Lee Jones fixes compilation warning in sti thermal driver;
+ - Marjus Elfring removes unnecessary checks in exynos thermal driver
+   (as per coccinelle); and
+ - Now we always update cpufreq policies, and thus get (hopefully) always i=
+n sync with cpufreq,
+   thanks to Yadwinder.=20
+
+BR,
 
 Eduardo Valentin
 
-> --=20
-> FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-> according to speedtest.net.
+----------------------------------------------------------------
+Lee Jones (1):
+      thermal: sti: Ignore suspend/resume functions when !PM_SLEEP
 
---a8Wt8u1KmwUX3Y2C
+Markus Elfring (1):
+      thermal: Exynos: Deletion of unnecessary checks before two function c=
+alls
+
+Yadwinder Singh Brar (1):
+      thermal: cpu_cooling: Update always cpufreq policy with thermal const=
+raints
+
+ drivers/thermal/cpu_cooling.c                   | 37 ++++++++++++++-------=
+----
+ drivers/thermal/samsung/exynos_thermal_common.c |  9 ++----
+ drivers/thermal/st/st_thermal.c                 |  3 ++
+ 3 files changed, 27 insertions(+), 22 deletions(-)
+
+--v9Ux+11Zm5mwPlX6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUeJAhAAoJEMLUO4d9pOJWNtgIAIVUhNPVtwVWHQGEfglfo9P9
-8lluSQs00PNqhA6zkn7nz9emKkhkiUKebxCRa3ni9Rf/SwWAGf4a70jO5/7xoHIB
-yq0DHIjVDf2s7H+EpaAisuDCU5i2SRxTPg+r9CMM2hZWMczQ5SEkuMJ3LvoifhJ6
-bXpTXw14vv/2Ko2LaOp1fM3zUnbCleVILpn+MWPgwIBz8TQSQQrJQ+KELzxvLZtB
-vLrnFa9K9wPZMWZcwCXRY+2aklaayMgcRWCcEBNzxcZ6hi8m6068Kow0d8LvHcQo
-hmWvxaaHlyFuMvSaaYik374PlMrB0OY1NqqIJgExoqYsWMkd7f0XaIjspOq6NP8=
-=0+hj
+iQEcBAEBAgAGBQJUeJDyAAoJEMLUO4d9pOJWW4cH/Rczgz9vecWZFA97vo0kQxOY
+UhEUvM8K1xYLbqRi23AVafgORTTkJGQzHt+C3ACB4dU7doISagflSFYJC1436rVV
+R7cgjh2Z5LPcw3RH8kwhHnLA/JqGrcaepy3fCfrUAaVenMWokiT4O1oFsLoNvTLc
+KR1cwNjfHl8AFPKLMJ30q4hA0aZtx2ZZ9JQaenKJbxYiNQmN3CHrM/zWdWtnFJsf
+Gpr1KJ0DO3sVC4P24Vvk4KFE0S3+ru9hTorlz1oJLelH/eHlVLGHGioww+szNn4B
+vcUGDinpGiafjUoeOk14ogCnmWBJbh8FOqxp3ss+Nzq6uRlQxUqqq7MyCAhZZXk=
+=D3kU
 -----END PGP SIGNATURE-----
 
---a8Wt8u1KmwUX3Y2C--
+--v9Ux+11Zm5mwPlX6--
