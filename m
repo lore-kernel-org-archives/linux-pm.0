@@ -1,309 +1,104 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 3/4] powernv: cpuidle: Redesign idle states management
-Date: Fri, 28 Nov 2014 10:50:36 +1100
-Message-ID: <20141127235035.GC12871@iris.ozlabs.ibm.com>
-References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
+From: "Petallo, MauriceX R" <mauricex.r.petallo@intel.com>
+Subject: RE: [PATCH] thermal: Don't call thermal_zone_device_update inside
+ spinlock
+Date: Fri, 28 Nov 2014 02:08:20 +0000
+Message-ID: <B48739867A236B498580AFF76C49038631FDE02A@PGSMSX107.gar.corp.intel.com>
+References: <1415875624-587-1-git-send-email-mauricex.r.petallo@intel.com>
+	 <20141125052258.GB29240@developer>
+ <1416938199.2043.234.camel@spandruv-desktop.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:54632 "EHLO ozlabs.org"
+Received: from mga09.intel.com ([134.134.136.24]:56838 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750729AbaK0Xuo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Nov 2014 18:50:44 -0500
-Content-Disposition: inline
-In-Reply-To: <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
+	id S1750926AbaK1CIY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Nov 2014 21:08:24 -0500
+In-Reply-To: <1416938199.2043.234.camel@spandruv-desktop.jf.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Nov 25, 2014 at 04:47:58PM +0530, Shreyas B. Prabhu wrote:
-[snip]
-> +2:
-> +	/* Sleep or winkle */
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07			/* Get thread id into r8 */
-> +	rotld	r7,r7,r8
-
-I would suggest adding another u8 field to the paca to store our
-thread bit, and initialize it to 1 << (cpu_id % threads_per_core)
-early on.  That will handle the POWER7 case correctly and reduce these
-four instructions to one.
-
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +lwarx_loop1:
-> +	lwarx	r15,0,r14
-> +	andc	r15,r15,r7			/* Clear thread bit */
-> +
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	beq	last_thread
-> +
-> +	/* Not the last thread to goto sleep */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +	b	common_enter
-> +
-> +last_thread:
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-> +	bne	common_enter
-> +	/*
-> +	 * Last thread of the core entering sleep. Last thread needs to execute
-> +	 * the hardware bug workaround code. Before that, set the lock bit to
-> +	 * avoid the race of other threads waking up and undoing workaround
-> +	 * before workaround is applied.
-> +	 */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +
-> +	/* Fast sleep workaround */
-> +	li	r3,1
-> +	li	r4,1
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +
-> +	/* Clear Lock bit */
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
-
-In this case we know the result of the andi. will be 0, so this could
-be just li r0,0; stw r0,0(r14).
-
-> +
-> +common_enter: /* common code for all the threads entering sleep */
-> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->  
->  _GLOBAL(power7_idle)
->  	/* Now check if user or arch enabled NAP mode */
-> @@ -141,49 +191,16 @@ _GLOBAL(power7_idle)
->  
->  _GLOBAL(power7_nap)
->  	mr	r4,r3
-> -	li	r3,0
-> +	li	r3,PNV_THREAD_NAP
->  	b	power7_powersave_common
->  	/* No return */
->  
->  _GLOBAL(power7_sleep)
-> -	li	r3,1
-> +	li	r3,PNV_THREAD_SLEEP
->  	li	r4,1
->  	b	power7_powersave_common
->  	/* No return */
->  
-> -/*
-> - * Make opal call in realmode. This is a generic function to be called
-> - * from realmode from reset vector. It handles endianess.
-> - *
-> - * r13 - paca pointer
-> - * r1  - stack pointer
-> - * r3  - opal token
-> - */
-> -opal_call_realmode:
-> -	mflr	r12
-> -	std	r12,_LINK(r1)
-> -	ld	r2,PACATOC(r13)
-> -	/* Set opal return address */
-> -	LOAD_REG_ADDR(r0,return_from_opal_call)
-> -	mtlr	r0
-> -	/* Handle endian-ness */
-> -	li	r0,MSR_LE
-> -	mfmsr	r12
-> -	andc	r12,r12,r0
-> -	mtspr	SPRN_HSRR1,r12
-> -	mr	r0,r3			/* Move opal token to r0 */
-> -	LOAD_REG_ADDR(r11,opal)
-> -	ld	r12,8(r11)
-> -	ld	r2,0(r11)
-> -	mtspr	SPRN_HSRR0,r12
-> -	hrfid
-> -
-> -return_from_opal_call:
-> -	FIXUP_ENDIAN
-> -	ld	r0,_LINK(r1)
-> -	mtlr	r0
-> -	blr
-> -
->  #define CHECK_HMI_INTERRUPT						\
->  	mfspr	r0,SPRN_SRR1;						\
->  BEGIN_FTR_SECTION_NESTED(66);						\
-> @@ -196,10 +213,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->  	/* Invoke opal call to handle hmi */				\
->  	ld	r2,PACATOC(r13);					\
->  	ld	r1,PACAR1(r13);						\
-> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
-> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
-> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->  	bl	opal_call_realmode;					\
-> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->  20:	nop;
->  
->  
-> @@ -210,12 +225,91 @@ _GLOBAL(power7_wakeup_tb_loss)
->  BEGIN_FTR_SECTION
->  	CHECK_HMI_INTERRUPT
->  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> +
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
-> +	rotld	r7,r7,r8
-> +	/* r7 now has 'thread_id'th bit set */
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +lwarx_loop2:
-> +	lwarx	r15,0,r14
-> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	/*
-> +	 * Lock bit is set in one of the 2 cases-
-> +	 * a. In the sleep/winkle enter path, the last thread is executing
-> +	 * fastsleep workaround code.
-> +	 * b. In the wake up path, another thread is executing fastsleep
-> +	 * workaround undo code or resyncing timebase or restoring context
-> +	 * In either case loop until the lock bit is cleared.
-> +	 */
-> +	bne	lwarx_loop2
-> +
-> +	cmpwi	cr2,r15,0
-> +	or	r15,r15,r7		/* Set thread bit */
-> +
-> +	beq	cr2,first_thread
-> +
-> +	/* Not first thread in core to wake up */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +	b	common_exit
-> +
-> +first_thread:
-> +	/* First thread in core to wakeup */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-> +	/*  skip fastsleep workaround if its not needed */
-> +	bne	timebase_resync
-> +
-> +	/* Undo fast sleep workaround */
-> +	mfcr	r16	/* Backup CR into a non-volatile register */
-> +	li	r3,1
-> +	li	r4,0
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +	mtcr	r16	/* Restore CR */
-> +
-> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
-> +	 * set in exceptions-64s.S */
-> +	ble	cr1,clear_lock
-> +
-> +timebase_resync:
->  	/* Time base re-sync */
-> -	li	r3,OPAL_RESYNC_TIMEBASE
-> +	li	r0,OPAL_RESYNC_TIMEBASE
->  	bl	opal_call_realmode;
-
-So if pnv_need_fastsleep_workaround is zero, we always do the timebase
-resync, but if pnv_need_fastsleep_workaround is one, we only do the
-timebase resync if we had a loss of state.  Is that really what you
-meant?
-
-> -
->  	/* TODO: Check r3 for failure */
->  
-> +clear_lock:
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
-> +
-> +common_exit:
-> +	li	r5,PNV_THREAD_RUNNING
-> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
-> +
-> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> +	li      r0,KVM_HWTHREAD_IN_KERNEL
-> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
-> +	/* Order setting hwthread_state vs. testing hwthread_req */
-> +	sync
-> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
-> +	cmpwi   r0,0
-> +	beq     6f
-> +	b       kvm_start_guest
-> +6:
-> +#endif
-
-I'd prefer not to duplicate this code.  Could you instead branch back
-to the code in exceptions-64s.S?  Or call this code via a bl and get
-back to exceptions-64s.S via a blr.
-
-> +
->  	REST_NVGPRS(r1)
->  	REST_GPR(2, r1)
->  	ld	r3,_CCR(r1)
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index feb549a..b2aa93b 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -158,6 +158,43 @@ opal_tracepoint_return:
->  	blr
->  #endif
->  
-> +/*
-> + * Make opal call in realmode. This is a generic function to be called
-> + * from realmode. It handles endianness.
-> + *
-> + * r13 - paca pointer
-> + * r1  - stack pointer
-> + * r0  - opal token
-> + */
-> +_GLOBAL(opal_call_realmode)
-> +	mflr	r12
-> +	std	r12,_LINK(r1)
-
-This is a bug waiting to happen.  Using _LINK(r1) was OK in this
-code's previous location, since there we know there is a
-INT_FRAME_SIZE-sized stack frame and the _LINK field is basically
-unused.  Now that you're making this available to call from anywhere,
-you can't trash the caller's stack frame like this.  You need to use
-PPC_LR_STKOFF(r1) instead.
-
-> +	ld	r2,PACATOC(r13)
-> +	/* Set opal return address */
-> +	LOAD_REG_ADDR(r12,return_from_opal_call)
-> +	mtlr	r12
-> +
-> +	mfmsr	r12
-> +#ifdef __LITTLE_ENDIAN__
-> +	/* Handle endian-ness */
-> +	li	r11,MSR_LE
-> +	andc	r12,r12,r11
-> +#endif
-> +	mtspr	SPRN_HSRR1,r12
-> +	LOAD_REG_ADDR(r11,opal)
-> +	ld	r12,8(r11)
-> +	ld	r2,0(r11)
-> +	mtspr	SPRN_HSRR0,r12
-> +	hrfid
-> +
-> +return_from_opal_call:
-> +#ifdef __LITTLE_ENDIAN__
-> +	FIXUP_ENDIAN
-> +#endif
-> +	ld	r12,_LINK(r1)
-> +	mtlr	r12
-> +	blr
-
-Paul.
+SGksDQpPay4gSSB3aWxsIHVwZGF0ZSB0aGUgdGl0bGUuDQpUaGFua3MgZm9yIHRoZSBmZWVkYmFj
+a3MgYW5kIEFjay4NCg0KUmVnYXJkcywNCi1NYXVyaWNlDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQpGcm9tOiBTcmluaXZhcyBQYW5kcnV2YWRhIFttYWlsdG86c3Jpbml2YXMucGFuZHJ1
+dmFkYUBsaW51eC5pbnRlbC5jb21dIA0KU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyNiwgMjAx
+NCAxOjU3IEFNDQpUbzogRWR1YXJkbyBWYWxlbnRpbg0KQ2M6IFBldGFsbG8sIE1hdXJpY2VYIFI7
+IFpoYW5nLCBSdWk7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZw0KU3ViamVjdDogUmU6IFtQQVRDSF0gdGhlcm1hbDogRG9uJ3QgY2FsbCB0aGVy
+bWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSBpbnNpZGUgc3BpbmxvY2sNCg0KT24gVHVlLCAyMDE0LTEx
+LTI1IGF0IDAxOjIzIC0wNDAwLCBFZHVhcmRvIFZhbGVudGluIHdyb3RlOg0KSGksIA0KPiBIaSwN
+Cj4gDQo+IEEgbWlub3IgdGhpbmcuIFlvdXIgcGF0Y2ggdGl0bGUgbWFrZXMgdXMgdGhpbmsgdGhp
+cyBmaXggYWZmZWN0cyB0aGUgDQo+IHRoZXJtYWwgc3Vic3lzdGVtIGNvbXBsZXRlbHksIHdoZXJl
+YXMgaXQgYWZmZWN0cyBhIHNwZWNpZmljIGRyaXZlci4NCj4gDQpHb29kIHBvaW50LiBJIG92ZXJs
+b29rZWQgdGhpcy4NCg0KTWF1cmljZSwNCkNoYW5nZSB0aGUgdGl0bGUgdG8gc29tZXRoaW5nIGxp
+a2UNCiJ0aGVybWFsOiBJbnRlbCBTb0MgRFRTOiBEb24ndCBjYWxsIHRoZXJtYWxfem9uZV9kZXZp
+Y2VfdXBkYXRlIGluc2lkZSBzcGlubG9jayINCg0KVGhhbmtzLA0KU3Jpbml2YXMgDQo+IA0KPiBP
+biBUaHUsIE5vdiAxMywgMjAxNCBhdCAwNjo0NzowNFBNICswODAwLCBNYXVyaWNlIFBldGFsbG8g
+d3JvdGU6DQo+ID4gVGhlIGRyaXZlciBjYWxscyBzcGluX2xvY2tfaXJxc2F2ZSBkdXJpbmcgRFRT
+IGludGVycnVwdC4gVGhlIA0KPiA+IGludGVycnVwdCBoYW5kbGUgdGhlbiBjYWxscyB0aGVybWFs
+X3pvbmVfZGV2aWNlX3VwZGF0ZSB3aGljaCANCj4gPiBpbXBsaWNpdGx5IGNhbGxzIGEgc2xlZXAg
+ZnVuY3Rpb24gYW5kIHByb2R1Y2UgdGhlIGZvbGxvd2luZyBidWc6DQo+ID4NCj4gIA0KPiA+IEJV
+Rzogc2xlZXBpbmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0IGF0IA0KPiA+
+IGtlcm5lbC9sb2NraW5nL211dGV4LmM6OTcNCj4gPiBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNh
+YmxlZCgpOiAxLCBwaWQ6IDkyMCwgbmFtZTogaXJxLzg2LXNvY19kdHMNCj4gPiBDUFU6IDAgUElE
+OiA5MjAgQ29tbTogaXJxLzg2LXNvY19kdHMgVGFpbnRlZDogRyAgICAgICAgICAgIEUgIDMuMTcu
+MC1yYzIrICMxDQo+ID4gSGFyZHdhcmUgbmFtZTogSW50ZWwgQ29ycC4gVkFMTEVZVklFVyBCMyBQ
+TEFURk9STS9OT1RFQk9PSywgQklPUyANCj4gPiBCWVRJQ1JCMS44NkMuMDA5Mi5SMzEuMTQwODI5
+MDg1MCAwOC8yOS8yMDE0DQo+ID4gIDAwMDAwMDAwIDAwMDAwMDAwIGMyNWRiZTc0IGMxODE4Y2Zk
+IGYzY2M0ODhjIGMyNWRiZTljIGMxMDU5MzA1IA0KPiA+IGMxYjQwNjNiDQo+ID4gIDAwMDAwMDAx
+IDAwMDAwMDAxIDAwMDAwMzk4IGYzY2M0ODhjIGY2ODE3NjQ0IGY2ODE3NjQ0IGYzZWNjNmMwIA0K
+PiA+IGMyNWRiZWE4DQo+ID4gIGMxODIwOGYyIGY2ODE3NDAwIGMyNWRiZWJjIGMxNTliMGJiIGMy
+NWRiZWRjIGY2ODE3NDAwIGYzMmEyMzAwIA0KPiA+IGMyNWRiZWU4IENhbGwgVHJhY2U6DQo+ID4g
+IFs8YzE4MThjZmQ+XSBkdW1wX3N0YWNrKzB4NDgvMHg2MA0KPiA+ICBbPGMxMDU5MzA1Pl0gX19t
+aWdodF9zbGVlcCsweGVjLzB4ZjQgIFs8YzE4MjA4ZjI+XSANCj4gPiBtdXRleF9sb2NrKzB4MWMv
+MHgzNCAgWzxjMTU5YjBiYj5dIHRoZXJtYWxfem9uZV9nZXRfdGVtcCsweDM0LzB4NTkgIA0KPiA+
+IFs8YzE1OWJkZTU+XSB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSsweDJkLzB4Y2INCj4gPiAg
+WzxmODVkYTE2YT5dID8gaW9zZl9tYmlfd3JpdGUrMHg2Yy8weDc0IFtpb3NmX21iaV0gIFs8Zjdj
+NzQ0NWQ+XSANCj4gPiBzb2NfaXJxX3RocmVhZF9mbisweDEwYy8weDE2MyBbaW50ZWxfc29jX2R0
+c190aGVybWFsXSAgWzxjMTA3YjcyYj5dIA0KPiA+IGlycV90aHJlYWRfZm4rMHgxOC8weDJhICBb
+PGMxMDdiZWRiPl0gaXJxX3RocmVhZCsweDgxLzB4MTFmICANCj4gPiBbPGMxMDdiNzEzPl0gPyBp
+cnFfZmluYWxpemVfb25lc2hvdCsweDdjLzB4N2MgIFs8YzEwN2JmNzk+XSA/IA0KPiA+IGlycV90
+aHJlYWQrMHgxMWYvMHgxMWYgIFs8YzEwN2JlNWE+XSA/IHdha2VfdGhyZWFkc193YWl0cSsweDMx
+LzB4MzEgIA0KPiA+IFs8YzEwNTQyMTc+XSBrdGhyZWFkKzB4ODcvMHg4YyAgWzxjMTgyMWU0MT5d
+IA0KPiA+IHJldF9mcm9tX2tlcm5lbF90aHJlYWQrMHgyMS8weDMwICBbPGMxMDU0MTkwPl0gPyAN
+Cj4gPiBfX2t0aHJlYWRfcGFya21lKzB4NTUvMHg1NQ0KPiA+IA0KPiA+IFNpZ25lZC1vZmYtYnk6
+IE1hdXJpY2UgUGV0YWxsbyA8bWF1cmljZXguci5wZXRhbGxvQGludGVsLmNvbT4NCj4gPiBBY2tl
+ZC1ieTogU3Jpbml2YXMgUGFuZHJ1dmFkYSA8c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRl
+bC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1hbC9pbnRlbF9zb2NfZHRzX3RoZXJt
+YWwuYyB8ICAgMTIgKysrKysrKy0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA3IGluc2VydGlv
+bnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhl
+cm1hbC9pbnRlbF9zb2NfZHRzX3RoZXJtYWwuYyANCj4gPiBiL2RyaXZlcnMvdGhlcm1hbC9pbnRl
+bF9zb2NfZHRzX3RoZXJtYWwuYw0KPiA+IGluZGV4IGE2YTBhMTguLjU1ODBmNWIgMTAwNjQ0DQo+
+ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL2ludGVsX3NvY19kdHNfdGhlcm1hbC5jDQo+ID4gKysr
+IGIvZHJpdmVycy90aGVybWFsL2ludGVsX3NvY19kdHNfdGhlcm1hbC5jDQo+ID4gQEAgLTM2MCw2
+ICszNjAsOSBAQCBzdGF0aWMgdm9pZCBwcm9jX3RoZXJtYWxfaW50ZXJydXB0KHZvaWQpDQo+ID4g
+IAl1MzIgc3RpY2t5X291dDsNCj4gPiAgCWludCBzdGF0dXM7DQo+ID4gIAl1MzIgcHRtY19vdXQ7
+DQo+ID4gKwl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+ICsNCj4gPiArCXNwaW5fbG9ja19pcnFz
+YXZlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIA0KPiA+ICAJLyogQ2xlYXIgQVBJ
+QyBpbnRlcnJ1cHQgKi8NCj4gPiAgCXN0YXR1cyA9IGlvc2ZfbWJpX3JlYWQoQlRfTUJJX1VOSVRf
+UE1DLCBCVF9NQklfQlVOSVRfUkVBRCwgQEAgDQo+ID4gLTM3OCwyMSArMzgxLDIwIEBAIHN0YXRp
+YyB2b2lkIHByb2NfdGhlcm1hbF9pbnRlcnJ1cHQodm9pZCkNCj4gPiAgCQkvKiByZXNldCBzdGlj
+a3kgYml0ICovDQo+ID4gIAkJc3RhdHVzID0gaW9zZl9tYmlfd3JpdGUoQlRfTUJJX1VOSVRfUE1D
+LCBCVF9NQklfQlVOSVRfV1JJVEUsDQo+ID4gIAkJCQkJU09DX0RUU19PRkZTRVRfUFRUU1MsIHN0
+aWNreV9vdXQpOw0KPiA+ICsJCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmludHJfbm90aWZ5X2xv
+Y2ssIGZsYWdzKTsNCj4gPiArDQo+ID4gIAkJZm9yIChpID0gMDsgaSA8IFNPQ19NQVhfRFRTX1NF
+TlNPUlM7ICsraSkgew0KPiA+ICAJCQlwcl9kZWJ1ZygiVFpEIHVwZGF0ZSBmb3Igem9uZSAlZFxu
+IiwgaSk7DQo+ID4gIAkJCXRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHNvY19kdHNbaV0tPnR6
+b25lKTsNCj4gPiAgCQl9DQo+ID4gLQl9DQo+ID4gKwl9IGVsc2UNCj4gPiArCQlzcGluX3VubG9j
+a19pcnFyZXN0b3JlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIA0KPiA+ICB9DQo+
+ID4gIA0KPiA+ICBzdGF0aWMgaXJxcmV0dXJuX3Qgc29jX2lycV90aHJlYWRfZm4oaW50IGlycSwg
+dm9pZCAqZGV2X2RhdGEpICB7DQo+ID4gLQl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+IC0NCj4g
+PiAtCXNwaW5fbG9ja19pcnFzYXZlKCZpbnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIAlw
+cm9jX3RoZXJtYWxfaW50ZXJydXB0KCk7DQo+ID4gLQlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZp
+bnRyX25vdGlmeV9sb2NrLCBmbGFncyk7DQo+ID4gIAlwcl9kZWJ1ZygicHJvY190aGVybWFsX2lu
+dGVycnVwdFxuIik7DQo+ID4gIA0KPiA+ICAJcmV0dXJuIElSUV9IQU5ETEVEOw0KPiANCj4gQSBw
+YXJ0IGZyb20gdGhlIG1pbm9yIHRoaW5nIEkgbWVudGlvbmVkIGJlZm9yZSwgeW91IGNhbiBhZGQg
+bXk6DQo+IA0KPiBBY2tlZC1ieTogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNv
+bT4NCj4gDQo+ID4gLS0NCj4gPiAxLjcuOS41DQo+ID4gDQo+ID4gLS0NCj4gPiBUbyB1bnN1YnNj
+cmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0i
+IA0KPiA+IGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwu
+b3JnIE1vcmUgbWFqb3Jkb21vIA0KPiA+IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
+bWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCg==
