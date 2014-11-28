@@ -1,76 +1,28 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH RFC v2 07/12] PM / Domains: export pm_genpd_lookup_name
-Date: Fri, 28 Nov 2014 14:22:09 +0530
-Message-ID: <CADGdYn70xe=JcXwMiQ4FXpq4pwHVhv+1Kp7YM_t=R_qk-_hk8A@mail.gmail.com>
-References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
-	<1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
-	<1416834256-11225-7-git-send-email-amit.daniel@samsung.com>
-	<CAPDyKFqE_qhrRs3X9s9juyPH_Zcq8vdE_amqKM3VUnMjHtL2Rg@mail.gmail.com>
-	<CADGdYn6fAScrpz4Va=THtC1ZgT+rYN_gQuE6NnRaCiN4NErg5g@mail.gmail.com>
-	<CAPDyKFo0epKqKuwHS_CKMG2hF+J=Fdve9kPK2EVeeR7FvdoJmg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/7] cpu_cooling: Don't match min/max frequencies for all
+ CPUs on cooling register
+Date: Fri, 28 Nov 2014 14:49:10 +0530
+Message-ID: <CAKohpo=zBD2tWWE_dZOBpu0woHv3+VTv9D+TJ+tRN6cy_ELikQ@mail.gmail.com>
+References: <cover.1416980447.git.viresh.kumar@linaro.org>
+	<4bb7d02f8267ad9efd4dab070d72c2f2659bc752.1416980448.git.viresh.kumar@linaro.org>
+	<20141127153547.GB22851@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFo0epKqKuwHS_CKMG2hF+J=Fdve9kPK2EVeeR7FvdoJmg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:36175 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbaK1JTL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 04:19:11 -0500
+Received: by mail-oi0-f48.google.com with SMTP id u20so4427769oif.21
+        for <linux-pm@vger.kernel.org>; Fri, 28 Nov 2014 01:19:11 -0800 (PST)
+In-Reply-To: <20141127153547.GB22851@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-On Thu, Nov 27, 2014 at 7:50 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 25 November 2014 at 09:48, amit daniel kachhap
-> <amit.daniel@samsung.com> wrote:
->> On Tue, Nov 25, 2014 at 1:05 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> On 24 November 2014 at 14:04, Amit Daniel Kachhap
->>> <amit.daniel@samsung.com> wrote:
->>>> This API may be needed to set the power domain parent/child relationship
->>>> in the power domain platform driver. The parent relationship is
->>>> generally set after the child power domain is registered with the power
->>>> domain subsystem. In this case, pm_genpd_lookup_name API might be
->>>> useful.
->>>
->>> I think this is a step in the wrong direction. Instead we should be
->>> working on removing the "name" based APIs from genpd.
->>>
->>> The proper way should be to pass the PM domain as a parameter to the
->>> APIs instead.
->> Yes i understand but i had a special requirement for using this API
->> during pd probe.
->>  I cannot use hierarchy to represent parent/child pd nodes as it will
->> break the existing SoC's. In my case all the PD nodes are linear. The
->> parent/child relationship are established in the second pass after all
->> the PD entries are registered with the help of this API.
->> Although there a way that i can always keep parent PD's before the
->> child PD's in DT in linear order. Will check this approach.
->
-> I had some thinking around this, could the below approach work?
->
-> I just posted a patch[1] adding a new pm_genpd_lookup() API, which is
-> using a "DT device node" to fetch the genpd. The idea is to use that
-> API to get the genpd handle which is needed to configure a subdomain
-> through pm_genpd_add_subdomain() API.
-I looked at your patch. I seems fine. i will test them and post the
-new version of my series.
+On 27 November 2014 at 21:05, Eduardo Valentin <edubezval@gmail.com> wrote:
+> Shall we also review the users of this API then? Simple to double check
+> if they are passing the correct value?
 
-Regards,
-Amit D
->
-> In principle you will have to walk through the DT a couple of times,
-> initialize those domains (and subdomains) which either don't have a
-> parent domain or which parent domain already has been initialized. I
-> guess you need a somewhat clever loop to do that, but I think it's
-> doable.
->
-> Obviously we also need to have a generic binding for a "parent
-> domain". I like Geert's proposal from the other patch, which means
-> using "power-domains = <&pd_xyz>".
->
-> Kind regards
-> Uffe
->
-> [1]
-> http://marc.info/?l=linux-pm&m=141709766008458&w=2
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+They weren't :).. Fixed them, patches would follow.
