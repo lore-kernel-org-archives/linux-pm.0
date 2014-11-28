@@ -1,40 +1,37 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: [PATCH 2/2] cpufreq: show the real avail freqs with the freq_table
-Date: Fri, 28 Nov 2014 10:43:39 +0800
-Message-ID: <1417142619-14548-3-git-send-email-wangweidong1@huawei.com>
-References: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: wangweidong1@huawei.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH 0/2 V4] intel_pstate: skip this driver if hit Sun X86 servers
+Date: Fri, 28 Nov 2014 12:33:09 +0900
+Message-ID: <1417145592-21829-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some time, the policy's max_freq and min_freq will change, so
-the avail freqs is not from the cpuinfo_min to cpuinfo_max.
-Just add the check for the freq_table.
+Oracle Sun servers(X86) have power capping features that work via ACPI _PPC method,
+patch No.1 is used to skip this driver if Oracle Sun server and _PPC detected.
+Patch No.2 introduces a kernel command line parameter for those who would like
+to enable intel_pstate on Sun X86 servers and be aware of the risk of no power
+capping capability working and try to get better performance.
 
-Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
----
- drivers/cpufreq/freq_table.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Compiled and tested with stable-3.18-rc5 on Oracle Sun server X4-2 series.
 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index df14766..4f86010 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -237,7 +237,9 @@ static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
- 		 * show_boost = false and driver_data != BOOST freq
- 		 * display NON BOOST freqs
- 		 */
--		if (show_boost ^ (pos->flags & CPUFREQ_BOOST_FREQ))
-+		if (pos->frequency < policy->min ||
-+		    pos->frequency > policy->max ||
-+		    show_boost ^ (pos->flags & CPUFREQ_BOOST_FREQ))
- 			continue;
- 
- 		count += sprintf(&buf[count], "%d ", pos->frequency);
+Thanks test and review by Linda Knippers <linda.knippers@hp.com>
+and the suggestion,review from Dirk Brandewie <dirk.j.brandewie@intel.com>.
+--
+v2: fix break HP Proliant issue.
+v3: expand the hardware vendor list.
+v4: refine code and doc
+
+Ethan Zhao (2):
+  intel_pstate: skip this driver if Sun server has _PPC method
+  intel_pstate: add kernel parameter to force loading on Sun X86
+    servers.
+
+ Documentation/kernel-parameters.txt |  5 ++++
+ drivers/cpufreq/intel_pstate.c      | 49 ++++++++++++++++++++++++++++++++++---
+ 2 files changed, 50 insertions(+), 4 deletions(-)
+
 -- 
-1.7.12
+1.8.3.1
+
