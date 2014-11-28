@@ -1,43 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] thermal: cpu_cooling: check for the readiness of
- cpufreq layer
-Date: Fri, 28 Nov 2014 07:58:52 +0530
-Message-ID: <CAKohpok90KG7ZcY8qq7g-VmhPSCsn83Ut_K_QJqC2b+efWiXkg@mail.gmail.com>
-References: <1417024212-1775-1-git-send-email-edubezval@gmail.com>
-	<CAKohponxUWVT1mjRfJarNtj-+=rXNOa_ONHUjmdu_+6N+=ZjPQ@mail.gmail.com>
-	<20141127140803.GA3342@developer>
+From: Wang Weidong <wangweidong1@huawei.com>
+Subject: [PATCH 0/2] fix some problems for cpufreq
+Date: Fri, 28 Nov 2014 10:43:37 +0800
+Message-ID: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:42921 "EHLO
-	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbaK1C2x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 21:28:53 -0500
-Received: by mail-oi0-f43.google.com with SMTP id a3so4146223oib.30
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2014 18:28:52 -0800 (PST)
-In-Reply-To: <20141127140803.GA3342@developer>
+Received: from szxga01-in.huawei.com ([119.145.14.64]:64740 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbaK1Cnv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Nov 2014 21:43:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, LKML <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: wangweidong1@huawei.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com
 
-On 27 November 2014 at 19:38, Eduardo Valentin <edubezval@gmail.com> wrote:
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> Ok.
->
-> though.. "normal practice" says  ack's are oftern used by the maintainer
-> of the affected code (quoting Documentation/SubmittingPatches) :-)
+Hi Rafael and Viresh
 
-Hehe :)
+Sorry to trouble you again. As for:
+"acpi-cpufreq: get the cur_freq from acpi_processor_performance states"
+I do it again, and add the other patch.
 
-Another paragraph from the same file:
+patch #1: acpi-cpufreq: make the freq_table store the same freq value
 
-Acked-by: does not necessarily indicate acknowledgement of the entire patch.
-For example, if a patch affects multiple subsystems and has an Acked-by: from
-one subsystem maintainer then this usually indicates acknowledgement of just
-the part which affects that maintainer's code.  Judgement should be used here.
-When in doubt people should refer to the original discussion in the mailing
-list archives.
+I think it can work. The set of available states which come
+from acpi won't change. Just like the power would be remove,
+the acpi driver will do that:
+call
+ ->acpi_processor_ppc_has_changed
+ ->cpufreq_update_policy
+ ->acpi_ppc_notifier_block.notifier_call
+   ->acpi_processor_ppc_notifier
+   ->cpufreq_verify_within_limits
+The progress will change the policy's min_freq and max_freq
+while it won't change the set of states(freq_tables).
 
-So my Acked-by was as cpufreq subsystem Maintainer :)
+patch #2: cpufreq: show the real avail freqs with the freq_table
+
+when the min_freq and max_freq change, we should sync the availble
+freqs.
+
+Regards,
+Wang
+
+Wang Weidong (2):
+  acpi-cpufreq: make the freq_table store the same freq value
+  cpufreq: show the real avail freqs with the freq_table
+
+ drivers/cpufreq/acpi-cpufreq.c | 2 +-
+ drivers/cpufreq/freq_table.c   | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+-- 
+1.7.12
+
+
