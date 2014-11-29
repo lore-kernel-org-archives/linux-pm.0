@@ -1,46 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Replacement][PATCH 1/4] PM: Merge the SET*_RUNTIME_PM_OPS() macros
-Date: Sat, 29 Nov 2014 01:52:32 +0100
-Message-ID: <1551552.1uQKV96bxc@vostro.rjw.lan>
-References: <37310416.jZXoh5nfSC@vostro.rjw.lan> <3484329.phAPviVnbd@vostro.rjw.lan> <1740704.VN27cDdEAu@vostro.rjw.lan>
+Subject: [PATCH] PM / Kconfig: Do not select PM directly from Kconfig files
+Date: Sat, 29 Nov 2014 02:03:48 +0100
+Message-ID: <4088467.A4Xd3YfMSv@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61939 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751366AbaK2AbP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 19:31:15 -0500
-In-Reply-To: <1740704.VN27cDdEAu@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-ia64-owner@vger.kernel.org>
+Sender: linux-ia64-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Luck <tony.luck@intel.com>, linux-sh@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 27, 2014 11:05:41 PM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The SET_PM_RUNTIME_PM_OPS() and SET_RUNTIME_PM_OPS() macros are
-> identical except that one of them is not empty for CONFIG_PM set,
-> while the other one is not empty for CONFIG_PM_RUNTIME set,
-> respectively.
-> 
-> However, after commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) PM_RUNTIME is always set if PM is set, so one
-> of these macros is now redundant.
-> 
-> For this reason, replace SET_PM_RUNTIME_PM_OPS() with
-> SET_RUNTIME_PM_OPS() everywhere and redefine the SET_PM_RUNTIME_PM_OPS
-> symbol as SET_RUNTIME_PM_OPS in case new code is starting to use the
-> macro being removed here.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It turns out that I need to defer this one, because it breaks builds for
-CONFIG_PM selected without CONFIG_PM_SLEEP or CONFIG_PM_RUNTIME (which is
-arguably invalid, but some defconfigs evidently do that).
+It is not valid to select CONFIG_PM directly without selecting
+CONFIG_PM_SLEEP or CONFIG_PM_RUNTIME too, because that breaks
+dependencies (ia64 does that) and it is not necessary to select
+CONFIG_PM directly if CONFIG_PM_SLEEP or CONFIG_PM_RUNTIME is
+set, because it will be set automatically then (sh does that).
 
-I need to fix those defconfigs first.
+Fix those mistakes.
 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/ia64/Kconfig |    1 -
+ arch/sh/Kconfig   |    1 -
+ 2 files changed, 2 deletions(-)
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux-pm/arch/ia64/Kconfig
+===================================================================
+--- linux-pm.orig/arch/ia64/Kconfig
++++ linux-pm/arch/ia64/Kconfig
+@@ -11,7 +11,6 @@ config IA64
+ 	select PCI if (!IA64_HP_SIM)
+ 	select ACPI if (!IA64_HP_SIM)
+ 	select ARCH_MIGHT_HAVE_ACPI_PDC if ACPI
+-	select PM if (!IA64_HP_SIM)
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+Index: linux-pm/arch/sh/Kconfig
+===================================================================
+--- linux-pm.orig/arch/sh/Kconfig
++++ linux-pm/arch/sh/Kconfig
+@@ -222,7 +222,6 @@ config CPU_SHX3
+ config ARCH_SHMOBILE
+ 	bool
+ 	select ARCH_SUSPEND_POSSIBLE
+-	select PM
+ 	select PM_RUNTIME
+ 
+ config CPU_HAS_PMU
+
