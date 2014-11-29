@@ -1,129 +1,109 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain
- transitions
-Date: Fri, 28 Nov 2014 19:04:32 +0100
-Message-ID: <5478B930.4090300@samsung.com>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
- <1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
- <1651173.5xzCFxz3LI@vostro.rjw.lan> <7hmw88gn3q.fsf@deeprootsystems.com>
- <CADGdYn5Prbbe6Rz=OfVMXm3dinCPrE-N0fn23dMMhZb8GzXm-Q@mail.gmail.com>
- <5458B1FA.7050401@samsung.com> <7h8ujmsvcv.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/3] PM / Domains: Initial PM clock support for genpd
+Date: Sat, 29 Nov 2014 01:22:45 +0100
+Message-ID: <10683450.1AReCcVW08@vostro.rjw.lan>
+References: <1417163403-7070-1-git-send-email-ulf.hansson@linaro.org> <1417163403-7070-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:28061 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbaK1SEp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Nov 2014 13:04:45 -0500
-In-reply-to: <7h8ujmsvcv.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1417163403-7070-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: amit daniel kachhap <amit.daniel@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, pankaj.dubey@samsung.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LAK <linux-arm-kernel@lists.infradead.org>
 
-On 07/11/14 19:45, Kevin Hilman wrote:
-> Sylwester Nawrocki <s.nawrocki@samsung.com> writes:
->> On 04/11/14 07:44, amit daniel kachhap wrote:
->>> On Mon, Nov 3, 2014 at 11:53 PM, Kevin Hilman <khilman@kernel.org> wrote:
->>>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->>>>> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
-[...]
->> Indeed, the somehow complicated power domain power on/off sequences
->> are SoC specific.  They involve not only groups of clocks (usually
->> gate, mux clock registers of all devices in a power domain) but also
->> SoC-specific PMU (Power Management Unit) registers.
->> I assume it would be inappropriate to push such details to device 
->> drivers.  Moreover, a device driver could not be even loaded.
->>
->> Since the clocks' state is already maintained by clk driver we came 
->> up with an idea of having generic calls from power domain driver back 
->> to the clock controller driver.
+On Friday, November 28, 2014 09:30:01 AM Ulf Hansson wrote:
+> It's quite common for PM domains to use PM clocks. Typically from SOC
+> specific code, the per device PM clock list is created and
+> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
 > 
-> For the clock tree, it still seems to me that this is better handled in
-> the SoC clock driver.  For example, when a power domain is about to be
-> gated, all the devices in that domain are runtime suspended, and
-> presumably all of their gate clocks are disabled.  Now, doesn't the
-> clock driver know the clock tree parent-child hierarchy and shouldn't it
-> be capable of saving the state of parent clocks (like mux clocks) etc?
+> A step towards consolidation is to integrate PM clock support into
+> genpd, which is what this patch does.
 > 
-> Stated diffrently, it still seems to me like we're pushing functionality
-> in PM core notifiers that should be the responsibility of subsystem
-> drivers. 
-
-My apologies for not replying earlier, I got distracted by other 
-activities.
-
-I'd prefer not adding anything new to the PM core, however there are
-dependencies between the power domain and clock controller driver 
-which are hard to model in the current APIs.  I assume resorting to 
-inter-exynos-driver API is not a good idea either.
-
-Saving/restoring the clock hierarchy in the clock controller driver
-during the power domain state transitions has a caveat that the clock
-turn off/on sequences are IP/SoC subsystem specific.  So simply 
-restoring saved registers from memory is not going to work.
-
-The other detail I might have forgotten to mention is that the whole
-clock controller may be in same power domain as the consumer devices.
-That means the clock controller's registers must not be touched when
-a related power domain is turned off.  Naturally when a power domain 
-gets switched off all the clock controller's registers reset to their 
-default values.  If we decided to use pm_runtime_{get_sync, put} in
-the clock controller driver I'm not sure how it would need to interact
-with the clk API.
-In current mainline there is an issue with exynos4x12 that the system
-may hang if clk_summary is attempted to read as the clock controller
-driver doesn't take the ISP power domain into account.
-
-[...]
->>>> Personally, I'm uncomfortable with notifiers like this because it
->>>> suggests that underlying frameworks are not doing the right thing, or
->>>> are not being used.  (I also don't like the implementation here where a
->>>> single global notifier list is maintained by the core, but the notifiers
->>>> are actually triggered by SoC specific code.)
->>>
->>> Yes right the global notifier block can be moved to per genpd structure.
->>> Also SoC trigger can be moved to core files.
->>>>
->>>> IIUC, the usage in this series seems to be that certain clock related
->>>> registers need to be saved/restored across a power domain transition.
->>>>
->>>> Wouldn't an alternative solution be to add a feature to the clock driver
->>>> such that the state of each clock is saved when the clock is disabled,
->>>> and restored when the clock is enabled?   That would allow any clock
->>>> context to survive any power domain transtion also, correct?
->>>
->>> I also thought about same. But the trigger point for this would be
->>> driver calling clk disable/enable and not the power domain. so this 
->>> will lead to lot of save/restore for each power domain child.
->>
->> Even though we would have saved/restored at that points still the power
->> domain driver would need to enforce some specific clock/PMU registers 
->> state before/after a power domain state transition. And this is what I 
->> found difficult with the existing APIs.
+> In this initial step, the calls to the pm_clk_suspend|resume() are
+> handled within genpd, but the per device PM clock list still needs to
+> be created from SOC specific code. It seems reasonable to have gendp to
+> handle that as well, but that left to future patches to address.
 > 
-> This is what I'm not understanding.
+> It's not every users of genpd that are keen on using PM clocks, thus we
+> need to provide this a configuration option for genpd. Therefore let's
+> add flag field in the genpd struct to keep this information and define
+> a new GENDP_PM_CLK bit for it.
 > 
-> Why can't the power domain driver's power_on/power_off callback just
-> call the PMU APIs and/or the clk_enable/_disable calls it needs?
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Changes in v3:
+> 	Moved define out of struct definition.
+> 	Don't use bitops.h
+> 	Rename define to GENDP_PM_CLK.
+> 	
+> Changes in v2:
+> 	Set ->start() callback to pm_clk_resume() and fixed comment.
+> 
+> ---
+>  drivers/base/power/domain.c | 7 +++++++
+>  include/linux/pm_domain.h   | 4 ++++
+>  2 files changed, 11 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 735c473..a2424a7 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/pm_runtime.h>
+>  #include <linux/pm_domain.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pm_clock.h>
+>  #include <linux/slab.h>
+>  #include <linux/err.h>
+>  #include <linux/sched.h>
+> @@ -1928,6 +1929,12 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>  	genpd->domain.ops.complete = pm_genpd_complete;
+>  	genpd->dev_ops.save_state = pm_genpd_default_save_state;
+>  	genpd->dev_ops.restore_state = pm_genpd_default_restore_state;
+> +
+> +	if (genpd->flags & GENPD_PM_CLK) {
+> +		genpd->dev_ops.stop = pm_clk_suspend;
+> +		genpd->dev_ops.start = pm_clk_resume;
+> +	}
+> +
+>  	mutex_lock(&gpd_list_lock);
+>  	list_add(&genpd->gpd_list_node, &gpd_list);
+>  	mutex_unlock(&gpd_list_lock);
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 8cbd32e..173cc67 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -17,6 +17,9 @@
+>  #include <linux/notifier.h>
+>  #include <linux/cpuidle.h>
+>  
+> +/* Defines used for the flags field in the struct generic_pm_domain */
+> +#define GENPD_PM_CLK		(1U << 0) /* PM domain uses PM clk */
 
-I was concerned that it would not have been reliable by using the clk 
-API due to the clk enable refcounting.  But that might not be a valid 
-argument, since as you pointed out when a power domain is about to 
-be gated related the clocks should be already disabled.
+I'd prefer GENPD_FLAG_PM_CLK to indicate in the name that this is, well, a flag.
 
-The other concern was atomicity in enabling/disabling groups of clocks,
-i.e. setting group of bits in a clock gate register at once, rather
-than a bit for each clock one by one.  But I'm not 100% sure about 
-such a hardware requirement myself, would need to do some more testing 
-and/or find a hardware engineer who could explain this. 
+Otherwise it looks OK to me.
 
-Additionally specifying clocks in device tree would be a bit messy and
-there would very likely anyway be an additional information required 
-in the power domain driver per each power domain regarding the clock 
-handling sequence. 
+If you want me to apply [2-3/3] too, ACKs from the ARM/shmobile maintainers
+are needed.
+
+> +
+>  enum gpd_status {
+>  	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+>  	GPD_STATE_WAIT_MASTER,	/* PM domain's master is being waited for */
+> @@ -76,6 +79,7 @@ struct generic_pm_domain {
+>  			  struct device *dev);
+>  	void (*detach_dev)(struct generic_pm_domain *domain,
+>  			   struct device *dev);
+> +	unsigned int flags;		/* Bit field of configs for genpd */
+>  };
+>  
+>  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+> 
 
 -- 
-Regards,
-Sylwester
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
