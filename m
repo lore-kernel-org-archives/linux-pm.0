@@ -1,50 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] x86 / PM: Replace CONFIG_PM_RUNTIME in io_apic.c
-Date: Sat, 29 Nov 2014 23:56:10 +0100
-Message-ID: <5062650.1vTULtXiIc@vostro.rjw.lan>
+From: Wang Weidong <wangweidong1@huawei.com>
+Subject: Re: [PATCH 0/2] fix some problems for cpufreq
+Date: Sun, 30 Nov 2014 16:23:59 +0800
+Message-ID: <547AD41F.7030907@huawei.com>
+References: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com> <2248504.pAVebap2qN@vostro.rjw.lan> <547923F2.6000701@huawei.com> <4004530.x5fm24OG42@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56274 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751304AbaK2Weu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 29 Nov 2014 17:34:50 -0500
+Received: from szxga01-in.huawei.com ([119.145.14.64]:46291 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbaK3IYS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Nov 2014 03:24:18 -0500
+In-Reply-To: <4004530.x5fm24OG42@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2014/11/30 6:30, Rafael J. Wysocki wrote:
+> On Saturday, November 29, 2014 09:40:02 AM Wang Weidong wrote:
+>> On 2014/11/29 9:26, Rafael J. Wysocki wrote:
+>>> On Friday, November 28, 2014 10:43:37 AM Wang Weidong wrote:
+>>>> Hi Rafael and Viresh
+>>>>
+>>>> Sorry to trouble you again. As for:
+>>>> "acpi-cpufreq: get the cur_freq from acpi_processor_performance states"
+>>>> I do it again, and add the other patch.
+>>>>
+>>>> patch #1: acpi-cpufreq: make the freq_table store the same freq value
+>>>>
+>>>> I think it can work. The set of available states which come
+>>>> from acpi won't change. Just like the power would be remove,
+>>>> the acpi driver will do that:
+>>>> call
+>>>>  ->acpi_processor_ppc_has_changed
+>>>>  ->cpufreq_update_policy
+>>>>  ->acpi_ppc_notifier_block.notifier_call
+>>>>    ->acpi_processor_ppc_notifier
+>>>>    ->cpufreq_verify_within_limits
+>>>> The progress will change the policy's min_freq and max_freq
+>>>> while it won't change the set of states(freq_tables).
+>>>
+>>> OK, so the above information needs to go into the changelog of patch [1/2].
+>>> Also, please clarify the problem description in that changelog, it is very
+>>> difficult to understand the way it is now.
+>>>
+>>
+>> sure, I should do it.
+>>
+>>>> patch #2: cpufreq: show the real avail freqs with the freq_table
+>>>>
+>>>> when the min_freq and max_freq change, we should sync the availble
+>>>> freqs.
+>>>
+>>> Why?  Do any other cpufreq drivers do that?
+>>>
+>>
+>> If some cpufreq drivers support several freqs like this:
+>> 1.05 Ghz 1.30Ghz 1.70GHz 2.10GHz 2.3GHz
+>>            |                |
+>>           min              max
+>> So what the available freqs is 1.30GHz 1.70GHz 2.10GHz
+>>
+>> when we do cpufreq-info or cat scaling_available_frequencies,
+>> I think the available freqs table show only show these 3 value,
+>> not all the values.
+> 
+> That changes an existing user space interface, however, and the
+> only reason I can figure out from what you're saying is your personal
+> opinion.  This isn't a good enough reason, however.
+> 
+> What if there are utilities and scripts out there relying on the
+> current behavior?
+> 
 
-After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-depending on CONFIG_PM_RUNTIME may now be changed to depend on
-CONFIG_PM.
+No, there are not utilities and scripts relying on it. 
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in x86/kernel/apic/io_apic.c.
+I just confuse that:
+If the policy->min and policy-max is changed while it shows all available freqs
+though scaling_available_frequencies. I can't set all freq-steps, only [policy->min, policy->max].
+why should it show all the available freqs.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Although, it doesn't impact on us. So just ignore the patch#2. :)
 
-This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP
-is selected) which currently is only in linux-next (via linux-pm).
+Wang,
+Regards
 
----
- arch/x86/kernel/apic/io_apic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-Index: linux-pm/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-pm/arch/x86/kernel/apic/io_apic.c
-@@ -3968,7 +3968,7 @@ bool mp_should_keep_irq(struct device *d
- {
- 	if (dev->power.is_prepared)
- 		return true;
--#ifdef	CONFIG_PM_RUNTIME
-+#ifdef	CONFIG_PM
- 	if (dev->power.runtime_status == RPM_SUSPENDING)
- 		return true;
- #endif
 
