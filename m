@@ -1,153 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v4] Thermal: int3406_thermal: solve the dependency build
- error
-Date: Sun, 30 Nov 2014 20:22:56 +0800
-Message-ID: <1417350176.27484.10.camel@rzhang1-toshiba>
-References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
-	 <543F88BE.4090307@intel.com> <20141017070620.GA1538@aaronlu.sh.intel.com>
-	 <20141017072236.GA12504@aaronlu.sh.intel.com> <544F33AF.1000704@intel.com>
-	 <20141107191127.GB27438@developer>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [Update 2x][PATCH] USB / PM: Drop CONFIG_PM_RUNTIME from the
+ USB core
+Date: Sun, 30 Nov 2014 10:45:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411301045010.10461-100000@netrider.rowland.org>
+References: <4725195.YHuDH3PCnx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141107191127.GB27438@developer>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <4725195.YHuDH3PCnx-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB development list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2014-11-07 at 15:11 -0400, Eduardo Valentin wrote:
-> Hi,
-> 
-> On Tue, Oct 28, 2014 at 02:11:59PM +0800, Aaron Lu wrote:
-> > Jim found that the current kernel may trigger a build error with some
-> > config: drivers/built-in.o: In function `int3406_thermal_probe':
-> > int3406_thermal.c:(.text+0x1d10b8): undefined reference to
-> > `acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
-> > CONFIG_ACPI_VIDEO=m. Solve the problem by separating a kernel config for
-> > int3406 thermal driver and add dependency on ACPI video for it.
-> > 
-> > Reported-by: Jim Davis <jim.epost@gmail.com>
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> 
-Aaron, this is an incremental patch on top of the INT3406 driver patch.
-As, both patches have not been shipped in Linus' tree, please merge
-these two patches altogether and resend.
+On Sat, 29 Nov 2014, Rafael J. Wysocki wrote:
 
-thanks,
-rui
-> Rui,
+> From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 > 
-> Any further comments on this change?
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so quite a few
+> #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
+> depend on CONFIG_PM (or even dropped in some cases).
 > 
-> BR,
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM in the USB core code
+> and documentation.
 > 
-> Eduardo Valentin
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ---
 > 
-> > ---
-> > v4: rebased on v3.18-rc2.
-> > 
-> >  drivers/thermal/Kconfig                  | 26 +++-----------------
-> >  drivers/thermal/int340x_thermal/Kconfig  | 41 ++++++++++++++++++++++++++++++++
-> >  drivers/thermal/int340x_thermal/Makefile |  1 +
-> >  3 files changed, 45 insertions(+), 23 deletions(-)
-> >  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
-> > 
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index f554d25b4399..ac391d8d76b4 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -229,29 +229,9 @@ config INTEL_SOC_DTS_THERMAL
-> >  	  notification methods.The other trip is a critical trip point, which
-> >  	  was set by the driver based on the TJ MAX temperature.
-> >  
-> > -config INT340X_THERMAL
-> > -	tristate "ACPI INT340X thermal drivers"
-> > -	depends on X86 && ACPI
-> > -	select THERMAL_GOV_USER_SPACE
-> > -	select ACPI_THERMAL_REL
-> > -	select ACPI_FAN
-> > -	help
-> > -	  Newer laptops and tablets that use ACPI may have thermal sensors and
-> > -	  other devices with thermal control capabilities outside the core
-> > -	  CPU/SOC, for thermal safety reasons.
-> > -	  They are exposed for the OS to use via the INT3400 ACPI device object
-> > -	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-> > -	  Enable this to expose the temperature information and cooling ability
-> > -	  from these objects to userspace via the normal thermal framework.
-> > -	  This means that a wide range of applications and GUI widgets can show
-> > -	  the information to the user or use this information for making
-> > -	  decisions. For example, the Intel Thermal Daemon can use this
-> > -	  information to allow the user to select his laptop to run without
-> > -	  turning on the fans.
-> > -
-> > -config ACPI_THERMAL_REL
-> > -	tristate
-> > -	depends on ACPI
-> > +menu "ACPI INT340X thermal drivers"
-> > +source drivers/thermal/int340x_thermal/Kconfig
-> > +endmenu
-> >  
-> >  menu "Texas Instruments thermal drivers"
-> >  source "drivers/thermal/ti-soc-thermal/Kconfig"
-> > diff --git a/drivers/thermal/int340x_thermal/Kconfig b/drivers/thermal/int340x_thermal/Kconfig
-> > new file mode 100644
-> > index 000000000000..b92892a6afe0
-> > --- /dev/null
-> > +++ b/drivers/thermal/int340x_thermal/Kconfig
-> > @@ -0,0 +1,41 @@
-> > +#
-> > +# ACPI INT340x thermal drivers configuration
-> > +#
-> > +
-> > +config INT340X_THERMAL
-> > +	tristate "ACPI INT340X thermal drivers"
-> > +	depends on X86 && ACPI
-> > +	select THERMAL_GOV_USER_SPACE
-> > +	select ACPI_THERMAL_REL
-> > +	select ACPI_FAN
-> > +	help
-> > +	  Newer laptops and tablets that use ACPI may have thermal sensors and
-> > +	  other devices with thermal control capabilities outside the core
-> > +	  CPU/SOC, for thermal safety reasons.
-> > +	  They are exposed for the OS to use via the INT3400 ACPI device object
-> > +	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-> > +	  Enable this to expose the temperature information and cooling ability
-> > +	  from these objects to userspace via the normal thermal framework.
-> > +	  This means that a wide range of applications and GUI widgets can show
-> > +	  the information to the user or use this information for making
-> > +	  decisions. For example, the Intel Thermal Daemon can use this
-> > +	  information to allow the user to select his laptop to run without
-> > +	  turning on the fans.
-> > +
-> > +if INT340X_THERMAL
-> > +
-> > +config ACPI_THERMAL_REL
-> > +	tristate
-> > +	depends on ACPI
-> > +
-> > +config INT3406_THERMAL
-> > +	tristate "ACPI INT3406 display thermal driver"
-> > +	depends on ACPI_VIDEO
-> > +	help
-> > +	  The display thermal device represents the LED/LCD display panel
-> > +	  that may or may not include touch support. The main function of
-> > +	  the display thermal device is to allow control of the display
-> > +	  brightness in order to address a thermal condition or to reduce
-> > +	  power consumed by display device.
-> > +
-> > +endif
-> > diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-> > index ffe40bffaf1a..a9d0429be412 100644
-> > --- a/drivers/thermal/int340x_thermal/Makefile
-> > +++ b/drivers/thermal/int340x_thermal/Makefile
-> > @@ -1,4 +1,5 @@
-> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
-> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
-> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-> > +obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
-> >  obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-> > -- 
-> > 1.9.3
-> > 
+> Added the Documentation/usb/power-management.txt changes.
+> 
+> Of course, this depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME
+> if PM_SLEEP is selected) which is in linux-next only (via linux-pm) at the
+> moment.
+
+Acked-by: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
