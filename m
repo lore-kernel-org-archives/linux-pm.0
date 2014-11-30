@@ -1,75 +1,153 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: [PATCH v2] acpi-cpufreq: make the freq_table store the same freq
- value
-Date: Sun, 30 Nov 2014 18:17:24 +0800
-Message-ID: <547AEEB4.2020803@huawei.com>
-References: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v4] Thermal: int3406_thermal: solve the dependency build
+ error
+Date: Sun, 30 Nov 2014 20:22:56 +0800
+Message-ID: <1417350176.27484.10.camel@rzhang1-toshiba>
+References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+	 <543F88BE.4090307@intel.com> <20141017070620.GA1538@aaronlu.sh.intel.com>
+	 <20141017072236.GA12504@aaronlu.sh.intel.com> <544F33AF.1000704@intel.com>
+	 <20141107191127.GB27438@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga03-in.huawei.com ([119.145.14.66]:31985 "EHLO
-	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbaK3KRh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Nov 2014 05:17:37 -0500
-In-Reply-To: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141107191127.GB27438@developer>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wang Weidong <wangweidong1@huawei.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com
 
-ACPI's P-states will report the acpi_processor_px *states to acpi-cpufreq.
-When the states likes these:
+On Fri, 2014-11-07 at 15:11 -0400, Eduardo Valentin wrote:
+> Hi,
+> 
+> On Tue, Oct 28, 2014 at 02:11:59PM +0800, Aaron Lu wrote:
+> > Jim found that the current kernel may trigger a build error with some
+> > config: drivers/built-in.o: In function `int3406_thermal_probe':
+> > int3406_thermal.c:(.text+0x1d10b8): undefined reference to
+> > `acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
+> > CONFIG_ACPI_VIDEO=m. Solve the problem by separating a kernel config for
+> > int3406 thermal driver and add dependency on ACPI video for it.
+> > 
+> > Reported-by: Jim Davis <jim.epost@gmail.com>
+> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> 
+Aaron, this is an incremental patch on top of the INT3406 driver patch.
+As, both patches have not been shipped in Linus' tree, please merge
+these two patches altogether and resend.
 
-[index:freq, 0:2400 1:2400 2:2000 3:1600...],
-
-we will initialize the freq_tables to those:
-
-[index:driver_data:freq, 0:0:2400, 1:2:2000 2:3,1600 ... CPUFREQ_TABLE_END]
-
-So when set the freqs to 2000, the data->acpi_data->state is 2
-(data->freq_table[1].driver_data), So when call get_cur_freq_on_cpu, we get
-the freqs is data->freq_table[2].frequency,the value is 1600.
-
-we can make the freq_table store the same value to fix this case problem.
-
-Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
----
-Change note: 
-
-v2: to check weather the freq_table will be changeable and clarify the problem.
-
-The set of available states which come from acpi won't change. Just like
-the power would be remove, the acpi driver will do that:
-
- ->acpi_processor_ppc_has_changed
- ->cpufreq_update_policy
- ->acpi_ppc_notifier_block.notifier_call
-   ->acpi_processor_ppc_notifier
-   ->cpufreq_verify_within_limits
-
-The progress will change the policy's min_freq and max_freq
-while it won't change the set of states(freq_tables).
-
----
- drivers/cpufreq/acpi-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b0c18ed..93634a4 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -779,7 +779,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	/* table init */
- 	for (i = 0; i < perf->state_count; i++) {
--		if (i > 0 && perf->states[i].core_frequency >=
-+		if (i > 0 && perf->states[i].core_frequency >
- 		    data->freq_table[valid_states-1].frequency / 1000)
- 			continue;
- 
--- 
-1.7.12
-
-
-
+thanks,
+rui
+> Rui,
+> 
+> Any further comments on this change?
+> 
+> BR,
+> 
+> Eduardo Valentin
+> 
+> > ---
+> > v4: rebased on v3.18-rc2.
+> > 
+> >  drivers/thermal/Kconfig                  | 26 +++-----------------
+> >  drivers/thermal/int340x_thermal/Kconfig  | 41 ++++++++++++++++++++++++++++++++
+> >  drivers/thermal/int340x_thermal/Makefile |  1 +
+> >  3 files changed, 45 insertions(+), 23 deletions(-)
+> >  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index f554d25b4399..ac391d8d76b4 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -229,29 +229,9 @@ config INTEL_SOC_DTS_THERMAL
+> >  	  notification methods.The other trip is a critical trip point, which
+> >  	  was set by the driver based on the TJ MAX temperature.
+> >  
+> > -config INT340X_THERMAL
+> > -	tristate "ACPI INT340X thermal drivers"
+> > -	depends on X86 && ACPI
+> > -	select THERMAL_GOV_USER_SPACE
+> > -	select ACPI_THERMAL_REL
+> > -	select ACPI_FAN
+> > -	help
+> > -	  Newer laptops and tablets that use ACPI may have thermal sensors and
+> > -	  other devices with thermal control capabilities outside the core
+> > -	  CPU/SOC, for thermal safety reasons.
+> > -	  They are exposed for the OS to use via the INT3400 ACPI device object
+> > -	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
+> > -	  Enable this to expose the temperature information and cooling ability
+> > -	  from these objects to userspace via the normal thermal framework.
+> > -	  This means that a wide range of applications and GUI widgets can show
+> > -	  the information to the user or use this information for making
+> > -	  decisions. For example, the Intel Thermal Daemon can use this
+> > -	  information to allow the user to select his laptop to run without
+> > -	  turning on the fans.
+> > -
+> > -config ACPI_THERMAL_REL
+> > -	tristate
+> > -	depends on ACPI
+> > +menu "ACPI INT340X thermal drivers"
+> > +source drivers/thermal/int340x_thermal/Kconfig
+> > +endmenu
+> >  
+> >  menu "Texas Instruments thermal drivers"
+> >  source "drivers/thermal/ti-soc-thermal/Kconfig"
+> > diff --git a/drivers/thermal/int340x_thermal/Kconfig b/drivers/thermal/int340x_thermal/Kconfig
+> > new file mode 100644
+> > index 000000000000..b92892a6afe0
+> > --- /dev/null
+> > +++ b/drivers/thermal/int340x_thermal/Kconfig
+> > @@ -0,0 +1,41 @@
+> > +#
+> > +# ACPI INT340x thermal drivers configuration
+> > +#
+> > +
+> > +config INT340X_THERMAL
+> > +	tristate "ACPI INT340X thermal drivers"
+> > +	depends on X86 && ACPI
+> > +	select THERMAL_GOV_USER_SPACE
+> > +	select ACPI_THERMAL_REL
+> > +	select ACPI_FAN
+> > +	help
+> > +	  Newer laptops and tablets that use ACPI may have thermal sensors and
+> > +	  other devices with thermal control capabilities outside the core
+> > +	  CPU/SOC, for thermal safety reasons.
+> > +	  They are exposed for the OS to use via the INT3400 ACPI device object
+> > +	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
+> > +	  Enable this to expose the temperature information and cooling ability
+> > +	  from these objects to userspace via the normal thermal framework.
+> > +	  This means that a wide range of applications and GUI widgets can show
+> > +	  the information to the user or use this information for making
+> > +	  decisions. For example, the Intel Thermal Daemon can use this
+> > +	  information to allow the user to select his laptop to run without
+> > +	  turning on the fans.
+> > +
+> > +if INT340X_THERMAL
+> > +
+> > +config ACPI_THERMAL_REL
+> > +	tristate
+> > +	depends on ACPI
+> > +
+> > +config INT3406_THERMAL
+> > +	tristate "ACPI INT3406 display thermal driver"
+> > +	depends on ACPI_VIDEO
+> > +	help
+> > +	  The display thermal device represents the LED/LCD display panel
+> > +	  that may or may not include touch support. The main function of
+> > +	  the display thermal device is to allow control of the display
+> > +	  brightness in order to address a thermal condition or to reduce
+> > +	  power consumed by display device.
+> > +
+> > +endif
+> > diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
+> > index ffe40bffaf1a..a9d0429be412 100644
+> > --- a/drivers/thermal/int340x_thermal/Makefile
+> > +++ b/drivers/thermal/int340x_thermal/Makefile
+> > @@ -1,4 +1,5 @@
+> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
+> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
+> >  obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
+> > +obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
+> >  obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
+> > -- 
+> > 1.9.3
+> > 
