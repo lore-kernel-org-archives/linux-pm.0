@@ -1,43 +1,43 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86 / PM: Replace CONFIG_PM_RUNTIME in io_apic.c
-Date: Mon, 1 Dec 2014 11:04:47 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1412011101150.3961@nanos>
-References: <5062650.1vTULtXiIc@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2] PM / Domains: Add pm_genpd_lookup() API to lookup
+ domain by firmware node
+Date: Mon, 1 Dec 2014 11:26:10 +0100
+Message-ID: <CAPDyKFpX5nXR18pKdLrtDrPK60p1y2CEqq+--3z3jczRRmKrqA@mail.gmail.com>
+References: <1417171115-5789-1-git-send-email-ulf.hansson@linaro.org>
+	<5765394.eQjV2VvkSL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:41723 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbaLAKEu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 05:04:50 -0500
-In-Reply-To: <5062650.1vTULtXiIc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5765394.eQjV2VvkSL@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Sat, 29 Nov 2014, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM in x86/kernel/apic/io_apic.c.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP
-> is selected) which currently is only in linux-next (via linux-pm).
+On 29 November 2014 at 01:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, November 28, 2014 11:38:35 AM Ulf Hansson wrote:
+>> In a step to move away from using genpd's name based APIs, such as the
+>> pm_genpd_add_subdomain_names(), provide an API to lookup an already
+>> initialized generic PM domain by its firmware node.
+>>
+>> This API would typically be a called from SOC specific code, to fetch a
+>> handle to the domain. Especially convenient to configure subdomains and
+>> when the hierarchy of the domains are described in DT.
+>>
+>> Do note, before pm_genpd_init() is invoked to initialize a generic PM
+>> domain, it's the callers responsibility to assign the new ->fwnode
+>> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+>> find the domain.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> I have no problems with that, but do you have a user for it?
 
-The function below is moving in linux-next to a different place
-.... So it has to wait until everything has hit linus tree.
+Amit Daniel Kachhap, posted a patchset which is adding subdomains
+configured from DT for Exynos. It's from there the idea to this patch
+comes from. Amit is about to post a new version, based on this patch.
 
-Feel free to send the cleanups directly to Linus after linux-pm and
-x86 has been merged.
- 
-Thanks,
+https://lkml.org/lkml/2014/11/24/290
 
-	tglx
+Kind regards
+Uffe
