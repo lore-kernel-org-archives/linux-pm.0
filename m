@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [RFC V1 1/8] cpufreq: Reuse "compatible" binding to probe cpufreq drivers
-Date: Mon,  1 Dec 2014 17:11:22 +0530
-Message-ID: <3f559b4093fed13f96da928882839f6f1353d07f.1417433163.git.viresh.kumar@linaro.org>
+Subject: [RFC V1 2/8] cpufreq: Create cpufreq platform-device based on "compatible" from DT
+Date: Mon,  1 Dec 2014 17:11:23 +0530
+Message-ID: <061f06ab89fc2b93796edf0b3548022efaf6e760.1417433163.git.viresh.kumar@linaro.org>
 References: <cover.1417433163.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:38229 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbaLALlx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 06:41:53 -0500
-Received: by mail-pa0-f45.google.com with SMTP id lj1so10964453pab.32
-        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 03:41:52 -0800 (PST)
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:52790 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbaLALl5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 06:41:57 -0500
+Received: by mail-pd0-f172.google.com with SMTP id y13so10738532pdi.17
+        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 03:41:56 -0800 (PST)
 In-Reply-To: <cover.1417433163.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1417433163.git.viresh.kumar@linaro.org>
 References: <cover.1417433163.git.viresh.kumar@linaro.org>
@@ -39,70 +39,88 @@ discussed here:
 
 http://lists.infradead.org/pipermail/linux-arm-kernel/2014-May/256154.html
 
-This patch is an attempt towards getting the bindings.
+This patch creates a separate file which will be responsible for creating
+cpufreq platform device based on the match with "compatible" property from DT.
 
-We only need to have cpufreq drivers name string present in "compatible"
-property for the root node.. If a cpufreq driver with DT support exists with
-that name, then cpufreq core will create a platform device for that.
+A Blacklist is also provided for backward compatibility with older DTs.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- .../devicetree/bindings/cpufreq/drivers.txt        | 46 ++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/drivers.txt
+ drivers/cpufreq/Makefile    |  2 +-
+ drivers/cpufreq/dt_device.c | 52 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 53 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/cpufreq/dt_device.c
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/drivers.txt b/Documentation/devicetree/bindings/cpufreq/drivers.txt
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index b3ca7b0..d6feb0b 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -1,6 +1,6 @@
+ # CPUfreq core
+ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
+-obj-$(CONFIG_PM_OPP)			+= cpufreq_opp.o
++obj-$(CONFIG_PM_OPP)			+= cpufreq_opp.o dt_device.o
+ 
+ # CPUfreq stats
+ obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
+diff --git a/drivers/cpufreq/dt_device.c b/drivers/cpufreq/dt_device.c
 new file mode 100644
-index 0000000..6a33150
+index 0000000..7800968
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/drivers.txt
-@@ -0,0 +1,46 @@
-+Binding to select which cpufreq driver to register
-+--------------------------------------------------
++++ b/drivers/cpufreq/dt_device.c
+@@ -0,0 +1,52 @@
++/*
++ * Creates platform device for probing cpufreq driver
++ *
++ * Copyright (C) 2014 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
 +
-+This presents generic DT binding for selecting which cpufreq-driver to probe for
-+platforms.
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+The property listed below must be defined in root nodes compatible list. We
-+don't support multiple CPUFreq driver currently for different cluster and so
-+this information isn't required to be present in cpu nodes.
++#include <linux/of_device.h>
 +
-+Required properties:
-+- None
++static const struct of_device_id compatible_machine_match[] = {
++	/* All new machines must have the below compatible to use this driver */
++	{ .compatible = "cpufreq-dt",		.data = "cpufreq-dt" },
++	{ .compatible = "arm-bL-cpufreq-dt",	.data = "arm-bL-cpufreq-dt" },
 +
-+Optional properties:
-+- compatible: CPUFreq driver to probe. For example: "arm-bL-cpufreq-dt",
-+  "cpufreq-dt", etc. A platform device will be created with this name by cpufreq
-+  core.
++	/* BLACKLIST of existing users of cpufreq-dt below */
 +
-+Examples:
++	/* BLACKLIST of existing users of arm-bL-cpufreq-dt below */
 +
-+/ {
-+	compatible = "samsung,exynos5250", "cpufreq-dt";
++	/* BLACKLIST of existing users of other drivers below */
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	{},
++};
 +
-+		cpu@0 {
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			operating-points = <
-+				/* kHz    uV */
-+				792000  1100000
-+				396000  950000
-+				198000  850000
-+				>;
-+		};
++static int cpufreq_dt_create_platform_device(void)
++{
++	struct device_node *root = of_find_node_by_path("/");
++	const struct of_device_id *match;
 +
-+		...
++	match = of_match_node(compatible_machine_match, root);
++	if (!match) {
++		pr_debug("%s: Couldn't find a match\n", __func__);
++		return -ENODEV;
++	}
 +
-+	};
++	pr_debug("%s: Create device for compatible:%s, driver:%s\n", __func__,
++		 match->compatible, (char *)match->data);
++	platform_device_register_simple(match->data, -1, NULL, 0);
 +
-+	...
-+
++	return 0;
 +}
++late_initcall(cpufreq_dt_create_platform_device);
 -- 
 2.0.3.693.g996b0fd
 
