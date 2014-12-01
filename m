@@ -1,147 +1,130 @@
-From: navneet kumar <navneetk@nvidia.com>
-Subject: Re: [PATCH 3/3] thermal: of: notify sensor driver on trip updates
-Date: Mon, 1 Dec 2014 14:35:56 -0800
-Message-ID: <547CED4C.1050407@nvidia.com>
-References: <1417050989-25405-1-git-send-email-navneetk@nvidia.com> <1417050989-25405-3-git-send-email-navneetk@nvidia.com> <20141127143236.GD3342@developer> <547CD380.3030707@nvidia.com> <20141201212321.GA4142@developer>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Update][PATCH 4/4] PCI / PM: Drop CONFIG_PM_RUNTIME from the PCI core
+Date: Mon, 1 Dec 2014 15:51:04 -0700
+Message-ID: <CAErSpo7taxQy=TNoe0eJ6oBpJxdmPNZtJ+Cuy8KxFvoWFLHCKA@mail.gmail.com>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan> <2582138.zUe2QZynBg@vostro.rjw.lan>
+ <1665071.LpcEGj9O01@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141201212321.GA4142@developer>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f46.google.com ([209.85.192.46]:56582 "EHLO
+	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932484AbaLAWvZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 17:51:25 -0500
+Received: by mail-qg0-f46.google.com with SMTP id z107so8304647qgd.5
+        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 14:51:24 -0800 (PST)
+In-Reply-To: <1665071.LpcEGj9O01@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
+On Thu, Nov 27, 2014 at 3:41 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: PCI / PM: Drop CONFIG_PM_RUNTIME from the PCI core
+>
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so quite a few
+> #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
+> depend on CONFIG_PM.
+>
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM in the PCI core code.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+I acked this on IRC, and I think Rafael plans to merge this via his
+tree, but for the archives:
 
-On 12/01/2014 01:23 PM, Eduardo Valentin wrote:
-> * PGP Signed by an unknown key
-> 
-> On Mon, Dec 01, 2014 at 12:45:52PM -0800, navneet kumar wrote:
->> Hi Eduardo,
->>
->> On 11/27/2014 06:32 AM, Eduardo Valentin wrote:
->>>> Old Signed by an unknown key
->>>
->>> Hello Navneet,
->>>
->>> On Wed, Nov 26, 2014 at 05:16:29PM -0800, Navneet Kumar wrote:
->>>> From: navneet kumar <navneetk@nvidia.com>
->>>>
->>>> some thermal sensor hardwares include logic which
->>>> can raise interrupts at certain programmed temperature
->>>> thresholds.
->>>>
->>>> Drivers for such sensors should be able to learn the
->>>> appropriate threshold temperatures for interrupts by querying
->>>> the thermal framework.
->>>>
->>>> This change provides a mechanism to allow a sensor driver to
->>>> update it's thresholds when userspace changes a trip point
->>>> temperature.
->>>>
->>>> While this behavior may not make sense in thermal zones
->>>> with more than one sensor, no such examples exist in
->>>> the kernel.
->>>>
->>>> Signed-off-by: navneet kumar <navneetk@nvidia.com>
->>>> ---
->>>>  drivers/thermal/of-thermal.c | 7 +++++++
->>>>  include/linux/thermal.h      | 1 +
->>>>  2 files changed, 8 insertions(+)
->>>>
->>>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->>>> index 3d47a0cf3825..3568e4a586dc 100644
->>>> --- a/drivers/thermal/of-thermal.c
->>>> +++ b/drivers/thermal/of-thermal.c
->>>> @@ -258,6 +258,9 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
->>>>  	/* thermal framework should take care of data->mask & (1 << trip) */
->>>>  	data->trips[trip].temperature = temp;
->>>>  
->>>> +	if (data->sops.trip_update)
->>>> +		data->sops.trip_update(data->sensor_data, trip);
->>>> +
->>>>  	return 0;
->>>>  }
->>>>  
->>>> @@ -285,6 +288,9 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
->>>>  	/* thermal framework should take care of data->mask & (1 << trip) */
->>>>  	data->trips[trip].hysteresis = hyst;
->>>>  
->>>> +	if (data->sops.trip_update)
->>>> +		data->sops.trip_update(data->sensor_data, trip);
->>>> +
->>>>  	return 0;
->>>>  }
->>>>  
->>>> @@ -500,6 +506,7 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
->>>>  
->>>>  	tz->sops.get_temp = NULL;
->>>>  	tz->sops.get_trend = NULL;
->>>> +	tz->sops.trip_update = NULL;
->>>>  	tz->sensor_data = NULL;
->>>>  	mutex_unlock(&tzd->lock);
->>>>  }
->>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>>> index 58341c56a01f..b93e65815175 100644
->>>> --- a/include/linux/thermal.h
->>>> +++ b/include/linux/thermal.h
->>>> @@ -292,6 +292,7 @@ struct thermal_genl_event {
->>>>  struct thermal_of_sensor_ops {
->>>>  	int (*get_temp)(void *, long *);
->>>>  	int (*get_trend)(void *, long *);
->>>> +	int (*trip_update)(void *, int);
->>>
->>> First thing I ask you is to update your work on top of my -linus branch,
->>> as I already mentioned. Reasoning is that part of the changes you are
->>> sending is already there.
->> will do.
->>>
->>> As for this new callback, I am fine with it as long as it is also
->>> available for drivers that do not use of-thermal. Once again, of-thermal
->>> is not a competitor of thermal core. It will never be. It is not a new
->>> thermal API. 
->> I agree that this callback is not a part of the thermal_core functionality.
->> However, when a driver registers directly with the thermal_core (doesn't use
->> of-thermal), it 'owns' the set_trip_XX callbacks in the first place; which is
->> the sole purpose of using the 'trip_update' callback in of-thermal.
->>
->> Adding an additional 'update' to the thermal_core ops would be a no-op. right?
-> 
-> Yes, you are right. Now I understand your point. 
-> 
-> Can we then re-use the .set_trips nomenclature?
-Sorry, I fail to understand. Are you suggesting to re-use the interface for set_trip 'temp' as well as 'hyst'?
-If so, is it just to maintain the commonality across thermal_core and of-thermal interfaces?
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-The way i see it, the driver just needs to get some kind of 'update' that 'something' changed with
-a trip point; and can later query the trips from of-thermal. (Lukasz's patch helps with that).
-Functionality-wise, using two callbacks seems excessive. But i may be wrong :-)
-
-> 
-> Cheers,
-> 
->>>
->>> That said, it does not make sense to have functionality in of-thermal that
->>> do not belong to thermal core. Exceptions are, of course, for helping
->>> doing the same operations we already have in thermal core.
->>>
->>> All the best,
->>>
->>> Eduardo Valentin
->>>
->>>>  };
->>>>  
->>>>  /* Function declarations */
->>>> -- 
->>>> 1.8.1.5
->>>>
->>>
->>> * Unknown Key
->>> * 0x7DA4E256
->>>
-> 
-> * Unknown Key
-> * 0x7DA4E256
-> 
+> ---
+>
+> Changelog fixup.
+>
+> ---
+>  drivers/pci/pci-driver.c |   20 +++++++-------------
+>  drivers/pci/pci-sysfs.c  |    4 ++--
+>  drivers/pci/pcie/Kconfig |    2 +-
+>  3 files changed, 10 insertions(+), 16 deletions(-)
+>
+> Index: linux-pm/drivers/pci/pcie/Kconfig
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pcie/Kconfig
+> +++ linux-pm/drivers/pci/pcie/Kconfig
+> @@ -79,4 +79,4 @@ endchoice
+>
+>  config PCIE_PME
+>         def_bool y
+> -       depends on PCIEPORTBUS && PM_RUNTIME
+> +       depends on PCIEPORTBUS && PM
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1104,7 +1104,7 @@ static int pci_pm_restore(struct device
+>
+>  #endif /* !CONFIG_HIBERNATE_CALLBACKS */
+>
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>
+>  static int pci_pm_runtime_suspend(struct device *dev)
+>  {
+> @@ -1200,16 +1200,6 @@ static int pci_pm_runtime_idle(struct de
+>         return ret;
+>  }
+>
+> -#else /* !CONFIG_PM_RUNTIME */
+> -
+> -#define pci_pm_runtime_suspend NULL
+> -#define pci_pm_runtime_resume  NULL
+> -#define pci_pm_runtime_idle    NULL
+> -
+> -#endif /* !CONFIG_PM_RUNTIME */
+> -
+> -#ifdef CONFIG_PM
+> -
+>  static const struct dev_pm_ops pci_dev_pm_ops = {
+>         .prepare = pci_pm_prepare,
+>         .suspend = pci_pm_suspend,
+> @@ -1231,11 +1221,15 @@ static const struct dev_pm_ops pci_dev_p
+>
+>  #define PCI_PM_OPS_PTR (&pci_dev_pm_ops)
+>
+> -#else /* !COMFIG_PM_OPS */
+> +#else /* !CONFIG_PM */
+> +
+> +#define pci_pm_runtime_suspend NULL
+> +#define pci_pm_runtime_resume  NULL
+> +#define pci_pm_runtime_idle    NULL
+>
+>  #define PCI_PM_OPS_PTR NULL
+>
+> -#endif /* !COMFIG_PM_OPS */
+> +#endif /* !CONFIG_PM */
+>
+>  /**
+>   * __pci_register_driver - register a new pci driver
+> Index: linux-pm/drivers/pci/pci-sysfs.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-sysfs.c
+> +++ linux-pm/drivers/pci/pci-sysfs.c
+> @@ -385,7 +385,7 @@ static ssize_t dev_bus_rescan_store(stru
+>  }
+>  static DEVICE_ATTR(rescan, (S_IWUSR|S_IWGRP), NULL, dev_bus_rescan_store);
+>
+> -#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
+> +#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+>  static ssize_t d3cold_allowed_store(struct device *dev,
+>                                     struct device_attribute *attr,
+>                                     const char *buf, size_t count)
+> @@ -566,7 +566,7 @@ static struct attribute *pci_dev_attrs[]
+>         &dev_attr_enable.attr,
+>         &dev_attr_broken_parity_status.attr,
+>         &dev_attr_msi_bus.attr,
+> -#if defined(CONFIG_PM_RUNTIME) && defined(CONFIG_ACPI)
+> +#if defined(CONFIG_PM) && defined(CONFIG_ACPI)
+>         &dev_attr_d3cold_allowed.attr,
+>  #endif
+>  #ifdef CONFIG_OF
+>
