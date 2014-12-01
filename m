@@ -1,76 +1,48 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH] tools, cpupower, fix return checks for sysfs_get_idlestate_count()
-Date: Mon,  1 Dec 2014 09:39:22 -0500
-Message-ID: <1417444762-26450-1-git-send-email-prarit@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC V1 0/8] CPUFreq: create platform-dev for DT based cpufreq drivers
+Date: Mon, 1 Dec 2014 20:18:10 +0530
+Message-ID: <CAKohpomsqCnEcSeuqtZcYOC6bgTrGmc8zXTm6cA72q+hr=LBsQ@mail.gmail.com>
+References: <cover.1417433163.git.viresh.kumar@linaro.org>
+	<7885354.QleDlR7NUO@wuerfel>
+	<CAKohpo=EPOH-WJ4mmAr-1BzzAEpvC-F0Y99Ox_yL7meUcRNx6Q@mail.gmail.com>
+	<5607434.rlEIdu4yyh@wuerfel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:41742 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753548AbaLAOje (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Dec 2014 09:39:34 -0500
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:57651 "EHLO
+	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbaLAOsL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 09:48:11 -0500
+Received: by mail-oi0-f42.google.com with SMTP id v63so7501668oia.15
+        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 06:48:10 -0800 (PST)
+In-Reply-To: <5607434.rlEIdu4yyh@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "olof@lixom.net" <olof@lixom.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mike Turquette <mike.turquette@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-Red Hat and Fedora use a bug reporting tool that gathers data about
-"broken" systems called sosreport.  Among other things, it includes the
-output of 'cpupower idle-info'.  Executing 'cpupower idle-info' on a
-system that has cpuidle disabled via 'cpuidle.off=1' results in a 300
-second hang in the cpupower application.
+On 1 December 2014 at 19:35, Arnd Bergmann <arnd@arndb.de> wrote:
+> I guess a string would be better here, the idea here was to
+> have a different bool property per driver, which would also
+> work.
 
-ie)
-[root@intel-brickland-05]# cpupower idle-info
-Could not determine cpuidle driver
+Hmm, I will prefer string as we don't need to define any more bindings then
+for new drivers.
 
-Analyzing CPU 0:
-Number of idle states: -19
-[hang]
+>> > @@ -367,29 +404,19 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
+>> >         if (!IS_ERR(cpu_reg))
+>> >                 regulator_put(cpu_reg);
+>> >
+>> > -       dt_cpufreq_driver.driver_data = dev_get_platdata(&pdev->dev);
+>> > -
+>>
+>> We still need this, and its about how clocks are shared between CPUs.
+>
+> I didn't see where this comes from. Who is setting up this platform
+> data?
 
-The problem is that the cpupower code only checks for a zero return from
-sysfs_get_idlestate_count().  The function can return -ENODEV (-19) as
-above.  This patch fixes callers to sysfs_get_idlestate_count() to check
-the right return values.
+Mvebu is using it to communicate that all CPUs have separate
+clock lines.
 
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- tools/power/cpupower/utils/cpuidle-info.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index 75e66de..458d69b 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -22,13 +22,13 @@
- 
- static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- {
--	unsigned int idlestates, idlestate;
-+	int idlestates, idlestate;
- 	char *tmp;
- 
- 	printf(_ ("Analyzing CPU %d:\n"), cpu);
- 
- 	idlestates = sysfs_get_idlestate_count(cpu);
--	if (idlestates == 0) {
-+	if (idlestates < 1) {
- 		printf(_("CPU %u: No idle states\n"), cpu);
- 		return;
- 	}
-@@ -100,10 +100,10 @@ static void cpuidle_general_output(void)
- static void proc_cpuidle_cpu_output(unsigned int cpu)
- {
- 	long max_allowed_cstate = 2000000000;
--	unsigned int cstate, cstates;
-+	int cstate, cstates;
- 
- 	cstates = sysfs_get_idlestate_count(cpu);
--	if (cstates == 0) {
-+	if (cstates < 1) {
- 		printf(_("CPU %u: No C-states info\n"), cpu);
- 		return;
- 	}
--- 
-1.7.9.3
-
+--
+viresh
