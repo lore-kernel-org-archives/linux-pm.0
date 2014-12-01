@@ -1,56 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH V4 3/3] ARM: shmobile: Convert to genpd flags for PM clocks for R-mobile
-Date: Mon,  1 Dec 2014 12:50:23 +0100
-Message-ID: <1417434623-31301-4-git-send-email-ulf.hansson@linaro.org>
-References: <1417434623-31301-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:45873 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbaLALuh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 06:50:37 -0500
-Received: by mail-lb0-f175.google.com with SMTP id u10so8561226lbd.34
-        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 03:50:36 -0800 (PST)
-In-Reply-To: <1417434623-31301-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V2] PM / Domains: Add pm_genpd_lookup() API to lookup
+ domain by firmware node
+Date: Mon, 1 Dec 2014 17:27:39 +0530
+Message-ID: <CADGdYn5aLr69PrqO5RvU4q6HU9pPZ+1tWL27cc=cVazAvSVFpQ@mail.gmail.com>
+References: <1417171115-5789-1-git-send-email-ulf.hansson@linaro.org>
+	<5765394.eQjV2VvkSL@vostro.rjw.lan>
+	<CAPDyKFpX5nXR18pKdLrtDrPK60p1y2CEqq+--3z3jczRRmKrqA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFpX5nXR18pKdLrtDrPK60p1y2CEqq+--3z3jczRRmKrqA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms@verge.net.au>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Instead of using the dev_ops ->stop|start() callbacks for genpd, let's
-convert to use genpd's flag field and set it to GENPD_FLAG_PM_CLK.
+On Mon, Dec 1, 2014 at 3:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 29 November 2014 at 01:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Friday, November 28, 2014 11:38:35 AM Ulf Hansson wrote:
+>>> In a step to move away from using genpd's name based APIs, such as the
+>>> pm_genpd_add_subdomain_names(), provide an API to lookup an already
+>>> initialized generic PM domain by its firmware node.
+>>>
+>>> This API would typically be a called from SOC specific code, to fetch a
+>>> handle to the domain. Especially convenient to configure subdomains and
+>>> when the hierarchy of the domains are described in DT.
+>>>
+>>> Do note, before pm_genpd_init() is invoked to initialize a generic PM
+>>> domain, it's the callers responsibility to assign the new ->fwnode
+>>> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+>>> find the domain.
+>>>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>
+>> I have no problems with that, but do you have a user for it?
+>
+> Amit Daniel Kachhap, posted a patchset which is adding subdomains
+> configured from DT for Exynos. It's from there the idea to this patch
+> comes from. Amit is about to post a new version, based on this patch.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
+Hi Ulf,
 
-Changes in v4:
-        Convert to renamed define.
+I was trying to use this API but i felt there is a better way of just exporting
+of_genpd_get_from_provider as a similar API is used to register the
+power domain.
 
-Changes in v3:
-        Convert to renamed define.
+Check if this make sense www.spinics.net/lists/arm-kernel/msg382665.html.
 
-Changes in v2:
-        None.
----
- arch/arm/mach-shmobile/pm-rmobile.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Regards,
+Amit
 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 717e641..6f7d56e 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -106,9 +106,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
- 	struct dev_power_governor *gov = rmobile_pd->gov;
- 
-+	genpd->flags = GENPD_FLAG_PM_CLK;
- 	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
--	genpd->dev_ops.stop		= pm_clk_suspend;
--	genpd->dev_ops.start		= pm_clk_resume;
- 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
- 	genpd->power_off		= rmobile_pd_power_down;
- 	genpd->power_on			= rmobile_pd_power_up;
--- 
-1.9.1
 
+>
+> https://lkml.org/lkml/2014/11/24/290
+>
+> Kind regards
+> Uffe
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
