@@ -1,92 +1,100 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [RFC V1 0/8] CPUFreq: create platform-dev for DT based cpufreq
- drivers
-Date: Mon, 01 Dec 2014 16:56:08 +0000
-Message-ID: <547C9DA8.3080403@arm.com>
-References: <cover.1417433163.git.viresh.kumar@linaro.org> <23115535.r6kXsReHU2@wuerfel> <547C8423.2090300@arm.com> <2342930.0NFoS1nEgv@wuerfel>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v13 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Mon, 1 Dec 2014 10:57:09 -0700
+Message-ID: <20141201175709.GA499@linaro.org>
+References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
+ <1417065854-37745-4-git-send-email-lina.iyer@linaro.org>
+ <1417077863.10282.3.camel@mm-sol.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:46872 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbaLAQ4N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 11:56:13 -0500
-In-Reply-To: <2342930.0NFoS1nEgv@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1417077863.10282.3.camel@mm-sol.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, "rob.herring@linaro.org" <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, santosh
 
+Hi Ivan,
 
-
-On 01/12/14 16:03, Arnd Bergmann wrote:
-> On Monday 01 December 2014 15:07:15 Sudeep Holla wrote:
->> On 01/12/14 14:11, Arnd Bergmann wrote:
->>> On Monday 01 December 2014 13:35:25 Sudeep Holla wrote:
->>>> On 01/12/14 13:29, Viresh Kumar wrote:
->>>>> On 1 December 2014 at 18:24, Arnd Bergmann <arnd@arndb.de> wrote:
->>>>>> Thanks a lot for working on this, we really need to figure it out one day!
->>>>>
->>>>>
->>>>>
->>>>>> Your patches seem well-implemented, so if everybody thinks the general
->>>>>> approach is the best solution, we should do that. From my point of view,
->>>>>> there are two things I would do differently:
->>>>>>
->>>>>> - In the DT binding, I would strongly prefer anything but the root compatible
->>>>>>      property as the key for the new platforms. Clearly we have to keep using
->>>>>>      it for the backwards-compatibility case, as you do, but I think there
->>>>>>      are more appropriate places to put it. Sorting from most favorite to least
->>>>>>      favorite, my list would be:
->>>>>>            1. a new property in /cpus/
->>>>>>            2. a new property each /cpus/cpu@... node.
->>>>>
->>>>> I did it this way earlier and named it dvfs-method but probably putting this
->>>>> into the /cpus/ node is far better. But then Sudeep asked to utilize
->>>>> compatible property only..
->>>>>
->>>>> Are you fine with the name here? "dvfs-method"
->>>>>
->>>>
->>>> That's right, I don't like driver specific method in the cpu node as you
->>>> initially did. But if it's a property in the chosen node (where we
->>>> usually put the Linux specific properties), I am fine with
->>>> that as Arnd has illustrated in his patch.
->>>
->>> I would prefer the /cpus node over the /chosen node because the former
->>> describes the hardware while the latter is supposed to be user-settable
->>> (on real open-firmware at least). But I think either one is better than
->>> using the / node compatible string.
->>>
->>
->> Agreed, the main reason for objection was that in the initial proposal
->> it was more a Linux configuration rather than hardware property.
->>
->> <dvfs-method> = "cpufreq-dt";
->>
->> I don't see anything hardware feature presented with that. On the other
->> hand, we could represent the some thing like whether the cpu share
->> clock or are they independently clocked as a hardware property in the
->> cpu nodes.
+On Thu, Nov 27 2014 at 01:43 -0700, Ivan T. Ivanov wrote:
 >
-> My interpretation of the dvfs-method property is that the string states
-> how dvfs works. In particular, it would be used to tell the difference
-> between machines that just rely on the clocks and regulators properties
-> of the CPU nodes as defined in bindings/cpufreq/cpufreq-dt.txt compared
-> to those that need platform-specific properties beyond that. The value
-> of the string should indeed not be "cpufreq-dt", as that would be a linux
-> implementation detail and inappropriate here.
+>Hi,
 >
+>On Wed, 2014-11-26 at 22:24 -0700, Lina Iyer wrote:
+>>
+>
+>>  - compatible:
+>> @@ -14,10 +23,13 @@ PROPERTIES
+>>         Value type: <string>
+>>         Definition: shall contain "qcom,saw2". A more specific value=
+ should be
+>>                                                 one of:
+>
+>Which driver is supposed to handle this property?
+>
+drivers/soc/qcom/spm.c - SAW power controller driver.
+>> -                               "qcom,saw2-v1"
+>> -                               "qcom,saw2-v1.1"
+>> -                               "qcom,saw2-v2"
+>> -                               "qcom,saw2-v2.1"
+>> +                       "qcom,saw2-v1"
+>> +                       "qcom,saw2-v1.1"
+>> +                       "qcom,saw2-v2"
+>> +                       "qcom,saw2-v2.1"
+>
+>Doesn't seems to be used or supported?
+>
+Used for identify the version of the SAW that does voltage changes.  An=
+y
+SAW that can change the voltage would use one of the above compatible
+strings. We only need a generic version number for regulator
+functionality as opposed to the ones used for idle control (like below)=
+,
+which needs to correctly identify the version number (saw2-v1.1), cpu/L=
+2
+(-cpu_variant of the SAW on a particlar SoC (qcom,apq/msmXXXX) to set
+the correct register values for that SoC.
 
-May be I misunderstood, but from Viresh's initial proposal my
-understanding was that the value of the property would indicate that it
-should use the cpufreq-dt driver and that sounded like Linux specific.
+L2 SAW is currently not upstream or part of this series. Will follow
+suit, when we have the power domains to control cluster low power modes=
+=2E
+The regulator functionality is currently not available upstream, as wel=
+l
+for 8084 and 8074.
 
-If it's not going to be used in that manner and is what have explained
-above, I am fine with that as that's exactly what I am trying to convey
-in this thread(though I now realize that I have not been so clear :( )
+Thanks,
+Lina
 
-Regards,
-Sudeep
-
+>> +                       "qcom,apq8064-saw2-v1.1-cpu"
+>> +                       "qcom,msm8974-saw2-v2.1-cpu"
+>> +                       "qcom,apq8084-saw2-v2.1-cpu"
+>>
+>
+><snip>
+>
+>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0regulator@2099000 {
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0power-controller@2099000 =
+{
+>>                 compatible =3D "qcom,saw2";
+>>                 reg =3D <0x02099000 0x1000>, <0x02009000 0x1000>;
+>> +               regulator;
+>>
+>
+><snip>
+>
+>> +static const struct of_device_id spm_match_table[] =3D {
+>> +       { .compatible =3D "qcom,msm8974-saw2-v2.1-cpu",
+>> +                       .data =3D &spm_reg_8974_8084_cpu },
+>> +       { .compatible =3D "qcom,apq8084-saw2-v2.1-cpu",
+>> +                       .data =3D &spm_reg_8974_8084_cpu },
+>> +       { .compatible =3D "qcom,apq8064-saw2-v1.1-cpu",
+>> +                       .data =3D &spm_reg_8064_cpu },
+>> +       { },
+>> +};
+>> +
+>
+>Regards,
+>Ivan
