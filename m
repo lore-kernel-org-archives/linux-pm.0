@@ -1,41 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 5/8] arm_big_little: free OPP table created during ->init()
-Date: Mon, 01 Dec 2014 23:37:25 +0100
-Message-ID: <2087619.jKJQDeFADg@vostro.rjw.lan>
-References: <cover.1416910766.git.viresh.kumar@linaro.org> <b5fca3025ec6411bb134306059c119b6b58f5ee2.1416910766.git.viresh.kumar@linaro.org> <CAKohpom2tLb6Krq94xsU9ra22ErNV=j6f5QCoR3ctaRj43=Jcw@mail.gmail.com>
+Subject: Re: [PATCH] PM / Kconfig: Do not select PM directly from Kconfig files
+Date: Mon, 01 Dec 2014 23:42:52 +0100
+Message-ID: <1709855.vJRHLWCgos@vostro.rjw.lan>
+References: <4088467.A4Xd3YfMSv@vostro.rjw.lan> <CAMuHMdU-PH=L4L-Jt8BVCvcFwJJY6PhEEBPWtO3wLhh2ndyA6g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52272 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932476AbaLAWQC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 17:16:02 -0500
-In-Reply-To: <CAKohpom2tLb6Krq94xsU9ra22ErNV=j6f5QCoR3ctaRj43=Jcw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdU-PH=L4L-Jt8BVCvcFwJJY6PhEEBPWtO3wLhh2ndyA6g@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Luck <tony.luck@intel.com>, Linux-sh list <linux-sh@vger.kernel.org>, Fenghua Yu <fenghua.yu@intel.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stefan Wahren <stefan.wahren@i2se.com>, Nishanth Menon <nm@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Monday, December 01, 2014 12:41:59 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> On 25 November 2014 at 16:04, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > OPP layer now supports freeing of OPPs and we should free them once they aren't
-> > useful anymore.
+On Monday, December 01, 2014 10:21:54 AM Geert Uytterhoeven wrote:
+> On Sat, Nov 29, 2014 at 2:03 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > It is not valid to select CONFIG_PM directly without selecting
+> > CONFIG_PM_SLEEP or CONFIG_PM_RUNTIME too, because that breaks
+> > dependencies (ia64 does that) and it is not necessary to select
+> > CONFIG_PM directly if CONFIG_PM_SLEEP or CONFIG_PM_RUNTIME is
+> > set, because it will be set automatically then (sh does that).
+> >
+> > Fix those mistakes.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > ---
-> >  drivers/cpufreq/arm_big_little.c    | 7 ++++++-
-> >  drivers/cpufreq/arm_big_little.h    | 5 ++++-
-> >  drivers/cpufreq/arm_big_little_dt.c | 1 +
-> >  3 files changed, 11 insertions(+), 2 deletions(-)
+> >  arch/ia64/Kconfig |    1 -
+> >  arch/sh/Kconfig   |    1 -
 > 
-> Looks like you missed applying this one from this series ?
+> For the sh part:
+> 
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-I overlooked this one due to a numbering conflict.  Applied now.
+Thanks!
 
+> Note that sh is orphaned, so you should resend your patch to Andrew Morton,
+> or queue it yourself.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Since it depends on material already in my tree, I'm going to queue it up myself.
+
+Rafael
+
