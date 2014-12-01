@@ -1,56 +1,49 @@
-From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
-Subject: Re: [RFC] cpufreq: Add "dvfs-method" binding to probe cpufreq drivers
-Date: Sun, 30 Nov 2014 12:04:46 -0800
-Message-ID: <547B785E.6020404@oracle.com>
-References: <596a6d49f2b3e2837aa9a54a3e1249161d3c9265.1416991009.git.viresh.kumar@linaro.org>	<CAKohpomBijLiBgV31ZhZDTctsTLccBZ+93r+esG-WRZAS4sqww@mail.gmail.com>	<54760107.3010205@oracle.com> <CAKohpokLeX+NoD9KX1MWWjyZtu6otw_oryt1f4gwLz7TffcExQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Update 2x][PATCH] USB / PM: Drop CONFIG_PM_RUNTIME from the USB core
+Date: Mon, 01 Dec 2014 02:12:51 +0100
+Message-ID: <22502474.I00WlQ6xeB@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1411301045010.10461-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:32083 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbaK3UFV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Nov 2014 15:05:21 -0500
-In-Reply-To: <CAKohpokLeX+NoD9KX1MWWjyZtu6otw_oryt1f4gwLz7TffcExQ@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:58135 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751701AbaLAAvb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Nov 2014 19:51:31 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1411301045010.10461-100000@netrider.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "olof@lixom.net" <olof@lixom.net>, Thomas Abraham <ta.omasab@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, USB development list <linux-usb@vger.kernel.org>
 
+On Sunday, November 30, 2014 10:45:39 AM Alan Stern wrote:
+> On Sat, 29 Nov 2014, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> > selected) PM_RUNTIME is always set if PM is set, so quite a few
+> > #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
+> > depend on CONFIG_PM (or even dropped in some cases).
+> > 
+> > Replace CONFIG_PM_RUNTIME with CONFIG_PM in the USB core code
+> > and documentation.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > Added the Documentation/usb/power-management.txt changes.
+> > 
+> > Of course, this depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME
+> > if PM_SLEEP is selected) which is in linux-next only (via linux-pm) at the
+> > moment.
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
+Thanks!
 
-On 11/26/14 9:14 PM, Viresh Kumar wrote:
-> On 26 November 2014 at 22:04, santosh shilimkar
-> <santosh.shilimkar@oracle.com> wrote:
->> Its really not 'dvfs-method' but really the actual driver which you
->> want to probe. Also we should just have one global way to parse
->> DT vs non-DT cpufreq drivers. In other words, instead of matching
->> multiple driver strings for different drivers, we should come up with
->> slightly generic binding. Probably 'cpufreq-dt' for all DT based probed
->> CPUFREQ drivers.
->>
->> What you say ?
->
-> I got a bit confused. :(
->
-> The whole purpose of this binding is to select which cpufreq driver to
-> choose from the available ones.
->
-> Are you saying that we should have only one cpufreq driver that works
-> with DT ? I don't think that would be the right decision, but we should
-> try to reuse cpufreq-dt wherever possible.
->
-I didn't mean one CPUFreq driver which works with DT.
+Greg, would there be any problems if I took this into the linux-pm tree?
 
-> Or are you saying that some common code should parse this DT information?
-Yes.
-
-> This is what I said in the patch, we can write another file which will
-> just create
-> a platform_device for us, depending on the string that came in.
->
-Sounds good.
-
-Regards,
-Santosh
+Rafael
 
