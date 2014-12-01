@@ -1,49 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update 2x][PATCH] USB / PM: Drop CONFIG_PM_RUNTIME from the USB core
-Date: Mon, 01 Dec 2014 02:12:51 +0100
-Message-ID: <22502474.I00WlQ6xeB@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1411301045010.10461-100000@netrider.rowland.org>
+From: ethan zhao <ethan.zhao@oracle.com>
+Subject: Re: [PATCH 1/2 V4] intel_pstate: skip this driver if Sun server has
+ _PPC method
+Date: Mon, 01 Dec 2014 09:26:05 +0800
+Message-ID: <547BC3AD.8030007@oracle.com>
+References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com> <1417145777-21897-2-git-send-email-ethan.zhao@oracle.com> <5478060D.7000304@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58135 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751701AbaLAAvb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Nov 2014 19:51:31 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1411301045010.10461-100000@netrider.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <5478060D.7000304@jp.fujitsu.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Cc: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com, Dirk Brandewie <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, USB development list <linux-usb@vger.kernel.org>
 
-On Sunday, November 30, 2014 10:45:39 AM Alan Stern wrote:
-> On Sat, 29 Nov 2014, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> > selected) PM_RUNTIME is always set if PM is set, so quite a few
-> > #ifdef blocks depending on CONFIG_PM_RUNTIME may now be changed to
-> > depend on CONFIG_PM (or even dropped in some cases).
-> > 
-> > Replace CONFIG_PM_RUNTIME with CONFIG_PM in the USB core code
-> > and documentation.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > Added the Documentation/usb/power-management.txt changes.
-> > 
-> > Of course, this depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME
-> > if PM_SLEEP is selected) which is in linux-next only (via linux-pm) at the
-> > moment.
-> 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Yasuaki,
 
-Thanks!
+On 2014/11/28 13:20, Yasuaki Ishimatsu wrote:
+> (2014/11/28 12:36), Ethan Zhao wrote:
+>> Oracle Sun X86 servers have dynamic power capping capability that works via
+>> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+>> enabled.
+>>
+>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+>> Tested-by: Linda Knippers <linda.knippers@hp.com>
+>> ---
+>>    v2: fix break HP Proliant issue.
+>>    v3: expand the hardware vendor list.
+>>    v4: refine code.
+>>
+>>   drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
+>>   1 file changed, 41 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index 27bb6d3..1bb62ca 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
+>>   	return true;
+>>   }
+>>   
+>> +static bool intel_pstate_has_acpi_ppc(void)
+>> +{
+>> +	int i;
+>> +
+>> +	for_each_possible_cpu(i) {
+>> +		struct acpi_processor *pr = per_cpu(processors, i);
+>> +
+>> +		if (!pr)
+>> +			continue;
+>> +		if (acpi_has_method(pr->handle, "_PPC"))
+>> +			return true;
+>> +	}
+>> +	return false;
+>> +}
+>> +
+>> +enum {
+>> +	PSS,
+>> +	PCC,
+>> +};
+> What does PCC stand for? Is it PPC?
 
-Greg, would there be any problems if I took this into the linux-pm tree?
-
-Rafael
+Good catch, should be PPC, not PCC.
+> Thanks,
+> Yasuaki Ishimatsu
+>
+>> +
+>>   struct hw_vendor_info {
+>>   	u16  valid;
+>>   	char oem_id[ACPI_OEM_ID_SIZE];
+>>   	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+>> +	int  oem_pwr_table;
+>>   };
+>>   
+>>   /* Hardware vendor-specific info that has its own power management modes */
+>>   static struct hw_vendor_info vendor_info[] = {
+>> -	{1, "HP    ", "ProLiant"},
+>> +	{1, "HP    ", "ProLiant", PSS},
+>> +	{1, "ORACLE", "X4-2    ", PCC},
+>> +	{1, "ORACLE", "X4-2L   ", PCC},
+>> +	{1, "ORACLE", "X4-2B   ", PCC},
+>> +	{1, "ORACLE", "X3-2    ", PCC},
+>> +	{1, "ORACLE", "X3-2L   ", PCC},
+>> +	{1, "ORACLE", "X3-2B   ", PCC},
+>> +	{1, "ORACLE", "X4470M2 ", PCC},
+>> +	{1, "ORACLE", "X4270M3 ", PCC},
+>> +	{1, "ORACLE", "X4270M2 ", PCC},
+>> +	{1, "ORACLE", "X4170M2 ", PCC},
+>>   	{0, "", ""},
+>>   };
+>>   
+>> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>>   
+>>   	for (v_info = vendor_info; v_info->valid; v_info++) {
+>>   		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+>> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+>> -		    intel_pstate_no_acpi_pss())
+>> -			return true;
+>> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
+>> +						ACPI_OEM_TABLE_ID_SIZE))
+>> +			switch (v_info->oem_pwr_table) {
+>> +			case PSS:
+>> +				return intel_pstate_no_acpi_pss();
+>> +			case PCC:
+>> +				return intel_pstate_has_acpi_ppc();
+>> +			}
+>>   	}
+>>   
+>>   	return false;
+>>   }
+>>   #else /* CONFIG_ACPI not enabled */
+>>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+>> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>>   #endif /* CONFIG_ACPI */
+>>   
+>>   static int __init intel_pstate_init(void)
+>>
+>
 
