@@ -1,1305 +1,1258 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Upstream bug report
-Date: Mon, 1 Dec 2014 11:39:38 +0530
-Message-ID: <CAOh2x=kmThmz+GnfbWLhnT9xG0w20C2b_jrpX0VGmrfY_umnTA@mail.gmail.com>
-References: <54776476.9060603@gmail.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v3 1/2] CPPC as a PID controller backend
+Date: Mon, 1 Dec 2014 01:23:07 -0500
+Message-ID: <CAJ5Y-ebiHC9Nk-T7mA33jfibdA1T-pkO2k4KLnhS=-o6gHSbLw@mail.gmail.com>
+References: <1416429381-3839-1-git-send-email-ashwin.chaugule@linaro.org>
+	<1416429381-3839-2-git-send-email-ashwin.chaugule@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f173.google.com ([209.85.220.173]:57914 "EHLO
-	mail-vc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbaLAGJk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 01:09:40 -0500
-Received: by mail-vc0-f173.google.com with SMTP id im17so4279439vcb.4
-        for <linux-pm@vger.kernel.org>; Sun, 30 Nov 2014 22:09:39 -0800 (PST)
-In-Reply-To: <54776476.9060603@gmail.com>
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:64856 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbaLAGXJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 01:23:09 -0500
+Received: by mail-wg0-f54.google.com with SMTP id l2so13261697wgh.27
+        for <linux-pm@vger.kernel.org>; Sun, 30 Nov 2014 22:23:08 -0800 (PST)
+In-Reply-To: <1416429381-3839-2-git-send-email-ashwin.chaugule@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "globesurfer22@gmail.com" <globesurfer22@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Patch Tracking <patches@linaro.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-@Dirk: Any clues? Looks like the firmware hasn't provided the freq range here?
+On 19 November 2014 at 15:36, Ashwin Chaugule
+<ashwin.chaugule@linaro.org> wrote:
+> CPPC (Collaborative Processor Performance Control) is defined
+> in the ACPI 5.0+ spec. It is a method for controlling CPU
+> performance on a continuous scale using performance feedback
+> registers. In contrast to the legacy "pstate" scale which is
+> discretized, and tied to CPU frequency, CPPC works off of an
+> abstract continuous scale. This lets the platforms freely interpret
+> the abstract unit and optimize it for power and performance given
+> its knowledge of thermal budgets and other constraints.
+>
+> The PID governor operates on similar concepts and can use CPPC
+> semantics to acquire the information it needs. This information
+> may be provided by various platforms via MSRs, CP15s or memory
+> mapped registers. CPPC helps to wrap all these variations into a
+> common framework.
+>
+> This patch introduces CPPC using PID as its governor for CPU
+> performance management.
+>
+> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> ---
+>  drivers/cpufreq/Kconfig    |   12 +
+>  drivers/cpufreq/Makefile   |    1 +
+>  drivers/cpufreq/acpi_pid.c | 1156 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 1169 insertions(+)
+>  create mode 100644 drivers/cpufreq/acpi_pid.c
 
-On Thu, Nov 27, 2014 at 11:20 PM, globesurfer22@gmail.com
-<globesurfer22@gmail.com> wrote:
-> [1] One line summary of the problem:
->
-> Maximum CPU frequency incorrect and there is no CPU scaling
->
->
->
-> [2] Full description of the problem/report:
->
-> I have an Acer Aspire 5720 and it is set up to dual boot Vista and ubuntu
-> 14.04 LTS. From new the laptop came with an Intel T7300 2.00 Ghz CPU and 1
-> GB DDR2 RAM. A few weeks ago I upgraded to 4 GB RAM, which works perfectly,
-> and a few days ago I upgraded to an Intel T9300 2.5 Ghz CPU.
->
-> The BIOS (up to date), Vista and ubuntu all recognise the CPU correctly as:
->
-> "Intel(R) Core(TM)2 Duo CPU T9300 @ 2.50 GHz".
->
-> Vista allows the CPU to run correctly at up to 2.5 Ghz and will step the CPU
-> speed lower when not needed, depending on which power settings are chosen.
->
-> The problem is that ubuntu will only allow the CPU to run at a fixed
-> frequency of 2.4 Ghz, which is incorrect as it's a 2.5Ghz CPU, and there is
-> no stepping to lower the CPU frequency when max frequency is not needed.
->
-> "cpupower frequency-info" in a terminal returns:
->
-> analyzing CPU 0:
-> driver: acpi-cpufreq
-> CPUs which run at the same hardware frequency: 0
-> CPUs which need to have their frequency coordinated by software: 0
-> maximum transition latency: 10.0 us.
-> hardware limits: 2.40 GHz - 2.40 GHz
-> available frequency steps: 2.40 GHz, 2.40 GHz
-> available cpufreq governors: conservative, ondemand, userspace, powersave,
-> performance
-> current policy: frequency should be within 2.40 GHz and 2.40 GHz.
-> The governor "ondemand" may decide which speed to use
-> within this range.
-> current CPU frequency is 2.40 GHz.
-> cpufreq stats: 2.40 GHz:10.47%, 2.40 GHz:89.53% (12799)
-> boost state support:
-> Supported: yes
-> Active: yes
->
-> I have tried using ondemand, performance and powersave - nothing makes any
-> difference. I have also installed CPU Frequency Scaling Indicator (which
-> shows only 2.4 Ghz and 2.4 Ghz (turbo mode) as available frequencies) and I
-> have also tried TLP but nothing makes any difference.
->
-> According to this website:
->
-> http://www.phoronix.com/scan.php?page=article&item=mobile_penryn&num=3
->
-> the T9300 CPU should have the following frequency steps:
->
-> 2.50 GHz, 2.00 GHz, 1.60 GHz, 1.20 GHz and 800 MHz.
->
-> I have also reproduced this issue on 12.04.3 LTS Precise Pangolin running
-> from a USB stick, and also on 14.04 LTS with the latest mainstream kernel.
->
->
->
-> [3] Keywords:
->
->
->
-> [4] Kernel version (from /proc/version):
->
-> Linux version 3.18.0-031800rc6-generic (apw@gomeisa) (gcc version 4.6.3
-> (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #201411231935 SMP Mon Nov 24 00:57:52 UTC
-> 2014
->
->
->
-> [5]
-> n/a
->
->
->
-> [6]
-> n/a
->
->
->
-> [7] Environment:
->
-> Description:    Ubuntu 14.04.1 LTS
-> Release:    14.04
->
->
->
-> [7.1.] Software (add the output of the ver_linux script here):
->
-> If some fields are empty or look unusual you may have an old version.
-> Compare to the current minimal requirements in Documentation/Changes.
->
-> Linux ulap4 3.18.0-031800rc6-generic #201411231935 SMP Mon Nov 24 00:57:52
-> UTC 2014 i686 i686 i686 GNU/Linux
->
-> Gnu C                  4.8
-> Gnu make               3.81
-> binutils               2.24
-> util-linux             2.20.1
-> mount                  support
-> module-init-tools      15
-> e2fsprogs              1.42.9
-> pcmciautils            018
-> PPP                    2.4.5
-> Linux C Library        2.19
-> Dynamic linker (ldd)   2.19
-> Procps                 3.3.9
-> Net-tools              1.60
-> Kbd                    1.15.5
-> Sh-utils               8.21
-> wireless-tools         30
-> Modules Loaded         ctr ccm bnep rfcomm bluetooth binfmt_misc ip6t_REJECT
-> nf_reject_ipv6 nf_log_ipv6 xt_hl ip6t_rt nf_conntrack_ipv6 nf_defrag_ipv6
-> ipt_REJECT nf_reject_ipv4 nf_log_ipv4 nf_log_common xt_LOG xt_limit
-> snd_hda_codec_realtek xt_tcpudp snd_hda_codec_generic xt_addrtype
-> nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack snd_hda_intel
-> snd_hda_controller snd_hda_codec snd_hwdep ip6table_filter snd_pcm
-> ip6_tables arc4 snd_seq_midi snd_seq_midi_event nf_conntrack_netbios_ns
-> snd_rawmidi uvcvideo iwl3945 snd_seq nf_conntrack_broadcast snd_seq_device
-> videobuf2_vmalloc iwlegacy videobuf2_memops snd_timer videobuf2_core
-> mac80211 v4l2_common videodev nf_nat_ftp media nf_nat snd cfg80211 r852
-> soundcore nf_conntrack_ftp nf_conntrack i915 iptable_filter ip_tables
-> sm_common coretemp nand x_tables nand_ecc nand_bch kvm_intel kvm bch r592
-> nand_ids drm_kms_helper mtd drm memstick i2c_algo_bit serio_raw lpc_ich
-> ir_lirc_codec lirc_dev ir_xmp_decoder ir_sanyo_decoder ir_jvc_decoder
-> ir_sharp_decoder ir_mce_kbd_decoder ir_sony_decoder ir_rc6_decoder
-> ir_rc5_decoder ir_nec_decoder parport_pc joydev ppdev rc_rc6_mce acer_wmi
-> ene_ir sparse_keymap mac_hid rc_core lp parport mxm_wmi wmi video psmouse
-> firewire_ohci ahci firewire_core libahci crc_itu_t sdhci_pci tg3 sdhci ptp
-> pps_core
->
->
->
-> [7.2.] Processor information (from /proc/cpuinfo):
->
-> processor    : 0
-> vendor_id    : GenuineIntel
-> cpu family    : 6
-> model        : 23
-> model name    : Intel(R) Core(TM)2 Duo CPU     T9300  @ 2.50GHz
-> stepping    : 6
-> cpu MHz        : 2400.000
-> cache size    : 6144 KB
-> physical id    : 0
-> siblings    : 2
-> core id        : 0
-> cpu cores    : 2
-> apicid        : 0
-> initial apicid    : 0
-> fdiv_bug    : no
-> f00f_bug    : no
-> coma_bug    : no
-> fpu        : yes
-> fpu_exception    : yes
-> cpuid level    : 10
-> wp        : yes
-> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc
-> arch_perfmon pebs bts aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3
-> cx16 xtpr pdcm sse4_1 lahf_lm ida dtherm tpr_shadow vnmi flexpriority
-> bugs        :
-> bogomips    : 4999.91
-> clflush size    : 64
-> cache_alignment    : 64
-> address sizes    : 36 bits physical, 48 bits virtual
-> power management:
->
-> processor    : 1
-> vendor_id    : GenuineIntel
-> cpu family    : 6
-> model        : 23
-> model name    : Intel(R) Core(TM)2 Duo CPU     T9300  @ 2.50GHz
-> stepping    : 6
-> cpu MHz        : 2400.000
-> cache size    : 6144 KB
-> physical id    : 0
-> siblings    : 2
-> core id        : 1
-> cpu cores    : 2
-> apicid        : 1
-> initial apicid    : 1
-> fdiv_bug    : no
-> f00f_bug    : no
-> coma_bug    : no
-> fpu        : yes
-> fpu_exception    : yes
-> cpuid level    : 10
-> wp        : yes
-> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc
-> arch_perfmon pebs bts aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3
-> cx16 xtpr pdcm sse4_1 lahf_lm ida dtherm tpr_shadow vnmi flexpriority
-> bugs        :
-> bogomips    : 4999.91
-> clflush size    : 64
-> cache_alignment    : 64
-> address sizes    : 36 bits physical, 48 bits virtual
-> power management:
->
->
->
-> [7.3.] Module information (from /proc/modules):
->
-> bnep 19107 2 - Live 0x00000000
-> rfcomm 59288 0 - Live 0x00000000
-> bluetooth 421512 10 bnep,rfcomm, Live 0x00000000
-> binfmt_misc 13165 1 - Live 0x00000000
-> ip6t_REJECT 12553 1 - Live 0x00000000
-> nf_reject_ipv6 13315 1 ip6t_REJECT, Live 0x00000000
-> nf_log_ipv6 12682 5 - Live 0x00000000
-> snd_hda_codec_realtek 68787 1 - Live 0x00000000
-> xt_hl 12465 6 - Live 0x00000000
-> snd_hda_codec_generic 63667 2 snd_hda_codec_realtek, Live 0x00000000
-> ip6t_rt 13259 3 - Live 0x00000000
-> nf_conntrack_ipv6 18458 8 - Live 0x00000000
-> nf_defrag_ipv6 26354 1 nf_conntrack_ipv6, Live 0x00000000
-> ipt_REJECT 12485 1 - Live 0x00000000
-> nf_reject_ipv4 13039 1 ipt_REJECT, Live 0x00000000
-> nf_log_ipv4 12715 5 - Live 0x00000000
-> nf_log_common 13249 2 nf_log_ipv6,nf_log_ipv4, Live 0x00000000
-> xt_LOG 12602 10 - Live 0x00000000
-> xt_limit 12541 13 - Live 0x00000000
-> xt_tcpudp 12788 18 - Live 0x00000000
-> xt_addrtype 12625 4 - Live 0x00000000
-> uvcvideo 76687 0 - Live 0x00000000
-> nf_conntrack_ipv4 14361 8 - Live 0x00000000
-> nf_defrag_ipv4 12649 1 nf_conntrack_ipv4, Live 0x00000000
-> videobuf2_vmalloc 13048 1 uvcvideo, Live 0x00000000
-> xt_conntrack 12664 16 - Live 0x00000000
-> videobuf2_memops 13170 1 videobuf2_vmalloc, Live 0x00000000
-> snd_hda_intel 29543 3 - Live 0x00000000
-> snd_hda_controller 30930 1 snd_hda_intel, Live 0x00000000
-> snd_hda_codec 121018 4
-> snd_hda_codec_realtek,snd_hda_codec_generic,snd_hda_intel,snd_hda_controller,
-> Live 0x00000000
-> videobuf2_core 45571 1 uvcvideo, Live 0x00000000
-> snd_hwdep 13276 1 snd_hda_codec, Live 0x00000000
-> ip6table_filter 12711 1 - Live 0x00000000
-> v4l2_common 15158 1 videobuf2_core, Live 0x00000000
-> snd_pcm 89138 3 snd_hda_intel,snd_hda_controller,snd_hda_codec, Live
-> 0x00000000
-> ip6_tables 18136 1 ip6table_filter, Live 0x00000000
-> arc4 12509 2 - Live 0x00000000
-> snd_seq_midi 13324 0 - Live 0x00000000
-> videodev 140643 3 uvcvideo,videobuf2_core,v4l2_common, Live 0x00000000
-> snd_seq_midi_event 14475 1 snd_seq_midi, Live 0x00000000
-> media 21030 2 uvcvideo,videodev, Live 0x00000000
-> snd_rawmidi 25786 1 snd_seq_midi, Live 0x00000000
-> nf_conntrack_netbios_ns 12585 0 - Live 0x00000000
-> iwl3945 64660 0 - Live 0x00000000
-> snd_seq 56978 2 snd_seq_midi,snd_seq_midi_event, Live 0x00000000
-> nf_conntrack_broadcast 12541 1 nf_conntrack_netbios_ns, Live 0x00000000
-> snd_seq_device 14137 3 snd_seq_midi,snd_rawmidi,snd_seq, Live 0x00000000
-> nf_nat_ftp 12692 0 - Live 0x00000000
-> coretemp 13358 0 - Live 0x00000000
-> iwlegacy 88297 1 iwl3945, Live 0x00000000
-> snd_timer 29036 2 snd_pcm,snd_seq, Live 0x00000000
-> nf_nat 21218 1 nf_nat_ftp, Live 0x00000000
-> nf_conntrack_ftp 14117 1 nf_nat_ftp, Live 0x00000000
-> mac80211 593840 2 iwl3945,iwlegacy, Live 0x00000000
-> snd 67102 16
-> snd_hda_codec_realtek,snd_hda_codec_generic,snd_hda_intel,snd_hda_codec,snd_hwdep,snd_pcm,snd_rawmidi,snd_seq,snd_seq_device,snd_timer,
-> Live 0x00000000
-> kvm_intel 143291 0 - Live 0x00000000
-> i915 905336 3 - Live 0x00000000
-> nf_conntrack 88172 8
-> nf_conntrack_ipv6,nf_conntrack_ipv4,xt_conntrack,nf_conntrack_netbios_ns,nf_conntrack_broadcast,nf_nat_ftp,nf_nat,nf_conntrack_ftp,
-> Live 0x00000000
-> soundcore 14635 2 snd_hda_codec,snd, Live 0x00000000
-> iptable_filter 12706 1 - Live 0x00000000
-> kvm 411210 1 kvm_intel, Live 0x00000000
-> r852 17822 0 - Live 0x00000000
-> cfg80211 440091 3 iwl3945,iwlegacy,mac80211, Live 0x00000000
-> ip_tables 18304 1 iptable_filter, Live 0x00000000
-> sm_common 16772 1 r852, Live 0x00000000
-> nand 67999 2 r852,sm_common, Live 0x00000000
-> x_tables 22103 13
-> ip6t_REJECT,xt_hl,ip6t_rt,ipt_REJECT,xt_LOG,xt_limit,xt_tcpudp,xt_addrtype,xt_conntrack,ip6table_filter,ip6_tables,iptable_filter,ip_tables,
-> Live 0x00000000
-> r592 17829 0 - Live 0x00000000
-> drm_kms_helper 87512 1 i915, Live 0x00000000
-> nand_ecc 13136 1 nand, Live 0x00000000
-> drm 263568 5 i915,drm_kms_helper, Live 0x00000000
-> nand_bch 13067 1 nand, Live 0x00000000
-> bch 21767 1 nand_bch, Live 0x00000000
-> memstick 16176 1 r592, Live 0x00000000
-> nand_ids 8547 1 nand, Live 0x00000000
-> mtd 53476 2 sm_common,nand, Live 0x00000000
-> joydev 17311 0 - Live 0x00000000
-> i2c_algo_bit 13316 1 i915, Live 0x00000000
-> ir_lirc_codec 12739 0 - Live 0x00000000
-> serio_raw 13251 0 - Live 0x00000000
-> lpc_ich 17000 0 - Live 0x00000000
-> ir_rc5_decoder 12459 0 - Live 0x00000000
-> ir_xmp_decoder 12459 0 - Live 0x00000000
-> lirc_dev 19354 1 ir_lirc_codec, Live 0x00000000
-> ir_sanyo_decoder 12465 0 - Live 0x00000000
-> ir_mce_kbd_decoder 12730 0 - Live 0x00000000
-> ir_nec_decoder 12459 0 - Live 0x00000000
-> ir_rc6_decoder 12459 0 - Live 0x00000000
-> ir_sony_decoder 12462 0 - Live 0x00000000
-> ir_jvc_decoder 12459 0 - Live 0x00000000
-> ir_sharp_decoder 12465 0 - Live 0x00000000
-> rc_rc6_mce 12454 0 - Live 0x00000000
-> ene_ir 18229 0 - Live 0x00000000
-> acer_wmi 19307 0 - Live 0x00000000
-> rc_core 26291 14
-> ir_lirc_codec,ir_rc5_decoder,ir_xmp_decoder,lirc_dev,ir_sanyo_decoder,ir_mce_kbd_decoder,ir_nec_decoder,ir_rc6_decoder,ir_sony_decoder,ir_jvc_decoder,ir_sharp_decoder,rc_rc6_mce,ene_ir,
-> Live 0x00000000
-> parport_pc 32154 0 - Live 0x00000000
-> sparse_keymap 13658 1 acer_wmi, Live 0x00000000
-> ppdev 17423 0 - Live 0x00000000
-> mac_hid 13099 0 - Live 0x00000000
-> lp 13359 0 - Live 0x00000000
-> parport 40945 3 parport_pc,ppdev,lp, Live 0x00000000
-> mxm_wmi 12893 0 - Live 0x00000000
-> wmi 18843 2 acer_wmi,mxm_wmi, Live 0x00000000
-> video 19969 2 i915,acer_wmi, Live 0x00000000
-> ahci 25756 3 - Live 0x00000000
-> firewire_ohci 36248 0 - Live 0x00000000
-> psmouse 106553 0 - Live 0x00000000
-> tg3 159838 0 - Live 0x00000000
-> sdhci_pci 18748 0 - Live 0x00000000
-> libahci 31003 1 ahci, Live 0x00000000
-> sdhci 38482 1 sdhci_pci, Live 0x00000000
-> firewire_core 62418 1 firewire_ohci, Live 0x00000000
-> ptp 18938 1 tg3, Live 0x00000000
-> crc_itu_t 12627 1 firewire_core, Live 0x00000000
-> pps_core 18768 1 ptp, Live 0x00000000
->
->
->
-> [7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem):
->
-> Result of cat /proc/ioports :
->
-> 0000-0cf7 : PCI Bus 0000:00
->   0000-001f : dma1
->   0020-0021 : pic1
->   0040-0043 : timer0
->   0050-0053 : timer1
->   0060-0060 : keyboard
->   0062-0062 : PNP0C09:00
->     0062-0062 : EC data
->   0064-0064 : keyboard
->   0066-0066 : PNP0C09:00
->     0066-0066 : EC cmd
->   0070-0077 : rtc0
->   0080-008f : dma page reg
->   00a0-00a1 : pic2
->   00c0-00df : dma2
->   00f0-00ff : fpu
->     00f0-00f0 : PNP0C04:00
->   0170-0177 : 0000:00:1f.1
->     0170-0177 : ata_piix
->   01f0-01f7 : 0000:00:1f.1
->     01f0-01f7 : ata_piix
->   0376-0376 : 0000:00:1f.1
->     0376-0376 : ata_piix
->   03c0-03df : vesafb
->   03f6-03f6 : 0000:00:1f.1
->     03f6-03f6 : ata_piix
->   0400-0403 : ACPI PM1a_EVT_BLK
->   0404-0405 : ACPI PM1a_CNT_BLK
->   0408-040b : ACPI PM_TMR
->   0410-0415 : ACPI CPU throttle
->   0420-0420 : ACPI PM2_CNT_BLK
->   0428-042f : ACPI GPE0_BLK
->   0430-0433 : iTCO_wdt
->   0460-047f : iTCO_wdt
->   0500-053f : 0000:00:1f.0
->     0500-053f : pnp 00:00
->   0600-060f : pnp 00:00
->   0610-0610 : pnp 00:00
->   0800-080f : pnp 00:00
->   0810-0817 : pnp 00:00
-> 0cf8-0cff : PCI conf1
-> 0d00-ffff : PCI Bus 0000:00
->   1000-1fff : PCI Bus 0000:06
->   2000-2fff : PCI Bus 0000:05
->   3000-3fff : PCI Bus 0000:04
->   4000-4fff : PCI Bus 0000:02
->   5000-501f : 0000:00:1f.3
->   5020-503f : 0000:00:1f.2
->     5020-503f : ahci
->   5040-505f : 0000:00:1d.2
->     5040-505f : uhci_hcd
->   5060-507f : 0000:00:1d.1
->     5060-507f : uhci_hcd
->   5080-509f : 0000:00:1d.0
->     5080-509f : uhci_hcd
->   50a0-50bf : 0000:00:1a.1
->     50a0-50bf : uhci_hcd
->   50c0-50df : 0000:00:1a.0
->     50c0-50df : uhci_hcd
->   50e0-50ef : 0000:00:1f.1
->     50e0-50ef : ata_piix
->   50f0-50f7 : 0000:00:1f.2
->     50f0-50f7 : ahci
->   50f8-50ff : 0000:00:1f.2
->     50f8-50ff : ahci
->   5110-5117 : 0000:00:02.0
->   5118-511b : 0000:00:1f.2
->     5118-511b : ahci
->   511c-511f : 0000:00:1f.2
->     511c-511f : ahci
->   ff2c-ff2f : ene_ir
->
->
->
-> Result of cat /proc/iomem :
->
-> 00000000-00000fff : reserved
-> 00001000-0009fbff : System RAM
-> 0009fc00-0009ffff : reserved
-> 000a0000-000bffff : PCI Bus 0000:00
->   000a0000-000bffff : Video RAM area
-> 000c0000-000c7fff : Video ROM
-> 000cf000-000d09ff : Adapter ROM
-> 000e0000-000fffff : reserved
->   000f0000-000fffff : System ROM
-> 00100000-bf4cffff : System RAM
->   01000000-016d1b62 : Kernel code
->   016d1b63-01a7173f : Kernel data
->   01b61000-01c27fff : Kernel bss
-> bf4d0000-bf4dafff : reserved
-> bf4db000-bf551fff : System RAM
-> bf552000-bf554fff : reserved
-> bf555000-bf5bafff : System RAM
-> bf5bb000-bf5befff : reserved
-> bf5bf000-bf66ffff : System RAM
-> bf670000-bf6befff : ACPI Non-volatile Storage
-> bf6bf000-bf6fffff : ACPI Tables
-> bf700000-bfffffff : reserved
->   bf800000-bff7ffff : Graphics Stolen Memory
-> c0000000-febfffff : PCI Bus 0000:00
->   c0000000-cfffffff : 0000:00:02.0
->   d0000000-d0ffffff : PCI Bus 0000:02
->   d1000000-d1ffffff : PCI Bus 0000:04
->   d2000000-d2ffffff : PCI Bus 0000:05
->   d3000000-d3ffffff : PCI Bus 0000:06
->   d4000000-d40fffff : 0000:00:02.0
->   d4100000-d41fffff : PCI Bus 0000:07
->     d4100000-d41007ff : 0000:07:00.0
->       d4100000-d41007ff : firewire_ohci
->     d4100800-d41008ff : 0000:07:00.3
->       d4100800-d41008ff : r852
->     d4100900-d41009ff : 0000:07:00.2
->       d4100900-d41009ff : r592
->     d4100a00-d4100aff : 0000:07:00.1
->       d4100a00-d4100aff : mmc0
->   d4200000-d52fffff : PCI Bus 0000:06
->     d4200000-d4200fff : 0000:06:00.0
->       d4200000-d4200fff : iwl3945
->   d5300000-d63fffff : PCI Bus 0000:05
->     d5300000-d530ffff : 0000:05:00.0
->       d5300000-d530ffff : tg3
->   d6400000-d73fffff : PCI Bus 0000:04
->   d7400000-d83fffff : PCI Bus 0000:02
->   d8400000-d8403fff : 0000:00:1b.0
->     d8400000-d8403fff : ICH HD audio
->   d8404000-d84047ff : 0000:00:1f.2
->     d8404000-d84047ff : ahci
->   d8404800-d8404bff : 0000:00:1d.7
->     d8404800-d8404bff : ehci_hcd
->   d8404c00-d8404fff : 0000:00:1a.7
->     d8404c00-d8404fff : ehci_hcd
->   d8405000-d84050ff : 0000:00:1f.3
->   d8406000-d8406fff : Intel Flush Page
->   d8500000-d85fffff : 0000:00:02.1
->   e0000000-efffffff : PCI MMCONFIG 0000 [bus 00-ff]
->     e0000000-efffffff : reserved
->       e0000000-efffffff : pnp 00:00
-> fec00000-fec00fff : reserved
->   fec00000-fec003ff : IOAPIC 0
-> fed00000-fed003ff : HPET 0
->   fed00000-fed003ff : PNP0103:00
-> fed14000-fed19fff : reserved
->   fed14000-fed17fff : pnp 00:00
->   fed18000-fed18fff : pnp 00:00
->   fed19000-fed19fff : pnp 00:00
-> fed1c000-fed1ffff : reserved
->   fed1c000-fed1ffff : pnp 00:00
->     fed1f410-fed1f414 : iTCO_wdt
-> fee00000-fee00fff : Local APIC
->   fee00000-fee00fff : reserved
->     fee00000-fee00fff : pnp 00:00
-> fff00000-ffffffff : reserved
->   fff00000-ffffffff : INT0800:00
-> 100000000-13fffffff : System RAM
->
->
->
-> [7.5.] PCI information ('lspci -vvv' as root):
->
-> 00:00.0 Host bridge: Intel Corporation Mobile PM965/GM965/GL960 Memory
-> Controller Hub (rev 03)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort+ >SERR- <PERR- INTx-
->     Latency: 0
->     Capabilities: [e0] Vendor Specific Information: Len=0a <?>
->     Kernel driver in use: agpgart-intel
->
-> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960
-> Integrated Graphics Controller (primary) (rev 03) (prog-if 00 [VGA
-> controller])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 29
->     Region 0: Memory at d4000000 (64-bit, non-prefetchable) [size=1M]
->     Region 2: Memory at c0000000 (64-bit, prefetchable) [size=256M]
->     Region 4: I/O ports at 5110 [size=8]
->     Expansion ROM at <unassigned> [disabled]
->     Capabilities: [90] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Address: fee0300c  Data: 41c2
->     Capabilities: [d0] Power Management version 3
->         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
-> PME(D0-,D1-,D2-,D3hot-,D3cold-)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->         Bridge: PM- B3+
->     Kernel driver in use: i915
->
-> 00:02.1 Display controller: Intel Corporation Mobile GM965/GL960 Integrated
-> Graphics Controller (secondary) (rev 03)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Region 0: Memory at d8500000 (64-bit, non-prefetchable) [size=1M]
->     Capabilities: [d0] Power Management version 3
->         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
-> PME(D0-,D1-,D2-,D3hot-,D3cold-)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->         Bridge: PM- B3+
->
-> 00:1a.0 USB controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
-> Controller #4 (rev 03) (prog-if 00 [UHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 16
->     Region 4: I/O ports at 50c0 [size=32]
->     Kernel driver in use: uhci_hcd
->
-> 00:1a.1 USB controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
-> Controller #5 (rev 03) (prog-if 00 [UHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin B routed to IRQ 21
->     Region 4: I/O ports at 50a0 [size=32]
->     Kernel driver in use: uhci_hcd
->
-> 00:1a.7 USB controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI
-> Controller #2 (rev 03) (prog-if 20 [EHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin C routed to IRQ 18
->     Region 0: Memory at d8404c00 (32-bit, non-prefetchable) [size=1K]
->     Capabilities: [50] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [58] Debug port: BAR=1 offset=00a0
->     Kernel driver in use: ehci-pci
->
-> 00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio
-> Controller (rev 03)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 31
->     Region 0: Memory at d8400000 (64-bit, non-prefetchable) [size=16K]
->     Capabilities: [50] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [60] MSI: Enable+ Count=1/1 Maskable- 64bit+
->         Address: 00000000fee0300c  Data: 41e2
->     Capabilities: [70] Express (v1) Root Complex Integrated Endpoint, MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0
->             ExtTag- RBE-
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop+
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->     Capabilities: [100 v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed- WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed- WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=ff
->             Status:    NegoPending- InProgress-
->         VC1:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed- WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=1 ArbSelect=Fixed TC/VC=00
->             Status:    NegoPending- InProgress-
->     Capabilities: [130 v1] Root Complex Link
->         Desc:    PortNumber=0f ComponentID=02 EltType=Config
->         Link0:    Desc:    TargetPort=00 TargetComponent=02 AssocRCRB-
-> LinkType=MemMapped LinkValid+
->             Addr:    00000000fed1c000
->     Kernel driver in use: snd_hda_intel
->
-> 00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port
-> 1 (rev 03) (prog-if 00 [Normal decode])
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Bus: primary=00, secondary=02, subordinate=02, sec-latency=0
->     I/O behind bridge: 00004000-00004fff
->     Memory behind bridge: d7400000-d83fffff
->     Prefetchable memory behind bridge: 00000000d0000000-00000000d0ffffff
->     Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort+ <SERR- <PERR-
->     BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
->         PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->     Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0
->             ExtTag- RBE+
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->         LnkCap:    Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <1us, L1 <4us
->             ClockPM- Surprise- LLActRep+ BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk-
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x0, TrErr- Train- SlotClk+ DLActive-
-> BWMgmt- ABWMgmt-
->         SltCap:    AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+
-> Surprise+
->             Slot #0, PowerLimit 6.500W; Interlock- NoCompl-
->         SltCtl:    Enable: AttnBtn+ PwrFlt- MRL- PresDet+ CmdCplt- HPIrq-
-> LinkChg-
->             Control: AttnInd Unknown, PwrInd Unknown, Power- Interlock-
->         SltSta:    Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet-
-> Interlock-
->             Changed: MRL- PresDet- LinkState-
->         RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna-
-> CRSVisible-
->         RootCap: CRSVisible-
->         RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->     Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Address: fee0300c  Data: 41c1
->     Capabilities: [90] Subsystem: Acer Incorporated [ALI] Device 011e
->     Capabilities: [a0] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [100 v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed+ WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed+ WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=01
->             Status:    NegoPending- InProgress-
->     Capabilities: [180 v1] Root Complex Link
->         Desc:    PortNumber=01 ComponentID=02 EltType=Config
->         Link0:    Desc:    TargetPort=00 TargetComponent=02 AssocRCRB-
-> LinkType=MemMapped LinkValid+
->             Addr:    00000000fed1c001
->     Kernel driver in use: pcieport
->
-> 00:1c.1 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port
-> 2 (rev 03) (prog-if 00 [Normal decode])
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
->     I/O behind bridge: 00003000-00003fff
->     Memory behind bridge: d6400000-d73fffff
->     Prefetchable memory behind bridge: 00000000d1000000-00000000d1ffffff
->     Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort+ <SERR- <PERR-
->     BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
->         PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->     Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0
->             ExtTag- RBE+
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->         LnkCap:    Port #2, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <1us, L1 <4us
->             ClockPM- Surprise- LLActRep+ BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk-
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x0, TrErr- Train- SlotClk+ DLActive-
-> BWMgmt- ABWMgmt-
->         SltCap:    AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+
-> Surprise+
->             Slot #1, PowerLimit 6.500W; Interlock- NoCompl-
->         SltCtl:    Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
-> LinkChg-
->             Control: AttnInd Unknown, PwrInd Unknown, Power- Interlock-
->         SltSta:    Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet-
-> Interlock-
->             Changed: MRL- PresDet- LinkState-
->         RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna-
-> CRSVisible-
->         RootCap: CRSVisible-
->         RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->     Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Address: fee0300c  Data: 41e1
->     Capabilities: [90] Subsystem: Acer Incorporated [ALI] Device 011e
->     Capabilities: [a0] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [100 v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed+ WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed+ WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=ff
->             Status:    NegoPending- InProgress-
->     Capabilities: [180 v1] Root Complex Link
->         Desc:    PortNumber=02 ComponentID=02 EltType=Config
->         Link0:    Desc:    TargetPort=00 TargetComponent=02 AssocRCRB-
-> LinkType=MemMapped LinkValid+
->             Addr:    00000000fed1c001
->     Kernel driver in use: pcieport
->
-> 00:1c.2 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port
-> 3 (rev 03) (prog-if 00 [Normal decode])
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
->     I/O behind bridge: 00002000-00002fff
->     Memory behind bridge: d5300000-d63fffff
->     Prefetchable memory behind bridge: 00000000d2000000-00000000d2ffffff
->     Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort+ <SERR- <PERR-
->     BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
->         PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->     Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0
->             ExtTag- RBE+
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->         LnkCap:    Port #3, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <256ns, L1 <4us
->             ClockPM- Surprise- LLActRep+ BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk+
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+
-> BWMgmt- ABWMgmt-
->         SltCap:    AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+
-> Surprise+
->             Slot #2, PowerLimit 6.500W; Interlock- NoCompl-
->         SltCtl:    Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
-> LinkChg-
->             Control: AttnInd Unknown, PwrInd Unknown, Power- Interlock-
->         SltSta:    Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+
-> Interlock-
->             Changed: MRL- PresDet+ LinkState+
->         RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna-
-> CRSVisible-
->         RootCap: CRSVisible-
->         RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->     Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Address: fee0300c  Data: 4142
->     Capabilities: [90] Subsystem: Acer Incorporated [ALI] Device 011e
->     Capabilities: [a0] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [100 v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed+ WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed+ WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=01
->             Status:    NegoPending- InProgress-
->     Capabilities: [180 v1] Root Complex Link
->         Desc:    PortNumber=03 ComponentID=02 EltType=Config
->         Link0:    Desc:    TargetPort=00 TargetComponent=02 AssocRCRB-
-> LinkType=MemMapped LinkValid+
->             Addr:    00000000fed1c001
->     Kernel driver in use: pcieport
->
-> 00:1c.3 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port
-> 4 (rev 03) (prog-if 00 [Normal decode])
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Bus: primary=00, secondary=06, subordinate=06, sec-latency=0
->     I/O behind bridge: 00001000-00001fff
->     Memory behind bridge: d4200000-d52fffff
->     Prefetchable memory behind bridge: 00000000d3000000-00000000d3ffffff
->     Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort+ <SERR- <PERR-
->     BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
->         PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->     Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0
->             ExtTag- RBE+
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->         LnkCap:    Port #4, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <1us, L1 <4us
->             ClockPM- Surprise- LLActRep+ BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk-
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+
-> BWMgmt- ABWMgmt-
->         SltCap:    AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+
-> Surprise+
->             Slot #3, PowerLimit 6.500W; Interlock- NoCompl-
->         SltCtl:    Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
-> LinkChg-
->             Control: AttnInd Unknown, PwrInd Unknown, Power- Interlock-
->         SltSta:    Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+
-> Interlock-
->             Changed: MRL- PresDet+ LinkState+
->         RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna-
-> CRSVisible-
->         RootCap: CRSVisible-
->         RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->     Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Address: fee0300c  Data: 4162
->     Capabilities: [90] Subsystem: Acer Incorporated [ALI] Device 011e
->     Capabilities: [a0] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [100 v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed+ WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed+ WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=01
->             Status:    NegoPending- InProgress-
->     Capabilities: [180 v1] Root Complex Link
->         Desc:    PortNumber=04 ComponentID=02 EltType=Config
->         Link0:    Desc:    TargetPort=00 TargetComponent=02 AssocRCRB-
-> LinkType=MemMapped LinkValid+
->             Addr:    00000000fed1c001
->     Kernel driver in use: pcieport
->
-> 00:1d.0 USB controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
-> Controller #1 (rev 03) (prog-if 00 [UHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 23
->     Region 4: I/O ports at 5080 [size=32]
->     Kernel driver in use: uhci_hcd
->
-> 00:1d.1 USB controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
-> Controller #2 (rev 03) (prog-if 00 [UHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin B routed to IRQ 19
->     Region 4: I/O ports at 5060 [size=32]
->     Kernel driver in use: uhci_hcd
->
-> 00:1d.2 USB controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
-> Controller #3 (rev 03) (prog-if 00 [UHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin C routed to IRQ 18
->     Region 4: I/O ports at 5040 [size=32]
->     Kernel driver in use: uhci_hcd
->
-> 00:1d.7 USB controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI
-> Controller #1 (rev 03) (prog-if 20 [EHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 23
->     Region 0: Memory at d8404800 (32-bit, non-prefetchable) [size=1K]
->     Capabilities: [50] Power Management version 2
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [58] Debug port: BAR=1 offset=00a0
->     Kernel driver in use: ehci-pci
->
-> 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev f3)
-> (prog-if 01 [Subtractive decode])
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Bus: primary=00, secondary=07, subordinate=07, sec-latency=32
->     I/O behind bridge: 0000f000-00000fff
->     Memory behind bridge: d4100000-d41fffff
->     Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
->     Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ <SERR- <PERR-
->     BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
->         PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->     Capabilities: [50] Subsystem: Acer Incorporated [ALI] Device 011e
->
-> 00:1f.0 ISA bridge: Intel Corporation 82801HM (ICH8M) LPC Interface
-> Controller (rev 03)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Capabilities: [e0] Vendor Specific Information: Len=0c <?>
->     Kernel driver in use: lpc_ich
->
-> 00:1f.1 IDE interface: Intel Corporation 82801HM/HEM (ICH8M/ICH8M-E) IDE
-> Controller (rev 03) (prog-if 8a [Master SecP PriP])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 18
->     Region 0: I/O ports at 01f0 [size=8]
->     Region 1: I/O ports at 03f4
->     Region 2: I/O ports at 0170 [size=8]
->     Region 3: I/O ports at 0374
->     Region 4: I/O ports at 50e0 [size=16]
->     Kernel driver in use: ata_piix
->
-> 00:1f.2 SATA controller: Intel Corporation 82801HM/HEM (ICH8M/ICH8M-E) SATA
-> Controller [AHCI mode] (rev 03) (prog-if 01 [AHCI 1.0])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin B routed to IRQ 28
->     Region 0: I/O ports at 50f8 [size=8]
->     Region 1: I/O ports at 511c [size=4]
->     Region 2: I/O ports at 50f0 [size=8]
->     Region 3: I/O ports at 5118 [size=4]
->     Region 4: I/O ports at 5020 [size=32]
->     Region 5: Memory at d8404000 (32-bit, non-prefetchable) [size=2K]
->     Capabilities: [80] MSI: Enable+ Count=1/4 Maskable- 64bit-
->         Address: fee0300c  Data: 41a2
->     Capabilities: [70] Power Management version 3
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0-,D1-,D2-,D3hot+,D3cold-)
->         Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [a8] SATA HBA v1.0 BAR4 Offset=00000004
->     Kernel driver in use: ahci
->
-> 00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev
-> 03)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Interrupt: pin B routed to IRQ 11
->     Region 0: Memory at d8405000 (32-bit, non-prefetchable) [size=256]
->     Region 4: I/O ports at 5000 [size=32]
->
-> 05:00.0 Ethernet controller: Broadcom Corporation NetLink BCM5787M Gigabit
-> Ethernet PCI Express (rev 02)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 32
->     Region 0: Memory at d5300000 (64-bit, non-prefetchable) [size=64K]
->     Expansion ROM at <ignored> [disabled]
->     Capabilities: [48] Power Management version 3
->         Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0-,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
->     Capabilities: [50] Vital Product Data
->         Product Name: Broadcom NetLink Gigabit Ethernet Controller
->         Read-only fields:
->             [PN] Part number: BCM95787m
->             [EC] Engineering changes: 106679-15
->             [SN] Serial number: 0123456789
->             [MN] Manufacture ID: 31 34 65 34
->             [RV] Reserved: checksum good, 29 byte(s) reserved
->         Read/write fields:
->             [YA] Asset tag: XYZ01234567
->             [RW] Read-write area: 107 byte(s) free
->         End
->     Capabilities: [58] Vendor Specific Information: Len=78 <?>
->     Capabilities: [e8] MSI: Enable+ Count=1/1 Maskable- 64bit+
->         Address: 00000000fee0300c  Data: 4123
->     Capabilities: [d0] Express (v1) Endpoint, MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0, Latency L0s <4us, L1
-> unlimited
->             ExtTag+ AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->             MaxPayload 128 bytes, MaxReadReq 512 bytes
->         DevSta:    CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-> TransPend-
->         LnkCap:    Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <4us, L1 <64us
->             ClockPM+ Surprise- LLActRep- BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk+
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive-
-> BWMgmt- ABWMgmt-
->     Capabilities: [100 v1] Advanced Error Reporting
->         UESta:    DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-> MalfTLP- ECRC- UnsupReq- ACSViol-
->         UEMsk:    DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-> MalfTLP- ECRC- UnsupReq- ACSViol-
->         UESvrt:    DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+
-> MalfTLP+ ECRC- UnsupReq- ACSViol-
->         CESta:    RxErr+ BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
->         CEMsk:    RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
->         AERCap:    First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ ChkEn-
->     Capabilities: [13c v1] Virtual Channel
->         Caps:    LPEVC=0 RefClk=100ns PATEntryBits=1
->         Arb:    Fixed- WRR32- WRR64- WRR128-
->         Ctrl:    ArbSelect=Fixed
->         Status:    InProgress-
->         VC0:    Caps:    PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
->             Arb:    Fixed- WRR32- WRR64- WRR128- TWRR128- WRR256-
->             Ctrl:    Enable+ ID=0 ArbSelect=Fixed TC/VC=01
->             Status:    NegoPending- InProgress-
->     Capabilities: [160 v1] Device Serial Number 00-16-d4-ff-fe-d9-69-0d
->     Kernel driver in use: tg3
->
-> 06:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG [Golan]
-> Network Connection (rev 02)
->     Subsystem: Intel Corporation PRO/Wireless 3945ABG Network Connection
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
-> <MAbort- >SERR- <PERR- INTx-
->     Latency: 0
->     Interrupt: pin A routed to IRQ 30
->     Region 0: Memory at d4200000 (32-bit, non-prefetchable) [size=4K]
->     Capabilities: [c8] Power Management version 2
->         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->     Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
->         Address: 00000000fee0100c  Data: 41d2
->     Capabilities: [e0] Express (v1) Legacy Endpoint, MSI 00
->         DevCap:    MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1
-> unlimited
->             ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
->         DevCtl:    Report errors: Correctable- Non-Fatal- Fatal-
-> Unsupported-
->             RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
->             MaxPayload 128 bytes, MaxReadReq 128 bytes
->         DevSta:    CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+
-> TransPend-
->         LnkCap:    Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit
-> Latency L0s <128ns, L1 <64us
->             ClockPM+ Surprise- LLActRep- BwNot-
->         LnkCtl:    ASPM Disabled; RCB 64 bytes Disabled- CommClk-
->             ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->         LnkSta:    Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive-
-> BWMgmt- ABWMgmt-
->     Capabilities: [100 v1] Advanced Error Reporting
->         UESta:    DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-> MalfTLP- ECRC- UnsupReq+ ACSViol-
->         UEMsk:    DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
-> MalfTLP- ECRC- UnsupReq- ACSViol-
->         UESvrt:    DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+
-> MalfTLP+ ECRC- UnsupReq- ACSViol-
->         CESta:    RxErr+ BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
->         CEMsk:    RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
->         AERCap:    First Error Pointer: 14, GenCap- CGenEn- ChkCap- ChkEn-
->     Capabilities: [140 v1] Device Serial Number 00-19-d2-ff-ff-65-f0-08
->     Kernel driver in use: iwl3945
->
-> 07:00.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev
-> 05) (prog-if 10 [OHCI])
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 64 (500ns min, 1000ns max)
->     Interrupt: pin A routed to IRQ 20
->     Region 0: Memory at d4100000 (32-bit, non-prefetchable) [size=2K]
->     Capabilities: [dc] Power Management version 2
->         Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-> PME(D0+,D1+,D2+,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=2 PME+
->     Kernel driver in use: firewire_ohci
->
-> 07:00.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host
-> Adapter (rev 22)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 64
->     Interrupt: pin B routed to IRQ 22
->     Region 0: Memory at d4100a00 (32-bit, non-prefetchable) [size=256]
->     Capabilities: [80] Power Management version 2
->         Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-> PME(D0+,D1+,D2+,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=2 PME-
->     Kernel driver in use: sdhci-pci
->
-> 07:00.2 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter
-> (rev 12)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 64
->     Interrupt: pin B routed to IRQ 22
->     Region 0: Memory at d4100900 (32-bit, non-prefetchable) [size=256]
->     Capabilities: [80] Power Management version 2
->         Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-> PME(D0+,D1+,D2+,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=2 PME-
->     Kernel driver in use: r592
->
-> 07:00.3 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
->     Subsystem: Acer Incorporated [ALI] Device 011e
->     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx-
->     Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->     Latency: 64
->     Interrupt: pin B routed to IRQ 22
->     Region 0: Memory at d4100800 (32-bit, non-prefetchable) [size=256]
->     Capabilities: [80] Power Management version 2
->         Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-> PME(D0+,D1+,D2+,D3hot+,D3cold+)
->         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=2 PME-
->     Kernel driver in use: r852
->
->
->
-> [7.6.] SCSI information (from /proc/scsi/scsi):
->
-> Attached devices:
-> Host: scsi0 Channel: 00 Id: 00 Lun: 00
->   Vendor: HL-DT-ST Model: DVDRAM GSA-T20N  Rev: WP03
->   Type:   CD-ROM                           ANSI  SCSI revision: 05
-> Host: scsi2 Channel: 00 Id: 00 Lun: 00
->   Vendor: ATA      Model: Hitachi HTS54161 Rev: C70P
->   Type:   Direct-Access                    ANSI  SCSI revision: 05
->
->
->
-> [7.7.] Result of ls /proc :
->
-> 1     132   1774  1960  2069  2153  2367  26   468  78 acpi         kallsyms
-> scsi
-> 10    133   18    1962  2070  2168  2372  27   476  79 asound       kcore
-> self
-> 1038  134   1826  1964  2071  2177  2377  276  48   797 buddyinfo    keys
-> slabinfo
-> 1073  135   1827  1992  2072  22    24    28   49   8 bus          key-users
-> softirqs
-> 11    136   1830  2     2073  2207  2437  282  5    80 cgroups      kmsg
-> stat
-> 1110  137   1839  20    2074  2249  2474  29   50   801 cmdline
-> kpagecount    swaps
-> 1124  1374  1843  2017  2075  2254  2481  3    51   807 consoles
-> kpageflags    sys
-> 1166  138   1849  2021  2076  2273  2482  30   517  81 cpuinfo      loadavg
-> sysrq-trigger
-> 1167  1389  1857  2034  2077  2278  2497  31   52   846 crypto       locks
-> sysvipc
-> 1180  139   1864  2043  2078  2282  25    32   54   858 devices      mdstat
-> thread-self
-> 1187  14    1866  2046  2079  2285  2500  33   55   872 diskstats    meminfo
-> timer_list
-> 12    140   1872  2050  2080  2286  2501  34   56   882 dma          misc
-> timer_stats
-> 1207  141   1877  2057  2081  2294  2510  346  57   884 driver       modules
-> tty
-> 1220  15    1885  2061  21    23    2523  35   58   9 execdomains  mounts
-> uptime
-> 1223  150   1889  2062  2129  2302  2539  36   59   956 fb           mtd
-> version
-> 1263  151   1893  2063  2133  2307  2562  4    6    962 filesystems  mtrr
-> vmallocinfo
-> 129   152   19    2064  2135  2314  2565  406  667  964 fs           net
-> vmstat
-> 13    153   1909  2065  2139  2323  2573  461  668  968 interrupts
-> pagetypeinfo  zoneinfo
-> 130   16    1913  2066  2143  2329  2590  462  683  974 iomem
-> partitions
-> 131   17    1919  2067  2147  2335  2598  463  7    975 ioports
-> sched_debug
-> 1319  1747  1930  2068  2152  2360  2599  464  771  980 irq
-> schedstat
->
->
->
-> [X.] Other notes, patches, fixes, workarounds:
->
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1396291
->
+
+Ping.
+
+Any comments on these patches?
+
+Thanks,
+Ashwin
+
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index ffe350f..1237104 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -196,6 +196,18 @@ config GENERIC_CPUFREQ_CPU0
+>
+>           If in doubt, say N.
+>
+> +config ACPI_PID
+> +       bool "ACPI based PID controller"
+> +       depends on PCC && !X86
+> +       help
+> +         The ACPI PID driver is an implementation of the CPPC (Collaborative
+> +         Processor Performance Controls) as defined in the ACPI 5.0+ spec. The
+> +         PID governor is derived from the intel_pstate driver and is used as a
+> +         standalone governor for CPPC. CPPC allows the OS to request CPU performance
+> +         with an abstract metric and lets the platform (e.g. BMC) interpret and
+> +         optimize it for power and performance in a platform specific manner. See
+> +         the ACPI 5.0+ specification for more details on CPPC.
+> +
+>  menu "x86 CPU frequency scaling drivers"
+>  depends on X86
+>  source "drivers/cpufreq/Kconfig.x86"
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index db6d9a2..6717cca 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -92,6 +92,7 @@ obj-$(CONFIG_POWERNV_CPUFREQ)         += powernv-cpufreq.o
+>
+>  ##################################################################################
+>  # Other platform drivers
+> +obj-$(CONFIG_ACPI_PID) += acpi_pid.o
+>  obj-$(CONFIG_AVR32_AT32AP_CPUFREQ)     += at32ap-cpufreq.o
+>  obj-$(CONFIG_BFIN_CPU_FREQ)            += blackfin-cpufreq.o
+>  obj-$(CONFIG_CRIS_MACH_ARTPEC3)                += cris-artpec3-cpufreq.o
+> diff --git a/drivers/cpufreq/acpi_pid.c b/drivers/cpufreq/acpi_pid.c
+> new file mode 100644
+> index 0000000..f8d8376
+> --- /dev/null
+> +++ b/drivers/cpufreq/acpi_pid.c
+> @@ -0,0 +1,1156 @@
+> +/*
+> + * CPPC (Collaborative Processor Performance Control) implementation
+> + * using PID governor derived from intel_pstate.
+> + *
+> + * (C) Copyright 2014 Linaro Ltd.
+> + * Author: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; version 2
+> + * of the License.
+> + *
+> + * CPPC describes a few methods for controlling CPU performance using
+> + * information from a per CPU table called CPC. This table is described in
+> + * the ACPI v5.0+ specification. The table consists of a list of
+> + * registers which may be memory mapped or hardware registers. A complete
+> + * list of registers as described in v5.1 is in cppc_pcc_regs.
+> + *
+> + * CPU performance is on an abstract continous scale as against a discretized
+> + * P-state scale which is tied to CPU frequency only. It is defined in the
+> + * ACPI 5.0+ spec. In brief, the basic operation involves:
+> + *
+> + * - OS makes a CPU performance request. (Can provide min and max bounds)
+> + *
+> + * - Platform (such as BMC) is free to optimize request within requested bounds
+> + *   depending on power/thermal budgets etc.
+> + *
+> + * - Platform conveys its decision back to OS
+> + *
+> + * The communication between OS and platform occurs through another medium
+> + * called (PCC) Platform communication Channel. This is a generic mailbox like
+> + * mechanism which includes doorbell semantics to indicate register updates.
+> + * See drivers/mailbox/pcc.c for details on PCC.
+> + *
+> + * Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+> + * specification.
+> + *
+> + * The PID governor adapted from intel_pstate maps very well onto CPPC methods.
+> + * See the cpc_read64/write64 calls for the ones which have been used by PID.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/kernel_stat.h>
+> +#include <linux/module.h>
+> +#include <linux/ktime.h>
+> +#include <linux/hrtimer.h>
+> +#include <linux/tick.h>
+> +#include <linux/slab.h>
+> +#include <linux/sched.h>
+> +#include <linux/list.h>
+> +#include <linux/cpu.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/sysfs.h>
+> +#include <linux/types.h>
+> +#include <linux/fs.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/acpi.h>
+> +#include <linux/mailbox_controller.h>
+> +#include <linux/mailbox_client.h>
+> +#include <trace/events/power.h>
+> +
+> +#include <asm/div64.h>
+> +
+> +#define FRAC_BITS 8
+> +#define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+> +#define fp_toint(X) ((X) >> FRAC_BITS)
+> +
+> +#define CPPC_EN                                1
+> +#define PCC_CMD_COMPLETE       1
+> +#define MAX_CPC_REG_ENT        19
+> +
+> +extern struct mbox_chan *pcc_mbox_request_channel(struct mbox_client *, unsigned int);
+> +extern int mbox_send_message(struct mbox_chan *chan, void *mssg);
+> +
+> +static struct mbox_chan *pcc_channel;
+> +static void __iomem *pcc_comm_addr;
+> +static u64 comm_base_addr;
+> +static int pcc_subspace_idx = -1;
+> +
+> +struct sample {
+> +       int32_t core_pct_busy;
+> +       u64 reference;
+> +       u64 delivered;
+> +       int freq;
+> +       ktime_t time;
+> +};
+> +
+> +struct pstate_data {
+> +       int     current_pstate;
+> +       int     min_pstate;
+> +       int     max_pstate;
+> +};
+> +
+> +struct _pid {
+> +       int setpoint;
+> +       int32_t integral;
+> +       int32_t p_gain;
+> +       int32_t i_gain;
+> +       int32_t d_gain;
+> +       int deadband;
+> +       int32_t last_err;
+> +};
+> +
+> +struct cpudata {
+> +       int cpu;
+> +
+> +       struct timer_list timer;
+> +
+> +       struct pstate_data pstate;
+> +       struct _pid pid;
+> +
+> +       ktime_t last_sample_time;
+> +       u64     prev_reference;
+> +       u64     prev_delivered;
+> +       struct sample sample;
+> +};
+> +
+> +static struct cpudata **all_cpu_data;
+> +struct pstate_adjust_policy {
+> +       int sample_rate_ms;
+> +       int deadband;
+> +       int setpoint;
+> +       int p_gain_pct;
+> +       int d_gain_pct;
+> +       int i_gain_pct;
+> +};
+> +
+> +struct pstate_funcs {
+> +       int (*get_sample)(struct cpudata*);
+> +       int (*get_pstates)(struct cpudata*);
+> +       int (*set)(struct cpudata*, int pstate);
+> +};
+> +
+> +struct cpu_defaults {
+> +       struct pstate_adjust_policy pid_policy;
+> +       struct pstate_funcs funcs;
+> +};
+> +
+> +static struct pstate_adjust_policy pid_params;
+> +static struct pstate_funcs pstate_funcs;
+> +
+> +struct perf_limits {
+> +       int max_perf_pct;
+> +       int min_perf_pct;
+> +       int32_t max_perf;
+> +       int32_t min_perf;
+> +       int max_policy_pct;
+> +       int max_sysfs_pct;
+> +};
+> +
+> +static struct perf_limits limits = {
+> +       .max_perf_pct = 100,
+> +       .max_perf = int_tofp(1),
+> +       .min_perf_pct = 0,
+> +       .min_perf = 0,
+> +       .max_policy_pct = 100,
+> +       .max_sysfs_pct = 100,
+> +};
+> +
+> +/* PCC Commands used by CPPC */
+> +enum cppc_ppc_cmds {
+> +       PCC_CMD_READ,
+> +       PCC_CMD_WRITE,
+> +       RESERVED,
+> +};
+> +
+> +/* These are indexes into the per-cpu cpc_regs[]. Order is important. */
+> +enum cppc_pcc_regs {
+> +       HIGHEST_PERF,                   /* Highest Performance                                          */
+> +       NOMINAL_PERF,                   /* Nominal Performance                                          */
+> +       LOW_NON_LINEAR_PERF,    /* Lowest Nonlinear Performance                         */
+> +       LOWEST_PERF,                    /* Lowest Performance                                           */
+> +       GUARANTEED_PERF,                /* Guaranteed Performance Register                      */
+> +       DESIRED_PERF,                   /* Desired Performance Register                         */
+> +       MIN_PERF,                               /* Minimum Performance Register                         */
+> +       MAX_PERF,                               /* Maximum Performance Register                         */
+> +       PERF_REDUC_TOLERANCE,   /* Performance Reduction Tolerance Register     */
+> +       TIME_WINDOW,                    /* Time Window Register                                         */
+> +       CTR_WRAP_TIME,                  /* Counter Wraparound Time                                      */
+> +       REFERENCE_CTR,                  /* Reference Counter Register                           */
+> +       DELIVERED_CTR,                  /* Delivered Counter Register                           */
+> +       PERF_LIMITED,                   /* Performance Limited Register                         */
+> +       ENABLE,                                 /* Enable Register                                                      */
+> +       AUTO_SEL_ENABLE,                /* Autonomous Selection Enable                          */
+> +       AUTO_ACT_WINDOW,                /* Autonomous Activity Window                           */
+> +       ENERGY_PERF,                    /* Energy Performance Preference Register       */
+> +       REFERENCE_PERF,                 /* Reference Performance                                        */
+> +};
+> +
+> +/* Each register in the CPC table has the following format */
+> +struct cpc_register_resource {
+> +       u8 descriptor;
+> +       u16 length;
+> +       u8 space_id;
+> +       u8 bit_width;
+> +       u8 bit_offset;
+> +       u8 access_width;
+> +       u64 __iomem address;
+> +}__attribute__((packed));
+> +
+> +/* Container to hold the CPC details for each CPU */
+> +struct cpc_desc {
+> +       unsigned int num_entries;
+> +       unsigned int version;
+> +       struct cpc_register_resource cpc_regs[MAX_CPC_REG_ENT];
+> +};
+> +
+> +static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+> +
+> +static int cpc_read64(u64 *val, struct cpc_register_resource *reg)
+> +{
+> +       struct acpi_pcct_subspace *cppc_ss = pcc_channel->con_priv;
+> +       u64 addr = (u64)cppc_ss->base_address;
+> +       int err = 0;
+> +       int cmd;
+> +
+> +       switch (reg->space_id) {
+> +               case ACPI_ADR_SPACE_PLATFORM_COMM:
+> +                       {
+> +                               cmd = PCC_CMD_READ;
+> +                               err = mbox_send_message(pcc_channel, &cmd);
+> +                               if (err < 0) {
+> +                                       pr_err("Failed PCC READ: (%d)\n", err);
+> +                                       return err;
+> +                               }
+> +
+> +                               *val = readq((void *) (reg->address + addr));
+> +                       }
+> +                       break;
+> +
+> +               case ACPI_ADR_SPACE_FIXED_HARDWARE:
+> +                       break;
+> +
+> +               default:
+> +                       pr_err("Unknown space_id detected in cpc reg: %d\n", reg->space_id);
+> +                       err = -EINVAL;
+> +                       break;
+> +       }
+> +
+> +       return err;
+> +}
+> +
+> +static int cpc_write64(u64 val, struct cpc_register_resource *reg)
+> +{
+> +       struct acpi_pcct_subspace *cppc_ss = pcc_channel->con_priv;
+> +       u64 addr = (u64)cppc_ss->base_address;
+> +       int err = 0;
+> +       int cmd;
+> +
+> +       switch (reg->space_id) {
+> +               case ACPI_ADR_SPACE_PLATFORM_COMM:
+> +                       {
+> +                               writeq(val, (void *)(reg->address + addr));
+> +
+> +                               cmd = PCC_CMD_WRITE;
+> +                               err = mbox_send_message(pcc_channel, &cmd);
+> +                               if (err < 0) {
+> +                                       pr_err("Failed PCC WRITE: (%d)\n", err);
+> +                                       return err;
+> +                               }
+> +                       }
+> +                       break;
+> +
+> +               case ACPI_ADR_SPACE_FIXED_HARDWARE:
+> +                       break;
+> +
+> +               default:
+> +                       pr_err("Unknown space_id detected in cpc reg: %d\n", reg->space_id);
+> +                       err = -EINVAL;
+> +                       break;
+> +       }
+> +
+> +       return err;
+> +}
+> +
+> +static inline int32_t mul_fp(int32_t x, int32_t y)
+> +{
+> +       return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+> +}
+> +
+> +static inline int32_t div_fp(int32_t x, int32_t y)
+> +{
+> +       return div_s64((int64_t)x << FRAC_BITS, y);
+> +}
+> +
+> +static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+> +               int deadband, int integral) {
+> +       pid->setpoint = setpoint;
+> +       pid->deadband  = deadband;
+> +       pid->integral  = int_tofp(integral);
+> +       pid->last_err  = int_tofp(setpoint) - int_tofp(busy);
+> +}
+> +
+> +static inline void pid_p_gain_set(struct _pid *pid, int percent)
+> +{
+> +       pid->p_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +}
+> +
+> +static inline void pid_i_gain_set(struct _pid *pid, int percent)
+> +{
+> +       pid->i_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +}
+> +
+> +static inline void pid_d_gain_set(struct _pid *pid, int percent)
+> +{
+> +       pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +}
+> +
+> +static signed int pid_calc(struct _pid *pid, int32_t busy)
+> +{
+> +       signed int result;
+> +       int32_t pterm, dterm, fp_error;
+> +       int32_t integral_limit;
+> +
+> +       fp_error = int_tofp(pid->setpoint) - busy;
+> +
+> +       if (abs(fp_error) <= int_tofp(pid->deadband))
+> +               return 0;
+> +
+> +       pterm = mul_fp(pid->p_gain, fp_error);
+> +
+> +       pid->integral += fp_error;
+> +
+> +       /* limit the integral term */
+> +       integral_limit = int_tofp(30);
+> +       if (pid->integral > integral_limit)
+> +               pid->integral = integral_limit;
+> +       if (pid->integral < -integral_limit)
+> +               pid->integral = -integral_limit;
+> +
+> +       dterm = mul_fp(pid->d_gain, fp_error - pid->last_err);
+> +       pid->last_err = fp_error;
+> +
+> +       result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
+> +       result = result + (1 << (FRAC_BITS-1));
+> +       return (signed int)fp_toint(result);
+> +}
+> +
+> +static inline void acpi_pid_busy_pid_reset(struct cpudata *cpu)
+> +{
+> +       pid_p_gain_set(&cpu->pid, pid_params.p_gain_pct);
+> +       pid_d_gain_set(&cpu->pid, pid_params.d_gain_pct);
+> +       pid_i_gain_set(&cpu->pid, pid_params.i_gain_pct);
+> +
+> +       pid_reset(&cpu->pid, pid_params.setpoint, 100, pid_params.deadband, 0);
+> +}
+> +
+> +static inline void acpi_pid_reset_all_pid(void)
+> +{
+> +       unsigned int cpu;
+> +
+> +       for_each_online_cpu(cpu) {
+> +               if (all_cpu_data[cpu])
+> +                       acpi_pid_busy_pid_reset(all_cpu_data[cpu]);
+> +       }
+> +}
+> +
+> +/************************** debugfs begin ************************/
+> +static int pid_param_set(void *data, u64 val)
+> +{
+> +       *(u32 *)data = val;
+> +       acpi_pid_reset_all_pid();
+> +       return 0;
+> +}
+> +
+> +static int pid_param_get(void *data, u64 *val)
+> +{
+> +       *val = *(u32 *)data;
+> +       return 0;
+> +}
+> +DEFINE_SIMPLE_ATTRIBUTE(fops_pid_param, pid_param_get, pid_param_set, "%llu\n");
+> +
+> +struct pid_param {
+> +       char *name;
+> +       void *value;
+> +};
+> +
+> +static struct pid_param pid_files[] = {
+> +       {"sample_rate_ms", &pid_params.sample_rate_ms},
+> +       {"d_gain_pct", &pid_params.d_gain_pct},
+> +       {"i_gain_pct", &pid_params.i_gain_pct},
+> +       {"deadband", &pid_params.deadband},
+> +       {"setpoint", &pid_params.setpoint},
+> +       {"p_gain_pct", &pid_params.p_gain_pct},
+> +       {NULL, NULL}
+> +};
+> +
+> +static void __init acpi_pid_debug_expose_params(void)
+> +{
+> +       struct dentry *debugfs_parent;
+> +       int i = 0;
+> +
+> +       debugfs_parent = debugfs_create_dir("acpi_pid_snb", NULL);
+> +       if (IS_ERR_OR_NULL(debugfs_parent))
+> +               return;
+> +       while (pid_files[i].name) {
+> +               debugfs_create_file(pid_files[i].name, 0660,
+> +                               debugfs_parent, pid_files[i].value,
+> +                               &fops_pid_param);
+> +               i++;
+> +       }
+> +}
+> +
+> +/************************** debugfs end ************************/
+> +
+> +/************************** sysfs begin ************************/
+> +#define show_one(file_name, object)                                    \
+> +       static ssize_t show_##file_name                                 \
+> +(struct kobject *kobj, struct attribute *attr, char *buf)      \
+> +{                                                              \
+> +       return sprintf(buf, "%u\n", limits.object);             \
+> +}
+> +
+> +static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+> +               const char *buf, size_t count)
+> +{
+> +       unsigned int input;
+> +       int ret;
+> +
+> +       ret = sscanf(buf, "%u", &input);
+> +       if (ret != 1)
+> +               return -EINVAL;
+> +
+> +       limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
+> +       limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +       limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+> +
+> +       return count;
+> +}
+> +
+> +static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+> +               const char *buf, size_t count)
+> +{
+> +       unsigned int input;
+> +       int ret;
+> +
+> +       ret = sscanf(buf, "%u", &input);
+> +       if (ret != 1)
+> +               return -EINVAL;
+> +       limits.min_perf_pct = clamp_t(int, input, 0 , 100);
+> +       limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> +
+> +       return count;
+> +}
+> +
+> +show_one(max_perf_pct, max_perf_pct);
+> +show_one(min_perf_pct, min_perf_pct);
+> +
+> +define_one_global_rw(max_perf_pct);
+> +define_one_global_rw(min_perf_pct);
+> +
+> +static struct attribute *acpi_pid_attributes[] = {
+> +       &max_perf_pct.attr,
+> +       &min_perf_pct.attr,
+> +       NULL
+> +};
+> +
+> +static struct attribute_group acpi_pid_attr_group = {
+> +       .attrs = acpi_pid_attributes,
+> +};
+> +
+> +static void __init acpi_pid_sysfs_expose_params(void)
+> +{
+> +       struct kobject *acpi_pid_kobject;
+> +       int rc;
+> +
+> +       acpi_pid_kobject = kobject_create_and_add("acpi_pid",
+> +                       &cpu_subsys.dev_root->kobj);
+> +       BUG_ON(!acpi_pid_kobject);
+> +       rc = sysfs_create_group(acpi_pid_kobject, &acpi_pid_attr_group);
+> +       BUG_ON(rc);
+> +}
+> +
+> +/************************** sysfs end ************************/
+> +
+> +static void acpi_pid_get_min_max(struct cpudata *cpu, int *min, int *max)
+> +{
+> +       int max_perf = cpu->pstate.max_pstate;
+> +       int max_perf_adj;
+> +       int min_perf;
+> +
+> +       max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits.max_perf));
+> +       *max = clamp_t(int, max_perf_adj,
+> +                       cpu->pstate.min_pstate, cpu->pstate.max_pstate);
+> +
+> +       min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits.min_perf));
+> +       *min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
+> +}
+> +
+> +static int acpi_pid_set_pstate(struct cpudata *cpu, int pstate)
+> +{
+> +       int max_perf, min_perf;
+> +
+> +       acpi_pid_get_min_max(cpu, &min_perf, &max_perf);
+> +
+> +       pstate = clamp_t(int, pstate, min_perf, max_perf);
+> +
+> +       if (pstate == cpu->pstate.current_pstate)
+> +               return 0;
+> +
+> +       trace_cpu_frequency(pstate * 100000, cpu->cpu);
+> +
+> +       cpu->pstate.current_pstate = pstate;
+> +
+> +       return pstate_funcs.set(cpu, pstate);
+> +}
+> +
+> +static int acpi_pid_get_cpu_pstates(struct cpudata *cpu)
+> +{
+> +       int ret = 0;
+> +       ret = pstate_funcs.get_pstates(cpu);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       return acpi_pid_set_pstate(cpu, cpu->pstate.min_pstate);
+> +}
+> +
+> +static inline void acpi_pid_calc_busy(struct cpudata *cpu)
+> +{
+> +       struct sample *sample = &cpu->sample;
+> +       int64_t core_pct;
+> +
+> +       core_pct = int_tofp(sample->delivered) * int_tofp(100);
+> +       core_pct = div64_u64(core_pct, int_tofp(sample->reference));
+> +
+> +       sample->freq = fp_toint(
+> +                       mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
+> +
+> +       sample->core_pct_busy = (int32_t)core_pct;
+> +}
+> +
+> +static inline int acpi_pid_sample(struct cpudata *cpu)
+> +{
+> +       int ret = 0;
+> +
+> +       cpu->last_sample_time = cpu->sample.time;
+> +       cpu->sample.time = ktime_get();
+> +
+> +       ret = pstate_funcs.get_sample(cpu);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       acpi_pid_calc_busy(cpu);
+> +
+> +       return ret;
+> +}
+> +
+> +static inline void acpi_pid_set_sample_time(struct cpudata *cpu)
+> +{
+> +       int delay;
+> +
+> +       delay = msecs_to_jiffies(pid_params.sample_rate_ms);
+> +       mod_timer_pinned(&cpu->timer, jiffies + delay);
+> +}
+> +
+> +static inline int32_t acpi_pid_get_scaled_busy(struct cpudata *cpu)
+> +{
+> +       int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+> +       u32 duration_us;
+> +       u32 sample_time;
+> +
+> +       core_busy = cpu->sample.core_pct_busy;
+> +       max_pstate = int_tofp(cpu->pstate.max_pstate);
+> +       current_pstate = int_tofp(cpu->pstate.current_pstate);
+> +       core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+> +
+> +       sample_time = pid_params.sample_rate_ms * USEC_PER_MSEC;
+> +       duration_us = (u32) ktime_us_delta(cpu->sample.time,
+> +                       cpu->last_sample_time);
+> +       if (duration_us > sample_time * 3) {
+> +               sample_ratio = div_fp(int_tofp(sample_time),
+> +                               int_tofp(duration_us));
+> +               core_busy = mul_fp(core_busy, sample_ratio);
+> +       }
+> +
+> +       return core_busy;
+> +}
+> +
+> +static inline int acpi_pid_adjust_busy_pstate(struct cpudata *cpu)
+> +{
+> +       int32_t busy_scaled;
+> +       struct _pid *pid;
+> +       signed int ctl;
+> +
+> +       pid = &cpu->pid;
+> +       busy_scaled = acpi_pid_get_scaled_busy(cpu);
+> +
+> +       ctl = pid_calc(pid, busy_scaled);
+> +
+> +       /* Negative values of ctl increase the pstate and vice versa */
+> +       return acpi_pid_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
+> +}
+> +
+> +static void acpi_pid_timer_func(unsigned long __data)
+> +{
+> +       struct cpudata *cpu = (struct cpudata *) __data;
+> +       struct sample *sample;
+> +
+> +       acpi_pid_sample(cpu);
+> +
+> +       sample = &cpu->sample;
+> +
+> +       acpi_pid_adjust_busy_pstate(cpu);
+> +
+> +       trace_pstate_sample(fp_toint(sample->core_pct_busy),
+> +                       fp_toint(acpi_pid_get_scaled_busy(cpu)),
+> +                       cpu->pstate.current_pstate,
+> +                       sample->delivered,
+> +                       sample->reference,
+> +                       sample->freq);
+> +
+> +       acpi_pid_set_sample_time(cpu);
+> +}
+> +
+> +static int acpi_pid_init_cpu(unsigned int cpunum)
+> +{
+> +       struct cpudata *cpu;
+> +       int ret = 0;
+> +
+> +       all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
+> +       if (!all_cpu_data[cpunum])
+> +               return -ENOMEM;
+> +
+> +       cpu = all_cpu_data[cpunum];
+> +
+> +       cpu->cpu = cpunum;
+> +       ret = acpi_pid_get_cpu_pstates(cpu);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       init_timer_deferrable(&cpu->timer);
+> +       cpu->timer.function = acpi_pid_timer_func;
+> +       cpu->timer.data = (unsigned long)cpu;
+> +       cpu->timer.expires = jiffies + HZ/100;
+> +       acpi_pid_busy_pid_reset(cpu);
+> +       ret = acpi_pid_sample(cpu);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       add_timer_on(&cpu->timer, cpunum);
+> +
+> +       pr_debug("ACPI PID controlling: cpu %d\n", cpunum);
+> +
+> +       return ret;
+> +}
+> +
+> +static unsigned int acpi_pid_get(unsigned int cpu_num)
+> +{
+> +       struct sample *sample;
+> +       struct cpudata *cpu;
+> +
+> +       cpu = all_cpu_data[cpu_num];
+> +       if (!cpu)
+> +               return 0;
+> +       sample = &cpu->sample;
+> +       return sample->freq;
+> +}
+> +
+> +static int acpi_pid_set_policy(struct cpufreq_policy *policy)
+> +{
+> +       if (!policy->cpuinfo.max_freq)
+> +               return -ENODEV;
+> +
+> +       if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+> +               limits.min_perf_pct = 100;
+> +               limits.min_perf = int_tofp(1);
+> +               limits.max_perf_pct = 100;
+> +               limits.max_perf = int_tofp(1);
+> +               return 0;
+> +       }
+> +       limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+> +       limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
+> +       limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> +
+> +       limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+> +       limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+> +       limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +       limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+> +
+> +       return 0;
+> +}
+> +
+> +static int acpi_pid_verify_policy(struct cpufreq_policy *policy)
+> +{
+> +       cpufreq_verify_within_cpu_limits(policy);
+> +
+> +       if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+> +                       policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+> +               return -EINVAL;
+> +
+> +       return 0;
+> +}
+> +
+> +static void acpi_pid_stop_cpu(struct cpufreq_policy *policy)
+> +{
+> +       int cpu_num = policy->cpu;
+> +       struct cpudata *cpu = all_cpu_data[cpu_num];
+> +
+> +       pr_info("acpi_pid CPU %d exiting\n", cpu_num);
+> +
+> +       del_timer_sync(&all_cpu_data[cpu_num]->timer);
+> +       acpi_pid_set_pstate(cpu, cpu->pstate.min_pstate);
+> +       kfree(all_cpu_data[cpu_num]);
+> +       all_cpu_data[cpu_num] = NULL;
+> +}
+> +
+> +static int acpi_pid_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       struct cpudata *cpu;
+> +       int rc;
+> +
+> +       rc = acpi_pid_init_cpu(policy->cpu);
+> +       if (rc)
+> +               return rc;
+> +
+> +       cpu = all_cpu_data[policy->cpu];
+> +
+> +       if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
+> +               policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+> +       else
+> +               policy->policy = CPUFREQ_POLICY_POWERSAVE;
+> +
+> +       policy->min = cpu->pstate.min_pstate * 100000;
+> +       policy->max = cpu->pstate.max_pstate * 100000;
+> +
+> +       /* cpuinfo and default policy values */
+> +       policy->cpuinfo.min_freq = cpu->pstate.min_pstate * 100000;
+> +       policy->cpuinfo.max_freq = cpu->pstate.max_pstate * 100000;
+> +       policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+> +       cpumask_set_cpu(policy->cpu, policy->cpus);
+> +
+> +       return 0;
+> +}
+> +
+> +static struct cpufreq_driver acpi_pid_driver = {
+> +       .flags = CPUFREQ_CONST_LOOPS,
+> +       .verify = acpi_pid_verify_policy,
+> +       .setpolicy = acpi_pid_set_policy,
+> +       .get = acpi_pid_get,
+> +       .init = acpi_pid_cpu_init,
+> +       .stop_cpu = acpi_pid_stop_cpu,
+> +       .name = "acpi_pid",
+> +};
+> +
+> +static void copy_pid_params(struct pstate_adjust_policy *policy)
+> +{
+> +       pid_params.sample_rate_ms = policy->sample_rate_ms;
+> +       pid_params.p_gain_pct = policy->p_gain_pct;
+> +       pid_params.i_gain_pct = policy->i_gain_pct;
+> +       pid_params.d_gain_pct = policy->d_gain_pct;
+> +       pid_params.deadband = policy->deadband;
+> +       pid_params.setpoint = policy->setpoint;
+> +}
+> +
+> +static void copy_cpu_funcs(struct pstate_funcs *funcs)
+> +{
+> +       pstate_funcs.get_sample = funcs->get_sample;
+> +       pstate_funcs.get_pstates = funcs->get_pstates;
+> +       pstate_funcs.set = funcs->set;
+> +}
+> +
+> +static void cppc_chan_tx_done(struct mbox_client *cl, void *mssg, int ret)
+> +{
+> +       if (!ret)
+> +               pr_debug("PCC TX successfully completed. CMD sent = %x\n", *(u16*)mssg);
+> +       else
+> +               pr_warn("PCC channel TX did not complete: CMD sent = %x\n", *(u16*)mssg);
+> +}
+> +
+> +struct mbox_client cppc_mbox_cl = {
+> +       .tx_done = cppc_chan_tx_done,
+> +       .tx_block = true,
+> +       .tx_tout = 10,
+> +};
+> +
+> +/*
+> + * The _CPC table is a per CPU table that describes all the PCC registers.
+> + * An example table looks like the following. The complete list of registers
+> + * one would expect is above cppc_pcc_regs[].
+> + *
+> + *     Name(_CPC, Package()
+> + *                     {
+> + *                     17,
+> + *                     NumEntries
+> + *                     1,
+> + *                     // Revision
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x120, 2)},
+> + *                     // Highest Performance
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x124, 2)},
+> + *                     // Nominal Performance
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x128, 2)},
+> + *                     // Lowest Nonlinear Performance
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x12C, 2)},
+> + *                     // Lowest Performance
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x130, 2)},
+> + *                     // Guaranteed Performance Register
+> + *                     ResourceTemplate(){Register(PCC, 32, 0, 0x110, 2)},
+> + *                     // Desired Performance Register
+> + *                     ResourceTemplate(){Register(SystemMemory, 0, 0, 0, 0)},
+> + *                     ..
+> + *                     ..
+> + *                     ..
+> + *
+> + *             }
+> + * Each Register() encodes how to access that specific register.
+> + * e.g. a sample PCC entry has the following encoding:
+> + *
+> + *     Register (
+> + *             PCC,
+> + *             AddressSpaceKeyword
+> + *             8,
+> + *             //RegisterBitWidth
+> + *             8,
+> + *             //RegisterBitOffset
+> + *             0x30,
+> + *             //RegisterAddress
+> + *             9
+> + *             //AccessSize (subspace ID)
+> + *             0
+> + *             )
+> + *             }
+> + *
+> + *     This function walks through all the per CPU _CPC entries and extracts
+> + *     the Register details. See cpc_read64/write64() to see how these registers
+> + *     are accessed.
+> + */
+> +static int acpi_cppc_processor_probe(void)
+> +{
+> +       struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
+> +       union acpi_object *out_obj, *cpc_obj;
+> +       struct cpc_desc *current_cpu_cpc;
+> +       struct cpc_register_resource *gas_t;
+> +       struct acpi_pcct_subspace *cppc_ss;
+> +       char proc_name[11];
+> +       unsigned int num_ent, ret = 0, i, cpu, len;
+> +       acpi_handle handle;
+> +       acpi_status status;
+> +
+> +       /* Parse the ACPI _CPC table for each cpu. */
+> +       for_each_possible_cpu(cpu) {
+> +               sprintf(proc_name, "\\_PR.CPU%d", cpu);
+> +
+> +               status = acpi_get_handle(NULL, proc_name, &handle);
+> +               if (ACPI_FAILURE(status)) {
+> +                       ret = -ENODEV;
+> +                       goto out_free;
+> +               }
+> +
+> +               if (!acpi_has_method(handle, "_CPC")) {
+> +                       ret = -ENODEV;
+> +                       goto out_free;
+> +               }
+> +
+> +               status = acpi_evaluate_object(handle, "_CPC", NULL, &output);
+> +               if (ACPI_FAILURE(status)) {
+> +                       ret = -ENODEV;
+> +                       goto out_free;
+> +               }
+> +
+> +               out_obj = (union acpi_object *) output.pointer;
+> +               if (out_obj->type != ACPI_TYPE_PACKAGE) {
+> +                       ret = -ENODEV;
+> +                       goto out_free;
+> +               }
+> +
+> +               current_cpu_cpc = kzalloc(sizeof(struct cpc_desc), GFP_KERNEL);
+> +               if (!current_cpu_cpc) {
+> +                       pr_err("Could not allocate per cpu CPC descriptors\n");
+> +                       return -ENOMEM;
+> +               }
+> +
+> +               num_ent = out_obj->package.count;
+> +               current_cpu_cpc->num_entries = num_ent;
+> +
+> +               pr_info("num_ent in CPC table:%d\n", num_ent);
+> +
+> +               /* Iterate through each entry in _CPC */
+> +               for (i = 2; i < num_ent; i++) {
+> +                       cpc_obj = &out_obj->package.elements[i];
+> +
+> +                       if (cpc_obj->type != ACPI_TYPE_BUFFER) {
+> +                               pr_err("Error in PCC entry in CPC table\n");
+> +                               ret = -EINVAL;
+> +                               goto out_free;
+> +                       }
+> +
+> +                       gas_t = (struct cpc_register_resource *) cpc_obj->buffer.pointer;
+> +
+> +                       /*
+> +                        * The PCC Subspace index is encoded inside the CPC table entries.
+> +                        * The same PCC index will be used for all the entries, so extract
+> +                        * it only once.
+> +                        */
+> +                       if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
+> +                               if (pcc_subspace_idx < 0)
+> +                                       pcc_subspace_idx = gas_t->access_width;
+> +                       }
+> +
+> +                       /*
+> +                        * First two entires are Version and num of entries.
+> +                        * Rest of them are PCC registers. Hence the loop
+> +                        * begins at 2. Get each reg info.
+> +                        */
+> +                       current_cpu_cpc->cpc_regs[i-2] = (struct cpc_register_resource) {
+> +                               .space_id = gas_t->space_id,
+> +                               .length = gas_t->length,
+> +                               .bit_width = gas_t->bit_width,
+> +                               .bit_offset = gas_t->bit_offset,
+> +                               .address = gas_t->address,
+> +                               .access_width = gas_t->access_width,
+> +                       };
+> +               }
+> +               /* Plug it into this CPUs CPC descriptor. */
+> +               per_cpu(cpc_desc_ptr, cpu) = current_cpu_cpc;
+> +       }
+> +
+> +       /*
+> +        * Now that we have all the information from the CPC table,
+> +        * lets get a mailbox channel from the mailbox controller.
+> +        * The channel for client is indexed using the subspace id
+> +        * which was encoded in the Register(PCC.. entries.
+> +        */
+> +       pr_debug("Completed parsing, now onto PCC init\n");
+> +
+> +       if (pcc_subspace_idx >= 0) {
+> +               pcc_channel = pcc_mbox_request_channel(&cppc_mbox_cl,
+> +                               pcc_subspace_idx);
+> +
+> +               if (IS_ERR(pcc_channel)) {
+> +                       pr_err("No PCC communication channel found\n");
+> +                       ret = -ENODEV;
+> +                       goto out_free;
+> +               }
+> +
+> +
+> +               /*
+> +                * The PCC mailbox controller driver should
+> +                * have parsed the PCCT (global table of all
+> +                * PCC channels) and stored pointers to the
+> +                * subspace communication region in con_priv.
+> +                */
+> +               cppc_ss = pcc_channel->con_priv;
+> +
+> +               /*
+> +                * This is the shared communication region
+> +                * for the OS and Platform to communicate over.
+> +                */
+> +               comm_base_addr = cppc_ss->base_address;
+> +               len = cppc_ss->length;
+> +
+> +               pr_debug("From PCCT: CPPC subspace addr:%llx, len: %d\n", comm_base_addr, len);
+> +               pcc_comm_addr = ioremap(comm_base_addr, len);
+> +               if (!pcc_comm_addr) {
+> +                       ret = -ENOMEM;
+> +                       pr_err("Failed to ioremap PCC comm region mem\n");
+> +                       goto out_free;
+> +               }
+> +
+> +               cppc_ss->base_address = (u64)pcc_comm_addr;
+> +               pr_debug("New PCC comm space addr: %llx\n", (u64)pcc_comm_addr);
+> +
+> +       } else {
+> +               pr_err("No PCC subspace detected in any CPC structure!\n");
+> +               ret = -EINVAL;
+> +               goto out_free;
+> +       }
+> +
+> +       /* Everything looks okay */
+> +       pr_info("Successfully parsed all CPC structs\n");
+> +
+> +       kfree(output.pointer);
+> +       return 0;
+> +
+> +out_free:
+> +       for_each_online_cpu(cpu) {
+> +               current_cpu_cpc = per_cpu(cpc_desc_ptr, cpu);
+> +               if (current_cpu_cpc)
+> +                       kfree(current_cpu_cpc);
+> +       }
+> +
+> +       kfree(output.pointer);
+> +       return -ENODEV;
+> +}
+> +
+> +static int cppc_get_pstates(struct cpudata *cpu)
+> +{
+> +       unsigned int cpunum = cpu->cpu;
+> +       struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> +       struct cpc_register_resource *highest_reg, *lowest_reg;
+> +       u64 min, max;
+> +       int ret;
+> +
+> +       if (!cpc_desc) {
+> +               pr_err("No CPC descriptor for CPU:%d\n", cpunum);
+> +               return -ENODEV;
+> +       }
+> +
+> +       highest_reg = &cpc_desc->cpc_regs[HIGHEST_PERF];
+> +       lowest_reg = &cpc_desc->cpc_regs[LOWEST_PERF];
+> +
+> +       ret = cpc_read64(&max, highest_reg);
+> +       if (ret < 0) {
+> +               pr_err("Err getting max pstate\n");
+> +               return ret;
+> +       }
+> +
+> +       cpu->pstate.max_pstate = max;
+> +
+> +       ret = cpc_read64(&min, lowest_reg);
+> +       if (ret < 0) {
+> +               pr_err("Err getting min pstate\n");
+> +               return ret;
+> +       }
+> +
+> +       cpu->pstate.min_pstate = min;
+> +
+> +       if (!cpu->pstate.max_pstate || !cpu->pstate.min_pstate) {
+> +               pr_err("Err reading CPU performance limits\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+> +static int cppc_get_sample(struct cpudata *cpu)
+> +{
+> +       unsigned int cpunum = cpu->cpu;
+> +       struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> +       struct cpc_register_resource *delivered_reg, *reference_reg;
+> +       u64 delivered, reference;
+> +       int ret;
+> +
+> +       if (!cpc_desc) {
+> +               pr_err("No CPC descriptor for CPU:%d\n", cpunum);
+> +               return -ENODEV;
+> +       }
+> +
+> +       delivered_reg = &cpc_desc->cpc_regs[DELIVERED_CTR];
+> +       reference_reg = &cpc_desc->cpc_regs[REFERENCE_CTR];
+> +
+> +       ret = cpc_read64(&delivered, delivered_reg);
+> +       if (ret < 0) {
+> +               pr_err("Err getting Delivered ctr\n");
+> +               return ret;
+> +       }
+> +
+> +       ret = cpc_read64(&reference, reference_reg);
+> +       if (ret < 0) {
+> +               pr_err("Err getting Reference ctr\n");
+> +               return ret;
+> +       }
+> +
+> +       if (!delivered || !reference) {
+> +               pr_err("Bogus values from Delivered or Reference counters\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       cpu->sample.delivered = delivered;
+> +       cpu->sample.reference = reference;
+> +
+> +       cpu->sample.delivered -= cpu->prev_delivered;
+> +       cpu->sample.reference -= cpu->prev_reference;
+> +
+> +       cpu->prev_delivered = delivered;
+> +       cpu->prev_reference = reference;
+> +
+> +       return 0;
+> +}
+> +
+> +static int cppc_set_pstate(struct cpudata *cpudata, int state)
+> +{
+> +       unsigned int cpu = cpudata->cpu;
+> +       struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+> +       struct cpc_register_resource *desired_reg;
+> +
+> +       if (!cpc_desc) {
+> +               pr_err("No CPC descriptor for CPU:%d\n", cpu);
+> +               return -ENODEV;
+> +       }
+> +
+> +       desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+> +       return cpc_write64(state, desired_reg);
+> +}
+> +
+> +static struct cpu_defaults acpi_pid_cppc = {
+> +       .pid_policy = {
+> +               .sample_rate_ms = 10,
+> +               .deadband = 0,
+> +               .setpoint = 97,
+> +               .p_gain_pct = 14,
+> +               .d_gain_pct = 0,
+> +               .i_gain_pct = 4,
+> +       },
+> +       .funcs = {
+> +               .get_sample = cppc_get_sample,
+> +               .get_pstates = cppc_get_pstates,
+> +               .set = cppc_set_pstate,
+> +       },
+> +};
+> +
+> +static int __init acpi_cppc_init(void)
+> +{
+> +       if (acpi_disabled || acpi_cppc_processor_probe()) {
+> +               pr_err("Err initializing CPC structures or ACPI is disabled\n");
+> +               return -ENODEV;
+> +       }
+> +
+> +       copy_pid_params(&acpi_pid_cppc.pid_policy);
+> +       copy_cpu_funcs(&acpi_pid_cppc.funcs);
+> +
+> +       return 0;
+> +}
+> +
+> +static int __init acpi_pid_init(void)
+> +{
+> +       int cpu, rc = 0;
+> +
+> +       rc = acpi_cppc_init();
+> +
+> +       if (rc)
+> +               return -ENODEV;
+> +
+> +       pr_info("ACPI PID driver initializing.\n");
+> +
+> +       all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+> +       if (!all_cpu_data)
+> +               return -ENOMEM;
+> +
+> +       rc = cpufreq_register_driver(&acpi_pid_driver);
+> +       if (rc)
+> +               goto out;
+> +
+> +       acpi_pid_debug_expose_params();
+> +       acpi_pid_sysfs_expose_params();
+> +
+> +       return rc;
+> +out:
+> +       get_online_cpus();
+> +       for_each_online_cpu(cpu) {
+> +               if (all_cpu_data[cpu]) {
+> +                       del_timer_sync(&all_cpu_data[cpu]->timer);
+> +                       kfree(all_cpu_data[cpu]);
+> +               }
+> +       }
+> +
+> +       put_online_cpus();
+> +       vfree(all_cpu_data);
+> +       return -ENODEV;
+> +}
+> +
+> +late_initcall(acpi_pid_init);
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 1.9.1
+>
