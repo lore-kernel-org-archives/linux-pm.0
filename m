@@ -1,118 +1,106 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/2 V6] intel_pstate: skip this driver if Sun server has
- _PPC method
-Date: Mon, 01 Dec 2014 07:11:55 -0800
-Message-ID: <547C853B.4000700@gmail.com>
-References: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC V1 0/8] CPUFreq: create platform-dev for DT based cpufreq drivers
+Date: Mon, 01 Dec 2014 17:03:46 +0100
+Message-ID: <2342930.0NFoS1nEgv@wuerfel>
+References: <cover.1417433163.git.viresh.kumar@linaro.org> <23115535.r6kXsReHU2@wuerfel> <547C8423.2090300@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: dirk.brandewie@gmail.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.13]:57277 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754118AbaLAQEk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 11:04:40 -0500
+In-Reply-To: <547C8423.2090300@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, "rob.herring@linaro.org" <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mike Turquette <mike.turquette@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>
 
-On 11/30/2014 06:32 PM, Ethan Zhao wrote:
-> Oracle Sun X86 servers have dynamic power capping capability that works via
-> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-> enabled.
->
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Tested-by: Linda Knippers <linda.knippers@hp.com>
+On Monday 01 December 2014 15:07:15 Sudeep Holla wrote:
+> On 01/12/14 14:11, Arnd Bergmann wrote:
+> > On Monday 01 December 2014 13:35:25 Sudeep Holla wrote:
+> >> On 01/12/14 13:29, Viresh Kumar wrote:
+> >>> On 1 December 2014 at 18:24, Arnd Bergmann <arnd@arndb.de> wrote:
+> >>>> Thanks a lot for working on this, we really need to figure it out one day!
+> >>>
+> >>>
+> >>>
+> >>>> Your patches seem well-implemented, so if everybody thinks the general
+> >>>> approach is the best solution, we should do that. From my point of view,
+> >>>> there are two things I would do differently:
+> >>>>
+> >>>> - In the DT binding, I would strongly prefer anything but the root compatible
+> >>>>     property as the key for the new platforms. Clearly we have to keep using
+> >>>>     it for the backwards-compatibility case, as you do, but I think there
+> >>>>     are more appropriate places to put it. Sorting from most favorite to least
+> >>>>     favorite, my list would be:
+> >>>>           1. a new property in /cpus/
+> >>>>           2. a new property each /cpus/cpu@... node.
+> >>>
+> >>> I did it this way earlier and named it dvfs-method but probably putting this
+> >>> into the /cpus/ node is far better. But then Sudeep asked to utilize
+> >>> compatible property only..
+> >>>
+> >>> Are you fine with the name here? "dvfs-method"
+> >>>
+> >>
+> >> That's right, I don't like driver specific method in the cpu node as you
+> >> initially did. But if it's a property in the chosen node (where we
+> >> usually put the Linux specific properties), I am fine with
+> >> that as Arnd has illustrated in his patch.
+> >
+> > I would prefer the /cpus node over the /chosen node because the former
+> > describes the hardware while the latter is supposed to be user-settable
+> > (on real open-firmware at least). But I think either one is better than
+> > using the / node compatible string.
+> >
+> 
+> Agreed, the main reason for objection was that in the initial proposal
+> it was more a Linux configuration rather than hardware property.
+> 
+> <dvfs-method> = "cpufreq-dt";
+> 
+> I don't see anything hardware feature presented with that. On the other
+> hand, we could represent the some thing like whether the cpu share
+> clock or are they independently clocked as a hardware property in the
+> cpu nodes.
 
-In the future you should not add other peoples Signed-off-by or Tested-by
-tags unless they have explicitly told you can do so. Other than that I
-am fine with this patch.
+My interpretation of the dvfs-method property is that the string states
+how dvfs works. In particular, it would be used to tell the difference
+between machines that just rely on the clocks and regulators properties
+of the CPU nodes as defined in bindings/cpufreq/cpufreq-dt.txt compared
+to those that need platform-specific properties beyond that. The value
+of the string should indeed not be "cpufreq-dt", as that would be a linux
+implementation detail and inappropriate here. 
 
---Dirk
-> ---
->    v2: fix break HP Proliant issue.
->    v3: expand the hardware vendor list.
->    v4: refine code.
->    v5v6: change enum PCC to PPC.
->
->   drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
->   1 file changed, 41 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 27bb6d3..1bb62ca 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
->   	return true;
->   }
->
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct acpi_processor *pr = per_cpu(processors, i);
-> +
-> +		if (!pr)
-> +			continue;
-> +		if (acpi_has_method(pr->handle, "_PPC"))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
-> +enum {
-> +	PSS,
-> +	PPC,
-> +};
-> +
->   struct hw_vendor_info {
->   	u16  valid;
->   	char oem_id[ACPI_OEM_ID_SIZE];
->   	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +	int  oem_pwr_table;
->   };
->
->   /* Hardware vendor-specific info that has its own power management modes */
->   static struct hw_vendor_info vendor_info[] = {
-> -	{1, "HP    ", "ProLiant"},
-> +	{1, "HP    ", "ProLiant", PSS},
-> +	{1, "ORACLE", "X4-2    ", PPC},
-> +	{1, "ORACLE", "X4-2L   ", PPC},
-> +	{1, "ORACLE", "X4-2B   ", PPC},
-> +	{1, "ORACLE", "X3-2    ", PPC},
-> +	{1, "ORACLE", "X3-2L   ", PPC},
-> +	{1, "ORACLE", "X3-2B   ", PPC},
-> +	{1, "ORACLE", "X4470M2 ", PPC},
-> +	{1, "ORACLE", "X4270M3 ", PPC},
-> +	{1, "ORACLE", "X4270M2 ", PPC},
-> +	{1, "ORACLE", "X4170M2 ", PPC},
->   	{0, "", ""},
->   };
->
-> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->
->   	for (v_info = vendor_info; v_info->valid; v_info++) {
->   		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
-> -		    intel_pstate_no_acpi_pss())
-> -			return true;
-> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
-> +						ACPI_OEM_TABLE_ID_SIZE))
-> +			switch (v_info->oem_pwr_table) {
-> +			case PSS:
-> +				return intel_pstate_no_acpi_pss();
-> +			case PPC:
-> +				return intel_pstate_has_acpi_ppc();
-> +			}
->   	}
->
->   	return false;
->   }
->   #else /* CONFIG_ACPI not enabled */
->   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->   #endif /* CONFIG_ACPI */
->
->   static int __init intel_pstate_init(void)
->
+For the strings, we could use a set like
 
+	linux,dvfs-method = "generic"; /* bindings/cpufreq/cpufreq-dt.txt */
+	linux,dvfs-method = "arm,big-little"; /* bindings/cpufreq/arm_big_little_dt.txt */
+	linux,dvfs-method = "samsung,exynos4210"; /* legacy exynos, all four */
+	linux,dvfs-method = "samsung,exynos4212";
+	linux,dvfs-method = "samsung,exynos4412";
+	linux,dvfs-method = "samsung,exynos5250";
+
+Note that the "linux," prefix here does not mean that the property would
+not be interpreted by another OS or that it doesn't describe the hardware.
+Instead, it means that it is defined by linux first and not specific to
+some other vendor. We could also drop the prefix, but that has the danger
+of conflicting with another property that someone already defined, while
+the "linux," namespace is managed through our upstream git and we know that
+nobody is using this property name.
+
+> > How about a "linux,cpu-dvfs-method" property in the root node? Would
+> > that work better for you than a "linux,dvfs-method" in the "/cpus"
+> > node?
+> >
+> 
+> I will leave that to the DT maintainers for specific details though
+> my preference is still chosen node as it's more related to Linux and
+> it's driver choice and unlikely to be used by other OSes. IMO we just
+> need single entry in the DT, so I am fine with either of your choice above.
+
+Ok.
+
+	Arnd
