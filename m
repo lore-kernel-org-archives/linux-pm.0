@@ -1,133 +1,49 @@
-From: ethan zhao <ethan.zhao@oracle.com>
-Subject: Re: [PATCH 1/2 V6] intel_pstate: skip this driver if Sun server has
- _PPC method
-Date: Tue, 02 Dec 2014 09:02:43 +0800
-Message-ID: <547D0FB3.4060502@oracle.com>
-References: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com> <547C853B.4000700@gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH V4 1/3] PM / Domains: Initial PM clock support for genpd
+Date: Mon, 01 Dec 2014 17:09:45 -0800
+Message-ID: <7h7fya502u.fsf@deeprootsystems.com>
+References: <1417434623-31301-1-git-send-email-ulf.hansson@linaro.org>
+	<1417434623-31301-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <547C853B.4000700@gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:42585 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbaLBBJs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 20:09:48 -0500
+Received: by mail-pd0-f178.google.com with SMTP id g10so12105170pdj.9
+        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 17:09:47 -0800 (PST)
+In-Reply-To: <1417434623-31301-2-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Mon, 1 Dec 2014 12:50:21 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 
-Dirk,
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-On 2014/12/1 23:11, Dirk Brandewie wrote:
-> On 11/30/2014 06:32 PM, Ethan Zhao wrote:
->> Oracle Sun X86 servers have dynamic power capping capability that 
->> works via
->> ACPI _PPC method etc, so skip loading this driver if Sun server has 
->> ACPI _PPC
->> enabled.
->>
->> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
->> Tested-by: Linda Knippers <linda.knippers@hp.com>
+> It's quite common for PM domains to use PM clocks. Typically from SOC
+> specific code, the per device PM clock list is created and
+> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
 >
-> In the future you should not add other peoples Signed-off-by or Tested-by
-> tags unless they have explicitly told you can do so. Other than that I
-> am fine with this patch.
-   Got it. many thanks.
-
-   Ethan
+> A step towards consolidation is to integrate PM clock support into
+> genpd, which is what this patch does.
 >
-> --Dirk
->> ---
->>    v2: fix break HP Proliant issue.
->>    v3: expand the hardware vendor list.
->>    v4: refine code.
->>    v5v6: change enum PCC to PPC.
->>
->>   drivers/cpufreq/intel_pstate.c | 45 
->> ++++++++++++++++++++++++++++++++++++++----
->>   1 file changed, 41 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c 
->> b/drivers/cpufreq/intel_pstate.c
->> index 27bb6d3..1bb62ca 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
->>       return true;
->>   }
->>
->> +static bool intel_pstate_has_acpi_ppc(void)
->> +{
->> +    int i;
->> +
->> +    for_each_possible_cpu(i) {
->> +        struct acpi_processor *pr = per_cpu(processors, i);
->> +
->> +        if (!pr)
->> +            continue;
->> +        if (acpi_has_method(pr->handle, "_PPC"))
->> +            return true;
->> +    }
->> +    return false;
->> +}
->> +
->> +enum {
->> +    PSS,
->> +    PPC,
->> +};
->> +
->>   struct hw_vendor_info {
->>       u16  valid;
->>       char oem_id[ACPI_OEM_ID_SIZE];
->>       char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
->> +    int  oem_pwr_table;
->>   };
->>
->>   /* Hardware vendor-specific info that has its own power management 
->> modes */
->>   static struct hw_vendor_info vendor_info[] = {
->> -    {1, "HP    ", "ProLiant"},
->> +    {1, "HP    ", "ProLiant", PSS},
->> +    {1, "ORACLE", "X4-2    ", PPC},
->> +    {1, "ORACLE", "X4-2L   ", PPC},
->> +    {1, "ORACLE", "X4-2B   ", PPC},
->> +    {1, "ORACLE", "X3-2    ", PPC},
->> +    {1, "ORACLE", "X3-2L   ", PPC},
->> +    {1, "ORACLE", "X3-2B   ", PPC},
->> +    {1, "ORACLE", "X4470M2 ", PPC},
->> +    {1, "ORACLE", "X4270M3 ", PPC},
->> +    {1, "ORACLE", "X4270M2 ", PPC},
->> +    {1, "ORACLE", "X4170M2 ", PPC},
->>       {0, "", ""},
->>   };
->>
->> @@ -966,15 +997,21 @@ static bool 
->> intel_pstate_platform_pwr_mgmt_exists(void)
->>
->>       for (v_info = vendor_info; v_info->valid; v_info++) {
->>           if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
->> -            !strncmp(hdr.oem_table_id, v_info->oem_table_id, 
->> ACPI_OEM_TABLE_ID_SIZE) &&
->> -            intel_pstate_no_acpi_pss())
->> -            return true;
->> +            !strncmp(hdr.oem_table_id, v_info->oem_table_id,
->> +                        ACPI_OEM_TABLE_ID_SIZE))
->> +            switch (v_info->oem_pwr_table) {
->> +            case PSS:
->> +                return intel_pstate_no_acpi_pss();
->> +            case PPC:
->> +                return intel_pstate_has_acpi_ppc();
->> +            }
->>       }
->>
->>       return false;
->>   }
->>   #else /* CONFIG_ACPI not enabled */
->>   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { 
->> return false; }
->> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->>   #endif /* CONFIG_ACPI */
->>
->>   static int __init intel_pstate_init(void)
->>
+> In this initial step, the calls to the pm_clk_suspend|resume() are
+> handled within genpd, but the per device PM clock list still needs to
+> be created from SOC specific code. It seems reasonable to have gendp to
+> handle that as well, but that left to future patches to address.
 >
+> It's not every users of genpd that are keen on using PM clocks, thus we
+> need to provide this a configuration option for genpd. Therefore let's
+> add flag field in the genpd struct to keep this information and define
+> a new GENDP_FLAG_PM_CLK bit for it.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
+Are you also planning to add a way to enable this option from DT?
+
+Kevin
