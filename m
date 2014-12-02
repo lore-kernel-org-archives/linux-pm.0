@@ -1,94 +1,90 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 00/10] sched: frequency and cpu invariant per-entity load-tracking and other load-tracking bits
-Date: Tue,  2 Dec 2014 14:06:22 +0000
-Message-ID: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFC PATCH 03/10] cpufreq: Architecture specific callback for frequency changes
+Date: Tue,  2 Dec 2014 14:06:25 +0000
+Message-ID: <1417529192-11579-4-git-send-email-morten.rasmussen@arm.com>
+References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:39592 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:39627 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbaLBOG6 (ORCPT
+	with ESMTP id S1752942AbaLBOG6 (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 09:06:58 -0500
+In-Reply-To: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <Morten.Rasmussen@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-Numerous proposals for various changes to per-entity load-tracking have
-been posted in the past to introduce various forms of scale invariance,
-utilization tracking, and taking blocked load into account. This RFC
-patch set has attempts to merge the features of these proposals.
+From: Morten Rasmussen <Morten.Rasmussen@arm.com>
 
-The patch set is based on top of Vincent's cpu capacity and usage patch
-set [1] which introduces the scheduler side of frequency invariant
-utilization tracking. This patch set adds:
+Architectures that don't have any other means for tracking cpu frequency
+changes need a callback from cpufreq to implement a scaling factor to
+enable scale-invariant per-entity load-tracking in the scheduler.
 
-Patches:
+To compute the scale invariance correction factor the architecture would
+need to know both the max frequency and the current frequency. This
+patch defines weak functions for setting both from cpufreq.
 
-1: Adds frequency scale invariance to runnable load tracking
-(weighted_cpuload() and friends). Like utilization in [1], load is now
-also scaled with frequency relative to the max frequency.
+Related architecture specific functions use weak function definitions.
+The same approach is followed here.
 
-2: Adds cpu scale invariance to both load and utilization. This second
-scaling compensates for differences in max performance between cpus,
-e.g. cpus with different max OPPs or different cpu uarchs (ARM
-big.LITTLE).
+These callbacks can be used to implement frequency scaling of cpu
+capacity later.
 
-3-5: ARM arch implementation of arch_scale_freq_capacity() to enable
-frequency invariance of both utilization and load.
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+---
+ drivers/cpufreq/cpufreq.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-6: Update ARM arch implementation of arch_scale_cpu_capacity().
-
-7: Remove scaling of cpu usage by capacity_orig. With introduction of
-cpu scale-invariance the per-entity tracking already does this scaling.
-
-Experimental patches:
-
-8: Add tracking of blocked utilization (usage) to the utilization
-introduced in [1].
-
-9: Change get_cpu_usage() to include blocked utilization (usage).
-
-10: Change weighted_cpuload() to include blocked load. The implications of
-this change needs further testing and very likely more changes.
-
-
-The last three patches are quite likely to cause some trouble and
-require some modifications to the users of get_cpu_usage() and
-weighted_cpuload(). An audit of the load-balance code is needed. The
-blocked load/utilization patches should be considered experimental, but
-they are part of what is needed to add invariance and blocked
-load/utilization to per-entity load-tracking.
-
-The purpose of this whole exercise is to get more accurate load and
-utilization tracking for systems with frequency scaling and/or cpus with
-different uarchs.
-
-[1] https://lkml.org/lkml/2014/11/3/535
-
-Dietmar Eggemann (5):
-  sched: Make load tracking frequency scale-invariant
-  sched: Make usage and load tracking cpu scale-invariant
-  ARM: vexpress: Add CPU clock-frequencies to TC2 device-tree
-  arm: Cpu invariant scheduler load-tracking support
-  sched: Get rid of scaling usage by cpu_capacity_orig
-
-Morten Rasmussen (5):
-  cpufreq: Architecture specific callback for frequency changes
-  arm: Frequency invariant scheduler load-tracking support
-  sched: Track blocked utilization contributions
-  sched: Include blocked utilization in usage tracking
-  sched: Include blocked load in weighted_cpuload
-
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts |  5 ++
- arch/arm/kernel/topology.c                 | 97 +++++++++++++++++---------=
-----
- drivers/cpufreq/cpufreq.c                  | 10 ++-
- kernel/sched/fair.c                        | 91 ++++++++++++++++++++++----=
---
- kernel/sched/sched.h                       |  8 ++-
- 5 files changed, 147 insertions(+), 64 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 644b54e..1b17608 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -278,6 +278,10 @@ static inline void adjust_jiffies(unsigned long val, s=
+truct cpufreq_freqs *ci)
+ }
+ #endif
+=20
++void __weak arch_scale_set_curr_freq(int cpu, unsigned long freq) {}
++
++void __weak arch_scale_set_max_freq(int cpu, unsigned long freq) {}
++
+ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ =09=09struct cpufreq_freqs *freqs, unsigned int state)
+ {
+@@ -315,6 +319,7 @@ static void __cpufreq_notify_transition(struct cpufreq_=
+policy *policy,
+ =09=09pr_debug("FREQ: %lu - CPU: %lu\n",
+ =09=09=09 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
+ =09=09trace_cpu_frequency(freqs->new, freqs->cpu);
++=09=09arch_scale_set_curr_freq(freqs->cpu, freqs->new);
+ =09=09srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+ =09=09=09=09CPUFREQ_POSTCHANGE, freqs);
+ =09=09if (likely(policy) && likely(policy->cpu =3D=3D freqs->cpu))
+@@ -2164,7 +2169,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *=
+policy,
+ =09=09=09=09struct cpufreq_policy *new_policy)
+ {
+ =09struct cpufreq_governor *old_gov;
+-=09int ret;
++=09int ret, cpu;
+=20
+ =09pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+ =09=09 new_policy->cpu, new_policy->min, new_policy->max);
+@@ -2202,6 +2207,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *=
+policy,
+ =09policy->min =3D new_policy->min;
+ =09policy->max =3D new_policy->max;
+=20
++=09for_each_cpu(cpu, policy->cpus)
++=09=09arch_scale_set_max_freq(cpu, policy->max);
++
+ =09pr_debug("new min and max freqs are %u - %u kHz\n",
+ =09=09 policy->min, policy->max);
+=20
 --=20
 1.9.1
 
