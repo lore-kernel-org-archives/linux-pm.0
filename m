@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v14 04/10] arm: dts: qcom: Add power-controller device node for 8074 Krait CPUs
-Date: Tue,  2 Dec 2014 10:39:12 -0700
-Message-ID: <1417541958-56907-5-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v14 05/10] arm: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+Date: Tue,  2 Dec 2014 10:39:13 -0700
+Message-ID: <1417541958-56907-6-git-send-email-lina.iyer@linaro.org>
 References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
@@ -10,22 +10,22 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Each Krait CPU in the QCOM 8074/8974 SoC has an SAW power controller to
+Each Krait CPU in the QCOM 8084 SoC has an SAW power controller to
 regulate the power to the cpu and aide the core in entering idle states.
 Reference the SAW instance and associate the instance with the CPU core.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 26 +++++++++++++++++++++++++-
  1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index e265ec1..5a41f44 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 1f130bc..71182bf 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
 @@ -21,6 +21,7 @@
- 			reg = <0>;
+ 			enable-method = "qcom,kpss-acc-v2";
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
 +			qcom,saw = <&saw0>;
@@ -33,7 +33,7 @@ index e265ec1..5a41f44 100644
  
  		cpu@1 {
 @@ -30,6 +31,7 @@
- 			reg = <1>;
+ 			enable-method = "qcom,kpss-acc-v2";
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
 +			qcom,saw = <&saw1>;
@@ -41,7 +41,7 @@ index e265ec1..5a41f44 100644
  
  		cpu@2 {
 @@ -39,6 +41,7 @@
- 			reg = <2>;
+ 			enable-method = "qcom,kpss-acc-v2";
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
 +			qcom,saw = <&saw2>;
@@ -49,7 +49,7 @@ index e265ec1..5a41f44 100644
  
  		cpu@3 {
 @@ -48,6 +51,7 @@
- 			reg = <3>;
+ 			enable-method = "qcom,kpss-acc-v2";
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
 +			qcom,saw = <&saw3>;
@@ -62,22 +62,22 @@ index e265ec1..5a41f44 100644
  
 -		saw_l2: regulator@f9012000 {
 +		saw0: power-controller@f9089000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
 +			reg = <0xf9089000 0x1000>, <0xf9009000 0x1000>;
 +		};
 +
 +		saw1: power-controller@f9099000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
 +			reg = <0xf9099000 0x1000>, <0xf9009000 0x1000>;
 +		};
 +
 +		saw2: power-controller@f90a9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
 +			reg = <0xf90a9000 0x1000>, <0xf9009000 0x1000>;
 +		};
 +
 +		saw3: power-controller@f90b9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
 +			reg = <0xf90b9000 0x1000>, <0xf9009000 0x1000>;
 +		};
 +
