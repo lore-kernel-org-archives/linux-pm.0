@@ -1,87 +1,120 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v14 09/10] arm: dts: qcom: Add idle states device nodes for 8084
-Date: Tue,  2 Dec 2014 10:39:17 -0700
-Message-ID: <1417541958-56907-10-git-send-email-lina.iyer@linaro.org>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: Re: [PATCH 1/2 V6] intel_pstate: skip this driver if Sun server has
+ _PPC method
+Date: Tue, 2 Dec 2014 10:22:31 -0800
+Message-ID: <20141202102231.32b43385@kcaccard-desk.amr.corp.intel.com>
+References: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:43286 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754228AbaLBSWk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Dec 2014 13:22:40 -0500
+In-Reply-To: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ethan Zhao <ethan.zhao@oracle.com>
+Cc: dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8084.
+On Mon, 1 Dec 2014 11:32:08 +0900
+Ethan Zhao <ethan.zhao@oracle.com> wrote:
 
-Support standby and standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+> Oracle Sun X86 servers have dynamic power capping capability that works via
+> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
+> enabled.
+> 
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> Tested-by: Linda Knippers <linda.knippers@hp.com>
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
----
- arch/arm/boot/dts/qcom-apq8084.dtsi | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 71182bf..a3c24ff 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -22,6 +22,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@1 {
-@@ -32,6 +33,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@2 {
-@@ -42,6 +44,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		cpu@3 {
-@@ -52,6 +55,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -59,6 +63,24 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
-+
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby",
-+						"arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc",
-+						"arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
--- 
-2.1.0
+> ---
+>   v2: fix break HP Proliant issue.
+>   v3: expand the hardware vendor list.
+>   v4: refine code.
+>   v5v6: change enum PCC to PPC.
+> 
+>  drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 41 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 27bb6d3..1bb62ca 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
+>  	return true;
+>  }
+>  
+> +static bool intel_pstate_has_acpi_ppc(void)
+> +{
+> +	int i;
+> +
+> +	for_each_possible_cpu(i) {
+> +		struct acpi_processor *pr = per_cpu(processors, i);
+> +
+> +		if (!pr)
+> +			continue;
+> +		if (acpi_has_method(pr->handle, "_PPC"))
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
+> +enum {
+> +	PSS,
+> +	PPC,
+> +};
+> +
+>  struct hw_vendor_info {
+>  	u16  valid;
+>  	char oem_id[ACPI_OEM_ID_SIZE];
+>  	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+> +	int  oem_pwr_table;
+>  };
+>  
+>  /* Hardware vendor-specific info that has its own power management modes */
+>  static struct hw_vendor_info vendor_info[] = {
+> -	{1, "HP    ", "ProLiant"},
+> +	{1, "HP    ", "ProLiant", PSS},
+> +	{1, "ORACLE", "X4-2    ", PPC},
+> +	{1, "ORACLE", "X4-2L   ", PPC},
+> +	{1, "ORACLE", "X4-2B   ", PPC},
+> +	{1, "ORACLE", "X3-2    ", PPC},
+> +	{1, "ORACLE", "X3-2L   ", PPC},
+> +	{1, "ORACLE", "X3-2B   ", PPC},
+> +	{1, "ORACLE", "X4470M2 ", PPC},
+> +	{1, "ORACLE", "X4270M3 ", PPC},
+> +	{1, "ORACLE", "X4270M2 ", PPC},
+> +	{1, "ORACLE", "X4170M2 ", PPC},
+>  	{0, "", ""},
+>  };
+>  
+> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>  
+>  	for (v_info = vendor_info; v_info->valid; v_info++) {
+>  		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
+> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+> -		    intel_pstate_no_acpi_pss())
+> -			return true;
+> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
+> +						ACPI_OEM_TABLE_ID_SIZE))
+> +			switch (v_info->oem_pwr_table) {
+> +			case PSS:
+> +				return intel_pstate_no_acpi_pss();
+> +			case PPC:
+> +				return intel_pstate_has_acpi_ppc();
+> +			}
+>  	}
+>  
+>  	return false;
+>  }
+>  #else /* CONFIG_ACPI not enabled */
+>  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
+> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+>  #endif /* CONFIG_ACPI */
+>  
+>  static int __init intel_pstate_init(void)
+
