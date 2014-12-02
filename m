@@ -1,174 +1,71 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
 Subject: Re: [PATCH v13 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Tue, 02 Dec 2014 16:47:05 +0100
-Message-ID: <547DDEF9.8020105@linaro.org>
-References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org> <1417065854-37745-4-git-send-email-lina.iyer@linaro.org> <5476E653.4040007@linaro.org> <20141201185023.GB499@linaro.org> <547D8C1A.1010204@linaro.org> <20141202153548.GE499@linaro.org>
+Date: Tue, 2 Dec 2014 08:52:59 -0700
+Message-ID: <20141202155259.GF499@linaro.org>
+References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
+ <1417065854-37745-4-git-send-email-lina.iyer@linaro.org>
+ <20141127150137.GA7889@red-moon>
+ <20141201185705.GC499@linaro.org>
+ <20141202111017.GC26306@e104818-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:46378 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbaLBPrL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 10:47:11 -0500
-Received: by mail-wi0-f174.google.com with SMTP id h11so28538547wiw.1
-        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 07:47:09 -0800 (PST)
-In-Reply-To: <20141202153548.GE499@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20141202111017.GC26306@e104818-lin.cambridge.arm.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "khilman@linaro.org" <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-On 12/02/2014 04:35 PM, Lina Iyer wrote:
-> On Tue, Dec 02 2014 at 02:53 -0700, Daniel Lezcano wrote:
->> On 12/01/2014 07:50 PM, Lina Iyer wrote:
->>> On Thu, Nov 27 2014 at 01:52 -0700, Daniel Lezcano wrote:
->>>> On 11/27/2014 06:24 AM, Lina Iyer wrote:
->>>
->>>> +    static bool cpuidle_drv_init;
->>>>
->>>>       ^^^^^^^^^
->>>>
->>>> As already said in a previous comment, please find a way to remove
->>>> that.
->>>>
->>> I will look into it. Stephen and I wanted the cpuidle driver to be
->>> probed only after any of the SPMs are ready. And possibly, only for=
- that
->>> cpu, for which the SPM has been probed.
->>>
->>> To achieve the SPM -> CPUIDLE Device relation, I havent found a goo=
-d way
->>> to do that. Without using CPUIDLE_MULTIPLE_DRIVERS, initializing ea=
-ch
->>> cpuidle device, separate from the cpuidle driver, requires that I u=
-pdate
->>> the cpuidle_driver->cpumask after probing each SPM device, to allow=
- for
->>> only one driver and cpuidle devices only for the probed cpus. Using=
- the
->>> cpuidle_register_driver(), resets the drv->refcnt in
->>> __cpuidle_driver_init.
->>>
->>> I may need something like this in the else clause of
->>> CPUIDLE_MULTIPLE_DRIVERS -
->>>
->>> static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int c=
-pu)
->>> {
->>>        struct cpuidle_driver *drv =3D cpuidle_curr_driver;
->>>
->>>        if (drv && !cpumask_test_cpu(cpu, drv->cpumask))
->>>                 drv =3D NULL;
->>>
->>>        return drv;
->>> }
+On Tue, Dec 02 2014 at 04:10 -0700, Catalin Marinas wrote:
+>On Mon, Dec 01, 2014 at 06:57:05PM +0000, Lina Iyer wrote:
+>> On Thu, Nov 27 2014 at 08:01 -0700, Lorenzo Pieralisi wrote:
+>> >On Thu, Nov 27, 2014 at 05:24:07AM +0000, Lina Iyer wrote:
+>> >
+>> >[...]
+>> >
+>> >> +static int spm_set_low_power_mode(enum pm_sleep_mode mode)
+>> >> +{
+>> >> +       struct spm_driver_data *drv = per_cpu(cpu_spm_drv,
+>> >> +                                               smp_processor_id());
+>> >> +       u32 start_index;
+>> >> +       u32 ctl_val;
+>> >> +
+>> >> +       if (!drv)
+>> >> +               return -ENXIO;
+>> >> +
+>> >> +       start_index = drv->reg_data->start_index[mode];
+>> >> +
+>> >> +       ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
+>> >> +       ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
+>> >> +       ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
+>> >> +       ctl_val |= SPM_CTL_EN;
+>> >> +       spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
+>> >> +
+>> >> +       /* Ensure we have written the start address */
+>> >> +       wmb();
+>> >
+>> >Can you explain please what this wmb is meant to achieve ? If it is there
+>> >to make sure the write made it to the SPM that's not a proper way
+>> >to achieve it, the barrier ensures ordering, not write completion.
 >>
->> You don't have to deal with the drv->cpumask and
->> CPUIDLE_MULTIPLE_DRIVERS. This field gives the list of the cpus the
->> driver will have to potentially handle.
->>
->> Just register the driver at the first place with the platform device
->> by using cpuidle_register_driver(drv), I suggest somewhere else than
->> the spm code.
->>
->> The underlying code will do:
->>
->>        if (!drv->cpumask)
->>                drv->cpumask =3D (struct cpumask *)cpu_possible_mask;
->>
->> Until the cpuidle device is not initialized for a specific cpu, the
->> cpuidle code will have no effect for this cpu. If you register the
->> driver but without registering the cpuidle devices that will result =
-in
->> nothing more than a structure initialized but inoperative.
->>
->> For each SPM being probed:
->>
->> struct cpuidle_device *dev =3D &per_cpu(cpuidle_dev, cpu);
->> dev->cpu =3D cpu;
->> cpuidle_register_device(dev);
->>
->> Note cpuidle_dev is exported via cpuidle.h, so you don't have to
->> redeclare a per cpu cpuidle device by your own.
->>
->> So rephrasing all that:
->>
->> (1) in cpuidle-qcom register the driver
->> (2) in the spm code register the device for each spm probe
->>
->> (1) being called before (2).
->>
->> If after that in the code you still have a "static bool
->> cpuidle_drv_init", then I guess we have a problem in the init sequen=
-ce
->> somewhere else.
->>
-> Okay, Thanks. Last night I was able to get a patch working with one
-> cpuidle_register_driver and multiple cpuidle_register_device. The iss=
-ue
-> using an module_init() was -
+>> A write completion would be great, but assuming that the context switch
+>> using SCM or WFI could ensure the flush, then ordering is probably good
+>> enough for this.
 >
-> 1. Register a device to probe the cpuidle driver.
-> 2. Register cpuidle devices for every SPM probed.
+>I assume you want the write to the device to complete (side-effects are
+>observed) before the WFI (which would raise a StandbyWFI signal). The
+>safer way is to read back from the device (or check/poll for the device
+>state change) rather than a barrier.
 
-That's it.
+Polling back to see if the register write was indeed successful, seems
+a bit more than what I would like on a low latency mode like Standby.
+Let me check with the hardware engineers, if a write ordering is
+required. It seems to me like I am not getting much out of the wmb()
+anyways. I will find out what kind of guarantees I would need to ensure
+the SPM write is successful.
 
-> What used to happen is that the cpuidle driver probe always happens
-> after the cpuidle devices were created.
->
-> I have a solution where I register for the cpuidle device to probe a
-> driver, at postcore_initcall() at which point, the cpuidle framework
-> would also be available.
->
-> I am not sure how elegant it looks, but thats the latest initcall I
-> could get a consistent driver initialization before the SPM probe
-> (therefore the device registration).
+Thanks for your time, Catalin.
 
-I don't have the code in front of me but we can probably find a nice=20
-place to probe the cpuidle driver. Is there any pm.c file with an init=20
-function that can be useful ? In any case, regarding the unusual init=20
-sequence for the cpuidle driver, I think the probe would deserve a comm=
-ent.
-
-> I will send the patch this morning.
-
-Ok, cool.
-
-[ ... ]
-
->>>> There is something wrong with the init sequence. Don't you find we=
-ird
->>>> you have to backward search for the cpu belonging to the pdev each
->>>> time the probe function is called ?
->>>>
->>>>
->>> Well, it was that or the SPM device node pointing to the CPU that i=
-t
->>> references. It seems more common to have an iterator than the doubl=
-y
->>> linked device nodes. I dont have a strong preference either way, ju=
-st
->>> chose the way that made device nodes easier.
->>>
-> This one, I havent addressed. How strongly do you feel about this? I
-> still have to iterate through all the cpus to find the cpu node that
-> matches the handle specified in the SAW node.
-
-IMO, we can live with that if there is no longer any static variable=20
-around telling us we initialized something.
-
-Thanks !
-
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Thanks,
+Lina.
