@@ -1,93 +1,63 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH 2/2 V6] intel_pstate: add kernel parameter to force
- loading on Sun X86 servers.
-Date: Tue, 2 Dec 2014 10:24:02 -0800
-Message-ID: <20141202102402.09ea6017@kcaccard-desk.amr.corp.intel.com>
-References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com>
-	<1417145777-21897-4-git-send-email-ethan.zhao@oracle.com>
+From: Jyri Sarha <jsarha@ti.com>
+Subject: Re: [PATCH] OMAPDSS: hdmi: Remove __exit qualifier from hdmi_uninit_output()
+Date: Tue, 2 Dec 2014 22:18:45 +0200
+Message-ID: <547E1EA5.30608@ti.com>
+References: <1417536771-12907-1-git-send-email-jsarha@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1417145777-21897-4-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>
-Cc: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:43264 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933038AbaLBUSy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 15:18:54 -0500
+In-Reply-To: <1417536771-12907-1-git-send-email-jsarha@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, t-kristo@ti.com, tomi.valkeinen@ti.com
 
-On Fri, 28 Nov 2014 12:36:17 +0900
-Ethan Zhao <ethan.zhao@oracle.com> wrote:
+Please ignore this patch. It has no relevance to linux-pm and escaped by 
+accident.
 
-> To force loading on Oracle Sun X86 servers, provide one kernel command line
-> parameter
-> 
->   intel_pstate = ora_force
-> 
-> For those who be aware of the risk of no power capping capabily working and
-> try to get better performance with this driver.
+Sorry,
+Jyri
 
-So, is this something you'd expect users to use on production systems,
-or is it just for debug?
-
-Thanks,
-Kristen
-
-> 
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+On 12/02/2014 06:12 PM, Jyri Sarha wrote:
+> Remove __exit qualifier from hdmi_uninit_output() because it is used
+> also in omapdss_hdmihw_probe().
+>
+> Signed-off-by: Jyri Sarha <jsarha@ti.com>
 > ---
->  v2: change to hardware vendor specific naming parameter.
->  v4: refine code and doc.
->  v5&v6: fix a typo in doc.
-> 
->  Documentation/kernel-parameters.txt | 5 +++++
->  drivers/cpufreq/intel_pstate.c      | 6 +++++-
->  2 files changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 479f332..7d0983e 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  		       disable
->  		         Do not enable intel_pstate as the default
->  		         scaling driver for the supported processors
-> +		       ora_force
-> +			 Force loading intel_pstate on Oracle Sun Servers(X86).
-> +			 only for those who be aware of the risk of no power capping
-> +			 capability working and try to get better performance with this
-> +			 driver.
->  
->  	intremap=	[X86-64, Intel-IOMMU]
->  			on	enable Interrupt Remapping (default)
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 1bb62ca..2654e13 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->  };
->  
->  static int __initdata no_load;
-> +static unsigned int  ora_force;
->  
->  static int intel_pstate_msrs_not_valid(void)
->  {
-> @@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->  			case PSS:
->  				return intel_pstate_no_acpi_pss();
->  			case PCC:
-> -				return intel_pstate_has_acpi_ppc();
-> +				return intel_pstate_has_acpi_ppc() &&
-> +					(!ora_force);
->  			}
->  	}
->  
-> @@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
->  
->  	if (!strcmp(str, "disable"))
->  		no_load = 1;
-> +	if (!strcmp(str, "ora_force"))
-> +		ora_force = 1;
->  	return 0;
->  }
->  early_param("intel_pstate", intel_pstate_setup);
+>   drivers/video/fbdev/omap2/dss/hdmi4.c |    2 +-
+>   drivers/video/fbdev/omap2/dss/hdmi5.c |    2 +-
+>   2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+> index e76cc5f..f1a02bf 100644
+> --- a/drivers/video/fbdev/omap2/dss/hdmi4.c
+> +++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+> @@ -510,7 +510,7 @@ static void hdmi_init_output(struct platform_device *pdev)
+>   	omapdss_register_output(out);
+>   }
+>
+> -static void __exit hdmi_uninit_output(struct platform_device *pdev)
+> +static void hdmi_uninit_output(struct platform_device *pdev)
+>   {
+>   	struct omap_dss_device *out = &hdmi.output;
+>
+> diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+> index cbfb282..d9d0d78 100644
+> --- a/drivers/video/fbdev/omap2/dss/hdmi5.c
+> +++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+> @@ -538,7 +538,7 @@ static void hdmi_init_output(struct platform_device *pdev)
+>   	omapdss_register_output(out);
+>   }
+>
+> -static void __exit hdmi_uninit_output(struct platform_device *pdev)
+> +static void hdmi_uninit_output(struct platform_device *pdev)
+>   {
+>   	struct omap_dss_device *out = &hdmi.output;
+>
+>
 
