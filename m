@@ -1,213 +1,141 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 25/26] cpu_cooling: Use cpufreq_dev->freq_table for
- finding level/freq
-Date: Tue, 2 Dec 2014 19:36:28 -0400
-Message-ID: <20141202233626.GA3969@developer>
+Subject: Re: [PATCH 19/26] cpu_cooling: find max level during device
+ registration
+Date: Tue, 2 Dec 2014 19:39:38 -0400
+Message-ID: <20141202233936.GB3969@developer>
 References: <cover.1417167599.git.viresh.kumar@linaro.org>
- <8c0412592bfd5524e638252a42edaf08f81f0976.1417167599.git.viresh.kumar@linaro.org>
+ <e2cb864949d833ab30c24b2bf039c682c8820040.1417167599.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
+	protocol="application/pgp-signature"; boundary="JYK4vJDZwFMowpUq"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f170.google.com ([209.85.216.170]:58027 "EHLO
-	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933163AbaLBXgh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 18:36:37 -0500
-Received: by mail-qc0-f170.google.com with SMTP id x3so10356043qcv.1
-        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 15:36:36 -0800 (PST)
+Received: from mail-qc0-f179.google.com ([209.85.216.179]:47738 "EHLO
+	mail-qc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933163AbaLBXjr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 18:39:47 -0500
+Received: by mail-qc0-f179.google.com with SMTP id c9so10454741qcz.10
+        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 15:39:47 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <8c0412592bfd5524e638252a42edaf08f81f0976.1417167599.git.viresh.kumar@linaro.org>
+In-Reply-To: <e2cb864949d833ab30c24b2bf039c682c8820040.1417167599.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, rui.zhang@intel.com
 
 
---T4sUOijqQbZv57TR
+--JYK4vJDZwFMowpUq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 28, 2014 at 03:14:19PM +0530, Viresh Kumar wrote:
-> get_property() was an over complicated beast with BUGs. It used to believ=
-e that
-> cpufreq table is present in ascending or descending order, which might not
-> always be true.
->=20
-> Previous patch has created another freq table in descending order for us =
-and we
-> better use it now. With that get_property() simply goes away and another =
-helper
-> get_level() comes in.
+Viresh
+
+On Fri, Nov 28, 2014 at 03:14:13PM +0530, Viresh Kumar wrote:
+> CPU frequency tables don't update after the driver is registered and so w=
+e don't
+> need to iterate over them to find total number of states every time
+> cpufreq_get_max_state() is called. Do it once at boot time.
+
+Could you please update me regarding the story behind the opp del patch
+set?
+
+http://permalink.gmane.org/gmane.linux.power-management.general/53348
+
 >=20
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/thermal/cpu_cooling.c | 96 +++++++------------------------------=
-------
->  1 file changed, 14 insertions(+), 82 deletions(-)
+>  drivers/thermal/cpu_cooling.c | 31 +++++++++++++++++++------------
+>  1 file changed, 19 insertions(+), 12 deletions(-)
 >=20
 > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 9a4a323..db4c001 100644
+> index 5815abf..05712d5 100644
 > --- a/drivers/thermal/cpu_cooling.c
 > +++ b/drivers/thermal/cpu_cooling.c
-> @@ -80,85 +80,27 @@ static struct cpufreq_cooling_device *notify_device;
-> =20
->  /* Below code defines functions to be used for cpufreq as cooling device=
- */
-> =20
-> -enum cpufreq_cooling_property {
-> -	GET_LEVEL,
-> -	GET_FREQ,
-> -};
-> -
->  /**
-> - * get_property - fetch a property of interest for a given cpu.
-> + * get_level: Find the level for a particular frequency
->   * @cpufreq_dev: cpufreq_dev for which the property is required
-> - * @input: query parameter
-> - * @output: query return
-> - * @property: type of query (frequency, level)
-> - *
-> - * This is the common function to
-> - * 1. translate frequency to cooling state
-> - * 2. translate cooling state to frequency
-> + * @freq: Frequency
+> @@ -52,6 +52,8 @@
+>   *	cooling	devices.
+>   * @cpufreq_val: integer value representing the absolute value of the cl=
+ipped
+>   *	frequency.
+> + * @max_level: maximum cooling level. One less than total number of valid
+> + *	cpufreq frequencies.
+>   * @allowed_cpus: all the cpus involved for this cpufreq_cooling_device.
 >   *
-> - * Note that the code may be not in good shape
-> - * but it is written in this way in order to:
-> - * a) reduce duplicate code as most of the code can be shared.
-> - * b) make sure the logic is consistent when translating between
-> - *    cooling states and frequencies.
-> - *
-> - * Return: 0 on success, -EINVAL when invalid parameters are passed.
-> + * Returns: level on success, THERMAL_CSTATE_INVALID on error.
->   */
-> -static int get_property(struct cpufreq_cooling_device *cpufreq_dev,
-> -			unsigned long input, unsigned int *output,
-> -			enum cpufreq_cooling_property property)
-> +static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_de=
-v,
-> +			       unsigned int freq)
+>   * This structure is required for keeping information of each registered
+> @@ -62,6 +64,7 @@ struct cpufreq_cooling_device {
+>  	struct thermal_cooling_device *cool_dev;
+>  	unsigned int cpufreq_state;
+>  	unsigned int cpufreq_val;
+> +	unsigned int max_level;
+>  	struct cpumask allowed_cpus;
+>  };
+>  static DEFINE_IDR(cpufreq_idr);
+> @@ -246,19 +249,9 @@ static int cpufreq_get_max_state(struct thermal_cool=
+ing_device *cdev,
+>  				 unsigned long *state)
 >  {
-> -	int i;
-> -	unsigned long level =3D 0;
-> -	unsigned int freq =3D CPUFREQ_ENTRY_INVALID;
-> -	int descend =3D -1;
-> -	struct cpufreq_frequency_table *pos, *table;
-> -
-> -	if (!output)
-> -		return -EINVAL;
-> +	unsigned long level;
+>  	struct cpufreq_cooling_device *cpufreq_device =3D cdev->devdata;
+> -	struct cpumask *mask =3D &cpufreq_device->allowed_cpus;
+> -	unsigned int cpu;
+> -	unsigned int count =3D 0;
+> -	int ret;
 > =20
-> -	table =3D cpufreq_frequency_get_table(cpumask_first(&cpufreq_dev->allow=
-ed_cpus));
-> -	if (!table)
-> -		return -EINVAL;
-> +	for (level =3D 0; level <=3D cpufreq_dev->max_level; level++) {
-> +		if (freq =3D=3D cpufreq_dev->freq_table[level])
-> +			return level;
-> =20
-> -	cpufreq_for_each_valid_entry(pos, table) {
-> -		/* ignore duplicate entry */
-> -		if (freq =3D=3D pos->frequency)
-> -			continue;
+> -	cpu =3D cpumask_any(mask);
 > -
-> -		/* get the frequency order */
-> -		if (freq !=3D CPUFREQ_ENTRY_INVALID && descend =3D=3D -1)
-> -			descend =3D freq > pos->frequency;
+> -	ret =3D get_property(cpu, 0, &count, GET_MAXL);
 > -
-> -		freq =3D pos->frequency;
-> +		if (freq > cpufreq_dev->freq_table[level])
-> +			break;
->  	}
-> =20
-> -	if (property =3D=3D GET_FREQ)
-> -		level =3D descend ? input : (cpufreq_dev->max_level - input);
+> -	if (count > 0)
+> -		*state =3D count;
 > -
-> -	i =3D 0;
-> -	cpufreq_for_each_valid_entry(pos, table) {
-> -		/* ignore duplicate entry */
-> -		if (freq =3D=3D pos->frequency)
-> -			continue;
-> -
-> -		/* now we have a valid frequency entry */
-> -		freq =3D pos->frequency;
-> -
-> -		if (property =3D=3D GET_LEVEL && (unsigned int)input =3D=3D freq) {
-> -			/* get level by frequency */
-> -			*output =3D descend ? i : (cpufreq_dev->max_level - i);
-> -			return 0;
-> -		}
-> -		if (property =3D=3D GET_FREQ && level =3D=3D i) {
-> -			/* get frequency by level */
-> -			*output =3D freq;
-> -			return 0;
-> -		}
-> -		i++;
-> -	}
-> -
-> -	return -EINVAL;
-> +	return THERMAL_CSTATE_INVALID;
+> -	return ret;
+> +	*state =3D cpufreq_device->max_level;
+> +	return 0;
 >  }
 > =20
 >  /**
-> @@ -179,14 +121,8 @@ unsigned long cpufreq_cooling_get_level(unsigned int=
- cpu, unsigned int freq)
->  	mutex_lock(&cooling_cpufreq_lock);
->  	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, head) {
->  		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
-> -			unsigned int val;
-> -
->  			mutex_unlock(&cooling_cpufreq_lock);
-> -			if (get_property(cpufreq_dev, (unsigned long)freq, &val,
-> -					 GET_LEVEL))
-> -				return THERMAL_CSTATE_INVALID;
-> -
-> -			return (unsigned long)val;
-> +			return get_level(cpufreq_dev, freq);
->  		}
->  	}
->  	mutex_unlock(&cooling_cpufreq_lock);
-> @@ -289,16 +225,12 @@ static int cpufreq_set_cur_state(struct thermal_coo=
-ling_device *cdev,
->  	struct cpufreq_cooling_device *cpufreq_device =3D cdev->devdata;
->  	unsigned int cpu =3D cpumask_any(&cpufreq_device->allowed_cpus);
->  	unsigned int clip_freq;
-> -	int ret =3D 0;
+> @@ -351,11 +344,25 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	struct thermal_cooling_device *cool_dev;
+>  	struct cpufreq_cooling_device *cpufreq_dev;
+>  	char dev_name[THERMAL_NAME_LENGTH];
+> +	struct cpufreq_frequency_table *pos, *table;
+> +
+> +	table =3D cpufreq_frequency_get_table(cpumask_first(clip_cpus));
+> +	if (!table) {
+> +		pr_debug("%s: CPUFreq table not found\n", __func__);
+> +		return ERR_PTR(-EPROBE_DEFER);
+> +	}
 > =20
->  	/* Check if the old cooling action is same as new cooling action */
->  	if (cpufreq_device->cpufreq_state =3D=3D state)
->  		return 0;
+>  	cpufreq_dev =3D kzalloc(sizeof(*cool_dev), GFP_KERNEL);
+>  	if (!cpufreq_dev)
+>  		return ERR_PTR(-ENOMEM);
 > =20
-> -	ret =3D get_property(cpufreq_device, state, &clip_freq, GET_FREQ);
-> -	if (ret)
-> -		return ret;
-> -
-> +	clip_freq =3D cpufreq_device->freq_table[state];
-
-There should be some check for valid state here..
-
->  	cpufreq_device->cpufreq_state =3D state;
->  	cpufreq_device->cpufreq_val =3D clip_freq;
->  	notify_device =3D cpufreq_device;
+> +	/* Find max levels */
+> +	cpufreq_for_each_valid_entry(pos, table)
+> +		cpufreq_dev->max_level++;
+> +
+> +	/* max_level is an index, not a counter */
+> +	cpufreq_dev->max_level--;
+> +
+>  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
+> =20
+>  	cpufreq_dev->id =3D idr_alloc(&cpufreq_idr, NULL, 0, 0, GFP_KERNEL);
 > --=20
 > 2.0.3.693.g996b0fd
 >=20
 
---T4sUOijqQbZv57TR
+--JYK4vJDZwFMowpUq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUfkzxAAoJEMLUO4d9pOJW2r8H/ixGxYgc34y1quEaxMNvBiG1
-P3DNd7gxhYXC8bYcThnLNaIjtt9U3KYX5mc08LO/8dIFRS2R0hYN0EhzP+kWm2m6
-IkH32XmawG3tKJpCBSvmoFkxxPC1L41NnVA91axWmzzBorZkGLVLo81cblZ7eXxD
-Ah+bxu4CuTyeLjTISA0UX6/QH8UgPjls7u1kbJ6VtHhUDQO2QqkdbVeYIgq87Dul
-Ey7GcW+wUVnDoeOBNx8Thf9bV3XeA0syhr2Wh9ZGVlnMh8BP4+G2nR499WPGsZrg
-fxP8sMz7LAse4b3mvWSZlYZYgJtRzS9TqRky5EnhfdUWNM2V9XRQ/CRm18jwWOs=
-=z0DI
+iQEcBAEBAgAGBQJUfk2kAAoJEMLUO4d9pOJWSoEH/jvxqC8tL4DLns9TzMWHRN58
+xXOKwQtzR9B8t+XSdYxAoLts/rzz46W7ib382stNiHXvffoCsyQbQSBYbSG4mWay
+UQue/IOaHbe9kYsV7C4bKt8Rcqdt/4vAIuTODCN2AGNlJgLu8ruFJfrml22WtBHJ
+1ODEaQPHZ7pCfUT6XznlosM9Y26CH0xDMzDNbJXD0kFaUgl23GcooiGhl6pDetWO
+2/au1bVLg9iCkttT3gkumS6/IkpKYvYWW+KxqNnBMFCIwEbZZ8M+MScEtX1oKMb9
+zP39OHDqcLc+pr4/Qxhl5DYS+aEGdHhY3Zb1H/V2jwqT7CVB5q1emoQhP7/3KJs=
+=PsJG
 -----END PGP SIGNATURE-----
 
---T4sUOijqQbZv57TR--
+--JYK4vJDZwFMowpUq--
