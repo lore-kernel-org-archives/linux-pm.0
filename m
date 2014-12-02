@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 02/10] sched: Make usage and load tracking cpu scale-invariant
-Date: Tue,  2 Dec 2014 14:06:24 +0000
-Message-ID: <1417529192-11579-3-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFC PATCH 05/10] ARM: vexpress: Add CPU clock-frequencies to TC2 device-tree
+Date: Tue,  2 Dec 2014 14:06:27 +0000
+Message-ID: <1417529192-11579-6-git-send-email-morten.rasmussen@arm.com>
 References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -9,115 +9,76 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jon Medhurst <tixy@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Besides the existing frequency scale-invariance correction factor, apply
-cpu scale-invariance correction factor to usage and load tracking.
+To enable the parsing of clock frequency and cpu efficiency values inside
+parse_dt_topology [arch/arm/kernel/topology.c] to scale the relative
+capacity of the cpus, this property has to be provided within the cpu
+nodes of the dts file.
 
-Cpu scale-invariance takes cpu performance deviations due to
-micro-architectural differences (i.e. instructions per seconds) between
-cpus in HMP systems (e.g. big.LITTLE) and differences in the frequency
-value of the highest OPP between cpus in SMP systems into consideration.
+The patch is a copy of 'ARM: vexpress: Add CPU clock-frequencies to TC2
+device-tree' (commit 8f15973ef8c3) taken from Linaro Stable Kernel (LSK)
+massaged into mainline.
 
-Each segment of the sched_avg::{running_avg_sum, runnable_avg_sum}
-geometric series is now scaled by the cpu performance factor too so the
-sched_avg::{utilization_avg_contrib, load_avg_contrib} of each entity will
-be invariant from the particular cpu of the HMP/SMP system it is gathered
-on. As a result, cfs_rq::runnable_load_avg which is the sum of
-sched_avg::load_avg_contrib, becomes cpu scale-invariant too.
-
-So the {usage, load} level that is returned by {get_cpu_usage,
-weighted_cpuload} stays relative to the max cpu performance of the system.
-
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Jon Medhurst <tixy@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b41f03d..5c4c989 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2473,6 +2473,21 @@ static u32 __compute_runnable_contrib(u64 n)
- }
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts=
+/vexpress-v2p-ca15_a7.dts
+index 322fd15..62f89e2 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+@@ -39,6 +39,7 @@
+ =09=09=09reg =3D <0>;
+ =09=09=09cci-control-port =3D <&cci_control1>;
+ =09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
++=09=09=09clock-frequency =3D <1000000000>;
+ =09=09};
 =20
- unsigned long __weak arch_scale_freq_capacity(struct sched_domain *sd, int=
- cpu);
-+unsigned long __weak arch_scale_cpu_capacity(struct sched_domain *sd, int =
-cpu);
-+
-+static unsigned long contrib_scale_factor(int cpu)
-+{
-+=09unsigned long scale_factor;
-+
-+=09scale_factor =3D arch_scale_freq_capacity(NULL, cpu);
-+=09scale_factor *=3D arch_scale_cpu_capacity(NULL, cpu);
-+=09scale_factor >>=3D SCHED_CAPACITY_SHIFT;
-+
-+=09return scale_factor;
-+}
-+
-+#define scale_contrib(contrib, scale_factor) \
-+=09((contrib * scale_factor) >> SCHED_CAPACITY_SHIFT)
+ =09=09cpu1: cpu@1 {
+@@ -47,6 +48,7 @@
+ =09=09=09reg =3D <1>;
+ =09=09=09cci-control-port =3D <&cci_control1>;
+ =09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
++=09=09=09clock-frequency =3D <1000000000>;
+ =09=09};
 =20
- /*
-  * We can represent the historical contribution to runnable average as the
-@@ -2510,7 +2525,7 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
- =09u64 delta, scaled_delta, periods;
- =09u32 runnable_contrib, scaled_runnable_contrib;
- =09int delta_w, scaled_delta_w, decayed =3D 0;
--=09unsigned long scale_freq =3D arch_scale_freq_capacity(NULL, cpu);
-+=09unsigned long scale_factor;
+ =09=09cpu2: cpu@2 {
+@@ -55,6 +57,7 @@
+ =09=09=09reg =3D <0x100>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
+ =09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
++=09=09=09clock-frequency =3D <800000000>;
+ =09=09};
 =20
- =09delta =3D now - sa->last_runnable_update;
- =09/*
-@@ -2531,6 +2546,8 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
- =09=09return 0;
- =09sa->last_runnable_update =3D now;
+ =09=09cpu3: cpu@3 {
+@@ -63,6 +66,7 @@
+ =09=09=09reg =3D <0x101>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
+ =09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
++=09=09=09clock-frequency =3D <800000000>;
+ =09=09};
 =20
-+=09scale_factor =3D contrib_scale_factor(cpu);
-+
- =09/* delta_w is the amount already accumulated against our next period */
- =09delta_w =3D sa->avg_period % 1024;
- =09if (delta + delta_w >=3D 1024) {
-@@ -2543,7 +2560,7 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
- =09=09 * period and accrue it.
- =09=09 */
- =09=09delta_w =3D 1024 - delta_w;
--=09=09scaled_delta_w =3D (delta_w * scale_freq) >> SCHED_CAPACITY_SHIFT;
-+=09=09scaled_delta_w =3D scale_contrib(delta_w, scale_factor);
+ =09=09cpu4: cpu@4 {
+@@ -71,6 +75,7 @@
+ =09=09=09reg =3D <0x102>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
+ =09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
++=09=09=09clock-frequency =3D <800000000>;
+ =09=09};
 =20
- =09=09if (runnable)
- =09=09=09sa->runnable_avg_sum +=3D scaled_delta_w;
-@@ -2566,8 +2583,8 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
-=20
- =09=09/* Efficiently calculate \sum (1..n_period) 1024*y^i */
- =09=09runnable_contrib =3D __compute_runnable_contrib(periods);
--=09=09scaled_runnable_contrib =3D (runnable_contrib * scale_freq)
--=09=09=09=09=09=09>> SCHED_CAPACITY_SHIFT;
-+=09=09scaled_runnable_contrib =3D
-+=09=09=09scale_contrib(runnable_contrib, scale_factor);
-=20
- =09=09if (runnable)
- =09=09=09sa->runnable_avg_sum +=3D scaled_runnable_contrib;
-@@ -2577,7 +2594,7 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
- =09}
-=20
- =09/* Remainder of delta accrued against u_0` */
--=09scaled_delta =3D (delta * scale_freq) >> SCHED_CAPACITY_SHIFT;
-+=09scaled_delta =3D scale_contrib(delta, scale_factor);
-=20
- =09if (runnable)
- =09=09sa->runnable_avg_sum +=3D scaled_delta;
+ =09=09idle-states {
 --=20
 1.9.1
