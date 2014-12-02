@@ -1,252 +1,306 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 4/8] opp: Introduce APIs to remove OPPs
-Date: Mon, 1 Dec 2014 15:25:25 -0800
-Message-ID: <20141201232524.GG25340@linux.vnet.ibm.com>
-References: <1407c1d67e546a09f5dd122de943de45bcd3c846.1417058376.git.viresh.kumar@linaro.org>
- <9a64eb3d9d11ff7379b7eb6d9207625175f28e47.1417058376.git.viresh.kumar@linaro.org>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v6 1/4] mfd: rt5033: Add Richtek RT5033 driver core.
+Date: Tue, 02 Dec 2014 09:10:32 +0900
+Message-ID: <547D0378.5060207@samsung.com>
+References: <1416489406-12416-1-git-send-email-beomho.seo@samsung.com>
+ <1416489406-12416-2-git-send-email-beomho.seo@samsung.com>
+ <20141201123936.GB11932@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50185 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932623AbaLAXZb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 18:25:31 -0500
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Mon, 1 Dec 2014 16:25:31 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
-	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2F8281FF0039
-	for <linux-pm@vger.kernel.org>; Mon,  1 Dec 2014 16:14:13 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id sB1NPSGK49807596
-	for <linux-pm@vger.kernel.org>; Mon, 1 Dec 2014 16:25:28 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id sB1NPPx6002466
-	for <linux-pm@vger.kernel.org>; Mon, 1 Dec 2014 16:25:27 -0700
-Content-Disposition: inline
-In-Reply-To: <9a64eb3d9d11ff7379b7eb6d9207625175f28e47.1417058376.git.viresh.kumar@linaro.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:15020 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932216AbaLBAKf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 19:10:35 -0500
+In-reply-to: <20141201123936.GB11932@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stefan.wahren@i2se.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, Seung-Woo Kim <sw0312.kim@samsung.com>, beomho.seo@samsung.com
 
-On Thu, Nov 27, 2014 at 08:54:06AM +0530, Viresh Kumar wrote:
-> OPPs are created statically (from DT) or dynamically. Currently we don't free
-> OPPs that are created statically, when the module unloads. And so if the module
-> is inserted back again, we get warning for duplicate OPPs as the same were
-> already present.
+Thank you for advices.
+On 12/01/2014 09:39 PM, Lee Jones wrote:
+> Sorry for the delay.
 > 
-> Also, there might be a need to remove dynamic OPPs in future and so API for that
-> is also added.
+>> This patch adds a new driver for Richtek RT5033 driver.
+>> RT5033 is a Multifunction device which includes battery charger, fuel gauge,
+>> flash LED current source, LDO and synchronous Buck converter. It is interfaced
+>> to host controller using I2C interface.
+>>
+>> Cc: Samuel Ortiz <sameo@linux.intel.com>
+>> Cc: Lee Jones <lee.jone@linaro.org>
+>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>> Changes in v6
+>> - Fix white space issue in mfd cell struct.
+>>
+>> Changes in v5
+>> - Change possible built as a module.
+>> - Revise rt5033_dev mfd cell entry.
+>> - Fix incorrect typo.
+>> - Add module alias.
+>>
+>> Changes in v4
+>> - none.
+>>
+>> Changes in v3
+>> - Correct sentence errors.
+>> - Add author information the top of each drivers.
+>> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and blink.
+>> - Change some return check.
+>> - Use bool and of_match_ptr().
+>>
+>> Changes in v2
+>> - Remove volatile_reg callback. Because this driver not in use regmap cache.
+>> - Revmoe unnecessary subnode of_compatible.
+>> - Add define for set_high impedance mode of charger.
+>>
+>>  drivers/mfd/Kconfig                |   12 ++
+>>  drivers/mfd/Makefile               |    1 +
+>>  drivers/mfd/rt5033.c               |  141 +++++++++++++++++++
+>>  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++++++++++++
+>>  include/linux/mfd/rt5033.h         |   62 +++++++++
+>>  5 files changed, 476 insertions(+)
+>>  create mode 100644 drivers/mfd/rt5033.c
+>>  create mode 100644 include/linux/mfd/rt5033-private.h
+>>  create mode 100644 include/linux/mfd/rt5033.h
+>>
+>> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+>> index 72d3808..9c13170 100644
+>> --- a/drivers/mfd/Kconfig
+>> +++ b/drivers/mfd/Kconfig
+>> @@ -618,6 +618,18 @@ config MFD_RTSX_PCI
+>>  	  types of memory cards, such as Memory Stick, Memory Stick Pro,
+>>  	  Secure Digital and MultiMediaCard.
+>>  
+>> +config MFD_RT5033
+>> +	tristate "Richtek RT5033 Power Management IC"
+>> +	depends on I2C=y
+>> +	select MFD_CORE
+>> +	select REGMAP_I2C
+>> +	help
+>> +	  This driver provides for the Richtek RT5033 Power Management IC,
+>> +	  which includes the I2C driver and the Core APIs. This driver provides
+>> +	  common support for accessing the device. The device supports multiple
+>> +	  sub-devices like charger, fuel gauge, flash LED, current source,
+>> +	  LDO and Buck.
+>> +
+>>  config MFD_RTSX_USB
+>>  	tristate "Realtek USB card reader"
+>>  	depends on USB
+>> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+>> index 53467e2..4059c24 100644
+>> --- a/drivers/mfd/Makefile
+>> +++ b/drivers/mfd/Makefile
+>> @@ -176,6 +176,7 @@ obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
+>>  obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
+>>  obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
+>>  obj-$(CONFIG_MFD_DLN2)		+= dln2.o
+>> +obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
+>>  
+>>  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+>>  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+>> diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
+>> new file mode 100644
+>> index 0000000..e2877c0
+>> --- /dev/null
+>> +++ b/drivers/mfd/rt5033.c
+>> @@ -0,0 +1,141 @@
+>> +/*
+>> + * MFD core driver for the Richtek RT5033.
 > 
-> This patch adds helper APIs to remove/free existing static and dynamic OPPs.
-> 
-> Because the OPPs are used both under RCU and SRCU, we have to wait for grace
-> period of both. And so are using kfree_rcu() from within call_srcu().
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-This looks plausible from an RCU viewpoint.  In particular, the
-kfree_rcu() within the SRCU callback will result in freeing being
-deferred until after both an SRCU and an RCU grace period elapsing.
-
-							Thanx, Paul
-
-> ---
-> V1->V2:
-> - Use kfree_rcu() instead of kfree() as OPP is accessed under rcu locks as well
->   and so we should wait for its grace period as well.
-> - Another patch which fixes a potential bug, 5/8. Must be applied after this
->   patch and before the original 5/8. Total of 9 patches now.
-> 
->  drivers/base/power/opp.c | 102 +++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h   |  12 +++++-
->  2 files changed, 113 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index b249b01..977474a 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -79,6 +79,7 @@ struct dev_pm_opp {
->   *		however addition is possible and is secured by dev_opp_list_lock
->   * @dev:	device pointer
->   * @srcu_head:	notifier head to notify the OPP availability changes.
-> + * @rcu_head:	RCU callback head used for deferred freeing
->   * @opp_list:	list of opps
->   *
->   * This is an internal data structure maintaining the link to opps attached to
-> @@ -90,6 +91,7 @@ struct device_opp {
-> 
->  	struct device *dev;
->  	struct srcu_notifier_head srcu_head;
-> +	struct rcu_head rcu_head;
->  	struct list_head opp_list;
->  };
-> 
-> @@ -498,6 +500,76 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
-> 
-> +static void kfree_opp_rcu(struct rcu_head *head)
-> +{
-> +	struct dev_pm_opp *opp = container_of(head, struct dev_pm_opp, rcu_head);
-> +
-> +	kfree_rcu(opp, rcu_head);
-> +}
-> +
-> +static void kfree_device_rcu(struct rcu_head *head)
-> +{
-> +	struct device_opp *device_opp = container_of(head, struct device_opp, rcu_head);
-> +
-> +	kfree(device_opp);
-> +}
-> +
-> +void __dev_pm_opp_remove(struct device_opp *dev_opp, struct dev_pm_opp *opp)
-> +{
-> +	/*
-> +	 * Notify the changes in the availability of the operable
-> +	 * frequency/voltage list.
-> +	 */
-> +	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
-> +	list_del_rcu(&opp->node);
-> +	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, kfree_opp_rcu);
-> +
-> +	if (list_empty(&dev_opp->opp_list)) {
-> +		list_del_rcu(&dev_opp->node);
-> +		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
-> +			  kfree_device_rcu);
-> +	}
-> +}
-> +
-> +/**
-> + * dev_pm_opp_remove()  - Remove an OPP from OPP list
-> + * @dev:	device for which we do this operation
-> + * @freq:	OPP to remove with matching 'freq'
-> + *
-> + * This function removes an opp from the opp list.
-> + */
-> +void dev_pm_opp_remove(struct device *dev, unsigned long freq)
-> +{
-> +	struct dev_pm_opp *opp;
-> +	struct device_opp *dev_opp;
-> +	bool found = false;
-> +
-> +	/* Hold our list modification lock here */
-> +	mutex_lock(&dev_opp_list_lock);
-> +
-> +	dev_opp = find_device_opp(dev);
-> +	if (IS_ERR(dev_opp))
-> +		goto unlock;
-> +
-> +	list_for_each_entry(opp, &dev_opp->opp_list, node) {
-> +		if (opp->rate == freq) {
-> +			found = true;
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (!found) {
-> +		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
-> +			 __func__, freq);
-> +		goto unlock;
-> +	}
-> +
-> +	__dev_pm_opp_remove(dev_opp, opp);
-> +unlock:
-> +	mutex_unlock(&dev_opp_list_lock);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
-> +
->  /**
->   * opp_set_availability() - helper to set the availability of an opp
->   * @dev:		device for which we do this operation
-> @@ -687,4 +759,34 @@ int of_init_opp_table(struct device *dev)
->  	return 0;
->  }
->  EXPORT_SYMBOL_GPL(of_init_opp_table);
-> +
-> +/**
-> + * of_free_opp_table() - Free OPP table entries created from static DT entries
-> + * @dev:	device pointer used to lookup device OPPs.
-> + *
-> + * Free OPPs created using static entries present in DT.
-> + */
-> +void of_free_opp_table(struct device *dev)
-> +{
-> +	struct device_opp *dev_opp = find_device_opp(dev);
-> +	struct dev_pm_opp *opp, *tmp;
-> +
-> +	/* Check for existing list for 'dev' */
-> +	dev_opp = find_device_opp(dev);
-> +	if (WARN(IS_ERR(dev_opp), "%s: dev_opp: %ld\n", dev_name(dev),
-> +		 PTR_ERR(dev_opp)))
-> +		return;
-> +
-> +	/* Hold our list modification lock here */
-> +	mutex_lock(&dev_opp_list_lock);
-> +
-> +	/* Free static OPPs */
-> +	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
-> +		if (!opp->dynamic)
-> +			__dev_pm_opp_remove(dev_opp, opp);
-> +	}
-> +
-> +	mutex_unlock(&dev_opp_list_lock);
-> +}
-> +EXPORT_SYMBOL_GPL(of_free_opp_table);
->  #endif
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 0330217..cec2d45 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -21,7 +21,7 @@ struct dev_pm_opp;
->  struct device;
-> 
->  enum dev_pm_opp_event {
-> -	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
-> +	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
->  };
-> 
->  #if defined(CONFIG_PM_OPP)
-> @@ -44,6 +44,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
-> 
->  int dev_pm_opp_add(struct device *dev, unsigned long freq,
->  		   unsigned long u_volt);
-> +void dev_pm_opp_remove(struct device *dev, unsigned long freq);
-> 
->  int dev_pm_opp_enable(struct device *dev, unsigned long freq);
-> 
-> @@ -90,6 +91,10 @@ static inline int dev_pm_opp_add(struct device *dev, unsigned long freq,
->  	return -EINVAL;
->  }
-> 
-> +static inline void dev_pm_opp_remove(struct device *dev, unsigned long freq)
-> +{
-> +}
-> +
->  static inline int dev_pm_opp_enable(struct device *dev, unsigned long freq)
->  {
->  	return 0;
-> @@ -109,11 +114,16 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
-> 
->  #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
->  int of_init_opp_table(struct device *dev);
-> +void of_free_opp_table(struct device *dev);
->  #else
->  static inline int of_init_opp_table(struct device *dev)
->  {
->  	return -EINVAL;
->  }
-> +
-> +static inline void of_free_opp_table(struct device *dev)
-> +{
-> +}
->  #endif
-> 
->  #endif		/* __LINUX_OPP_H__ */
-> -- 
-> 2.0.3.693.g996b0fd
+> Nicer to put a small description of the h/w here.
 > 
 
+OK. I will put a small description.
+
+>> + * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
+>> + * Author: Beomho Seo <beomho.seo@samsung.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published bythe Free Software Foundation.
+>> + */
+>> +
+>> +#include <linux/err.h>
+>> +#include <linux/module.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/mfd/core.h>
+>> +#include <linux/mfd/rt5033.h>
+>> +#include <linux/mfd/rt5033-private.h>
+>> +
+>> +static const struct regmap_irq rt5033_irqs[] = {
+>> +	{ .mask = RT5033_PMIC_IRQ_BUCKOCP, },
+>> +	{ .mask = RT5033_PMIC_IRQ_BUCKLV, },
+>> +	{ .mask = RT5033_PMIC_IRQ_SAFELDOLV, },
+>> +	{ .mask = RT5033_PMIC_IRQ_LDOLV, },
+>> +	{ .mask = RT5033_PMIC_IRQ_OT, },
+>> +	{ .mask = RT5033_PMIC_IRQ_VDDA_UV, },
+>> +};
+>> +
+>> +static const struct regmap_irq_chip rt5033_irq_chip = {
+>> +	.name		= "rt5033",
+>> +	.status_base	= RT5033_REG_PMIC_IRQ_STAT,
+>> +	.mask_base	= RT5033_REG_PMIC_IRQ_CTRL,
+>> +	.mask_invert	= true,
+>> +	.num_regs	= 1,
+>> +	.irqs		= rt5033_irqs,
+>> +	.num_irqs	= ARRAY_SIZE(rt5033_irqs),
+>> +};
+>> +
+>> +static const struct mfd_cell rt5033_devs[] = {
+>> +	{ .name = "rt5033-regulator", },
+>> +	{
+>> +		.name = "rt5033-charger",
+>> +		.of_compatible = "richtek,rt5033-charger",
+>> +	}, {
+>> +		.name = "rt5033-battery",
+>> +		.of_compatible = "richtek,rt5033-battery",
+>> +	},
+>> +};
+>> +
+>> +static const struct of_device_id rt5033_dt_match[] = {
+>> +	{ .compatible = "richtek,rt5033", },
+>> +	{ }
+>> +};
+> 
+> Put this just above where you use it for the first time.
+> 
+
+I will be changed next version.
+
+>> +static const struct regmap_config rt5033_regmap_config = {
+>> +	.reg_bits	= 8,
+>> +	.val_bits	= 8,
+>> +	.max_register	= RT5033_REG_END,
+>> +};
+>> +
+>> +static int rt5033_i2c_probe(struct i2c_client *i2c,
+>> +				const struct i2c_device_id *id)
+>> +{
+>> +	struct rt5033_dev *rt5033;
+>> +	unsigned int data;
+> 
+> 'data' is not a very good name for a variable.
+> 
+> "devid" or "id" would be better in this case.
+> 
+
+I will use "devid" or "id".
+
+>> +	int ret;
+>> +
+>> +	rt5033 = devm_kzalloc(&i2c->dev, sizeof(*rt5033), GFP_KERNEL);
+>> +	if (!rt5033)
+>> +		return -ENOMEM;
+>> +
+>> +	i2c_set_clientdata(i2c, rt5033);
+>> +	rt5033->dev = &i2c->dev;
+>> +	rt5033->irq = i2c->irq;
+>> +	rt5033->wakeup = true;
+>> +
+>> +	rt5033->regmap = devm_regmap_init_i2c(i2c, &rt5033_regmap_config);
+>> +	if (IS_ERR(rt5033->regmap)) {
+>> +		dev_err(&i2c->dev, "Failed to allocate register map.\n");
+>> +		return PTR_ERR(rt5033->regmap);
+>> +	}
+>> +
+>> +	ret = regmap_read(rt5033->regmap, RT5033_REG_DEVICE_ID, &data);
+>> +	if (ret) {
+>> +		dev_err(&i2c->dev, "Device not found\n");
+>> +		return -ENODEV;
+>> +	}
+>> +	dev_info(&i2c->dev, "Device found Device ID: %04x\n", data);
+>> +
+>> +	ret = regmap_add_irq_chip(rt5033->regmap, rt5033->irq,
+>> +			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+>> +			0, &rt5033_irq_chip, &rt5033->irq_data);
+>> +	if (ret) {
+>> +		dev_err(&i2c->dev, "Failed to request IRQ %d: %d\n",
+>> +							rt5033->irq, ret);
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = mfd_add_devices(rt5033->dev, -1, rt5033_devs,
+>> +			ARRAY_SIZE(rt5033_devs), NULL, 0,
+>> +			regmap_irq_get_domain(rt5033->irq_data));
+>> +	if (ret < 0) {
+>> +		dev_err(&i2c->dev, "Failed to add RT5033 child devices.\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	device_init_wakeup(rt5033->dev, rt5033->wakeup);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int rt5033_i2c_remove(struct i2c_client *i2c)
+>> +{
+>> +	struct rt5033_dev *rt5033 = i2c_get_clientdata(i2c);
+>> +
+>> +	mfd_remove_devices(rt5033->dev);
+> 
+> &i2c->dev?
+> 
+
+It will be changed.
+
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct i2c_device_id rt5033_i2c_id[] = {
+>> +	{ "rt5033", },
+>> +	{ }
+>> +};
+>> +MODULE_DEVICE_TABLE(i2c, rt5033_i2c_id);
+>> +
+>> +static struct i2c_driver rt5033_driver = {
+>> +	.driver = {
+>> +		.name = "rt5033",
+>> +		.of_match_table = of_match_ptr(rt5033_dt_match),
+>> +	},
+>> +	.probe = rt5033_i2c_probe,
+>> +	.remove = rt5033_i2c_remove,
+>> +	.id_table = rt5033_i2c_id,
+>> +};
+>> +module_i2c_driver(rt5033_driver);
+>> +
+>> +MODULE_ALIAS("i2c:rt5033");
+>> +MODULE_DESCRIPTION("Richtek RT5033 multi-function core driver");
+>> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
+>> +MODULE_LICENSE("GPL");
+> 
+> [...]
+> 
+>> +#endif /* __RT5033_PRIVATE_H__ */
+>> diff --git a/include/linux/mfd/rt5033.h b/include/linux/mfd/rt5033.h
+>> new file mode 100644
+>> index 0000000..bd06415
+>> --- /dev/null
+>> +++ b/include/linux/mfd/rt5033.h
+> 
+> [...]
+> 
+>> +struct rt5033_charger {
+>> +	struct device		*dev;
+>> +	struct rt5033_dev	*rt5033;
+>> +	struct power_supply	psy;
+>> +
+>> +	struct rt5033_charger_data	*data;
+> 
+> 'data' is not a good name for a variable.
+> 
+
+I will change variable name.
+
+>> +};
+>> +
+>> +#endif /* __RT5033_H__ */
+> 
+
+
+Best regards,
+Beomho Seo
