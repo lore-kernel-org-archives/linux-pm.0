@@ -1,152 +1,207 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] thermal/int3400: export uuids
-Date: Tue,  2 Dec 2014 09:11:23 -0800
-Message-ID: <1417540283-32609-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v14 00/10] cpuidle driver for QCOM SoCs: 8064, 8074, 8084
+Date: Tue,  2 Dec 2014 10:39:08 -0700
+Message-ID: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:3416 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754199AbaLBRNh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Dec 2014 12:13:37 -0500
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:50331 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbaLBRkY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 12:40:24 -0500
+Received: by mail-pd0-f174.google.com with SMTP id w10so13518635pde.19
+        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 09:40:23 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-INT3400 currently supports only one policy, which can't be changed.
-This change exports all available policies (uuids) to user space and
-allow this to be changed.
-It introduces an attribute group uuids in INT3400 platform driver.
-There are two attributes exposed:
-- available_uuids
-- current_uuid
+Dependent patchsets - 
+        https://lkml.org/lkml/2014/8/4/767
+        http://www.spinics.net/lists/linux-arm-msm/msg10799.html
+        http://www.spinics.net/lists/linux-arm-msm/msg10795.html
 
-User space can set current_uuid via this interface to one of the
-available uuids. The uuid change is communicated to firmware, only
-when the current zone mode is changed to "enabled". So the ideal
-sequence should be
-- set INT3400 zone mode to "disabled"
-- change current_uuid
-- set INT3400 zone mode to "enabled"
+Changes since v13:
+- Return values for idle states propagated back to the cpuidle driver.
+- Remove static bool cpuidle_drv_init.
+- Register cpuidle driver and cpuidle device separately.
+ - cpuidle device registered only when the SPM for the cpu is probed.
+- Initialization changes to ensure dynamic cpuidle devices are registered only
+  after the cpuidle driver is registered.
+- Removed wmb, replaced with a poll loop to ensure that the SPM registers are
+  written before executing wfi.
+  - Added spm_register_write_sync() for write guarantees.
+- Removed irrelevant return value for spm_set_low_power_mode().
+- Added comments, updated module description.
+- Removed Reviewed-by and Acked-by on the spm and cpuidle-qcom patches.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/int340x_thermal/int3400_thermal.c | 80 ++++++++++++++++++++++-
- 1 file changed, 78 insertions(+), 2 deletions(-)
+Changes since v12:
+- Minor fixes
+- Added Reviewed-by
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index edc1cce..dcb306e 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -43,6 +43,74 @@ struct int3400_thermal_priv {
- 	struct trt *trts;
- 	u8 uuid_bitmap;
- 	int rel_misc_dev_res;
-+	int current_uuid_index;
-+};
-+
-+static ssize_t available_uuids_show(struct device *dev,
-+				    struct device_attribute *attr,
-+				    char *buf)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int i;
-+	int length = 0;
-+
-+	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; i++) {
-+		if (priv->uuid_bitmap & (1 << i))
-+			if (PAGE_SIZE - length > 0)
-+				length += snprintf(&buf[length],
-+						   PAGE_SIZE - length,
-+						   "%s\n",
-+						   int3400_thermal_uuids[i]);
-+	}
-+
-+	return length;
-+}
-+
-+static ssize_t current_uuid_show(struct device *dev,
-+				 struct device_attribute *devattr, char *buf)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
-+		return sprintf(buf, "%s\n",
-+			       int3400_thermal_uuids[priv->current_uuid_index]);
-+	else
-+		return sprintf(buf, "INVALID\n");
-+}
-+
-+static ssize_t current_uuid_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
-+		if ((priv->uuid_bitmap & (1 << i)) &&
-+		    !(strncmp(buf, int3400_thermal_uuids[i],
-+			      sizeof(int3400_thermal_uuids[i]) - 1))) {
-+			priv->current_uuid_index = i;
-+			return count;
-+		}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static DEVICE_ATTR(current_uuid, 0644, current_uuid_show, current_uuid_store);
-+static DEVICE_ATTR_RO(available_uuids);
-+static struct attribute *uuid_attrs[] = {
-+	&dev_attr_available_uuids.attr,
-+	&dev_attr_current_uuid.attr,
-+	NULL
-+};
-+
-+static struct attribute_group uuid_attribute_group = {
-+	.attrs = uuid_attrs,
-+	.name = "uuids"
- };
- 
- static int int3400_thermal_get_uuids(struct int3400_thermal_priv *priv)
-@@ -160,9 +228,9 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
- 
- 	if (enable != priv->mode) {
- 		priv->mode = enable;
--		/* currently, only PASSIVE COOLING is supported */
- 		result = int3400_thermal_run_osc(priv->adev->handle,
--					INT3400_THERMAL_PASSIVE_1, enable);
-+						 priv->current_uuid_index,
-+						 enable);
- 	}
- 	return result;
- }
-@@ -223,7 +291,14 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	priv->rel_misc_dev_res = acpi_thermal_rel_misc_device_add(
- 							priv->adev->handle);
- 
-+	result = sysfs_create_group(&pdev->dev.kobj, &uuid_attribute_group);
-+	if (result)
-+		goto free_zone;
-+
- 	return 0;
-+
-+free_zone:
-+	thermal_zone_device_unregister(priv->thermal);
- free_trt:
- 	kfree(priv->trts);
- free_art:
-@@ -240,6 +315,7 @@ static int int3400_thermal_remove(struct platform_device *pdev)
- 	if (!priv->rel_misc_dev_res)
- 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
- 
-+	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
- 	thermal_zone_device_unregister(priv->thermal);
- 	kfree(priv->trts);
- 	kfree(priv->arts);
+Changes since v11:
+- Address review comments on spm.c
+- Commenting style fixes
+- Added Reviewed-by
+
+Changes since v10:
+[ https://www.mail-archive.com/devicetree@vger.kernel.org/msg51880.html ]
+- Address review comments
+- Added Acked-by and Reviewed-by
+
+Changes since v9:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11714.html ]
+- Address review comments on v9
+
+Changes since v8:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11473.html ]
+- Flatten out the file structure - merge pm.c into spm.c after discussions
+- Add a new function to set warm boot address, in scm-boot.c
+- Support for 8064 (New)
+- Tested on 8074, 8084. 8064 was tested with a WIP tree
+- Address review comments from v8
+- Looking into possiblility of  initializing the cpuidle device for a cpu,
+only when the corresponding spm device is probed successfully.
+
+Changes since v7:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11199.html ]
+- Address review comments
+- Tested on 8974 but not 8084
+- WFI renamed to Standby
+- Update commit text with original author and link to the downstream tree
+
+Changes since v6:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11012.html ]
+- SPM device nodes merged with existing SAW DT nodes
+- SPM register information is handled within the driver
+- Clean up from using 'msm' to 'qcom'
+        - Shorten some enumerations as well
+- Review comments from v6 addressed
+- New: Support for 8084 SoC
+        - Not tested. I do not have a board with this SoC, but the SPM
+        configuration should be identical for WFI and SPC
+
+Changes since v5:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10559.html ]
+- Merge spm-devices.c and spm.c into one file and one patch
+        - Simplify implementation of the driver.
+        - Update documentation mapping the DT properties with corresponding
+          SPM register information.
+- Removed scm-boot changes for quad core warmboot, its has been pulled in.
+
+Changes since v4:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10327.html ]
+- Update to the v8 of ARM generic idle states patches
+- Use platform device model for cpuidle-qcom
+- Clean up msm-pm.c to remove unnecessary include files and functions
+- Update commit text and documentation for all idle states
+- Remove scm-boot relocate patch from this series, submitted earlier
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10518.html ]
+
+Changes since v3:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10288.html ]
+- Fix CONFIG_QCOM_PM Kconfig as bool
+- More clean ups in spm.c and spm-devices.c
+        - Removed and re-organized data structures to make initialization simple
+        - Remove export of sequence flush functions
+        - Updated commit text
+        - Comments for use of barriers.
+- Rebase on top of 3.17-rc1
+
+Changes since v2:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10148.html ]
+- Prune all the drivers to support basic WFI and power down cpuidle
+  functionality. Remove debug code.
+- Integrate KConfig changes into the drivers' patches.
+- Use Lorenzo's ARM idle-states patches as the basis for reading cpuidle
+  c-states from DT.
+  [ http://marc.info/?l=linux-pm&m=140794514812383&w=2 ]
+- Incorporate review comments
+- Rebase on top of 3.16
+
+Changes since v1/RFC:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10065.html ]
+- Remove hotplug from the patch series. Will submit it separately.
+- Fix SPM drivers per the review comments
+- Modify patch sequence to compile SPM drivers independent of msm-pm, so as to
+  allow wfi() calls to use SPM even without SoC interface driver.
+
+8074/8084/8064 like any ARM SoC can do architectural clock gating, that helps save
+on power, but not enough of leakage power.  Leakage power of the SoC can be
+further reduced by turning off power to the core. To aid this, every core (cpu
+and L2) is accompanied by a Sub-system Power Manager (SPM), that can be
+configured to indicate the low power mode, the core would be put into and the
+SPM programs the peripheral h/w accordingly to enter low power and turn off the
+power rail to the core.
+
+The idle invocation hierarchy -
+
+CPUIDLE
+        |
+        cpuidle-qcom.c [CPUIdle driver]
+        |
+        ------> spm.c [SPM driver]
+                |
+                ------> scm-boot.c [SCM interface layer]
+                        |
+------------------------|--------------------------
+(EL)                    Secure Monitor Code
+                        |
+                        |
+                        wfi();
+------------------------|--------------------------
+(HW)                    [CPU] {clock gate}
+                        |
+                        -----> [SPM] {statemachine}
+
+
+The patchset does the following -
+
+- Introduce the SPM driver to control power to the core
+- Add device bindings for 8974, 8084, 8064 CPU SPM devices
+- Add cpuidle driver for QCOM cpus, using ARM generic idle state definitions.
+- Add device bindings for 8974, 8084, 8064 idle-states - WFI and SPC
+
+Thanks,
+Lina
+
+
+Lina Iyer (10):
+  qcom: scm: Move scm-boot files to drivers/soc/qcom/ and
+    include/soc/qcom
+  qcom: scm: Add SCM warmboot support for quad core SoCs
+  qcom: spm: Add Subsystem Power Manager driver
+  arm: dts: qcom: Add power-controller device node for 8074 Krait CPUs
+  arm: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+  arm: dts: qcom: Update power-controller device node for 8064 Krait
+    CPUs
+  qcom: cpuidle: Add cpuidle driver for QCOM cpus
+  arm: dts: qcom: Add idle states device nodes for 8074
+  arm: dts: qcom: Add idle states device nodes for 8084
+  arm: dts: qcom: Add idle state device nodes for 8064
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  81 +++++
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  31 +-
+ arch/arm/boot/dts/qcom-apq8064.dtsi                |  38 ++-
+ arch/arm/boot/dts/qcom-apq8084.dtsi                |  48 ++-
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  48 ++-
+ arch/arm/mach-qcom/Makefile                        |   1 -
+ arch/arm/mach-qcom/platsmp.c                       |   2 +-
+ drivers/cpuidle/Kconfig.arm                        |   7 +
+ drivers/cpuidle/Makefile                           |   1 +
+ drivers/cpuidle/cpuidle-qcom.c                     |  99 ++++++
+ drivers/soc/qcom/Kconfig                           |   8 +
+ drivers/soc/qcom/Makefile                          |   3 +-
+ .../arm/mach-qcom => drivers/soc/qcom}/scm-boot.c  |  37 ++-
+ drivers/soc/qcom/spm.c                             | 338 +++++++++++++++++++++
+ include/soc/qcom/pm.h                              |  31 ++
+ .../arm/mach-qcom => include/soc/qcom}/scm-boot.h  |   3 +-
+ 16 files changed, 754 insertions(+), 22 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+ rename {arch/arm/mach-qcom => drivers/soc/qcom}/scm-boot.c (59%)
+ create mode 100644 drivers/soc/qcom/spm.c
+ create mode 100644 include/soc/qcom/pm.h
+ rename {arch/arm/mach-qcom => include/soc/qcom}/scm-boot.h (91%)
+
 -- 
-1.9.1
+2.1.0
 
