@@ -1,120 +1,93 @@
 From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH 1/2 V6] intel_pstate: skip this driver if Sun server has
- _PPC method
-Date: Tue, 2 Dec 2014 10:22:31 -0800
-Message-ID: <20141202102231.32b43385@kcaccard-desk.amr.corp.intel.com>
-References: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
+Subject: Re: [PATCH 2/2 V6] intel_pstate: add kernel parameter to force
+ loading on Sun X86 servers.
+Date: Tue, 2 Dec 2014 10:24:02 -0800
+Message-ID: <20141202102402.09ea6017@kcaccard-desk.amr.corp.intel.com>
+References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com>
+	<1417145777-21897-4-git-send-email-ethan.zhao@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:43286 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754228AbaLBSWk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Dec 2014 13:22:40 -0500
-In-Reply-To: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1417145777-21897-4-git-send-email-ethan.zhao@oracle.com>
+Sender: linux-doc-owner@vger.kernel.org
 To: Ethan Zhao <ethan.zhao@oracle.com>
-Cc: dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+List-Id: linux-pm@vger.kernel.org
 
-On Mon, 1 Dec 2014 11:32:08 +0900
+On Fri, 28 Nov 2014 12:36:17 +0900
 Ethan Zhao <ethan.zhao@oracle.com> wrote:
 
-> Oracle Sun X86 servers have dynamic power capping capability that works via
-> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-> enabled.
+> To force loading on Oracle Sun X86 servers, provide one kernel command line
+> parameter
+> 
+>   intel_pstate = ora_force
+> 
+> For those who be aware of the risk of no power capping capabily working and
+> try to get better performance with this driver.
+
+So, is this something you'd expect users to use on production systems,
+or is it just for debug?
+
+Thanks,
+Kristen
+
 > 
 > Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Tested-by: Linda Knippers <linda.knippers@hp.com>
-
-Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
-
 > ---
->   v2: fix break HP Proliant issue.
->   v3: expand the hardware vendor list.
->   v4: refine code.
->   v5v6: change enum PCC to PPC.
+>  v2: change to hardware vendor specific naming parameter.
+>  v4: refine code and doc.
+>  v5&v6: fix a typo in doc.
 > 
->  drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 41 insertions(+), 4 deletions(-)
+>  Documentation/kernel-parameters.txt | 5 +++++
+>  drivers/cpufreq/intel_pstate.c      | 6 +++++-
+>  2 files changed, 10 insertions(+), 1 deletion(-)
 > 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 479f332..7d0983e 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>  		       disable
+>  		         Do not enable intel_pstate as the default
+>  		         scaling driver for the supported processors
+> +		       ora_force
+> +			 Force loading intel_pstate on Oracle Sun Servers(X86).
+> +			 only for those who be aware of the risk of no power capping
+> +			 capability working and try to get better performance with this
+> +			 driver.
+>  
+>  	intremap=	[X86-64, Intel-IOMMU]
+>  			on	enable Interrupt Remapping (default)
 > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 27bb6d3..1bb62ca 100644
+> index 1bb62ca..2654e13 100644
 > --- a/drivers/cpufreq/intel_pstate.c
 > +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
->  	return true;
->  }
->  
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct acpi_processor *pr = per_cpu(processors, i);
-> +
-> +		if (!pr)
-> +			continue;
-> +		if (acpi_has_method(pr->handle, "_PPC"))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
-> +enum {
-> +	PSS,
-> +	PPC,
-> +};
-> +
->  struct hw_vendor_info {
->  	u16  valid;
->  	char oem_id[ACPI_OEM_ID_SIZE];
->  	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +	int  oem_pwr_table;
+> @@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
 >  };
 >  
->  /* Hardware vendor-specific info that has its own power management modes */
->  static struct hw_vendor_info vendor_info[] = {
-> -	{1, "HP    ", "ProLiant"},
-> +	{1, "HP    ", "ProLiant", PSS},
-> +	{1, "ORACLE", "X4-2    ", PPC},
-> +	{1, "ORACLE", "X4-2L   ", PPC},
-> +	{1, "ORACLE", "X4-2B   ", PPC},
-> +	{1, "ORACLE", "X3-2    ", PPC},
-> +	{1, "ORACLE", "X3-2L   ", PPC},
-> +	{1, "ORACLE", "X3-2B   ", PPC},
-> +	{1, "ORACLE", "X4470M2 ", PPC},
-> +	{1, "ORACLE", "X4270M3 ", PPC},
-> +	{1, "ORACLE", "X4270M2 ", PPC},
-> +	{1, "ORACLE", "X4170M2 ", PPC},
->  	{0, "", ""},
->  };
+>  static int __initdata no_load;
+> +static unsigned int  ora_force;
 >  
-> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->  
->  	for (v_info = vendor_info; v_info->valid; v_info++) {
->  		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
-> -		    intel_pstate_no_acpi_pss())
-> -			return true;
-> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
-> +						ACPI_OEM_TABLE_ID_SIZE))
-> +			switch (v_info->oem_pwr_table) {
-> +			case PSS:
-> +				return intel_pstate_no_acpi_pss();
-> +			case PPC:
-> +				return intel_pstate_has_acpi_ppc();
-> +			}
+>  static int intel_pstate_msrs_not_valid(void)
+>  {
+> @@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+>  			case PSS:
+>  				return intel_pstate_no_acpi_pss();
+>  			case PCC:
+> -				return intel_pstate_has_acpi_ppc();
+> +				return intel_pstate_has_acpi_ppc() &&
+> +					(!ora_force);
+>  			}
 >  	}
 >  
->  	return false;
->  }
->  #else /* CONFIG_ACPI not enabled */
->  static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->  #endif /* CONFIG_ACPI */
+> @@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
 >  
->  static int __init intel_pstate_init(void)
+>  	if (!strcmp(str, "disable"))
+>  		no_load = 1;
+> +	if (!strcmp(str, "ora_force"))
+> +		ora_force = 1;
+>  	return 0;
+>  }
+>  early_param("intel_pstate", intel_pstate_setup);
 
