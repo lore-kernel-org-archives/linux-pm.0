@@ -1,54 +1,152 @@
-From: Jyri Sarha <jsarha@ti.com>
-Subject: [PATCH] OMAPDSS: hdmi: Remove __exit qualifier from hdmi_uninit_output()
-Date: Tue, 2 Dec 2014 18:12:50 +0200
-Message-ID: <1417536771-12907-1-git-send-email-jsarha@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal/int3400: export uuids
+Date: Tue,  2 Dec 2014 09:11:23 -0800
+Message-ID: <1417540283-32609-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:38027 "EHLO comal.ext.ti.com"
+Received: from mga09.intel.com ([134.134.136.24]:3416 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932249AbaLBQNB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Dec 2014 11:13:01 -0500
+	id S1754199AbaLBRNh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Dec 2014 12:13:37 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, t-kristo@ti.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Remove __exit qualifier from hdmi_uninit_output() because it is used
-also in omapdss_hdmihw_probe().
+INT3400 currently supports only one policy, which can't be changed.
+This change exports all available policies (uuids) to user space and
+allow this to be changed.
+It introduces an attribute group uuids in INT3400 platform driver.
+There are two attributes exposed:
+- available_uuids
+- current_uuid
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+User space can set current_uuid via this interface to one of the
+available uuids. The uuid change is communicated to firmware, only
+when the current zone mode is changed to "enabled". So the ideal
+sequence should be
+- set INT3400 zone mode to "disabled"
+- change current_uuid
+- set INT3400 zone mode to "enabled"
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c |    2 +-
- drivers/video/fbdev/omap2/dss/hdmi5.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 80 ++++++++++++++++++++++-
+ 1 file changed, 78 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index e76cc5f..f1a02bf 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -510,7 +510,7 @@ static void hdmi_init_output(struct platform_device *pdev)
- 	omapdss_register_output(out);
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index edc1cce..dcb306e 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -43,6 +43,74 @@ struct int3400_thermal_priv {
+ 	struct trt *trts;
+ 	u8 uuid_bitmap;
+ 	int rel_misc_dev_res;
++	int current_uuid_index;
++};
++
++static ssize_t available_uuids_show(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++	int i;
++	int length = 0;
++
++	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; i++) {
++		if (priv->uuid_bitmap & (1 << i))
++			if (PAGE_SIZE - length > 0)
++				length += snprintf(&buf[length],
++						   PAGE_SIZE - length,
++						   "%s\n",
++						   int3400_thermal_uuids[i]);
++	}
++
++	return length;
++}
++
++static ssize_t current_uuid_show(struct device *dev,
++				 struct device_attribute *devattr, char *buf)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++
++	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
++		return sprintf(buf, "%s\n",
++			       int3400_thermal_uuids[priv->current_uuid_index]);
++	else
++		return sprintf(buf, "INVALID\n");
++}
++
++static ssize_t current_uuid_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++	int i;
++
++	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
++		if ((priv->uuid_bitmap & (1 << i)) &&
++		    !(strncmp(buf, int3400_thermal_uuids[i],
++			      sizeof(int3400_thermal_uuids[i]) - 1))) {
++			priv->current_uuid_index = i;
++			return count;
++		}
++	}
++
++	return -EINVAL;
++}
++
++static DEVICE_ATTR(current_uuid, 0644, current_uuid_show, current_uuid_store);
++static DEVICE_ATTR_RO(available_uuids);
++static struct attribute *uuid_attrs[] = {
++	&dev_attr_available_uuids.attr,
++	&dev_attr_current_uuid.attr,
++	NULL
++};
++
++static struct attribute_group uuid_attribute_group = {
++	.attrs = uuid_attrs,
++	.name = "uuids"
+ };
+ 
+ static int int3400_thermal_get_uuids(struct int3400_thermal_priv *priv)
+@@ -160,9 +228,9 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+ 
+ 	if (enable != priv->mode) {
+ 		priv->mode = enable;
+-		/* currently, only PASSIVE COOLING is supported */
+ 		result = int3400_thermal_run_osc(priv->adev->handle,
+-					INT3400_THERMAL_PASSIVE_1, enable);
++						 priv->current_uuid_index,
++						 enable);
+ 	}
+ 	return result;
  }
+@@ -223,7 +291,14 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	priv->rel_misc_dev_res = acpi_thermal_rel_misc_device_add(
+ 							priv->adev->handle);
  
--static void __exit hdmi_uninit_output(struct platform_device *pdev)
-+static void hdmi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &hdmi.output;
++	result = sysfs_create_group(&pdev->dev.kobj, &uuid_attribute_group);
++	if (result)
++		goto free_zone;
++
+ 	return 0;
++
++free_zone:
++	thermal_zone_device_unregister(priv->thermal);
+ free_trt:
+ 	kfree(priv->trts);
+ free_art:
+@@ -240,6 +315,7 @@ static int int3400_thermal_remove(struct platform_device *pdev)
+ 	if (!priv->rel_misc_dev_res)
+ 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
  
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index cbfb282..d9d0d78 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -538,7 +538,7 @@ static void hdmi_init_output(struct platform_device *pdev)
- 	omapdss_register_output(out);
- }
- 
--static void __exit hdmi_uninit_output(struct platform_device *pdev)
-+static void hdmi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &hdmi.output;
- 
++	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
+ 	thermal_zone_device_unregister(priv->thermal);
+ 	kfree(priv->trts);
+ 	kfree(priv->arts);
 -- 
-1.7.9.5
+1.9.1
 
