@@ -1,71 +1,46 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v13 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Tue, 2 Dec 2014 08:52:59 -0700
-Message-ID: <20141202155259.GF499@linaro.org>
-References: <1417065854-37745-1-git-send-email-lina.iyer@linaro.org>
- <1417065854-37745-4-git-send-email-lina.iyer@linaro.org>
- <20141127150137.GA7889@red-moon>
- <20141201185705.GC499@linaro.org>
- <20141202111017.GC26306@e104818-lin.cambridge.arm.com>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH 16/26] cpu_cooling: Drop useless locking around
+ idr_alloc/idr_remove
+Date: Tue, 2 Dec 2014 15:53:43 +0000
+Message-ID: <20141202155343.GD2834@e104805>
+References: <cover.1417167599.git.viresh.kumar@linaro.org>
+ <a71abc2219d80e9b8e77599d2e60612a96bb36a9.1417167599.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:56498 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbaLBPxr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 10:53:47 -0500
+In-Reply-To: <a71abc2219d80e9b8e77599d2e60612a96bb36a9.1417167599.git.viresh.kumar@linaro.org>
 Content-Disposition: inline
-In-Reply-To: <20141202111017.GC26306@e104818-lin.cambridge.arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "khilman@linaro.org" <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
 
-On Tue, Dec 02 2014 at 04:10 -0700, Catalin Marinas wrote:
->On Mon, Dec 01, 2014 at 06:57:05PM +0000, Lina Iyer wrote:
->> On Thu, Nov 27 2014 at 08:01 -0700, Lorenzo Pieralisi wrote:
->> >On Thu, Nov 27, 2014 at 05:24:07AM +0000, Lina Iyer wrote:
->> >
->> >[...]
->> >
->> >> +static int spm_set_low_power_mode(enum pm_sleep_mode mode)
->> >> +{
->> >> +       struct spm_driver_data *drv = per_cpu(cpu_spm_drv,
->> >> +                                               smp_processor_id());
->> >> +       u32 start_index;
->> >> +       u32 ctl_val;
->> >> +
->> >> +       if (!drv)
->> >> +               return -ENXIO;
->> >> +
->> >> +       start_index = drv->reg_data->start_index[mode];
->> >> +
->> >> +       ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
->> >> +       ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
->> >> +       ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
->> >> +       ctl_val |= SPM_CTL_EN;
->> >> +       spm_register_write(drv, SPM_REG_SPM_CTL, ctl_val);
->> >> +
->> >> +       /* Ensure we have written the start address */
->> >> +       wmb();
->> >
->> >Can you explain please what this wmb is meant to achieve ? If it is there
->> >to make sure the write made it to the SPM that's not a proper way
->> >to achieve it, the barrier ensures ordering, not write completion.
->>
->> A write completion would be great, but assuming that the context switch
->> using SCM or WFI could ensure the flush, then ordering is probably good
->> enough for this.
->
->I assume you want the write to the device to complete (side-effects are
->observed) before the WFI (which would raise a StandbyWFI signal). The
->safer way is to read back from the device (or check/poll for the device
->state change) rather than a barrier.
+Hi Viresh,
 
-Polling back to see if the register write was indeed successful, seems
-a bit more than what I would like on a low latency mode like Standby.
-Let me check with the hardware engineers, if a write ordering is
-required. It seems to me like I am not getting much out of the wmb()
-anyways. I will find out what kind of guarantees I would need to ensure
-the SPM write is successful.
+On Fri, Nov 28, 2014 at 09:44:10AM +0000, Viresh Kumar wrote:
+> Locking around idr_alloc/idr_remove looks rather pointless as there is no race
+> it is trying to fix. Remove it.
 
-Thanks for your time, Catalin.
+You are assuming that all cpufreq cooling devices are registered
+sequentially, one after the other.  That doesn't need be the case.  I
+don't think the performance that you get from this patch justifies the
+possible races that could be introduced by not having the locking.
+Why should we remove this?
 
-Thanks,
-Lina.
+> get_idr() and release_idr() aren't much useful now, so get rid of them as well.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> @Eduardo: Same is true for thermal-core as well ?
+
+I think that my previous concern applies to thermal_core as well,
+thermal zones may not be initialised sequentially.
+
+Cheers,
+Javi
+
