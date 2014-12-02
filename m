@@ -1,45 +1,49 @@
-From: Abhilash Kesavan <a.kesavan@samsung.com>
-Subject: [PATCH 2/2] ARM: EXYNOS: Remove ARCH_HAS_BANDGAP selection
-Date: Tue, 02 Dec 2014 12:04:33 +0530
-Message-ID: <1417502073-6322-2-git-send-email-a.kesavan@samsung.com>
-References: <1417502073-6322-1-git-send-email-a.kesavan@samsung.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [RFC V1 0/8] CPUFreq: create platform-dev for DT based cpufreq
+ drivers
+Date: Tue, 2 Dec 2014 09:20:13 +0100
+Message-ID: <20141202092013.6017a9b0@free-electrons.com>
+References: <cover.1417433163.git.viresh.kumar@linaro.org>
+	<5607434.rlEIdu4yyh@wuerfel>
+	<CAKohpomsqCnEcSeuqtZcYOC6bgTrGmc8zXTm6cA72q+hr=LBsQ@mail.gmail.com>
+	<3594266.ci9lGXQ9iA@wuerfel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:38049 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754354AbaLBGel (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 01:34:41 -0500
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NFX00HU2ZLRBA90@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 02 Dec 2014 15:34:39 +0900 (KST)
-In-reply-to: <1417502073-6322-1-git-send-email-a.kesavan@samsung.com>
+Received: from down.free-electrons.com ([37.187.137.238]:58436 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751194AbaLBIUR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 03:20:17 -0500
+In-Reply-To: <3594266.ci9lGXQ9iA@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com, l.majewski@samsung.com, amit.daniel@samsung.com, kesavan.abhilash@gmail.com
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Chander Kashyap <k.chander@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Grant Likely <grant.likely@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "olof@lixom.net" <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.in>
 
-On removing the samsung thermal driver dependency on ARCH_HAS_BANDGAP,
-selection of this symbol becomes redundant.
+Dear Arnd Bergmann,
 
-Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
----
- arch/arm/mach-exynos/Kconfig |    1 -
- 1 file changed, 1 deletion(-)
+On Mon, 01 Dec 2014 15:59:14 +0100, Arnd Bergmann wrote:
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index e4a00ba..6ddfce7 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -9,7 +9,6 @@
- 
- menuconfig ARCH_EXYNOS
- 	bool "Samsung EXYNOS" if ARCH_MULTI_V7
--	select ARCH_HAS_BANDGAP
- 	select ARCH_HAS_HOLES_MEMORYMODEL
- 	select ARCH_REQUIRE_GPIOLIB
- 	select ARM_AMBA
+> I still don't see where it does that. All I see for mvebu is
+> 
+> 	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> 
+> without any platform data. I see this patch
+> http://lists.linaro.org/pipermail/linaro-kernel/2014-September/017693.html
+> on the mailing list, but it's not in linux-next, and it obviously
+> would not work any more with the patch I proposed. Instead I suppose
+> you would use a different string to match against for the case of
+> separate clocks.
+
+Hum, right. Actually, only the cpufreq driver part has been taken, and
+I forgot to resubmit the mach-mvebu part of the solution. I'll do so
+today.
+
+Best regards,
+
+Thomas
 -- 
-1.7.9.5
-
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
