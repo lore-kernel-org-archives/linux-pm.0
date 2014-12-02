@@ -1,83 +1,62 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 04/10] arm: Frequency invariant scheduler load-tracking support
-Date: Tue,  2 Dec 2014 14:06:26 +0000
-Message-ID: <1417529192-11579-5-git-send-email-morten.rasmussen@arm.com>
-References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 1/2] drivers: thermal: Remove ARCH_HAS_BANDGAP dependency
+ for samsung
+Date: Tue, 02 Dec 2014 15:17:31 +0100
+Message-ID: <2381774.pu2QYzQvZt@amdc1032>
+References: <1417502073-6322-1-git-send-email-a.kesavan@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:39671 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbaLBOG6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 09:06:58 -0500
-In-Reply-To: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:35550 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbaLBORi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 09:17:38 -0500
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0NFY007E9L1BKR70@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 02 Dec 2014 23:17:35 +0900 (KST)
+In-reply-to: <1417502073-6322-1-git-send-email-a.kesavan@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com
-Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <Morten.Rasmussen@arm.com>, Russell King <linux@arm.linux.org.uk>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, l.majewski@samsung.com, amit.daniel@samsung.com, kesavan.abhilash@gmail.com
 
-From: Morten Rasmussen <Morten.Rasmussen@arm.com>
 
-Implements arch-specific function to provide the scheduler with a
-frequency scaling correction factor for more accurate load-tracking. The
-factor is:
+Hi,
 
-=09current_freq(cpu) * SCHED_CAPACITY_SCALE / max_freq(cpu)
+On Tuesday, December 02, 2014 12:04:32 PM Abhilash Kesavan wrote:
+> As samsung thermal support is enabled only for ARCH_EXYNOS, there is no
+> need to select ARCH_HAS_BANDGAP from the arch-specific code. Removing this
+> dependency will also allow the driver to be enabled on 64-bit SoCs.
+> 
+> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> ---
+> This was based on the discussion regarding adding ARCH_HAS_BANDGAP symbol for
+> arm64 here: http://www.spinics.net/lists/arm-kernel/msg377560.html
 
-This implementation only provides frequency invariance. No
-micro-architecture invariance yet.
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
----
- arch/arm/kernel/topology.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 89cfdd6..73ef337 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -169,6 +169,39 @@ static void update_cpu_capacity(unsigned int cpu)
- =09=09cpu, arch_scale_cpu_capacity(NULL, cpu));
- }
-=20
-+/*
-+ * Scheduler load-tracking scale-invariance
-+ *
-+ * Provides the scheduler with a scale-invariance correction factor that
-+ * compensates for frequency scaling.
-+ */
-+
-+static DEFINE_PER_CPU(atomic_long_t, cpu_curr_freq);
-+static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
-+
-+/* cpufreq callback function setting current cpu frequency */
-+void arch_scale_set_curr_freq(int cpu, unsigned long freq)
-+{
-+=09atomic_long_set(&per_cpu(cpu_curr_freq, cpu), freq);
-+}
-+
-+/* cpufreq callback function setting max cpu frequency */
-+void arch_scale_set_max_freq(int cpu, unsigned long freq)
-+{
-+=09atomic_long_set(&per_cpu(cpu_max_freq, cpu), freq);
-+}
-+
-+unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
-+{
-+=09unsigned long curr =3D atomic_long_read(&per_cpu(cpu_curr_freq, cpu));
-+=09unsigned long max =3D atomic_long_read(&per_cpu(cpu_max_freq, cpu));
-+
-+=09if (!max)
-+=09=09return SCHED_CAPACITY_SCALE;
-+
-+=09return (curr * SCHED_CAPACITY_SCALE) / max;
-+}
-+
- #else
- static inline void parse_dt_topology(void) {}
- static inline void update_cpu_capacity(unsigned int cpuid) {}
---=20
-1.9.1
-
+>  drivers/thermal/samsung/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+> index f760389..c43306e 100644
+> --- a/drivers/thermal/samsung/Kconfig
+> +++ b/drivers/thermal/samsung/Kconfig
+> @@ -1,6 +1,6 @@
+>  config EXYNOS_THERMAL
+>  	tristate "Exynos thermal management unit driver"
+> -	depends on ARCH_HAS_BANDGAP && OF
+> +	depends on OF
+>  	help
+>  	  If you say yes here you get support for the TMU (Thermal Management
+>  	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
 
