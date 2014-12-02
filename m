@@ -1,108 +1,83 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 01/10] sched: Make load tracking frequency scale-invariant
-Date: Tue,  2 Dec 2014 14:06:23 +0000
-Message-ID: <1417529192-11579-2-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFC PATCH 04/10] arm: Frequency invariant scheduler load-tracking support
+Date: Tue,  2 Dec 2014 14:06:26 +0000
+Message-ID: <1417529192-11579-5-git-send-email-morten.rasmussen@arm.com>
 References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:39671 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753312AbaLBOG6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 09:06:58 -0500
 In-Reply-To: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com
-Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@redhat.com
+Cc: dietmar.eggemann@arm.com, vincent.guittot@linaro.org, pjt@google.com, bsegall@google.com, mturquette@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <Morten.Rasmussen@arm.com>, Russell King <linux@arm.linux.org.uk>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+From: Morten Rasmussen <Morten.Rasmussen@arm.com>
 
-Apply frequency scale-invariance correction factor to load tracking.
-Each segment of the sched_avg::runnable_avg_sum geometric series is now
-scaled by the current frequency so the sched_avg::load_avg_contrib of each
-entity will be invariant with frequency scaling. As a result,
-cfs_rq::runnable_load_avg which is the sum of sched_avg::load_avg_contrib,
-becomes invariant too. So the load level that is returned by
-weighted_cpuload, stays relative to the max frequency of the cpu.
+Implements arch-specific function to provide the scheduler with a
+frequency scaling correction factor for more accurate load-tracking. The
+factor is:
 
-Then, we want the keep the load tracking values in a 32bits type, which
-implies that the max value of sched_avg::{runnable|running}_avg_sum must
-be lower than 2^32/88761=3D48388 (88761 is the max weight of a task). As
-LOAD_AVG_MAX =3D 47742, arch_scale_freq_capacity must return a value less
-than (48388/47742) << SCHED_CAPACITY_SHIFT =3D 1037 (SCHED_SCALE_CAPACITY =
-=3D
-1024). So we define the range to [0..SCHED_SCALE_CAPACITY] in order to
-avoid overflow.
+=09current_freq(cpu) * SCHED_CAPACITY_SCALE / max_freq(cpu)
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+This implementation only provides frequency invariance. No
+micro-architecture invariance yet.
+
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ arch/arm/kernel/topology.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ee76d52..b41f03d 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2507,9 +2507,9 @@ static __always_inline int __update_entity_runnable_a=
-vg(u64 now, int cpu,
- =09=09=09=09=09=09=09int runnable,
- =09=09=09=09=09=09=09int running)
- {
--=09u64 delta, periods;
--=09u32 runnable_contrib;
--=09int delta_w, decayed =3D 0;
-+=09u64 delta, scaled_delta, periods;
-+=09u32 runnable_contrib, scaled_runnable_contrib;
-+=09int delta_w, scaled_delta_w, decayed =3D 0;
- =09unsigned long scale_freq =3D arch_scale_freq_capacity(NULL, cpu);
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index 89cfdd6..73ef337 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -169,6 +169,39 @@ static void update_cpu_capacity(unsigned int cpu)
+ =09=09cpu, arch_scale_cpu_capacity(NULL, cpu));
+ }
 =20
- =09delta =3D now - sa->last_runnable_update;
-@@ -2543,11 +2543,12 @@ static __always_inline int __update_entity_runnable=
-_avg(u64 now, int cpu,
- =09=09 * period and accrue it.
- =09=09 */
- =09=09delta_w =3D 1024 - delta_w;
-+=09=09scaled_delta_w =3D (delta_w * scale_freq) >> SCHED_CAPACITY_SHIFT;
++/*
++ * Scheduler load-tracking scale-invariance
++ *
++ * Provides the scheduler with a scale-invariance correction factor that
++ * compensates for frequency scaling.
++ */
 +
- =09=09if (runnable)
--=09=09=09sa->runnable_avg_sum +=3D delta_w;
-+=09=09=09sa->runnable_avg_sum +=3D scaled_delta_w;
- =09=09if (running)
--=09=09=09sa->running_avg_sum +=3D delta_w * scale_freq
--=09=09=09=09>> SCHED_CAPACITY_SHIFT;
-+=09=09=09sa->running_avg_sum +=3D scaled_delta_w;
- =09=09sa->avg_period +=3D delta_w;
-=20
- =09=09delta -=3D delta_w;
-@@ -2565,20 +2566,23 @@ static __always_inline int __update_entity_runnable=
-_avg(u64 now, int cpu,
-=20
- =09=09/* Efficiently calculate \sum (1..n_period) 1024*y^i */
- =09=09runnable_contrib =3D __compute_runnable_contrib(periods);
-+=09=09scaled_runnable_contrib =3D (runnable_contrib * scale_freq)
-+=09=09=09=09=09=09>> SCHED_CAPACITY_SHIFT;
++static DEFINE_PER_CPU(atomic_long_t, cpu_curr_freq);
++static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
 +
- =09=09if (runnable)
--=09=09=09sa->runnable_avg_sum +=3D runnable_contrib;
-+=09=09=09sa->runnable_avg_sum +=3D scaled_runnable_contrib;
- =09=09if (running)
--=09=09=09sa->running_avg_sum +=3D runnable_contrib * scale_freq
--=09=09=09=09>> SCHED_CAPACITY_SHIFT;
-+=09=09=09sa->running_avg_sum +=3D scaled_runnable_contrib;
- =09=09sa->avg_period +=3D runnable_contrib;
- =09}
-=20
- =09/* Remainder of delta accrued against u_0` */
-+=09scaled_delta =3D (delta * scale_freq) >> SCHED_CAPACITY_SHIFT;
++/* cpufreq callback function setting current cpu frequency */
++void arch_scale_set_curr_freq(int cpu, unsigned long freq)
++{
++=09atomic_long_set(&per_cpu(cpu_curr_freq, cpu), freq);
++}
 +
- =09if (runnable)
--=09=09sa->runnable_avg_sum +=3D delta;
-+=09=09sa->runnable_avg_sum +=3D scaled_delta;
- =09if (running)
--=09=09sa->running_avg_sum +=3D delta * scale_freq
--=09=09=09>> SCHED_CAPACITY_SHIFT;
-+=09=09sa->running_avg_sum +=3D scaled_delta;
- =09sa->avg_period +=3D delta;
-=20
- =09return decayed;
++/* cpufreq callback function setting max cpu frequency */
++void arch_scale_set_max_freq(int cpu, unsigned long freq)
++{
++=09atomic_long_set(&per_cpu(cpu_max_freq, cpu), freq);
++}
++
++unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
++{
++=09unsigned long curr =3D atomic_long_read(&per_cpu(cpu_curr_freq, cpu));
++=09unsigned long max =3D atomic_long_read(&per_cpu(cpu_max_freq, cpu));
++
++=09if (!max)
++=09=09return SCHED_CAPACITY_SCALE;
++
++=09return (curr * SCHED_CAPACITY_SCALE) / max;
++}
++
+ #else
+ static inline void parse_dt_topology(void) {}
+ static inline void update_cpu_capacity(unsigned int cpuid) {}
 --=20
 1.9.1
+
+
