@@ -1,70 +1,48 @@
-From: "Zheng, Lv" <lv.zheng@intel.com>
-Subject: RE: [PATCH 1/2] ACPICA: Save current masks of enabled GPEs after
- enable register writes
-Date: Tue, 2 Dec 2014 00:56:14 +0000
-Message-ID: <1AE640813FDE7649BE1B193DEA596E88026A5ABD@SHSMSX101.ccr.corp.intel.com>
-References: <2017469.J3BZteXtBu@vostro.rjw.lan>
- <5837035.VZ0lP2ZXdi@vostro.rjw.lan>
- <1AE640813FDE7649BE1B193DEA596E88026A57CA@SHSMSX101.ccr.corp.intel.com>
- <1906259.Y3CVpWVIyR@vostro.rjw.lan>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 0/4] PM: Use CONFIG_PM instead of CONFIG_PM_RUNTIME in core code
+Date: Mon, 01 Dec 2014 17:01:40 -0800
+Message-ID: <7hd28250gb.fsf@deeprootsystems.com>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:48354 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753077AbaLBA4u (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Dec 2014 19:56:50 -0500
-In-Reply-To: <1906259.Y3CVpWVIyR@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:56133 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754130AbaLBBBo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Dec 2014 20:01:44 -0500
+Received: by mail-pa0-f45.google.com with SMTP id lj1so12274041pab.32
+        for <linux-pm@vger.kernel.org>; Mon, 01 Dec 2014 17:01:44 -0800 (PST)
+In-Reply-To: <37310416.jZXoh5nfSC@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Thu, 27 Nov 2014 01:37:13 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-SGksDQoNCj4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5l
-dF0NCj4gU2VudDogVHVlc2RheSwgRGVjZW1iZXIgMDIsIDIwMTQgNjozMyBBTQ0KPiANCj4gT24g
-TW9uZGF5LCBEZWNlbWJlciAwMSwgMjAxNCAwNTowMzowNCBBTSBaaGVuZywgTHYgd3JvdGU6DQo+
-ID4gSGksIFJhZmFlbA0KPiA+DQo+ID4gPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRv
-OnJqd0Byand5c29ja2kubmV0XQ0KPiA+ID4gU2VudDogTW9uZGF5LCBEZWNlbWJlciAwMSwgMjAx
-NCA5OjUzIEFNDQo+ID4gPg0KPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5q
-Lnd5c29ja2lAaW50ZWwuY29tPg0KPiA+ID4NCj4gPiA+IFRoZXJlIGlzIGEgcmFjZSBjb25kaXRp
-b24gYmV0d2VlbiBhY3BpX2h3X2Rpc2FibGVfYWxsX2dwZXMoKSBvcg0KPiA+ID4gYWNwaV9lbmFi
-bGVfYWxsX3dha2V1cF9ncGVzKCkgYW5kIGFjcGlfZXZfYXN5bmNoX2VuYWJsZV9ncGUoKSBzdWNo
-DQo+ID4gPiB0aGF0IGlmIHRoZSBsYXR0ZXIgd2lucyB0aGUgcmFjZSwgaXQgbWF5IG1pc3Rha2Vu
-bHkgZW5hYmxlIGEgR1BFDQo+ID4gPiBkaXNhYmxlZCBieSB0aGUgZm9ybWVyLiAgVGhpcyBtYXkg
-bGVhZCB0byBwcmVtYXR1cmUgc3lzdGVtIHdha2V1cHMNCj4gPiA+IGR1cmluZyBzeXN0ZW0gc3Vz
-cGVuZCBhbmQgcG90ZW50aWFsbHkgdG8gbW9yZSBzZXJpb3VzIGNvbnNlcXVlbmNlcy4NCj4gPiA+
-DQo+ID4gPiBUaGUgc291cmNlIG9mIHRoZSBwcm9ibGVtIGlzIGhvdyBhY3BpX2h3X2xvd19zZXRf
-Z3BlKCkgd29ya3Mgd2hlbg0KPiA+ID4gcGFzc2VkIEFDUElfR1BFX0NPTkRJVElPTkFMX0VOQUJM
-RSBhcyB0aGUgc2Vjb25kIGFyZ3VtZW50LiAgSW4gdGhhdA0KPiA+ID4gY2FzZSwgdGhlIEdQRSB3
-aWxsIGJlIGVuYWJsZWQgaWYgdGhlIGNvcnJlc3BvbmRpbmcgYml0IGlzIHNldCBpbiB0aGUNCj4g
-PiA+IGVuYWJsZV9mb3JfcnVuIG1hc2sgb2YgdGhlIEdQRSBlbmFibGUgcmVnaXN0ZXIgY29udGFp
-bmluZyB0aGF0IGJpdC4NCj4gPiA+IEhvd2V2ZXIsIGFjcGlfaHdfZGlzYWJsZV9hbGxfZ3Blcygp
-IGFuZCBhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMoKQ0KPiA+ID4gZG9uJ3QgbW9kaWZ5IHRo
-ZSBlbmFibGVfZm9yX3J1biBtYXNrcyBvZiBHUEUgcmVnaXN0ZXJzIHdoZW4gd3JpdGluZw0KPiA+
-ID4gdG8gdGhlbS4gIEluIGNvbnNlcXVlbmNlLCBpZiBhY3BpX2V2X2FzeW5jaF9lbmFibGVfZ3Bl
-KCksIHdoaWNoDQo+ID4gPiBldmVudHVhbGx5IGNhbGxzIGFjcGlfaHdfbG93X3NldF9ncGUoKSB3
-aXRoIHRoZSBzZWNvbmQgYXJndW1lbnQNCj4gPiA+IGVxdWFsIHRvIEFDUElfR1BFX0NPTkRJVElP
-TkFMX0VOQUJMRSwgaXMgZXhlY3V0ZWQgaW4gcGFyYWxsZWwgd2l0aA0KPiA+ID4gb25lIG9mIHRo
-ZXNlIGZ1bmN0aW9ucywgaXQgbWF5IHJldmVyc2UgY2hhbmdlcyBtYWRlIGJ5IHRoZW0uDQo+ID4g
-Pg0KPiA+ID4gVG8gZml4IHRoZSBwcm9ibGVtLCBpbnRyb2R1Y2UgYSBuZXcgZW5hYmxlX21hc2sg
-ZmllbGQgaW4gc3RydWN0DQo+ID4gPiBhY3BpX2dwZV9yZWdpc3Rlcl9pbmZvIGluIHdoaWNoIHRv
-IHN0b3JlIHRoZSBjdXJyZW50IG1hc2sgb2YNCj4gPiA+IGVuYWJsZWQgR1BFcyBhbmQgbW9kaWZ5
-IGFjcGlfaHdfbG93X3NldF9ncGUoKSB0byB0YWtlIHRoaXMNCj4gPiA+IG1hc2sgaW50byBhY2Nv
-dW50IGluc3RlYWQgb2YgZW5hYmxlX2Zvcl9ydW4gd2hlbiBpdHMgc2Vjb25kDQo+ID4gPiBhcmd1
-bWVudCBpcyBlcXVhbCB0byBBQ1BJX0dQRV9DT05ESVRJT05BTF9FTkFCTEUuICBBbHNvIG1vZGlm
-eQ0KPiA+ID4gdGhlIGxvdy1sZXZlbCByb3V0aW5lcyBjYWxsZWQgYnkgYWNwaV9od19kaXNhYmxl
-X2FsbF9ncGVzKCksDQo+ID4gPiBhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMoKSBhbmQgYWNw
-aV9lbmFibGVfYWxsX3J1bnRpbWVfZ3BlcygpDQo+ID4gPiB0byB1cGRhdGUgdGhlIGVuYWJsZV9t
-YXNrIG1hc2tzIG9mIEdQRSByZWdpc3RlcnMgYWZ0ZXIgYWxsDQo+ID4gPiAoc3VjY2Vzc2Z1bCkg
-d3JpdGVzIHRvIHRob3NlIHJlZ2lzdGVycy4NCj4gPg0KPiA+IEJvdGggdGhlIHNvbHV0aW9uIGFu
-ZCB0aGUgcGF0Y2ggbG9va3MgT0suDQo+ID4gWW91J2xsIHN0aWxsIG5lZWQgdGhlIGZvbGxvd2lu
-ZyBmaXggdG8gZW5zdXJlIHRoZSBhdG9taWNpdHkgb2YgYWNwaV9ldl9hc3luY2hfZW5hYmxlX2dw
-ZSgpOg0KPiA+IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9hdHRhY2htZW50LmNnaT9pZD0x
-NTczOTENCj4gPg0KPiA+IEFja2VkLWJ5OiBMdiBaaGVuZyA8bHYuemhlbmdAaW50ZWwuY29tPg0K
-PiANCj4gVGhhbmtzIQ0KPiANCj4gQ2FuIHlvdSBwbGVhc2Ugc3VibWl0IHRoZSBwYXRjaCBmcm9t
-DQo+IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9hdHRhY2htZW50LmNnaT9pZD0xNTczOTEN
-Cj4gdG8gbGludXgtYWNwaSBvZmZpY2lhbGx5Pw0KPiANCj4gSSdkIGxpa2UgaXQgdG8gYmUgaW5j
-bHVkZWQgaW50byAzLjE5IGFzIGEgZml4Lg0KDQpPSy4gSSdsbCBwb3N0IGl0IHRvIHRoaXMgdGhy
-ZWFkLg0KDQpUaGFua3MgYW5kIGJlc3QgcmVnYXJkcw0KLUx2DQoNCg==
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+
+> Hi,
+>
+> After commit b2b49ccbdd54 "PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected" (currently in Linux next) CONFIG_PM_RUNTIME is set whenever
+> CONFIG_PM is set, so CONFIG_PM can be used in #ifdefs instead of
+> CONFIG_PM_RUNTIME which simplifies things in quite a few cases.
+>
+> For this reason, the following patches modify some core code to use
+> CONFIG_PM instead of CONFIG_PM_RUNTIME.
+>
+> [1/4] Drop a macro which is redundant after the above commit.
+> [2/4] Use PM instead of PM_RUNTIME in the core device PM code.
+> [3/4] Use PM instead of PM_RUNTIME in the ACPI core.
+> [4/4] Use PM instead of PM_RUNTIME in the PCI core.
+>
+> They build for me for all of the relevant combinations of options (on x86),
+> but more testing (on the other architectures) would be welcome.
+
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
+I gave this a quick boot test on all the OMAP boards I have, and it's
+booting fine. As soon as this hits linux-next, it will be boot tested on
+a pile of different ARM platforms, and will let you know what happens.
+
+Kevin
