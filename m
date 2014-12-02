@@ -1,107 +1,262 @@
-From: Jyri Sarha <jsarha@ti.com>
-Subject: Re: [PATCH RFC] PM / Runtime: Better support for nested irq_safe
- drivers
-Date: Tue, 2 Dec 2014 23:46:21 +0200
-Message-ID: <547E332D.3060405@ti.com>
-References: <1417551543-15009-1-git-send-email-jsarha@ti.com> <2710424.RMSWoOIU7o@vostro.rjw.lan>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC 2/2] OOM, PM: make OOM detection in the freezer path
+ raceless
+Date: Tue, 2 Dec 2014 17:08:04 -0500
+Message-ID: <20141202220804.GS10918@htj.dyndns.org>
+References: <20141118210833.GE23640@dhcp22.suse.cz>
+ <1416345006-8284-1-git-send-email-mhocko@suse.cz>
+ <1416345006-8284-2-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:46959 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbaLBVq3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Dec 2014 16:46:29 -0500
-In-Reply-To: <2710424.RMSWoOIU7o@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1416345006-8284-2-git-send-email-mhocko@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, pavel@ucw.cz, t-kristo@ti.com, tomi.valkeinen@ti.com
 
-On 12/02/2014 11:54 PM, Rafael J. Wysocki wrote:
-> On Tuesday, December 02, 2014 10:19:03 PM Jyri Sarha wrote:
->> Do not lock parent of irq safe device to enabled state if the parent
->> is also irq safe.
->>
->> Before this patch the pm_runtime_irq_safe() always called
->> pm_runtime_get_sync() for the parent, locking the parent to enabled
->> state and for sure making any parent irq_safe. This is hardly optimal
->> if the parent device PM code is also irq_safe.
->>
->> After this patch the PM runtime core synchronously enables any
->> irq_safe parents of an irq_safe device when pm_runtime_get_sync() is
->> called. The parents are checked asyncronously after pm_runtime_put()
->> call.
->>
->> Signed-off-by: Jyri Sarha <jsarha@ti.com>
->> ---
->>   drivers/base/power/runtime.c |   11 ++++++-----
->>   1 file changed, 6 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 67c7938..800ca1e 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -541,7 +541,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->>   	}
->>
->>   	/* Maybe the parent is now able to suspend. */
->> -	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
->> +	if (parent && !parent->power.ignore_children &&
->> +	    (!dev->power.irq_safe || parent->power.irq_safe)) {
->>   		spin_unlock(&dev->power.lock);
->>
->>   		spin_lock(&parent->power.lock);
->> @@ -706,7 +707,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->>   		 * parent is permanently resumed.
->>   		 */
->>   		parent = dev->parent;
->> -		if (dev->power.irq_safe)
->> +		if (dev->power.irq_safe && !parent->power.irq_safe)
->
-> Of course, you haven't read the comment above these two lines, because
-> otherwise you wouldn't have submitted this patch at all.
->
-> I'm not applying it.
+Hello, sorry about the delay.  Was on vacation.
 
-Is there something seriously wrong with the code part too? Or is this 
-just a matter of updating the comment (sorry that I missed that)?
+Generally looks good to me.  Some comments below.
 
-If the thing I am doing somehow fundamentally flawed, I 	apologize. 
-However, this was an RFC patch after all and the problem I am trying to 
-solve is real.
+> @@ -355,8 +355,10 @@ static struct sysrq_key_op sysrq_term_op = {
+>  
+>  static void moom_callback(struct work_struct *ignored)
+>  {
+> -	out_of_memory(node_zonelist(first_memory_node, GFP_KERNEL), GFP_KERNEL,
+> -		      0, NULL, true);
+> +	if (!out_of_memory(node_zonelist(first_memory_node, GFP_KERNEL),
+> +			   GFP_KERNEL, 0, NULL, true)) {
+> +		printk(KERN_INFO "OOM request ignored because killer is disabled\n");
+> +	}
+>  }
 
->
->>   			goto skip_parent;
->>   		spin_unlock(&dev->power.lock);
->>
->> @@ -755,7 +756,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->>   		rpm_idle(dev, RPM_ASYNC);
->>
->>    out:
->> -	if (parent && !dev->power.irq_safe) {
->> +	if (parent && (!dev->power.irq_safe || parent->power.irq_safe)) {
->>   		spin_unlock_irq(&dev->power.lock);
->>
->>   		pm_runtime_put(parent);
->> @@ -1269,7 +1270,7 @@ EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
->>    */
->>   void pm_runtime_irq_safe(struct device *dev)
->>   {
->> -	if (dev->parent)
->> +	if (dev->parent && !dev->parent->power.irq_safe)
->>   		pm_runtime_get_sync(dev->parent);
->>   	spin_lock_irq(&dev->power.lock);
->>   	dev->power.irq_safe = 1;
->> @@ -1399,7 +1400,7 @@ void pm_runtime_remove(struct device *dev)
->>   	/* Change the status back to 'suspended' to match the initial status. */
->>   	if (dev->power.runtime_status == RPM_ACTIVE)
->>   		pm_runtime_set_suspended(dev);
->> -	if (dev->power.irq_safe && dev->parent)
->> +	if (dev->power.irq_safe && dev->parent && !dev->parent->power.irq_safe)
->>   		pm_runtime_put(dev->parent);
->>   }
->>   #endif
->>
->
+CodingStyle line 157 says "Do not unnecessarily use braces where a
+single statement will do.".
 
+> +/**
+> + * oom_killer_disable - disable OOM killer
+> + *
+> + * Forces all page allocations to fail rather than trigger OOM killer.
+> + * Will block and wait until all OOM victims are dead.
+> + *
+> + * Returns true if successfull and false if the OOM killer cannot be
+> + * disabled.
+> + */
+> +extern bool oom_killer_disable(void);
+
+And function comments usually go where the function body is, not where
+the function is declared, no?
+
+> @@ -157,27 +132,11 @@ int freeze_processes(void)
+>  	pm_wakeup_clear();
+>  	printk("Freezing user space processes ... ");
+>  	pm_freezing = true;
+> -	oom_kills_saved = oom_kills_count();
+>  	error = try_to_freeze_tasks(true);
+>  	if (!error) {
+>  		__usermodehelper_set_disable_depth(UMH_DISABLED);
+> -		oom_killer_disable();
+> -
+> -		/*
+> -		 * There might have been an OOM kill while we were
+> -		 * freezing tasks and the killed task might be still
+> -		 * on the way out so we have to double check for race.
+> -		 */
+> -		if (oom_kills_count() != oom_kills_saved &&
+> -		    !check_frozen_processes()) {
+> -			__usermodehelper_set_disable_depth(UMH_ENABLED);
+> -			printk("OOM in progress.");
+> -			error = -EBUSY;
+> -		} else {
+> -			printk("done.");
+> -		}
+> +		printk("done.\n");
+
+A delta but shouldn't it be pr_cont()?
+
+...
+> @@ -206,6 +165,18 @@ int freeze_kernel_threads(void)
+>  	printk("\n");
+>  	BUG_ON(in_atomic());
+>  
+> +	/*
+> +	 * Now that everything freezable is handled we need to disbale
+> +	 * the OOM killer to disallow any further interference with
+> +	 * killable tasks.
+> +	 */
+> +	printk("Disabling OOM killer ... ");
+> +	if (!oom_killer_disable()) {
+> +		printk("failed.\n");
+> +		error = -EAGAIN;
+> +	} else
+> +		printk("done.\n");
+
+Ditto on pr_cont() and CodingStyle line 169 says "This does not apply
+if only one branch of a conditional statement is a single statement;
+in the latter case use braces in both branches:"
+
+> @@ -251,6 +220,9 @@ void thaw_kernel_threads(void)
+>  {
+>  	struct task_struct *g, *p;
+>  
+> +	printk("Enabling OOM killer again.\n");
+
+Do we really need this printk?  The same goes for Disabling OOM
+killer.  For freezing it makes some sense because freezing may take a
+considerable amount of time and even occassionally fail due to
+timeout.  We aren't really expecting those to happen for OOM victims.
+
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 302e0fc6d121..34bcbb053132 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -2128,6 +2128,8 @@ static void mem_cgroup_oom(struct mem_cgroup *memcg, gfp_t mask, int order)
+>  	current->memcg_oom.order = order;
+>  }
+>  
+> +extern bool oom_killer_disabled;
+
+Ugh... don't we wanna put this in a header file?
+
+> +void mark_tsk_oom_victim(struct task_struct *tsk)
+>  {
+> -	return atomic_read(&oom_kills);
+> +	BUG_ON(oom_killer_disabled);
+
+WARN_ON_ONCE() is prolly a better option here?
+
+> +	if (test_and_set_tsk_thread_flag(tsk, TIF_MEMDIE))
+
+Can a task actually be selected as an OOM victim multiple times?
+
+> +		return;
+> +	atomic_inc(&oom_victims);
+>  }
+>  
+> -void note_oom_kill(void)
+> +void unmark_tsk_oom_victim(struct task_struct *tsk)
+>  {
+> -	atomic_inc(&oom_kills);
+> +	int count;
+> +
+> +	if (!test_and_clear_tsk_thread_flag(tsk, TIF_MEMDIE))
+> +		return;
+
+Maybe test this inline in exit_mm()?  e.g.
+
+	if (test_thread_flag(TIF_MEMDIE))
+		unmark_tsk_oom_victim(current);
+
+Also, can the function ever be called by someone other than current?
+If not, why would it take @task?
+
+> +
+> +	down_read(&oom_sem);
+> +	/*
+> +	 * There is no need to signal the lasst oom_victim if there
+> +	 * is nobody who cares.
+> +	 */
+> +	if (!atomic_dec_return(&oom_victims) && oom_killer_disabled)
+> +		complete(&oom_victims_wait);
+
+I don't think using completion this way is safe.  Please read on.
+
+> +	up_read(&oom_sem);
+>  }
+>  
+> -void mark_tsk_oom_victim(struct task_struct *tsk)
+> +bool oom_killer_disable(void)
+>  {
+> -	set_tsk_thread_flag(tsk, TIF_MEMDIE);
+> +	/*
+> +	 * Make sure to not race with an ongoing OOM killer
+> +	 * and that the current is not the victim.
+> +	 */
+> +	down_write(&oom_sem);
+> +	if (!test_tsk_thread_flag(current, TIF_MEMDIE))
+> +		oom_killer_disabled = true;
+
+Prolly "if (TIF_MEMDIE) { unlock; return; }" is easier to follow.
+
+> +
+> +	count = atomic_read(&oom_victims);
+> +	up_write(&oom_sem);
+> +
+> +	if (count && oom_killer_disabled)
+> +		wait_for_completion(&oom_victims_wait);
+
+So, each complete() increments the done count and wait decs.  The
+above code works iff the complete()'s and wait()'s are always balanced
+which usually isn't true in this type of wait code.  Either use
+reinit_completion() / complete_all() combos or wait_event().
+
+> +
+> +	return oom_killer_disabled;
+
+Maybe 0 / -errno is better choice as return values?
+
+> +/** out_of_memory -  tries to invoke OOM killer.
+
+Formatting?
+
+> + * @zonelist: zonelist pointer
+> + * @gfp_mask: memory allocation flags
+> + * @order: amount of memory being requested as a power of 2
+> + * @nodemask: nodemask passed to page allocator
+> + * @force_kill: true if a task must be killed, even if others are exiting
+> + *
+> + * invokes __out_of_memory if the OOM is not disabled by oom_killer_disable()
+> + * when it returns false. Otherwise returns true.
+> + */
+> +bool out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+> +		int order, nodemask_t *nodemask, bool force_kill)
+> +{
+> +	bool ret = false;
+> +
+> +	down_read(&oom_sem);
+> +	if (!oom_killer_disabled) {
+> +		__out_of_memory(zonelist, gfp_mask, order, nodemask, force_kill);
+> +		ret = true;
+> +	}
+> +	up_read(&oom_sem);
+> +
+> +	return ret;
+
+Ditto on return value.  0 / -EBUSY seem like a better choice to me.
+
+> @@ -712,12 +770,16 @@ void pagefault_out_of_memory(void)
+>  {
+>  	struct zonelist *zonelist;
+>  
+> +	down_read(&oom_sem);
+>  	if (mem_cgroup_oom_synchronize(true))
+> -		return;
+> +		goto unlock;
+>  
+>  	zonelist = node_zonelist(first_memory_node, GFP_KERNEL);
+>  	if (oom_zonelist_trylock(zonelist, GFP_KERNEL)) {
+> -		out_of_memory(NULL, 0, 0, NULL, false);
+> +		if (!oom_killer_disabled)
+> +			__out_of_memory(NULL, 0, 0, NULL, false);
+>  		oom_zonelist_unlock(zonelist, GFP_KERNEL);
+
+Is this a condition which can happen and we can deal with?  With
+userland fully frozen, there shouldn't be page faults which lead to
+memory allocation, right?  Shouldn't we document how oom
+disable/enable is supposed to be used (it only makes sense while the
+whole system is in quiescent state) and at least trigger
+WARN_ON_ONCE() if the above code path gets triggered while oom killer
+is disabled?
+
+Thanks.
+
+-- 
+tejun
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
