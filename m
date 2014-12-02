@@ -1,160 +1,170 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 16/26] cpu_cooling: Drop useless locking around
- idr_alloc/idr_remove
-Date: Tue, 2 Dec 2014 19:05:35 -0400
-Message-ID: <20141202230533.GB3432@developer>
-References: <cover.1417167599.git.viresh.kumar@linaro.org>
- <a71abc2219d80e9b8e77599d2e60612a96bb36a9.1417167599.git.viresh.kumar@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Tue, 2 Dec 2014 16:05:44 -0700
+Message-ID: <20141202230544.GG499@linaro.org>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
+ <1417541958-56907-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tsOsTdHNUZQcU9Ye"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f179.google.com ([209.85.216.179]:59338 "EHLO
-	mail-qc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932722AbaLBXFl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 18:05:41 -0500
-Received: by mail-qc0-f179.google.com with SMTP id c9so10083629qcz.24
-        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 15:05:40 -0800 (PST)
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <a71abc2219d80e9b8e77599d2e60612a96bb36a9.1417167599.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1417541958-56907-4-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, rui.zhang@intel.com
 
+On Tue, Dec 02 2014 at 10:40 -0700, Lina Iyer wrote:
++
+[...]
+>+static int spm_dev_probe(struct platform_device *pdev)
+>+{
+>+	struct spm_driver_data *drv;
+>+	struct resource *res;
+>+	const struct of_device_id *match_id;
+>+	void __iomem *addr;
+>+	int cpu;
+>+	struct cpuidle_device *dev;
+>+
+>+	drv = spm_get_drv(pdev, &cpu);
+>+	if (!drv)
+>+		return -EINVAL;
+>+
+>+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>+	drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
+>+	if (IS_ERR(drv->reg_base))
+>+		return PTR_ERR(drv->reg_base);
+>+
+>+	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
+>+	if (!match_id)
+>+		return -ENODEV;
+>+
+>+	drv->reg_data = match_id->data;
+>+
+>+	/* Write the SPM sequences first.. */
+>+	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
+>+	__iowrite32_copy(addr, drv->reg_data->seq,
+>+			ARRAY_SIZE(drv->reg_data->seq) / 4);
+>+
+>+	/*
+>+	 * ..and then the control registers.
+>+	 * On some SoC if the control registers are written first and if the
+>+	 * CPU was held in reset, the reset signal could trigger the SPM state
+>+	 * machine, before the sequences are completely written.
+>+	 */
+>+	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
+>+	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
+>+	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
+>+	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
+>+				drv->reg_data->pmic_data[0]);
+>+	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
+>+				drv->reg_data->pmic_data[1]);
+>+
+>+	per_cpu(cpu_spm_drv, cpu) = drv;
+>+
+>+	/* Register the cpuidle device for the cpu, we are ready for cpuidle */
+>+	dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
+>+	if (!dev)
+>+		return -ENOMEM;
+>+
+>+	dev->cpu = cpu;
+>+	return cpuidle_register_device(dev);
+>+}
+>+
+>+static struct qcom_cpu_pm_ops lpm_ops = {
+>+	.standby = qcom_cpu_standby,
+>+	.spc = qcom_cpu_spc,
+>+};
+>+
+>+static struct platform_device qcom_cpuidle_drv = {
+>+	.name	= "qcom_cpuidle",
+>+	.id	= -1,
+>+	.dev.platform_data = &lpm_ops,
+>+};
+>+
+>+static struct platform_driver spm_driver = {
+>+	.probe = spm_dev_probe,
+>+	.driver = {
+>+		.name = "saw",
+>+		.of_match_table = spm_match_table,
+>+	},
+>+};
+>+
+>+static int __init qcom_spm_init(void)
+>+{
+>+	int ret;
+>+
+>+	/*
+>+	 * cpuidle driver need to registered before the cpuidle device
+>+	 * for any cpu. Register the device for the the cpuidle driver.
+>+	 */
+>+	ret = platform_device_register(&qcom_cpuidle_drv);
+>+	if (ret)
+>+		return ret;
+Stephen pointed out that we would have the platform device lying around
+on a non-QCOM device when using multi_v7_defconfig.
 
---tsOsTdHNUZQcU9Ye
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So instead of doing this here, we could do this in the probe..
 
-On Fri, Nov 28, 2014 at 03:14:10PM +0530, Viresh Kumar wrote:
-> Locking around idr_alloc/idr_remove looks rather pointless as there is no=
- race
-> it is trying to fix. Remove it.
->=20
+ if (!cpuidle_get_driver()) {
+         int ret = platform_device_register(&qcom_cpuidle_drv);
+         if (ret)
+                 return ret;
+ }
 
-Can you please elaborate on how the idr's are going to be serialize
-without the lock?
+Would that be okay?
 
-> get_idr() and release_idr() aren't much useful now, so get rid of them as=
- well.
->=20
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> @Eduardo: Same is true for thermal-core as well ?
+The successful probe indicates that we are on a QCOM SoC, and we have not
+registered a cpuidle_driver before this.
 
-Probably not ?
+Thanks,
+Lina
 
-> ---
->  drivers/thermal/cpu_cooling.c | 45 ++++---------------------------------=
-------
->  1 file changed, 4 insertions(+), 41 deletions(-)
->=20
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 032cba3..ca8f1bb 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -73,42 +73,6 @@ static unsigned int cpufreq_dev_count;
->  #define NOTIFY_INVALID NULL
->  static struct cpufreq_cooling_device *notify_device;
-> =20
-> -/**
-> - * get_idr - function to get a unique id.
-> - * @idr: struct idr * handle used to create a id.
-> - * @id: int * value generated by this function.
-> - *
-> - * This function will populate @id with an unique
-> - * id, using the idr API.
-> - *
-> - * Return: 0 on success, an error code on failure.
-> - */
-> -static int get_idr(struct idr *idr, int *id)
-> -{
-> -	int ret;
-> -
-> -	mutex_lock(&cooling_cpufreq_lock);
-> -	ret =3D idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
-> -	mutex_unlock(&cooling_cpufreq_lock);
-> -	if (unlikely(ret < 0))
-> -		return ret;
-> -	*id =3D ret;
-> -
-> -	return 0;
-> -}
-> -
-> -/**
-> - * release_idr - function to free the unique id.
-> - * @idr: struct idr * handle used for creating the id.
-> - * @id: int value representing the unique id.
-> - */
-> -static void release_idr(struct idr *idr, int id)
-> -{
-> -	mutex_lock(&cooling_cpufreq_lock);
-> -	idr_remove(idr, id);
-> -	mutex_unlock(&cooling_cpufreq_lock);
-> -}
-> -
->  /* Below code defines functions to be used for cpufreq as cooling device=
- */
-> =20
->  enum cpufreq_cooling_property {
-> @@ -430,7 +394,6 @@ __cpufreq_cooling_register(struct device_node *np,
->  	struct thermal_cooling_device *cool_dev;
->  	struct cpufreq_cooling_device *cpufreq_dev;
->  	char dev_name[THERMAL_NAME_LENGTH];
-> -	int ret =3D 0;
-> =20
->  	cpufreq_dev =3D kzalloc(sizeof(*cool_dev), GFP_KERNEL);
->  	if (!cpufreq_dev)
-> @@ -438,8 +401,8 @@ __cpufreq_cooling_register(struct device_node *np,
-> =20
->  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
-> =20
-> -	ret =3D get_idr(&cpufreq_idr, &cpufreq_dev->id);
-> -	if (ret) {
-> +	cpufreq_dev->id =3D idr_alloc(&cpufreq_idr, NULL, 0, 0, GFP_KERNEL);
-> +	if (unlikely(cpufreq_dev->id < 0)) {
->  		cool_dev =3D ERR_PTR(cpufreq_dev->id);
->  		goto free_cdev;
->  	}
-> @@ -467,7 +430,7 @@ __cpufreq_cooling_register(struct device_node *np,
->  	return cool_dev;
-> =20
->  remove_idr:
-> -	release_idr(&cpufreq_idr, cpufreq_dev->id);
-> +	idr_remove(&cpufreq_idr, cpufreq_dev->id);
->  free_cdev:
->  	kfree(cpufreq_dev);
-> =20
-> @@ -540,7 +503,7 @@ void cpufreq_cooling_unregister(struct thermal_coolin=
-g_device *cdev)
->  	mutex_unlock(&cooling_cpufreq_lock);
-> =20
->  	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
-> -	release_idr(&cpufreq_idr, cpufreq_dev->id);
-> +	idr_remove(&cpufreq_idr, cpufreq_dev->id);
->  	kfree(cpufreq_dev);
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_cooling_unregister);
-> --=20
-> 2.0.3.693.g996b0fd
->=20
-
---tsOsTdHNUZQcU9Ye
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUfkW0AAoJEMLUO4d9pOJW+pwH/jiL4IOf6xRg4UzABeUuCDb5
-Rt5Tr3K0ao6nWL0bMvx7trDYfbti9Yw00kFuuTYGsev6ykL7sEoytz9RAS7SQVt5
-xYHZhmCH1K50dGofrbvq0GDLlFknBR2Kg8Tx6LJRKUlk0KJrDgTQglcRJvlVhwtc
-ZG7tk+AkNwschR0SRyLNOfnpkHY2CNw1aK/jSgcnTuSep6TH4993ideVrjvUGxL7
-kLEyPTf54CUrXvWwTynhXhlv/Yx9uu30GQA1gMo+b61OUxs0j7bd3WI5uw0hjjB0
-/vHeBdpO1BI/QfLbtNZHXfB1hu1EH2+QOJWZ+Lab67tFIwVDNLMBEcaPiK0yflk=
-=OmaP
------END PGP SIGNATURE-----
-
---tsOsTdHNUZQcU9Ye--
+>+
+>+	return platform_driver_register(&spm_driver);
+>+}
+>+module_init(qcom_spm_init);
+>+
+>+MODULE_LICENSE("GPL v2");
+>+MODULE_DESCRIPTION("SAW power controller driver");
+>+MODULE_ALIAS("platform:saw");
+>diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
+>new file mode 100644
+>index 0000000..d9a56d7
+>--- /dev/null
+>+++ b/include/soc/qcom/pm.h
+>@@ -0,0 +1,31 @@
+>+/*
+>+ * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+>+ *
+>+ * This software is licensed under the terms of the GNU General Public
+>+ * License version 2, as published by the Free Software Foundation, and
+>+ * may be copied, distributed, and modified under those terms.
+>+ *
+>+ * This program is distributed in the hope that it will be useful,
+>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>+ * GNU General Public License for more details.
+>+ *
+>+ */
+>+
+>+#ifndef __QCOM_PM_H
+>+#define __QCOM_PM_H
+>+
+>+enum pm_sleep_mode {
+>+	PM_SLEEP_MODE_STBY,
+>+	PM_SLEEP_MODE_RET,
+>+	PM_SLEEP_MODE_SPC,
+>+	PM_SLEEP_MODE_PC,
+>+	PM_SLEEP_MODE_NR,
+>+};
+>+
+>+struct qcom_cpu_pm_ops {
+>+	int (*standby)(void *data);
+>+	int (*spc)(void *data);
+>+};
+>+
+>+#endif  /* __QCOM_PM_H */
+>-- 
+>2.1.0
+>
