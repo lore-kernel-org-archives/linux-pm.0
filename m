@@ -1,99 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RFC] PM / Runtime: Better support for nested irq_safe drivers
-Date: Tue, 02 Dec 2014 22:54:45 +0100
-Message-ID: <2710424.RMSWoOIU7o@vostro.rjw.lan>
-References: <1417551543-15009-1-git-send-email-jsarha@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Subject: Re: [PATCH RFC] PM / Runtime: Better support for nested irq_safe
+ drivers
+Date: Tue, 2 Dec 2014 23:46:21 +0200
+Message-ID: <547E332D.3060405@ti.com>
+References: <1417551543-15009-1-git-send-email-jsarha@ti.com> <2710424.RMSWoOIU7o@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59263 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932844AbaLBVdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 16:33:22 -0500
-In-Reply-To: <1417551543-15009-1-git-send-email-jsarha@ti.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:46959 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbaLBVq3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Dec 2014 16:46:29 -0500
+In-Reply-To: <2710424.RMSWoOIU7o@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jyri Sarha <jsarha@ti.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-pm@vger.kernel.org, pavel@ucw.cz, t-kristo@ti.com, tomi.valkeinen@ti.com
 
-On Tuesday, December 02, 2014 10:19:03 PM Jyri Sarha wrote:
-> Do not lock parent of irq safe device to enabled state if the parent
-> is also irq safe.
-> 
-> Before this patch the pm_runtime_irq_safe() always called
-> pm_runtime_get_sync() for the parent, locking the parent to enabled
-> state and for sure making any parent irq_safe. This is hardly optimal
-> if the parent device PM code is also irq_safe.
-> 
-> After this patch the PM runtime core synchronously enables any
-> irq_safe parents of an irq_safe device when pm_runtime_get_sync() is
-> called. The parents are checked asyncronously after pm_runtime_put()
-> call.
-> 
-> Signed-off-by: Jyri Sarha <jsarha@ti.com>
-> ---
->  drivers/base/power/runtime.c |   11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 67c7938..800ca1e 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -541,7 +541,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  	}
->  
->  	/* Maybe the parent is now able to suspend. */
-> -	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
-> +	if (parent && !parent->power.ignore_children && 
-> +	    (!dev->power.irq_safe || parent->power.irq_safe)) {
->  		spin_unlock(&dev->power.lock);
->  
->  		spin_lock(&parent->power.lock);
-> @@ -706,7 +707,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  		 * parent is permanently resumed.
->  		 */
->  		parent = dev->parent;
-> -		if (dev->power.irq_safe)
-> +		if (dev->power.irq_safe && !parent->power.irq_safe)
+On 12/02/2014 11:54 PM, Rafael J. Wysocki wrote:
+> On Tuesday, December 02, 2014 10:19:03 PM Jyri Sarha wrote:
+>> Do not lock parent of irq safe device to enabled state if the parent
+>> is also irq safe.
+>>
+>> Before this patch the pm_runtime_irq_safe() always called
+>> pm_runtime_get_sync() for the parent, locking the parent to enabled
+>> state and for sure making any parent irq_safe. This is hardly optimal
+>> if the parent device PM code is also irq_safe.
+>>
+>> After this patch the PM runtime core synchronously enables any
+>> irq_safe parents of an irq_safe device when pm_runtime_get_sync() is
+>> called. The parents are checked asyncronously after pm_runtime_put()
+>> call.
+>>
+>> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+>> ---
+>>   drivers/base/power/runtime.c |   11 ++++++-----
+>>   1 file changed, 6 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+>> index 67c7938..800ca1e 100644
+>> --- a/drivers/base/power/runtime.c
+>> +++ b/drivers/base/power/runtime.c
+>> @@ -541,7 +541,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>>   	}
+>>
+>>   	/* Maybe the parent is now able to suspend. */
+>> -	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
+>> +	if (parent && !parent->power.ignore_children &&
+>> +	    (!dev->power.irq_safe || parent->power.irq_safe)) {
+>>   		spin_unlock(&dev->power.lock);
+>>
+>>   		spin_lock(&parent->power.lock);
+>> @@ -706,7 +707,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>>   		 * parent is permanently resumed.
+>>   		 */
+>>   		parent = dev->parent;
+>> -		if (dev->power.irq_safe)
+>> +		if (dev->power.irq_safe && !parent->power.irq_safe)
+>
+> Of course, you haven't read the comment above these two lines, because
+> otherwise you wouldn't have submitted this patch at all.
+>
+> I'm not applying it.
 
-Of course, you haven't read the comment above these two lines, because
-otherwise you wouldn't have submitted this patch at all.
+Is there something seriously wrong with the code part too? Or is this 
+just a matter of updating the comment (sorry that I missed that)?
 
-I'm not applying it.
+If the thing I am doing somehow fundamentally flawed, I 	apologize. 
+However, this was an RFC patch after all and the problem I am trying to 
+solve is real.
 
->  			goto skip_parent;
->  		spin_unlock(&dev->power.lock);
->  
-> @@ -755,7 +756,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  		rpm_idle(dev, RPM_ASYNC);
->  
->   out:
-> -	if (parent && !dev->power.irq_safe) {
-> +	if (parent && (!dev->power.irq_safe || parent->power.irq_safe)) {
->  		spin_unlock_irq(&dev->power.lock);
->  
->  		pm_runtime_put(parent);
-> @@ -1269,7 +1270,7 @@ EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
->   */
->  void pm_runtime_irq_safe(struct device *dev)
->  {
-> -	if (dev->parent)
-> +	if (dev->parent && !dev->parent->power.irq_safe)
->  		pm_runtime_get_sync(dev->parent);
->  	spin_lock_irq(&dev->power.lock);
->  	dev->power.irq_safe = 1;
-> @@ -1399,7 +1400,7 @@ void pm_runtime_remove(struct device *dev)
->  	/* Change the status back to 'suspended' to match the initial status. */
->  	if (dev->power.runtime_status == RPM_ACTIVE)
->  		pm_runtime_set_suspended(dev);
-> -	if (dev->power.irq_safe && dev->parent)
-> +	if (dev->power.irq_safe && dev->parent && !dev->parent->power.irq_safe)
->  		pm_runtime_put(dev->parent);
->  }
->  #endif
-> 
+>
+>>   			goto skip_parent;
+>>   		spin_unlock(&dev->power.lock);
+>>
+>> @@ -755,7 +756,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>>   		rpm_idle(dev, RPM_ASYNC);
+>>
+>>    out:
+>> -	if (parent && !dev->power.irq_safe) {
+>> +	if (parent && (!dev->power.irq_safe || parent->power.irq_safe)) {
+>>   		spin_unlock_irq(&dev->power.lock);
+>>
+>>   		pm_runtime_put(parent);
+>> @@ -1269,7 +1270,7 @@ EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+>>    */
+>>   void pm_runtime_irq_safe(struct device *dev)
+>>   {
+>> -	if (dev->parent)
+>> +	if (dev->parent && !dev->parent->power.irq_safe)
+>>   		pm_runtime_get_sync(dev->parent);
+>>   	spin_lock_irq(&dev->power.lock);
+>>   	dev->power.irq_safe = 1;
+>> @@ -1399,7 +1400,7 @@ void pm_runtime_remove(struct device *dev)
+>>   	/* Change the status back to 'suspended' to match the initial status. */
+>>   	if (dev->power.runtime_status == RPM_ACTIVE)
+>>   		pm_runtime_set_suspended(dev);
+>> -	if (dev->power.irq_safe && dev->parent)
+>> +	if (dev->power.irq_safe && dev->parent && !dev->parent->power.irq_safe)
+>>   		pm_runtime_put(dev->parent);
+>>   }
+>>   #endif
+>>
+>
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
