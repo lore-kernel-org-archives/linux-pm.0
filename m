@@ -1,63 +1,59 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/4] ARM: shmobile: R-Mobile: Add SYSC restart handler
-Date: Wed,  3 Dec 2014 15:17:03 +0100
-Message-ID: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
+Subject: [PATCH 2/4] ARM: shmobile: r8a7740: Remove restart callback
+Date: Wed,  3 Dec 2014 15:17:05 +0100
+Message-ID: <1417616227-6715-3-git-send-email-geert+renesas@glider.be>
+References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from michel.telenet-ops.be ([195.130.137.88]:55417 "EHLO
+	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbaLCORN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 09:17:13 -0500
+In-Reply-To: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Arnd Bergmann <arnd@arndb.de>
 Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-	Hi Simon, Magnus, Arnd,
+Remove the restart handling hack from the r8a7740 generic multiplatform
+case.
 
-This patch series extends the PM domain platform driver for the R-Mobile
-System Controller (SYSC) to register a restart handler, and removes the
-restart handler hacks on DT-based R-Mobile A1 (r8a7740) and SH-Mobile AG5
-(sh73a0) platforms.
+Restart on DT-based r8a7740 platforms is now handled through the restart
+handler registered by the R-Mobile System Controller (SYSC) driver.
 
-Note that this supports DT-based platforms only. Legacy platforms keep
-on using the restart callback in struct machine_desc.
+This reverts commit 1174c712afa2779f ("ARM: shmobile: r8a7740: Add
+restart callback").
 
-This was tested on r8a7740/armadillo-multiplatform,
-sh73a0/kzm9g-reference, and sh73a0/kzm9g-multiplatform.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm/mach-shmobile/setup-r8a7740.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-Arnd: is this what you had in mind in your response to "[GIT PULL] Third
-Round of Renesas ARM Based Soc Updates for v3.19"
-(http://www.spinics.net/lists/arm-kernel/msg379348.html)?
-
-Dependencies:
-  - The first two patches depend on the series "[PATCH v6 0/7] ARM:
-    shmobile: R-Mobile: DT PM domain support", as that series adds the
-    SYSC PM domain platform driver for DT-based platforms and adds the
-    SYSC device node to r8a7740.dtsi,
-  - The last two patches also depend on the series "[PATCH RFC 0/7] ARM:
-    shmobile: sh73a0: DT PM domain support", as that series adds the
-    SYSC device node to sh73a0.dtsi.
-
-Thanks!
-
-Geert Uytterhoeven (4):
-  ARM: shmobile: R-Mobile: Add SYSC restart handler
-  ARM: shmobile: r8a7740: Remove restart callback
-  ARM: shmobile: sh73a0: Remove restart callback
-  ARM: shmobile: kzm9g-reference: Remove restart callback
-
- arch/arm/mach-shmobile/board-kzm9g-reference.c |  8 -----
- arch/arm/mach-shmobile/pm-rmobile.c            | 48 +++++++++++++++++++++++++-
- arch/arm/mach-shmobile/setup-r8a7740.c         |  8 -----
- arch/arm/mach-shmobile/setup-sh73a0.c          |  8 -----
- 4 files changed, 47 insertions(+), 25 deletions(-)
-
+diff --git a/arch/arm/mach-shmobile/setup-r8a7740.c b/arch/arm/mach-shmobile/setup-r8a7740.c
+index 79ad93dfdae4ee70..cce7cdab0524d4a0 100644
+--- a/arch/arm/mach-shmobile/setup-r8a7740.c
++++ b/arch/arm/mach-shmobile/setup-r8a7740.c
+@@ -835,13 +835,6 @@ static void __init r8a7740_generic_init(void)
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+-#define RESCNT2 IOMEM(0xe6188020)
+-static void r8a7740_restart(enum reboot_mode mode, const char *cmd)
+-{
+-	/* Do soft power on reset */
+-	writel(1 << 31, RESCNT2);
+-}
+-
+ static const char *r8a7740_boards_compat_dt[] __initdata = {
+ 	"renesas,r8a7740",
+ 	NULL,
+@@ -854,7 +847,6 @@ DT_MACHINE_START(R8A7740_DT, "Generic R8A7740 (Flattened Device Tree)")
+ 	.init_machine	= r8a7740_generic_init,
+ 	.init_late	= shmobile_init_late,
+ 	.dt_compat	= r8a7740_boards_compat_dt,
+-	.restart	= r8a7740_restart,
+ MACHINE_END
+ 
+ #endif /* CONFIG_USE_OF */
 -- 
 1.9.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
