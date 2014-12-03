@@ -1,118 +1,90 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 03 Dec 2014 10:11:25 +0100
-Message-ID: <547ED3BD.5090209@linaro.org>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <1417541958-56907-4-git-send-email-lina.iyer@linaro.org> <20141202230544.GG499@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH RFC 0/3] Add "Simple" / Renesas Bus State Controller Driver
+Date: Wed, 3 Dec 2014 10:30:06 +0100
+Message-ID: <CAMuHMdWCGQwLVb1K5jRxWToe-de8T_A5n08FsjEiv8z1B9Q4oA@mail.gmail.com>
+References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
+	<6261300.I132f1jLqB@wuerfel>
+	<CAMuHMdVjpL-QgS0aAdMo4EHXibhpKCJC73yY+HDY=+Ae=LMigA@mail.gmail.com>
+	<7h4mtlen8f.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20141202230544.GG499@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <7h4mtlen8f.fsf@deeprootsystems.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/03/2014 12:05 AM, Lina Iyer wrote:
-> On Tue, Dec 02 2014 at 10:40 -0700, Lina Iyer wrote:
-> +
-> [...]
+Hi Kevin, Arnd,
 
-[ ... ]
+I've been giving this some more thoughts...
 
->> +static int __init qcom_spm_init(void)
->> +{
->> +    int ret;
->> +
->> +    /*
->> +     * cpuidle driver need to registered before the cpuidle device
->> +     * for any cpu. Register the device for the the cpuidle driver.
->> +     */
->> +    ret =3D platform_device_register(&qcom_cpuidle_drv);
->> +    if (ret)
->> +        return ret;
-> Stephen pointed out that we would have the platform device lying arou=
-nd
-> on a non-QCOM device when using multi_v7_defconfig.
+On Wed, Nov 26, 2014 at 9:11 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>> On Mon, Nov 24, 2014 at 9:15 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>>> On Monday 24 November 2014 21:10:05 Geert Uytterhoeven wrote:
+>>>> As this minimal BSC driver isn't hardware-specific at all, I'm wondering
+>>>> if there's a simpler way to do this?
+>>>>   - Should the driver be renamed to "simple-bus", and match "simple-bus"?
+>>>>   - Should this be moved to core code, without an explicit driver for
+>>>>     "simple-bus"? I.e. should the driver core just enable runtime PM for
+>>>>     all devices not bound to a driver, as they may represent buses with
+>>>>     child devices that do rely on runtime PM?
+>>>>
+>>>> Thanks for your comments and suggestions!
+>>>
+>>> My understanding of simple-bus is that it's something that does
+>>> not have any power-management capabilities, and I'd rather not
+>>> add clocks or interrupts to it.
 
-Perhaps I am missing the point, but this is not supposed to happen, no =
-?
+Should I not add the interrupt to the device node, even though I do
+know the hardware block has an interrupt?
+Of course, to make use of the interrupt, you do need a hardware-specific
+driver that binds to the specific compatible name. But for now such a
+driver is overkill, as I do not need to use the interrupt.
 
-> So instead of doing this here, we could do this in the probe..
->
-> if (!cpuidle_get_driver()) {
->          int ret =3D platform_device_register(&qcom_cpuidle_drv);
->          if (ret)
->                  return ret;
-> }
->
-> Would that be okay?
->
-> The successful probe indicates that we are on a QCOM SoC, and we have=
- not
-> registered a cpuidle_driver before this.
->
-> Thanks,
-> Lina
->
->> +
->> +    return platform_driver_register(&spm_driver);
->> +}
->> +module_init(qcom_spm_init);
->> +
->> +MODULE_LICENSE("GPL v2");
->> +MODULE_DESCRIPTION("SAW power controller driver");
->> +MODULE_ALIAS("platform:saw");
->> diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
->> new file mode 100644
->> index 0000000..d9a56d7
->> --- /dev/null
->> +++ b/include/soc/qcom/pm.h
->> @@ -0,0 +1,31 @@
->> +/*
->> + * Copyright (c) 2009-2014, The Linux Foundation. All rights reserv=
-ed.
->> + *
->> + * This software is licensed under the terms of the GNU General Pub=
-lic
->> + * License version 2, as published by the Free Software Foundation,=
- and
->> + * may be copied, distributed, and modified under those terms.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + *
->> + */
->> +
->> +#ifndef __QCOM_PM_H
->> +#define __QCOM_PM_H
->> +
->> +enum pm_sleep_mode {
->> +    PM_SLEEP_MODE_STBY,
->> +    PM_SLEEP_MODE_RET,
->> +    PM_SLEEP_MODE_SPC,
->> +    PM_SLEEP_MODE_PC,
->> +    PM_SLEEP_MODE_NR,
->> +};
->> +
->> +struct qcom_cpu_pm_ops {
->> +    int (*standby)(void *data);
->> +    int (*spc)(void *data);
->> +};
->> +
->> +#endif  /* __QCOM_PM_H */
->> --
->> 2.1.0
+Power domains (and clocks used for power management) are different,
+as they are platform features: they may appear in any device node, even if
+the bindings for the device node don't mention them.
+Else I cannot add them to a node that's compatible with e.g. "arm,cortex-a15"
+or "arm,pl310-cache", without adding (or completely replacing them with)
+compatible names like "renesas,r8a73a4-cortex-a15" resp.
+"renesas,sh73a0-pl310-cache"?
+Hence I think they should be allowed in "simple-bus" nodes, too.
+
+>>> What I think makes more sense is to have a bus driver for it
+>>> in drivers/bus, remove the "simple-bus" compatibility value
+>>> and have the driver take care of registering the power domain
+>>> and probing the child devices using of_platform_populate on
+>>> itself.
 >>
+>> Registering power domains is already handled by the core code.
+>>
+>> So compared to my RFC code, I only have to
+>>   1. Drop "simple-bus" from the compatible property in the .dtsi,
+>>   2. Call of_platform_populate() from renesas_bsc_probe(), to
+>>      register the child devices, now the core code no longer does that.
+>>
+>> I find it a bit strange having to add _more_ code, as the core code handles
+>> registering child devices fine. Doing it from my bus driver only protects
+>> against people trying to run a kernel without my bus driver included
+>> (which currently works fine, as long as no PM domain or clock is involved,
+>>  e.g. if the clock is forgotten in the SoC's .dtsi :-).
+>
+> I actually rather like the simple bus driver in it's current form, where
+> the device and pm-domain registration is taken care of by the
+> core. Since it's really not HW specific at all, maybe just rename it
+> simple-pm-bus or something like that?
 
+That means writing bindings for a new bus type "simple-pm-bus"?
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+Gr{oetje,eeting}s,
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
