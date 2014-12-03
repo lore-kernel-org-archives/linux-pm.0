@@ -1,29 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 08/26] cpu_cooling: Pass variable instead of its type to sizeof()
-Date: Wed, 3 Dec 2014 10:08:08 +0530
-Message-ID: <CAKohpom=Tp5B5f4B6PjsFxpyU_Kgu_D=uo9n0ypLSA-RR2ck3w@mail.gmail.com>
+Subject: Re: [PATCH 24/26] cpu_cooling: Store frequencies in descending order
+Date: Wed, 3 Dec 2014 10:22:30 +0530
+Message-ID: <CAKohpo=ew8wUeJ4Mf567BNP70AS8uHDWmBEFzL4Uo_ze0UtJ+A@mail.gmail.com>
 References: <cover.1417167599.git.viresh.kumar@linaro.org>
-	<1a0d2430eb52b55fdb8f82c4cbbb8b4038a105ec.1417167599.git.viresh.kumar@linaro.org>
-	<20141202152624.GA2834@e104805>
-	<20141202230730.GC3432@developer>
+	<ecb90bfbe1dd69ad73210630ce0a2f988d6210f1.1417167599.git.viresh.kumar@linaro.org>
+	<20141202232128.GA3645@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:40490 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbaLCEiJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 23:38:09 -0500
-Received: by mail-ob0-f171.google.com with SMTP id uz6so10954811obc.30
-        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 20:38:09 -0800 (PST)
-In-Reply-To: <20141202230730.GC3432@developer>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:57375 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbaLCEwb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 23:52:31 -0500
+Received: by mail-ob0-f174.google.com with SMTP id nt9so4000719obb.19
+        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 20:52:30 -0800 (PST)
+In-Reply-To: <20141202232128.GA3645@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Javi Merino <javi.merino@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-On 3 December 2014 at 04:37, Eduardo Valentin <edubezval@gmail.com> wrote:
->> This should be:
->>
->> +     cpufreq_dev = kzalloc(sizeof(*cpufreq_dev), GFP_KERNEL);
+On 3 December 2014 at 04:51, Eduardo Valentin <edubezval@gmail.com> wrote:
 
-This is insulting now. So stupid mistake..
+>> +static unsigned int find_next_max(struct cpufreq_frequency_table *table,
+>> +                               unsigned int prev_max)
+>> +{
+>> +     struct cpufreq_frequency_table *pos;
+>> +     unsigned int max = 0;
+>> +
+>> +     cpufreq_for_each_valid_entry(pos, table) {
+>> +             if (pos->frequency > max && pos->frequency < prev_max)
+>
+> What happens if, for some random reason, the cpufreq table is in
+> ascending order and this function is called with prev_max == (unsigned
+> int) -1 ? What would be the returned max?
+
+The last frequency of the table, i.e. the max value. What bug did you catch,
+that I am not able to see..
