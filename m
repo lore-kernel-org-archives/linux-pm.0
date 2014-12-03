@@ -1,27 +1,33 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: [PATCH] iio / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 03:06:04 +0100
-Message-ID: <202529361.GBbZ7zGgn8@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] input / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 03 Dec 2014 03:09:10 +0100
+Message-ID: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50612 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750864AbaLCBrq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 20:47:46 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Ferruh Yigit <fery@cypress.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
 selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
 depending on CONFIG_PM_RUNTIME may now be changed to depend on
 CONFIG_PM.
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-drivers/iio/.
+The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+replaced with CONFIG_PM too.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Make these changes in 2 files under drivers/input/.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
 Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
@@ -31,74 +37,34 @@ linux-pm tree).
 Please let me know if it is OK to take this one into linux-pm.
 
 ---
- drivers/iio/accel/bmc150-accel.c |    4 ++--
- drivers/iio/accel/kxcjk-1013.c   |    4 ++--
- drivers/iio/gyro/bmg160.c        |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/input/keyboard/samsung-keypad.c  |    2 +-
+ drivers/input/touchscreen/cyttsp4_core.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/iio/accel/bmc150-accel.c
+Index: linux-pm/drivers/input/keyboard/samsung-keypad.c
 ===================================================================
---- linux-pm.orig/drivers/iio/accel/bmc150-accel.c
-+++ linux-pm/drivers/iio/accel/bmc150-accel.c
-@@ -510,7 +510,7 @@ static int bmc150_accel_get_bw(struct bm
- 	return -EINVAL;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int bmc150_accel_get_startup_times(struct bmc150_accel_data *data)
- {
- 	int i;
-@@ -1349,7 +1349,7 @@ static int bmc150_accel_resume(struct de
- }
- #endif
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int bmc150_accel_runtime_suspend(struct device *dev)
- {
- 	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-Index: linux-pm/drivers/iio/accel/kxcjk-1013.c
-===================================================================
---- linux-pm.orig/drivers/iio/accel/kxcjk-1013.c
-+++ linux-pm/drivers/iio/accel/kxcjk-1013.c
-@@ -358,7 +358,7 @@ static int kxcjk1013_chip_init(struct kx
+--- linux-pm.orig/drivers/input/keyboard/samsung-keypad.c
++++ linux-pm/drivers/input/keyboard/samsung-keypad.c
+@@ -463,7 +463,7 @@ static int samsung_keypad_remove(struct
  	return 0;
  }
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int kxcjk1013_get_startup_times(struct kxcjk1013_data *data)
+ static int samsung_keypad_runtime_suspend(struct device *dev)
  {
- 	int i;
-@@ -1357,7 +1357,7 @@ static int kxcjk1013_resume(struct devic
- }
- #endif
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int kxcjk1013_runtime_suspend(struct device *dev)
- {
- 	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-Index: linux-pm/drivers/iio/gyro/bmg160.c
+ 	struct platform_device *pdev = to_platform_device(dev);
+Index: linux-pm/drivers/input/touchscreen/cyttsp4_core.c
 ===================================================================
---- linux-pm.orig/drivers/iio/gyro/bmg160.c
-+++ linux-pm/drivers/iio/gyro/bmg160.c
-@@ -237,7 +237,7 @@ static int bmg160_chip_init(struct bmg16
- 
- static int bmg160_set_power_state(struct bmg160_data *data, bool on)
- {
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	int ret;
- 
- 	if (on)
-@@ -1164,7 +1164,7 @@ static int bmg160_resume(struct device *
+--- linux-pm.orig/drivers/input/touchscreen/cyttsp4_core.c
++++ linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+@@ -1716,7 +1716,7 @@ static void cyttsp4_free_si_ptrs(struct
+ 	kfree(si->btn_rec_data);
  }
- #endif
  
--#ifdef CONFIG_PM_RUNTIME
+-#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
 +#ifdef CONFIG_PM
- static int bmg160_runtime_suspend(struct device *dev)
+ static int cyttsp4_core_sleep(struct cyttsp4 *cd)
  {
- 	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
+ 	int rc;
+
