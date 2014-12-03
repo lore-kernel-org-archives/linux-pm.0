@@ -1,19 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] gpio / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 02:50:30 +0100
-Message-ID: <1655942.O63mJN07or@vostro.rjw.lan>
+Subject: [PATCH] drm / exynos / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 03 Dec 2014 02:53:44 +0100
+Message-ID: <19437813.I83iiGloeA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54591 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750730AbaLCB3G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 20:29:06 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org
+Cc: Jingoo Han <jg1.han@samsung.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, dri-devel@lists.freedesktop.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Javier Martinez Canillas <javier@dowhile0.org>, Santosh Shilimkar <ssantosh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-omap@vger.kernel.org, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
@@ -22,7 +18,8 @@ selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
 depending on CONFIG_PM_RUNTIME may now be changed to depend on
 CONFIG_PM.
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/gpio/gpio-omap.c.
+Replace CONFIG_PM_RUNTIME with CONFIG_PM in 4 files under
+gpu/drm/exynos/.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -34,47 +31,61 @@ linux-pm tree).
 Please let me know if it is OK to take this one into linux-pm.
 
 ---
- drivers/gpio/gpio-omap.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/exynos/exynos_drm_fimc.c    |    2 +-
+ drivers/gpu/drm/exynos/exynos_drm_g2d.c     |    2 +-
+ drivers/gpu/drm/exynos/exynos_drm_gsc.c     |    2 +-
+ drivers/gpu/drm/exynos/exynos_drm_rotator.c |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-pm/drivers/gpio/gpio-omap.c
+Index: linux-pm/drivers/gpu/drm/exynos/exynos_drm_fimc.c
 ===================================================================
---- linux-pm.orig/drivers/gpio/gpio-omap.c
-+++ linux-pm/drivers/gpio/gpio-omap.c
-@@ -1259,7 +1259,7 @@ static int omap_gpio_probe(struct platfo
- 
- #ifdef CONFIG_ARCH_OMAP2PLUS
- 
--#if defined(CONFIG_PM_RUNTIME)
-+#if defined(CONFIG_PM)
- static void omap_gpio_restore_context(struct gpio_bank *bank);
- 
- static int omap_gpio_runtime_suspend(struct device *dev)
-@@ -1440,7 +1440,7 @@ static int omap_gpio_runtime_resume(stru
- 
- 	return 0;
+--- linux-pm.orig/drivers/gpu/drm/exynos/exynos_drm_fimc.c
++++ linux-pm/drivers/gpu/drm/exynos/exynos_drm_fimc.c
+@@ -1817,7 +1817,7 @@ static int fimc_resume(struct device *de
  }
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
+ #endif
  
- void omap2_gpio_prepare_for_idle(int pwr_mode)
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int fimc_runtime_suspend(struct device *dev)
  {
-@@ -1468,7 +1468,7 @@ void omap2_gpio_resume_after_idle(void)
- 	}
+ 	struct fimc_context *ctx = get_fimc_context(dev);
+Index: linux-pm/drivers/gpu/drm/exynos/exynos_drm_gsc.c
+===================================================================
+--- linux-pm.orig/drivers/gpu/drm/exynos/exynos_drm_gsc.c
++++ linux-pm/drivers/gpu/drm/exynos/exynos_drm_gsc.c
+@@ -1764,7 +1764,7 @@ static int gsc_resume(struct device *dev
  }
+ #endif
  
--#if defined(CONFIG_PM_RUNTIME)
-+#if defined(CONFIG_PM)
- static void omap_gpio_init_context(struct gpio_bank *p)
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int gsc_runtime_suspend(struct device *dev)
  {
- 	struct omap_gpio_reg_offs *regs = p->regs;
-@@ -1525,7 +1525,7 @@ static void omap_gpio_restore_context(st
- 	writel_relaxed(bank->context.irqenable2,
- 				bank->base + bank->regs->irqenable2);
+ 	struct gsc_context *ctx = get_gsc_context(dev);
+Index: linux-pm/drivers/gpu/drm/exynos/exynos_drm_rotator.c
+===================================================================
+--- linux-pm.orig/drivers/gpu/drm/exynos/exynos_drm_rotator.c
++++ linux-pm/drivers/gpu/drm/exynos/exynos_drm_rotator.c
+@@ -822,7 +822,7 @@ static int rotator_resume(struct device
  }
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- #else
- #define omap_gpio_runtime_suspend NULL
- #define omap_gpio_runtime_resume NULL
-
+ #endif
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int rotator_runtime_suspend(struct device *dev)
+ {
+ 	struct rot_context *rot = dev_get_drvdata(dev);
+Index: linux-pm/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+===================================================================
+--- linux-pm.orig/drivers/gpu/drm/exynos/exynos_drm_g2d.c
++++ linux-pm/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+@@ -1540,7 +1540,7 @@ static int g2d_resume(struct device *dev
+ }
+ #endif
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int g2d_runtime_suspend(struct device *dev)
+ {
+ 	struct g2d_data *g2d = dev_get_drvdata(dev);
