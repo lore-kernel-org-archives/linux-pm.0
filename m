@@ -1,36 +1,44 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] hsi / OMAP / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 20:49:12 +0100
-Message-ID: <2553100.3OLsEPLv6G@wuerfel>
-References: <6319344.XVfdONE5DJ@vostro.rjw.lan>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Wed, 03 Dec 2014 21:35:34 +0100
+Message-ID: <2596381.rFt35NU3oS@wuerfel>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <547ED3BD.5090209@linaro.org> <20141203143122.GH499@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6319344.XVfdONE5DJ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-omap@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20141203143122.GH499@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 December 2014 03:02:24 Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Do that for the omap_ssi driver.
-> 
+On Wednesday 03 December 2014 07:31:22 Lina Iyer wrote:
+> >>>+static int __init qcom_spm_init(void)
+> >>>+{
+> >>>+    int ret;
+> >>>+
+> >>>+    /*
+> >>>+     * cpuidle driver need to registered before the cpuidle device
+> >>>+     * for any cpu. Register the device for the the cpuidle driver.
+> >>>+     */
+> >>>+    ret = platform_device_register(&qcom_cpuidle_drv);
+> >>>+    if (ret)
+> >>>+        return ret;
+> >>Stephen pointed out that we would have the platform device lying around
+> >>on a non-QCOM device when using multi_v7_defconfig.
+> >
+> >Perhaps I am missing the point, but this is not supposed to happen, no ?
+> >
+> This would happen, since the file would compile on multi_v7 and we would
+> initialize and register this device regardless. The cpuidle-qcom.c
+> driver probe would bail out looking for a matching compatible property.
+> So we would not register a cpuidle driver but the device would lay
+> around.
 
-Just for clarification: does that mean that PM, PM_RUNTIME, and PM_SLEEP
-are all synonyms now, or is there still some other combination that
-allows a subset to be set?
-
-Before we do lots of s/CONFIG_PM_SLEEP/CONFIG_PM/ changes in lots of
-other drivers, it would be nice to come up with a new set of macros
-to replace all the SET_RUNTIME_PM_OPS/SIMPLE_DEV_PM_OPS/..._OPS
-with a version that avoided the #ifdefs altogether.
+I think the problem is registering a platform_device. I've complained
+about this before, but it still seems to get copied all over the
+place. Please don't do this but have a driver that looks at DT to
+figure out whether to access hardware or not.
 
 	Arnd
