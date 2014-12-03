@@ -1,49 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] hsi / OMAP / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 23:45:22 +0100
-Message-ID: <22524926.vCRamu0d6Y@vostro.rjw.lan>
-References: <6319344.XVfdONE5DJ@vostro.rjw.lan> <2553100.3OLsEPLv6G@wuerfel>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH] iio / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 03 Dec 2014 23:46:45 +0100
+Message-ID: <5292660.MpQBlxNLlG@vostro.rjw.lan>
+References: <202529361.GBbZ7zGgn8@vostro.rjw.lan> <1417623491.2043.320.camel@spandruv-desktop.jf.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2553100.3OLsEPLv6G@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-omap@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1417623491.2043.320.camel-hINH/TbAiWppyMZ9rn1DP+ejPoqOX1/hEvhb3Hwu1Ks@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 03, 2014 08:49:12 PM Arnd Bergmann wrote:
-> On Wednesday 03 December 2014 03:02:24 Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, December 03, 2014 08:18:11 AM Srinivas Pandruvada wrote:
+> On Wed, 2014-12-03 at 03:06 +0100, Rafael J. Wysocki wrote: 
+> > From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 > > 
 > > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
 > > selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
 > > depending on CONFIG_PM_RUNTIME may now be changed to depend on
 > > CONFIG_PM.
 > > 
-> > Do that for the omap_ssi driver.
+> > Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
+> > drivers/iio/.
 > > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> Acked-by: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 > 
-> Just for clarification: does that mean that PM, PM_RUNTIME, and PM_SLEEP
-> are all synonyms now, or is there still some other combination that
-> allows a subset to be set?
+> > ---
+> > 
+> > Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> > PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> > linux-pm tree).
+> > 
+> > Please let me know if it is OK to take this one into linux-pm.
+> 
+> There are some other drivers using this define, we need to change all
+> those.
 
-PM_RUNTIME is always set when PM is, but PM_SLEEP still may not be set then.
+Yes, I'm doing this everywhere, this patch is just one part of it.
 
-The plan is to drop PM_RUNTIME and use PM as a user-visible option instead
-of it (which can be selected automatically by PM_SLEEP too).
-
-As stated here:
-http://marc.info/?l=linux-kernel&m=141710589711818&w=4
-http://marc.info/?l=linux-kernel&m=141712284917133&w=4
-
-> Before we do lots of s/CONFIG_PM_SLEEP/CONFIG_PM/ changes in lots of
-> other drivers, it would be nice to come up with a new set of macros
-> to replace all the SET_RUNTIME_PM_OPS/SIMPLE_DEV_PM_OPS/..._OPS
-> with a version that avoided the #ifdefs altogether.
-
-I don't think we can avoid all of the #ifdefs and the macros still work
-(except for one which is redundant, but I have a patch to clean that up).
-
-Rafael
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
