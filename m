@@ -1,147 +1,75 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 1/7] PM / Domains: Add DT bindings for the R-Mobile System Controller
-Date: Wed,  3 Dec 2014 14:41:41 +0100
-Message-ID: <1417614107-5985-2-git-send-email-geert+renesas@glider.be>
-References: <1417614107-5985-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1417614107-5985-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 24/26] cpu_cooling: Store frequencies in descending order
+Date: Wed, 3 Dec 2014 09:41:59 -0400
+Message-ID: <20141203134157.GB4325@developer>
+References: <cover.1417167599.git.viresh.kumar@linaro.org>
+ <ecb90bfbe1dd69ad73210630ce0a2f988d6210f1.1417167599.git.viresh.kumar@linaro.org>
+ <20141202232128.GA3645@developer>
+ <CAKohpo=ew8wUeJ4Mf567BNP70AS8uHDWmBEFzL4Uo_ze0UtJ+A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7ZAtKRhVyVSsbBD2"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f43.google.com ([209.85.192.43]:35021 "EHLO
+	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbaLCNmI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 08:42:08 -0500
+Received: by mail-qg0-f43.google.com with SMTP id q108so10801609qgd.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 05:42:07 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=ew8wUeJ4Mf567BNP70AS8uHDWmBEFzL4Uo_ze0UtJ+A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-The Renesas R-Mobile System Controller provides a.o. power management
-support, following the generic PM domain bindings in
-Documentation/devicetree/bindings/power/power_domain.txt.
 
-For now this supports the R-Mobile A1 (r8a7740) only, but it should be
-sufficiently generic to handle other members of the SH-Mobile/R-Mobile
-family in the future.
+--7ZAtKRhVyVSsbBD2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-v6:
-  - Drop power-on/off latencies, as they're put on hold,
-  - Remove leftover sentence about PM QoS device latencies,
-v5:
-  - No changes,
-v4:
-  - Drop device save/restore state latencies, as they're Linux driver-specific,
-  - Drop PM QoS device latencies, as they're put on hold,
-v3:
-  - Reword,
-v2:
-  - Fix copy-and-paste s/#address-cells/#size-cells/,
-  - Add optional PM QoS device latencies.
----
- .../bindings/power/renesas,sysc-rmobile.txt        | 98 ++++++++++++++++++++++
- 1 file changed, 98 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+On Wed, Dec 03, 2014 at 10:22:30AM +0530, Viresh Kumar wrote:
+> On 3 December 2014 at 04:51, Eduardo Valentin <edubezval@gmail.com> wrote:
+>=20
+> >> +static unsigned int find_next_max(struct cpufreq_frequency_table *tab=
+le,
+> >> +                               unsigned int prev_max)
+> >> +{
+> >> +     struct cpufreq_frequency_table *pos;
+> >> +     unsigned int max =3D 0;
+> >> +
+> >> +     cpufreq_for_each_valid_entry(pos, table) {
+> >> +             if (pos->frequency > max && pos->frequency < prev_max)
+> >
+> > What happens if, for some random reason, the cpufreq table is in
+> > ascending order and this function is called with prev_max =3D=3D (unsig=
+ned
+> > int) -1 ? What would be the returned max?
+>=20
+> The last frequency of the table, i.e. the max value. What bug did you cat=
+ch,
+> that I am not able to see..
 
-diff --git a/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
-new file mode 100644
-index 0000000000000000..5887cbae313481cc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
-@@ -0,0 +1,98 @@
-+DT bindings for the Renesas R-Mobile System Controller
-+
-+== System Controller Node ==
-+
-+The R-Mobile System Controller provides the following functions:
-+  - Boot mode management,
-+  - Reset generation,
-+  - Power management.
-+
-+Required properties:
-+- compatible: Should be "renesas,sysc-<soctype>", "renesas,sysc-rmobile" as
-+	      fallback.
-+	      Examples with soctypes are:
-+		- "renesas,sysc-r8a7740" (R-Mobile A1)
-+- reg: Two address start and address range blocks for the device:
-+         - The first block refers to the normally accessible registers,
-+         - the second block refers to the registers protected by the HPB
-+	   semaphore.
-+
-+Optional nodes:
-+- pm-domains: This node contains a hierarchy of PM domain nodes, which should
-+  match the Power Area Hierarchy in the Power Domain Specifications section of
-+  the device's datasheet.
-+
-+
-+== PM Domain Nodes ==
-+
-+Each of the PM domain nodes represents a PM domain, as documented by the
-+generic PM domain bindings in
-+Documentation/devicetree/bindings/power/power_domain.txt.
-+
-+The nodes should be named by the real power area names, and thus their names
-+should be unique.
-+
-+Required properties:
-+  - #power-domain-cells: Must be 0.
-+
-+Optional properties:
-+- reg: If the PM domain is not always-on, this property must contain the bit
-+       index number for the corresponding power area in the various Power
-+       Control and Status Registers. The parent's node must contain the
-+       following two properties:
-+	 - #address-cells: Must be 1,
-+	 - #size-cells: Must be 0.
-+       If the PM domain is always-on, this property must be omitted.
-+
-+
-+Example:
-+
-+This shows a subset of the r8a7740 PM domain hierarchy, containing the
-+C5 "always-on" domain, 2 of its subdomains (A4S and A4SU), and the A3SP domain,
-+which is a subdomain of A4S.
-+
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,sysc-r8a7740", "renesas,sysc-rmobile";
-+		reg = <0xe6180000 8000>, <0xe6188000 8000>;
-+
-+		pm-domains {
-+			pd_c5: c5 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_a4s: a4s@10 {
-+					reg = <10>;
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
-+
-+					pd_a3sp: a3sp@11 {
-+						reg = <11>;
-+						#power-domain-cells = <0>;
-+					};
-+				};
-+
-+				pd_a4su: a4su@20 {
-+					reg = <20>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+		};
-+	};
-+
-+
-+== PM Domain Consumers ==
-+
-+Hardware blocks belonging to a PM domain should contain a "power-domains"
-+property that is a phandle pointing to the corresponding PM domain node.
-+
-+Example:
-+
-+	tpu: pwm@e6600000 {
-+		compatible = "renesas,tpu-r8a7740", "renesas,tpu";
-+		reg = <0xe6600000 0x100>;
-+		clocks = <&mstp3_clks R8A7740_CLK_TPU0>;
-+		power-domains = <&pd_a3sp>;
-+		#pwm-cells = <3>;
-+	};
--- 
-1.9.1
+Well, passing -1 to unsigned int will make it max unsigned int, your
+function will return the first freq, which in the scenario I gave, it
+would be the min freq, not the first max, right?
+
+
+--7ZAtKRhVyVSsbBD2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUfxMdAAoJEMLUO4d9pOJWmfQIAJIbVyR327gSadwqwukvE0Ne
+tAWWlTOEowdA5TELLdsLgk64stfv4h9cJ5+klzd8n/JQAG8xKwFdyi0cWFO4bxCr
+Y0agE1h50pIATjsG7pB0cAD2tx2r7JaFCsYOE5Xl1bUv6T1YHux5njv/H0U4D8cQ
+bONnDx71/oseg5LNWA9IKYv7KbNNsbf5uAPKTvVHMJEFPPknkS+wfHXtHWYBCwRm
+wIg0nXWE8mRls/eMgvSHYKPvMgZu5JaJF7AMhC9B40BEsX72/KrfQhgCFu8q+fSg
+1FgPGrHhc4YpXb7eGKDiOwyVjGXlMMTd10H5lGy3TsUW3ot5JO39qt9g+YkzeSc=
+=eLHl
+-----END PGP SIGNATURE-----
+
+--7ZAtKRhVyVSsbBD2--
