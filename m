@@ -1,59 +1,82 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: Re: [PATCH 0/2] fix some problems for cpufreq
-Date: Wed, 3 Dec 2014 13:49:19 +0800
-Message-ID: <547EA45F.6060600@huawei.com>
-References: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>	<2248504.pAVebap2qN@vostro.rjw.lan>	<547923F2.6000701@huawei.com>	<4004530.x5fm24OG42@vostro.rjw.lan>	<547AD41F.7030907@huawei.com> <CAKohpomMWj8QRW5eYdTGXT+HEZpSA6AV5C6mUzYyC1N1fWV7vg@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] input / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Tue, 2 Dec 2014 21:54:44 -0800
+Message-ID: <20141203055444.GA7411@dtor-glaptop>
+References: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:32120 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbaLCFti (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 00:49:38 -0500
-In-Reply-To: <CAKohpomMWj8QRW5eYdTGXT+HEZpSA6AV5C6mUzYyC1N1fWV7vg@mail.gmail.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:42591 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbaLCFzH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 00:55:07 -0500
+Content-Disposition: inline
+In-Reply-To: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, guohanjun@huawei.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-input@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Ferruh Yigit <fery@cypress.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 2014/12/2 12:38, Viresh Kumar wrote:
-> On 30 November 2014 at 13:53, Wang Weidong <wangweidong1@huawei.com> wrote:
->> No, there are not utilities and scripts relying on it.
+On Wed, Dec 03, 2014 at 03:09:10AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> How can you be so sure about it ? There might be scripts/utils you
-> aren't aware of
-> and are depending on this..
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
 > 
->> I just confuse that:
->> If the policy->min and policy-max is changed while it shows all available freqs
->> though scaling_available_frequencies. I can't set all freq-steps, only [policy->min, policy->max].
->> why should it show all the available freqs.
+> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> replaced with CONFIG_PM too.
 > 
-> That's not the only purpose of those frequencies there. It shows list
-> of all possible
-> frequencies. Now, there can be issues if those lists are updated.
+> Make these changes in 2 files under drivers/input/.
 > 
-> Suppose somebody just played with the min/max frequency, now how would anybody
-> come to know about the frequencies available above/below the
-> user-max/min frequency?
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+> ---
 > 
-> So as you mentioned in your example above: User space would never know about
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
 > 
-> 1.05 Ghz and 2.3GHz anymore.. Unless you remember it or save it somewhere.
+> Please let me know if it is OK to take this one into linux-pm.
+
+Yeah, it should be fine.
+
+> 
+> ---
+>  drivers/input/keyboard/samsung-keypad.c  |    2 +-
+>  drivers/input/touchscreen/cyttsp4_core.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/input/keyboard/samsung-keypad.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/keyboard/samsung-keypad.c
+> +++ linux-pm/drivers/input/keyboard/samsung-keypad.c
+> @@ -463,7 +463,7 @@ static int samsung_keypad_remove(struct
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int samsung_keypad_runtime_suspend(struct device *dev)
+>  {
+>  	struct platform_device *pdev = to_platform_device(dev);
+> Index: linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/touchscreen/cyttsp4_core.c
+> +++ linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> @@ -1716,7 +1716,7 @@ static void cyttsp4_free_si_ptrs(struct
+>  	kfree(si->btn_rec_data);
+>  }
+>  
+> -#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
+> +#ifdef CONFIG_PM
+>  static int cyttsp4_core_sleep(struct cyttsp4 *cd)
+>  {
+>  	int rc;
 > 
 
-Nice, Thanks for your reply.
-
-Got it.
-
-Wang,
-Regards
-
->> Although, it doesn't impact on us. So just ignore the patch#2. :)
-> 
-> Probably yes.
-> 
-> 
-
-
+-- 
+Dmitry
