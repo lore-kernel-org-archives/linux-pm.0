@@ -1,104 +1,103 @@
-From: ethan zhao <ethan.zhao@oracle.com>
-Subject: Re: [PATCH 2/2 V6] intel_pstate: add kernel parameter to force loading
- on Sun X86 servers.
-Date: Wed, 03 Dec 2014 08:49:58 +0800
-Message-ID: <547E5E36.2070603@oracle.com>
-References: <1417145777-21897-1-git-send-email-ethan.zhao@oracle.com> <1417145777-21897-4-git-send-email-ethan.zhao@oracle.com> <20141202102402.09ea6017@kcaccard-desk.amr.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] block / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 03 Dec 2014 02:34:23 +0100
+Message-ID: <1836422.FyhARLgxbM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141202102402.09ea6017@kcaccard-desk.amr.corp.intel.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: dirk.j.brandewie@intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, joe.jin@oracle.com, brian.maly@oracle.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Kristen,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 2014/12/3 2:24, Kristen Carlson Accardi wrote:
-> On Fri, 28 Nov 2014 12:36:17 +0900
-> Ethan Zhao <ethan.zhao@oracle.com> wrote:
->
->> To force loading on Oracle Sun X86 servers, provide one kernel command line
->> parameter
->>
->>    intel_pstate = ora_force
->>
->> For those who be aware of the risk of no power capping capabily working and
->> try to get better performance with this driver.
-> So, is this something you'd expect users to use on production systems,
-> or is it just for debug?
-    Till now, we couldn't make the decision that users couldn't use 
-intel_pstate on product systems at all,
-    So we leave one gate, and we could do something even the binary 
-kernel was shipped to user. of course,
-    a lot of test and debug need to be done in the future.
+After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+depending on CONFIG_PM_RUNTIME may now be changed to depend on
+CONFIG_PM.
 
-    It is possible for users to use it on their product system if they 
-are aware of all the risk.
+Replace CONFIG_PM_RUNTIME with CONFIG_PM in the block device core.
 
-   Thanks,
-   Ethan
->
-> Thanks,
-> Kristen
->
->> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
->> ---
->>   v2: change to hardware vendor specific naming parameter.
->>   v4: refine code and doc.
->>   v5&v6: fix a typo in doc.
->>
->>   Documentation/kernel-parameters.txt | 5 +++++
->>   drivers/cpufreq/intel_pstate.c      | 6 +++++-
->>   2 files changed, 10 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index 479f332..7d0983e 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->>   		       disable
->>   		         Do not enable intel_pstate as the default
->>   		         scaling driver for the supported processors
->> +		       ora_force
->> +			 Force loading intel_pstate on Oracle Sun Servers(X86).
->> +			 only for those who be aware of the risk of no power capping
->> +			 capability working and try to get better performance with this
->> +			 driver.
->>   
->>   	intremap=	[X86-64, Intel-IOMMU]
->>   			on	enable Interrupt Remapping (default)
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index 1bb62ca..2654e13 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->>   };
->>   
->>   static int __initdata no_load;
->> +static unsigned int  ora_force;
->>   
->>   static int intel_pstate_msrs_not_valid(void)
->>   {
->> @@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->>   			case PSS:
->>   				return intel_pstate_no_acpi_pss();
->>   			case PCC:
->> -				return intel_pstate_has_acpi_ppc();
->> +				return intel_pstate_has_acpi_ppc() &&
->> +					(!ora_force);
->>   			}
->>   	}
->>   
->> @@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
->>   
->>   	if (!strcmp(str, "disable"))
->>   		no_load = 1;
->> +	if (!strcmp(str, "ora_force"))
->> +		ora_force = 1;
->>   	return 0;
->>   }
->>   early_param("intel_pstate", intel_pstate_setup);
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
+Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+PM_SLEEP is selected) which is only in linux-next at the moment (via the
+linux-pm tree).
+
+Please let me know if it is OK to take this one into linux-pm.
+
+---
+ block/blk-core.c       |    6 +++---
+ block/elevator.c       |    2 +-
+ include/linux/blkdev.h |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux-pm/include/linux/blkdev.h
+===================================================================
+--- linux-pm.orig/include/linux/blkdev.h
++++ linux-pm/include/linux/blkdev.h
+@@ -398,7 +398,7 @@ struct request_queue {
+ 	 */
+ 	struct kobject mq_kobj;
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ 	struct device		*dev;
+ 	int			rpm_status;
+ 	unsigned int		nr_pending;
+@@ -1057,7 +1057,7 @@ extern void blk_put_queue(struct request
+ /*
+  * block layer runtime pm functions
+  */
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ extern void blk_pm_runtime_init(struct request_queue *q, struct device *dev);
+ extern int blk_pre_runtime_suspend(struct request_queue *q);
+ extern void blk_post_runtime_suspend(struct request_queue *q, int err);
+Index: linux-pm/block/blk-core.c
+===================================================================
+--- linux-pm.orig/block/blk-core.c
++++ linux-pm/block/blk-core.c
+@@ -1325,7 +1325,7 @@ void part_round_stats(int cpu, struct hd
+ }
+ EXPORT_SYMBOL_GPL(part_round_stats);
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static void blk_pm_put_request(struct request *rq)
+ {
+ 	if (rq->q->dev && !(rq->cmd_flags & REQ_PM) && !--rq->q->nr_pending)
+@@ -2134,7 +2134,7 @@ void blk_account_io_done(struct request
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ /*
+  * Don't process normal requests when queue is suspended
+  * or in the process of suspending/resuming
+@@ -3159,7 +3159,7 @@ void blk_finish_plug(struct blk_plug *pl
+ }
+ EXPORT_SYMBOL(blk_finish_plug);
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ /**
+  * blk_pm_runtime_init - Block layer runtime PM initialization routine
+  * @q: the queue of the device
+Index: linux-pm/block/elevator.c
+===================================================================
+--- linux-pm.orig/block/elevator.c
++++ linux-pm/block/elevator.c
+@@ -539,7 +539,7 @@ void elv_bio_merged(struct request_queue
+ 		e->type->ops.elevator_bio_merged_fn(q, rq, bio);
+ }
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static void blk_pm_requeue_request(struct request *rq)
+ {
+ 	if (rq->q->dev && !(rq->cmd_flags & REQ_PM))
