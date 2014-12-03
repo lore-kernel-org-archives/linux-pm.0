@@ -1,50 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 25/26] cpu_cooling: Use cpufreq_dev->freq_table for
- finding level/freq
-Date: Wed, 3 Dec 2014 10:40:11 +0530
-Message-ID: <CAKohponQ0vr7QXFun3GmPsMCGj6VOd3P0of6Hd5p4ZBG-_PxdQ@mail.gmail.com>
-References: <cover.1417167599.git.viresh.kumar@linaro.org>
-	<8c0412592bfd5524e638252a42edaf08f81f0976.1417167599.git.viresh.kumar@linaro.org>
-	<20141202233626.GA3969@developer>
+From: Wang Weidong <wangweidong1@huawei.com>
+Subject: Re: [PATCH 0/2] fix some problems for cpufreq
+Date: Wed, 3 Dec 2014 13:49:19 +0800
+Message-ID: <547EA45F.6060600@huawei.com>
+References: <1417142619-14548-1-git-send-email-wangweidong1@huawei.com>	<2248504.pAVebap2qN@vostro.rjw.lan>	<547923F2.6000701@huawei.com>	<4004530.x5fm24OG42@vostro.rjw.lan>	<547AD41F.7030907@huawei.com> <CAKohpomMWj8QRW5eYdTGXT+HEZpSA6AV5C6mUzYyC1N1fWV7vg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:51245 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbaLCFKM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 00:10:12 -0500
-Received: by mail-oi0-f53.google.com with SMTP id x69so10404393oia.12
-        for <linux-pm@vger.kernel.org>; Tue, 02 Dec 2014 21:10:11 -0800 (PST)
-In-Reply-To: <20141202233626.GA3969@developer>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:32120 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbaLCFti (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 00:49:38 -0500
+In-Reply-To: <CAKohpomMWj8QRW5eYdTGXT+HEZpSA6AV5C6mUzYyC1N1fWV7vg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, guohanjun@huawei.com
 
-On 3 December 2014 at 05:06, Eduardo Valentin <edubezval@gmail.com> wrote:
->> -     ret = get_property(cpufreq_device, state, &clip_freq, GET_FREQ);
->> -     if (ret)
->> -             return ret;
->> -
->> +     clip_freq = cpufreq_device->freq_table[state];
->
-> There should be some check for valid state here..
+On 2014/12/2 12:38, Viresh Kumar wrote:
+> On 30 November 2014 at 13:53, Wang Weidong <wangweidong1@huawei.com> wrote:
+>> No, there are not utilities and scripts relying on it.
+> 
+> How can you be so sure about it ? There might be scripts/utils you
+> aren't aware of
+> and are depending on this..
+> 
+>> I just confuse that:
+>> If the policy->min and policy-max is changed while it shows all available freqs
+>> though scaling_available_frequencies. I can't set all freq-steps, only [policy->min, policy->max].
+>> why should it show all the available freqs.
+> 
+> That's not the only purpose of those frequencies there. It shows list
+> of all possible
+> frequencies. Now, there can be issues if those lists are updated.
+> 
+> Suppose somebody just played with the min/max frequency, now how would anybody
+> come to know about the frequencies available above/below the
+> user-max/min frequency?
+> 
+> So as you mentioned in your example above: User space would never know about
+> 
+> 1.05 Ghz and 2.3GHz anymore.. Unless you remember it or save it somewhere.
+> 
 
-What about this ??
+Nice, Thanks for your reply.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 6bd95bc..6e76417 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -228,6 +228,10 @@ static int cpufreq_set_cur_state(struct
-thermal_cooling_device *cdev,
-        unsigned int cpu = cpumask_any(&cpufreq_device->allowed_cpus);
-        unsigned int clip_freq;
+Got it.
 
-+       /* Request state should be less than max_level */
-+       if (WARN_ON(state > cpufreq_device->max_level))
-+               return -EINVAL;
-+
-        /* Check if the old cooling action is same as new cooling action */
-        if (cpufreq_device->cpufreq_state == state)
-                return 0;
+Wang,
+Regards
+
+>> Although, it doesn't impact on us. So just ignore the patch#2. :)
+> 
+> Probably yes.
+> 
+> 
+
+
