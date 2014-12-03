@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 3/4] ARM: shmobile: sh73a0: Remove restart callback
-Date: Wed,  3 Dec 2014 15:17:06 +0100
-Message-ID: <1417616227-6715-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 1/4] ARM: shmobile: R-Mobile: Add SYSC restart handler
+Date: Wed,  3 Dec 2014 15:17:04 +0100
+Message-ID: <1417616227-6715-2-git-send-email-geert+renesas@glider.be>
 References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
@@ -10,46 +10,88 @@ To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Arnd
 Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the restart handling hack from the sh73a0 generic multiplatform
-case.
+Extend the PM domain platform driver for the R-Mobile System
+Controller (SYSC) to register a restart handler, to be used on various
+Renesas ARM SoCs (e.g. R-Mobile A1 (r8a7740) and APE6 (r8a73a4), and
+SH-Mobile AP4 (sh7372) and AG5 (sh73a0)).
 
-Restart on DT-based sh73a0 platforms is now handled through the restart
-handler registered by the R-Mobile System Controller (SYSC) driver.
-
-This reverts commit cad900819fba0176 ("ARM: shmobile: sh73a0: Add
-restart callback").
+Note that this supports DT-based platforms only.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/arm/mach-shmobile/setup-sh73a0.c | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/arm/mach-shmobile/pm-rmobile.c | 48 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-shmobile/setup-sh73a0.c b/arch/arm/mach-shmobile/setup-sh73a0.c
-index 2ec702c51dd25050..9e5e5ebbd1af641d 100644
---- a/arch/arm/mach-shmobile/setup-sh73a0.c
-+++ b/arch/arm/mach-shmobile/setup-sh73a0.c
-@@ -818,13 +818,6 @@ void __init sh73a0_add_standard_devices_dt(void)
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index f540096c05f6eabd..b82da04c7210a98d 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -23,14 +23,22 @@
+ #include <linux/slab.h>
  
--#define RESCNT2 IOMEM(0xe6188020)
--static void sh73a0_restart(enum reboot_mode mode, const char *cmd)
--{
--	/* Do soft power on reset */
--	writel((1 << 31), RESCNT2);
--}
--
- static const char *sh73a0_boards_compat_dt[] __initdata = {
- 	"renesas,sh73a0",
- 	NULL,
-@@ -836,7 +829,6 @@ DT_MACHINE_START(SH73A0_DT, "Generic SH73A0 (Flattened Device Tree)")
- 	.init_early	= shmobile_init_delay,
- 	.init_machine	= sh73a0_add_standard_devices_dt,
- 	.init_late	= shmobile_init_late,
--	.restart	= sh73a0_restart,
- 	.dt_compat	= sh73a0_boards_compat_dt,
- MACHINE_END
- #endif /* CONFIG_USE_OF */
+ #include <asm/io.h>
++#include <asm/system_misc.h>
+ 
+ #include "pm-rmobile.h"
+ 
+-/* SYSC */
++/* SYSC Register Bank 1 */
+ #define SPDCR		0x08	/* SYS Power Down Control Register */
+ #define SWUCR		0x14	/* SYS Wakeup Control Register */
+ #define PSTR		0x80	/* Power Status Register */
+ 
++/* SYSC Register Bank 2 */
++#define RESCNT2		0x20	/* Reset Control Register 2 */
++
++/* Reset Control Register 2 */
++#define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
++
++
+ #define PSTR_RETRIES	100
+ #define PSTR_DELAY_US	10
+ 
+@@ -400,3 +408,41 @@ static int __init rmobile_init_pm_domains(void)
+ core_initcall(rmobile_init_pm_domains);
+ 
+ #endif /* !CONFIG_ARCH_SHMOBILE_LEGACY */
++
++
++static void __iomem *sysc_base2;
++
++static void rmobile_sysc_restart(enum reboot_mode reboot_mode, const char *cmd)
++{
++	pr_debug("%s %u/%s\n", __func__, reboot_mode, cmd);
++
++	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
++}
++
++static int rmobile_sysc_probe(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	sysc_base2 = of_iomap(pdev->dev.of_node, 1);
++	if (!sysc_base2)
++		return -ENODEV;
++
++	arm_pm_restart = rmobile_sysc_restart;
++
++	return 0;
++}
++
++static const struct of_device_id rmobile_sysc_of_match[] = {
++	{ .compatible = "renesas,sysc-rmobile", },
++	{ /* sentinel */ }
++};
++
++static struct platform_driver rmobile_sysc_driver = {
++	.probe = rmobile_sysc_probe,
++	.driver = {
++		.name = "rmobile_sysc",
++		.of_match_table = rmobile_sysc_of_match,
++	},
++};
++
++module_platform_driver(rmobile_sysc_driver);
 -- 
 1.9.1
 
