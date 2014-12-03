@@ -1,90 +1,32 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC 0/3] Add "Simple" / Renesas Bus State Controller Driver
-Date: Wed, 3 Dec 2014 10:30:06 +0100
-Message-ID: <CAMuHMdWCGQwLVb1K5jRxWToe-de8T_A5n08FsjEiv8z1B9Q4oA@mail.gmail.com>
-References: <1416859808-18503-1-git-send-email-geert+renesas@glider.be>
-	<6261300.I132f1jLqB@wuerfel>
-	<CAMuHMdVjpL-QgS0aAdMo4EHXibhpKCJC73yY+HDY=+Ae=LMigA@mail.gmail.com>
-	<7h4mtlen8f.fsf@deeprootsystems.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 16/26] cpu_cooling: Drop useless locking around idr_alloc/idr_remove
+Date: Wed, 3 Dec 2014 15:02:51 +0530
+Message-ID: <CAKohpomTB8yaSUAHjmPMJg6oKXVcAX1YsHvBYJa5x6iAtkqMCg@mail.gmail.com>
+References: <cover.1417167599.git.viresh.kumar@linaro.org>
+	<a71abc2219d80e9b8e77599d2e60612a96bb36a9.1417167599.git.viresh.kumar@linaro.org>
+	<20141202230533.GB3432@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <7h4mtlen8f.fsf@deeprootsystems.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:55885 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbaLCJcw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 04:32:52 -0500
+Received: by mail-ob0-f171.google.com with SMTP id uz6so11163983obc.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 01:32:51 -0800 (PST)
+In-Reply-To: <20141202230533.GB3432@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-Hi Kevin, Arnd,
-
-I've been giving this some more thoughts...
-
-On Wed, Nov 26, 2014 at 9:11 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->> On Mon, Nov 24, 2014 at 9:15 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->>> On Monday 24 November 2014 21:10:05 Geert Uytterhoeven wrote:
->>>> As this minimal BSC driver isn't hardware-specific at all, I'm wondering
->>>> if there's a simpler way to do this?
->>>>   - Should the driver be renamed to "simple-bus", and match "simple-bus"?
->>>>   - Should this be moved to core code, without an explicit driver for
->>>>     "simple-bus"? I.e. should the driver core just enable runtime PM for
->>>>     all devices not bound to a driver, as they may represent buses with
->>>>     child devices that do rely on runtime PM?
->>>>
->>>> Thanks for your comments and suggestions!
->>>
->>> My understanding of simple-bus is that it's something that does
->>> not have any power-management capabilities, and I'd rather not
->>> add clocks or interrupts to it.
-
-Should I not add the interrupt to the device node, even though I do
-know the hardware block has an interrupt?
-Of course, to make use of the interrupt, you do need a hardware-specific
-driver that binds to the specific compatible name. But for now such a
-driver is overkill, as I do not need to use the interrupt.
-
-Power domains (and clocks used for power management) are different,
-as they are platform features: they may appear in any device node, even if
-the bindings for the device node don't mention them.
-Else I cannot add them to a node that's compatible with e.g. "arm,cortex-a15"
-or "arm,pl310-cache", without adding (or completely replacing them with)
-compatible names like "renesas,r8a73a4-cortex-a15" resp.
-"renesas,sh73a0-pl310-cache"?
-Hence I think they should be allowed in "simple-bus" nodes, too.
-
->>> What I think makes more sense is to have a bus driver for it
->>> in drivers/bus, remove the "simple-bus" compatibility value
->>> and have the driver take care of registering the power domain
->>> and probing the child devices using of_platform_populate on
->>> itself.
+On 3 December 2014 at 04:35, Eduardo Valentin <edubezval@gmail.com> wrote:
+> On Fri, Nov 28, 2014 at 03:14:10PM +0530, Viresh Kumar wrote:
+>> Locking around idr_alloc/idr_remove looks rather pointless as there is no race
+>> it is trying to fix. Remove it.
 >>
->> Registering power domains is already handled by the core code.
->>
->> So compared to my RFC code, I only have to
->>   1. Drop "simple-bus" from the compatible property in the .dtsi,
->>   2. Call of_platform_populate() from renesas_bsc_probe(), to
->>      register the child devices, now the core code no longer does that.
->>
->> I find it a bit strange having to add _more_ code, as the core code handles
->> registering child devices fine. Doing it from my bus driver only protects
->> against people trying to run a kernel without my bus driver included
->> (which currently works fine, as long as no PM domain or clock is involved,
->>  e.g. if the clock is forgotten in the SoC's .dtsi :-).
 >
-> I actually rather like the simple bus driver in it's current form, where
-> the device and pm-domain registration is taken care of by the
-> core. Since it's really not HW specific at all, maybe just rename it
-> simple-pm-bus or something like that?
+> Can you please elaborate on how the idr's are going to be serialize
+> without the lock?
 
-That means writing bindings for a new bus type "simple-pm-bus"?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Dropped this patch, I was wrong ..
