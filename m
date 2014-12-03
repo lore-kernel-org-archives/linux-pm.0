@@ -1,57 +1,131 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 4/4] ARM: shmobile: kzm9g-reference: Remove restart callback
-Date: Wed,  3 Dec 2014 15:17:07 +0100
-Message-ID: <1417616227-6715-5-git-send-email-geert+renesas@glider.be>
-References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:55419 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbaLCORN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 09:17:13 -0500
-In-Reply-To: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Wed, 3 Dec 2014 07:31:22 -0700
+Message-ID: <20141203143122.GH499@linaro.org>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
+ <1417541958-56907-4-git-send-email-lina.iyer@linaro.org>
+ <20141202230544.GG499@linaro.org>
+ <547ED3BD.5090209@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <547ED3BD.5090209@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Remove the restart handling hack from the kzm9g-reference case.
+On Wed, Dec 03 2014 at 02:11 -0700, Daniel Lezcano wrote:
+>On 12/03/2014 12:05 AM, Lina Iyer wrote:
+>>On Tue, Dec 02 2014 at 10:40 -0700, Lina Iyer wrote:
+>>+
+>>[...]
+>
+>[ ... ]
+>
+>>>+static int __init qcom_spm_init(void)
+>>>+{
+>>>+    int ret;
+>>>+
+>>>+    /*
+>>>+     * cpuidle driver need to registered before the cpuidle device
+>>>+     * for any cpu. Register the device for the the cpuidle driver.
+>>>+     */
+>>>+    ret =3D platform_device_register(&qcom_cpuidle_drv);
+>>>+    if (ret)
+>>>+        return ret;
+>>Stephen pointed out that we would have the platform device lying arou=
+nd
+>>on a non-QCOM device when using multi_v7_defconfig.
+>
+>Perhaps I am missing the point, but this is not supposed to happen, no=
+ ?
+>
+This would happen, since the file would compile on multi_v7 and we woul=
+d
+initialize and register this device regardless. The cpuidle-qcom.c
+driver probe would bail out looking for a matching compatible property.
+So we would not register a cpuidle driver but the device would lay
+around.
 
-Restart on DT-based sh73a0 platforms is now handled through the restart
-handler registered by the R-Mobile System Controller (SYSC) driver.
-
-This reverts commit 534547c036afad3f ("ARM: shmobile: kzm9g-reference:
-Add restart callback").
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/mach-shmobile/board-kzm9g-reference.c | 8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/arch/arm/mach-shmobile/board-kzm9g-reference.c b/arch/arm/mach-shmobile/board-kzm9g-reference.c
-index 2e82e44ab85258b7..f2ef759b6e969cc8 100644
---- a/arch/arm/mach-shmobile/board-kzm9g-reference.c
-+++ b/arch/arm/mach-shmobile/board-kzm9g-reference.c
-@@ -39,13 +39,6 @@ static void __init kzm_init(void)
- #endif
- }
- 
--#define RESCNT2 IOMEM(0xe6188020)
--static void kzm9g_restart(enum reboot_mode mode, const char *cmd)
--{
--	/* Do soft power on reset */
--	writel((1 << 31), RESCNT2);
--}
--
- static const char *kzm9g_boards_compat_dt[] __initdata = {
- 	"renesas,kzm9g-reference",
- 	NULL,
-@@ -57,6 +50,5 @@ DT_MACHINE_START(KZM9G_DT, "kzm9g-reference")
- 	.init_early	= shmobile_init_delay,
- 	.init_machine	= kzm_init,
- 	.init_late	= shmobile_init_late,
--	.restart	= kzm9g_restart,
- 	.dt_compat	= kzm9g_boards_compat_dt,
- MACHINE_END
--- 
-1.9.1
-
+>>So instead of doing this here, we could do this in the probe..
+>>
+>>if (!cpuidle_get_driver()) {
+>>         int ret =3D platform_device_register(&qcom_cpuidle_drv);
+>>         if (ret)
+>>                 return ret;
+>>}
+>>
+>>Would that be okay?
+>>
+>>The successful probe indicates that we are on a QCOM SoC, and we have=
+ not
+>>registered a cpuidle_driver before this.
+>>
+>>Thanks,
+>>Lina
+>>
+>>>+
+>>>+    return platform_driver_register(&spm_driver);
+>>>+}
+>>>+module_init(qcom_spm_init);
+>>>+
+>>>+MODULE_LICENSE("GPL v2");
+>>>+MODULE_DESCRIPTION("SAW power controller driver");
+>>>+MODULE_ALIAS("platform:saw");
+>>>diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
+>>>new file mode 100644
+>>>index 0000000..d9a56d7
+>>>--- /dev/null
+>>>+++ b/include/soc/qcom/pm.h
+>>>@@ -0,0 +1,31 @@
+>>>+/*
+>>>+ * Copyright (c) 2009-2014, The Linux Foundation. All rights reserv=
+ed.
+>>>+ *
+>>>+ * This software is licensed under the terms of the GNU General Pub=
+lic
+>>>+ * License version 2, as published by the Free Software Foundation,=
+ and
+>>>+ * may be copied, distributed, and modified under those terms.
+>>>+ *
+>>>+ * This program is distributed in the hope that it will be useful,
+>>>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>>>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>>>+ * GNU General Public License for more details.
+>>>+ *
+>>>+ */
+>>>+
+>>>+#ifndef __QCOM_PM_H
+>>>+#define __QCOM_PM_H
+>>>+
+>>>+enum pm_sleep_mode {
+>>>+    PM_SLEEP_MODE_STBY,
+>>>+    PM_SLEEP_MODE_RET,
+>>>+    PM_SLEEP_MODE_SPC,
+>>>+    PM_SLEEP_MODE_PC,
+>>>+    PM_SLEEP_MODE_NR,
+>>>+};
+>>>+
+>>>+struct qcom_cpu_pm_ops {
+>>>+    int (*standby)(void *data);
+>>>+    int (*spc)(void *data);
+>>>+};
+>>>+
+>>>+#endif  /* __QCOM_PM_H */
+>>>--
+>>>2.1.0
+>>>
+>
+>
+>--=20
+> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+>
+>Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+><http://twitter.com/#!/linaroorg> Twitter |
+><http://www.linaro.org/linaro-blog/> Blog
+>
