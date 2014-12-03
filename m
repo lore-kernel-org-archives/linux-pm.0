@@ -1,85 +1,78 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Subject: Re: [PATCH RFC] PM / Runtime: Better support for nested irq_safe
- drivers
-Date: Wed, 3 Dec 2014 09:45:43 +0200
-Message-ID: <547EBFA7.2060005@ti.com>
-References: <1417551543-15009-1-git-send-email-jsarha@ti.com> <2710424.RMSWoOIU7o@vostro.rjw.lan> <547E332D.3060405@ti.com> <3160452.2AXUHE51NB@vostro.rjw.lan>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH RFC v2 08/12] soc: samsung: pm_domain: Add support for
+ parent power domain
+Date: Wed, 03 Dec 2014 09:36:27 +0100
+Message-ID: <547ECB8B.3040905@samsung.com>
+References: <1416833572-6880-1-git-send-email-amit.daniel@samsung.com>
+ <1416834256-11225-1-git-send-email-amit.daniel@samsung.com>
+ <1416834256-11225-8-git-send-email-amit.daniel@samsung.com>
+ <CAPDyKFoBnViXQF=wDYp0x4gaOO4ht3a8KBeY6=k6_Zkkav28pQ@mail.gmail.com>
+ <CADGdYn4Vi2wV1y3Y0cTbPL0cFR2EEV7jT=82fHNYu+=xwZ7mBA@mail.gmail.com>
+ <CAMuHMdX+rcmUM+_4c72b16Zs_c5KMhO3bYSH5-AUp087cwGdeA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="pNvmjWc6tlSGwtKdGsBmAsBWQX9kn2ndC"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:56896 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbaLCHpy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Dec 2014 02:45:54 -0500
-In-Reply-To: <3160452.2AXUHE51NB@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAMuHMdX+rcmUM+_4c72b16Zs_c5KMhO3bYSH5-AUp087cwGdeA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, amit daniel kachhap <amit.daniel@samsung.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Kevin Hilman <khilman@kernel.org>, Pankaj Dubey <pankaj.dubey@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jyri Sarha <jsarha@ti.com>
-Cc: linux-pm@vger.kernel.org, pavel@ucw.cz, t-kristo@ti.com
 
---pNvmjWc6tlSGwtKdGsBmAsBWQX9kn2ndC
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-On 03/12/14 01:11, Rafael J. Wysocki wrote:
+On 2014-11-25 10:19, Geert Uytterhoeven wrote:
+> On Tue, Nov 25, 2014 at 9:57 AM, amit daniel kachhap
+> <amit.daniel@samsung.com>  wrote:
+>>>> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>>> index 00ebda1..0160bdc 100644
+>>>> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>>> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+>>>> @@ -24,6 +24,7 @@ Optional Properties:
+>>>>          - pclkN, clkN: Pairs of parent of input clock and input clock to the
+>>>>                  devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
+>>>>                  are supported currently.
+>>>> +- parents: phandle of parent power domains.
+> Why not using just "power-domains = <&pd_top>"?
+> This is consistent with how clocks refer to their parent clocks.
 
-> Second, what if the parent sets its irq_safe after the child does?
+I agree. The only question is weather exynos dts should keep using 
+samsung,power-domain
+property, or switch to generic 'power-domains' approach. I assume that 
+exynos-pm driver
+should support both.
 
-Then the behavior becomes the same as it is currently.
+>>>>   Node of a device using power domains must have a samsung,power-domain property
+>>>>   defined with a phandle to respective power domain.
+>>>> @@ -48,6 +49,7 @@ Example:
+>>>>          mfc_pd: power-domain@10044060 {
+>>>>                  compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
+>>>>                  reg = <0x10044060 0x20>;
+>>>> +               parents = <&pd_top>;
+>>>>                  #power-domain-cells = <0>;
+>>>>          };
+>>> This seems like a good and generic approach to describe that a PM
+>>> domain could have a parent. I would suggest to rename it, such it
+>>> reflects its a PM domain binding though.
+>> I am not sure if this is generic. I guess PD's represented like below
+>> are more generic.
+>> PD1 {
+>>          PD2 {
+>>                  PD3 {
+>>                  };
+>>          };
+>> };
+> Such a representation is not always possible.
+> If you have one power-controller for a hierarchy of PM domains, you can
+> use it.
+> If you have multiple power-controllers, the power controller nodes are at the
+> same level in DT, so you'll have to use "power-domains" properties to link
+> them together.
 
-But isn't the probe of the parent always ran before the child? And the
-only sane place (?) to set irq_safe is in probe, after
-pm_runtime_enable. If so, it should never happen in practice that the
-parent's irq_safe is called after the child's.
+I agree. I will send updated patch for this purpose for existing exynos4 
+power domain driver.
 
->> If the thing I am doing somehow fundamentally flawed, I 	apologize.=20
->> However, this was an RFC patch after all and the problem I am trying t=
-o=20
->> solve is real.
->=20
-> Well, the whole irq_safe concept if somewhat rough and fragile (for exa=
-mple,
-> it doesn't play well with bus type callbacks that may sleep) and I'm no=
-t
-
-I don't know enough of the PM to understand what you mean with above,
-but isn't it a bug to set a device irq-safe if it may need sleeping
-callbacks? Or do you mean that the device driver may not know if such
-sleeping callbacks happen or not?
-
-> sure if making it more fragile is a good idea.
-
-Is there something we can do to fix it? Conceptually I don't see any
-issues with it, but I'm probably only looking at it from the platform
-device point of view.
-
- Tomi
-
-
-
---pNvmjWc6tlSGwtKdGsBmAsBWQX9kn2ndC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUfr+nAAoJEPo9qoy8lh71vesQAK6tkyTEvPlfibMIsDca6Am3
-1v6qbUpdfDQwa2LCHwjJyl0hTodfRH40JOhsnoosbjsYDlBJnIA8UtGwRWTN/4jZ
-MK350Qcp9EBm/LVRXMkzOhupZYKYAB/8p3RcsmEF86gzujWLtNN0DMeIUUn7C40p
-2kNUwlWe7jn4NbsRtyvEHfnLBUJ769QyxmCUibWpAkyhycRYyr/JQ5sOq0vpXWMD
-CWZZB5WW79VP9SLLaUZHqFxZVrKKYaHETBpPw4uD3Mvki2u/aVQ3gNhORoszJ3SP
-CMDoFXeUs07R4a4iZ9TQghCESCu/Z0t2KhfsAg3BsZP1vRrr11QZ+onhgoIERPcy
-WEu6xJjRyAFILQBi00lV6aZtEfqCTgPG5r0Oh17ABPnbd1IzuI//n91yFs/q37OJ
-9r14/z607Dhe7IXkVzLHPJXi6rwGXKKIFo2HO67J2GgthJ3r4K+VyuKJiD3eiW9G
-GU6xwly+JSw03UnzAVBasscgl9Ehv+6olt1GPM7km1Bf+pXb/mUF9bUlpbKuHzSe
-XV1QOhJzSF9ixKffU88l687v/GUoJbZw0yrMoelwfqQpfiBFUycXAU0s+WrwZ7WK
-jVjsSI2vcRGdCHFIGV4psdnK9PYFrCZEQwHwiVLDzDE3yCt5KuhMwOZNyuw9r3pe
-auPv7eb0qUbMk13vfxnv
-=RLt/
------END PGP SIGNATURE-----
-
---pNvmjWc6tlSGwtKdGsBmAsBWQX9kn2ndC--
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
