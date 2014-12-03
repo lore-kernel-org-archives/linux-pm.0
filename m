@@ -1,222 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] media / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 03:13:55 +0100
-Message-ID: <4139875.fkJ48z9AaU@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] hsi / OMAP / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 3 Dec 2014 02:57:16 +0100
+Message-ID: <20141203015716.GA29215@earth.universe>
+References: <6319344.XVfdONE5DJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-media@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, Kamil Debski <k.debski@samsung.com>, Philipp Zabel <p.zabel@pengutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:59425 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbaLCB5W (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Dec 2014 20:57:22 -0500
+Content-Disposition: inline
+In-Reply-To: <6319344.XVfdONE5DJ@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-omap@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-depending on CONFIG_PM_RUNTIME may now be changed to depend on
-CONFIG_PM.
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
-replaced with CONFIG_PM too.
+Hi,
 
-Make these changes everywhere under drivers/media/.
+On Wed, Dec 03, 2014 at 03:02:24AM +0100, Rafael J. Wysocki wrote:
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+>=20
+> Do that for the omap_ssi driver.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
-Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-PM_SLEEP is selected) which is only in linux-next at the moment (via the
-linux-pm tree).
+-- Sebastian
 
-Please let me know if it is OK to take this one into linux-pm.
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
----
- drivers/media/platform/coda/coda-common.c       |    4 ++--
- drivers/media/platform/exynos4-is/fimc-core.c   |    6 +++---
- drivers/media/platform/exynos4-is/fimc-is-i2c.c |    2 +-
- drivers/media/platform/exynos4-is/fimc-lite.c   |    2 +-
- drivers/media/platform/exynos4-is/mipi-csis.c   |    2 +-
- drivers/media/platform/s5p-jpeg/jpeg-core.c     |    4 ++--
- drivers/media/platform/s5p-mfc/s5p_mfc.c        |    2 +-
- drivers/media/platform/s5p-mfc/s5p_mfc_pm.c     |   10 ++++------
- 8 files changed, 15 insertions(+), 17 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Index: linux-pm/drivers/media/platform/s5p-jpeg/jpeg-core.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/s5p-jpeg/jpeg-core.c
-+++ linux-pm/drivers/media/platform/s5p-jpeg/jpeg-core.c
-@@ -2632,7 +2632,7 @@ static int s5p_jpeg_remove(struct platfo
- 	return 0;
- }
- 
--#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
-+#ifdef CONFIG_PM
- static int s5p_jpeg_runtime_suspend(struct device *dev)
- {
- 	struct s5p_jpeg *jpeg = dev_get_drvdata(dev);
-@@ -2682,7 +2682,7 @@ static int s5p_jpeg_runtime_resume(struc
- 
- 	return 0;
- }
--#endif /* CONFIG_PM_RUNTIME || CONFIG_PM_SLEEP */
-+#endif /* CONFIG_PM */
- 
- #ifdef CONFIG_PM_SLEEP
- static int s5p_jpeg_suspend(struct device *dev)
-Index: linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/s5p-mfc/s5p_mfc.c
-+++ linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc.c
-@@ -1302,7 +1302,7 @@ static int s5p_mfc_resume(struct device
- }
- #endif
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int s5p_mfc_runtime_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-Index: linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
-+++ linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
-@@ -13,9 +13,7 @@
- #include <linux/clk.h>
- #include <linux/err.h>
- #include <linux/platform_device.h>
--#ifdef CONFIG_PM_RUNTIME
- #include <linux/pm_runtime.h>
--#endif
- #include "s5p_mfc_common.h"
- #include "s5p_mfc_debug.h"
- #include "s5p_mfc_pm.h"
-@@ -67,7 +65,7 @@ int s5p_mfc_init_pm(struct s5p_mfc_dev *
- 	}
- 
- 	atomic_set(&pm->power, 0);
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	pm->device = &dev->plat_dev->dev;
- 	pm_runtime_enable(pm->device);
- #endif
-@@ -93,7 +91,7 @@ void s5p_mfc_final_pm(struct s5p_mfc_dev
- 	}
- 	clk_unprepare(pm->clock_gate);
- 	clk_put(pm->clock_gate);
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	pm_runtime_disable(pm->device);
- #endif
- }
-@@ -120,7 +118,7 @@ void s5p_mfc_clock_off(void)
- 
- int s5p_mfc_power_on(void)
- {
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	return pm_runtime_get_sync(pm->device);
- #else
- 	atomic_set(&pm->power, 1);
-@@ -130,7 +128,7 @@ int s5p_mfc_power_on(void)
- 
- int s5p_mfc_power_off(void)
- {
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	return pm_runtime_put_sync(pm->device);
- #else
- 	atomic_set(&pm->power, 0);
-Index: linux-pm/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-+++ linux-pm/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-@@ -81,7 +81,7 @@ static int fimc_is_i2c_remove(struct pla
- 	return 0;
- }
- 
--#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
-+#ifdef CONFIG_PM
- static int fimc_is_i2c_runtime_suspend(struct device *dev)
- {
- 	struct fimc_is_i2c *isp_i2c = dev_get_drvdata(dev);
-Index: linux-pm/drivers/media/platform/exynos4-is/fimc-lite.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-lite.c
-+++ linux-pm/drivers/media/platform/exynos4-is/fimc-lite.c
-@@ -1588,7 +1588,7 @@ err_clk_put:
- 	return ret;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int fimc_lite_runtime_resume(struct device *dev)
- {
- 	struct fimc_lite *fimc = dev_get_drvdata(dev);
-Index: linux-pm/drivers/media/platform/exynos4-is/mipi-csis.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/exynos4-is/mipi-csis.c
-+++ linux-pm/drivers/media/platform/exynos4-is/mipi-csis.c
-@@ -978,7 +978,7 @@ static int s5pcsis_resume(struct device
- }
- #endif
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int s5pcsis_runtime_suspend(struct device *dev)
- {
- 	return s5pcsis_pm_suspend(dev, true);
-Index: linux-pm/drivers/media/platform/exynos4-is/fimc-core.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-core.c
-+++ linux-pm/drivers/media/platform/exynos4-is/fimc-core.c
-@@ -832,7 +832,7 @@ err:
- 	return -ENXIO;
- }
- 
--#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
-+#ifdef CONFIG_PM
- static int fimc_m2m_suspend(struct fimc_dev *fimc)
- {
- 	unsigned long flags;
-@@ -871,7 +871,7 @@ static int fimc_m2m_resume(struct fimc_d
- 
- 	return 0;
- }
--#endif /* CONFIG_PM_RUNTIME || CONFIG_PM_SLEEP */
-+#endif /* CONFIG_PM */
- 
- static const struct of_device_id fimc_of_match[];
- 
-@@ -1039,7 +1039,7 @@ err_sclk:
- 	return ret;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int fimc_runtime_resume(struct device *dev)
- {
- 	struct fimc_dev *fimc =	dev_get_drvdata(dev);
-Index: linux-pm/drivers/media/platform/coda/coda-common.c
-===================================================================
---- linux-pm.orig/drivers/media/platform/coda/coda-common.c
-+++ linux-pm/drivers/media/platform/coda/coda-common.c
-@@ -1980,7 +1980,7 @@ static int coda_probe(struct platform_de
- 
- 	/*
- 	 * Start activated so we can directly call coda_hw_init in
--	 * coda_fw_callback regardless of whether CONFIG_PM_RUNTIME is
-+	 * coda_fw_callback regardless of whether CONFIG_PM is
- 	 * enabled or whether the device is associated with a PM domain.
- 	 */
- 	pm_runtime_get_noresume(&pdev->dev);
-@@ -2013,7 +2013,7 @@ static int coda_remove(struct platform_d
- 	return 0;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int coda_runtime_resume(struct device *dev)
- {
- 	struct coda_dev *cdev = dev_get_drvdata(dev);
+iQIcBAEBCgAGBQJUfm37AAoJENju1/PIO/qaZBQP/1W0BOz17Rq63nUFxXXBqJUo
+8/Xr5Jteme/iS7VbjK30ya1Dv7bogM2gTJOo+BNILVhb3L8rZQilsC+CyPNUubtd
+lmccFgtSeusC0X956oZ5w7N9C+mN+qYrOXlby+/5qvLUuxTHBHKVS6tJPJOBPFGh
+WsCKFDWte1P/Yzqh8baxXdjLa6ul4FEF+U7eBcfqyf/2va/6xPvG6q1zIBuX1O+j
+fO7nsO1biGvyFXgTLsuwU2CKETdULlzjI/SAJgRfifwCdtoQ+U9hNI/aYovrbkpy
+ys/KjBhDlzL6BP+R1zxpS4QBOThLf8+9UXceuCuxIF5s3qamBDyI+MN6+HgHVl7n
+Kxb8/HcCWgYclB/RHPBMl7nFqnbhhmdw7kDWqaekVOYGHjkEJa5DTKHN2ubqXHmX
+K5HrPs6gpuD4BcXnana52hgVSrBCdh+jPlQz5SDzJtlR+daFzTuIt/T08yBXkpkT
+o2mDsMIxshHxlhr2DNJM5reN/nmQdv+WPJ7kB7B7hlLRpTskXo+O+q3YVsbjvu4U
+E0ZaxUmQD5uyZK9R1w3+rKh56r5Hh/Y1LdbId66zLxQ5DXCWv2Iq+eblSdSaQ9q6
+fIAY9M+ZW2U24ux7dVF8vr6GC579Lx85nrKeondrW1evc/YxXE82JXXf8zScJJFv
+NAzsH0mA64IWOLBCTOHX
+=jA9Q
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
