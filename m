@@ -1,67 +1,97 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 19/26] cpu_cooling: find max level during device
- registration
-Date: Wed, 3 Dec 2014 09:40:10 -0400
-Message-ID: <20141203134008.GA4325@developer>
-References: <cover.1417167599.git.viresh.kumar@linaro.org>
- <e2cb864949d833ab30c24b2bf039c682c8820040.1417167599.git.viresh.kumar@linaro.org>
- <20141202233936.GB3969@developer>
- <CAKohpomo_kqvubwoJ2BUnOvAmCk8XgnP_5x-ws55G0Uf_F1OnA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f178.google.com ([209.85.216.178]:34893 "EHLO
-	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbaLCNkT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 08:40:19 -0500
-Received: by mail-qc0-f178.google.com with SMTP id b13so12483475qcw.9
-        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 05:40:18 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAKohpomo_kqvubwoJ2BUnOvAmCk8XgnP_5x-ws55G0Uf_F1OnA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v6 2/7] ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev() for pm_clk setup
+Date: Wed,  3 Dec 2014 14:41:42 +0100
+Message-ID: <1417614107-5985-3-git-send-email-geert+renesas@glider.be>
+References: <1417614107-5985-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1417614107-5985-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
+Use the just introduced genpd attach/detach callbacks to register the
+devices' module clocks, instead of doing it directly, to make it
+DT-proof.
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+v6:
+  - No changes,
+v5:
+  - Update for {at,de}tach_dev() taking a generic_pm_domain pointer
+    again,
+v4:
+  - Add Reviewed-by,
+  - Add missing pm_clk_create()/pm_clk_destroy() calls,
+  - Update for attach_dev() returning an error code again,
+v3:
+  - Update for callback signature changes,
+v2:
+  - New.
+---
+ arch/arm/mach-shmobile/pm-rmobile.c | 34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
 
-On Wed, Dec 03, 2014 at 10:27:43AM +0530, Viresh Kumar wrote:
-> On 3 December 2014 at 05:09, Eduardo Valentin <edubezval@gmail.com> wrote:
-> > Could you please update me regarding the story behind the opp del patch
-> > set?
-> >
-> > http://permalink.gmane.org/gmane.linux.power-management.general/53348
->=20
-> Its merged by Rafael, should be in next now.
-
-OK. Good. But does it mean we can remove OPPs after cpufreq
-registration? Meaning, is the cpufreq table changing over time?
-
-
-BR,
-
-Eduardo Valentin
-
-
---mYCpIKhGyMATD0i+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUfxKvAAoJEMLUO4d9pOJWluIH/10eCCOTYUOsquMD1bbPlOEU
-1nZXdSrcdXwndmtbUhIe941R1ykPaeod0UbRj4lVH9o4DzqiIbqWLx0U7Shz4HX8
-Embvwj5wbQX1c8dEQ1GzHK9qJgS9F+Esbi/HXoNjOGoKSNEj4J07CgU/osuLwlf1
-SST6VDh8b/M1H84Y7XfwfZKud85NEWhvc7/xId7x7gysT04dFzwMUPsd7HN6rmTh
-+mfEQX5tvVzoyzJelOsnDYAhk3wNSYoBq35Fyo8y2ZKrxomUGoKv5Wel3lyonBGP
-6QFc+jDv+UFyjQqTpRPFRgoHORI4bDid3BKGYihMb7Mlzx+zZmpCd0sdgbwId+M=
-=eG4z
------END PGP SIGNATURE-----
-
---mYCpIKhGyMATD0i+--
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 717e6413d29cb998..168046c355fc8368 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -101,6 +101,36 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
+ 	return true;
+ }
+ 
++static int rmobile_pd_attach_dev(struct generic_pm_domain *domain,
++				 struct device *dev)
++{
++	int error;
++
++	error = pm_clk_create(dev);
++	if (error) {
++		dev_err(dev, "pm_clk_create failed %d\n", error);
++		return error;
++	}
++
++	error = pm_clk_add(dev, NULL);
++	if (error) {
++		dev_err(dev, "pm_clk_add failed %d\n", error);
++		goto fail;
++	}
++
++	return 0;
++
++fail:
++	pm_clk_destroy(dev);
++	return error;
++}
++
++static void rmobile_pd_detach_dev(struct generic_pm_domain *domain,
++				  struct device *dev)
++{
++	pm_clk_destroy(dev);
++}
++
+ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ {
+ 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+@@ -112,6 +142,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
+ 	genpd->power_off		= rmobile_pd_power_down;
+ 	genpd->power_on			= rmobile_pd_power_up;
++	genpd->attach_dev		= rmobile_pd_attach_dev;
++	genpd->detach_dev		= rmobile_pd_detach_dev;
+ 	__rmobile_pd_power_up(rmobile_pd, false);
+ }
+ 
+@@ -130,8 +162,6 @@ void rmobile_add_device_to_domain_td(const char *domain_name,
+ 	struct device *dev = &pdev->dev;
+ 
+ 	__pm_genpd_name_add_device(domain_name, dev, td);
+-	if (pm_clk_no_clocks(dev))
+-		pm_clk_add(dev, NULL);
+ }
+ 
+ void rmobile_add_devices_to_domains(struct pm_domain_device data[],
+-- 
+1.9.1
