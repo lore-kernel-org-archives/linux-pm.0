@@ -1,38 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Add ability for PXA2xx CPUFreq to be compiled as a module or, not at all
-Date: Wed, 03 Dec 2014 03:21:55 +0100
-Message-ID: <1732555.JfkHq48zY8@vostro.rjw.lan>
-References: <5472AD1E.8010005@tul.cz> <CAOh2x==+amATsYbASxr8D6z5x3UOxySLY_kNXzDvoSB4_tycAA@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: Re: [PATCH] input / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 03 Dec 2014 11:02:21 +0900
+Message-ID: <001001d00e9d$2cbfdc50$863f94f0$%han@samsung.com>
+References: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56762 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751293AbaLCCAb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 21:00:31 -0500
-In-Reply-To: <CAOh2x==+amATsYbASxr8D6z5x3UOxySLY_kNXzDvoSB4_tycAA@mail.gmail.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:63797 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbaLCCBF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Dec 2014 21:01:05 -0500
+In-reply-to: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
+Content-language: ko
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Petr Cvek <petr.cvek@tul.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Dmitry Torokhov' <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, 'Paul Gortmaker' <paul.gortmaker@windriver.com>, 'Ferruh Yigit' <fery@cypress.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Jingoo Han' <jg1.han@samsung.com>
 
-On Tuesday, November 25, 2014 04:35:27 PM Viresh Kumar wrote:
-> On Mon, Nov 24, 2014 at 9:29 AM, Petr Cvek <petr.cvek@tul.cz> wrote:
-> > Add ability for PXA2xx CPUFreq to be compiled as a module or not at all.
-> >
-> > Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm | 8 ++++++++
-> >  drivers/cpufreq/Makefile    | 3 +--
-> >  2 files changed, 9 insertions(+), 2 deletions(-)
+On Wednesday, December 03, 2014 11:09 AM, Rafael J. Wysocki wrote:
 > 
-> Make sure you cc Maintainers to get quick responses.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> replaced with CONFIG_PM too.
+> 
+> Make these changes in 2 files under drivers/input/.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Patch queued up for 3.19-rc1, thanks!
+Reviewed-by: Jingoo Han <jg1.han@samsung.com>
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best regards,
+Jingoo Han
+
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
+> 
+> ---
+>  drivers/input/keyboard/samsung-keypad.c  |    2 +-
+>  drivers/input/touchscreen/cyttsp4_core.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/input/keyboard/samsung-keypad.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/keyboard/samsung-keypad.c
+> +++ linux-pm/drivers/input/keyboard/samsung-keypad.c
+> @@ -463,7 +463,7 @@ static int samsung_keypad_remove(struct
+>  	return 0;
+>  }
+> 
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int samsung_keypad_runtime_suspend(struct device *dev)
+>  {
+>  	struct platform_device *pdev = to_platform_device(dev);
+> Index: linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/touchscreen/cyttsp4_core.c
+> +++ linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> @@ -1716,7 +1716,7 @@ static void cyttsp4_free_si_ptrs(struct
+>  	kfree(si->btn_rec_data);
+>  }
+> 
+> -#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
+> +#ifdef CONFIG_PM
+>  static int cyttsp4_core_sleep(struct cyttsp4 *cd)
+>  {
+>  	int rc;
+
