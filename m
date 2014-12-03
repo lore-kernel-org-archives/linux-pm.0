@@ -1,117 +1,74 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] iio / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 03 Dec 2014 08:18:11 -0800
-Message-ID: <1417623491.2043.320.camel@spandruv-desktop.jf.intel.com>
-References: <202529361.GBbZ7zGgn8@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH RFC] PM / Runtime: Better support for nested irq_safe
+ drivers
+Date: Wed, 3 Dec 2014 13:12:45 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1412031309520.1538-100000@iolanthe.rowland.org>
+References: <547F3210.2010604@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <202529361.GBbZ7zGgn8@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-iio@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Hartmut Knaack <knaack.h@gmx.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:55420 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751273AbaLCSMr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 13:12:47 -0500
+In-Reply-To: <547F3210.2010604@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, pavel@ucw.cz, t-kristo@ti.com
 
-On Wed, 2014-12-03 at 03:06 +0100, Rafael J. Wysocki wrote: 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/iio/.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+On Wed, 3 Dec 2014, Tomi Valkeinen wrote:
 
-> ---
+> On 03/12/14 17:22, Alan Stern wrote:
+> > On Tue, 2 Dec 2014, Jyri Sarha wrote:
+> > 
+> >> Is there something seriously wrong with the code part too? Or is this 
+> >> just a matter of updating the comment (sorry that I missed that)?
+> >>
+> >> If the thing I am doing somehow fundamentally flawed, I 	apologize. 
+> >> However, this was an RFC patch after all and the problem I am trying to 
+> >> solve is real.
+> > 
+> > What exactly _is_ the problem you are trying to solve?
+> > 
+> > When I first wrote the irq_safe stuff, I considered doing something 
+> > like what you want.  But there was no demand for it at the time, and 
+> > leaving it out seemed simpler and safer.
+> > 
+> > However, if you have a genuine use case then I don't object to allowing
+> > parents of irq-safe devices to enter runtime suspend, provided the
+> > parents are also irq-safe.
 > 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
+> OMAP Display subsystem hardware has one main module (dss) and multiple
+> submodules (dispc being the important one here). The submodules require
+> the main module to be enabled and configured to work. These are modeled
+> as a dss parent platform device, and a number of child platform devices.
 
-There are some other drivers using this define, we need to change all
-those.
+Although you didn't say so, it sounds like you want the dss device to 
+go into runtime suspend whenever it isn't needed by any of the child 
+devices.
 
-Thanks,
-Srinivas
+> The DRM driver for OMAP (omapdrm uses the dispc device, and uses runtime
+> PM to control dispc's power state. Unfortunately on some cases omapdrm
+> wants to access the hardware from atomic context, and needs to enable
+> the dispc first.
+> 
+> omapdrm could be changed not to touch the hardware from atomic context,
+> but that is a big change, requiring rewrite of its core logic. I hope we
+> get that done some day, as it would be a performance boost also. But as
+> for today, omapdrm will crash in some cases when it happens to call
+> runtime_get from atomic context.
+> 
+> So... If what's proposed in this patch is messy and risky, I think we
+> should skip it and try to change omapdrm as soon as we manage to. If so,
+> I'd still be interested to hear what problems this might cause, as we're
+> planning to apply it to our internal tree to fix the issue with omapdrm.
+> 
+> But as the functionality in this patch sounded sane and something which
+> could be usable for others also, we wanted to try this approach.
 
-> 
-> ---
->  drivers/iio/accel/bmc150-accel.c |    4 ++--
->  drivers/iio/accel/kxcjk-1013.c   |    4 ++--
->  drivers/iio/gyro/bmg160.c        |    4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> Index: linux-pm/drivers/iio/accel/bmc150-accel.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/accel/bmc150-accel.c
-> +++ linux-pm/drivers/iio/accel/bmc150-accel.c
-> @@ -510,7 +510,7 @@ static int bmc150_accel_get_bw(struct bm
->  	return -EINVAL;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmc150_accel_get_startup_times(struct bmc150_accel_data *data)
->  {
->  	int i;
-> @@ -1349,7 +1349,7 @@ static int bmc150_accel_resume(struct de
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmc150_accel_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> Index: linux-pm/drivers/iio/accel/kxcjk-1013.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/accel/kxcjk-1013.c
-> +++ linux-pm/drivers/iio/accel/kxcjk-1013.c
-> @@ -358,7 +358,7 @@ static int kxcjk1013_chip_init(struct kx
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int kxcjk1013_get_startup_times(struct kxcjk1013_data *data)
->  {
->  	int i;
-> @@ -1357,7 +1357,7 @@ static int kxcjk1013_resume(struct devic
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int kxcjk1013_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> Index: linux-pm/drivers/iio/gyro/bmg160.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/gyro/bmg160.c
-> +++ linux-pm/drivers/iio/gyro/bmg160.c
-> @@ -237,7 +237,7 @@ static int bmg160_chip_init(struct bmg16
->  
->  static int bmg160_set_power_state(struct bmg160_data *data, bool on)
->  {
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  	int ret;
->  
->  	if (on)
-> @@ -1164,7 +1164,7 @@ static int bmg160_resume(struct device *
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmg160_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> 
+It seems reasonable to me.  But Rafael is the person you need to 
+convince.
+
+Alan Stern
+
