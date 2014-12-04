@@ -1,77 +1,73 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/4] PM: Drop the SET_PM_RUNTIME_PM_OPS() macro
-Date: Thu, 4 Dec 2014 11:04:20 +0100
-Message-ID: <CAPDyKFr_WEbeHLY9Q03PxpMnOwVAaj1PN28pvU6d-WoO+ocAgA@mail.gmail.com>
-References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
-	<3484329.phAPviVnbd@vostro.rjw.lan>
-	<CAPDyKFoZmCYYNAGfNzwwEj=jk9wrfCKoxqQ4p=KStADSK1suCg@mail.gmail.com>
-	<2647870.gu06V1GGvo@vostro.rjw.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/4] ARM: shmobile: R-Mobile: Add SYSC restart handler
+Date: Thu, 04 Dec 2014 11:08:04 +0100
+Message-ID: <3671800.E1ZjeAe67g@wuerfel>
+References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be> <1417616227-6715-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f42.google.com ([209.85.218.42]:52057 "EHLO
-	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753723AbaLDKEW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 05:04:22 -0500
-Received: by mail-oi0-f42.google.com with SMTP id v63so12164810oia.29
-        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2014 02:04:21 -0800 (PST)
-In-Reply-To: <2647870.gu06V1GGvo@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1417616227-6715-2-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 3 December 2014 at 23:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, December 03, 2014 03:15:49 PM Ulf Hansson wrote:
->> On 27 November 2014 at 01:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > The SET_PM_RUNTIME_PM_OPS() and SET_RUNTIME_PM_OPS() macros are
->> > identical except that one of them is not empty for CONFIG_PM set,
->> > while the other one is not empty for CONFIG_PM_RUNTIME set,
->> > respectively.
->> >
->> > However, after commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
->> > PM_SLEEP is selected) PM_RUNTIME is always set if PM is set, so one
->> > of these macros is now redundant.
->> >
->> > For this reason, drop SET_PM_RUNTIME_PM_OPS() and replace it with
->> > SET_RUNTIME_PM_OPS() everywhere.
->>
->> Hi Rafael,
->>
->> Apparently, I have queued an mmc patch in my mmc tree, which means one
->> mmc driver starts using the SET_PM_RUNTIME_PM_OPS macro. It should
->> cause a build error in linux-next with @subject patch.
->>
->> I have shared that patch through an immutable branch, I have also
->> checked potential conflicts and it shouldn't be any problems to pull
->> that in to your tree. Then you can fix $subject patch by also
->> converting the mmc driver to use SET_RUNTIME_PM_OPS macro.
->>
->> The branch is available at:
->> git://git.linaro.org/people/ulf.hansson/mmc.git mmc_for_linux_pm
->
-> Thanks for letting me know!
->
-> What about adding the following line to the $subject patch instead:
->
-> #define SET_PM_RUNTIME_PM_OPS   SET_RUNTIME_PM_OPS
->
-> and fixing things up when all has been merged?
+On Wednesday 03 December 2014 15:17:04 Geert Uytterhoeven wrote:
+> Extend the PM domain platform driver for the R-Mobile System
+> Controller (SYSC) to register a restart handler, to be used on various
+> Renesas ARM SoCs (e.g. R-Mobile A1 (r8a7740) and APE6 (r8a73a4), and
+> SH-Mobile AP4 (sh7372) and AG5 (sh73a0)).
+> 
+> Note that this supports DT-based platforms only.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-That's an option.
+Is this one of the typical system controllers that contains lots of
+random registers? Maybe you could mark it as "syscon" in DT and just
+use the existing drivers/power/reset/syscon-reboot.c driver?
 
-On the other hand we will have a window of new users of
-SET_PM_RUNTIME_PM_OPS, during the next release cycle. Or are you
-saying that we should send fixes for the rc which takes care of the
-removal of it?
+> +static void __iomem *sysc_base2;
+> +
+> +static void rmobile_sysc_restart(enum reboot_mode reboot_mode, const char *cmd)
+> +{
+> +	pr_debug("%s %u/%s\n", __func__, reboot_mode, cmd);
+> +
+> +	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
+> +}
+> +
+> +static int rmobile_sysc_probe(struct platform_device *pdev)
+> +{
+> +	dev_dbg(&pdev->dev, "%s\n", __func__);
+> +
+> +	sysc_base2 = of_iomap(pdev->dev.of_node, 1);
+> +	if (!sysc_base2)
+> +		return -ENODEV;
+> +
+> +	arm_pm_restart = rmobile_sysc_restart;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id rmobile_sysc_of_match[] = {
+> +	{ .compatible = "renesas,sysc-rmobile", },
+> +	{ /* sentinel */ }
+> +};
+> +
+> +static struct platform_driver rmobile_sysc_driver = {
+> +	.probe = rmobile_sysc_probe,
+> +	.driver = {
+> +		.name = "rmobile_sysc",
+> +		.of_match_table = rmobile_sysc_of_match,
+> +	},
+> +};
+> +
+> +module_platform_driver(rmobile_sysc_driver);
 
-Kind regards
-Uffe
+This clearly looks much better than the previous implementation, so that
+is great. If you can decouple it from the rest of this file, either through
+syscon or by asserting that sysc_base2 is not going to be needed for
+anything else, how about moving the new code to a standalon driver in
+drivers/power/reset?
 
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+	Arnd
