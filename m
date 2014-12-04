@@ -1,49 +1,118 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v6 3/7] ARM: shmobile: R-Mobile: Enable module clocks if !CONFIG_PM_RUNTIME
-Date: Thu, 4 Dec 2014 14:51:19 +0100
-Message-ID: <CAMuHMdVsuCnqwEoP6k4iM0mnsdTiB=d7y4=EAicB_E_ZSec48Q@mail.gmail.com>
-References: <1417614107-5985-1-git-send-email-geert+renesas@glider.be>
-	<1417614107-5985-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFogROGA+MtQcGNfa052wPKxcs9cpT43NcpcyeGVFCwPoQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 4 Dec 2014 19:37:11 +0530
+Message-ID: <CAKohponP3PXd5b=YY7bpBK6FTNc5_Y7RU=X7q7dP1bYELcW6Dw@mail.gmail.com>
+References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
+	<1417692868.9037.4.camel@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFogROGA+MtQcGNfa052wPKxcs9cpT43NcpcyeGVFCwPoQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Philipp Zabel <philipp.zabel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:45286 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753937AbaLDOHM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 09:07:12 -0500
+Received: by mail-ob0-f174.google.com with SMTP id nt9so6492136obb.33
+        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2014 06:07:12 -0800 (PST)
+In-Reply-To: <1417692868.9037.4.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hi Ulf,
+Hi Lucas,
 
-On Thu, Dec 4, 2014 at 2:41 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
->> index 168046c355fc8368..6d912ce801aa88bd 100644
->> --- a/arch/arm/mach-shmobile/pm-rmobile.c
->> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
->> @@ -118,6 +118,14 @@ static int rmobile_pd_attach_dev(struct generic_pm_domain *domain,
->>                 goto fail;
->>         }
->>
->> +       if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
+On 4 December 2014 at 17:04, Lucas Stach <l.stach@pengutronix.de> wrote:
+
+>> +- opp-list@*:
+>> +  List of nodes defining performance points. Following belong to the nodes
+>> +  within the opp-lists.
+>> +
+>> +  Required properties:
+>> +  - frequency-kHz: Frequency in kHz
+>> +  - voltage-uV: voltage in micro Volts
+>> +
+>> +  Optional properties:
+>> +  - turbo-mode: Marks the volt-freq pair as turbo pair.
+>> +  - status: Marks the node enabled/disabled.
 >
-> This will require a fixup later on, since using genpd will always be
-> done for CONFIG_PM_RUNTIME (or CONFIG_PM actually) ).
+> What about devices with multiple different turbo states? We have seen
 
-Indeed. But this is queued up in a branch that doesn't have the PM unification
-yet.
+You mean that a state may or maynot be turbo at some point of time ?
 
-Gr{oetje,eeting}s,
+> CPUs that boost to different states in the x86 world, surely we will
+> encounter something like this in the ARM world too. Do we just mark them
+> all as turbo OPPs and let the driver decide what to do? If we want to
 
-                        Geert
+Maybe yes. But the good thing about binding this time is, it is expandable.
+So, if there is a future need that we can't think of today, then we can surely
+do incremental changes here.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+> keep using cpufreq-dt for as much devices as possible is it really
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Its not about cpufreq-dt alone. We maybe using other drivers as well..
+
+> sufficient to know that this is a turbo state, without knowing the
+> conditions required for activating the state?
+
+Can you elaborate more on this? If something is required and we
+know what exactly it is, then we can put up the right binding right
+now as well..
+
+>> +- opp@*:
+>> +  Operating performance point node per device. Multiple devices sharing it can
+>> +  use its phandle in their 'opp' property.
+>> +
+>> +  Required properties:
+>> +  - opp-list: phandle to opp-list defined above.
+>> +
+>> +  Optional properties:
+>> +  - clocks: Tuple of clock providers
+>> +  - clock-names: Clock names
+>> +  - opp-supply: phandle to the parent supply/regulator node
+>> +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+>
+> This is extremely ill defined. It doesn't say in which direction the
+> tolerance is to be applied. Can you go below or above the OPP specified
+> voltage? For now everyone just assumes that it has to work both ways.
+
+Yes, the binding is as per today's requirements (or rather implementations).
+So it is both ways. But if everybody agrees on it, we can improve it..
+
+> Also with this binding the tolerance is applied for all OPPs, where is
+> very much depends on the individual OPP.
+
+Hmm, Not only this but the same is true for clock latency as well. We
+*may* need that per opp node sometime..
+
+> If you are going to redefine OPPs anyway I would really like to see this
+> property die and rather have a min/max voltage per OPP. That way you can
+
+Maybe yes.
+
+> properly express the OPP constraints. Most OPPs will likely allow a much
+> higher voltage than their minimal specified one, except when you go over
+> thermal limits with a high clock/voltage combination.
+
+Yes.
+
+>> +  - clock-latency: Specify the possible maximum transition latency for clock,
+>> +    in unit of nanoseconds.
+>
+> Why do we need this? This is property of the clock. We should be able to
+> handle this completely internally in the kernel. I don't know if the
+> clock API has something like this right now, but it should be a trivial
+> addition.
+
+This is not only clock's latency, but is somehow named this way. This should
+give the time it takes to change from frequency A to frequency B, which include
+change in supplies as well.. So, this probably is dvfs-latency ..
+
+This is required by cpufreq right now, but would be useful for the energy aware
+scheduler as well. So, yes this is important. Also, it might also be required to
+be per OPP...
+
+Probably we can use voltage-tolerance and clock-latency at both
+levels. list-level
+and OPP level. list level being at higher priority ?
+
+Thanks for your quick comments :)
