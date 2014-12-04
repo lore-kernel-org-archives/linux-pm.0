@@ -1,55 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6] cpufreq: Add SFI based cpufreq driver support
-Date: Thu, 4 Dec 2014 09:05:53 +0530
-Message-ID: <CAOh2x==6j6m5_5aKt=rwLPAh6_pBCBvafeCo6OKUb40zMaik-g@mail.gmail.com>
-References: <20141125054226.GA20738@intel-desktop>
-	<CAJvTdKku-ioem5iP0xz=uFkom2XMsKMrRHQ7k8vD5FFKt33P9A@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] drivers: sh / PM: Replace CONFIG_PM_RUNTIME with
+ CONFIG_PM
+Date: Thu, 4 Dec 2014 12:58:00 +0900
+Message-ID: <20141204035758.GA6346@verge.net.au>
+References: <3463511.sXIeyHdjYI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f174.google.com ([209.85.220.174]:58106 "EHLO
-	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbaLDDfy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 22:35:54 -0500
-Received: by mail-vc0-f174.google.com with SMTP id id10so7541042vcb.19
-        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 19:35:53 -0800 (PST)
-In-Reply-To: <CAJvTdKku-ioem5iP0xz=uFkom2XMsKMrRHQ7k8vD5FFKt33P9A@mail.gmail.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:41865 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbaLDD6H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 22:58:07 -0500
+Content-Disposition: inline
+In-Reply-To: <3463511.sXIeyHdjYI@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Srinidhi Kasagar <srinidhi.kasagar@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Dec 4, 2014 at 8:51 AM, Len Brown <lenb@kernel.org> wrote:
-> I like this trend:
->
-> drivers/cpufreq/sfi-cpufreq.c |  529 +++++++++++++++++++++++++++++++++++++++++
-> v1: drivers/cpufreq/sfi-cpufreq.c |  426
-> +++++++++++++++++++++++++++++++++++++++++
-> v2: drivers/cpufreq/sfi-cpufreq.c |  332
-> +++++++++++++++++++++++++++++++++++++++++
-> v3: drivers/cpufreq/sfi-cpufreq.c |  326
-> +++++++++++++++++++++++++++++++++++++++++
-> v4: drivers/cpufreq/sfi-cpufreq.c |  317
-> +++++++++++++++++++++++++++++++++++++++++
-> v5: drivers/cpufreq/sfi-cpufreq.c         |  238
-> +++++++++++++++++++++++++++++++++
-> v6: drivers/cpufreq/sfi-cpufreq.c         |  230
-> +++++++++++++++++++++++++++++++++
+On Thu, Dec 04, 2014 at 02:24:22AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/sh/pm_runtime.c.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
 
-Nice outcome of our reviews :)
+Hi Rafael,
 
-> On Tue, Nov 25, 2014 at 12:42 AM, Srinidhi Kasagar
-> <srinidhi.kasagar@intel.com> wrote:
->
->> +++ b/drivers/cpufreq/sfi-cpufreq.c
->
->> +#define SFI_FREQ_MASK          0xff00
->> +
->> +static DEFINE_PER_CPU(struct sfi_cpufreq_data *, drv_data);
->> +static DEFINE_MUTEX(performance_mutex);
->
-> I'm not sure that cpufreq is able to call driver init's in parallel,
-> so I'm not sure that the driver init needs to lock against other
-> invocations of itself.
+That is fine by me if it is fine by Geert.
 
-No. Its not possible.
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
+
+> 
+> ---
+>  drivers/sh/pm_runtime.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/sh/pm_runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/sh/pm_runtime.c
+> +++ linux-pm/drivers/sh/pm_runtime.c
+> @@ -20,7 +20,7 @@
+>  #include <linux/bitmap.h>
+>  #include <linux/slab.h>
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int sh_pm_runtime_suspend(struct device *dev)
+>  {
+>  	int ret;
+> @@ -68,7 +68,7 @@ static struct dev_pm_domain default_pm_d
+>  
+>  #define DEFAULT_PM_DOMAIN_PTR	NULL
+>  
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  static struct pm_clk_notifier_block platform_bus_notifier = {
+>  	.pm_domain = DEFAULT_PM_DOMAIN_PTR,
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
