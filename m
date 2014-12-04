@@ -1,35 +1,70 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2] power: reset: Add reset driver for R-Mobile platforms
-Date: Thu, 4 Dec 2014 08:19:53 -0800
-Message-ID: <20141204161953.GB7385@roeck-us.net>
-References: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Thu, 4 Dec 2014 09:28:34 -0700
+Message-ID: <20141204162834.GA2995@linaro.org>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
+ <2596381.rFt35NU3oS@wuerfel>
+ <548020D7.8030003@linaro.org>
+ <8625951.Wbs2MxLnhi@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Simon Horman <horms@verge.net.au>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
+In-Reply-To: <8625951.Wbs2MxLnhi@wuerfel>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 04, 2014 at 04:33:21PM +0100, Geert Uytterhoeven wrote:
-> Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
-> a restart handler to trigger a soft power-on reset through the R-Mobile
-> System Controller.
-> The priority of this restart handler is 192, to allow a watchdog driver
-> to use priority 128.
-> 
-Also because it is conreolled by devicetree and thus by definition should have
-higher priority.
+On Thu, Dec 04 2014 at 02:02 -0700, Arnd Bergmann wrote:
+>On Thursday 04 December 2014 09:52:39 Daniel Lezcano wrote:
+>> On 12/03/2014 09:35 PM, Arnd Bergmann wrote:
+>> > On Wednesday 03 December 2014 07:31:22 Lina Iyer wrote:
+>> >>>>> +static int __init qcom_spm_init(void)
+>> >>>>> +{
+>> >>>>> +    int ret;
+>> >>>>> +
+>> >>>>> +    /*
+>> >>>>> +     * cpuidle driver need to registered before the cpuidle device
+>> >>>>> +     * for any cpu. Register the device for the the cpuidle driver.
+>> >>>>> +     */
+>> >>>>> +    ret = platform_device_register(&qcom_cpuidle_drv);
+>> >>>>> +    if (ret)
+>> >>>>> +        return ret;
+>> >>>> Stephen pointed out that we would have the platform device lying around
+>> >>>> on a non-QCOM device when using multi_v7_defconfig.
+>> >>>
+>> >>> Perhaps I am missing the point, but this is not supposed to happen, no ?
+>> >>>
+>> >> This would happen, since the file would compile on multi_v7 and we would
+>> >> initialize and register this device regardless. The cpuidle-qcom.c
+>> >> driver probe would bail out looking for a matching compatible property.
+>> >> So we would not register a cpuidle driver but the device would lay
+>> >> around.
+>> >
+>> > I think the problem is registering a platform_device. I've complained
+>> > about this before, but it still seems to get copied all over the
+>> > place. Please don't do this but have a driver that looks at DT to
+>> > figure out whether to access hardware or not.
+>>
+>> We did this approach but, I can remember why, someone was complaining
+>> about it also
+>>
+>> The platform device/driver paradigm allowed us to split the arch
+>> specific parts by passing the pm ops through the platform data.
+>>
+>> Would make sense to have a single common place for the ARM arch where we
+>> initialize the platform device for cpuidle ?
+>
+>No. It's really not a device, and if you pretend that it is, you get
+>into problems like this.
 
-> Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
-> Bridge) semaphore should be acquired on systems where both the ARM and
-> SH core are in use. The driver can be extended later to support this,
-> when needed.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Arnd, the problem is that the provides function pointers to the SoC code
+that the cpuilde driver uses to call based on the idle state.
 
-Looks good to me (except for the dual empty lines ;-).
+After much discussions, we came down to using function pointers from
+translating from DT strings, other than using that again, I dont see a
+good way of achieving the ability of cpuidle driver staying a separate
+driver from the SPM driver.
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Daniel, thoughts?
