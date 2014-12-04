@@ -1,74 +1,84 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 0/4] ARM: shmobile: R-Mobile: Add SYSC restart handler
-Date: Thu, 4 Dec 2014 16:34:09 +0900
-Message-ID: <20141204073409.GG25806@verge.net.au>
-References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
+From: Ferruh Yigit <fery@cypress.com>
+Subject: Re: [PATCH] input / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Thu, 4 Dec 2014 09:58:56 +0200
+Message-ID: <54801440.2040300@cypress.com>
+References: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Magnus Damm <magnus.damm@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <8119438.MdkFLx3Wvh@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jingoo Han <jg1.han@samsung.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 03, 2014 at 03:17:03PM +0100, Geert Uytterhoeven wrote:
-> 	Hi Simon, Magnus, Arnd,
-> 
-> This patch series extends the PM domain platform driver for the R-Mobile
-> System Controller (SYSC) to register a restart handler, and removes the
-> restart handler hacks on DT-based R-Mobile A1 (r8a7740) and SH-Mobile AG5
-> (sh73a0) platforms.
-> 
-> Note that this supports DT-based platforms only. Legacy platforms keep
-> on using the restart callback in struct machine_desc.
-> 
-> This was tested on r8a7740/armadillo-multiplatform,
-> sh73a0/kzm9g-reference, and sh73a0/kzm9g-multiplatform.
-> 
-> Arnd: is this what you had in mind in your response to "[GIT PULL] Third
-> Round of Renesas ARM Based Soc Updates for v3.19"
-> (http://www.spinics.net/lists/arm-kernel/msg379348.html)?
-> 
-> Dependencies:
->   - The first two patches depend on the series "[PATCH v6 0/7] ARM:
->     shmobile: R-Mobile: DT PM domain support", as that series adds the
->     SYSC PM domain platform driver for DT-based platforms and adds the
->     SYSC device node to r8a7740.dtsi,
+On 12/03/2014 03:47 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+>
+> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> replaced with CONFIG_PM too.
+>
+> Make these changes in 2 files under drivers/input/.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-As I have queued up that series I believe I could also queue up
-the first two patches of this series. Is that worthwhile?
+Reviewed-by: Ferruh Yigit <fery@cypress.com>
 
->   - The last two patches also depend on the series "[PATCH RFC 0/7] ARM:
->     shmobile: sh73a0: DT PM domain support", as that series adds the
->     SYSC device node to sh73a0.dtsi.
-> 
-> Thanks!
-> 
-> Geert Uytterhoeven (4):
->   ARM: shmobile: R-Mobile: Add SYSC restart handler
->   ARM: shmobile: r8a7740: Remove restart callback
->   ARM: shmobile: sh73a0: Remove restart callback
->   ARM: shmobile: kzm9g-reference: Remove restart callback
-> 
->  arch/arm/mach-shmobile/board-kzm9g-reference.c |  8 -----
->  arch/arm/mach-shmobile/pm-rmobile.c            | 48 +++++++++++++++++++++++++-
->  arch/arm/mach-shmobile/setup-r8a7740.c         |  8 -----
->  arch/arm/mach-shmobile/setup-sh73a0.c          |  8 -----
->  4 files changed, 47 insertions(+), 25 deletions(-)
-> 
-> -- 
-> 1.9.1
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+
+> ---
+>
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+>
+> Please let me know if it is OK to take this one into linux-pm.
+>
+> ---
+>  drivers/input/keyboard/samsung-keypad.c  |    2 +-
+>  drivers/input/touchscreen/cyttsp4_core.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: linux-pm/drivers/input/keyboard/samsung-keypad.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/keyboard/samsung-keypad.c
+> +++ linux-pm/drivers/input/keyboard/samsung-keypad.c
+> @@ -463,7 +463,7 @@ static int samsung_keypad_remove(struct
+>       return 0;
+>  }
+>
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int samsung_keypad_runtime_suspend(struct device *dev)
+>  {
+>       struct platform_device *pdev = to_platform_device(dev);
+> Index: linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/input/touchscreen/cyttsp4_core.c
+> +++ linux-pm/drivers/input/touchscreen/cyttsp4_core.c
+> @@ -1716,7 +1716,7 @@ static void cyttsp4_free_si_ptrs(struct
+>       kfree(si->btn_rec_data);
+>  }
+>
+> -#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
+> +#ifdef CONFIG_PM
+>  static int cyttsp4_core_sleep(struct cyttsp4 *cd)
+>  {
+>       int rc;
+>
+>
+
+
+--
+
+
+regards,
+ferruh
+
+
+This message and any attachments may contain Cypress (or its subsidiaries) confidential information. If it has been received in error, please advise the sender and immediately delete this message.
