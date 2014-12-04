@@ -1,75 +1,79 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [RFC 2/2] OOM, PM: make OOM detection in the freezer path
- raceless
-Date: Thu, 4 Dec 2014 18:18:22 +0100
-Message-ID: <20141204171822.GE25001@dhcp22.suse.cz>
-References: <20141118210833.GE23640@dhcp22.suse.cz>
- <1416345006-8284-1-git-send-email-mhocko@suse.cz>
- <1416345006-8284-2-git-send-email-mhocko@suse.cz>
- <20141202220804.GS10918@htj.dyndns.org>
- <20141204141623.GA25001@dhcp22.suse.cz>
- <20141204144454.GB15219@htj.dyndns.org>
- <20141204165601.GD25001@dhcp22.suse.cz>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 4 Dec 2014 17:18:49 +0000
+Message-ID: <20141204171849.GX7712@sirena.org.uk>
+References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
+ <1417692868.9037.4.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JBABWuYasNt1mk88"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:48335 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932254AbaLDRTR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 12:19:17 -0500
 Content-Disposition: inline
-In-Reply-To: <20141204165601.GD25001@dhcp22.suse.cz>
-Sender: owner-linux-mm@kvack.org
-To: Tejun Heo <tj@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>
+In-Reply-To: <1417692868.9037.4.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, nm@ti.com, rob.herring@linaro.org, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, santosh.shilimkar@oracle.com, Rafael Wysocki <rjw@rjwysocki.net>, olof@lixom.net, devicetree@vger.kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, grant.likely@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
 
-On Thu 04-12-14 17:56:01, Michal Hocko wrote:
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index 1d55ab12792f..032be9d2a239 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -408,7 +408,7 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
->   * Number of OOM victims in flight
->   */
->  static atomic_t oom_victims = ATOMIC_INIT(0);
-> -static DECLARE_COMPLETION(oom_victims_wait);
-> +static DECLARE_WAIT_QUEUE_HEAD(oom_victims_wait);
->  
->  bool oom_killer_disabled __read_mostly;
->  static DECLARE_RWSEM(oom_sem);
-> @@ -435,7 +435,7 @@ void unmark_tsk_oom_victim(void)
->  	 * is nobody who cares.
->  	 */
->  	if (!atomic_dec_return(&oom_victims) && oom_killer_disabled)
-> -		complete_all(&oom_victims_wait);
-> +		wake_up_all(&oom_victims_wait);
->  	up_read(&oom_sem);
->  }
->  
-> @@ -464,16 +464,11 @@ bool oom_killer_disable(void)
->  		return false;
->  	}
->  
-> -	/* unmark_tsk_oom_victim is calling complete_all */
-> -	if (!oom_killer_disable)
-> -		reinit_completion(&oom_victims_wait);
-> -
->  	oom_killer_disabled = true;
-> -	count = atomic_read(&oom_victims);
->  	up_write(&oom_sem);
->  
->  	if (count)
 
-whithout this count test obviously
+--JBABWuYasNt1mk88
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> -		wait_for_completion(&oom_victims_wait);
-> +		wait_event(oom_victims_wait, atomic_read(&oom_victims));
->  
->  	return true;
->  }
--- 
-Michal Hocko
-SUSE Labs
+On Thu, Dec 04, 2014 at 12:34:28PM +0100, Lucas Stach wrote:
+> Am Donnerstag, den 04.12.2014, 16:44 +0530 schrieb Viresh Kumar:
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> > +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+
+> This is extremely ill defined. It doesn't say in which direction the
+> tolerance is to be applied. Can you go below or above the OPP specified
+> voltage? For now everyone just assumes that it has to work both ways.
+> Also with this binding the tolerance is applied for all OPPs, where is
+> very much depends on the individual OPP.
+
+Almost all specifications for voltages are done as either min/typ/max or
++/- a target voltage.
+
+> If you are going to redefine OPPs anyway I would really like to see this
+> property die and rather have a min/max voltage per OPP. That way you can
+> properly express the OPP constraints. Most OPPs will likely allow a much
+> higher voltage than their minimal specified one, except when you go over
+> thermal limits with a high clock/voltage combination.
+
+If you've got a minimum and maximum you also need to specify a target,
+generally it's going to be better to go for the target voltage which may
+not be the midpoint and is unlikely to be one of the bounds.  I do think
+it's sensible to have the option of doing both to more closely match
+datasheets.
+
+> > +  - clock-latency: Specify the possible maximum transition latency for clock,
+> > +    in unit of nanoseconds.
+
+> Why do we need this? This is property of the clock. We should be able to
+> handle this completely internally in the kernel. I don't know if the
+> clock API has something like this right now, but it should be a trivial
+> addition.
+
+Or have it be part of the clock binding at any rate.
+
+--JBABWuYasNt1mk88
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUgJd4AAoJECTWi3JdVIfQO2cH/A4xkox0tV1u0JGW0NZZ64CB
+iG9m41Xnvtdio2GQH7wyCZ6Q+w3Uz6JdKHq/LPG/EqVNzop7aa5F4v+MFD5pyAlx
+iTauzhvWV+FtrAek6SkOm/f96J5K2edYHVPygAmsXbjuID2u4dJ4TjdUB+tvT+vq
+DnrvlZZJkhtG6TgHekKBhGe1lyoDJagC4T6ZmIhewtBSZvnY8bRR7U2eQFqzz+lT
+If5B55ybdhHOvdDQ50DKc1F/4AYZzX0m79eK4YkYV1NxRVnbbzbzhKAzpI0HfZg6
+PgbYIN1PJoGvvOD4UB9u8MxS2dvgCuFx9zXJyEoXadxS6WEDW9BaArXlQLPGsM8=
+=Yk1q
+-----END PGP SIGNATURE-----
+
+--JBABWuYasNt1mk88--
