@@ -1,180 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH] SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Tue, 09 Dec 2014 22:47:47 +0100
-Message-ID: <3039454.iyzHXUp3Uj@vostro.rjw.lan>
-References: <3237237.IIIiULdqDt@vostro.rjw.lan>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: [RESEND PATCH v5 3/5] acerhdf: Use bang-bang thermal governor
+Date: Thu, 4 Dec 2014 03:40:44 -0800
+Message-ID: <20141204114044.GB100190@vmdeb7>
+References: <1398561815-22033-1-git-send-email-peter@piie.net>
+ <1417184452-11884-1-git-send-email-peter@piie.net>
+ <1417184452-11884-4-git-send-email-peter@piie.net>
+ <20141203090436.GC52608@vmdeb7>
+ <cone.1417677032.220767.18692.1000@mups>
+ <cone.1417677666.882029.18692.1000@mups>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3237237.IIIiULdqDt@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-scsi@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "James E.J. Bottomley" <JBottomley@parallels.com>, Vinayak Holikatti <vinholikatti@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:52976 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbaLIW3p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 17:29:45 -0500
+Content-Disposition: inline
+In-Reply-To: <cone.1417677666.882029.18692.1000@mups>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Feuerer <peter@piie.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Andreas Mohr <andi@lisas.de>, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+On Thu, Dec 04, 2014 at 08:21:06AM +0100, Peter Feuerer wrote:
+> Hi again,
+> 
+> Peter Feuerer writes:
+> 
+> >Hi Darren,
+> >
+> >thank you very much for your reply.
+> >
+> >
+> >Darren Hart writes:
+> >
+> >>On Fri, Nov 28, 2014 at 03:20:50PM +0100, Peter Feuerer wrote:
+> >>>acerhdf has been doing an on-off fan control using hysteresis by
+> >>>post-manipulating the outcome of thermal subsystem trip point handling.
+> >>>This patch enables acerhdf to use the bang-bang governor, which is
+> >>>intended for on-off controlled fans.
+> >>>
+> >>>Cc: platform-driver-x86@vger.kernel.org
+> >>>Cc: Darren Hart <dvhart@infradead.org>
+> >>>Cc: Andrew Morton <akpm@linux-foundation.org>
+> >>>CC: Zhang Rui <rui.zhang@intel.com>
+> >>>Cc: Andreas Mohr <andi@lisas.de>
+> >>>Cc: Javi Merino <javi.merino@arm.com>
+> >>>Acked-and-tested-by: Borislav Petkov <bp@suse.de>
+> >>>Signed-off-by: Peter Feuerer <peter@piie.net>
+> >>>---
+> >>> drivers/platform/x86/Kconfig   |  3 ++-
+> >>> drivers/platform/x86/acerhdf.c | 36 +++++++++++++++++++++++++++++++-----
+> >>> 2 files changed, 33 insertions(+), 6 deletions(-)
+> >>>
+> >>>diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> >>>index a2eabe6..c173266 100644
+> >>>--- a/drivers/platform/x86/Kconfig
+> >>>+++ b/drivers/platform/x86/Kconfig
+> >>>@@ -38,7 +38,8 @@ config ACER_WMI
+> >>> config ACERHDF
+> >>> 	tristate "Acer Aspire One temperature and fan driver"
+> >>>-	depends on THERMAL && ACPI
+> >>>+	select THERMAL_GOV_BANG_BANG
+> >>
+> >>So we use select sparingly as it does implicit things.
+> >>
+> >>I checked the THERMAL_GOV_BANG_BANG Kconfig entry, and the help says acerhdf
+> >>already depends on it (which it doesn't appear to). Any particular reason to add
+> >>select here instead of adding it as a depends.
+> >>
+> >>Why did you drop THERMAL?
+> >
+> >I had it like this in my first version of patches:
+> >+ depends on THERMAL && ACPI && THERMAL_GOV_BANG_BANG
+> >
+> >But after some discussion with lkml community we ended up with the select
+> >line and dropped THERMAL dependency, as it is implied by
+> >THEMAL_GOV_BANG_BANG.  I'm not so experienced with Kconfig, so I must rely
+> >on the statements of the community in this case.
+> 
+> Just found the link about this discussion I had with Rui and Boris:
+> http://linux-kernel.2935.n7.nabble.com/PATCH-0-4-acerhdf-thermal-adding-new-models-and-appropriate-governor-tp848572p908256.html
+> 
 
-After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-depending on CONFIG_PM_RUNTIME may now be changed to depend on
-CONFIG_PM.
+Rui,
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-drivers/scsi/ and in include/scsi/scsi_device.h.
+I see you said you agree with the approach to "select THERMAL_GOV_BANG_BANG",
+and I'm OK with that. But that doesn't ensure, as far as I can see, a
+sufficient set of Kconfig dependencies for ACERHDF as THERMAL_GOV_BANG_BANG
+doesn't in turn select THERMAL.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+While it's unlikely to get ACERHDF available without THERMAL enabled, it does
+look possible. Should this driver also select or depends on THERMAL?
 
-Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-PM_SLEEP is selected) which is only in linux-next at the moment (via the
-linux-pm tree).
+Maybe:
 
-Please let me know if it is OK to take this one into linux-pm.
+depends on ACPI
+depends on THERMAL
+select THERMAL_GOV_BANG_BANG
 
----
- drivers/scsi/scsi_pm.c           |   10 ----------
- drivers/scsi/scsi_priv.h         |    5 ++---
- drivers/scsi/ufs/ufshcd-pci.c    |   11 ++++-------
- drivers/scsi/ufs/ufshcd-pltfrm.c |   11 ++++-------
- include/scsi/scsi_device.h       |    4 ++--
- 5 files changed, 12 insertions(+), 29 deletions(-)
+?
 
-Index: linux-pm/include/scsi/scsi_device.h
-===================================================================
---- linux-pm.orig/include/scsi/scsi_device.h
-+++ linux-pm/include/scsi/scsi_device.h
-@@ -440,13 +440,13 @@ static inline int scsi_execute_req(struc
- extern void sdev_disable_disk_events(struct scsi_device *sdev);
- extern void sdev_enable_disk_events(struct scsi_device *sdev);
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- extern int scsi_autopm_get_device(struct scsi_device *);
- extern void scsi_autopm_put_device(struct scsi_device *);
- #else
- static inline int scsi_autopm_get_device(struct scsi_device *d) { return 0; }
- static inline void scsi_autopm_put_device(struct scsi_device *d) {}
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- static inline int __must_check scsi_device_reprobe(struct scsi_device *sdev)
- {
-Index: linux-pm/drivers/scsi/scsi_priv.h
-===================================================================
---- linux-pm.orig/drivers/scsi/scsi_priv.h
-+++ linux-pm/drivers/scsi/scsi_priv.h
-@@ -157,8 +157,7 @@ static inline void scsi_netlink_exit(voi
- /* scsi_pm.c */
- #ifdef CONFIG_PM
- extern const struct dev_pm_ops scsi_bus_pm_ops;
--#endif
--#ifdef CONFIG_PM_RUNTIME
-+
- extern void scsi_autopm_get_target(struct scsi_target *);
- extern void scsi_autopm_put_target(struct scsi_target *);
- extern int scsi_autopm_get_host(struct Scsi_Host *);
-@@ -168,7 +167,7 @@ static inline void scsi_autopm_get_targe
- static inline void scsi_autopm_put_target(struct scsi_target *t) {}
- static inline int scsi_autopm_get_host(struct Scsi_Host *h) { return 0; }
- static inline void scsi_autopm_put_host(struct Scsi_Host *h) {}
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- extern struct async_domain scsi_sd_pm_domain;
- extern struct async_domain scsi_sd_probe_domain;
-Index: linux-pm/drivers/scsi/scsi_pm.c
-===================================================================
---- linux-pm.orig/drivers/scsi/scsi_pm.c
-+++ linux-pm/drivers/scsi/scsi_pm.c
-@@ -213,8 +213,6 @@ static int scsi_bus_restore(struct devic
- 
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
--
- static int sdev_runtime_suspend(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-@@ -332,14 +330,6 @@ void scsi_autopm_put_host(struct Scsi_Ho
- 	pm_runtime_put_sync(&shost->shost_gendev);
- }
- 
--#else
--
--#define scsi_runtime_suspend	NULL
--#define scsi_runtime_resume	NULL
--#define scsi_runtime_idle	NULL
--
--#endif /* CONFIG_PM_RUNTIME */
--
- const struct dev_pm_ops scsi_bus_pm_ops = {
- 	.prepare =		scsi_bus_prepare,
- 	.suspend =		scsi_bus_suspend,
-Index: linux-pm/drivers/scsi/ufs/ufshcd-pci.c
-===================================================================
---- linux-pm.orig/drivers/scsi/ufs/ufshcd-pci.c
-+++ linux-pm/drivers/scsi/ufs/ufshcd-pci.c
-@@ -62,12 +62,7 @@ static int ufshcd_pci_resume(struct devi
- {
- 	return ufshcd_system_resume(dev_get_drvdata(dev));
- }
--#else
--#define ufshcd_pci_suspend	NULL
--#define ufshcd_pci_resume	NULL
--#endif /* CONFIG_PM */
- 
--#ifdef CONFIG_PM_RUNTIME
- static int ufshcd_pci_runtime_suspend(struct device *dev)
- {
- 	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
-@@ -80,11 +75,13 @@ static int ufshcd_pci_runtime_idle(struc
- {
- 	return ufshcd_runtime_idle(dev_get_drvdata(dev));
- }
--#else /* !CONFIG_PM_RUNTIME */
-+#else /* !CONFIG_PM */
-+#define ufshcd_pci_suspend	NULL
-+#define ufshcd_pci_resume	NULL
- #define ufshcd_pci_runtime_suspend	NULL
- #define ufshcd_pci_runtime_resume	NULL
- #define ufshcd_pci_runtime_idle	NULL
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- /**
-  * ufshcd_pci_shutdown - main function to put the controller in reset state
-Index: linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
-===================================================================
---- linux-pm.orig/drivers/scsi/ufs/ufshcd-pltfrm.c
-+++ linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
-@@ -266,12 +266,7 @@ static int ufshcd_pltfrm_resume(struct d
- {
- 	return ufshcd_system_resume(dev_get_drvdata(dev));
- }
--#else
--#define ufshcd_pltfrm_suspend	NULL
--#define ufshcd_pltfrm_resume	NULL
--#endif
- 
--#ifdef CONFIG_PM_RUNTIME
- static int ufshcd_pltfrm_runtime_suspend(struct device *dev)
- {
- 	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
-@@ -284,11 +279,13 @@ static int ufshcd_pltfrm_runtime_idle(st
- {
- 	return ufshcd_runtime_idle(dev_get_drvdata(dev));
- }
--#else /* !CONFIG_PM_RUNTIME */
-+#else /* !CONFIG_PM */
-+#define ufshcd_pltfrm_suspend	NULL
-+#define ufshcd_pltfrm_resume	NULL
- #define ufshcd_pltfrm_runtime_suspend	NULL
- #define ufshcd_pltfrm_runtime_resume	NULL
- #define ufshcd_pltfrm_runtime_idle	NULL
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- static void ufshcd_pltfrm_shutdown(struct platform_device *pdev)
- {
+> [...]
+> 
+> -- 
+> kind regards,
+> --peter;
+> 
+
+-- 
+Darren Hart
+Intel Open Source Technology Center
