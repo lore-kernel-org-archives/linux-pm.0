@@ -1,38 +1,49 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 1/2] PM / Domains: R-Mobile SYSC: Add missing 0x prefixes to example
-Date: Thu,  4 Dec 2014 13:31:37 +0100
-Message-ID: <1417696298-27740-2-git-send-email-geert+renesas@glider.be>
-References: <1417696298-27740-1-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/4] ARM: shmobile: R-Mobile: Add SYSC restart handler
+Date: Thu, 4 Dec 2014 13:53:52 +0100
+Message-ID: <CAMuHMdXqY79KkrmEvnG4qqDaw5x8raxRs2eKBM6E-+DyZwFt-A@mail.gmail.com>
+References: <1417616227-6715-1-git-send-email-geert+renesas@glider.be>
+	<1417616227-6715-2-git-send-email-geert+renesas@glider.be>
+	<3671800.E1ZjeAe67g@wuerfel>
+	<CAMuHMdWeFceyn3_TkgsuwakK9UOVUszBFqEv-uRqRC+2a=5XGA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1417696298-27740-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <CAMuHMdWeFceyn3_TkgsuwakK9UOVUszBFqEv-uRqRC+2a=5XGA@mail.gmail.com>
 Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-The register lengths in the example were supposed to be 0x8000, not
-8000.
-This doesn't cause any problems for now, but at least the second range
-is documented to cover the full 32 KiB on R-Mobile A1 (r8a7740).
+Hi Arnd,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Thu, Dec 4, 2014 at 12:47 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+>> This clearly looks much better than the previous implementation, so that
+>> is great. If you can decouple it from the rest of this file, either through
+>> syscon or by asserting that sysc_base2 is not going to be needed for
+>> anything else, how about moving the new code to a standalon driver in
+>> drivers/power/reset?
+>
+> Yes, sysc_base2 is used for reset control only (I don't think we need to read
+> the mode strap pins).
+>
+> So unless there's a simple solution to the regmap problem, I think moving
+> this driver part to  drivers/power/reset is the most viable option.
 
-diff --git a/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
-index 5887cbae313481cc..2460476808e9333e 100644
---- a/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
-+++ b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
-@@ -53,7 +53,7 @@ which is a subdomain of A4S.
- 
- 	sysc: system-controller@e6180000 {
- 		compatible = "renesas,sysc-r8a7740", "renesas,sysc-rmobile";
--		reg = <0xe6180000 8000>, <0xe6188000 8000>;
-+		reg = <0xe6180000 0x8000>, <0xe6188000 0x8000>;
- 
- 		pm-domains {
- 			pd_c5: c5 {
--- 
-1.9.1
+There's another reasone for having a separate driver: if both the SH core and
+the ARM core are in use, the second register bank can only be accessed after
+acquiring the HPB (Peripheral Bus Bridge) semaphore.
+While we don't actively support running anything on the SH core, we don't
+want to prevent users from doing that.
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
