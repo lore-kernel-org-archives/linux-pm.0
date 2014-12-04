@@ -1,70 +1,49 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Subject: [PATCH] power: bq24190_charger: suppress build warning
-Date: Thu,  4 Dec 2014 14:56:04 +0000
-Message-ID: <1417704964-23155-1-git-send-email-prabhakar.csengg@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V4 1/3] PM / Domains: Initial PM clock support for genpd
+Date: Thu, 4 Dec 2014 16:00:02 +0100
+Message-ID: <CAPDyKFpPFismu2Cv4DBX7Eao5EBx4xXXz4K_6pfbitavfGZLTA@mail.gmail.com>
+References: <1417434623-31301-1-git-send-email-ulf.hansson@linaro.org>
+	<1417434623-31301-2-git-send-email-ulf.hansson@linaro.org>
+	<7h7fya502u.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:37410 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932128AbaLDO4X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 09:56:23 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7h7fya502u.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-This patch fixes following build warning:
+On 2 December 2014 at 02:09, Kevin Hilman <khilman@kernel.org> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+>> It's quite common for PM domains to use PM clocks. Typically from SOC
+>> specific code, the per device PM clock list is created and
+>> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
+>>
+>> A step towards consolidation is to integrate PM clock support into
+>> genpd, which is what this patch does.
+>>
+>> In this initial step, the calls to the pm_clk_suspend|resume() are
+>> handled within genpd, but the per device PM clock list still needs to
+>> be created from SOC specific code. It seems reasonable to have gendp to
+>> handle that as well, but that left to future patches to address.
+>>
+>> It's not every users of genpd that are keen on using PM clocks, thus we
+>> need to provide this a configuration option for genpd. Therefore let's
+>> add flag field in the genpd struct to keep this information and define
+>> a new GENDP_FLAG_PM_CLK bit for it.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
+>
+> Are you also planning to add a way to enable this option from DT?
 
-In file included from include/linux/printk.h:261:0,
-                 from include/linux/kernel.h:13,
-                 from include/linux/list.h:8,
-                 from include/linux/module.h:9,
-                 from drivers/power/bq24190_charger.c:11:
-drivers/power/bq24190_charger.c: In function =E2=80=98bq24190_irq_handl=
-er_thread=E2=80=99:
-include/linux/dynamic_debug.h:86:20: warning: =E2=80=98ss_reg=E2=80=99 =
-may be used uninitialized in this function [-Wmaybe-uninitialized]
-   __dynamic_dev_dbg(&descriptor, dev, fmt, \
-                    ^
-drivers/power/bq24190_charger.c:1211:5: note: =E2=80=98ss_reg=E2=80=99 =
-was declared here
-  u8 ss_reg, f_reg;
-     ^
-In file included from include/linux/printk.h:261:0,
-                 from include/linux/kernel.h:13,
-                 from include/linux/list.h:8,
-                 from include/linux/module.h:9,
-                 from drivers/power/bq24190_charger.c:11:
-include/linux/dynamic_debug.h:86:20: warning: =E2=80=98f_reg=E2=80=99 m=
-ay be used uninitialized in this function [-Wmaybe-uninitialized]
-   __dynamic_dev_dbg(&descriptor, dev, fmt, \
-                    ^
-drivers/power/bq24190_charger.c:1211:13: note: =E2=80=98f_reg=E2=80=99 =
-was declared here
-  u8 ss_reg, f_reg;
+I am thinking of that, yes. Though I wanted the discussion around how
+to deal with creating the PM clock lists while using PM domains to
+settle first.
 
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
----
- drivers/power/bq24190_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_ch=
-arger.c
-index ad3ff8f..72e552d 100644
---- a/drivers/power/bq24190_charger.c
-+++ b/drivers/power/bq24190_charger.c
-@@ -1208,7 +1208,7 @@ static irqreturn_t bq24190_irq_handler_thread(int=
- irq, void *data)
- {
- 	struct bq24190_dev_info *bdi =3D data;
- 	bool alert_userspace =3D false;
--	u8 ss_reg, f_reg;
-+	u8 ss_reg =3D 0, f_reg =3D 0;
- 	int ret;
-=20
- 	pm_runtime_get_sync(bdi->dev);
---=20
-1.9.1
-
+Kind regards
+Uffe
