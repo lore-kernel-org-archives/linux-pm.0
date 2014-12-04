@@ -1,79 +1,249 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
-Date: Thu, 4 Dec 2014 17:18:49 +0000
-Message-ID: <20141204171849.GX7712@sirena.org.uk>
-References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
- <1417692868.9037.4.camel@pengutronix.de>
+From: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Subject: Re: [PATCH] media / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Thu, 4 Dec 2014 16:08:40 -0200
+Message-ID: <20141204160840.7d021bf1@recife.lan>
+References: <4139875.fkJ48z9AaU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="JBABWuYasNt1mk88"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:48335 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932254AbaLDRTR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 12:19:17 -0500
-Content-Disposition: inline
-In-Reply-To: <1417692868.9037.4.camel@pengutronix.de>
+Received: from lists.s-osg.org ([54.187.51.154]:39268 "EHLO lists.s-osg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932678AbaLDSIr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Dec 2014 13:08:47 -0500
+In-Reply-To: <4139875.fkJ48z9AaU@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, nm@ti.com, rob.herring@linaro.org, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, santosh.shilimkar@oracle.com, Rafael Wysocki <rjw@rjwysocki.net>, olof@lixom.net, devicetree@vger.kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, grant.likely@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-media@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, Kamil Debski <k.debski@samsung.com>, Philipp Zabel <p.zabel@pengutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Em Wed, 03 Dec 2014 03:13:55 +0100
+"Rafael J. Wysocki" <rjw@rjwysocki.net> escreveu:
 
---JBABWuYasNt1mk88
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> replaced with CONFIG_PM too.
+> 
+> Make these changes everywhere under drivers/media/.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, Dec 04, 2014 at 12:34:28PM +0100, Lucas Stach wrote:
-> Am Donnerstag, den 04.12.2014, 16:44 +0530 schrieb Viresh Kumar:
+Acked-by: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
 
-> > +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+Feel free to apply it via your tree.
 
-> This is extremely ill defined. It doesn't say in which direction the
-> tolerance is to be applied. Can you go below or above the OPP specified
-> voltage? For now everyone just assumes that it has to work both ways.
-> Also with this binding the tolerance is applied for all OPPs, where is
-> very much depends on the individual OPP.
+PS.: I won't doubt that you would find some extra checks for
+PM_RUNTIME on other places at media, as I remember I merged some
+things like that recently - I think they are there for 3.19, but
+it needs to be double-checked.
 
-Almost all specifications for voltages are done as either min/typ/max or
-+/- a target voltage.
+Regards,
+Mauro
 
-> If you are going to redefine OPPs anyway I would really like to see this
-> property die and rather have a min/max voltage per OPP. That way you can
-> properly express the OPP constraints. Most OPPs will likely allow a much
-> higher voltage than their minimal specified one, except when you go over
-> thermal limits with a high clock/voltage combination.
-
-If you've got a minimum and maximum you also need to specify a target,
-generally it's going to be better to go for the target voltage which may
-not be the midpoint and is unlikely to be one of the bounds.  I do think
-it's sensible to have the option of doing both to more closely match
-datasheets.
-
-> > +  - clock-latency: Specify the possible maximum transition latency for clock,
-> > +    in unit of nanoseconds.
-
-> Why do we need this? This is property of the clock. We should be able to
-> handle this completely internally in the kernel. I don't know if the
-> clock API has something like this right now, but it should be a trivial
-> addition.
-
-Or have it be part of the clock binding at any rate.
-
---JBABWuYasNt1mk88
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUgJd4AAoJECTWi3JdVIfQO2cH/A4xkox0tV1u0JGW0NZZ64CB
-iG9m41Xnvtdio2GQH7wyCZ6Q+w3Uz6JdKHq/LPG/EqVNzop7aa5F4v+MFD5pyAlx
-iTauzhvWV+FtrAek6SkOm/f96J5K2edYHVPygAmsXbjuID2u4dJ4TjdUB+tvT+vq
-DnrvlZZJkhtG6TgHekKBhGe1lyoDJagC4T6ZmIhewtBSZvnY8bRR7U2eQFqzz+lT
-If5B55ybdhHOvdDQ50DKc1F/4AYZzX0m79eK4YkYV1NxRVnbbzbzhKAzpI0HfZg6
-PgbYIN1PJoGvvOD4UB9u8MxS2dvgCuFx9zXJyEoXadxS6WEDW9BaArXlQLPGsM8=
-=Yk1q
------END PGP SIGNATURE-----
-
---JBABWuYasNt1mk88--
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
+> 
+> ---
+>  drivers/media/platform/coda/coda-common.c       |    4 ++--
+>  drivers/media/platform/exynos4-is/fimc-core.c   |    6 +++---
+>  drivers/media/platform/exynos4-is/fimc-is-i2c.c |    2 +-
+>  drivers/media/platform/exynos4-is/fimc-lite.c   |    2 +-
+>  drivers/media/platform/exynos4-is/mipi-csis.c   |    2 +-
+>  drivers/media/platform/s5p-jpeg/jpeg-core.c     |    4 ++--
+>  drivers/media/platform/s5p-mfc/s5p_mfc.c        |    2 +-
+>  drivers/media/platform/s5p-mfc/s5p_mfc_pm.c     |   10 ++++------
+>  8 files changed, 15 insertions(+), 17 deletions(-)
+> 
+> Index: linux-pm/drivers/media/platform/s5p-jpeg/jpeg-core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/s5p-jpeg/jpeg-core.c
+> +++ linux-pm/drivers/media/platform/s5p-jpeg/jpeg-core.c
+> @@ -2632,7 +2632,7 @@ static int s5p_jpeg_remove(struct platfo
+>  	return 0;
+>  }
+>  
+> -#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
+> +#ifdef CONFIG_PM
+>  static int s5p_jpeg_runtime_suspend(struct device *dev)
+>  {
+>  	struct s5p_jpeg *jpeg = dev_get_drvdata(dev);
+> @@ -2682,7 +2682,7 @@ static int s5p_jpeg_runtime_resume(struc
+>  
+>  	return 0;
+>  }
+> -#endif /* CONFIG_PM_RUNTIME || CONFIG_PM_SLEEP */
+> +#endif /* CONFIG_PM */
+>  
+>  #ifdef CONFIG_PM_SLEEP
+>  static int s5p_jpeg_suspend(struct device *dev)
+> Index: linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/s5p-mfc/s5p_mfc.c
+> +++ linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc.c
+> @@ -1302,7 +1302,7 @@ static int s5p_mfc_resume(struct device
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int s5p_mfc_runtime_suspend(struct device *dev)
+>  {
+>  	struct platform_device *pdev = to_platform_device(dev);
+> Index: linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
+> +++ linux-pm/drivers/media/platform/s5p-mfc/s5p_mfc_pm.c
+> @@ -13,9 +13,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/err.h>
+>  #include <linux/platform_device.h>
+> -#ifdef CONFIG_PM_RUNTIME
+>  #include <linux/pm_runtime.h>
+> -#endif
+>  #include "s5p_mfc_common.h"
+>  #include "s5p_mfc_debug.h"
+>  #include "s5p_mfc_pm.h"
+> @@ -67,7 +65,7 @@ int s5p_mfc_init_pm(struct s5p_mfc_dev *
+>  	}
+>  
+>  	atomic_set(&pm->power, 0);
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  	pm->device = &dev->plat_dev->dev;
+>  	pm_runtime_enable(pm->device);
+>  #endif
+> @@ -93,7 +91,7 @@ void s5p_mfc_final_pm(struct s5p_mfc_dev
+>  	}
+>  	clk_unprepare(pm->clock_gate);
+>  	clk_put(pm->clock_gate);
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  	pm_runtime_disable(pm->device);
+>  #endif
+>  }
+> @@ -120,7 +118,7 @@ void s5p_mfc_clock_off(void)
+>  
+>  int s5p_mfc_power_on(void)
+>  {
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  	return pm_runtime_get_sync(pm->device);
+>  #else
+>  	atomic_set(&pm->power, 1);
+> @@ -130,7 +128,7 @@ int s5p_mfc_power_on(void)
+>  
+>  int s5p_mfc_power_off(void)
+>  {
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  	return pm_runtime_put_sync(pm->device);
+>  #else
+>  	atomic_set(&pm->power, 0);
+> Index: linux-pm/drivers/media/platform/exynos4-is/fimc-is-i2c.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-is-i2c.c
+> +++ linux-pm/drivers/media/platform/exynos4-is/fimc-is-i2c.c
+> @@ -81,7 +81,7 @@ static int fimc_is_i2c_remove(struct pla
+>  	return 0;
+>  }
+>  
+> -#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
+> +#ifdef CONFIG_PM
+>  static int fimc_is_i2c_runtime_suspend(struct device *dev)
+>  {
+>  	struct fimc_is_i2c *isp_i2c = dev_get_drvdata(dev);
+> Index: linux-pm/drivers/media/platform/exynos4-is/fimc-lite.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-lite.c
+> +++ linux-pm/drivers/media/platform/exynos4-is/fimc-lite.c
+> @@ -1588,7 +1588,7 @@ err_clk_put:
+>  	return ret;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int fimc_lite_runtime_resume(struct device *dev)
+>  {
+>  	struct fimc_lite *fimc = dev_get_drvdata(dev);
+> Index: linux-pm/drivers/media/platform/exynos4-is/mipi-csis.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/exynos4-is/mipi-csis.c
+> +++ linux-pm/drivers/media/platform/exynos4-is/mipi-csis.c
+> @@ -978,7 +978,7 @@ static int s5pcsis_resume(struct device
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int s5pcsis_runtime_suspend(struct device *dev)
+>  {
+>  	return s5pcsis_pm_suspend(dev, true);
+> Index: linux-pm/drivers/media/platform/exynos4-is/fimc-core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/exynos4-is/fimc-core.c
+> +++ linux-pm/drivers/media/platform/exynos4-is/fimc-core.c
+> @@ -832,7 +832,7 @@ err:
+>  	return -ENXIO;
+>  }
+>  
+> -#if defined(CONFIG_PM_RUNTIME) || defined(CONFIG_PM_SLEEP)
+> +#ifdef CONFIG_PM
+>  static int fimc_m2m_suspend(struct fimc_dev *fimc)
+>  {
+>  	unsigned long flags;
+> @@ -871,7 +871,7 @@ static int fimc_m2m_resume(struct fimc_d
+>  
+>  	return 0;
+>  }
+> -#endif /* CONFIG_PM_RUNTIME || CONFIG_PM_SLEEP */
+> +#endif /* CONFIG_PM */
+>  
+>  static const struct of_device_id fimc_of_match[];
+>  
+> @@ -1039,7 +1039,7 @@ err_sclk:
+>  	return ret;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int fimc_runtime_resume(struct device *dev)
+>  {
+>  	struct fimc_dev *fimc =	dev_get_drvdata(dev);
+> Index: linux-pm/drivers/media/platform/coda/coda-common.c
+> ===================================================================
+> --- linux-pm.orig/drivers/media/platform/coda/coda-common.c
+> +++ linux-pm/drivers/media/platform/coda/coda-common.c
+> @@ -1980,7 +1980,7 @@ static int coda_probe(struct platform_de
+>  
+>  	/*
+>  	 * Start activated so we can directly call coda_hw_init in
+> -	 * coda_fw_callback regardless of whether CONFIG_PM_RUNTIME is
+> +	 * coda_fw_callback regardless of whether CONFIG_PM is
+>  	 * enabled or whether the device is associated with a PM domain.
+>  	 */
+>  	pm_runtime_get_noresume(&pdev->dev);
+> @@ -2013,7 +2013,7 @@ static int coda_remove(struct platform_d
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int coda_runtime_resume(struct device *dev)
+>  {
+>  	struct coda_dev *cdev = dev_get_drvdata(dev);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
