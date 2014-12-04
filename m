@@ -1,77 +1,244 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [PATCH] e1000e / igb / PM: Eliminate CONFIG_PM_RUNTIME
-Date: Thu, 04 Dec 2014 08:50:03 -0800
-Message-ID: <1417711803.2404.1.camel@jtkirshe-mobl>
-References: <2389302.4ImTL0YnUc@vostro.rjw.lan>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [RFC 2/2] OOM, PM: make OOM detection in the freezer path
+ raceless
+Date: Thu, 4 Dec 2014 17:56:01 +0100
+Message-ID: <20141204165601.GD25001@dhcp22.suse.cz>
+References: <20141118210833.GE23640@dhcp22.suse.cz>
+ <1416345006-8284-1-git-send-email-mhocko@suse.cz>
+ <1416345006-8284-2-git-send-email-mhocko@suse.cz>
+ <20141202220804.GS10918@htj.dyndns.org>
+ <20141204141623.GA25001@dhcp22.suse.cz>
+ <20141204144454.GB15219@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="=-N5sAahnPKnYjkWl4ycK9"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2389302.4ImTL0YnUc@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, Linux NICS <linux.nics@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Bruce Allan <bruce.w.allan@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20141204144454.GB15219@htj.dyndns.org>
+Sender: owner-linux-mm@kvack.org
+To: Tejun Heo <tj@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu 04-12-14 09:44:54, Tejun Heo wrote:
+> On Thu, Dec 04, 2014 at 03:16:23PM +0100, Michal Hocko wrote:
+> > > A delta but shouldn't it be pr_cont()?
+> > 
+> > kernel/power/process.c doesn't use pr_* so I've stayed with what the
+> > rest of the file is using. I can add a patch which transforms all of
+> > them.
+> 
+> The console output becomes wrong when printk() is used on
+> continuation.  So, yeah, it'd be great to fix it.
+> 
+> > > > +extern bool oom_killer_disabled;
+> > > 
+> > > Ugh... don't we wanna put this in a header file?
+> > 
+> > Who else would need the declaration? This is not something random code
+> > should look at.
+> 
+> Let's say, somebody changes the type to ulong for whatever reason
+> later and forgets to update this declaration.  What happens then on a
+> big endian machine?
 
---=-N5sAahnPKnYjkWl4ycK9
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+OK, see your point. Although this is unlikely...
+ 
+> Jesus, this is basic C programming.  You don't sprinkle external
+> declarations which the compiler can't verify against the actual
+> definitions.  There's absolutely no compelling reason to do that here.
+> Why would you take out compiler verification for no reason?
+> 
+> > > > +void mark_tsk_oom_victim(struct task_struct *tsk)
+> > > >  {
+> > > > -	return atomic_read(&oom_kills);
+> > > > +	BUG_ON(oom_killer_disabled);
+> > > 
+> > > WARN_ON_ONCE() is prolly a better option here?
+> > 
+> > Well, something fishy is going on when oom_killer_disabled is set and we
+> > mark new OOM victim. This is a clear bug. Why would be warning and a
+> > allow the follow up breakage?
+> 
+> Because the system is more likely to be able to go on and we don't BUG
+> when we can WARN as a general rule.  Working systems is almost always
+> better than a dead system even for debugging.
+> 
+> > > > +	if (test_and_set_tsk_thread_flag(tsk, TIF_MEMDIE))
+> > > 
+> > > Can a task actually be selected as an OOM victim multiple times?
+> > 
+> > AFAICS nothing prevents from global OOM and memcg OOM killers racing.
+> 
+> Maybe it'd be a good idea to note that in the comment?
 
-On Thu, 2014-12-04 at 02:15 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME within #ifdef blocks depending on
-> CONFIG_PM may be dropped now.
->=20
-> Do that in the e1000e and igb network drivers.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+ok
 
-> ---
->=20
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME
-> if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via
-> the
-> linux-pm tree).
->=20
-> Please let me know if it is OK to take this one into linux-pm.
+> > > > -void note_oom_kill(void)
+> > > > +void unmark_tsk_oom_victim(struct task_struct *tsk)
+> > > >  {
+> > > > -	atomic_inc(&oom_kills);
+> > > > +	int count;
+> > > > +
+> > > > +	if (!test_and_clear_tsk_thread_flag(tsk, TIF_MEMDIE))
+> > > > +		return;
+> > > 
+> > > Maybe test this inline in exit_mm()?  e.g.
+> > > 
+> > > 	if (test_thread_flag(TIF_MEMDIE))
+> > > 		unmark_tsk_oom_victim(current);
+> > 
+> > Why do you think testing TIF_MEMDIE in exit_mm is better? I would like
+> > to reduce the usage of the flag as much as possible.
+> 
+> Because it's adding a function call/return to hot path for everybody.
+> It sure is a miniscule cost but we're adding that for no good reason.
 
-Yes, that is fine.
+ok. 
+ 
+> > > So, each complete() increments the done count and wait decs.  The
+> > > above code works iff the complete()'s and wait()'s are always balanced
+> > > which usually isn't true in this type of wait code.  Either use
+> > > reinit_completion() / complete_all() combos or wait_event().
+> > 
+> > Hmm, I thought that only a single instance of freeze_kernel_threads
+> > (which calls oom_killer_disable) can run at a time. But I am currently
+> > not sure that all paths are called under lock_system_sleep.
+> > I am not familiar with reinit_completion API. Is the following correct?
+> 
+> Hmmm... wouldn't wait_event() easier to read in this case?
 
->=20
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |    2 --
->  drivers/net/ethernet/intel/igb/igb_main.c  |    6 +-----
->  2 files changed, 1 insertion(+), 7 deletions(-)
+OK, it looks easier. I thought it would require some additional
+synchronization between wake up and wait but everything necessary seems
+to be done in wait_event already so we cannot miss a wake up AFAICS:
 
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 1d55ab12792f..032be9d2a239 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -408,7 +408,7 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
+  * Number of OOM victims in flight
+  */
+ static atomic_t oom_victims = ATOMIC_INIT(0);
+-static DECLARE_COMPLETION(oom_victims_wait);
++static DECLARE_WAIT_QUEUE_HEAD(oom_victims_wait);
+ 
+ bool oom_killer_disabled __read_mostly;
+ static DECLARE_RWSEM(oom_sem);
+@@ -435,7 +435,7 @@ void unmark_tsk_oom_victim(void)
+ 	 * is nobody who cares.
+ 	 */
+ 	if (!atomic_dec_return(&oom_victims) && oom_killer_disabled)
+-		complete_all(&oom_victims_wait);
++		wake_up_all(&oom_victims_wait);
+ 	up_read(&oom_sem);
+ }
+ 
+@@ -464,16 +464,11 @@ bool oom_killer_disable(void)
+ 		return false;
+ 	}
+ 
+-	/* unmark_tsk_oom_victim is calling complete_all */
+-	if (!oom_killer_disable)
+-		reinit_completion(&oom_victims_wait);
+-
+ 	oom_killer_disabled = true;
+-	count = atomic_read(&oom_victims);
+ 	up_write(&oom_sem);
+ 
+ 	if (count)
+-		wait_for_completion(&oom_victims_wait);
++		wait_event(oom_victims_wait, atomic_read(&oom_victims));
+ 
+ 	return true;
+ }
 
+> ...
+> > > Maybe 0 / -errno is better choice as return values?
+> > 
+> > I do not have problem to change this if you feel strong about it but
+> > true/false sounds easier to me and it allows the caller to decide what to
+> > report. If there were multiple reasons to fail then sure but that is not
+> > the case.
+> 
+> It's not a big deal but except for functions which have clear boolean
+> behavior - functions which try/attempt something or query or decide
 
---=-N5sAahnPKnYjkWl4ycK9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+this is basically try_lock which might fail due to whatever internal
+reasons.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> certain things - randomly thrown in bool returns tend to become
+> confusing especially because its bool fail value is the opposite of
+> 0/-errno fail value.  So, "this function only fails with one reason"
+> is usually a bad and arbitrary reason for choosing bool return which
+> causes confusion on callsites and headaches when the function develops
+> more reasons to fail.
+> 
+> ...
+> > > > @@ -712,12 +770,16 @@ void pagefault_out_of_memory(void)
+> > > >  {
+> > > >  	struct zonelist *zonelist;
+> > > >  
+> > > > +	down_read(&oom_sem);
+> > > >  	if (mem_cgroup_oom_synchronize(true))
+> > > > -		return;
+> > > > +		goto unlock;
+> > > >  
+> > > >  	zonelist = node_zonelist(first_memory_node, GFP_KERNEL);
+> > > >  	if (oom_zonelist_trylock(zonelist, GFP_KERNEL)) {
+> > > > -		out_of_memory(NULL, 0, 0, NULL, false);
+> > > > +		if (!oom_killer_disabled)
+> > > > +			__out_of_memory(NULL, 0, 0, NULL, false);
+> > > >  		oom_zonelist_unlock(zonelist, GFP_KERNEL);
+> > > 
+> > > Is this a condition which can happen and we can deal with? With
+> > > userland fully frozen, there shouldn't be page faults which lead to
+> > > memory allocation, right?
+> > 
+> > Except for racing OOM victims which were missed by try_to_freeze_tasks
+> > because they didn't get cpu slice to wake up from the freezer. The task
+> > would die on the way out from the page fault exception. I have updated
+> > the changelog to be more verbose about this.
+> 
+> That's something very not obvious.  Let's please add a comment
+> explaining that.
 
-iQIcBAABCgAGBQJUgJC7AAoJEOVv75VaS+3OhagQAKC2oVQr6pfJKePHVYr1+0VM
-gVtoyKJ7xfG6/r3kWBbYOwqnMIHmwZNYAIsECLiWJVBRTyisCqIe9jI9PFnZV0Hh
-zvVQgtiPkN9IOd1EiF1XzO0JUXLXxZquTxZxLPlzdHQNDxmrJX4HhEIAyT+o5OL2
-qvAguBKU7cS9N7OIGgptOkhj4QPm8b4BaertLgv6tpaYFBqdCfGzO0MEAdJfAPbK
-6NvllmaR0xnufjZhmWSE8k4Ad8cFfkhIaEe+LgjtOcEC1ic962gDMh+LXmOcMy7c
-moKxXCnFXr1z5lQJUwZ9py0aKOtOj/5WalAQM9OfniOkyMLYGt8kuF2m5Wlyun4o
-vni5aTl7JzOQkEC6yN4qFki2jIE6fbCesOcPaBK08J0rjr8XN7WA5WqTNxl8tTFt
-+Ldlc0wXAaDXaVuvtSj/oUex/RYdO7aNatvCwPuUH/e/zfAPAHVyBdllq8rdgmH/
-FeTJ4Z4CtyIGQV+M7FVxFcj9nNkJiZDr3b15HTs8WhaYKZtNSVfJxsga7xn0zmc4
-4ncOZgRF+9PeGdMvnzGU0Kgix//j9gxsUXXnTm/qktj0gwaiCH6JCdQlyETlywXj
-hmFlvzF28FEwPlliCfnz+C9Il44HYFfPQAiAwHeK/DECvN/EHILGT0tocM6Y/PkD
-rDoiBOB4uj6i0SLMf7jd
-=sAzl
------END PGP SIGNATURE-----
+@@ -778,6 +795,15 @@ void pagefault_out_of_memory(void)
+ 	if (oom_zonelist_trylock(zonelist, GFP_KERNEL)) {
+ 		if (!oom_killer_disabled)
+ 			__out_of_memory(NULL, 0, 0, NULL, false);
++		else
++			/*
++			 * There shouldn't be any user tasks runable while the
++			 * OOM killer is disabled so the current task has to
++			 * be a racing OOM victim for which oom_killer_disable()
++			 * is waiting for.
++			 */
++			WARN_ON(test_thread_flag(TIF_MEMDIE));
++
+ 		oom_zonelist_unlock(zonelist, GFP_KERNEL);
+ 	}
+ unlock:
 
---=-N5sAahnPKnYjkWl4ycK9--
+> 
+> > > (it only makes sense while the whole system is in quiescent state)
+> > > and at least trigger WARN_ON_ONCE() if the above code path gets
+> > > triggered while oom killer is disabled?
+> > 
+> > I can add a WARN_ON(!test_thread_flag(tsk, TIF_MEMDIE)).
+> 
+> Yeah, that makes sense to me.
+> 
+> Thanks.
+> 
+> -- 
+> tejun
+
+-- 
+Michal Hocko
+SUSE Labs
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
