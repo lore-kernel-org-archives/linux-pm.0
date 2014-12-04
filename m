@@ -1,70 +1,77 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Thu, 4 Dec 2014 09:28:34 -0700
-Message-ID: <20141204162834.GA2995@linaro.org>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
- <2596381.rFt35NU3oS@wuerfel>
- <548020D7.8030003@linaro.org>
- <8625951.Wbs2MxLnhi@wuerfel>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: [PATCH] e1000e / igb / PM: Eliminate CONFIG_PM_RUNTIME
+Date: Thu, 04 Dec 2014 08:50:03 -0800
+Message-ID: <1417711803.2404.1.camel@jtkirshe-mobl>
+References: <2389302.4ImTL0YnUc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8625951.Wbs2MxLnhi@wuerfel>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha512";
+	protocol="application/pgp-signature"; boundary="=-N5sAahnPKnYjkWl4ycK9"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2389302.4ImTL0YnUc@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, Linux NICS <linux.nics@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Bruce Allan <bruce.w.allan@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 04 2014 at 02:02 -0700, Arnd Bergmann wrote:
->On Thursday 04 December 2014 09:52:39 Daniel Lezcano wrote:
->> On 12/03/2014 09:35 PM, Arnd Bergmann wrote:
->> > On Wednesday 03 December 2014 07:31:22 Lina Iyer wrote:
->> >>>>> +static int __init qcom_spm_init(void)
->> >>>>> +{
->> >>>>> +    int ret;
->> >>>>> +
->> >>>>> +    /*
->> >>>>> +     * cpuidle driver need to registered before the cpuidle device
->> >>>>> +     * for any cpu. Register the device for the the cpuidle driver.
->> >>>>> +     */
->> >>>>> +    ret = platform_device_register(&qcom_cpuidle_drv);
->> >>>>> +    if (ret)
->> >>>>> +        return ret;
->> >>>> Stephen pointed out that we would have the platform device lying around
->> >>>> on a non-QCOM device when using multi_v7_defconfig.
->> >>>
->> >>> Perhaps I am missing the point, but this is not supposed to happen, no ?
->> >>>
->> >> This would happen, since the file would compile on multi_v7 and we would
->> >> initialize and register this device regardless. The cpuidle-qcom.c
->> >> driver probe would bail out looking for a matching compatible property.
->> >> So we would not register a cpuidle driver but the device would lay
->> >> around.
->> >
->> > I think the problem is registering a platform_device. I've complained
->> > about this before, but it still seems to get copied all over the
->> > place. Please don't do this but have a driver that looks at DT to
->> > figure out whether to access hardware or not.
->>
->> We did this approach but, I can remember why, someone was complaining
->> about it also
->>
->> The platform device/driver paradigm allowed us to split the arch
->> specific parts by passing the pm ops through the platform data.
->>
->> Would make sense to have a single common place for the ARM arch where we
->> initialize the platform device for cpuidle ?
->
->No. It's really not a device, and if you pretend that it is, you get
->into problems like this.
 
-Arnd, the problem is that the provides function pointers to the SoC code
-that the cpuilde driver uses to call based on the idle state.
+--=-N5sAahnPKnYjkWl4ycK9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-After much discussions, we came down to using function pointers from
-translating from DT strings, other than using that again, I dont see a
-good way of achieving the ability of cpuidle driver staying a separate
-driver from the SPM driver.
+On Thu, 2014-12-04 at 02:15 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>=20
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME within #ifdef blocks depending on
+> CONFIG_PM may be dropped now.
+>=20
+> Do that in the e1000e and igb network drivers.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Daniel, thoughts?
+> ---
+>=20
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME
+> if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via
+> the
+> linux-pm tree).
+>=20
+> Please let me know if it is OK to take this one into linux-pm.
+
+Yes, that is fine.
+
+>=20
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c |    2 --
+>  drivers/net/ethernet/intel/igb/igb_main.c  |    6 +-----
+>  2 files changed, 1 insertion(+), 7 deletions(-)
+
+
+
+--=-N5sAahnPKnYjkWl4ycK9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJUgJC7AAoJEOVv75VaS+3OhagQAKC2oVQr6pfJKePHVYr1+0VM
+gVtoyKJ7xfG6/r3kWBbYOwqnMIHmwZNYAIsECLiWJVBRTyisCqIe9jI9PFnZV0Hh
+zvVQgtiPkN9IOd1EiF1XzO0JUXLXxZquTxZxLPlzdHQNDxmrJX4HhEIAyT+o5OL2
+qvAguBKU7cS9N7OIGgptOkhj4QPm8b4BaertLgv6tpaYFBqdCfGzO0MEAdJfAPbK
+6NvllmaR0xnufjZhmWSE8k4Ad8cFfkhIaEe+LgjtOcEC1ic962gDMh+LXmOcMy7c
+moKxXCnFXr1z5lQJUwZ9py0aKOtOj/5WalAQM9OfniOkyMLYGt8kuF2m5Wlyun4o
+vni5aTl7JzOQkEC6yN4qFki2jIE6fbCesOcPaBK08J0rjr8XN7WA5WqTNxl8tTFt
++Ldlc0wXAaDXaVuvtSj/oUex/RYdO7aNatvCwPuUH/e/zfAPAHVyBdllq8rdgmH/
+FeTJ4Z4CtyIGQV+M7FVxFcj9nNkJiZDr3b15HTs8WhaYKZtNSVfJxsga7xn0zmc4
+4ncOZgRF+9PeGdMvnzGU0Kgix//j9gxsUXXnTm/qktj0gwaiCH6JCdQlyETlywXj
+hmFlvzF28FEwPlliCfnz+C9Il44HYFfPQAiAwHeK/DECvN/EHILGT0tocM6Y/PkD
+rDoiBOB4uj6i0SLMf7jd
+=sAzl
+-----END PGP SIGNATURE-----
+
+--=-N5sAahnPKnYjkWl4ycK9--
