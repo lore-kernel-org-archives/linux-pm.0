@@ -1,47 +1,167 @@
-From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Subject: Re: [PATCH v7 08/11] arm/arm64: Unexport restart handlers
-Date: Thu, 04 Dec 2014 16:06:22 +0100
-Message-ID: <3875532.ABOh5kXkPb@wuerfel>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net> <CAMuHMdX-WsVErpiZ_EbFSGxeJEfpu3cRaZzitupiSAA2hXEJ8g@mail.gmail.com> <54807505.2000406@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <54807505.2000406-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, Jonas Jensen <jonas.jensen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel@lists
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2] power: reset: Add reset driver for R-Mobile platforms
+Date: Thu,  4 Dec 2014 16:33:21 +0100
+Message-ID: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Simon Horman <horms@verge.net.au>, Arnd Bergmann <arnd@arndb.de>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 04 December 2014 06:51:49 Guenter Roeck wrote:
-> On 12/04/2014 06:44 AM, Geert Uytterhoeven wrote:
-> > On Thu, Dec 4, 2014 at 3:26 PM, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> wrote:
-> >> On 12/04/2014 05:36 AM, Geert Uytterhoeven wrote:
-> >>> On Wed, Aug 20, 2014 at 2:45 AM, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> wrote:
-> >>>> Implementing a restart handler in a module don't make sense
-> >>>> as there would be no guarantee that the module is loaded when
-> >>>> a restart is needed. Unexport arm_pm_restart to ensure that
-> >>>> no one gets the idea to do it anyway.
-> >>>
-> >>> Why not? I was just going to do that, but I got greeted by:
-> >>
-> >> Because you should register a restart handler instead, like the other
-> >> drivers in the same directory now do.
-> >
-> > That's a different thing. "there would be no guarantee that the module is
-> > loaded when a restart is needed" is also valid for restart handlers...
-> >
-> 
-> Not really, because you are supposed to unregister the restart handler
-> on unload. Sure, you can instead clear arm_pm_reastart and leave the system
-> with no means to restart ...
+Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
+a restart handler to trigger a soft power-on reset through the R-Mobile
+System Controller.
+The priority of this restart handler is 192, to allow a watchdog driver
+to use priority 128.
 
-I agree with Geert that your commit message was confusing, it sounds like
-you were referring to drivers that are not yet loaded, while the problem
-that you are really address is drivers that have been unloaded later.
+Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
+Bridge) semaphore should be acquired on systems where both the ARM and
+SH core are in use. The driver can be extended later to support this,
+when needed.
 
-	Arnd
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Tested on R-Mobile A1 (r8a7740) and SH-Mobile AG5 (sh73a0).
+
+This can be considered v2 of "[PATCH 1/4] ARM: shmobile: R-Mobile: Add
+SYSC restart handler"
+(http://www.spinics.net/lists/arm-kernel/msg383402.html).
+
+Changes:
+  - Move to a standalone driver under drivers/power/reset that can be
+    modular,
+  - Use register_restart_handler() instead of setting arm_pm_restart,
+---
+ drivers/power/reset/Kconfig         |  6 +++
+ drivers/power/reset/Makefile        |  1 +
+ drivers/power/reset/rmobile-reset.c | 93 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 100 insertions(+)
+ create mode 100644 drivers/power/reset/rmobile-reset.c
+
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 028e765045196f89..d743145e0001f466 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -159,5 +159,11 @@ config POWER_RESET_SYSCON
+ 	help
+ 	  Reboot support for generic SYSCON mapped register reset.
+ 
++config POWER_RESET_RMOBILE
++	tristate "Renesas R-Mobile reset driver"
++	depends on ARCH_RMOBILE || COMPILE_TEST
++	help
++	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index 1d4804d6b3237c1c..1631652009acc32d 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -18,3 +18,4 @@ obj-$(CONFIG_POWER_RESET_VEXPRESS) += vexpress-poweroff.o
+ obj-$(CONFIG_POWER_RESET_XGENE) += xgene-reboot.o
+ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
+ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
++obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+diff --git a/drivers/power/reset/rmobile-reset.c b/drivers/power/reset/rmobile-reset.c
+new file mode 100644
+index 0000000000000000..ff3bbcfd03d1e7b4
+--- /dev/null
++++ b/drivers/power/reset/rmobile-reset.c
+@@ -0,0 +1,93 @@
++/*
++ * Renesas R-Mobile Reset Driver
++ *
++ * Copyright (C) 2014 Glider bvba
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/printk.h>
++#include <linux/reboot.h>
++
++
++/* SYSC Register Bank 2 */
++#define RESCNT2		0x20		/* Reset Control Register 2 */
++
++/* Reset Control Register 2 */
++#define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
++
++
++static void __iomem *sysc_base2;
++
++static int rmobile_reset_handler(struct notifier_block *this,
++				 unsigned long mode, void *cmd)
++{
++	pr_debug("%s %lu\n", __func__, mode);
++
++	/* Let's assume we have acquired the HPB semaphore */
++	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block rmobile_reset_nb = {
++	.notifier_call = rmobile_reset_handler,
++	.priority = 192,
++};
++
++static int rmobile_reset_probe(struct platform_device *pdev)
++{
++	int error;
++
++	sysc_base2 = of_iomap(pdev->dev.of_node, 1);
++	if (!sysc_base2)
++		return -ENODEV;
++
++	error = register_restart_handler(&rmobile_reset_nb);
++	if (error) {
++		dev_err(&pdev->dev,
++			"cannot register restart handler (err=%d)\n", error);
++		goto fail_unmap;
++	}
++
++	return 0;
++
++fail_unmap:
++	iounmap(sysc_base2);
++	return error;
++}
++
++static int rmobile_reset_remove(struct platform_device *pdev)
++{
++	unregister_restart_handler(&rmobile_reset_nb);
++	iounmap(sysc_base2);
++	return 0;
++}
++
++static const struct of_device_id rmobile_reset_of_match[] = {
++	{ .compatible = "renesas,sysc-rmobile", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, rmobile_reset_of_match);
++
++static struct platform_driver rmobile_reset_driver = {
++	.probe = rmobile_reset_probe,
++	.remove = rmobile_reset_remove,
++	.driver = {
++		.name = "rmobile_reset",
++		.of_match_table = rmobile_reset_of_match,
++	},
++};
++
++module_platform_driver(rmobile_reset_driver);
++
++MODULE_DESCRIPTION("Renesas R-Mobile Reset Driver");
++MODULE_AUTHOR("Geert Uytterhoeven <geert+renesas@glider.be>");
++MODULE_LICENSE("GPL v2");
+-- 
+1.9.1
+
