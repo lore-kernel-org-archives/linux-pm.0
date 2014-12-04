@@ -1,78 +1,94 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 26/26] cpu_cooling: update copyright tags
-Date: Thu, 4 Dec 2014 10:11:10 +0530
-Message-ID: <CADGdYn497nKLax3tV1QMmPxvU6QqZ0-UbALZqCHoRFQ+Hni40g@mail.gmail.com>
-References: <cover.1417167599.git.viresh.kumar@linaro.org>
-	<f91d122fc519b91471ea06bf0e9c1bad28f8229c.1417167599.git.viresh.kumar@linaro.org>
-	<20141202194137.GA6592@developer>
-	<CAKohponNQnbA2DmXxoewh-O5hGBwT=aX13uphreOyp9vbPA2Wg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f50.google.com ([209.85.213.50]:41783 "EHLO
-	mail-yh0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbaLDElL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 23:41:11 -0500
-Received: by mail-yh0-f50.google.com with SMTP id 29so8458394yhl.37
-        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 20:41:10 -0800 (PST)
-In-Reply-To: <CAKohponNQnbA2DmXxoewh-O5hGBwT=aX13uphreOyp9vbPA2Wg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/4] powernv: cpuidle: Redesign idle states management
+Date: Thu,  4 Dec 2014 12:58:19 +0530
+Message-ID: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, Dec 3, 2014 at 10:04 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 3 December 2014 at 01:11, Eduardo Valentin <edubezval@gmail.com> wrote:
->> Hello Viresh K,
->>
->> On Fri, Nov 28, 2014 at 03:14:20PM +0530, Viresh Kumar wrote:
->>> Adding my copyright information for two purposes:
->>> - To get cc'd for future patches to review (Only if people read this header
->>>   while sending mail)
->>
->> For this item, I get_maintainers might copy you due the amount of
->> commit hits, no?
->>
->>> - Have done enough changes to earn a place here?
->>>
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>> Drop this patch if you didn't like it Eduardo :)
->>
->> I am not against your patch, no.
->>
->> But, I am probably not the correct person to judge this though. If you get a
->> confirmation from the original copyright holder (amit/samsung), then I
->> am glad to add this.
->
-> @Amit ?? :)
+Deep idle states like sleep and winkle are per core idle states. A core
+enters these states only when all the threads enter either the particular
+idle state or a deeper one. There are tasks like fastsleep hardware bug
+workaround and hypervisor core state save which have to be done only by
+the last thread of the core entering deep idle state and similarly tasks
+like timebase resync, hypervisor core register restore that have to be
+done only by the first thread waking up from these states. 
 
-Yes its fine with me.
+The current idle state management does not have a way to distinguish the
+first/last thread of the core waking/entering idle states. Tasks like
+timebase resync are done for all the threads. This is not only is suboptimal,
+but can cause functionality issues when subcores are involved.
 
-Regards,
-Amit
->
->>> ---
->>>  drivers/thermal/cpu_cooling.c | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->>> index db4c001..4369963 100644
->>> --- a/drivers/thermal/cpu_cooling.c
->>> +++ b/drivers/thermal/cpu_cooling.c
->>> @@ -4,6 +4,8 @@
->>>   *  Copyright (C) 2012       Samsung Electronics Co., Ltd(http://www.samsung.com)
->>>   *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
->>>   *
->>> + *  Copyright (C) 2014  Viresh Kumar <viresh.kumar@linaro.org>
->>> + *
->>>   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>   *  This program is free software; you can redistribute it and/or modify
->>>   *  it under the terms of the GNU General Public License as published by
->>> --
->>> 2.0.3.693.g996b0fd
->>>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Winkle is deeper idle state compared to fastsleep. In this state the power
+supply to the chiplet, i.e core, private L2 and private L3 is turned off.
+This results in a total hypervisor state loss. This patch set adds support
+for winkle and provides a way to track the idle states of the threads of the
+core and use it for idle state management of idle states sleep and winkle.
+
+TBD:
+----
+- Remove duplication of branching to kvm code. 
+
+Changes in v3:
+-------------
+- Added barriers after lock
+- Added a paca field to that stores thread mask. 
+- Changed code structure around fastsleep workaround, to allow for manual
+  patching out if the platform does not require it. 
+- Threads waiting on core_idle_state lock now loop in HMT_LOW
+- Using NV CRs to avoid save/restore of CR while making OPAL calls.
+- Fixed couple of flow issues in path where fastsleep workaround was not needed
+- Using PPC_LR_STKOFF instead of _LINK in opal_call_realmode
+- Restoring WORT and WORC
+
+Changes in v2:
+--------------
+-Using PNV_THREAD_NAP/SLEEP defines while calling power7_powersave_common
+-Comment changes based on review
+-Rebased on top of 3.18-rc6
+
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+Paul Mackerras (1):
+  powerpc: powernv: Switch off MMU before entering nap/sleep/rvwinkle
+    mode
+
+Preeti U. Murthy (1):
+  powerpc/powernv: Enable Offline CPUs to enter deep idle states
+
+Shreyas B. Prabhu (2):
+  powernv: cpuidle: Redesign idle states management
+  powernv: powerpc: Add winkle support for offline cpus
+
+ arch/powerpc/include/asm/cpuidle.h             |  14 ++
+ arch/powerpc/include/asm/opal.h                |  13 +
+ arch/powerpc/include/asm/paca.h                |   6 +
+ arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+ arch/powerpc/include/asm/processor.h           |   1 +
+ arch/powerpc/include/asm/reg.h                 |   4 +
+ arch/powerpc/kernel/asm-offsets.c              |   6 +
+ arch/powerpc/kernel/cpu_setup_power.S          |   4 +
+ arch/powerpc/kernel/exceptions-64s.S           |  30 ++-
+ arch/powerpc/kernel/idle_power7.S              | 332 +++++++++++++++++++++----
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  39 +++
+ arch/powerpc/platforms/powernv/powernv.h       |   2 +
+ arch/powerpc/platforms/powernv/setup.c         | 160 ++++++++++++
+ arch/powerpc/platforms/powernv/smp.c           |  10 +-
+ arch/powerpc/platforms/powernv/subcore.c       |  34 +++
+ arch/powerpc/platforms/powernv/subcore.h       |   1 +
+ drivers/cpuidle/cpuidle-powernv.c              |  10 +-
+ 17 files changed, 608 insertions(+), 60 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/cpuidle.h
+
+-- 
+1.9.3
