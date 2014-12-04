@@ -1,19 +1,19 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] MFD / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Thu, 04 Dec 2014 01:54:41 +0100
-Message-ID: <2857906.7ft1XTNUKe@vostro.rjw.lan>
+Subject: [PATCH] misc / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Thu, 04 Dec 2014 01:57:13 +0100
+Message-ID: <2262178.AG1kTbXfTd@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52287 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:50028 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751106AbaLDAdU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 19:33:20 -0500
+	with SMTP id S1751322AbaLDAfs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 19:35:48 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Eric Piel <eric.piel@tremplin-utc.net>, Tomas Winkler <tomas.winkler@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
@@ -23,7 +23,7 @@ depending on CONFIG_PM_RUNTIME may now be changed to depend on
 CONFIG_PM.
 
 Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-drivers/mfd/.
+drivers/misc/.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -35,57 +35,162 @@ linux-pm tree).
 Please let me know if it is OK to take this one into linux-pm.
 
 ---
- drivers/mfd/ab8500-gpadc.c |    2 +-
- drivers/mfd/arizona-core.c |    4 ++--
- drivers/mfd/wm8994-core.c  |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/misc/apds990x.c                |    4 ++--
+ drivers/misc/bh1770glc.c               |    2 +-
+ drivers/misc/lis3lv02d/lis3lv02d_i2c.c |    4 ++--
+ drivers/misc/mei/mei_dev.h             |    4 ++--
+ drivers/misc/mei/pci-me.c              |    8 ++++----
+ drivers/misc/mei/pci-txe.c             |    8 +++-----
+ 6 files changed, 14 insertions(+), 16 deletions(-)
 
-Index: linux-pm/drivers/mfd/ab8500-gpadc.c
+Index: linux-pm/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
 ===================================================================
---- linux-pm.orig/drivers/mfd/ab8500-gpadc.c
-+++ linux-pm/drivers/mfd/ab8500-gpadc.c
-@@ -867,7 +867,7 @@ static void ab8500_gpadc_read_calibratio
- 		gpadc->cal_data[ADC_INPUT_VBAT].offset);
+--- linux-pm.orig/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
++++ linux-pm/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
+@@ -235,7 +235,7 @@ static int lis3lv02d_i2c_resume(struct d
  }
+ #endif /* CONFIG_PM_SLEEP */
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int ab8500_gpadc_runtime_suspend(struct device *dev)
+ static int lis3_i2c_runtime_suspend(struct device *dev)
  {
- 	struct ab8500_gpadc *gpadc = dev_get_drvdata(dev);
-Index: linux-pm/drivers/mfd/wm8994-core.c
+ 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
+@@ -253,7 +253,7 @@ static int lis3_i2c_runtime_resume(struc
+ 	lis3lv02d_poweron(lis3);
+ 	return 0;
+ }
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ static const struct i2c_device_id lis3lv02d_id[] = {
+ 	{"lis3lv02d", LIS3LV02D},
+Index: linux-pm/drivers/misc/mei/mei_dev.h
 ===================================================================
---- linux-pm.orig/drivers/mfd/wm8994-core.c
-+++ linux-pm/drivers/mfd/wm8994-core.c
-@@ -116,7 +116,7 @@ static const char *wm8958_main_supplies[
- 	"SPKVDD2",
+--- linux-pm.orig/drivers/misc/mei/mei_dev.h
++++ linux-pm/drivers/misc/mei/mei_dev.h
+@@ -530,9 +530,9 @@ struct mei_device {
+ 	 * Power Gating support
+ 	 */
+ 	enum mei_pg_event pg_event;
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ 	struct dev_pm_domain pg_domain;
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ 	unsigned char rd_msg_buf[MEI_RD_MSG_BUF_SIZE];
+ 	u32 rd_msg_hdr;
+Index: linux-pm/drivers/misc/mei/pci-me.c
+===================================================================
+--- linux-pm.orig/drivers/misc/mei/pci-me.c
++++ linux-pm/drivers/misc/mei/pci-me.c
+@@ -89,13 +89,13 @@ static const struct pci_device_id mei_me
+ 
+ MODULE_DEVICE_TABLE(pci, mei_me_pci_tbl);
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static inline void mei_me_set_pm_domain(struct mei_device *dev);
+ static inline void mei_me_unset_pm_domain(struct mei_device *dev);
+ #else
+ static inline void mei_me_set_pm_domain(struct mei_device *dev) {}
+ static inline void mei_me_unset_pm_domain(struct mei_device *dev) {}
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ /**
+  * mei_me_quirk_probe - probe for devices that doesn't valid ME interface
+@@ -357,7 +357,7 @@ static int mei_me_pci_resume(struct devi
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int mei_me_pm_runtime_idle(struct device *device)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(device);
+@@ -453,7 +453,7 @@ static inline void mei_me_unset_pm_domai
+ 	/* stop using pm callbacks if any */
+ 	dev->dev->pm_domain = NULL;
+ }
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ #ifdef CONFIG_PM
+ static const struct dev_pm_ops mei_me_pm_ops = {
+Index: linux-pm/drivers/misc/mei/pci-txe.c
+===================================================================
+--- linux-pm.orig/drivers/misc/mei/pci-txe.c
++++ linux-pm/drivers/misc/mei/pci-txe.c
+@@ -42,13 +42,13 @@ static const struct pci_device_id mei_tx
  };
+ MODULE_DEVICE_TABLE(pci, mei_txe_pci_tbl);
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int wm8994_suspend(struct device *dev)
+ static inline void mei_txe_set_pm_domain(struct mei_device *dev);
+ static inline void mei_txe_unset_pm_domain(struct mei_device *dev);
+ #else
+ static inline void mei_txe_set_pm_domain(struct mei_device *dev) {}
+ static inline void mei_txe_unset_pm_domain(struct mei_device *dev) {}
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ static void mei_txe_pci_iounmap(struct pci_dev *pdev, struct mei_txe_hw *hw)
  {
- 	struct wm8994 *wm8994 = dev_get_drvdata(dev);
-Index: linux-pm/drivers/mfd/arizona-core.c
+@@ -295,7 +295,7 @@ static int mei_txe_pci_resume(struct dev
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int mei_txe_pm_runtime_idle(struct device *device)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(device);
+@@ -401,9 +401,7 @@ static inline void mei_txe_unset_pm_doma
+ 	/* stop using pm callbacks if any */
+ 	dev->dev->pm_domain = NULL;
+ }
+-#endif /* CONFIG_PM_RUNTIME */
+ 
+-#ifdef CONFIG_PM
+ static const struct dev_pm_ops mei_txe_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(mei_txe_pci_suspend,
+ 				mei_txe_pci_resume)
+Index: linux-pm/drivers/misc/apds990x.c
 ===================================================================
---- linux-pm.orig/drivers/mfd/arizona-core.c
-+++ linux-pm/drivers/mfd/arizona-core.c
-@@ -330,7 +330,7 @@ err_fll:
- 		return err;
+--- linux-pm.orig/drivers/misc/apds990x.c
++++ linux-pm/drivers/misc/apds990x.c
+@@ -609,7 +609,7 @@ static int apds990x_detect(struct apds99
+ 	return ret;
  }
  
--#ifdef CONFIG_PM_RUNTIME
+-#if defined(CONFIG_PM) || defined(CONFIG_PM_RUNTIME)
 +#ifdef CONFIG_PM
- static int arizona_runtime_resume(struct device *dev)
+ static int apds990x_chip_on(struct apds990x_chip *chip)
  {
- 	struct arizona *arizona = dev_get_drvdata(dev);
-@@ -1024,7 +1024,7 @@ int arizona_dev_init(struct arizona *ari
- 		goto err_irq;
- 	}
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	regulator_disable(arizona->dcvdd);
+ 	int err	 = regulator_bulk_enable(ARRAY_SIZE(chip->regs),
+@@ -1237,7 +1237,7 @@ static int apds990x_resume(struct device
+ }
  #endif
  
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int apds990x_runtime_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
+Index: linux-pm/drivers/misc/bh1770glc.c
+===================================================================
+--- linux-pm.orig/drivers/misc/bh1770glc.c
++++ linux-pm/drivers/misc/bh1770glc.c
+@@ -1358,7 +1358,7 @@ static int bh1770_resume(struct device *
+ }
+ #endif
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int bh1770_runtime_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
 
