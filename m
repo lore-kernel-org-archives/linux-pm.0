@@ -1,95 +1,77 @@
-From: Dennis Wassenberg <dennis.wassenberg@secunet.com>
-Subject: Re: S0iX Ultra Low Power States
-Date: Thu, 4 Dec 2014 10:59:50 +0100
-Message-ID: <54803096.6070807@secunet.com>
-References: <54747B59.2080503@secunet.com> <20141125101359.088cdacf@kcaccard-desk.amr.corp.intel.com> <54770FF3.4000809@secunet.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/4] PM: Drop the SET_PM_RUNTIME_PM_OPS() macro
+Date: Thu, 4 Dec 2014 11:04:20 +0100
+Message-ID: <CAPDyKFr_WEbeHLY9Q03PxpMnOwVAaj1PN28pvU6d-WoO+ocAgA@mail.gmail.com>
+References: <37310416.jZXoh5nfSC@vostro.rjw.lan>
+	<3484329.phAPviVnbd@vostro.rjw.lan>
+	<CAPDyKFoZmCYYNAGfNzwwEj=jk9wrfCKoxqQ4p=KStADSK1suCg@mail.gmail.com>
+	<2647870.gu06V1GGvo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from a.mx.secunet.com ([195.81.216.161]:52510 "EHLO a.mx.secunet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbaLDKAP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Dec 2014 05:00:15 -0500
-In-Reply-To: <54770FF3.4000809@secunet.com>
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:52057 "EHLO
+	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753723AbaLDKEW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 05:04:22 -0500
+Received: by mail-oi0-f42.google.com with SMTP id v63so12164810oia.29
+        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2014 02:04:21 -0800 (PST)
+In-Reply-To: <2647870.gu06V1GGvo@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi Kristen,
+On 3 December 2014 at 23:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, December 03, 2014 03:15:49 PM Ulf Hansson wrote:
+>> On 27 November 2014 at 01:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > The SET_PM_RUNTIME_PM_OPS() and SET_RUNTIME_PM_OPS() macros are
+>> > identical except that one of them is not empty for CONFIG_PM set,
+>> > while the other one is not empty for CONFIG_PM_RUNTIME set,
+>> > respectively.
+>> >
+>> > However, after commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+>> > PM_SLEEP is selected) PM_RUNTIME is always set if PM is set, so one
+>> > of these macros is now redundant.
+>> >
+>> > For this reason, drop SET_PM_RUNTIME_PM_OPS() and replace it with
+>> > SET_RUNTIME_PM_OPS() everywhere.
+>>
+>> Hi Rafael,
+>>
+>> Apparently, I have queued an mmc patch in my mmc tree, which means one
+>> mmc driver starts using the SET_PM_RUNTIME_PM_OPS macro. It should
+>> cause a build error in linux-next with @subject patch.
+>>
+>> I have shared that patch through an immutable branch, I have also
+>> checked potential conflicts and it shouldn't be any problems to pull
+>> that in to your tree. Then you can fix $subject patch by also
+>> converting the mmc driver to use SET_RUNTIME_PM_OPS macro.
+>>
+>> The branch is available at:
+>> git://git.linaro.org/people/ulf.hansson/mmc.git mmc_for_linux_pm
+>
+> Thanks for letting me know!
+>
+> What about adding the following line to the $subject patch instead:
+>
+> #define SET_PM_RUNTIME_PM_OPS   SET_RUNTIME_PM_OPS
+>
+> and fixing things up when all has been merged?
 
-Now I am investigating on an other device (Microsoft Surface Pro 3).
-There I followed your instructions but without success. Even powertop
-assumes that everything is tuned for low power.
+That's an option.
 
-This device takes 2.5 Watt in freeze mode. So I assume that the S0i3
-state was not entered automatically. Is there any possibility to check
-which precondition is not satisfied? Or can I force the system to enter
-S0iX states?
+On the other hand we will have a window of new users of
+SET_PM_RUNTIME_PM_OPS, during the next release cycle. Or are you
+saying that we should send fixes for the rc which takes care of the
+removal of it?
 
-Thank you & best regards,
-Dennis
+Kind regards
+Uffe
 
-On 27.11.2014 12:50, Dennis Wassenberg wrote:
-> Hi Kristen,
-> 
-> thank you for these hints. Especially these regarding PCIe endpoint
-> devices. I found that some of these was configured to be always on which
-> prevents the system from entering the S0iX states. After changing this
-> the power consumption reduced to approximately 0.5 Watt.
-> 
-> Thank you & best regards,
-> 
-> Dennis
-> 
-> On 25.11.2014 19:13, Kristen Carlson Accardi wrote:
->> On Tue, 25 Nov 2014 13:51:37 +0100
->> Dennis Wassenberg <dennis.wassenberg@secunet.com> wrote:
->>
->>> Hi,
->>>
->>> I would like to know more about the Linux power management in
->>> correlation to the Intel S0iX Ultra Low Power States.
->>>
->>> Systems which have a Windows 8 Logo must support Connected Standby (or
->>> InstantGo, however it is called). One of the requirements getting this
->>> logo is that the ACPI firmware must not provide an S3 object in the root
->>> of the namespace. This means that Linux can not use the S3 mode.
->>>
->>> To archive a very low power consumption Microsoft uses the Ultra Low
->>> Power States S0i1 and S0i3. Is there a way to use these low power states
->>> in linux for Haswell/LynxPoint or Broadwell/Skylake platforms?
->>>
->>> I read something about these states. Such that they can be activated
->>> automatically but there are some preconditions (e.g. certain IO devices
->>> have to put into a low power state, graphics off, only one CPU online,
->>> ...). If I enter the S1 Low Power State (with additional
->>> disable_nonboot_cpus) all of these preconditions should be fulfilled?!
->>> But I can not observe that the there is a power consumption less than 1
->>> Watt.
->>>
->>> Thank you & Best regards,
->>>
->>> Dennis
->>
->> Hi,
->> On haswell ULT and Broadwell ULT these states can be entered as part of
->> Linux's normal Idle flow if some preconditions are met.  You should run
->> powertop to ensure that all devices are tuned for low power.  The
->> embedded display must be off. (no external display connected).  You
->> should confirm that all PCIe endpoint devices on your platform support
->> ASPM and L1 substates (using lspci).  If they do not, you must ensure
->> they are in D3.  You should kill or freeze any processes that frequently
->> wake in order to improve your average battery life.  You can use
->> powertop or turbostat to confirm entry into pc8/pc9/pc10.
->>
->> Good luck.
->> Kristen
->>
->>
+>
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
