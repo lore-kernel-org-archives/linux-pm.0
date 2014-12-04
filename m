@@ -1,35 +1,59 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] power: Use subdir-ccflags-* to inherit debug flag
-Date: Thu,  4 Dec 2014 16:34:48 +0100
-Message-ID: <1417707288-675-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from andre.telenet-ops.be ([195.130.132.53]:33963 "EHLO
-	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753982AbaLDPev (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 10:34:51 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2] PM / Domains: Add pm_genpd_lookup() API to lookup
+ domain by firmware node
+Date: Thu, 4 Dec 2014 16:42:16 +0100
+Message-ID: <CAPDyKFozWmOuCA_uR1b7BAxhYUGUFp48K0b4tTR-cWjzjgR2FQ@mail.gmail.com>
+References: <1417171115-5789-1-git-send-email-ulf.hansson@linaro.org>
+	<5765394.eQjV2VvkSL@vostro.rjw.lan>
+	<CAPDyKFpX5nXR18pKdLrtDrPK60p1y2CEqq+--3z3jczRRmKrqA@mail.gmail.com>
+	<CADGdYn5aLr69PrqO5RvU4q6HU9pPZ+1tWL27cc=cVazAvSVFpQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADGdYn5aLr69PrqO5RvU4q6HU9pPZ+1tWL27cc=cVazAvSVFpQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Use subdir-ccflags-* instead of ccflags-* to inherit the debug
-settings from Kconfig when traversing subdirectories.
+On 1 December 2014 at 12:57, amit daniel kachhap
+<amit.daniel@samsung.com> wrote:
+> On Mon, Dec 1, 2014 at 3:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 29 November 2014 at 01:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Friday, November 28, 2014 11:38:35 AM Ulf Hansson wrote:
+>>>> In a step to move away from using genpd's name based APIs, such as the
+>>>> pm_genpd_add_subdomain_names(), provide an API to lookup an already
+>>>> initialized generic PM domain by its firmware node.
+>>>>
+>>>> This API would typically be a called from SOC specific code, to fetch a
+>>>> handle to the domain. Especially convenient to configure subdomains and
+>>>> when the hierarchy of the domains are described in DT.
+>>>>
+>>>> Do note, before pm_genpd_init() is invoked to initialize a generic PM
+>>>> domain, it's the callers responsibility to assign the new ->fwnode
+>>>> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
+>>>> find the domain.
+>>>>
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>
+>>> I have no problems with that, but do you have a user for it?
+>>
+>> Amit Daniel Kachhap, posted a patchset which is adding subdomains
+>> configured from DT for Exynos. It's from there the idea to this patch
+>> comes from. Amit is about to post a new version, based on this patch.
+>
+> Hi Ulf,
+>
+> I was trying to use this API but i felt there is a better way of just exporting
+> of_genpd_get_from_provider as a similar API is used to register the
+> power domain.
+>
+> Check if this make sense www.spinics.net/lists/arm-kernel/msg382665.html.
+>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/power/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+That makes sense!
 
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index dfa89427392636ed..845e2e25b016f04e 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -1,4 +1,4 @@
--ccflags-$(CONFIG_POWER_SUPPLY_DEBUG) := -DDEBUG
-+subdir-ccflags-$(CONFIG_POWER_SUPPLY_DEBUG) := -DDEBUG
- 
- power_supply-y				:= power_supply_core.o
- power_supply-$(CONFIG_SYSFS)		+= power_supply_sysfs.o
--- 
-1.9.1
+So, let's drop $subject patch.
 
+Kind regards
+Uffe
