@@ -1,57 +1,62 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] drivers: sh / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Thu, 4 Dec 2014 10:01:34 +0100
-Message-ID: <CAMuHMdVG2ZR4X4pYSAZYP12x+oMfCEd_7ciuHqBjGQqSumNYzQ@mail.gmail.com>
-References: <3463511.sXIeyHdjYI@vostro.rjw.lan>
-	<20141204035758.GA6346@verge.net.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Thu, 04 Dec 2014 10:01:56 +0100
+Message-ID: <8625951.Wbs2MxLnhi@wuerfel>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <2596381.rFt35NU3oS@wuerfel> <548020D7.8030003@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:45734 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbaLDJBg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 04:01:36 -0500
-In-Reply-To: <20141204035758.GA6346@verge.net.au>
+Received: from mout.kundenserver.de ([212.227.17.13]:50705 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbaLDJCf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 04:02:35 -0500
+In-Reply-To: <548020D7.8030003@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-On Thu, Dec 4, 2014 at 4:58 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Thu, Dec 04, 2014 at 02:24:22AM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
->> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
->> depending on CONFIG_PM_RUNTIME may now be changed to depend on
->> CONFIG_PM.
->>
->> Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/sh/pm_runtime.c.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
->> PM_SLEEP is selected) which is only in linux-next at the moment (via the
->> linux-pm tree).
->>
->> Please let me know if it is OK to take this one into linux-pm.
->
-> Hi Rafael,
->
-> That is fine by me if it is fine by Geert.
->
-> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+On Thursday 04 December 2014 09:52:39 Daniel Lezcano wrote:
+> On 12/03/2014 09:35 PM, Arnd Bergmann wrote:
+> > On Wednesday 03 December 2014 07:31:22 Lina Iyer wrote:
+> >>>>> +static int __init qcom_spm_init(void)
+> >>>>> +{
+> >>>>> +    int ret;
+> >>>>> +
+> >>>>> +    /*
+> >>>>> +     * cpuidle driver need to registered before the cpuidle device
+> >>>>> +     * for any cpu. Register the device for the the cpuidle driver.
+> >>>>> +     */
+> >>>>> +    ret = platform_device_register(&qcom_cpuidle_drv);
+> >>>>> +    if (ret)
+> >>>>> +        return ret;
+> >>>> Stephen pointed out that we would have the platform device lying around
+> >>>> on a non-QCOM device when using multi_v7_defconfig.
+> >>>
+> >>> Perhaps I am missing the point, but this is not supposed to happen, no ?
+> >>>
+> >> This would happen, since the file would compile on multi_v7 and we would
+> >> initialize and register this device regardless. The cpuidle-qcom.c
+> >> driver probe would bail out looking for a matching compatible property.
+> >> So we would not register a cpuidle driver but the device would lay
+> >> around.
+> >
+> > I think the problem is registering a platform_device. I've complained
+> > about this before, but it still seems to get copied all over the
+> > place. Please don't do this but have a driver that looks at DT to
+> > figure out whether to access hardware or not.
+> 
+> We did this approach but, I can remember why, someone was complaining 
+> about it also 
+> 
+> The platform device/driver paradigm allowed us to split the arch 
+> specific parts by passing the pm ops through the platform data.
+> 
+> Would make sense to have a single common place for the ARM arch where we 
+> initialize the platform device for cpuidle ?
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+No. It's really not a device, and if you pretend that it is, you get
+into problems like this.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+	Arnd
