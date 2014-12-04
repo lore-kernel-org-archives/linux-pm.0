@@ -1,19 +1,19 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] misc / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Thu, 04 Dec 2014 01:57:13 +0100
-Message-ID: <2262178.AG1kTbXfTd@vostro.rjw.lan>
+Subject: [PATCH] MMC / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Thu, 04 Dec 2014 02:12:01 +0100
+Message-ID: <14058791.TAS1lQ00cW@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50028 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60377 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751322AbaLDAfs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 19:35:48 -0500
+	with SMTP id S1752000AbaLDAuj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 19:50:39 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Eric Piel <eric.piel@tremplin-utc.net>, Tomas Winkler <tomas.winkler@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-mmc@vger.kernel.org
+Cc: Chris Ball <chris@printf.net>, Ulf Hansson <ulf.hansson@linaro.org>, Ben Dooks <ben-linux@fluff.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
@@ -35,162 +35,204 @@ linux-pm tree).
 Please let me know if it is OK to take this one into linux-pm.
 
 ---
- drivers/misc/apds990x.c                |    4 ++--
- drivers/misc/bh1770glc.c               |    2 +-
- drivers/misc/lis3lv02d/lis3lv02d_i2c.c |    4 ++--
- drivers/misc/mei/mei_dev.h             |    4 ++--
- drivers/misc/mei/pci-me.c              |    8 ++++----
- drivers/misc/mei/pci-txe.c             |    8 +++-----
- 6 files changed, 14 insertions(+), 16 deletions(-)
+ drivers/mmc/core/bus.c             |    4 ++--
+ drivers/mmc/host/sdhci-acpi.c      |    2 +-
+ drivers/mmc/host/sdhci-esdhc-imx.c |    4 ++--
+ drivers/mmc/host/sdhci-pci.c       |   18 +++++++-----------
+ drivers/mmc/host/sdhci-pxav3.c     |    2 +-
+ drivers/mmc/host/sdhci-s3c.c       |    6 +++---
+ drivers/mmc/host/sdhci.c           |    7 ++-----
+ drivers/mmc/host/sdhci.h           |    3 ---
+ 8 files changed, 18 insertions(+), 28 deletions(-)
 
-Index: linux-pm/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
+Index: linux-pm/drivers/mmc/core/bus.c
 ===================================================================
---- linux-pm.orig/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
-+++ linux-pm/drivers/misc/lis3lv02d/lis3lv02d_i2c.c
-@@ -235,7 +235,7 @@ static int lis3lv02d_i2c_resume(struct d
+--- linux-pm.orig/drivers/mmc/core/bus.c
++++ linux-pm/drivers/mmc/core/bus.c
+@@ -179,7 +179,7 @@ static int mmc_bus_resume(struct device
  }
- #endif /* CONFIG_PM_SLEEP */
+ #endif
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int lis3_i2c_runtime_suspend(struct device *dev)
+ static int mmc_runtime_suspend(struct device *dev)
  {
- 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
-@@ -253,7 +253,7 @@ static int lis3_i2c_runtime_resume(struc
- 	lis3lv02d_poweron(lis3);
+ 	struct mmc_card *card = mmc_dev_to_card(dev);
+@@ -195,7 +195,7 @@ static int mmc_runtime_resume(struct dev
+ 
+ 	return host->bus_ops->runtime_resume(host);
+ }
+-#endif /* !CONFIG_PM_RUNTIME */
++#endif /* !CONFIG_PM */
+ 
+ static const struct dev_pm_ops mmc_bus_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(mmc_runtime_suspend, mmc_runtime_resume, NULL)
+Index: linux-pm/drivers/mmc/host/sdhci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/mmc/host/sdhci-acpi.c
++++ linux-pm/drivers/mmc/host/sdhci-acpi.c
+@@ -416,7 +416,7 @@ static int sdhci_acpi_resume(struct devi
+ 
+ #endif
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ 
+ static int sdhci_acpi_runtime_suspend(struct device *dev)
+ {
+Index: linux-pm/drivers/mmc/host/sdhci-esdhc-imx.c
+===================================================================
+--- linux-pm.orig/drivers/mmc/host/sdhci-esdhc-imx.c
++++ linux-pm/drivers/mmc/host/sdhci-esdhc-imx.c
+@@ -1172,7 +1172,7 @@ static int sdhci_esdhc_imx_remove(struct
+ 	pm_runtime_dont_use_autosuspend(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 
+-	if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
++	if (!IS_ENABLED(CONFIG_PM)) {
+ 		clk_disable_unprepare(imx_data->clk_per);
+ 		clk_disable_unprepare(imx_data->clk_ipg);
+ 		clk_disable_unprepare(imx_data->clk_ahb);
+@@ -1183,7 +1183,7 @@ static int sdhci_esdhc_imx_remove(struct
  	return 0;
  }
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- static const struct i2c_device_id lis3lv02d_id[] = {
- 	{"lis3lv02d", LIS3LV02D},
-Index: linux-pm/drivers/misc/mei/mei_dev.h
-===================================================================
---- linux-pm.orig/drivers/misc/mei/mei_dev.h
-+++ linux-pm/drivers/misc/mei/mei_dev.h
-@@ -530,9 +530,9 @@ struct mei_device {
- 	 * Power Gating support
- 	 */
- 	enum mei_pg_event pg_event;
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 	struct dev_pm_domain pg_domain;
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- 	unsigned char rd_msg_buf[MEI_RD_MSG_BUF_SIZE];
- 	u32 rd_msg_hdr;
-Index: linux-pm/drivers/misc/mei/pci-me.c
-===================================================================
---- linux-pm.orig/drivers/misc/mei/pci-me.c
-+++ linux-pm/drivers/misc/mei/pci-me.c
-@@ -89,13 +89,13 @@ static const struct pci_device_id mei_me
- 
- MODULE_DEVICE_TABLE(pci, mei_me_pci_tbl);
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static inline void mei_me_set_pm_domain(struct mei_device *dev);
- static inline void mei_me_unset_pm_domain(struct mei_device *dev);
- #else
- static inline void mei_me_set_pm_domain(struct mei_device *dev) {}
- static inline void mei_me_unset_pm_domain(struct mei_device *dev) {}
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- /**
-  * mei_me_quirk_probe - probe for devices that doesn't valid ME interface
-@@ -357,7 +357,7 @@ static int mei_me_pci_resume(struct devi
- }
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int mei_me_pm_runtime_idle(struct device *device)
+ static int sdhci_esdhc_runtime_suspend(struct device *dev)
  {
- 	struct pci_dev *pdev = to_pci_dev(device);
-@@ -453,7 +453,7 @@ static inline void mei_me_unset_pm_domai
- 	/* stop using pm callbacks if any */
- 	dev->dev->pm_domain = NULL;
- }
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- #ifdef CONFIG_PM
- static const struct dev_pm_ops mei_me_pm_ops = {
-Index: linux-pm/drivers/misc/mei/pci-txe.c
+ 	struct sdhci_host *host = dev_get_drvdata(dev);
+Index: linux-pm/drivers/mmc/host/sdhci-pci.c
 ===================================================================
---- linux-pm.orig/drivers/misc/mei/pci-txe.c
-+++ linux-pm/drivers/misc/mei/pci-txe.c
-@@ -42,13 +42,13 @@ static const struct pci_device_id mei_tx
- };
- MODULE_DEVICE_TABLE(pci, mei_txe_pci_tbl);
+--- linux-pm.orig/drivers/mmc/host/sdhci-pci.c
++++ linux-pm/drivers/mmc/host/sdhci-pci.c
+@@ -134,7 +134,7 @@ static int pch_hc_probe_slot(struct sdhc
+ 	return 0;
+ }
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static inline void mei_txe_set_pm_domain(struct mei_device *dev);
- static inline void mei_txe_unset_pm_domain(struct mei_device *dev);
- #else
- static inline void mei_txe_set_pm_domain(struct mei_device *dev) {}
- static inline void mei_txe_unset_pm_domain(struct mei_device *dev) {}
--#endif /* CONFIG_PM_RUNTIME */
+ 
+ static irqreturn_t sdhci_pci_sd_cd(int irq, void *dev_id)
+ {
+@@ -1230,15 +1230,6 @@ static int sdhci_pci_resume(struct devic
+ 	return 0;
+ }
+ 
+-#else /* CONFIG_PM */
+-
+-#define sdhci_pci_suspend NULL
+-#define sdhci_pci_resume NULL
+-
+-#endif /* CONFIG_PM */
+-
+-#ifdef CONFIG_PM_RUNTIME
+-
+ static int sdhci_pci_runtime_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
+@@ -1310,7 +1301,12 @@ static int sdhci_pci_runtime_idle(struct
+ 	return 0;
+ }
+ 
+-#endif
++#else /* CONFIG_PM */
++
++#define sdhci_pci_suspend NULL
++#define sdhci_pci_resume NULL
++
 +#endif /* CONFIG_PM */
  
- static void mei_txe_pci_iounmap(struct pci_dev *pdev, struct mei_txe_hw *hw)
- {
-@@ -295,7 +295,7 @@ static int mei_txe_pci_resume(struct dev
- }
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int mei_txe_pm_runtime_idle(struct device *device)
- {
- 	struct pci_dev *pdev = to_pci_dev(device);
-@@ -401,9 +401,7 @@ static inline void mei_txe_unset_pm_doma
- 	/* stop using pm callbacks if any */
- 	dev->dev->pm_domain = NULL;
- }
--#endif /* CONFIG_PM_RUNTIME */
- 
--#ifdef CONFIG_PM
- static const struct dev_pm_ops mei_txe_pm_ops = {
- 	SET_SYSTEM_SLEEP_PM_OPS(mei_txe_pci_suspend,
- 				mei_txe_pci_resume)
-Index: linux-pm/drivers/misc/apds990x.c
+ static const struct dev_pm_ops sdhci_pci_pm_ops = {
+ 	.suspend = sdhci_pci_suspend,
+Index: linux-pm/drivers/mmc/host/sdhci-pxav3.c
 ===================================================================
---- linux-pm.orig/drivers/misc/apds990x.c
-+++ linux-pm/drivers/misc/apds990x.c
-@@ -609,7 +609,7 @@ static int apds990x_detect(struct apds99
- 	return ret;
- }
- 
--#if defined(CONFIG_PM) || defined(CONFIG_PM_RUNTIME)
-+#ifdef CONFIG_PM
- static int apds990x_chip_on(struct apds990x_chip *chip)
- {
- 	int err	 = regulator_bulk_enable(ARRAY_SIZE(chip->regs),
-@@ -1237,7 +1237,7 @@ static int apds990x_resume(struct device
+--- linux-pm.orig/drivers/mmc/host/sdhci-pxav3.c
++++ linux-pm/drivers/mmc/host/sdhci-pxav3.c
+@@ -436,7 +436,7 @@ static int sdhci_pxav3_resume(struct dev
  }
  #endif
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int apds990x_runtime_suspend(struct device *dev)
+ static int sdhci_pxav3_runtime_suspend(struct device *dev)
  {
- 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
-Index: linux-pm/drivers/misc/bh1770glc.c
+ 	struct sdhci_host *host = dev_get_drvdata(dev);
+Index: linux-pm/drivers/mmc/host/sdhci-s3c.c
 ===================================================================
---- linux-pm.orig/drivers/misc/bh1770glc.c
-+++ linux-pm/drivers/misc/bh1770glc.c
-@@ -1358,7 +1358,7 @@ static int bh1770_resume(struct device *
+--- linux-pm.orig/drivers/mmc/host/sdhci-s3c.c
++++ linux-pm/drivers/mmc/host/sdhci-s3c.c
+@@ -609,7 +609,7 @@ static int sdhci_s3c_probe(struct platfo
+ 		goto err_req_regs;
+ 	}
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ 	if (pdata->cd_type != S3C_SDHCI_CD_INTERNAL)
+ 		clk_disable_unprepare(sc->clk_io);
+ #endif
+@@ -635,7 +635,7 @@ static int sdhci_s3c_remove(struct platf
+ 	if (sc->ext_cd_irq)
+ 		free_irq(sc->ext_cd_irq, sc);
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ 	if (sc->pdata->cd_type != S3C_SDHCI_CD_INTERNAL)
+ 		clk_prepare_enable(sc->clk_io);
+ #endif
+@@ -667,7 +667,7 @@ static int sdhci_s3c_resume(struct devic
  }
  #endif
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static int bh1770_runtime_suspend(struct device *dev)
+ static int sdhci_s3c_runtime_suspend(struct device *dev)
  {
- 	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
+ 	struct sdhci_host *host = dev_get_drvdata(dev);
+Index: linux-pm/drivers/mmc/host/sdhci.c
+===================================================================
+--- linux-pm.orig/drivers/mmc/host/sdhci.c
++++ linux-pm/drivers/mmc/host/sdhci.c
+@@ -56,7 +56,7 @@ static int sdhci_execute_tuning(struct m
+ static void sdhci_tuning_timer(unsigned long data);
+ static void sdhci_enable_preset_value(struct sdhci_host *host, bool enable);
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ static int sdhci_runtime_pm_get(struct sdhci_host *host);
+ static int sdhci_runtime_pm_put(struct sdhci_host *host);
+ static void sdhci_runtime_pm_bus_on(struct sdhci_host *host);
+@@ -2654,9 +2654,6 @@ int sdhci_resume_host(struct sdhci_host
+ }
+ 
+ EXPORT_SYMBOL_GPL(sdhci_resume_host);
+-#endif /* CONFIG_PM */
+-
+-#ifdef CONFIG_PM_RUNTIME
+ 
+ static int sdhci_runtime_pm_get(struct sdhci_host *host)
+ {
+@@ -2757,7 +2754,7 @@ int sdhci_runtime_resume_host(struct sdh
+ }
+ EXPORT_SYMBOL_GPL(sdhci_runtime_resume_host);
+ 
+-#endif
++#endif /* CONFIG_PM */
+ 
+ /*****************************************************************************\
+  *                                                                           *
+Index: linux-pm/drivers/mmc/host/sdhci.h
+===================================================================
+--- linux-pm.orig/drivers/mmc/host/sdhci.h
++++ linux-pm/drivers/mmc/host/sdhci.h
+@@ -411,9 +411,6 @@ void sdhci_set_uhs_signaling(struct sdhc
+ extern int sdhci_suspend_host(struct sdhci_host *host);
+ extern int sdhci_resume_host(struct sdhci_host *host);
+ extern void sdhci_enable_irq_wakeups(struct sdhci_host *host);
+-#endif
+-
+-#ifdef CONFIG_PM_RUNTIME
+ extern int sdhci_runtime_suspend_host(struct sdhci_host *host);
+ extern int sdhci_runtime_resume_host(struct sdhci_host *host);
+ #endif
 
