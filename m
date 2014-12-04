@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 23/26] thermal: cpu_cooling: Pass 'cpufreq_dev' to get_property()
-Date: Thu,  4 Dec 2014 09:42:05 +0530
-Message-ID: <97446fa591216a1c23f732d48294f550db8c0972.1417664938.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 24/26] thermal: cpu_cooling: Store frequencies in descending order
+Date: Thu,  4 Dec 2014 09:42:06 +0530
+Message-ID: <cda097e4e9379ed48bc8f0279bfdd6699928d2d1.1417664938.git.viresh.kumar@linaro.org>
 References: <cover.1417664938.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:63582 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbaLDEOP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 23:14:15 -0500
-Received: by mail-pd0-f174.google.com with SMTP id w10so16731268pde.5
-        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 20:14:14 -0800 (PST)
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:56380 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbaLDEOT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 23:14:19 -0500
+Received: by mail-pa0-f54.google.com with SMTP id fb1so17241400pad.13
+        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 20:14:18 -0800 (PST)
 In-Reply-To: <cover.1417664938.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1417664938.git.viresh.kumar@linaro.org>
 References: <cover.1417664938.git.viresh.kumar@linaro.org>
@@ -18,138 +18,127 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, edubezval@gmail.com
 Cc: linaro-kernel@lists.linaro.org, rui.zhang@intel.com, amit.daniel@samsung.com, javi.merino@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-We already know the value of 'cpufreq_dev->max_level' and so there is no need
-calculating that once again. For this, we need to send 'cpufreq_dev' to
-get_property().
+CPUFreq framework *doesn't* guarantee that frequencies present in cpufreq table
+will be in ascending or descending order. But cpu_cooling somehow assumes that.
 
-Make all necessary changes for this change. Because cpufreq_cooling_get_level()
-doesn't have access to 'cpufreq_dev', it is updated to iterate over the list of
-cpufreq_cooling_devices to get cooling device for the cpu number passed to it.
-This also makes it robust to return levels only for the CPU registered via a
-cooling device. We don't have to support anything that isn't registered yet.
+Probably because most of current users are creating this list from DT, which is
+done with the help of OPP layer. And OPP layer creates the list in ascending
+order of frequencies.
+
+But cpu_cooling can be used for other platforms too, which don't have
+frequencies arranged in any order.
+
+This patch tries to fix this issue by creating another list of valid frequencies
+in descending order. Care is also taken to throw warnings for duplicate entries.
+
+Later patches would use it to simplify code.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 50 +++++++++++++++++++++++--------------------
- 1 file changed, 27 insertions(+), 23 deletions(-)
+ drivers/thermal/cpu_cooling.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 40 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 32ff6dc..7687922 100644
+index 7687922..cb5a4b9 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -118,7 +118,7 @@ enum cpufreq_cooling_property {
+@@ -65,6 +65,7 @@ struct cpufreq_cooling_device {
+ 	unsigned int cpufreq_state;
+ 	unsigned int cpufreq_val;
+ 	unsigned int max_level;
++	unsigned int *freq_table;	/* In descending order */
+ 	struct cpumask allowed_cpus;
+ 	struct list_head node;
+ };
+@@ -352,6 +353,20 @@ static struct notifier_block thermal_cpufreq_notifier_block = {
+ 	.notifier_call = cpufreq_thermal_notifier,
+ };
  
++static unsigned int find_next_max(struct cpufreq_frequency_table *table,
++				  unsigned int prev_max)
++{
++	struct cpufreq_frequency_table *pos;
++	unsigned int max = 0;
++
++	cpufreq_for_each_valid_entry(pos, table) {
++		if (pos->frequency > max && pos->frequency < prev_max)
++			max = pos->frequency;
++	}
++
++	return max;
++}
++
  /**
-  * get_property - fetch a property of interest for a given cpu.
-- * @cpu: cpu for which the property is required
-+ * @cpufreq_dev: cpufreq_dev for which the property is required
-  * @input: query parameter
-  * @output: query return
-  * @property: type of query (frequency, level)
-@@ -135,20 +135,20 @@ enum cpufreq_cooling_property {
-  *
-  * Return: 0 on success, -EINVAL when invalid parameters are passed.
-  */
--static int get_property(unsigned int cpu, unsigned long input,
--			unsigned int *output,
-+static int get_property(struct cpufreq_cooling_device *cpufreq_dev,
-+			unsigned long input, unsigned int *output,
- 			enum cpufreq_cooling_property property)
- {
- 	int i;
--	unsigned long max_level = 0, level = 0;
-+	unsigned long level = 0;
- 	unsigned int freq = CPUFREQ_ENTRY_INVALID;
- 	int descend = -1;
--	struct cpufreq_frequency_table *pos, *table =
--					cpufreq_frequency_get_table(cpu);
-+	struct cpufreq_frequency_table *pos, *table;
+  * __cpufreq_cooling_register - helper function to create cpufreq cooling device
+  * @np: a valid struct device_node to the cooling device device tree node
+@@ -374,6 +389,7 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	struct cpufreq_cooling_device *cpufreq_dev;
+ 	char dev_name[THERMAL_NAME_LENGTH];
+ 	struct cpufreq_frequency_table *pos, *table;
++	unsigned int freq, i;
+ 	int ret;
  
- 	if (!output)
- 		return -EINVAL;
+ 	table = cpufreq_frequency_get_table(cpumask_first(clip_cpus));
+@@ -397,6 +413,14 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	cpufreq_for_each_valid_entry(pos, table)
+ 		cpufreq_dev->max_level++;
  
-+	table = cpufreq_frequency_get_table(cpumask_first(&cpufreq_dev->allowed_cpus));
- 	if (!table)
- 		return -EINVAL;
++	cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
++					  cpufreq_dev->max_level, GFP_KERNEL);
++	if (!cpufreq_dev->freq_table) {
++		return ERR_PTR(-ENOMEM);
++		cool_dev = ERR_PTR(-ENOMEM);
++		goto free_cdev;
++	}
++
+ 	/* max_level is an index, not a counter */
+ 	cpufreq_dev->max_level--;
  
-@@ -162,18 +162,10 @@ static int get_property(unsigned int cpu, unsigned long input,
- 			descend = freq > pos->frequency;
- 
- 		freq = pos->frequency;
--		max_level++;
+@@ -405,7 +429,7 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
+ 	if (ret) {
+ 		cool_dev = ERR_PTR(ret);
+-		goto free_cdev;
++		goto free_table;
  	}
  
--	/* No valid cpu frequency entry */
--	if (max_level == 0)
--		return -EINVAL;
--
--	/* max_level is an index, not a counter */
--	max_level--;
--
- 	if (property == GET_FREQ)
--		level = descend ? input : (max_level - input);
-+		level = descend ? input : (cpufreq_dev->max_level - input);
+ 	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
+@@ -416,6 +440,18 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	if (IS_ERR(cool_dev))
+ 		goto remove_idr;
  
- 	i = 0;
- 	cpufreq_for_each_valid_entry(pos, table) {
-@@ -186,7 +178,7 @@ static int get_property(unsigned int cpu, unsigned long input,
- 
- 		if (property == GET_LEVEL && (unsigned int)input == freq) {
- 			/* get level by frequency */
--			*output = descend ? i : (max_level - i);
-+			*output = descend ? i : (cpufreq_dev->max_level - i);
- 			return 0;
- 		}
- 		if (property == GET_FREQ && level == i) {
-@@ -213,12 +205,25 @@ static int get_property(unsigned int cpu, unsigned long input,
-  */
- unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
- {
--	unsigned int val;
-+	struct cpufreq_cooling_device *cpufreq_dev;
- 
--	if (get_property(cpu, (unsigned long)freq, &val, GET_LEVEL))
--		return THERMAL_CSTATE_INVALID;
-+	mutex_lock(&cooling_cpufreq_lock);
-+	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
-+		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
-+			unsigned int val;
++	/* Fill freq-table in descending order of frequencies */
++	for (i = 0, freq = -1; i <= cpufreq_dev->max_level; i++) {
++		freq = find_next_max(table, freq);
++		cpufreq_dev->freq_table[i] = freq;
 +
-+			mutex_unlock(&cooling_cpufreq_lock);
-+			if (get_property(cpufreq_dev, (unsigned long)freq, &val,
-+					 GET_LEVEL))
-+				return THERMAL_CSTATE_INVALID;
-+
-+			return (unsigned long)val;
-+		}
++		/* Warn for duplicate entries */
++		if (!freq)
++			pr_warn("%s: table has duplicate entries\n", __func__);
++		else
++			pr_debug("%s: freq:%u KHz\n", __func__, freq);
 +	}
-+	mutex_unlock(&cooling_cpufreq_lock);
++
+ 	cpufreq_dev->cool_dev = cool_dev;
  
--	return (unsigned long)val;
-+	pr_err("%s: cpu:%d not part of any cooling device\n", __func__, cpu);
-+	return THERMAL_CSTATE_INVALID;
+ 	mutex_lock(&cooling_cpufreq_lock);
+@@ -432,6 +468,8 @@ __cpufreq_cooling_register(struct device_node *np,
+ 
+ remove_idr:
+ 	release_idr(&cpufreq_idr, cpufreq_dev->id);
++free_table:
++	kfree(cpufreq_dev->freq_table);
+ free_cdev:
+ 	kfree(cpufreq_dev);
+ 
+@@ -505,6 +543,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+ 	release_idr(&cpufreq_idr, cpufreq_dev->id);
++	kfree(cpufreq_dev->freq_table);
+ 	kfree(cpufreq_dev);
  }
- EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
- 
-@@ -323,7 +328,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	if (cpufreq_device->cpufreq_state == state)
- 		return 0;
- 
--	ret = get_property(cpu, state, &clip_freq, GET_FREQ);
-+	ret = get_property(cpufreq_device, state, &clip_freq, GET_FREQ);
- 	if (ret)
- 		return ret;
- 
-@@ -381,8 +386,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 	if (!cpufreq_dev)
- 		return ERR_PTR(-ENOMEM);
- 
--	ret = get_property(cpumask_any(clip_cpus), 0, &cpufreq_dev->cpufreq_val,
--			   GET_FREQ);
-+	ret = get_property(cpufreq_dev, 0, &cpufreq_dev->cpufreq_val, GET_FREQ);
- 	if (ret) {
- 		pr_err("%s: Failed to get frequency: %d", __func__, ret);
- 		cool_dev = ERR_PTR(ret);
+ EXPORT_SYMBOL_GPL(cpufreq_cooling_unregister);
 -- 
 2.0.3.693.g996b0fd
 
