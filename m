@@ -1,62 +1,36 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Thu, 04 Dec 2014 10:01:56 +0100
-Message-ID: <8625951.Wbs2MxLnhi@wuerfel>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <2596381.rFt35NU3oS@wuerfel> <548020D7.8030003@linaro.org>
+Subject: Re: [PATCH] hsi / OMAP / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Thu, 04 Dec 2014 10:23:35 +0100
+Message-ID: <8906994.EV0QeHVvVO@wuerfel>
+References: <6319344.XVfdONE5DJ@vostro.rjw.lan> <2553100.3OLsEPLv6G@wuerfel> <22524926.vCRamu0d6Y@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:50705 "EHLO
+Received: from mout.kundenserver.de ([212.227.126.187]:49689 "EHLO
 	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbaLDJCf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 04:02:35 -0500
-In-Reply-To: <548020D7.8030003@linaro.org>
+	with ESMTP id S1752700AbaLDJXk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 04:23:40 -0500
+In-Reply-To: <22524926.vCRamu0d6Y@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-omap@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thursday 04 December 2014 09:52:39 Daniel Lezcano wrote:
-> On 12/03/2014 09:35 PM, Arnd Bergmann wrote:
-> > On Wednesday 03 December 2014 07:31:22 Lina Iyer wrote:
-> >>>>> +static int __init qcom_spm_init(void)
-> >>>>> +{
-> >>>>> +    int ret;
-> >>>>> +
-> >>>>> +    /*
-> >>>>> +     * cpuidle driver need to registered before the cpuidle device
-> >>>>> +     * for any cpu. Register the device for the the cpuidle driver.
-> >>>>> +     */
-> >>>>> +    ret = platform_device_register(&qcom_cpuidle_drv);
-> >>>>> +    if (ret)
-> >>>>> +        return ret;
-> >>>> Stephen pointed out that we would have the platform device lying around
-> >>>> on a non-QCOM device when using multi_v7_defconfig.
-> >>>
-> >>> Perhaps I am missing the point, but this is not supposed to happen, no ?
-> >>>
-> >> This would happen, since the file would compile on multi_v7 and we would
-> >> initialize and register this device regardless. The cpuidle-qcom.c
-> >> driver probe would bail out looking for a matching compatible property.
-> >> So we would not register a cpuidle driver but the device would lay
-> >> around.
-> >
-> > I think the problem is registering a platform_device. I've complained
-> > about this before, but it still seems to get copied all over the
-> > place. Please don't do this but have a driver that looks at DT to
-> > figure out whether to access hardware or not.
+On Wednesday 03 December 2014 23:45:22 Rafael J. Wysocki wrote:
+> http://marc.info/?l=linux-kernel&m=141712284917133&w=4
 > 
-> We did this approach but, I can remember why, someone was complaining 
-> about it also 
+> > Before we do lots of s/CONFIG_PM_SLEEP/CONFIG_PM/ changes in lots of
+> > other drivers, it would be nice to come up with a new set of macros
+> > to replace all the SET_RUNTIME_PM_OPS/SIMPLE_DEV_PM_OPS/..._OPS
+> > with a version that avoided the #ifdefs altogether.
 > 
-> The platform device/driver paradigm allowed us to split the arch 
-> specific parts by passing the pm ops through the platform data.
-> 
-> Would make sense to have a single common place for the ARM arch where we 
-> initialize the platform device for cpuidle ?
+> I don't think we can avoid all of the #ifdefs and the macros still work
+> (except for one which is redundant, but I have a patch to clean that up).
 
-No. It's really not a device, and if you pretend that it is, you get
-into problems like this.
+Right, while we can create a version that does not require the #ifdef,
+that would still mean we'd have to touch every file and replace
+SET_RUNTIME_PM_OPS with PM_SET_RUNTIME_OPS or something like that
+because the new macro would not work if the function is not defined.
 
 	Arnd
