@@ -1,59 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V2] PM / Domains: Add pm_genpd_lookup() API to lookup
- domain by firmware node
-Date: Thu, 4 Dec 2014 16:42:16 +0100
-Message-ID: <CAPDyKFozWmOuCA_uR1b7BAxhYUGUFp48K0b4tTR-cWjzjgR2FQ@mail.gmail.com>
-References: <1417171115-5789-1-git-send-email-ulf.hansson@linaro.org>
-	<5765394.eQjV2VvkSL@vostro.rjw.lan>
-	<CAPDyKFpX5nXR18pKdLrtDrPK60p1y2CEqq+--3z3jczRRmKrqA@mail.gmail.com>
-	<CADGdYn5aLr69PrqO5RvU4q6HU9pPZ+1tWL27cc=cVazAvSVFpQ@mail.gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v7 08/11] arm/arm64: Unexport restart handlers
+Date: Thu, 4 Dec 2014 08:11:08 -0800
+Message-ID: <20141204161108.GA7385@roeck-us.net>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
+ <CAMuHMdX-WsVErpiZ_EbFSGxeJEfpu3cRaZzitupiSAA2hXEJ8g@mail.gmail.com>
+ <54807505.2000406@roeck-us.net>
+ <3875532.ABOh5kXkPb@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn5aLr69PrqO5RvU4q6HU9pPZ+1tWL27cc=cVazAvSVFpQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:45832 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932577AbaLDQMY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Dec 2014 11:12:24 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XwZ0x-0032h3-Vq
+	for linux-pm@vger.kernel.org; Thu, 04 Dec 2014 16:12:24 +0000
+Content-Disposition: inline
+In-Reply-To: <3875532.ABOh5kXkPb@wuerfel>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux Watchdog Mailing List <linux-watchdog@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Jonas Jensen <jonas.jensen@gmail.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists
 
-On 1 December 2014 at 12:57, amit daniel kachhap
-<amit.daniel@samsung.com> wrote:
-> On Mon, Dec 1, 2014 at 3:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 29 November 2014 at 01:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Friday, November 28, 2014 11:38:35 AM Ulf Hansson wrote:
->>>> In a step to move away from using genpd's name based APIs, such as the
->>>> pm_genpd_add_subdomain_names(), provide an API to lookup an already
->>>> initialized generic PM domain by its firmware node.
->>>>
->>>> This API would typically be a called from SOC specific code, to fetch a
->>>> handle to the domain. Especially convenient to configure subdomains and
->>>> when the hierarchy of the domains are described in DT.
->>>>
->>>> Do note, before pm_genpd_init() is invoked to initialize a generic PM
->>>> domain, it's the callers responsibility to assign the new ->fwnode
->>>> pointer in the struct generic_pm_domain, to enable pm_genpd_lookup() to
->>>> find the domain.
->>>>
->>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>
->>> I have no problems with that, but do you have a user for it?
->>
->> Amit Daniel Kachhap, posted a patchset which is adding subdomains
->> configured from DT for Exynos. It's from there the idea to this patch
->> comes from. Amit is about to post a new version, based on this patch.
->
-> Hi Ulf,
->
-> I was trying to use this API but i felt there is a better way of just exporting
-> of_genpd_get_from_provider as a similar API is used to register the
-> power domain.
->
-> Check if this make sense www.spinics.net/lists/arm-kernel/msg382665.html.
->
+On Thu, Dec 04, 2014 at 04:06:22PM +0100, Arnd Bergmann wrote:
+> On Thursday 04 December 2014 06:51:49 Guenter Roeck wrote:
+> > On 12/04/2014 06:44 AM, Geert Uytterhoeven wrote:
+> > > On Thu, Dec 4, 2014 at 3:26 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > >> On 12/04/2014 05:36 AM, Geert Uytterhoeven wrote:
+> > >>> On Wed, Aug 20, 2014 at 2:45 AM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > >>>> Implementing a restart handler in a module don't make sense
+> > >>>> as there would be no guarantee that the module is loaded when
+> > >>>> a restart is needed. Unexport arm_pm_restart to ensure that
+> > >>>> no one gets the idea to do it anyway.
+> > >>>
+> > >>> Why not? I was just going to do that, but I got greeted by:
+> > >>
+> > >> Because you should register a restart handler instead, like the other
+> > >> drivers in the same directory now do.
+> > >
+> > > That's a different thing. "there would be no guarantee that the module is
+> > > loaded when a restart is needed" is also valid for restart handlers...
+> > >
+> > 
+> > Not really, because you are supposed to unregister the restart handler
+> > on unload. Sure, you can instead clear arm_pm_reastart and leave the system
+> > with no means to restart ...
+> 
+> I agree with Geert that your commit message was confusing, it sounds like
+> you were referring to drivers that are not yet loaded, while the problem
+> that you are really address is drivers that have been unloaded later.
+> 
+Yes, I realize that now. I should probably have added the rationale
+for the entire series to this commit. I'll try to do better next time.
 
-That makes sense!
-
-So, let's drop $subject patch.
-
-Kind regards
-Uffe
+Guenter
