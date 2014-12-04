@@ -1,49 +1,47 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V4 1/3] PM / Domains: Initial PM clock support for genpd
-Date: Thu, 4 Dec 2014 16:00:02 +0100
-Message-ID: <CAPDyKFpPFismu2Cv4DBX7Eao5EBx4xXXz4K_6pfbitavfGZLTA@mail.gmail.com>
-References: <1417434623-31301-1-git-send-email-ulf.hansson@linaro.org>
-	<1417434623-31301-2-git-send-email-ulf.hansson@linaro.org>
-	<7h7fya502u.fsf@deeprootsystems.com>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH v7 08/11] arm/arm64: Unexport restart handlers
+Date: Thu, 04 Dec 2014 16:06:22 +0100
+Message-ID: <3875532.ABOh5kXkPb@wuerfel>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net> <CAMuHMdX-WsVErpiZ_EbFSGxeJEfpu3cRaZzitupiSAA2hXEJ8g@mail.gmail.com> <54807505.2000406@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h7fya502u.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <54807505.2000406-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, Jonas Jensen <jonas.jensen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel@lists
 List-Id: linux-pm@vger.kernel.org
 
-On 2 December 2014 at 02:09, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> It's quite common for PM domains to use PM clocks. Typically from SOC
->> specific code, the per device PM clock list is created and
->> pm_clk_suspend|resume() are invoked to handle clock gating/ungating.
->>
->> A step towards consolidation is to integrate PM clock support into
->> genpd, which is what this patch does.
->>
->> In this initial step, the calls to the pm_clk_suspend|resume() are
->> handled within genpd, but the per device PM clock list still needs to
->> be created from SOC specific code. It seems reasonable to have gendp to
->> handle that as well, but that left to future patches to address.
->>
->> It's not every users of genpd that are keen on using PM clocks, thus we
->> need to provide this a configuration option for genpd. Therefore let's
->> add flag field in the genpd struct to keep this information and define
->> a new GENDP_FLAG_PM_CLK bit for it.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Acked-by: Kevin Hilman <khilman@linaro.org>
->
-> Are you also planning to add a way to enable this option from DT?
+On Thursday 04 December 2014 06:51:49 Guenter Roeck wrote:
+> On 12/04/2014 06:44 AM, Geert Uytterhoeven wrote:
+> > On Thu, Dec 4, 2014 at 3:26 PM, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> wrote:
+> >> On 12/04/2014 05:36 AM, Geert Uytterhoeven wrote:
+> >>> On Wed, Aug 20, 2014 at 2:45 AM, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> wrote:
+> >>>> Implementing a restart handler in a module don't make sense
+> >>>> as there would be no guarantee that the module is loaded when
+> >>>> a restart is needed. Unexport arm_pm_restart to ensure that
+> >>>> no one gets the idea to do it anyway.
+> >>>
+> >>> Why not? I was just going to do that, but I got greeted by:
+> >>
+> >> Because you should register a restart handler instead, like the other
+> >> drivers in the same directory now do.
+> >
+> > That's a different thing. "there would be no guarantee that the module is
+> > loaded when a restart is needed" is also valid for restart handlers...
+> >
+> 
+> Not really, because you are supposed to unregister the restart handler
+> on unload. Sure, you can instead clear arm_pm_reastart and leave the system
+> with no means to restart ...
 
-I am thinking of that, yes. Though I wanted the discussion around how
-to deal with creating the PM clock lists while using PM domains to
-settle first.
+I agree with Geert that your commit message was confusing, it sounds like
+you were referring to drivers that are not yet loaded, while the problem
+that you are really address is drivers that have been unloaded later.
 
-Kind regards
-Uffe
+	Arnd
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
