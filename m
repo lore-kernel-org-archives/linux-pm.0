@@ -1,62 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] drivers: sh / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Thu, 04 Dec 2014 02:24:22 +0100
-Message-ID: <3463511.sXIeyHdjYI@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50283 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752054AbaLDBC6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 20:02:58 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH 2/2 V7] intel_pstate: add kernel parameter to force loading on Sun X86 servers.
+Date: Thu,  4 Dec 2014 11:07:31 +0900
+Message-ID: <1417658851-8729-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+To force loading on Oracle Sun X86 servers, provide one kernel command line
+parameter
 
-After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-depending on CONFIG_PM_RUNTIME may now be changed to depend on
-CONFIG_PM.
+  intel_pstate = ora_force
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/sh/pm_runtime.c.
+For those who be aware of the risk of no power capping capabily working and
+try to get better performance with this driver.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 ---
+ v2: change to hardware vendor specific naming parameter.
+ v4: refine code and doc.
+ v5&v6: fix a typo in doc.
+ v7: change enum PCC to PPC.
 
-Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-PM_SLEEP is selected) which is only in linux-next at the moment (via the
-linux-pm tree).
+ Documentation/kernel-parameters.txt | 5 +++++
+ drivers/cpufreq/intel_pstate.c      | 6 +++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-Please let me know if it is OK to take this one into linux-pm.
-
----
- drivers/sh/pm_runtime.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/sh/pm_runtime.c
-===================================================================
---- linux-pm.orig/drivers/sh/pm_runtime.c
-+++ linux-pm/drivers/sh/pm_runtime.c
-@@ -20,7 +20,7 @@
- #include <linux/bitmap.h>
- #include <linux/slab.h>
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 479f332..7d0983e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		       disable
+ 		         Do not enable intel_pstate as the default
+ 		         scaling driver for the supported processors
++		       ora_force
++			 Force loading intel_pstate on Oracle Sun Servers(X86).
++			 only for those who be aware of the risk of no power capping
++			 capability working and try to get better performance with this
++			 driver.
  
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int sh_pm_runtime_suspend(struct device *dev)
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1bb62ca..2654e13 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
+ };
+ 
+ static int __initdata no_load;
++static unsigned int  ora_force;
+ 
+ static int intel_pstate_msrs_not_valid(void)
  {
- 	int ret;
-@@ -68,7 +68,7 @@ static struct dev_pm_domain default_pm_d
+@@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+ 			case PSS:
+ 				return intel_pstate_no_acpi_pss();
+ 			case PPC:
+-				return intel_pstate_has_acpi_ppc();
++				return intel_pstate_has_acpi_ppc() &&
++					(!ora_force);
+ 			}
+ 	}
  
- #define DEFAULT_PM_DOMAIN_PTR	NULL
+@@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
  
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- static struct pm_clk_notifier_block platform_bus_notifier = {
- 	.pm_domain = DEFAULT_PM_DOMAIN_PTR,
+ 	if (!strcmp(str, "disable"))
+ 		no_load = 1;
++	if (!strcmp(str, "ora_force"))
++		ora_force = 1;
+ 	return 0;
+ }
+ early_param("intel_pstate", intel_pstate_setup);
+-- 
+1.8.3.1
 
