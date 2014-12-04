@@ -1,78 +1,99 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] drivers: sh / PM: Replace CONFIG_PM_RUNTIME with
- CONFIG_PM
-Date: Thu, 4 Dec 2014 12:58:00 +0900
-Message-ID: <20141204035758.GA6346@verge.net.au>
-References: <3463511.sXIeyHdjYI@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 00/26] thermal: cpu_cooling: Fixes and cleanups
+Date: Thu,  4 Dec 2014 09:41:42 +0530
+Message-ID: <cover.1417664938.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:41865 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbaLDD6H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 22:58:07 -0500
-Content-Disposition: inline
-In-Reply-To: <3463511.sXIeyHdjYI@vostro.rjw.lan>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:56036 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbaLDEMp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Dec 2014 23:12:45 -0500
+Received: by mail-pd0-f169.google.com with SMTP id z10so1715349pdj.0
+        for <linux-pm@vger.kernel.org>; Wed, 03 Dec 2014 20:12:44 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org, edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, rui.zhang@intel.com, amit.daniel@samsung.com, javi.merino@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Hongbo Zhang <hongbo.zhang@linaro.com>, Kyungmin Park <kyungmin.park@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Thu, Dec 04, 2014 at 02:24:22AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/sh/pm_runtime.c.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
+Hi Eduardo,
 
-Hi Rafael,
+Here is the second iteration of my cpu_cooling cleanups to make it work/look
+better. As discussed earlier I picked one of your patches as mine were dependent
+on it. Have done some fixes to your patch as well.
 
-That is fine by me if it is fine by Geert.
+First few are updates to platform drivers to fix mask present in clip_cpus.
+Next ones are cleanups of cpu_cooling.c to get things properly organized.
 
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
+Tested-on: Exynos5250 (Dual ARM Cortex A15).
+Rebased-over: v3.18-rc7
+Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linux.git
+thermal/cpu-cooling-fixes
 
-> 
-> ---
->  drivers/sh/pm_runtime.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/sh/pm_runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/sh/pm_runtime.c
-> +++ linux-pm/drivers/sh/pm_runtime.c
-> @@ -20,7 +20,7 @@
->  #include <linux/bitmap.h>
->  #include <linux/slab.h>
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int sh_pm_runtime_suspend(struct device *dev)
->  {
->  	int ret;
-> @@ -68,7 +68,7 @@ static struct dev_pm_domain default_pm_d
->  
->  #define DEFAULT_PM_DOMAIN_PTR	NULL
->  
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
->  
->  static struct pm_clk_notifier_block platform_bus_notifier = {
->  	.pm_domain = DEFAULT_PM_DOMAIN_PTR,
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Hongbo Zhang <hongbo.zhang@linaro.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+
+V1->V2:
+- Dropped: cpu_cooling: Drop useless locking around idr_alloc/idr_remove
+- Fixed $Subject of patches to prefix with: "thermal: " before "cpu_cooling:"
+- Fixed some stupid mistakes highlighted by Eduardo and Javi.
+  - s/ERR_PTR(cpufreq_dev->id)/ERR_PTR(ret)
+  - s/sizeof(*cool_dev)/sizeof(*cpufreq_dev)
+
+- Rebased over rc7 and that changed lots of things.
+  - list of cooling devices was already present in rc7, so my patch to do the
+    same is gone.
+  - Other modifications done as well to fit with latest updates.
+
+Eduardo Valentin (1):
+  thermal: cpu_cooling: check for the readiness of cpufreq layer
+
+Viresh Kumar (25):
+  thermal: db8500: pass cpu_present_mask to cpufreq_cooling_register()
+  thermal: imx: pass cpu_present_mask to cpufreq_cooling_register()
+  thermal: exynos: pass cpu_present_mask to cpufreq_cooling_register()
+  thermal: cpu_cooling: random comment fixups
+  thermal: cpu_cooling: fix doc comment over struct
+    cpufreq_cooling_device
+  thermal: cpu_cooling: Add comment to clarify relation between cooling
+    state and frequency
+  thermal: cpu_cooling: Pass variable instead of its type to sizeof()
+  thermal: cpu_cooling: no need to set cpufreq_state to zero
+  thermal: cpu_cooling: no need to set cpufreq_dev to NULL
+  thermal: cpu_cooling: no need to initialze 'ret'
+  thermal: cpu_cooling: propagate error returned by idr_alloc()
+  thermal: cpu_cooling: Don't match min/max frequencies for all CPUs on
+    cooling register
+  thermal: cpu_cooling: don't iterate over all allowed_cpus to update
+    cpufreq policy
+  thermal: cpu_cooling: Don't check is_cpufreq_valid()
+  thermal: cpu_cooling: do error handling at the bottom in
+    __cpufreq_cooling_register()
+  thermal: cpu_cooling: initialize 'cpufreq_val' on registration
+  thermal: cpu_cooling: Merge cpufreq_apply_cooling() into
+    cpufreq_set_cur_state()
+  thermal: cpu_cooling: remove unnecessary wrapper get_cpu_frequency()
+  thermal: cpu_cooling: find max level during device registration
+  thermal: cpu_cooling: get_property() doesn't need to support GET_MAXL
+    anymore
+  thermal: cpu_cooling: use cpufreq_dev_list instead of
+    cpufreq_dev_count
+  thermal: cpu_cooling: Pass 'cpufreq_dev' to get_property()
+  thermal: cpu_cooling: Store frequencies in descending order
+  thermal: cpu_cooling: Use cpufreq_dev->freq_table for finding
+    level/freq
+  thermal: cpu_cooling: update copyright tags
+
+ drivers/thermal/cpu_cooling.c                      | 360 ++++++++-------------
+ drivers/thermal/db8500_cpufreq_cooling.c           |  10 +-
+ drivers/thermal/imx_thermal.c                      |   9 +-
+ drivers/thermal/samsung/exynos_thermal_common.c    |  12 +-
+ drivers/thermal/samsung/exynos_tmu.c               |   5 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   6 -
+ 6 files changed, 148 insertions(+), 254 deletions(-)
+
+-- 
+2.0.3.693.g996b0fd
+
