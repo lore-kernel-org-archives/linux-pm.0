@@ -1,118 +1,44 @@
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2 V6] intel_pstate: skip this driver if Sun server has
- _PPC method
-Date: Fri, 5 Dec 2014 08:33:12 +0900
-Message-ID: <5480EF38.5060000@jp.fujitsu.com>
-References: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/2] ARM: shmobile: R-mobile: Fix SYSC register lengths
+Date: Fri, 5 Dec 2014 09:13:32 +0900
+Message-ID: <20141205001332.GA8790@verge.net.au>
+References: <1417696298-27740-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1417401128-32086-1-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Dirk Brandewie <dirk.brandewie@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1417696298-27740-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-(2014/12/01 11:32), Ethan Zhao wrote:
-> Oracle Sun X86 servers have dynamic power capping capability that works via
-> ACPI _PPC method etc, so skip loading this driver if Sun server has ACPI _PPC
-> enabled.
+On Thu, Dec 04, 2014 at 01:31:36PM +0100, Geert Uytterhoeven wrote:
+> 	Hi Simon, Magnus,
 > 
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Tested-by: Linda Knippers <linda.knippers@hp.com>
-> ---
-Looks good to me.
+> This patch series fixes the register lengths of the SYSC device nodes, by
+> adding the missing 0x prefixes. They were really intended to be 0x8000, not
+> 8000.
+> This doesn't cause any problems for now, but at least the second range
+> is documented to cover the full 32 KiB on R-Mobile A1 (r8a7740).
+> Sorry for not noticing before.
+> 
+> Perhaps these can still be folded into the commits that introduced the bugs?
+>   - commit 0f3dad1d6c519ddf ("PM / Domains: Add DT bindings for the R-Mobile
+>     System Controller"),
+>   - commit 2f49e6f2721c4344 ("ARM: shmobile: r8a7740 dtsi: Add PM domain
+>     support").
+> 
+> Thanks!
+> 
+> Geert Uytterhoeven (2):
+>   PM / Domains: R-Mobile SYSC: Add missing 0x prefixes to example
+>   ARM: shmobile: r8a7740 dtsi: Add missing 0x prefix to SYSC reg lengths
+> 
+>  Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt | 2 +-
+>  arch/arm/boot/dts/r8a7740.dtsi                                   | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Thanks Geert,
 
-Thanks,
-Yasuaki Ishimatsu
-
->    v2: fix break HP Proliant issue.
->    v3: expand the hardware vendor list.
->    v4: refine code.
->    v5v6: change enum PCC to PPC.
-> 
->   drivers/cpufreq/intel_pstate.c | 45 ++++++++++++++++++++++++++++++++++++++----
->   1 file changed, 41 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 27bb6d3..1bb62ca 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -943,15 +943,46 @@ static bool intel_pstate_no_acpi_pss(void)
->   	return true;
->   }
->   
-> +static bool intel_pstate_has_acpi_ppc(void)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct acpi_processor *pr = per_cpu(processors, i);
-> +
-> +		if (!pr)
-> +			continue;
-> +		if (acpi_has_method(pr->handle, "_PPC"))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
-> +enum {
-> +	PSS,
-> +	PPC,
-> +};
-> +
->   struct hw_vendor_info {
->   	u16  valid;
->   	char oem_id[ACPI_OEM_ID_SIZE];
->   	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +	int  oem_pwr_table;
->   };
->   
->   /* Hardware vendor-specific info that has its own power management modes */
->   static struct hw_vendor_info vendor_info[] = {
-> -	{1, "HP    ", "ProLiant"},
-> +	{1, "HP    ", "ProLiant", PSS},
-> +	{1, "ORACLE", "X4-2    ", PPC},
-> +	{1, "ORACLE", "X4-2L   ", PPC},
-> +	{1, "ORACLE", "X4-2B   ", PPC},
-> +	{1, "ORACLE", "X3-2    ", PPC},
-> +	{1, "ORACLE", "X3-2L   ", PPC},
-> +	{1, "ORACLE", "X3-2B   ", PPC},
-> +	{1, "ORACLE", "X4470M2 ", PPC},
-> +	{1, "ORACLE", "X4270M3 ", PPC},
-> +	{1, "ORACLE", "X4270M2 ", PPC},
-> +	{1, "ORACLE", "X4170M2 ", PPC},
->   	{0, "", ""},
->   };
->   
-> @@ -966,15 +997,21 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
->   
->   	for (v_info = vendor_info; v_info->valid; v_info++) {
->   		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
-> -		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
-> -		    intel_pstate_no_acpi_pss())
-> -			return true;
-> +			!strncmp(hdr.oem_table_id, v_info->oem_table_id,
-> +						ACPI_OEM_TABLE_ID_SIZE))
-> +			switch (v_info->oem_pwr_table) {
-> +			case PSS:
-> +				return intel_pstate_no_acpi_pss();
-> +			case PPC:
-> +				return intel_pstate_has_acpi_ppc();
-> +			}
->   	}
->   
->   	return false;
->   }
->   #else /* CONFIG_ACPI not enabled */
->   static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
-> +static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
->   #endif /* CONFIG_ACPI */
->   
->   static int __init intel_pstate_init(void)
-> 
+I will squash these changes into the patches that added the problems.
