@@ -1,92 +1,81 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH] PCI: Add disabling pm async quirk for JMicron chips
-Date: Fri,  5 Dec 2014 15:17:37 +0800
-Message-ID: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: bhelgaas@google.com, rjw@rjwysocki.net, mister.freeman@laposte.net, aaron.lu@intel.com, tj@kernel.org, chuansheng.liu@intel.com
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH 2/2 V8] intel_pstate: add kernel parameter to force loading.
+Date: Fri,  5 Dec 2014 18:40:53 +0900
+Message-ID: <1417772453-22483-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, kristen@linux.intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, alexey.kodanev@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some history from
-commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361")
-==
-Since v3.15, the PM feature of async noirq
-commit 76569faa62c4 ("PM / sleep: Asynchronous threads for resume_noirq") is introduced.
+To force loading on Oracle Sun X86 servers, provide one kernel command line
+parameter
 
-Then Jay hit one system resuming issue that one of the JMicron controller
-can not be powered up successfully.
+  intel_pstate = force
 
-His device tree is like below:
-                 +-1c.4-[02]--+-00.0  JMicron Technology Corp. JMB363 SATA/IDE Controller
-                 |            \-00.1  JMicron Technology Corp. JMB363 SATA/IDE Controller
+For those who be aware of the risk of no power capping capabily working and
+try to get better performance with this driver.
 
-After investigation, we found the the Micron chip 363 included
-one SATA controller(0000:02:00.0) and one PATA controller(0000:02:00.1),
-these two controllers do not have parent-children relationship,
-but the PATA controller only can be powered on after the SATA controller
-has finished the powering on.
-
-If we enabled the async noirq(), then the below error is hit during noirq
-phase:
-pata_jmicron 0000:02:00.1: Refused to change power state, currently in D3
-Here for JMicron chip 363/361, we need forcedly to disable the async method.
-
-Bug detail: https://bugzilla.kernel.org/show_bug.cgi?id=81551
-==
-
-After that, Barto reported the same issue, but his Jmicron chip is JMB368,
-so it can not be covered by
-commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361").
-
-Bug link:
-https://bugzilla.kernel.org/show_bug.cgi?id=84861
-
-Here we think Jmicron chips have the same issue as describled in
-commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361"),
-
-so here add one quirk to disable the JMicron chips' PM async feature.
-
-Cc: stable@vger.kernel.org # 3.15+
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+Tested-by: Alexey Kodanev <alexey.kodanev@oracle.com>
 ---
- drivers/pci/quirks.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ v2: change to hardware vendor specific naming parameter.
+ v4: refine code and doc.
+ v5&v6: fix a typo in doc.
+ v7: change enum PCC to PPC.
+ v8: change the name of kernel command line parameter to generic one.
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 90acb32..1963080 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1501,6 +1501,21 @@ static void quirk_jmicron_ata(struct pci_dev *pdev)
- 	pci_read_config_dword(pdev, PCI_CLASS_REVISION, &class);
- 	pdev->class = class >> 8;
+ Documentation/kernel-parameters.txt | 5 +++++
+ drivers/cpufreq/intel_pstate.c      | 6 +++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 479f332..7d0983e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		       disable
+ 		         Do not enable intel_pstate as the default
+ 		         scaling driver for the supported processors
++		       force
++			 Enable intel_pstate on systems where it may cause problems to
++			 happen due to conflicts with platform firmware attempting to
++			 drive P-states by itself in certain situations (for thermal 
++			 control or power capping in general or other purposes).
+ 
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1bb62ca..2654e13 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
+ };
+ 
+ static int __initdata no_load;
++static unsigned int  force_load;
+ 
+ static int intel_pstate_msrs_not_valid(void)
+ {
+@@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+ 			case PSS:
+ 				return intel_pstate_no_acpi_pss();
+ 			case PPC:
+-				return intel_pstate_has_acpi_ppc();
++				return intel_pstate_has_acpi_ppc() &&
++					(!force_load);
+ 			}
+ 	}
+ 
+@@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
+ 
+ 	if (!strcmp(str, "disable"))
+ 		no_load = 1;
++	if (!strcmp(str, "force"))
++		force_load = 1;
+ 	return 0;
  }
-+
-+/*
-+ * For JMicron chips, we need to disable the async_suspend method, otherwise
-+ * they will hit the power-on issue when doing device resume, add one quirk
-+ * solution to disable the async_suspend method.
-+ */
-+static void pci_async_suspend_fixup(struct pci_dev *pdev)
-+{
-+	    /*
-+		 * disabling the async_suspend method for JMicron chips to
-+		 * avoid device resuming issue.
-+		 */
-+	    device_disable_async_suspend(&pdev->dev);
-+}
-+
- DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB360, quirk_jmicron_ata);
- DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361, quirk_jmicron_ata);
- DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB362, quirk_jmicron_ata);
-@@ -1519,6 +1534,8 @@ DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB3
- DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366, quirk_jmicron_ata);
- DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368, quirk_jmicron_ata);
- DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB369, quirk_jmicron_ata);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_JMICRON, PCI_ANY_ID,
-+		pci_async_suspend_fixup);
- 
- #endif
- 
+ early_param("intel_pstate", intel_pstate_setup);
 -- 
-1.7.9.5
+1.8.3.1
+
