@@ -1,134 +1,189 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC 1/3] devfreq: dt-bindings: Document Exynos3250 devfreq
- driver
-Date: Fri, 5 Dec 2014 16:53:56 +0000
-Message-ID: <20141205165356.GC12849@leverpostej>
-References: <1417797988-29225-1-git-send-email-k.kozlowski@samsung.com>
- <1417797988-29225-2-git-send-email-k.kozlowski@samsung.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH] PM QoS: Add debugfs support to view the list of constraints
+Date: Fri, 5 Dec 2014 11:19:08 -0600
+Message-ID: <1417799948-48440-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:59823 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750748AbaLEQyB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 11:54:01 -0500
-Content-Disposition: inline
-In-Reply-To: <1417797988-29225-2-git-send-email-k.kozlowski@samsung.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:51040 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbaLERTV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 12:19:21 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Chanwoo Choi <cw00.choi@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>
 
-On Fri, Dec 05, 2014 at 04:46:26PM +0000, Krzysztof Kozlowski wrote:
-> Add documentation for bindings used by Exynos3250 devfreq driver.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> ---
->  .../bindings/arm/samsung/exynos3250-devfreq.txt    | 66 ++++++++++++++++++++++
->  1 file changed, 66 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt b/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> new file mode 100644
-> index 000000000000..047955e9e371
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> @@ -0,0 +1,66 @@
-> +Samsung Exynos3250 devfreq driver
+From: Nishanth Menon <nm@ti.com>
 
-The binding should describe the hardware, not a particular driver of
-that hardware. Please write the binding (and its documentation) with
-that in mind, and drop references to the driver and "busfreq".
+PM QoS requests are notoriously hard to debug and made even
+more so due to their highly dynamic nature. Having visibility
+into the internal data representation per constraint allows
+us to have much better appreciation of potential issues or
+bad usage by drivers in the system.
 
-With an adequate binding we can probe the device and forward the
-information to relevant driver(s) as necessary.
+So introduce for all classes of PM QoS, an entry in
+/sys/kernel/debug/pm_qos that shall show all the current
+requests as well as the snapshot of the value these requests
+boil down to. For example:
+==> /sys/kernel/debug/pm_qos/cpu_dma_latency <==
+1: 4444: Active
+2: 2000000000: Default
+3: 2000000000: Default
+4: 2000000000: Default
+Type=Minimum, Value=4444, Requests: active=1 / total=4
 
-> +=================================
-> +
-> +The driver support changing frequencies and voltage for:
-> + - memory controller and bus,
-> + - peripheral buses (left and right).
+==> /sys/kernel/debug/pm_qos/memory_bandwidth <==
+Empty!
 
+...
 
-What do left and right mean in this context?
+The actual value listed will have their meaning based
+on the QoS it is on, the 'Type' indicates what logic
+it would use to collate the information - Minimum,
+Maximum, or Sum. Value is the collation of all requests.
+This interface also compares the values with the defaults
+for the QoS class and marks the ones that are
+currently active.
 
-> +
-> +Memory controller and bus
-> +=========================
-> +Required properties:
-> + - compatible : should be "samsung,exynos3250-busfreq-mif"
-> + - reg : two sets (offset and length of the register) for PPMU registers
-> +	used by this devfreq driver
-> + - clock-names : one clock of name "dmc" to manage frequency
-> + - clocks : phandle and specifier for clock listed in clock-names property
-> + - vdd_mif-supply : phandle to MIF voltage regulator
+Signed-off-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ kernel/power/qos.c | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 89 insertions(+), 2 deletions(-)
 
-s/_/-/ in property names please.
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 5f4c006..97b0df7 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -41,6 +41,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
+ 
+ #include <linux/uaccess.h>
+ #include <linux/export.h>
+@@ -182,6 +184,81 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
+ 	c->target_value = value;
+ }
+ 
++static inline int pm_qos_get_value(struct pm_qos_constraints *c);
++static int pm_qos_dbg_show_requests(struct seq_file *s, void *unused)
++{
++	struct pm_qos_object *qos = (struct pm_qos_object *)s->private;
++	struct pm_qos_constraints *c;
++	struct pm_qos_request *req;
++	char *type;
++	unsigned long flags;
++	int tot_reqs = 0;
++	int active_reqs = 0;
++
++	if (IS_ERR_OR_NULL(qos)) {
++		pr_err("%s: bad qos param!\n", __func__);
++		return -EINVAL;
++	}
++	c = qos->constraints;
++	if (IS_ERR_OR_NULL(c)) {
++		pr_err("%s: Bad constraints on qos?\n", __func__);
++		return -EINVAL;
++	}
++
++	/* Lock to ensure we have a snapshot */
++	spin_lock_irqsave(&pm_qos_lock, flags);
++	if (plist_head_empty(&c->list)) {
++		seq_puts(s, "Empty!\n");
++		goto out;
++	}
++
++	switch (c->type) {
++	case PM_QOS_MIN:
++		type = "Minimum";
++		break;
++	case PM_QOS_MAX:
++		type = "Maximum";
++		break;
++	case PM_QOS_SUM:
++		type = "Sum";
++		break;
++	default:
++		type = "Unknown";
++	}
++
++	plist_for_each_entry(req, &c->list, node) {
++		char *state = "Default";
++
++		if ((req->node).prio != c->default_value) {
++			active_reqs++;
++			state = "Active";
++		}
++		tot_reqs++;
++		seq_printf(s, "%d: %d: %s\n", tot_reqs,
++			   (req->node).prio, state);
++	}
++
++	seq_printf(s, "Type=%s, Value=%d, Requests: active=%d / total=%d\n",
++		   type, pm_qos_get_value(c), active_reqs, tot_reqs);
++
++out:
++	spin_unlock_irqrestore(&pm_qos_lock, flags);
++	return 0;
++}
++
++static int pm_qos_dbg_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pm_qos_dbg_show_requests,
++			   inode->i_private);
++}
++
++static const struct file_operations pm_qos_debug_fops = {
++	.open           = pm_qos_dbg_open,
++	.read           = seq_read,
++	.llseek         = seq_lseek,
++	.release        = single_release,
++};
++
+ /**
+  * pm_qos_update_target - manages the constraints list and calls the notifiers
+  *  if needed
+@@ -509,12 +586,17 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+ EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+ 
+ /* User space interface to PM QoS classes via misc devices */
+-static int register_pm_qos_misc(struct pm_qos_object *qos)
++static int register_pm_qos_misc(struct pm_qos_object *qos, struct dentry *d)
+ {
+ 	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
+ 	qos->pm_qos_power_miscdev.name = qos->name;
+ 	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
+ 
++	if (d) {
++		(void)debugfs_create_file(qos->name, S_IRUGO, d,
++					  (void *)qos, &pm_qos_debug_fops);
++	}
++
+ 	return misc_register(&qos->pm_qos_power_miscdev);
+ }
+ 
+@@ -608,11 +690,16 @@ static int __init pm_qos_power_init(void)
+ {
+ 	int ret = 0;
+ 	int i;
++	struct dentry *d;
+ 
+ 	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+ 
++	d = debugfs_create_dir("pm_qos", NULL);
++	if (IS_ERR_OR_NULL(d))
++		d = NULL;
++
+ 	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
+-		ret = register_pm_qos_misc(pm_qos_array[i]);
++		ret = register_pm_qos_misc(pm_qos_array[i], d);
+ 		if (ret < 0) {
+ 			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+ 			       pm_qos_array[i]->name);
+-- 
+2.1.0
 
-> +
-> +Peripheral buses
-> +================
-> +Required properties:
-> + - compatible : should be "samsung,exynos3250-busfreq-int"
-
-What does "int" mean here?
-
-> + - reg : two sets (offset and length of the register) for PPMU registers
-> +	used by this devfreq driver
-> + - clock-names : names for PPMU clocks and bus clocks to manage frequencies;
-> +	All following clock names (and corresponding phandles) must be
-> +	provided:
-> +	- "ppmu_left", "ppmu_right",
-> +	- "aclk_400", "aclk_266", "aclk_200", "aclk_160", "aclk_gdl", "aclk_gdr", "mfc";
-> + - clocks : phandles and specifiers for clocks listed in clock-names property
-> + - vdd_mif-supply : phandle to INT voltage regulator
-
-s/_/-/ here too.
-
-Thanks,
-Mark.
-
-> +
-> +Example
-> +=======
-> +	busfreq_mif: busfreq@106A0000 {
-> +		compatible = "samsung,exynos3250-busfreq-mif";
-> +		reg = <0x106A0000 0x2000>, <0x106B0000 0x2000>;
-> +		clocks = <&cmu_dmc CLK_DIV_DMC>;
-> +		clock-names = "dmc";
-> +		vdd_mif-supply = <&buck1_reg>;
-> +		status = "okay";
-> +	};
-> +
-> +	busfreq_int: busfreq@116A0000 {
-> +		compatible = "samsung,exynos3250-busfreq-int";
-> +		reg = <0x116A0000 0x2000>, <0x112A0000 0x2000>;
-> +		clocks = <&cmu CLK_PPMULEFT>,
-> +			<&cmu CLK_PPMURIGHT>,
-> +			<&cmu CLK_DIV_ACLK_400_MCUISP>,
-> +			<&cmu CLK_DIV_ACLK_266>,
-> +			<&cmu CLK_DIV_ACLK_200>,
-> +			<&cmu CLK_DIV_ACLK_160>,
-> +			<&cmu CLK_DIV_GDL>,
-> +			<&cmu CLK_DIV_GDR>,
-> +			<&cmu CLK_DIV_MFC>;
-> +		clock-names = "ppmuleft",
-> +			"ppmuright",
-> +			"aclk_400",
-> +			"aclk_266",
-> +			"aclk_200",
-> +			"aclk_160",
-> +			"aclk_gdl",
-> +			"aclk_gdr",
-> +			"mfc";
-> +		vdd_int-supply = <&buck3_reg>;
-> +		status = "okay";
-> +	};
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
