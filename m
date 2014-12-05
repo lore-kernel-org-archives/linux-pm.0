@@ -1,81 +1,54 @@
-From: Ethan Zhao <ethan.zhao@oracle.com>
-Subject: [PATCH 2/2 V8] intel_pstate: add kernel parameter to force loading.
-Date: Fri,  5 Dec 2014 18:40:53 +0900
-Message-ID: <1417772453-22483-1-git-send-email-ethan.zhao@oracle.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: dirk.j.brandewie@intel.com, kristen@linux.intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, alexey.kodanev@oracle.com, Ethan Zhao <ethan.zhao@oracle.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: FIX ME in omap-cpufreq.c
+Date: Fri, 5 Dec 2014 07:20:32 -0600
+Message-ID: <5481B120.9050109@ti.com>
+References: <54809D3F.6070108@gmail.com> <CAKohpomfgZEkQ4Nv_VqtUe9ObveB+Ymw2Q0KxJLLZmkzHbQEQg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:41735 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750749AbaLENUi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Dec 2014 08:20:38 -0500
+In-Reply-To: <CAKohpomfgZEkQ4Nv_VqtUe9ObveB+Ymw2Q0KxJLLZmkzHbQEQg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, nick <xerofoify@gmail.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-To force loading on Oracle Sun X86 servers, provide one kernel command line
-parameter
+On 12/04/2014 10:30 PM, Viresh Kumar wrote:
+> On 4 December 2014 at 23:13, nick <xerofoify@gmail.com> wrote:
+>> Greetings Kevin and the other maintainers of this file,
+> 
+> Hi,
+> 
+>> I am wondering why the below code still has a fix me? It seems rather trivial to fix, as all we need is the transition
+>> time of the CPU. Due to this and I don't have the hardware do any of you have the hardware, can any of you tell me the
+>> correct value for this if you have this hardware. Further more I will paste the code below.
+> 
+> Not every FIXME wants to get fixed. Believe me.
+> 
+> Don't just grep for FIXME's in kernel and send patches for that. It
+> isn't working anymore Nick.
+> 
+> I understand that you want to get some name for yourself in the kernel community
+> (and for sure there is nothing wrong in that), but the way you have chosen isn't
+> taking you there. People aren't really happy with the way things are proceeding.
+> 
+> If you really want to help kernel (and yourself), start getting deeper
+> knowledge of
+> frameworks you have any idea of. And they try to solve some real problems.
+> 
+> I don't want to discourage you here, but trying to show the right path. Rest is
+> upon you :)
+> 
 
-  intel_pstate = force
+by the way, the file is redundant once we get omap3 platforms to be DT
+only and will be deleted. It is meant only for legacy boot for OMAP3
+at the moment.
 
-For those who be aware of the risk of no power capping capabily working and
-try to get better performance with this driver.
 
-Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-Tested-by: Alexey Kodanev <alexey.kodanev@oracle.com>
----
- v2: change to hardware vendor specific naming parameter.
- v4: refine code and doc.
- v5&v6: fix a typo in doc.
- v7: change enum PCC to PPC.
- v8: change the name of kernel command line parameter to generic one.
-
- Documentation/kernel-parameters.txt | 5 +++++
- drivers/cpufreq/intel_pstate.c      | 6 +++++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 479f332..7d0983e 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 		       disable
- 		         Do not enable intel_pstate as the default
- 		         scaling driver for the supported processors
-+		       force
-+			 Enable intel_pstate on systems where it may cause problems to
-+			 happen due to conflicts with platform firmware attempting to
-+			 drive P-states by itself in certain situations (for thermal 
-+			 control or power capping in general or other purposes).
- 
- 	intremap=	[X86-64, Intel-IOMMU]
- 			on	enable Interrupt Remapping (default)
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1bb62ca..2654e13 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
- };
- 
- static int __initdata no_load;
-+static unsigned int  force_load;
- 
- static int intel_pstate_msrs_not_valid(void)
- {
-@@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
- 			case PSS:
- 				return intel_pstate_no_acpi_pss();
- 			case PPC:
--				return intel_pstate_has_acpi_ppc();
-+				return intel_pstate_has_acpi_ppc() &&
-+					(!force_load);
- 			}
- 	}
- 
-@@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
- 
- 	if (!strcmp(str, "disable"))
- 		no_load = 1;
-+	if (!strcmp(str, "force"))
-+		force_load = 1;
- 	return 0;
- }
- early_param("intel_pstate", intel_pstate_setup);
 -- 
-1.8.3.1
-
+Regards,
+Nishanth Menon
