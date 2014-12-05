@@ -1,7 +1,7 @@
 From: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [RFC RESEND 3/3] PM / devfreq: Add watermark active governor
-Date: Fri, 5 Dec 2014 15:41:32 +0200
-Message-ID: <1417786892-477-4-git-send-email-amerilainen@nvidia.com>
+Subject: [RFC RESEND 2/3] PM / devfreq: Add watermark simple governor
+Date: Fri, 5 Dec 2014 15:41:31 +0200
+Message-ID: <1417786892-477-3-git-send-email-amerilainen@nvidia.com>
 References: <1417786892-477-1-git-send-email-amerilainen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,67 +12,58 @@ To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU
 Cc: javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds a new watermark governor that actively alters the
-watermark values based on the current frequency and target load.
+From: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-The governor takes target load as a given property (80% by default)
-and every time when the governor re-estimation is triggered, the
-governor checks the current load and calculates the next frequency
-that would push the device as close this target load as possible.
+This patch adds a new devfreq governor, watermark simple. The
+governor decides next frequency naively by selecting the previous
+frequency in the frequency table if we received low watermark
+- or the next frequency in case we received high watermark.
 
-At this point also the watermark values are updated so that next
-time the interrupt should come when the load change is significant
-enough to cause frequency change to either next or previous
-frequency.
-
+Signed-off-by: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Signed-off-by: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/devfreq/Kconfig                 |  11 ++
+ drivers/devfreq/Kconfig                 |   7 +
  drivers/devfreq/Makefile                |   1 +
- drivers/devfreq/governor_wmark_active.c | 276 ++++++++++++++++++++++++++++++++
- 3 files changed, 288 insertions(+)
- create mode 100644 drivers/devfreq/governor_wmark_active.c
+ drivers/devfreq/governor_wmark_simple.c | 245 ++++++++++++++++++++++++++++++++
+ 3 files changed, 253 insertions(+)
+ create mode 100644 drivers/devfreq/governor_wmark_simple.c
 
 diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 37710d999ffe..dc5b207e9c3b 100644
+index faf4e70c42e0..37710d999ffe 100644
 --- a/drivers/devfreq/Kconfig
 +++ b/drivers/devfreq/Kconfig
-@@ -70,6 +70,17 @@ config DEVFREQ_GOV_WMARK_SIMPLE
- 	  This governor returns the next frequency from frequency table
- 	  based on type watermark event.
+@@ -63,6 +63,13 @@ config DEVFREQ_GOV_USERSPACE
+ 	  Otherwise, the governor does not change the frequnecy
+ 	  given at the initialization.
  
-+config DEVFREQ_GOV_WMARK_ACTIVE
-+	tristate "Active Watermark"
++config DEVFREQ_GOV_WMARK_SIMPLE
++	tristate "Simple Watermark"
 +	help
 +	  Sets the frequency based on monitor watermark events.
-+	  This governor calculates relation between current load and
-+	  target load. The next frequency is calculated by multiplying
-+	  this relation with the current frequency.
-+
-+	  The watermark values are updated so that the watermarks are
-+	  triggered when the above algorithm would change the frequency.
++	  This governor returns the next frequency from frequency table
++	  based on type watermark event.
 +
  comment "DEVFREQ Drivers"
  
  config ARM_EXYNOS4_BUS_DEVFREQ
 diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-index 92024eeb73b6..91e07aef3b29 100644
+index 16138c9e0d58..92024eeb73b6 100644
 --- a/drivers/devfreq/Makefile
 +++ b/drivers/devfreq/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
+@@ -3,6 +3,7 @@ obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
+ obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
  obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
  obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
- obj-$(CONFIG_DEVFREQ_GOV_WMARK_SIMPLE)	+= governor_wmark_simple.o
-+obj-$(CONFIG_DEVFREQ_GOV_WMARK_ACTIVE)	+= governor_wmark_active.o
++obj-$(CONFIG_DEVFREQ_GOV_WMARK_SIMPLE)	+= governor_wmark_simple.o
  
  # DEVFREQ Drivers
  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos/
-diff --git a/drivers/devfreq/governor_wmark_active.c b/drivers/devfreq/governor_wmark_active.c
+diff --git a/drivers/devfreq/governor_wmark_simple.c b/drivers/devfreq/governor_wmark_simple.c
 new file mode 100644
-index 000000000000..fe67d915d490
+index 000000000000..bd14adcc84cb
 --- /dev/null
-+++ b/drivers/devfreq/governor_wmark_active.c
-@@ -0,0 +1,276 @@
++++ b/drivers/devfreq/governor_wmark_simple.c
+@@ -0,0 +1,245 @@
 +/*
 + * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
 + *
@@ -105,8 +96,12 @@ index 000000000000..fe67d915d490
 +	int			freq_count;
 +
 +	/* algorithm parameters */
-+	unsigned int		p_load_target;
-+	unsigned int		p_load_max;
++	unsigned int		p_high_wmark;
++	unsigned int		p_low_wmark;
++
++	/* dynamically changing data */
++	enum watermark_type	event;
++	unsigned int		last_request;
 +
 +	/* common data */
 +	struct devfreq		*df;
@@ -114,8 +109,8 @@ index 000000000000..fe67d915d490
 +	struct dentry		*debugdir;
 +};
 +
-+static unsigned int freqlist_up(struct wmark_gov_info *wmarkinfo,
-+				unsigned int curr_freq)
++static unsigned long freqlist_up(struct wmark_gov_info *wmarkinfo,
++				 unsigned long curr_freq)
 +{
 +	int i, pos;
 +
@@ -129,7 +124,7 @@ index 000000000000..fe67d915d490
 +}
 +
 +static unsigned int freqlist_down(struct wmark_gov_info *wmarkinfo,
-+				  unsigned int curr_freq)
++				  unsigned long curr_freq)
 +{
 +	int i, pos;
 +
@@ -141,97 +136,47 @@ index 000000000000..fe67d915d490
 +	return wmarkinfo->freqlist[pos];
 +}
 +
-+static unsigned int freqlist_round(struct wmark_gov_info *wmarkinfo,
-+				   unsigned int freq)
-+{
-+	int i, pos;
-+
-+	for (i = 0; i < wmarkinfo->freq_count; i++)
-+		if (wmarkinfo->freqlist[i] >= freq)
-+			break;
-+
-+	pos = min(wmarkinfo->freq_count - 1, i);
-+	return wmarkinfo->freqlist[pos];
-+}
-+
-+static void update_watermarks(struct devfreq *df,
-+			      unsigned int current_frequency)
-+{
-+	struct wmark_gov_info *wmarkinfo = df->data;
-+	unsigned int relation = 0, next_freq = 0;
-+	unsigned int current_frequency_khz = current_frequency / 1000;
-+
-+	if (current_frequency == wmarkinfo->freqlist[0]) {
-+		/* disable the low watermark if we are at lowest clock */
-+		df->profile->set_low_wmark(df->dev.parent, 0);
-+	} else {
-+		/* calculate the low threshold; what is the load value
-+		 * at which we would go into lower frequency given the
-+		 * that we are running at the new frequency? */
-+		next_freq = freqlist_down(wmarkinfo, current_frequency);
-+		relation = ((next_freq / current_frequency_khz) *
-+			wmarkinfo->p_load_target) / 1000;
-+		df->profile->set_low_wmark(df->dev.parent, relation);
-+	}
-+
-+	if (current_frequency ==
-+	    wmarkinfo->freqlist[wmarkinfo->freq_count - 1]) {
-+		/* disable the high watermark if we are at highest clock */
-+		df->profile->set_high_wmark(df->dev.parent, 1000);
-+	} else {
-+		/* calculate the high threshold; what is the load value
-+		 * at which we would go into highest frequency given the
-+		 * that we are running at the new frequency? */
-+		next_freq = freqlist_up(wmarkinfo, current_frequency);
-+		relation = ((next_freq / current_frequency_khz) *
-+			wmarkinfo->p_load_target) / 1000;
-+		relation = min(wmarkinfo->p_load_max, relation);
-+		df->profile->set_high_wmark(df->dev.parent, relation);
-+	}
-+
-+}
-+
 +static int devfreq_watermark_target_freq(struct devfreq *df,
 +					 unsigned long *freq)
 +{
 +	struct wmark_gov_info *wmarkinfo = df->data;
 +	struct devfreq_dev_status dev_stat;
-+	unsigned int load, relation, next_freq;
 +	int err;
 +
 +	err = df->profile->get_dev_status(df->dev.parent, &dev_stat);
 +	if (err < 0)
 +		return err;
 +
-+	/* keep current frequency if we do not have proper data available */
-+	if (!dev_stat.total_time) {
-+		*freq = dev_stat.current_frequency;
-+		return 0;
++	switch (wmarkinfo->event) {
++	case HIGH_WATERMARK_EVENT:
++		*freq = freqlist_up(wmarkinfo, dev_stat.current_frequency);
++
++		/* always enable low watermark */
++		df->profile->set_low_wmark(df->dev.parent,
++					   wmarkinfo->p_low_wmark);
++
++		/* disable high watermark if no change */
++		if (*freq == wmarkinfo->last_request)
++			df->profile->set_high_wmark(df->dev.parent, 1000);
++		break;
++	case LOW_WATERMARK_EVENT:
++		*freq = freqlist_down(wmarkinfo, dev_stat.current_frequency);
++
++		/* always enable high watermark */
++		df->profile->set_high_wmark(df->dev.parent,
++					    wmarkinfo->p_high_wmark);
++
++		/* disable low watermark if no change */
++		if (*freq == wmarkinfo->last_request)
++			df->profile->set_low_wmark(df->dev.parent, 0);
++		break;
++	default:
++		break;
 +	}
 +
-+	/* calculate first load and relation load/p_load_target */
-+	load = (dev_stat.busy_time * 1000) / dev_stat.total_time;
-+
-+	/* if we cross load max...  */
-+	if (load >= wmarkinfo->p_load_max) {
-+		/* we go directly to the highest frequency. depending
-+		 * on frequency table we might never go higher than
-+		 * the current frequency (i.e. load should be over 100%
-+		 * to make relation push to the next frequency). */
-+		*freq = wmarkinfo->freqlist[wmarkinfo->freq_count - 1];
-+	} else {
-+		/* otherwise, based on relation between current load and
-+		 * load target we calculate the "ideal" frequency
-+		 * where we would be just at the target */
-+		relation = (load * 1000) / wmarkinfo->p_load_target;
-+		next_freq = relation * (dev_stat.current_frequency / 1000);
-+
-+		/* round this frequency */
-+		*freq = freqlist_round(wmarkinfo, next_freq);
-+	}
-+
-+	/* update watermarks to match with the new frequency */
-+	update_watermarks(df, *freq);
++	/* Mark that you handled event */
++	wmarkinfo->event = NO_WATERMARK_EVENT;
++	wmarkinfo->last_request = *freq;
 +
 +	return 0;
 +}
@@ -251,10 +196,10 @@ index 000000000000..fe67d915d490
 +	if (!wmarkinfo->debugdir)
 +		return;
 +
-+	debugfs_create_u32("load_target", S_IRUGO | S_IWUSR,
-+			   wmarkinfo->debugdir, &wmarkinfo->p_load_target);
-+	debugfs_create_u32("load_max", S_IRUGO | S_IWUSR,
-+			   wmarkinfo->debugdir, &wmarkinfo->p_load_max);
++	debugfs_create_u32("low_wmark", S_IRUGO | S_IWUSR,
++			   wmarkinfo->debugdir, &wmarkinfo->p_low_wmark);
++	debugfs_create_u32("high_wmark", S_IRUGO | S_IWUSR,
++			   wmarkinfo->debugdir, &wmarkinfo->p_high_wmark);
 +}
 +
 +static void devfreq_watermark_debug_stop(struct devfreq *df)
@@ -281,10 +226,11 @@ index 000000000000..fe67d915d490
 +	df->data = (void *)wmarkinfo;
 +	wmarkinfo->freqlist = df->profile->freq_table;
 +	wmarkinfo->freq_count = df->profile->max_state;
-+	wmarkinfo->p_load_target = 700;
-+	wmarkinfo->p_load_max = 900;
++	wmarkinfo->event = NO_WATERMARK_EVENT;
 +	wmarkinfo->df = df;
 +	wmarkinfo->pdev = pdev;
++	wmarkinfo->p_low_wmark = 100;
++	wmarkinfo->p_high_wmark = 600;
 +
 +	devfreq_watermark_debug_start(df);
 +
@@ -297,12 +243,18 @@ index 000000000000..fe67d915d490
 +{
 +	int ret = 0;
 +	struct wmark_gov_info *wmarkinfo = df->data;
++	enum watermark_type *type = wmark_type;
 +
 +	switch (event) {
 +	case DEVFREQ_GOV_START:
 +		devfreq_watermark_start(df);
 +		wmarkinfo = df->data;
-+		update_watermarks(df, wmarkinfo->freqlist[0]);
++		if (df->profile->set_low_wmark)
++			df->profile->set_low_wmark(df->dev.parent,
++						   wmarkinfo->p_low_wmark);
++		if (df->profile->set_high_wmark)
++			df->profile->set_high_wmark(df->dev.parent,
++						    wmarkinfo->p_high_wmark);
 +		break;
 +	case DEVFREQ_GOV_STOP:
 +		devfreq_watermark_debug_stop(df);
@@ -312,15 +264,23 @@ index 000000000000..fe67d915d490
 +		break;
 +
 +	case DEVFREQ_GOV_RESUME:
-+		wmarkinfo = df->data;
-+		update_watermarks(df, wmarkinfo->freqlist[0]);
++		if (df->profile->set_low_wmark)
++			df->profile->set_low_wmark(df->dev.parent,
++						   wmarkinfo->p_low_wmark);
++		if (df->profile->set_high_wmark)
++			df->profile->set_high_wmark(df->dev.parent,
++						    wmarkinfo->p_high_wmark);
 +		devfreq_monitor_resume(df);
 +		break;
 +
 +	case DEVFREQ_GOV_WMARK:
++		/* Set watermark interrupt type */
++		wmarkinfo->event = *type;
++
 +		mutex_lock(&df->lock);
 +		update_devfreq(df);
 +		mutex_unlock(&df->lock);
++
 +		break;
 +
 +	default:
@@ -330,8 +290,8 @@ index 000000000000..fe67d915d490
 +	return ret;
 +}
 +
-+static struct devfreq_governor devfreq_watermark_active = {
-+	.name = "wmark_active",
++static struct devfreq_governor devfreq_watermark = {
++	.name = "wmark_simple",
 +	.get_target_freq = devfreq_watermark_target_freq,
 +	.event_handler = devfreq_watermark_event_handler,
 +};
@@ -339,12 +299,12 @@ index 000000000000..fe67d915d490
 +
 +static int __init devfreq_watermark_init(void)
 +{
-+	return devfreq_add_governor(&devfreq_watermark_active);
++	return devfreq_add_governor(&devfreq_watermark);
 +}
 +
 +static void __exit devfreq_watermark_exit(void)
 +{
-+	devfreq_remove_governor(&devfreq_watermark_active);
++	devfreq_remove_governor(&devfreq_watermark);
 +}
 +
 +rootfs_initcall(devfreq_watermark_init);
