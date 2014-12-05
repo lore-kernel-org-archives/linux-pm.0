@@ -1,80 +1,33 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH] DMA / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Fri, 5 Dec 2014 20:02:18 +0530
-Message-ID: <20141205143218.GH3411@intel.com>
-References: <2237445.kkHAuggnGG@vostro.rjw.lan>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] PCI: Add disabling pm async quirk for JMicron chips
+Date: Fri, 5 Dec 2014 09:45:44 -0500
+Message-ID: <20141205144544.GH4080@htj.dyndns.org>
+References: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:30248 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbaLEObv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Dec 2014 09:31:51 -0500
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2237445.kkHAuggnGG@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Chuansheng Liu <chuansheng.liu@intel.com>
+Cc: bhelgaas@google.com, rjw@rjwysocki.net, mister.freeman@laposte.net, aaron.lu@intel.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: dmaengine@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, Dan Williams <dan.j.williams@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Dec 03, 2014 at 02:44:08AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/dma/nbpfaxi.c
-> and drivers/dma/tegra20-apb-dma.c.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-With change of patch title to dmaengine (we dont use DMA for dmaengine
-subsystem patches)
-Acked-by: Vinod Koul <vinod.koul@intel.com>
+On Fri, Dec 05, 2014 at 03:17:37PM +0800, Chuansheng Liu wrote:
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB360, quirk_jmicron_ata);
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361, quirk_jmicron_ata);
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB362, quirk_jmicron_ata);
+> @@ -1519,6 +1534,8 @@ DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB3
+>  DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366, quirk_jmicron_ata);
+>  DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368, quirk_jmicron_ata);
+>  DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB369, quirk_jmicron_ata);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_JMICRON, PCI_ANY_ID,
+> +		pci_async_suspend_fixup);
+
+Why is this being done through pci quirks?  e6b7e41cdd8 implements the
+same quirk in the respective drivers.  What's the difference here?
+
+Thanks.
 
 -- 
-~Vinod
-
-> ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
-> 
-> ---
->  drivers/dma/nbpfaxi.c         |    2 +-
->  drivers/dma/tegra20-apb-dma.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/dma/nbpfaxi.c
-> ===================================================================
-> --- linux-pm.orig/drivers/dma/nbpfaxi.c
-> +++ linux-pm/drivers/dma/nbpfaxi.c
-> @@ -1479,7 +1479,7 @@ static struct platform_device_id nbpf_id
->  };
->  MODULE_DEVICE_TABLE(platform, nbpf_ids);
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int nbpf_runtime_suspend(struct device *dev)
->  {
->  	struct nbpf_device *nbpf = platform_get_drvdata(to_platform_device(dev));
-> Index: linux-pm/drivers/dma/tegra20-apb-dma.c
-> ===================================================================
-> --- linux-pm.orig/drivers/dma/tegra20-apb-dma.c
-> +++ linux-pm/drivers/dma/tegra20-apb-dma.c
-> @@ -1587,7 +1587,7 @@ static int tegra_dma_pm_resume(struct de
->  #endif
->  
->  static const struct dev_pm_ops tegra_dma_dev_pm_ops = {
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  	.runtime_suspend = tegra_dma_runtime_suspend,
->  	.runtime_resume = tegra_dma_runtime_resume,
->  #endif
-> 
-
--- 
+tejun
