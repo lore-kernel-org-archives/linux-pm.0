@@ -1,54 +1,65 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: FIX ME in omap-cpufreq.c
-Date: Fri, 5 Dec 2014 07:20:32 -0600
-Message-ID: <5481B120.9050109@ti.com>
-References: <54809D3F.6070108@gmail.com> <CAKohpomfgZEkQ4Nv_VqtUe9ObveB+Ymw2Q0KxJLLZmkzHbQEQg@mail.gmail.com>
+From: Arto Merilainen <amerilainen@nvidia.com>
+Subject: [RFC RESEND 0/3] Add watermark support to devfreq
+Date: Fri, 5 Dec 2014 15:41:29 +0200
+Message-ID: <1417786892-477-1-git-send-email-amerilainen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:41735 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbaLENUi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Dec 2014 08:20:38 -0500
-In-Reply-To: <CAKohpomfgZEkQ4Nv_VqtUe9ObveB+Ymw2Q0KxJLLZmkzHbQEQg@mail.gmail.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:11887 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbaLENl6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 08:41:58 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, nick <xerofoify@gmail.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, tomeu.vizoso@collabora.com, gnurou@gmail.com
+Cc: javier.martinez@collabora.co.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, swarren@wwwdotorg.org, thierry.reding@gmail.com, grant.likely@linaro.org, srasal@nvidia.com, amerilainen@nvidia.com
 
-On 12/04/2014 10:30 PM, Viresh Kumar wrote:
-> On 4 December 2014 at 23:13, nick <xerofoify@gmail.com> wrote:
->> Greetings Kevin and the other maintainers of this file,
-> 
-> Hi,
-> 
->> I am wondering why the below code still has a fix me? It seems rather trivial to fix, as all we need is the transition
->> time of the CPU. Due to this and I don't have the hardware do any of you have the hardware, can any of you tell me the
->> correct value for this if you have this hardware. Further more I will paste the code below.
-> 
-> Not every FIXME wants to get fixed. Believe me.
-> 
-> Don't just grep for FIXME's in kernel and send patches for that. It
-> isn't working anymore Nick.
-> 
-> I understand that you want to get some name for yourself in the kernel community
-> (and for sure there is nothing wrong in that), but the way you have chosen isn't
-> taking you there. People aren't really happy with the way things are proceeding.
-> 
-> If you really want to help kernel (and yourself), start getting deeper
-> knowledge of
-> frameworks you have any idea of. And they try to solve some real problems.
-> 
-> I don't want to discourage you here, but trying to show the right path. Rest is
-> upon you :)
-> 
+(Sorry for the spam. I am resending the series because I noted that
+some of the email addresses were mistyped)
 
-by the way, the file is redundant once we get omap3 platforms to be DT
-only and will be deleted. It is meant only for legacy boot for OMAP3
-at the moment.
+Currently main mechanism to implement scaling using devfreq is
+polling and the device profile is free to set polling interval.
+However, in many cases this approach is not optimal; We may
+unnecessarily use CPU time to determine load on engine that
+is idle most of time - or we may simply read load when we
+already know that the device is busy.
 
+In some cases a device itself has counters to track its activity
+and possibility to raise interrupts when load goes above or below
+certain threshold.
+
+This series adds support for watermark events to devfreq and
+introduces two example governors. The first patch adds two
+callbacks to the device profile (for setting watermark) and
+adds a new function call to devfreq that informs of crossed
+watermark.
+
+The added governors demonstrate usage of the new API. The first
+governor (watermark simple) sets device to trigger low watermark
+event when load goes below 10% and high watermark interrupt when
+the load goes above 60%. Watermark active tries to keep load at
+certain level and it actively sets thresholds based on the
+frequency table in order get interrupts only when the load value
+would affect to the current frequency in re-estimation.
+
+Arto Merilainen (1):
+  PM / devfreq: Add watermark active governor
+
+Shridhar Rasal (2):
+  PM / devfreq: Add watermark events
+  PM / devfreq: Add watermark simple governor
+
+ drivers/devfreq/Kconfig                 |  18 +++
+ drivers/devfreq/Makefile                |   2 +
+ drivers/devfreq/devfreq.c               |  19 +++
+ drivers/devfreq/governor.h              |   1 +
+ drivers/devfreq/governor_wmark_active.c | 276 ++++++++++++++++++++++++++++++++
+ drivers/devfreq/governor_wmark_simple.c | 245 ++++++++++++++++++++++++++++
+ include/linux/devfreq.h                 |  26 +++
+ 7 files changed, 587 insertions(+)
+ create mode 100644 drivers/devfreq/governor_wmark_active.c
+ create mode 100644 drivers/devfreq/governor_wmark_simple.c
 
 -- 
-Regards,
-Nishanth Menon
+1.8.1.5
+
