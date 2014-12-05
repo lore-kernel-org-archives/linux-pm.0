@@ -1,52 +1,116 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH] dmaengine: shdma: Runtime-resume device in .shutdown()
-Date: Fri, 5 Dec 2014 23:17:54 +0530
-Message-ID: <20141205174754.GV3411@intel.com>
-References: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: [RFC PATCH v6 0/9] The power allocator thermal governor
+Date: Fri,  5 Dec 2014 19:04:11 +0000
+Message-ID: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 19, 2014 at 04:15:46PM +0100, Geert Uytterhoeven wrote:
-> During system reboot, the sh-dma-engine device may be runtime-suspended,
-> causing a crash:
-> 
->     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
->     Internal error: : 1406 [#1] SMP ARM
->     ...
->     PC is at sh_dmae_ctl_stop+0x28/0x64
->     LR is at sh_dmae_ctl_stop+0x24/0x64
-> 
-> If the sh-dma-engine is runtime-suspended, its module clock is turned
-> off, and its registers cannot be accessed. Runtime-resume the device in
-> the driver's .shutdown() callback to fix this.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/dma/sh/shdmac.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
-> index b65317c6ea4e722c..a13c6ba7468f12a6 100644
-> --- a/drivers/dma/sh/shdmac.c
-> +++ b/drivers/dma/sh/shdmac.c
-> @@ -585,7 +585,10 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
->  static void sh_dmae_shutdown(struct platform_device *pdev)
->  {
->  	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-> +
-> +	pm_runtime_get_sync(&pdev->dev);
->  	sh_dmae_ctl_stop(shdev);
-> +	pm_runtime_put(&pdev->dev);
-but if you are runtime_suspended, then why should you even proceed to stop
-the clock. Why not just cleanup and return when runtime suspended
+Hi linux-pm,
 
--- 
-~Vinod
+The power allocator governor allocates device power to control
+temperature.  This requires transforming performance requests into
+requested power, which we do with an extended cooling device API
+introduced in patch 5 (thermal: extend the cooling device API to
+include power information).  Patch 6 (thermal: cpu_cooling: implement
+the power cooling device API) extends the cpu cooling device using a
+simple power model.  The division of power between the cooling devices
+ensures that power is allocated where it is needed the most, based on
+the current workload.
 
+Patches 1-3 adds array printing helpers to ftrace, which we then use
+in patch 8.
+
+Changes since v5:
+  - Addressed Stephen's review of the trace patches.
+  - Removed power actors and extended the cooling device interface
+    instead.
+  - Let platforms override the power allocator governor parameters in
+    their thermal zone parameters
+
+Changes since v4:
+  - Add more tracing
+  - Document some of the limitations of the power allocator governor
+  - Export the power_actor API and move power_actor.h to include/linux
+
+Changes since v3:
+  - Use tz->passive to poll faster when the first trip point is hit.
+  - Don't make a special directory for power_actors
+  - Add a DT property for sustainable-power
+  - Simplify the static power interface and pass the current thermal
+    zone in every power_actor_ops to remove the controversial
+    enum power_actor_types
+  - Use locks with the actor_list list
+  - Use cpufreq_get() to get the frequency of the cpu instead of
+    using the notifiers.
+  - Remove the prompt for THERMAL_POWER_ACTOR_CPU when configuring
+    the kernel
+
+Changes since v2:
+  - Changed the PI controller into a PID controller
+  - Added static power to the cpu power model
+  - tz parameter max_dissipatable_power renamed to sustainable_power
+  - Register the cpufreq cooling device as part of the
+    power_cpu_actor registration.
+
+Changes since v1:
+  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
+  - Replaced the cooling device interface with a separate power actor
+    API
+  - Addressed most of Eduardo's comments
+  - Incorporated ftrace support for bitmask to trace cpumasks
+
+Todo:
+  - Expose thermal zone parameters in sysfs
+  - Expose new governor parameters in device tree
+  - Expose cooling device weights in device tree
+
+Cheers,
+Javi & Punit
+
+Dave Martin (1):
+  tracing: Add array printing helpers
+
+Javi Merino (7):
+  tools lib traceevent: Generalize numeric argument
+  tools lib traceevent: Add support for __print_u{8,16,32,64}_array()
+  thermal: let governors have private data for each thermal zone
+  thermal: extend the cooling device API to include power information
+  thermal: cpu_cooling: implement the power cooling device API
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+
+Punit Agrawal (1):
+  of: thermal: Introduce sustainable power for a thermal zone
+
+ .../devicetree/bindings/thermal/thermal.txt        |   4 +
+ Documentation/thermal/cpu-cooling-api.txt          | 144 +++++-
+ Documentation/thermal/power_allocator.txt          | 223 +++++++++
+ drivers/thermal/Kconfig                            |  15 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/cpu_cooling.c                      | 455 +++++++++++++++++=
+-
+ drivers/thermal/of-thermal.c                       |   4 +
+ drivers/thermal/power_allocator.c                  | 528 +++++++++++++++++=
+++++
+ drivers/thermal/thermal_core.c                     | 128 ++++-
+ drivers/thermal/thermal_core.h                     |   8 +
+ include/linux/cpu_cooling.h                        |  49 +-
+ include/linux/ftrace_event.h                       |   9 +
+ include/linux/thermal.h                            |  61 ++-
+ include/trace/events/thermal_power_allocator.h     | 138 ++++++
+ include/trace/ftrace.h                             |  17 +
+ kernel/trace/trace_output.c                        |  51 ++
+ tools/lib/traceevent/event-parse.c                 |  88 +++-
+ tools/lib/traceevent/event-parse.h                 |   8 +-
+ 18 files changed, 1886 insertions(+), 45 deletions(-)
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/trace/events/thermal_power_allocator.h
+
+--=20
+1.9.1
