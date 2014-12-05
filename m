@@ -1,48 +1,75 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PCI: Add disabling pm async quirk for JMicron chips
-Date: Fri, 5 Dec 2014 14:18:40 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1412051415180.13167-100000@ida.rowland.org>
-References: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2 V8] intel_pstate: add kernel parameter to force loading.
+Date: Fri, 05 Dec 2014 23:28:33 +0100
+Message-ID: <1450362.V0bfHnJ0NE@vostro.rjw.lan>
+References: <1417772453-22483-1-git-send-email-ethan.zhao@oracle.com> <5481D8B9.2030603@hp.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Chuansheng Liu <chuansheng.liu@intel.com>
-Cc: bhelgaas@google.com, rjw@rjwysocki.net, mister.freeman@laposte.net, aaron.lu@intel.com, tj@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58666 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751239AbaLEWHJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 17:07:09 -0500
+In-Reply-To: <5481D8B9.2030603@hp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linda Knippers <linda.knippers@hp.com>
+Cc: Ethan Zhao <ethan.zhao@oracle.com>, dirk.j.brandewie@intel.com, kristen@linux.intel.com, viresh.kumar@linaro.org, corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, alexey.kodanev@oracle.com
 
-On Fri, 5 Dec 2014, Chuansheng Liu wrote:
-
-> Some history from
-> commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361")
-> ==
-> Since v3.15, the PM feature of async noirq
-> commit 76569faa62c4 ("PM / sleep: Asynchronous threads for resume_noirq") is introduced.
+On Friday, December 05, 2014 11:09:29 AM Linda Knippers wrote:
+> On 12/5/2014 4:40 AM, Ethan Zhao wrote:
+> > To force loading on Oracle Sun X86 servers, provide one kernel command line
+> > parameter
+> > 
+> >   intel_pstate = force
+> > 
+> > For those who be aware of the risk of no power capping capabily working and
+> > try to get better performance with this driver.
+> > 
+> > Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+> > Tested-by: Alexey Kodanev <alexey.kodanev@oracle.com>
+> > ---
+> >  v2: change to hardware vendor specific naming parameter.
+> >  v4: refine code and doc.
+> >  v5&v6: fix a typo in doc.
+> >  v7: change enum PCC to PPC.
+> >  v8: change the name of kernel command line parameter to generic one.
+> > 
+> >  Documentation/kernel-parameters.txt | 5 +++++
+> >  drivers/cpufreq/intel_pstate.c      | 6 +++++-
+> >  2 files changed, 10 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> > index 479f332..7d0983e 100644
+> > --- a/Documentation/kernel-parameters.txt
+> > +++ b/Documentation/kernel-parameters.txt
+> > @@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+> >  		       disable
+> >  		         Do not enable intel_pstate as the default
+> >  		         scaling driver for the supported processors
+> > +		       force
+> > +			 Enable intel_pstate on systems where it may cause problems to
+> > +			 happen due to conflicts with platform firmware attempting to
+> > +			 drive P-states by itself in certain situations (for thermal 
+> > +			 control or power capping in general or other purposes).
 > 
-> Then Jay hit one system resuming issue that one of the JMicron controller
-> can not be powered up successfully.
+> I suggest something like:
+> 			Enable intel_pstate on systems that prohibit it by
+> 			default in favor of acpi-cpufreq.  Forcing the
+> 			intel_pstate driver instead of acpi-cpufreq may disable
+> 			platform features, such as thermal controls and power
+> 			capping, that rely on ACPI p-state information being
+> 			used by the OS and therefore should be used with care.
+> 			This option does not work with processors that aren't
+> 			supported by the intel_pstate driver or on platforms
+> 			that use pcc-cpufreq instead of acpi-cpufreq.
 > 
-> His device tree is like below:
->                  +-1c.4-[02]--+-00.0  JMicron Technology Corp. JMB363 SATA/IDE Controller
->                  |            \-00.1  JMicron Technology Corp. JMB363 SATA/IDE Controller
-> 
-> After investigation, we found the the Micron chip 363 included
-> one SATA controller(0000:02:00.0) and one PATA controller(0000:02:00.1),
-> these two controllers do not have parent-children relationship,
-> but the PATA controller only can be powered on after the SATA controller
-> has finished the powering on.
-> 
-> If we enabled the async noirq(), then the below error is hit during noirq
-> phase:
-> pata_jmicron 0000:02:00.1: Refused to change power state, currently in D3
-> Here for JMicron chip 363/361, we need forcedly to disable the async method.
+> Maybe this is too specific but I believe it is accurate.  Comments?
 
-You know, this is exactly why device_pm_wait_for_dev() exists -- so 
-that asynchronous power-management operations can wait for other 
-devices even when there's no parent-child relation.
+Looks good to me, thanks!
 
-You should try to use device_pm_wait_for_dev() instead of disabling 
-async suspend/resume.
 
-Alan Stern
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
