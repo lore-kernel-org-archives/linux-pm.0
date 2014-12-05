@@ -1,98 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: dt: disable unsupported OPPs
-Date: Fri, 5 Dec 2014 10:47:59 +0530
-Message-ID: <CAKohpokjgNEhEzq6-Pkkn_nt0=TxgK4Q4oDqa7LdL62rqfwe-g@mail.gmail.com>
-References: <1414155955-13640-1-git-send-email-l.stach@pengutronix.de>
+Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
+Date: Fri, 5 Dec 2014 10:54:49 +0530
+Message-ID: <CAKohpomO1HdoCJPSK8RHYozBhBTxwE4kQLYK48Ub4fFVV0mt-w@mail.gmail.com>
+References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
+	<1417692868.9037.4.camel@pengutronix.de>
+	<CAKohponP3PXd5b=YY7bpBK6FTNc5_Y7RU=X7q7dP1bYELcW6Dw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:43159 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbaLEFR7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 00:17:59 -0500
-Received: by mail-ob0-f179.google.com with SMTP id va2so5246obc.24
-        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2014 21:17:59 -0800 (PST)
-In-Reply-To: <1414155955-13640-1-git-send-email-l.stach@pengutronix.de>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:54856 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbaLEFYt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 00:24:49 -0500
+Received: by mail-ob0-f172.google.com with SMTP id wn1so12808obc.17
+        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2014 21:24:49 -0800 (PST)
+In-Reply-To: <CAKohponP3PXd5b=YY7bpBK6FTNc5_Y7RU=X7q7dP1bYELcW6Dw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Mark Brown <broonie@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hi Lucas,
+On 4 December 2014 at 19:37, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> This is not only clock's latency, but is somehow named this way. This should
+> give the time it takes to change from frequency A to frequency B, which include
+> change in supplies as well.. So, this probably is dvfs-latency ..
 
-On 24 October 2014 at 18:35, Lucas Stach <l.stach@pengutronix.de> wrote:
-
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-
->         if (!IS_ERR(cpu_reg)) {
-> -               struct dev_pm_opp *opp;
-> -               unsigned long min_uV, max_uV;
-> -               int i;
-> +               unsigned long opp_freq = 0;
->
->                 /*
-> -                * OPP is maintained in order of increasing frequency, and
-> -                * freq_table initialised from OPP is therefore sorted in the
-> -                * same order.
-> +                * Disable any OPPs where the connected regulator isn't able to
-> +                * provide the specified voltage and record minimum and maximum
-> +                * voltage levels.
->                  */
-> -               for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-> -                       ;
-> -               rcu_read_lock();
-> -               opp = dev_pm_opp_find_freq_exact(cpu_dev,
-> -                               freq_table[0].frequency * 1000, true);
-> -               min_uV = dev_pm_opp_get_voltage(opp);
-> -               opp = dev_pm_opp_find_freq_exact(cpu_dev,
-> -                               freq_table[i-1].frequency * 1000, true);
-> -               max_uV = dev_pm_opp_get_voltage(opp);
-> -               rcu_read_unlock();
-> +               while (1) {
-> +                       struct dev_pm_opp *opp;
-> +                       unsigned long opp_uV, tol_uV;
-> +
-> +                       rcu_read_lock();
-> +                       opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
-> +                       if (IS_ERR(opp)) {
-> +                               rcu_read_unlock();
-> +                               break;
-> +                       }
-> +                       opp_uV = dev_pm_opp_get_voltage(opp);
-> +                       rcu_read_unlock();
-> +
-> +                       tol_uV = opp_uV * priv->voltage_tolerance / 100;
-> +                       if (regulator_is_supported_voltage(cpu_reg, opp_uV,
-> +                                                          opp_uV + tol_uV)) {
-
-Sorry for opening an relatively old thread. Shouldn't we instead do this here:
-
-                       if (regulator_is_supported_voltage(cpu_reg,
-opp_uV - tol_uV,
-                                                          opp_uV + tol_uV)) {
-
-??
-
-Because the minimum voltage we will try to set is: min_uV - tol_uV (as we
-do it with help of: regulator_set_voltage_tol())..
-
-> +                               if (opp_uV < min_uV)
-> +                                       min_uV = opp_uV;
-> +                               if (opp_uV > max_uV)
-> +                                       max_uV = opp_uV;
-
-Also the min/max _uV we are using here to calculate latency *may* also
-include the tolerance voltage ? i.e. min_uV = min_uV - tol_uV and
-max_uV = max_uV + tol_volt ??
-
-> +                       } else {
-> +                               dev_pm_opp_disable(cpu_dev, opp_freq);
-> +                       }
-> +
-> +                       opp_freq++;
-> +               }
-> +
->                 ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
->                 if (ret > 0)
->                         transition_latency += ret * 1000;
->         }
+Oops. No this is just clock-latency. We are calculating voltage-latency
+separately.
