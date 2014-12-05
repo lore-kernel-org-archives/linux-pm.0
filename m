@@ -1,7 +1,7 @@
 From: Michal Hocko <mhocko@suse.cz>
-Subject: [PATCH -v2 1/5] oom: add helpers for setting and clearing TIF_MEMDIE
-Date: Fri,  5 Dec 2014 17:41:43 +0100
-Message-ID: <1417797707-31699-2-git-send-email-mhocko@suse.cz>
+Subject: [PATCH -v2 4/5] sysrq: convert printk to pr_* equivalent
+Date: Fri,  5 Dec 2014 17:41:46 +0100
+Message-ID: <1417797707-31699-5-git-send-email-mhocko@suse.cz>
 References: <20141110163055.GC18373@dhcp22.suse.cz>
  <1417797707-31699-1-git-send-email-mhocko@suse.cz>
 Return-path: <owner-linux-mm@kvack.org>
@@ -11,113 +11,85 @@ To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch is just a preparatory and it doesn't introduce any functional
-change.
+While touching this area let's convert printk to pr_*. This also makes
+the printing of continuation lines done properly.
 
 Signed-off-by: Michal Hocko <mhocko@suse.cz>
 ---
- include/linux/oom.h |  4 ++++
- kernel/exit.c       |  2 +-
- mm/memcontrol.c     |  2 +-
- mm/oom_kill.c       | 23 ++++++++++++++++++++---
- 4 files changed, 26 insertions(+), 5 deletions(-)
+ drivers/tty/sysrq.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/oom.h b/include/linux/oom.h
-index 4971874f54db..1315fcbb9527 100644
---- a/include/linux/oom.h
-+++ b/include/linux/oom.h
-@@ -47,6 +47,10 @@ static inline bool oom_task_origin(const struct task_struct *p)
- 	return !!(p->signal->oom_flags & OOM_FLAG_ORIGIN);
- }
+diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
+index 42bad18c66c9..0071469ecbf1 100644
+--- a/drivers/tty/sysrq.c
++++ b/drivers/tty/sysrq.c
+@@ -90,7 +90,7 @@ static void sysrq_handle_loglevel(int key)
  
-+extern void mark_tsk_oom_victim(struct task_struct *tsk);
-+
-+extern void unmark_tsk_oom_victim(void);
-+
- extern unsigned long oom_badness(struct task_struct *p,
- 		struct mem_cgroup *memcg, const nodemask_t *nodemask,
- 		unsigned long totalpages);
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 5d30019ff953..ee5176e2a1ba 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -459,7 +459,7 @@ static void exit_mm(struct task_struct *tsk)
- 	task_unlock(tsk);
- 	mm_update_next_owner(mm);
- 	mmput(mm);
--	clear_thread_flag(TIF_MEMDIE);
-+	unmark_tsk_oom_victim();
+ 	i = key - '0';
+ 	console_loglevel = CONSOLE_LOGLEVEL_DEFAULT;
+-	printk("Loglevel set to %d\n", i);
++	pr_info("Loglevel set to %d\n", i);
+ 	console_loglevel = i;
  }
- 
- /*
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index d6ac0e33e150..302e0fc6d121 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1735,7 +1735,7 @@ static void mem_cgroup_out_of_memory(struct mem_cgroup *memcg, gfp_t gfp_mask,
- 	 * quickly exit and free its memory.
- 	 */
- 	if (fatal_signal_pending(current) || current->flags & PF_EXITING) {
--		set_thread_flag(TIF_MEMDIE);
-+		mark_tsk_oom_victim(current);
+ static struct sysrq_key_op sysrq_loglevel_op = {
+@@ -220,7 +220,7 @@ static void showacpu(void *dummy)
  		return;
- 	}
  
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 5340f6b91312..c75b37d59a32 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -421,6 +421,23 @@ void note_oom_kill(void)
- 	atomic_inc(&oom_kills);
+ 	spin_lock_irqsave(&show_lock, flags);
+-	printk(KERN_INFO "CPU%d:\n", smp_processor_id());
++	pr_info("CPU%d:\n", smp_processor_id());
+ 	show_stack(NULL, NULL);
+ 	spin_unlock_irqrestore(&show_lock, flags);
  }
+@@ -243,7 +243,7 @@ static void sysrq_handle_showallcpus(int key)
+ 		struct pt_regs *regs = get_irq_regs();
  
-+/**
-+ * Marks the given taks as OOM victim.
-+ * @tsk: task to mark
-+ */
-+void mark_tsk_oom_victim(struct task_struct *tsk)
-+{
-+	set_tsk_thread_flag(tsk, TIF_MEMDIE);
-+}
-+
-+/**
-+ * Unmarks the current task as OOM victim.
-+ */
-+void unmark_tsk_oom_victim(void)
-+{
-+	clear_thread_flag(TIF_MEMDIE);
-+}
-+
- #define K(x) ((x) << (PAGE_SHIFT-10))
- /*
-  * Must be called while holding a reference to p, which will be released upon
-@@ -444,7 +461,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 	 * its children or threads, just set TIF_MEMDIE so it can die quickly
- 	 */
- 	if (p->flags & PF_EXITING) {
--		set_tsk_thread_flag(p, TIF_MEMDIE);
-+		mark_tsk_oom_victim(p);
- 		put_task_struct(p);
- 		return;
- 	}
-@@ -527,7 +544,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		if (regs) {
+-			printk(KERN_INFO "CPU%d:\n", smp_processor_id());
++			pr_info("CPU%d:\n", smp_processor_id());
+ 			show_regs(regs);
  		}
- 	rcu_read_unlock();
- 
--	set_tsk_thread_flag(victim, TIF_MEMDIE);
-+	mark_tsk_oom_victim(victim);
- 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
- 	put_task_struct(victim);
- }
-@@ -650,7 +667,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
- 	 * quickly exit and free its memory.
+ 		schedule_work(&sysrq_showallcpus);
+@@ -522,7 +522,7 @@ void __handle_sysrq(int key, bool check_mask)
  	 */
- 	if (fatal_signal_pending(current) || current->flags & PF_EXITING) {
--		set_thread_flag(TIF_MEMDIE);
-+		mark_tsk_oom_victim(current);
- 		return;
- 	}
+ 	orig_log_level = console_loglevel;
+ 	console_loglevel = CONSOLE_LOGLEVEL_DEFAULT;
+-	printk(KERN_INFO "SysRq : ");
++	pr_info("SysRq : ");
  
+         op_p = __sysrq_get_key_op(key);
+         if (op_p) {
+@@ -531,14 +531,14 @@ void __handle_sysrq(int key, bool check_mask)
+ 		 * should not) and is the invoked operation enabled?
+ 		 */
+ 		if (!check_mask || sysrq_on_mask(op_p->enable_mask)) {
+-			printk("%s\n", op_p->action_msg);
++			pr_cont("%s\n", op_p->action_msg);
+ 			console_loglevel = orig_log_level;
+ 			op_p->handler(key);
+ 		} else {
+-			printk("This sysrq operation is disabled.\n");
++			pr_cont("This sysrq operation is disabled.\n");
+ 		}
+ 	} else {
+-		printk("HELP : ");
++		pr_cont("HELP : ");
+ 		/* Only print the help msg once per handler */
+ 		for (i = 0; i < ARRAY_SIZE(sysrq_key_table); i++) {
+ 			if (sysrq_key_table[i]) {
+@@ -549,10 +549,10 @@ void __handle_sysrq(int key, bool check_mask)
+ 					;
+ 				if (j != i)
+ 					continue;
+-				printk("%s ", sysrq_key_table[i]->help_msg);
++				pr_cont("%s ", sysrq_key_table[i]->help_msg);
+ 			}
+ 		}
+-		printk("\n");
++		pr_cont("\n");
+ 		console_loglevel = orig_log_level;
+ 	}
+ 	rcu_read_unlock();
 -- 
 2.1.3
 
