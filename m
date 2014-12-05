@@ -1,176 +1,132 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v6 1/9] tracing: Add array printing helpers
-Date: Fri,  5 Dec 2014 19:04:12 +0000
-Message-ID: <1417806260-9264-2-git-send-email-javi.merino@arm.com>
+Subject: [RFC PATCH v6 2/9] tools lib traceevent: Generalize numeric argument
+Date: Fri,  5 Dec 2014 19:04:13 +0000
+Message-ID: <1417806260-9264-3-git-send-email-javi.merino@arm.com>
 References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33408 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbaLETFG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 14:05:06 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Dave Martin <Dave.Martin@arm.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Steven Rostedt <srostedt@redhat.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, Jiri Olsa <jolsa@redhat.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Dave Martin <Dave.Martin@arm.com>
+Numeric arguments can be in different bases, so rename it to num so
+that they can be used for formats other than PRINT_HEX
 
-If a trace event contains an array, there is currently no standard
-way to format this for text output.  Drivers are currently hacking
-around this by a) local hacks that use the trace_seq functionailty
-directly, or b) just not printing that information.  For fixed size
-arrays, formatting of the elements can be open-coded, but this gets
-cumbersome for arrays of non-trivial size.
-
-These approaches result in non-standard content of the event format
-description delivered to userspace, so userland tools needs to be
-taught to understand and parse each array printing method
-individually.
-
-This patch implements common __print_<type>_array() helpers that
-tracepoint implementations can use instead of reinventing them.  A
-simple C-style syntax is used to delimit the array and its elements
-{like,this}.
-
-So that the helpers can be used with large static arrays as well as
-dynamic arrays, they take a pointer and element count: they can be
-used with __get_dynamic_array() for use with dynamic arrays.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Signed-off-by: Dave Martin <Dave.Martin@arm.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- include/linux/ftrace_event.h |  9 ++++++++
- include/trace/ftrace.h       | 17 +++++++++++++++
- kernel/trace/trace_output.c  | 51 ++++++++++++++++++++++++++++++++++++++++=
-++++
- 3 files changed, 77 insertions(+)
+ tools/lib/traceevent/event-parse.c | 26 +++++++++++++-------------
+ tools/lib/traceevent/event-parse.h |  4 ++--
+ 2 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 28672e87e910..415afc53fa51 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -44,6 +44,15 @@ const char *ftrace_print_bitmask_seq(struct trace_seq *p=
-, void *bitmask_ptr,
- const char *ftrace_print_hex_seq(struct trace_seq *p,
- =09=09=09=09 const unsigned char *buf, int len);
+diff --git a/tools/lib/traceevent/event-parse.c b/tools/lib/traceevent/even=
+t-parse.c
+index cf3a44bf1ec3..f12ea53cc83b 100644
+--- a/tools/lib/traceevent/event-parse.c
++++ b/tools/lib/traceevent/event-parse.c
+@@ -754,8 +754,8 @@ static void free_arg(struct print_arg *arg)
+ =09=09free_flag_sym(arg->symbol.symbols);
+ =09=09break;
+ =09case PRINT_HEX:
+-=09=09free_arg(arg->hex.field);
+-=09=09free_arg(arg->hex.size);
++=09=09free_arg(arg->num.field);
++=09=09free_arg(arg->num.size);
+ =09=09break;
+ =09case PRINT_TYPE:
+ =09=09free(arg->typecast.type);
+@@ -2503,7 +2503,7 @@ process_hex(struct event_format *event, struct print_=
+arg *arg, char **tok)
+ =09if (test_type_token(type, token, EVENT_DELIM, ","))
+ =09=09goto out_free;
 =20
-+const char *ftrace_print_u8_array_seq(struct trace_seq *p,
-+=09=09=09=09      const u8 *buf, int count);
-+const char *ftrace_print_u16_array_seq(struct trace_seq *p,
-+=09=09=09=09       const u16 *buf, int count);
-+const char *ftrace_print_u32_array_seq(struct trace_seq *p,
-+=09=09=09=09       const u32 *buf, int count);
-+const char *ftrace_print_u64_array_seq(struct trace_seq *p,
-+=09=09=09=09       const u64 *buf, int count);
-+
- struct trace_iterator;
- struct trace_event;
+-=09arg->hex.field =3D field;
++=09arg->num.field =3D field;
 =20
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 26b4f2e13275..15bc5d417aea 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -263,6 +263,19 @@
- #undef __print_hex
- #define __print_hex(buf, buf_len) ftrace_print_hex_seq(p, buf, buf_len)
+ =09free_token(token);
 =20
-+#undef __print_u8_array
-+#define __print_u8_array(array, count)=09=09=09\
-+=09ftrace_print_u8_array_seq(p, array, count)
-+#undef __print_u16_array
-+#define __print_u16_array(array, count)=09=09=09\
-+=09ftrace_print_u16_array_seq(p, array, count)
-+#undef __print_u32_array
-+#define __print_u32_array(array, count)=09=09=09\
-+=09ftrace_print_u32_array_seq(p, array, count)
-+#undef __print_u64_array
-+#define __print_u64_array(array, count)=09=09=09\
-+=09ftrace_print_u64_array_seq(p, array, count)
-+
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)=09\
- static notrace enum print_line_t=09=09=09=09=09\
-@@ -676,6 +689,10 @@ static inline void ftrace_test_probe_##call(void)=09=
-=09=09\
- #undef __get_dynamic_array_len
- #undef __get_str
- #undef __get_bitmask
-+#undef __print_u8_array
-+#undef __print_u16_array
-+#undef __print_u32_array
-+#undef __print_u64_array
+@@ -2519,7 +2519,7 @@ process_hex(struct event_format *event, struct print_=
+arg *arg, char **tok)
+ =09if (test_type_token(type, token, EVENT_DELIM, ")"))
+ =09=09goto out_free;
 =20
- #undef TP_printk
- #define TP_printk(fmt, args...) "\"" fmt "\", "  __stringify(args)
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index c6977d5a9b12..4a6ee61f30b3 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -186,6 +186,57 @@ ftrace_print_hex_seq(struct trace_seq *p, const unsign=
-ed char *buf, int buf_len)
- }
- EXPORT_SYMBOL(ftrace_print_hex_seq);
+-=09arg->hex.size =3D field;
++=09arg->num.size =3D field;
 =20
-+static const char *
-+ftrace_print_array_seq(struct trace_seq *p, const void *buf, int buf_len,
-+=09=09       bool (*iterator)(struct trace_seq *p, const char *prefix,
-+=09=09=09=09=09const void **buf, int *buf_len))
-+{
-+=09const char *ret =3D trace_seq_buffer_ptr(p);
-+=09const char *prefix =3D "";
-+
-+=09trace_seq_putc(p, '{');
-+
-+=09while (iterator(p, prefix, &buf, &buf_len))
-+=09=09prefix =3D ",";
-+
-+=09trace_seq_putc(p, '}');
-+=09trace_seq_putc(p, 0);
-+
-+=09return ret;
-+}
-+
-+#define DEFINE_PRINT_ARRAY(type, printk_type, format)=09=09=09\
-+static bool=09=09=09=09=09=09=09=09\
-+ftrace_print_array_iterator_##type(struct trace_seq *p, const char *prefix=
-, \
-+=09=09=09=09   const void **buf, int *buf_len)=09\
-+{=09=09=09=09=09=09=09=09=09\
-+=09const type *__src =3D *buf;=09=09=09=09=09\
-+=09=09=09=09=09=09=09=09=09\
-+=09if (*buf_len < sizeof(*__src))=09=09=09=09=09\
-+=09=09return false;=09=09=09=09=09=09\
-+=09=09=09=09=09=09=09=09=09\
-+=09trace_seq_printf(p, "%s" format, prefix, (printk_type)*__src++); \
-+=09=09=09=09=09=09=09=09=09\
-+=09*buf =3D __src;=09=09=09=09=09=09=09\
-+=09*buf_len -=3D sizeof(*__src);=09=09=09=09=09\
-+=09=09=09=09=09=09=09=09=09\
-+=09return true;=09=09=09=09=09=09=09\
-+}=09=09=09=09=09=09=09=09=09\
-+=09=09=09=09=09=09=09=09=09\
-+const char *ftrace_print_##type##_array_seq(=09=09=09=09\
-+=09struct trace_seq *p, const type *buf, int count)=09=09\
-+{=09=09=09=09=09=09=09=09=09\
-+=09return ftrace_print_array_seq(p, buf, (count) * sizeof(type),=09\
-+=09=09=09=09      ftrace_print_array_iterator_##type); \
-+}=09=09=09=09=09=09=09=09=09\
-+=09=09=09=09=09=09=09=09=09\
-+EXPORT_SYMBOL(ftrace_print_##type##_array_seq)
-+
-+DEFINE_PRINT_ARRAY(u8, unsigned int, "0x%x");
-+DEFINE_PRINT_ARRAY(u16, unsigned int, "0x%x");
-+DEFINE_PRINT_ARRAY(u32, unsigned int, "0x%x");
-+DEFINE_PRINT_ARRAY(u64, unsigned long long, "0x%llx");
-+
- int ftrace_raw_output_prep(struct trace_iterator *iter,
- =09=09=09   struct trace_event *trace_event)
- {
+ =09free_token(token);
+ =09type =3D read_token_item(tok);
+@@ -3740,24 +3740,24 @@ static void print_str_arg(struct trace_seq *s, void=
+ *data, int size,
+ =09=09}
+ =09=09break;
+ =09case PRINT_HEX:
+-=09=09if (arg->hex.field->type =3D=3D PRINT_DYNAMIC_ARRAY) {
++=09=09if (arg->num.field->type =3D=3D PRINT_DYNAMIC_ARRAY) {
+ =09=09=09unsigned long offset;
+ =09=09=09offset =3D pevent_read_number(pevent,
+-=09=09=09=09data + arg->hex.field->dynarray.field->offset,
+-=09=09=09=09arg->hex.field->dynarray.field->size);
++=09=09=09=09data + arg->num.field->dynarray.field->offset,
++=09=09=09=09arg->num.field->dynarray.field->size);
+ =09=09=09hex =3D data + (offset & 0xffff);
+ =09=09} else {
+-=09=09=09field =3D arg->hex.field->field.field;
++=09=09=09field =3D arg->num.field->field.field;
+ =09=09=09if (!field) {
+-=09=09=09=09str =3D arg->hex.field->field.name;
++=09=09=09=09str =3D arg->num.field->field.name;
+ =09=09=09=09field =3D pevent_find_any_field(event, str);
+ =09=09=09=09if (!field)
+ =09=09=09=09=09goto out_warning_field;
+-=09=09=09=09arg->hex.field->field.field =3D field;
++=09=09=09=09arg->num.field->field.field =3D field;
+ =09=09=09}
+ =09=09=09hex =3D data + field->offset;
+ =09=09}
+-=09=09len =3D eval_num_arg(data, size, event, arg->hex.size);
++=09=09len =3D eval_num_arg(data, size, event, arg->num.size);
+ =09=09for (i =3D 0; i < len; i++) {
+ =09=09=09if (i)
+ =09=09=09=09trace_seq_putc(s, ' ');
+@@ -4923,9 +4923,9 @@ static void print_args(struct print_arg *args)
+ =09=09break;
+ =09case PRINT_HEX:
+ =09=09printf("__print_hex(");
+-=09=09print_args(args->hex.field);
++=09=09print_args(args->num.field);
+ =09=09printf(", ");
+-=09=09print_args(args->hex.size);
++=09=09print_args(args->num.size);
+ =09=09printf(")");
+ =09=09break;
+ =09case PRINT_STRING:
+diff --git a/tools/lib/traceevent/event-parse.h b/tools/lib/traceevent/even=
+t-parse.h
+index 7a3873ff9a4f..2bf72e908a74 100644
+--- a/tools/lib/traceevent/event-parse.h
++++ b/tools/lib/traceevent/event-parse.h
+@@ -240,7 +240,7 @@ struct print_arg_symbol {
+ =09struct print_flag_sym=09*symbols;
+ };
+=20
+-struct print_arg_hex {
++struct print_arg_num {
+ =09struct print_arg=09*field;
+ =09struct print_arg=09*size;
+ };
+@@ -291,7 +291,7 @@ struct print_arg {
+ =09=09struct print_arg_typecast=09typecast;
+ =09=09struct print_arg_flags=09=09flags;
+ =09=09struct print_arg_symbol=09=09symbol;
+-=09=09struct print_arg_hex=09=09hex;
++=09=09struct print_arg_num=09=09num;
+ =09=09struct print_arg_func=09=09func;
+ =09=09struct print_arg_string=09=09string;
+ =09=09struct print_arg_bitmask=09bitmask;
 --=20
 1.9.1
-
-
