@@ -1,189 +1,52 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH] PM QoS: Add debugfs support to view the list of constraints
-Date: Fri, 5 Dec 2014 11:19:08 -0600
-Message-ID: <1417799948-48440-1-git-send-email-d-gerlach@ti.com>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH] dmaengine: shdma: Runtime-resume device in .shutdown()
+Date: Fri, 5 Dec 2014 23:17:54 +0530
+Message-ID: <20141205174754.GV3411@intel.com>
+References: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:51040 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbaLERTV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 12:19:21 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>
 
-From: Nishanth Menon <nm@ti.com>
+On Wed, Nov 19, 2014 at 04:15:46PM +0100, Geert Uytterhoeven wrote:
+> During system reboot, the sh-dma-engine device may be runtime-suspended,
+> causing a crash:
+> 
+>     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+>     Internal error: : 1406 [#1] SMP ARM
+>     ...
+>     PC is at sh_dmae_ctl_stop+0x28/0x64
+>     LR is at sh_dmae_ctl_stop+0x24/0x64
+> 
+> If the sh-dma-engine is runtime-suspended, its module clock is turned
+> off, and its registers cannot be accessed. Runtime-resume the device in
+> the driver's .shutdown() callback to fix this.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/dma/sh/shdmac.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+> index b65317c6ea4e722c..a13c6ba7468f12a6 100644
+> --- a/drivers/dma/sh/shdmac.c
+> +++ b/drivers/dma/sh/shdmac.c
+> @@ -585,7 +585,10 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+>  static void sh_dmae_shutdown(struct platform_device *pdev)
+>  {
+>  	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
+> +
+> +	pm_runtime_get_sync(&pdev->dev);
+>  	sh_dmae_ctl_stop(shdev);
+> +	pm_runtime_put(&pdev->dev);
+but if you are runtime_suspended, then why should you even proceed to stop
+the clock. Why not just cleanup and return when runtime suspended
 
-PM QoS requests are notoriously hard to debug and made even
-more so due to their highly dynamic nature. Having visibility
-into the internal data representation per constraint allows
-us to have much better appreciation of potential issues or
-bad usage by drivers in the system.
-
-So introduce for all classes of PM QoS, an entry in
-/sys/kernel/debug/pm_qos that shall show all the current
-requests as well as the snapshot of the value these requests
-boil down to. For example:
-==> /sys/kernel/debug/pm_qos/cpu_dma_latency <==
-1: 4444: Active
-2: 2000000000: Default
-3: 2000000000: Default
-4: 2000000000: Default
-Type=Minimum, Value=4444, Requests: active=1 / total=4
-
-==> /sys/kernel/debug/pm_qos/memory_bandwidth <==
-Empty!
-
-...
-
-The actual value listed will have their meaning based
-on the QoS it is on, the 'Type' indicates what logic
-it would use to collate the information - Minimum,
-Maximum, or Sum. Value is the collation of all requests.
-This interface also compares the values with the defaults
-for the QoS class and marks the ones that are
-currently active.
-
-Signed-off-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
----
- kernel/power/qos.c | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 89 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 5f4c006..97b0df7 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -41,6 +41,8 @@
- #include <linux/platform_device.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
- 
- #include <linux/uaccess.h>
- #include <linux/export.h>
-@@ -182,6 +184,81 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
- 	c->target_value = value;
- }
- 
-+static inline int pm_qos_get_value(struct pm_qos_constraints *c);
-+static int pm_qos_dbg_show_requests(struct seq_file *s, void *unused)
-+{
-+	struct pm_qos_object *qos = (struct pm_qos_object *)s->private;
-+	struct pm_qos_constraints *c;
-+	struct pm_qos_request *req;
-+	char *type;
-+	unsigned long flags;
-+	int tot_reqs = 0;
-+	int active_reqs = 0;
-+
-+	if (IS_ERR_OR_NULL(qos)) {
-+		pr_err("%s: bad qos param!\n", __func__);
-+		return -EINVAL;
-+	}
-+	c = qos->constraints;
-+	if (IS_ERR_OR_NULL(c)) {
-+		pr_err("%s: Bad constraints on qos?\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	/* Lock to ensure we have a snapshot */
-+	spin_lock_irqsave(&pm_qos_lock, flags);
-+	if (plist_head_empty(&c->list)) {
-+		seq_puts(s, "Empty!\n");
-+		goto out;
-+	}
-+
-+	switch (c->type) {
-+	case PM_QOS_MIN:
-+		type = "Minimum";
-+		break;
-+	case PM_QOS_MAX:
-+		type = "Maximum";
-+		break;
-+	case PM_QOS_SUM:
-+		type = "Sum";
-+		break;
-+	default:
-+		type = "Unknown";
-+	}
-+
-+	plist_for_each_entry(req, &c->list, node) {
-+		char *state = "Default";
-+
-+		if ((req->node).prio != c->default_value) {
-+			active_reqs++;
-+			state = "Active";
-+		}
-+		tot_reqs++;
-+		seq_printf(s, "%d: %d: %s\n", tot_reqs,
-+			   (req->node).prio, state);
-+	}
-+
-+	seq_printf(s, "Type=%s, Value=%d, Requests: active=%d / total=%d\n",
-+		   type, pm_qos_get_value(c), active_reqs, tot_reqs);
-+
-+out:
-+	spin_unlock_irqrestore(&pm_qos_lock, flags);
-+	return 0;
-+}
-+
-+static int pm_qos_dbg_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pm_qos_dbg_show_requests,
-+			   inode->i_private);
-+}
-+
-+static const struct file_operations pm_qos_debug_fops = {
-+	.open           = pm_qos_dbg_open,
-+	.read           = seq_read,
-+	.llseek         = seq_lseek,
-+	.release        = single_release,
-+};
-+
- /**
-  * pm_qos_update_target - manages the constraints list and calls the notifiers
-  *  if needed
-@@ -509,12 +586,17 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
- 
- /* User space interface to PM QoS classes via misc devices */
--static int register_pm_qos_misc(struct pm_qos_object *qos)
-+static int register_pm_qos_misc(struct pm_qos_object *qos, struct dentry *d)
- {
- 	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
- 	qos->pm_qos_power_miscdev.name = qos->name;
- 	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
- 
-+	if (d) {
-+		(void)debugfs_create_file(qos->name, S_IRUGO, d,
-+					  (void *)qos, &pm_qos_debug_fops);
-+	}
-+
- 	return misc_register(&qos->pm_qos_power_miscdev);
- }
- 
-@@ -608,11 +690,16 @@ static int __init pm_qos_power_init(void)
- {
- 	int ret = 0;
- 	int i;
-+	struct dentry *d;
- 
- 	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
- 
-+	d = debugfs_create_dir("pm_qos", NULL);
-+	if (IS_ERR_OR_NULL(d))
-+		d = NULL;
-+
- 	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
--		ret = register_pm_qos_misc(pm_qos_array[i]);
-+		ret = register_pm_qos_misc(pm_qos_array[i], d);
- 		if (ret < 0) {
- 			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
- 			       pm_qos_array[i]->name);
 -- 
-2.1.0
+~Vinod
 
