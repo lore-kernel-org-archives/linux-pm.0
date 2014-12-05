@@ -1,7 +1,7 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v6 2/9] tools lib traceevent: Generalize numeric argument
-Date: Fri,  5 Dec 2014 19:04:13 +0000
-Message-ID: <1417806260-9264-3-git-send-email-javi.merino@arm.com>
+Subject: [RFC PATCH v6 4/9] thermal: let governors have private data for each thermal zone
+Date: Fri,  5 Dec 2014 19:04:15 +0000
+Message-ID: <1417806260-9264-5-git-send-email-javi.merino@arm.com>
 References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -9,124 +9,218 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Steven Rostedt <srostedt@redhat.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, Jiri Olsa <jolsa@redhat.com>
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Numeric arguments can be in different bases, so rename it to num so
-that they can be used for formats other than PRINT_HEX
+A governor may need to store its current state between calls to
+throttle().  That state depends on the thermal zone, so store it as
+private data in struct thermal_zone_device.
 
-Cc: Steven Rostedt <srostedt@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
+The governors may have two new ops: bind_to_tz() and unbind_from_tz().
+When provided, these functions let governors do some initialization
+and teardown when they are bound/unbound to a tz and possibly store that
+information in the governor_data field of the struct
+thermal_zone_device.
+
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- tools/lib/traceevent/event-parse.c | 26 +++++++++++++-------------
- tools/lib/traceevent/event-parse.h |  4 ++--
- 2 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/thermal/thermal_core.c | 83 ++++++++++++++++++++++++++++++++++++++=
+----
+ include/linux/thermal.h        |  9 +++++
+ 2 files changed, 84 insertions(+), 8 deletions(-)
 
-diff --git a/tools/lib/traceevent/event-parse.c b/tools/lib/traceevent/even=
-t-parse.c
-index cf3a44bf1ec3..f12ea53cc83b 100644
---- a/tools/lib/traceevent/event-parse.c
-+++ b/tools/lib/traceevent/event-parse.c
-@@ -754,8 +754,8 @@ static void free_arg(struct print_arg *arg)
- =09=09free_flag_sym(arg->symbol.symbols);
- =09=09break;
- =09case PRINT_HEX:
--=09=09free_arg(arg->hex.field);
--=09=09free_arg(arg->hex.size);
-+=09=09free_arg(arg->num.field);
-+=09=09free_arg(arg->num.size);
- =09=09break;
- =09case PRINT_TYPE:
- =09=09free(arg->typecast.type);
-@@ -2503,7 +2503,7 @@ process_hex(struct event_format *event, struct print_=
-arg *arg, char **tok)
- =09if (test_type_token(type, token, EVENT_DELIM, ","))
- =09=09goto out_free;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
+c
+index 43b90709585f..9021cb72a13a 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -75,6 +75,58 @@ static struct thermal_governor *__find_governor(const ch=
+ar *name)
+ =09return NULL;
+ }
 =20
--=09arg->hex.field =3D field;
-+=09arg->num.field =3D field;
++/**
++ * bind_previous_governor() - bind the previous governor of the thermal zo=
+ne
++ * @tz:=09=09a valid pointer to a struct thermal_zone_device
++ * @failed_gov_name:=09the name of the governor that failed to register
++ *
++ * Register the previous governor of the thermal zone after a new
++ * governor has failed to be bound.
++ */
++static void bind_previous_governor(struct thermal_zone_device *tz,
++=09=09=09=09const char *failed_gov_name)
++{
++=09if (tz->governor && tz->governor->bind_to_tz) {
++=09=09if (tz->governor->bind_to_tz(tz)) {
++=09=09=09dev_err(&tz->device,
++=09=09=09=09"governor %s failed to bind and the previous one (%s) failed t=
+o bind again, thermal zone %s has no governor\n",
++=09=09=09=09failed_gov_name, tz->governor->name, tz->type);
++=09=09=09tz->governor =3D NULL;
++=09=09}
++=09}
++}
++
++/**
++ * thermal_set_governor() - Switch to another governor
++ * @tz:=09=09a valid pointer to a struct thermal_zone_device
++ * @new_gov:=09pointer to the new governor
++ *
++ * Change the governor of thermal zone @tz.
++ *
++ * Return: 0 on success, an error if the new governor's bind_to_tz() faile=
+d.
++ */
++static int thermal_set_governor(struct thermal_zone_device *tz,
++=09=09=09=09struct thermal_governor *new_gov)
++{
++=09int ret =3D 0;
++
++=09if (tz->governor && tz->governor->unbind_from_tz)
++=09=09tz->governor->unbind_from_tz(tz);
++
++=09if (new_gov && new_gov->bind_to_tz) {
++=09=09ret =3D new_gov->bind_to_tz(tz);
++=09=09if (ret) {
++=09=09=09bind_previous_governor(tz, new_gov->name);
++
++=09=09=09return ret;
++=09=09}
++=09}
++
++=09tz->governor =3D new_gov;
++
++=09return ret;
++}
++
+ int thermal_register_governor(struct thermal_governor *governor)
+ {
+ =09int err;
+@@ -107,8 +159,15 @@ int thermal_register_governor(struct thermal_governor =
+*governor)
 =20
- =09free_token(token);
+ =09=09name =3D pos->tzp->governor_name;
 =20
-@@ -2519,7 +2519,7 @@ process_hex(struct event_format *event, struct print_=
-arg *arg, char **tok)
- =09if (test_type_token(type, token, EVENT_DELIM, ")"))
- =09=09goto out_free;
+-=09=09if (!strncasecmp(name, governor->name, THERMAL_NAME_LENGTH))
+-=09=09=09pos->governor =3D governor;
++=09=09if (!strncasecmp(name, governor->name, THERMAL_NAME_LENGTH)) {
++=09=09=09int ret;
++
++=09=09=09ret =3D thermal_set_governor(pos, governor);
++=09=09=09if (ret)
++=09=09=09=09dev_err(&pos->device,
++=09=09=09=09=09"Failed to set governor %s for thermal zone %s: %d\n",
++=09=09=09=09=09governor->name, pos->type, ret);
++=09=09}
+ =09}
 =20
--=09arg->hex.size =3D field;
-+=09arg->num.size =3D field;
+ =09mutex_unlock(&thermal_list_lock);
+@@ -134,7 +193,7 @@ void thermal_unregister_governor(struct thermal_governo=
+r *governor)
+ =09list_for_each_entry(pos, &thermal_tz_list, node) {
+ =09=09if (!strncasecmp(pos->governor->name, governor->name,
+ =09=09=09=09=09=09THERMAL_NAME_LENGTH))
+-=09=09=09pos->governor =3D NULL;
++=09=09=09thermal_set_governor(pos, NULL);
+ =09}
 =20
- =09free_token(token);
- =09type =3D read_token_item(tok);
-@@ -3740,24 +3740,24 @@ static void print_str_arg(struct trace_seq *s, void=
- *data, int size,
- =09=09}
- =09=09break;
- =09case PRINT_HEX:
--=09=09if (arg->hex.field->type =3D=3D PRINT_DYNAMIC_ARRAY) {
-+=09=09if (arg->num.field->type =3D=3D PRINT_DYNAMIC_ARRAY) {
- =09=09=09unsigned long offset;
- =09=09=09offset =3D pevent_read_number(pevent,
--=09=09=09=09data + arg->hex.field->dynarray.field->offset,
--=09=09=09=09arg->hex.field->dynarray.field->size);
-+=09=09=09=09data + arg->num.field->dynarray.field->offset,
-+=09=09=09=09arg->num.field->dynarray.field->size);
- =09=09=09hex =3D data + (offset & 0xffff);
- =09=09} else {
--=09=09=09field =3D arg->hex.field->field.field;
-+=09=09=09field =3D arg->num.field->field.field;
- =09=09=09if (!field) {
--=09=09=09=09str =3D arg->hex.field->field.name;
-+=09=09=09=09str =3D arg->num.field->field.name;
- =09=09=09=09field =3D pevent_find_any_field(event, str);
- =09=09=09=09if (!field)
- =09=09=09=09=09goto out_warning_field;
--=09=09=09=09arg->hex.field->field.field =3D field;
-+=09=09=09=09arg->num.field->field.field =3D field;
- =09=09=09}
- =09=09=09hex =3D data + field->offset;
- =09=09}
--=09=09len =3D eval_num_arg(data, size, event, arg->hex.size);
-+=09=09len =3D eval_num_arg(data, size, event, arg->num.size);
- =09=09for (i =3D 0; i < len; i++) {
- =09=09=09if (i)
- =09=09=09=09trace_seq_putc(s, ' ');
-@@ -4923,9 +4923,9 @@ static void print_args(struct print_arg *args)
- =09=09break;
- =09case PRINT_HEX:
- =09=09printf("__print_hex(");
--=09=09print_args(args->hex.field);
-+=09=09print_args(args->num.field);
- =09=09printf(", ");
--=09=09print_args(args->hex.size);
-+=09=09print_args(args->num.size);
- =09=09printf(")");
- =09=09break;
- =09case PRINT_STRING:
-diff --git a/tools/lib/traceevent/event-parse.h b/tools/lib/traceevent/even=
-t-parse.h
-index 7a3873ff9a4f..2bf72e908a74 100644
---- a/tools/lib/traceevent/event-parse.h
-+++ b/tools/lib/traceevent/event-parse.h
-@@ -240,7 +240,7 @@ struct print_arg_symbol {
- =09struct print_flag_sym=09*symbols;
+ =09mutex_unlock(&thermal_list_lock);
+@@ -762,8 +821,9 @@ policy_store(struct device *dev, struct device_attribut=
+e *attr,
+ =09if (!gov)
+ =09=09goto exit;
+=20
+-=09tz->governor =3D gov;
+-=09ret =3D count;
++=09ret =3D thermal_set_governor(tz, gov);
++=09if (!ret)
++=09=09ret =3D count;
+=20
+ exit:
+ =09mutex_unlock(&thermal_governor_lock);
+@@ -1459,6 +1519,7 @@ struct thermal_zone_device *thermal_zone_device_regis=
+ter(const char *type,
+ =09int result;
+ =09int count;
+ =09int passive =3D 0;
++=09struct thermal_governor *governor;
+=20
+ =09if (type && strlen(type) >=3D THERMAL_NAME_LENGTH)
+ =09=09return ERR_PTR(-EINVAL);
+@@ -1549,9 +1610,15 @@ struct thermal_zone_device *thermal_zone_device_regi=
+ster(const char *type,
+ =09mutex_lock(&thermal_governor_lock);
+=20
+ =09if (tz->tzp)
+-=09=09tz->governor =3D __find_governor(tz->tzp->governor_name);
++=09=09governor =3D __find_governor(tz->tzp->governor_name);
+ =09else
+-=09=09tz->governor =3D def_governor;
++=09=09governor =3D def_governor;
++
++=09result =3D thermal_set_governor(tz, governor);
++=09if (result) {
++=09=09mutex_unlock(&thermal_governor_lock);
++=09=09goto unregister;
++=09}
+=20
+ =09mutex_unlock(&thermal_governor_lock);
+=20
+@@ -1640,7 +1707,7 @@ void thermal_zone_device_unregister(struct thermal_zo=
+ne_device *tz)
+ =09=09device_remove_file(&tz->device, &dev_attr_mode);
+ =09device_remove_file(&tz->device, &dev_attr_policy);
+ =09remove_trip_attrs(tz);
+-=09tz->governor =3D NULL;
++=09thermal_set_governor(tz, NULL);
+=20
+ =09thermal_remove_hwmon_sysfs(tz);
+ =09release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index ef90838b36a0..2c14ab1f5c0d 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -191,6 +191,7 @@ struct thermal_attr {
+  * @ops:=09operations this &thermal_zone_device supports
+  * @tzp:=09thermal zone parameters
+  * @governor:=09pointer to the governor for this thermal zone
++ * @governor_data:=09private pointer for governor data
+  * @thermal_instances:=09list of &struct thermal_instance of this thermal =
+zone
+  * @idr:=09&struct idr to generate unique id for this zone's cooling
+  *=09=09devices
+@@ -217,6 +218,7 @@ struct thermal_zone_device {
+ =09struct thermal_zone_device_ops *ops;
+ =09const struct thermal_zone_params *tzp;
+ =09struct thermal_governor *governor;
++=09void *governor_data;
+ =09struct list_head thermal_instances;
+ =09struct idr idr;
+ =09struct mutex lock;
+@@ -227,12 +229,19 @@ struct thermal_zone_device {
+ /**
+  * struct thermal_governor - structure that holds thermal governor informa=
+tion
+  * @name:=09name of the governor
++ * @bind_to_tz: callback called when binding to a thermal zone.  If it
++ *=09=09returns 0, the governor is bound to the thermal zone,
++ *=09=09otherwise it fails.
++ * @unbind_from_tz:=09callback called when a governor is unbound from a
++ *=09=09=09thermal zone.
+  * @throttle:=09callback called for every trip point even if temperature i=
+s
+  *=09=09below the trip point temperature
+  * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
+  */
+ struct thermal_governor {
+ =09char name[THERMAL_NAME_LENGTH];
++=09int (*bind_to_tz)(struct thermal_zone_device *tz);
++=09void (*unbind_from_tz)(struct thermal_zone_device *tz);
+ =09int (*throttle)(struct thermal_zone_device *tz, int trip);
+ =09struct list_head=09governor_list;
  };
-=20
--struct print_arg_hex {
-+struct print_arg_num {
- =09struct print_arg=09*field;
- =09struct print_arg=09*size;
- };
-@@ -291,7 +291,7 @@ struct print_arg {
- =09=09struct print_arg_typecast=09typecast;
- =09=09struct print_arg_flags=09=09flags;
- =09=09struct print_arg_symbol=09=09symbol;
--=09=09struct print_arg_hex=09=09hex;
-+=09=09struct print_arg_num=09=09num;
- =09=09struct print_arg_func=09=09func;
- =09=09struct print_arg_string=09=09string;
- =09=09struct print_arg_bitmask=09bitmask;
 --=20
 1.9.1
