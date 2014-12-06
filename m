@@ -1,38 +1,45 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] PM / Kconfig: Replace PM_RUNTIME with PM in dependencies
-Date: Sat, 6 Dec 2014 07:43:04 -0500
-Message-ID: <20141206124304.GA18711@htj.dyndns.org>
-References: <1710744.OD8H2BOPgr@vostro.rjw.lan>
+Subject: Re: [PATCH -v2 1/5] oom: add helpers for setting and clearing
+ TIF_MEMDIE
+Date: Sat, 6 Dec 2014 07:56:17 -0500
+Message-ID: <20141206125617.GB18711@htj.dyndns.org>
+References: <20141110163055.GC18373@dhcp22.suse.cz>
+ <1417797707-31699-1-git-send-email-mhocko@suse.cz>
+ <1417797707-31699-2-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f44.google.com ([209.85.192.44]:38278 "EHLO
-	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbaLFMnJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Dec 2014 07:43:09 -0500
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <1710744.OD8H2BOPgr@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1417797707-31699-2-git-send-email-mhocko@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomasz Stanislawski <t.stanislaws@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, Dec 06, 2014 at 03:54:35AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so Kconfig options
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace PM_RUNTIME with PM in Kconfig dependencies throughout the
-> tree.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Dec 05, 2014 at 05:41:43PM +0100, Michal Hocko wrote:
+> +/**
+> + * Marks the given taks as OOM victim.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+/**
+ * $FUNCTION_NAME - $DESCRIPTION
 
-Thanks.
+> + * @tsk: task to mark
+> + */
+> +void mark_tsk_oom_victim(struct task_struct *tsk)
+> +{
+> +	set_tsk_thread_flag(tsk, TIF_MEMDIE);
+> +}
+> +
+> +/**
+> + * Unmarks the current task as OOM victim.
+
+Ditto.
 
 -- 
 tejun
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
