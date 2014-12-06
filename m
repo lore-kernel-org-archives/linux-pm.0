@@ -1,19 +1,19 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] tty / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Sat, 06 Dec 2014 03:33:47 +0100
-Message-ID: <1863568.HuOkEcjIrB@vostro.rjw.lan>
+Subject: [PATCH] video / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Sat, 06 Dec 2014 03:36:46 +0100
+Message-ID: <19160360.7uJRUqlDQg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58392 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:57757 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751216AbaLFCMT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 21:12:19 -0500
+	with SMTP id S1752054AbaLFCPT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Dec 2014 21:15:19 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jiri Slaby <jslaby@suse.cz>, Mika Westerberg <mika.westerberg@linux.intel.com>, Matthias Brugger <matthias.bgg@gmail.com>, Alan Cox <alan@linux.intel.com>
+To: Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
@@ -22,8 +22,10 @@ selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
 depending on CONFIG_PM_RUNTIME may now be changed to depend on
 CONFIG_PM.
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-drivers/tty/.
+The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+replaced with CONFIG_PM too.
+
+Make these changes in 2 files under drivers/video/.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -35,89 +37,43 @@ linux-pm tree).
 Please let me know if it is OK to take this one into linux-pm.
 
 ---
- drivers/tty/serial/8250/8250_dw.c  |    2 +-
- drivers/tty/serial/8250/8250_mtk.c |    2 +-
- drivers/tty/serial/mfd.c           |    7 ++-----
- drivers/tty/serial/msm_serial_hs.c |    2 +-
- drivers/tty/serial/omap-serial.c   |    2 +-
- 5 files changed, 6 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/s3c-fb.c          |    2 +-
+ drivers/video/fbdev/sh_mobile_meram.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/tty/serial/8250/8250_dw.c
+Index: linux-pm/drivers/video/fbdev/sh_mobile_meram.c
 ===================================================================
---- linux-pm.orig/drivers/tty/serial/8250/8250_dw.c
-+++ linux-pm/drivers/tty/serial/8250/8250_dw.c
-@@ -489,7 +489,7 @@ static int dw8250_resume(struct device *
- }
- #endif /* CONFIG_PM_SLEEP */
+--- linux-pm.orig/drivers/video/fbdev/sh_mobile_meram.c
++++ linux-pm/drivers/video/fbdev/sh_mobile_meram.c
+@@ -569,7 +569,7 @@ EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_
+  * Power management
+  */
  
--#ifdef CONFIG_PM_RUNTIME
+-#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
 +#ifdef CONFIG_PM
- static int dw8250_runtime_suspend(struct device *dev)
+ static int sh_mobile_meram_suspend(struct device *dev)
  {
- 	struct dw8250_data *data = dev_get_drvdata(dev);
-Index: linux-pm/drivers/tty/serial/8250/8250_mtk.c
-===================================================================
---- linux-pm.orig/drivers/tty/serial/8250/8250_mtk.c
-+++ linux-pm/drivers/tty/serial/8250/8250_mtk.c
-@@ -244,7 +244,7 @@ static int mtk8250_resume(struct device
- }
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int mtk8250_runtime_suspend(struct device *dev)
- {
- 	struct mtk8250_data *data = dev_get_drvdata(dev);
-Index: linux-pm/drivers/tty/serial/msm_serial_hs.c
-===================================================================
---- linux-pm.orig/drivers/tty/serial/msm_serial_hs.c
-+++ linux-pm/drivers/tty/serial/msm_serial_hs.c
-@@ -1792,7 +1792,7 @@ static void __exit msm_serial_hs_exit(vo
- }
- module_exit(msm_serial_hs_exit);
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int msm_hs_runtime_idle(struct device *dev)
- {
- 	/*
-Index: linux-pm/drivers/tty/serial/mfd.c
-===================================================================
---- linux-pm.orig/drivers/tty/serial/mfd.c
-+++ linux-pm/drivers/tty/serial/mfd.c
-@@ -1252,12 +1252,7 @@ static int serial_hsu_resume(struct pci_
- 	}
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -612,7 +612,7 @@ static int sh_mobile_meram_resume(struct
+ 		meram_write_reg(priv->base, common_regs[i], priv->regs[i]);
  	return 0;
  }
--#else
--#define serial_hsu_suspend	NULL
--#define serial_hsu_resume	NULL
--#endif
+-#endif /* CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
  
--#ifdef CONFIG_PM_RUNTIME
- static int serial_hsu_runtime_idle(struct device *dev)
- {
- 	pm_schedule_suspend(dev, 500);
-@@ -1274,6 +1269,8 @@ static int serial_hsu_runtime_resume(str
- 	return 0;
- }
- #else
-+#define serial_hsu_suspend		NULL
-+#define serial_hsu_resume		NULL
- #define serial_hsu_runtime_idle		NULL
- #define serial_hsu_runtime_suspend	NULL
- #define serial_hsu_runtime_resume	NULL
-Index: linux-pm/drivers/tty/serial/omap-serial.c
+ static UNIVERSAL_DEV_PM_OPS(sh_mobile_meram_dev_pm_ops,
+ 			    sh_mobile_meram_suspend,
+Index: linux-pm/drivers/video/fbdev/s3c-fb.c
 ===================================================================
---- linux-pm.orig/drivers/tty/serial/omap-serial.c
-+++ linux-pm/drivers/tty/serial/omap-serial.c
-@@ -1799,7 +1799,7 @@ static void serial_omap_mdr1_errataset(s
- 	}
+--- linux-pm.orig/drivers/video/fbdev/s3c-fb.c
++++ linux-pm/drivers/video/fbdev/s3c-fb.c
+@@ -1630,7 +1630,7 @@ static int s3c_fb_resume(struct device *
  }
+ #endif
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
- static void serial_omap_restore_context(struct uart_omap_port *up)
+ static int s3c_fb_runtime_suspend(struct device *dev)
  {
- 	if (up->errata & UART_ERRATA_i202_MDR1_ACCESS)
+ 	struct s3c_fb *sfb = dev_get_drvdata(dev);
 
