@@ -1,65 +1,38 @@
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] sound / PM: Replace CONFIG_PM_RUNTIME with
-	CONFIG_PM
-Date: Sat, 6 Dec 2014 01:50:46 -0800
-Message-ID: <20141206095045.GA2624@Asurada>
-References: <2064254.7lXiTpmK64@vostro.rjw.lan>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] PM / Kconfig: Replace PM_RUNTIME with PM in dependencies
+Date: Sat, 6 Dec 2014 07:43:04 -0500
+Message-ID: <20141206124304.GA18711@htj.dyndns.org>
+References: <1710744.OD8H2BOPgr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@alsa-project.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f44.google.com ([209.85.192.44]:38278 "EHLO
+	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752383AbaLFMnJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Dec 2014 07:43:09 -0500
 Content-Disposition: inline
-In-Reply-To: <2064254.7lXiTpmK64@vostro.rjw.lan>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Brian Austin <brian.austin@cirrus.com>, alsa-devel@alsa-project.org, Kukjin Kim <kgene.kim@samsung.com>, Timur Tabi <timur@tabi.org>, Linux PM list <linux-pm@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>, Xiubo Li <Li.Xiubo@freescale.com>, Liam Girdwood <lgirdwood@gmail.com>, Paul Handrigan <Paul.Handrigan@cirrus.com>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1710744.OD8H2BOPgr@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomasz Stanislawski <t.stanislaws@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, Dec 06, 2014 at 03:46:27AM +0100, Rafael J. Wysocki wrote:
+On Sat, Dec 06, 2014 at 03:54:35AM +0100, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
 > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> selected) PM_RUNTIME is always set if PM is set, so Kconfig options
 > depending on CONFIG_PM_RUNTIME may now be changed to depend on
 > CONFIG_PM.
 > 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under sound/.
+> Replace PM_RUNTIME with PM in Kconfig dependencies throughout the
+> tree.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
-> 
-> ---
->  sound/pci/hda/hda_controller.c |    2 +-
->  sound/pci/hda/hda_intel.c      |    5 +----
->  sound/soc/codecs/cs35l32.c     |    2 +-
->  sound/soc/codecs/cs42xx8.c     |    2 +-
->  sound/soc/codecs/max98090.c    |    2 +-
->  sound/soc/codecs/pcm512x.c     |    2 +-
->  sound/soc/codecs/tas2552.c     |    4 ++--
->  sound/soc/codecs/wm2200.c      |    2 +-
->  sound/soc/codecs/wm5100.c      |    2 +-
->  sound/soc/codecs/wm8962.c      |    2 +-
->  sound/soc/fsl/fsl_asrc.c       |    4 ++--
->  sound/soc/samsung/i2s.c        |    4 ++--
->  12 files changed, 15 insertions(+), 18 deletions(-)
 
-For cs42xx8.c and fsl_asrc.c
+Acked-by: Tejun Heo <tj@kernel.org>
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Thanks.
 
-Thank you
-Nic
+-- 
+tejun
