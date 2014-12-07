@@ -1,48 +1,37 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH] dmaengine: shdma: Runtime-resume device in .shutdown()
-Date: Sun, 7 Dec 2014 17:23:44 +0530
-Message-ID: <20141207115344.GZ3411@intel.com>
-References: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
- <20141205174754.GV3411@intel.com>
- <CAMuHMdW+zQontjNcG+MGxFec4CZFFzcDAwY=zNMNKCZLJh9whQ@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 0/4] OOM vs PM freezer fixes
+Date: Sun, 7 Dec 2014 08:55:51 -0500
+Message-ID: <20141207135551.GA19034@htj.dyndns.org>
+References: <20141110163055.GC18373@dhcp22.suse.cz>
+ <1417797707-31699-1-git-send-email-mhocko@suse.cz>
+ <20141207100953.GC15892@dhcp22.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdW+zQontjNcG+MGxFec4CZFFzcDAwY=zNMNKCZLJh9whQ@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+In-Reply-To: <20141207100953.GC15892@dhcp22.suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 07, 2014 at 11:35:21AM +0100, Geert Uytterhoeven wrote:
-> >>  static void sh_dmae_shutdown(struct platform_device *pdev)
-> >>  {
-> >>       struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-> >> +
-> >> +     pm_runtime_get_sync(&pdev->dev);
-> >>       sh_dmae_ctl_stop(shdev);
-> >> +     pm_runtime_put(&pdev->dev);
-> > but if you are runtime_suspended, then why should you even proceed to stop
-> > the clock. Why not just cleanup and return when runtime suspended
-> 
-> sh_dmae_ctl_stop() stops the DMA engine, not the clock.
-> Accessing the DMA engine cannot be done while the module clock is stopped.
-> 
-> If pm_runtime_suspended() returns true, I can indeed just return (no new
-> request can come in while .shutdown() is called).
-> However, if pm_runtime_suspended() returns false, the device may still
-> become runtime suspended in between the check for pm_runtime_suspended()
-> and accessing the DMA engine registers in sh_dmae_ctl_stop(), as runtime
-> suspend is an asynchronous operation, right?
-> 
-> So I think adding a check for pm_runtime_suspended() can only serve as
-> an optimization, the pm_runtime_{get_sync,put}() has to stay to prevent a
-> race condition.
-You are quite right in your observations, but this solution though correct
-seems bit heavy for case like shutdown. can't we can use driver lock to
-prevent race.
+On Sun, Dec 07, 2014 at 11:09:53AM +0100, Michal Hocko wrote:
+> this is another attempt to address OOM vs. PM interaction. More
+> about the issue is described in the last patch. The other 4 patches
+> are just clean ups. This is based on top of 3.18-rc3 + Johannes'
+> http://marc.info/?l=linux-kernel&m=141779091114777 which is not in the
+> Andrew's tree yet but I wanted to prevent from later merge conflicts.
+
+When the patches are based on a custom tree, it's often a good idea to
+create a git branch of the patches to help reviewing.
+
+Thanks.
 
 -- 
-~Vinod
+tejun
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
