@@ -1,29 +1,35 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 0/4] OOM vs PM freezer fixes
-Date: Sun, 7 Dec 2014 08:55:51 -0500
-Message-ID: <20141207135551.GA19034@htj.dyndns.org>
+Subject: Re: [PATCH -v2 2/5] OOM: thaw the OOM victim if it is frozen
+Date: Sun, 7 Dec 2014 08:59:40 -0500
+Message-ID: <20141207135940.GB19034@htj.dyndns.org>
 References: <20141110163055.GC18373@dhcp22.suse.cz>
  <1417797707-31699-1-git-send-email-mhocko@suse.cz>
- <20141207100953.GC15892@dhcp22.suse.cz>
+ <1417797707-31699-3-git-send-email-mhocko@suse.cz>
+ <20141206130657.GC18711@htj.dyndns.org>
+ <20141207102430.GF15892@dhcp22.suse.cz>
+ <20141207104539.GK15892@dhcp22.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20141207100953.GC15892@dhcp22.suse.cz>
+In-Reply-To: <20141207104539.GK15892@dhcp22.suse.cz>
 Sender: owner-linux-mm@kvack.org
 To: Michal Hocko <mhocko@suse.cz>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 07, 2014 at 11:09:53AM +0100, Michal Hocko wrote:
-> this is another attempt to address OOM vs. PM interaction. More
-> about the issue is described in the last patch. The other 4 patches
-> are just clean ups. This is based on top of 3.18-rc3 + Johannes'
-> http://marc.info/?l=linux-kernel&m=141779091114777 which is not in the
-> Andrew's tree yet but I wanted to prevent from later merge conflicts.
+On Sun, Dec 07, 2014 at 11:45:39AM +0100, Michal Hocko wrote:
+....
+>  void mark_tsk_oom_victim(struct task_struct *tsk)
+>  {
+>  	set_tsk_thread_flag(tsk, TIF_MEMDIE);
+> +	__thaw_task(tsk);
 
-When the patches are based on a custom tree, it's often a good idea to
-create a git branch of the patches to help reviewing.
+Yeah, this is a lot better.  Maybe we can add a comment at least
+pointing readers to where to look at to understand what's going on?
+This stems from the fact that OOM killer which essentially is a memory
+reclaim operation overrides freezing.  It'd be nice if that is
+documented somehow.
 
 Thanks.
 
