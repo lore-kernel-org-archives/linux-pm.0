@@ -1,46 +1,138 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH] Documentation/power/regulators/ ... cleanup ranges
-Date: Sun, 7 Dec 2014 17:08:51 +0100
-Message-ID: <20141207160851.GA18371@amd>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] ARM / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Sun, 7 Dec 2014 11:23:26 -0600
+Message-ID: <20141207172326.GB12811@kahuna>
+References: <2407638.dfZGaT4vm1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <2407638.dfZGaT4vm1@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Trivial patch monkey <trivial@kernel.org>, rjw@rjwysocki.net, corbet@lwn.net, geert+renesas@glider.be, broonie@linaro.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@arm.linux.org.uk>, Will Deacon <will.deacon@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 03:50-20141206, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere in the code under
+> arch/arm/ (the defconfig files will be modified later).
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
+> 
+> ---
+>  arch/arm/kernel/perf_event.c       |    2 +-
+>  arch/arm/mach-davinci/pm_domain.c  |    2 +-
+>  arch/arm/mach-keystone/pm_domain.c |    2 +-
+>  arch/arm/mach-omap1/pm_bus.c       |    4 ++--
+>  arch/arm/mach-omap2/io.c           |    2 +-
+>  arch/arm/mach-omap2/omap_device.c  |    2 +-
+>  6 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> Index: linux-pm/arch/arm/kernel/perf_event.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/kernel/perf_event.c
+> +++ linux-pm/arch/arm/kernel/perf_event.c
+> @@ -481,7 +481,7 @@ static void armpmu_disable(struct pmu *p
+>  	armpmu->stop(armpmu);
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int armpmu_runtime_resume(struct device *dev)
+>  {
+>  	struct arm_pmu_platdata *plat = dev_get_platdata(dev);
+> Index: linux-pm/arch/arm/mach-davinci/pm_domain.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-davinci/pm_domain.c
+> +++ linux-pm/arch/arm/mach-davinci/pm_domain.c
+> @@ -14,7 +14,7 @@
+>  #include <linux/pm_clock.h>
+>  #include <linux/platform_device.h>
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int davinci_pm_runtime_suspend(struct device *dev)
+>  {
+>  	int ret;
+> Index: linux-pm/arch/arm/mach-keystone/pm_domain.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-keystone/pm_domain.c
+> +++ linux-pm/arch/arm/mach-keystone/pm_domain.c
+> @@ -19,7 +19,7 @@
+>  #include <linux/clk-provider.h>
+>  #include <linux/of.h>
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int keystone_pm_runtime_suspend(struct device *dev)
+>  {
+>  	int ret;
+> Index: linux-pm/arch/arm/mach-omap1/pm_bus.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-omap1/pm_bus.c
+> +++ linux-pm/arch/arm/mach-omap1/pm_bus.c
+> @@ -21,7 +21,7 @@
+>  
+>  #include "soc.h"
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int omap1_pm_runtime_suspend(struct device *dev)
+>  {
+>  	int ret;
+> @@ -59,7 +59,7 @@ static struct dev_pm_domain default_pm_d
+>  #define OMAP1_PM_DOMAIN (&default_pm_domain)
+>  #else
+>  #define OMAP1_PM_DOMAIN NULL
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  static struct pm_clk_notifier_block platform_bus_notifier = {
+>  	.pm_domain = OMAP1_PM_DOMAIN,
+> Index: linux-pm/arch/arm/mach-omap2/io.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-omap2/io.c
+> +++ linux-pm/arch/arm/mach-omap2/io.c
+> @@ -359,7 +359,7 @@ static void __init omap_hwmod_init_posts
+>  	u8 postsetup_state;
+>  
+>  	/* Set the default postsetup state for all hwmods */
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  	postsetup_state = _HWMOD_STATE_IDLE;
+>  #else
+>  	postsetup_state = _HWMOD_STATE_ENABLED;
+> Index: linux-pm/arch/arm/mach-omap2/omap_device.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-omap2/omap_device.c
+> +++ linux-pm/arch/arm/mach-omap2/omap_device.c
+> @@ -588,7 +588,7 @@ odbs_exit:
+>  	return ERR_PTR(ret);
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  static int _od_runtime_suspend(struct device *dev)
+>  {
+>  	struct platform_device *pdev = to_platform_device(dev);
+> 
 
-overview.txt uses '->' to indicate ranges, which is a bit
-non-traditional. I changed it to '..' to make it clear.
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/Documentation/power/regulator/overview.txt b/Documentation/power/regulator/overview.txt
-index 40ca2d6..4dd5dbb 100644
---- a/Documentation/power/regulator/overview.txt
-+++ b/Documentation/power/regulator/overview.txt
-@@ -90,7 +90,7 @@ Some terms used in this document:-
-                    operating parameters and is specified in the regulator
-                    datasheet. i.e.
- 
--                     - voltage output is in the range 800mV -> 3500mV.
-+                     - voltage output is in the range 800mV .. 3500mV.
-                      - regulator current output limit is 20mA @ 5V but is
-                        10mA @ 10V.
- 
-@@ -99,8 +99,8 @@ Some terms used in this document:-
-                    power domain to a particular power range. i.e.
- 
-                      - Domain-1 voltage is 3300mV
--                     - Domain-2 voltage is 1400mV -> 1600mV
--                     - Domain-3 current limit is 0mA -> 20mA.
-+                     - Domain-2 voltage is 1400mV .. 1600mV
-+                     - Domain-3 current limit is 0mA .. 20mA.
- 
-                    Consumer Level: This is defined by consumer drivers
-                    dynamically setting voltage or current limit levels.
-
+For the OMAP pieces:
+Acked-by: Nishanth Menon <nm@ti.com>
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+Nishanth Menon
