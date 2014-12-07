@@ -1,84 +1,104 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] dmaengine: shdma: Runtime-resume device in .shutdown()
-Date: Sun, 7 Dec 2014 11:35:21 +0100
-Message-ID: <CAMuHMdW+zQontjNcG+MGxFec4CZFFzcDAwY=zNMNKCZLJh9whQ@mail.gmail.com>
-References: <1416410146-29652-1-git-send-email-geert+renesas@glider.be>
-	<20141205174754.GV3411@intel.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH -v2 2/5] OOM: thaw the OOM victim if it is frozen
+Date: Sun, 7 Dec 2014 11:45:39 +0100
+Message-ID: <20141207104539.GK15892@dhcp22.suse.cz>
+References: <20141110163055.GC18373@dhcp22.suse.cz>
+ <1417797707-31699-1-git-send-email-mhocko@suse.cz>
+ <1417797707-31699-3-git-send-email-mhocko@suse.cz>
+ <20141206130657.GC18711@htj.dyndns.org>
+ <20141207102430.GF15892@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f41.google.com ([209.85.215.41]:46592 "EHLO
-	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752960AbaLGKfY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Dec 2014 05:35:24 -0500
-In-Reply-To: <20141205174754.GV3411@intel.com>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:53578 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbaLGKpn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Dec 2014 05:45:43 -0500
+Content-Disposition: inline
+In-Reply-To: <20141207102430.GF15892@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-Hi Vinod,
+On Sun 07-12-14 11:24:30, Michal Hocko wrote:
+> On Sat 06-12-14 08:06:57, Tejun Heo wrote:
+> > Hello,
+> > 
+> > On Fri, Dec 05, 2014 at 05:41:44PM +0100, Michal Hocko wrote:
+> > > oom_kill_process only sets TIF_MEMDIE flag and sends a signal to the
+> > > victim. This is basically noop when the task is frozen though because
+> > > the task sleeps in uninterruptible sleep. The victim is eventually
+> > > thawed later when oom_scan_process_thread meets the task again in a
+> > > later OOM invocation so the OOM killer doesn't live lock. But this is
+> > > less than optimal. Let's add the frozen check and thaw the task right
+> > > before we send SIGKILL to the victim.
+> > > 
+> > > The check and thawing in oom_scan_process_thread has to stay because the
+> > > task might got access to memory reserves even without an explicit
+> > > SIGKILL from oom_kill_process (e.g. it already has fatal signal pending
+> > > or it is exiting already).
+> > 
+> > How else would a task get TIF_MEMDIE?  If there are other paths which
+> > set TIF_MEMDIE, the right thing to do is creating a function which
+> > thaws / wakes up the target task and use it there too.  Please
+> > interlock these things properly from the get-go instead of scattering
+> > these things around.
+> 
+> See __out_of_memory which sets TIF_MEMDIE on current when it is exiting
+> or has fatal signals pending. This task cannot be frozen obviously.
 
-On Fri, Dec 5, 2014 at 6:47 PM, Vinod Koul <vinod.koul@intel.com> wrote:
-> On Wed, Nov 19, 2014 at 04:15:46PM +0100, Geert Uytterhoeven wrote:
->> During system reboot, the sh-dma-engine device may be runtime-suspended,
->> causing a crash:
->>
->>     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
->>     Internal error: : 1406 [#1] SMP ARM
->>     ...
->>     PC is at sh_dmae_ctl_stop+0x28/0x64
->>     LR is at sh_dmae_ctl_stop+0x24/0x64
->>
->> If the sh-dma-engine is runtime-suspended, its module clock is turned
->> off, and its registers cannot be accessed. Runtime-resume the device in
->> the driver's .shutdown() callback to fix this.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> ---
->>  drivers/dma/sh/shdmac.c | 3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
->> index b65317c6ea4e722c..a13c6ba7468f12a6 100644
->> --- a/drivers/dma/sh/shdmac.c
->> +++ b/drivers/dma/sh/shdmac.c
->> @@ -585,7 +585,10 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
->>  static void sh_dmae_shutdown(struct platform_device *pdev)
->>  {
->>       struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
->> +
->> +     pm_runtime_get_sync(&pdev->dev);
->>       sh_dmae_ctl_stop(shdev);
->> +     pm_runtime_put(&pdev->dev);
-> but if you are runtime_suspended, then why should you even proceed to stop
-> the clock. Why not just cleanup and return when runtime suspended
+On the other hand we are doing the same early in oom_kill_process which
+doesn't work on the current. I've moved the __thaw_task
+into mark_tsk_oom_victim so it catches all instances now.
+oom_scan_process_thread doesn't need to thaw anymore.
+---
+>From af8222df6c503fa1beab8279ff39a282fd90698b Mon Sep 17 00:00:00 2001
+From: Michal Hocko <mhocko@suse.cz>
+Date: Wed, 12 Nov 2014 18:56:54 +0100
+Subject: [PATCH] OOM: thaw the OOM victim if it is frozen
 
-sh_dmae_ctl_stop() stops the DMA engine, not the clock.
-Accessing the DMA engine cannot be done while the module clock is stopped.
+oom_kill_process only sets TIF_MEMDIE flag and sends a signal to the
+victim. This is basically noop when the task is frozen though because
+the task sleeps in uninterruptible sleep. The victim is eventually
+thawed later when oom_scan_process_thread meets the task again in a
+later OOM invocation so the OOM killer doesn't live lock. But this is
+less than optimal. Let's add __thaw_task into mark_tsk_oom_victim after
+we set TIF_MEMDIE to the victim. We are not checking whether the task is
+frozen because that would be racy and __thaw_task does that already.
+oom_scan_process_thread doesn't need to care about freezer anymore
+as TIF_MEMDIE and freezer are excluded completely now.
 
-If pm_runtime_suspended() returns true, I can indeed just return (no new
-request can come in while .shutdown() is called).
-However, if pm_runtime_suspended() returns false, the device may still
-become runtime suspended in between the check for pm_runtime_suspended()
-and accessing the DMA engine registers in sh_dmae_ctl_stop(), as runtime
-suspend is an asynchronous operation, right?
+Signed-off-by: Michal Hocko <mhocko@suse.cz>
+---
+ mm/oom_kill.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-So I think adding a check for pm_runtime_suspended() can only serve as
-an optimization, the pm_runtime_{get_sync,put}() has to stay to prevent a
-race condition.
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 56eab9621c3a..19a08f3f00ba 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -266,8 +266,6 @@ enum oom_scan_t oom_scan_process_thread(struct task_struct *task,
+ 	 * Don't allow any other task to have access to the reserves.
+ 	 */
+ 	if (test_tsk_thread_flag(task, TIF_MEMDIE)) {
+-		if (unlikely(frozen(task)))
+-			__thaw_task(task);
+ 		if (!force_kill)
+ 			return OOM_SCAN_ABORT;
+ 	}
+@@ -428,6 +426,7 @@ void note_oom_kill(void)
+ void mark_tsk_oom_victim(struct task_struct *tsk)
+ {
+ 	set_tsk_thread_flag(tsk, TIF_MEMDIE);
++	__thaw_task(tsk);
+ }
+ 
+ /**
+-- 
+2.1.3
 
-Please correct me if I'm wrong.
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Michal Hocko
+SUSE Labs
