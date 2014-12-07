@@ -1,56 +1,33 @@
 From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH -v2 2/5] OOM: thaw the OOM victim if it is frozen
-Date: Sun, 7 Dec 2014 19:55:33 +0100
-Message-ID: <20141207185533.GA29065@dhcp22.suse.cz>
+Subject: Re: [PATCH 0/4] OOM vs PM freezer fixes
+Date: Sun, 7 Dec 2014 20:00:26 +0100
+Message-ID: <20141207190026.GB29065@dhcp22.suse.cz>
 References: <20141110163055.GC18373@dhcp22.suse.cz>
  <1417797707-31699-1-git-send-email-mhocko@suse.cz>
- <1417797707-31699-3-git-send-email-mhocko@suse.cz>
- <20141206130657.GC18711@htj.dyndns.org>
- <20141207102430.GF15892@dhcp22.suse.cz>
- <20141207104539.GK15892@dhcp22.suse.cz>
- <20141207135940.GB19034@htj.dyndns.org>
+ <20141207100953.GC15892@dhcp22.suse.cz>
+ <20141207135551.GA19034@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20141207135940.GB19034@htj.dyndns.org>
+In-Reply-To: <20141207135551.GA19034@htj.dyndns.org>
 Sender: owner-linux-mm@kvack.org
 To: Tejun Heo <tj@kernel.org>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 07-12-14 08:59:40, Tejun Heo wrote:
-> On Sun, Dec 07, 2014 at 11:45:39AM +0100, Michal Hocko wrote:
-> ....
-> >  void mark_tsk_oom_victim(struct task_struct *tsk)
-> >  {
-> >  	set_tsk_thread_flag(tsk, TIF_MEMDIE);
-> > +	__thaw_task(tsk);
+On Sun 07-12-14 08:55:51, Tejun Heo wrote:
+> On Sun, Dec 07, 2014 at 11:09:53AM +0100, Michal Hocko wrote:
+> > this is another attempt to address OOM vs. PM interaction. More
+> > about the issue is described in the last patch. The other 4 patches
+> > are just clean ups. This is based on top of 3.18-rc3 + Johannes'
+> > http://marc.info/?l=linux-kernel&m=141779091114777 which is not in the
+> > Andrew's tree yet but I wanted to prevent from later merge conflicts.
 > 
-> Yeah, this is a lot better.  Maybe we can add a comment at least
-> pointing readers to where to look at to understand what's going on?
-> This stems from the fact that OOM killer which essentially is a memory
-> reclaim operation overrides freezing.  It'd be nice if that is
-> documented somehow.
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 19a08f3f00ba..fca456fe855a 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -426,6 +426,13 @@ void note_oom_kill(void)
- void mark_tsk_oom_victim(struct task_struct *tsk)
- {
- 	set_tsk_thread_flag(tsk, TIF_MEMDIE);
-+
-+	/*
-+	 * Make sure that the task is woken up from uninterruptible sleep
-+	 * if it is frozen because OOM killer wouldn't be able to free
-+	 * any memory and livelock. freezing_slow_path will tell the freezer
-+	 * that TIF_MEMDIE tasks should be ignored.
-+	 */
- 	__thaw_task(tsk);
- }
+> When the patches are based on a custom tree, it's often a good idea to
+> create a git branch of the patches to help reviewing.
 
-Better?
+git://git.kernel.org/pub/scm/linux/kernel/git/mhocko/mm.git to-review/make-oom-vs-pm-freezing-more-robust-2
 -- 
 Michal Hocko
 SUSE Labs
