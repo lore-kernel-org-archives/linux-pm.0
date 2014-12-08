@@ -1,54 +1,216 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] ARM / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 8 Dec 2014 13:45:48 +0100
-Message-ID: <CAPDyKFpk3XW43e+7b0Py80a-RAUnbbZ3t+w7B9Sm8KdeyMZ5Ag@mail.gmail.com>
-References: <2407638.dfZGaT4vm1@vostro.rjw.lan>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [RFC PATCH v6 6/9] thermal: cpu_cooling: implement the power
+ cooling device API
+Date: Mon, 8 Dec 2014 12:50:34 +0000
+Message-ID: <20141208125033.GB2980@e104805>
+References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+ <1417806260-9264-7-git-send-email-javi.merino@arm.com>
+ <CAOh2x==BKyS08th2d4r0Q2UGqhzAwj6sqOgFsH6J0pWup+OU_A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f41.google.com ([209.85.216.41]:62969 "EHLO
-	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbaLHMpu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 07:45:50 -0500
-Received: by mail-qa0-f41.google.com with SMTP id f12so3322751qad.14
-        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 04:45:49 -0800 (PST)
-In-Reply-To: <2407638.dfZGaT4vm1@vostro.rjw.lan>
+Received: from service87.mimecast.com ([91.220.42.44]:41694 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754855AbaLHMui convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 07:50:38 -0500
+In-Reply-To: <CAOh2x==BKyS08th2d4r0Q2UGqhzAwj6sqOgFsH6J0pWup+OU_A@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King <linux@arm.linux.org.uk>, Will Deacon <will.deacon@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap <linux-omap@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On 6 December 2014 at 03:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
->
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere in the code under
-> arch/arm/ (the defconfig files will be modified later).
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
->
-> Please let me know if it is OK to take this one into linux-pm.
->
-> ---
->  arch/arm/kernel/perf_event.c       |    2 +-
->  arch/arm/mach-davinci/pm_domain.c  |    2 +-
->  arch/arm/mach-keystone/pm_domain.c |    2 +-
->  arch/arm/mach-omap1/pm_bus.c       |    4 ++--
->  arch/arm/mach-omap2/io.c           |    2 +-
->  arch/arm/mach-omap2/omap_device.c  |    2 +-
->  6 files changed, 7 insertions(+), 7 deletions(-)
+On Mon, Dec 08, 2014 at 05:49:00AM +0000, Viresh Kumar wrote:
+> Hi Javi,
 
-There are a bunch of Kconfig options that "selects/depends" on
-"PM_RUNTIME". I suppose you should change them into "PM" as well.
+Hi Viresh,
 
-Kind regards
-Uffe
+> Looks like ARM's exchange server screwed up your patch?
+> 
+> This is how I see it with gmail's show-original option:
+> 
+> +=09cpufreq_device->dyn_power_table =3D power_table;
+> +=09cpufreq_device->dyn_power_table_entries =3D i;
+> +
+> 
+> I have seen this a lot, while I was in ARM. Had to adopt some work-arounds to
+> get over it. :)
+
+Sigh.  Care to share them (privately I guess)?
+ 
+> On Sat, Dec 6, 2014 at 12:34 AM, Javi Merino <javi.merino@arm.com> wrote:
+> 
+> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> 
+> > +static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_device,
+> > +                               u32 capacitance)
+> > +{
+> > +       struct power_table *power_table;
+> > +       struct dev_pm_opp *opp;
+> > +       struct device *dev = NULL;
+> > +       int num_opps, cpu, i, ret = 0;
+> 
+> Why not initialize num_opps and i to 0 here?
+
+ok
+
+> > +       unsigned long freq;
+> > +
+> > +       num_opps = 0;
+> > +
+> > +       rcu_read_lock();
+> > +
+> > +       for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+> 
+> All these CPUs must be sharing the OPPs as they must be supplied
+> from a single clock line. But probably you need to iterate over all
+> because you don't know which ones share OPP. Right ? Probably
+> the work I am doing around getting new OPP bindings might solve
+> this..
+
+Is this loop pointless?  I seem to recall that it was needed but I
+forgot the details.  If you think it is, I can remove it.
+
+> > +               dev = get_cpu_device(cpu);
+> > +               if (!dev)
+> 
+> Is this allowed? I understand you can continue, but this is not
+> possible. Right ? So, print a error here?
+
+Ok, now it prints an error.
+
+> > +                       continue;
+> > +
+> > +               num_opps = dev_pm_opp_get_opp_count(dev);
+> > +               if (num_opps > 0) {
+> > +                       break;
+> > +               } else if (num_opps < 0) {
+> > +                       ret = num_opps;
+> > +                       goto unlock;
+> > +               }
+> > +       }
+> > +
+> > +       if (num_opps == 0) {
+> > +               ret = -EINVAL;
+> > +               goto unlock;
+> > +       }
+> > +
+> > +       power_table = kcalloc(num_opps, sizeof(*power_table), GFP_KERNEL);
+> > +
+> > +       i = 0;
+> 
+> Either initialize i at the beginning or in the initialization part of
+> for loop below.
+
+As part of the for loop.
+ 
+> > +       for (freq = 0;
+> > +            opp = dev_pm_opp_find_freq_ceil(dev, &freq), !IS_ERR(opp);
+> > +            freq++) {
+> > +               u32 freq_mhz, voltage_mv;
+> > +               u64 power;
+> > +
+> > +               freq_mhz = freq / 1000000;
+> > +               voltage_mv = dev_pm_opp_get_voltage(opp) / 1000;
+> > +
+> > +               /*
+> > +                * Do the multiplication with MHz and millivolt so as
+> > +                * to not overflow.
+> > +                */
+> > +               power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+> > +               do_div(power, 1000000000);
+> > +
+> > +               /* frequency is stored in power_table in KHz */
+> > +               power_table[i].frequency = freq / 1000;
+> > +               power_table[i].power = power;
+> > +
+> > +               i++;
+> 
+> Why here and not with freq++?
+
+As part of the for loop as well.
+ 
+> > +       }
+> > +
+> > +       if (i == 0) {
+> > +               ret = PTR_ERR(opp);
+> > +               goto unlock;
+> > +       }
+> > +
+> > +       cpufreq_device->dyn_power_table = power_table;
+> > +       cpufreq_device->dyn_power_table_entries = i;
+> > +
+> > +unlock:
+> > +       rcu_read_unlock();
+> > +       return ret;
+> > +}
+> > +
+> > +static u32 cpu_freq_to_power(struct cpufreq_cooling_device *cpufreq_device,
+> > +                       u32 freq)
+> 
+> Because the patch is screwed up a bit, I really can't see if the 'u'
+> or u32 is directly
+> below the 's' of struct cpufreq_cooling_device. Running checkpatch with --strict
+> will take care of that probably. Sorry if you have already taken care of that..
+
+It wasn't.  I'll run checkpatch with --strict on next submission.
+
+> > +{
+> > +       int i;
+> > +       struct power_table *pt = cpufreq_device->dyn_power_table;
+> > +
+> > +       for (i = 1; i < cpufreq_device->dyn_power_table_entries; i++)
+> > +               if (freq < pt[i].frequency)
+> > +                       break;
+> > +
+> > +       return pt[i - 1].power;
+> > +}
+> 
+> > +static u32 get_static_power(struct cpufreq_cooling_device *cpufreq_device,
+> > +                       unsigned long freq)
+> > +{
+> > +       struct device *cpu_dev;
+> > +       struct dev_pm_opp *opp;
+> > +       unsigned long voltage;
+> > +       struct cpumask *cpumask = &cpufreq_device->allowed_cpus;
+> > +       unsigned long freq_hz = freq * 1000;
+> > +
+> > +       if (!cpufreq_device->plat_get_static_power)
+> > +               return 0;
+> > +
+> > +       cpu_dev = get_cpu_device(cpumask_any(cpumask));
+> 
+> Similar to the way you have used for-each-cpu earlier, the cpu
+> returned from above maynot have opps attached to it. Right ?
+> 
+> Probably you can keep a copy of the cpu_dev we have opps attached
+> with somewhere and reuse it.
+
+Sounds like a good idea, done.
+
+> > +
+> > +       rcu_read_lock();
+> > +
+> > +       opp = dev_pm_opp_find_freq_exact(cpu_dev, freq_hz, true);
+> 
+> So, this might fail if I am not wrong.
+> 
+> > +       voltage = dev_pm_opp_get_voltage(opp);
+> > +
+> > +       rcu_read_unlock();
+> > +
+> > +       if (voltage == 0) {
+> > +               dev_warn_ratelimited(cpu_dev,
+> > +                               "Failed to get voltage for frequency %lu: %ld\n",
+> > +                               freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
+> > +               return 0;
+> > +       }
+> > +
+> > +       return cpufreq_device->plat_get_static_power(cpumask, voltage);
+> > +}
+> 
+
+Cheers,
+Javi
+
