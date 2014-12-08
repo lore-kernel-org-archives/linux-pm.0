@@ -1,121 +1,77 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC 1/3] devfreq: dt-bindings: Document Exynos3250 devfreq driver
-Date: Mon, 08 Dec 2014 10:46:17 +0100
-Message-ID: <1418031977.6084.13.camel@AMDC1943>
-References: <1647680679.696101418015213383.JavaMail.weblogic@epmlwas04c>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Thermal: introduce INT3406 thermal driver
+Date: Mon, 8 Dec 2014 11:55:49 +0100
+Message-ID: <CAMuHMdWHn+BcpPjr7x+Y1aRwUgBP54mH=4XpjB1VOd7T76-kjw@mail.gmail.com>
+References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+	<543F88BE.4090307@intel.com>
+	<20141017070620.GA1538@aaronlu.sh.intel.com>
+	<20141017072236.GA12504@aaronlu.sh.intel.com>
+	<544F33AF.1000704@intel.com>
+	<20141107191127.GB27438@developer>
+	<1417350176.27484.10.camel@rzhang1-toshiba>
+	<547D59D2.8010906@intel.com>
+	<1418009702.19126.14.camel@rzhang1-toshiba>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1647680679.696101418015213383.JavaMail.weblogic@epmlwas04c>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: =?UTF-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, =?UTF-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <1418009702.19126.14.camel@rzhang1-toshiba>
+Sender: linux-next-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On pon, 2014-12-08 at 05:06 +0000, MyungJoo Ham wrote:
-> >   
-> >  Add documentation for bindings used by Exynos3250 devfreq driver.
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > ---
-> >  .../bindings/arm/samsung/exynos3250-devfreq.txt    | 66 ++++++++++++++++++++++
-> >  1 file changed, 66 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt b/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> > new file mode 100644
-> > index 000000000000..047955e9e371
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/samsung/exynos3250-devfreq.txt
-> > @@ -0,0 +1,66 @@
-> > +Samsung Exynos3250 devfreq driver
-> > +=================================
-> > +
-> > +The driver support changing frequencies and voltage for:
-> > + - memory controller and bus,
-> > + - peripheral buses (left and right).
-> > +
-> > +Memory controller and bus
-> > +=========================
-> > +Required properties:
-> > + - compatible : should be "samsung,exynos3250-busfreq-mif"
-> > + - reg : two sets (offset and length of the register) for PPMU registers
-> > +	used by this devfreq driver
-> > + - clock-names : one clock of name "dmc" to manage frequency
-> > + - clocks : phandle and specifier for clock listed in clock-names property
-> > + - vdd_mif-supply : phandle to MIF voltage regulator
-> > +
-> > +Peripheral buses
-> > +================
-> > +Required properties:
-> > + - compatible : should be "samsung,exynos3250-busfreq-int"
-> > + - reg : two sets (offset and length of the register) for PPMU registers
-> > +	used by this devfreq driver
-> > + - clock-names : names for PPMU clocks and bus clocks to manage frequencies;
-> > +	All following clock names (and corresponding phandles) must be
-> > +	provided:
-> > +	- "ppmu_left", "ppmu_right",
-> > +	- "aclk_400", "aclk_266", "aclk_200", "aclk_160", "aclk_gdl", "aclk_gdr", "mfc";
-> > + - clocks : phandles and specifiers for clocks listed in clock-names property
-> > + - vdd_mif-supply : phandle to INT voltage regulator
-> > +
-> > +Example
-> > +=======
-> > +	busfreq_mif: busfreq@106A0000 {
-> > +		compatible = "samsung,exynos3250-busfreq-mif";
-> > +		reg = <0x106A0000 0x2000>, <0x106B0000 0x2000>;
-> > +		clocks = <&cmu_dmc CLK_DIV_DMC>;
-> > +		clock-names = "dmc";
-> > +		vdd_mif-supply = <&buck1_reg>;
-> > +		status = "okay";
-> > +	};
-> 
-> The hardware you are binding hereby is "Exynos PPMU".
-> You may consider to bind PPMU (DMC PPMU or BUS PPMU whichever hardware
-> you want to use) with DT and then let exynos bus devfreq driver use
-> the already-bound devices if found, ... in principle.
-> In other words or point of view, you may implement PPMU driver in
-> devfreq class device driver so that you let it bind PPMU device with DT.
-> It may be done similarly with the device below.
+On Mon, Dec 8, 2014 at 4:35 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Tue, 2014-12-02 at 14:18 +0800, Aaron Lu wrote:
+>> On 11/30/2014 08:22 PM, Zhang Rui wrote:
+>> > On Fri, 2014-11-07 at 15:11 -0400, Eduardo Valentin wrote:
+>> >> Hi,
+>> >>
+>> >> On Tue, Oct 28, 2014 at 02:11:59PM +0800, Aaron Lu wrote:
+>> >>> Jim found that the current kernel may trigger a build error with some
+>> >>> config: drivers/built-in.o: In function `int3406_thermal_probe':
+>> >>> int3406_thermal.c:(.text+0x1d10b8): undefined reference to
+>> >>> `acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
+>> >>> CONFIG_ACPI_VIDEO=m. Solve the problem by separating a kernel config for
+>> >>> int3406 thermal driver and add dependency on ACPI video for it.
+>> >>>
+>> >>> Reported-by: Jim Davis <jim.epost@gmail.com>
+>> >>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>> >>
+>> > Aaron, this is an incremental patch on top of the INT3406 driver patch.
+>> > As, both patches have not been shipped in Linus' tree, please merge
+>> > these two patches altogether and resend.
+>>
+>> OK, here it is:
+>>
+>> From 02d7abdcfe138e6cdee7572b10addce4f56d89eb Mon Sep 17 00:00:00 2001
+>> From: Aaron Lu <aaron.lu@intel.com>
+>> Date: Wed, 3 Sep 2014 15:15:02 +0800
+>> Subject: [PATCH] Thermal: introduce INT3406 thermal driver
+>>
+>> INT3406 ACPI device object resembles an ACPI video output device, but its
+>> _BCM is said to be deprecated and should not be used. So we will make
+>> use of the raw interface to do the actual cooling. Due to this, the
+>> backlight core has some modifications. Also, to re-use some of the ACPI
+>> video module's code, one function has been exported.
+>>
+>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>
+> applied.
 
-Yes, you're right. I saw also similar case for Tegra Activity Monitor. 
+Unfortunately drivers/thermal/int340x_thermal/Kconfig was missing
+from the patch, hence "make oldconfig" now fails miserably with
 
-Thanks for pointing this,
-Krzysztof
+drivers/thermal/Kconfig:265: can't open file
+"drivers/thermal/int340x_thermal/Kconfig"
 
+Gr{oetje,eeting}s,
 
-> 
-> 
-> Cheers,
-> MyungJoo.
-> 
-> 
-> > +
-> > +	busfreq_int: busfreq@116A0000 {
-> > +		compatible = "samsung,exynos3250-busfreq-int";
-> > +		reg = <0x116A0000 0x2000>, <0x112A0000 0x2000>;
-> > +		clocks = <&cmu CLK_PPMULEFT>,
-> > +			<&cmu CLK_PPMURIGHT>,
-> > +			<&cmu CLK_DIV_ACLK_400_MCUISP>,
-> > +			<&cmu CLK_DIV_ACLK_266>,
-> > +			<&cmu CLK_DIV_ACLK_200>,
-> > +			<&cmu CLK_DIV_ACLK_160>,
-> > +			<&cmu CLK_DIV_GDL>,
-> > +			<&cmu CLK_DIV_GDR>,
-> > +			<&cmu CLK_DIV_MFC>;
-> > +		clock-names = "ppmuleft",
-> > +			"ppmuright",
-> > +			"aclk_400",
-> > +			"aclk_266",
-> > +			"aclk_200",
-> > +			"aclk_160",
-> > +			"aclk_gdl",
-> > +			"aclk_gdr",
-> > +			"mfc";
-> > +		vdd_int-supply = <&buck3_reg>;
-> > +		status = "okay";
-> > +	};
-> > -- 
-> > 1.9.1
-> > 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
