@@ -1,105 +1,52 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [RFC RESEND 0/3] Add watermark support to devfreq
-Date: Mon, 08 Dec 2014 07:44:37 +0000 (GMT)
-Message-ID: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] opp: remove double calls to find_device_opp()
+Date: Mon,  8 Dec 2014 13:46:18 +0530
+Message-ID: <ad3feb97e2a3c80e8b3897a9ca17d682034e6de6.1418026567.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:34039 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbaLHHoj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 02:44:39 -0500
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NG90003R6UDGLE0@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 08 Dec 2014 16:44:37 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:62395 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbaLHIQo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 03:16:44 -0500
+Received: by mail-pa0-f45.google.com with SMTP id lj1so4790483pab.32
+        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 00:16:44 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arto Merilainen <amerilainen@nvidia.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "tomeu.vizoso@collabora.com" <tomeu.vizoso@collabora.com>, "gnurou@gmail.com" <gnurou@gmail.com>
-Cc: "javier.martinez@collabora.co.uk" <javier.martinez@collabora.co.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "srasal@nvidia.com" <srasal@nvidia.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-PiAoU29ycnkgZm9yIHRoZSBzcGFtLiBJIGFtIHJlc2VuZGluZyB0aGUgc2VyaWVzIGJlY2F1c2Ug
-SSBub3RlZCB0aGF0DQo+IHNvbWUgb2YgdGhlIGVtYWlsIGFkZHJlc3NlcyB3ZXJlIG1pc3R5cGVk
-KQ0KPiANCj4gQ3VycmVudGx5IG1haW4gbWVjaGFuaXNtIHRvIGltcGxlbWVudCBzY2FsaW5nIHVz
-aW5nIGRldmZyZXEgaXMNCj4gcG9sbGluZyBhbmQgdGhlIGRldmljZSBwcm9maWxlIGlzIGZyZWUg
-dG8gc2V0IHBvbGxpbmcgaW50ZXJ2YWwuDQo+IEhvd2V2ZXIsIGluIG1hbnkgY2FzZXMgdGhpcyBh
-cHByb2FjaCBpcyBub3Qgb3B0aW1hbDsgV2UgbWF5DQo+IHVubmVjZXNzYXJpbHkgdXNlIENQVSB0
-aW1lIHRvIGRldGVybWluZSBsb2FkIG9uIGVuZ2luZSB0aGF0DQo+IGlzIGlkbGUgbW9zdCBvZiB0
-aW1lIC0gb3Igd2UgbWF5IHNpbXBseSByZWFkIGxvYWQgd2hlbiB3ZQ0KPiBhbHJlYWR5IGtub3cg
-dGhhdCB0aGUgZGV2aWNlIGlzIGJ1c3kuDQo+IA0KPiBJbiBzb21lIGNhc2VzIGEgZGV2aWNlIGl0
-c2VsZiBoYXMgY291bnRlcnMgdG8gdHJhY2sgaXRzIGFjdGl2aXR5DQo+IGFuZCBwb3NzaWJpbGl0
-eSB0byByYWlzZSBpbnRlcnJ1cHRzIHdoZW4gbG9hZCBnb2VzIGFib3ZlIG9yIGJlbG93DQo+IGNl
-cnRhaW4gdGhyZXNob2xkLg0KPiANCj4gVGhpcyBzZXJpZXMgYWRkcyBzdXBwb3J0IGZvciB3YXRl
-cm1hcmsgZXZlbnRzIHRvIGRldmZyZXEgYW5kDQo+IGludHJvZHVjZXMgdHdvIGV4YW1wbGUgZ292
-ZXJub3JzLiBUaGUgZmlyc3QgcGF0Y2ggYWRkcyB0d28NCj4gY2FsbGJhY2tzIHRvIHRoZSBkZXZp
-Y2UgcHJvZmlsZSAoZm9yIHNldHRpbmcgd2F0ZXJtYXJrKSBhbmQNCj4gYWRkcyBhIG5ldyBmdW5j
-dGlvbiBjYWxsIHRvIGRldmZyZXEgdGhhdCBpbmZvcm1zIG9mIGNyb3NzZWQNCj4gd2F0ZXJtYXJr
-Lg0KPiANCj4gVGhlIGFkZGVkIGdvdmVybm9ycyBkZW1vbnN0cmF0ZSB1c2FnZSBvZiB0aGUgbmV3
-IEFQSS4gVGhlIGZpcnN0DQo+IGdvdmVybm9yICh3YXRlcm1hcmsgc2ltcGxlKSBzZXRzIGRldmlj
-ZSB0byB0cmlnZ2VyIGxvdyB3YXRlcm1hcmsNCj4gZXZlbnQgd2hlbiBsb2FkIGdvZXMgYmVsb3cg
-MTAlIGFuZCBoaWdoIHdhdGVybWFyayBpbnRlcnJ1cHQgd2hlbg0KPiB0aGUgbG9hZCBnb2VzIGFi
-b3ZlIDYwJS4gV2F0ZXJtYXJrIGFjdGl2ZSB0cmllcyB0byBrZWVwIGxvYWQgYXQNCj4gY2VydGFp
-biBsZXZlbCBhbmQgaXQgYWN0aXZlbHkgc2V0cyB0aHJlc2hvbGRzIGJhc2VkIG9uIHRoZQ0KPiBm
-cmVxdWVuY3kgdGFibGUgaW4gb3JkZXIgZ2V0IGludGVycnVwdHMgb25seSB3aGVuIHRoZSBsb2Fk
-IHZhbHVlDQo+IHdvdWxkIGFmZmVjdCB0byB0aGUgY3VycmVudCBmcmVxdWVuY3kgaW4gcmUtZXN0
-aW1hdGlvbi4NCg0KSGkgQXJ0bywNCg0KDQpQbGVhc2UgbGV0IG1lIHN0YXJ0IHdpdGggc29tZXdo
-YXQgbmFpdmUgaGlnaC1sZXZlbCBxdWVzdGlvbjoNCiAgV2hhdCBkbyB5b3UgbWVhbiBieSB3YXRl
-cm1hcmsgaW4gdGhpcyBjb250ZXh0Pw0KSXMgaXQgYSBwcm9kdWN0IG5hbWUgb2YgeW91cnMgKGlu
-dGVycnVwdC1iYXNlZCBQTVUsIEkgcHJlc3VtZSk/DQpPciBkb2VzIHdhdGVybWFyayBoYXZlIGFu
-b3RoZXIgc2VtYW50aWNzIHRoYXQgSSBhbSBub3QgYXdhcmUgb2Y/DQpPciBkbyB5b3UgcmVhbGx5
-IG1lYW4gc29tZXRoaW5nIGxpa2UNCiAgaHR0cDovL2VuLndpa2lwZWRpYS5vcmcvd2lraS9EaWdp
-dGFsX3dhdGVybWFya2luZw0KDQpPdGhlciBpdGNoaW5nIHBvaW50cyBpbmNsdWRlOg0KLSBkZXZm
-cmVxX3dhdGVybWFya19ldmVudCgpIHdhcyBkZWNsYXJlZCBidXQgaGFzIG5ldmVyIGJlZW4gdXNl
-ZC4NCiAgICBXaG8gaXMgc3VwcG9zZWQgdG8gY2FsbCB0aGlzIGZ1bmN0aW9uPw0KLSBJcyBlbnVt
-IHdhdGVybWFya190eXBlIHN1cHBvc2VkIHRvIGJlIHVzZWQgb3V0IG9mIC9kcml2ZXJzL2RldmZy
-ZXEvKiA/DQogICAgT3RoZXJ3aXNlLCBwbGVhc2UgbW92ZSBpdCBpbnNpZGUgL2RyaXZlcnMvZGV2
-ZnJlcS9nb3Zlcm5vci5oDQogICAgKEkgZ3Vlc3MgaXQgaXMgdG8gYmUgdXNlZCBpbnNpZGUgY29y
-cmVzcG9uZGluZyBnb3Zlcm5vcnMgb25seSkNCi0gQ291bGQgeW91IHBsZWFzZSB3YXRlcm1hcmst
-c3BlY2lmaWMgaW50ZXJmYWNlcyAoc2V0X2hpZ2gvbG93X3dtYXJrKSBpbnRvDQogICAgaXRzIG93
-biBwdWJsaWMgaGVhZGVyIGZpbGU/IChlLmcuLCAvaW5jbHVkZS9saW51eC9kZXZmcmVxL2dvdmVy
-bm9yX3dtYXJrLmgpDQogIEkgdGhpbmsgd2UgY2FuIGNyZWF0ZSBhbm90aGVyIChnb3Zlcm5vcl9z
-aW1wbGVvbmRlbWFuZC5oKSBpbiB0aGVyZSBhcyB3ZWxsDQogICAgaW4gb3JkZXIgdG8gaGF2ZSB0
-aHJlc2hvbGQgdmFsdWVzIGNvbmZpZ3VyZWQgYnkgZGV2aWNlIGRyaXZlcnMuDQogIEFkZGluZyBn
-b3Zlcm5vci1zcGVjaWZpYyBjb25maWd1cmF0aW9ucyBpbnRvIGRldmZyZXEuaCBzZWVtcyBub3QN
-CiAgICBhcHByb3ByaWF0ZSBlc3BlY2lhbGx5IHdoZW4gd2UgZXhwZWN0IHRoYXQgd2UgbWF5IG5l
-ZWQgbWFueSBkaWZmZXJlbnQNCiAgICBnb3Zlcm5vcnMuDQoNCiAgT1IuLg0KDQogIFRoaXMgc2Vl
-bXMgdGhhdCB5b3UgY2FuIGtlZXAgc2V0X2gvbF93bWFyayBmdW5jdGlvbnMgZXhwb3NlZCB0bw0K
-ICAgIGRyaXZlcnMvZGV2ZnJlcS8qIG9ubHkuIFRoZXJlZm9yZSwgaGF2aW5nIC9kcml2ZXJzL2Rl
-dmZyZXEvZ292ZXJub3Jfd21hcmsuaA0KICAgIHNob3VsZCBiZSBzdWZmaWNpZW50IGFzIHdlbGws
-IHdoaWNoIHNob3VsZCBiZSBtb3JlIG5lYXQgdGhhbiB0aGUgYWJvdmUuDQogIFRoZSBjYWxsYmFj
-a3MgYXJlIHRvIGJlIGRlZmluZWQgYnkgdGhlIGRldmZyZXEgZHJpdmVycywgYXJlbid0IHRoZXk/
-DQoNCi0gVGhlIGV2ZW50IG5hbWUsICJERVZGUkVRX0dPVl9XTUFSSyIsIGRlZmluZWQgaW4gZ292
-ZXJub3IuaCwgc2VlbXMgdG8gYmUNCiAgICBtb3JlIGFwcHJvcHJpYXRlIGlmIGl0IGlzIG5hbWVk
-ICJERVZGUkVRX0dPVl9JTlRFUk5BTCIgYXMgd2Ugd29uJ3QgbmVlZA0KICAgIHRvIGRlZmluZSBl
-dmVudCBuYW1lcyBmb3IgZWFjaCBnb3Zvcm5vcidzIGludGVybmFsIG5lZWRzLg0KDQogIE9SLi4g
-Zm9yIG1vcmUgZ2VuZXJhbGl0eSwNCiAgICB3ZSBtYXkgZGVmaW5lIGEgbWFjcm8gbGlrZToNCg0K
-I2RlZmluZSBERVZGUkVRX0dPVl9JTlRFUk5BTCh2YWx1ZSkJKCgweDEgPDwgMzEpIHwgKHZhbHVl
-KSkNCiNkZWZpbmUgR0VUX0RFVkZSRVFfR09WX0lOVEVSTkFMKGV2ZW50KQkoKGV2ZW50KSAmIH4o
-MHgxIDw8IDMxKSkNCg0KLSBJbiBnZW5lcmFsLCBJIHdvdWxkIGxvdmUgdG8gc2VlIGdvdmVybm9y
-cyB3aXRoIG1pbmltYWwgaW50ZXJ2ZW50aW9uIG9uDQogICAgdGhlIGZyYW1ld29yayBjb3JlL21h
-aW4gY29kZSwgZXNwZWNpYWxseSB3aGVuIGl0IGlzIG5vdCBiZW5lZmljaWFsIHRvDQogICAgb3Ro
-ZXIgZ292ZXJub3JzLiBVbmxpa2UgY3B1ZnJlcSwgd2UgbWF5IGNvbnRhaW4gbWFueSBkaWZmZXJl
-bnQgdHlwZXMgb2YNCiAgICBkZXZpY2VzIGluIGRldmZyZXEsIHdoaWNoIGhhcyB0aGUgcG90ZW50
-aWFsIHRvIGFjY29tcGFueSBtYW55IGRpZmZlcmVudA0KICAgIGdvdmVybm9ycy4NCg0KDQpDaGVl
-cnMsDQpNeXVuZ0pvby4NCg0KPiANCj4gQXJ0byBNZXJpbGFpbmVuICgxKToNCj4gICBQTSAvIGRl
-dmZyZXE6IEFkZCB3YXRlcm1hcmsgYWN0aXZlIGdvdmVybm9yDQo+IA0KPiBTaHJpZGhhciBSYXNh
-bCAoMik6DQo+ICAgUE0gLyBkZXZmcmVxOiBBZGQgd2F0ZXJtYXJrIGV2ZW50cw0KPiAgIFBNIC8g
-ZGV2ZnJlcTogQWRkIHdhdGVybWFyayBzaW1wbGUgZ292ZXJub3INCj4gDQo+ICBkcml2ZXJzL2Rl
-dmZyZXEvS2NvbmZpZyAgICAgICAgICAgICAgICAgfCAgMTggKysrDQo+ICBkcml2ZXJzL2RldmZy
-ZXEvTWFrZWZpbGUgICAgICAgICAgICAgICAgfCAgIDIgKw0KPiAgZHJpdmVycy9kZXZmcmVxL2Rl
-dmZyZXEuYyAgICAgICAgICAgICAgIHwgIDE5ICsrKw0KPiAgZHJpdmVycy9kZXZmcmVxL2dvdmVy
-bm9yLmggICAgICAgICAgICAgIHwgICAxICsNCj4gIGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl93
-bWFya19hY3RpdmUuYyB8IDI3NiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAg
-ZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3dtYXJrX3NpbXBsZS5jIHwgMjQ1ICsrKysrKysrKysr
-KysrKysrKysrKysrKysrKysNCj4gIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oICAgICAgICAgICAg
-ICAgICB8ICAyNiArKysNCj4gIDcgZmlsZXMgY2hhbmdlZCwgNTg3IGluc2VydGlvbnMoKykNCj4g
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3Jfd21hcmtfYWN0aXZl
-LmMNCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3Jfd21hcmtf
-c2ltcGxlLmMNCj4gDQo+IC0tIA0KPiAxLjguMS41DQo+IA0K
+By mistake we called find_device_opp() twice in of_free_opp_table(), fix it.
 
+Generated diff doesn't show the problem well and so here is the code snippet:
+
+void of_free_opp_table(struct device *dev)
+{
+	struct device_opp *dev_opp = find_device_opp(dev);
+	struct dev_pm_opp *opp, *tmp;
+
+	/* Check for existing list for 'dev' */
+	dev_opp = find_device_opp(dev);
+
+	...
+}
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 2d195f3..16c59f4 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -768,7 +768,7 @@ EXPORT_SYMBOL_GPL(of_init_opp_table);
+  */
+ void of_free_opp_table(struct device *dev)
+ {
+-	struct device_opp *dev_opp = find_device_opp(dev);
++	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp, *tmp;
+ 
+ 	/* Check for existing list for 'dev' */
+-- 
+2.2.0
 
