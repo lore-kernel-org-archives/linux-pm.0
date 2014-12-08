@@ -1,77 +1,80 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Thermal: introduce INT3406 thermal driver
-Date: Mon, 8 Dec 2014 11:55:49 +0100
-Message-ID: <CAMuHMdWHn+BcpPjr7x+Y1aRwUgBP54mH=4XpjB1VOd7T76-kjw@mail.gmail.com>
-References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
-	<543F88BE.4090307@intel.com>
-	<20141017070620.GA1538@aaronlu.sh.intel.com>
-	<20141017072236.GA12504@aaronlu.sh.intel.com>
-	<544F33AF.1000704@intel.com>
-	<20141107191127.GB27438@developer>
-	<1417350176.27484.10.camel@rzhang1-toshiba>
-	<547D59D2.8010906@intel.com>
-	<1418009702.19126.14.camel@rzhang1-toshiba>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Subject: Re: [PATCH] video / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Mon, 8 Dec 2014 13:00:28 +0200
+Message-ID: <548584CC.7010603@ti.com>
+References: <19160360.7uJRUqlDQg@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <1418009702.19126.14.camel@rzhang1-toshiba>
-Sender: linux-next-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:35095 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbaLHLAk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 06:00:40 -0500
+In-Reply-To: <19160360.7uJRUqlDQg@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Dec 8, 2014 at 4:35 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Tue, 2014-12-02 at 14:18 +0800, Aaron Lu wrote:
->> On 11/30/2014 08:22 PM, Zhang Rui wrote:
->> > On Fri, 2014-11-07 at 15:11 -0400, Eduardo Valentin wrote:
->> >> Hi,
->> >>
->> >> On Tue, Oct 28, 2014 at 02:11:59PM +0800, Aaron Lu wrote:
->> >>> Jim found that the current kernel may trigger a build error with some
->> >>> config: drivers/built-in.o: In function `int3406_thermal_probe':
->> >>> int3406_thermal.c:(.text+0x1d10b8): undefined reference to
->> >>> `acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
->> >>> CONFIG_ACPI_VIDEO=m. Solve the problem by separating a kernel config for
->> >>> int3406 thermal driver and add dependency on ACPI video for it.
->> >>>
->> >>> Reported-by: Jim Davis <jim.epost@gmail.com>
->> >>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->> >>
->> > Aaron, this is an incremental patch on top of the INT3406 driver patch.
->> > As, both patches have not been shipped in Linus' tree, please merge
->> > these two patches altogether and resend.
->>
->> OK, here it is:
->>
->> From 02d7abdcfe138e6cdee7572b10addce4f56d89eb Mon Sep 17 00:00:00 2001
->> From: Aaron Lu <aaron.lu@intel.com>
->> Date: Wed, 3 Sep 2014 15:15:02 +0800
->> Subject: [PATCH] Thermal: introduce INT3406 thermal driver
->>
->> INT3406 ACPI device object resembles an ACPI video output device, but its
->> _BCM is said to be deprecated and should not be used. So we will make
->> use of the raw interface to do the actual cooling. Due to this, the
->> backlight core has some modifications. Also, to re-use some of the ACPI
->> video module's code, one function has been exported.
->>
->> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->
-> applied.
+--FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately drivers/thermal/int340x_thermal/Kconfig was missing
-from the patch, hence "make oldconfig" now fails miserably with
+On 06/12/14 04:36, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>=20
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+>=20
+> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> replaced with CONFIG_PM too.
+>=20
+> Make these changes in 2 files under drivers/video/.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>=20
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME =
+if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via th=
+e
+> linux-pm tree).
+>=20
+> Please let me know if it is OK to take this one into linux-pm.
 
-drivers/thermal/Kconfig:265: can't open file
-"drivers/thermal/int340x_thermal/Kconfig"
+Does not seem to conflict with fbdev changes, so:
 
-Gr{oetje,eeting}s,
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-                        Geert
+ Tomi
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
+--FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUhYTMAAoJEPo9qoy8lh71uXgQAIV22jLyJQL+DkDsmDE8buTT
+tB0GkxxDqm/Z1HtO0BjDYxuDKNDlgJ3kPBCHOqi+aKxLM+Y71v8BdTpOY4UVDfPX
+AX3oklbRazxLFeCWlFSNQ2oMXKFms1CuvQd2jRo98X3sYniP1Vt4mmcqlebW8dco
+7GHFO/jgYnmpKrU5wz/CQeAvHSdaH5ArYb++uDWvvoOM1oKwA0+loNx3McJS2QSC
+TqC20xR39Wu9m63gB6sa27tyhmRHb7XBdcXaVg3ubozfO+2oPKMP/6wupeT0nXUP
+wl6V6tR6C3ZdRuyCe+HmOTXsFaUCWdosRWijaDIO762Rts9NnuThRjYN1AFLfQKC
+IumkjFWXdHfsE+0R5nmcXAFha3UybMM/AtFS8l2tSieJMe/wQlo6ilk1NycCvfHA
+Blf+Co2bCTmKEY241jNmQixw1Rkb5a0XAiL/wYVh2m86NIYf3ZvoOOWamAShNPkc
+jXJdTrTTioMp9rEiqp1yHq4Cy7Qz3nyE0vCQHKzYHgsZFjAURl4hiJjHoqZ8ss8F
+2PNEGK8Myy0R+8ArLdkVsmvS/jnXLW0n5PW/2xsP0Kb1SBGgDqR2Ob5YP3NvH9IL
+VS2YfcyUa4dCADgAodBwRUjXsc4o2gUyMbQubxMurhcYv+bFx7TB0SuJrlRpltnR
+nnttB9xQ9l43dRi31QxO
+=zUcK
+-----END PGP SIGNATURE-----
+
+--FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg--
