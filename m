@@ -1,52 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] opp: remove double calls to find_device_opp()
-Date: Mon,  8 Dec 2014 13:46:18 +0530
-Message-ID: <ad3feb97e2a3c80e8b3897a9ca17d682034e6de6.1418026567.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:62395 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbaLHIQo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 03:16:44 -0500
-Received: by mail-pa0-f45.google.com with SMTP id lj1so4790483pab.32
-        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 00:16:44 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [PATCH] phy / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Mon, 8 Dec 2014 13:48:44 +0530
+Message-ID: <54855EE4.7040104@ti.com>
+References: <2122955.8tCSpWHocD@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2122955.8tCSpWHocD@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-By mistake we called find_device_opp() twice in of_free_opp_table(), fix it.
 
-Generated diff doesn't show the problem well and so here is the code snippet:
 
-void of_free_opp_table(struct device *dev)
-{
-	struct device_opp *dev_opp = find_device_opp(dev);
-	struct dev_pm_opp *opp, *tmp;
+On Saturday 06 December 2014 08:09 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
+> drivers/phy/.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
 
-	/* Check for existing list for 'dev' */
-	dev_opp = find_device_opp(dev);
+Sure.
 
-	...
-}
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 2d195f3..16c59f4 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -768,7 +768,7 @@ EXPORT_SYMBOL_GPL(of_init_opp_table);
-  */
- void of_free_opp_table(struct device *dev)
- {
--	struct device_opp *dev_opp = find_device_opp(dev);
-+	struct device_opp *dev_opp;
- 	struct dev_pm_opp *opp, *tmp;
- 
- 	/* Check for existing list for 'dev' */
--- 
-2.2.0
-
+Acked-by: Kishon Vijay Abraham I <kishon@ti.com>
+> 
+> ---
+>  drivers/phy/phy-omap-usb2.c |    2 +-
+>  drivers/phy/phy-ti-pipe3.c  |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/phy/phy-omap-usb2.c
+> ===================================================================
+> --- linux-pm.orig/drivers/phy/phy-omap-usb2.c
+> +++ linux-pm/drivers/phy/phy-omap-usb2.c
+> @@ -322,7 +322,7 @@ static int omap_usb2_remove(struct platf
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  
+>  static int omap_usb2_runtime_suspend(struct device *dev)
+>  {
+> Index: linux-pm/drivers/phy/phy-ti-pipe3.c
+> ===================================================================
+> --- linux-pm.orig/drivers/phy/phy-ti-pipe3.c
+> +++ linux-pm/drivers/phy/phy-ti-pipe3.c
+> @@ -423,7 +423,7 @@ static int ti_pipe3_remove(struct platfo
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  
+>  static int ti_pipe3_runtime_suspend(struct device *dev)
+>  {
+> 
