@@ -1,44 +1,35 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH] Thermal: introduce INT3406 thermal driver
-Date: Mon, 08 Dec 2014 21:22:44 +0800
-Message-ID: <5485A624.1060903@intel.com>
-References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>	<543F88BE.4090307@intel.com>	<20141017070620.GA1538@aaronlu.sh.intel.com>	<20141017072236.GA12504@aaronlu.sh.intel.com>	<544F33AF.1000704@intel.com>	<20141107191127.GB27438@developer>	<1417350176.27484.10.camel@rzhang1-toshiba>	<547D59D2.8010906@intel.com>	<1418009702.19126.14.camel@rzhang1-toshiba>	<CAMuHMdWHn+BcpPjr7x+Y1aRwUgBP54mH=4XpjB1VOd7T76-kjw@mail.gmail.com> <CAMuHMdW8Yap=VrHaEs-oKbVtRSUSb87qf9JJph7aG-MPuv4f_w@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v6 6/9] thermal: cpu_cooling: implement the power
+ cooling device API
+Date: Mon, 8 Dec 2014 19:01:35 +0530
+Message-ID: <CAKohpokM_8Qm5YH0Xb=n95bP94Qreqpcd1fAyCD2W5u9Pd=ndg@mail.gmail.com>
+References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+	<1417806260-9264-7-git-send-email-javi.merino@arm.com>
+	<CAOh2x==BKyS08th2d4r0Q2UGqhzAwj6sqOgFsH6J0pWup+OU_A@mail.gmail.com>
+	<20141208125033.GB2980@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdW8Yap=VrHaEs-oKbVtRSUSb87qf9JJph7aG-MPuv4f_w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:49585 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752960AbaLHNbg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 08:31:36 -0500
+Received: by mail-ob0-f172.google.com with SMTP id wn1so3570688obc.3
+        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 05:31:36 -0800 (PST)
+In-Reply-To: <20141208125033.GB2980@e104805>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On 12/08/2014 07:20 PM, Geert Uytterhoeven wrote:
-> On Mon, Dec 8, 2014 at 11:55 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> Unfortunately drivers/thermal/int340x_thermal/Kconfig was missing
->> from the patch, hence "make oldconfig" now fails miserably with
->>
->> drivers/thermal/Kconfig:265: can't open file
->> "drivers/thermal/int340x_thermal/Kconfig"
-> 
-> I've lifted the missing file from "[PATCH v3] Thermal: int3406_thermal:
-> solve the dependency build error" (https://lkml.org/lkml/2014/10/17/38).
+On 8 December 2014 at 18:20, Javi Merino <javi.merino@arm.com> wrote:
+> Sigh.  Care to share them (privately I guess)?
 
-My bad, and thanks a lot for your kind help!
+Sure, you will get that in a separate (private) mail..
 
-Regards,
-Aaron
+> Is this loop pointless?  I seem to recall that it was needed but I
+> forgot the details.  If you think it is, I can remove it.
 
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-> 
+Yes it is pointless. The CPUs you are iterating on, share clock lines
+and so they will have same set of OPPs. Just do this for the cpu
+we are registering the cooling device.
