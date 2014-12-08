@@ -1,54 +1,44 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: Re: [PATCH] video / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 08 Dec 2014 20:06:30 +0900
-Message-ID: <000901d012d7$0509a090$0f1ce1b0$%han@samsung.com>
-References: <19160360.7uJRUqlDQg@vostro.rjw.lan> <548584CC.7010603@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Thermal: introduce INT3406 thermal driver
+Date: Mon, 8 Dec 2014 12:20:41 +0100
+Message-ID: <CAMuHMdW8Yap=VrHaEs-oKbVtRSUSb87qf9JJph7aG-MPuv4f_w@mail.gmail.com>
+References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+	<543F88BE.4090307@intel.com>
+	<20141017070620.GA1538@aaronlu.sh.intel.com>
+	<20141017072236.GA12504@aaronlu.sh.intel.com>
+	<544F33AF.1000704@intel.com>
+	<20141107191127.GB27438@developer>
+	<1417350176.27484.10.camel@rzhang1-toshiba>
+	<547D59D2.8010906@intel.com>
+	<1418009702.19126.14.camel@rzhang1-toshiba>
+	<CAMuHMdWHn+BcpPjr7x+Y1aRwUgBP54mH=4XpjB1VOd7T76-kjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <548584CC.7010603@ti.com>
-Content-language: ko
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Jingoo Han' <jg1.han@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWHn+BcpPjr7x+Y1aRwUgBP54mH=4XpjB1VOd7T76-kjw@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, December 08, 2014 8:00 PM, Tomi Valkeinen wrote
-> 
-> On 06/12/14 04:36, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> > selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> > depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> > CONFIG_PM.
-> >
-> > The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
-> > replaced with CONFIG_PM too.
-> >
-> > Make these changes in 2 files under drivers/video/.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >
-> > Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> > PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> > linux-pm tree).
-> >
-> > Please let me know if it is OK to take this one into linux-pm.
-> 
-> Does not seem to conflict with fbdev changes, so:
-> 
-> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+On Mon, Dec 8, 2014 at 11:55 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Unfortunately drivers/thermal/int340x_thermal/Kconfig was missing
+> from the patch, hence "make oldconfig" now fails miserably with
+>
+> drivers/thermal/Kconfig:265: can't open file
+> "drivers/thermal/int340x_thermal/Kconfig"
 
-For drivers/video/fbdev/s3c-fb.c,
+I've lifted the missing file from "[PATCH v3] Thermal: int3406_thermal:
+solve the dependency build error" (https://lkml.org/lkml/2014/10/17/38).
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Gr{oetje,eeting}s,
 
-Best regards,
-Jingoo Han
+                        Geert
 
-> 
->  Tomi
-> 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
