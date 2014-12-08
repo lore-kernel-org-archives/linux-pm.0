@@ -1,97 +1,107 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3 2/5] thermal: of: Extend of-thermal.c to provide check if
- trip point is valid
-Date: Mon, 08 Dec 2014 18:04:18 +0100
-Message-ID: <1418058261-25251-3-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v3 3/5] thermal: of: Rename struct __thermal_trip to struct
+ thermal_trip
+Date: Mon, 08 Dec 2014 18:04:19 +0100
+Message-ID: <1418058261-25251-4-git-send-email-l.majewski@samsung.com>
 References: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
  <1418058261-25251-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:42916 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbaLHRG4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 12:06:56 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418058261-25251-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>, navneet kumar <navneetk@nvidia.com>, Lukasz Majewski <l.majewski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch extends the of-thermal.c to provide check if trip point is
-valid.
+This patch changes name of struct __thermal_trip to thermal_trip and moves
+declaration of the latter to ./include/linux/thermal.h for better visibility.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v3:
-- Rename of_thermal_is_trip_en() to of_thermal_is_trip_valid()
-- Export of_thermal_is_trip_valid symbol as GPL
-- Fix the build error when CONFIG_THERMAL_OF is not defined
-
-Changes for v2:
-- Replace int with bool
-- Replace 1/0 with true/false
-- Add check if data pointer is not NULL
-- Add missing doxygen style comment for the function
+- New patch - as suggested by Navneet Kumar
 ---
- drivers/thermal/of-thermal.c   | 21 +++++++++++++++++++++
- drivers/thermal/thermal_core.h |  6 ++++++
- 2 files changed, 27 insertions(+)
+ drivers/thermal/of-thermal.c | 21 +++------------------
+ include/linux/thermal.h      | 15 +++++++++++++++
+ 2 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 7facd23..87b9cfe 100644
+index 87b9cfe..d3ac117 100644
 --- a/drivers/thermal/of-thermal.c
 +++ b/drivers/thermal/of-thermal.c
-@@ -133,6 +133,27 @@ int of_thermal_get_ntrips(struct thermal_zone_device *tz)
- }
- EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
+@@ -37,21 +37,6 @@
+ /***   Private data structures to represent thermal device tree data ***/
+ 
+ /**
+- * struct __thermal_trip - representation of a point in temperature domain
+- * @np: pointer to struct device_node that this trip point was created from
+- * @temperature: temperature value in miliCelsius
+- * @hysteresis: relative hysteresis in miliCelsius
+- * @type: trip point type
+- */
+-
+-struct __thermal_trip {
+-	struct device_node *np;
+-	unsigned long int temperature;
+-	unsigned long int hysteresis;
+-	enum thermal_trip_type type;
+-};
+-
+-/**
+  * struct __thermal_bind_param - a match between trip and cooling device
+  * @cooling_device: a pointer to identify the referred cooling device
+  * @trip_id: the trip point index
+@@ -88,7 +73,7 @@ struct __thermal_zone {
+ 
+ 	/* trip data */
+ 	int ntrips;
+-	struct __thermal_trip *trips;
++	struct thermal_trip *trips;
+ 
+ 	/* cooling binding data */
+ 	int num_tbps;
+@@ -538,7 +523,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_of_sensor_unregister);
+  */
+ static int thermal_of_populate_bind_params(struct device_node *np,
+ 					   struct __thermal_bind_params *__tbp,
+-					   struct __thermal_trip *trips,
++					   struct thermal_trip *trips,
+ 					   int ntrips)
+ {
+ 	struct of_phandle_args cooling_spec;
+@@ -641,7 +626,7 @@ static int thermal_of_get_trip_type(struct device_node *np,
+  * Return: 0 on success, proper error code otherwise
+  */
+ static int thermal_of_populate_trip(struct device_node *np,
+-				    struct __thermal_trip *trip)
++				    struct thermal_trip *trip)
+ {
+ 	int prop;
+ 	int ret;
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 5bc28a7..b8d91ef 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -303,6 +303,21 @@ struct thermal_zone_of_device_ops {
+ 	int (*get_trend)(void *, long *);
+ };
  
 +/**
-+ * of_thermal_is_trip_valid - function to check if trip point is valid
-+ *
-+ * @tz:	pointer to a thermal zone
-+ * @trip:	trip point to evaluate
-+ *
-+ * This function is responsible for checking if passed trip point is valid
-+ *
-+ * Return: true if trip point is valid, false otherwise
++ * struct thermal_trip - representation of a point in temperature domain
++ * @np: pointer to struct device_node that this trip point was created from
++ * @temperature: temperature value in miliCelsius
++ * @hysteresis: relative hysteresis in miliCelsius
++ * @type: trip point type
 + */
-+bool of_thermal_is_trip_valid(struct thermal_zone_device *tz, int trip)
-+{
-+	struct __thermal_zone *data = tz->devdata;
 +
-+	if (!data || trip >= data->ntrips || trip < 0)
-+		return false;
++struct thermal_trip {
++	struct device_node *np;
++	unsigned long int temperature;
++	unsigned long int hysteresis;
++	enum thermal_trip_type type;
++};
 +
-+	return true;
-+}
-+EXPORT_SYMBOL_GPL(of_thermal_is_trip_valid);
-+
- static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
- 				enum thermal_trend *trend)
- {
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 1cc5041..58a0dfa 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -90,6 +90,7 @@ static inline void thermal_gov_user_space_unregister(void) {}
- int of_parse_thermal_zones(void);
- void of_thermal_destroy_zones(void);
- int of_thermal_get_ntrips(struct thermal_zone_device *);
-+bool of_thermal_is_trip_valid(struct thermal_zone_device *, int);
- #else
- static inline int of_parse_thermal_zones(void) { return 0; }
- static inline void of_thermal_destroy_zones(void) { }
-@@ -97,6 +98,11 @@ static inline int of_thermal_get_ntrips(struct thermal_zone_device *tz)
- {
- 	return 0;
- }
-+static inline bool of_thermal_is_trip_valid(struct thermal_zone_device *tz,
-+					    int trip)
-+{
-+	return 0;
-+}
- #endif
- 
- #endif /* __THERMAL_CORE_H__ */
+ /* Function declarations */
+ #ifdef CONFIG_THERMAL_OF
+ struct thermal_zone_device *
 -- 
 2.0.0.rc2
-
