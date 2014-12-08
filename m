@@ -1,73 +1,129 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Subject: Re: [PATCH] phy / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 8 Dec 2014 13:48:44 +0530
-Message-ID: <54855EE4.7040104@ti.com>
-References: <2122955.8tCSpWHocD@vostro.rjw.lan>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [RFC RESEND 0/3] Add watermark support to devfreq
+Date: Mon, 8 Dec 2014 09:57:39 +0100
+Message-ID: <CAAObsKDmWDez5tRNa=zGuCDhM+FNgeXOUCygpjeQ-eyK=4Kq9g@mail.gmail.com>
+References: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2122955.8tCSpWHocD@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:36603 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbaLHI6B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 03:58:01 -0500
+In-Reply-To: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Arto Merilainen <amerilainen@nvidia.com>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "gnurou@gmail.com" <gnurou@gmail.com>, "javier.martinez@collabora.co.uk" <javier.martinez@collabora.co.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "srasal@nvidia.com" <srasal@nvidia.com>
 
+On 8 December 2014 at 08:44, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> (Sorry for the spam. I am resending the series because I noted that
+>> some of the email addresses were mistyped)
+>>
+>> Currently main mechanism to implement scaling using devfreq is
+>> polling and the device profile is free to set polling interval.
+>> However, in many cases this approach is not optimal; We may
+>> unnecessarily use CPU time to determine load on engine that
+>> is idle most of time - or we may simply read load when we
+>> already know that the device is busy.
+>>
+>> In some cases a device itself has counters to track its activity
+>> and possibility to raise interrupts when load goes above or below
+>> certain threshold.
+>>
+>> This series adds support for watermark events to devfreq and
+>> introduces two example governors. The first patch adds two
+>> callbacks to the device profile (for setting watermark) and
+>> adds a new function call to devfreq that informs of crossed
+>> watermark.
+>>
+>> The added governors demonstrate usage of the new API. The first
+>> governor (watermark simple) sets device to trigger low watermark
+>> event when load goes below 10% and high watermark interrupt when
+>> the load goes above 60%. Watermark active tries to keep load at
+>> certain level and it actively sets thresholds based on the
+>> frequency table in order get interrupts only when the load value
+>> would affect to the current frequency in re-estimation.
+>
+> Hi Arto,
+>
+>
+> Please let me start with somewhat naive high-level question:
+>   What do you mean by watermark in this context?
+> Is it a product name of yours (interrupt-based PMU, I presume)?
+> Or does watermark have another semantics that I am not aware of?
+> Or do you really mean something like
+>   http://en.wikipedia.org/wiki/Digital_watermarking
 
+The watermark term is borrowed here from queues. The high and low
+watermarks define the boundaries within the load has to be contained.
+If the load is above or below the watermarks, a more suitable
+frequency has to be found.
 
-On Saturday 06 December 2014 08:09 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/phy/.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
+Regards,
 
-Sure.
+Tomeu
 
-Acked-by: Kishon Vijay Abraham I <kishon@ti.com>
-> 
-> ---
->  drivers/phy/phy-omap-usb2.c |    2 +-
->  drivers/phy/phy-ti-pipe3.c  |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/phy/phy-omap-usb2.c
-> ===================================================================
-> --- linux-pm.orig/drivers/phy/phy-omap-usb2.c
-> +++ linux-pm/drivers/phy/phy-omap-usb2.c
-> @@ -322,7 +322,7 @@ static int omap_usb2_remove(struct platf
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  
->  static int omap_usb2_runtime_suspend(struct device *dev)
->  {
-> Index: linux-pm/drivers/phy/phy-ti-pipe3.c
-> ===================================================================
-> --- linux-pm.orig/drivers/phy/phy-ti-pipe3.c
-> +++ linux-pm/drivers/phy/phy-ti-pipe3.c
-> @@ -423,7 +423,7 @@ static int ti_pipe3_remove(struct platfo
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  
->  static int ti_pipe3_runtime_suspend(struct device *dev)
->  {
-> 
+> Other itching points include:
+> - devfreq_watermark_event() was declared but has never been used.
+>     Who is supposed to call this function?
+> - Is enum watermark_type supposed to be used out of /drivers/devfreq/* ?
+>     Otherwise, please move it inside /drivers/devfreq/governor.h
+>     (I guess it is to be used inside corresponding governors only)
+> - Could you please watermark-specific interfaces (set_high/low_wmark) into
+>     its own public header file? (e.g., /include/linux/devfreq/governor_wmark.h)
+>   I think we can create another (governor_simpleondemand.h) in there as well
+>     in order to have threshold values configured by device drivers.
+>   Adding governor-specific configurations into devfreq.h seems not
+>     appropriate especially when we expect that we may need many different
+>     governors.
+>
+>   OR..
+>
+>   This seems that you can keep set_h/l_wmark functions exposed to
+>     drivers/devfreq/* only. Therefore, having /drivers/devfreq/governor_wmark.h
+>     should be sufficient as well, which should be more neat than the above.
+>   The callbacks are to be defined by the devfreq drivers, aren't they?
+>
+> - The event name, "DEVFREQ_GOV_WMARK", defined in governor.h, seems to be
+>     more appropriate if it is named "DEVFREQ_GOV_INTERNAL" as we won't need
+>     to define event names for each govornor's internal needs.
+>
+>   OR.. for more generality,
+>     we may define a macro like:
+>
+> #define DEVFREQ_GOV_INTERNAL(value)     ((0x1 << 31) | (value))
+> #define GET_DEVFREQ_GOV_INTERNAL(event) ((event) & ~(0x1 << 31))
+>
+> - In general, I would love to see governors with minimal intervention on
+>     the framework core/main code, especially when it is not beneficial to
+>     other governors. Unlike cpufreq, we may contain many different types of
+>     devices in devfreq, which has the potential to accompany many different
+>     governors.
+>
+>
+> Cheers,
+> MyungJoo.
+>
+>>
+>> Arto Merilainen (1):
+>>   PM / devfreq: Add watermark active governor
+>>
+>> Shridhar Rasal (2):
+>>   PM / devfreq: Add watermark events
+>>   PM / devfreq: Add watermark simple governor
+>>
+>>  drivers/devfreq/Kconfig                 |  18 +++
+>>  drivers/devfreq/Makefile                |   2 +
+>>  drivers/devfreq/devfreq.c               |  19 +++
+>>  drivers/devfreq/governor.h              |   1 +
+>>  drivers/devfreq/governor_wmark_active.c | 276 ++++++++++++++++++++++++++++++++
+>>  drivers/devfreq/governor_wmark_simple.c | 245 ++++++++++++++++++++++++++++
+>>  include/linux/devfreq.h                 |  26 +++
+>>  7 files changed, 587 insertions(+)
+>>  create mode 100644 drivers/devfreq/governor_wmark_active.c
+>>  create mode 100644 drivers/devfreq/governor_wmark_simple.c
+>>
+>> --
+>> 1.8.1.5
+>>
