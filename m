@@ -1,129 +1,175 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [RFC RESEND 0/3] Add watermark support to devfreq
-Date: Mon, 8 Dec 2014 09:57:39 +0100
-Message-ID: <CAAObsKDmWDez5tRNa=zGuCDhM+FNgeXOUCygpjeQ-eyK=4Kq9g@mail.gmail.com>
-References: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RFC 1/3] devfreq: dt-bindings: Document Exynos3250 devfreq driver
+Date: Mon, 08 Dec 2014 10:09:02 +0100
+Message-ID: <1418029742.6084.8.camel@AMDC1943>
+References: <1417797988-29225-1-git-send-email-k.kozlowski@samsung.com>
+ <1417797988-29225-2-git-send-email-k.kozlowski@samsung.com>
+ <20141205165356.GC12849@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f171.google.com ([209.85.216.171]:36603 "EHLO
-	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbaLHI6B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 03:58:01 -0500
-In-Reply-To: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:8841 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbaLHJJJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 04:09:09 -0500
+In-reply-to: <20141205165356.GC12849@leverpostej>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Arto Merilainen <amerilainen@nvidia.com>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "gnurou@gmail.com" <gnurou@gmail.com>, "javier.martinez@collabora.co.uk" <javier.martinez@collabora.co.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "srasal@nvidia.com" <srasal@nvidia.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Chanwoo Choi <cw00.choi@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>
 
-On 8 December 2014 at 08:44, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> (Sorry for the spam. I am resending the series because I noted that
->> some of the email addresses were mistyped)
->>
->> Currently main mechanism to implement scaling using devfreq is
->> polling and the device profile is free to set polling interval.
->> However, in many cases this approach is not optimal; We may
->> unnecessarily use CPU time to determine load on engine that
->> is idle most of time - or we may simply read load when we
->> already know that the device is busy.
->>
->> In some cases a device itself has counters to track its activity
->> and possibility to raise interrupts when load goes above or below
->> certain threshold.
->>
->> This series adds support for watermark events to devfreq and
->> introduces two example governors. The first patch adds two
->> callbacks to the device profile (for setting watermark) and
->> adds a new function call to devfreq that informs of crossed
->> watermark.
->>
->> The added governors demonstrate usage of the new API. The first
->> governor (watermark simple) sets device to trigger low watermark
->> event when load goes below 10% and high watermark interrupt when
->> the load goes above 60%. Watermark active tries to keep load at
->> certain level and it actively sets thresholds based on the
->> frequency table in order get interrupts only when the load value
->> would affect to the current frequency in re-estimation.
->
-> Hi Arto,
->
->
-> Please let me start with somewhat naive high-level question:
->   What do you mean by watermark in this context?
-> Is it a product name of yours (interrupt-based PMU, I presume)?
-> Or does watermark have another semantics that I am not aware of?
-> Or do you really mean something like
->   http://en.wikipedia.org/wiki/Digital_watermarking
+On pi=C4=85, 2014-12-05 at 16:53 +0000, Mark Rutland wrote:
+> On Fri, Dec 05, 2014 at 04:46:26PM +0000, Krzysztof Kozlowski wrote:
+> > Add documentation for bindings used by Exynos3250 devfreq driver.
+> >=20
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > ---
+> >  .../bindings/arm/samsung/exynos3250-devfreq.txt    | 66 ++++++++++=
+++++++++++++
+> >  1 file changed, 66 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/arm/samsung/e=
+xynos3250-devfreq.txt
+> >=20
+> > diff --git a/Documentation/devicetree/bindings/arm/samsung/exynos32=
+50-devfreq.txt b/Documentation/devicetree/bindings/arm/samsung/exynos32=
+50-devfreq.txt
+> > new file mode 100644
+> > index 000000000000..047955e9e371
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/arm/samsung/exynos3250-devf=
+req.txt
+> > @@ -0,0 +1,66 @@
+> > +Samsung Exynos3250 devfreq driver
+>=20
+> The binding should describe the hardware, not a particular driver of
+> that hardware. Please write the binding (and its documentation) with
+> that in mind, and drop references to the driver and "busfreq".
+>=20
+> With an adequate binding we can probe the device and forward the
+> information to relevant driver(s) as necessary.
 
-The watermark term is borrowed here from queues. The high and low
-watermarks define the boundaries within the load has to be contained.
-If the load is above or below the watermarks, a more suitable
-frequency has to be found.
+OK
 
-Regards,
+>=20
+> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > +
+> > +The driver support changing frequencies and voltage for:
+> > + - memory controller and bus,
+> > + - peripheral buses (left and right).
+>=20
+>=20
+> What do left and right mean in this context?
 
-Tomeu
+These are names for clock domains associated with buses between memory
+controller and peripherals. They're called "leftbus" and "rightbus" in
+documentation.
 
-> Other itching points include:
-> - devfreq_watermark_event() was declared but has never been used.
->     Who is supposed to call this function?
-> - Is enum watermark_type supposed to be used out of /drivers/devfreq/* ?
->     Otherwise, please move it inside /drivers/devfreq/governor.h
->     (I guess it is to be used inside corresponding governors only)
-> - Could you please watermark-specific interfaces (set_high/low_wmark) into
->     its own public header file? (e.g., /include/linux/devfreq/governor_wmark.h)
->   I think we can create another (governor_simpleondemand.h) in there as well
->     in order to have threshold values configured by device drivers.
->   Adding governor-specific configurations into devfreq.h seems not
->     appropriate especially when we expect that we may need many different
->     governors.
->
->   OR..
->
->   This seems that you can keep set_h/l_wmark functions exposed to
->     drivers/devfreq/* only. Therefore, having /drivers/devfreq/governor_wmark.h
->     should be sufficient as well, which should be more neat than the above.
->   The callbacks are to be defined by the devfreq drivers, aren't they?
->
-> - The event name, "DEVFREQ_GOV_WMARK", defined in governor.h, seems to be
->     more appropriate if it is named "DEVFREQ_GOV_INTERNAL" as we won't need
->     to define event names for each govornor's internal needs.
->
->   OR.. for more generality,
->     we may define a macro like:
->
-> #define DEVFREQ_GOV_INTERNAL(value)     ((0x1 << 31) | (value))
-> #define GET_DEVFREQ_GOV_INTERNAL(event) ((event) & ~(0x1 << 31))
->
-> - In general, I would love to see governors with minimal intervention on
->     the framework core/main code, especially when it is not beneficial to
->     other governors. Unlike cpufreq, we may contain many different types of
->     devices in devfreq, which has the potential to accompany many different
->     governors.
->
->
-> Cheers,
-> MyungJoo.
->
->>
->> Arto Merilainen (1):
->>   PM / devfreq: Add watermark active governor
->>
->> Shridhar Rasal (2):
->>   PM / devfreq: Add watermark events
->>   PM / devfreq: Add watermark simple governor
->>
->>  drivers/devfreq/Kconfig                 |  18 +++
->>  drivers/devfreq/Makefile                |   2 +
->>  drivers/devfreq/devfreq.c               |  19 +++
->>  drivers/devfreq/governor.h              |   1 +
->>  drivers/devfreq/governor_wmark_active.c | 276 ++++++++++++++++++++++++++++++++
->>  drivers/devfreq/governor_wmark_simple.c | 245 ++++++++++++++++++++++++++++
->>  include/linux/devfreq.h                 |  26 +++
->>  7 files changed, 587 insertions(+)
->>  create mode 100644 drivers/devfreq/governor_wmark_active.c
->>  create mode 100644 drivers/devfreq/governor_wmark_simple.c
->>
->> --
->> 1.8.1.5
->>
+>=20
+> > +
+> > +Memory controller and bus
+> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+> > +Required properties:
+> > + - compatible : should be "samsung,exynos3250-busfreq-mif"
+> > + - reg : two sets (offset and length of the register) for PPMU reg=
+isters
+> > +	used by this devfreq driver
+> > + - clock-names : one clock of name "dmc" to manage frequency
+> > + - clocks : phandle and specifier for clock listed in clock-names =
+property
+> > + - vdd_mif-supply : phandle to MIF voltage regulator
+>=20
+> s/_/-/ in property names please.
+
+Sure.
+
+>=20
+> > +
+> > +Peripheral buses
+> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > +Required properties:
+> > + - compatible : should be "samsung,exynos3250-busfreq-int"
+>=20
+> What does "int" mean here?
+
+It is the name of power source (VDD_INT) and regulator supplying certai=
+n
+power domains in SoC. However I have no clue what engineers meant by
+this abbreviation.
+
+>=20
+> > + - reg : two sets (offset and length of the register) for PPMU reg=
+isters
+> > +	used by this devfreq driver
+> > + - clock-names : names for PPMU clocks and bus clocks to manage fr=
+equencies;
+> > +	All following clock names (and corresponding phandles) must be
+> > +	provided:
+> > +	- "ppmu_left", "ppmu_right",
+> > +	- "aclk_400", "aclk_266", "aclk_200", "aclk_160", "aclk_gdl", "ac=
+lk_gdr", "mfc";
+> > + - clocks : phandles and specifiers for clocks listed in clock-nam=
+es property
+> > + - vdd_mif-supply : phandle to INT voltage regulator
+>=20
+> s/_/-/ here too.
+
+OK
+
+Thanks for feedback.
+
+Best regards,
+Krzysztof
+
+
+> Thanks,
+> Mark.
+>=20
+> > +
+> > +Example
+> > +=3D=3D=3D=3D=3D=3D=3D
+> > +	busfreq_mif: busfreq@106A0000 {
+> > +		compatible =3D "samsung,exynos3250-busfreq-mif";
+> > +		reg =3D <0x106A0000 0x2000>, <0x106B0000 0x2000>;
+> > +		clocks =3D <&cmu_dmc CLK_DIV_DMC>;
+> > +		clock-names =3D "dmc";
+> > +		vdd_mif-supply =3D <&buck1_reg>;
+> > +		status =3D "okay";
+> > +	};
+> > +
+> > +	busfreq_int: busfreq@116A0000 {
+> > +		compatible =3D "samsung,exynos3250-busfreq-int";
+> > +		reg =3D <0x116A0000 0x2000>, <0x112A0000 0x2000>;
+> > +		clocks =3D <&cmu CLK_PPMULEFT>,
+> > +			<&cmu CLK_PPMURIGHT>,
+> > +			<&cmu CLK_DIV_ACLK_400_MCUISP>,
+> > +			<&cmu CLK_DIV_ACLK_266>,
+> > +			<&cmu CLK_DIV_ACLK_200>,
+> > +			<&cmu CLK_DIV_ACLK_160>,
+> > +			<&cmu CLK_DIV_GDL>,
+> > +			<&cmu CLK_DIV_GDR>,
+> > +			<&cmu CLK_DIV_MFC>;
+> > +		clock-names =3D "ppmuleft",
+> > +			"ppmuright",
+> > +			"aclk_400",
+> > +			"aclk_266",
+> > +			"aclk_200",
+> > +			"aclk_160",
+> > +			"aclk_gdl",
+> > +			"aclk_gdr",
+> > +			"mfc";
+> > +		vdd_int-supply =3D <&buck3_reg>;
+> > +		status =3D "okay";
+> > +	};
+> > --=20
+> > 1.9.1
+> >=20
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe devicetre=
+e" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >=20
+
