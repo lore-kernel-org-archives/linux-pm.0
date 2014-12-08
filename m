@@ -1,404 +1,188 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/4] powernv: cpuidle: Redesign idle states management
-Date: Mon, 08 Dec 2014 10:56:46 +0530
-Message-ID: <54853696.40501@linux.vnet.ibm.com>
-References: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com> <1417678103-32571-4-git-send-email-shreyas@linux.vnet.ibm.com> <20141208050126.GB4437@drongo>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v6 6/9] thermal: cpu_cooling: implement the power
+ cooling device API
+Date: Mon, 8 Dec 2014 11:19:00 +0530
+Message-ID: <CAOh2x==BKyS08th2d4r0Q2UGqhzAwj6sqOgFsH6J0pWup+OU_A@mail.gmail.com>
+References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+	<1417806260-9264-7-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:44622 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbaLHF04 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 00:26:56 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Mon, 8 Dec 2014 10:56:53 +0530
-In-Reply-To: <20141208050126.GB4437@drongo>
+Received: from mail-vc0-f176.google.com ([209.85.220.176]:55574 "EHLO
+	mail-vc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbaLHFtB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 00:49:01 -0500
+In-Reply-To: <1417806260-9264-7-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, punit.agrawal@arm.com, Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Paul,
+Hi Javi,
 
-On Monday 08 December 2014 10:31 AM, Paul Mackerras wrote:
-> On Thu, Dec 04, 2014 at 12:58:22PM +0530, Shreyas B. Prabhu wrote:
->> Deep idle states like sleep and winkle are per core idle states. A core
->> enters these states only when all the threads enter either the
->> particular idle state or a deeper one. There are tasks like fastsleep
->> hardware bug workaround and hypervisor core state save which have to be
->> done only by the last thread of the core entering deep idle state and
->> similarly tasks like timebase resync, hypervisor core register restore
->> that have to be done only by the first thread waking up from these
->> state.
->>
->> The current idle state management does not have a way to distinguish the
->> first/last thread of the core waking/entering idle states. Tasks like
->> timebase resync are done for all the threads. This is not only is
->> suboptimal, but can cause functionality issues when subcores and kvm is
->> involved.
->>
->> This patch adds the necessary infrastructure to track idle states of
->> threads in a per-core structure. It uses this info to perform tasks like
->> fastsleep workaround and timebase resync only once per core.
-> 
-> Comments below...
-> 
->> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
->> index a5139ea..e4578c3 100644
->> --- a/arch/powerpc/include/asm/paca.h
->> +++ b/arch/powerpc/include/asm/paca.h
->> @@ -158,6 +158,12 @@ struct paca_struct {
->>  	 * early exception handler for use by high level C handler
->>  	 */
->>  	struct opal_machine_check_event *opal_mc_evt;
->> +
->> +	/* Per-core mask tracking idle threads and a lock bit-[L][TTTTTTTT] */
->> +	u32 *core_idle_state_ptr;
->> +	u8 thread_idle_state;		/* ~Idle[0]/Nap[1]/Sleep[2]/Winkle[3] */
-> 
-> Might be clearer in the comment to say "/* PNV_THREAD_xxx */" so it's
-> clear the value should be one of PNV_THREAD_NAP, PNV_THREAD_SLEEP,
-> etc.
+Looks like ARM's exchange server screwed up your patch?
 
-Okay. 
-> 
->> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
->> index 283c603..8c3a1f4 100644
->> --- a/arch/powerpc/kernel/idle_power7.S
->> +++ b/arch/powerpc/kernel/idle_power7.S
->> @@ -18,6 +18,7 @@
->>  #include <asm/hw_irq.h>
->>  #include <asm/kvm_book3s_asm.h>
->>  #include <asm/opal.h>
->> +#include <asm/cpuidle.h>
->>  
->>  #undef DEBUG
->>  
->> @@ -37,8 +38,7 @@
->>  
->>  /*
->>   * Pass requested state in r3:
->> - * 	0 - nap
->> - * 	1 - sleep
->> + *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE
->>   *
->>   * To check IRQ_HAPPENED in r4
->>   * 	0 - don't check
->> @@ -123,12 +123,58 @@ power7_enter_nap_mode:
->>  	li	r4,KVM_HWTHREAD_IN_NAP
->>  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
->>  #endif
->> -	cmpwi	cr0,r3,1
->> -	beq	2f
->> +	stb	r3,PACA_THREAD_IDLE_STATE(r13)
->> +	cmpwi	cr1,r3,PNV_THREAD_SLEEP
->> +	bge	cr1,2f
->>  	IDLE_STATE_ENTER_SEQ(PPC_NAP)
->>  	/* No return */
->> -2:	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->> -	/* No return */
->> +2:
->> +	/* Sleep or winkle */
->> +	lbz	r7,PACA_THREAD_MASK(r13)
->> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
->> +lwarx_loop1:
->> +	lwarx	r15,0,r14
->> +	andc	r15,r15,r7			/* Clear thread bit */
->> +
->> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
->> +
->> +/*
->> + * If cr0 = 0, then current thread is the last thread of the core entering
->> + * sleep. Last thread needs to execute the hardware bug workaround code if
->> + * required by the platform.
->> + * Make the workaround call unconditionally here. The below branch call is
->> + * patched out when the idle states are discovered if the platform does not
->> + * require it.
->> + */
->> +.global pnv_fastsleep_workaround_at_entry
->> +pnv_fastsleep_workaround_at_entry:
->> +	beq	fastsleep_workaround_at_entry
-> 
-> Did you investigate using the feature bit mechanism to do this
-> patching for you?  You would need to allocate a CPU feature bit and
-> parse the device tree early on and set or clear the feature bit,
-> before the feature fixups are done.  The code here would then end up
-> looking like:
-> 
-> BEGIN_FTR_SECTION
-> 	beq	fastsleep_workaround_at_entry
-> END_FTR_SECTION_IFSET(CPU_FTR_FASTSLEEP_WORKAROUND)
-> 
+This is how I see it with gmail's show-original option:
 
-I agree using feature fixup is a much cleaner implementation. The difficulty is,
-information on whether fastsleep workaround is needed is passed in the device
-tree. do_feature_fixups is currently called before we unflatten the device tree.
-Any suggestions for this?
++=09cpufreq_device->dyn_power_table =3D power_table;
++=09cpufreq_device->dyn_power_table_entries =3D i;
++
 
->> +	stwcx.	r15,0,r14
->> +	isync
->> +	bne-	lwarx_loop1
-> 
-> The isync has to come after the bne.  Please fix this here and in the
-> other places where you added the isync.
-> 
-Okay. 
+I have seen this a lot, while I was in ARM. Had to adopt some work-arounds to
+get over it. :)
 
->> +common_enter: /* common code for all the threads entering sleep */
->> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->> +
->> +fastsleep_workaround_at_entry:
->> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	stwcx.	r15,0,r14
->> +	isync
->> +	bne-	lwarx_loop1
->> +
->> +	/* Fast sleep workaround */
->> +	li	r3,1
->> +	li	r4,1
->> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
->> +	bl	opal_call_realmode
->> +
->> +	/* Clear Lock bit */
->> +	li	r0,0
->> +	lwsync
->> +	stw	r0,0(r14)
->> +	b	common_enter
->> +
->>  
->>  _GLOBAL(power7_idle)
->>  	/* Now check if user or arch enabled NAP mode */
->> @@ -141,49 +187,16 @@ _GLOBAL(power7_idle)
->>  
->>  _GLOBAL(power7_nap)
->>  	mr	r4,r3
->> -	li	r3,0
->> +	li	r3,PNV_THREAD_NAP
->>  	b	power7_powersave_common
->>  	/* No return */
->>  
->>  _GLOBAL(power7_sleep)
->> -	li	r3,1
->> +	li	r3,PNV_THREAD_SLEEP
->>  	li	r4,1
->>  	b	power7_powersave_common
->>  	/* No return */
->>  
->> -/*
->> - * Make opal call in realmode. This is a generic function to be called
->> - * from realmode from reset vector. It handles endianess.
->> - *
->> - * r13 - paca pointer
->> - * r1  - stack pointer
->> - * r3  - opal token
->> - */
->> -opal_call_realmode:
->> -	mflr	r12
->> -	std	r12,_LINK(r1)
->> -	ld	r2,PACATOC(r13)
->> -	/* Set opal return address */
->> -	LOAD_REG_ADDR(r0,return_from_opal_call)
->> -	mtlr	r0
->> -	/* Handle endian-ness */
->> -	li	r0,MSR_LE
->> -	mfmsr	r12
->> -	andc	r12,r12,r0
->> -	mtspr	SPRN_HSRR1,r12
->> -	mr	r0,r3			/* Move opal token to r0 */
->> -	LOAD_REG_ADDR(r11,opal)
->> -	ld	r12,8(r11)
->> -	ld	r2,0(r11)
->> -	mtspr	SPRN_HSRR0,r12
->> -	hrfid
->> -
->> -return_from_opal_call:
->> -	FIXUP_ENDIAN
->> -	ld	r0,_LINK(r1)
->> -	mtlr	r0
->> -	blr
->> -
->>  #define CHECK_HMI_INTERRUPT						\
->>  	mfspr	r0,SPRN_SRR1;						\
->>  BEGIN_FTR_SECTION_NESTED(66);						\
->> @@ -196,10 +209,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->>  	/* Invoke opal call to handle hmi */				\
->>  	ld	r2,PACATOC(r13);					\
->>  	ld	r1,PACAR1(r13);						\
->> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
->> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->>  	bl	opal_call_realmode;					\
->> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->>  20:	nop;
-> 
-> I recently sent a patch "powerpc: powernv: Return to cpu offline loop
-> when finished in KVM guest" which passes a value in r3 through
-> power7_wakeup_loss and power7_wakeup_noloss back to the caller of
-> power7_nap().  So please don't take out the save/restore of r3 here.
-> 
+On Sat, Dec 6, 2014 at 12:34 AM, Javi Merino <javi.merino@arm.com> wrote:
 
-Okay. I'll base my these patches on top of your patch and resend.
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
 
->> @@ -210,12 +221,90 @@ _GLOBAL(power7_wakeup_tb_loss)
->>  BEGIN_FTR_SECTION
->>  	CHECK_HMI_INTERRUPT
->>  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->> +
->> +	lbz	r7,PACA_THREAD_MASK(r13)
->> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
->> +lwarx_loop2:
->> +	lwarx	r15,0,r14
->> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	/*
->> +	 * Lock bit is set in one of the 2 cases-
->> +	 * a. In the sleep/winkle enter path, the last thread is executing
->> +	 * fastsleep workaround code.
->> +	 * b. In the wake up path, another thread is executing fastsleep
->> +	 * workaround undo code or resyncing timebase or restoring context
->> +	 * In either case loop until the lock bit is cleared.
->> +	 */
->> +	bne	core_idle_lock_held
->> +
->> +	cmpwi	cr2,r15,0
->> +	or	r15,r15,r7		/* Set thread bit */
->> +
->> +	beq	cr2,first_thread
->> +
->> +	/* Not first thread in core to wake up */
->> +	stwcx.	r15,0,r14
->> +	isync
->> +	bne-	lwarx_loop2
->> +	b	common_exit
->> +
->> +core_idle_lock_held:
->> +	HMT_LOW
->> +core_idle_lock_loop:
->> +	lwz	r15,0(14)
->> +	andi.   r9,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	bne	core_idle_lock_loop
->> +	HMT_MEDIUM
->> +	b	lwarx_loop2
->> +
->> +first_thread:
->> +	/* First thread in core to wakeup */
->> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	stwcx.	r15,0,r14
->> +	isync
->> +	bne-	lwarx_loop2
->> +
->> +	/*
->> +	 * First thread in the core waking up from fastsleep. It needs to
->> +	 * call the fastsleep workaround code if the platform requires it.
->> +	 * Call it unconditionally here. The below branch instruction will
->> +	 * be patched out when the idle states are discovered if platform
->> +	 * does not require workaround.
->> +	 */
->> +.global pnv_fastsleep_workaround_at_exit
->> +pnv_fastsleep_workaround_at_exit:
->> +	b	fastsleep_workaround_at_exit
->> +
->> +timebase_resync:
->> +	/* Do timebase resync if we are waking up from sleep. Use cr3 value
->> +	 * set in exceptions-64s.S */
->> +	ble	cr3,clear_lock
->>  	/* Time base re-sync */
->> -	li	r3,OPAL_RESYNC_TIMEBASE
->> +	li	r0,OPAL_RESYNC_TIMEBASE
->>  	bl	opal_call_realmode;
->> -
->>  	/* TODO: Check r3 for failure */
->>  
->> +clear_lock:
->> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
->> +	lwsync
->> +	stw	r15,0(r14)
->> +
->> +common_exit:
->> +	li	r5,PNV_THREAD_RUNNING
->> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
->> +
->> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> +	li      r0,KVM_HWTHREAD_IN_KERNEL
->> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
->> +	/* Order setting hwthread_state vs. testing hwthread_req */
->> +	sync
->> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
->> +	cmpwi   r0,0
->> +	beq     6f
->> +	b       kvm_start_guest
-> 
-> There is a bit of a problem here: the FIXUP_ENDIAN in
-> opal_call_realmode will trash SRR1 (if the kernel is little-endian),
-> but the code at kvm_start_guest needs SRR1 from the system reset
-> exception so that it can know what the wakeup reason was.
-> 
-Hmm, I'll save/restore SRR1 before calling opal_call_realmode. Thanks for catching this.
+> +static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_device,
+> +                               u32 capacitance)
+> +{
+> +       struct power_table *power_table;
+> +       struct dev_pm_opp *opp;
+> +       struct device *dev = NULL;
+> +       int num_opps, cpu, i, ret = 0;
 
->> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
->> index 34c6665..97e0279 100644
->> --- a/arch/powerpc/platforms/powernv/setup.c
->> +++ b/arch/powerpc/platforms/powernv/setup.c
->> @@ -36,6 +36,9 @@
->>  #include <asm/opal.h>
->>  #include <asm/kexec.h>
->>  #include <asm/smp.h>
->> +#include <asm/cputhreads.h>
->> +#include <asm/cpuidle.h>
->> +#include <asm/code-patching.h>
->>  
->>  #include "powernv.h"
->>  
->> @@ -292,10 +295,43 @@ static void __init pnv_setup_machdep_rtas(void)
->>  
->>  static u32 supported_cpuidle_states;
->>  
->> +static void pnv_alloc_idle_core_states(void)
->> +{
->> +	int i, j;
->> +	int nr_cores = cpu_nr_cores();
->> +	u32 *core_idle_state;
->> +
->> +	/*
->> +	 * core_idle_state - First 8 bits track the idle state of each thread
->> +	 * of the core. The 8th bit is the lock bit. Initially all thread bits
->> +	 * are set. They are cleared when the thread enters deep idle state
->> +	 * like sleep and winkle. Initially the lock bit is cleared.
->> +	 * The lock bit has 2 purposes
->> +	 * a. While the first thread is restoring core state, it prevents
->> +	 * from other threads in the core from switching to prcoess context.
-> 
->            ^^^^ remove "from"                               ^^^^^^^ process
-> 
->> +	 * b. While the last thread in the core is saving the core state, it
->> +	 * prevent a different thread from waking up.
-> 
->            ^^^^^^^ prevents
-> 
-Oops. Will fix it.
->> +	 */
->> +	for (i = 0; i < nr_cores; i++) {
->> +		int first_cpu = i * threads_per_core;
->> +		int node = cpu_to_node(first_cpu);
->> +
->> +		core_idle_state = kmalloc_node(sizeof(u32), GFP_KERNEL, node);
->> +		for (j = 0; j < threads_per_core; j++) {
->> +			int cpu = first_cpu + j;
->> +
->> +			paca[cpu].core_idle_state_ptr = core_idle_state;
->> +			paca[cpu].thread_idle_state = PNV_THREAD_RUNNING;
->> +			paca[cpu].thread_mask = 1 << (cpu % threads_per_core);
-> 
-> This would be simpler and quicker:
-> 
-> 			paca[cpu].thread_mask = 1 << j;
-> 
-Will make the change.
+Why not initialize num_opps and i to 0 here?
 
+> +       unsigned long freq;
+> +
+> +       num_opps = 0;
+> +
+> +       rcu_read_lock();
+> +
+> +       for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
 
-Thanks,
-Shreyas 
+All these CPUs must be sharing the OPPs as they must be supplied
+from a single clock line. But probably you need to iterate over all
+because you don't know which ones share OPP. Right ? Probably
+the work I am doing around getting new OPP bindings might solve
+this..
 
+> +               dev = get_cpu_device(cpu);
+> +               if (!dev)
 
+Is this allowed? I understand you can continue, but this is not
+possible. Right ? So, print a error here?
+
+> +                       continue;
+> +
+> +               num_opps = dev_pm_opp_get_opp_count(dev);
+> +               if (num_opps > 0) {
+> +                       break;
+> +               } else if (num_opps < 0) {
+> +                       ret = num_opps;
+> +                       goto unlock;
+> +               }
+> +       }
+> +
+> +       if (num_opps == 0) {
+> +               ret = -EINVAL;
+> +               goto unlock;
+> +       }
+> +
+> +       power_table = kcalloc(num_opps, sizeof(*power_table), GFP_KERNEL);
+> +
+> +       i = 0;
+
+Either initialize i at the beginning or in the initialization part of
+for loop below.
+
+> +       for (freq = 0;
+> +            opp = dev_pm_opp_find_freq_ceil(dev, &freq), !IS_ERR(opp);
+> +            freq++) {
+> +               u32 freq_mhz, voltage_mv;
+> +               u64 power;
+> +
+> +               freq_mhz = freq / 1000000;
+> +               voltage_mv = dev_pm_opp_get_voltage(opp) / 1000;
+> +
+> +               /*
+> +                * Do the multiplication with MHz and millivolt so as
+> +                * to not overflow.
+> +                */
+> +               power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+> +               do_div(power, 1000000000);
+> +
+> +               /* frequency is stored in power_table in KHz */
+> +               power_table[i].frequency = freq / 1000;
+> +               power_table[i].power = power;
+> +
+> +               i++;
+
+Why here and not with freq++?
+
+> +       }
+> +
+> +       if (i == 0) {
+> +               ret = PTR_ERR(opp);
+> +               goto unlock;
+> +       }
+> +
+> +       cpufreq_device->dyn_power_table = power_table;
+> +       cpufreq_device->dyn_power_table_entries = i;
+> +
+> +unlock:
+> +       rcu_read_unlock();
+> +       return ret;
+> +}
+> +
+> +static u32 cpu_freq_to_power(struct cpufreq_cooling_device *cpufreq_device,
+> +                       u32 freq)
+
+Because the patch is screwed up a bit, I really can't see if the 'u'
+or u32 is directly
+below the 's' of struct cpufreq_cooling_device. Running checkpatch with --strict
+will take care of that probably. Sorry if you have already taken care of that..
+
+> +{
+> +       int i;
+> +       struct power_table *pt = cpufreq_device->dyn_power_table;
+> +
+> +       for (i = 1; i < cpufreq_device->dyn_power_table_entries; i++)
+> +               if (freq < pt[i].frequency)
+> +                       break;
+> +
+> +       return pt[i - 1].power;
+> +}
+
+> +static u32 get_static_power(struct cpufreq_cooling_device *cpufreq_device,
+> +                       unsigned long freq)
+> +{
+> +       struct device *cpu_dev;
+> +       struct dev_pm_opp *opp;
+> +       unsigned long voltage;
+> +       struct cpumask *cpumask = &cpufreq_device->allowed_cpus;
+> +       unsigned long freq_hz = freq * 1000;
+> +
+> +       if (!cpufreq_device->plat_get_static_power)
+> +               return 0;
+> +
+> +       cpu_dev = get_cpu_device(cpumask_any(cpumask));
+
+Similar to the way you have used for-each-cpu earlier, the cpu
+returned from above maynot have opps attached to it. Right ?
+
+Probably you can keep a copy of the cpu_dev we have opps attached
+with somewhere and reuse it.
+
+> +
+> +       rcu_read_lock();
+> +
+> +       opp = dev_pm_opp_find_freq_exact(cpu_dev, freq_hz, true);
+
+So, this might fail if I am not wrong.
+
+> +       voltage = dev_pm_opp_get_voltage(opp);
+> +
+> +       rcu_read_unlock();
+> +
+> +       if (voltage == 0) {
+> +               dev_warn_ratelimited(cpu_dev,
+> +                               "Failed to get voltage for frequency %lu: %ld\n",
+> +                               freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
+> +               return 0;
+> +       }
+> +
+> +       return cpufreq_device->plat_get_static_power(cpumask, voltage);
+> +}
