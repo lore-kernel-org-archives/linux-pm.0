@@ -1,51 +1,54 @@
-From: Sekhar Nori <nsekhar@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH] ARM / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 8 Dec 2014 16:54:05 +0530
-Message-ID: <54858A55.8010005@ti.com>
+Date: Mon, 8 Dec 2014 13:45:48 +0100
+Message-ID: <CAPDyKFpk3XW43e+7b0Py80a-RAUnbbZ3t+w7B9Sm8KdeyMZ5Ag@mail.gmail.com>
 References: <2407638.dfZGaT4vm1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:38681 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755055AbaLHLY5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Dec 2014 06:24:57 -0500
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:62969 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbaLHMpu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 07:45:50 -0500
+Received: by mail-qa0-f41.google.com with SMTP id f12so3322751qad.14
+        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 04:45:49 -0800 (PST)
 In-Reply-To: <2407638.dfZGaT4vm1@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>
-Cc: Will Deacon <will.deacon@arm.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@arm.linux.org.uk>, Will Deacon <will.deacon@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap <linux-omap@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Saturday 06 December 2014 08:20 AM, Rafael J. Wysocki wrote:
+On 6 December 2014 at 03:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
+>
 > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
 > selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
 > depending on CONFIG_PM_RUNTIME may now be changed to depend on
 > CONFIG_PM.
-> 
+>
 > Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere in the code under
 > arch/arm/ (the defconfig files will be modified later).
-> 
+>
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
-> 
+>
 > Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
 > PM_SLEEP is selected) which is only in linux-next at the moment (via the
 > linux-pm tree).
-> 
+>
 > Please let me know if it is OK to take this one into linux-pm.
-> 
+>
 > ---
 >  arch/arm/kernel/perf_event.c       |    2 +-
 >  arch/arm/mach-davinci/pm_domain.c  |    2 +-
+>  arch/arm/mach-keystone/pm_domain.c |    2 +-
+>  arch/arm/mach-omap1/pm_bus.c       |    4 ++--
+>  arch/arm/mach-omap2/io.c           |    2 +-
+>  arch/arm/mach-omap2/omap_device.c  |    2 +-
+>  6 files changed, 7 insertions(+), 7 deletions(-)
 
-Acked-by: Sekhar Nori <nsekhar@ti.com>
+There are a bunch of Kconfig options that "selects/depends" on
+"PM_RUNTIME". I suppose you should change them into "PM" as well.
 
-for the mach-davinci change. I have nothing conflicting queued, so feel
-free to take this through your tree.
-
-Thanks,
-Sekhar
-
+Kind regards
+Uffe
