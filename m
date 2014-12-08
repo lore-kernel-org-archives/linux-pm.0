@@ -1,80 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
 Subject: Re: [PATCH] video / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 8 Dec 2014 13:00:28 +0200
-Message-ID: <548584CC.7010603@ti.com>
-References: <19160360.7uJRUqlDQg@vostro.rjw.lan>
+Date: Mon, 08 Dec 2014 20:06:30 +0900
+Message-ID: <000901d012d7$0509a090$0f1ce1b0$%han@samsung.com>
+References: <19160360.7uJRUqlDQg@vostro.rjw.lan> <548584CC.7010603@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:35095 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbaLHLAk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 06:00:40 -0500
-In-Reply-To: <19160360.7uJRUqlDQg@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
-
---FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <548584CC.7010603@ti.com>
+Content-language: ko
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Jingoo Han' <jg1.han@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 06/12/14 04:36, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
->=20
-> The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
-> replaced with CONFIG_PM too.
->=20
-> Make these changes in 2 files under drivers/video/.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->=20
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME =
-if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via th=
-e
-> linux-pm tree).
->=20
-> Please let me know if it is OK to take this one into linux-pm.
+On Monday, December 08, 2014 8:00 PM, Tomi Valkeinen wrote
+> 
+> On 06/12/14 04:36, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> > selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> > depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> > CONFIG_PM.
+> >
+> > The alternative of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME may be
+> > replaced with CONFIG_PM too.
+> >
+> > Make these changes in 2 files under drivers/video/.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> > PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> > linux-pm tree).
+> >
+> > Please let me know if it is OK to take this one into linux-pm.
+> 
+> Does not seem to conflict with fbdev changes, so:
+> 
+> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Does not seem to conflict with fbdev changes, so:
+For drivers/video/fbdev/s3c-fb.c,
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
- Tomi
+Best regards,
+Jingoo Han
 
-
-
---FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUhYTMAAoJEPo9qoy8lh71uXgQAIV22jLyJQL+DkDsmDE8buTT
-tB0GkxxDqm/Z1HtO0BjDYxuDKNDlgJ3kPBCHOqi+aKxLM+Y71v8BdTpOY4UVDfPX
-AX3oklbRazxLFeCWlFSNQ2oMXKFms1CuvQd2jRo98X3sYniP1Vt4mmcqlebW8dco
-7GHFO/jgYnmpKrU5wz/CQeAvHSdaH5ArYb++uDWvvoOM1oKwA0+loNx3McJS2QSC
-TqC20xR39Wu9m63gB6sa27tyhmRHb7XBdcXaVg3ubozfO+2oPKMP/6wupeT0nXUP
-wl6V6tR6C3ZdRuyCe+HmOTXsFaUCWdosRWijaDIO762Rts9NnuThRjYN1AFLfQKC
-IumkjFWXdHfsE+0R5nmcXAFha3UybMM/AtFS8l2tSieJMe/wQlo6ilk1NycCvfHA
-Blf+Co2bCTmKEY241jNmQixw1Rkb5a0XAiL/wYVh2m86NIYf3ZvoOOWamAShNPkc
-jXJdTrTTioMp9rEiqp1yHq4Cy7Qz3nyE0vCQHKzYHgsZFjAURl4hiJjHoqZ8ss8F
-2PNEGK8Myy0R+8ArLdkVsmvS/jnXLW0n5PW/2xsP0Kb1SBGgDqR2Ob5YP3NvH9IL
-VS2YfcyUa4dCADgAodBwRUjXsc4o2gUyMbQubxMurhcYv+bFx7TB0SuJrlRpltnR
-nnttB9xQ9l43dRi31QxO
-=zUcK
------END PGP SIGNATURE-----
-
---FRLHTuixXLWp3cwBRuTDNWWCmoWeGjcVg--
+> 
+>  Tomi
+> 
