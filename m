@@ -1,46 +1,140 @@
-From: santosh shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH] ARM / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Mon, 08 Dec 2014 10:14:46 -0800
-Message-ID: <5485EA96.4000806@oracle.com>
-References: <2407638.dfZGaT4vm1@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 1/5] thermal: of: Extend of-thermal.c to provide
+ number of trip points
+Date: Mon, 8 Dec 2014 15:52:49 -0400
+Message-ID: <20141208195247.GA31126@developer>
+References: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
+ <1418058261-25251-1-git-send-email-l.majewski@samsung.com>
+ <1418058261-25251-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:42688 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756079AbaLHSPi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 13:15:38 -0500
-In-Reply-To: <2407638.dfZGaT4vm1@vostro.rjw.lan>
+Received: from mail-qg0-f48.google.com ([209.85.192.48]:35628 "EHLO
+	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbaLHUB2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 15:01:28 -0500
+Content-Disposition: inline
+In-Reply-To: <1418058261-25251-2-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>
-Cc: Will Deacon <will.deacon@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>, navneet kumar <navneetk@nvidia.com>
 
-On 12/5/2014 6:50 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
->
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere in the code under
-> arch/arm/ (the defconfig files will be modified later).
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Dec 08, 2014 at 06:04:17PM +0100, Lukasz Majewski wrote:
+> This patch extends the of-thermal.c to provide information about number of
+> available trip points.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > ---
->
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
->
-> Please let me know if it is OK to take this one into linux-pm.
->
+> Changes for v3:
+> - Exporting of_thermal_get_ntrips symbol as a GPL
+> - Fix build error when CONFIG_THERMAL_OF is disabled
+>=20
+> Changes for v2:
+> - Provide detailed (doxygen like) description of the of_thermal_get_ntrip=
+s()
+>   method
+> - Check for data pointer not being NULL
 > ---
+>  drivers/thermal/of-thermal.c   | 21 +++++++++++++++++++++
+>  drivers/thermal/thermal_core.h |  5 +++++
+>  2 files changed, 26 insertions(+)
+>=20
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index b7982f0..7facd23 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -112,6 +112,27 @@ static int of_thermal_get_temp(struct thermal_zone_d=
+evice *tz,
+>  	return data->ops->get_temp(data->sensor_data, temp);
+>  }
+> =20
+> +/**
+> + * of_thermal_get_ntrips - function to export number of available trip
+> + *			   points.
+> + * @tz: pointer to a thermal zone
+> + *
+> + * This function is a globally visible wrapper to get number of trip poi=
+nts
+> + * stored in the local struct __thermal_zone
+> + *
+> + * Return: number of available trip points, -ENODEV when data not availa=
+ble
+> + */
+> +int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+> +{
+> +	struct __thermal_zone *data =3D tz->devdata;
+> +
+> +	if (!data || IS_ERR(data))
+> +		return -ENODEV;
+> +
+> +	return data->ntrips;
+> +}
+> +EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
+> +
+>  static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+>  				enum thermal_trend *trend)
+>  {
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_cor=
+e.h
+> index d15d243..1cc5041 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -89,9 +89,14 @@ static inline void thermal_gov_user_space_unregister(v=
+oid) {}
+>  #ifdef CONFIG_THERMAL_OF
+>  int of_parse_thermal_zones(void);
+>  void of_thermal_destroy_zones(void);
+> +int of_thermal_get_ntrips(struct thermal_zone_device *);
 
->   arch/arm/mach-keystone/pm_domain.c |    2 +-
+Lukasz,
 
-Looks fine to me. For keystone parts.
+Here is a question that applies to all patches in this series adding
+functions in this header.
 
-Acked-by: Santosh Shilimkar <ssantosh@kernel.org>
+i suppose you intend to use these new functions in driver code, right?
+Add them here, will limit their usage to code inside drivers/thermal.
+
+Shouldn't these new APIs be declared under include/linux/thermal.h?
+
+This way, they can be be available to other parts of the kernel too.
+
+
+>  #else
+>  static inline int of_parse_thermal_zones(void) { return 0; }
+>  static inline void of_thermal_destroy_zones(void) { }
+> +static inline int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+> +{
+> +	return 0;
+> +}
+>  #endif
+> =20
+>  #endif /* __THERMAL_CORE_H__ */
+> --=20
+> 2.0.0.rc2
+>=20
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUhgGGAAoJEMLUO4d9pOJW5CoIAJkLstXbYH8fH5b3xUQQAgXu
+hguT0+WkWh8nsOAsbPWVeBbCj/TJ1IZqAOzs2CmGY5DJVZCINgAdxIwRzAzx3i8r
+GsL8xKtBSdiphSEKKTdAOWEzOgsRE1YxU/WD+DV2/llFppx/N5my6ne1dpo50bCH
+G1+vbTPJZgItOX3QhpjPHrGGDxXONiAuGS0t9rfp9zzgo6LekDuHut0CvYNinaK0
+WXXyJVQt5T1O3FZquyCk3P+blZabaNDxPVi8HcOTbEGDHZcAHgHG4jC/UM37WIal
+zuhHIEpDnLbBLjcVFSrkKLNswS3Z2SMfAe3T45pArnsFHQSQEXRwgsar67tPd5I=
+=K0K/
+-----END PGP SIGNATURE-----
+
+--fUYQa+Pmc3FrFX/N--
