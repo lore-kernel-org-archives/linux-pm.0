@@ -1,324 +1,163 @@
-From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC RESEND 2/3] PM / devfreq: Add watermark simple governor
-Date: Tue, 9 Dec 2014 16:18:48 +0900
-Message-ID: <CAAVeFuLZsbmzjOZw3Y2KnPCQvGuN2P-Ax4ZqHT4QTi-=RM=gcQ@mail.gmail.com>
-References: <1417786892-477-1-git-send-email-amerilainen@nvidia.com> <1417786892-477-3-git-send-email-amerilainen@nvidia.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v7 1/4] mfd: rt5033: Add Richtek RT5033 driver core.
+Date: Tue, 9 Dec 2014 09:06:26 +0000
+Message-ID: <20141209090626.GU3951@x1>
+References: <1417527591-20450-1-git-send-email-beomho.seo@samsung.com>
+ <1417527591-20450-2-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1417786892-477-3-git-send-email-amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f180.google.com ([209.85.223.180]:33371 "EHLO
+	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530AbaLIJGf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 04:06:35 -0500
+Received: by mail-ie0-f180.google.com with SMTP id rp18so109424iec.25
+        for <linux-pm@vger.kernel.org>; Tue, 09 Dec 2014 01:06:34 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1417527591-20450-2-git-send-email-beomho.seo@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
-On Fri, Dec 5, 2014 at 10:41 PM, Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> From: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->
-> This patch adds a new devfreq governor, watermark simple. The
-> governor decides next frequency naively by selecting the previous
-> frequency in the frequency table if we received low watermark
-> - or the next frequency in case we received high watermark.
->
-> Signed-off-by: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> Signed-off-by: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On Tue, 02 Dec 2014, Beomho Seo wrote:
+
+> This patch adds a new driver for Richtek RT5033 driver.
+> RT5033 is a Multifunction device which includes battery charger, fuel=
+ gauge,
+> flash LED current source, LDO and synchronous Buck converter. It is i=
+nterfaced
+> to host controller using I2C interface.
+>=20
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> Cc: Lee Jones <lee.jone@linaro.org>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 > ---
->  drivers/devfreq/Kconfig                 |   7 +
->  drivers/devfreq/Makefile                |   1 +
->  drivers/devfreq/governor_wmark_simple.c | 245 ++++++++++++++++++++++++++++++++
->  3 files changed, 253 insertions(+)
->  create mode 100644 drivers/devfreq/governor_wmark_simple.c
->
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index faf4e70c42e0..37710d999ffe 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -63,6 +63,13 @@ config DEVFREQ_GOV_USERSPACE
->           Otherwise, the governor does not change the frequnecy
->           given at the initialization.
->
-> +config DEVFREQ_GOV_WMARK_SIMPLE
-> +       tristate "Simple Watermark"
-> +       help
-> +         Sets the frequency based on monitor watermark events.
-> +         This governor returns the next frequency from frequency table
-> +         based on type watermark event.
-> +
->  comment "DEVFREQ Drivers"
->
->  config ARM_EXYNOS4_BUS_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> index 16138c9e0d58..92024eeb73b6 100644
-> --- a/drivers/devfreq/Makefile
-> +++ b/drivers/devfreq/Makefile
-> @@ -3,6 +3,7 @@ obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)       += governor_simpleondemand.o
->  obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)  += governor_performance.o
->  obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)    += governor_powersave.o
->  obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)    += governor_userspace.o
-> +obj-$(CONFIG_DEVFREQ_GOV_WMARK_SIMPLE) += governor_wmark_simple.o
->
->  # DEVFREQ Drivers
->  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)  += exynos/
-> diff --git a/drivers/devfreq/governor_wmark_simple.c b/drivers/devfreq/governor_wmark_simple.c
+> Changes in v7
+> - Use small description.
+> - Change some names for a variable.
+> - Revise of_device_id struct style.
+>=20
+> Changes in v6
+> - Fix white space issue in mfd cell struct.
+>=20
+> Changes in v5
+> - Change possible built as a module.
+> - Revise rt5033_dev mfd cell entry.
+> - Fix incorrect typo.
+> - Add module alias.
+>=20
+> Changes in v4
+> - none.
+>=20
+> Changes in v3
+> - Correct sentence errors.
+> - Add author information the top of each drivers.
+> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and b=
+link.
+> - Change some return check.
+> - Use bool and of_match_ptr().
+>=20
+> Changes in v2
+> - Remove volatile_reg callback. Because this driver not in use regmap=
+ cache.
+> - Revmoe unnecessary subnode of_compatible.
+> - Add define for set_high impedance mode of charger.
+> ---
+>  drivers/mfd/Kconfig                |   12 ++
+>  drivers/mfd/Makefile               |    1 +
+>  drivers/mfd/rt5033.c               |  141 +++++++++++++++++++
+>  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++=
+++++++++++
+>  include/linux/mfd/rt5033.h         |   62 +++++++++
+>  5 files changed, 476 insertions(+)
+>  create mode 100644 drivers/mfd/rt5033.c
+>  create mode 100644 include/linux/mfd/rt5033-private.h
+>  create mode 100644 include/linux/mfd/rt5033.h
+
+[...]
+
+> diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
 > new file mode 100644
-> index 000000000000..bd14adcc84cb
+> index 0000000..2d2bfbe
 > --- /dev/null
-> +++ b/drivers/devfreq/governor_wmark_simple.c
-> @@ -0,0 +1,245 @@
+> +++ b/drivers/mfd/rt5033.c
+> @@ -0,0 +1,141 @@
 > +/*
-> + * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
+> + * RT5033 core driver.
+
+I asked you to write a small description of the h/w here.
+
+Instead you've made it _less_ descriptive?
+
+> + * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
+> + * Author: Beomho Seo <beomho.seo@samsung.com>
 > + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published bythe Free Software Foundation.
 > + */
 > +
-> +#include <linux/devfreq.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/types.h>
-> +#include <linux/slab.h>
-> +#include <linux/device.h>
-> +#include <linux/notifier.h>
-> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/module.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/of_device.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/rt5033.h>
+> +#include <linux/mfd/rt5033-private.h>
 > +
-> +#include "governor.h"
-> +
-> +struct wmark_gov_info {
-> +       /* probed from the devfreq */
-> +       unsigned int            *freqlist;
-> +       int                     freq_count;
-> +
-> +       /* algorithm parameters */
-> +       unsigned int            p_high_wmark;
-> +       unsigned int            p_low_wmark;
-> +
-> +       /* dynamically changing data */
-> +       enum watermark_type     event;
-
-I would rename this to last_event for clarity.
-
-> +       unsigned int            last_request;
-
-last_freq might be a more appropriate name here.
-
-> +
-> +       /* common data */
-> +       struct devfreq          *df;
-
-Unless I missed something this member is only set once in
-devfreq_watermark_start() and never touched afterwards.
-
-> +       struct platform_device  *pdev;
-
-Same with this one.
-
-> +       struct dentry           *debugdir;
+> +static const struct regmap_irq rt5033_irqs[] =3D {
+> +	{ .mask =3D RT5033_PMIC_IRQ_BUCKOCP, },
+> +	{ .mask =3D RT5033_PMIC_IRQ_BUCKLV, },
+> +	{ .mask =3D RT5033_PMIC_IRQ_SAFELDOLV, },
+> +	{ .mask =3D RT5033_PMIC_IRQ_LDOLV, },
+> +	{ .mask =3D RT5033_PMIC_IRQ_OT, },
+> +	{ .mask =3D RT5033_PMIC_IRQ_VDDA_UV, },
 > +};
 > +
-> +static unsigned long freqlist_up(struct wmark_gov_info *wmarkinfo,
-> +                                unsigned long curr_freq)
-> +{
-> +       int i, pos;
+> +static const struct regmap_irq_chip rt5033_irq_chip =3D {
+> +	.name		=3D "rt5033",
+> +	.status_base	=3D RT5033_REG_PMIC_IRQ_STAT,
+> +	.mask_base	=3D RT5033_REG_PMIC_IRQ_CTRL,
+> +	.mask_invert	=3D true,
+> +	.num_regs	=3D 1,
+> +	.irqs		=3D rt5033_irqs,
+> +	.num_irqs	=3D ARRAY_SIZE(rt5033_irqs),
+> +};
 > +
-> +       for (i = 0; i < wmarkinfo->freq_count; i++)
-> +               if (wmarkinfo->freqlist[i] > curr_freq)
-> +                       break;
+> +static const struct mfd_cell rt5033_devs[] =3D {
+> +	{ .name =3D "rt5033-regulator", },
+> +	{
+> +		.name =3D "rt5033-charger",
+> +		.of_compatible =3D "richtek,rt5033-charger",
+> +	}, {
+> +		.name =3D "rt5033-battery",
+> +		.of_compatible =3D "richtek,rt5033-battery",
+> +	},
+> +};
 > +
-> +       pos = min(wmarkinfo->freq_count - 1, i);
-> +
-> +       return wmarkinfo->freqlist[pos];
-> +}
-> +
-> +static unsigned int freqlist_down(struct wmark_gov_info *wmarkinfo,
-> +                                 unsigned long curr_freq)
-> +{
-> +       int i, pos;
-> +
-> +       for (i = wmarkinfo->freq_count - 1; i >= 0; i--)
-> +               if (wmarkinfo->freqlist[i] < curr_freq)
-> +                       break;
-> +
-> +       pos = max(0, i);
-> +       return wmarkinfo->freqlist[pos];
-> +}
-> +
-> +static int devfreq_watermark_target_freq(struct devfreq *df,
-> +                                        unsigned long *freq)
-> +{
-> +       struct wmark_gov_info *wmarkinfo = df->data;
-> +       struct devfreq_dev_status dev_stat;
-> +       int err;
-> +
-> +       err = df->profile->get_dev_status(df->dev.parent, &dev_stat);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       switch (wmarkinfo->event) {
-> +       case HIGH_WATERMARK_EVENT:
-> +               *freq = freqlist_up(wmarkinfo, dev_stat.current_frequency);
-> +
-> +               /* always enable low watermark */
-> +               df->profile->set_low_wmark(df->dev.parent,
-> +                                          wmarkinfo->p_low_wmark);
-> +
-> +               /* disable high watermark if no change */
-> +               if (*freq == wmarkinfo->last_request)
-> +                       df->profile->set_high_wmark(df->dev.parent, 1000);
-> +               break;
-> +       case LOW_WATERMARK_EVENT:
-> +               *freq = freqlist_down(wmarkinfo, dev_stat.current_frequency);
-> +
-> +               /* always enable high watermark */
-> +               df->profile->set_high_wmark(df->dev.parent,
-> +                                           wmarkinfo->p_high_wmark);
-> +
-> +               /* disable low watermark if no change */
-> +               if (*freq == wmarkinfo->last_request)
-> +                       df->profile->set_low_wmark(df->dev.parent, 0);
-> +               break;
-> +       default:
-> +               break;
-> +       }
-> +
-> +       /* Mark that you handled event */
+> +static const struct of_device_id rt5033_dt_match[] =3D {
+> +	{
+> +		.compatible =3D "richtek,rt5033",
+> +	},
+> +	{ }
+> +};
 
-s/you/we
+This was better as a single line entry.
 
-> +       wmarkinfo->event = NO_WATERMARK_EVENT;
-> +       wmarkinfo->last_request = *freq;
-> +
-> +       return 0;
-> +}
-> +
-> +static void devfreq_watermark_debug_start(struct devfreq *df)
-> +{
-> +       struct wmark_gov_info *wmarkinfo = df->data;
-> +       char dirname[128];
-> +
-> +       snprintf(dirname, sizeof(dirname), "%s_scaling",
-> +               to_platform_device(df->dev.parent)->name);
-> +
-> +       if (!wmarkinfo)
-> +               return;
-> +
-> +       wmarkinfo->debugdir = debugfs_create_dir(dirname, NULL);
-> +       if (!wmarkinfo->debugdir)
-> +               return;
-> +
-> +       debugfs_create_u32("low_wmark", S_IRUGO | S_IWUSR,
-> +                          wmarkinfo->debugdir, &wmarkinfo->p_low_wmark);
-> +       debugfs_create_u32("high_wmark", S_IRUGO | S_IWUSR,
-> +                          wmarkinfo->debugdir, &wmarkinfo->p_high_wmark);
+I also asked you to move it down to where it's first used, instead of
+way up here.  Please convert it back to one line and move the whole
+structure down just above the line:
 
-Shouldn't we call set_low_wmark() and set_high_wmark() when these
-values are changed so the hardware reacts to the new values?
+"static struct i2c_driver rt5033_driver =3D {"
 
-> +}
-> +
-> +static void devfreq_watermark_debug_stop(struct devfreq *df)
-> +{
-> +       struct wmark_gov_info *wmarkinfo = df->data;
-> +
-> +       debugfs_remove_recursive(wmarkinfo->debugdir);
-> +}
-> +
-> +static int devfreq_watermark_start(struct devfreq *df)
-> +{
-> +       struct wmark_gov_info *wmarkinfo;
-> +       struct platform_device *pdev = to_platform_device(df->dev.parent);
-> +
-> +       if (!df->profile->freq_table) {
-> +               dev_err(&pdev->dev, "Frequency table missing\n");
-> +               return -EINVAL;
+[...]
 
-This error is not propagated by devfreq_watermark_event_handler(). It
-definitely should be.
-
-Also you will want to fail if d->profile->max_state == 0, otherwise
-funny things will happen when a watermark is reached.
-
-> +       }
-> +
-> +       wmarkinfo = kzalloc(sizeof(struct wmark_gov_info), GFP_KERNEL);
-
-This memory is never freed.
-
-> +       if (!wmarkinfo)
-> +               return -ENOMEM;
-> +
-> +       df->data = (void *)wmarkinfo;
-> +       wmarkinfo->freqlist = df->profile->freq_table;
-> +       wmarkinfo->freq_count = df->profile->max_state;
-
-Contrary to what its comment says, freq_table is not optional anymore
-and only used for statistics if one intents to use a watermark
-governor. It should probably be updated to reflect this.
-
-> +       wmarkinfo->event = NO_WATERMARK_EVENT;
-> +       wmarkinfo->df = df;
-> +       wmarkinfo->pdev = pdev;
-> +       wmarkinfo->p_low_wmark = 100;
-> +       wmarkinfo->p_high_wmark = 600;
-> +
-> +       devfreq_watermark_debug_start(df);
-> +
-> +       return 0;
-> +}
-> +
-> +static int devfreq_watermark_event_handler(struct devfreq *df,
-> +                                          unsigned int event,
-> +                                          void *wmark_type)
-> +{
-> +       int ret = 0;
-> +       struct wmark_gov_info *wmarkinfo = df->data;
-> +       enum watermark_type *type = wmark_type;
-> +
-> +       switch (event) {
-> +       case DEVFREQ_GOV_START:
-> +               devfreq_watermark_start(df);
-
-This function does not really start anything - it prepares df to be
-used with this governor. Maybe call it devfreq_watermark_init()
-instead? Then you could have a devfreq_watermark_fini() function
-called when we stop the governor that frees the memory previously
-allocated.
-
-Also I think you want to call try_module_get(THIS_MODULE) here to
-prevent the governor module from being removed it if is used by
-someone.
-
-> +               wmarkinfo = df->data;
-> +               if (df->profile->set_low_wmark)
-> +                       df->profile->set_low_wmark(df->dev.parent,
-> +                                                  wmarkinfo->p_low_wmark);
-> +               if (df->profile->set_high_wmark)
-> +                       df->profile->set_high_wmark(df->dev.parent,
-> +                                                   wmarkinfo->p_high_wmark);
-
-Isn't it an error if one (or both) of these functions is missing? For
-we will never receive any event. Not sure about this.
-
-> +               break;
-> +       case DEVFREQ_GOV_STOP:
-> +               devfreq_watermark_debug_stop(df);
-
-As said above, have a devfreq_watermark_fini() (or any other name)
-here that frees the kzalloc'd memory and calls
-devfreq_watermark_debug_stop(). Also you should probably call
-module_put(THIS_MODULE).
-
-> +               break;
-> +       case DEVFREQ_GOV_SUSPEND:
-> +               devfreq_monitor_suspend(df);
-
-Shouldn't we call set_low_wmark() and set_high_wmark() to prevent the
-hardware from firing interrupts after devfreq_monitor_suspend() is
-called?
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
