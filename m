@@ -1,40 +1,49 @@
-From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v3 3/3] ARM: tegra: Add Tegra124 ACTMON support
-Date: Tue, 9 Dec 2014 14:33:39 +0900
-Message-ID: <CAAVeFu+UZyzF6c+MMnXFAKUbDcw6aan13Sg88c9-YbUsbXYKnw@mail.gmail.com>
-References: <1417709696-29281-1-git-send-email-tomeu.vizoso@collabora.com> <1417709696-29281-4-git-send-email-tomeu.vizoso@collabora.com>
+From: Alexandre Courbot <gnurou@gmail.com>
+Subject: Re: [PATCH v3 0/3] Add support for Tegra Activity Monitor
+Date: Tue, 9 Dec 2014 14:38:01 +0900
+Message-ID: <CAAVeFuJkpuWocEDTfSAK7_UfhZvqOfYJY6sLgsy9i+KcMAkbCQ@mail.gmail.com>
+References: <1417709696-29281-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1417709696-29281-4-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f169.google.com ([209.85.223.169]:49778 "EHLO
+	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756635AbaLIFiW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 00:38:22 -0500
+In-Reply-To: <1417709696-29281-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On Fri, Dec 5, 2014 at 1:14 AM, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
-> Add device node for the ACTMON block to the Tegra124 device tree.
+On Fri, Dec 5, 2014 at 1:14 AM, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> Hello,
 >
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> this v3 addresses the comments that the devfreq implementation got, namely:
 >
-> ---
+> * Address misc. style issues found by Thierry and Alexander
+> * Added helpers for register i/o
+> * Further documented the structs
+> * Enable the ACTMON after the IRQ handler has been installed
+> * Disable the ACTMON before removing the IRQ handler
+> * Add governor in a subsys initcall
 >
-> v3:     * Address misc. style issues found by Thierry and Alexander
->         * Added helpers for register i/o
->         * Further documented the structs
->         * Enable the ACTMON after the IRQ handler has been installed
->         * Disable the ACTMON before removing the IRQ handler
->         * Add governor in a subsys initcall
->
-> v2:     * Add operating-points property
-> ---
->  arch/arm/boot/dts/tegra124.dtsi        |  23 +
->  drivers/devfreq/Kconfig                |   7 +-
->  drivers/devfreq/Makefile               |   2 +-
->  drivers/devfreq/tegra-actmon-devfreq.c | 777 +++++++++++++++++++++++++++++++++
->  drivers/devfreq/tegra-devfreq.c        | 718 ------------------------------
+> There's an open question on whether some functionality currently in this
+> devfreq driver should be moved into the devfreq framework, but without knowing
+> of other SoC family that would benefit from it, I'm reticent. It would be
+> great to hear from the devfreq maintainers if they have any plans regarding
+> this, or if they have any suggestion.
 
-In patch 2/3 you create tegra-devfreq.c, to apparently move it to
-tegra-actmon-devfreq.c and (seemingly) add somemore lines to it. This
-makes things difficult to review, and I am almost sure this is a
-naming mistake - could you fix this and resend?
+I cannot make a thorough review because of the problem I mentioned in
+patch 3/3, but I am guessing this series is converging towards what we
+want. Now the main question will be how we can leverage Arto's
+watermark series for this one. I am ready to bet that doing so can
+reduce quite a lot of code.
+
+Since you are likely to be the first user of the watermarking feature,
+could you comment on its potential shortcomings and whatever needs to
+be fixed to best implement ACTMON support using it? I will try to push
+it myself, but you are obviously in a better position to understand
+what is needed.
+
+Thanks!
