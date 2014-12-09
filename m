@@ -1,124 +1,90 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [RFC PATCHv2 5/7] ARM: dts: Add PPMU dt node for Exynos3250
-Date: Tue, 09 Dec 2014 23:13:04 +0900
-Message-ID: <1418134386-14681-6-git-send-email-cw00.choi@samsung.com>
-References: <1418134386-14681-1-git-send-email-cw00.choi@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] thermal-soc management updates for v3.19 #2
+Date: Tue, 9 Dec 2014 00:02:28 -0400
+Message-ID: <20141209040226.GA2245@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1418134386-14681-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, k.kozlowski@samsung.com, kgene.kim@samsung.com, b.zolnierkie@samsung.com, rafael.j.wysocki@intel.com, tomasz.figa@gmail.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-samsung-soc@vger.kernel.org, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch add PPMU (Performance Profiling Monitoring Units) dt node
-to estimate the utilization of each IP in Exynos SoC throught DEVFREQ Event
-subsystem.
 
-This patch adds following PPMU dt nodes:
-- PPMU_DMC0	0x106a0000
-- PPMU_DMC1	0x106b0000
-- PPMU_RIGHTBUS 0x112A0000
-- PPMU_LEFTBUS  0x116A0000
-- PPMU_CAMIF    0x11AC0000
-- PPMU_LCD0     0x11E40000
-- PPMU_3D       0x13220000
-- PPMU_MFC_L    0x13660000
-- PPMU_CPU	0x106c0000
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/boot/dts/exynos3250.dtsi | 66 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+Hello Rui,
 
-diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
-index c743f60..70a9120 100644
---- a/arch/arm/boot/dts/exynos3250.dtsi
-+++ b/arch/arm/boot/dts/exynos3250.dtsi
-@@ -529,6 +529,72 @@
- 			compatible = "arm,cortex-a7-pmu";
- 			interrupts = <0 18 0>, <0 19 0>;
- 		};
-+
-+		ppmu_dmc0: ppmu_dmc0@106a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106a0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_dmc1: ppmu_dmc1@106b0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106b0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_cpu: ppmu_cpu@106c0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106c0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_rightbus: ppmu_rightbus@112a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x112a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMURIGHT>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_leftbus: ppmu_leftbus0@116a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x116a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMULEFT>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_camif: ppmu_camif@11ac0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x11ac0000 0x2000>;
-+			clocks = <&cmu CLK_PPMUCAMIF>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_lcd0: ppmu_lcd0@11e40000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x11e40000 0x2000>;
-+			clocks = <&cmu CLK_PPMULCD0>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_g3d: ppmu_g3d@13220000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x13220000 0x2000>;
-+			clocks = <&cmu CLK_PPMUG3D>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_mfc_l: ppmu_mfc_l@13660000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x13660000 0x2000>;
-+			clocks = <&cmu CLK_PPMUMFC_L>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
- 	};
- };
- 
--- 
-1.8.5.5
+(sorry for duplicates, now copying the list)
+
+Please pull from
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.=
+git linus
+
+to receive Thermal-SoC Management updates for v3.19 with top-most
+
+184a4bf623fa587067851d25435fcb2f41de445b:
+
+  thermal: of: Extend current of-thermal.c code to allow setting emulated t=
+emp (2014-12-08 21:10:00 -0400)
+
+on top of e920f9b632a687834de5a78c60ac5c4c62327b1d:
+
+  thermal: armada: Remove support for A375-Z1 SoC (2014-11-24 16:55:42 -040=
+0)
+
+Specifics:
+
+Continuing the content for thermal-soc, I am sending now a specific extensi=
+on in OF thermal.
+In this pull, we have a change that extends the of thermal to allow drivers=
+ to register and use
+its functionality in a better way. The content here does not exploits therm=
+al core. The new=20
+API entries are intended to only access and properly implement the function=
+alities already
+implemented in thermal core.
+
+BR,
+
+Eduardo Valentin
+
+----------------------------------------------------------------
+Lukasz Majewski (5):
+      thermal: of: Extend of-thermal.c to provide number of trip points
+      thermal: of: Extend of-thermal.c to provide check if trip point is va=
+lid
+      thermal: of: Rename struct __thermal_trip to struct thermal_trip
+      thermal: of: Extend of-thermal to export table of trip points
+      thermal: of: Extend current of-thermal.c code to allow setting emulat=
+ed temp
+
+ drivers/thermal/of-thermal.c   | 109 ++++++++++++++++++++++++++++++++++---=
+----
+ drivers/thermal/thermal_core.h |  18 +++++++
+ include/linux/thermal.h        |  18 +++++++
+ 3 files changed, 127 insertions(+), 18 deletions(-)
+
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUhnRKAAoJEMLUO4d9pOJWf1cH/3hJ3Duu2Inq7FXcQwiovKYy
+LDm4CJbgUXVe6+PpcdeKJTQCnKK2aEeFeLhdohgvPGhVuThC5lR98jg1RkqFnheG
+9Ff2TuSbf7OG1NUNDnnog03GTx6Ea4gedcyXmLrhbVu3PTH50j7ySZXwxmgBcMp0
+6UnHYA5b4SLuPIgX9/nKlR1MmwwqY60CERV+Y/aULnYeCI/tuOtcayaGgpOszz9v
+Z08t6Dn/4yAwgV8GUJOKbfilprQ9vuP3aMMsV2GEoIGosdNb20tG7nECtyccVVPX
+W1THbV15YIbn3aUFIPMVyIXBerTkz25sAqrGnnsQm/0Y2wKfvHXXHZ9rdAIPwy4=
+=nXlx
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
