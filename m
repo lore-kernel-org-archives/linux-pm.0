@@ -1,58 +1,49 @@
-From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v3 0/3] Add support for Tegra Activity Monitor
-Date: Tue, 9 Dec 2014 23:18:49 +0900
-Message-ID: <CAAVeFuJY_31ayqnoY65uCoP9AadvucEARmuv4jr_DoS6Aj5rGA@mail.gmail.com>
-References: <1417709696-29281-1-git-send-email-tomeu.vizoso@collabora.com>
- <CAAVeFuJkpuWocEDTfSAK7_UfhZvqOfYJY6sLgsy9i+KcMAkbCQ@mail.gmail.com> <548703C4.1030300@collabora.com>
+From: "Austin, Brian" <Brian.Austin@cirrus.com>
+Subject: Re: [PATCH] sound / PM: Replace CONFIG_PM_RUNTIME with
+	CONFIG_PM
+Date: Tue, 9 Dec 2014 15:09:32 +0000
+Message-ID: <D0AC6CA0.260F%Brian.Austin@cirrus.com>
+References: <2064254.7lXiTpmK64@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <548703C4.1030300-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+In-Reply-To: <2064254.7lXiTpmK64@vostro.rjw.lan>
+Content-Language: en-US
+Content-ID: <F3B38E4FEE1A904B85E89897BF7DEC9A@ad.cirrus.com>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Takashi Iwai <tiwai@suse.de>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Kukjin Kim <kgene.kim@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Xiubo Li <Li.Xiubo@freescale.com>, Timur Tabi <timur@tabi.org>, "Handrigan,
+ Paul" <Paul.Handrigan@cirrus.com>, Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 9, 2014 at 11:14 PM, Tomeu Vizoso
-<tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
-> On 12/09/2014 06:38 AM, Alexandre Courbot wrote:
->> On Fri, Dec 5, 2014 at 1:14 AM, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
->>> Hello,
->>>
->>> this v3 addresses the comments that the devfreq implementation got, namely:
->>>
->>> * Address misc. style issues found by Thierry and Alexander
->>> * Added helpers for register i/o
->>> * Further documented the structs
->>> * Enable the ACTMON after the IRQ handler has been installed
->>> * Disable the ACTMON before removing the IRQ handler
->>> * Add governor in a subsys initcall
->>>
->>> There's an open question on whether some functionality currently in this
->>> devfreq driver should be moved into the devfreq framework, but without knowing
->>> of other SoC family that would benefit from it, I'm reticent. It would be
->>> great to hear from the devfreq maintainers if they have any plans regarding
->>> this, or if they have any suggestion.
->>
->> I cannot make a thorough review because of the problem I mentioned in
->> patch 3/3, but I am guessing this series is converging towards what we
->> want. Now the main question will be how we can leverage Arto's
->> watermark series for this one. I am ready to bet that doing so can
->> reduce quite a lot of code.
->>
->> Since you are likely to be the first user of the watermarking feature,
->> could you comment on its potential shortcomings and whatever needs to
->> be fixed to best implement ACTMON support using it? I will try to push
->> it myself, but you are obviously in a better position to understand
->> what is needed.
+
+
+On 12/5/14, 8:46 PM, "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+>From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Sure, I'm still playing with the idea, but I have sent a few questions
-> to that thread already.
-
-Seen that, thanks! After seeing your comments I come to thing that
-maybe we should merge ACTMON support first and then adapt it to use
-watermarking afterwards. I'm all for incremental changes and after 4
-iterations this series should be close to completion now - would be
-sad to go back to the design board at this stage.
-
-Reviewing your v4 is on my schedule for tomorrow, thanks for your patience!
+>After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+>selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+>depending on CONFIG_PM_RUNTIME may now be changed to depend on
+>CONFIG_PM.
+>
+>Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under sound/.
+>
+>Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>---
+>
+>Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+>PM_SLEEP is selected) which is only in linux-next at the moment (via the
+>linux-pm tree).
+>
+For the cs35l32
+Acked-by: Brian Austin <brian.austin@cirrus.com>
