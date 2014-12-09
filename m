@@ -1,159 +1,67 @@
-From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC RESEND 0/3] Add watermark support to devfreq
-Date: Tue, 9 Dec 2014 22:11:16 +0900
-Message-ID: <CAAVeFu+ZK_RpHqVQbbqJQV_8NWD3ShHMpNw0RmfFVK0Nykt+oQ@mail.gmail.com>
-References: <1555621726.710701418024675477.JavaMail.weblogic@epmlwas04c> <5485DADF.7020109@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5485DADF.7020109-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org" <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org" <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v4 0/3] Add support for Tegra Activity Monitor
+Date: Tue,  9 Dec 2014 14:15:03 +0100
+Message-ID: <1418130912-24725-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:52737 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756812AbaLINQC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 08:16:02 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Alexandre Courbot <gnurou@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Arto Merilainen <amerilainen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-On Tue, Dec 9, 2014 at 2:07 AM, Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> Hi MyungJoo,
->
-> Thank for your answer, see my answers inline.
->
-> On 12/08/2014 09:44 AM, MyungJoo Ham wrote:
->>
->> Please let me start with somewhat naive high-level question:
->>    What do you mean by watermark in this context?
->
->
-> Sorry for poor choice of naming. "Load threshold interrupt" might be more
-> appropriate. The idea of the series here is to add an ability to program
-> hardware to give interrupts when the current load value goes above (or
-> below) certain threshold(s). I will revisit the naming.
+Hello,
 
-I personally like the watermark naming and think it is a pretty good
-analogy to what this series is doing, but your call.
+this v4 just fixes a botched rename in v3. The original cover letter for v3 follows:
 
->
->> Other itching points include:
->> - devfreq_watermark_event() was declared but has never been used.
->>      Who is supposed to call this function?
->
->
-> The device profile is responsible to call this function from an interrupt
-> handler. I will document this.
->
->> - Is enum watermark_type supposed to be used out of /drivers/devfreq/* ?
->
->
-> Yes, the idea is to use the enumerations for informing the type of the
-> event. I.e. from interrupt handler we might call:
->   devfreq_watermark_event(devfreq, ACTMON_INTR_BELOW_WMARK);
->
->> - Could you please watermark-specific interfaces (set_high/low_wmark) into
->>      its own public header file? (e.g.,
->> /include/linux/devfreq/governor_wmark.h)
->>    I think we can create another (governor_simpleondemand.h) in there as
->> well
->>      in order to have threshold values configured by device drivers.
->>    Adding governor-specific configurations into devfreq.h seems not
->>      appropriate especially when we expect that we may need many different
->>      governors.
+this v3 addresses the comments that the devfreq implementation got, namely:
 
-Considering that watermarking is a pretty common technique for the
-kind of work that devfreq is attempting to cover (implementing
-event-driven frequency scaling vs. polling-driven as current devfreq
-does), doesn't it make sense to turn it into a core devfreq feature? I
-don't think devfreq can be that easily extended and doing so might
-make things messier than they are.
+* Address misc. style issues found by Thierry and Alexander
+* Added helpers for register i/o
+* Further documented the structs
+* Enable the ACTMON after the IRQ handler has been installed
+* Disable the ACTMON before removing the IRQ handler
+* Add governor in a subsys initcall
 
->
->
-> I am not convinced that creating two separate interfaces is better than
-> extending a single centralised interface. Let us first consider the
-> compatibility...:
->
-> First, in trivial case the device driver does not implement the threshold
-> feature. Obviously we cannot use threshold based governor for scaling but
-> all existing polling based governors will work as earlier.
->
-> Second, let us assume that we have a device that supports threshold
-> interrupts and the driver has implemented the required set_h/l_wmark
-> interrupts and calls devfreq_watermark_event() when we get an interrupt.
-> This device can therefore use wmark_simple and wmark_active governors. In
-> addition to the wmark governors, we may choose to use a polling based
-> governor. With current approach the polling governor simply ignores the
-> events and leaves the thresholds "as is".
->
-> In short, I would not be concerned on compatibility. From governor side it
-> should be ok to ignore an event. In addition, it is ok from governor
-> initialization to fail in case the device driver does not implement all
-> required features.
->
->
-> I am also afraid that initialisation makes two-communication-paths approach
-> tricky. In code you likely could have..:
->   devfreq_add_device(dev, &pdata->devfreq, "wmark_simple", &extra_fns);
->
-> .. but what happens if we wish to change the governor on the fly through
-> sysfs? In worst case this is targeting to a governor that requires its own
-> data field in initialisation.
->
->>
->>    OR..
->>
->>    This seems that you can keep set_h/l_wmark functions exposed to
->>      drivers/devfreq/* only. Therefore, having
->> /drivers/devfreq/governor_wmark.h
->>      should be sufficient as well, which should be more neat than the
->> above.
->>    The callbacks are to be defined by the devfreq drivers, aren't they?
->
->
-> set_h/l_wmark callbacks should be implemented by the device profiles (the
-> device drivers themselves) for setting the thresholds on hardware. These are
-> not devfreq/governor private functions but something that should be
-> implemented inside the device driver.
->
->>
->> - The event name, "DEVFREQ_GOV_WMARK", defined in governor.h, seems to be
->>      more appropriate if it is named "DEVFREQ_GOV_INTERNAL" as we won't
->> need
->>      to define event names for each govornor's internal needs.
->>
->>    OR.. for more generality,
->>      we may define a macro like:
->>
->> #define DEVFREQ_GOV_INTERNAL(value)     ((0x1 << 31) | (value))
->> #define GET_DEVFREQ_GOV_INTERNAL(event) ((event) & ~(0x1 << 31))
->
->
-> This should work.
->
->>
->> - In general, I would love to see governors with minimal intervention on
->>      the framework core/main code, especially when it is not beneficial to
->>      other governors. Unlike cpufreq, we may contain many different types
->> of
->>      devices in devfreq, which has the potential to accompany many
->> different
->>      governors.
->>
->
-> I would like to see is that we could easily take advantage of hardware
-> features and not let framework limit us too much. :-)
->
-> For example, Tomeu has been working on ACTMON driver that measures memory
-> transfers (please refer to "Add support for Tegra Activity Monitor" series).
-> This hardware block is capable of generating interrupts based on activity
-> and hence by factoring the series properly, we could use the same governor
-> from the series in different places easily. Without proper interfacing
-> everyone ends up duplicating the code.
+There's an open question on whether some functionality currently in this
+devfreq driver should be moved into the devfreq framework, but without knowing
+of other SoC family that would benefit from it, I'm reticent. It would be
+great to hear from the devfreq maintainers if they have any plans regarding
+this, or if they have any suggestion.
 
-Indeed. Watermarking support would make the ACTMON driver simpler and
-easier to integrate with all the governors that devfreq currently has.
-Without core support for it, it could only interact properly with its
-own, dedicated governor.
+These patches implement support for setting the rate of the EMC clock based on
+stats collected from the ACTMON, a piece of hw in the Tegra124 that counts
+memory accesses (among others).
 
-MyungJoo, the issue of having this feature in the core vs. having it
-as a devfreq "extension" aside, do you agree with the core idea? An
-informl ack for the idea would allow us to start leveraging this for
-the ACTMON driver. With a concrete user it will make it easier for
-everyone to understand how the pieces should fit together.
+It depends on the following in-flight patches:
+
+* EMC driver: http://thread.gmane.org/gmane.linux.drivers.devicetree/99304
+* CPUFreq driver: http://thread.gmane.org/gmane.linux.kernel/1812962
+
+I have pushed a branch here for testing:
+
+http://cgit.collabora.com/git/user/tomeu/linux.git/log/?h=actmon-v4
+
+Regards,
+
+Tomeu
+
+Tomeu Vizoso (3):
+  of: Add binding for NVIDIA Tegra ACTMON node
+  PM / devfreq: tegra: add devfreq driver for Tegra Activity Monitor
+  ARM: tegra: Add Tegra124 ACTMON support
+
+ .../devicetree/bindings/arm/tegra/actmon.txt       |  38 +
+ arch/arm/boot/dts/tegra124.dtsi                    |  23 +
+ drivers/devfreq/Kconfig                            |   9 +
+ drivers/devfreq/Makefile                           |   1 +
+ drivers/devfreq/tegra-actmon-devfreq.c             | 777 +++++++++++++++++++++
+ 5 files changed, 848 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/tegra/actmon.txt
+ create mode 100644 drivers/devfreq/tegra-actmon-devfreq.c
+
+-- 
+1.9.3
+
