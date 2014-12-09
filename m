@@ -1,105 +1,135 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH] SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Tue, 09 Dec 2014 14:19:57 +0800
-Message-ID: <5486948D.1060807@intel.com>
-References: <3237237.IIIiULdqDt@vostro.rjw.lan>
+From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC RESEND 1/3] PM / devfreq: Add watermark events
+Date: Tue, 9 Dec 2014 16:17:01 +0900
+Message-ID: <CAAVeFuKS7qigoL63NQHBcWKphsL9MELD_kchexBX_GiDGABidw@mail.gmail.com>
+References: <1417786892-477-1-git-send-email-amerilainen@nvidia.com> <1417786892-477-2-git-send-email-amerilainen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:56902 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbaLIGUA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Dec 2014 01:20:00 -0500
-In-Reply-To: <3237237.IIIiULdqDt@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1417786892-477-2-git-send-email-amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-scsi@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "James E.J. Bottomley" <JBottomley@parallels.com>, Vinayak Holikatti <vinholikatti@gmail.com>
 
-On 12/04/2014 09:22 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/scsi/ and in include/scsi/scsi_device.h.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Dec 5, 2014 at 10:41 PM, Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> From: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>
+> This patch adds support for watermark events. These events inform
+> the governor that the device load has gone below (low watermark) or
+> above (high watermark) certain load value.
+
+This is definitely a useful feature to have, as it reflects what
+efficient hardware does (raise an interrupt when load goes above/under
+a certain threshold). In particular Tomeu's ACTMON driver would
+probably greatly benefit from it.
+
+A few comments below:
+
+>
+> Signed-off-by: Shridhar Rasal <srasal-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
-> 
-> ---
->  drivers/scsi/scsi_pm.c           |    4 ++--
->  drivers/scsi/scsi_priv.h         |    5 ++---
->  drivers/scsi/ufs/ufshcd-pci.c    |   11 ++++-------
->  drivers/scsi/ufs/ufshcd-pltfrm.c |   11 ++++-------
->  include/scsi/scsi_device.h       |    4 ++--
->  5 files changed, 14 insertions(+), 21 deletions(-)
-> 
-> Index: linux-pm/drivers/scsi/scsi_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/scsi_pm.c
-> +++ linux-pm/drivers/scsi/scsi_pm.c
-> @@ -213,7 +213,7 @@ static int scsi_bus_restore(struct devic
->  
->  #endif /* CONFIG_PM_SLEEP */
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  
->  static int sdev_runtime_suspend(struct device *dev)
+>  drivers/devfreq/devfreq.c  | 19 +++++++++++++++++++
+>  drivers/devfreq/governor.h |  1 +
+>  include/linux/devfreq.h    | 26 ++++++++++++++++++++++++++
+>  3 files changed, 46 insertions(+)
+>
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 30b538d8cc90..8333d024132a 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -1050,6 +1050,25 @@ static struct attribute *devfreq_attrs[] = {
+>  };
+>  ATTRIBUTE_GROUPS(devfreq);
+>
+> +/**
+> + * devfreq_watermark_event() - Handles watermark events
+> + * @devfreq: the devfreq instance to be updated
+> + * @type: type of watermark event
+> + */
+> +int devfreq_watermark_event(struct devfreq *devfreq, int type)
+
+Here I suppose "type" is to be an enum watermark_type - therefore it
+should probably be changed to that type instead of int.
+
+> +{
+> +       if (!devfreq)
+> +               return -EINVAL;
+> +
+> +       if (!devfreq->governor)
+> +               return -EINVAL;
+
+Let's fold these two conditions into "if (!devfreq || !devfreq->governor)"
+
+> +
+> +       return devfreq->governor->event_handler(devfreq,
+> +                               DEVFREQ_GOV_WMARK, &type);
+> +}
+> +EXPORT_SYMBOL(devfreq_watermark_event);
+> +
+> +
+
+Extra whiteline here.
+
+>  static int __init devfreq_init(void)
 >  {
-> @@ -338,7 +338,7 @@ void scsi_autopm_put_host(struct Scsi_Ho
->  #define scsi_runtime_resume	NULL
->  #define scsi_runtime_idle	NULL
->  
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
->  
->  const struct dev_pm_ops scsi_bus_pm_ops = {
->  	.prepare =		scsi_bus_prepare,
+>         devfreq_class = class_create(THIS_MODULE, "devfreq");
+> diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+> index fad7d6321978..fb9875388f3f 100644
+> --- a/drivers/devfreq/governor.h
+> +++ b/drivers/devfreq/governor.h
+> @@ -24,6 +24,7 @@
+>  #define DEVFREQ_GOV_INTERVAL                   0x3
+>  #define DEVFREQ_GOV_SUSPEND                    0x4
+>  #define DEVFREQ_GOV_RESUME                     0x5
+> +#define DEVFREQ_GOV_WMARK                      0x6
+>
+>  /* Caution: devfreq->lock must be locked before calling update_devfreq */
+>  extern int update_devfreq(struct devfreq *devfreq);
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index f1863dcd83ea..b5bf6c4fe286 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -21,6 +21,12 @@
+>
+>  struct devfreq;
+>
+> +enum watermark_type {
 
-Just one nitpeak: since scsi_pm.o is only compiled when CONFIG_PM is
-set, I think we can skip the #ifdef CONFIG_PM ... #endif macro in this
-file now. I mean something like this:
+Change the name to devfreq_watermark_event maybe? We know it's a type
+already from the context, and we should use the devfreq_ prefix to
+avoid name collisions.
 
-diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
-index 7454498..9e43ae1 100644
---- a/drivers/scsi/scsi_pm.c
-+++ b/drivers/scsi/scsi_pm.c
-@@ -213,8 +213,6 @@ static int scsi_bus_restore(struct device *dev)
- 
- #endif /* CONFIG_PM_SLEEP */
- 
--#ifdef CONFIG_PM_RUNTIME
--
- static int sdev_runtime_suspend(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-@@ -332,14 +330,6 @@ void scsi_autopm_put_host(struct Scsi_Host *shost)
- 	pm_runtime_put_sync(&shost->shost_gendev);
- }
- 
--#else
--
--#define scsi_runtime_suspend	NULL
--#define scsi_runtime_resume	NULL
--#define scsi_runtime_idle	NULL
--
--#endif /* CONFIG_PM_RUNTIME */
--
- const struct dev_pm_ops scsi_bus_pm_ops = {
- 	.prepare =		scsi_bus_prepare,
- 	.suspend =		scsi_bus_suspend,
+> +       NO_WATERMARK_EVENT = 0,
+> +       HIGH_WATERMARK_EVENT = 1,
+> +       LOW_WATERMARK_EVENT = 2
 
-Thanks,
-Aaron
+... and if the type is renamed to watermark_event, these could become
+DEVFREQ_NO_WATERMARK, DEVFREQ_HIGH_WATERMARK, and
+DEVFREQ_LOW_WATERMARK.
+
+> +};
+> +
+>  /**
+>   * struct devfreq_dev_status - Data given from devfreq user device to
+>   *                          governors. Represents the performance
+> @@ -68,6 +74,16 @@ struct devfreq_dev_status {
+>   *                     status to devfreq, which is used by governors.
+>   * @get_cur_freq:      The device should provide the current frequency
+>   *                     at which it is operating.
+> + * @set_high_wmark:    This is an optional callback to set high
+> + *                     watermark for watermark event. The value is
+> + *                     be scaled between 0 and 1000 where 1000 equals to
+> + *                     100% load. Setting this value to 1000 disables
+> + *                     the event
+> + * @set_low_wmark:     This is an optional callback to set low
+> + *                     watermark for watermark event. The value is
+> + *                     be scaled between 0 and 1000 where 1000 equals to
+> + *                     100% load. Setting this value to 0 disables the
+> + *                     event.
+
+>From the comment it is not clear whether the 0..1000 range corresponds
+to the load between two frequencies in the frequencies table, or
+covers the whole frequency table. I understand it is the former, but
+it would be nice to explicitly state it.
