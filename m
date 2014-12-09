@@ -1,81 +1,86 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 0/5] thermal: of: of-thermal.c API extensions
-Date: Mon, 8 Dec 2014 21:21:05 -0400
-Message-ID: <20141209012103.GA22004@developer>
-References: <1416500488-7232-1-git-send-email-l.majewski@samsung.com>
- <1418058261-25251-1-git-send-email-l.majewski@samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f44.google.com ([209.85.192.44]:35541 "EHLO
-	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756364AbaLIB3o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 20:29:44 -0500
-Content-Disposition: inline
-In-Reply-To: <1418058261-25251-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH 2/2 V9] intel_pstate: add kernel parameter to force loading.
+Date: Tue,  9 Dec 2014 10:43:19 +0900
+Message-ID: <1418089399-9310-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, linda.knippers@hp.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, corbet@lwn.net, kristen@linux.intel.com
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Mikko Perttunen <mperttunen@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, Caesar Wang <caesar.wang@rock-chips.com>, navneet kumar <navneetk@nvidia.com>
 
+To force loading on Oracle Sun X86 servers, provide one kernel command line
+parameter
 
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  intel_pstate = force
 
-On Mon, Dec 08, 2014 at 06:04:16PM +0100, Lukasz Majewski wrote:
-> Provided patch series extend of-thermal.c file API. It is necessary=20
-> for ongoing Exynos TMU rework.
->=20
-> First version of this code can be found at:
-> http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
->=20
-> Second version:
-> http://www.spinics.net/lists/kernel/msg1872274.html
->=20
-> This code provides methods to access some of-thermal local data.
-> Moreover it provides a read only access to of-thermal trip points.
->=20
-> Lukasz Majewski (5):
->   thermal: of: Extend of-thermal.c to provide number of trip points
->   thermal: of: Extend of-thermal.c to provide check if trip point is
->     valid
->   thermal: of: Rename struct __thermal_trip to struct thermal_trip
->   thermal: of: Extend of-thermal to export table of trip points
->   thermal: of: Extend current of-thermal.c code to allow setting
->     emulated temp
+For those who be aware of the risk of no power capping capabily working and
+try to get better performance with this driver.
 
-Applied the series in my -linus branch.
+Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+Tested-by: Alexey Kodanev <alexey.kodanev@oracle.com>
+Reviewed-by: Linda Knippers <linda.knippers@hp.com>
+---
+ v2: change to hardware vendor specific naming parameter.
+ v4: refine code and doc.
+ v5&v6: fix a typo in doc.
+ v7: change enum PCC to PPC.
+ v8: change the name of kernel command line parameter to generic one.
+ v9: refine doc
 
-Cheers
+ Documentation/kernel-parameters.txt | 5 +++++
+ drivers/cpufreq/intel_pstate.c      | 6 +++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
->=20
->  drivers/thermal/of-thermal.c   | 109 ++++++++++++++++++++++++++++++++++-=
-------
->  drivers/thermal/thermal_core.h |  18 +++++++
->  include/linux/thermal.h        |  18 +++++++
->  3 files changed, 127 insertions(+), 18 deletions(-)
->=20
-> --=20
-> 2.0.0.rc2
->=20
-
---J/dobhs11T7y2rNN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUhk52AAoJEMLUO4d9pOJW72IH/2HrY/qq1YM135SR31Qinko4
-ycKuClzqp3VY2Iz/WnOa3ZR8WOY/IeqFdP0shY7tUhKAWomP6+g/iuHWe/J2cFa1
-RoN3OP1R8LmwKI0rSHTHzdsS9r2IkqeFIzfxNUfNCW6a8hAhpXWcXnBTd+Ql8KVk
-laB21nfnHerlvh2fzz4FrEBWqyso4t2o0o/n49kJyFWWrv+/6c9OBWJvRjvwqjoN
-2Y/L9Y3sgP7feI/AnLuX4G2K/cAmV8wOdPYmuu6HRl4IlmwD5j+TfAffLQQN1Syq
-cLa5XAzZ8HFaui6wfKcsy6OQz23P2uJwG/e67m7RPeu8W7kQ1jWmErxzyj69UZA=
-=fxLy
------END PGP SIGNATURE-----
-
---J/dobhs11T7y2rNN--
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 479f332..7d0983e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1446,6 +1446,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		       disable
+ 		         Do not enable intel_pstate as the default
+ 		         scaling driver for the supported processors
++		       force
++			 Enable intel_pstate on systems that prohibit it by default
++			 in favor of acpi-cpufreq. Forcing the intel_pstate driver
++			 instead of acpi-cpufreq may disable platform features, such
++			 as thermal controls and power capping, that rely on ACPI
++			 P-States information being indicated to OSPM and therefore
++			 should be used with caution. This option does not work with
++			 processors that aren't supported by the intel_pstate driver
++			 or on platforms that use pcc-cpufreq instead of acpi-cpufreq.
+ 
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1bb62ca..2654e13 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -866,6 +866,7 @@ static struct cpufreq_driver intel_pstate_driver = {
+ };
+ 
+ static int __initdata no_load;
++static unsigned int  force_load;
+ 
+ static int intel_pstate_msrs_not_valid(void)
+ {
+@@ -1003,7 +1004,8 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+ 			case PSS:
+ 				return intel_pstate_no_acpi_pss();
+ 			case PPC:
+-				return intel_pstate_has_acpi_ppc();
++				return intel_pstate_has_acpi_ppc() &&
++					(!force_load);
+ 			}
+ 	}
+ 
+@@ -1078,6 +1080,8 @@ static int __init intel_pstate_setup(char *str)
+ 
+ 	if (!strcmp(str, "disable"))
+ 		no_load = 1;
++	if (!strcmp(str, "force"))
++		force_load = 1;
+ 	return 0;
+ }
+ early_param("intel_pstate", intel_pstate_setup);
+-- 
+1.8.3.1
