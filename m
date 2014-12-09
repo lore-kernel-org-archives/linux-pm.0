@@ -1,71 +1,56 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] sound / PM: Replace CONFIG_PM_RUNTIME with
-	CONFIG_PM
-Date: Tue, 9 Dec 2014 16:15:20 +0000
-Message-ID: <20141209161520.GK1934@sirena.org.uk>
-References: <2064254.7lXiTpmK64@vostro.rjw.lan>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] SPI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Tue, 9 Dec 2014 16:17:17 +0000
+Message-ID: <20141209161717.GL1934@sirena.org.uk>
+References: <2091649.zj2SIBdzpD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4223912251545695587=="
-Return-path: <alsa-devel-bounces@alsa-project.org>
-In-Reply-To: <2064254.7lXiTpmK64@vostro.rjw.lan>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Brian Austin <brian.austin@cirrus.com>, alsa-devel@alsa-project.org, Kukjin Kim <kgene.kim@samsung.com>, Timur Tabi <timur@tabi.org>, Linux PM list <linux-pm@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Paul Handrigan <Paul.Handrigan@cirrus.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Li.Xiubo@freescale.com>, Ben Dooks <ben-linux@fluff.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7l042bGvurpep9Wg"
+Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <2091649.zj2SIBdzpD-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Ben Dooks <ben-linux-elnMNo+KYs3YtjvyW6yDsg@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============4223912251545695587==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vk/v8fjDPiDepTtA"
-Content-Disposition: inline
-
-
---vk/v8fjDPiDepTtA
+--7l042bGvurpep9Wg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Sat, Dec 06, 2014 at 03:46:27AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
+On Sat, Dec 06, 2014 at 03:30:23AM +0100, Rafael J. Wysocki wrote:
 
-Acked-by: Mark Brown <broonie@kernel.org>
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
 
---vk/v8fjDPiDepTtA
+> Please let me know if it is OK to take this one into linux-pm.
+
+Acked-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+if you fix the subject line to resemble the style for the subsystem
+(spi: ) - using normal subject line styles really helps spot relevant
+mails in the inbox.
+
+--7l042bGvurpep9Wg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUhyAXAAoJECTWi3JdVIfQ+gAH/RtO167WNmJph1mXUpYcElXu
-I4EZb20uXYY4zTHiKzXAYlq/9zJM+IkpW7+3MSe00lA8hQxD03VzeiocmVamMaJX
-PWXGu6ifGJU0sMv+Zvxejxjd2dlhhr9Rd8z85luIKi/70a+3i6cJIUtit0DxSWD/
-ZSPoPJU/qrsFNVLzUy7iXt0ryYBdEUsnTQCCmekRWPQzkTcfQA1OpCH6dpaS2Pic
-yXhZ4fJwl4oQSOVP/XoRPp7SyBgCskwk/dJnz2WRcHqq2tPQkjsE3XSzIBo957NO
-DCXIvFBfM/YvSJQQHGkU6DGhr7tVJYxFxfea0lmtHxk8wfyA3q7agqUxNyu6WaU=
-=wspE
+iQEcBAEBAgAGBQJUhyCMAAoJECTWi3JdVIfQZDAH/jxHEqTaZq0PSH+i6f7lKHTd
+VaFYWWOA+kv50Djh9WSr8mXVKMqOPtWFG30RDRPW3aNwVguDmPgkQ5gDLBsVIxAN
+GSMkMqe5+dnR7T5O6JkUIg3lEw2DATtifuX4Jv5mJpqcTPdKNPxD5HFiNpHsg3Z+
+GkWeAy4taukU5J/fCf+WJOaBySnigOTfHCctD2uqMrLTo6zl9zSpI8tFX7ldRk12
+E6zVNCHaexLuKpHQmuwEO3O+sQyIeQyBqpg+U/ya0DU0d6ufK45PmB9+zMmbI2OZ
+V3o5atUqSD9vWw3aT6dPgsvub5Jgx0GMS7utBdoIAqevtPWRlyQ2msG1aY44Zlc=
+=nKwU
 -----END PGP SIGNATURE-----
 
---vk/v8fjDPiDepTtA--
-
---===============4223912251545695587==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4223912251545695587==--
+--7l042bGvurpep9Wg--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-spi" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
