@@ -1,28 +1,42 @@
 From: Ilkka Koskinen <ilkka.koskinen@linux.intel.com>
-Subject: [PATCH 0/2] Thermal/int340x: _art and _trt fixes
-Date: Mon,  8 Dec 2014 18:01:30 -0800
-Message-ID: <1418090492-87508-1-git-send-email-ilkka.koskinen@linux.intel.com>
+Subject: [PATCH 1/2] Thermal/int340x: Clear the error value of the last acpi_bus_get_device() call
+Date: Mon,  8 Dec 2014 18:01:31 -0800
+Message-ID: <1418090492-87508-2-git-send-email-ilkka.koskinen@linux.intel.com>
+References: <1418090492-87508-1-git-send-email-ilkka.koskinen@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga03.intel.com ([134.134.136.65]:55255 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbaLICEs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1755261AbaLICEs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Mon, 8 Dec 2014 21:04:48 -0500
+In-Reply-To: <1418090492-87508-1-git-send-email-ilkka.koskinen@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: ilkka.koskinen@linux.intel.com, rui.zhang@intel.com, edubezval@gmail.com, jacob.jun.pan@linux.intel.com
 
-This patch set fixes two issues in parsing _art and _trt acpi entries
+Previously the return value of the last acpi_bus_get_device() was
+returned. However, since we only report those issues, it should be
+cleared to continue as expected.
 
-Ilkka Koskinen (2):
-  Thermal/int340x: Clear the error value of the last
-    acpi_bus_get_device() call
-  Thermal/int340x: Handle properly the case when _trt or _art acpi entry
-    is missing
+Signed-off-by: Ilkka Koskinen <ilkka.koskinen@linux.intel.com>
+Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+index ac5c405..e4e61b3 100644
+--- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
++++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+@@ -131,6 +131,8 @@ int acpi_parse_trt(acpi_handle handle, int *trt_count, struct trt **trtp,
+ 			pr_warn("Failed to get target ACPI device\n");
+ 	}
+ 
++	result = 0;
++
+ 	*trtp = trts;
+ 	/* don't count bad entries */
+ 	*trt_count -= nr_bad_entries;
 -- 
 1.9.1
 
