@@ -1,48 +1,105 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] opp: set new_opp->dev_opp to a valid dev_opp
-Date: Tue,  9 Dec 2014 11:18:51 +0530
-Message-ID: <92ee61e091ccc336e6937f7af093f7ce569f5485.1418104004.git.viresh.kumar@linaro.org>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH] SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Tue, 09 Dec 2014 14:19:57 +0800
+Message-ID: <5486948D.1060807@intel.com>
+References: <3237237.IIIiULdqDt@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:64516 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbaLIFtR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 00:49:17 -0500
-Received: by mail-pd0-f177.google.com with SMTP id ft15so6589979pdb.22
-        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 21:49:16 -0800 (PST)
+Received: from mga02.intel.com ([134.134.136.20]:56902 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbaLIGUA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Dec 2014 01:20:00 -0500
+In-Reply-To: <3237237.IIIiULdqDt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-scsi@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "James E.J. Bottomley" <JBottomley@parallels.com>, Vinayak Holikatti <vinholikatti@gmail.com>
 
-We find/allocate dev_opp after using its value to fill new_opp->dev_opp right
-now. Move this to a later point where dev_opp is valid.
+On 12/04/2014 09:22 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
+> drivers/scsi/ and in include/scsi/scsi_device.h.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
+> 
+> ---
+>  drivers/scsi/scsi_pm.c           |    4 ++--
+>  drivers/scsi/scsi_priv.h         |    5 ++---
+>  drivers/scsi/ufs/ufshcd-pci.c    |   11 ++++-------
+>  drivers/scsi/ufs/ufshcd-pltfrm.c |   11 ++++-------
+>  include/scsi/scsi_device.h       |    4 ++--
+>  5 files changed, 14 insertions(+), 21 deletions(-)
+> 
+> Index: linux-pm/drivers/scsi/scsi_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/scsi_pm.c
+> +++ linux-pm/drivers/scsi/scsi_pm.c
+> @@ -213,7 +213,7 @@ static int scsi_bus_restore(struct devic
+>  
+>  #endif /* CONFIG_PM_SLEEP */
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  
+>  static int sdev_runtime_suspend(struct device *dev)
+>  {
+> @@ -338,7 +338,7 @@ void scsi_autopm_put_host(struct Scsi_Ho
+>  #define scsi_runtime_resume	NULL
+>  #define scsi_runtime_idle	NULL
+>  
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  const struct dev_pm_ops scsi_bus_pm_ops = {
+>  	.prepare =		scsi_bus_prepare,
 
-Fixes: a7470db6fec4 ("PM / OPP don't match for existing OPPs when list is empty")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Just one nitpeak: since scsi_pm.o is only compiled when CONFIG_PM is
+set, I think we can skip the #ifdef CONFIG_PM ... #endif macro in this
+file now. I mean something like this:
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 2d195f3a1998..c2020520b2bf 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -400,7 +400,6 @@ static int dev_pm_opp_add_dynamic(struct device *dev, unsigned long freq,
- 	mutex_lock(&dev_opp_list_lock);
+diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
+index 7454498..9e43ae1 100644
+--- a/drivers/scsi/scsi_pm.c
++++ b/drivers/scsi/scsi_pm.c
+@@ -213,8 +213,6 @@ static int scsi_bus_restore(struct device *dev)
  
- 	/* populate the opp table */
--	new_opp->dev_opp = dev_opp;
- 	new_opp->rate = freq;
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
-@@ -460,6 +459,7 @@ static int dev_pm_opp_add_dynamic(struct device *dev, unsigned long freq,
- 	}
+ #endif /* CONFIG_PM_SLEEP */
  
- list_add:
-+	new_opp->dev_opp = dev_opp;
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
+-#ifdef CONFIG_PM_RUNTIME
+-
+ static int sdev_runtime_suspend(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+@@ -332,14 +330,6 @@ void scsi_autopm_put_host(struct Scsi_Host *shost)
+ 	pm_runtime_put_sync(&shost->shost_gendev);
+ }
  
--- 
-2.2.0
+-#else
+-
+-#define scsi_runtime_suspend	NULL
+-#define scsi_runtime_resume	NULL
+-#define scsi_runtime_idle	NULL
+-
+-#endif /* CONFIG_PM_RUNTIME */
+-
+ const struct dev_pm_ops scsi_bus_pm_ops = {
+ 	.prepare =		scsi_bus_prepare,
+ 	.suspend =		scsi_bus_suspend,
 
+Thanks,
+Aaron
