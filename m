@@ -1,31 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/26] thermal: cpu_cooling: Fixes and cleanups
-Date: Tue, 9 Dec 2014 07:17:27 +0530
-Message-ID: <CAKohpon0YdJUgF1gBoCDo+jULtB-f5QYgt1H9vX9NeEZ9Y+68g@mail.gmail.com>
-References: <cover.1417664938.git.viresh.kumar@linaro.org>
-	<20141208200150.GA13589@developer>
+Subject: Re: [RFC PATCH v6 6/9] thermal: cpu_cooling: implement the power
+ cooling device API
+Date: Tue, 9 Dec 2014 07:29:39 +0530
+Message-ID: <CAKohpomy7=v_qE3B_+hhwdUE8MCJkV7gzmPpUOb==t1BuZAnAA@mail.gmail.com>
+References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+	<1417806260-9264-7-git-send-email-javi.merino@arm.com>
+	<CAOh2x==BKyS08th2d4r0Q2UGqhzAwj6sqOgFsH6J0pWup+OU_A@mail.gmail.com>
+	<20141208125033.GB2980@e104805>
+	<CAKohpokM_8Qm5YH0Xb=n95bP94Qreqpcd1fAyCD2W5u9Pd=ndg@mail.gmail.com>
+	<20141208142217.GA1831@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:43146 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755469AbaLIBr2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Dec 2014 20:47:28 -0500
-Received: by mail-ob0-f176.google.com with SMTP id vb8so4591544obc.21
-        for <linux-pm@vger.kernel.org>; Mon, 08 Dec 2014 17:47:27 -0800 (PST)
-In-Reply-To: <20141208200150.GA13589@developer>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141208142217.GA1831@e104805>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Javi Merino <javi.merino@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Hongbo Zhang <hongbo.zhang@linaro.com>, Kyungmin Park <kyungmin.park@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On 9 December 2014 at 01:31, Eduardo Valentin <edubezval@gmail.com> wrote:
-> The series is good to me. The comments in the list regarding kerneldoc I
-> ammended myself. I also tested them and could not spot any problems. For
-> this reason, I will be attempting to send this series in a second round
-> for 3.19.
+On 8 December 2014 at 19:52, Javi Merino <javi.merino@arm.com> wrote:
+> Ok, changed it into:
 >
-> However, this series depend on your rework in cpufreq side. Is that
-> going in for 3.19?
+>         cpu = cpumask_any(&cpufreq_device->allowed_cpus);
+>         dev = get_cpu_device(cpu);
+>         if (!dev) {
+>                 dev_warn(&cpufreq_device->cool_dev->device,
+>                         "No cpu device for cpu %d\n", cpu);
+>                 ret = -EINVAL;
+>                 goto unlock;
+>         }
+>
+>         num_opps = dev_pm_opp_get_opp_count(dev);
+>         if (num_opps <= 0) {
+>                 ret = (num_opps < 0)? num_opps : -EINVAL;
+>                 goto unlock;
+>         }
 
-Yes it will. https://lkml.org/lkml/2014/12/8/704
+And this might not work. This is what I said in the first reply.
+
+So, a bit lengthy reply now :)
+
+Every cpu has a device struct associated with it. When cpufreq
+core initializes drivers, they ask for mapping (initializing) the opps.
+At that point we pass policy->cpu to opp core. OPP core doesn't
+know which cores share clock line (I am trying to solve that [1]) and
+so it just initializes the OPPs for policy->cpu. Let us say it cpuX.
+
+Now there will be few more CPUs which are going to share clock
+line with it and hence will use the same OPPs. In thermal core,
+you got clip_cpus which is exactly the masks of all these CPUs
+sharing clock line.
+
+If the OPP layer is good enough, then above code can work. But
+because right now the OPPs are mapped to just cpuX, passing
+any other cpu from clip_cpus will fail as it doesn't have any associated
+OPPs.
+
+Now what I asked you is to use the CPU for which
+__cpufreq_cooling_register() is called. Normally we are calling
+__cpufreq_cooling_register() for the CPU for which OPPs are
+registered (but people might call it up for other CPUs as well)..
+
+So, using that cpu *might* have worked here.
+
+Now the earlier loop you used was good to get this information,
+but it wasn't consistent and so I objected.
+
+What you should do:
+
+- Create another routine to find the cpu for which OPPs are bound
+to
+-  And save the cpu_dev for it in the global struct for cpu_cooling
+- reuse it wherever required.
+
+--
+viresh
+
+[1] https://www.marc.info/?t=141769172100002&r=1&w=2
