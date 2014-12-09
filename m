@@ -1,78 +1,62 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: [PATCH] ACPI / Fan: Use bus id for INT3404 Fan
-Date: Tue, 09 Dec 2014 15:26:37 -0800
-Message-ID: <1418167597.740.30.camel@spandruv-desktop.jf.intel.com>
+Date: Tue, 9 Dec 2014 23:30:30 +0000
+Message-ID: <1418167806.740.33.camel@spandruv-desktop.jf.intel.com>
 References: <1418158385-5070-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 	 <5893682.k1Yk2RLk90@vostro.rjw.lan>
+	 <1418167597.740.30.camel@spandruv-desktop.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:24618 "EHLO mga09.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:3565 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753784AbaLIX1H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Dec 2014 18:27:07 -0500
-In-Reply-To: <5893682.k1Yk2RLk90@vostro.rjw.lan>
+	id S1754015AbaLIXcW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Dec 2014 18:32:22 -0500
+In-Reply-To: <1418167597.740.30.camel@spandruv-desktop.jf.intel.com>
+Content-Language: en-US
+Content-ID: <BA2791FD8B4872489E5F55AD5E6DA863@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-apci@vger.kernel.orgrui.zhang, edubezval@gmail.com, linux-pm@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-On Tue, 2014-12-09 at 22:43 +0100, Rafael J. Wysocki wrote: 
-> On Tuesday, December 09, 2014 12:53:05 PM Srinivas Pandruvada wrote:
-> > The ART table refers to actual bus id name for specifying relationship.
-> > Naming "Fan" is not enough as name in the ART table can change on every
-> > platform.
-> > 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/acpi/fan.c | 8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
-> > index caf9b76..c9213bc 100644
-> > --- a/drivers/acpi/fan.c
-> > +++ b/drivers/acpi/fan.c
-> > @@ -325,6 +325,7 @@ static int acpi_fan_probe(struct platform_device *pdev)
-> >  	struct thermal_cooling_device *cdev;
-> >  	struct acpi_fan *fan;
-> >  	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
-> > +	char *name;
-> >  
-> >  	fan = devm_kzalloc(&pdev->dev, sizeof(*fan), GFP_KERNEL);
-> >  	if (!fan) {
-> > @@ -346,7 +347,12 @@ static int acpi_fan_probe(struct platform_device *pdev)
-> >  		}
-> >  	}
-> >  
-> > -	cdev = thermal_cooling_device_register("Fan", device,
-> > +	if (!strncmp(pdev->name, "INT3404", strlen("INT3404")))
-> 
-> strcmp() should be sufficient here (we need to have a match to get to this point
-> anyway).
-The pdev->name comes up with instance number: INT3404:00, so only
-comparing "INT3404" as we can have multiple instances.
-
-> 
-> That said I'd compare with "PNP0C0B" and then use "Fan" if that's matching
-> or the device ID otherwise.
-I will submit another patch with this change.
-Here also it comes up with PNPC0B:instance number, so still have to
-compare only "PNPC0B"
-
-Thanks,
-Srinivas 
-> > +		name = acpi_device_bid(device);
-> > +	else
-> > +		name = "Fan";
-> > +
-> > +	cdev = thermal_cooling_device_register(name, device,
-> >  						&fan_cooling_ops);
-> >  	if (IS_ERR(cdev)) {
-> >  		result = PTR_ERR(cdev);
-> > 
-> 
-> And please CC ACPI patches to linux-acpi.
-> 
-
-
+Q29ycmVjdGVkIGVtYWlsIGFkZHJlc3MuDQpPbiBUdWUsIDIwMTQtMTItMDkgYXQgMTU6MjYgLTA4
+MDAsIFNyaW5pdmFzIFBhbmRydXZhZGEgd3JvdGU6IA0KPiBPbiBUdWUsIDIwMTQtMTItMDkgYXQg
+MjI6NDMgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiANCj4gPiBPbiBUdWVzZGF5LCBE
+ZWNlbWJlciAwOSwgMjAxNCAxMjo1MzowNSBQTSBTcmluaXZhcyBQYW5kcnV2YWRhIHdyb3RlOg0K
+PiA+ID4gVGhlIEFSVCB0YWJsZSByZWZlcnMgdG8gYWN0dWFsIGJ1cyBpZCBuYW1lIGZvciBzcGVj
+aWZ5aW5nIHJlbGF0aW9uc2hpcC4NCj4gPiA+IE5hbWluZyAiRmFuIiBpcyBub3QgZW5vdWdoIGFz
+IG5hbWUgaW4gdGhlIEFSVCB0YWJsZSBjYW4gY2hhbmdlIG9uIGV2ZXJ5DQo+ID4gPiBwbGF0Zm9y
+bS4NCj4gPiA+IA0KPiA+ID4gU2lnbmVkLW9mZi1ieTogU3Jpbml2YXMgUGFuZHJ1dmFkYSA8c3Jp
+bml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBkcml2
+ZXJzL2FjcGkvZmFuLmMgfCA4ICsrKysrKystDQo+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDcgaW5z
+ZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiA+ID4gDQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy9hY3BpL2Zhbi5jIGIvZHJpdmVycy9hY3BpL2Zhbi5jDQo+ID4gPiBpbmRleCBjYWY5Yjc2
+Li5jOTIxM2JjIDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJpdmVycy9hY3BpL2Zhbi5jDQo+ID4gPiAr
+KysgYi9kcml2ZXJzL2FjcGkvZmFuLmMNCj4gPiA+IEBAIC0zMjUsNiArMzI1LDcgQEAgc3RhdGlj
+IGludCBhY3BpX2Zhbl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ID4g
+IAlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqY2RldjsNCj4gPiA+ICAJc3RydWN0IGFj
+cGlfZmFuICpmYW47DQo+ID4gPiAgCXN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlID0gQUNQSV9D
+T01QQU5JT04oJnBkZXYtPmRldik7DQo+ID4gPiArCWNoYXIgKm5hbWU7DQo+ID4gPiAgDQo+ID4g
+PiAgCWZhbiA9IGRldm1fa3phbGxvYygmcGRldi0+ZGV2LCBzaXplb2YoKmZhbiksIEdGUF9LRVJO
+RUwpOw0KPiA+ID4gIAlpZiAoIWZhbikgew0KPiA+ID4gQEAgLTM0Niw3ICszNDcsMTIgQEAgc3Rh
+dGljIGludCBhY3BpX2Zhbl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+
+ID4gIAkJfQ0KPiA+ID4gIAl9DQo+ID4gPiAgDQo+ID4gPiAtCWNkZXYgPSB0aGVybWFsX2Nvb2xp
+bmdfZGV2aWNlX3JlZ2lzdGVyKCJGYW4iLCBkZXZpY2UsDQo+ID4gPiArCWlmICghc3RybmNtcChw
+ZGV2LT5uYW1lLCAiSU5UMzQwNCIsIHN0cmxlbigiSU5UMzQwNCIpKSkNCj4gPiANCj4gPiBzdHJj
+bXAoKSBzaG91bGQgYmUgc3VmZmljaWVudCBoZXJlICh3ZSBuZWVkIHRvIGhhdmUgYSBtYXRjaCB0
+byBnZXQgdG8gdGhpcyBwb2ludA0KPiA+IGFueXdheSkuDQo+IFRoZSBwZGV2LT5uYW1lIGNvbWVz
+IHVwIHdpdGggaW5zdGFuY2UgbnVtYmVyOiBJTlQzNDA0OjAwLCBzbyBvbmx5DQo+IGNvbXBhcmlu
+ZyAiSU5UMzQwNCIgYXMgd2UgY2FuIGhhdmUgbXVsdGlwbGUgaW5zdGFuY2VzLg0KPiANCj4gPiAN
+Cj4gPiBUaGF0IHNhaWQgSSdkIGNvbXBhcmUgd2l0aCAiUE5QMEMwQiIgYW5kIHRoZW4gdXNlICJG
+YW4iIGlmIHRoYXQncyBtYXRjaGluZw0KPiA+IG9yIHRoZSBkZXZpY2UgSUQgb3RoZXJ3aXNlLg0K
+PiBJIHdpbGwgc3VibWl0IGFub3RoZXIgcGF0Y2ggd2l0aCB0aGlzIGNoYW5nZS4NCj4gSGVyZSBh
+bHNvIGl0IGNvbWVzIHVwIHdpdGggUE5QQzBCOmluc3RhbmNlIG51bWJlciwgc28gc3RpbGwgaGF2
+ZSB0bw0KPiBjb21wYXJlIG9ubHkgIlBOUEMwQiINCj4gDQo+IFRoYW5rcywNCj4gU3Jpbml2YXMg
+DQo+ID4gPiArCQluYW1lID0gYWNwaV9kZXZpY2VfYmlkKGRldmljZSk7DQo+ID4gPiArCWVsc2UN
+Cj4gPiA+ICsJCW5hbWUgPSAiRmFuIjsNCj4gPiA+ICsNCj4gPiA+ICsJY2RldiA9IHRoZXJtYWxf
+Y29vbGluZ19kZXZpY2VfcmVnaXN0ZXIobmFtZSwgZGV2aWNlLA0KPiA+ID4gIAkJCQkJCSZmYW5f
+Y29vbGluZ19vcHMpOw0KPiA+ID4gIAlpZiAoSVNfRVJSKGNkZXYpKSB7DQo+ID4gPiAgCQlyZXN1
+bHQgPSBQVFJfRVJSKGNkZXYpOw0KPiA+ID4gDQo+ID4gDQo+ID4gQW5kIHBsZWFzZSBDQyBBQ1BJ
+IHBhdGNoZXMgdG8gbGludXgtYWNwaS4NCj4gPiANCj4gDQoNCg==
