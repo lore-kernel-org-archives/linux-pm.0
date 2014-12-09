@@ -1,113 +1,78 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [RESEND PATCH v5 3/5] acerhdf: Use bang-bang thermal governor
-Date: Thu, 4 Dec 2014 03:40:44 -0800
-Message-ID: <20141204114044.GB100190@vmdeb7>
-References: <1398561815-22033-1-git-send-email-peter@piie.net>
- <1417184452-11884-1-git-send-email-peter@piie.net>
- <1417184452-11884-4-git-send-email-peter@piie.net>
- <20141203090436.GC52608@vmdeb7>
- <cone.1417677032.220767.18692.1000@mups>
- <cone.1417677666.882029.18692.1000@mups>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] ACPI / Fan: Use bus id for INT3404 Fan
+Date: Tue, 09 Dec 2014 15:26:37 -0800
+Message-ID: <1418167597.740.30.camel@spandruv-desktop.jf.intel.com>
+References: <1418158385-5070-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <5893682.k1Yk2RLk90@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:52976 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbaLIW3p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Dec 2014 17:29:45 -0500
-Content-Disposition: inline
-In-Reply-To: <cone.1417677666.882029.18692.1000@mups>
+Received: from mga09.intel.com ([134.134.136.24]:24618 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753784AbaLIX1H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Dec 2014 18:27:07 -0500
+In-Reply-To: <5893682.k1Yk2RLk90@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Feuerer <peter@piie.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Andreas Mohr <andi@lisas.de>, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-apci@vger.kernel.orgrui.zhang, edubezval@gmail.com, linux-pm@vger.kernel.org
 
-On Thu, Dec 04, 2014 at 08:21:06AM +0100, Peter Feuerer wrote:
-> Hi again,
+On Tue, 2014-12-09 at 22:43 +0100, Rafael J. Wysocki wrote: 
+> On Tuesday, December 09, 2014 12:53:05 PM Srinivas Pandruvada wrote:
+> > The ART table refers to actual bus id name for specifying relationship.
+> > Naming "Fan" is not enough as name in the ART table can change on every
+> > platform.
+> > 
+> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  drivers/acpi/fan.c | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+> > index caf9b76..c9213bc 100644
+> > --- a/drivers/acpi/fan.c
+> > +++ b/drivers/acpi/fan.c
+> > @@ -325,6 +325,7 @@ static int acpi_fan_probe(struct platform_device *pdev)
+> >  	struct thermal_cooling_device *cdev;
+> >  	struct acpi_fan *fan;
+> >  	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
+> > +	char *name;
+> >  
+> >  	fan = devm_kzalloc(&pdev->dev, sizeof(*fan), GFP_KERNEL);
+> >  	if (!fan) {
+> > @@ -346,7 +347,12 @@ static int acpi_fan_probe(struct platform_device *pdev)
+> >  		}
+> >  	}
+> >  
+> > -	cdev = thermal_cooling_device_register("Fan", device,
+> > +	if (!strncmp(pdev->name, "INT3404", strlen("INT3404")))
 > 
-> Peter Feuerer writes:
+> strcmp() should be sufficient here (we need to have a match to get to this point
+> anyway).
+The pdev->name comes up with instance number: INT3404:00, so only
+comparing "INT3404" as we can have multiple instances.
+
 > 
-> >Hi Darren,
-> >
-> >thank you very much for your reply.
-> >
-> >
-> >Darren Hart writes:
-> >
-> >>On Fri, Nov 28, 2014 at 03:20:50PM +0100, Peter Feuerer wrote:
-> >>>acerhdf has been doing an on-off fan control using hysteresis by
-> >>>post-manipulating the outcome of thermal subsystem trip point handling.
-> >>>This patch enables acerhdf to use the bang-bang governor, which is
-> >>>intended for on-off controlled fans.
-> >>>
-> >>>Cc: platform-driver-x86@vger.kernel.org
-> >>>Cc: Darren Hart <dvhart@infradead.org>
-> >>>Cc: Andrew Morton <akpm@linux-foundation.org>
-> >>>CC: Zhang Rui <rui.zhang@intel.com>
-> >>>Cc: Andreas Mohr <andi@lisas.de>
-> >>>Cc: Javi Merino <javi.merino@arm.com>
-> >>>Acked-and-tested-by: Borislav Petkov <bp@suse.de>
-> >>>Signed-off-by: Peter Feuerer <peter@piie.net>
-> >>>---
-> >>> drivers/platform/x86/Kconfig   |  3 ++-
-> >>> drivers/platform/x86/acerhdf.c | 36 +++++++++++++++++++++++++++++++-----
-> >>> 2 files changed, 33 insertions(+), 6 deletions(-)
-> >>>
-> >>>diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-> >>>index a2eabe6..c173266 100644
-> >>>--- a/drivers/platform/x86/Kconfig
-> >>>+++ b/drivers/platform/x86/Kconfig
-> >>>@@ -38,7 +38,8 @@ config ACER_WMI
-> >>> config ACERHDF
-> >>> 	tristate "Acer Aspire One temperature and fan driver"
-> >>>-	depends on THERMAL && ACPI
-> >>>+	select THERMAL_GOV_BANG_BANG
-> >>
-> >>So we use select sparingly as it does implicit things.
-> >>
-> >>I checked the THERMAL_GOV_BANG_BANG Kconfig entry, and the help says acerhdf
-> >>already depends on it (which it doesn't appear to). Any particular reason to add
-> >>select here instead of adding it as a depends.
-> >>
-> >>Why did you drop THERMAL?
-> >
-> >I had it like this in my first version of patches:
-> >+ depends on THERMAL && ACPI && THERMAL_GOV_BANG_BANG
-> >
-> >But after some discussion with lkml community we ended up with the select
-> >line and dropped THERMAL dependency, as it is implied by
-> >THEMAL_GOV_BANG_BANG.  I'm not so experienced with Kconfig, so I must rely
-> >on the statements of the community in this case.
+> That said I'd compare with "PNP0C0B" and then use "Fan" if that's matching
+> or the device ID otherwise.
+I will submit another patch with this change.
+Here also it comes up with PNPC0B:instance number, so still have to
+compare only "PNPC0B"
+
+Thanks,
+Srinivas 
+> > +		name = acpi_device_bid(device);
+> > +	else
+> > +		name = "Fan";
+> > +
+> > +	cdev = thermal_cooling_device_register(name, device,
+> >  						&fan_cooling_ops);
+> >  	if (IS_ERR(cdev)) {
+> >  		result = PTR_ERR(cdev);
+> > 
 > 
-> Just found the link about this discussion I had with Rui and Boris:
-> http://linux-kernel.2935.n7.nabble.com/PATCH-0-4-acerhdf-thermal-adding-new-models-and-appropriate-governor-tp848572p908256.html
+> And please CC ACPI patches to linux-acpi.
 > 
 
-Rui,
 
-I see you said you agree with the approach to "select THERMAL_GOV_BANG_BANG",
-and I'm OK with that. But that doesn't ensure, as far as I can see, a
-sufficient set of Kconfig dependencies for ACERHDF as THERMAL_GOV_BANG_BANG
-doesn't in turn select THERMAL.
-
-While it's unlikely to get ACERHDF available without THERMAL enabled, it does
-look possible. Should this driver also select or depends on THERMAL?
-
-Maybe:
-
-depends on ACPI
-depends on THERMAL
-select THERMAL_GOV_BANG_BANG
-
-?
-
-> [...]
-> 
-> -- 
-> kind regards,
-> --peter;
-> 
-
--- 
-Darren Hart
-Intel Open Source Technology Center
