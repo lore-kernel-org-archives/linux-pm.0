@@ -1,105 +1,90 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: Fix cdev registration with THERMAL_NO_LIMIT on
- 64bit
-Date: Wed, 10 Dec 2014 10:42:44 -0400
-Message-ID: <20141210144242.GB3232@developer>
-References: <1418127721-1182-1-git-send-email-punit.agrawal@arm.com>
- <1418176657.12435.40.camel@rzhang1-toshiba>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v8 1/4] mfd: rt5033: Add Richtek RT5033 driver core.
+Date: Wed, 10 Dec 2014 15:16:59 +0000
+Message-ID: <20141210151659.GE23481@x1>
+References: <1418126634-4781-1-git-send-email-beomho.seo@samsung.com>
+ <1418126634-4781-2-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lEGEL1/lMxI0MVQ2"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f52.google.com ([209.85.216.52]:37521 "EHLO
-	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756341AbaLJOmw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Dec 2014 09:42:52 -0500
+Received: from mail-qg0-f43.google.com ([209.85.192.43]:58586 "EHLO
+	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757293AbaLJPRK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Dec 2014 10:17:10 -0500
+Received: by mail-qg0-f43.google.com with SMTP id i50so2228153qgf.16
+        for <linux-pm@vger.kernel.org>; Wed, 10 Dec 2014 07:17:09 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1418176657.12435.40.camel@rzhang1-toshiba>
+In-Reply-To: <1418126634-4781-2-git-send-email-beomho.seo@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
+On Tue, 09 Dec 2014, Beomho Seo wrote:
 
---lEGEL1/lMxI0MVQ2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Dec 10, 2014 at 09:57:37AM +0800, Zhang Rui wrote:
-> On Tue, 2014-12-09 at 12:22 +0000, Punit Agrawal wrote:
-> > The size of unsigned long varies between 32 and 64 bit systems while
-> > the size of phandle arguments is always 32 bits per parameter.
-> >=20
-> > On 64-bit systems, cooling devices registered via of-thermal apis fail
-> > to bind when the min/max cooling state is specified as
-> > THERMAL_NO_LIMIT (-1UL) as there is a mis-match between the value read
-> > from the device tree (32bit) and the pre-processor define (64bit).
-> >=20
-> > As we're unlikely to need cooling states larger than 32 bits, and for
-> > consistency with the size of phandle arguments, explicitly limit
-> > THERMAL_NO_LIMIT to 32 bits.
-> >=20
-> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > ---
-> >  include/dt-bindings/thermal/thermal.h | 2 +-
-> >  include/linux/thermal.h               | 2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/include/dt-bindings/thermal/thermal.h b/include/dt-binding=
-s/thermal/thermal.h
-> > index 59822a9..b5e6b00 100644
-> > --- a/include/dt-bindings/thermal/thermal.h
-> > +++ b/include/dt-bindings/thermal/thermal.h
-> > @@ -11,7 +11,7 @@
-> >  #define _DT_BINDINGS_THERMAL_THERMAL_H
-> > =20
-> >  /* On cooling devices upper and lower limits */
-> > -#define THERMAL_NO_LIMIT		(-1UL)
-> > +#define THERMAL_NO_LIMIT		(~0)
-> > =20
-> I'm okay with the other change, so Eduardo, what do you think of this?
-
-Adding to my fixes branch.
-
-
-Prunit, thanks for spotting and fixing this issue.
-
+> This patch adds a new driver for Richtek RT5033 driver.
+> RT5033 is a Multifunction device which includes battery charger, fuel=
+ gauge,
+> flash LED current source, LDO and synchronous Buck converter. It is i=
+nterfaced
+> to host controller using I2C interface.
 >=20
-> thanks,
-> rui
-> >  #endif
-> > =20
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index ef90838..005586f 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -38,7 +38,7 @@
-> >  #define THERMAL_CSTATE_INVALID -1UL
-> > =20
-> >  /* No upper/lower limit requirement */
-> > -#define THERMAL_NO_LIMIT	THERMAL_CSTATE_INVALID
-> > +#define THERMAL_NO_LIMIT	((u32)~0)
-> > =20
-> >  /* Unit conversion macros */
-> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >=3D 0) ?	\
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> Cc: Lee Jones <lee.jone@linaro.org>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+> Changes in v8
+> - Add description of hardware.
+> - Move structure.
 >=20
+> Changes in v7
+> - Use small description.
+> - Change some names for a variable.
+> - Revise of_device_id struct style.
 >=20
+> Changes in v6
+> - Fix white space issue in mfd cell struct.
+>=20
+> Changes in v5
+> - Change possible built as a module.
+> - Revise rt5033_dev mfd cell entry.
+> - Fix incorrect typo.
+> - Add module alias.
+>=20
+> Changes in v4
+> - none.
+>=20
+> Changes in v3
+> - Correct sentence errors.
+> - Add author information the top of each drivers.
+> - Remove unnecessary pre-initialise, struct member(rt5033->i2c) and b=
+link.
+> - Change some return check.
+> - Use bool and of_match_ptr().
+>=20
+> Changes in v2
+> - Remove volatile_reg callback. Because this driver not in use regmap=
+ cache.
+> - Revmoe unnecessary subnode of_compatible.
+> - Add define for set_high impedance mode of charger.
+> ---
+>  drivers/mfd/Kconfig                |   12 ++
+>  drivers/mfd/Makefile               |    1 +
+>  drivers/mfd/rt5033.c               |  142 ++++++++++++++++++++
+>  include/linux/mfd/rt5033-private.h |  260 ++++++++++++++++++++++++++=
+++++++++++
+>  include/linux/mfd/rt5033.h         |   62 +++++++++
+>  5 files changed, 477 insertions(+)
+>  create mode 100644 drivers/mfd/rt5033.c
+>  create mode 100644 include/linux/mfd/rt5033-private.h
+>  create mode 100644 include/linux/mfd/rt5033.h
 
---lEGEL1/lMxI0MVQ2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Applied for v3.20, thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUiFvbAAoJEMLUO4d9pOJWghoH/Rgcf9dQtqBNMU6E8tYBG0Ar
-G1fDzp3zKTCJAT5BKmziermLifCgD1JybWZ5S9VVPTGB88+B2fis/ZBjGfw2l+Ya
-Owk9uhPHgF5qvX3jqeEb/JdwhC785AREk2+qdR8QRUc7eM1EROEtxoSRsB+sxRjs
-ZluAdmgRDVCojLcH4g40kcROkuwQAjSZRffahmgBTBIlA6YaHj3VxBvtYjCWB5yb
-8HhTMWdjBCd9R3bTzgcoGcPDQZKt1IiwpA+t05lJaV/pi/tBD4D3+XX3Kr/osipm
-1xiHBxIC/TGYrxa0K36+n8r3vL1eeAw6CwOGP1W0BjL7yZCmiL8oUicXbh1GnXc=
-=Vhxu
------END PGP SIGNATURE-----
-
---lEGEL1/lMxI0MVQ2--
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
