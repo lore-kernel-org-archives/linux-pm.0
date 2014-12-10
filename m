@@ -1,193 +1,71 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [Update][PATCH] SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 10 Dec 2014 09:43:36 +0800
-Message-ID: <5487A548.6070800@intel.com>
-References: <3237237.IIIiULdqDt@vostro.rjw.lan> <3039454.iyzHXUp3Uj@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2 2/2] Thermal/int340x: Handle properly the case when
+ _trt or _art acpi entry is missing
+Date: Wed, 10 Dec 2014 09:50:44 +0800
+Message-ID: <1418176244.12435.38.camel@rzhang1-toshiba>
+References: <1418157243-6849-1-git-send-email-ilkka.koskinen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:3780 "EHLO mga11.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:26186 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752370AbaLJBnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Dec 2014 20:43:47 -0500
-In-Reply-To: <3039454.iyzHXUp3Uj@vostro.rjw.lan>
+	id S1755312AbaLJBus (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Dec 2014 20:50:48 -0500
+In-Reply-To: <1418157243-6849-1-git-send-email-ilkka.koskinen@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-scsi@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "James E.J. Bottomley" <JBottomley@parallels.com>, Vinayak Holikatti <vinholikatti@gmail.com>
+To: Ilkka Koskinen <ilkka.koskinen@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, jacob.jun.pan@linux.intel.com
 
-On 12/10/2014 05:47 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+On Tue, 2014-12-09 at 12:34 -0800, Ilkka Koskinen wrote:
+> If either of the entries was missing, the driver tried to free memory
+> using uninitialized pointer. In addition, it was dereferencing null
+> pointer.
 > 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/scsi/ and in include/scsi/scsi_device.h.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Ilkka Koskinen <ilkka.koskinen@linux.intel.com>
+> Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Reviewed-by: Aaron Lu <aaron.lu@intel.com>
+applied.
 
-Thanks,
-Aaron
-
+thanks,
+rui
 > ---
+>  drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
-> 
-> ---
->  drivers/scsi/scsi_pm.c           |   10 ----------
->  drivers/scsi/scsi_priv.h         |    5 ++---
->  drivers/scsi/ufs/ufshcd-pci.c    |   11 ++++-------
->  drivers/scsi/ufs/ufshcd-pltfrm.c |   11 ++++-------
->  include/scsi/scsi_device.h       |    4 ++--
->  5 files changed, 12 insertions(+), 29 deletions(-)
-> 
-> Index: linux-pm/include/scsi/scsi_device.h
-> ===================================================================
-> --- linux-pm.orig/include/scsi/scsi_device.h
-> +++ linux-pm/include/scsi/scsi_device.h
-> @@ -440,13 +440,13 @@ static inline int scsi_execute_req(struc
->  extern void sdev_disable_disk_events(struct scsi_device *sdev);
->  extern void sdev_enable_disk_events(struct scsi_device *sdev);
+> diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> index e4e61b3..231cabc 100644
+> --- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> +++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+> @@ -82,7 +82,7 @@ int acpi_parse_trt(acpi_handle handle, int *trt_count, struct trt **trtp,
+>  	struct acpi_buffer trt_format = { sizeof("RRNNNNNN"), "RRNNNNNN" };
 >  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  extern int scsi_autopm_get_device(struct scsi_device *);
->  extern void scsi_autopm_put_device(struct scsi_device *);
->  #else
->  static inline int scsi_autopm_get_device(struct scsi_device *d) { return 0; }
->  static inline void scsi_autopm_put_device(struct scsi_device *d) {}
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
+>  	if (!acpi_has_method(handle, "_TRT"))
+> -		return 0;
+> +		return -ENODEV;
 >  
->  static inline int __must_check scsi_device_reprobe(struct scsi_device *sdev)
->  {
-> Index: linux-pm/drivers/scsi/scsi_priv.h
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/scsi_priv.h
-> +++ linux-pm/drivers/scsi/scsi_priv.h
-> @@ -157,8 +157,7 @@ static inline void scsi_netlink_exit(voi
->  /* scsi_pm.c */
->  #ifdef CONFIG_PM
->  extern const struct dev_pm_ops scsi_bus_pm_ops;
-> -#endif
-> -#ifdef CONFIG_PM_RUNTIME
-> +
->  extern void scsi_autopm_get_target(struct scsi_target *);
->  extern void scsi_autopm_put_target(struct scsi_target *);
->  extern int scsi_autopm_get_host(struct Scsi_Host *);
-> @@ -168,7 +167,7 @@ static inline void scsi_autopm_get_targe
->  static inline void scsi_autopm_put_target(struct scsi_target *t) {}
->  static inline int scsi_autopm_get_host(struct Scsi_Host *h) { return 0; }
->  static inline void scsi_autopm_put_host(struct Scsi_Host *h) {}
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
+>  	status = acpi_evaluate_object(handle, "_TRT", NULL, &buffer);
+>  	if (ACPI_FAILURE(status))
+> @@ -167,7 +167,7 @@ int acpi_parse_art(acpi_handle handle, int *art_count, struct art **artp,
+>  		sizeof("RRNNNNNNNNNNN"), "RRNNNNNNNNNNN" };
 >  
->  extern struct async_domain scsi_sd_pm_domain;
->  extern struct async_domain scsi_sd_probe_domain;
-> Index: linux-pm/drivers/scsi/scsi_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/scsi_pm.c
-> +++ linux-pm/drivers/scsi/scsi_pm.c
-> @@ -213,8 +213,6 @@ static int scsi_bus_restore(struct devic
+>  	if (!acpi_has_method(handle, "_ART"))
+> -		return 0;
+> +		return -ENODEV;
 >  
->  #endif /* CONFIG_PM_SLEEP */
+>  	status = acpi_evaluate_object(handle, "_ART", NULL, &buffer);
+>  	if (ACPI_FAILURE(status))
+> @@ -321,8 +321,8 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
+>  	unsigned long length = 0;
+>  	int count = 0;
+>  	char __user *arg = (void __user *)__arg;
+> -	struct trt *trts;
+> -	struct art *arts;
+> +	struct trt *trts = NULL;
+> +	struct art *arts = NULL;
 >  
-> -#ifdef CONFIG_PM_RUNTIME
-> -
->  static int sdev_runtime_suspend(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> @@ -332,14 +330,6 @@ void scsi_autopm_put_host(struct Scsi_Ho
->  	pm_runtime_put_sync(&shost->shost_gendev);
->  }
->  
-> -#else
-> -
-> -#define scsi_runtime_suspend	NULL
-> -#define scsi_runtime_resume	NULL
-> -#define scsi_runtime_idle	NULL
-> -
-> -#endif /* CONFIG_PM_RUNTIME */
-> -
->  const struct dev_pm_ops scsi_bus_pm_ops = {
->  	.prepare =		scsi_bus_prepare,
->  	.suspend =		scsi_bus_suspend,
-> Index: linux-pm/drivers/scsi/ufs/ufshcd-pci.c
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/ufs/ufshcd-pci.c
-> +++ linux-pm/drivers/scsi/ufs/ufshcd-pci.c
-> @@ -62,12 +62,7 @@ static int ufshcd_pci_resume(struct devi
->  {
->  	return ufshcd_system_resume(dev_get_drvdata(dev));
->  }
-> -#else
-> -#define ufshcd_pci_suspend	NULL
-> -#define ufshcd_pci_resume	NULL
-> -#endif /* CONFIG_PM */
->  
-> -#ifdef CONFIG_PM_RUNTIME
->  static int ufshcd_pci_runtime_suspend(struct device *dev)
->  {
->  	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
-> @@ -80,11 +75,13 @@ static int ufshcd_pci_runtime_idle(struc
->  {
->  	return ufshcd_runtime_idle(dev_get_drvdata(dev));
->  }
-> -#else /* !CONFIG_PM_RUNTIME */
-> +#else /* !CONFIG_PM */
-> +#define ufshcd_pci_suspend	NULL
-> +#define ufshcd_pci_resume	NULL
->  #define ufshcd_pci_runtime_suspend	NULL
->  #define ufshcd_pci_runtime_resume	NULL
->  #define ufshcd_pci_runtime_idle	NULL
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
->  
->  /**
->   * ufshcd_pci_shutdown - main function to put the controller in reset state
-> Index: linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/ufs/ufshcd-pltfrm.c
-> +++ linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
-> @@ -266,12 +266,7 @@ static int ufshcd_pltfrm_resume(struct d
->  {
->  	return ufshcd_system_resume(dev_get_drvdata(dev));
->  }
-> -#else
-> -#define ufshcd_pltfrm_suspend	NULL
-> -#define ufshcd_pltfrm_resume	NULL
-> -#endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
->  static int ufshcd_pltfrm_runtime_suspend(struct device *dev)
->  {
->  	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
-> @@ -284,11 +279,13 @@ static int ufshcd_pltfrm_runtime_idle(st
->  {
->  	return ufshcd_runtime_idle(dev_get_drvdata(dev));
->  }
-> -#else /* !CONFIG_PM_RUNTIME */
-> +#else /* !CONFIG_PM */
-> +#define ufshcd_pltfrm_suspend	NULL
-> +#define ufshcd_pltfrm_resume	NULL
->  #define ufshcd_pltfrm_runtime_suspend	NULL
->  #define ufshcd_pltfrm_runtime_resume	NULL
->  #define ufshcd_pltfrm_runtime_idle	NULL
-> -#endif /* CONFIG_PM_RUNTIME */
-> +#endif /* CONFIG_PM */
->  
->  static void ufshcd_pltfrm_shutdown(struct platform_device *pdev)
->  {
-> 
+>  	switch (cmd) {
+>  	case ACPI_THERMAL_GET_TRT_COUNT:
+
 
