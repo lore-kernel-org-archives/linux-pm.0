@@ -1,39 +1,40 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 14/17] thermal: exynos: Remove exynos_thermal_common.[c|h]
- files
-Date: Wed, 10 Dec 2014 13:09:53 +0100
-Message-ID: <1418213396-743-15-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v2 15/17] thermal: exynos: Remove exynos_tmu_data.c file
+Date: Wed, 10 Dec 2014 13:09:54 +0100
+Message-ID: <1418213396-743-16-git-send-email-l.majewski@samsung.com>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1418213396-743-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:61460 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbaLJMOZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Dec 2014 07:14:25 -0500
 In-reply-to: <1418213396-743-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-After defining all necessary Exynos data in the device tree and heavy
-reusage of the of-thermal.c those files can be removed.
+Data already present in the exynos_tmu_data.c file has been moved to the
+appropriate device tree files.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
 - None
 ---
- drivers/thermal/samsung/exynos_thermal_common.c | 445 ------------------------
- drivers/thermal/samsung/exynos_thermal_common.h | 106 ------
- 2 files changed, 551 deletions(-)
- delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
- delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+ drivers/thermal/samsung/exynos_tmu_data.c | 228 ------------------------------
+ 1 file changed, 228 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
 
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
 deleted file mode 100644
-index 00aa688..0000000
---- a/drivers/thermal/samsung/exynos_thermal_common.c
+index a993f3d..0000000
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ /dev/null
-@@ -1,445 +0,0 @@
+@@ -1,228 +0,0 @@
 -/*
-- * exynos_thermal_common.c - Samsung EXYNOS common thermal file
+- * exynos_tmu_data.c - Samsung EXYNOS tmu data file
 - *
 - *  Copyright (C) 2013 Samsung Electronics
 - *  Amit Daniel Kachhap <amit.daniel@samsung.com>
@@ -53,541 +54,213 @@ index 00aa688..0000000
 - * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 - *
 - */
--
--#include <linux/cpu_cooling.h>
--#include <linux/err.h>
--#include <linux/slab.h>
--#include <linux/thermal.h>
 -
 -#include "exynos_thermal_common.h"
+-#include "exynos_tmu.h"
 -
--struct exynos_thermal_zone {
--	enum thermal_device_mode mode;
--	struct thermal_zone_device *therm_dev;
--	struct thermal_cooling_device *cool_dev[MAX_COOLING_DEVICE];
--	unsigned int cool_dev_size;
--	struct platform_device *exynos4_dev;
--	struct thermal_sensor_conf *sensor_conf;
--	bool bind;
+-struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-		.threshold = 80,
+-		.trigger_levels[0] = 5,
+-		.trigger_levels[1] = 20,
+-		.trigger_levels[2] = 30,
+-		.trigger_enable[0] = true,
+-		.trigger_enable[1] = true,
+-		.trigger_enable[2] = true,
+-		.trigger_enable[3] = false,
+-		.trigger_type[0] = THROTTLE_ACTIVE,
+-		.trigger_type[1] = THROTTLE_ACTIVE,
+-		.trigger_type[2] = SW_TRIP,
+-		.max_trigger_level = 4,
+-		.non_hw_trigger_levels = 3,
+-		.gain = 15,
+-		.reference_voltage = 7,
+-		.cal_type = TYPE_ONE_POINT_TRIMMING,
+-		.min_efuse_value = 40,
+-		.max_efuse_value = 100,
+-		.first_point_trim = 25,
+-		.second_point_trim = 85,
+-		.default_temp_offset = 50,
+-		.type = SOC_ARCH_EXYNOS4210,
+-		},
+-	},
+-	.tmu_count = 1,
 -};
 -
--/* Get mode callback functions for thermal zone */
--static int exynos_get_mode(struct thermal_zone_device *thermal,
--			enum thermal_device_mode *mode)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	if (th_zone)
--		*mode = th_zone->mode;
--	return 0;
--}
+-#define EXYNOS3250_TMU_DATA \
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 70, \
+-	.trigger_levels[1] = 95, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_TWO_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50
 -
--/* Set mode callback functions for thermal zone */
--static int exynos_set_mode(struct thermal_zone_device *thermal,
--			enum thermal_device_mode mode)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	if (!th_zone) {
--		dev_err(&thermal->device,
--			"thermal zone not registered\n");
--		return 0;
--	}
--
--	mutex_lock(&thermal->lock);
--
--	if (mode == THERMAL_DEVICE_ENABLED &&
--		!th_zone->sensor_conf->trip_data.trigger_falling)
--		thermal->polling_delay = IDLE_INTERVAL;
--	else
--		thermal->polling_delay = 0;
--
--	mutex_unlock(&thermal->lock);
--
--	th_zone->mode = mode;
--	thermal_zone_device_update(thermal);
--	dev_dbg(th_zone->sensor_conf->dev,
--		"thermal polling set for duration=%d msec\n",
--		thermal->polling_delay);
--	return 0;
--}
--
--
--/* Get trip type callback functions for thermal zone */
--static int exynos_get_trip_type(struct thermal_zone_device *thermal, int trip,
--				 enum thermal_trip_type *type)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
--	int trip_type;
--
--	if (trip < 0 || trip >= max_trip)
--		return -EINVAL;
--
--	trip_type = th_zone->sensor_conf->trip_data.trip_type[trip];
--
--	if (trip_type == SW_TRIP)
--		*type = THERMAL_TRIP_CRITICAL;
--	else if (trip_type == THROTTLE_ACTIVE)
--		*type = THERMAL_TRIP_ACTIVE;
--	else if (trip_type == THROTTLE_PASSIVE)
--		*type = THERMAL_TRIP_PASSIVE;
--	else
--		return -EINVAL;
--
--	return 0;
--}
--
--/* Get trip temperature callback functions for thermal zone */
--static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
--				unsigned long *temp)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
--
--	if (trip < 0 || trip >= max_trip)
--		return -EINVAL;
--
--	*temp = th_zone->sensor_conf->trip_data.trip_val[trip];
--	/* convert the temperature into millicelsius */
--	*temp = *temp * MCELSIUS;
--
--	return 0;
--}
--
--/* Get critical temperature callback functions for thermal zone */
--static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
--				unsigned long *temp)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
--	/* Get the temp of highest trip*/
--	return exynos_get_trip_temp(thermal, max_trip - 1, temp);
--}
--
--/* Bind callback functions for thermal zone */
--static int exynos_bind(struct thermal_zone_device *thermal,
--			struct thermal_cooling_device *cdev)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	struct thermal_sensor_conf *data = th_zone->sensor_conf;
--	struct device_node *child, *gchild, *np;
--	struct of_phandle_args cooling_spec;
--	unsigned long max, state = 0;
--	int ret = 0, i = 0;
--
--	/*
--	 * Below code is necessary to skip binding when cpufreq's
--	 * frequency table is not yet initialized.
--	 */
--	cdev->ops->get_max_state(cdev, &state);
--	if (!state && !th_zone->cool_dev_size) {
--		th_zone->cool_dev_size = 1;
--		th_zone->cool_dev[0] = cdev;
--		th_zone->bind = false;
--		return 0;
--	}
--
--	np = of_find_node_by_path("/thermal-zones/cpu-thermal");
--	if (!np) {
--		pr_err("failed to find thmerla-zones/cpu-thermal node\n");
--		return -ENOENT;
--	}
--
--	child = of_get_child_by_name(np, "cooling-maps");
--
--	for_each_child_of_node(child, gchild) {
--		ret = of_parse_phandle_with_args(gchild, "cooling-device",
--						 "#cooling-cells",
--						 0, &cooling_spec);
--		if (ret < 0) {
--			pr_err("missing cooling_device property\n");
--			goto end;
--		}
--
--		if (cooling_spec.args_count < 2) {
--			ret = -EINVAL;
--			goto end;
--		}
--
--		max = cooling_spec.args[0];
--		if (thermal_zone_bind_cooling_device(thermal, i, cdev,
--						     max, 0)) {
--			dev_err(data->dev,
--				"thermal error unbinding cdev inst=%d\n", i);
--
--			ret = -EINVAL;
--			goto end;
--		}
--		i++;
--	}
--	th_zone->bind = true;
--end:
--	of_node_put(child);
--	of_node_put(np);
--
--	return ret;
--}
--
--/* Unbind callback functions for thermal zone */
--static int exynos_unbind(struct thermal_zone_device *thermal,
--			struct thermal_cooling_device *cdev)
--{
--	int ret = 0, i;
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	struct thermal_sensor_conf *data = th_zone->sensor_conf;
--	struct device_node *child, *gchild, *np;
--
--	if (th_zone->bind == false || !th_zone->cool_dev_size)
--		return 0;
--
--	/* find the cooling device registered*/
--	for (i = 0; i < th_zone->cool_dev_size; i++)
--		if (cdev == th_zone->cool_dev[i])
--			break;
--
--	/* No matching cooling device */
--	if (i == th_zone->cool_dev_size)
--		return 0;
--
--	np = of_find_node_by_path("/thermal-zones/cpu-thermal");
--	if (!np) {
--		pr_err("failed to find thmerla-zones/cpu-thermal node\n");
--		return -ENOENT;
--	}
--
--	child = of_get_child_by_name(np, "cooling-maps");
--
--	i = 0;
--	for_each_child_of_node(child, gchild) {
--		if (thermal_zone_unbind_cooling_device(thermal, i,
--						       cdev)) {
--			dev_err(data->dev,
--				"error unbinding cdev inst=%d\n", i);
--			ret = -EINVAL;
--			goto end;
--		}
--		i++;
--	}
--	th_zone->bind = false;
--end:
--	of_node_put(child);
--	of_node_put(np);
--
--	return ret;
--}
--
--/* Get temperature callback functions for thermal zone */
--static int exynos_get_temp(struct thermal_zone_device *thermal,
--			unsigned long *temp)
--{
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--	void *data;
--
--	if (!th_zone->sensor_conf) {
--		dev_err(&thermal->device,
--			"Temperature sensor not initialised\n");
--		return -EINVAL;
--	}
--	data = th_zone->sensor_conf->driver_data;
--	*temp = th_zone->sensor_conf->read_temperature(data);
--	/* convert the temperature into millicelsius */
--	*temp = *temp * MCELSIUS;
--	return 0;
--}
--
--/* Get temperature callback functions for thermal zone */
--static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
--						unsigned long temp)
--{
--	void *data;
--	int ret = -EINVAL;
--	struct exynos_thermal_zone *th_zone = thermal->devdata;
--
--	if (!th_zone->sensor_conf) {
--		dev_err(&thermal->device,
--			"Temperature sensor not initialised\n");
--		return -EINVAL;
--	}
--	data = th_zone->sensor_conf->driver_data;
--	if (th_zone->sensor_conf->write_emul_temp)
--		ret = th_zone->sensor_conf->write_emul_temp(data, temp);
--	return ret;
--}
--
--/* Get the temperature trend */
--static int exynos_get_trend(struct thermal_zone_device *thermal,
--			int trip, enum thermal_trend *trend)
--{
--	int ret;
--	unsigned long trip_temp;
--
--	ret = exynos_get_trip_temp(thermal, trip, &trip_temp);
--	if (ret < 0)
--		return ret;
--
--	if (thermal->temperature >= trip_temp)
--		*trend = THERMAL_TREND_RAISE_FULL;
--	else
--		*trend = THERMAL_TREND_DROP_FULL;
--
--	return 0;
--}
--/* Operation callback functions for thermal zone */
--static struct thermal_zone_device_ops exynos_dev_ops = {
--	.bind = exynos_bind,
--	.unbind = exynos_unbind,
--	.get_temp = exynos_get_temp,
--	.set_emul_temp = exynos_set_emul_temp,
--	.get_trend = exynos_get_trend,
--	.get_mode = exynos_get_mode,
--	.set_mode = exynos_set_mode,
--	.get_trip_type = exynos_get_trip_type,
--	.get_trip_temp = exynos_get_trip_temp,
--	.get_crit_temp = exynos_get_crit_temp,
+-struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS3250_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS3250,
+-		},
+-	},
+-	.tmu_count = 1,
 -};
 -
--/*
-- * This function may be called from interrupt based temperature sensor
-- * when threshold is changed.
-- */
--void exynos_report_trigger(struct thermal_sensor_conf *conf)
--{
--	unsigned int i;
--	char data[10];
--	char *envp[] = { data, NULL };
--	struct exynos_thermal_zone *th_zone;
+-#define EXYNOS4412_TMU_DATA \
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 70, \
+-	.trigger_levels[1] = 95, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50
 -
--	if (!conf || !conf->pzone_data) {
--		pr_err("Invalid temperature sensor configuration data\n");
--		return;
--	}
--
--	th_zone = conf->pzone_data;
--
--	if (th_zone->bind == false) {
--		for (i = 0; i < th_zone->cool_dev_size; i++) {
--			if (!th_zone->cool_dev[i])
--				continue;
--			exynos_bind(th_zone->therm_dev,
--					th_zone->cool_dev[i]);
--		}
--	}
--
--	thermal_zone_device_update(th_zone->therm_dev);
--
--	mutex_lock(&th_zone->therm_dev->lock);
--	/* Find the level for which trip happened */
--	for (i = 0; i < th_zone->sensor_conf->trip_data.trip_count; i++) {
--		if (th_zone->therm_dev->last_temperature <
--			th_zone->sensor_conf->trip_data.trip_val[i] * MCELSIUS)
--			break;
--	}
--
--	if (th_zone->mode == THERMAL_DEVICE_ENABLED &&
--		!th_zone->sensor_conf->trip_data.trigger_falling) {
--		if (i > 0)
--			th_zone->therm_dev->polling_delay = ACTIVE_INTERVAL;
--		else
--			th_zone->therm_dev->polling_delay = IDLE_INTERVAL;
--	}
--
--	snprintf(data, sizeof(data), "%u", i);
--	kobject_uevent_env(&th_zone->therm_dev->device.kobj, KOBJ_CHANGE, envp);
--	mutex_unlock(&th_zone->therm_dev->lock);
--}
--
--/* Register with the in-kernel thermal management */
--int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
--{
--	int ret;
--	struct exynos_thermal_zone *th_zone;
--
--	if (!sensor_conf || !sensor_conf->read_temperature) {
--		pr_err("Temperature sensor not initialised\n");
--		return -EINVAL;
--	}
--
--	th_zone = devm_kzalloc(sensor_conf->dev,
--				sizeof(struct exynos_thermal_zone), GFP_KERNEL);
--	if (!th_zone)
--		return -ENOMEM;
--
--	th_zone->sensor_conf = sensor_conf;
--	/*
--	 * TODO: 1) Handle multiple cooling devices in a thermal zone
--	 *	 2) Add a flag/name in cooling info to map to specific
--	 *	 sensor
--	 */
--	if (sensor_conf->cooling_data.freq_clip_count > 0) {
--		th_zone->cool_dev[th_zone->cool_dev_size] =
--				cpufreq_cooling_register(cpu_present_mask);
--		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
--			ret = PTR_ERR(th_zone->cool_dev[th_zone->cool_dev_size]);
--			if (ret != -EPROBE_DEFER)
--				dev_err(sensor_conf->dev,
--					"Failed to register cpufreq cooling device: %d\n",
--					ret);
--			goto err_unregister;
--		}
--		th_zone->cool_dev_size++;
--	}
--
--	th_zone->therm_dev = thermal_zone_device_register(
--			sensor_conf->name, sensor_conf->trip_data.trip_count,
--			0, th_zone, &exynos_dev_ops, NULL, 0,
--			sensor_conf->trip_data.trigger_falling ? 0 :
--			IDLE_INTERVAL);
--
--	if (IS_ERR(th_zone->therm_dev)) {
--		dev_err(sensor_conf->dev,
--			"Failed to register thermal zone device\n");
--		ret = PTR_ERR(th_zone->therm_dev);
--		goto err_unregister;
--	}
--	th_zone->mode = THERMAL_DEVICE_ENABLED;
--	sensor_conf->pzone_data = th_zone;
--
--	dev_info(sensor_conf->dev,
--		"Exynos: Thermal zone(%s) registered\n", sensor_conf->name);
--
--	return 0;
--
--err_unregister:
--	exynos_unregister_thermal(sensor_conf);
--	return ret;
--}
--
--/* Un-Register with the in-kernel thermal management */
--void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
--{
--	int i;
--	struct exynos_thermal_zone *th_zone;
--
--	if (!sensor_conf || !sensor_conf->pzone_data) {
--		pr_err("Invalid temperature sensor configuration data\n");
--		return;
--	}
--
--	th_zone = sensor_conf->pzone_data;
--
--	thermal_zone_device_unregister(th_zone->therm_dev);
--
--	for (i = 0; i < th_zone->cool_dev_size; ++i)
--		cpufreq_cooling_unregister(th_zone->cool_dev[i]);
--
--	dev_info(sensor_conf->dev,
--		"Exynos: Kernel Thermal management unregistered\n");
--}
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-deleted file mode 100644
-index cd44719..0000000
---- a/drivers/thermal/samsung/exynos_thermal_common.h
-+++ /dev/null
-@@ -1,106 +0,0 @@
--/*
-- * exynos_thermal_common.h - Samsung EXYNOS common header file
-- *
-- *  Copyright (C) 2013 Samsung Electronics
-- *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- *
-- */
--
--#ifndef _EXYNOS_THERMAL_COMMON_H
--#define _EXYNOS_THERMAL_COMMON_H
--
--/* In-kernel thermal framework related macros & definations */
--#define SENSOR_NAME_LEN	16
--#define MAX_TRIP_COUNT	8
--#define MAX_COOLING_DEVICE 4
--
--#define ACTIVE_INTERVAL 500
--#define IDLE_INTERVAL 10000
--#define MCELSIUS	1000
--
--/* CPU Zone information */
--#define PANIC_ZONE      4
--#define WARN_ZONE       3
--#define MONITOR_ZONE    2
--#define SAFE_ZONE       1
--
--#define GET_ZONE(trip) (trip + 2)
--#define GET_TRIP(zone) (zone - 2)
--
--enum trigger_type {
--	THROTTLE_ACTIVE = 1,
--	THROTTLE_PASSIVE,
--	SW_TRIP,
--	HW_TRIP,
+-struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS4412_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS4412,
+-		},
+-	},
+-	.tmu_count = 1,
 -};
 -
--/**
-- * struct freq_clip_table
-- * @freq_clip_max: maximum frequency allowed for this cooling state.
-- * @temp_level: Temperature level at which the temperature clipping will
-- *	happen.
-- * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
-- *
-- * This structure is required to be filled and passed to the
-- * cpufreq_cooling_unregister function.
-- */
--struct freq_clip_table {
--	unsigned int freq_clip_max;
--	unsigned int temp_level;
--	const struct cpumask *mask_val;
+-struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS4412_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS5250,
+-		},
+-	},
+-	.tmu_count = 1,
 -};
 -
--struct	thermal_trip_point_conf {
--	int trip_val[MAX_TRIP_COUNT];
--	int trip_type[MAX_TRIP_COUNT];
--	int trip_count;
--	unsigned char trigger_falling;
+-#define __EXYNOS5260_TMU_DATA	\
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 85, \
+-	.trigger_levels[1] = 103, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50,
+-
+-#define EXYNOS5260_TMU_DATA \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5260
+-
+-struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-	},
+-	.tmu_count = 5,
 -};
 -
--struct	thermal_cooling_conf {
--	struct freq_clip_table freq_data[MAX_TRIP_COUNT];
--	int freq_clip_count;
+-#define EXYNOS5420_TMU_DATA \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5420
+-
+-#define EXYNOS5420_TMU_DATA_SHARED \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
+-
+-struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5420_TMU_DATA },
+-		{ EXYNOS5420_TMU_DATA },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-	},
+-	.tmu_count = 5,
 -};
 -
--struct thermal_sensor_conf {
--	char name[SENSOR_NAME_LEN];
--	int (*read_temperature)(void *data);
--	int (*write_emul_temp)(void *drv_data, unsigned long temp);
--	struct thermal_trip_point_conf trip_data;
--	struct thermal_cooling_conf cooling_data;
--	void *driver_data;
--	void *pzone_data;
--	struct device *dev;
+-#define EXYNOS5440_TMU_DATA \
+-	.trigger_levels[0] = 100, \
+-	.trigger_levels[4] = 105, \
+-	.trigger_enable[0] = 1, \
+-	.trigger_type[0] = SW_TRIP, \
+-	.trigger_type[4] = HW_TRIP, \
+-	.max_trigger_level = 5, \
+-	.non_hw_trigger_levels = 1, \
+-	.gain = 5, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 0x5b2d, \
+-	.min_efuse_value = 16, \
+-	.max_efuse_value = 76, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 70, \
+-	.default_temp_offset = 25, \
+-	.type = SOC_ARCH_EXYNOS5440
+-
+-struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5440_TMU_DATA } ,
+-		{ EXYNOS5440_TMU_DATA } ,
+-		{ EXYNOS5440_TMU_DATA } ,
+-	},
+-	.tmu_count = 3,
 -};
--
--/*Functions used exynos based thermal sensor driver*/
--#ifdef CONFIG_EXYNOS_THERMAL_CORE
--void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf);
--int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf);
--void exynos_report_trigger(struct thermal_sensor_conf *sensor_conf);
--#else
--static inline void
--exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf) { return; }
--
--static inline int
--exynos_register_thermal(struct thermal_sensor_conf *sensor_conf) { return 0; }
--
--static inline void
--exynos_report_trigger(struct thermal_sensor_conf *sensor_conf) { return; }
--
--#endif /* CONFIG_EXYNOS_THERMAL_CORE */
--#endif /* _EXYNOS_THERMAL_COMMON_H */
 -- 
 2.0.0.rc2
+
