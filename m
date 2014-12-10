@@ -1,360 +1,193 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] thermal: int340x: Introduce processor reporting device
-Date: Tue,  9 Dec 2014 16:47:17 -0800
-Message-ID: <1418172437-8861-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [Update][PATCH] SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Wed, 10 Dec 2014 09:43:36 +0800
+Message-ID: <5487A548.6070800@intel.com>
+References: <3237237.IIIiULdqDt@vostro.rjw.lan> <3039454.iyzHXUp3Uj@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:19710 "EHLO mga02.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:3780 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbaLJArw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Dec 2014 19:47:52 -0500
+	id S1752370AbaLJBnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Dec 2014 20:43:47 -0500
+In-Reply-To: <3039454.iyzHXUp3Uj@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-scsi@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "James E.J. Bottomley" <JBottomley@parallels.com>, Vinayak Holikatti <vinholikatti@gmail.com>
 
-The Int340x thermal provides a processor thermal device, which
-is used to control processor thermal states. These devices are
-either reported as a PCI device or an ACPI device. This
-device provides power limits, control states and optional
-temperature.
-This change implements minimal requirements to expose processor
-power limits which can be used during thermal power limiting.
-Power limits are exposed via an attribute group called
-"power_limits" under the device. The exported attributes
-are:
-power_limit_0_max_uw
-power_limit_1_max_uw
-power_limit_0_min_uw
-power_limit_1_min_uw
-power_limit_0_tmin_us
-power_limit_1_tmin_us
-power_limit_0_tmax_us
-power_limit_1_tmax_us
-power_limit_0_step_uw
-power_limit_1_step_uw
+On 12/10/2014 05:47 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: SCSI / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+> 
+> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
+> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
+> depending on CONFIG_PM_RUNTIME may now be changed to depend on
+> CONFIG_PM.
+> 
+> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
+> drivers/scsi/ and in include/scsi/scsi_device.h.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/int340x_thermal/Makefile           |   1 +
- .../int340x_thermal/processor_thermal_device.c     | 299 +++++++++++++++++++++
- 2 files changed, 300 insertions(+)
- create mode 100644 drivers/thermal/int340x_thermal/processor_thermal_device.c
+Reviewed-by: Aaron Lu <aaron.lu@intel.com>
 
-diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index ffe40bf..d441369 100644
---- a/drivers/thermal/int340x_thermal/Makefile
-+++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-+obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device.o
- obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-new file mode 100644
-index 0000000..3fc10ca
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -0,0 +1,299 @@
-+/*
-+ * processor_thermal_device.c
-+ * Copyright (c) 2014, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/acpi.h>
-+
-+/* Broadwell-U/HSB thermal reporting device */
-+#define PCI_DEVICE_ID_PROC_BDW_THERMAL	0x1603
-+#define PCI_DEVICE_ID_PROC_HSB_THERMAL	0x0A03
-+
-+/* Braswell thermal reporting device */
-+#define PCI_DEVICE_ID_PROC_BSW_THERMAL	0x22DC
-+
-+struct power_config {
-+	u32	index;
-+	u32	min_uw;
-+	u32	max_uw;
-+	u32	tmin_us;
-+	u32	tmax_us;
-+	u32	step_uw;
-+};
-+
-+struct proc_thermal_device {
-+	struct device *dev;
-+	struct acpi_device *adev;
-+	struct power_config power_limits[2];
-+};
-+
-+enum proc_thermal_emum_mode_type {
-+	PROC_THERMAL_NONE,
-+	PROC_THERMAL_PCI,
-+	PROC_THERMAL_PLATFORM_DEV
-+};
-+
-+/*
-+ * We can have only one type of enumeration, PCI or Platform,
-+ * not both. So we don't need instance specific data.
-+ */
-+static enum proc_thermal_emum_mode_type proc_thermal_emum_mode =
-+							PROC_THERMAL_NONE;
-+
-+#define POWER_LIMIT_SHOW(index, suffix) \
-+static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
-+					struct device_attribute *attr, \
-+					char *buf) \
-+{ \
-+	struct pci_dev *pci_dev; \
-+	struct platform_device *pdev; \
-+	struct proc_thermal_device *proc_dev; \
-+\
-+	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
-+		pdev = to_platform_device(dev); \
-+		proc_dev = platform_get_drvdata(pdev); \
-+	} else { \
-+		pci_dev = to_pci_dev(dev); \
-+		proc_dev = pci_get_drvdata(pci_dev); \
-+	} \
-+	return sprintf(buf, "%lu\n",\
-+	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
-+}
-+
-+POWER_LIMIT_SHOW(0, min_uw)
-+POWER_LIMIT_SHOW(0, max_uw)
-+POWER_LIMIT_SHOW(0, step_uw)
-+POWER_LIMIT_SHOW(0, tmin_us)
-+POWER_LIMIT_SHOW(0, tmax_us)
-+
-+POWER_LIMIT_SHOW(1, min_uw)
-+POWER_LIMIT_SHOW(1, max_uw)
-+POWER_LIMIT_SHOW(1, step_uw)
-+POWER_LIMIT_SHOW(1, tmin_us)
-+POWER_LIMIT_SHOW(1, tmax_us)
-+
-+static DEVICE_ATTR_RO(power_limit_0_min_uw);
-+static DEVICE_ATTR_RO(power_limit_0_max_uw);
-+static DEVICE_ATTR_RO(power_limit_0_step_uw);
-+static DEVICE_ATTR_RO(power_limit_0_tmin_us);
-+static DEVICE_ATTR_RO(power_limit_0_tmax_us);
-+
-+static DEVICE_ATTR_RO(power_limit_1_min_uw);
-+static DEVICE_ATTR_RO(power_limit_1_max_uw);
-+static DEVICE_ATTR_RO(power_limit_1_step_uw);
-+static DEVICE_ATTR_RO(power_limit_1_tmin_us);
-+static DEVICE_ATTR_RO(power_limit_1_tmax_us);
-+
-+static struct attribute *power_limit_attrs[] = {
-+	&dev_attr_power_limit_0_min_uw.attr,
-+	&dev_attr_power_limit_1_min_uw.attr,
-+	&dev_attr_power_limit_0_max_uw.attr,
-+	&dev_attr_power_limit_1_max_uw.attr,
-+	&dev_attr_power_limit_0_step_uw.attr,
-+	&dev_attr_power_limit_1_step_uw.attr,
-+	&dev_attr_power_limit_0_tmin_us.attr,
-+	&dev_attr_power_limit_1_tmin_us.attr,
-+	&dev_attr_power_limit_0_tmax_us.attr,
-+	&dev_attr_power_limit_1_tmax_us.attr,
-+	NULL
-+};
-+
-+static struct attribute_group power_limit_attribute_group = {
-+	.attrs = power_limit_attrs,
-+	.name = "power_limits"
-+};
-+
-+static int proc_thermal_add(struct device *dev,
-+			    struct proc_thermal_device **priv)
-+{
-+	struct proc_thermal_device *proc_priv;
-+	struct acpi_device *adev;
-+	acpi_status status;
-+	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *elements, *ppcc;
-+	union acpi_object *p;
-+	int i;
-+
-+	adev = ACPI_COMPANION(dev);
-+
-+	status = acpi_evaluate_object(adev->handle, "PPCC", NULL, &buf);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	p = buf.pointer;
-+	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
-+		dev_err(dev, "Invalid PPCC data\n");
-+		return -EFAULT;
-+	}
-+	if (!p->package.count) {
-+		dev_err(dev, "Invalid PPCC package size\n");
-+		return -EFAULT;
-+	}
-+
-+	proc_priv = devm_kzalloc(dev, sizeof(*proc_priv), GFP_KERNEL);
-+	if (!proc_priv)
-+		return -ENOMEM;
-+
-+	proc_priv->dev = dev;
-+	proc_priv->adev = adev;
-+
-+	for (i = 0; i < min((int)p->package.count - 1, 2); ++i) {
-+		elements = &(p->package.elements[i+1]);
-+		if (elements->type != ACPI_TYPE_PACKAGE ||
-+		    elements->package.count != 6)
-+			return -EFAULT;
-+
-+		ppcc = elements->package.elements;
-+		proc_priv->power_limits[i].index = ppcc[0].integer.value;
-+		proc_priv->power_limits[i].min_uw = ppcc[1].integer.value;
-+		proc_priv->power_limits[i].max_uw = ppcc[2].integer.value;
-+		proc_priv->power_limits[i].tmin_us = ppcc[3].integer.value;
-+		proc_priv->power_limits[i].tmax_us = ppcc[4].integer.value;
-+		proc_priv->power_limits[i].step_uw = ppcc[5].integer.value;
-+	}
-+
-+	*priv = proc_priv;
-+
-+	return sysfs_create_group(&dev->kobj,
-+				  &power_limit_attribute_group);
-+}
-+
-+void proc_thermal_remove(struct proc_thermal_device *proc_priv)
-+{
-+	sysfs_remove_group(&proc_priv->dev->kobj,
-+			   &power_limit_attribute_group);
-+}
-+
-+static int int3401_add(struct platform_device *pdev)
-+{
-+	struct proc_thermal_device *proc_priv;
-+	int ret;
-+
-+	if (proc_thermal_emum_mode == PROC_THERMAL_PCI) {
-+		dev_err(&pdev->dev, "error: enumerated as PCI dev\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = proc_thermal_add(&pdev->dev, &proc_priv);
-+	if (ret)
-+		return ret;
-+
-+	platform_set_drvdata(pdev, proc_priv);
-+	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
-+
-+	return 0;
-+}
-+
-+static int int3401_remove(struct platform_device *pdev)
-+{
-+	proc_thermal_remove(platform_get_drvdata(pdev));
-+
-+	return 0;
-+}
-+
-+static int  proc_thermal_pci_probe(struct pci_dev *pdev,
-+				   const struct pci_device_id *unused)
-+{
-+	struct proc_thermal_device *proc_priv;
-+	int ret;
-+
-+	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) {
-+		dev_err(&pdev->dev, "error: enumerated as platform dev\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = pci_enable_device(pdev);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "error: could not enable device\n");
-+		return ret;
-+	}
-+
-+	ret = proc_thermal_add(&pdev->dev, &proc_priv);
-+	if (ret) {
-+		pci_disable_device(pdev);
-+		return ret;
-+	}
-+
-+	pci_set_drvdata(pdev, proc_priv);
-+	proc_thermal_emum_mode = PROC_THERMAL_PCI;
-+
-+	return 0;
-+}
-+
-+static void  proc_thermal_pci_remove(struct pci_dev *pdev)
-+{
-+	proc_thermal_remove(pci_get_drvdata(pdev));
-+	pci_disable_device(pdev);
-+}
-+
-+static const struct pci_device_id proc_thermal_pci_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BDW_THERMAL)},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_HSB_THERMAL)},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BSW_THERMAL)},
-+	{ 0, },
-+};
-+
-+MODULE_DEVICE_TABLE(pci, proc_thermal_pci_ids);
-+
-+static struct pci_driver proc_thermal_pci_driver = {
-+	.name		= "proc_thermal",
-+	.probe		= proc_thermal_pci_probe,
-+	.remove		= proc_thermal_pci_remove,
-+	.id_table	= proc_thermal_pci_ids,
-+};
-+
-+static const struct acpi_device_id int3401_device_ids[] = {
-+	{"INT3401", 0},
-+	{"", 0},
-+};
-+MODULE_DEVICE_TABLE(acpi, int3401_device_ids);
-+
-+static struct platform_driver int3401_driver = {
-+	.probe = int3401_add,
-+	.remove = int3401_remove,
-+	.driver = {
-+		.name = "int3401 thermal",
-+		.owner  = THIS_MODULE,
-+		.acpi_match_table = int3401_device_ids,
-+	},
-+};
-+
-+static int __init proc_thermal_init(void)
-+{
-+	int ret;
-+
-+	ret = platform_driver_register(&int3401_driver);
-+	if (ret)
-+		return ret;
-+
-+	ret = pci_register_driver(&proc_thermal_pci_driver);
-+
-+	return ret;
-+}
-+
-+static void __exit proc_thermal_exit(void)
-+{
-+	platform_driver_unregister(&int3401_driver);
-+	pci_unregister_driver(&proc_thermal_pci_driver);
-+}
-+
-+module_init(proc_thermal_init);
-+module_exit(proc_thermal_exit);
-+
-+MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
-+MODULE_DESCRIPTION("Processor Thermal Reporting Device Driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.9.1
+Thanks,
+Aaron
+
+> ---
+> 
+> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
+> PM_SLEEP is selected) which is only in linux-next at the moment (via the
+> linux-pm tree).
+> 
+> Please let me know if it is OK to take this one into linux-pm.
+> 
+> ---
+>  drivers/scsi/scsi_pm.c           |   10 ----------
+>  drivers/scsi/scsi_priv.h         |    5 ++---
+>  drivers/scsi/ufs/ufshcd-pci.c    |   11 ++++-------
+>  drivers/scsi/ufs/ufshcd-pltfrm.c |   11 ++++-------
+>  include/scsi/scsi_device.h       |    4 ++--
+>  5 files changed, 12 insertions(+), 29 deletions(-)
+> 
+> Index: linux-pm/include/scsi/scsi_device.h
+> ===================================================================
+> --- linux-pm.orig/include/scsi/scsi_device.h
+> +++ linux-pm/include/scsi/scsi_device.h
+> @@ -440,13 +440,13 @@ static inline int scsi_execute_req(struc
+>  extern void sdev_disable_disk_events(struct scsi_device *sdev);
+>  extern void sdev_enable_disk_events(struct scsi_device *sdev);
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> +#ifdef CONFIG_PM
+>  extern int scsi_autopm_get_device(struct scsi_device *);
+>  extern void scsi_autopm_put_device(struct scsi_device *);
+>  #else
+>  static inline int scsi_autopm_get_device(struct scsi_device *d) { return 0; }
+>  static inline void scsi_autopm_put_device(struct scsi_device *d) {}
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  static inline int __must_check scsi_device_reprobe(struct scsi_device *sdev)
+>  {
+> Index: linux-pm/drivers/scsi/scsi_priv.h
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/scsi_priv.h
+> +++ linux-pm/drivers/scsi/scsi_priv.h
+> @@ -157,8 +157,7 @@ static inline void scsi_netlink_exit(voi
+>  /* scsi_pm.c */
+>  #ifdef CONFIG_PM
+>  extern const struct dev_pm_ops scsi_bus_pm_ops;
+> -#endif
+> -#ifdef CONFIG_PM_RUNTIME
+> +
+>  extern void scsi_autopm_get_target(struct scsi_target *);
+>  extern void scsi_autopm_put_target(struct scsi_target *);
+>  extern int scsi_autopm_get_host(struct Scsi_Host *);
+> @@ -168,7 +167,7 @@ static inline void scsi_autopm_get_targe
+>  static inline void scsi_autopm_put_target(struct scsi_target *t) {}
+>  static inline int scsi_autopm_get_host(struct Scsi_Host *h) { return 0; }
+>  static inline void scsi_autopm_put_host(struct Scsi_Host *h) {}
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  extern struct async_domain scsi_sd_pm_domain;
+>  extern struct async_domain scsi_sd_probe_domain;
+> Index: linux-pm/drivers/scsi/scsi_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/scsi_pm.c
+> +++ linux-pm/drivers/scsi/scsi_pm.c
+> @@ -213,8 +213,6 @@ static int scsi_bus_restore(struct devic
+>  
+>  #endif /* CONFIG_PM_SLEEP */
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> -
+>  static int sdev_runtime_suspend(struct device *dev)
+>  {
+>  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> @@ -332,14 +330,6 @@ void scsi_autopm_put_host(struct Scsi_Ho
+>  	pm_runtime_put_sync(&shost->shost_gendev);
+>  }
+>  
+> -#else
+> -
+> -#define scsi_runtime_suspend	NULL
+> -#define scsi_runtime_resume	NULL
+> -#define scsi_runtime_idle	NULL
+> -
+> -#endif /* CONFIG_PM_RUNTIME */
+> -
+>  const struct dev_pm_ops scsi_bus_pm_ops = {
+>  	.prepare =		scsi_bus_prepare,
+>  	.suspend =		scsi_bus_suspend,
+> Index: linux-pm/drivers/scsi/ufs/ufshcd-pci.c
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/ufs/ufshcd-pci.c
+> +++ linux-pm/drivers/scsi/ufs/ufshcd-pci.c
+> @@ -62,12 +62,7 @@ static int ufshcd_pci_resume(struct devi
+>  {
+>  	return ufshcd_system_resume(dev_get_drvdata(dev));
+>  }
+> -#else
+> -#define ufshcd_pci_suspend	NULL
+> -#define ufshcd_pci_resume	NULL
+> -#endif /* CONFIG_PM */
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+>  static int ufshcd_pci_runtime_suspend(struct device *dev)
+>  {
+>  	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
+> @@ -80,11 +75,13 @@ static int ufshcd_pci_runtime_idle(struc
+>  {
+>  	return ufshcd_runtime_idle(dev_get_drvdata(dev));
+>  }
+> -#else /* !CONFIG_PM_RUNTIME */
+> +#else /* !CONFIG_PM */
+> +#define ufshcd_pci_suspend	NULL
+> +#define ufshcd_pci_resume	NULL
+>  #define ufshcd_pci_runtime_suspend	NULL
+>  #define ufshcd_pci_runtime_resume	NULL
+>  #define ufshcd_pci_runtime_idle	NULL
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  /**
+>   * ufshcd_pci_shutdown - main function to put the controller in reset state
+> Index: linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/ufs/ufshcd-pltfrm.c
+> +++ linux-pm/drivers/scsi/ufs/ufshcd-pltfrm.c
+> @@ -266,12 +266,7 @@ static int ufshcd_pltfrm_resume(struct d
+>  {
+>  	return ufshcd_system_resume(dev_get_drvdata(dev));
+>  }
+> -#else
+> -#define ufshcd_pltfrm_suspend	NULL
+> -#define ufshcd_pltfrm_resume	NULL
+> -#endif
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+>  static int ufshcd_pltfrm_runtime_suspend(struct device *dev)
+>  {
+>  	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
+> @@ -284,11 +279,13 @@ static int ufshcd_pltfrm_runtime_idle(st
+>  {
+>  	return ufshcd_runtime_idle(dev_get_drvdata(dev));
+>  }
+> -#else /* !CONFIG_PM_RUNTIME */
+> +#else /* !CONFIG_PM */
+> +#define ufshcd_pltfrm_suspend	NULL
+> +#define ufshcd_pltfrm_resume	NULL
+>  #define ufshcd_pltfrm_runtime_suspend	NULL
+>  #define ufshcd_pltfrm_runtime_resume	NULL
+>  #define ufshcd_pltfrm_runtime_idle	NULL
+> -#endif /* CONFIG_PM_RUNTIME */
+> +#endif /* CONFIG_PM */
+>  
+>  static void ufshcd_pltfrm_shutdown(struct platform_device *pdev)
+>  {
+> 
 
