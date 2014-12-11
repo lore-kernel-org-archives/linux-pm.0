@@ -1,84 +1,77 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v5] Thermal: introduce INT3406 thermal driver
-Date: Thu, 11 Dec 2014 10:37:52 +0800
-Message-ID: <1418265472.12435.68.camel@rzhang1-toshiba>
-References: <54868CF6.6020505@intel.com>
-	 <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com>
-	 <20141211010226.GA26253@aaronlu.sh.intel.com>
-	 <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/5] opp: handle allocation of device_opp in a separate routine
+Date: Thu, 11 Dec 2014 08:45:22 +0530
+Message-ID: <CAKohpoktdrOX8TDwqd-co+mNERS_NjewitDXguXDZO9bEWdFFA@mail.gmail.com>
+References: <0a31e317c90f601f77cc21b80455633928c70c96.1418184737.git.viresh.kumar@linaro.org>
+	<b759d2563caee1189b543d7a3acb222d316d81a1.1418184737.git.viresh.kumar@linaro.org>
+	<3480697.K2MkBymPAS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:56414 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932937AbaLKCh6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Dec 2014 21:37:58 -0500
-In-Reply-To: <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:38346 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933642AbaLKDPX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Dec 2014 22:15:23 -0500
+Received: by mail-ob0-f171.google.com with SMTP id uz6so1116258obc.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Dec 2014 19:15:22 -0800 (PST)
+In-Reply-To: <3480697.K2MkBymPAS@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: Aaron Lu <aaron.lu@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, 2014-12-10 at 18:15 -0800, Olof Johansson wrote:
-> On Wed, Dec 10, 2014 at 5:02 PM, Aaron Lu <aaron.lu@intel.com> wrote:
-> > On Wed, Dec 10, 2014 at 11:53:25AM -0800, Olof Johansson wrote:
-> >> Hi,
-> >>
-> >> [+daniel vetter]
-> >>
-> >> On Mon, Dec 8, 2014 at 9:47 PM, Aaron Lu <aaron.lu@intel.com> wrote:
-> >> > INT3406 ACPI device object resembles an ACPI video output device, but its
-> >> > _BCM is said to be deprecated and should not be used. So we will make
-> >> > use of the raw interface to do the actual cooling. Due to this, the
-> >> > backlight core has some modifications. Also, to re-use some of the ACPI
-> >> > video module's code, one function has been exported.
-> >> >
-> >> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> >> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> >> > ---
-> >> > v5:
-> >> > Add the missing file drivers/thermal/int340x_thermal/Kconfig
-> >> > Remove the assignment of .owner field from the device_driver structure
-> >>
-> >>
-> >> Did this patch show up in -next for the first time last night, or did
-> >> some other change break this?
-> >>
-> >> It causes a panic in i915 when booting Minnowboard Max for me.
-> >
-> > Sorry for the trouble, I'm looking at this now.
-> > Is there anything special about the Minnowboard Max? I'll try to
-> > reproduce the issue here locally with a typical Intel desktop.
-> 
-> Another good question is why the code showed up in -next today. Code
-> going in for 3.19 is supposed to have been baking there already, and
-> it's too early to stage anything for 3.20.
-> 
-> Zhang?
+On 11 December 2014 at 03:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> I've lost patches [1-2/5] somehow, but never mind.  I can get them from Patchwork.
 
-well, my Linux machine happened to be broken when I was in travel in Oct
-and Nov, so that I got the 3.19 material prepared a little late.
-Thus I just took some fixes and driver specific patches and plan to push
-my pull request next week.
-For this one, it had been pushed to linux-next for 3.18, but was dropped
-because of some Kconfig problem. So I thought it was safe to include
-this one for 3.19.
-sorry for bring the trouble here.
+Strange, you were always in --to for them ..
 
-Now my intention is to see if we can have this problem fixed by this
-Fri. If not, I will drop it for 3.19. is it okay for you?
+> In this one I'm wondering about the printk removal mentioned above.  Did
+> checkpatch complain about the printk?
 
-thanks,
-rui
-> 
-> > Is it the next/master branch?
-> > git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> 
-> Yes. But I've confirmed that it happens with Zhang's next branch too
-> without the rest of linux-next.
-> 
-> 
-> -Olof
+commit ebfdc40969f24fc0cdd1349835d36e8ebae05374
+Author: Joe Perches <joe@perches.com>
+Date:   Wed Aug 6 16:10:27 2014 -0700
 
+    checkpatch: attempt to find unnecessary 'out of memory' messages
 
+    Logging messages that show some type of "out of memory" error are
+    generally unnecessary as there is a generic message and a stack dump
+    done by the memory subsystem.
+
+    These messages generally increase kernel size without much added value.
+
+    Emit a warning on these types of messages.
+
+    This test looks for any inserted message function, then looks at the
+    previous line for an "if (!foo)" or "if (foo == NULL)" test and then
+    looks at the preceding statement for an allocation function like "foo =
+    kmalloc()"
+
+    ie: this code matches:
+
+        foo = kmalloc();
+        if (foo == NULL) {
+                printk("Out of memory\n");
+                return -ENOMEM;
+        }
+
+    This test is very crude and incomplete.
+
+    This test can miss quite a lot of of OOM messages that do not have this
+    specific form.
+
+    ie: this code does not match:
+
+        foo = kmalloc();
+        if (!foo) {
+                rtn = -ENOMEM;
+                printk("Out of memory!\n");
+                goto out;
+        }
+
+    This test could also be a false positive when the logging message itself
+    does not specify anything about memory, but I did not find any false
+    positives in my limited testing.
+
+    spatch could be a better solution but correctness seems non-trivial for
+    that tool too.
