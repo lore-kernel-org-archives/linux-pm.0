@@ -1,176 +1,77 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [RFC PATCHv3 6/7] ARM: dts: Add PPMU dt node for Exynos4 SoC
-Date: Fri, 12 Dec 2014 17:27:31 +0900
-Message-ID: <1418372852-12454-7-git-send-email-cw00.choi@samsung.com>
-References: <1418372852-12454-1-git-send-email-cw00.choi@samsung.com>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 8/8] iio: Add ABI documentation for input current readings
+Date: Fri, 12 Dec 2014 11:45:59 +0000
+Message-ID: <548AD577.10508@kernel.org>
+References: <cover.1416938054.git.Adam.Thomson.Opensource@diasemi.com> <9d3c3451c2cac6035277fb36ffead1a1f8af453e.1416938054.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1418372852-12454-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: devicetree@vger.kernel.org, k.kozlowski@samsung.com, kgene.kim@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tomasz.figa@gmail.com, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, linux-samsung-soc@vger.kernel.org, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <9d3c3451c2cac6035277fb36ffead1a1f8af453e.1416938054.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch add PPMU (Performance Profiling Monitoring Unit) dt node for Exynos4
-(Exynos4210/4212/4412) SoC. PPMU dt node is used to monitor the utilization of
-each IP.
+On 25/11/14 18:25, Adam Thomson wrote:
+> Add information on in_current related readings.
+> 
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+This one stands on it's own to applied (with some fuzz and tiny
+bit of rearranging) to the togreg branch of iio.git - initially pushed
+out as testing for the autobuilders to play with it.
 
-The Exynos4210/Exynos4212/Exynos4412 SoC includes following PPMUs:
-- PPMU_DMC0      0x106A_0000
-- PPMU_DMC1      0x106B_0000
-- PPMU_CPU       0x106C_0000
-- PPMU_ACP       0x10AE_0000
-- PPMU_RIGHT_BUS 0x112A_0000
-- PPMU_LEFT_BUS  0x116A_0000
-- PPMU_LCD0      0x11E4_0000
-- PPMU_CAMIF     0x11AC_0000
-- PPMU_IMAGE     0x12AA_0000
-- PPMU_TV        0x12E4_0000
-- PPMU_3D        0x1322_0000
-- PPMU_MFC_L     0x1366_0000
-- PPMU_MFC_R     0x1367_0000
+Thanks,
 
-Additionally, the Exynos4210 SoC includes following PPMUs:
-- PPMU_LCD1      0x1224_0000
-
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- arch/arm/boot/dts/exynos4.dtsi    | 96 +++++++++++++++++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4210.dtsi |  8 ++++
- 2 files changed, 104 insertions(+)
-
-diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
-index e0278ec..150bb56 100644
---- a/arch/arm/boot/dts/exynos4.dtsi
-+++ b/arch/arm/boot/dts/exynos4.dtsi
-@@ -645,4 +645,100 @@
- 		samsung,sysreg = <&sys_reg>;
- 		status = "disabled";
- 	};
-+
-+	ppmu_dmc0: ppmu_dmc0@106a0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x106a0000 0x2000>;
-+		clocks = <&clock CLK_PPMUDMC0>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_dmc1: ppmu_dmc1@106b0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x106b0000 0x2000>;
-+		clocks = <&clock CLK_PPMUDMC1>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_cpu: ppmu_cpu@106c0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x106c0000 0x2000>;
-+		clocks = <&clock CLK_PPMUCPU>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_rightbus: ppmu_rightbus@112a0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x112a0000 0x2000>;
-+		clocks = <&clock CLK_PPMURIGHT>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_leftbus: ppmu_leftbus0@116a0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x116a0000 0x2000>;
-+		clocks = <&clock CLK_PPMULEFT>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_camif: ppmu_camif@11ac0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x11ac0000 0x2000>;
-+		clocks = <&clock CLK_PPMUCAMIF>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_lcd0: ppmu_lcd0@11e40000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x11e40000 0x2000>;
-+		clocks = <&clock CLK_PPMULCD0>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_image: ppmu_image@12aa0000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x12aa0000 0x2000>;
-+		clocks = <&clock CLK_PPMUIMAGE>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_tv: ppmu_tv@12e40000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x12e40000 0x2000>;
-+		clocks = <&clock CLK_PPMUTV>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_g3d: ppmu_g3d@13220000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x13220000 0x2000>;
-+		clocks = <&clock CLK_PPMUG3D>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_mfc_l: ppmu_mfc_l@13660000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x13660000 0x2000>;
-+		clocks = <&clock CLK_PPMUMFC_L>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
-+
-+	ppmu_mfc_r: ppmu_mfc_r@13670000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x13670000 0x2000>;
-+		clocks = <&clock CLK_PPMUMFC_R>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
- };
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index bcc9e63..b2598de 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -192,4 +192,12 @@
- 			samsung,lcd-wb;
- 		};
- 	};
-+
-+	ppmu_lcd1: ppmu_lcd1@12240000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x12240000 0x2000>;
-+		clocks = <&clock CLK_PPMULCD1>;
-+		clock-names = "ppmu";
-+		status = "disabled";
-+	};
- };
--- 
-1.8.5.5
+Jonathan
+> ---
+>  Documentation/ABI/testing/sysfs-bus-iio | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-bus-iio b/Documentation/ABI/testing/sysfs-bus-iio
+> index d760b02..37cd4d4 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-iio
+> +++ b/Documentation/ABI/testing/sysfs-bus-iio
+> @@ -92,6 +92,18 @@ Description:
+>  		is required is a consistent labeling.  Units after application
+>  		of scale and offset are millivolts.
+> 
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_currentY_raw
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_currentY_supply_raw
+> +KernelVersion:	3.17
+> +Contact:	linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> +Description:
+> +		Raw (unscaled no bias removal etc.) current measurement from
+> +		channel Y. In special cases where the channel does not
+> +		correspond to externally available input one of the named
+> +		versions may be used. The number must always be specified and
+> +		unique to allow association with event codes. Units after
+> +		application of scale and offset are milliamps.
+> +
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_capacitanceY_raw
+>  KernelVersion:	3.2
+>  Contact:	linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> @@ -227,6 +239,8 @@ What:		/sys/bus/iio/devices/iio:deviceX/in_accel_y_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_accel_z_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_voltageY_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_voltage_offset
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_currentY_offset
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_current_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_tempY_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_temp_offset
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_pressureY_offset
+> @@ -249,8 +263,11 @@ Description:
+>  		to the _raw output.
+> 
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_voltageY_scale
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_currentY_scale
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_voltageY_supply_scale
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_currentY_supply_scale
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_voltage_scale
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_current_scale
+>  What:		/sys/bus/iio/devices/iio:deviceX/out_voltageY_scale
+>  What:		/sys/bus/iio/devices/iio:deviceX/out_altvoltageY_scale
+>  What:		/sys/bus/iio/devices/iio:deviceX/in_accel_scale
+> --
+> 1.9.3
+> 
