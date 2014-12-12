@@ -1,110 +1,139 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [GIT PULL] ACPI and power management updates for 3.19-rc1
-Date: Fri, 12 Dec 2014 15:42:07 +0100
-Message-ID: <1589257.Va5eEYbcUY@vostro.rjw.lan>
-References: <CAJZ5v0i3UhvaAu9JV_BuB0fPFmHAa_NdX+eXYBnAHcsiaVOw9g@mail.gmail.com> <CA+55aFx+8gKsDSDKSAxB4+JuL_M22uuHDmzSfsv1qJ=dSZ3-ww@mail.gmail.com>
+Date: Fri, 12 Dec 2014 15:56:27 +0100
+Message-ID: <2077616.2azHLLCLOp@vostro.rjw.lan>
+References: <CAJZ5v0i3UhvaAu9JV_BuB0fPFmHAa_NdX+eXYBnAHcsiaVOw9g@mail.gmail.com> <CA+55aFx+8gKsDSDKSAxB4+JuL_M22uuHDmzSfsv1qJ=dSZ3-ww@mail.gmail.com> <1589257.Va5eEYbcUY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFx+8gKsDSDKSAxB4+JuL_M22uuHDmzSfsv1qJ=dSZ3-ww@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49281 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S967727AbaLLOeu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Dec 2014 09:34:50 -0500
+In-Reply-To: <1589257.Va5eEYbcUY@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
-On Thursday, December 11, 2014 07:59:20 PM Linus Torvalds wrote:
-> On Mon, Dec 8, 2014 at 4:21 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > Also the ACPI core is now going to support the _DEP configuration
-> > information in a limited way.
+On Friday, December 12, 2014 03:42:07 PM Rafael J. Wysocki wrote:
+> On Thursday, December 11, 2014 07:59:20 PM Linus Torvalds wrote:
+> > On Mon, Dec 8, 2014 at 4:21 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > Also the ACPI core is now going to support the _DEP configuration
+> > > information in a limited way.
+> > 
+> > Hmm. That seems to be the cause of this annoying new message:
+> > 
+> >     ...
+> >     ACPI: Using IOAPIC for interrupt routing
+> >     PCI: Using host bridge windows from ACPI; if necessary, use
+> > "pci=nocrs" and report a bug
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:00: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:01: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:02: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:03: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:04: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:05: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:06: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb200)
+> >     acpi LNXCPU:07: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb840)
+> >     acpi device:27: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb840)
+> >     acpi device:3f: Failed to evaluate _DEP.
+> >     ACPI: [Package] has zero elements (ffff88040ccdb8c0)
+> >     acpi LNXVIDEO:00: Failed to evaluate _DEP.
+> >     ACPI: Power Resource [FN00] (off)
+> >     ...
+> > 
+> > which doesn't seem to hinder anything from working, but is extremely
+> > annoying because it's printed out as some super-important "KERN_ERR
+> > message of Doom!"
+> > 
+> > I don't see why incomplete ACPI tables would *ever* be "KERN_ERR"
+> > level messages, but I particularly don't see it when it seems to be
+> > our own meaningless fake entries.
 > 
-> Hmm. That seems to be the cause of this annoying new message:
+> Right the KERN_ERR level in there is silly.  Overlooked in review, sorry
+> about that.  The patch below should take care of it.
 > 
->     ...
->     ACPI: Using IOAPIC for interrupt routing
->     PCI: Using host bridge windows from ACPI; if necessary, use
-> "pci=nocrs" and report a bug
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:00: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:01: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:02: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:03: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:04: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:05: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:06: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb200)
->     acpi LNXCPU:07: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb840)
->     acpi device:27: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb840)
->     acpi device:3f: Failed to evaluate _DEP.
->     ACPI: [Package] has zero elements (ffff88040ccdb8c0)
->     acpi LNXVIDEO:00: Failed to evaluate _DEP.
->     ACPI: Power Resource [FN00] (off)
->     ...
-> 
-> which doesn't seem to hinder anything from working, but is extremely
-> annoying because it's printed out as some super-important "KERN_ERR
-> message of Doom!"
-> 
-> I don't see why incomplete ACPI tables would *ever* be "KERN_ERR"
-> level messages, but I particularly don't see it when it seems to be
-> our own meaningless fake entries.
+> Some of the messages you're seeing are from acpi_evaluate_reference(),
+> though, and are not really useful too.  I'll cut a separate patch for
+> these.
 
-Right the KERN_ERR level in there is silly.  Overlooked in review, sorry
-about that.  The patch below should take care of it.
-
-Some of the messages you're seeing are from acpi_evaluate_reference(),
-though, and are not really useful too.  I'll cut a separate patch for
-these.
-
-Rafael
-
+This:
 
 ---
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: ACPI / scan: Change the level of _DEP-related messages to KERN_DEBUG
+Subject: ACPI / utils: Drop error messages from acpi_evaluate_reference()
 
-Two _DEP-related failure messages are printed as dev_err() which is
-unnecessary and annoying.  Use dev_dbg() to print them.
+Some of the error messages printed by acpi_evaluate_reference()
+with the KERN_ERR priority should really be debug messages, but then
+they would be redundant, because acpi_util_eval_error() is called
+too at the same spots (except for one).
 
-While at it, one of the messages should actually say it is related
-to _DEP, so modify it to that effect.
+Drop the kernel messages from there entirely and leave the
+acpi_util_eval_error() to take care of the debug printing.  In one case,
+replace the kernel message with a call to acpi_util_eval_error().
 
-Fixes: 40e7fcb19293 (ACPI: Add _DEP support to fix battery issue on Asus T100TA)
-Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/scan.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/utils.c |   12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Index: linux-pm/drivers/acpi/scan.c
+Index: linux-pm/drivers/acpi/utils.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/scan.c
-+++ linux-pm/drivers/acpi/scan.c
-@@ -2214,7 +2214,7 @@ static void acpi_device_dep_initialize(s
- 	status = acpi_evaluate_reference(adev->handle, "_DEP", NULL,
- 					&dep_devices);
- 	if (ACPI_FAILURE(status)) {
--		dev_err(&adev->dev, "Failed to evaluate _DEP.\n");
-+		dev_dbg(&adev->dev, "Failed to evaluate _DEP.\n");
- 		return;
+--- linux-pm.orig/drivers/acpi/utils.c
++++ linux-pm/drivers/acpi/utils.c
+@@ -346,22 +346,16 @@ acpi_evaluate_reference(acpi_handle hand
+ 	package = buffer.pointer;
+ 
+ 	if ((buffer.length == 0) || !package) {
+-		printk(KERN_ERR PREFIX "No return object (len %X ptr %p)\n",
+-			    (unsigned)buffer.length, package);
+ 		status = AE_BAD_DATA;
+ 		acpi_util_eval_error(handle, pathname, status);
+ 		goto end;
  	}
+ 	if (package->type != ACPI_TYPE_PACKAGE) {
+-		printk(KERN_ERR PREFIX "Expecting a [Package], found type %X\n",
+-			    package->type);
+ 		status = AE_BAD_DATA;
+ 		acpi_util_eval_error(handle, pathname, status);
+ 		goto end;
+ 	}
+ 	if (!package->package.count) {
+-		printk(KERN_ERR PREFIX "[Package] has zero elements (%p)\n",
+-			    package);
+ 		status = AE_BAD_DATA;
+ 		acpi_util_eval_error(handle, pathname, status);
+ 		goto end;
+@@ -380,17 +374,13 @@ acpi_evaluate_reference(acpi_handle hand
  
-@@ -2224,7 +2224,7 @@ static void acpi_device_dep_initialize(s
- 
- 		status = acpi_get_object_info(dep_devices.handles[i], &info);
- 		if (ACPI_FAILURE(status)) {
--			dev_err(&adev->dev, "Error reading device info\n");
-+			dev_dbg(&adev->dev, "Error reading _DEP device info\n");
- 			continue;
+ 		if (element->type != ACPI_TYPE_LOCAL_REFERENCE) {
+ 			status = AE_BAD_DATA;
+-			printk(KERN_ERR PREFIX
+-				    "Expecting a [Reference] package element, found type %X\n",
+-				    element->type);
+ 			acpi_util_eval_error(handle, pathname, status);
+ 			break;
  		}
  
+ 		if (!element->reference.handle) {
+-			printk(KERN_WARNING PREFIX "Invalid reference in"
+-			       " package %s\n", pathname);
+ 			status = AE_NULL_ENTRY;
++			acpi_util_eval_error(handle, pathname, status);
+ 			break;
+ 		}
+ 		/* Get the  acpi_handle. */
 
