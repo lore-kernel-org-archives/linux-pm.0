@@ -1,115 +1,76 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] iio / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Fri, 12 Dec 2014 12:29:46 +0000
-Message-ID: <548ADFBA.6000303@kernel.org>
-References: <202529361.GBbZ7zGgn8@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: imx: Do not print error message in the
+ EPROBE_DEFER case
+Date: Fri, 12 Dec 2014 09:13:25 -0400
+Message-ID: <20141212131323.GB19853@developer>
+References: <1418332300-7859-1-git-send-email-festevam@gmail.com>
+ <20141211231405.GA19853@developer>
+ <CAOMZO5Ao2=wbKj4VtU4bq5FhMfeOaMW5M9kmjf7y7o0vx-WJDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <202529361.GBbZ7zGgn8-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="f2QGlHpHGjS2mn6Y"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f41.google.com ([209.85.192.41]:41850 "EHLO
+	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967578AbaLLNNd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Dec 2014 08:13:33 -0500
+Received: by mail-qg0-f41.google.com with SMTP id j5so5385120qga.0
+        for <linux-pm@vger.kernel.org>; Fri, 12 Dec 2014 05:13:33 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAOMZO5Ao2=wbKj4VtU4bq5FhMfeOaMW5M9kmjf7y7o0vx-WJDA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: "rui.zhang" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@freescale.com>
 
-On 03/12/14 02:06, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> 
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
-> 
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/iio/.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
-> 
-> Note: This depends on commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if
-> PM_SLEEP is selected) which is only in linux-next at the moment (via the
-> linux-pm tree).
-> 
-> Please let me know if it is OK to take this one into linux-pm.
-It is.  If I took too long to reply and the dependency merged
-in the current window, I can take these through IIO if you'd prefer?
 
-Thanks,
+--f2QGlHpHGjS2mn6Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jonathan
-> 
-> ---
->  drivers/iio/accel/bmc150-accel.c |    4 ++--
->  drivers/iio/accel/kxcjk-1013.c   |    4 ++--
->  drivers/iio/gyro/bmg160.c        |    4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> Index: linux-pm/drivers/iio/accel/bmc150-accel.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/accel/bmc150-accel.c
-> +++ linux-pm/drivers/iio/accel/bmc150-accel.c
-> @@ -510,7 +510,7 @@ static int bmc150_accel_get_bw(struct bm
->  	return -EINVAL;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmc150_accel_get_startup_times(struct bmc150_accel_data *data)
->  {
->  	int i;
-> @@ -1349,7 +1349,7 @@ static int bmc150_accel_resume(struct de
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmc150_accel_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> Index: linux-pm/drivers/iio/accel/kxcjk-1013.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/accel/kxcjk-1013.c
-> +++ linux-pm/drivers/iio/accel/kxcjk-1013.c
-> @@ -358,7 +358,7 @@ static int kxcjk1013_chip_init(struct kx
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int kxcjk1013_get_startup_times(struct kxcjk1013_data *data)
->  {
->  	int i;
-> @@ -1357,7 +1357,7 @@ static int kxcjk1013_resume(struct devic
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int kxcjk1013_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> Index: linux-pm/drivers/iio/gyro/bmg160.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iio/gyro/bmg160.c
-> +++ linux-pm/drivers/iio/gyro/bmg160.c
-> @@ -237,7 +237,7 @@ static int bmg160_chip_init(struct bmg16
->  
->  static int bmg160_set_power_state(struct bmg160_data *data, bool on)
->  {
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  	int ret;
->  
->  	if (on)
-> @@ -1164,7 +1164,7 @@ static int bmg160_resume(struct device *
->  }
->  #endif
->  
-> -#ifdef CONFIG_PM_RUNTIME
-> +#ifdef CONFIG_PM
->  static int bmg160_runtime_suspend(struct device *dev)
->  {
->  	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
-> 
+Fabio,
+
+On Thu, Dec 11, 2014 at 09:18:25PM -0200, Fabio Estevam wrote:
+> Hi Eduardo,
+>=20
+> On Thu, Dec 11, 2014 at 9:14 PM, Eduardo Valentin <edubezval@gmail.com> w=
+rote:
+>=20
+> > Thanks for your patch. But I am queuing a different patch that does a
+> > similar job.
+> >
+> > https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal=
+=2Egit/commit/?h=3Dfixes&id=3D0f1be51c358f740fe5183bd0bcd60076fdfb53d0
+>=20
+> I am running linux-next 20141211, which has this commit applied.
+>=20
+> > Can you please check my -fixes branch? When EPROBE_DEFER happens, we are
+> > now printing a debug message only.
+>=20
+> On linux-next I am still getting the error, so I still needed my patch.
+
+Understood. I will be queuing it in my -fixes branch.
+
+Thanks!
+
+>=20
+> Thanks
+
+--f2QGlHpHGjS2mn6Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUiunsAAoJEMLUO4d9pOJWRfcH/RH71xUS6WWb8PntO8ApXYqT
+0sX1SAObX35OdI/Vg44XXBDWXOuafBbmhJsWs3U/fgTVYoQGmSmxlkmEJuG3mWO9
+vzX3F8qEnBA/YJMCQ76Vjgbgqker/U5jjSh95UGaV7XQ9Guh1AxBkSCLWVOaO4Po
+VM1cuUaTW1R0nXeVlyED+DjC3pzs3e8an42nR2pWB1cNWMT9HWGqZwd29nroCC5d
+ZmFuGU0K752y0jJU0EWK+K0+/ct1nW8X17/CYm2pW3+HRBIDbB5w/nPEjYgi7YLf
+Ba80WhMRE3SvvniaOQdGKLpQTNSe/GuBW/v4kryTOTBrq6SQrjGp3j6njXPJzW8=
+=OiJX
+-----END PGP SIGNATURE-----
+
+--f2QGlHpHGjS2mn6Y--
