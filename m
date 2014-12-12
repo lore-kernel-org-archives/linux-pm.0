@@ -1,39 +1,41 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] thermal: imx: Do not print error message in the
- EPROBE_DEFER case
-Date: Thu, 11 Dec 2014 21:18:25 -0200
-Message-ID: <CAOMZO5Ao2=wbKj4VtU4bq5FhMfeOaMW5M9kmjf7y7o0vx-WJDA@mail.gmail.com>
-References: <1418332300-7859-1-git-send-email-festevam@gmail.com>
-	<20141211231405.GA19853@developer>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/5] opp: handle allocation of device_opp in a separate routine
+Date: Fri, 12 Dec 2014 09:04:18 +0530
+Message-ID: <CAKohpo=ZmGpqg8hHDO+sOE7jwy8FMP5y4w5hCRgTsg9hj7eoNg@mail.gmail.com>
+References: <0a31e317c90f601f77cc21b80455633928c70c96.1418184737.git.viresh.kumar@linaro.org>
+	<3480697.K2MkBymPAS@vostro.rjw.lan>
+	<CAKohpoktdrOX8TDwqd-co+mNERS_NjewitDXguXDZO9bEWdFFA@mail.gmail.com>
+	<2316919.BxPO4eAa0q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:51819 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934114AbaLKXS1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Dec 2014 18:18:27 -0500
-Received: by mail-la0-f51.google.com with SMTP id ms9so5130982lab.24
-        for <linux-pm@vger.kernel.org>; Thu, 11 Dec 2014 15:18:25 -0800 (PST)
-In-Reply-To: <20141211231405.GA19853@developer>
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:46771 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933200AbaLLDeT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Dec 2014 22:34:19 -0500
+Received: by mail-oi0-f54.google.com with SMTP id u20so4694911oif.13
+        for <linux-pm@vger.kernel.org>; Thu, 11 Dec 2014 19:34:19 -0800 (PST)
+In-Reply-To: <2316919.BxPO4eAa0q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "rui.zhang" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Eduardo,
-
-On Thu, Dec 11, 2014 at 9:14 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-
-> Thanks for your patch. But I am queuing a different patch that does a
-> similar job.
+On 12 December 2014 at 02:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> OK
 >
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=fixes&id=0f1be51c358f740fe5183bd0bcd60076fdfb53d0
+> So I've applied this, but here are the rules for the future regarding
+> checkpatch.pl:
+>
+> (1) checkpatch.pl is meant for checking changes made by a patch and *not* for
+>     checking the existing code.
+>
+> (2) Always use common sense on top of checkpatch.pl complaints.
 
-I am running linux-next 20141211, which has this commit applied.
+Correct, normally I do ignore the warnings for cases which I don't care about.
+I did react to this one because there have been patches going around removing
+print messages on allocation failures. And I didn't wanted to get another one
+for this and so removed it in my patch only..
 
-> Can you please check my -fixes branch? When EPROBE_DEFER happens, we are
-> now printing a debug message only.
-
-On linux-next I am still getting the error, so I still needed my patch.
-
-Thanks
+--
+viresh
