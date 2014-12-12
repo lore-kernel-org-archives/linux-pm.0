@@ -1,427 +1,63 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RFC PATCHv2 1/7] devfreq: event: Add new devfreq_event class to
- provide basic data for devfreq governor
-Date: Fri, 12 Dec 2014 12:42:53 +0900
-Message-ID: <548A643D.10508@samsung.com>
-References: <1418134386-14681-1-git-send-email-cw00.choi@samsung.com>
- <1418134386-14681-2-git-send-email-cw00.choi@samsung.com>
- <1418204220.16644.14.camel@AMDC1943> <5488FDCE.2060009@samsung.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] ACPI and power management updates for 3.19-rc1
+Date: Thu, 11 Dec 2014 19:59:20 -0800
+Message-ID: <CA+55aFx+8gKsDSDKSAxB4+JuL_M22uuHDmzSfsv1qJ=dSZ3-ww@mail.gmail.com>
+References: <CAJZ5v0i3UhvaAu9JV_BuB0fPFmHAa_NdX+eXYBnAHcsiaVOw9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <5488FDCE.2060009@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: devicetree@vger.kernel.org, kgene.kim@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tomasz.figa@gmail.com, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f54.google.com ([209.85.216.54]:33389 "EHLO
+	mail-qa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757819AbaLLD7V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Dec 2014 22:59:21 -0500
+In-Reply-To: <CAJZ5v0i3UhvaAu9JV_BuB0fPFmHAa_NdX+eXYBnAHcsiaVOw9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi Krzysztof,
+On Mon, Dec 8, 2014 at 4:21 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> Also the ACPI core is now going to support the _DEP configuration
+> information in a limited way.
 
-I replied again this mail because I'll use the mutex for set_event()/get_event()
-according to your comment. But, of_parse_phandle() seems that this function
-don't need the of_node_put() function.
+Hmm. That seems to be the cause of this annoying new message:
 
+    ...
+    ACPI: Using IOAPIC for interrupt routing
+    PCI: Using host bridge windows from ACPI; if necessary, use
+"pci=nocrs" and report a bug
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:00: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:01: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:02: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:03: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:04: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:05: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:06: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb200)
+    acpi LNXCPU:07: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb840)
+    acpi device:27: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb840)
+    acpi device:3f: Failed to evaluate _DEP.
+    ACPI: [Package] has zero elements (ffff88040ccdb8c0)
+    acpi LNXVIDEO:00: Failed to evaluate _DEP.
+    ACPI: Power Resource [FN00] (off)
+    ...
 
-On 12/11/2014 11:13 AM, Chanwoo Choi wrote:
-> Hi Krzysztof,
-> 
-> First of all, thanks for your review.
-> 
-> On 12/10/2014 06:37 PM, Krzysztof Kozlowski wrote:
->> On wto, 2014-12-09 at 23:13 +0900, Chanwoo Choi wrote:
->>> This patch add new devfreq_event class for devfreq_event device which provide
->>> raw data (e.g., memory bus utilization/GPU utilization). This raw data from
->>> devfreq_event data would be used for the governor of devfreq subsystem.
->>> - devfreq_event device : Provide raw data for governor of existing devfreq device
->>> - devfreq device       : Monitor device state and change frequency/voltage of device
->>>                          using the raw data from devfreq_event device
->>>
->>> The devfreq subsystem support generic DVFS(Dynamic Voltage/Frequency Scaling)
->>> for Non-CPU Devices. The devfreq device would dertermine current device state
->>> using various governor (e.g., ondemand, performance, powersave). After completed
->>> determination of system state, devfreq device would change the frequency/voltage
->>> of devfreq device according to the result of governor.
->>>
->>> But, devfreq governor must need basic data which indicates current device state.
->>> Existing devfreq subsystem only consider devfreq device which check current system
->>> state and determine proper system state using basic data. There is no subsystem
->>> for device providing basic data to devfreq device.
->>>
->>> The devfreq subsystem must need devfreq_event device(data-provider device) for
->>> existing devfreq device. So, this patch add new devfreq_event class for
->>> devfreq_event device which read various basic data(e.g, memory bus utilization,
->>> GPU utilization) and provide measured data to existing devfreq device through
->>> standard APIs of devfreq_event class.
->>>
->>> The following description explains the feature of two kind of devfreq class:
->>> - devfreq class (existing)
->>>  : devfreq consumer device use raw data from devfreq_event device for
->>>    determining proper current system state and change voltage/frequency
->>>    dynamically using various governors.
->>>
->>> - devfreq_event class (new)
->>>  : Provide measured raw data to devfreq device for governor
->>>
->>> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
->>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
->>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>> ---
->>>  drivers/devfreq/Kconfig         |   2 +
->>>  drivers/devfreq/Makefile        |   5 +-
->>>  drivers/devfreq/devfreq-event.c | 302 ++++++++++++++++++++++++++++++++++++++++
->>>  drivers/devfreq/event/Makefile  |   1 +
->>>  include/linux/devfreq.h         | 141 +++++++++++++++++++
->>>  5 files changed, 450 insertions(+), 1 deletion(-)
->>>  create mode 100644 drivers/devfreq/devfreq-event.c
->>>  create mode 100644 drivers/devfreq/event/Makefile
->>>
->>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
->>> index faf4e70..4d15b62 100644
->>> --- a/drivers/devfreq/Kconfig
->>> +++ b/drivers/devfreq/Kconfig
->>> @@ -87,4 +87,6 @@ config ARM_EXYNOS5_BUS_DEVFREQ
->>>  	  It reads PPMU counters of memory controllers and adjusts the
->>>  	  operating frequencies and voltages with OPP support.
->>>  
->>> +comment "DEVFREQ Event Drivers"
->>> +
->>>  endif # PM_DEVFREQ
->>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
->>> index 16138c9..a1ffabe 100644
->>> --- a/drivers/devfreq/Makefile
->>> +++ b/drivers/devfreq/Makefile
->>> @@ -1,4 +1,4 @@
->>> -obj-$(CONFIG_PM_DEVFREQ)	+= devfreq.o
->>> +obj-$(CONFIG_PM_DEVFREQ)		+= devfreq.o devfreq-event.o
->>>  obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
->>>  obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
->>>  obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
->>> @@ -7,3 +7,6 @@ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
->>>  # DEVFREQ Drivers
->>>  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos/
->>>  obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)	+= exynos/
->>> +
->>> +# DEVFREQ Event Drivers
->>> +obj-$(CONFIG_PM_DEVFREQ)		+= event/
->>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
->>> new file mode 100644
->>> index 0000000..b47329f
->>> --- /dev/null
->>> +++ b/drivers/devfreq/devfreq-event.c
->>> @@ -0,0 +1,302 @@
->>> +/*
->>> + * devfreq-event: Generic DEVFREQ Event class driver
->>> + *
->>> + * Copyright (C) 2014 Samsung Electronics
->>> + * Chanwoo Choi <cw00.choi@samsung.com>
->>> + *
->>> + * This program is free software; you can redistribute it and/or modify
->>> + * it under the terms of the GNU General Public License version 2 as
->>> + * published by the Free Software Foundation.
->>> + *
->>> + * This driver is based on drivers/devfreq/devfreq.c
->>> + */
->>> +
->>> +#include <linux/kernel.h>
->>> +#include <linux/sched.h>
->>> +#include <linux/errno.h>
->>> +#include <linux/err.h>
->>> +#include <linux/init.h>
->>> +#include <linux/module.h>
->>> +#include <linux/slab.h>
->>> +#include <linux/stat.h>
->>> +#include <linux/pm_opp.h>
->>> +#include <linux/devfreq.h>
->>> +#include <linux/workqueue.h>
->>> +#include <linux/platform_device.h>
->>> +#include <linux/list.h>
->>> +#include <linux/printk.h>
->>> +#include <linux/hrtimer.h>
->>> +#include <linux/of.h>
->>> +#include "governor.h"
->>> +
->>> +static struct class *devfreq_event_class;
->>> +
->>> +/* The list of all devfreq event list */
->>> +static LIST_HEAD(devfreq_event_list);
->>> +static DEFINE_MUTEX(devfreq_event_list_lock);
->>> +
->>> +#define to_devfreq_event(DEV) container_of(DEV, struct devfreq_event_dev, dev)
->>> +
->>> +struct devfreq_event_dev *devfreq_add_event_device(struct device *dev,
->>> +					struct devfreq_event_desc *desc)
->>> +{
->>> +	struct devfreq_event_dev *event_dev;
->>> +	static atomic_t event_no = ATOMIC_INIT(0);
->>> +	int ret;
->>> +
->>> +	if (!dev || !desc)
->>> +		return ERR_PTR(-EINVAL);
->>> +
->>> +	if (!desc->name || !desc->ops)
->>> +		return ERR_PTR(-EINVAL);
->>> +
->>> +	event_dev = kzalloc(sizeof(struct devfreq_event_dev), GFP_KERNEL);
->>> +	if (!event_dev)
->>> +		return ERR_PTR(-ENOMEM);
->>
->> Is this memory freed anywhere when driver is removed? I couldn't find
->> it. I couldn't also find function like devfreq_remove_event_device()
->> which would be reverting all the work done when adding.
-> 
-> You're right. I'll use devm_kzalloc instead of kzalloc.
-> 
->>
->>> +
->>> +	mutex_lock(&devfreq_event_list_lock);
->>> +
->>> +	mutex_init(&event_dev->lock);
->>> +	event_dev->desc = desc;
->>> +	event_dev->dev.parent = dev;
->>> +	event_dev->dev.class = devfreq_event_class;
->>> +
->>> +	dev_set_name(&event_dev->dev, "event.%d",
->>> +		     atomic_inc_return(&event_no) - 1);
->>> +	ret = device_register(&event_dev->dev);
->>> +	if (ret != 0) {
->>> +		put_device(&event_dev->dev);
->>> +		goto err;
->>> +	}
->>> +	dev_set_drvdata(&event_dev->dev, event_dev);
->>> +
->>> +	/* Add devfreq event device to devfreq_event_list */
->>> +	INIT_LIST_HEAD(&event_dev->node);
->>> +	list_add(&event_dev->node, &devfreq_event_list);
->>> +
->>> +	mutex_unlock(&devfreq_event_list_lock);
->>> +
->>> +	return event_dev;
->>> +err:
->>
->> Missing 'mutex_unlock(&devfreq_event_list_lock)' here.
-> 
-> OK. I'll fix it.
-> 
->>
->>
->>> +	kfree(event_dev);
->>> +	return ERR_PTR(ret);
->>> +}
->>> +EXPORT_SYMBOL(devfreq_add_event_device);
->>> +
->>> +struct devfreq_event_dev *devfreq_get_event_dev(const char *event_dev_name)
->>> +{
->>> +	struct devfreq_event_dev *event_dev;
->>> +
->>> +	mutex_lock(&devfreq_event_list_lock);
->>> +	list_for_each_entry(event_dev, &devfreq_event_list, node) {
->>> +		if (!strcmp(event_dev->desc->name, event_dev_name))
->>> +			goto out;
->>> +	}
->>> +	event_dev = NULL;
->>> +out:
->>> +	mutex_unlock(&devfreq_event_list_lock);
->>> +
->>> +	return event_dev;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_get_event_dev);
->>> +
->>> +struct devfreq_event_dev *devfreq_get_event_dev_by_phandle(struct device *dev,
->>> +						      int index)
->>> +{
->>> +	struct device_node *node;
->>> +	struct devfreq_event_dev *event_dev;
->>> +
->>> +	if (!dev->of_node) {
->>> +		dev_err(dev, "device does not have a device node entry\n");
->>> +		return ERR_PTR(-EINVAL);
->>> +	}
->>> +
->>> +	node = of_parse_phandle(dev->of_node, "devfreq-events", index);
->>> +	if (!node) {
->>> +		dev_err(dev, "failed to get phandle in %s node\n",
->>> +			dev->of_node->full_name);
->>> +		return ERR_PTR(-ENODEV);
->>> +	}
->>> +
->>> +	event_dev = devfreq_get_event_dev(node->name);
->>> +	if (!event_dev) {
->>> +		dev_err(dev, "unable to get devfreq-event device : %s\n",
->>> +			node->name);
->>
->> of_node_put() for node obtained with of_parse_phandle().
-> 
-> OK. I'll add it.
+which doesn't seem to hinder anything from working, but is extremely
+annoying because it's printed out as some super-important "KERN_ERR
+message of Doom!"
 
-of_parse_phandle() seems that it don't need of_node_put().
+I don't see why incomplete ACPI tables would *ever* be "KERN_ERR"
+level messages, but I particularly don't see it when it seems to be
+our own meaningless fake entries.
 
-> 
->>
->>> +		return ERR_PTR(-ENODEV);
->>> +	}
->>> +
->>> +	return event_dev;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_get_event_dev_by_phandle);
->>> +
->>> +int devfreq_put_event_dev(struct devfreq_event_dev *event_dev)
->>> +{
->>
->> of_node_put() here to decrement refcnt from of_parse_phandle()?
-> 
-> It is my mistake. I think that devfreq_put_event_dev is not necesssary.
-> I'll remove it.
-> 
->>
->>> +	return 0;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_put_event_dev);
->>> +
->>> +int devfreq_enable_event_dev(struct devfreq_event_dev *event_dev)
->>> +{
->>> +	int ret = 0;
->>> +
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return -EINVAL;
->>> +
->>> +	mutex_lock(&event_dev->lock);
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->enable) {
->>> +		ret = event_dev->desc->ops->enable(event_dev);
->>> +		if (ret < 0)
->>> +			goto err;
->>> +	}
->>> +	event_dev->enable_count++;
->>> +err:
->>> +	mutex_unlock(&event_dev->lock);
->>> +
->>> +	return ret;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_enable_event_dev);
->>> +
->>> +int devfreq_disable_event_dev(struct devfreq_event_dev *event_dev)
->>> +{
->>> +	int ret = 0;
->>> +
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return -EINVAL;
->>> +
->>> +	mutex_lock(&event_dev->lock);
->>> +	if (event_dev->enable_count > 0) {
->>> +		event_dev->enable_count--;
->>> +	} else {
->>> +		dev_warn(&event_dev->dev, "unbalanced enable_count\n");
->>> +		ret = -EINVAL;
->>> +		goto err;
->>> +	}
->>> +
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->disable) {
->>> +		ret = event_dev->desc->ops->disable(event_dev);
->>> +		if (ret < 0) {
->>> +			event_dev->enable_count++;
->>> +			goto err;
->>> +		}
->>> +	}
->>> +err:
->>> +	mutex_unlock(&event_dev->lock);
->>> +
->>> +	return ret;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_disable_event_dev);
->>> +
->>> +bool devfreq_is_enabled_event_dev(struct devfreq_event_dev *event_dev)
->>> +{
->>> +	bool enabled = false;
->>> +
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return enabled;
->>> +
->>> +	if (!(event_dev->enable_count > 0))
->>> +		return enabled;
->>> +
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->is_enabled)
->>> +		enabled = event_dev->desc->ops->is_enabled(event_dev);
->>> +
->>> +	return enabled;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_is_enabled_event_dev);
->>> +
->>> +int devfreq_set_event_event_dev(struct devfreq_event_dev *event_dev)
->>
->> The convention of names you use is not obvious to me. I would expect
->> rather devfreq_event_dev_XXX (where XXX is "set_event", "is_enabled"
->> etc).
->> The one above is good example what is the issue with current convention:
->> devfreq_set_event_event_dev
->>             ^     ^
->> This double "event" looks weird.
-> 
-> You're right. I'll have to fix the function name according to your comment.
-> 
->>
->>> +{
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return -EINVAL;
->>> +
->>> +	if (!devfreq_is_enabled_event_dev(event_dev))
->>> +		return -EPERM;
->>> +
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->set_event)
->>> +		return event_dev->desc->ops->set_event(event_dev);
->>
->> No mutexes here? What exactly is protected by mutex?
-> 
-> I used the mutex when devfreq-event class read/write the data of devfreq_event_dev structure.
-
-I'll use mutex for set_event() function according to your comment.
-
-> 
->>
->>> +
->>> +	return -EINVAL;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_set_event_event_dev);
->>> +
->>> +int devfreq_get_event_event_dev(struct devfreq_event_dev *event_dev,
->>> +				int *total_event)
->>> +{
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return -EINVAL;
->>> +
->>> +	if (!devfreq_is_enabled_event_dev(event_dev))
->>> +		return -EPERM;
->>> +
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->get_event)
->>> +		return event_dev->desc->ops->get_event(event_dev, total_event);
->>> +
->>> +	return -EINVAL;
->>> +}
->>> +EXPORT_SYMBOL_GPL(devfreq_get_event_event_dev);
->>> +
->>> +int devfreq_reset_event_dev(struct devfreq_event_dev *event_dev)
->>> +{
->>> +	if (!event_dev || !event_dev->desc)
->>> +		return -EINVAL;
->>> +
->>> +	if (!devfreq_is_enabled_event_dev(event_dev))
->>> +		return -EPERM;
->>> +
->>> +	if (event_dev->desc->ops && event_dev->desc->ops->reset)
->>> +		return event_dev->desc->ops->reset(event_dev);
->>
->> Same here, no mutex?
-> 
-> I replied it on previous your question.
-
-I'll use mutex for set_event() function according to your comment.
-
-Best Regards,
-Chanwoo Choi
+                   Linus
