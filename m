@@ -1,31 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Resend][PATCH] NFC / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Sat, 13 Dec 2014 02:36:19 +0100
-Message-ID: <2345337.9Neq3LLH1l@vostro.rjw.lan>
-References: <1783661.J0PllbRLKd@vostro.rjw.lan>
+Subject: [Resend][PATCH] power / PM: Eliminate CONFIG_PM_RUNTIME
+Date: Sat, 13 Dec 2014 02:37:38 +0100
+Message-ID: <2140907.kiDBIytxHB@vostro.rjw.lan>
+References: <2283612.6Ya1ZnvRTt@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54315 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:65161 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932591AbaLMBOk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Dec 2014 20:14:40 -0500
-In-Reply-To: <1783661.J0PllbRLKd@vostro.rjw.lan>
+	with SMTP id S932591AbaLMBP7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Dec 2014 20:15:59 -0500
+In-Reply-To: <2283612.6Ya1ZnvRTt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-wireless@vger.kernel.org
-Cc: Lauro Ramos Venancio <lauro.venancio@openbossa.org>, Aloisio Almeida Jr <aloisio.almeida@openbossa.org>, Samuel Ortiz <sameo@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: NFC / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
 
 After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
 selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-depending on CONFIG_PM_RUNTIME may now be changed to depend on
-CONFIG_PM.
+depending on CONFIG_PM_RUNTIME within #ifdef blocks depending on
+CONFIG_PM may be dropped now.
 
-Replace CONFIG_PM_RUNTIME with CONFIG_PM in drivers/nfc/trf7970a.c.
+Do that in drivers/power/pm2301_charger.c.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -35,20 +34,29 @@ take it through the linux-pm tree, as I'm going to remove CONFIG_PM_RUNTIME
 entirely shortly.
 
 ---
- drivers/nfc/trf7970a.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/pm2301_charger.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Index: linux-pm/drivers/nfc/trf7970a.c
+Index: linux-pm/drivers/power/pm2301_charger.c
 ===================================================================
---- linux-pm.orig/drivers/nfc/trf7970a.c
-+++ linux-pm/drivers/nfc/trf7970a.c
-@@ -2154,7 +2154,7 @@ static int trf7970a_resume(struct device
- }
+--- linux-pm.orig/drivers/power/pm2301_charger.c
++++ linux-pm/drivers/power/pm2301_charger.c
+@@ -951,8 +951,6 @@ static int pm2xxx_wall_charger_suspend(s
+ 
  #endif
  
 -#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- static int trf7970a_pm_runtime_suspend(struct device *dev)
+-
+ static int  pm2xxx_runtime_suspend(struct device *dev)
  {
- 	struct spi_device *spi = container_of(dev, struct spi_device, dev);
+ 	struct i2c_client *pm2xxx_i2c_client = to_i2c_client(dev);
+@@ -977,8 +975,6 @@ static int  pm2xxx_runtime_resume(struct
+ 	return 0;
+ }
+ 
+-#endif
+-
+ static const struct dev_pm_ops pm2xxx_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(pm2xxx_wall_charger_suspend,
+ 		pm2xxx_wall_charger_resume)
 
