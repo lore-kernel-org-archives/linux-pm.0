@@ -1,50 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] export suspend_resume trace event
-Date: Sun, 14 Dec 2014 22:28:46 +0100
-Message-ID: <4662484.obop6v7tsN@vostro.rjw.lan>
-References: <20141213040646.GA22352@linux.intel.com>
+Subject: Re: [PATCH] cpupower: Correctly detect if running as root
+Date: Sun, 14 Dec 2014 22:29:24 +0100
+Message-ID: <1660884.y6rjWabQcf@vostro.rjw.lan>
+References: <b03faaf6b63a9175da0ce7ab8e0fc3da0cba4a86.1418560562.git.mprivozn@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55402 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:58860 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750883AbaLNVHJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Dec 2014 16:07:09 -0500
-In-Reply-To: <20141213040646.GA22352@linux.intel.com>
+	with SMTP id S1750986AbaLNVHn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Dec 2014 16:07:43 -0500
+In-Reply-To: <b03faaf6b63a9175da0ce7ab8e0fc3da0cba4a86.1418560562.git.mprivozn@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: todd.e.brandt@linux.intel.com
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, todd.e.brandt@intel.com
+To: Michal Privoznik <mprivozn@redhat.com>
+Cc: trenn@suse.de, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, December 12, 2014 08:06:46 PM Todd E Brandt wrote:
-> Export the suspend_resume tracepoint so it can be used
-> in loadable modules.
+On Sunday, December 14, 2014 01:36:52 PM Michal Privoznik wrote:
+> Some operations, like frequency-set, need root privileges. However,
+> the way that this is detected is not correct. The getuid() is called,
+> while in fact geteuid() should be. This way we can allow
+> distributions or users to set SETUID flags on the cpupower binary if
+> they want to and let regular users change the cpu frequency governor.
 > 
-> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+> Signed-off-by: Michal Privoznik <mprivozn@redhat.com>
 
-I'm going to queue this up for 3.20 some time after the 3.19 merge window ends.
+An ACK from Thomas is needed.
 
-
-> ----
->  kernel/trace/power-traces.c | 1 +
->  1 file changed, 1 insertion(+)
+> ---
+>  tools/power/cpupower/utils/cpupower.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
-> index 1c71382..eb4220a 100644
-> --- a/kernel/trace/power-traces.c
-> +++ b/kernel/trace/power-traces.c
-> @@ -13,5 +13,6 @@
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/power.h>
+> diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
+> index 7cdcf88..9ea9143 100644
+> --- a/tools/power/cpupower/utils/cpupower.c
+> +++ b/tools/power/cpupower/utils/cpupower.c
+> @@ -199,7 +199,7 @@ int main(int argc, const char *argv[])
+>  	}
 >  
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(suspend_resume);
->  EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_idle);
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  	get_cpu_info(0, &cpupower_cpu_info);
+> -	run_as_root = !getuid();
+> +	run_as_root = !geteuid();
+>  	if (run_as_root) {
+>  		ret = uname(&uts);
+>  		if (!ret && !strcmp(uts.machine, "x86_64") &&
+> 
 
 -- 
 I speak only for myself.
