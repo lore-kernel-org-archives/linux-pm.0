@@ -1,43 +1,58 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] thermal: cpu_cooling: document node in struct cpufreq_cooling_device
-Date: Mon, 15 Dec 2014 16:55:52 +0000
-Message-ID: <1418662552-26128-1-git-send-email-javi.merino@arm.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Mon, 15 Dec 2014 17:43:36 +0000
+Message-ID: <20141215174336.GJ11285@n2100.arm.linux.org.uk>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+ <7573578.UE8ufgjWuX@vostro.rjw.lan>
+ <CAKohpok6ieJYgusMh+WFCQT8d5_QVgGczmQyD79UPz4hdYU1Dg@mail.gmail.com>
+ <002f01d0186b$2700b730$75022590$%brar@samsung.com>
+ <20141215134636.GI11285@n2100.arm.linux.org.uk>
+ <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:50033 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbaLOQ4L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 11:56:11 -0500
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:60180 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750863AbaLORnu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 12:43:50 -0500
+Content-Disposition: inline
+In-Reply-To: <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+To: Yadwinder Singh Brar <yadi.brar@samsung.com>
+Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 'Eduardo Valentin' <edubezval@gmail.com>
 
-The node field of struct cpufreq_cooling_device was reintroduced in
-2dcd851fe4b4 (thermal: cpu_cooling: Update always cpufreq policy with
-thermal constraints) but without the documentation that it once had.
-Add it back so that all the fields of struct cpufreq_cooling_device
-are documented.
+On Mon, Dec 15, 2014 at 08:24:05PM +0530, Yadwinder Singh Brar wrote:
+> > The answer may well be to have finer grained locking here:
+> > 
+> > - one lock to protect cpufreq_dev_list, which is only ever taken when
+> >   adding or removing entries from it
+> > 
+> > - a second lock to protect cpufreq_dev_count and the calls to
+> >   cpufreq_register_notifier() and cpufreq_unregister_notifier()
+> > 
+> > and you would /never/ take either of those two locks inside each other.
+> > In other words:
+> > 
+> > 	mutex_lock(&cooling_list_lock);
+> > 	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+> > 	mutex_unlock(&cooling_list_lock);
+> > 
+> > 	mutex_lock(&cooling_cpufreq_lock);
+> > 	if (cpufreq_dev_count++ == 0)
+> > 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+> > 					  CPUFREQ_POLICY_NOTIFIER);
+> > 	mutex_unlock(&cooling_cpufreq_lock);
+> > 
+> > and similar in the cleanup path.  The notifier itself would only ever
+> > take the cooling_list_lock.
+> > 
+> 
+> I agree with this approach, if its fine for others also, I can implement
+> and post patch.
 
-Cc: Yadwinder Singh Brar <yadi.brar@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- drivers/thermal/cpu_cooling.c | 1 +
- 1 file changed, 1 insertion(+)
+Yes, please do.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index ad09e51ffae4..588185abeab0 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -39,6 +39,7 @@
-  * @cpufreq_val: integer value representing the absolute value of the clipped
-  *	frequency.
-  * @allowed_cpus: all the cpus involved for this cpufreq_cooling_device.
-+ * @node: list_head to link all cpufreq_cooling_device together.
-  *
-  * This structure is required for keeping information of each
-  * cpufreq_cooling_device registered. In order to prevent corruption of this a
 -- 
-1.9.1
-
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
