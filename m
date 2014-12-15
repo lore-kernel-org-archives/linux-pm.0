@@ -1,37 +1,122 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 2/2] thermal/powerclamp: add ids for future xeon cpus
-Date: Mon, 15 Dec 2014 10:15:41 -0800
-Message-ID: <1418667341-8917-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 3/3] arm64: psci: Add support to call cpu_suspend with
+ deepest C state.
+Date: Mon, 15 Dec 2014 18:34:25 +0000
+Message-ID: <20141215183425.GB721@red-moon>
+References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
+ <1414641338-25279-3-git-send-email-amit.daniel@samsung.com>
+ <20141030104630.GC17843@red-moon>
+ <CADGdYn51aC-r7bRLvF+5p2z=a1WXRXobA-ukuvuDXHn-HE2PZw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:54956 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbaLOSTH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Dec 2014 13:19:07 -0500
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:50242 "EHLO
+	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbaLOSe2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 13:34:28 -0500
+Content-Disposition: inline
+In-Reply-To: <CADGdYn51aC-r7bRLvF+5p2z=a1WXRXobA-ukuvuDXHn-HE2PZw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-Enable Intel Powerclamp driver on Xeon cpu id 0x56, package C-state
-is available on this CPU for idle injection.
+On Mon, Dec 01, 2014 at 08:08:55AM +0000, amit daniel kachhap wrote:
+> On Thu, Oct 30, 2014 at 4:16 PM, Lorenzo Pieralisi
+> <lorenzo.pieralisi@arm.com> wrote:
+> > On Thu, Oct 30, 2014 at 03:55:38AM +0000, Amit Daniel Kachhap wrote:
+> >> This feature will be useful for system suspend/resume which may
+> >> intend to invoke cpu_suspend with deepest possible C state level.
+> >
+> > We are working on defining system states in the PSCI specification,
+> > but it is not set in stone yet (Cc'ed Charles).
+> >
+> > I guess you are posting this code because you have already an
+> > implementation that supports system suspend/resume, so I am
+> > taking an immediate action to come up with an API suitable
+> > for that asap.
+> Hi Lorenzo,
+> 
+> Any update on this API for system sleep.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/intel_powerclamp.c | 1 +
- 1 file changed, 1 insertion(+)
+Hi Amit,
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index b46c706..1ee263a 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -690,6 +690,7 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
- 	{ X86_VENDOR_INTEL, 6, 0x45},
- 	{ X86_VENDOR_INTEL, 6, 0x46},
- 	{ X86_VENDOR_INTEL, 6, 0x4c},
-+	{ X86_VENDOR_INTEL, 6, 0x56},
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
--- 
-1.9.1
+Sorry for the delay in replying, I am working on it at the moment, we will
+post the API in the coming weeks.
 
+Thank you,
+Lorenzo
+
+> 
+> Regards,
+> Amit
+> 
+> >
+> > On a side note I do not necessarily like this magic idle index
+> > logic, I prefer adding an API for that, that translates the call
+> > into whatever is required by the back-end (ie PSCI) implementation.
+> >
+> > Thanks,
+> > Lorenzo
+> >
+> >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> >> ---
+> >>  arch/arm64/include/asm/psci.h | 2 ++
+> >>  arch/arm64/kernel/psci.c      | 8 ++++++++
+> >>  2 files changed, 10 insertions(+)
+> >>
+> >> diff --git a/arch/arm64/include/asm/psci.h b/arch/arm64/include/asm/psci.h
+> >> index e5312ea..487e52b 100644
+> >> --- a/arch/arm64/include/asm/psci.h
+> >> +++ b/arch/arm64/include/asm/psci.h
+> >> @@ -14,6 +14,8 @@
+> >>  #ifndef __ASM_PSCI_H
+> >>  #define __ASM_PSCI_H
+> >>
+> >> +#define CPU_PSCI_IDLE_INDEX_MAX              0xff
+> >> +
+> >>  int psci_init(void);
+> >>
+> >>  #endif /* __ASM_PSCI_H */
+> >> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+> >> index 4ebc146..a761513 100644
+> >> --- a/arch/arm64/kernel/psci.c
+> >> +++ b/arch/arm64/kernel/psci.c
+> >> @@ -70,6 +70,7 @@ enum psci_function {
+> >>  static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_state);
+> >>
+> >>  static u32 psci_function_id[PSCI_FN_MAX];
+> >> +static u32 cpu_psci_idle_state_count;
+> >>
+> >>  static int psci_to_linux_errno(int errno)
+> >>  {
+> >> @@ -239,6 +240,8 @@ static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_node,
+> >>       if (!count)
+> >>               return -ENODEV;
+> >>
+> >> +     cpu_psci_idle_state_count = count;
+> >> +
+> >>       psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
+> >>       if (!psci_states)
+> >>               return -ENOMEM;
+> >> @@ -521,6 +524,11 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
+> >>  {
+> >>       int ret;
+> >>       struct psci_power_state *state = __get_cpu_var(psci_power_state);
+> >> +
+> >> +     /* Check and select the deepest idle state */
+> >> +     if (index == CPU_PSCI_IDLE_INDEX_MAX)
+> >> +             index = cpu_psci_idle_state_count;
+> >> +
+> >>       /*
+> >>        * idle state index 0 corresponds to wfi, should never be called
+> >>        * from the cpu_suspend operations.
+> >> --
+> >> 1.9.1
+> >>
+> >>
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
