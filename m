@@ -1,63 +1,139 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] PM QoS: Add debugfs support to view the list of constraints
-Date: Mon, 15 Dec 2014 14:34:15 -0800
-Message-ID: <7h1to0h7a0.fsf@deeprootsystems.com>
-References: <1417799948-48440-1-git-send-email-d-gerlach@ti.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Mon, 15 Dec 2014 23:09:22 +0000
+Message-ID: <20141215230922.GL11285@n2100.arm.linux.org.uk>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+ <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com>
+ <20141215174336.GJ11285@n2100.arm.linux.org.uk>
+ <3353119.0CuA8fKaup@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:52534 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbaLOWeT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 17:34:19 -0500
-Received: by mail-pd0-f182.google.com with SMTP id p10so12468716pdj.41
-        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 14:34:18 -0800 (PST)
-In-Reply-To: <1417799948-48440-1-git-send-email-d-gerlach@ti.com> (Dave
-	Gerlach's message of "Fri, 5 Dec 2014 11:19:08 -0600")
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:60706 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751076AbaLOXJf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 18:09:35 -0500
+Content-Disposition: inline
+In-Reply-To: <3353119.0CuA8fKaup@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Yadwinder Singh Brar <yadi.brar@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 'Eduardo Valentin' <edubezval@gmail.com>
 
-Dave Gerlach <d-gerlach@ti.com> writes:
+On Mon, Dec 15, 2014 at 10:41:02PM +0100, Rafael J. Wysocki wrote:
+> On Monday, December 15, 2014 05:43:36 PM Russell King - ARM Linux wrote:
+> > On Mon, Dec 15, 2014 at 08:24:05PM +0530, Yadwinder Singh Brar wrote:
+> > > I agree with this approach, if its fine for others also, I can implement
+> > > and post patch.
+> > 
+> > Yes, please do.
+> 
+> Indeed.  We have a regression here to fix.
 
-> From: Nishanth Menon <nm@ti.com>
->
-> PM QoS requests are notoriously hard to debug and made even
-> more so due to their highly dynamic nature. Having visibility
-> into the internal data representation per constraint allows
-> us to have much better appreciation of potential issues or
-> bad usage by drivers in the system.
->
-> So introduce for all classes of PM QoS, an entry in
-> /sys/kernel/debug/pm_qos that shall show all the current
-> requests as well as the snapshot of the value these requests
-> boil down to. For example:
-> ==> /sys/kernel/debug/pm_qos/cpu_dma_latency <==
-> 1: 4444: Active
-> 2: 2000000000: Default
-> 3: 2000000000: Default
-> 4: 2000000000: Default
-> Type=Minimum, Value=4444, Requests: active=1 / total=4
->
-> ==> /sys/kernel/debug/pm_qos/memory_bandwidth <==
-> Empty!
->
-> ...
->
-> The actual value listed will have their meaning based
-> on the QoS it is on, the 'Type' indicates what logic
-> it would use to collate the information - Minimum,
-> Maximum, or Sum. Value is the collation of all requests.
-> This interface also compares the values with the defaults
-> for the QoS class and marks the ones that are
-> currently active.
->
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+Well, here's a patch which I'm running on top of 3.18 at the moment,
+which is basically what I described in my email, and I'm running with it
+and it is without any lockdep complaint.
 
-A very useful feature indeed,
+8<===
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+thermal: cpu_cooling: fix lockdep problems in cpu_cooling
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+A recent change to the cpu_cooling code introduced a AB-BA deadlock
+scenario between the cpufreq_policy_notifier_list rwsem and the
+cooling_cpufreq_lock.  This is caused by cooling_cpufreq_lock being held
+before the registration/removal of the notifier block (an operation
+which takes the rwsem), and the notifier code itself which takes the
+locks in the reverse order.
 
-Kevin
+Solve this by moving to finer grained locking - use one mutex to protect
+the cpufreq_dev_list as a whole, and a separate lock to ensure correct
+ordering of cpufreq notifier registration and removal.
+
+I considered taking the cooling_list_lock within cooling_cpufreq_lock to
+protect the registration sequence as a whole, but that adds a dependency
+between these two locks which is best avoided (lest someone tries to
+take those two new locks in the reverse order.)  In any case, it's safer
+to have an empty cpufreq_dev_list than to have unnecessary dependencies
+between locks.
+
+Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq policy with thermal constraints")
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+
+ drivers/thermal/cpu_cooling.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index ad09e51ffae4..9e42c6f30785 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -57,6 +57,7 @@ static DEFINE_MUTEX(cooling_cpufreq_lock);
+ 
+ static unsigned int cpufreq_dev_count;
+ 
++static DEFINE_MUTEX(cooling_list_lock);
+ static LIST_HEAD(cpufreq_dev_list);
+ 
+ /**
+@@ -317,7 +318,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	if (event != CPUFREQ_ADJUST)
+ 		return 0;
+ 
+-	mutex_lock(&cooling_cpufreq_lock);
++	mutex_lock(&cooling_list_lock);
+ 	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+ 		if (!cpumask_test_cpu(policy->cpu,
+ 					&cpufreq_dev->allowed_cpus))
+@@ -333,7 +334,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 		if (policy->max != max_freq)
+ 			cpufreq_verify_within_limits(policy, 0, max_freq);
+ 	}
+-	mutex_unlock(&cooling_cpufreq_lock);
++	mutex_unlock(&cooling_list_lock);
+ 
+ 	return 0;
+ }
+@@ -482,6 +483,11 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	}
+ 	cpufreq_dev->cool_dev = cool_dev;
+ 	cpufreq_dev->cpufreq_state = 0;
++
++	mutex_lock(&cooling_list_lock);
++	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
++	mutex_unlock(&cooling_list_lock);
++
+ 	mutex_lock(&cooling_cpufreq_lock);
+ 
+ 	/* Register the notifier for first cpufreq cooling device */
+@@ -489,7 +495,6 @@ __cpufreq_cooling_register(struct device_node *np,
+ 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+ 					  CPUFREQ_POLICY_NOTIFIER);
+ 	cpufreq_dev_count++;
+-	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+ 
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
+@@ -553,7 +558,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	cpufreq_dev = cdev->devdata;
+ 	mutex_lock(&cooling_cpufreq_lock);
+-	list_del(&cpufreq_dev->node);
+ 	cpufreq_dev_count--;
+ 
+ 	/* Unregister the notifier for the last cpufreq cooling device */
+@@ -562,6 +566,10 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 					    CPUFREQ_POLICY_NOTIFIER);
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
++	mutex_lock(&cooling_list_lock);
++	list_del(&cpufreq_dev->node);
++	mutex_unlock(&cooling_list_lock);
++
+ 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+ 	release_idr(&cpufreq_idr, cpufreq_dev->id);
+ 	kfree(cpufreq_dev);
+
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
