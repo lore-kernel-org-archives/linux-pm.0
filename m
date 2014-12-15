@@ -1,90 +1,93 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH v2] PM/ Domains: Export of_genpd_get_from_provider function.
-Date: Mon, 15 Dec 2014 09:08:59 +0530
-Message-ID: <1418614739-7989-1-git-send-email-amit.daniel@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Mon, 15 Dec 2014 09:26:59 +0530
+Message-ID: <CAKohpok6ieJYgusMh+WFCQT8d5_QVgGczmQyD79UPz4hdYU1Dg@mail.gmail.com>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+	<7573578.UE8ufgjWuX@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:42880 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750713AbaLODqT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Dec 2014 22:46:19 -0500
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:57244 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbaLOD5A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Dec 2014 22:57:00 -0500
+Received: by mail-oi0-f48.google.com with SMTP id u20so7508577oif.21
+        for <linux-pm@vger.kernel.org>; Sun, 14 Dec 2014 19:56:59 -0800 (PST)
+In-Reply-To: <7573578.UE8ufgjWuX@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, yadi.brar@samsung.com
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-This function looks up a PM domain form the provider. This will be
-useful to add parent/child domain relationship from the SoC specific
-code. The caller of the function must make sure that PM domain provider
-is already registered.
+On 15 December 2014 at 03:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Sunday, December 14, 2014 09:36:55 PM Russell King - ARM Linux wrote:
+>> Here's a nice Christmas present one of my iMX6 machines gave me tonight.
+>> I haven't begun to look into it.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
-Changes from v1:
-* Added Ulf Hansson Reviewed by.
-* Cc'd to linux-pm
+Is the culprit this one?
 
-This patch may solve the same purpose which is done by earlier posts
-1) https://lkml.org/lkml/2014/11/24/319 - In this there were comments
-for not using the PM domain name.
+Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq
+policy with thermal constraints")
 
-2) Ulf Hansson posted a patch
-http://www.spinics.net/lists/linux-samsung-soc/msg39745.html which also solves
-similar purpose but I feel this is slightly complex and involves changing
-the genpd structure.
+As this is what it changed:
 
- drivers/base/power/domain.c | 3 ++-
- include/linux/pm_domain.h   | 8 ++++++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 6a103a3..0d8780c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2088,7 +2088,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
-  * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
-  * on failure.
-  */
--static struct generic_pm_domain *of_genpd_get_from_provider(
-+struct generic_pm_domain *of_genpd_get_from_provider(
- 					struct of_phandle_args *genpdspec)
+@@ -316,21 +312,28 @@ static int cpufreq_thermal_notifier(struct
+notifier_block *nb,
  {
- 	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
-@@ -2108,6 +2108,7 @@ static struct generic_pm_domain *of_genpd_get_from_provider(
- 
- 	return genpd;
- }
-+EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
- 
- /**
-  * genpd_dev_pm_detach - Detach a device from its PM domain.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 6cd20d5..a9edab2 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -271,6 +271,8 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
- int __of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
- 			void *data);
- void of_genpd_del_provider(struct device_node *np);
-+struct generic_pm_domain *of_genpd_get_from_provider(
-+			struct of_phandle_args *genpdspec);
- 
- struct generic_pm_domain *__of_genpd_xlate_simple(
- 					struct of_phandle_args *genpdspec,
-@@ -288,6 +290,12 @@ static inline int __of_genpd_add_provider(struct device_node *np,
- }
- static inline void of_genpd_del_provider(struct device_node *np) {}
- 
-+static inline struct generic_pm_domain *of_genpd_get_from_provider(
-+			struct of_phandle_args *genpdspec)
-+{
-+	return NULL;
-+}
-+
- #define __of_genpd_xlate_simple		NULL
- #define __of_genpd_xlate_onecell	NULL
- 
--- 
-2.2.0
+        struct cpufreq_policy *policy = data;
+        unsigned long max_freq = 0;
++       struct cpufreq_cooling_device *cpufreq_dev;
 
+-       if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
++       if (event != CPUFREQ_ADJUST)
+                return 0;
+
+-       if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
+-               max_freq = notify_device->cpufreq_val;
+-       else
+-               return 0;
++       mutex_lock(&cooling_cpufreq_lock);
++       list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
++               if (!cpumask_test_cpu(policy->cpu,
++                                       &cpufreq_dev->allowed_cpus))
++                       continue;
++
++               if (!cpufreq_dev->cpufreq_val)
++                       cpufreq_dev->cpufreq_val = get_cpu_frequency(
++                                       cpumask_any(&cpufreq_dev->allowed_cpus),
++                                       cpufreq_dev->cpufreq_state);
+
+-       /* Never exceed user_policy.max */
+-       if (max_freq > policy->user_policy.max)
+-               max_freq = policy->user_policy.max;
++               max_freq = cpufreq_dev->cpufreq_val;
+
+-       if (policy->max != max_freq)
+-               cpufreq_verify_within_limits(policy, 0, max_freq);
++               if (policy->max != max_freq)
++                       cpufreq_verify_within_limits(policy, 0, max_freq);
++       }
++       mutex_unlock(&cooling_cpufreq_lock);
+
+        return 0;
+ }
+
+
+>> ======================================================
+>> [ INFO: possible circular locking dependency detected ]
+>> 3.18.0+ #1453 Not tainted
+>> -------------------------------------------------------
+>> rc.local/770 is trying to acquire lock:
+>>  (cooling_cpufreq_lock){+.+.+.}, at: [<c04abfc4>] cpufreq_thermal_notifier+0x34/0xfc
+>>
+>> but task is already holding lock:
+>>  ((cpufreq_policy_notifier_list).rwsem){++++.+}, at: [<c0042f04>]  __blocking_notifier_call_chain+0x34/0x68
+>>
+>> which lock already depends on the new lock.
+>
+> Well, that's for Viresh.
+
+Maybe not as the rework I have done is queued for this merge window.
+I was afraid really after reading the "offenders" discussion on IRC :)
+
+Cc'd Yadwinder as well who wrote this patch.
