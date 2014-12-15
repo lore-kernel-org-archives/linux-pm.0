@@ -1,152 +1,114 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v3 1/2] CPPC as a PID controller backend
-Date: Mon, 15 Dec 2014 10:22:48 -0500
-Message-ID: <CAJ5Y-eaJoJLTy29fy1LiL2NSfqR_yhjCpcym7uROK3cS=nSeUA@mail.gmail.com>
-References: <1416429381-3839-1-git-send-email-ashwin.chaugule@linaro.org>
-	<1416429381-3839-2-git-send-email-ashwin.chaugule@linaro.org>
-	<6251973.kCIHGsD2QL@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power supply changes for 3.19
+Date: Mon, 15 Dec 2014 16:33:27 +0100
+Message-ID: <20141215153326.GA23477@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:47818 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbaLOPWu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 10:22:50 -0500
-Received: by mail-wg0-f41.google.com with SMTP id y19so14855356wgg.14
-        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 07:22:48 -0800 (PST)
-In-Reply-To: <6251973.kCIHGsD2QL@vostro.rjw.lan>
+Received: from mail.kernel.org ([198.145.19.201]:33735 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbaLOPdf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Dec 2014 10:33:35 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Patch Tracking <patches@linaro.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-On 15 December 2014 at 10:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, November 19, 2014 03:36:20 PM Ashwin Chaugule wrote:
->>
->> +config ACPI_PID
->> +     bool "ACPI based PID controller"
->
-> Sorry, but what sense does this make?  How's the user supposed to understand
-> what the choice is about?
->
->> +     depends on PCC && !X86
->> +     help
->> +       The ACPI PID driver is an implementation of the CPPC (Collaborative
->> +       Processor Performance Controls) as defined in the ACPI 5.0+ spec. The
->
-> OK, so this is a cpufreq driver based on ACPI CPPC and using a PID controller
-> as a built-in governor, right?
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Right. I'll elaborate the first line. :)
+Hi,
 
->
->> +       PID governor is derived from the intel_pstate driver and is used as a
->> +       standalone governor for CPPC. CPPC allows the OS to request CPU performance
->> +       with an abstract metric and lets the platform (e.g. BMC) interpret and
->> +       optimize it for power and performance in a platform specific manner. See
->> +       the ACPI 5.0+ specification for more details on CPPC.
->> +
+The following changes since commit fc14f9c1272f62c3e8d01300f52467c0d9af50f9:
 
-[..]
+  Linux 3.18-rc5 (2014-11-16 16:36:20 -0800)
 
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/kernel_stat.h>
->> +#include <linux/module.h>
->> +#include <linux/ktime.h>
->> +#include <linux/hrtimer.h>
->> +#include <linux/tick.h>
->> +#include <linux/slab.h>
->> +#include <linux/sched.h>
->> +#include <linux/list.h>
->> +#include <linux/cpu.h>
->> +#include <linux/cpufreq.h>
->> +#include <linux/sysfs.h>
->> +#include <linux/types.h>
->> +#include <linux/fs.h>
->> +#include <linux/debugfs.h>
->> +#include <linux/acpi.h>
->> +#include <linux/mailbox_controller.h>
->> +#include <linux/mailbox_client.h>
->> +#include <trace/events/power.h>
->
-> Are all of the headers really necessary?  Doesn't the file compile without any of them?
+are available in the git repository at:
 
-Seems like I could remove some. I'll give it a try. Although I got
-most of it from intel_pstate so assumed it would be required.
+  git://git.infradead.org/battery-2.6.git tags/for-v3.19
 
->> +static int cpc_read64(u64 *val, struct cpc_register_resource *reg)
->> +{
->> +     struct acpi_pcct_subspace *cppc_ss = pcc_channel->con_priv;
->> +     u64 addr = (u64)cppc_ss->base_address;
->> +     int err = 0;
->> +     int cmd;
->> +
->> +     switch (reg->space_id) {
->> +             case ACPI_ADR_SPACE_PLATFORM_COMM:
->> +                     {
->> +                             cmd = PCC_CMD_READ;
->> +                             err = mbox_send_message(pcc_channel, &cmd);
->> +                             if (err < 0) {
->> +                                     pr_err("Failed PCC READ: (%d)\n", err);
->> +                                     return err;
->> +                             }
->> +
->> +                             *val = readq((void *) (reg->address + addr));
->> +                     }
->> +                     break;
->> +
->> +             case ACPI_ADR_SPACE_FIXED_HARDWARE:
->> +                     break;
->> +
->> +             default:
->> +                     pr_err("Unknown space_id detected in cpc reg: %d\n", reg->space_id);
->> +                     err = -EINVAL;
->> +                     break;
->> +     }
->> +
->> +     return err;
->> +}
->> +
->> +static int cpc_write64(u64 val, struct cpc_register_resource *reg)
->> +{
->> +     struct acpi_pcct_subspace *cppc_ss = pcc_channel->con_priv;
->> +     u64 addr = (u64)cppc_ss->base_address;
->> +     int err = 0;
->> +     int cmd;
->> +
->> +     switch (reg->space_id) {
->> +             case ACPI_ADR_SPACE_PLATFORM_COMM:
->> +                     {
->> +                             writeq(val, (void *)(reg->address + addr));
->> +
->> +                             cmd = PCC_CMD_WRITE;
->> +                             err = mbox_send_message(pcc_channel, &cmd);
->> +                             if (err < 0) {
->> +                                     pr_err("Failed PCC WRITE: (%d)\n", err);
->> +                                     return err;
->> +                             }
->> +                     }
->> +                     break;
->> +
->> +             case ACPI_ADR_SPACE_FIXED_HARDWARE:
->> +                     break;
->> +
->> +             default:
->> +                     pr_err("Unknown space_id detected in cpc reg: %d\n", reg->space_id);
->> +                     err = -EINVAL;
->> +                     break;
->> +     }
->> +
->> +     return err;
->> +}
->
-> There seems to be quite a lot of code duplication between the two functions
-> above.  Any chance to combine them somehow?
+for you to fetch changes up to b81180b3fd4814af0459a5b6aeb1ee188fea98dc:
 
-Ok, I could fold them in one routine and add a new arg to take the PCC command.
+  power: reset: adjust priority of simple syscon reboot driver (2014-12-03 20:38:30 +0100)
 
-Thanks,
-Ashwin
+----------------------------------------------------------------
+power supply and reset changes for the v3.19 series
+
+* update power/reset drivers to use kernel restart handler
+* add power off driver for i.mx6
+* add DT support for gpio-charger
+
+----------------------------------------------------------------
+Fabio Estevam (1):
+      power: ds2782_battery: Simplify the PM hooks
+
+Guenter Roeck (10):
+      power/reset: vexpress: Register with kernel restart handler
+      power/reset: xgene: Return -ENOMEM if out of memory
+      power/reset: xgene: Drop devm_kfree
+      power/reset: xgene: Use local variable dev instead of pdev->dev
+      power/reset: xgene: Use mdelay instead of jiffies based timeout
+      power/reset: xgene: Register with kernel restart handler
+      power/reset: axxia: Register with kernel restart handler
+      power/reset: keystone: Register with kernel restart handler
+      power/reset: hisi: Register with kernel restart handler
+      power/reset: brcmstb: Register with kernel restart handler
+
+Heiko Stuebner (2):
+      dt-bindings: document gpio-charger bindings
+      power: gpio-charger: add device tree support
+
+Robin Gong (1):
+      power: reset: imx-snvs-poweroff: add power off driver for i.mx6
+
+Stefan Agner (1):
+      power: reset: adjust priority of simple syscon reboot driver
+
+ Documentation/devicetree/bindings/power_supply/gpio-charger.txt      | 27 +++++++++++++++++++++++++++
+ Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt | 23 +++++++++++++++++++++++
+ drivers/power/ds2782_battery.c                                       |  8 ++------
+ drivers/power/gpio-charger.c                                         | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ drivers/power/reset/Kconfig                                          |  9 +++++++++
+ drivers/power/reset/Makefile                                         |  1 +
+ drivers/power/reset/axxia-reset.c                                    | 21 +++++++++++++++------
+ drivers/power/reset/brcmstb-reboot.c                                 | 28 +++++++++++++++++++---------
+ drivers/power/reset/hisi-reboot.c                                    | 20 ++++++++++++++++----
+ drivers/power/reset/imx-snvs-poweroff.c                              | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/power/reset/keystone-reset.c                                 | 20 +++++++++++++++-----
+ drivers/power/reset/syscon-reboot.c                                  |  2 +-
+ drivers/power/reset/vexpress-poweroff.c                              | 40 ++++++++++++++++++++++++++++++----------
+ drivers/power/reset/xgene-reboot.c                                   | 56 ++++++++++++++++++++++++++++++--------------------------
+ 14 files changed, 324 insertions(+), 69 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/gpio-charger.txt
+ create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
+ create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+
+-- Sebastian
+
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUjv9GAAoJENju1/PIO/qauccP/2Yc9j9h7RyAHiJPjucV9HqP
+IRa/xHsK7Lftq+XGo+f4Qho7lkHfDfJ2Xz/dCdkPGbmNbYiq2p/b9KKY/BvZcP9/
+sogp0bfJEHcTbF+JIl/K9Xj2orkscBWUJNOpQVgV5ZuHKzGJV+7yE/cNubbLViWk
+jTbwBbndf7R3BAWTnIPcYm8rxm4lZKyDLlo3TgzYFUKOJUpgTYFHQUvPl4Bf8CfK
+TnnVqT9srP6Oi8eC2F7mL31H/1MpTZi4kNUqgPDSuFtEGlESaxddLy7CfgEWK4DK
+FfcXwyEv336POLR04F5FJSoQhClGNkVKc1mfuRgp3n6EAw0GhCkrgXir4F+nZOvl
+2QcsGaG4BA7l8jSqLTrqRxAAlO+V6WYt+H5Gzi//DTzvqZN5kLSdcEy2STxPx30S
+XF42BOK2KyjlOhFZqreCwNHJp5I9Bonkq71NAeOyYIcx6nZTglSCmdzIqyd5/H+X
+rRxF4ANbgkWqSZa6GqmP3nFjMgArx0kAloN8/wFX32OvVKJy6JWYj2d5JYFEEQZ/
+bjaWGwZV+PcX1gVHfWgA7L/snps4Iluy/phkwTZwn/SYsgCHUaAVanbKEMAv2Uv/
+8rmYebf+AxLdXPJMjHE544e/WfXzFBK6UufmY+xCgGYcZeUqHXYa5HsS9pkAPvIm
+RlsLF7ruBJ2DF0fNakTX
+=1+3A
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
