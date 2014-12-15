@@ -1,55 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Mon, 15 Dec 2014 22:41:02 +0100
-Message-ID: <3353119.0CuA8fKaup@vostro.rjw.lan>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk> <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com> <20141215174336.GJ11285@n2100.arm.linux.org.uk>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] PM QoS: Add debugfs support to view the list of constraints
+Date: Mon, 15 Dec 2014 14:34:15 -0800
+Message-ID: <7h1to0h7a0.fsf@deeprootsystems.com>
+References: <1417799948-48440-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50872 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750814AbaLOVTV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 16:19:21 -0500
-In-Reply-To: <20141215174336.GJ11285@n2100.arm.linux.org.uk>
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:52534 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbaLOWeT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 17:34:19 -0500
+Received: by mail-pd0-f182.google.com with SMTP id p10so12468716pdj.41
+        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 14:34:18 -0800 (PST)
+In-Reply-To: <1417799948-48440-1-git-send-email-d-gerlach@ti.com> (Dave
+	Gerlach's message of "Fri, 5 Dec 2014 11:19:08 -0600")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Yadwinder Singh Brar <yadi.brar@samsung.com>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 'Eduardo Valentin' <edubezval@gmail.com>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>
 
-On Monday, December 15, 2014 05:43:36 PM Russell King - ARM Linux wrote:
-> On Mon, Dec 15, 2014 at 08:24:05PM +0530, Yadwinder Singh Brar wrote:
-> > > The answer may well be to have finer grained locking here:
-> > > 
-> > > - one lock to protect cpufreq_dev_list, which is only ever taken when
-> > >   adding or removing entries from it
-> > > 
-> > > - a second lock to protect cpufreq_dev_count and the calls to
-> > >   cpufreq_register_notifier() and cpufreq_unregister_notifier()
-> > > 
-> > > and you would /never/ take either of those two locks inside each other.
-> > > In other words:
-> > > 
-> > > 	mutex_lock(&cooling_list_lock);
-> > > 	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
-> > > 	mutex_unlock(&cooling_list_lock);
-> > > 
-> > > 	mutex_lock(&cooling_cpufreq_lock);
-> > > 	if (cpufreq_dev_count++ == 0)
-> > > 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
-> > > 					  CPUFREQ_POLICY_NOTIFIER);
-> > > 	mutex_unlock(&cooling_cpufreq_lock);
-> > > 
-> > > and similar in the cleanup path.  The notifier itself would only ever
-> > > take the cooling_list_lock.
-> > > 
-> > 
-> > I agree with this approach, if its fine for others also, I can implement
-> > and post patch.
-> 
-> Yes, please do.
+Dave Gerlach <d-gerlach@ti.com> writes:
 
-Indeed.  We have a regression here to fix.
+> From: Nishanth Menon <nm@ti.com>
+>
+> PM QoS requests are notoriously hard to debug and made even
+> more so due to their highly dynamic nature. Having visibility
+> into the internal data representation per constraint allows
+> us to have much better appreciation of potential issues or
+> bad usage by drivers in the system.
+>
+> So introduce for all classes of PM QoS, an entry in
+> /sys/kernel/debug/pm_qos that shall show all the current
+> requests as well as the snapshot of the value these requests
+> boil down to. For example:
+> ==> /sys/kernel/debug/pm_qos/cpu_dma_latency <==
+> 1: 4444: Active
+> 2: 2000000000: Default
+> 3: 2000000000: Default
+> 4: 2000000000: Default
+> Type=Minimum, Value=4444, Requests: active=1 / total=4
+>
+> ==> /sys/kernel/debug/pm_qos/memory_bandwidth <==
+> Empty!
+>
+> ...
+>
+> The actual value listed will have their meaning based
+> on the QoS it is on, the 'Type' indicates what logic
+> it would use to collate the information - Minimum,
+> Maximum, or Sum. Value is the collation of all requests.
+> This interface also compares the values with the defaults
+> for the QoS class and marks the ones that are
+> currently active.
+>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 
-Rafael
+A very useful feature indeed,
 
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
+Kevin
