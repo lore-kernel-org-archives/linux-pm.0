@@ -1,56 +1,316 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Tue, 16 Dec 2014 20:44:17 +0100
-Message-ID: <3424177.tKdrF8ZmHS@wuerfel>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <2663853.2Q3kHisMT7@wuerfel> <5490857A.1000808@codeaurora.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
+Date: Tue, 16 Dec 2014 15:03:44 -0600
+Message-ID: <54909E30.4040300@ti.com>
+References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal> <CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <5490857A.1000808@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 16 December 2014 11:18:18 Stephen Boyd wrote:
-> On 12/16/2014 06:38 AM, Arnd Bergmann wrote:
-> > On Tuesday 16 December 2014 15:12:22 Daniel Lezcano wrote:
-> >> At the beginning, all that become from not including mach files from the 
-> >> drivers directory which make sense.
-> >>
-> >> Perhaps it is time to write a similar mechanism for the cpuidle drivers 
-> >> where we can still separate the low level PM code from the generic 
-> >> cpuidle code.
-> > That way you basically duplicate the same thing we already have, which
-> > isn't much better.
-> >
-> > In the example of drivers/soc/qcom/spm.c, just call cpuidle_register
-> > from the spm_dev_probe() function and be done with it. You already
-> > have a device that is responsible for handling this, don't try to
-> > construct more than you already need.
-> >
-> > I would assume that the same can be done for most other platforms.
-> >
-> > There are probably cases where the same piece of hardware is responsible
-> > for both cpuidle and cpufreq, but what that means is really that you
-> > should have a single driver for it that does both things. Same for
-> > SMP support: if you have one register block that does both the SMP
-> > bringup and the cpuidle stuff, then have *one* driver for this block
-> > that does it all. There are currently a few dependencies that require
-> > doing SMP bringup early during boot, but we decided years ago that those
-> > are all artificial dependencies and we should be able to boot secondary
-> > CPUs much later than we currently do.
-> >
++Viresh and linux-pm
+On 12/16/2014 10:59 AM, Kevin Hilman wrote:
+> FYI... New boot failures in today's linux-next for omap4-panda-es and
+> omap5-uevm:
 > 
-> +1. The SPM harware is used for hotplug, suspend, cpuidle, as well as
-> provides a regulator for a CPU, so all these things should be done in a
-> single driver. Booting secondary CPUs early is not hard here either if
-> we move the smp ops into the same driver. The only downside then is that
-> it can't be a module, but I would guess that we can work on making that
-> possible by allowing smp ops to be inserted and removed at any time.
+>    http://status.armcloud.us/boot/?lab-khilman&fail&omap
 
-Right, I don't see modular SMP operations happening any time soon,
-but it also doesn't seem like a fundamental restriction.
+http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
+[    2.071996] ------------[ cut here ]------------
+[    2.076831] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
+[    2.082753] Internal error: Oops - BUG: 0 [#1] SMP ARM
 
-	Arnd
+
+http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap4-panda-es.html
+[    2.109588] ------------[ cut here ]------------
+[    2.114410] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
+[    2.120330] Internal error: Oops - BUG: 0 [#1] SMP ARM
+
+> 
+> The omap3-beagle-xm one has been fixed by Tero, but the fix hasn't hit
+> -next yet.  I haven't had a chance to bisect these yet.
+> 
+> Kevin
+> 
+> 
+> ---------- Forwarded message ----------
+> From: Kevin's boot bot <khilman@kernel.org>
+> Date: Mon, Dec 15, 2014 at 10:28 PM
+> Subject: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
+> To: kernel-build-reports@lists.linaro.org
+> 
+> 
+> Full Build report: http://status.armcloud.us/build/next/kernel/next-20141216/
+> Full Boot report:
+> http://status.armcloud.us/boot/all/job/next/kernel/next-20141216/
+> 
+> Tree/Branch: next
+> Git describe: next-20141216
+> 
+> Failed boot tests
+> =================
+>                      emev2-kzm9d:     FAIL:    arm-shmobile_defconfig
+>                                        u-boot: ERROR: timeout getting
+> DHCP address.
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-shmobile_defconfig/lab-khilman/boot-emev2-kzm9d.html
+>          exynos5420-arndale-octa:     FAIL:
+> arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y/lab-khilman/boot-exynos5420-arndale-octa.html
+>              exynos5800-peach-pi:     FAIL:
+> arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y/lab-khilman/boot-exynos5800-peach-pi.html
+>                       omap5-uevm:     FAIL:
+> arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y
+>                                        kernel: Unable to handle kernel
+> paging request at virtual address ffffffec
+> 
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y/lab-khilman/boot-omap5-uevm.html
+>              exynos5800-peach-pi:     FAIL:    arm-multi_v7_defconfig
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-exynos5800-peach-pi.html
+>          exynos5420-arndale-octa:     FAIL:    arm-multi_v7_defconfig
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-exynos5420-arndale-octa.html
+>                       omap5-uevm:     FAIL:    arm-multi_v7_defconfig
+>                                        kernel: Unable to handle kernel
+> paging request at virtual address ffffffec
+> 
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
+>                   omap4-panda-es:     FAIL:    arm-multi_v7_defconfig
+>                                        kernel: ERROR: failed to boot:
+> Kernel panic
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap4-panda-es.html
+>          exynos5420-arndale-octa:     FAIL:    arm-exynos_defconfig
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-exynos_defconfig/lab-khilman/boot-exynos5420-arndale-octa.html
+>              exynos5800-peach-pi:     FAIL:    arm-exynos_defconfig
+>                                        kernel: ERROR: failed to boot:
+> <class 'pexpect.TIMEOUT'>
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-exynos_defconfig/lab-khilman/boot-exynos5800-peach-pi.html
+>             exynos5410-odroid-xu:     FAIL:    arm-exynos_defconfig
+>                                        ERROR: Timeout waiting for
+> command: if test -n ${preboot}; then run preboot; fi.
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-exynos_defconfig/lab-khilman/boot-exynos5410-odroid-xu.html
+>           omap3-beagle-xm,legacy:     FAIL:    arm-omap2plus_defconfig
+>                                        kernel: ERROR: did not start booting.
+> 
+> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-omap2plus_defconfig/lab-khilman/boot-omap3-beagle-xm,legacy.html
+> 
+> Full Report
+> ===========
+> 
+> arm-shmobile_defconfig
+> ----------------------
+>                      emev2-kzm9d:     FAIL  -  u-boot: ERROR: timeout
+> getting DHCP address.
+> 
+> arm-davinci_all_defconfig
+> -------------------------
+>                  dm365evm,legacy:     PASS
+>                        da850-evm:     PASS
+> 
+> arm-tegra_defconfig
+> -------------------
+>              tegra124-jetson-tk1:     PASS
+>                   tegra30-beaver:     PASS
+> 
+> arm-bcm2835_defconfig
+> ---------------------
+>                      bcm2835-rpi:     PASS
+> 
+> arm-multi_v7_defconfig+CONFIG_CPU_BIG_ENDIAN=y
+> ----------------------------------------------
+>       armada-xp-openblocks-ax3-4:     PASS
+>               armada-370-mirabox:     PASS
+> 
+> arm-multi_v7_defconfig+CONFIG_ARM_LPAE=y
+> ----------------------------------------
+>              tegra124-jetson-tk1:     PASS
+>             exynos5410-odroid-xu:     PASS
+>            sun7i-a20-cubieboard2:     PASS
+>          exynos5420-arndale-octa:     FAIL  -  kernel: ERROR: failed
+> to boot: <class 'pexpect.TIMEOUT'>
+>       armada-xp-openblocks-ax3-4:     PASS
+>              exynos5800-peach-pi:     FAIL  -  kernel: ERROR: failed
+> to boot: <class 'pexpect.TIMEOUT'>
+>               sun7i-a20-bananapi:     PASS
+>                       omap5-uevm:     FAIL  (Warnings:  1)  -  kernel:
+> Unable to handle kernel paging request at virtual address ffffffec
+> 
+>            exynos5422-odroid-xu3:     PASS  (Warnings:  1)
+>               exynos5250-arndale:     PASS
+>                 rk3288-evb-rk808:     PASS
+>                vexpress-v2p-ca15:     PASS
+> 
+> arm-imx_v6_v7_defconfig
+> -----------------------
+>       imx6dl-wandboard,wand-dual:     PASS
+>       imx6dl-wandboard,wand-solo:     PASS
+>                  imx6q-wandboard:     PASS
+> 
+> arm-versatile_defconfig
+> -----------------------
+>               versatilepb,legacy:     PASS
+> 
+> arm-multi_v7_defconfig
+> ----------------------
+>                 am335x-boneblack:     PASS
+>  qcom-msm8974-sony-xperia-honami:     PASS
+>               armada-370-mirabox:     PASS
+>             sun4i-a10-cubieboard:     PASS
+>                 omap3-overo-tobi:     PASS
+>                      am335x-bone:     PASS
+>               sun7i-a20-bananapi:     PASS
+>              tegra124-jetson-tk1:     PASS
+>                  omap3-beagle-xm:     PASS
+>            sun7i-a20-cubieboard2:     PASS
+>             exynos5410-odroid-xu:     PASS
+>                      omap4-panda:     PASS
+>                  imx6q-wandboard:     PASS
+>       imx6dl-wandboard,wand-dual:     PASS
+>                     omap3-beagle:     PASS
+>                     ste-snowball:     PASS
+>                   tegra30-beaver:     PASS
+>                       omap3-n900:     PASS
+>         qcom-apq8074-dragonboard:     PASS
+>            qcom-apq8064-cm-qs600:     PASS
+>                      bcm28155-ap:     PASS
+>              exynos5800-peach-pi:     FAIL  -  kernel: ERROR: failed
+> to boot: <class 'pexpect.TIMEOUT'>
+>       imx6dl-wandboard,wand-solo:     PASS
+>           omap3-overo-storm-tobi:     PASS
+>            exynos5422-odroid-xu3:     PASS  (Warnings:  1)
+>                 rk3288-evb-rk808:     PASS
+>             qcom-apq8064-ifc6410:     PASS
+>                    stih410-b2120:     PASS
+>          exynos5420-arndale-octa:     FAIL  -  kernel: ERROR: failed
+> to boot: <class 'pexpect.TIMEOUT'>
+>       armada-xp-openblocks-ax3-4:     PASS
+>                 vexpress-v2p-ca9:     PASS
+>                vexpress-v2p-ca15:     PASS
+>                       omap5-uevm:     FAIL  (Warnings:  1)  -  kernel:
+> Unable to handle kernel paging request at virtual address ffffffec
+> 
+>                   omap4-panda-es:     FAIL  (Warnings:  1)  -  kernel:
+> ERROR: failed to boot: Kernel panic
+>               exynos5250-arndale:     PASS
+>                       zynq-zc702:     PASS
+>                    am437x-gp-evm:     PASS  (Warnings:  1)
+> 
+> arm-vexpress_defconfig
+> ----------------------
+>                 vexpress-v2p-ca9:     PASS
+>                vexpress-v2p-ca15:     PASS
+> 
+> arm-sunxi_defconfig
+> -------------------
+>               sun7i-a20-bananapi:     PASS
+>            sun7i-a20-cubieboard2:     PASS
+>             sun4i-a10-cubieboard:     PASS
+> 
+> arm-qcom_defconfig
+> ------------------
+>            qcom-apq8064-cm-qs600:     PASS
+>             qcom-apq8064-ifc6410:     PASS
+>  qcom-msm8974-sony-xperia-honami:     PASS
+>         qcom-apq8074-dragonboard:     PASS
+> 
+> arm-u8500_defconfig
+> -------------------
+>                     ste-snowball:     PASS
+> 
+> arm-exynos_defconfig
+> --------------------
+>          exynos5420-arndale-octa:     FAIL  (Warnings:  1)  -  kernel:
+> ERROR: failed to boot: <class 'pexpect.TIMEOUT'>
+>            exynos5422-odroid-xu3:     PASS  (Warnings:  1)
+>               exynos5250-arndale:     PASS
+>              exynos5800-peach-pi:     FAIL  -  kernel: ERROR: failed
+> to boot: <class 'pexpect.TIMEOUT'>
+>             exynos5410-odroid-xu:     FAIL  -  ERROR: Timeout waiting
+> for command: if test -n ${preboot}; then run preboot; fi.
+> 
+> arm-mvebu_v7_defconfig+CONFIG_CPU_BIG_ENDIAN=y
+> ----------------------------------------------
+>       armada-xp-openblocks-ax3-4:     PASS
+>               armada-370-mirabox:     PASS
+> 
+> arm-bcm_defconfig
+> -----------------
+>                      bcm28155-ap:     PASS
+> 
+> arm-omap2plus_defconfig
+> -----------------------
+>                      omap4-panda:     PASS
+>           omap3-overo-storm-tobi:     PASS
+>                  omap3-beagle-xm:     PASS
+>                       omap3-n900:     PASS
+>           omap3-beagle-xm,legacy:     FAIL  -  kernel: ERROR: did not
+> start booting.
+>                      am335x-bone:     PASS
+>                 am335x-boneblack:     PASS
+>                omap3-n900,legacy:     PASS  (Warnings:  3)
+>                 omap3-overo-tobi:     PASS
+>              omap3-beagle,legacy:     PASS  (Warnings:  2)
+>          omap3-overo-tobi,legacy:     PASS  (Warnings:  2)
+>    omap3-overo-storm-tobi,legacy:     PASS  (Warnings:  1)
+>                       omap5-uevm:     PASS  (Warnings:  1)
+>                   omap4-panda-es:     PASS
+>                    am437x-gp-evm:     PASS
+>                     omap3-beagle:     PASS
+> 
+> arm-sama5_defconfig
+> -------------------
+>                       sama5d35ek:     PASS
+>            at91-sama5d3_xplained:     PASS
+> 
+> arm-mvebu_v7_defconfig
+> ----------------------
+>       armada-xp-openblocks-ax3-4:     PASS
+>               armada-370-mirabox:     PASS
+> 
+> arm64-defconfig+CONFIG_OF_UNITTEST=y
+> ------------------------------------
+>              qemu-aarch64,legacy:     PASS
+> 
+> arm64-defconfig
+> ---------------
+>              qemu-aarch64,legacy:     PASS
+> 
+> _______________________________________________
+> Kernel-build-reports mailing list
+> Kernel-build-reports@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/kernel-build-reports
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
+-- 
+Regards,
+Nishanth Menon
