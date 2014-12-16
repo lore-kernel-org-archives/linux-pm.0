@@ -1,39 +1,36 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Tue, 16 Dec 2014 15:39:31 +0100
-Message-ID: <5335513.NAdy3tNNVt@wuerfel>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <2519415.GklIQeMgWR@wuerfel> <20141205154526.GC2995@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20141205154526.GC2995@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 1/2] powercap/rapl: add ids for future xeon cpus
+Date: Tue, 16 Dec 2014 09:52:47 -0800
+Message-ID: <1418752367-8291-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:37694 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751030AbaLPSNB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Dec 2014 13:13:01 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Friday 05 December 2014 08:45:26 Lina Iyer wrote:
-> On Thu, Dec 04 2014 at 11:20 -0700, Arnd Bergmann wrote:
-> >On Thursday 04 December 2014 09:28:34 Lina Iyer wrote:
+Enable RAPL driver on Xeon cpu id 0x56.
 
-> >Having all cpuidle code generally live in drivers/cpuidle is still a good
-> >idea IMO, but using a platform device just for the purpose of passing
-> >data between some platform specific code and another platform specific
-> >driver hasn't worked out that well here.
-> >
-> To achieve both, I cant think of a better way to initialize the cpuidle
-> driver without the use of reference count (0 ==>
-> platform_driver_register).
-> 
-> I tried creating dummy platform device in the DT but something or
-> another gives in to an ugly implementation.
-> 
-> Any other ideas?
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Hi Lina,
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index c71443c..97b5e4e 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1041,6 +1041,7 @@ static const struct x86_cpu_id rapl_ids[] = {
+ 	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
+ 	RAPL_CPU(0x4C, rapl_defaults_atom),/* Braswell */
+ 	RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
++	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+ 	RAPL_CPU(0x5A, rapl_defaults_atom),/* Annidale */
+ 	{}
+ };
+-- 
+1.9.1
 
-sorry for missing your mail earlier, I just replied to Daniel on this
-topic, when the thread popped up again.
-	
-	Arnd
