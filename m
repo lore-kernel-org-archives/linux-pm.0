@@ -1,63 +1,54 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 1/2] powercap/rapl: add ids for future xeon cpus
-Date: Tue, 16 Dec 2014 09:41:37 -0800
-Message-ID: <20141216094137.516ab5d2@ultegra>
-References: <1418667255-8804-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<20141216003648.GA32627@roeck-us.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
+Date: Tue, 16 Dec 2014 11:18:18 -0800
+Message-ID: <5490857A.1000808@codeaurora.org>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> <2519415.GklIQeMgWR@wuerfel> <54903DC6.8010308@linaro.org> <2663853.2Q3kHisMT7@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:43804 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbaLPSXj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Dec 2014 13:23:39 -0500
-In-Reply-To: <20141216003648.GA32627@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <2663853.2Q3kHisMT7@wuerfel>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Mon, 15 Dec 2014 16:36:48 -0800
-Guenter Roeck <linux@roeck-us.net> wrote:
+On 12/16/2014 06:38 AM, Arnd Bergmann wrote:
+> On Tuesday 16 December 2014 15:12:22 Daniel Lezcano wrote:
+>> At the beginning, all that become from not including mach files from the 
+>> drivers directory which make sense.
+>>
+>> Perhaps it is time to write a similar mechanism for the cpuidle drivers 
+>> where we can still separate the low level PM code from the generic 
+>> cpuidle code.
+> That way you basically duplicate the same thing we already have, which
+> isn't much better.
+>
+> In the example of drivers/soc/qcom/spm.c, just call cpuidle_register
+> from the spm_dev_probe() function and be done with it. You already
+> have a device that is responsible for handling this, don't try to
+> construct more than you already need.
+>
+> I would assume that the same can be done for most other platforms.
+>
+> There are probably cases where the same piece of hardware is responsible
+> for both cpuidle and cpufreq, but what that means is really that you
+> should have a single driver for it that does both things. Same for
+> SMP support: if you have one register block that does both the SMP
+> bringup and the cpuidle stuff, then have *one* driver for this block
+> that does it all. There are currently a few dependencies that require
+> doing SMP bringup early during boot, but we decided years ago that those
+> are all artificial dependencies and we should be able to boot secondary
+> CPUs much later than we currently do.
+>
 
-> On Mon, Dec 15, 2014 at 10:14:15AM -0800, Jacob Pan wrote:
-> > Enable RAPL driver on Xeon cpu id 0x56.
-> > 
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > ---
-> >  drivers/powercap/intel_rapl.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c index c71443c..ee00ffb 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1041,6 +1041,7 @@ static const struct x86_cpu_id rapl_ids[] = {
-> >  	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
-> >  	RAPL_CPU(0x4C, rapl_defaults_atom),/* Braswell */
-> >  	RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
-> > +	RAPL_CPU(0x56, rapl_defaults_atom),/* Future Xeon */
-> 
-> Is rapl_defaults_atom correct, or should this be rapl_defaults_core ?
-> 
-you are right should be core, will fix.
++1. The SPM harware is used for hotplug, suspend, cpuidle, as well as
+provides a regulator for a CPU, so all these things should be done in a
+single driver. Booting secondary CPUs early is not hard here either if
+we move the smp ops into the same driver. The only downside then is that
+it can't be a module, but I would guess that we can work on making that
+possible by allowing smp ops to be inserted and removed at any time.
 
-thanks
-> Guenter
-> 
-> >  	RAPL_CPU(0x5A, rapl_defaults_atom),/* Annidale */
-> >  	{}
-> >  };
-> > -- 
-> > 1.9.1
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe
-> > linux-kernel" in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-
-[Jacob Pan]
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
