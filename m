@@ -1,7 +1,7 @@
 From: Dmitry Torokhov <dtor@chromium.org>
-Subject: [PATCH 1/4] PM / OPP: add some lockdep annotations
-Date: Tue, 16 Dec 2014 15:09:36 -0800
-Message-ID: <1418771379-24369-2-git-send-email-dtor@chromium.org>
+Subject: [PATCH 4/4] cpufreq-dt: defer probing if OPP table is not ready
+Date: Tue, 16 Dec 2014 15:09:39 -0800
+Message-ID: <1418771379-24369-5-git-send-email-dtor@chromium.org>
 References: <1418771379-24369-1-git-send-email-dtor@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1418771379-24369-1-git-send-email-dtor@chromium.org>
@@ -10,68 +10,38 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Certain OPP APIs need to be called under RCU lock; let's add a few
-rcu_lockdep_assert() calls to warn about potential misuse.
+cpufreq-dt driver supports mode when OPP table is provided by platform
+code and not device tree. However on certain platforms code that fills
+OPP table may run after cpufreq driver tries to initialize, so let's
+report -EPROBE_DEFER if we do not find any entires in OPP table for the
+CPU.
 
 Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
 ---
- drivers/base/power/opp.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index d24dd614a..b78c14d 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -108,6 +108,14 @@ static LIST_HEAD(dev_opp_list);
- /* Lock to allow exclusive modification to the device and opp lists */
- static DEFINE_MUTEX(dev_opp_list_lock);
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index f56147a..fde97d6 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -211,6 +211,17 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	/* OPPs might be populated at runtime, don't check for error here */
+ 	of_init_opp_table(cpu_dev);
  
-+#define opp_rcu_lockdep_assert()					\
-+do {									\
-+	rcu_lockdep_assert(rcu_read_lock_held() ||			\
-+				lockdep_is_held(&dev_opp_list_lock),	\
-+			   "Missing rcu_read_lock() or "		\
-+			   "dev_opp_list_lock protection");		\
-+} while (0)
++	/*
++	 * But we need OPP table to function so if it is not there let's
++	 * give platform code chance to provide it for us.
++	 */
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		pr_debug("OPP table is not ready, deferring probe\n");
++		ret = -EPROBE_DEFER;
++		goto out_free_opp;
++	}
 +
- /**
-  * find_device_opp() - find device_opp struct using device pointer
-  * @dev:	device pointer used to lookup device OPPs
-@@ -218,6 +226,8 @@ int dev_pm_opp_get_opp_count(struct device *dev)
- 	struct dev_pm_opp *temp_opp;
- 	int count = 0;
- 
-+	opp_rcu_lockdep_assert();
-+
- 	dev_opp = find_device_opp(dev);
- 	if (IS_ERR(dev_opp)) {
- 		int r = PTR_ERR(dev_opp);
-@@ -267,6 +277,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
-+	opp_rcu_lockdep_assert();
-+
- 	dev_opp = find_device_opp(dev);
- 	if (IS_ERR(dev_opp)) {
- 		int r = PTR_ERR(dev_opp);
-@@ -313,6 +325,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
-+	opp_rcu_lockdep_assert();
-+
- 	if (!dev || !freq) {
- 		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
- 		return ERR_PTR(-EINVAL);
-@@ -361,6 +375,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
-+	opp_rcu_lockdep_assert();
-+
- 	if (!dev || !freq) {
- 		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
- 		return ERR_PTR(-EINVAL);
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
 -- 
 2.2.0.rc0.207.ga3a616c
