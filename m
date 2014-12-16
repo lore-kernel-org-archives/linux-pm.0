@@ -1,41 +1,54 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: [PATCH] MAINTAINERS: add entry for intel_pstate
-Date: Mon, 15 Dec 2014 15:58:24 -0800
-Message-ID: <1418687904-16904-1-git-send-email-kristen@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:28016 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbaLOX6Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Dec 2014 18:58:25 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Dmitry Torokhov <dtor@chromium.org>
+Subject: [PATCH] cpufreq-dt: defer probing if OPP table is not ready
+Date: Mon, 15 Dec 2014 16:10:58 -0800
+Message-ID: <20141216001058.GA31286@dtor-ws>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org
 
-Add entry for intel_pstate.
+cpufreq-dt driver supports mode when OPP table is provided by platform
+code and not device tree. However on certain platforms code that fills
+OPP table may run after cpufreq driver tries to initialize, so let's
+report -EPROBE_DEFER if we do not find any entires in OPP table for the
+CPU.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen@linux.intel.com>
+Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
 ---
- MAINTAINERS | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e186bf9..f81f139 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4928,6 +4928,12 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git
- S:	Supported
- F:	drivers/idle/intel_idle.c
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index f56147a..4f874fa 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -211,6 +211,19 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	/* OPPs might be populated at runtime, don't check for error here */
+ 	of_init_opp_table(cpu_dev);
  
-+INTEL PSTATE DRIVER
-+M:	Kristen Carlson Accardi <kristen@linux.intel.com>
-+L:	linux-pm@vger.kernel.org
-+S:	Supported
-+F:	drivers/cpufreq/intel_pstate.c
++	/*
++	 * But we need OPP table to function so if it is not there let's
++	 * give platform code chance to provide it for us.
++	 */
++	rcu_read_lock();
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	rcu_read_unlock();
++	if (ret <= 0) {
++		pr_debug("OPP table is not ready, deferring probe\n");
++		ret = -EPROBE_DEFER;
++		goto out_free_opp;
++	}
 +
- INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
- M:	Maik Broemme <mbroemme@plusserver.de>
- L:	linux-fbdev@vger.kernel.org
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
 -- 
-1.9.3
+2.2.0.rc0.207.ga3a616c
 
+
+-- 
+Dmitry
