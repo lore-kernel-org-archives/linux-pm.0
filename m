@@ -1,86 +1,76 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/3] cpuidle menu: Better idle duration measurement without using CPUIDLE_FLAG_TIME_INVALID
-Date: Tue, 16 Dec 2014 01:52:06 -0500
-Message-ID: <c55877aa13886c660da484118a96117f939553e3.1418712225.git.len.brown@intel.com>
+Subject: [PATCH 2/3] cpuidle ladder: Better idle duration measurement without using CPUIDLE_FLAG_TIME_INVALID
+Date: Tue, 16 Dec 2014 01:52:07 -0500
+Message-ID: <83e27d4a9f387aa9781de927ea7f436f388de7bd.1418712225.git.len.brown@intel.com>
 References: <1418712728-2193-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f43.google.com ([209.85.213.43]:36595 "EHLO
+	mail-yh0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbaLPGwS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 01:52:18 -0500
 In-Reply-To: <1418712728-2193-1-git-send-email-lenb@kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <c55877aa13886c660da484118a96117f939553e3.1418712225.git.len.brown@intel.com>
+References: <c55877aa13886c660da484118a96117f939553e3.1418712225.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-When menu sees CPUIDLE_FLAG_TIME_INVALID, it ignores its timestamps,
-and assumes that idle lasted as long as the time till next predicted
-timer expiration.
+When the ladder governor sees the CPUIDLE_FLAG_TIME_INVALID flag,
+it unconditionally causes a state promotion by setting last_residency
+to a number higher than the state's promotion_time:
 
-But if an interrupt was seen and serviced before that duration,
-it would actually be more accurate to use the measured time
-rather than rounding up to the next predicted timer expiration.
+last_residency = last_state->threshold.promotion_time + 1
 
-And if an interrupt is seen and serviced such that the mesured time
-exceeds the time till next predicted timer expiration, then
-truncating to that expiration is the right thing to do --
-since we can never stay idle past that timer expiration.
+It does this for fear that cpuidle_get_last_residency()
+will be in-accurate, because cpuidle_enter_state() invoked
+a state with CPUIDLE_FLAG_TIME_INVALID.
 
-So the code can do a better job without
-checking for CPUIDLE_FLAG_TIME_INVALID.
+But the only state with CPUIDLE_FLAG_TIME_INVALID is
+acpi_safe_halt(), which may return well after its actual
+idle duration because it enables interrupts, so cpuidle_enter_state()
+also measures interrupt service time.
+
+So what?  In ladder, a huge invalid last_residency has exactly
+the same effect as the current code -- it unconditionally
+causes a state promotion.
+
+In the case where the idle residency plus measured interrupt
+handling time is less than the state's demotion_time -- we should
+use that timestamp to give ladder a chance to demote, rather than
+unconditionally promoting.
+
+This can be done by simply ignoring the CPUIDLE_FLAG_TIME_INVALID,
+and using the "invalid" time, as it is either equal to what we are
+doing today, or better.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/governors/menu.c | 25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
+ drivers/cpuidle/governors/ladder.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 659d7b0..4058079 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -396,8 +396,8 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * power state and occurrence of the wakeup event.
- 	 *
- 	 * If the entered idle state didn't support residency measurements,
--	 * we are basically lost in the dark how much time passed.
--	 * As a compromise, assume we slept for the whole expected time.
-+	 * we use them anyway if they are short, and if long,
-+	 * truncate to the whole expected time.
- 	 *
- 	 * Any measured amount of time will include the exit latency.
- 	 * Since we are interested in when the wakeup begun, not when it
-@@ -405,22 +405,17 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * the measured amount of time is less than the exit latency,
- 	 * assume the state was never reached and the exit latency is 0.
- 	 */
--	if (unlikely(target->flags & CPUIDLE_FLAG_TIME_INVALID)) {
--		/* Use timer value as is */
--		measured_us = data->next_timer_us;
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 37263d9..401c010 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -79,12 +79,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
  
--	} else {
--		/* Use measured value */
--		measured_us = cpuidle_get_last_residency(dev);
-+	/* measured value */
-+	measured_us = cpuidle_get_last_residency(dev);
+ 	last_state = &ldev->states[last_idx];
  
--		/* Deduct exit latency */
--		if (measured_us > target->exit_latency)
--			measured_us -= target->exit_latency;
-+	/* Deduct exit latency */
-+	if (measured_us > target->exit_latency)
-+		measured_us -= target->exit_latency;
- 
--		/* Make sure our coefficients do not exceed unity */
--		if (measured_us > data->next_timer_us)
--			measured_us = data->next_timer_us;
+-	if (!(drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_INVALID)) {
+-		last_residency = cpuidle_get_last_residency(dev) - \
+-					 drv->states[last_idx].exit_latency;
 -	}
-+	/* Make sure our coefficients do not exceed unity */
-+	if (measured_us > data->next_timer_us)
-+		measured_us = data->next_timer_us;
+-	else
+-		last_residency = last_state->threshold.promotion_time + 1;
++	last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
  
- 	/* Update our correction ratio */
- 	new_factor = data->correction_factor[data->bucket];
+ 	/* consider promotion */
+ 	if (last_idx < drv->state_count - 1 &&
 -- 
 2.1.2.451.g98349e5
 
