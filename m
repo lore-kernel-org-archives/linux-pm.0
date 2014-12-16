@@ -1,39 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq-dt: defer probing if OPP table is not ready
-Date: Tue, 16 Dec 2014 11:08:27 +0530
-Message-ID: <CAKohpon_z5duigPptOpT1wrLkWLgDqGQq8+1J7oofujy7Q4MtA@mail.gmail.com>
-References: <20141216001058.GA31286@dtor-ws>
-	<CAKohpo=mcG99N5q_CCua8Hdydo=ydHKD-CiTJO9SsAhLvkTJHw@mail.gmail.com>
-	<CAE_wzQ_Lz7pv1io6UMAXjesVeurbC=as2BuxBrA+XXkh5b+AWA@mail.gmail.com>
+From: Dmitry Torokhov <dtor@chromium.org>
+Subject: Re: [PATCH] cpufreq: imx6: prorect calls to dev_pm_opp_get_opp_count
+ with RCU lock
+Date: Mon, 15 Dec 2014 21:41:03 -0800
+Message-ID: <CAE_wzQ_J088FOzBoq66irs4A=ShJ3rqzLmT2sEP6dmvPE6cB2w@mail.gmail.com>
+References: <20141216005048.GA3802@dtor-ws>
+	<CAKohpok+b36_7SAUZmgM6jdtiWNu01u_0U4zQqE1b3B4xh0Svw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:45383 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbaLPFi2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 00:38:28 -0500
-Received: by mail-ob0-f169.google.com with SMTP id vb8so21378027obc.0
-        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:38:27 -0800 (PST)
-In-Reply-To: <CAE_wzQ_Lz7pv1io6UMAXjesVeurbC=as2BuxBrA+XXkh5b+AWA@mail.gmail.com>
+Received: from mail-ig0-f178.google.com ([209.85.213.178]:64039 "EHLO
+	mail-ig0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbaLPFlF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 00:41:05 -0500
+Received: by mail-ig0-f178.google.com with SMTP id hl2so6452367igb.5
+        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:41:04 -0800 (PST)
+Received: from mail-ie0-f176.google.com (mail-ie0-f176.google.com. [209.85.223.176])
+        by mx.google.com with ESMTPSA id jg3sm5951823igb.12.2014.12.15.21.41.03
+        for <linux-pm@vger.kernel.org>
+        (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+        Mon, 15 Dec 2014 21:41:03 -0800 (PST)
+Received: by mail-ie0-f176.google.com with SMTP id tr6so12216335ieb.21
+        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:41:03 -0800 (PST)
+In-Reply-To: <CAKohpok+b36_7SAUZmgM6jdtiWNu01u_0U4zQqE1b3B4xh0Svw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dtor@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dmitry Torokhov <dtor@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@freescale.com>, Philipp Zabel <p.zabel@pengutronix.de>, Anson Huang <b20788@freescale.com>, John Tobias <john.tobias.ph@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 16 December 2014 at 11:02, Dmitry Torokhov <dtor@chromium.org> wrote:
-> Yes we will. Which simply means that this WARN is stupid. We also will
-> hit it if there is no opp table and the allocation below fails; or if
-> it succeeds then dev_pm_opp_init_cpufreq_table() will fail and we'll
-> hit this code path again.
+On Mon, Dec 15, 2014 at 9:33 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16 December 2014 at 06:20, Dmitry Torokhov <dtor@chromium.org> wrote:
+>> dev_pm_opp_get_opp_count() must be called with RCU lock held.
+>>
+>> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+>> ---
+>>
+>> Not tested at all...
+>>
+>>  drivers/cpufreq/imx6q-cpufreq.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+>> index 380a90d..851d4fd 100644
+>> --- a/drivers/cpufreq/imx6q-cpufreq.c
+>> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+>> @@ -200,7 +200,9 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>>          * Just, incase the platform did not supply the OPP
+>>          * table, it will try to get it.
+>>          */
+>> +       rcu_read_lock();
+>>         num = dev_pm_opp_get_opp_count(cpu_dev);
+>> +       rcu_read_unlock();
+>>         if (num < 0) {
+>>                 ret = of_init_opp_table(cpu_dev);
+>>                 if (ret < 0) {
+>> @@ -211,7 +213,9 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>>                 /* Because we have added the OPPs here, we must free them */
+>>                 free_opp = true;
+>>
+>> +               rcu_read_lock();
+>>                 num = dev_pm_opp_get_opp_count(cpu_dev);
+>> +               rcu_read_unlock();
+>>                 if (num < 0) {
+>>                         ret = num;
+>>                         dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
 >
-> We should either drop that WARN() or handle -ENODEV there properly.
+> This one looks fine for sure but I was wondering for the users which just
+> need to call opp-count from under the locks, what about something like:
+>
+> dev_pm_opp_get_opp_count_locked() ?
 
-Yeah, we should drop it. Its just too hard for such cases. You will take care
-of that in your series?
+Yeah, for the majority of callers taking the lock won't hurt as they
+call it in their init code.
 
-For your patch:
-
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-
---
-viresh
+Thanks,
+Dmitry
