@@ -1,17 +1,16 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v5 1/3] of: Add binding for NVIDIA Tegra ACTMON node
-Date: Tue, 16 Dec 2014 09:41:19 +0100
-Message-ID: <1418719298-25314-2-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v5 3/3] ARM: tegra: Add Tegra124 ACTMON support
+Date: Tue, 16 Dec 2014 09:41:21 +0100
+Message-ID: <1418719298-25314-4-git-send-email-tomeu.vizoso@collabora.com>
 References: <1418719298-25314-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1418719298-25314-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Alexandre Courbot <gnurou@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Arto Merilainen <amerilainen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Alexandre Courbot <gnurou@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Arto Merilainen <amerilainen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This block gathers statistics about various counters and can be configured to
-fire interrupts when thresholds are crossed.
+Add device node for the ACTMON block to the Tegra124 device tree.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
@@ -19,34 +18,18 @@ Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
 v2:	* Add operating-points property
 ---
- .../devicetree/bindings/arm/tegra/actmon.txt       | 38 ++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/tegra/actmon.txt
+ arch/arm/boot/dts/tegra124.dtsi | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/actmon.txt b/Documentation/devicetree/bindings/arm/tegra/actmon.txt
-new file mode 100644
-index 0000000..b4069df
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/tegra/actmon.txt
-@@ -0,0 +1,38 @@
-+Tegra124 Activity Monitor driver
-+
-+Required properties:
-+
-+- compatible: should be "nvidia,tegra124-actmon"
-+- reg: offset and length of the register set for the device
-+- interrupts: standard interrupt property
-+- clocks: Must contain a phandle and clock specifier pair for each entry in clock-names. See ../clock/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - actmon
-+  - emc
-+- resets: Must contain an entry for each entry in reset-names. See ../reset/reset.txt for details.
-+- reset-names: Must include the following entries:
-+  - actmon
-+- operating-points: Supported operating points. See ../power/opp.txt for details.
-+
-+Example:
-+	actmon@6000c800 {
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index a49e7da..9d7baa8 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
+@@ -215,6 +215,29 @@
+ 		reg = <0x0 0x60007000 0x0 0x1000>;
+ 	};
+ 
++	actmon@0,6000c800 {
 +		compatible = "nvidia,tegra124-actmon";
 +		reg = <0x0 0x6000c800 0x0 0x400>;
 +		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
@@ -56,7 +39,8 @@ index 0000000..b4069df
 +		resets = <&tegra_car 119>;
 +		reset-names = "actmon";
 +		operating-points = <
-+			/* kHz	uV */
++			/* KHz	uV */
++			/* TODO: Add more points below 102 MHz */
 +			102000	800000
 +			204000	800000
 +			300000	820000
@@ -67,5 +51,9 @@ index 0000000..b4069df
 +			924000	1010000
 +		>;
 +	};
++
+ 	gpio: gpio@0,6000d000 {
+ 		compatible = "nvidia,tegra124-gpio", "nvidia,tegra30-gpio";
+ 		reg = <0x0 0x6000d000 0x0 0x1000>;
 -- 
 1.9.3
