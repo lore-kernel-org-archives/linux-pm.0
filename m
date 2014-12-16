@@ -1,78 +1,46 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API pm_genpd_dev_need_restore to use restore types
-Date: Tue, 16 Dec 2014 14:10:25 -0800
-Message-ID: <7h61dbdz5a.fsf@deeprootsystems.com>
-References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
-	<54901341.20106@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <54901341.20106@samsung.com> (Marek Szyprowski's message of "Tue,
-	16 Dec 2014 12:10:57 +0100")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, ulf.hansson@linaro.org, tomasz.figa@gmail.com, kgene.kim@samsung.com, s.nawrocki@samsung.com, thomas.ab@samsung.com, pankaj.dubey@samsung.com, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Dmitry Torokhov <dtor@chromium.org>
+Subject: [PATCH 0/4] Allow cpufreq-dt to defer probe if OPP table is not ready
+Date: Tue, 16 Dec 2014 15:09:35 -0800
+Message-ID: <1418771379-24369-1-git-send-email-dtor@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:49717 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbaLPXJw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 18:09:52 -0500
+Received: by mail-ig0-f177.google.com with SMTP id z20so7943272igj.10
+        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 15:09:51 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Marek Szyprowski <m.szyprowski@samsung.com> writes:
+[ Resending as my previous attempt appears to be messed up... ]
 
-> Hello,
->
-> On 2014-12-13 17:51, Amit Daniel Kachhap wrote:
->> Instead of using bool to restore suspended devices initially, use flags
->> like GPD_DEV_SUSPEND_INIT, GPD_DEV_RESTORE_INIT and GPD_DEV_RESTORE_FORCE.
->> The first two flags will be similar to the existing true/false functionality.
->> The third flag may be used to force restore of suspended devices
->> whenever their associated power domain is turned on.
->>
->> Currently, PD power off function powers off all the associated unused
->> devices. The functionality added in this patch is similar to it.
->>
->> This feature may be used for those devices which are always in ON state
->> if the PD associated with them is ON but may need local runtime resume
->> and suspend during PD On/Off. These devices (like clock) may not implement
->> complete pm_runtime calls such as pm_runtime_get/pm_runtime_put due to
->> subsystems interaction behaviour or any other reason.
->>
->> The model works like,
->>      DEV1 (Attaches itself with PD but no calls to pm_runtime_get and
->>      /	pm_runtime_put. Its local runtime_suspend/resume is invoked via
->>     /	GPD_DEV_RESTORE_FORCE option)
->>    /
->> PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
->>    \	pm_runtime_put. This in turn invokes PD On/Off)
->>     \
->>      DEV3 (Similar to DEV1)
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->
-> The idea of adding new gen_pd flag and reusing runtime pm calls intead
-> of additional notifiers looks promising, but I have some doubts. 
+This series change cpufreq-dt driver to return -EPROBE_DEFER in case OPP table
+is not ready by the time it gets to initialize. The use case is for platforms
+that use platform code (or maybe a different driver altogether) to provide OPP
+tables.
 
-I agree, this is better than notifiers, but I have some doubts too.
+In addition to changes to cpufreq-dt there are assorted changes to OPP code to
+make it work a bit better.
 
-> don't see any guarantee that devices with GPD_DEV_RESTORE_FORCE flag
-> will be suspended after all "normal" devices and restored before
-> them. Without such assumption it will be hard to use this approach for
-> iommu related activities, because device might need to use (in its
-> suspend/resume callbacks) the functionality provided by the other
-> device with GPD_DEV_RESTORE_FORCE flag. Maybe some additional flags
-> like suspend/resume priority (or more flags) will solve somehow this
-> dependency.
+Note that I am not happy with OPP code: dev_pm_opp_init_cpufreq_table() is
+wrong in it's assumption that taking RCU lock will guarantee that number of
+OPPs will not change - we can remove OPP from list just fine, and then
+initialization will fail. I also think that we shoudl change API so users should
+get a reference to their OPP table and then pass opaque dev_opp pointer to
+accessor APIs instead of re-scanning the global list over and over and over.
 
-At a deeper level, the problem with this approach is that this is more
-generically a runtime PM dependency problem, not a genpd problem.  For
-example, what happens when the same kind of dependency exists on a
-platform using a custom PM domain instead of genpd (like ACPI.) ?
+Thanks,
+Dmitry
 
-What's needed to solve this problem is a generalized way to have runtime
-PM dependencies between devices.  Runtime PM already automatically
-handles parent devices as one type of dependent device (e.g. a parent
-device needs to be runtime PM resumed before its child.)  So what's
-needed is a generic way to other PM dependencies with the runtime PM
-core (not the genpd core.)
+Dmitry Torokhov (4):
+  PM / OPP: add some lockdep annotations
+  PM / OPP: fix warning in of_free_opp_table
+  PM / OPP: take RCU lock in dev_pm_opp_get_opp_count
+  cpufreq-dt: defer probing if OPP table is not ready
 
-If runtime PM handles the dependencies corretcly, then genpd (and any
-other PM domain) will get them "for free".
+ drivers/base/power/opp.c     | 39 +++++++++++++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq-dt.c | 11 +++++++++++
+ 2 files changed, 42 insertions(+), 8 deletions(-)
 
-Kevin
