@@ -1,131 +1,137 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RFC PATCHv3 2/7] devfreq: event: Add the list of supported
- devfreq-event type
-Date: Tue, 16 Dec 2014 10:15:16 +0900
-Message-ID: <548F87A4.5060000@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [RFC PATCHv3 1/7] devfreq: event: Add new devfreq_event class to
+ provide basic data for devfreq governor
+Date: Tue, 16 Dec 2014 10:23:50 +0900
+Message-ID: <548F89A6.7000202@samsung.com>
 References: <1418372852-12454-1-git-send-email-cw00.choi@samsung.com>
- <1418372852-12454-3-git-send-email-cw00.choi@samsung.com>
- <1418655206.20866.6.camel@AMDC1943>
+ <1418372852-12454-2-git-send-email-cw00.choi@samsung.com>
+ <1418655186.20866.5.camel@AMDC1943>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:54487 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbaLPBPU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Dec 2014 20:15:20 -0500
-In-reply-to: <1418655206.20866.6.camel@AMDC1943>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1418655186.20866.5.camel@AMDC1943>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene.kim@samsung.com, rafael.j.wysocki@intel.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
 Hi Krzysztof,
 
 On 12/15/2014 11:53 PM, Krzysztof Kozlowski wrote:
 > On pi=C4=85, 2014-12-12 at 17:27 +0900, Chanwoo Choi wrote:
->> This patch adds the list of supported devfreq-event type as followin=
-g.
->> Each devfreq-event device driver would support the various devfreq-e=
-vent type
->> for devfreq governor at the same time.
->> - DEVFREQ_EVENT_TYPE_RAW_DATA
->> - DEVFREQ_EVENT_TYPE_UTILIZATION
->> - DEVFREQ_EVENT_TYPE_BANDWIDTH
->> - DEVFREQ_EVENT_TYPE_LATENCY
+>> This patch add new devfreq_event class for devfreq_event device whic=
+h provide
+>> raw data (e.g., memory bus utilization/GPU utilization). This raw da=
+ta from
+>> devfreq_event data would be used for the governor of devfreq subsyst=
+em.
+>> - devfreq_event device : Provide raw data for governor of existing d=
+evfreq device
+>> - devfreq device       : Monitor device state and change frequency/v=
+oltage of device
+>>                          using the raw data from devfreq_event devic=
+e
 >>
->> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
->> Cc: Kyungmin Park <kyungmin.park@samsung.com>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/devfreq-event.c | 44 ++++++++++++++++++++++++++++++=
-+++++++----
->>  include/linux/devfreq.h         | 29 ++++++++++++++++++++++-----
->>  2 files changed, 64 insertions(+), 9 deletions(-)
+>> The devfreq subsystem support generic DVFS(Dynamic Voltage/Frequency=
+ Scaling)
+>> for Non-CPU Devices. The devfreq device would dertermine current dev=
+ice state
+>> using various governor (e.g., ondemand, performance, powersave). Aft=
+er completed
+>> determination of system state, devfreq device would change the frequ=
+ency/voltage
+>> of devfreq device according to the result of governor.
 >>
->> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfr=
-eq-event.c
->> index eaf59c1..9444f93 100644
->> --- a/drivers/devfreq/devfreq-event.c
->> +++ b/drivers/devfreq/devfreq-event.c
->> @@ -29,6 +29,9 @@
->>  #include <linux/of.h>
->>  #include "governor.h"
->> =20
->> +#define EVENT_TYPE_RAW_DATA_MAX		U64_MAX
->> +#define EVENT_TYPE_UTILIZATION_MAX	100
->> +
->>  static struct class *devfreq_event_class;
->> =20
->>  /* The list of all devfreq event list */
->> @@ -144,7 +147,8 @@ EXPORT_SYMBOL_GPL(devfreq_event_is_enabled);
->>   * Note that this function set the event to the devfreq-event devic=
-e to start
->>   * for getting the event data which could be various event type.
->>   */
->> -int devfreq_event_set_event(struct devfreq_event_dev *edev)
->> +int devfreq_event_set_event(struct devfreq_event_dev *edev,
->> +				enum devfreq_event_type type)
->>  {
->>  	int ret;
->> =20
->> @@ -158,7 +162,15 @@ int devfreq_event_set_event(struct devfreq_even=
-t_dev *edev)
->>  		return -EPERM;
->> =20
->>  	mutex_lock(&edev->lock);
->> -	ret =3D edev->desc->ops->set_event(edev);
->> +
->> +	if ((edev->desc->type & type) =3D=3D 0) {
->> +		dev_err(&edev->dev, "unsupported of devfreq-event type\n");
->> +		mutex_unlock(&edev->lock);
->> +		return -EINVAL;
->> +	}
->> +
->> +	ret =3D edev->desc->ops->set_event(edev, type);
->> +
->>  	mutex_unlock(&edev->lock);
->> =20
->>  	return ret;
->> @@ -174,7 +186,9 @@ EXPORT_SYMBOL_GPL(devfreq_event_set_event);
->>   * current event data and total_event should be stored in second pa=
-rameter
->>   * (total_event).
->>   */
->> -u64 devfreq_event_get_event(struct devfreq_event_dev *edev, u64 *to=
-tal_event)
->> +u64 devfreq_event_get_event(struct devfreq_event_dev *edev,
->> +				enum devfreq_event_type type,
->> +				u64 *total_event)
->>  {
->>  	u64 event;
->> =20
->> @@ -190,7 +204,27 @@ u64 devfreq_event_get_event(struct devfreq_even=
-t_dev *edev, u64 *total_event)
->>  		return 0;
->> =20
->>  	mutex_lock(&edev->lock);
->> -	event =3D edev->desc->ops->get_event(edev, total_event);
->> +
->> +	if ((edev->desc->type & type) =3D=3D 0) {
->> +		dev_err(&edev->dev, "unsupported of devfreq-event type\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	event =3D edev->desc->ops->get_event(edev, type, total_event);
->> +
->> +	switch (type) {
->> +	case DEVFREQ_EVENT_TYPE_RAW_DATA:
->> +	case DEVFREQ_EVENT_TYPE_BANDWIDTH:
->> +	case DEVFREQ_EVENT_TYPE_LATENCY:
->> +		if ((event > *total_event)
->> +			|| ((event > EVENT_TYPE_RAW_DATA_MAX) ||
->> +				*total_event > EVENT_TYPE_RAW_DATA_MAX))
->> +			event =3D 0;
+>> But, devfreq governor must need basic data which indicates current d=
+evice state.
+>> Existing devfreq subsystem only consider devfreq device which check =
+current system
+>> state and determine proper system state using basic data. There is n=
+o subsystem
+>> for device providing basic data to devfreq device.
+>>
+>> The devfreq subsystem must need devfreq_event device(data-provider d=
+evice) for
+>> existing devfreq device. So, this patch add new devfreq_event class =
+for
+>> devfreq_event device which read various basic data(e.g, memory bus u=
+tilization,
+>> GPU utilization) and provide measured data to existing devfreq devic=
+e through
+>> standard APIs of devfreq_event class.
+>>
+>> The following description explains the feature of two kind of devfre=
+q class:
+>> - devfreq class (existing)
+>>  : devfreq consumer device use raw data from devfreq_event device fo=
+r
+>>    determining proper current system state and change voltage/freque=
+ncy
+>>    dynamically using various governors.
+>>
+>> - devfreq_event class (new)
+>>  : Provide measured raw data to devfreq device for governor
+>>
+>> Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>> Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>> Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 >=20
-> missing break here.
+> [...]
+>=20
+>> +/**
+>> + * devfreq_event_get_event() - Get event and total_event from devfr=
+eq-event dev.
+>> + * @edev	: the devfreq-event device
+>> + *
+>> + * Note that this function get the calculated event data from devfr=
+eq-event dev
+>> + * after stoping the progress of whole sequence of devfreq-event de=
+v. Return
+>> + * current event data and total_event should be stored in second pa=
+rameter
+>> + * (total_event).
+>> + */
+>> +u64 devfreq_event_get_event(struct devfreq_event_dev *edev, u64 *to=
+tal_event)
+>> +{
+>=20
+> I think this function should return int (0 for success, negative
+> otherwise) and store the "event" under pointer passed as argument.
+> Why? Because:
+> 1. error conditions are indicated with 'return 0' but should be 'retu=
+rn
+> -EINVAL'
+> 2. Exynos-ppmu driver returns -EINVAL.
+> Checking for error conditions is in such case more complex than it
+> should.
 
-My mistake. I'll add it and 'default' case statement.
+In this patchset,
+the return value (event) and *total_event of devfreq_event_get_event() =
+should
+be used for busy_time/total_time of struct devfreq_dev_status (include/=
+linux/devfreq.h).
+The busy_time/total_time is 'unsigned long' type.
+
+So, I'll modify the prototype of devfreq_event_get_event() as following=
+ by adding
+new 'devfreq_event_data' structure.
+
+struct devfreq_event_data {
+	u64 event;
+	u64 total_event;
+};
+
+int devfreq_event_get_event(struct devfreq_event_edev *edev, struct dev=
+freq_event_data *edata);
 
 Best Regards,
 Chanwoo Choi
+
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
