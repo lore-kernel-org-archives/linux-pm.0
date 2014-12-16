@@ -1,53 +1,43 @@
-From: Dmitry Torokhov <dtor@chromium.org>
-Subject: Re: [PATCH] cpufreq-dt: defer probing if OPP table is not ready
-Date: Mon, 15 Dec 2014 21:43:11 -0800
-Message-ID: <CAE_wzQ8OmWxtZcb5aD8TKkfthkR=N6oYF4a-9fZXcqTyTR=L-w@mail.gmail.com>
-References: <20141216001058.GA31286@dtor-ws>
-	<CAKohpo=mcG99N5q_CCua8Hdydo=ydHKD-CiTJO9SsAhLvkTJHw@mail.gmail.com>
-	<CAE_wzQ_Lz7pv1io6UMAXjesVeurbC=as2BuxBrA+XXkh5b+AWA@mail.gmail.com>
-	<CAKohpon_z5duigPptOpT1wrLkWLgDqGQq8+1J7oofujy7Q4MtA@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [RFC RESEND 0/3] Add watermark support to devfreq
+Date: Tue, 16 Dec 2014 06:42:38 +0000 (GMT)
+Message-ID: <1134564356.176631418712156720.JavaMail.weblogic@epmlwas06d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f180.google.com ([209.85.223.180]:65464 "EHLO
-	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbaLPFnM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 00:43:12 -0500
-Received: by mail-ie0-f180.google.com with SMTP id rp18so12368113iec.11
-        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:43:12 -0800 (PST)
-Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com. [209.85.223.179])
-        by mx.google.com with ESMTPSA id f1sm2560407iga.1.2014.12.15.21.43.11
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
-        Mon, 15 Dec 2014 21:43:11 -0800 (PST)
-Received: by mail-ie0-f179.google.com with SMTP id rp18so11814163iec.24
-        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:43:11 -0800 (PST)
-In-Reply-To: <CAKohpon_z5duigPptOpT1wrLkWLgDqGQq8+1J7oofujy7Q4MtA@mail.gmail.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:21582 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbaLPGmk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 01:42:40 -0500
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NGN0009JXB2KXC0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 16 Dec 2014 15:42:38 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dmitry Torokhov <dtor@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Alexandre Courbot <gnurou@gmail.com>, Arto Merilainen <amerilainen@nvidia.com>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "tomeu.vizoso@collabora.com" <tomeu.vizoso@collabora.com>, "javier.martinez@collabora.co.uk" <javier.martinez@collabora.co.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "srasal@nvidia.com" <srasal@nvidia.com>
 
-On Mon, Dec 15, 2014 at 9:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16 December 2014 at 11:02, Dmitry Torokhov <dtor@chromium.org> wrote:
->> Yes we will. Which simply means that this WARN is stupid. We also will
->> hit it if there is no opp table and the allocation below fails; or if
->> it succeeds then dev_pm_opp_init_cpufreq_table() will fail and we'll
->> hit this code path again.
->>
->> We should either drop that WARN() or handle -ENODEV there properly.
->
-> Yeah, we should drop it. Its just too hard for such cases. You will take care
-> of that in your series?
->
+QWxleGFuZHJlIENvdXJib3Q6DQo+IA0KPiBNeXVuZ0pvbywgdGhlIGlzc3VlIG9mIGhhdmluZyB0
+aGlzIGZlYXR1cmUgaW4gdGhlIGNvcmUgdnMuIGhhdmluZyBpdA0KPiBhcyBhIGRldmZyZXEgImV4
+dGVuc2lvbiIgYXNpZGUsIGRvIHlvdSBhZ3JlZSB3aXRoIHRoZSBjb3JlIGlkZWE/IEFuDQo+IGlu
+Zm9ybWwgYWNrIGZvciB0aGUgaWRlYSB3b3VsZCBhbGxvdyB1cyB0byBzdGFydCBsZXZlcmFnaW5n
+IHRoaXMgZm9yDQo+IHRoZSBBQ1RNT04gZHJpdmVyLiBXaXRoIGEgY29uY3JldGUgdXNlciBpdCB3
+aWxsIG1ha2UgaXQgZWFzaWVyIGZvcg0KPiBldmVyeW9uZSB0byB1bmRlcnN0YW5kIGhvdyB0aGUg
+cGllY2VzIHNob3VsZCBmaXQgdG9nZXRoZXIuDQoNClllcywgSSBsb3ZlIHRoZSBpZGVhIG9mIGV2
+ZW50L2ludGVycnVwdC1kcml2ZW4gRFZGUyBhbmQgSSBhZ3JlZSB3aXRoDQp0aGUgY29yZSBpZGVh
+LiBUaGUgcmVtYWluaW5nIGNvbmNlcm4gaXMgdGhhdCB0aGUgY3VycmVudCAiaW1wbGVtZW50YXRp
+b24iDQptaWdodCBiZSB0b28gaW52YXNpdmUgdG8gdGhlIHN1YnN5c3RlbSB3aGlsZSBpdCBkb2Vz
+IG5vdCBuZWVkIHRvIGJlIGFzDQphIGdvdmVybm9yIGNhbiBhbHdheXMgY2hvb3NlIG5vdCB0byBw
+b2xsLiBBbmQgdGhlIG90aGVyIGlzc3VlcyBhcmUNCnF1aXRlIG1pbm9yIGFzIHdlbGwuDQoNCkFj
+dHVhbGx5LCBpdCBhcHBlYXJzIHRoYXQgbmV4dC1nZW5lcmF0aW9ucyBvZiBzb21lIGFyY2hpdGVj
+dHVyZXMNCihJIHRoaW5rIEkgY2Fubm90IHB1YmxpY2FsbHkgc2F5IHdoaWNoIGFuZCB3aGVuKSBh
+cmUgZ29pbmcgdG8gc3VwcG9ydA0KdGhpcyBmb3IgZ2VuZXJhbCBwZXJpcGhlcmFscyBvbiB0aGUg
+YnVzIGFuZCB0aGUgQ1BVIHNvb24uDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KDQo+ICAgDQo=
 
-Yes, I'll address other comments and resubmit.
 
-> For your patch:
->
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Thanks!
-
--- 
-Dmitry
