@@ -1,105 +1,228 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/3] cpuidle, ACPI: remove unused CPUIDLE_FLAG_TIME_INVALID
-Date: Tue, 16 Dec 2014 12:08:25 +0100
-Message-ID: <549012A9.6070408@linaro.org>
-References: <1418712728-2193-1-git-send-email-lenb@kernel.org> <2d1595ea66f8eadeb1e337354b311c4f5282e2a1.1418712225.git.len.brown@intel.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API
+ pm_genpd_dev_need_restore to use restore types
+Date: Tue, 16 Dec 2014 12:10:57 +0100
+Message-ID: <54901341.20106@samsung.com>
+References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:37592 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbaLPLI1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 06:08:27 -0500
-Received: by mail-wi0-f178.google.com with SMTP id em10so12027425wid.11
-        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 03:08:26 -0800 (PST)
-In-Reply-To: <2d1595ea66f8eadeb1e337354b311c4f5282e2a1.1418712225.git.len.brown@intel.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:59893 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbaLPLLD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 06:11:03 -0500
+In-reply-to: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, khilman@linaro.org, rjw@rjwysocki.net, len.brown@intel.com, ulf.hansson@linaro.org, tomasz.figa@gmail.com, kgene.kim@samsung.com, s.nawrocki@samsung.com, thomas.ab@samsung.com, pankaj.dubey@samsung.com, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/16/2014 07:52 AM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> CPUIDLE_FLAG_TIME_INVALID is no longer checked
-> by menu or ladder cpuidle governors, so don't
-> bother setting or defining it.
->
-> It was originally invented to account for the fact that
-> acpi_safe_halt() enables interrupts to invoke HLT.
-> That would allow interrupt service routines to be included
-> in the last_idle duration measurements made in cpuidle_enter_state(),
-> potentially returning a duration much larger than reality.
->
-> But menu and ladder can gracefully handle erroneously large duration
-> intervals without checking for CPUIDLE_FLAG_TIME_INVALID.
-> Further, if they don't check CPUIDLE_FLAG_TIME_INVALID, they
-> can also benefit from the instances when the duration interval
-> is not erroneously large.
->
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Hello,
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 2014-12-13 17:51, Amit Daniel Kachhap wrote:
+> Instead of using bool to restore suspended devices initially, use flags
+> like GPD_DEV_SUSPEND_INIT, GPD_DEV_RESTORE_INIT and GPD_DEV_RESTORE_FORCE.
+> The first two flags will be similar to the existing true/false functionality.
+> The third flag may be used to force restore of suspended devices
+> whenever their associated power domain is turned on.
+>
+> Currently, PD power off function powers off all the associated unused
+> devices. The functionality added in this patch is similar to it.
+>
+> This feature may be used for those devices which are always in ON state
+> if the PD associated with them is ON but may need local runtime resume
+> and suspend during PD On/Off. These devices (like clock) may not implement
+> complete pm_runtime calls such as pm_runtime_get/pm_runtime_put due to
+> subsystems interaction behaviour or any other reason.
+>
+> The model works like,
+>      DEV1 (Attaches itself with PD but no calls to pm_runtime_get and
+>      /	pm_runtime_put. Its local runtime_suspend/resume is invoked via
+>     /	GPD_DEV_RESTORE_FORCE option)
+>    /
+> PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
+>    \	pm_runtime_put. This in turn invokes PD On/Off)
+>     \
+>      DEV3 (Similar to DEV1)
+>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
+The idea of adding new gen_pd flag and reusing runtime pm calls intead 
+of additional
+notifiers looks promising, but I have some doubts. I don't see any 
+guarantee that
+devices with GPD_DEV_RESTORE_FORCE flag will be suspended after all 
+"normal" devices
+and restored before them. Without such assumption it will be hard to use 
+this approach
+for iommu related activities, because device might need to use (in its 
+suspend/resume
+callbacks) the functionality provided by the other device with 
+GPD_DEV_RESTORE_FORCE
+flag. Maybe some additional flags like suspend/resume priority (or more 
+flags) will
+solve somehow this dependency.
 
 > ---
->   drivers/acpi/processor_idle.c | 2 --
->   include/linux/cpuidle.h       | 3 ---
->   2 files changed, 5 deletions(-)
+> This work is continuation of earlier work,
 >
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_i=
-dle.c
-> index 4995365..87b704e 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -985,8 +985,6 @@ static int acpi_processor_setup_cpuidle_states(st=
-ruct acpi_processor *pr)
->   		state->flags =3D 0;
->   		switch (cx->type) {
->   			case ACPI_STATE_C1:
-> -			if (cx->entry_method !=3D ACPI_CSTATE_FFH)
-> -				state->flags |=3D CPUIDLE_FLAG_TIME_INVALID;
+> In V2: Completely removed notfiers and add support for huge clock list to be
+> 	suspended and restored. There was some issue in this as some clocks are
+> 	not exposed and are just initialised by bootloaders. This approach
+> 	required all of them to be exposed which is cumbersome. Also some
+> 	clock API's set_parent are disabling the original parent clocks
+> 	which is not required.
+> 	Link (https://lkml.org/lkml/2014/11/24/290)
 >
->   			state->enter =3D acpi_idle_enter_c1;
->   			state->enter_dead =3D acpi_idle_play_dead;
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index a07e087..ab70f3b 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -53,7 +53,6 @@ struct cpuidle_state {
->   };
+> In V1: Implemented PM Domain notfier such as PD_ON_PRE, PD_ON_POST
+> 	PD_OFF_PRE and PD_OFF_POST. This was not supported and other
+> 	options suggested. link (http://www.spinics.net/lists/linux-samsung-soc/msg38442.html)
 >
->   /* Idle State Flags */
-> -#define CPUIDLE_FLAG_TIME_INVALID	(0x01) /* is residency time measur=
-able? */
->   #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cp=
-us */
->   #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this=
- state */
+> This work may also assist exynos iommu pm runtime posted earlier by Marek
+> http://lists.linaro.org/pipermail/linaro-mm-sig/2014-August/004099.html
+> 	
+>   drivers/base/power/domain.c | 40 ++++++++++++++++++++++++++++++++++++----
+>   include/linux/pm_domain.h   | 15 +++++++++++++--
+>   2 files changed, 49 insertions(+), 6 deletions(-)
 >
-> @@ -89,8 +88,6 @@ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev)=
-;
->   /**
->    * cpuidle_get_last_residency - retrieves the last state's residenc=
-y time
->    * @dev: the target CPU
-> - *
-> - * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_INVALID is set
->    */
->   static inline int cpuidle_get_last_residency(struct cpuidle_device =
-*dev)
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 6a103a3..d955a05 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -49,6 +49,7 @@
+>   
+>   static LIST_HEAD(gpd_list);
+>   static DEFINE_MUTEX(gpd_list_lock);
+> +static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd);
+>   
+>   static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
 >   {
->
+> @@ -176,6 +177,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
+>   	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
+>   		genpd->name, "on", elapsed_ns);
+>   
+> +	__pm_genpd_restore_devices(genpd);
+> +
+>   	return ret;
+>   }
+>   
+> @@ -453,6 +456,24 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
+>   }
+>   
+>   /**
+> + * __pm_genpd_restore_devices- Restore the pre-suspend state of all device
+> + *				according to the restore flag.
+> + * @genpd: PM domain the device belongs to.
+> + */
+> +static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd)
+> +{
+> +	struct pm_domain_data *pdd;
+> +	struct generic_pm_domain_data *gpd_data;
+> +
+> +	/* Force restore the devices according to the restore flag */
+> +	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+> +		gpd_data = to_gpd_data(pdd);
+> +		if (gpd_data->force_restore == true)
+> +			__pm_genpd_restore_device(pdd, genpd);
+> +	}
+> +}
+> +
+> +/**
+>    * genpd_abort_poweroff - Check if a PM domain power off should be aborted.
+>    * @genpd: PM domain to check.
+>    *
+> @@ -1469,6 +1490,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>   	gpd_data->base.dev = dev;
+>   	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+>   	gpd_data->need_restore = -1;
+> +	gpd_data->force_restore = false;
+>   	gpd_data->td.constraint_changed = true;
+>   	gpd_data->td.effective_constraint_ns = -1;
+>   	mutex_unlock(&gpd_data->lock);
+> @@ -1561,18 +1583,28 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>   /**
+>    * pm_genpd_dev_need_restore - Set/unset the device's "need restore" flag.
+>    * @dev: Device to set/unset the flag for.
+> - * @val: The new value of the device's "need restore" flag.
+> + * @val: This can have values GPD_DEV_SUSPEND_INIT or GPD_DEV_RESTORE_INIT
+> + *	together with GPD_DEV_RESTORE_FORCE.
+>    */
+> -void pm_genpd_dev_need_restore(struct device *dev, bool val)
+> +void pm_genpd_dev_need_restore(struct device *dev, unsigned int val)
+>   {
+>   	struct pm_subsys_data *psd;
+> +	struct generic_pm_domain_data *pdd;
+>   	unsigned long flags;
+>   
+>   	spin_lock_irqsave(&dev->power.lock, flags);
+>   
+>   	psd = dev_to_psd(dev);
+> -	if (psd && psd->domain_data)
+> -		to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
+> +	if (psd && psd->domain_data) {
+> +		pdd = to_gpd_data(psd->domain_data);
+> +		if (val & GPD_DEV_SUSPEND_INIT)
+> +			pdd->need_restore = 0;
+> +		else if (val & GPD_DEV_RESTORE_INIT)
+> +			pdd->need_restore = 1;
+> +
+> +		if (val & GPD_DEV_RESTORE_FORCE)
+> +			pdd->force_restore = true;
+> +	}
+>   
+>   	spin_unlock_irqrestore(&dev->power.lock, flags);
+>   }
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 6cd20d5..8aa74ee 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -20,6 +20,15 @@
+>   /* Defines used for the flags field in the struct generic_pm_domain */
+>   #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+>   
+> +/* Defines used for the types of restore */
+> +#define	GPD_DEV_SUSPEND_INIT	0x1	/* Initiate the device runtime as
+> +					   suspend/resume/suspend... */
+> +#define	GPD_DEV_RESTORE_INIT	0x10	/* Initiate the device runtime as
+> +					   resume/suspend/suspend... */
+> +#define	GPD_DEV_RESTORE_FORCE	0x100	/* Force these devices to always do
+> +					   resume in PD power on. Initial
+> +					   behaviour can be one of the above */
+> +
+>   enum gpd_status {
+>   	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+>   	GPD_STATE_WAIT_MASTER,	/* PM domain's master is being waited for */
+> @@ -116,6 +125,7 @@ struct generic_pm_domain_data {
+>   	struct mutex lock;
+>   	unsigned int refcount;
+>   	int need_restore;
+> +	bool force_restore;
+>   };
+>   
+>   #ifdef CONFIG_PM_GENERIC_DOMAINS
+> @@ -140,7 +150,7 @@ extern int __pm_genpd_name_add_device(const char *domain_name,
+>   
+>   extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>   				  struct device *dev);
+> -extern void pm_genpd_dev_need_restore(struct device *dev, bool val);
+> +extern void pm_genpd_dev_need_restore(struct device *dev, unsigned int val);
+>   extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>   				  struct generic_pm_domain *new_subdomain);
+>   extern int pm_genpd_add_subdomain_names(const char *master_name,
+> @@ -187,7 +197,8 @@ static inline int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>   {
+>   	return -ENOSYS;
+>   }
+> -static inline void pm_genpd_dev_need_restore(struct device *dev, bool val) {}
+> +static inline void pm_genpd_dev_need_restore(struct device *dev,
+> +						unsigned int val) {}
+>   static inline int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>   					 struct generic_pm_domain *new_sd)
+>   {
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
