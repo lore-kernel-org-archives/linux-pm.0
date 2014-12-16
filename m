@@ -1,81 +1,88 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 1/2] cpuidle: acpi: Remove TIME_INVALID flag from acpi
-Date: Tue, 16 Dec 2014 00:28:11 -0500
-Message-ID: <CAJvTdKkzNUc4Q59DSeo3MPVhR=eWLE3iEmagrYSVb69Stt-Exg@mail.gmail.com>
-References: <1416562192-14114-1-git-send-email-daniel.lezcano@linaro.org>
-	<2283319.n13QkHWkNs@vostro.rjw.lan>
-	<546F53CF.8070004@linaro.org>
-	<54802121.2030407@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: add some lockdep annotations
+Date: Tue, 16 Dec 2014 11:01:12 +0530
+Message-ID: <CAKohpo=EcaewdcOtdsa8urPOZtB86XDs1NP2xaLy4Lt=aOjPDA@mail.gmail.com>
+References: <20141216004204.GA30467@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <54802121.2030407@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel@lists.linaro.org, linux acpi <linux-acpi@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:44588 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbaLPFbM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 00:31:12 -0500
+Received: by mail-ob0-f173.google.com with SMTP id uy5so21407658obc.4
+        for <linux-pm@vger.kernel.org>; Mon, 15 Dec 2014 21:31:12 -0800 (PST)
+In-Reply-To: <20141216004204.GA30467@dtor-ws>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dtor@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nishanth Menon <nm@ti.com>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
->>>> The commit 8e92b6605d introduced the TIME_VALID flag for the C1 state
->>>> if this one is a mwait state assuming the interrupt will be enabled
->>>> before reading the end time of the idle state.
-...
->>>> I have been digging through the code and I didn't find any place
->>>> where the interrupts are enabled before reading the time.
+On 16 December 2014 at 06:12, Dmitry Torokhov <dtor@chromium.org> wrote:
+> Certain OPP APIs need to be called under RCU lock; let's add a few
+> rcu_lockdep_assert() calls to warn about potential misuse.
 
-Linux is correct as it stands, and the patch proposed here is not correct.
+Very nice..
 
-Note that on x86, the "STI" instruction enables interrupts:
+> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+> ---
+>  drivers/base/power/opp.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index d24dd614a..852eebf 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -218,6 +218,11 @@ int dev_pm_opp_get_opp_count(struct device *dev)
+>         struct dev_pm_opp *temp_opp;
+>         int count = 0;
+>
+> +       rcu_lockdep_assert(rcu_read_lock_held() ||
+> +                               lockdep_is_held(&dev_opp_list_lock),
+> +                          "dev_pm_opp_get_opp_count() needs rcu_read_lock() "
+> +                          "or dev_opp_list_lock protection");
+> +
+>         dev_opp = find_device_opp(dev);
+>         if (IS_ERR(dev_opp)) {
+>                 int r = PTR_ERR(dev_opp);
+> @@ -267,6 +272,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       rcu_lockdep_assert(rcu_read_lock_held() ||
+> +                               lockdep_is_held(&dev_opp_list_lock),
+> +                          "dev_pm_opp_find_freq_exact() needs rcu_read_lock() "
+> +                          "or dev_opp_list_lock protection");
+> +
+>         dev_opp = find_device_opp(dev);
+>         if (IS_ERR(dev_opp)) {
+>                 int r = PTR_ERR(dev_opp);
+> @@ -313,6 +323,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       rcu_lockdep_assert(rcu_read_lock_held() ||
+> +                               lockdep_is_held(&dev_opp_list_lock),
+> +                          "dev_pm_opp_find_freq_ceil() needs rcu_read_lock() "
+> +                          "or dev_opp_list_lock protection");
+> +
+>         if (!dev || !freq) {
+>                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+>                 return ERR_PTR(-EINVAL);
+> @@ -361,6 +376,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       rcu_lockdep_assert(rcu_read_lock_held() ||
+> +                               lockdep_is_held(&dev_opp_list_lock),
+> +                          "dev_pm_opp_find_freq_floor() needs rcu_read_lock() "
+> +                          "or dev_opp_list_lock protection");
+> +
 
-static inline void native_safe_halt(void)
-{
-        asm volatile("sti; hlt": : :"memory");
-}
+To get rid of the redundancy a bit, what about something like:
 
-We get here via acpi_safe_halt(), which is invoked with interrupts
-disabled via the cpuidle enter path.
-As it needs to return with interrupts disabled, it hacks them off
-again, but not before the actual
-interrupt is serviced -- which is what throws off the time-stamps in
-this path, and why
-the CPUIDLE_FLAG_TIME_INVALID exists.
-
-/*
- * Callers should disable interrupts before the call and enable
- * interrupts after return.
- */
-static void acpi_safe_halt(void)
-{
-        if (!tif_need_resched()) {
-                safe_halt();
-                local_irq_disable();
-        }
-}
-
-That said...
-I think if ladder and menu were more clever, we could delete
-CPUIDLE_FLAG_TIME_INVALID...
-Today, we use this flag to set our last_residency to the amount of
-time until the predicted
-next timer expires.  There are only two cases:
-
-First, we could have taken and serviced an interrupt -- all before the timer
-would have expired.
-In this case, we are rounding up last_residency to the max, the
-duration till the next timer
-would have expired.
-
-Second, we could take the timer, and we could service it for a long
-time, and we'd
-return a time that is longer than the expected time.  So here we are truncating
-down to the expected duration till the next timer.
-
-But in case #1, our "invalid" measurement is actually more accurate than what
-we are rounding up to.  And in case #2, we don't need a flag to detect it --
-indeed menu already checks for that case:
-
-                /* Make sure our coefficients do not exceed unity */
-                if (measured_us > data->next_timer_us)
-                        measured_us = data->next_timer_us;
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+#define opp_rcu_lockdep_assert()        \
+        rcu_lockdep_assert(rcu_read_lock_held() || \
+                                        lockdep_is_held(&dev_opp_list_lock), \
+                                        "Missing rcu_read_lock() or
+dev_opp_list_lock protection");
