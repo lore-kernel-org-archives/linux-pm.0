@@ -1,142 +1,224 @@
-From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [RFC PATCH 2/2] iommu: rockchip: Handle system-wide and runtime PM
-Date: Tue, 16 Dec 2014 11:18:33 +0900
-Message-ID: <CAAFQd5BO0cU-cbGMGg5aJ79Th-8a-QC0Qces9cuuGPvwUc5yhw@mail.gmail.com>
-References: <1418286387-9663-1-git-send-email-tfiga@chromium.org>
-	<1508486.LLFuttrbI2@avalon>
-	<CAAFQd5A5UAYpV6Z3ii+TTuPOxJF8VFJmnUnHZWkc9dZN04qxYA@mail.gmail.com>
-	<1994723.9H6BPHKqxP@avalon>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [RFC PATCHv2 1/7] devfreq: event: Add new devfreq_event class to
+ provide basic data for devfreq governor
+Date: Tue, 16 Dec 2014 11:50:32 +0900
+Message-ID: <548F9DF8.80508@samsung.com>
+References: <1418134386-14681-1-git-send-email-cw00.choi@samsung.com>
+ <1418134386-14681-2-git-send-email-cw00.choi@samsung.com>
+ <1418204220.16644.14.camel@AMDC1943> <5488FDCE.2060009@samsung.com>
+ <548A643D.10508@samsung.com> <1418639428.7591.5.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1994723.9H6BPHKqxP@avalon>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <1418639428.7591.5.camel@AMDC1943>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: devicetree@vger.kernel.org, kgene.kim@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tomasz.figa@gmail.com, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 16, 2014 at 4:53 AM, Laurent Pinchart
-<laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org> wrote:
-> Hi Tomasz,
->
-> On Monday 15 December 2014 11:39:01 Tomasz Figa wrote:
->> On Sat, Dec 13, 2014 at 5:47 AM, Laurent Pinchart wrote:
->> > On Friday 12 December 2014 13:15:51 Tomasz Figa wrote:
->> >> On Fri, Dec 12, 2014 at 5:48 AM, Rafael J. Wysocki wrote:
->> >>> On Thursday, December 11, 2014 04:51:37 PM Ulf Hansson wrote:
->> >>>> On 11 December 2014 at 16:31, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->> >>>>> [+ Laurent Pinchart]
->> >>>>>
->> >>>>> Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
->> >>>>>> On Thu, Dec 11, 2014 at 8:58 PM, Ulf Hansson wrote:
->> >>>>> [...]
->> >>>>>
->> >>>>>>>> @@ -988,11 +1107,28 @@ static int rk_iommu_probe(struct
->> >>>>>>>> platform_device *pdev)
->> >>>>>>>>                 return -ENXIO;
->> >>>>>>>>         }
->> >>>>>>>>
->> >>>>>>>> +       pm_runtime_no_callbacks(dev);
->> >>>>>>>> +       pm_runtime_enable(dev);
->> >>>>>>>> +
->> >>>>>>>> +       /* Synchronize state of the domain with driver data. */
->> >>>>>>>> +       pm_runtime_get_sync(dev);
->> >>>>>>>> +       iommu->is_powered = true;
->> >>>>>>>
->> >>>>>>> Doesn't the runtime PM status reflect the value of "is_powered",
->> >>>>>>> thus why do you need to have a copy of it? Could it perpahps be
->> >>>>>>> that you try to cope with the case when CONFIG_PM is unset?
->> >>>>>>
->> >>>>>> It's worth noting that this driver fully relies on status of other
->> >>>>>> devices in the power domain the IOMMU is in and does not enforce
->> >>>>>> the status on its own. So in general, as far as my understanding of
->> >>>>>> PM runtime subsystem, the status of the IOMMU device will be always
->> >>>>>> suspended, because nobody will call pm_runtime_get() on it (except
->> >>>>>> the get and put pair in probe). So is_powered is here to track
->> >>>>>> status of the domain, not the device. Feel free to suggest a better
->> >>>>>> way, though.
->> >>>>>
->> >>>>> I still don't like these notifiers.  I think they add ways to bypass
->> >>>>> having proper runtime PM implemented for devices/subsystems.
->> >>>>
->> >>>> I do agree, but I haven't found another good solution to the problem.
->> >>>
->> >>> For the record, I'm not liking this mostly because it "fixes" a generic
->> >>> problem in a way that's hidden in the genpd code and very indirect.
->> >>
->> >> Well, that's true. This is indeed a generic problem of PM dependencies
->> >> between devices (other than those represented by parent-child
->> >> relation), which in fact doesn't have much to do with genpd, but
->> >> rather with those devices directly. It is just that genpd is the most
->> >> convenient location to solve this in current code and in a simple way.
->> >> In other words, I see this solution as a reasonable way to get the
->> >> problem solved quickly for now, so that we can start thinking about a
->> >> more elegant solution.
->> >>
->> >> >> > From a high-level, the IOMMU is just another device inside the PM
->> >> >> > domain, so ideally it should be doing it's own _get() and _put()
->> >> >> > calls so the PM domain code would just do the right thing without
->> >> >> > the need for notifiers.
->> >> >>
->> >> >> As I understand it, the IOMMU (or for other similar cases) shouldn't
->> >> >> be doing any get() and put() at all because there are no IO API to
->> >> >> serve request from.
->> >
->> > Speaking purely from an IOMMU point of view that's not entirely tree.
->> > IOMMU drivers expose map and unmap operations, so they can track whether
->> > any memory is mapped. From a bus master point of view the IOMMU map and
->> > unmap operations are hidden by the DMA mapping API. The IOMMU can thus
->> > track the existence of mappings without any IOMMU awareness in the bus
->> > master driver.
->> >
->> > If no mapping exist the IOMMU shouldn't receive any translation request.
->> > An IOMMU driver could thus call pm_runtime_get_sync() in the map handler
->> > when creating the first mapping, and pm_runtime_put() in the unmap handler
->> > when tearing the last mapping down.
->> >
->> > One could argue that the IOMMU would end up being powered more often than
->> > strictly needed, as bus masters drivers, even when written properly, could
->> > keep mappings around at times they don't perform bus access. This is true,
->> > and that's an argument I've raised during the last kernel summit. The
->> > general response (including Linus Torvald's) was that micro-optimizing
->> > power management might not be worth it, and that measurements proving
->> > that the gain is worth it are required before introducing new APIs to
->> > solve the problem. I can't disagree with that argument.
->>
->> This would be a micro optimization if the IOMMU was located in its own
->> power domain. Unfortunately in most cases it is not, so keeping all
->> the devices in the domain powered on, because one of them have a
->> mapping created doesn't sound like a good idea.
->>
->> Moreover, most of the drivers will keep the mapping for much longer
->> than one run cycle. Please take a look at V4L2's videobuf2 subsystem
->> (which I guess you are more familiar with than me;)), which will keep
->> MMAP buffers mapped in IOMMU address space for their whole lifetime. I
->> believe similar is the case for DRM drivers.
->
-> Yes, but that doesn't mean it gets out of control. Buffers shouldn't be
-> allocated if they won't be used. Granted, they could be preallocated (or
-> rather premapped) slightly before being used, but in sane use cases that
-> shouldn't be long before the hardware needs to be turned on.
-
-Assuming that we don't have a third party, called "user", involved.
-
-A simple use case is video playback pause. Usually all the software
-state (including output buffers that can be used as reference for
-decoding next frames) needs to be preserved to continue decoding after
-resume, but it would be nice to power off the decoder, if it is unused
-for some period. In addition, we would like the pause/resume operation
-to be fast, so unmapping/freeing buffers and then exactly the opposite
-on resume doesn't sound like a good idea.
-
-Best regards,
-Tomasz
+SGkgS3J6eXN6dG9mLAoKT24gMTIvMTUvMjAxNCAwNzozMCBQTSwgS3J6eXN6dG9mIEtvemxvd3Nr
+aSB3cm90ZToKPiBPbiBwacSFLCAyMDE0LTEyLTEyIGF0IDEyOjQyICswOTAwLCBDaGFud29vIENo
+b2kgd3JvdGU6Cj4+IEhpIEtyenlzenRvZiwKPj4KPj4gSSByZXBsaWVkIGFnYWluIHRoaXMgbWFp
+bCBiZWNhdXNlIEknbGwgdXNlIHRoZSBtdXRleCBmb3Igc2V0X2V2ZW50KCkvZ2V0X2V2ZW50KCkK
+Pj4gYWNjb3JkaW5nIHRvIHlvdXIgY29tbWVudC4gQnV0LCBvZl9wYXJzZV9waGFuZGxlKCkgc2Vl
+bXMgdGhhdCB0aGlzIGZ1bmN0aW9uCj4+IGRvbid0IG5lZWQgdGhlIG9mX25vZGVfcHV0KCkgZnVu
+Y3Rpb24uCj4+Cj4+Cj4+IE9uIDEyLzExLzIwMTQgMTE6MTMgQU0sIENoYW53b28gQ2hvaSB3cm90
+ZToKPj4+IEhpIEtyenlzenRvZiwKPj4+Cj4+PiBGaXJzdCBvZiBhbGwsIHRoYW5rcyBmb3IgeW91
+ciByZXZpZXcuCj4+Pgo+Pj4gT24gMTIvMTAvMjAxNCAwNjozNyBQTSwgS3J6eXN6dG9mIEtvemxv
+d3NraSB3cm90ZToKPj4+PiBPbiB3dG8sIDIwMTQtMTItMDkgYXQgMjM6MTMgKzA5MDAsIENoYW53
+b28gQ2hvaSB3cm90ZToKPj4+Pj4gVGhpcyBwYXRjaCBhZGQgbmV3IGRldmZyZXFfZXZlbnQgY2xh
+c3MgZm9yIGRldmZyZXFfZXZlbnQgZGV2aWNlIHdoaWNoIHByb3ZpZGUKPj4+Pj4gcmF3IGRhdGEg
+KGUuZy4sIG1lbW9yeSBidXMgdXRpbGl6YXRpb24vR1BVIHV0aWxpemF0aW9uKS4gVGhpcyByYXcg
+ZGF0YSBmcm9tCj4+Pj4+IGRldmZyZXFfZXZlbnQgZGF0YSB3b3VsZCBiZSB1c2VkIGZvciB0aGUg
+Z292ZXJub3Igb2YgZGV2ZnJlcSBzdWJzeXN0ZW0uCj4+Pj4+IC0gZGV2ZnJlcV9ldmVudCBkZXZp
+Y2UgOiBQcm92aWRlIHJhdyBkYXRhIGZvciBnb3Zlcm5vciBvZiBleGlzdGluZyBkZXZmcmVxIGRl
+dmljZQo+Pj4+PiAtIGRldmZyZXEgZGV2aWNlICAgICAgIDogTW9uaXRvciBkZXZpY2Ugc3RhdGUg
+YW5kIGNoYW5nZSBmcmVxdWVuY3kvdm9sdGFnZSBvZiBkZXZpY2UKPj4+Pj4gICAgICAgICAgICAg
+ICAgICAgICAgICAgIHVzaW5nIHRoZSByYXcgZGF0YSBmcm9tIGRldmZyZXFfZXZlbnQgZGV2aWNl
+Cj4+Pj4+Cj4+Pj4+IFRoZSBkZXZmcmVxIHN1YnN5c3RlbSBzdXBwb3J0IGdlbmVyaWMgRFZGUyhE
+eW5hbWljIFZvbHRhZ2UvRnJlcXVlbmN5IFNjYWxpbmcpCj4+Pj4+IGZvciBOb24tQ1BVIERldmlj
+ZXMuIFRoZSBkZXZmcmVxIGRldmljZSB3b3VsZCBkZXJ0ZXJtaW5lIGN1cnJlbnQgZGV2aWNlIHN0
+YXRlCj4+Pj4+IHVzaW5nIHZhcmlvdXMgZ292ZXJub3IgKGUuZy4sIG9uZGVtYW5kLCBwZXJmb3Jt
+YW5jZSwgcG93ZXJzYXZlKS4gQWZ0ZXIgY29tcGxldGVkCj4+Pj4+IGRldGVybWluYXRpb24gb2Yg
+c3lzdGVtIHN0YXRlLCBkZXZmcmVxIGRldmljZSB3b3VsZCBjaGFuZ2UgdGhlIGZyZXF1ZW5jeS92
+b2x0YWdlCj4+Pj4+IG9mIGRldmZyZXEgZGV2aWNlIGFjY29yZGluZyB0byB0aGUgcmVzdWx0IG9m
+IGdvdmVybm9yLgo+Pj4+Pgo+Pj4+PiBCdXQsIGRldmZyZXEgZ292ZXJub3IgbXVzdCBuZWVkIGJh
+c2ljIGRhdGEgd2hpY2ggaW5kaWNhdGVzIGN1cnJlbnQgZGV2aWNlIHN0YXRlLgo+Pj4+PiBFeGlz
+dGluZyBkZXZmcmVxIHN1YnN5c3RlbSBvbmx5IGNvbnNpZGVyIGRldmZyZXEgZGV2aWNlIHdoaWNo
+IGNoZWNrIGN1cnJlbnQgc3lzdGVtCj4+Pj4+IHN0YXRlIGFuZCBkZXRlcm1pbmUgcHJvcGVyIHN5
+c3RlbSBzdGF0ZSB1c2luZyBiYXNpYyBkYXRhLiBUaGVyZSBpcyBubyBzdWJzeXN0ZW0KPj4+Pj4g
+Zm9yIGRldmljZSBwcm92aWRpbmcgYmFzaWMgZGF0YSB0byBkZXZmcmVxIGRldmljZS4KPj4+Pj4K
+Pj4+Pj4gVGhlIGRldmZyZXEgc3Vic3lzdGVtIG11c3QgbmVlZCBkZXZmcmVxX2V2ZW50IGRldmlj
+ZShkYXRhLXByb3ZpZGVyIGRldmljZSkgZm9yCj4+Pj4+IGV4aXN0aW5nIGRldmZyZXEgZGV2aWNl
+LiBTbywgdGhpcyBwYXRjaCBhZGQgbmV3IGRldmZyZXFfZXZlbnQgY2xhc3MgZm9yCj4+Pj4+IGRl
+dmZyZXFfZXZlbnQgZGV2aWNlIHdoaWNoIHJlYWQgdmFyaW91cyBiYXNpYyBkYXRhKGUuZywgbWVt
+b3J5IGJ1cyB1dGlsaXphdGlvbiwKPj4+Pj4gR1BVIHV0aWxpemF0aW9uKSBhbmQgcHJvdmlkZSBt
+ZWFzdXJlZCBkYXRhIHRvIGV4aXN0aW5nIGRldmZyZXEgZGV2aWNlIHRocm91Z2gKPj4+Pj4gc3Rh
+bmRhcmQgQVBJcyBvZiBkZXZmcmVxX2V2ZW50IGNsYXNzLgo+Pj4+Pgo+Pj4+PiBUaGUgZm9sbG93
+aW5nIGRlc2NyaXB0aW9uIGV4cGxhaW5zIHRoZSBmZWF0dXJlIG9mIHR3byBraW5kIG9mIGRldmZy
+ZXEgY2xhc3M6Cj4+Pj4+IC0gZGV2ZnJlcSBjbGFzcyAoZXhpc3RpbmcpCj4+Pj4+ICA6IGRldmZy
+ZXEgY29uc3VtZXIgZGV2aWNlIHVzZSByYXcgZGF0YSBmcm9tIGRldmZyZXFfZXZlbnQgZGV2aWNl
+IGZvcgo+Pj4+PiAgICBkZXRlcm1pbmluZyBwcm9wZXIgY3VycmVudCBzeXN0ZW0gc3RhdGUgYW5k
+IGNoYW5nZSB2b2x0YWdlL2ZyZXF1ZW5jeQo+Pj4+PiAgICBkeW5hbWljYWxseSB1c2luZyB2YXJp
+b3VzIGdvdmVybm9ycy4KPj4+Pj4KPj4+Pj4gLSBkZXZmcmVxX2V2ZW50IGNsYXNzIChuZXcpCj4+
+Pj4+ICA6IFByb3ZpZGUgbWVhc3VyZWQgcmF3IGRhdGEgdG8gZGV2ZnJlcSBkZXZpY2UgZm9yIGdv
+dmVybm9yCj4+Pj4+Cj4+Pj4+IENjOiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5n
+LmNvbT4KPj4+Pj4gQ2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+
+Cj4+Pj4+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29t
+Pgo+Pj4+PiAtLS0KPj4+Pj4gIGRyaXZlcnMvZGV2ZnJlcS9LY29uZmlnICAgICAgICAgfCAgIDIg
+Kwo+Pj4+PiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAgICAgICB8ICAgNSArLQo+Pj4+PiAg
+ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEtZXZlbnQuYyB8IDMwMiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrCj4+Pj4+ICBkcml2ZXJzL2RldmZyZXEvZXZlbnQvTWFrZWZp
+bGUgIHwgICAxICsKPj4+Pj4gIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oICAgICAgICAgfCAxNDEg
+KysrKysrKysrKysrKysrKysrKwo+Pj4+PiAgNSBmaWxlcyBjaGFuZ2VkLCA0NTAgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbigtKQo+Pj4+PiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvZGV2
+ZnJlcS9kZXZmcmVxLWV2ZW50LmMKPj4+Pj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2Rl
+dmZyZXEvZXZlbnQvTWFrZWZpbGUKPj4+Pj4KPj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
+ZnJlcS9LY29uZmlnIGIvZHJpdmVycy9kZXZmcmVxL0tjb25maWcKPj4+Pj4gaW5kZXggZmFmNGU3
+MC4uNGQxNWI2MiAxMDA2NDQKPj4+Pj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL0tjb25maWcKPj4+
+Pj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL0tjb25maWcKPj4+Pj4gQEAgLTg3LDQgKzg3LDYgQEAg
+Y29uZmlnIEFSTV9FWFlOT1M1X0JVU19ERVZGUkVRCj4+Pj4+ICAJICBJdCByZWFkcyBQUE1VIGNv
+dW50ZXJzIG9mIG1lbW9yeSBjb250cm9sbGVycyBhbmQgYWRqdXN0cyB0aGUKPj4+Pj4gIAkgIG9w
+ZXJhdGluZyBmcmVxdWVuY2llcyBhbmQgdm9sdGFnZXMgd2l0aCBPUFAgc3VwcG9ydC4KPj4+Pj4g
+IAo+Pj4+PiArY29tbWVudCAiREVWRlJFUSBFdmVudCBEcml2ZXJzIgo+Pj4+PiArCj4+Pj4+ICBl
+bmRpZiAjIFBNX0RFVkZSRVEKPj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9NYWtl
+ZmlsZSBiL2RyaXZlcnMvZGV2ZnJlcS9NYWtlZmlsZQo+Pj4+PiBpbmRleCAxNjEzOGM5Li5hMWZm
+YWJlIDEwMDY0NAo+Pj4+PiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvTWFrZWZpbGUKPj4+Pj4gKysr
+IGIvZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlCj4+Pj4+IEBAIC0xLDQgKzEsNCBAQAo+Pj4+PiAt
+b2JqLSQoQ09ORklHX1BNX0RFVkZSRVEpCSs9IGRldmZyZXEubwo+Pj4+PiArb2JqLSQoQ09ORklH
+X1BNX0RFVkZSRVEpCQkrPSBkZXZmcmVxLm8gZGV2ZnJlcS1ldmVudC5vCj4+Pj4+ICBvYmotJChD
+T05GSUdfREVWRlJFUV9HT1ZfU0lNUExFX09OREVNQU5EKQkrPSBnb3Zlcm5vcl9zaW1wbGVvbmRl
+bWFuZC5vCj4+Pj4+ICBvYmotJChDT05GSUdfREVWRlJFUV9HT1ZfUEVSRk9STUFOQ0UpCSs9IGdv
+dmVybm9yX3BlcmZvcm1hbmNlLm8KPj4+Pj4gIG9iai0kKENPTkZJR19ERVZGUkVRX0dPVl9QT1dF
+UlNBVkUpCSs9IGdvdmVybm9yX3Bvd2Vyc2F2ZS5vCj4+Pj4+IEBAIC03LDMgKzcsNiBAQCBvYmot
+JChDT05GSUdfREVWRlJFUV9HT1ZfVVNFUlNQQUNFKQkrPSBnb3Zlcm5vcl91c2Vyc3BhY2Uubwo+
+Pj4+PiAgIyBERVZGUkVRIERyaXZlcnMKPj4+Pj4gIG9iai0kKENPTkZJR19BUk1fRVhZTk9TNF9C
+VVNfREVWRlJFUSkJKz0gZXh5bm9zLwo+Pj4+PiAgb2JqLSQoQ09ORklHX0FSTV9FWFlOT1M1X0JV
+U19ERVZGUkVRKQkrPSBleHlub3MvCj4+Pj4+ICsKPj4+Pj4gKyMgREVWRlJFUSBFdmVudCBEcml2
+ZXJzCj4+Pj4+ICtvYmotJChDT05GSUdfUE1fREVWRlJFUSkJCSs9IGV2ZW50Lwo+Pj4+PiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEtZXZlbnQuYyBiL2RyaXZlcnMvZGV2ZnJl
+cS9kZXZmcmVxLWV2ZW50LmMKPj4+Pj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPj4+Pj4gaW5kZXgg
+MDAwMDAwMC4uYjQ3MzI5Zgo+Pj4+PiAtLS0gL2Rldi9udWxsCj4+Pj4+ICsrKyBiL2RyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLWV2ZW50LmMKPj4+Pj4gQEAgLTAsMCArMSwzMDIgQEAKPj4+Pj4gKy8q
+Cj4+Pj4+ICsgKiBkZXZmcmVxLWV2ZW50OiBHZW5lcmljIERFVkZSRVEgRXZlbnQgY2xhc3MgZHJp
+dmVyCj4+Pj4+ICsgKgo+Pj4+PiArICogQ29weXJpZ2h0IChDKSAyMDE0IFNhbXN1bmcgRWxlY3Ry
+b25pY3MKPj4+Pj4gKyAqIENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPgo+Pj4+
+PiArICoKPj4+Pj4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJl
+ZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5Cj4+Pj4+ICsgKiBpdCB1bmRlciB0aGUgdGVybXMg
+b2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIHZlcnNpb24gMiBhcwo+Pj4+PiArICog
+cHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24uCj4+Pj4+ICsgKgo+Pj4+
+PiArICogVGhpcyBkcml2ZXIgaXMgYmFzZWQgb24gZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYwo+
+Pj4+PiArICovCj4+Pj4+ICsKPj4+Pj4gKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4KPj4+Pj4g
+KyNpbmNsdWRlIDxsaW51eC9zY2hlZC5oPgo+Pj4+PiArI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+
+Cj4+Pj4+ICsjaW5jbHVkZSA8bGludXgvZXJyLmg+Cj4+Pj4+ICsjaW5jbHVkZSA8bGludXgvaW5p
+dC5oPgo+Pj4+PiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgo+Pj4+PiArI2luY2x1ZGUgPGxp
+bnV4L3NsYWIuaD4KPj4+Pj4gKyNpbmNsdWRlIDxsaW51eC9zdGF0Lmg+Cj4+Pj4+ICsjaW5jbHVk
+ZSA8bGludXgvcG1fb3BwLmg+Cj4+Pj4+ICsjaW5jbHVkZSA8bGludXgvZGV2ZnJlcS5oPgo+Pj4+
+PiArI2luY2x1ZGUgPGxpbnV4L3dvcmtxdWV1ZS5oPgo+Pj4+PiArI2luY2x1ZGUgPGxpbnV4L3Bs
+YXRmb3JtX2RldmljZS5oPgo+Pj4+PiArI2luY2x1ZGUgPGxpbnV4L2xpc3QuaD4KPj4+Pj4gKyNp
+bmNsdWRlIDxsaW51eC9wcmludGsuaD4KPj4+Pj4gKyNpbmNsdWRlIDxsaW51eC9ocnRpbWVyLmg+
+Cj4+Pj4+ICsjaW5jbHVkZSA8bGludXgvb2YuaD4KPj4+Pj4gKyNpbmNsdWRlICJnb3Zlcm5vci5o
+Igo+Pj4+PiArCj4+Pj4+ICtzdGF0aWMgc3RydWN0IGNsYXNzICpkZXZmcmVxX2V2ZW50X2NsYXNz
+Owo+Pj4+PiArCj4+Pj4+ICsvKiBUaGUgbGlzdCBvZiBhbGwgZGV2ZnJlcSBldmVudCBsaXN0ICov
+Cj4+Pj4+ICtzdGF0aWMgTElTVF9IRUFEKGRldmZyZXFfZXZlbnRfbGlzdCk7Cj4+Pj4+ICtzdGF0
+aWMgREVGSU5FX01VVEVYKGRldmZyZXFfZXZlbnRfbGlzdF9sb2NrKTsKPj4+Pj4gKwo+Pj4+PiAr
+I2RlZmluZSB0b19kZXZmcmVxX2V2ZW50KERFVikgY29udGFpbmVyX29mKERFViwgc3RydWN0IGRl
+dmZyZXFfZXZlbnRfZGV2LCBkZXYpCj4+Pj4+ICsKPj4+Pj4gK3N0cnVjdCBkZXZmcmVxX2V2ZW50
+X2RldiAqZGV2ZnJlcV9hZGRfZXZlbnRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwKPj4+Pj4g
+KwkJCQkJc3RydWN0IGRldmZyZXFfZXZlbnRfZGVzYyAqZGVzYykKPj4+Pj4gK3sKPj4+Pj4gKwlz
+dHJ1Y3QgZGV2ZnJlcV9ldmVudF9kZXYgKmV2ZW50X2RldjsKPj4+Pj4gKwlzdGF0aWMgYXRvbWlj
+X3QgZXZlbnRfbm8gPSBBVE9NSUNfSU5JVCgwKTsKPj4+Pj4gKwlpbnQgcmV0Owo+Pj4+PiArCj4+
+Pj4+ICsJaWYgKCFkZXYgfHwgIWRlc2MpCj4+Pj4+ICsJCXJldHVybiBFUlJfUFRSKC1FSU5WQUwp
+Owo+Pj4+PiArCj4+Pj4+ICsJaWYgKCFkZXNjLT5uYW1lIHx8ICFkZXNjLT5vcHMpCj4+Pj4+ICsJ
+CXJldHVybiBFUlJfUFRSKC1FSU5WQUwpOwo+Pj4+PiArCj4+Pj4+ICsJZXZlbnRfZGV2ID0ga3ph
+bGxvYyhzaXplb2Yoc3RydWN0IGRldmZyZXFfZXZlbnRfZGV2KSwgR0ZQX0tFUk5FTCk7Cj4+Pj4+
+ICsJaWYgKCFldmVudF9kZXYpCj4+Pj4+ICsJCXJldHVybiBFUlJfUFRSKC1FTk9NRU0pOwo+Pj4+
+Cj4+Pj4gSXMgdGhpcyBtZW1vcnkgZnJlZWQgYW55d2hlcmUgd2hlbiBkcml2ZXIgaXMgcmVtb3Zl
+ZD8gSSBjb3VsZG4ndCBmaW5kCj4+Pj4gaXQuIEkgY291bGRuJ3QgYWxzbyBmaW5kIGZ1bmN0aW9u
+IGxpa2UgZGV2ZnJlcV9yZW1vdmVfZXZlbnRfZGV2aWNlKCkKPj4+PiB3aGljaCB3b3VsZCBiZSBy
+ZXZlcnRpbmcgYWxsIHRoZSB3b3JrIGRvbmUgd2hlbiBhZGRpbmcuCj4+Pgo+Pj4gWW91J3JlIHJp
+Z2h0LiBJJ2xsIHVzZSBkZXZtX2t6YWxsb2MgaW5zdGVhZCBvZiBremFsbG9jLgo+Pj4KPj4+Pgo+
+Pj4+PiArCj4+Pj4+ICsJbXV0ZXhfbG9jaygmZGV2ZnJlcV9ldmVudF9saXN0X2xvY2spOwo+Pj4+
+PiArCj4+Pj4+ICsJbXV0ZXhfaW5pdCgmZXZlbnRfZGV2LT5sb2NrKTsKPj4+Pj4gKwlldmVudF9k
+ZXYtPmRlc2MgPSBkZXNjOwo+Pj4+PiArCWV2ZW50X2Rldi0+ZGV2LnBhcmVudCA9IGRldjsKPj4+
+Pj4gKwlldmVudF9kZXYtPmRldi5jbGFzcyA9IGRldmZyZXFfZXZlbnRfY2xhc3M7Cj4+Pj4+ICsK
+Pj4+Pj4gKwlkZXZfc2V0X25hbWUoJmV2ZW50X2Rldi0+ZGV2LCAiZXZlbnQuJWQiLAo+Pj4+PiAr
+CQkgICAgIGF0b21pY19pbmNfcmV0dXJuKCZldmVudF9ubykgLSAxKTsKPj4+Pj4gKwlyZXQgPSBk
+ZXZpY2VfcmVnaXN0ZXIoJmV2ZW50X2Rldi0+ZGV2KTsKPj4+Pj4gKwlpZiAocmV0ICE9IDApIHsK
+Pj4+Pj4gKwkJcHV0X2RldmljZSgmZXZlbnRfZGV2LT5kZXYpOwo+Pj4+PiArCQlnb3RvIGVycjsK
+Pj4+Pj4gKwl9Cj4+Pj4+ICsJZGV2X3NldF9kcnZkYXRhKCZldmVudF9kZXYtPmRldiwgZXZlbnRf
+ZGV2KTsKPj4+Pj4gKwo+Pj4+PiArCS8qIEFkZCBkZXZmcmVxIGV2ZW50IGRldmljZSB0byBkZXZm
+cmVxX2V2ZW50X2xpc3QgKi8KPj4+Pj4gKwlJTklUX0xJU1RfSEVBRCgmZXZlbnRfZGV2LT5ub2Rl
+KTsKPj4+Pj4gKwlsaXN0X2FkZCgmZXZlbnRfZGV2LT5ub2RlLCAmZGV2ZnJlcV9ldmVudF9saXN0
+KTsKPj4+Pj4gKwo+Pj4+PiArCW11dGV4X3VubG9jaygmZGV2ZnJlcV9ldmVudF9saXN0X2xvY2sp
+Owo+Pj4+PiArCj4+Pj4+ICsJcmV0dXJuIGV2ZW50X2RldjsKPj4+Pj4gK2VycjoKPj4+Pgo+Pj4+
+IE1pc3NpbmcgJ211dGV4X3VubG9jaygmZGV2ZnJlcV9ldmVudF9saXN0X2xvY2spJyBoZXJlLgo+
+Pj4KPj4+IE9LLiBJJ2xsIGZpeCBpdC4KPj4+Cj4+Pj4KPj4+Pgo+Pj4+PiArCWtmcmVlKGV2ZW50
+X2Rldik7Cj4+Pj4+ICsJcmV0dXJuIEVSUl9QVFIocmV0KTsKPj4+Pj4gK30KPj4+Pj4gK0VYUE9S
+VF9TWU1CT0woZGV2ZnJlcV9hZGRfZXZlbnRfZGV2aWNlKTsKPj4+Pj4gKwo+Pj4+PiArc3RydWN0
+IGRldmZyZXFfZXZlbnRfZGV2ICpkZXZmcmVxX2dldF9ldmVudF9kZXYoY29uc3QgY2hhciAqZXZl
+bnRfZGV2X25hbWUpCj4+Pj4+ICt7Cj4+Pj4+ICsJc3RydWN0IGRldmZyZXFfZXZlbnRfZGV2ICpl
+dmVudF9kZXY7Cj4+Pj4+ICsKPj4+Pj4gKwltdXRleF9sb2NrKCZkZXZmcmVxX2V2ZW50X2xpc3Rf
+bG9jayk7Cj4+Pj4+ICsJbGlzdF9mb3JfZWFjaF9lbnRyeShldmVudF9kZXYsICZkZXZmcmVxX2V2
+ZW50X2xpc3QsIG5vZGUpIHsKPj4+Pj4gKwkJaWYgKCFzdHJjbXAoZXZlbnRfZGV2LT5kZXNjLT5u
+YW1lLCBldmVudF9kZXZfbmFtZSkpCj4+Pj4+ICsJCQlnb3RvIG91dDsKPj4+Pj4gKwl9Cj4+Pj4+
+ICsJZXZlbnRfZGV2ID0gTlVMTDsKPj4+Pj4gK291dDoKPj4+Pj4gKwltdXRleF91bmxvY2soJmRl
+dmZyZXFfZXZlbnRfbGlzdF9sb2NrKTsKPj4+Pj4gKwo+Pj4+PiArCXJldHVybiBldmVudF9kZXY7
+Cj4+Pj4+ICt9Cj4+Pj4+ICtFWFBPUlRfU1lNQk9MX0dQTChkZXZmcmVxX2dldF9ldmVudF9kZXYp
+Owo+Pj4+PiArCj4+Pj4+ICtzdHJ1Y3QgZGV2ZnJlcV9ldmVudF9kZXYgKmRldmZyZXFfZ2V0X2V2
+ZW50X2Rldl9ieV9waGFuZGxlKHN0cnVjdCBkZXZpY2UgKmRldiwKPj4+Pj4gKwkJCQkJCSAgICAg
+IGludCBpbmRleCkKPj4+Pj4gK3sKPj4+Pj4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGU7Cj4+
+Pj4+ICsJc3RydWN0IGRldmZyZXFfZXZlbnRfZGV2ICpldmVudF9kZXY7Cj4+Pj4+ICsKPj4+Pj4g
+KwlpZiAoIWRldi0+b2Zfbm9kZSkgewo+Pj4+PiArCQlkZXZfZXJyKGRldiwgImRldmljZSBkb2Vz
+IG5vdCBoYXZlIGEgZGV2aWNlIG5vZGUgZW50cnlcbiIpOwo+Pj4+PiArCQlyZXR1cm4gRVJSX1BU
+UigtRUlOVkFMKTsKPj4+Pj4gKwl9Cj4+Pj4+ICsKPj4+Pj4gKwlub2RlID0gb2ZfcGFyc2VfcGhh
+bmRsZShkZXYtPm9mX25vZGUsICJkZXZmcmVxLWV2ZW50cyIsIGluZGV4KTsKPj4+Pj4gKwlpZiAo
+IW5vZGUpIHsKPj4+Pj4gKwkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gZ2V0IHBoYW5kbGUgaW4g
+JXMgbm9kZVxuIiwKPj4+Pj4gKwkJCWRldi0+b2Zfbm9kZS0+ZnVsbF9uYW1lKTsKPj4+Pj4gKwkJ
+cmV0dXJuIEVSUl9QVFIoLUVOT0RFVik7Cj4+Pj4+ICsJfQo+Pj4+PiArCj4+Pj4+ICsJZXZlbnRf
+ZGV2ID0gZGV2ZnJlcV9nZXRfZXZlbnRfZGV2KG5vZGUtPm5hbWUpOwo+Pj4+PiArCWlmICghZXZl
+bnRfZGV2KSB7Cj4+Pj4+ICsJCWRldl9lcnIoZGV2LCAidW5hYmxlIHRvIGdldCBkZXZmcmVxLWV2
+ZW50IGRldmljZSA6ICVzXG4iLAo+Pj4+PiArCQkJbm9kZS0+bmFtZSk7Cj4+Pj4KPj4+PiBvZl9u
+b2RlX3B1dCgpIGZvciBub2RlIG9idGFpbmVkIHdpdGggb2ZfcGFyc2VfcGhhbmRsZSgpLgo+Pj4K
+Pj4+IE9LLiBJJ2xsIGFkZCBpdC4KPj4KPj4gb2ZfcGFyc2VfcGhhbmRsZSgpIHNlZW1zIHRoYXQg
+aXQgZG9uJ3QgbmVlZCBvZl9ub2RlX3B1dCgpLgo+IAo+IFRoZSBvZl9wYXJzZV9waGFuZGxlKCkg
+aW5jcmVhc2VzIHRoZSByZWZjb3VudCBmb3Igbm9kZSBpdCByZXR1cm5zLgo+PkZyb20gZG9jdW1l
+bnRhdGlvbjoKPiAKPiAvKioKPiAgKiBSZXR1cm5zIHRoZSBkZXZpY2Vfbm9kZSBwb2ludGVyIHdp
+dGggcmVmY291bnQgaW5jcmVtZW50ZWQuICBVc2UKPiAgKiBvZl9ub2RlX3B1dCgpIG9uIGl0IHdo
+ZW4gZG9uZS4KPiAgKi8KPiAKPiBUaGUgZnVuY3Rpb24gcmV0dXJucyBlcnJvciBjb25kaXRpb24g
+YnV0IG5vZGUgd2FzIGZvdW5kIGFuZCBpdHMgcmVmY250Cj4gd2FzIGluY3JlbWVudGVkLiBUaGVu
+IHdoeSBkbyB5b3UgdGhpbmsgdGhhdCBvZl9ub2RlX3B1dCgpIGlzIG5vdAo+IG5lY2Vzc2FyeSBo
+ZXJlPwoKT0ssIEknbGwgY2FsbCBvZl9ub2RlX3B1dCgpIGFzIGZvbGxvd2luZzoKCmRpZmYgLS1n
+aXQgYS9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS1ldmVudC5jIGIvZHJpdmVycy9kZXZmcmVxL2Rl
+dmZyZXEtZXZlbnQuYwppbmRleCBjZDljNDg1Li5hMWVkYWZjIDEwMDY0NAotLS0gYS9kcml2ZXJz
+L2RldmZyZXEvZGV2ZnJlcS1ldmVudC5jCisrKyBiL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2
+ZW50LmMKQEAgLTI4Miw5ICsyODIsMTIgQEAgb3V0OgogICAgICAgIGlmICghZWRldikgewogICAg
+ICAgICAgICAgICAgZGV2X2VycihkZXYsICJ1bmFibGUgdG8gZ2V0IGRldmZyZXEtZXZlbnQgZGV2
+aWNlIDogJXNcbiIsCiAgICAgICAgICAgICAgICAgICAgICAgIG5vZGUtPm5hbWUpOworICAgICAg
+ICAgICAgICAgb2Zfbm9kZV9wdXQobm9kZSk7CiAgICAgICAgICAgICAgICByZXR1cm4gRVJSX1BU
+UigtRU5PREVWKTsKICAgICAgICB9CiAKKyAgICAgICBvZl9ub2RlX3B1dChub2RlKTsKKwogICAg
+ICAgIHJldHVybiBlZGV2OwogfQoKPiAKPj4KPj4+Cj4+Pj4KPj4+Pj4gKwkJcmV0dXJuIEVSUl9Q
+VFIoLUVOT0RFVik7Cj4+Pj4+ICsJfQo+Pj4+PiArCj4+Pj4+ICsJcmV0dXJuIGV2ZW50X2RldjsK
+Pj4+Pj4gK30KPj4+Pj4gK0VYUE9SVF9TWU1CT0xfR1BMKGRldmZyZXFfZ2V0X2V2ZW50X2Rldl9i
+eV9waGFuZGxlKTsKPj4+Pj4gKwo+Pj4+PiAraW50IGRldmZyZXFfcHV0X2V2ZW50X2RldihzdHJ1
+Y3QgZGV2ZnJlcV9ldmVudF9kZXYgKmV2ZW50X2RldikKPj4+Pj4gK3sKPj4+Pgo+Pj4+IG9mX25v
+ZGVfcHV0KCkgaGVyZSB0byBkZWNyZW1lbnQgcmVmY250IGZyb20gb2ZfcGFyc2VfcGhhbmRsZSgp
+Pwo+Pj4KPj4+IEl0IGlzIG15IG1pc3Rha2UuIEkgdGhpbmsgdGhhdCBkZXZmcmVxX3B1dF9ldmVu
+dF9kZXYgaXMgbm90IG5lY2Vzc3NhcnkuCj4+PiBJJ2xsIHJlbW92ZSBpdC4KPiAKPiBUaGVuIGhv
+dyB0byBkZWNyZWFzZSB0aGUgcmVmY250IGZvciBub2RlIG9idGFpbmVkIGluCj4gZGV2ZnJlcV9n
+ZXRfZXZlbnRfZGV2X2J5X3BoYW5kbGUoKT8KCkknbGwgY2FsbCBvZl9ub2RlX3B1dCBpbiBkZXZm
+cmVxX2V2ZW50X2dldF9lZGV2X2J5X3BoYW5kbGUoKSBhY2NvcmRpbmcgdG8geW91ciBjb21tZW50
+LgoKVGhhbmtzIGZvciB5b3VyIHJldmlldy4KCkJlc3QgUmVnYXJkcywKQ2hhbndvbyBDaG9pCgoK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJt
+LWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3Jn
+Cmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtl
+cm5lbAo=
