@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 5/8] ARM: shmobile: sh73a0 dtsi: Add Bus State Controller node
-Date: Wed, 17 Dec 2014 19:49:10 +0100
-Message-ID: <1418842153-17113-6-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 3/8] drivers: bus: Add Simple Power-Managed Bus DT Bindings
+Date: Wed, 17 Dec 2014 19:49:08 +0100
+Message-ID: <1418842153-17113-4-git-send-email-geert+renesas@glider.be>
 References: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
@@ -10,28 +10,60 @@ To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linu
 Cc: Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Add a node for the Bus State Controller (BSC) on sh73a0, to which
-multiple external devices can be connected.
-
-The BSC is driven by the ZB clock, and located in PM domain A4S.
-A reference to the latter will be added later.
-
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v2:
-  - Postpone power-domains
+  - New
 ---
- arch/arm/boot/dts/sh73a0.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../devicetree/bindings/bus/simple-pm-bus.txt      | 49 ++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
 
-diff --git a/arch/arm/boot/dts/sh73a0.dtsi b/arch/arm/boot/dts/sh73a0.dtsi
-index b60d0456fc7a0c00..8989b63d6993adb9 100644
---- a/arch/arm/boot/dts/sh73a0.dtsi
-+++ b/arch/arm/boot/dts/sh73a0.dtsi
-@@ -357,6 +357,16 @@
- 		status = "disabled";
- 	};
- 
+diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+new file mode 100644
+index 0000000000000000..bc5f985fd5463afa
+--- /dev/null
++++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+@@ -0,0 +1,49 @@
++Simple Power-Managed Bus
++========================
++
++A Simple Power-Managed Bus is a transparent bus that doesn't need a real
++driver, as it's typically initialized by the boot loader.
++
++However, its bus controller is part of a PM domain, or under the control of a
++functional clock.  Hence, the bus controller's PM domain and/or clock must be
++enabled for child devices connected to the bus (either on-SoC or externally)
++to function.
++
++
++Generic compatible values and properties
++----------------------------------------
++
++Required properties:
++  - compatible: Must be at least one of the vendor-specific compatible values
++		from a vendor-specific section below, and "simple-bus" as a
++		fallback.
++
++Optional platform-specific properties for clock or PM domain control (at least
++one of them is required):
++  - clocks: Must contain a reference to the functional clock(s),
++  - power-domains: Must contain a reference to the PM domain.
++
++
++Vendor-specific compatible values and properties
++------------------------------------------------
++
++Renesas Bus State Controller (BSC):
++  - compatible: Must be an SoC-specific value, and "renesas,bsc" as a fallback.
++                SoC-specific values can be:
++		"renesas,bsc-r8a73a4" for R-Mobile APE6 (r8a73a4)
++		"renesas,bsc-sh73a0" for SH-Mobile AG5 (sh73a0)
++  - interrupts: Must contain a reference to the BSC interrupt, if available.
++
++
++Example:
++
 +	bsc: bus@fec10000 {
 +		compatible = "renesas,bsc-sh73a0", "renesas,bsc", "simple-bus";
 +		#address-cells = <1>;
@@ -40,10 +72,7 @@ index b60d0456fc7a0c00..8989b63d6993adb9 100644
 +		ranges = <0 0 0x20000000>;
 +		interrupts = <0 39 IRQ_TYPE_LEVEL_HIGH>;
 +		clocks = <&zb_clk>;
++		power-domains = <&pd_a4s>;
 +	};
-+
- 	clocks {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
 -- 
 1.9.1
