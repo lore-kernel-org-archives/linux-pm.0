@@ -1,78 +1,66 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
-Date: Wed, 17 Dec 2014 09:28:57 -0600
-Message-ID: <20141217152857.GA838@kahuna>
-References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
- <CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
- <54909E30.4040300@ti.com>
- <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
+Subject: [PATCH] cpufreq: Stop BUGing the system
+Date: Wed, 17 Dec 2014 09:51:35 -0600
+Message-ID: <1418831495-26958-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:43482 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbaLQP3D (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 10:29:03 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 09:37-20141217, Viresh Kumar wrote:
-> On 17 December 2014 at 02:33, Nishanth Menon <nm@ti.com> wrote:
-> > http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
-> > [    2.071996] ------------[ cut here ]------------
-> > [    2.076831] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
-> > [    2.082753] Internal error: Oops - BUG: 0 [#1] SMP ARM
-> 
-> This is what we have hit:
-> 
->         if ((cpufreq_driver->flags & CPUFREQ_NEED_INITIAL_FREQ_CHECK)
->             && has_target()) {
->                 /* Are we running at unknown frequency ? */
->                 ret = cpufreq_frequency_table_get_index(policy, policy->cur);
->                 if (ret == -EINVAL) {
->                         /* Warn user and fix it */
->                         pr_warn("%s: CPU%d: Running at unlisted freq: %u KHz\n",
->                                 __func__, policy->cpu, policy->cur);
->                         ret = __cpufreq_driver_target(policy, policy->cur - 1,
->                                 CPUFREQ_RELATION_L);
-> 
->                         /*
->                          * Reaching here after boot in a few seconds may not
->                          * mean that system will remain stable at "unknown"
->                          * frequency for longer duration. Hence, a BUG_ON().
->                          */
->                         BUG_ON(ret);        /********* We have hit
-> this one *******/
->                         pr_warn("%s: CPU%d: Unlisted initial frequency
-> changed to: %u KHz\n",
->                                 __func__, policy->cpu, policy->cur);
->                 }
->         }
-> 
-> 
-> So the SoC was running on unlisted frequency and when we tried to
-> change to some other valid (listed) frequency, we failed.
-> 
-> The comment over it describes why it is a BUG.. Its some SoC issue
-> and need to be resolved by somebody with a board.
-> 
-> So, in short __cpufreq_driver_target() failed to change freq..
+CPUFRreq subsystem is not a system catastrophic failure point.
+Failures in these cases DONOT need complete system shutdown with BUG.
+just refuse to let cpufreq function should be good enough.
 
-I still do not see the need to crash the entire system - OK, fine
-cpufreq is broke, but the remaining part of the system can easily
-function. That BUG does look like a ugly point and lack of proper
-cleanup logic - cpufreq should be expected to report and gracefully
-shut itself down, not screw up my platform boot.
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+ drivers/cpufreq/cpufreq.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-For that matter we have had cpufreq working on TI platforms for years
-now. I will eventually find time to track the issue down if no one else
-beats me to it, but it kinda indicates that things are probably starting
-to bitrot...
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a09a29c..a5aa2fa 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -281,7 +281,10 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs, unsigned int state)
+ {
+-	BUG_ON(irqs_disabled());
++	if (irqs_disabled()) {
++		WARN(1, "IRQs disabled!\n");
++		return;
++	}
+ 
+ 	if (cpufreq_disabled())
+ 		return;
+@@ -1253,9 +1256,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 			/*
+ 			 * Reaching here after boot in a few seconds may not
+ 			 * mean that system will remain stable at "unknown"
+-			 * frequency for longer duration. Hence, a BUG_ON().
++			 * frequency for longer duration. Hence, a WARN().
+ 			 */
+-			BUG_ON(ret);
++			if (ret) {
++				WARN(1, "SYSTEM operating at invalid freq %u", policy->cur);
++				goto err_out_unregister;
++			}
+ 			pr_warn("%s: CPU%d: Unlisted initial frequency changed to: %u KHz\n",
+ 				__func__, policy->cpu, policy->cur);
+ 		}
+@@ -2556,7 +2562,10 @@ static int __init cpufreq_core_init(void)
+ 		return -ENODEV;
+ 
+ 	cpufreq_global_kobject = kobject_create();
+-	BUG_ON(!cpufreq_global_kobject);
++	if (!cpufreq_global_kobject) {
++		WARN(1, "No memory for cpufreq_global_kobject\n");
++		return -ENOMEM;
++	}
+ 
+ 	return 0;
+ }
 -- 
-Regards,
-Nishanth Menon
+1.7.9.5
