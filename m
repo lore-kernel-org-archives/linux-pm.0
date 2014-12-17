@@ -1,78 +1,52 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
-Date: Wed, 17 Dec 2014 09:16:15 -0800
-Message-ID: <CAMAWPa-_OZC3ynKYxbtXK4=z-z720JxXigT23umscMTm8VWAzA@mail.gmail.com>
-References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
-	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
-	<54909E30.4040300@ti.com>
-	<CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
+From: Dmitry Torokhov <dtor@chromium.org>
+Subject: Re: [PATCH 3/4] PM / OPP: take RCU lock in dev_pm_opp_get_opp_count
+Date: Wed, 17 Dec 2014 09:28:42 -0800
+Message-ID: <3741028.CtOSUWyiaT@dtor-glaptop>
+References: <1418771379-24369-1-git-send-email-dtor@chromium.org> <1418771379-24369-4-git-send-email-dtor@chromium.org> <CAKohpok0UieH=Pi4nU2tKqV1_LH+3uzMDr0B8wsN61g1BnG4pg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:44410 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751066AbaLQRQ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Dec 2014 12:16:27 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 323EE20A29
-	for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 17:16:22 +0000 (UTC)
-Received: from mail-wi0-f176.google.com (mail-wi0-f176.google.com [209.85.212.176])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id 33AA6209D3
-	for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 17:16:17 +0000 (UTC)
-Received: by mail-wi0-f176.google.com with SMTP id ex7so16471599wid.9
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 09:16:15 -0800 (PST)
-In-Reply-To: <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
+Received: from mail-ie0-f172.google.com ([209.85.223.172]:52823 "EHLO
+	mail-ie0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbaLQR2o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 12:28:44 -0500
+Received: by mail-ie0-f172.google.com with SMTP id tr6so15416186ieb.31
+        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 09:28:44 -0800 (PST)
+In-Reply-To: <CAKohpok0UieH=Pi4nU2tKqV1_LH+3uzMDr0B8wsN61g1BnG4pg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-[+ Tero]
-
-On Tue, Dec 16, 2014 at 8:07 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 17 December 2014 at 02:33, Nishanth Menon <nm@ti.com> wrote:
->> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
->> [    2.071996] ------------[ cut here ]------------
->> [    2.076831] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
->> [    2.082753] Internal error: Oops - BUG: 0 [#1] SMP ARM
+On Wednesday, December 17, 2014 10:06:17 AM Viresh Kumar wrote:
+> On 17 December 2014 at 04:39, Dmitry Torokhov <dtor@chromium.org> wrote:
+> > A lot of callers are missing the fact that dev_pm_opp_get_opp_count
+> > needs to be called under RCU lock. Given that RCU locks can safely be
+> > nested, instead of providing *_locked() API, let's take RCU lock inside
+> 
+> Hmm, I asked for a *_locked() API because many users of
+> dev_pm_opp_get_opp_count() are already calling it from rcu read side
+> critical sections.
+> 
+> Now, there are two questions:
+> - Can rcu-read side critical sections be nested ?
+> 
+> Yes, this is what the comment over rcu_read_lock() says
+> 
+>  * RCU read-side critical sections may be nested.  Any deferred actions
+>  * will be deferred until the outermost RCU read-side critical section
+>  * completes.
+> 
+> - Would it be better to drop these double rcu_read_locks() ? i.e. either
+> get a *_locked() API or fix the callers of dev_pm_opp_get_opp_count().
+> 
+> @Paul: What do you say ?
 >
 
-[...]
+FWIW the change is a stop-gap; I hope we'll get away from using 
+dev_pm_opp_get_opp_count() in cpufreq drivers and then we can revert the 
+change. I just did not want to touch cpufreq drivers unless necessary.
 
-> So the SoC was running on unlisted frequency and when we tried to
-> change to some other valid (listed) frequency, we failed.
->
-> The comment over it describes why it is a BUG.. Its some SoC issue
-> and need to be resolved by somebody with a board.
->
-> So, in short __cpufreq_driver_target() failed to change freq..
-
-So this looks like a bug that has been hiding, but just exposed
-because cpufreq-cpu0 (now cpufreq-dt) was not getting built-in since
-before v3.18.
-
-On omap4-panda-es, v3.18 with multi_v7_defconfig + CPUFREQ_DT enabled,
-I see this:
-
-[    2.062103] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted
-freq: 699977 KHz
-[    2.070404] cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial
-frequency changed to: 700000 KHz
-
-No BUG.  But, in next-20141216,
-
-[    2.083953] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted
-freq: 699977 KHz
-[    2.091949] cpu cpu0: failed to set clock rate: -22
-[    2.097045] cpufreq: __target_index: Failed to change cpu frequency: -22
-
-And then the BUG.
-
-So the BUG() itself isn't the problem with this regression.  There's
-been a fair amount of changes in the OMAP clk driver (including some
-other regressions), so I suspect the culprit to be lying somewhere in
-the recent OMAP clock changes.
-
-Kevin
+Thanks,
+Dmitry
