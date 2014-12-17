@@ -1,39 +1,31 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
-Date: Wed, 17 Dec 2014 21:57:36 +0530
-Message-ID: <CAKohponn9Ubk7ze5XVsJ4Gdkosx4YY3e0fNHLwjUYurkOYFqsg@mail.gmail.com>
-References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
-	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
-	<54909E30.4040300@ti.com>
-	<CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
-	<20141217152857.GA838@kahuna>
+Subject: Re: [PATCH] ARM: defconfigs: use CONFIG_CPUFREQ_DT
+Date: Wed, 17 Dec 2014 21:58:26 +0530
+Message-ID: <CAKohpomS1PAO1zyQJ9bkK6eYo4vM-GMTrYwDnPcFfpvB3a+b2g@mail.gmail.com>
+References: <63217079d4b61d835fed98198ae1e3f0e6329de1.1418617005.git.viresh.kumar@linaro.org>
+	<2757282.fj6z18fAYb@vostro.rjw.lan>
+	<7h1to0iw76.fsf@deeprootsystems.com>
+	<CAGo_u6oO+Tou2XSVr3dxn94hV0HTdYMZWz-XKK_aydwusaRBvg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:33890 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbaLQQ1h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 11:27:37 -0500
-Received: by mail-ob0-f179.google.com with SMTP id va2so4539407obc.10
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 08:27:36 -0800 (PST)
-In-Reply-To: <20141217152857.GA838@kahuna>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:58037 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbaLQQ20 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 11:28:26 -0500
+Received: by mail-oi0-f53.google.com with SMTP id g201so2494895oib.40
+        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 08:28:26 -0800 (PST)
+In-Reply-To: <CAGo_u6oO+Tou2XSVr3dxn94hV0HTdYMZWz-XKK_aydwusaRBvg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Nishanth Menon <nm@ti.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "arm@kernel.org" <arm@kernel.org>, Linaro Kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, "# 3.13.x" <stable@vger.kernel.org>
 
-On 17 December 2014 at 20:58, Nishanth Menon <nm@ti.com> wrote:
-> I still do not see the need to crash the entire system - OK, fine
-> cpufreq is broke, but the remaining part of the system can easily
-> function. That BUG does look like a ugly point and lack of proper
-> cleanup logic - cpufreq should be expected to report and gracefully
-> shut itself down, not screw up my platform boot.
+On 17 December 2014 at 21:31, Nishanth Menon <nm@ti.com> wrote:
+> Any chance of the following being queued for the .19 window or do we
+> wait to go through Tony?
+> https://patchwork.kernel.org/patch/5484401/
 
-http://lists.linaro.org/pipermail/linaro-kernel/2013-November/009128.html
+I think I have seen that as part of Arnd pull request sent today to Linus.
 
-We came to this conclusion because you insisted that its not safe
-for the system to continue on a unsupported frequency from kernel's
-freq table. It may run well, but we don't know what will happen in
-longer run..
-
-And surely it deserves a bug-on then.
+https://lkml.org/lkml/2014/12/16/439
