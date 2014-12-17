@@ -1,87 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] PM / OPP: add some lockdep annotations
-Date: Wed, 17 Dec 2014 09:40:42 +0530
-Message-ID: <CAKohponveD5W3=L5rd_vVjs2CTHcH93qS8S3H-Bg-S-DckiViA@mail.gmail.com>
+Subject: Re: [PATCH 2/4] PM / OPP: fix warning in of_free_opp_table
+Date: Wed, 17 Dec 2014 09:58:17 +0530
+Message-ID: <CAKohpok+_wee9HwvQqpn7HRj_9zH3EifNn0MX_1yXx=WJuK0RQ@mail.gmail.com>
 References: <1418771379-24369-1-git-send-email-dtor@chromium.org>
-	<1418771379-24369-2-git-send-email-dtor@chromium.org>
+	<1418771379-24369-3-git-send-email-dtor@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:39899 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbaLQEKm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 23:10:42 -0500
-Received: by mail-oi0-f53.google.com with SMTP id g201so1700127oib.26
-        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 20:10:42 -0800 (PST)
-In-Reply-To: <1418771379-24369-2-git-send-email-dtor@chromium.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:52173 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbaLQE2S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 23:28:18 -0500
+Received: by mail-oi0-f48.google.com with SMTP id u20so10497302oif.7
+        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 20:28:18 -0800 (PST)
+In-Reply-To: <1418771379-24369-3-git-send-email-dtor@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Dmitry Torokhov <dtor@chromium.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 On 17 December 2014 at 04:39, Dmitry Torokhov <dtor@chromium.org> wrote:
-> Certain OPP APIs need to be called under RCU lock; let's add a few
-> rcu_lockdep_assert() calls to warn about potential misuse.
+> Not having OPP defined for a device is not a crime, we should not splat
+> warning in this case. Also, it seems that we are ready to accept invalid
+> dev (find_device_opp will return ERR_PTR(-EINVAL) then) so let's not
+> crash in dev_name() in such case.
 >
 > Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
 > ---
->  drivers/base/power/opp.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+>  drivers/base/power/opp.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
 >
 > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index d24dd614a..b78c14d 100644
+> index b78c14d..413c7fe 100644
 > --- a/drivers/base/power/opp.c
 > +++ b/drivers/base/power/opp.c
-> @@ -108,6 +108,14 @@ static LIST_HEAD(dev_opp_list);
->  /* Lock to allow exclusive modification to the device and opp lists */
->  static DEFINE_MUTEX(dev_opp_list_lock);
+> @@ -799,9 +799,15 @@ void of_free_opp_table(struct device *dev)
 >
-> +#define opp_rcu_lockdep_assert()                                       \
-> +do {                                                                   \
-> +       rcu_lockdep_assert(rcu_read_lock_held() ||                      \
-> +                               lockdep_is_held(&dev_opp_list_lock),    \
-> +                          "Missing rcu_read_lock() or "                \
-> +                          "dev_opp_list_lock protection");             \
-> +} while (0)
-> +
->  /**
->   * find_device_opp() - find device_opp struct using device pointer
->   * @dev:       device pointer used to lookup device OPPs
-> @@ -218,6 +226,8 @@ int dev_pm_opp_get_opp_count(struct device *dev)
->         struct dev_pm_opp *temp_opp;
->         int count = 0;
->
-> +       opp_rcu_lockdep_assert();
-> +
+>         /* Check for existing list for 'dev' */
 >         dev_opp = find_device_opp(dev);
->         if (IS_ERR(dev_opp)) {
->                 int r = PTR_ERR(dev_opp);
-> @@ -267,6 +277,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
->         struct device_opp *dev_opp;
->         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->
-> +       opp_rcu_lockdep_assert();
-> +
->         dev_opp = find_device_opp(dev);
->         if (IS_ERR(dev_opp)) {
->                 int r = PTR_ERR(dev_opp);
-> @@ -313,6 +325,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
->         struct device_opp *dev_opp;
->         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->
-> +       opp_rcu_lockdep_assert();
-> +
->         if (!dev || !freq) {
->                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
->                 return ERR_PTR(-EINVAL);
-> @@ -361,6 +375,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
->         struct device_opp *dev_opp;
->         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->
-> +       opp_rcu_lockdep_assert();
-> +
->         if (!dev || !freq) {
->                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
->                 return ERR_PTR(-EINVAL);
+> -       if (WARN(IS_ERR(dev_opp), "%s: dev_opp: %ld\n", dev_name(dev),
+> -                PTR_ERR(dev_opp)))
+> +       if (IS_ERR(dev_opp)) {
+> +               int error = PTR_ERR(dev_opp);
+> +               if (error != -ENODEV)
+> +                       WARN(1, "%s: dev_opp: %ld\n",
+> +                            IS_ERR_OR_NULL(dev) ?
+> +                                       "Invalid device" : dev_name(dev),
+> +                            error);
+>                 return;
+
+What about this:
+
+        if (IS_ERR(dev_opp)) {
+                int error = PTR_ERR(dev_opp);
+                WARN(error != -ENODEV, "%s: dev_opp: %ld\n",
+                     IS_ERR_OR_NULL(dev) ?  "Invalid device" : dev_name(dev),
+                     error);
+                return;
+        }
+
+We can get rid of the extra indentation level and an extra comparison check.
+
+Otherwise:
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
