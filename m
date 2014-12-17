@@ -1,108 +1,69 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH 03/10] cpufreq: Architecture specific callback for
- frequency changes
-Date: Wed, 17 Dec 2014 08:56:14 +0100
-Message-ID: <CAKfTPtAXGQRPGNBkAinzeR65xF0-WRr6wtTqf2-XtGzXGM5LNA@mail.gmail.com>
-References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com> <1417529192-11579-4-git-send-email-morten.rasmussen@arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
+Date: Wed, 17 Dec 2014 09:09:47 +0100
+Message-ID: <20141217080947.GB2027@amd>
+References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
+ <20141213025530.GO21347@ld-irv-0074>
+ <20141213083123.GA26129@amd>
+ <20141216235813.GI9759@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f44.google.com ([209.85.218.44]:36038 "EHLO
-	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbaLQH4f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 02:56:35 -0500
-Received: by mail-oi0-f44.google.com with SMTP id e131so10791453oig.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 23:56:34 -0800 (PST)
-In-Reply-To: <1417529192-11579-4-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20141216235813.GI9759@ld-irv-0074>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Paul Turner <pjt@google.com>, Benjamin Segall <bsegall@google.com>, Michael Turquette <mturquette@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 2 December 2014 at 15:06, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
-> From: Morten Rasmussen <Morten.Rasmussen@arm.com>
->
-> Architectures that don't have any other means for tracking cpu frequency
-> changes need a callback from cpufreq to implement a scaling factor to
-> enable scale-invariant per-entity load-tracking in the scheduler.
->
-> To compute the scale invariance correction factor the architecture would
-> need to know both the max frequency and the current frequency. This
-> patch defines weak functions for setting both from cpufreq.
->
-> Related architecture specific functions use weak function definitions.
-> The same approach is followed here.
->
-> These callbacks can be used to implement frequency scaling of cpu
-> capacity later.
->
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 644b54e..1b17608 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -278,6 +278,10 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
->  }
->  #endif
->
-> +void __weak arch_scale_set_curr_freq(int cpu, unsigned long freq) {}
-> +
-> +void __weak arch_scale_set_max_freq(int cpu, unsigned long freq) {}
-> +
->  static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
->                 struct cpufreq_freqs *freqs, unsigned int state)
->  {
-> @@ -315,6 +319,7 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
->                 pr_debug("FREQ: %lu - CPU: %lu\n",
->                          (unsigned long)freqs->new, (unsigned long)freqs->cpu);
->                 trace_cpu_frequency(freqs->new, freqs->cpu);
-> +               arch_scale_set_curr_freq(freqs->cpu, freqs->new);
 
-You must ensure that arch_scale_set_curr_freq will be called at least
-once per CPU in order to ensure that you have a defined current
-frequency.
+> > 40 lines of code, and new sysfs interface for use by someone who puts
+> > the probes on board, anyway... (so should be able to add the single
+> > mdelay himself).
+> 
+> I heard your complaint the first time:
+> 
+>   https://lkml.org/lkml/2014/9/4/63
+> 
+> And I responded to it already:
+> 
+>   https://lkml.org/lkml/2014/9/4/494
+> 
+> You did not respond, but Chirantan spoke up saying he wanted such a
+> patch too. He came up with a very similar solution independently:
 
-If cpufreq don't have to change the frequency of a CPU, you will never
-set the current frequency and the notification handler will never be
-called. A typical example is a CPU booting at max frequency and we use
-the performance governor; The CPU frequency is already the right one
-so cpufreq will not change it and you will never call
-arch_scale_set_curr_freq. The current frequency will be at least
-undefined or set to 0 for ARM platform (according to patch 04) and the
-arch_scale_freq_capacity will return 0
+I know. I believe your patch is so crazy that no more discussion was neccessary.
 
-Regards,
-Vincent
+>   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/15bccc2c63c3475ef61d3187c73ccf1d80b18c7e
+> 
+> But since you've decided to make the same comment again, I will detail
+> more of the reasons why I think your suggestion ("go add the mdelay
+> yourself") is off-base.
+> 
+>  1. This is behind a debug config option (CONFIG_PM_DEBUG). So what's
+>  the problem with improving its usefulness? Non-debug users can easily
+>  compile it out if they're worried about 40 lines.
 
->                 srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
->                                 CPUFREQ_POSTCHANGE, freqs);
->                 if (likely(policy) && likely(policy->cpu == freqs->cpu))
-> @@ -2164,7 +2169,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->                                 struct cpufreq_policy *new_policy)
->  {
->         struct cpufreq_governor *old_gov;
-> -       int ret;
-> +       int ret, cpu;
->
->         pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
->                  new_policy->cpu, new_policy->min, new_policy->max);
-> @@ -2202,6 +2207,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->         policy->min = new_policy->min;
->         policy->max = new_policy->max;
->
-> +       for_each_cpu(cpu, policy->cpus)
-> +               arch_scale_set_max_freq(cpu, policy->max);
-> +
->         pr_debug("new min and max freqs are %u - %u kHz\n",
->                  policy->min, policy->max);
->
-> --
-> 1.9.1
->
->
+We are talking 40 unneccessary lines of source. Imagine everyone who
+needed to change one value added 40 lines of code. Terabyte
+kernel. Overengineered. Crazy. Something we'll have to maintain
+forever.
+
+Make it module parameter so that the patch is two lines of code. If
+that does not work for you, think of something that does.
+
+>  2. The current debug code encodes a particular policy (which kernels
+>  generally should not). Is it better if I submit a patch that changes
+>  the current magic delay to 60000 milliseconds? What about 1334
+>  milliseconds?
+> 
+>  3. To continue your argument: why would I ever try to patch the
+>  upstream kernel, if I'm perfectly capable of doing this myself?
+
+Good questions. Showing that perhaps you should not patch the
+upstream.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
