@@ -1,43 +1,59 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] ARM: defconfigs: use CONFIG_CPUFREQ_DT
-Date: Wed, 17 Dec 2014 10:01:39 -0600
-Message-ID: <CAGo_u6oO+Tou2XSVr3dxn94hV0HTdYMZWz-XKK_aydwusaRBvg@mail.gmail.com>
-References: <63217079d4b61d835fed98198ae1e3f0e6329de1.1418617005.git.viresh.kumar@linaro.org>
-	<2757282.fj6z18fAYb@vostro.rjw.lan>
-	<7h1to0iw76.fsf@deeprootsystems.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] cpupower: Correctly detect if running as root
+Date: Wed, 17 Dec 2014 17:22:54 +0100
+Message-ID: <12251128.9086t2JFoE@skinner>
+References: <b03faaf6b63a9175da0ce7ab8e0fc3da0cba4a86.1418560562.git.mprivozn@redhat.com> <1660884.y6rjWabQcf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <7h1to0iw76.fsf@deeprootsystems.com>
-Sender: stable-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, arm@kernel.org, Linaro Kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Olof Johansson <olof@lixom.net>, arnd.bergmann@linaro.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:50793 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750905AbaLQQW5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Dec 2014 11:22:57 -0500
+In-Reply-To: <1660884.y6rjWabQcf@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Michal Privoznik <mprivozn@redhat.com>, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2014 at 12:50 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->
->> On Monday, December 15, 2014 09:48:19 AM Viresh Kumar wrote:
->>> CONFIG_GENERIC_CPUFREQ_CPU0 disappeared with commit bbcf071969b20f
->>> ("cpufreq: cpu0: rename driver and internals to 'cpufreq_dt'") and some
->>> defconfigs are still using it instead of the new one.
->>>
->>> Use the renamed CONFIG_CPUFREQ_DT generic driver.
->>>
->>> Cc: <stable@vger.kernel.org>        # 3.18
->>> Reported-by: Nishanth Menon <nm@ti.com>
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
->> OK, so who should be applying this?
->>
->
-> Normally, we take these defconfig changes through the arm-soc tree, and
-> I think that should continue, otherwise we'll be bound to have conflicts.
->
-> Note all the pull requests for this merge window are already sent, but
-> I'll queue this up in arm-soc/fixes so it can make it during the
-> v3.19-rc cycle.
+On Sunday, December 14, 2014 10:29:24 PM Rafael J. Wysocki wrote:
+> On Sunday, December 14, 2014 01:36:52 PM Michal Privoznik wrote:
+> > Some operations, like frequency-set, need root privileges. However,
+> > the way that this is detected is not correct. The getuid() is called,
+> > while in fact geteuid() should be. This way we can allow
+> > distributions or users to set SETUID flags on the cpupower binary if
+> > they want to and let regular users change the cpu frequency governor.
+> > 
+> > Signed-off-by: Michal Privoznik <mprivozn@redhat.com>
+> 
+> An ACK from Thomas is needed.
+Patch is correct, Thanks!
 
-Any chance of the following being queued for the .19 window or do we
-wait to go through Tony?
-https://patchwork.kernel.org/patch/5484401/
+Acked-by: Thomas Renninger <trenn@suse.de>
+
+     Thomas
+> 
+> > ---
+> > 
+> >  tools/power/cpupower/utils/cpupower.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/tools/power/cpupower/utils/cpupower.c
+> > b/tools/power/cpupower/utils/cpupower.c index 7cdcf88..9ea9143 100644
+> > --- a/tools/power/cpupower/utils/cpupower.c
+> > +++ b/tools/power/cpupower/utils/cpupower.c
+> > @@ -199,7 +199,7 @@ int main(int argc, const char *argv[])
+> > 
+> >  	}
+> >  	
+> >  	get_cpu_info(0, &cpupower_cpu_info);
+> > 
+> > -	run_as_root = !getuid();
+> > +	run_as_root = !geteuid();
+> > 
+> >  	if (run_as_root) {
+> >  	
+> >  		ret = uname(&uts);
+> >  		if (!ret && !strcmp(uts.machine, "x86_64") &&
+
