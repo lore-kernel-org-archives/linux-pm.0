@@ -1,55 +1,42 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 7/8] ARM: shmobile: r8a73a4 dtsi: Add Bus State Controller node
-Date: Wed, 17 Dec 2014 19:49:12 +0100
-Message-ID: <1418842153-17113-8-git-send-email-geert+renesas@glider.be>
-References: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:42274 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbaLQStZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 13:49:25 -0500
-In-Reply-To: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
+Date: Wed, 17 Dec 2014 11:11:39 -0800
+Message-ID: <CAMAWPa-Y2f-NKXT1B9Y1O5BLvDTzQFE++pxWYg3BVc93Q_HSRQ@mail.gmail.com>
+References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
+	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
+	<54909E30.4040300@ti.com>
+	<CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
+	<CAMAWPa-_OZC3ynKYxbtXK4=z-z720JxXigT23umscMTm8VWAzA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAMAWPa-_OZC3ynKYxbtXK4=z-z720JxXigT23umscMTm8VWAzA@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org
-Cc: Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add a node for the Bus State Controller (BSC) on r8a73a4, to which
-multiple external devices can be connected.
+On Wed, Dec 17, 2014 at 9:16 AM, Kevin Hilman <khilman@kernel.org> wrote:
 
-The BSC is driven by the ZB clock, and located in PM domain C4.
-A reference to the latter will be added later.
+[...]
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Untested
+> So the BUG() itself isn't the problem with this regression.  There's
+> been a fair amount of changes in the OMAP clk driver (including some
+> other regressions), so I suspect the culprit to be lying somewhere in
+> the recent OMAP clock changes.
 
-v2:
-  - New
----
- arch/arm/boot/dts/r8a73a4.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+So I attempted to bisect this down, and while it's pinpointing the
+problem to the clk-next branch, it's not that simple  I bisected this
+on next-20141216, which is where it first showed up, and the bisect
+reported: e03f3bb62ca8a1124bc408046c50aed7629b24cc is the first bad
+commit.
 
-diff --git a/arch/arm/boot/dts/r8a73a4.dtsi b/arch/arm/boot/dts/r8a73a4.dtsi
-index d0b81bd64e439174..960a810456bd7e26 100644
---- a/arch/arm/boot/dts/r8a73a4.dtsi
-+++ b/arch/arm/boot/dts/r8a73a4.dtsi
-@@ -399,6 +399,15 @@
- 		interrupts = <1 9 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_HIGH)>;
- 	};
- 
-+	bsc: bus@fec10000 {
-+		compatible = "renesas,bsc-r8a73a4", "renesas,bsc", "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0 0xfec10000 0 0x400>;
-+		ranges = <0 0 0 0x20000000>;
-+		clocks = <&zb_clk>;
-+	};
-+
- 	clocks {
- 		#address-cells = <2>;
- 		#size-cells = <2>;
--- 
-1.9.1
+That commit is where clk-next is merged into linux-next.  What's
+intersting is that testing clk-next by itself was just fine, and
+linux-next before merging clk-next was just fine.  The bisection here
+is complicated because OMAP clock-related changes when in through
+drivers/clk and through arch/arm/mach-omap2, so debugging this down
+further is going to be a more manual effort.  And one I will leave for
+someone else.
 
+Kevin
