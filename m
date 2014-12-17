@@ -1,82 +1,78 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 17 Dec 2014 08:22:35 -0700
-Message-ID: <20141217152235.GA1437@linaro.org>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
- <2519415.GklIQeMgWR@wuerfel>
- <54903DC6.8010308@linaro.org>
- <2663853.2Q3kHisMT7@wuerfel>
- <5490857A.1000808@codeaurora.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
+Date: Wed, 17 Dec 2014 09:28:57 -0600
+Message-ID: <20141217152857.GA838@kahuna>
+References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
+ <CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
+ <54909E30.4040300@ti.com>
+ <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:40052 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbaLQPWf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 10:22:35 -0500
-Received: by mail-pa0-f50.google.com with SMTP id bj1so16581718pad.37
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 07:22:35 -0800 (PST)
+Received: from devils.ext.ti.com ([198.47.26.153]:43482 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbaLQP3D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 10:29:03 -0500
 Content-Disposition: inline
-In-Reply-To: <5490857A.1000808@codeaurora.org>
+In-Reply-To: <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Dec 16 2014 at 12:18 -0700, Stephen Boyd wrote:
->On 12/16/2014 06:38 AM, Arnd Bergmann wrote:
->> On Tuesday 16 December 2014 15:12:22 Daniel Lezcano wrote:
->>> At the beginning, all that become from not including mach files from the
->>> drivers directory which make sense.
->>>
->>> Perhaps it is time to write a similar mechanism for the cpuidle drivers
->>> where we can still separate the low level PM code from the generic
->>> cpuidle code.
->> That way you basically duplicate the same thing we already have, which
->> isn't much better.
->>
->> In the example of drivers/soc/qcom/spm.c, just call cpuidle_register
->> from the spm_dev_probe() function and be done with it. You already
->> have a device that is responsible for handling this, don't try to
->> construct more than you already need.
->>
->> I would assume that the same can be done for most other platforms.
->>
->> There are probably cases where the same piece of hardware is responsible
->> for both cpuidle and cpufreq, but what that means is really that you
->> should have a single driver for it that does both things. Same for
->> SMP support: if you have one register block that does both the SMP
->> bringup and the cpuidle stuff, then have *one* driver for this block
->> that does it all. There are currently a few dependencies that require
->> doing SMP bringup early during boot, but we decided years ago that those
->> are all artificial dependencies and we should be able to boot secondary
->> CPUs much later than we currently do.
->>
->
->+1. The SPM harware is used for hotplug, suspend, cpuidle, as well as
->provides a regulator for a CPU, so all these things should be done in a
->single driver. Booting secondary CPUs early is not hard here either if
->we move the smp ops into the same driver. The only downside then is that
->it can't be a module, but I would guess that we can work on making that
->possible by allowing smp ops to be inserted and removed at any time.
->
-I am not sure, just because the hardware supports multiple
-functionality, everything should go into the same file.
+On 09:37-20141217, Viresh Kumar wrote:
+> On 17 December 2014 at 02:33, Nishanth Menon <nm@ti.com> wrote:
+> > http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
+> > [    2.071996] ------------[ cut here ]------------
+> > [    2.076831] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
+> > [    2.082753] Internal error: Oops - BUG: 0 [#1] SMP ARM
+> 
+> This is what we have hit:
+> 
+>         if ((cpufreq_driver->flags & CPUFREQ_NEED_INITIAL_FREQ_CHECK)
+>             && has_target()) {
+>                 /* Are we running at unknown frequency ? */
+>                 ret = cpufreq_frequency_table_get_index(policy, policy->cur);
+>                 if (ret == -EINVAL) {
+>                         /* Warn user and fix it */
+>                         pr_warn("%s: CPU%d: Running at unlisted freq: %u KHz\n",
+>                                 __func__, policy->cpu, policy->cur);
+>                         ret = __cpufreq_driver_target(policy, policy->cur - 1,
+>                                 CPUFREQ_RELATION_L);
+> 
+>                         /*
+>                          * Reaching here after boot in a few seconds may not
+>                          * mean that system will remain stable at "unknown"
+>                          * frequency for longer duration. Hence, a BUG_ON().
+>                          */
+>                         BUG_ON(ret);        /********* We have hit
+> this one *******/
+>                         pr_warn("%s: CPU%d: Unlisted initial frequency
+> changed to: %u KHz\n",
+>                                 __func__, policy->cpu, policy->cur);
+>                 }
+>         }
+> 
+> 
+> So the SoC was running on unlisted frequency and when we tried to
+> change to some other valid (listed) frequency, we failed.
+> 
+> The comment over it describes why it is a BUG.. Its some SoC issue
+> and need to be resolved by somebody with a board.
+> 
+> So, in short __cpufreq_driver_target() failed to change freq..
 
-If you think of a SPM driver as something that provides a service, you
-would see that all the functionality of cpuidle, hotplug, suspend, use
-the service and can have their own place to share their commonality. SPM
-h/w is not just for cpus. It could be a generic power controller (to an
-extent) for the cpu, cache, coherenency interface and pretty much any
-bus/clock exports the services of that device. There needs to be a
-distinction between an entity that provides the functionality and a one
-that uses it. You cannot build on additional functionality neatly if you
-have them all together.
+I still do not see the need to crash the entire system - OK, fine
+cpufreq is broke, but the remaining part of the system can easily
+function. That BUG does look like a ugly point and lack of proper
+cleanup logic - cpufreq should be expected to report and gracefully
+shut itself down, not screw up my platform boot.
 
-As such, I am quite appalled by the addition of the idle functions in
-the SPM driver, but seems like its the direction many want, hence went
-with it. But, please dont suggest using SPM driver as a dumping ground
-for all functionality that SPM may indirectly influence.
+For that matter we have had cpufreq working on TI platforms for years
+now. I will eventually find time to track the issue down if no one else
+beats me to it, but it kinda indicates that things are probably starting
+to bitrot...
 
-Thanks,
-Lina
+-- 
+Regards,
+Nishanth Menon
