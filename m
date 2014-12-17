@@ -1,164 +1,266 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [RFC PATCH 2/2] iommu: rockchip: Handle system-wide and runtime PM
-Date: Wed, 17 Dec 2014 02:15:31 +0200
-Message-ID: <2249350.4v5So9DQ9Z@avalon>
-References: <1418286387-9663-1-git-send-email-tfiga@chromium.org>
- <1994723.9H6BPHKqxP@avalon>
- <CAAFQd5BO0cU-cbGMGg5aJ79Th-8a-QC0Qces9cuuGPvwUc5yhw@mail.gmail.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API pm_genpd_dev_need_restore
+ to use restore types
+Date: Wed, 17 Dec 2014 08:13:47 +0530
+Message-ID: <CADGdYn60ONwuLtcdXSegbQLgFaF-me+mZY6-LPYRQvdfmWFMdA@mail.gmail.com>
+References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
+	<54901341.20106@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAAFQd5BO0cU-cbGMGg5aJ79Th-8a-QC0Qces9cuuGPvwUc5yhw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tomasz Figa <tfiga@chromium.org>
-Cc: Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Daniel Kurtz <djkurtz@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, iommu@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54901341.20106@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: LAK <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tomasz,
+On Tue, Dec 16, 2014 at 4:40 PM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> Hello,
+>
+> On 2014-12-13 17:51, Amit Daniel Kachhap wrote:
+>>
+>> Instead of using bool to restore suspended devices initially, use flags
+>> like GPD_DEV_SUSPEND_INIT, GPD_DEV_RESTORE_INIT and GPD_DEV_RESTORE_FORCE.
+>> The first two flags will be similar to the existing true/false
+>> functionality.
+>> The third flag may be used to force restore of suspended devices
+>> whenever their associated power domain is turned on.
+>>
+>> Currently, PD power off function powers off all the associated unused
+>> devices. The functionality added in this patch is similar to it.
+>>
+>> This feature may be used for those devices which are always in ON state
+>> if the PD associated with them is ON but may need local runtime resume
+>> and suspend during PD On/Off. These devices (like clock) may not implement
+>> complete pm_runtime calls such as pm_runtime_get/pm_runtime_put due to
+>> subsystems interaction behaviour or any other reason.
+>>
+>> The model works like,
+>>      DEV1 (Attaches itself with PD but no calls to pm_runtime_get and
+>>      /  pm_runtime_put. Its local runtime_suspend/resume is invoked via
+>>     /   GPD_DEV_RESTORE_FORCE option)
+>>    /
+>> PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
+>>    \    pm_runtime_put. This in turn invokes PD On/Off)
+>>     \
+>>      DEV3 (Similar to DEV1)
+>>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>
+>
+> The idea of adding new gen_pd flag and reusing runtime pm calls intead of
+> additional
+> notifiers looks promising, but I have some doubts. I don't see any guarantee
+> that
+> devices with GPD_DEV_RESTORE_FORCE flag will be suspended after all "normal"
+> devices
+> and restored before them. Without such assumption it will be hard to use
+> this approach
+> for iommu related activities, because device might need to use (in its
+> suspend/resume
+> callbacks) the functionality provided by the other device with
+> GPD_DEV_RESTORE_FORCE
+> flag. Maybe some additional flags like suspend/resume priority (or more
+> flags) will
+> solve somehow this dependency.
 
-On Tuesday 16 December 2014 11:18:33 Tomasz Figa wrote:
-> On Tue, Dec 16, 2014 at 4:53 AM, Laurent Pinchart wrote:
-> > On Monday 15 December 2014 11:39:01 Tomasz Figa wrote:
-> >> On Sat, Dec 13, 2014 at 5:47 AM, Laurent Pinchart wrote:
-> >>> On Friday 12 December 2014 13:15:51 Tomasz Figa wrote:
-> >>>> On Fri, Dec 12, 2014 at 5:48 AM, Rafael J. Wysocki wrote:
-> >>>>> On Thursday, December 11, 2014 04:51:37 PM Ulf Hansson wrote:
-> >>>>>> On 11 December 2014 at 16:31, Kevin Hilman wrote:
-> >>>>>>> [+ Laurent Pinchart]
-> >>>>>>> 
-> >>>>>>> Tomasz Figa <tfiga@chromium.org> writes:
-> >>>>>>>> On Thu, Dec 11, 2014 at 8:58 PM, Ulf Hansson wrote:
-> >>>>>>> [...]
-> >>>>>>> 
-> >>>>>>>>>> @@ -988,11 +1107,28 @@ static int rk_iommu_probe(struct
-> >>>>>>>>>> platform_device *pdev)
-> >>>>>>>>>>                 return -ENXIO;
-> >>>>>>>>>>         }
-> >>>>>>>>>> 
-> >>>>>>>>>> +       pm_runtime_no_callbacks(dev);
-> >>>>>>>>>> +       pm_runtime_enable(dev);
-> >>>>>>>>>> +
-> >>>>>>>>>> +       /* Synchronize state of the domain with driver data. */
-> >>>>>>>>>> +       pm_runtime_get_sync(dev);
-> >>>>>>>>>> +       iommu->is_powered = true;
-> >>>>>>>>> 
-> >>>>>>>>> Doesn't the runtime PM status reflect the value of "is_powered",
-> >>>>>>>>> thus why do you need to have a copy of it? Could it perpahps be
-> >>>>>>>>> that you try to cope with the case when CONFIG_PM is unset?
-> >>>>>>>> 
-> >>>>>>>> It's worth noting that this driver fully relies on status of other
-> >>>>>>>> devices in the power domain the IOMMU is in and does not enforce
-> >>>>>>>> the status on its own. So in general, as far as my understanding
-> >>>>>>>> of PM runtime subsystem, the status of the IOMMU device will be
-> >>>>>>>> always suspended, because nobody will call pm_runtime_get() on it
-> >>>>>>>> (except the get and put pair in probe). So is_powered is here to
-> >>>>>>>> track status of the domain, not the device. Feel free to suggest a
-> >>>>>>>> better way, though.
-> >>>>>>> 
-> >>>>>>> I still don't like these notifiers.  I think they add ways to
-> >>>>>>> bypass having proper runtime PM implemented for devices/subsystems.
-> >>>>>> 
-> >>>>>> I do agree, but I haven't found another good solution to the
-> >>>>>> problem.
-> >>>>> 
-> >>>>> For the record, I'm not liking this mostly because it "fixes" a
-> >>>>> generic problem in a way that's hidden in the genpd code and very
-> >>>>> indirect.
-> >>>> 
-> >>>> Well, that's true. This is indeed a generic problem of PM dependencies
-> >>>> between devices (other than those represented by parent-child
-> >>>> relation), which in fact doesn't have much to do with genpd, but
-> >>>> rather with those devices directly. It is just that genpd is the most
-> >>>> convenient location to solve this in current code and in a simple way.
-> >>>> In other words, I see this solution as a reasonable way to get the
-> >>>> problem solved quickly for now, so that we can start thinking about a
-> >>>> more elegant solution.
-> >>>> 
-> >>>>>>> From a high-level, the IOMMU is just another device inside the PM
-> >>>>>>> domain, so ideally it should be doing it's own _get() and _put()
-> >>>>>>> calls so the PM domain code would just do the right thing without
-> >>>>>>> the need for notifiers.
-> >>>>>> 
-> >>>>>> As I understand it, the IOMMU (or for other similar cases)
-> >>>>>> shouldn't be doing any get() and put() at all because there are no
-> >>>>>> IO API to serve request from.
-> >>> 
-> >>> Speaking purely from an IOMMU point of view that's not entirely tree.
-> >>> IOMMU drivers expose map and unmap operations, so they can track
-> >>> whether any memory is mapped. From a bus master point of view the IOMMU
-> >>> map and unmap operations are hidden by the DMA mapping API. The IOMMU
-> >>> can thus track the existence of mappings without any IOMMU awareness in
-> >>> the bus master driver.
-> >>> 
-> >>> If no mapping exist the IOMMU shouldn't receive any translation
-> >>> request. An IOMMU driver could thus call pm_runtime_get_sync() in the
-> >>> map handler when creating the first mapping, and pm_runtime_put() in
-> >>> the unmap handler when tearing the last mapping down.
-> >>> 
-> >>> One could argue that the IOMMU would end up being powered more often
-> >>> than strictly needed, as bus masters drivers, even when written
-> >>> properly, could keep mappings around at times they don't perform bus
-> >>> access. This is true, and that's an argument I've raised during the
-> >>> last kernel summit. The general response (including Linus Torvald's)
-> >>> was that micro-optimizing power management might not be worth it, and
-> >>> that measurements proving that the gain is worth it are required before
-> >>> introducing new APIs to solve the problem. I can't disagree with that
-> >>> argument.
-> >> 
-> >> This would be a micro optimization if the IOMMU was located in its own
-> >> power domain. Unfortunately in most cases it is not, so keeping all
-> >> the devices in the domain powered on, because one of them have a
-> >> mapping created doesn't sound like a good idea.
-> >> 
-> >> Moreover, most of the drivers will keep the mapping for much longer
-> >> than one run cycle. Please take a look at V4L2's videobuf2 subsystem
-> >> (which I guess you are more familiar with than me;)), which will keep
-> >> MMAP buffers mapped in IOMMU address space for their whole lifetime. I
-> >> believe similar is the case for DRM drivers.
-> > 
-> > Yes, but that doesn't mean it gets out of control. Buffers shouldn't be
-> > allocated if they won't be used. Granted, they could be preallocated (or
-> > rather premapped) slightly before being used, but in sane use cases that
-> > shouldn't be long before the hardware needs to be turned on.
-> 
-> Assuming that we don't have a third party, called "user", involved.
+Hi Marek,
 
-Who needs that ? :-D
+Thanks for pointing this issue out. I agree that there is no priority
+in suspending devices with this flag. But this works well in syncing
+with power domain on/off as the devices of these types have only
+dependency with power domain. BTW I tested this implementation with
+your first version of IOMMU save/restore patches. Although i have not
+posted those but they work fine. I can post those after cleaning them
+up.
+Here, the ordering between various devices is taken care as they are
+probed at different point of time(clock then IOMMU). so the suspend
+happens in reverse probe order and resume happens in probe order. I
+will check more on this and get back.
 
-> A simple use case is video playback pause. Usually all the software state
-> (including output buffers that can be used as reference for decoding next
-> frames) needs to be preserved to continue decoding after resume, but it
-> would be nice to power off the decoder, if it is unused for some period. In
-> addition, we would like the pause/resume operation to be fast, so
-> unmapping/freeing buffers and then exactly the opposite on resume doesn't
-> sound like a good idea.
+Thanks,
+Amit Daniel
 
-OK, then we have one possible use case. I expect people to still want to see 
-power consumption numbers though.
-
-You can call me annoying, but I'm not sure whether a generic PM dependency 
-implementation, while it could be a good idea in general, is the best solution 
-here, especially if the bus master and the IOMMU are in a different power 
-domain. The bus master could provide functions that don't require DMA access. 
-For instance a camera controller could feed its output to the display 
-directly, without going through memory. In that case we probably don't want to 
-power the IOMMU and its complete power domain on when using the camera 
-controller in that mode.
-
-One alternative solution would be to extend the DMA mapping API with two 
-functions to signal that DMA is about to be started and that DMA has now 
-finished. It might be considered too ad-hoc though.
-
--- 
-Regards,
-
-Laurent Pinchart
+>
+>
+>> ---
+>> This work is continuation of earlier work,
+>>
+>> In V2: Completely removed notfiers and add support for huge clock list to
+>> be
+>>         suspended and restored. There was some issue in this as some
+>> clocks are
+>>         not exposed and are just initialised by bootloaders. This approach
+>>         required all of them to be exposed which is cumbersome. Also some
+>>         clock API's set_parent are disabling the original parent clocks
+>>         which is not required.
+>>         Link (https://lkml.org/lkml/2014/11/24/290)
+>>
+>> In V1: Implemented PM Domain notfier such as PD_ON_PRE, PD_ON_POST
+>>         PD_OFF_PRE and PD_OFF_POST. This was not supported and other
+>>         options suggested. link
+>> (http://www.spinics.net/lists/linux-samsung-soc/msg38442.html)
+>>
+>> This work may also assist exynos iommu pm runtime posted earlier by Marek
+>> http://lists.linaro.org/pipermail/linaro-mm-sig/2014-August/004099.html
+>>
+>>   drivers/base/power/domain.c | 40
+>> ++++++++++++++++++++++++++++++++++++----
+>>   include/linux/pm_domain.h   | 15 +++++++++++++--
+>>   2 files changed, 49 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 6a103a3..d955a05 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -49,6 +49,7 @@
+>>     static LIST_HEAD(gpd_list);
+>>   static DEFINE_MUTEX(gpd_list_lock);
+>> +static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd);
+>>     static struct generic_pm_domain *pm_genpd_lookup_name(const char
+>> *domain_name)
+>>   {
+>> @@ -176,6 +177,8 @@ static int genpd_power_on(struct generic_pm_domain
+>> *genpd)
+>>         pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
+>>                 genpd->name, "on", elapsed_ns);
+>>   +     __pm_genpd_restore_devices(genpd);
+>> +
+>>         return ret;
+>>   }
+>>   @@ -453,6 +456,24 @@ static void __pm_genpd_restore_device(struct
+>> pm_domain_data *pdd,
+>>   }
+>>     /**
+>> + * __pm_genpd_restore_devices- Restore the pre-suspend state of all
+>> device
+>> + *                             according to the restore flag.
+>> + * @genpd: PM domain the device belongs to.
+>> + */
+>> +static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd)
+>> +{
+>> +       struct pm_domain_data *pdd;
+>> +       struct generic_pm_domain_data *gpd_data;
+>> +
+>> +       /* Force restore the devices according to the restore flag */
+>> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+>> +               gpd_data = to_gpd_data(pdd);
+>> +               if (gpd_data->force_restore == true)
+>> +                       __pm_genpd_restore_device(pdd, genpd);
+>> +       }
+>> +}
+>> +
+>> +/**
+>>    * genpd_abort_poweroff - Check if a PM domain power off should be
+>> aborted.
+>>    * @genpd: PM domain to check.
+>>    *
+>> @@ -1469,6 +1490,7 @@ int __pm_genpd_add_device(struct generic_pm_domain
+>> *genpd, struct device *dev,
+>>         gpd_data->base.dev = dev;
+>>         list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+>>         gpd_data->need_restore = -1;
+>> +       gpd_data->force_restore = false;
+>>         gpd_data->td.constraint_changed = true;
+>>         gpd_data->td.effective_constraint_ns = -1;
+>>         mutex_unlock(&gpd_data->lock);
+>> @@ -1561,18 +1583,28 @@ int pm_genpd_remove_device(struct
+>> generic_pm_domain *genpd,
+>>   /**
+>>    * pm_genpd_dev_need_restore - Set/unset the device's "need restore"
+>> flag.
+>>    * @dev: Device to set/unset the flag for.
+>> - * @val: The new value of the device's "need restore" flag.
+>> + * @val: This can have values GPD_DEV_SUSPEND_INIT or
+>> GPD_DEV_RESTORE_INIT
+>> + *     together with GPD_DEV_RESTORE_FORCE.
+>>    */
+>> -void pm_genpd_dev_need_restore(struct device *dev, bool val)
+>> +void pm_genpd_dev_need_restore(struct device *dev, unsigned int val)
+>>   {
+>>         struct pm_subsys_data *psd;
+>> +       struct generic_pm_domain_data *pdd;
+>>         unsigned long flags;
+>>         spin_lock_irqsave(&dev->power.lock, flags);
+>>         psd = dev_to_psd(dev);
+>> -       if (psd && psd->domain_data)
+>> -               to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
+>> +       if (psd && psd->domain_data) {
+>> +               pdd = to_gpd_data(psd->domain_data);
+>> +               if (val & GPD_DEV_SUSPEND_INIT)
+>> +                       pdd->need_restore = 0;
+>> +               else if (val & GPD_DEV_RESTORE_INIT)
+>> +                       pdd->need_restore = 1;
+>> +
+>> +               if (val & GPD_DEV_RESTORE_FORCE)
+>> +                       pdd->force_restore = true;
+>> +       }
+>>         spin_unlock_irqrestore(&dev->power.lock, flags);
+>>   }
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 6cd20d5..8aa74ee 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -20,6 +20,15 @@
+>>   /* Defines used for the flags field in the struct generic_pm_domain */
+>>   #define GENPD_FLAG_PM_CLK     (1U << 0) /* PM domain uses PM clk */
+>>   +/* Defines used for the types of restore */
+>> +#define        GPD_DEV_SUSPEND_INIT    0x1     /* Initiate the device
+>> runtime as
+>> +                                          suspend/resume/suspend... */
+>> +#define        GPD_DEV_RESTORE_INIT    0x10    /* Initiate the device
+>> runtime as
+>> +                                          resume/suspend/suspend... */
+>> +#define        GPD_DEV_RESTORE_FORCE   0x100   /* Force these devices to
+>> always do
+>> +                                          resume in PD power on. Initial
+>> +                                          behaviour can be one of the
+>> above */
+>> +
+>>   enum gpd_status {
+>>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
+>>         GPD_STATE_WAIT_MASTER,  /* PM domain's master is being waited for
+>> */
+>> @@ -116,6 +125,7 @@ struct generic_pm_domain_data {
+>>         struct mutex lock;
+>>         unsigned int refcount;
+>>         int need_restore;
+>> +       bool force_restore;
+>>   };
+>>     #ifdef CONFIG_PM_GENERIC_DOMAINS
+>> @@ -140,7 +150,7 @@ extern int __pm_genpd_name_add_device(const char
+>> *domain_name,
+>>     extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>>                                   struct device *dev);
+>> -extern void pm_genpd_dev_need_restore(struct device *dev, bool val);
+>> +extern void pm_genpd_dev_need_restore(struct device *dev, unsigned int
+>> val);
+>>   extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>>                                   struct generic_pm_domain
+>> *new_subdomain);
+>>   extern int pm_genpd_add_subdomain_names(const char *master_name,
+>> @@ -187,7 +197,8 @@ static inline int pm_genpd_remove_device(struct
+>> generic_pm_domain *genpd,
+>>   {
+>>         return -ENOSYS;
+>>   }
+>> -static inline void pm_genpd_dev_need_restore(struct device *dev, bool
+>> val) {}
+>> +static inline void pm_genpd_dev_need_restore(struct device *dev,
+>> +                                               unsigned int val) {}
+>>   static inline int pm_genpd_add_subdomain(struct generic_pm_domain
+>> *genpd,
+>>                                          struct generic_pm_domain *new_sd)
+>>   {
+>
+>
+> Best regards
+> --
+> Marek Szyprowski, PhD
+> Samsung R&D Institute Poland
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
