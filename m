@@ -1,64 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
-Date: Wed, 17 Dec 2014 09:37:07 +0530
-Message-ID: <CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
-References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
-	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
-	<54909E30.4040300@ti.com>
+Subject: Re: [PATCH 1/4] PM / OPP: add some lockdep annotations
+Date: Wed, 17 Dec 2014 09:40:42 +0530
+Message-ID: <CAKohponveD5W3=L5rd_vVjs2CTHcH93qS8S3H-Bg-S-DckiViA@mail.gmail.com>
+References: <1418771379-24369-1-git-send-email-dtor@chromium.org>
+	<1418771379-24369-2-git-send-email-dtor@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:40301 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbaLQEHI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 23:07:08 -0500
-Received: by mail-ob0-f174.google.com with SMTP id nt9so2165309obb.5
-        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 20:07:07 -0800 (PST)
-In-Reply-To: <54909E30.4040300@ti.com>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:39899 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbaLQEKm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 23:10:42 -0500
+Received: by mail-oi0-f53.google.com with SMTP id g201so1700127oib.26
+        for <linux-pm@vger.kernel.org>; Tue, 16 Dec 2014 20:10:42 -0800 (PST)
+In-Reply-To: <1418771379-24369-2-git-send-email-dtor@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Dmitry Torokhov <dtor@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 17 December 2014 at 02:33, Nishanth Menon <nm@ti.com> wrote:
-> http://storage.armcloud.us/kernel-ci/next/next-20141216/arm-multi_v7_defconfig/lab-khilman/boot-omap5-uevm.html
-> [    2.071996] ------------[ cut here ]------------
-> [    2.076831] kernel BUG at ../drivers/cpufreq/cpufreq.c:1258!
-> [    2.082753] Internal error: Oops - BUG: 0 [#1] SMP ARM
+On 17 December 2014 at 04:39, Dmitry Torokhov <dtor@chromium.org> wrote:
+> Certain OPP APIs need to be called under RCU lock; let's add a few
+> rcu_lockdep_assert() calls to warn about potential misuse.
+>
+> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+> ---
+>  drivers/base/power/opp.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index d24dd614a..b78c14d 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -108,6 +108,14 @@ static LIST_HEAD(dev_opp_list);
+>  /* Lock to allow exclusive modification to the device and opp lists */
+>  static DEFINE_MUTEX(dev_opp_list_lock);
+>
+> +#define opp_rcu_lockdep_assert()                                       \
+> +do {                                                                   \
+> +       rcu_lockdep_assert(rcu_read_lock_held() ||                      \
+> +                               lockdep_is_held(&dev_opp_list_lock),    \
+> +                          "Missing rcu_read_lock() or "                \
+> +                          "dev_opp_list_lock protection");             \
+> +} while (0)
+> +
+>  /**
+>   * find_device_opp() - find device_opp struct using device pointer
+>   * @dev:       device pointer used to lookup device OPPs
+> @@ -218,6 +226,8 @@ int dev_pm_opp_get_opp_count(struct device *dev)
+>         struct dev_pm_opp *temp_opp;
+>         int count = 0;
+>
+> +       opp_rcu_lockdep_assert();
+> +
+>         dev_opp = find_device_opp(dev);
+>         if (IS_ERR(dev_opp)) {
+>                 int r = PTR_ERR(dev_opp);
+> @@ -267,6 +277,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       opp_rcu_lockdep_assert();
+> +
+>         dev_opp = find_device_opp(dev);
+>         if (IS_ERR(dev_opp)) {
+>                 int r = PTR_ERR(dev_opp);
+> @@ -313,6 +325,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       opp_rcu_lockdep_assert();
+> +
+>         if (!dev || !freq) {
+>                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+>                 return ERR_PTR(-EINVAL);
+> @@ -361,6 +375,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+>         struct device_opp *dev_opp;
+>         struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>
+> +       opp_rcu_lockdep_assert();
+> +
+>         if (!dev || !freq) {
+>                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+>                 return ERR_PTR(-EINVAL);
 
-This is what we have hit:
-
-        if ((cpufreq_driver->flags & CPUFREQ_NEED_INITIAL_FREQ_CHECK)
-            && has_target()) {
-                /* Are we running at unknown frequency ? */
-                ret = cpufreq_frequency_table_get_index(policy, policy->cur);
-                if (ret == -EINVAL) {
-                        /* Warn user and fix it */
-                        pr_warn("%s: CPU%d: Running at unlisted freq: %u KHz\n",
-                                __func__, policy->cpu, policy->cur);
-                        ret = __cpufreq_driver_target(policy, policy->cur - 1,
-                                CPUFREQ_RELATION_L);
-
-                        /*
-                         * Reaching here after boot in a few seconds may not
-                         * mean that system will remain stable at "unknown"
-                         * frequency for longer duration. Hence, a BUG_ON().
-                         */
-                        BUG_ON(ret);        /********* We have hit
-this one *******/
-                        pr_warn("%s: CPU%d: Unlisted initial frequency
-changed to: %u KHz\n",
-                                __func__, policy->cpu, policy->cur);
-                }
-        }
-
-
-So the SoC was running on unlisted frequency and when we tried to
-change to some other valid (listed) frequency, we failed.
-
-The comment over it describes why it is a BUG.. Its some SoC issue
-and need to be resolved by somebody with a board.
-
-So, in short __cpufreq_driver_target() failed to change freq..
---
-viresh
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
