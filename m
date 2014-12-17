@@ -1,66 +1,43 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH] cpufreq: Stop BUGing the system
-Date: Wed, 17 Dec 2014 09:51:35 -0600
-Message-ID: <1418831495-26958-1-git-send-email-nm@ti.com>
+Subject: Re: [PATCH] ARM: defconfigs: use CONFIG_CPUFREQ_DT
+Date: Wed, 17 Dec 2014 10:01:39 -0600
+Message-ID: <CAGo_u6oO+Tou2XSVr3dxn94hV0HTdYMZWz-XKK_aydwusaRBvg@mail.gmail.com>
+References: <63217079d4b61d835fed98198ae1e3f0e6329de1.1418617005.git.viresh.kumar@linaro.org>
+	<2757282.fj6z18fAYb@vostro.rjw.lan>
+	<7h1to0iw76.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <7h1to0iw76.fsf@deeprootsystems.com>
+Sender: stable-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, arm@kernel.org, Linaro Kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Olof Johansson <olof@lixom.net>, arnd.bergmann@linaro.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-CPUFRreq subsystem is not a system catastrophic failure point.
-Failures in these cases DONOT need complete system shutdown with BUG.
-just refuse to let cpufreq function should be good enough.
+On Mon, Dec 15, 2014 at 12:50 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>
+>> On Monday, December 15, 2014 09:48:19 AM Viresh Kumar wrote:
+>>> CONFIG_GENERIC_CPUFREQ_CPU0 disappeared with commit bbcf071969b20f
+>>> ("cpufreq: cpu0: rename driver and internals to 'cpufreq_dt'") and some
+>>> defconfigs are still using it instead of the new one.
+>>>
+>>> Use the renamed CONFIG_CPUFREQ_DT generic driver.
+>>>
+>>> Cc: <stable@vger.kernel.org>        # 3.18
+>>> Reported-by: Nishanth Menon <nm@ti.com>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> OK, so who should be applying this?
+>>
+>
+> Normally, we take these defconfig changes through the arm-soc tree, and
+> I think that should continue, otherwise we'll be bound to have conflicts.
+>
+> Note all the pull requests for this merge window are already sent, but
+> I'll queue this up in arm-soc/fixes so it can make it during the
+> v3.19-rc cycle.
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- drivers/cpufreq/cpufreq.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a09a29c..a5aa2fa 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -281,7 +281,10 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
- static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
- {
--	BUG_ON(irqs_disabled());
-+	if (irqs_disabled()) {
-+		WARN(1, "IRQs disabled!\n");
-+		return;
-+	}
- 
- 	if (cpufreq_disabled())
- 		return;
-@@ -1253,9 +1256,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 			/*
- 			 * Reaching here after boot in a few seconds may not
- 			 * mean that system will remain stable at "unknown"
--			 * frequency for longer duration. Hence, a BUG_ON().
-+			 * frequency for longer duration. Hence, a WARN().
- 			 */
--			BUG_ON(ret);
-+			if (ret) {
-+				WARN(1, "SYSTEM operating at invalid freq %u", policy->cur);
-+				goto err_out_unregister;
-+			}
- 			pr_warn("%s: CPU%d: Unlisted initial frequency changed to: %u KHz\n",
- 				__func__, policy->cpu, policy->cur);
- 		}
-@@ -2556,7 +2562,10 @@ static int __init cpufreq_core_init(void)
- 		return -ENODEV;
- 
- 	cpufreq_global_kobject = kobject_create();
--	BUG_ON(!cpufreq_global_kobject);
-+	if (!cpufreq_global_kobject) {
-+		WARN(1, "No memory for cpufreq_global_kobject\n");
-+		return -ENOMEM;
-+	}
- 
- 	return 0;
- }
--- 
-1.7.9.5
+Any chance of the following being queued for the .19 window or do we
+wait to go through Tony?
+https://patchwork.kernel.org/patch/5484401/
