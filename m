@@ -1,49 +1,83 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] Thermal Management updates for 3.19-rc1
-Date: Wed, 17 Dec 2014 10:29:13 -0800
-Message-ID: <CA+55aFyLpbx8MhNYvQvp74VjmvPEeJTFAw25cnPYFG1B-CLexQ@mail.gmail.com>
-References: <1418807145.5983.27.camel@rzhang1-toshiba>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f45.google.com ([209.85.216.45]:62085 "EHLO
-	mail-qa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbaLQS3O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 13:29:14 -0500
-Received: by mail-qa0-f45.google.com with SMTP id i13so3849414qae.32
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 10:29:13 -0800 (PST)
-In-Reply-To: <1418807145.5983.27.camel@rzhang1-toshiba>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 8/8] ARM: shmobile: ape6evm dts: Move Ethernet node to BSC
+Date: Wed, 17 Dec 2014 19:49:13 +0100
+Message-ID: <1418842153-17113-9-git-send-email-geert+renesas@glider.be>
+References: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org
+Cc: Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Pulled, but:
+Move the Ethernet node from the ad-hoc lbsc node to the BSC node,
+as its connected to the Bus State Controller.  This allows the system to
+know the right position of the Ethernet node in the clock and PM domain
+hierarchy, and manage the clock and PM domain appropriately.
 
-On Wed, Dec 17, 2014 at 1:05 AM, Zhang Rui <rui.zhang@intel.com> wrote:
->
->  Documentation/devicetree/bindings/thermal/armada-thermal.txt   |   8 --
->  Documentation/devicetree/bindings/thermal/rockchip-thermal.txt |  68
-> ++++++++++++++
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Untested
 
-Please fix your pull request generation.
+v2:
+  - New
+---
+ arch/arm/boot/dts/r8a73a4-ape6evm.dts | 35 +++++++++++++++--------------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
 
-It *looks* like you are doing the diffstat in a very wide window, and
-then doing a cut-and-paste into email.
+diff --git a/arch/arm/boot/dts/r8a73a4-ape6evm.dts b/arch/arm/boot/dts/r8a73a4-ape6evm.dts
+index 0d50bef0123449f5..44c4cac1820a4dfe 100644
+--- a/arch/arm/boot/dts/r8a73a4-ape6evm.dts
++++ b/arch/arm/boot/dts/r8a73a4-ape6evm.dts
+@@ -72,26 +72,6 @@
+ 		regulator-always-on;
+ 	};
+ 
+-	lbsc {
+-		compatible = "simple-bus";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges = <0 0 0 0x20000000>;
+-
+-		ethernet@8000000 {
+-			compatible = "smsc,lan9220", "smsc,lan9115";
+-			reg = <0x08000000 0x1000>;
+-			interrupt-parent = <&irqc1>;
+-			interrupts = <8 IRQ_TYPE_LEVEL_HIGH>;
+-			phy-mode = "mii";
+-			reg-io-width = <4>;
+-			smsc,irq-active-high;
+-			smsc,irq-push-pull;
+-			vdd33a-supply = <&ape6evm_fixed_3v3>;
+-			vddvario-supply = <&ape6evm_fixed_1v8>;
+-		};
+-	};
+-
+ 	leds {
+ 		compatible = "gpio-leds";
+ 		led1 {
+@@ -184,6 +164,21 @@
+ 	voltage-tolerance = <1>; /* 1% */
+ };
+ 
++&bsc {
++	ethernet@8000000 {
++		compatible = "smsc,lan9220", "smsc,lan9115";
++		reg = <0x08000000 0x1000>;
++		interrupt-parent = <&irqc1>;
++		interrupts = <8 IRQ_TYPE_LEVEL_HIGH>;
++		phy-mode = "mii";
++		reg-io-width = <4>;
++		smsc,irq-active-high;
++		smsc,irq-push-pull;
++		vdd33a-supply = <&ape6evm_fixed_3v3>;
++		vddvario-supply = <&ape6evm_fixed_1v8>;
++	};
++};
++
+ &cmt1 {
+ 	status = "okay";
+ };
+-- 
+1.9.1
 
-Resulting in all these huge long lines that wrap in a very ugly way. Like this:
-
->  drivers/thermal/rockchip_thermal.c                             | 693
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-that's not exactly legible, is it?
-
-In order to use your screen estate to full advantage, "git diff
---stat" will default to the terminal width, but it does default to the
-normal 80 columns if you just output to a file.
-
-Or if you really want to cut-and-paste and do this from a terminal,
-just use "--stat=72" instead of just plain "--stat". Or use "export
-COLUMNS=80" or something.
-
-                           Linus
