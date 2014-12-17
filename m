@@ -1,84 +1,98 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Tue, 16 Dec 2014 15:58:13 -0800
-Message-ID: <20141216235813.GI9759@ld-irv-0074>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20141213025530.GO21347@ld-irv-0074>
- <20141213083123.GA26129@amd>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/3] cpuidle, ACPI: remove unused CPUIDLE_FLAG_TIME_INVALID
+Date: Wed, 17 Dec 2014 01:28:01 +0100
+Message-ID: <1590939.ihOXNTxWbF@vostro.rjw.lan>
+References: <1418712728-2193-1-git-send-email-lenb@kernel.org> <2d1595ea66f8eadeb1e337354b311c4f5282e2a1.1418712225.git.len.brown@intel.com> <549012A9.6070408@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:40834 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbaLPX6R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 18:58:17 -0500
-Content-Disposition: inline
-In-Reply-To: <20141213083123.GA26129@amd>
+Received: from v094114.home.net.pl ([79.96.170.134]:54075 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750810AbaLQAGR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Dec 2014 19:06:17 -0500
+In-Reply-To: <549012A9.6070408@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On Sat, Dec 13, 2014 at 09:31:23AM +0100, Pavel Machek wrote:
-> On Fri 2014-12-12 18:55:30, Brian Norris wrote:
-> > On Wed, Sep 03, 2014 at 04:55:35PM -0700, Brian Norris wrote:
-> > > When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
-> > > selecting one of a few suspend test modes, where rather than entering a
-> > > full suspend state, the kernel will perform some subset of suspend
-> > > steps, wait 5 seconds, and then resume back to normal operation.
-> > > 
-> > > This mode is useful for (among other things) observing the state of the
-> > > system just before entering a sleep mode, for debugging or analysis
-> > > purposes. However, a constant 5 second wait is not sufficient for some
-> > > sorts of analysis; for example, on an SoC, one might want to use
-> > > external tools to probe the power states of various on-chip controllers
-> > > or clocks.
-> > > 
-> > > This patch adds a companion sysfs file (/sys/power/pm_test_delay) that
-> > > allows user-space to configure how long the system waits in this test
-> > > state before resuming. It also updates the PM debugging documentation to
-> > > mention the new file.
-> > > 
-> > > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> > 
-> > What do you think about this patch? It seems there is at least one other
-> > developer who is independently interested in this.
+On Tuesday, December 16, 2014 12:08:25 PM Daniel Lezcano wrote:
+> On 12/16/2014 07:52 AM, Len Brown wrote:
+> > From: Len Brown <len.brown@intel.com>
+> >
+> > CPUIDLE_FLAG_TIME_INVALID is no longer checked
+> > by menu or ladder cpuidle governors, so don't
+> > bother setting or defining it.
+> >
+> > It was originally invented to account for the fact that
+> > acpi_safe_halt() enables interrupts to invoke HLT.
+> > That would allow interrupt service routines to be included
+> > in the last_idle duration measurements made in cpuidle_enter_state(),
+> > potentially returning a duration much larger than reality.
+> >
+> > But menu and ladder can gracefully handle erroneously large duration
+> > intervals without checking for CPUIDLE_FLAG_TIME_INVALID.
+> > Further, if they don't check CPUIDLE_FLAG_TIME_INVALID, they
+> > can also benefit from the instances when the duration interval
+> > is not erroneously large.
+> >
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> 40 lines of code, and new sysfs interface for use by someone who puts
-> the probes on board, anyway... (so should be able to add the single
-> mdelay himself).
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I heard your complaint the first time:
+OK
 
-  https://lkml.org/lkml/2014/9/4/63
+Since the material for my next pull request is staged already, I'm going to
+queue up this series for 3.19-rc, but I'll most likely push it for -rc2.
 
-And I responded to it already:
+Thanks!
 
-  https://lkml.org/lkml/2014/9/4/494
+> > ---
+> >   drivers/acpi/processor_idle.c | 2 --
+> >   include/linux/cpuidle.h       | 3 ---
+> >   2 files changed, 5 deletions(-)
+> >
+> > diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> > index 4995365..87b704e 100644
+> > --- a/drivers/acpi/processor_idle.c
+> > +++ b/drivers/acpi/processor_idle.c
+> > @@ -985,8 +985,6 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
+> >   		state->flags = 0;
+> >   		switch (cx->type) {
+> >   			case ACPI_STATE_C1:
+> > -			if (cx->entry_method != ACPI_CSTATE_FFH)
+> > -				state->flags |= CPUIDLE_FLAG_TIME_INVALID;
+> >
+> >   			state->enter = acpi_idle_enter_c1;
+> >   			state->enter_dead = acpi_idle_play_dead;
+> > diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> > index a07e087..ab70f3b 100644
+> > --- a/include/linux/cpuidle.h
+> > +++ b/include/linux/cpuidle.h
+> > @@ -53,7 +53,6 @@ struct cpuidle_state {
+> >   };
+> >
+> >   /* Idle State Flags */
+> > -#define CPUIDLE_FLAG_TIME_INVALID	(0x01) /* is residency time measurable? */
+> >   #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
+> >   #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
+> >
+> > @@ -89,8 +88,6 @@ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
+> >   /**
+> >    * cpuidle_get_last_residency - retrieves the last state's residency time
+> >    * @dev: the target CPU
+> > - *
+> > - * NOTE: this value is invalid if CPUIDLE_FLAG_TIME_INVALID is set
+> >    */
+> >   static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
+> >   {
+> >
+> 
+> 
+> 
 
-You did not respond, but Chirantan spoke up saying he wanted such a
-patch too. He came up with a very similar solution independently:
-
-  https://chromium.googlesource.com/chromiumos/third_party/kernel/+/15bccc2c63c3475ef61d3187c73ccf1d80b18c7e
-
-But since you've decided to make the same comment again, I will detail
-more of the reasons why I think your suggestion ("go add the mdelay
-yourself") is off-base.
-
- 1. This is behind a debug config option (CONFIG_PM_DEBUG). So what's
- the problem with improving its usefulness? Non-debug users can easily
- compile it out if they're worried about 40 lines.
-
- 2. The current debug code encodes a particular policy (which kernels
- generally should not). Is it better if I submit a patch that changes
- the current magic delay to 60000 milliseconds? What about 1334
- milliseconds?
-
- 3. To continue your argument: why would I ever try to patch the
- upstream kernel, if I'm perfectly capable of doing this myself?
-
- 4. How does putting probes on a board suddenly qualify someone for
- patching and rebuilding their kernel? I noted that I have *users* who
- want to do this. Hence, I'm patching a *user* interface.
-
-Brian
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
