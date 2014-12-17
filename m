@@ -1,59 +1,106 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v14 03/10] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 17 Dec 2014 14:04:04 +0000
-Message-ID: <20141217140404.GB11998@red-moon>
-References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
- <2519415.GklIQeMgWR@wuerfel>
- <54903DC6.8010308@linaro.org>
- <2663853.2Q3kHisMT7@wuerfel>
- <549181F0.3010408@linaro.org>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API pm_genpd_dev_need_restore
+ to use restore types
+Date: Wed, 17 Dec 2014 20:06:48 +0530
+Message-ID: <CADGdYn4WQ6i29ecTthu7eNUfSSQ--YESGyHcA1_9CdK-h53hxA@mail.gmail.com>
+References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
+	<54901341.20106@samsung.com>
+	<7h61dbdz5a.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:51168 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbaLQOD7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 09:03:59 -0500
-Content-Disposition: inline
-In-Reply-To: <549181F0.3010408@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7h61dbdz5a.fsf@deeprootsystems.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Lina Iyer <lina.iyer@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Wed, Dec 17, 2014 at 01:15:28PM +0000, Daniel Lezcano wrote:
-
-[...]
-
-> > I would assume that the same can be done for most other platforms.
-> >
-> > There are probably cases where the same piece of hardware is responsible
-> > for both cpuidle and cpufreq, but what that means is really that you
-> > should have a single driver for it that does both things. Same for
-> > SMP support: if you have one register block that does both the SMP
-> > bringup and the cpuidle stuff, then have *one* driver for this block
-> > that does it all. There are currently a few dependencies that require
-> > doing SMP bringup early during boot, but we decided years ago that those
-> > are all artificial dependencies and we should be able to boot secondary
-> > CPUs much later than we currently do.
-> 
-> I agree with this point and given the number of drivers, the easiest way 
-> to do that is to create cpu pm ops as I gave in the previous email and 
-> reuse them for cpu hotplug/bringup. And I believe that is possible if we 
-> continue our approach by splitting the low level pm code from the 
-> cpuidle driver.
-> 
-> What about doing something simple ? Like creating a struct 
-> arm_cpu_pm_ops variable visible from everywhere and filled by the 
-> different platform ?
-
-I agree with this approach, which by the way consists in defining
-cpu operations as ARM64 does and use those from cpuidle, suspend and
-hotplug code. The MCPM interface does that already, probably we should
-enhance/rename it since people think it must be used for multicluster
-power management whereas it is a pretty generic [drivers -> mach] code
-interface (I am talking about the API, not the synchronization scheme),
-and can certainly be extended/refactored according to new platforms need.
+On Wed, Dec 17, 2014 at 3:40 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> Marek Szyprowski <m.szyprowski@samsung.com> writes:
+>
+>> Hello,
+>>
+>> On 2014-12-13 17:51, Amit Daniel Kachhap wrote:
+>>> Instead of using bool to restore suspended devices initially, use flags
+>>> like GPD_DEV_SUSPEND_INIT, GPD_DEV_RESTORE_INIT and GPD_DEV_RESTORE_FORCE.
+>>> The first two flags will be similar to the existing true/false functionality.
+>>> The third flag may be used to force restore of suspended devices
+>>> whenever their associated power domain is turned on.
+>>>
+>>> Currently, PD power off function powers off all the associated unused
+>>> devices. The functionality added in this patch is similar to it.
+>>>
+>>> This feature may be used for those devices which are always in ON state
+>>> if the PD associated with them is ON but may need local runtime resume
+>>> and suspend during PD On/Off. These devices (like clock) may not implement
+>>> complete pm_runtime calls such as pm_runtime_get/pm_runtime_put due to
+>>> subsystems interaction behaviour or any other reason.
+>>>
+>>> The model works like,
+>>>      DEV1 (Attaches itself with PD but no calls to pm_runtime_get and
+>>>      /       pm_runtime_put. Its local runtime_suspend/resume is invoked via
+>>>     /        GPD_DEV_RESTORE_FORCE option)
+>>>    /
+>>> PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
+>>>    \ pm_runtime_put. This in turn invokes PD On/Off)
+>>>     \
+>>>      DEV3 (Similar to DEV1)
+>>>
+>>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>
+>> The idea of adding new gen_pd flag and reusing runtime pm calls intead
+>> of additional notifiers looks promising, but I have some doubts.
+>
+> I agree, this is better than notifiers, but I have some doubts too.
 
 Thanks,
-Lorenzo
+
+>
+>> don't see any guarantee that devices with GPD_DEV_RESTORE_FORCE flag
+>> will be suspended after all "normal" devices and restored before
+>> them. Without such assumption it will be hard to use this approach for
+>> iommu related activities, because device might need to use (in its
+>> suspend/resume callbacks) the functionality provided by the other
+>> device with GPD_DEV_RESTORE_FORCE flag. Maybe some additional flags
+>> like suspend/resume priority (or more flags) will solve somehow this
+>> dependency.
+>
+> At a deeper level, the problem with this approach is that this is more
+> generically a runtime PM dependency problem, not a genpd problem.  For
+> example, what happens when the same kind of dependency exists on a
+> platform using a custom PM domain instead of genpd (like ACPI.) ?
+
+This patch does not try to solve runtime PM dependencies between
+devices. As an example, if there are three devices D1, D2, D3 in a
+power domain. Device D3 would update the power domain state
+requirement using runtime PM API but devices D1 and D2 do not want to
+control the domain but just want to be notified when the power domain
+state changes.
+
+>
+> What's needed to solve this problem is a generalized way to have runtime
+> PM dependencies between devices.  Runtime PM already automatically
+> handles parent devices as one type of dependent device (e.g. a parent
+> device needs to be runtime PM resumed before its child.)  So what's
+> needed is a generic way to other PM dependencies with the runtime PM
+> core (not the genpd core.)
+
+Considering the example above with three devices, device D1 and D2 are
+passive components in this power domain. These devices only need to
+know the state changes of the power domains but would not control the
+power domain themselves nor put forth constraints in the power domain
+state changes. So I did not clearly understand as to how this example
+could be solved by introducing changes in runtime PM core.
+
+Regards,
+Amit Daniel
+
+>
+> If runtime PM handles the dependencies corretcly, then genpd (and any
+> other PM domain) will get them "for free".
+>
+> Kevin
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
