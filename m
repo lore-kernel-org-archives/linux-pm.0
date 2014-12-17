@@ -1,52 +1,48 @@
-From: Dmitry Torokhov <dtor@chromium.org>
-Subject: Re: [PATCH 3/4] PM / OPP: take RCU lock in dev_pm_opp_get_opp_count
-Date: Wed, 17 Dec 2014 09:28:42 -0800
-Message-ID: <3741028.CtOSUWyiaT@dtor-glaptop>
-References: <1418771379-24369-1-git-send-email-dtor@chromium.org> <1418771379-24369-4-git-send-email-dtor@chromium.org> <CAKohpok0UieH=Pi4nU2tKqV1_LH+3uzMDr0B8wsN61g1BnG4pg@mail.gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v14 00/10] cpuidle driver for QCOM SoCs: 8064, 8074, 8084
+Date: Wed, 17 Dec 2014 10:14:53 -0800
+Message-ID: <7hegryb0te.fsf@deeprootsystems.com>
+References: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f172.google.com ([209.85.223.172]:52823 "EHLO
-	mail-ie0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbaLQR2o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 12:28:44 -0500
-Received: by mail-ie0-f172.google.com with SMTP id tr6so15416186ieb.31
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 09:28:44 -0800 (PST)
-In-Reply-To: <CAKohpok0UieH=Pi4nU2tKqV1_LH+3uzMDr0B8wsN61g1BnG4pg@mail.gmail.com>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:34088 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbaLQSO5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 13:14:57 -0500
+Received: by mail-pd0-f179.google.com with SMTP id fp1so16714745pdb.10
+        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 10:14:56 -0800 (PST)
+In-Reply-To: <1417541958-56907-1-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 2 Dec 2014 10:39:08 -0700")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: daniel.lezcano@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-On Wednesday, December 17, 2014 10:06:17 AM Viresh Kumar wrote:
-> On 17 December 2014 at 04:39, Dmitry Torokhov <dtor@chromium.org> wrote:
-> > A lot of callers are missing the fact that dev_pm_opp_get_opp_count
-> > needs to be called under RCU lock. Given that RCU locks can safely be
-> > nested, instead of providing *_locked() API, let's take RCU lock inside
-> 
-> Hmm, I asked for a *_locked() API because many users of
-> dev_pm_opp_get_opp_count() are already calling it from rcu read side
-> critical sections.
-> 
-> Now, there are two questions:
-> - Can rcu-read side critical sections be nested ?
-> 
-> Yes, this is what the comment over rcu_read_lock() says
-> 
->  * RCU read-side critical sections may be nested.  Any deferred actions
->  * will be deferred until the outermost RCU read-side critical section
->  * completes.
-> 
-> - Would it be better to drop these double rcu_read_locks() ? i.e. either
-> get a *_locked() API or fix the callers of dev_pm_opp_get_opp_count().
-> 
-> @Paul: What do you say ?
+Lina Iyer <lina.iyer@linaro.org> writes:
+
+> Dependent patchsets - 
+>         https://lkml.org/lkml/2014/8/4/767
+>         http://www.spinics.net/lists/linux-arm-msm/msg10799.html
+>         http://www.spinics.net/lists/linux-arm-msm/msg10795.html
 >
+> Changes since v13:
+> - Return values for idle states propagated back to the cpuidle driver.
+> - Remove static bool cpuidle_drv_init.
+> - Register cpuidle driver and cpuidle device separately.
+>  - cpuidle device registered only when the SPM for the cpu is probed.
+> - Initialization changes to ensure dynamic cpuidle devices are registered only
+>   after the cpuidle driver is registered.
+> - Removed wmb, replaced with a poll loop to ensure that the SPM registers are
+>   written before executing wfi.
+>   - Added spm_register_write_sync() for write guarantees.
+> - Removed irrelevant return value for spm_set_low_power_mode().
+> - Added comments, updated module description.
+> - Removed Reviewed-by and Acked-by on the spm and cpuidle-qcom patches.
 
-FWIW the change is a stop-gap; I hope we'll get away from using 
-dev_pm_opp_get_opp_count() in cpufreq drivers and then we can revert the 
-change. I just did not want to touch cpufreq drivers unless necessary.
+I think this series should also include updates to qcom_defconfig that
+enable QCOM_PM and the cpuidle driver.
 
-Thanks,
-Dmitry
+Then it will be enabled by default and get more broad testing.
+
+Kevin
