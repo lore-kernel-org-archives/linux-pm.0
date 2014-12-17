@@ -1,55 +1,39 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 2/2] Fix no idle state information return value
-Date: Wed, 17 Dec 2014 17:27:01 +0100
-Message-ID: <1494685.HIEjl338tW@skinner>
-References: <1418565998-3701-1-git-send-email-prarit@redhat.com> <1418565998-3701-3-git-send-email-prarit@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
+Date: Wed, 17 Dec 2014 21:57:36 +0530
+Message-ID: <CAKohponn9Ubk7ze5XVsJ4Gdkosx4YY3e0fNHLwjUYurkOYFqsg@mail.gmail.com>
+References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
+	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
+	<54909E30.4040300@ti.com>
+	<CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
+	<20141217152857.GA838@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:50860 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbaLQQ1D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Dec 2014 11:27:03 -0500
-In-Reply-To: <1418565998-3701-3-git-send-email-prarit@redhat.com>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:33890 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbaLQQ1h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 11:27:37 -0500
+Received: by mail-ob0-f179.google.com with SMTP id va2so4539407obc.10
+        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 08:27:36 -0800 (PST)
+In-Reply-To: <20141217152857.GA838@kahuna>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Nishanth Menon <nm@ti.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Sunday, December 14, 2014 09:06:38 AM Prarit Bhargava wrote:
-> sysfs_get_idlestate_count() returns an unsigned int.  Returning -ENODEV
-> is not the right thing to do here, and in any case is handled the same
-> way as if there are no states found.
-Yep, returning zero states instead of an error code makes a lot sense
-here.
+On 17 December 2014 at 20:58, Nishanth Menon <nm@ti.com> wrote:
+> I still do not see the need to crash the entire system - OK, fine
+> cpufreq is broke, but the remaining part of the system can easily
+> function. That BUG does look like a ugly point and lack of proper
+> cleanup logic - cpufreq should be expected to report and gracefully
+> shut itself down, not screw up my platform boot.
 
-> 
-> Cc: Thomas Renninger <trenn@suse.de>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Acked-by: Thomas Renninger <trenn@suse.de>
+http://lists.linaro.org/pipermail/linaro-kernel/2013-November/009128.html
 
-Thanks!
+We came to this conclusion because you insisted that its not safe
+for the system to continue on a unsupported frequency from kernel's
+freq table. It may run well, but we don't know what will happen in
+longer run..
 
-    Thomas
-
-> ---
->  tools/power/cpupower/utils/helpers/sysfs.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/power/cpupower/utils/helpers/sysfs.c
-> b/tools/power/cpupower/utils/helpers/sysfs.c index 09afe5d..4e8fe2c 100644
-> --- a/tools/power/cpupower/utils/helpers/sysfs.c
-> +++ b/tools/power/cpupower/utils/helpers/sysfs.c
-> @@ -361,7 +361,7 @@ unsigned int sysfs_get_idlestate_count(unsigned int cpu)
-> 
->  	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpuidle");
->  	if (stat(file, &statbuf) != 0 || !S_ISDIR(statbuf.st_mode))
-> -		return -ENODEV;
-> +		return 0;
-> 
->  	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpuidle/state0", 
-cpu);
->  	if (stat(file, &statbuf) != 0 || !S_ISDIR(statbuf.st_mode))
-
+And surely it deserves a bug-on then.
