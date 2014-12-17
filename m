@@ -1,69 +1,175 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Wed, 17 Dec 2014 09:09:47 +0100
-Message-ID: <20141217080947.GB2027@amd>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20141213025530.GO21347@ld-irv-0074>
- <20141213083123.GA26129@amd>
- <20141216235813.GI9759@ld-irv-0074>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 08/10] sched: Track blocked utilization contributions
+Date: Wed, 17 Dec 2014 09:12:36 +0100
+Message-ID: <CAKfTPtDq7EpPWyw+=h+WKGeMPmbPdSrAyFFNssNhHczL3minZA@mail.gmail.com>
+References: <1417529192-11579-1-git-send-email-morten.rasmussen@arm.com> <1417529192-11579-9-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141216235813.GI9759@ld-irv-0074>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:65384 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbaLQIM6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Dec 2014 03:12:58 -0500
+Received: by mail-oi0-f53.google.com with SMTP id g201so1880288oib.26
+        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2014 00:12:57 -0800 (PST)
+In-Reply-To: <1417529192-11579-9-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Paul Turner <pjt@google.com>, Benjamin Segall <bsegall@google.com>, Michael Turquette <mturquette@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On 2 December 2014 at 15:06, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
+> Introduces the blocked utilization, the utilization counter-part to
+> cfs_rq->utilization_load_avg. It is the sum of sched_entity utilization
+> contributions of entities that were recently on the cfs_rq that are
+> currently blocked. Combined with sum of contributions of entities
+> currently on the cfs_rq or currently running
+> (cfs_rq->utilization_load_avg) this can provide a more stable average
+> view of the cpu usage.
 
-> > 40 lines of code, and new sysfs interface for use by someone who puts
-> > the probes on board, anyway... (so should be able to add the single
-> > mdelay himself).
-> 
-> I heard your complaint the first time:
-> 
->   https://lkml.org/lkml/2014/9/4/63
-> 
-> And I responded to it already:
-> 
->   https://lkml.org/lkml/2014/9/4/494
-> 
-> You did not respond, but Chirantan spoke up saying he wanted such a
-> patch too. He came up with a very similar solution independently:
+I'm fully aligned with the interest of adding blocked tasks in the
+CPU's utilization. Now, instead of adding one more atomic data and
+it's manipulation, it might be worth to move on yuyang.du@intel.com
+patchset: rewrites the per entity load tracking which includes blocked
+load.
 
-I know. I believe your patch is so crazy that no more discussion was neccessary.
-
->   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/15bccc2c63c3475ef61d3187c73ccf1d80b18c7e
-> 
-> But since you've decided to make the same comment again, I will detail
-> more of the reasons why I think your suggestion ("go add the mdelay
-> yourself") is off-base.
-> 
->  1. This is behind a debug config option (CONFIG_PM_DEBUG). So what's
->  the problem with improving its usefulness? Non-debug users can easily
->  compile it out if they're worried about 40 lines.
-
-We are talking 40 unneccessary lines of source. Imagine everyone who
-needed to change one value added 40 lines of code. Terabyte
-kernel. Overengineered. Crazy. Something we'll have to maintain
-forever.
-
-Make it module parameter so that the patch is two lines of code. If
-that does not work for you, think of something that does.
-
->  2. The current debug code encodes a particular policy (which kernels
->  generally should not). Is it better if I submit a patch that changes
->  the current magic delay to 60000 milliseconds? What about 1334
->  milliseconds?
-> 
->  3. To continue your argument: why would I ever try to patch the
->  upstream kernel, if I'm perfectly capable of doing this myself?
-
-Good questions. Showing that perhaps you should not patch the
-upstream.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+> cc: Ingo Molnar <mingo@redhat.com>
+> cc: Peter Zijlstra <peterz@infradead.org>
+>
+> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+> ---
+>  kernel/sched/fair.c  | 30 +++++++++++++++++++++++++++++-
+>  kernel/sched/sched.h |  8 ++++++--
+>  2 files changed, 35 insertions(+), 3 deletions(-)
+>
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 090223f..adf64df 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -2778,6 +2778,15 @@ static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
+>                 cfs_rq->blocked_load_avg = 0;
+>  }
+>
+> +static inline void subtract_utilization_blocked_contrib(struct cfs_rq *cfs_rq,
+> +                                               long utilization_contrib)
+> +{
+> +       if (likely(utilization_contrib < cfs_rq->utilization_blocked_avg))
+> +               cfs_rq->utilization_blocked_avg -= utilization_contrib;
+> +       else
+> +               cfs_rq->utilization_blocked_avg = 0;
+> +}
+> +
+>  static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
+>
+>  /* Update a sched_entity's runnable average */
+> @@ -2813,6 +2822,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
+>                 cfs_rq->utilization_load_avg += utilization_delta;
+>         } else {
+>                 subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
+> +               subtract_utilization_blocked_contrib(cfs_rq,
+> +                                                       -utilization_delta);
+>         }
+>  }
+>
+> @@ -2830,14 +2841,20 @@ static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
+>                 return;
+>
+>         if (atomic_long_read(&cfs_rq->removed_load)) {
+> -               unsigned long removed_load;
+> +               unsigned long removed_load, removed_utilization;
+>                 removed_load = atomic_long_xchg(&cfs_rq->removed_load, 0);
+> +               removed_utilization =
+> +                       atomic_long_xchg(&cfs_rq->removed_utilization, 0);
+>                 subtract_blocked_load_contrib(cfs_rq, removed_load);
+> +               subtract_utilization_blocked_contrib(cfs_rq,
+> +                                                       removed_utilization);
+>         }
+>
+>         if (decays) {
+>                 cfs_rq->blocked_load_avg = decay_load(cfs_rq->blocked_load_avg,
+>                                                       decays);
+> +               cfs_rq->utilization_blocked_avg =
+> +                       decay_load(cfs_rq->utilization_blocked_avg, decays);
+>                 atomic64_add(decays, &cfs_rq->decay_counter);
+>                 cfs_rq->last_decay = now;
+>         }
+> @@ -2884,6 +2901,8 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
+>         /* migrated tasks did not contribute to our blocked load */
+>         if (wakeup) {
+>                 subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
+> +               subtract_utilization_blocked_contrib(cfs_rq,
+> +                                       se->avg.utilization_avg_contrib);
+>                 update_entity_load_avg(se, 0);
+>         }
+>
+> @@ -2910,6 +2929,8 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
+>         cfs_rq->utilization_load_avg -= se->avg.utilization_avg_contrib;
+>         if (sleep) {
+>                 cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
+> +               cfs_rq->utilization_blocked_avg +=
+> +                                               se->avg.utilization_avg_contrib;
+>                 se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+>         } /* migrations, e.g. sleep=0 leave decay_count == 0 */
+>  }
+> @@ -4929,6 +4950,8 @@ migrate_task_rq_fair(struct task_struct *p, int next_cpu)
+>                 se->avg.decay_count = -__synchronize_entity_decay(se);
+>                 atomic_long_add(se->avg.load_avg_contrib,
+>                                                 &cfs_rq->removed_load);
+> +               atomic_long_add(se->avg.utilization_avg_contrib,
+> +                                       &cfs_rq->removed_utilization);
+>         }
+>
+>         /* We have migrated, no longer consider this task hot */
+> @@ -7944,6 +7967,8 @@ static void switched_from_fair(struct rq *rq, struct task_struct *p)
+>         if (se->avg.decay_count) {
+>                 __synchronize_entity_decay(se);
+>                 subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
+> +               subtract_utilization_blocked_contrib(cfs_rq,
+> +                                       se->avg.utilization_avg_contrib);
+>         }
+>  #endif
+>  }
+> @@ -8003,6 +8028,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
+>  #ifdef CONFIG_SMP
+>         atomic64_set(&cfs_rq->decay_counter, 1);
+>         atomic_long_set(&cfs_rq->removed_load, 0);
+> +       atomic_long_set(&cfs_rq->removed_utilization, 0);
+>  #endif
+>  }
+>
+> @@ -8055,6 +8081,8 @@ static void task_move_group_fair(struct task_struct *p, int queued)
+>                  */
+>                 se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+>                 cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
+> +               cfs_rq->utilization_blocked_avg +=
+> +                                               se->avg.utilization_avg_contrib;
+>  #endif
+>         }
+>  }
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index e402133..208237f 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -368,11 +368,15 @@ struct cfs_rq {
+>          * the blocked sched_entities on the rq.
+>          * utilization_load_avg is the sum of the average running time of the
+>          * sched_entities on the rq.
+> +        * utilization_blocked_avg is the utilization equivalent of
+> +        * blocked_load_avg, i.e. the sum of running contributions of blocked
+> +        * sched_entities associated with the rq.
+>          */
+> -       unsigned long runnable_load_avg, blocked_load_avg, utilization_load_avg;
+> +       unsigned long runnable_load_avg, blocked_load_avg;
+> +       unsigned long utilization_load_avg, utilization_blocked_avg;
+>         atomic64_t decay_counter;
+>         u64 last_decay;
+> -       atomic_long_t removed_load;
+> +       atomic_long_t removed_load, removed_utilization;
+>
+>  #ifdef CONFIG_FAIR_GROUP_SCHED
+>         /* Required to track per-cpu representation of a task_group */
+> --
+> 1.9.1
+>
+>
