@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/13] cpufreq: Remove (now) unused 'last_cpu' from struct cpufreq_policy
-Date: Thu, 18 Dec 2014 17:30:23 +0530
-Message-ID: <82b5546aafebb43a3b87ec86a6dcf4c8d75d6e2b.1418902789.git.viresh.kumar@linaro.org>
+Subject: [PATCH 07/13] cpufreq: stats: remove cpufreq_stats_update_policy_cpu()
+Date: Thu, 18 Dec 2014 17:30:24 +0530
+Message-ID: <ab1c5ebd79a42da6c7d2eb94c222d3a5766bd15b.1418902789.git.viresh.kumar@linaro.org>
 References: <cover.1418902789.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:46995 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbaLRMBZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 07:01:25 -0500
-Received: by mail-pd0-f172.google.com with SMTP id y13so1315189pdi.3
-        for <linux-pm@vger.kernel.org>; Thu, 18 Dec 2014 04:01:25 -0800 (PST)
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:61492 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbaLRMBa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 07:01:30 -0500
+Received: by mail-pd0-f178.google.com with SMTP id r10so1309002pdi.9
+        for <linux-pm@vger.kernel.org>; Thu, 18 Dec 2014 04:01:30 -0800 (PST)
 In-Reply-To: <cover.1418902789.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1418902789.git.viresh.kumar@linaro.org>
 References: <cover.1418902789.git.viresh.kumar@linaro.org>
@@ -18,43 +18,60 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-'last_cpu' was used only from cpufreq-stats and isn't used anymore. Get rid of
-it.
+cpufreq_stats_update_policy_cpu() doesn't do any useful stuff anymore and must
+be removed. Along with it, also remove 'cpu' field from 'struct cpufreq_stats'
+as that isn't used as well.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 3 ---
- include/linux/cpufreq.h   | 2 --
- 2 files changed, 5 deletions(-)
+ drivers/cpufreq/cpufreq_stats.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a09a29c312a9..b88894578fd1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1091,10 +1091,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
- 	}
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 106c89ccef30..f458fdbc5bfd 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -18,7 +18,6 @@
+ static spinlock_t cpufreq_stats_lock;
  
- 	down_write(&policy->rwsem);
+ struct cpufreq_stats {
+-	unsigned int cpu;
+ 	unsigned int total_trans;
+ 	unsigned long long last_time;
+ 	unsigned int max_state;
+@@ -194,7 +193,6 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
+ 	if (ret)
+ 		goto error_out;
+ 
+-	stat->cpu = cpu;
+ 	policy->stats_data = stat;
+ 
+ 	cpufreq_for_each_valid_entry(pos, table)
+@@ -251,24 +249,12 @@ static void cpufreq_stats_create_table(unsigned int cpu)
+ 	cpufreq_cpu_put(policy);
+ }
+ 
+-static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
+-{
+-	struct cpufreq_stats *stat = policy->stats_data;
 -
--	policy->last_cpu = policy->cpu;
- 	policy->cpu = cpu;
+-	stat->cpu = policy->cpu;
+-}
 -
- 	up_write(&policy->rwsem);
+ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+ 		unsigned long val, void *data)
+ {
+ 	int ret = 0;
+ 	struct cpufreq_policy *policy = data;
  
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 3cb097b86d20..2d99f12e4199 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -66,8 +66,6 @@ struct cpufreq_policy {
- 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
- 						should set cpufreq */
- 	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
--	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
--					   * this policy */
- 	struct clk		*clk;
- 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
- 
+-	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
+-		cpufreq_stats_update_policy_cpu(policy);
+-		return 0;
+-	}
+-
+ 	if (val == CPUFREQ_CREATE_POLICY)
+ 		ret = __cpufreq_stats_create_table(policy);
+ 	else if (val == CPUFREQ_REMOVE_POLICY)
 -- 
 2.2.0
 
