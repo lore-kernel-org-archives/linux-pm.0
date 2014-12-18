@@ -1,103 +1,93 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use
- PWM FAN as a cooling device
-Date: Thu, 18 Dec 2014 06:27:56 -0800
-Message-ID: <5492E46C.3080100@roeck-us.net>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com> <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] cpufreq: Stop BUGing the system
+Date: Thu, 18 Dec 2014 08:49:15 -0600
+Message-ID: <20141218144915.GA29004@kahuna>
+References: <1418831495-26958-1-git-send-email-nm@ti.com>
+ <CAKohponF61J6pWOtfg_722dQDbXtxrmt2dG+rKY7SKbE3xKGZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:59538 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbaLRO2N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 09:28:13 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Y1c3p-0004SI-DT
-	for linux-pm@vger.kernel.org; Thu, 18 Dec 2014 14:28:13 +0000
-In-Reply-To: <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
+Received: from bear.ext.ti.com ([192.94.94.41]:54472 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751107AbaLROtU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Dec 2014 09:49:20 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohponF61J6pWOtfg_722dQDbXtxrmt2dG+rKY7SKbE3xKGZg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>
-Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12/18/2014 02:13 AM, Lukasz Majewski wrote:
-> Several new properties to allow PWM fan working as a cooling device have been
-> combined into this single commit.
->
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
->   .../devicetree/bindings/hwmon/pwm-fan.txt          | 28 ++++++++++++++++++++++
->   1 file changed, 28 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> index 610757c..3877810 100644
-> --- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> +++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> @@ -3,10 +3,38 @@ Bindings for a fan connected to the PWM lines
->   Required properties:
->   - compatible	: "pwm-fan"
->   - pwms		: the PWM that is used to control the PWM fan
-> +- cooling-pwm-values      : PWM duty cycle values relative to
-> +			    cooling-max-pwm-value correspondig to
-> +			    proper cooling states
+On 07:38-20141218, Viresh Kumar wrote:
+> On 17 December 2014 at 21:21, Nishanth Menon <nm@ti.com> wrote:
+> > CPUFRreq subsystem is not a system catastrophic failure point.
+> > Failures in these cases DONOT need complete system shutdown with BUG.
+> > just refuse to let cpufreq function should be good enough.
+> >
+> > Signed-off-by: Nishanth Menon <nm@ti.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c |   17 +++++++++++++----
+> >  1 file changed, 13 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index a09a29c..a5aa2fa 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -281,7 +281,10 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+> >  static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+> >                 struct cpufreq_freqs *freqs, unsigned int state)
+> >  {
+> > -       BUG_ON(irqs_disabled());
+> > +       if (irqs_disabled()) {
+> > +               WARN(1, "IRQs disabled!\n");
+> > +               return;
+> > +       }
+> 
+> What about:
+> 
+> > +               if (WARN(irqs_disabled(), "IRQs disabled!\n")
+> > +                       return;
+> 
+> Same for the last change as well..
 
-I don't understand what you mean with "relative to". Please elaborate.
-Do you mean "associated with" ?
+k.
+> 
+> >
+> >         if (cpufreq_disabled())
+> >                 return;
+> > @@ -1253,9 +1256,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+> >                         /*
+> >                          * Reaching here after boot in a few seconds may not
+> >                          * mean that system will remain stable at "unknown"
+> > -                        * frequency for longer duration. Hence, a BUG_ON().
+> > +                        * frequency for longer duration. Hence, a WARN().
+> >                          */
+> > -                       BUG_ON(ret);
+> > +                       if (ret) {
+> > +                               WARN(1, "SYSTEM operating at invalid freq %u", policy->cur);
+> > +                               goto err_out_unregister;
+> > +                       }
+> 
+> And I still don't agree for this one. We shouldn't keep on working on a
+> potentially unstable frequency.
 
-Where is "cooling-max-pwm-value" defined, and how is this all expected
-to relate to the maximum duty cycle value provided by the pwm device ?
+I can add "could be unstable" -> the point being there can be psuedo
+errors reported in the system - example - clock framework bugs. Dont
+just stop the boot. example: what if cpufreq was a driver module - it
+would not have rescued the system because cpufreq had'nt detected the
+logic - if we are going to force this on the system, we should probably
+not do this in cpufreq code, instead should be somewhere generic.
 
-> +- default-pulse-width     : Property specifying default pulse width for FAN
-> +			    at system boot (zero to disable FAN on boot).
-> +			    Allowed range is 0 to 255
+While I do empathise (and had infact advocated in the past) of not
+favouring system attempting to continue at an invalid configuration and
+our attempt to rescue has failed - given that we cannot provide a
+consistent behavior (it is not a core system behavior) and potential of
+a false-postive (example clk framework or underlying bug), it should be
+good enough to "enhance" WARN to be "severe sounding enough" to
+flag it for developer and continue while keeping the system alive as
+much as possible.
 
-You'll need dt maintainer approval for the new properties.
 
-One thing I wonder about though is why you use "default-pulse-width"
-and not "default-pwm". Seems to be arbitrary. I don't see "pulse-width"
-used anywhere in the upstream kernel.
-
-I am somewhat concerned that you define the new properties as mandatory.
-That means existing configurations will fail, which does not seem to be
-a good idea. It would be more appropriate to not configure the thermal device
-if the new properties are not provided.
-
-The newly introduced semantics also conflicts with the current semantics,
-which sets the initial duty cycle initially to the maximum allowed duty cycle
-as reported by the pwm device itself.
-
-Guenter
-
-> +
-> +Thorough description of the following bindings:
-> +		cooling-min-state = <0>;
-> +		cooling-max-state = <3>;
-> +		#cooling-cells = <2>;
-> +		thermal-zone {
-> +			cpu_thermal: cpu-thermal {
-> +			cooling-maps {
-> +				map0 {
-> +				     trip = <&cpu_alert1>;
-> +				     cooling-device = <&fan0 0 1>;
-> +				};
-> +			};
-> +		};
-> +
-> +for PWM FAN used as cooling device can be found at:
-> +./Documentation/devicetree/bindings/thermal/thermal.txt
->
->   Example:
->   	pwm-fan {
->   		compatible = "pwm-fan";
->   		status = "okay";
->   		pwms = <&pwm 0 10000 0>;
-> +		cooling-min-state = <0>;
-> +		cooling-max-state = <3>;
-> +		#cooling-cells = <2>;
-> +		cooling-pwm-values = <0 102 170 255>;
-> +		default-pulse-width = <0>;
->   	};
->
-
+-- 
+Regards,
+Nishanth Menon
