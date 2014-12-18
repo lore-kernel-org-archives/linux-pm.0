@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use PWM FAN
- as a cooling device
-Date: Thu, 18 Dec 2014 11:13:04 +0100
-Message-ID: <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 4/9] hwmon: thermal: dts: Add properties to use pwm-fan device
+ as a cooling device in Odroid U3
+Date: Thu, 18 Dec 2014 11:13:06 +0100
+Message-ID: <1418897591-18332-5-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
@@ -11,56 +11,61 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Several new properties to allow PWM fan working as a cooling device have been
-combined into this single commit.
+With those bindings it is possible to use pwm-fan device available at
+Odroid U3 as a cooling device.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- .../devicetree/bindings/hwmon/pwm-fan.txt          | 28 ++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-index 610757c..3877810 100644
---- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-+++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-@@ -3,10 +3,38 @@ Bindings for a fan connected to the PWM lines
- Required properties:
- - compatible	: "pwm-fan"
- - pwms		: the PWM that is used to control the PWM fan
-+- cooling-pwm-values      : PWM duty cycle values relative to
-+			    cooling-max-pwm-value correspondig to
-+			    proper cooling states
-+- default-pulse-width     : Property specifying default pulse width for FAN
-+			    at system boot (zero to disable FAN on boot).
-+			    Allowed range is 0 to 255
-+
-+Thorough description of the following bindings:
-+		cooling-min-state = <0>;
-+		cooling-max-state = <3>;
-+		#cooling-cells = <2>;
-+		thermal-zone {
-+			cpu_thermal: cpu-thermal {
-+			cooling-maps {
-+				map0 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&fan0 0 1>;
-+				};
-+			};
-+		};
-+
-+for PWM FAN used as cooling device can be found at:
-+./Documentation/devicetree/bindings/thermal/thermal.txt
+diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+index 60bd1e4..cc50e96 100644
+--- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
++++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+@@ -32,11 +32,42 @@
+ 		};
+ 	};
  
- Example:
- 	pwm-fan {
+-	pwm-fan {
++	fan0: pwm-fan {
  		compatible = "pwm-fan";
- 		status = "okay";
  		pwms = <&pwm 0 10000 0>;
 +		cooling-min-state = <0>;
 +		cooling-max-state = <3>;
 +		#cooling-cells = <2>;
 +		cooling-pwm-values = <0 102 170 255>;
-+		default-pulse-width = <0>;
+ 		status = "okay";
  	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			cooling-maps {
++				map0 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&cpu0 7 7>;
++				};
++				map1 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&cpu0 13 13>;
++				};
++				map2 {
++				     trip = <&cpu_alert0>;
++				     cooling-device = <&fan0 0 1>;
++				};
++				map3 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&fan0 1 2>;
++				};
++				map4 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&fan0 2 3>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &pwm {
 -- 
 2.0.0.rc2
