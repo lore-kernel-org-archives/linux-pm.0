@@ -1,78 +1,191 @@
-From: Ethan Zhao <ethan.zhao@oracle.com>
-Subject: [PATCH] cpufreq: fix a NULL pointer dereference triggered by _PPC changed notification
-Date: Thu, 18 Dec 2014 10:08:39 +0900
-Message-ID: <1418864919-14870-1-git-send-email-ethan.zhao@oracle.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: dirk.j.brandewie@intel.com, kristen@linux.intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net
-Cc: linda.knippers@hp.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Ethan Zhao <ethan.zhao@oracle.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [RFC PATCH 2/2] iommu: rockchip: Handle system-wide and runtime PM
+Date: Thu, 18 Dec 2014 02:32:30 +0100
+Message-ID: <1727491.gphUuq12bL@vostro.rjw.lan>
+References: <1418286387-9663-1-git-send-email-tfiga@chromium.org>
+	<CAAFQd5BO0cU-cbGMGg5aJ79Th-8a-QC0Qces9cuuGPvwUc5yhw@mail.gmail.com>
+	<2249350.4v5So9DQ9Z@avalon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <2249350.4v5So9DQ9Z@avalon>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-If _PPC changed notification happens before governor was initiated while kernel
-is booting, a NULL pointer dereference will be triggered:
+On Wednesday, December 17, 2014 02:15:31 AM Laurent Pinchart wrote:
+> Hi Tomasz,
+> 
+> On Tuesday 16 December 2014 11:18:33 Tomasz Figa wrote:
+> > On Tue, Dec 16, 2014 at 4:53 AM, Laurent Pinchart wrote:
+> > > On Monday 15 December 2014 11:39:01 Tomasz Figa wrote:
+> > >> On Sat, Dec 13, 2014 at 5:47 AM, Laurent Pinchart wrote:
+> > >>> On Friday 12 December 2014 13:15:51 Tomasz Figa wrote:
+> > >>>> On Fri, Dec 12, 2014 at 5:48 AM, Rafael J. Wysocki wrote:
+> > >>>>> On Thursday, December 11, 2014 04:51:37 PM Ulf Hansson wrote:
+> > >>>>>> On 11 December 2014 at 16:31, Kevin Hilman wrote:
+> > >>>>>>> [+ Laurent Pinchart]
+> > >>>>>>> 
+> > >>>>>>> Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
+> > >>>>>>>> On Thu, Dec 11, 2014 at 8:58 PM, Ulf Hansson wrote:
+> > >>>>>>> [...]
+> > >>>>>>> 
+> > >>>>>>>>>> @@ -988,11 +1107,28 @@ static int rk_iommu_probe(struct
+> > >>>>>>>>>> platform_device *pdev)
+> > >>>>>>>>>>                 return -ENXIO;
+> > >>>>>>>>>>         }
+> > >>>>>>>>>> 
+> > >>>>>>>>>> +       pm_runtime_no_callbacks(dev);
+> > >>>>>>>>>> +       pm_runtime_enable(dev);
+> > >>>>>>>>>> +
+> > >>>>>>>>>> +       /* Synchronize state of the domain with driver data. */
+> > >>>>>>>>>> +       pm_runtime_get_sync(dev);
+> > >>>>>>>>>> +       iommu->is_powered = true;
+> > >>>>>>>>> 
+> > >>>>>>>>> Doesn't the runtime PM status reflect the value of "is_powered",
+> > >>>>>>>>> thus why do you need to have a copy of it? Could it perpahps be
+> > >>>>>>>>> that you try to cope with the case when CONFIG_PM is unset?
+> > >>>>>>>> 
+> > >>>>>>>> It's worth noting that this driver fully relies on status of other
+> > >>>>>>>> devices in the power domain the IOMMU is in and does not enforce
+> > >>>>>>>> the status on its own. So in general, as far as my understanding
+> > >>>>>>>> of PM runtime subsystem, the status of the IOMMU device will be
+> > >>>>>>>> always suspended, because nobody will call pm_runtime_get() on it
+> > >>>>>>>> (except the get and put pair in probe). So is_powered is here to
+> > >>>>>>>> track status of the domain, not the device. Feel free to suggest a
+> > >>>>>>>> better way, though.
+> > >>>>>>> 
+> > >>>>>>> I still don't like these notifiers.  I think they add ways to
+> > >>>>>>> bypass having proper runtime PM implemented for devices/subsystems.
+> > >>>>>> 
+> > >>>>>> I do agree, but I haven't found another good solution to the
+> > >>>>>> problem.
+> > >>>>> 
+> > >>>>> For the record, I'm not liking this mostly because it "fixes" a
+> > >>>>> generic problem in a way that's hidden in the genpd code and very
+> > >>>>> indirect.
+> > >>>> 
+> > >>>> Well, that's true. This is indeed a generic problem of PM dependencies
+> > >>>> between devices (other than those represented by parent-child
+> > >>>> relation), which in fact doesn't have much to do with genpd, but
+> > >>>> rather with those devices directly. It is just that genpd is the most
+> > >>>> convenient location to solve this in current code and in a simple way.
+> > >>>> In other words, I see this solution as a reasonable way to get the
+> > >>>> problem solved quickly for now, so that we can start thinking about a
+> > >>>> more elegant solution.
+> > >>>> 
+> > >>>>>>> From a high-level, the IOMMU is just another device inside the PM
+> > >>>>>>> domain, so ideally it should be doing it's own _get() and _put()
+> > >>>>>>> calls so the PM domain code would just do the right thing without
+> > >>>>>>> the need for notifiers.
+> > >>>>>> 
+> > >>>>>> As I understand it, the IOMMU (or for other similar cases)
+> > >>>>>> shouldn't be doing any get() and put() at all because there are no
+> > >>>>>> IO API to serve request from.
+> > >>> 
+> > >>> Speaking purely from an IOMMU point of view that's not entirely tree.
+> > >>> IOMMU drivers expose map and unmap operations, so they can track
+> > >>> whether any memory is mapped. From a bus master point of view the IOMMU
+> > >>> map and unmap operations are hidden by the DMA mapping API. The IOMMU
+> > >>> can thus track the existence of mappings without any IOMMU awareness in
+> > >>> the bus master driver.
+> > >>> 
+> > >>> If no mapping exist the IOMMU shouldn't receive any translation
+> > >>> request. An IOMMU driver could thus call pm_runtime_get_sync() in the
+> > >>> map handler when creating the first mapping, and pm_runtime_put() in
+> > >>> the unmap handler when tearing the last mapping down.
+> > >>> 
+> > >>> One could argue that the IOMMU would end up being powered more often
+> > >>> than strictly needed, as bus masters drivers, even when written
+> > >>> properly, could keep mappings around at times they don't perform bus
+> > >>> access. This is true, and that's an argument I've raised during the
+> > >>> last kernel summit. The general response (including Linus Torvald's)
+> > >>> was that micro-optimizing power management might not be worth it, and
+> > >>> that measurements proving that the gain is worth it are required before
+> > >>> introducing new APIs to solve the problem. I can't disagree with that
+> > >>> argument.
+> > >> 
+> > >> This would be a micro optimization if the IOMMU was located in its own
+> > >> power domain. Unfortunately in most cases it is not, so keeping all
+> > >> the devices in the domain powered on, because one of them have a
+> > >> mapping created doesn't sound like a good idea.
+> > >> 
+> > >> Moreover, most of the drivers will keep the mapping for much longer
+> > >> than one run cycle. Please take a look at V4L2's videobuf2 subsystem
+> > >> (which I guess you are more familiar with than me;)), which will keep
+> > >> MMAP buffers mapped in IOMMU address space for their whole lifetime. I
+> > >> believe similar is the case for DRM drivers.
+> > > 
+> > > Yes, but that doesn't mean it gets out of control. Buffers shouldn't be
+> > > allocated if they won't be used. Granted, they could be preallocated (or
+> > > rather premapped) slightly before being used, but in sane use cases that
+> > > shouldn't be long before the hardware needs to be turned on.
+> > 
+> > Assuming that we don't have a third party, called "user", involved.
+> 
+> Who needs that ? :-D
+> 
+> > A simple use case is video playback pause. Usually all the software state
+> > (including output buffers that can be used as reference for decoding next
+> > frames) needs to be preserved to continue decoding after resume, but it
+> > would be nice to power off the decoder, if it is unused for some period. In
+> > addition, we would like the pause/resume operation to be fast, so
+> > unmapping/freeing buffers and then exactly the opposite on resume doesn't
+> > sound like a good idea.
+> 
+> OK, then we have one possible use case. I expect people to still want to see 
+> power consumption numbers though.
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000030
- IP: [<ffffffff81470453>] __cpufreq_governor+0x23/0x1e0
- PGD 0
- Oops: 0000 [#1] SMP
- ... ...
- RIP: 0010:[<ffffffff81470453>]  [<ffffffff81470453>]
- __cpufreq_governor+0x23/0x1e0
- RSP: 0018:ffff881fcfbcfbb8  EFLAGS: 00010286
- RAX: 0000000000000000 RBX: ffff881fd11b3980 RCX: ffff88407fc20000
- RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff881fd11b3980
- RBP: ffff881fcfbcfbd8 R08: 0000000000000000 R09: 000000000000000f
- R10: ffffffff818068d0 R11: 0000000000000043 R12: 0000000000000004
- R13: 0000000000000000 R14: ffffffff8196cae0 R15: 0000000000000000
- FS:  0000000000000000(0000) GS:ffff881fffc00000(0000) knlGS:0000000000000000
- CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
- CR2: 0000000000000030 CR3: 00000000018ae000 CR4: 00000000000407f0
- DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
- DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
- Process kworker/0:3 (pid: 750, threadinfo ffff881fcfbce000, task
- ffff881fcf556400)
- Stack:
-  ffff881fffc17d00 ffff881fcfbcfc18 ffff881fd11b3980 0000000000000000
-  ffff881fcfbcfc08 ffffffff81470d08 ffff881fd11b3980 0000000000000007
-  ffff881fcfbcfc18 ffff881fffc17d00 ffff881fcfbcfd28 ffffffff81472e9a
- Call Trace:
-  [<ffffffff81470d08>] __cpufreq_set_policy+0x1b8/0x2e0
-  [<ffffffff81472e9a>] cpufreq_update_policy+0xca/0x150
-  [<ffffffff81472f20>] ? cpufreq_update_policy+0x150/0x150
-  [<ffffffff81324a96>] acpi_processor_ppc_has_changed+0x71/0x7b
-  [<ffffffff81320bcd>] acpi_processor_notify+0x55/0x115
-  [<ffffffff812f9c29>] acpi_device_notify+0x19/0x1b
-  [<ffffffff813084ca>] acpi_ev_notify_dispatch+0x41/0x5f
-  [<ffffffff812f64a4>] acpi_os_execute_deferred+0x27/0x34
+Well, we have them, kind of.
 
-The root cause is a race conditon -- cpufreq core and acpi-cpufreq driver
-were initiated, but cpufreq_governor wasn't and _PPC changed notification
-happened, __cpufreq_governor() was called within acpi_os_execute_deferred
-kernel thread context.
+In the ACPI world there's something called _DEP which gives us a list of devices
+depended on by the given one.  Those may be devices whose drivers provide so
+called "operation region" handling which means that an ACPI method executed for
+the dependent device may access a device it depends on indirectly.  Because of
+that indirection we basically need the devices listed by _DEP to be "on" whenever
+the dependent device is "on" or things may break in nasty ways otherwise.
 
-To fix this panic issue, add pointer checking code in __cpufreq_governor()
-before pointer policy->governor is to be dereferenced.
+Now, on (some) Intel SoCs some devices listed by _DEP cannot be "on" all the
+time, because the lowest-power states of the whole SoC cannot be used then,
+which makes hours of battery life of a difference.
 
-Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
----
- drivers/cpufreq/cpufreq.c | 5 +++++
- 1 file changed, 5 insertions(+)
+This isn't exactly the same problem, but it maps to the IOMMU one quite well IMO.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4473eba..b75735c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2021,6 +2021,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	/* Don't start any governor operations if we are entering suspend */
- 	if (cpufreq_suspended)
- 		return 0;
-+	/* Governor might not be initiated here if _PPC changed notification
-+	   happened, check it.
-+	*/
-+	if (!policy->governor)
-+		return -EINVAL;
- 
- 	if (policy->governor->max_transition_latency &&
- 	    policy->cpuinfo.transition_latency >
+> You can call me annoying, but I'm not sure whether a generic PM dependency 
+> implementation, while it could be a good idea in general, is the best solution 
+> here, especially if the bus master and the IOMMU are in a different power 
+> domain. The bus master could provide functions that don't require DMA access. 
+> For instance a camera controller could feed its output to the display 
+> directly, without going through memory. In that case we probably don't want to 
+> power the IOMMU and its complete power domain on when using the camera 
+> controller in that mode.
+
+That's a fair point, but it really boils down to energy usage numbers again.
+
+> One alternative solution would be to extend the DMA mapping API with two 
+> functions to signal that DMA is about to be started and that DMA has now 
+> finished. It might be considered too ad-hoc though.
+
+It would be better to be able to reference count the DMA engine from the
+bus master IMO and arguably you can use the runtime PM framework for that.
+Namely, give bus masters someting like
+
+	pm_runtime_get_my_DMA_engine(bus_master_device)
+	pm_runtime_put_my_DMA_engine(bus_master_device)
+
+and let them call these as they see fit.
+
+
 -- 
-1.8.3.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
