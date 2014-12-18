@@ -1,93 +1,41 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: Stop BUGing the system
-Date: Thu, 18 Dec 2014 08:49:15 -0600
-Message-ID: <20141218144915.GA29004@kahuna>
-References: <1418831495-26958-1-git-send-email-nm@ti.com>
- <CAKohponF61J6pWOtfg_722dQDbXtxrmt2dG+rKY7SKbE3xKGZg@mail.gmail.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 0/4] OOM vs PM freezer fixes
+Date: Thu, 18 Dec 2014 17:27:18 +0100
+Message-ID: <20141218162718.GE832@dhcp22.suse.cz>
+References: <20141110163055.GC18373@dhcp22.suse.cz>
+ <1417797707-31699-1-git-send-email-mhocko@suse.cz>
+ <20141207100953.GC15892@dhcp22.suse.cz>
+ <20141207135551.GA19034@htj.dyndns.org>
+ <20141207190026.GB29065@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:54472 "EHLO bear.ext.ti.com"
+Received: from cantor2.suse.de ([195.135.220.15]:43550 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbaLROtU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Dec 2014 09:49:20 -0500
+	id S1751872AbaLRQ1V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Dec 2014 11:27:21 -0500
 Content-Disposition: inline
-In-Reply-To: <CAKohponF61J6pWOtfg_722dQDbXtxrmt2dG+rKY7SKbE3xKGZg@mail.gmail.com>
+In-Reply-To: <20141207190026.GB29065@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 07:38-20141218, Viresh Kumar wrote:
-> On 17 December 2014 at 21:21, Nishanth Menon <nm@ti.com> wrote:
-> > CPUFRreq subsystem is not a system catastrophic failure point.
-> > Failures in these cases DONOT need complete system shutdown with BUG.
-> > just refuse to let cpufreq function should be good enough.
-> >
-> > Signed-off-by: Nishanth Menon <nm@ti.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c |   17 +++++++++++++----
-> >  1 file changed, 13 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index a09a29c..a5aa2fa 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -281,7 +281,10 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
-> >  static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
-> >                 struct cpufreq_freqs *freqs, unsigned int state)
-> >  {
-> > -       BUG_ON(irqs_disabled());
-> > +       if (irqs_disabled()) {
-> > +               WARN(1, "IRQs disabled!\n");
-> > +               return;
-> > +       }
+On Sun 07-12-14 20:00:26, Michal Hocko wrote:
+> On Sun 07-12-14 08:55:51, Tejun Heo wrote:
+> > On Sun, Dec 07, 2014 at 11:09:53AM +0100, Michal Hocko wrote:
+> > > this is another attempt to address OOM vs. PM interaction. More
+> > > about the issue is described in the last patch. The other 4 patches
+> > > are just clean ups. This is based on top of 3.18-rc3 + Johannes'
+> > > http://marc.info/?l=linux-kernel&m=141779091114777 which is not in the
+> > > Andrew's tree yet but I wanted to prevent from later merge conflicts.
+> > 
+> > When the patches are based on a custom tree, it's often a good idea to
+> > create a git branch of the patches to help reviewing.
 > 
-> What about:
-> 
-> > +               if (WARN(irqs_disabled(), "IRQs disabled!\n")
-> > +                       return;
-> 
-> Same for the last change as well..
+> git://git.kernel.org/pub/scm/linux/kernel/git/mhocko/mm.git to-review/make-oom-vs-pm-freezing-more-robust-2
 
-k.
-> 
-> >
-> >         if (cpufreq_disabled())
-> >                 return;
-> > @@ -1253,9 +1256,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
-> >                         /*
-> >                          * Reaching here after boot in a few seconds may not
-> >                          * mean that system will remain stable at "unknown"
-> > -                        * frequency for longer duration. Hence, a BUG_ON().
-> > +                        * frequency for longer duration. Hence, a WARN().
-> >                          */
-> > -                       BUG_ON(ret);
-> > +                       if (ret) {
-> > +                               WARN(1, "SYSTEM operating at invalid freq %u", policy->cur);
-> > +                               goto err_out_unregister;
-> > +                       }
-> 
-> And I still don't agree for this one. We shouldn't keep on working on a
-> potentially unstable frequency.
-
-I can add "could be unstable" -> the point being there can be psuedo
-errors reported in the system - example - clock framework bugs. Dont
-just stop the boot. example: what if cpufreq was a driver module - it
-would not have rescued the system because cpufreq had'nt detected the
-logic - if we are going to force this on the system, we should probably
-not do this in cpufreq code, instead should be somewhere generic.
-
-While I do empathise (and had infact advocated in the past) of not
-favouring system attempting to continue at an invalid configuration and
-our attempt to rescue has failed - given that we cannot provide a
-consistent behavior (it is not a core system behavior) and potential of
-a false-postive (example clk framework or underlying bug), it should be
-good enough to "enhance" WARN to be "severe sounding enough" to
-flag it for developer and continue while keeping the system alive as
-much as possible.
-
-
+Are there any other concerns? Should I just resubmit (after rc1)?
 -- 
-Regards,
-Nishanth Menon
+Michal Hocko
+SUSE Labs
