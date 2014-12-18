@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 4/9] hwmon: thermal: dts: Add properties to use pwm-fan device
- as a cooling device in Odroid U3
-Date: Thu, 18 Dec 2014 11:13:06 +0100
-Message-ID: <1418897591-18332-5-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 5/9] hwmon: thermal: Extract __set_pwm() function to only
+ modify PWM duty cycle
+Date: Thu, 18 Dec 2014 11:13:07 +0100
+Message-ID: <1418897591-18332-6-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
@@ -11,61 +11,77 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-With those bindings it is possible to use pwm-fan device available at
-Odroid U3 as a cooling device.
+It was necessary to decouple code handling writing to sysfs from the one
+responsible for setting PWM of the fan.
+Due to that, new __set_pwm() method was extracted, which is responsible for
+only setting new PWM duty cycle.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+ drivers/hwmon/pwm-fan.c | 35 ++++++++++++++++++++++-------------
+ 1 file changed, 22 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index 60bd1e4..cc50e96 100644
---- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
-+++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -32,11 +32,42 @@
- 		};
- 	};
- 
--	pwm-fan {
-+	fan0: pwm-fan {
- 		compatible = "pwm-fan";
- 		pwms = <&pwm 0 10000 0>;
-+		cooling-min-state = <0>;
-+		cooling-max-state = <3>;
-+		#cooling-cells = <2>;
-+		cooling-pwm-values = <0 102 170 255>;
- 		status = "okay";
- 	};
-+
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			cooling-maps {
-+				map0 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&cpu0 7 7>;
-+				};
-+				map1 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&cpu0 13 13>;
-+				};
-+				map2 {
-+				     trip = <&cpu_alert0>;
-+				     cooling-device = <&fan0 0 1>;
-+				};
-+				map3 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&fan0 1 2>;
-+				};
-+				map4 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&fan0 2 3>;
-+				};
-+			};
-+		};
-+	};
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 1991d903..870e100 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -33,21 +33,15 @@ struct pwm_fan_ctx {
+ 	unsigned char pwm_value;
  };
  
- &pwm {
+-static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+-		       const char *buf, size_t count)
++static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ {
+-	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
+-	unsigned long pwm, duty;
+-	ssize_t ret;
+-
+-	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
+-		return -EINVAL;
+-
+-	mutex_lock(&ctx->lock);
++	unsigned long duty;
++	int ret;
+ 
+ 	if (ctx->pwm_value == pwm)
+-		goto exit_set_pwm_no_change;
++		return 0;
+ 
++	mutex_lock(&ctx->lock);
+ 	if (pwm == 0) {
+ 		pwm_disable(ctx->pwm);
+ 		goto exit_set_pwm;
+@@ -66,13 +60,28 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+ 
+ exit_set_pwm:
+ 	ctx->pwm_value = pwm;
+-exit_set_pwm_no_change:
+-	ret = count;
+ exit_set_pwm_err:
+ 	mutex_unlock(&ctx->lock);
+ 	return ret;
+ }
+ 
++static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
++		       const char *buf, size_t count)
++{
++	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
++	unsigned long pwm;
++	int ret;
++
++	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
++		return -EINVAL;
++
++	ret = __set_pwm(ctx, pwm);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
+ static ssize_t show_pwm(struct device *dev,
+ 			struct device_attribute *attr, char *buf)
+ {
 -- 
 2.0.0.rc2
