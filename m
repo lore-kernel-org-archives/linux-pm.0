@@ -1,61 +1,205 @@
-From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Subject: Re: [PATCH v7] cpufreq: Add SFI based cpufreq driver support
-Date: Thu, 18 Dec 2014 12:14:14 +0530
-Message-ID: <20141218064414.GA18689@intel-desktop>
-References: <20141211081438.GA2885@intel-desktop>
- <CAJvTdKmCwJTWE4t9YuWn+OLxG5EWZDXo5LZ1Bxq45ECiOvQmsA@mail.gmail.com>
- <20141216102444.GA16158@intel-desktop>
- <CAJvTdKn71M8edzdereUnDTESxJTpgdLXZjFAULO=aQTA0wnpdA@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv4 1/8] devfreq: event: Add new devfreq_event class to
+ provide basic data for devfreq governor
+Date: Thu, 18 Dec 2014 16:23:52 +0900
+Message-ID: <54928108.5080603@samsung.com>
+References: <1527528755.303581418883865069.JavaMail.weblogic@epmlwas01d>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:56823 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323AbaLRGmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Dec 2014 01:42:49 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJvTdKn71M8edzdereUnDTESxJTpgdLXZjFAULO=aQTA0wnpdA@mail.gmail.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:17614 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbaLRHX4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 02:23:56 -0500
+In-reply-to: <1527528755.303581418883865069.JavaMail.weblogic@epmlwas01d>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com
+To: myungjoo.ham@samsung.com
+Cc: =?UTF-8?B?6rmA6rWt7KeE?= <kgene.kim@samsung.com>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Wed, Dec 17, 2014 at 05:12:43PM -0500, Len Brown wrote:
-> >> policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-> >
-> > But we know the transition latency of this system. Why should we
-> > claim it as "unknown"? The sfi_freq_table_entry has latency
-> > field - does it not make irrelevant then?
-> 
-> I wrote the SFI spec.
-> If I did it again, I would not include the latency field in the FREQ table,
-> because Linux does not need it.
-> 
-> >> ondemand will compare this to TRANSITION_LATENCY_LIMIT (10 * 1000 * 1000)
-> >> and since -1 is less than 10,000,000; it will be happy.
-> >>
-> >> > +       for (i = 0; i < num_freq_table_entries; i++) {
-> >> > +               /* detect transition latency */
-> >> > +               if ((sfi_cpufreq_array[i].latency * 1000) >
-> >> > +                   policy->cpuinfo.transition_latency)
-> >> > +                       policy->cpuinfo.transition_latency =
-> >> > +                               sfi_cpufreq_array[i].latency * 1000;
-> >>
-> >> delete above 5 lines.  every SFI system will have latency
-> >> plenty lower than that required by ondemand governor.
-> 
-> There is effectively no customer for the information being provided,
-> as there are only two possible outcomes:
-> 
-> 1. The largest value in the table is < 10ms, and ondemand loads
-> 2. The largest value in the table is > 10ms and ondemand fails to load.
-> #1 is how it should always work on all known SFI platforms.
-> #2 is a firmware bug.
-> 
-> Well, we can do #1 with 1 line, and at the same time eliminate
-> exposure to firmware bugs in #2.
+Dear Myungjoo,
 
-Ok, as we know the latency of this system (as 100 us), I will hardcode this
-with 1 line and remove the rest of detection stuff..
+Thanks for your review.
 
-Srinidhi
+On 12/18/2014 03:24 PM, MyungJoo Ham wrote:
+> Hi Chanwoo,
+> 
+> I love the idea and I now have a little mechanical issues in your code.
+> 
+>> ---
+>>  drivers/devfreq/Kconfig         |   2 +
+>>  drivers/devfreq/Makefile        |   5 +-
+>>  drivers/devfreq/devfreq-event.c | 449 ++++++++++++++++++++++++++++++++++++++++
+>>  drivers/devfreq/event/Makefile  |   1 +
+>>  include/linux/devfreq.h         | 160 ++++++++++++++
+>>  5 files changed, 616 insertions(+), 1 deletion(-)
+>>  create mode 100644 drivers/devfreq/devfreq-event.c
+>>  create mode 100644 drivers/devfreq/event/Makefile
+>>
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index faf4e70..4d15b62 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -87,4 +87,6 @@ config ARM_EXYNOS5_BUS_DEVFREQ
+>>  	  It reads PPMU counters of memory controllers and adjusts the
+>>  	  operating frequencies and voltages with OPP support.
+>>  
+>> +comment "DEVFREQ Event Drivers"
+>> +
+>>  endif # PM_DEVFREQ
+>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+>> index 16138c9..a1ffabe 100644
+>> --- a/drivers/devfreq/Makefile
+>> +++ b/drivers/devfreq/Makefile
+>> @@ -1,4 +1,4 @@
+>> -obj-$(CONFIG_PM_DEVFREQ)	+= devfreq.o
+>> +obj-$(CONFIG_PM_DEVFREQ)		+= devfreq.o devfreq-event.o
+>>  obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
+>>  obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
+>>  obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
+>> @@ -7,3 +7,6 @@ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
+>>  # DEVFREQ Drivers
+>>  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos/
+>>  obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)	+= exynos/
+>> +
+>> +# DEVFREQ Event Drivers
+>> +obj-$(CONFIG_PM_DEVFREQ)		+= event/
+>>
+> 
+> It looks getting mature fast.
+> However, I would like to suggest you to
+> 
+> allow not to compile devfreq-event.c and not include its compiled object
+>   if devfreq.c is required but devfreq-event.c is not required.
+>   (e.g., add CONFIG_PM_DEVFREQ_EVENT and let it be enabled when needed)
+>   just a little concern for lightweight devices.
+>     (this change might require a bit more work on the header as well)
+>   - Or do you think devfreq-event.c will become almost mandatory for
+>    most devfreq drivers?
+
+I agree your opinion.
+I'll add CONFIG_PM_DEVFREQ_EVENT according to your comment.
+
+> 
+> 
+> [snip]
+> 
+>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+>> new file mode 100644
+>> index 0000000..0e1948e
+>> --- /dev/null
+>> +++ b/drivers/devfreq/devfreq-event.c
+>> @@ -0,0 +1,449 @@
+>> +/*
+>> + * devfreq-event: Generic DEVFREQ Event class driver
+> 
+> DEVFREQ is a generic DVFS mechanism (or subsystem).
+> 
+> Plus, I thought devfreq-event is considered to be a "framework"
+> for devfreq event class drivers. Am I mistaken?
+
+You're right. just "class driver" description is not proper.
+I'll modify the description of devfreq-event.c as following:
+or If you have other opinion, would you please let me know about it?
+
+	devfreq-event: DEVFREQ-Event Framework to provide raw data of Non-CPU Devices.
+
+
+> [snip]
+> 
+>> +struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
+>> +                                               struct devfreq_event_desc *desc)
+>> +{
+>> +       struct devfreq_event_dev *edev;
+>> +       static atomic_t event_no = ATOMIC_INIT(0);
+>> +       int ret;
+>> +
+>> +       if (!dev || !desc)
+>> +               return ERR_PTR(-EINVAL);
+>> +
+>> +       if (!desc->name || !desc->ops)
+>> +               return ERR_PTR(-EINVAL);
+>> +
+>> +       if (!desc->ops->set_event || !desc->ops->get_event)
+>> +               return ERR_PTR(-EINVAL);
+>> +
+>> +       edev = devm_kzalloc(dev, sizeof(*edev), GFP_KERNEL);
+>> +       if (!edev)
+>> +               return ERR_PTR(-ENOMEM);
+>> +
+>> +       mutex_lock(&devfreq_event_list_lock);
+> 
+> You seem to lock that global lock too long. That lock is only required
+> while you operate the list. The data to be protected by this mutex is
+> devfreq_event_list. Until the new entry is added to the list, the new
+> entry is free from protection. (may be delayed right before list_add)
+
+OK. I'll move global lock right before calling list_add() on below.
+
+> 
+>> +       mutex_init(&edev->lock);
+>> +       edev->desc = desc;
+>> +       edev->dev.parent = dev;
+>> +       edev->dev.class = devfreq_event_class;
+>> +       edev->dev.release = devfreq_event_release_edev;
+>> +
+>> +       dev_set_name(&edev->dev, "event.%d", atomic_inc_return(&event_no) - 1);
+>> +       ret = device_register(&edev->dev);
+>> +       if (ret < 0) {
+>> +               put_device(&edev->dev);
+>> +               mutex_unlock(&devfreq_event_list_lock);
+>> +               return ERR_PTR(ret);
+>> +       }
+>> +       dev_set_drvdata(&edev->dev, edev);
+>> +
+>> +       INIT_LIST_HEAD(&edev->node);
+>> +       list_add(&edev->node, &devfreq_event_list);
+>> +       mutex_unlock(&devfreq_event_list_lock);
+>> +
+>> +       return edev;
+>> +}
+> 
+> 
+> 
+> [snip / reversed maybe.. sorry]
+> 
+>> +/**
+>> + * devfreq_event_is_enabled() - Check whether devfreq-event dev is enabled or
+>> + *                             not.
+>> + * @edev       : the devfreq-event device
+>> + *
+>> + * Note that this function check whether devfreq-event dev is enabled or not.
+>> + * If return true, the devfreq-event dev is enabeld. If return false, the
+>> + * devfreq-event dev is disabled.
+>> + */
+>> +bool devfreq_event_is_enabled(struct devfreq_event_dev *edev)
+>> +{
+>> +       bool enabled = false;
+>> +
+>> +       if (!edev || !edev->desc)
+>> +               return enabled;
+>> +
+>> +       mutex_lock(&edev->lock);
+>> +
+>> +       if (edev->enable_count > 0)
+>> +               enabled = true;
+>> +
+>> +       if (edev->desc->ops && edev->desc->ops->is_enabled)
+>> +               enabled |= edev->desc->ops->is_enabled(edev);
+> 
+> What does it mean when enabled_count > 0 and ops->is_enabled() is false? or..
+> What does it mean when enabled_count = 0 and ops->is_enabled() is true?
+> 
+> If you do enable_count in the subsystem, why would we rely on
+> ops->is_enabled()? Are you assuming that a device MAY turn itself off
+> without any kernel control (ops->disable()) and it is still a correct
+> behabior?
+
+You're right. devfreq_event_is_enabled() has ambiguous operation according to your comment.
+
+I'll only control the enable_count in the subsystem without ops->is_enabled()
+and then remove the is_enabled function in the structre devfreq_event_ops.
+
+Best Regards,
+Chanwoo Choi
