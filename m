@@ -1,119 +1,78 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API pm_genpd_dev_need_restore to use restore types
-Date: Thu, 18 Dec 2014 01:58:55 +0100
-Message-ID: <5418986.E58ik2Q1Hm@vostro.rjw.lan>
-References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com> <CADGdYn4WQ6i29ecTthu7eNUfSSQ--YESGyHcA1_9CdK-h53hxA@mail.gmail.com> <7h4msub0ca.fsf@deeprootsystems.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h4msub0ca.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: amit daniel kachhap <amit.daniel@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Ethan Zhao <ethan.zhao@oracle.com>
+Subject: [PATCH] cpufreq: fix a NULL pointer dereference triggered by _PPC changed notification
+Date: Thu, 18 Dec 2014 10:08:39 +0900
+Message-ID: <1418864919-14870-1-git-send-email-ethan.zhao@oracle.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: dirk.j.brandewie@intel.com, kristen@linux.intel.com, viresh.kumar@linaro.org, rjw@rjwysocki.net
+Cc: linda.knippers@hp.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ethan.kernel@gmail.com, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 17, 2014 10:25:09 AM Kevin Hilman wrote:
-> amit daniel kachhap <amit.daniel@samsung.com> writes:
-> 
-> > On Wed, Dec 17, 2014 at 3:40 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> >> Marek Szyprowski <m.szyprowski@samsung.com> writes:
-> >>
-> >>> Hello,
-> >>>
-> >>> On 2014-12-13 17:51, Amit Daniel Kachhap wrote:
-> >>>> Instead of using bool to restore suspended devices initially, use flags
-> >>>> like GPD_DEV_SUSPEND_INIT, GPD_DEV_RESTORE_INIT and GPD_DEV_RESTORE_FORCE.
-> >>>> The first two flags will be similar to the existing true/false functionality.
-> >>>> The third flag may be used to force restore of suspended devices
-> >>>> whenever their associated power domain is turned on.
-> >>>>
-> >>>> Currently, PD power off function powers off all the associated unused
-> >>>> devices. The functionality added in this patch is similar to it.
-> >>>>
-> >>>> This feature may be used for those devices which are always in ON state
-> >>>> if the PD associated with them is ON but may need local runtime resume
-> >>>> and suspend during PD On/Off. These devices (like clock) may not implement
-> >>>> complete pm_runtime calls such as pm_runtime_get/pm_runtime_put due to
-> >>>> subsystems interaction behaviour or any other reason.
-> >>>>
-> >>>> The model works like,
-> >>>>      DEV1 (Attaches itself with PD but no calls to pm_runtime_get and
-> >>>>      /       pm_runtime_put. Its local runtime_suspend/resume is invoked via
-> >>>>     /        GPD_DEV_RESTORE_FORCE option)
-> >>>>    /
-> >>>> PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
-> >>>>    \ pm_runtime_put. This in turn invokes PD On/Off)
-> >>>>     \
-> >>>>      DEV3 (Similar to DEV1)
-> >>>>
-> >>>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> >>>
-> >>> The idea of adding new gen_pd flag and reusing runtime pm calls intead
-> >>> of additional notifiers looks promising, but I have some doubts.
-> >>
-> >> I agree, this is better than notifiers, but I have some doubts too.
-> >
-> > Thanks,
-> >
-> >>
-> >>> don't see any guarantee that devices with GPD_DEV_RESTORE_FORCE flag
-> >>> will be suspended after all "normal" devices and restored before
-> >>> them. Without such assumption it will be hard to use this approach for
-> >>> iommu related activities, because device might need to use (in its
-> >>> suspend/resume callbacks) the functionality provided by the other
-> >>> device with GPD_DEV_RESTORE_FORCE flag. Maybe some additional flags
-> >>> like suspend/resume priority (or more flags) will solve somehow this
-> >>> dependency.
-> >>
-> >> At a deeper level, the problem with this approach is that this is more
-> >> generically a runtime PM dependency problem, not a genpd problem.  For
-> >> example, what happens when the same kind of dependency exists on a
-> >> platform using a custom PM domain instead of genpd (like ACPI.) ?
-> >
-> > This patch does not try to solve runtime PM dependencies between
-> > devices. As an example, if there are three devices D1, D2, D3 in a
-> > power domain. Device D3 would update the power domain state
-> > requirement using runtime PM API but devices D1 and D2 do not want to
-> > control the domain but just want to be notified when the power domain
-> > state changes.
-> 
-> Yes, I understand that.  
-> 
-> The question is: what do you do when you have the same dependency
-> problem and you're not using genpd (for example, some SoCs have
-> implmeented their own PM domains, and ACPI devices are managed by their
-> own PM domain, not genpd.)
-> 
-> >> What's needed to solve this problem is a generalized way to have runtime
-> >> PM dependencies between devices.  Runtime PM already automatically
-> >> handles parent devices as one type of dependent device (e.g. a parent
-> >> device needs to be runtime PM resumed before its child.)  So what's
-> >> needed is a generic way to other PM dependencies with the runtime PM
-> >> core (not the genpd core.)
-> >
-> > Considering the example above with three devices, device D1 and D2 are
-> > passive components in this power domain. These devices only need to
-> > know the state changes of the power domains but would not control the
-> > power domain themselves nor put forth constraints in the power domain
-> > state changes. So I did not clearly understand as to how this example
-> > could be solved by introducing changes in runtime PM core.
-> 
-> Your solution only solves the problems for devices managed by genpd.
-> 
-> If I understood your example correctly, what you really want to solve
-> this problem more generically is to be able to tell the runtime PM core
-> that D3 has a dependency on D1 and D2.  Then, whenver the runtime PM
-> core is doing get/put operations for D3, it needs to also do them for D1
-> and D2.
-> 
-> This will accomplish the same as your proposed approach, but work for
-> any devices in any PM domains.
+If _PPC changed notification happens before governor was initiated while kernel
+is booting, a NULL pointer dereference will be triggered:
 
-Plus, it is not limited to runtime PM, really.  It affects system suspend
-too.
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000030
+ IP: [<ffffffff81470453>] __cpufreq_governor+0x23/0x1e0
+ PGD 0
+ Oops: 0000 [#1] SMP
+ ... ...
+ RIP: 0010:[<ffffffff81470453>]  [<ffffffff81470453>]
+ __cpufreq_governor+0x23/0x1e0
+ RSP: 0018:ffff881fcfbcfbb8  EFLAGS: 00010286
+ RAX: 0000000000000000 RBX: ffff881fd11b3980 RCX: ffff88407fc20000
+ RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff881fd11b3980
+ RBP: ffff881fcfbcfbd8 R08: 0000000000000000 R09: 000000000000000f
+ R10: ffffffff818068d0 R11: 0000000000000043 R12: 0000000000000004
+ R13: 0000000000000000 R14: ffffffff8196cae0 R15: 0000000000000000
+ FS:  0000000000000000(0000) GS:ffff881fffc00000(0000) knlGS:0000000000000000
+ CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+ CR2: 0000000000000030 CR3: 00000000018ae000 CR4: 00000000000407f0
+ DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+ DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+ Process kworker/0:3 (pid: 750, threadinfo ffff881fcfbce000, task
+ ffff881fcf556400)
+ Stack:
+  ffff881fffc17d00 ffff881fcfbcfc18 ffff881fd11b3980 0000000000000000
+  ffff881fcfbcfc08 ffffffff81470d08 ffff881fd11b3980 0000000000000007
+  ffff881fcfbcfc18 ffff881fffc17d00 ffff881fcfbcfd28 ffffffff81472e9a
+ Call Trace:
+  [<ffffffff81470d08>] __cpufreq_set_policy+0x1b8/0x2e0
+  [<ffffffff81472e9a>] cpufreq_update_policy+0xca/0x150
+  [<ffffffff81472f20>] ? cpufreq_update_policy+0x150/0x150
+  [<ffffffff81324a96>] acpi_processor_ppc_has_changed+0x71/0x7b
+  [<ffffffff81320bcd>] acpi_processor_notify+0x55/0x115
+  [<ffffffff812f9c29>] acpi_device_notify+0x19/0x1b
+  [<ffffffff813084ca>] acpi_ev_notify_dispatch+0x41/0x5f
+  [<ffffffff812f64a4>] acpi_os_execute_deferred+0x27/0x34
 
+The root cause is a race conditon -- cpufreq core and acpi-cpufreq driver
+were initiated, but cpufreq_governor wasn't and _PPC changed notification
+happened, __cpufreq_governor() was called within acpi_os_execute_deferred
+kernel thread context.
 
+To fix this panic issue, add pointer checking code in __cpufreq_governor()
+before pointer policy->governor is to be dereferenced.
+
+Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+---
+ drivers/cpufreq/cpufreq.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 4473eba..b75735c 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2021,6 +2021,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 	/* Don't start any governor operations if we are entering suspend */
+ 	if (cpufreq_suspended)
+ 		return 0;
++	/* Governor might not be initiated here if _PPC changed notification
++	   happened, check it.
++	*/
++	if (!policy->governor)
++		return -EINVAL;
+ 
+ 	if (policy->governor->max_transition_latency &&
+ 	    policy->cpuinfo.transition_latency >
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.3.1
