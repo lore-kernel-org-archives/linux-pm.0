@@ -1,57 +1,67 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH RFC v3 1/2] PM / Domains: Extend API
- pm_genpd_dev_need_restore to use restore types
-Date: Thu, 18 Dec 2014 11:05:18 +0100
-Message-ID: <5492A6DE.5020704@samsung.com>
-References: <1418489518-7252-1-git-send-email-amit.daniel@samsung.com>
- <CADGdYn4WQ6i29ecTthu7eNUfSSQ--YESGyHcA1_9CdK-h53hxA@mail.gmail.com>
- <7h4msub0ca.fsf@deeprootsystems.com> <5418986.E58ik2Q1Hm@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <5418986.E58ik2Q1Hm@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
-Cc: amit daniel kachhap <amit.daniel@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH 0/9] hwmon: thermal: Odroid U3: Provide support for Odroid U3
+ fan
+Date: Thu, 18 Dec 2014 11:13:02 +0100
+Message-ID: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:54295 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbaLRKNe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 05:13:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-On 18/12/14 01:58, Rafael J. Wysocki wrote:
->>>> What's needed to solve this problem is a generalized way to have runtime
->>>> > >> PM dependencies between devices.  Runtime PM already automatically
->>>> > >> handles parent devices as one type of dependent device (e.g. a parent
->>>> > >> device needs to be runtime PM resumed before its child.)  So what's
->>>> > >> needed is a generic way to other PM dependencies with the runtime PM
->>>> > >> core (not the genpd core.)
->>> > >
->>> > > Considering the example above with three devices, device D1 and D2 are
->>> > > passive components in this power domain. These devices only need to
->>> > > know the state changes of the power domains but would not control the
->>> > > power domain themselves nor put forth constraints in the power domain
->>> > > state changes. So I did not clearly understand as to how this example
->>> > > could be solved by introducing changes in runtime PM core.
->> > 
->> > Your solution only solves the problems for devices managed by genpd.
->> > 
->> > If I understood your example correctly, what you really want to solve
->> > this problem more generically is to be able to tell the runtime PM core
->> > that D3 has a dependency on D1 and D2.  Then, whenver the runtime PM
->> > core is doing get/put operations for D3, it needs to also do them for D1
->> > and D2.
+Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
+subsystem for low level control.
 
-Indeed, I think it would solve most of the problems if we were able to
-model the PM dependencies between devices which would then be handled
-in the PM core.  I recall something like this has been proposed a while
-ago [1].
+After successful probe it registers itself as a cooling device for thermal
+subsystem. To preserve ability to use this fan as a PWM device a stub for
+thermal_of_cooling_device_register() has been added.
 
->> > This will accomplish the same as your proposed approach, but work for
->> > any devices in any PM domains.
->
-> Plus, it is not limited to runtime PM, really.  It affects system suspend
-> too.
+Moreover, some entries to device tree description for Exynos4412 and in
+particular Odroid U3 have been added.
 
-[1] https://lkml.org/lkml/2009/8/26/485
+Those patches were tested on Exynos4412 - Odroid U3 board.
+
+Patches were applied on:
+
+linux-soc-thermal/next branch
+SHA1: c42c7a44c7a543dcb388c1ee1a798e6ed76ad8cf
+
+with following preceding patch series:
+'thermal: exynos: Thermal code rework to use device tree'
+http://www.spinics.net/lists/linux-samsung-soc/msg37719.html
+
+Presented code utilize reworked Exynos thermal subsystem.
+
+
+Kamil Debski (1):
+  ARM: dts: Add pwm-fan node to the Odroid-U3 board
+
+Lukasz Majewski (8):
+  thermal: Provide stub for thermal_of_cooling_device_register()
+    function
+  hwmon: dts: Doc: Add DTS doc to explain how to use PWM FAN as a
+    cooling device
+  hwmon: thermal: dts: Add properties to use pwm-fan device as a cooling
+    device in Odroid U3
+  hwmon: thermal: Extract __set_pwm() function to only modify PWM duty
+    cycle
+  hwmon: thermal: Read PWM FAN configuration from device tree
+  hwmon: thermal: Code for using PWM FAN as a cooling device
+  hwmon: thermal: Provide 'default-pulse-width' property to setup FAN on
+    boot
+  hwmon: thermal: dts: Disable FAN on boot on the Odroid U3
+
+ .../devicetree/bindings/hwmon/pwm-fan.txt          |  28 +++
+ arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts          |  45 +++++
+ drivers/hwmon/pwm-fan.c                            | 195 +++++++++++++++++----
+ include/linux/thermal.h                            |  14 +-
+ 5 files changed, 249 insertions(+), 35 deletions(-)
 
 -- 
-Regards,
-Sylwester
+2.0.0.rc2
+
