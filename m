@@ -1,68 +1,58 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH] regulator: rt5033-regulator: Use regulator_nodes/of_match in
- the descriptor
-Date: Thu, 18 Dec 2014 20:13:36 +0900
-Message-ID: <1418901216-19030-1-git-send-email-beomho.seo@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/13] cpufreq: stats: cleanups
+Date: Thu, 18 Dec 2014 17:30:17 +0530
+Message-ID: <cover.1418902789.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:62199 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbaLRLNj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 06:13:39 -0500
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:40837 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbaLRMBB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 07:01:01 -0500
+Received: by mail-pa0-f50.google.com with SMTP id bj1so1274924pad.37
+        for <linux-pm@vger.kernel.org>; Thu, 18 Dec 2014 04:01:01 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: lgirdwood@gmail.com, broonie@kernel.org, beomho.seo@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch is add regulator_nodes/of_match in the regulator descriptor
-for using information from DT instead of sppecific codes.
+Hi Rafael,
 
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
----
- drivers/regulator/rt5033-regulator.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+I finally started looking at how to make cpufreq-core somewhat less complex with
+respect to locking, its state machine, etc..
 
-diff --git a/drivers/regulator/rt5033-regulator.c b/drivers/regulator/rt5033-regulator.c
-index 870cc49..96d2c18 100644
---- a/drivers/regulator/rt5033-regulator.c
-+++ b/drivers/regulator/rt5033-regulator.c
-@@ -36,6 +36,8 @@ static struct regulator_ops rt5033_buck_ops = {
- static const struct regulator_desc rt5033_supported_regulators[] = {
- 	[RT5033_BUCK] = {
- 		.name		= "BUCK",
-+		.of_match	= of_match_ptr("BUCK"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= RT5033_BUCK,
- 		.ops		= &rt5033_buck_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -50,6 +52,8 @@ static const struct regulator_desc rt5033_supported_regulators[] = {
- 	},
- 	[RT5033_LDO] = {
- 		.name		= "LDO",
-+		.of_match	= of_match_ptr("LDO"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= RT5033_LDO,
- 		.ops		= &rt5033_buck_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -64,6 +68,8 @@ static const struct regulator_desc rt5033_supported_regulators[] = {
- 	},
- 	[RT5033_SAFE_LDO] = {
- 		.name		= "SAFE_LDO",
-+		.of_match	= of_match_ptr("SAFE_LDO"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= RT5033_SAFE_LDO,
- 		.ops		= &rt5033_safe_ldo_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -81,7 +87,7 @@ static int rt5033_regulator_probe(struct platform_device *pdev)
- 	int ret, i;
- 	struct regulator_config config = {};
- 
--	config.dev = &pdev->dev;
-+	config.dev = rt5033->dev;
- 	config.driver_data = rt5033;
- 
- 	for (i = 0; i < ARRAY_SIZE(rt5033_supported_regulators); i++) {
+The first thing I had to get into was cpufreq-stats and so this series. Mostly
+cleanups to make things better..
+
+Please see if they make any sense at all.
+
+I know we are at Merge window right now and you wouldn't apply it even to
+linux-next. So, if they look fine, please don't hesitate in dropping a mail to
+confirm they look fine, so that I can send the next set of cleanups atleast for
+reviews. We can get these applied one by one then, once we are a bit confident
+of them.
+
+Pushed here:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/stats/cleanups
+
+Viresh Kumar (13):
+  cpufreq: stats: don't break strings into multiple lines
+  cpufreq: stats: return -EEXIST when stats are already allocated
+  cpufreq: stats: don't check for freq table while freeing stats
+  cpufreq: stats: pass 'stat' to cpufreq_stats_update()
+  cpufreq: stats: get rid of per-cpu cpufreq_stats_table
+  cpufreq: Remove (now) unused 'last_cpu' from struct cpufreq_policy
+  cpufreq: stats: remove cpufreq_stats_update_policy_cpu()
+  cpufreq: remove CPUFREQ_UPDATE_POLICY_CPU notifications
+  cpufreq: stats: create sysfs group once we are ready
+  cpufreq: stats: don't update stats from show_trans_table()
+  cpufreq: stats: don't update stats on false notifiers
+  cpufreq: stats: Fix locking
+  cpufreq: stats: call cpufreq_stats_update() with locks held
+
+ drivers/cpufreq/cpufreq.c       |   6 --
+ drivers/cpufreq/cpufreq_stats.c | 140 ++++++++++++++++++----------------------
+ include/linux/cpufreq.h         |  10 +--
+ 3 files changed, 69 insertions(+), 87 deletions(-)
+
 -- 
-1.7.9.5
+2.2.0
 
