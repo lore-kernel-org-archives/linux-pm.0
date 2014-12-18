@@ -1,277 +1,251 @@
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Subject: Fix: Bind Cooling Device Weight
-Date: Thu, 18 Dec 2014 12:19:00 +0000
-Message-ID: <5492C634.5030604@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: [PATCH 1/3] power: rt5033_battery: Add RT5033 Fuel gauge device driver
+Date: Thu, 18 Dec 2014 22:15:45 +0900
+Message-ID: <1418908547-10241-2-git-send-email-beomho.seo@samsung.com>
+References: <1418908547-10241-1-git-send-email-beomho.seo@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:51164 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbaLRMTD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 07:19:03 -0500
+Received: from mailout1.samsung.com ([203.254.224.24]:29801 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbaLRNPv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 08:15:51 -0500
+In-reply-to: <1418908547-10241-1-git-send-email-beomho.seo@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, rui.zhang@intel.com, Javi Merino <javi.merino@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sameo@linux.intel.com, lee.jone@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
 
-The Problem:
+This patch adds device driver of Richtek PMIC.
+The driver support battery fuel gange. Fuel gauge calculates and determines the
+battery state of charge(SOC) according to battery open circuit voltage(OCV).
+Also, this driver provides battery average voltage, voltage and bettery present
+property.
 
-In the current code, the weight of the cooling device, which is read as
-contribution from the device tree in of-thermal.c as:
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/power/Kconfig          |    8 ++
+ drivers/power/Makefile         |    1 +
+ drivers/power/rt5033_battery.c |  177 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 186 insertions(+)
+ create mode 100644 drivers/power/rt5033_battery.c
 
-
-        ret = of_property_read_u32(np, "contribution", &prop);
-        if (ret == 0)
-                __tbp->usage = prop;
-
-This is only stored in the private devicedata as:
-
-        ((__thernal_zone *)cdev->devdata)->__tbp->usage
-
-As of-thermal.c specifies its "bind" operation and does not populate
-tzd->tzp->tbp, this causes an erroneous access in the fair-share
-governor when it tries to access the weight:
-
-instance->target = get_target_state(tz, cdev,
-                                        tzp->tbp[i].weight,
-cur_trip_level);
-
-
-The Proposed solution:
-
-The proposed solution has the following changes:
-
- 1. Passing the weight as an argument to thermal_zone_bind_cooling_device
-
- 2. Storing the weight in the thermal_instance data structure created in
-the thermal_zone_bind_cooling_device function
-
- 3. Changing the accesses in the governor accordingly.
-
- I am not sure of what default value should be assigned to the weight
-member in the instance data structure and would like to leave this open
-to discussion.
-
-Suggested Patch (Not Signed off):
-
-diff --git a/drivers/thermal/db8500_thermal.c
-b/drivers/thermal/db8500_thermal.c
-index 1e3b3bf9f993..e3ccc2218eb3 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -76,7 +76,7 @@ static int db8500_cdev_bind(struct thermal_zone_device
-*thermal,
-         upper = lower = i > max_state ? max_state : i;
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 0108c2a..da6981f 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -397,6 +397,14 @@ config BATTERY_GOLDFISH
+ 	  Say Y to enable support for the battery and AC power in the
+ 	  Goldfish emulator.
  
-         ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
--            upper, lower);
-+            upper, lower, THERMAL_WEIGHT_DEFAULT);
- 
-         dev_info(&cdev->device, "%s bind to %d: %d-%s\n", cdev->type,
-             i, ret, ret ? "fail" : "succeed");
-diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-index 6e0a3fbfae86..c3b25187b467 100644
---- a/drivers/thermal/fair_share.c
-+++ b/drivers/thermal/fair_share.c
-@@ -109,7 +109,7 @@ static int fair_share_throttle(struct
-thermal_zone_device *tz, int trip)
-             continue;
- 
-         instance->target = get_target_state(tz, cdev,
--                    tzp->tbp[i].weight, cur_trip_level);
-+                    instance->weight, cur_trip_level);
- 
-         instance->cdev->updated = false;
-         thermal_cdev_update(cdev);
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 5a1f1070b702..74d0c9951eef 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -307,7 +307,8 @@ static int imx_bind(struct thermal_zone_device *tz,
- 
-     ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
-                            THERMAL_NO_LIMIT,
--                           THERMAL_NO_LIMIT);
-+                           THERMAL_NO_LIMIT
-+                           THERMAL_WEIGHT_DEFAULT);
-     if (ret) {
-         dev_err(&tz->device,
-             "binding zone %s with cdev %s failed:%d\n",
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index e032b9bf4085..cf4036cbb671 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -157,7 +157,8 @@ static int of_thermal_bind(struct
-thermal_zone_device *thermal,
-             ret = thermal_zone_bind_cooling_device(thermal,
-                         tbp->trip_id, cdev,
-                         tbp->max,
--                        tbp->min);
-+                        tbp->min,
-+                        tbp->usage);
-             if (ret)
-                 return ret;
-         }
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.c
-b/drivers/thermal/samsung/exynos_thermal_common.c
-index b6be572704a4..d653798b519f 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.c
-+++ b/drivers/thermal/samsung/exynos_thermal_common.c
-@@ -163,7 +163,7 @@ static int exynos_bind(struct thermal_zone_device
-*thermal,
-         case MONITOR_ZONE:
-         case WARN_ZONE:
-             if (thermal_zone_bind_cooling_device(thermal, i, cdev,
--                                level, 0)) {
-+                                level, 0, THERMAL_WEIGHT_DEFAULT)) {
-                 dev_err(data->dev,
-                     "error unbinding cdev inst=%d\n", i);
-                 ret = -EINVAL;
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4921e084c20b..199866864ef1 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -277,7 +277,8 @@ static void print_bind_err_msg(struct
-thermal_zone_device *tz,
- 
- static void __bind(struct thermal_zone_device *tz, int mask,
-             struct thermal_cooling_device *cdev,
--            unsigned long *limits)
-+            unsigned long *limits,
-+            unsigned int weight)
- {
-     int i, ret;
- 
-@@ -292,7 +293,8 @@ static void __bind(struct thermal_zone_device *tz,
-int mask,
-                 upper = limits[i * 2 + 1];
-             }
-             ret = thermal_zone_bind_cooling_device(tz, i, cdev,
--                                   upper, lower);
-+                                   upper, lower,
-+                                   weight);
-             if (ret)
-                 print_bind_err_msg(tz, cdev, ret);
-         }
-@@ -339,7 +341,8 @@ static void bind_cdev(struct thermal_cooling_device
-*cdev)
-                 continue;
-             tzp->tbp[i].cdev = cdev;
-             __bind(pos, tzp->tbp[i].trip_mask, cdev,
--                   tzp->tbp[i].binding_limits);
-+                   tzp->tbp[i].binding_limits,
-+                   tzp->tbp[i].weight);
-         }
-     }
- 
-@@ -378,7 +381,8 @@ static void bind_tz(struct thermal_zone_device *tz)
-                 continue;
-             tzp->tbp[i].cdev = pos;
-             __bind(tz, tzp->tbp[i].trip_mask, pos,
--                   tzp->tbp[i].binding_limits);
-+                   tzp->tbp[i].binding_limits,
-+                   tzp->tbp[i].weight);
-         }
-     }
- exit:
-@@ -770,7 +774,8 @@ passive_store(struct device *dev, struct
-device_attribute *attr,
-                 thermal_zone_bind_cooling_device(tz,
-                         THERMAL_TRIPS_NONE, cdev,
-                         THERMAL_NO_LIMIT,
--                        THERMAL_NO_LIMIT);
-+                        THERMAL_NO_LIMIT,
-+                        THERMAL_WEIGHT_DEFAULT);
-         }
-         mutex_unlock(&thermal_list_lock);
-         if (!tz->passive_delay)
-@@ -1009,7 +1014,9 @@ thermal_cooling_device_trip_point_show(struct
-device *dev,
-  * @lower:    the Minimum cooling state can be used for this trip point.
-  *        THERMAL_NO_LIMIT means no lower limit,
-  *        and the cooling device can be in cooling state 0.
-- *
-+ * @weight:    The weight of the cooling device to be bound to the
-+        thermal zone. THERMAL_WEIGHT_DEFAULT for default value
++config BATTERY_RT5033
++	tristate "RT5033 fuel gauge support"
++	depends on MFD_RT5033
++	help
++	  This adds support for battery fuel gauge in Richtek RT5033 PMIC.
++	  The fuelgauge calculates and determines the battery state of charge
++	  according to battery open circuit voltage.
 +
-  * This interface function bind a thermal cooling device to the certain
-trip
-  * point of a thermal zone device.
-  * This function is usually called in the thermal zone device .bind
-callback.
-@@ -1019,7 +1026,8 @@ thermal_cooling_device_trip_point_show(struct
-device *dev,
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
-                      int trip,
-                      struct thermal_cooling_device *cdev,
--                     unsigned long upper, unsigned long lower)
-+                     unsigned long upper, unsigned long lower,
-+                     unsigned int weight)
- {
-     struct thermal_instance *dev;
-     struct thermal_instance *pos;
-@@ -1062,6 +1070,7 @@ int thermal_zone_bind_cooling_device(struct
-thermal_zone_device *tz,
-     dev->upper = upper;
-     dev->lower = lower;
-     dev->target = THERMAL_NO_TARGET;
-+    dev->weight = weight;
+ source "drivers/power/reset/Kconfig"
  
-     result = get_idr(&tz->idr, &tz->lock, &dev->id);
-     if (result)
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index b907be823527..1c61abe7801f 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -48,6 +48,7 @@ struct thermal_instance {
-     struct device_attribute attr;
-     struct list_head tz_node; /* node in tz->thermal_instances */
-     struct list_head cdev_node; /* node in cdev->thermal_instances */
-+    unsigned int weight; /* The weight of the cooling device */
- };
- 
- int thermal_register_governor(struct thermal_governor *);
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 9eec26dc0448..772549ec9bd8 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -147,7 +147,8 @@ static int ti_thermal_bind(struct
-thermal_zone_device *thermal,
-     return thermal_zone_bind_cooling_device(thermal, 0, cdev,
-     /* bind with min and max states defined by cpu_cooling */
-                         THERMAL_NO_LIMIT,
--                        THERMAL_NO_LIMIT);
-+                        THERMAL_NO_LIMIT,
-+                        THERMAL_WEIGHT_DEFAULT);
- }
- 
- /* Unbind callback functions for thermal zone */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index fc4fdcbbdecc..674795ba0900 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -40,6 +40,9 @@
- /* No upper/lower limit requirement */
- #define THERMAL_NO_LIMIT    ((u32)~0)
- 
-+/* Default weight of a bound cooling device */
-+#define THERMAL_WEIGHT_DEFAULT 1
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index dfa8942..b83a0c7 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
+ obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
+ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
+ obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
++obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
+ obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
+ obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
+ obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
+diff --git a/drivers/power/rt5033_battery.c b/drivers/power/rt5033_battery.c
+new file mode 100644
+index 0000000..7b898f4
+--- /dev/null
++++ b/drivers/power/rt5033_battery.c
+@@ -0,0 +1,177 @@
++/*
++ * Fuel gauge driver for Richtek RT5033
++ *
++ * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
++ * Author: Beomho Seo <beomho.seo@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published bythe Free Software Foundation.
++ */
 +
- /* Unit conversion macros */
- #define KELVIN_TO_CELSIUS(t)    (long)(((long)t-2732 >= 0) ?    \
-                 ((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-@@ -375,7 +378,8 @@ void thermal_zone_device_unregister(struct
-thermal_zone_device *);
- 
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
-                      struct thermal_cooling_device *,
--                     unsigned long, unsigned long);
-+                     unsigned long, unsigned long,
-+                     unsigned int);
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
-                        struct thermal_cooling_device *);
- void thermal_zone_device_update(struct thermal_zone_device *);
-
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/mfd/rt5033-private.h>
++#include <linux/mfd/rt5033.h>
++
++static int rt5033_battery_get_capacity(struct i2c_client *client)
++{
++	struct rt5033_battery *battery = i2c_get_clientdata(client);
++	u32 msb;
++
++	regmap_read(battery->regmap, RT5033_FUEL_REG_SOC_H, &msb);
++
++	return msb;
++}
++
++static int rt5033_battery_get_present(struct i2c_client *client)
++{
++	struct rt5033_battery *battery = i2c_get_clientdata(client);
++	u32 val;
++
++	regmap_read(battery->regmap, RT5033_FUEL_REG_CONFIG_L, &val);
++
++	return (val & RT5033_FUEL_BAT_PRESENT) ? true : false;
++}
++
++static int rt5033_battery_get_watt_prop(struct i2c_client *client,
++		enum power_supply_property psp)
++{
++	struct rt5033_battery *battery = i2c_get_clientdata(client);
++	unsigned int regh, regl;
++	int ret;
++	u32 msb, lsb;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		regh = RT5033_FUEL_REG_VBAT_H;
++		regl = RT5033_FUEL_REG_VBAT_L;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		regh = RT5033_FUEL_REG_AVG_VOLT_H;
++		regl = RT5033_FUEL_REG_AVG_VOLT_L;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		regh = RT5033_FUEL_REG_OCV_H;
++		regl = RT5033_FUEL_REG_OCV_L;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	regmap_read(battery->regmap, regh, &msb);
++	regmap_read(battery->regmap, regl, &lsb);
++
++	ret = ((msb << 4) + (lsb >> 4)) * 1250 / 1000;
++
++	return ret;
++}
++
++static int rt5033_battery_get_property(struct power_supply *psy,
++		enum power_supply_property psp,
++		union power_supply_propval *val)
++{
++	struct rt5033_battery *battery = container_of(psy,
++				struct rt5033_battery, psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		val->intval = rt5033_battery_get_watt_prop(battery->client,
++									psp);
++		break;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = rt5033_battery_get_present(battery->client);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = rt5033_battery_get_capacity(battery->client);
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static enum power_supply_property rt5033_battery_props[] = {
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_OCV,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_CAPACITY,
++};
++
++static struct regmap_config rt5033_battery_regmap_config = {
++	.reg_bits	= 8,
++	.val_bits	= 8,
++	.max_register	= RT5033_FUEL_REG_END,
++};
++
++static int rt5033_battery_probe(struct i2c_client *client,
++		const struct i2c_device_id *id)
++{
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	struct rt5033_battery *battery;
++	u32 ret;
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
++		return -EIO;
++
++	battery = devm_kzalloc(&client->dev, sizeof(*battery), GFP_KERNEL);
++	if (!battery)
++		return -EINVAL;
++
++	battery->client = client;
++	battery->regmap = devm_regmap_init_i2c(client,
++			&rt5033_battery_regmap_config);
++	if (IS_ERR(battery->regmap)) {
++		dev_err(&client->dev, "Failed to initialize regmap\n");
++		return -EINVAL;
++	}
++
++	i2c_set_clientdata(client, battery);
++
++	battery->psy.name		= "rt5033-battery";
++	battery->psy.type		= POWER_SUPPLY_TYPE_BATTERY;
++	battery->psy.get_property	= rt5033_battery_get_property;
++	battery->psy.properties		= rt5033_battery_props;
++	battery->psy.num_properties	= ARRAY_SIZE(rt5033_battery_props);
++
++	ret = power_supply_register(&client->dev, &battery->psy);
++	if (ret) {
++		dev_err(&client->dev, "Failed to register power supply\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static int rt5033_battery_remove(struct i2c_client *client)
++{
++	struct rt5033_battery *battery = i2c_get_clientdata(client);
++
++	power_supply_unregister(&battery->psy);
++
++	return 0;
++}
++
++static const struct i2c_device_id rt5033_battery_id[] = {
++	{ "rt5033-battery", },
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, rt5033_battery_id);
++
++static struct i2c_driver rt5033_battery_driver = {
++	.driver = {
++		.name = "rt5033-battery",
++	},
++	.probe = rt5033_battery_probe,
++	.remove = rt5033_battery_remove,
++	.id_table = rt5033_battery_id,
++};
++module_i2c_driver(rt5033_battery_driver);
++
++MODULE_DESCRIPTION("Richtek RT5033 fuel gauge driver");
++MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
 
