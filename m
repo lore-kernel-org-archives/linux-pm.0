@@ -1,109 +1,138 @@
-From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Subject: Re: [PATCH v8] cpufreq: Add SFI based cpufreq driver support
-Date: Fri, 19 Dec 2014 20:38:32 +0530
-Message-ID: <20141219150832.GA21139@intel-desktop>
-References: <20141218085900.GA31027@intel-desktop>
- <CAJvTdKkpsVGoN=v8h_=4uW=MJ=THPL1C4SKAMM9MBrQM4k30FA@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use PWM
+ FAN as a cooling device
+Date: Fri, 19 Dec 2014 16:32:24 +0100
+Message-ID: <20141219163224.34796e5d@amdc2363>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+ <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
+ <1418899337.23532.9.camel@collabora.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:44479 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbaLSPHT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 19 Dec 2014 10:07:19 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJvTdKkpsVGoN=v8h_=4uW=MJ=THPL1C4SKAMM9MBrQM4k30FA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1418899337.23532.9.camel@collabora.co.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sjoerd Simons <sjoerd.simons@collabora.co.uk>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com
 
-On Fri, Dec 19, 2014 at 02:20:00AM -0500, Len Brown wrote:
-> > v8:
-> ...
+Hi Sjoerd,
+
+Thanks for your feedback and sorry for a late reply.
+
+> On Thu, 2014-12-18 at 11:13 +0100, Lukasz Majewski wrote:
+> > Several new properties to allow PWM fan working as a cooling device
+> > have been combined into this single commit.
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > ---
+> >  .../devicetree/bindings/hwmon/pwm-fan.txt          | 28
+> > ++++++++++++++++++++++ 1 file changed, 28 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt index
+> > 610757c..3877810 100644 ---
+> > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt +++
+> > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt @@ -3,10
+> > +3,38 @@ Bindings for a fan connected to the PWM lines Required
+> > properties:
+> >  - compatible	: "pwm-fan"
+> >  - pwms		: the PWM that is used to control the PWM fan
+> > +- cooling-pwm-values      : PWM duty cycle values relative to
+> > +			    cooling-max-pwm-value correspondig to
+> > +			    proper cooling states
+> > +- default-pulse-width     : Property specifying default pulse
+> > width for FAN
+> > +			    at system boot (zero to disable FAN on
+> > boot).
+> > +			    Allowed range is 0 to 255
 > 
-> > diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
-> > new file mode 100644
-> > index 000000000000..f9a913242537
-> > --- /dev/null
-> > +++ b/drivers/cpufreq/sfi-cpufreq.c
-> > @@ -0,0 +1,144 @@
-> > +/*
-> > + *  SFI Performance States Driver
-> ...
-> > +static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> > +{
-> > +       struct cpufreq_frequency_table *freq_table;
-> > +       unsigned int i, result;
+> The 0..255 range seems somewhat random. Would be nicer to either use
+> the approach of pwm-backlight (iotw, have the range go from the first
+> to the last entry of cooling-pwm-values) 
+
+I'm OK to change the default-pulse-width to be similar to
+"default-brightness-level" (as it is in
+Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt)
+
+> or simply have be the duty
+> lenght in NS as entries instead of the current indirection.
+
+I'd prefer to keep the indirection - as it is utilized in the current
+pwm-fan.c driver.
+
+> 
+> I assumed your cooling-pwm-values are a [0..255] range as well instead
+> of nanoseconds (would be good to make that more clear)?
+
+Your assumption is correct. cooling-pwm-values are indeed in the
+[0..255] range. I will add this information in v2.
+
+> 
+> Also having more consistent names would be nice.. To take
+> pwm-backlight as inspiration, cooling-levels and
+> default-cooling-level would make it more clear the second property
+> picks a default setting from the first one.
+
+I agree.
+
+> 
+> One thing i do wonder, is having an explicit default setting useful?
+> Should it not default to maximum cooling unless otherwise configured
+> by either the thermal framework or sysfs ?
+
+Enabling pan to full RPM was the default behaviour in the current
+pwm-fan.c file.
+
+To be honest, there is no need to enable fan to full RPM speed in this
+board for following reasons:
+1. In Odroid the FAN is optional (stacked on top of a heat sink) - very
+often it is just enough to only have the heat sink.
+
+2. Odroid has thermal enabled by default and IMHO it would be more
+feasible to allow thermal to control fan from the very beginning.
+
+However, I can also understand if the policy for hwmon implies a rule
+to enable by default all fans to full RPM speed.
+
+> 
+> 
+> > +Thorough description of the following bindings:
+> > +		cooling-min-state = <0>;
+> > +		cooling-max-state = <3>;
+> > +		#cooling-cells = <2>;
+> > +		thermal-zone {
+> > +			cpu_thermal: cpu-thermal {
+> > +			cooling-maps {
+> > +				map0 {
+> > +				     trip = <&cpu_alert1>;
+> > +				     cooling-device = <&fan0 0 1>;
+> > +				};
+> > +			};
+> > +		};
 > > +
-> > +       freq_table = kzalloc(sizeof(*freq_table) *
-> > +                       (num_freq_table_entries + 1), GFP_KERNEL);
-> > +       if (!freq_table)
-> > +               return -ENOMEM;
-> > +
-> > +       policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
-> > +
-> > +       policy->cpuinfo.transition_latency = 100000;    /* 100us */
+> > +for PWM FAN used as cooling device can be found at:
+> > +./Documentation/devicetree/bindings/thermal/thermal.txt
+> >  
+> >  Example:
+> >  	pwm-fan {
+> >  		compatible = "pwm-fan";
+> >  		status = "okay";
+> >  		pwms = <&pwm 0 10000 0>;
+> > +		cooling-min-state = <0>;
+> > +		cooling-max-state = <3>;
+> > +		#cooling-cells = <2>;
+> > +		cooling-pwm-values = <0 102 170 255>;
+> > +		default-pulse-width = <0>;
+> >  	};
 > 
-> It would be better to use CPUFREQ_ETERNAL here
-> than to make up a number (100us)  asserting that it is valid for all possible
-> cores that might run this driver.   If we put a real number here, then people
-> will argue about how real it is when a different core runs this driver.
-> The fact of the matter is that only ondemand *consumes* this number,
-> and it compares it to 10,000,000 to see if can load.  Then it compares
-> MIN_LATENCY_MULTIPLIER (20) * latency, as a floor for min_sampling_rate,
-> which would otherwise default to MICRO_FREQUENCY_MIN_SAMPLE_RATE (10000).
 > 
-> ie. all number you give here that are less than
-> MICRO_FREQUENCY_MIN_SAMPLE_RATE/MIN_LATENCY_MULTIPLIER = 500us
-> are equivalent.
-> 
-> So just use -1 and avoid getting into a debate as to what this number really is.
-
-I don't get your point.
-
-* Why should we say the transition_latency as "unknown" or ETERNAL
-knowing the fact that this system always has the latency of 100 us?
-* If you set the transition_latency as -1/ETERNAL, then the
-interactive and ondemand governors will not load because
-the following condition will be true in __cpufreq_governor
-and thus fallback to performance.
-
- if (policy->governor->max_transition_latency &&
-            policy->cpuinfo.transition_latency >
-            policy->governor->max_transition_latency) {
 
 
-$cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_transition_latency
-4294967295
 
-am i missing something?
+-- 
+Best regards,
 
-> 
-> > +       for (i = 0; i < num_freq_table_entries; i++) {
-> > +               /* initialize the freq table */
-> 
-> above comment adds no value to the two lines below, so you can remove
-> the comment.
-> 
-> > +               freq_table[i].driver_data = i;
-> > +               freq_table[i].frequency = sfi_cpufreq_array[i].freq_mhz * 1000;
-> > +       }
-> > +       freq_table[i].frequency = CPUFREQ_TABLE_END;
-> > +
-> > +       result = cpufreq_table_validate_and_show(policy, freq_table);
-> 
-> policy is PER_CPU
-> and sfi_cpufreq_cpu_init() will be called for every CPU in the system, yes?
-> So here we are kzalloc-ing and initializing an identical freq_table
-> for all the CPUs in the system.
-> 
-> But it does not appears that there is any per-cpu-specific data in that table.
-> 
-> As they are identical, can we allocate just one
-> and point all cpus to it?  We would free that one
-> after the last CPU has exited.
+Lukasz Majewski
 
-Yes, this can be done now as there is no per-cpu specific data.
-
-Srinidhi
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
