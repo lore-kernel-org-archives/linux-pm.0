@@ -1,173 +1,52 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH] regulator: max14577: Use regulator_nodes/of_match in the
- descriptor
-Date: Fri, 19 Dec 2014 18:04:46 +0900
-Message-ID: <1418979886-31482-1-git-send-email-beomho.seo@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/4] spi: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+Date: Fri, 19 Dec 2014 11:39:30 +0000
+Message-ID: <20141219113930.GD11764@sirena.org.uk>
+References: <472992175.g1ArEYGFPo@vostro.rjw.lan>
+ <6486956.sOFTSHEqBe@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LN2Nay5amKJRgrhj"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:8294 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751230AbaLSJEt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 04:04:49 -0500
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:36567 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbaLSLjr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 06:39:47 -0500
+Content-Disposition: inline
+In-Reply-To: <6486956.sOFTSHEqBe@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: lgirdwood@gmail.com, broonie@kernel.org, beomho.seo@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-spi@vger.kernel.org
 
-This patch is add regulator_nodes/ofmatch in the regulator descriptor
-for using information from DT instead of specific codes.
-That will be used regulation_of_get_init_data function for get regulator
-property on device tree. Using that make driver simpler.
 
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
----
- drivers/regulator/max14577.c |   62 ++++++++++--------------------------------
- 1 file changed, 14 insertions(+), 48 deletions(-)
+--LN2Nay5amKJRgrhj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/regulator/max14577.c b/drivers/regulator/max14577.c
-index 0ff5a20..bbcc750 100644
---- a/drivers/regulator/max14577.c
-+++ b/drivers/regulator/max14577.c
-@@ -103,6 +103,8 @@ static struct regulator_ops max14577_charger_ops = {
- static const struct regulator_desc max14577_supported_regulators[] = {
- 	[MAX14577_SAFEOUT] = {
- 		.name		= "SAFEOUT",
-+		.of_match	= of_match_ptr("SAFEOUT"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX14577_SAFEOUT,
- 		.ops		= &max14577_safeout_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -114,6 +116,8 @@ static const struct regulator_desc max14577_supported_regulators[] = {
- 	},
- 	[MAX14577_CHARGER] = {
- 		.name		= "CHARGER",
-+		.of_match	= of_match_ptr("CHARGER"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX14577_CHARGER,
- 		.ops		= &max14577_charger_ops,
- 		.type		= REGULATOR_CURRENT,
-@@ -137,6 +141,8 @@ static struct regulator_ops max77836_ldo_ops = {
- static const struct regulator_desc max77836_supported_regulators[] = {
- 	[MAX14577_SAFEOUT] = {
- 		.name		= "SAFEOUT",
-+		.of_match	= of_match_ptr("SAFEOUT"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX14577_SAFEOUT,
- 		.ops		= &max14577_safeout_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -148,6 +154,8 @@ static const struct regulator_desc max77836_supported_regulators[] = {
- 	},
- 	[MAX14577_CHARGER] = {
- 		.name		= "CHARGER",
-+		.of_match	= of_match_ptr("CHARGER"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX14577_CHARGER,
- 		.ops		= &max14577_charger_ops,
- 		.type		= REGULATOR_CURRENT,
-@@ -157,6 +165,8 @@ static const struct regulator_desc max77836_supported_regulators[] = {
- 	},
- 	[MAX77836_LDO1] = {
- 		.name		= "LDO1",
-+		.of_match	= of_match_ptr("LDO1"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX77836_LDO1,
- 		.ops		= &max77836_ldo_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -171,6 +181,8 @@ static const struct regulator_desc max77836_supported_regulators[] = {
- 	},
- 	[MAX77836_LDO2] = {
- 		.name		= "LDO2",
-+		.of_match	= of_match_ptr("LDO2"),
-+		.regulators_node = of_match_ptr("regulators"),
- 		.id		= MAX77836_LDO2,
- 		.ops		= &max77836_ldo_ops,
- 		.type		= REGULATOR_VOLTAGE,
-@@ -198,43 +210,6 @@ static struct of_regulator_match max77836_regulator_matches[] = {
- 	{ .name = "LDO2", },
- };
- 
--static int max14577_regulator_dt_parse_pdata(struct platform_device *pdev,
--		enum maxim_device_type dev_type)
--{
--	int ret;
--	struct device_node *np;
--	struct of_regulator_match *regulator_matches;
--	unsigned int regulator_matches_size;
--
--	np = of_get_child_by_name(pdev->dev.parent->of_node, "regulators");
--	if (!np) {
--		dev_err(&pdev->dev, "Failed to get child OF node for regulators\n");
--		return -EINVAL;
--	}
--
--	switch (dev_type) {
--	case MAXIM_DEVICE_TYPE_MAX77836:
--		regulator_matches = max77836_regulator_matches;
--		regulator_matches_size = ARRAY_SIZE(max77836_regulator_matches);
--		break;
--	case MAXIM_DEVICE_TYPE_MAX14577:
--	default:
--		regulator_matches = max14577_regulator_matches;
--		regulator_matches_size = ARRAY_SIZE(max14577_regulator_matches);
--	}
--
--	ret = of_regulator_match(&pdev->dev, np, regulator_matches,
--			regulator_matches_size);
--	if (ret < 0)
--		dev_err(&pdev->dev, "Error parsing regulator init data: %d\n", ret);
--	else
--		ret = 0;
--
--	of_node_put(np);
--
--	return ret;
--}
--
- static inline struct regulator_init_data *match_init_data(int index,
- 		enum maxim_device_type dev_type)
- {
-@@ -261,11 +236,6 @@ static inline struct device_node *match_of_node(int index,
- 	}
- }
- #else /* CONFIG_OF */
--static int max14577_regulator_dt_parse_pdata(struct platform_device *pdev,
--		enum maxim_device_type dev_type)
--{
--	return 0;
--}
- static inline struct regulator_init_data *match_init_data(int index,
- 		enum maxim_device_type dev_type)
- {
-@@ -308,16 +278,12 @@ static int max14577_regulator_probe(struct platform_device *pdev)
- {
- 	struct max14577 *max14577 = dev_get_drvdata(pdev->dev.parent);
- 	struct max14577_platform_data *pdata = dev_get_platdata(max14577->dev);
--	int i, ret;
-+	int i, ret = 0;
- 	struct regulator_config config = {};
- 	const struct regulator_desc *supported_regulators;
- 	unsigned int supported_regulators_size;
- 	enum maxim_device_type dev_type = max14577->dev_type;
- 
--	ret = max14577_regulator_dt_parse_pdata(pdev, dev_type);
--	if (ret)
--		return ret;
--
- 	switch (dev_type) {
- 	case MAXIM_DEVICE_TYPE_MAX77836:
- 		supported_regulators = max77836_supported_regulators;
-@@ -329,7 +295,7 @@ static int max14577_regulator_probe(struct platform_device *pdev)
- 		supported_regulators_size = ARRAY_SIZE(max14577_supported_regulators);
- 	}
- 
--	config.dev = &pdev->dev;
-+	config.dev = max14577->dev;
- 	config.driver_data = max14577;
- 
- 	for (i = 0; i < supported_regulators_size; i++) {
--- 
-1.7.9.5
+On Fri, Dec 19, 2014 at 02:49:26AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>=20
+> A couple of new CONFIG_PM_RUNTIME users have been added recently
+> in the SPI subsystem.
 
+Acked-by: Mark Brown <broonie@kernel.org>
+
+--LN2Nay5amKJRgrhj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUlA5xAAoJECTWi3JdVIfQ4Y4H/i1QIBvQ50DxVv0eqtUe9MWs
+B8PMhsx0QdGtBy6/ySOaBUBugG2c/jYukvEN4XV9OJaaWnQXr9BPONdwNxynBsl5
+mm42eIQJxAvZnBUN0f/O1fTjbR8y9dJ0zqcnLj3SoNAEItwtvb8IIxXlyUGe6q/j
+Ksqwfv9NuPrUE0ZVvgx1VTaF2Vag2OMm2KRplZyPwPUu+MXpyoxWQert43McGYL2
+wI7gGO8g6Iudi6slUThI6imgHmfCCW9Scokf6qGbYY8tDAgzD6LLkTr/N4Lwafb7
+MaZp7dJERrG7fnKQEYyNsAQ2jhIzfrs8BvBwMGa/rHklOxUlbFr9wqYnUkSCik8=
+=dsLY
+-----END PGP SIGNATURE-----
+
+--LN2Nay5amKJRgrhj--
