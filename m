@@ -1,84 +1,152 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH RESEND v2 06/10] power: charger-manager: Get external power
- souce information only from EXTCON.
-Date: Fri, 19 Dec 2014 11:47:26 +0900
-Message-ID: <1418957250-6542-7-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH RESEND v2 04/10] power: charger-manager: Fix to use
+ CHARGE_NOW/FULL property correctly.
+Date: Fri, 19 Dec 2014 11:47:24 +0900
+Message-ID: <1418957250-6542-5-git-send-email-jonghwa3.lee@samsung.com>
 References: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:58375 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbaLSCrk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 21:47:40 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-When charger-manager checks whether external power source is available,
-it gets information from charger IC driver. However, it's not correct source,
-charger IC doesn't have responsibilty to give cable connection status.
-The charger-manager already gets cable information from EXTCON susbsystem,
-so it can re-use it.
+The POWER_SUPPLY_CHARGE_NOW/FULL property reflects battery's charges
+in uAh unit, but charger-manager has been used it wrongly. This patch
+makes it to use those propeties correctly and change to be optional.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c |   34 ++++++++++++++--------------------
- 1 file changed, 14 insertions(+), 20 deletions(-)
+ drivers/power/charger-manager.c |   85 +++++++++++++--------------------------
+ 1 file changed, 28 insertions(+), 57 deletions(-)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index bb44588..172dfe5 100644
+index 64fdaaf..687f109 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -115,34 +115,28 @@ static bool is_batt_present(struct charger_manager *cm)
-  * is_ext_pwr_online - See if an external power source is attached to charge
-  * @cm: the Charger Manager representing the battery.
-  *
-- * Returns true if at least one of the chargers of the battery has an external
-- * power source attached to charge the battery regardless of whether it is
-- * actually charging or not.
-+ * Returns true if there is external power source.
-+ * Cable connection information is only obtained by EXTCON class notification.
-  */
- static bool is_ext_pwr_online(struct charger_manager *cm)
- {
--	union power_supply_propval val;
--	struct power_supply *psy;
--	bool online = false;
--	int i, ret;
- 
--	/* If at least one of them has one, it's yes. */
--	for (i = 0; cm->desc->psy_charger_stat[i]; i++) {
--		psy = power_supply_get_by_name(cm->desc->psy_charger_stat[i]);
--		if (!psy) {
--			dev_err(cm->dev, "Cannot find power supply \"%s\"\n",
--					cm->desc->psy_charger_stat[i]);
--			continue;
--		}
-+	struct charger_desc *desc = cm->desc;
-+	struct charger_regulator *regulators = desc->charger_regulators;
-+	struct charger_cable *cables;
-+	int i, j, num_cables;
- 
--		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
--		if (ret == 0 && val.intval) {
--			online = true;
--			break;
-+	/* If at least one of them has one, it's yes. */
-+	for (i = 0; i < desc->num_charger_regulators; i++) {
-+		cables = regulators[i].cables;
-+		num_cables = regulators[i].num_cables;
-+		for (j = 0; j < num_cables; j++) {
-+			if (cables[j].attached)
-+				return true;
+@@ -796,35 +796,13 @@ static int charger_get_property(struct power_supply *psy,
+ 			val->intval = 0;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+-		if (is_full_charged(cm))
+-			val->intval = 1;
+-		else
+-			val->intval = 0;
+-		ret = 0;
+-		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		if (is_charging(cm)) {
+-			fuel_gauge = power_supply_get_by_name(
+-					cm->desc->psy_fuel_gauge);
+-			if (!fuel_gauge) {
+-				ret = -ENODEV;
+-				break;
+-			}
+-
+-			ret = fuel_gauge->get_property(fuel_gauge,
+-						POWER_SUPPLY_PROP_CHARGE_NOW,
+-						val);
+-			if (ret) {
+-				val->intval = 1;
+-				ret = 0;
+-			} else {
+-				/* If CHARGE_NOW is supplied, use it */
+-				val->intval = (val->intval > 0) ?
+-						val->intval : 1;
+-			}
+-		} else {
+-			val->intval = 0;
++		fuel_gauge = power_supply_get_by_name(cm->desc->psy_fuel_gauge);
++		if (!fuel_gauge) {
++			ret = -ENODEV;
++			break;
  		}
- 	}
- 
--	return online;
-+	return false;
++		ret = fuel_gauge->get_property(fuel_gauge, psp, val);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -832,8 +810,7 @@ static int charger_get_property(struct power_supply *psy,
+ 	return ret;
  }
  
- /**
+-#define NUM_CHARGER_PSY_OPTIONAL	(4)
+-static enum power_supply_property default_charger_props[] = {
++static enum power_supply_property cm_default_props[] = {
+ 	/* Guaranteed to provide */
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_HEALTH,
+@@ -841,20 +818,21 @@ static enum power_supply_property default_charger_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_ONLINE,
+-	POWER_SUPPLY_PROP_CHARGE_FULL,
+ 	POWER_SUPPLY_PROP_TEMP,
+-	/*
+-	 * Optional properties are:
+-	 * POWER_SUPPLY_PROP_CHARGE_NOW,
+-	 * POWER_SUPPLY_PROP_CURRENT_NOW,
+-	 */
+ };
+ 
++static enum power_supply_property cm_optional_props[] = {
++	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++};
++
++#define CM_NUM_OF_PROPS	\
++	(ARRAY_SIZE(cm_default_props) + ARRAY_SIZE(cm_optional_props))
++
+ static struct power_supply psy_default = {
+ 	.name = "battery",
+ 	.type = POWER_SUPPLY_TYPE_BATTERY,
+-	.properties = default_charger_props,
+-	.num_properties = ARRAY_SIZE(default_charger_props),
+ 	.get_property = charger_get_property,
+ 	.no_thermal = true,
+ };
+@@ -1484,29 +1462,22 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	/* Allocate for psy properties because they may vary */
+ 	cm->charger_psy.properties = devm_kzalloc(&pdev->dev,
+ 				sizeof(enum power_supply_property)
+-				* (ARRAY_SIZE(default_charger_props) +
+-				NUM_CHARGER_PSY_OPTIONAL), GFP_KERNEL);
++				* CM_NUM_OF_PROPS, GFP_KERNEL);
+ 	if (!cm->charger_psy.properties)
+ 		return -ENOMEM;
+ 
+-	memcpy(cm->charger_psy.properties, default_charger_props,
+-		sizeof(enum power_supply_property) *
+-		ARRAY_SIZE(default_charger_props));
+-	cm->charger_psy.num_properties = psy_default.num_properties;
+-
+-	/* Find which optional psy-properties are available */
+-	if (!fuel_gauge->get_property(fuel_gauge,
+-					  POWER_SUPPLY_PROP_CHARGE_NOW, &val)) {
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_CHARGE_NOW;
+-		cm->charger_psy.num_properties++;
+-	}
+-	if (!fuel_gauge->get_property(fuel_gauge,
+-					  POWER_SUPPLY_PROP_CURRENT_NOW,
+-					  &val)) {
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_CURRENT_NOW;
+-		cm->charger_psy.num_properties++;
++	memcpy(cm->charger_psy.properties, cm_default_props,
++			sizeof(enum power_supply_property) *
++			ARRAY_SIZE(cm_default_props));
++	cm->charger_psy.num_properties = ARRAY_SIZE(cm_default_props);
++
++	/* Add available optional properties */
++	for (i = 0; i < ARRAY_SIZE(cm_optional_props); i++) {
++		if (fuel_gauge->get_property(fuel_gauge,
++				cm_optional_props[i], &val))
++			continue;
++		cm->charger_psy.properties[cm->charger_psy.num_properties++] =
++				cm_optional_props[i];
+ 	}
+ 
+ 	if (desc->thermal_zone) {
 -- 
 1.7.9.5
-
