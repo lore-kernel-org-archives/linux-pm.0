@@ -1,211 +1,55 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH V3 03/11] power: charger-manager: Use power_supply_changed()
- not private uevent.
-Date: Fri, 19 Dec 2014 17:55:15 +0900
-Message-ID: <1418979323-7188-4-git-send-email-jonghwa3.lee@samsung.com>
-References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH V3 0/11] Improve charger manager driver for optimized operation.
+Date: Fri, 19 Dec 2014 17:55:12 +0900
+Message-ID: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Whenever battery status is changed, charger manager tries to trigger uevent
-through private interface. This patch modifies it to use power_supply_changed()
-since it belongs to power supply subsystem.
+After charger manager's initially introduced, it has kept its codes without any
+big change. However, the charger manager working operation isn't optimized and
+it also has unused codes and non-generic interface. This series tries to make
+charger manager more generic and maintainable with some fixes.
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
----
- drivers/power/charger-manager.c |   91 +++++----------------------------------
- 1 file changed, 11 insertions(+), 80 deletions(-)
+[Changes in V3]
+- Add omitted patch '[1/11] Use alarmtimer for battery~' from v2 patch set.
 
-diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 71a3df7..8c76bce 100644
---- a/drivers/power/charger-manager.c
-+++ b/drivers/power/charger-manager.c
-@@ -28,18 +28,6 @@
- #include <linux/of.h>
- #include <linux/thermal.h>
- 
--static const char * const default_event_names[] = {
--	[CM_EVENT_UNKNOWN] = "Unknown",
--	[CM_EVENT_BATT_FULL] = "Battery Full",
--	[CM_EVENT_BATT_IN] = "Battery Inserted",
--	[CM_EVENT_BATT_OUT] = "Battery Pulled Out",
--	[CM_EVENT_BATT_OVERHEAT] = "Battery Overheat",
--	[CM_EVENT_BATT_COLD] = "Battery Cold",
--	[CM_EVENT_EXT_PWR_IN_OUT] = "External Power Attach/Detach",
--	[CM_EVENT_CHG_START_STOP] = "Charging Start/Stop",
--	[CM_EVENT_OTHERS] = "Other battery events"
--};
--
- /*
-  * Regard CM_JIFFIES_SMALL jiffies is small enough to ignore for
-  * delayed works so that we can run delayed works with CM_JIFFIES_SMALL
-@@ -56,8 +44,6 @@ static const char * const default_event_names[] = {
-  */
- #define CM_RTC_SMALL		(2)
- 
--#define UEVENT_BUF_SIZE		32
--
- static LIST_HEAD(cm_list);
- static DEFINE_MUTEX(cm_list_mtx);
- 
-@@ -423,61 +409,6 @@ static int try_charger_restart(struct charger_manager *cm)
- }
- 
- /**
-- * uevent_notify - Let users know something has changed.
-- * @cm: the Charger Manager representing the battery.
-- * @event: the event string.
-- *
-- * If @event is null, it implies that uevent_notify is called
-- * by resume function. When called in the resume function, cm_suspended
-- * should be already reset to false in order to let uevent_notify
-- * notify the recent event during the suspend to users. While
-- * suspended, uevent_notify does not notify users, but tracks
-- * events so that uevent_notify can notify users later after resumed.
-- */
--static void uevent_notify(struct charger_manager *cm, const char *event)
--{
--	static char env_str[UEVENT_BUF_SIZE + 1] = "";
--	static char env_str_save[UEVENT_BUF_SIZE + 1] = "";
--
--	if (cm_suspended) {
--		/* Nothing in suspended-event buffer */
--		if (env_str_save[0] == 0) {
--			if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--				return; /* status not changed */
--			strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--			return;
--		}
--
--		if (!strncmp(env_str_save, event, UEVENT_BUF_SIZE))
--			return; /* Duplicated. */
--		strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--		return;
--	}
--
--	if (event == NULL) {
--		/* No messages pending */
--		if (!env_str_save[0])
--			return;
--
--		strncpy(env_str, env_str_save, UEVENT_BUF_SIZE);
--		kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--		env_str_save[0] = 0;
--
--		return;
--	}
--
--	/* status not changed */
--	if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--		return;
--
--	/* save the status and notify the update */
--	strncpy(env_str, event, UEVENT_BUF_SIZE);
--	kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--
--	dev_info(cm->dev, "%s\n", event);
--}
--
--/**
-  * fullbatt_vchk - Check voltage drop some times after "FULL" event.
-  * @work: the work_struct appointing the function
-  *
-@@ -514,7 +445,7 @@ static void fullbatt_vchk(struct work_struct *work)
- 
- 	if (diff > desc->fullbatt_vchkdrop_uV) {
- 		try_charger_restart(cm);
--		uevent_notify(cm, "Recharging");
-+		power_supply_changed(&cm->charger_psy);
- 	}
- }
- 
-@@ -545,7 +476,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 		if (duration > desc->charging_max_duration_ms) {
- 			dev_info(cm->dev, "Charging duration exceed %ums\n",
- 				 desc->charging_max_duration_ms);
--			uevent_notify(cm, "Discharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, false);
- 			ret = true;
- 		}
-@@ -556,7 +487,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 				is_ext_pwr_online(cm)) {
- 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
- 				 desc->discharging_max_duration_ms);
--			uevent_notify(cm, "Recharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, true);
- 			ret = true;
- 		}
-@@ -638,7 +569,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	if (temp_alrt) {
- 		cm->emergency_stop = temp_alrt;
- 		if (!try_charger_enable(cm, false))
--			uevent_notify(cm, default_event_names[temp_alrt]);
-+			power_supply_changed(&cm->charger_psy);
- 
- 	/*
- 	 * Check whole charging duration and discharing duration
-@@ -663,7 +594,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
- 			cm->charger_enabled) {
- 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+		power_supply_changed(&cm->charger_psy);
- 
- 		try_charger_enable(cm, false);
- 
-@@ -672,7 +603,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 		cm->emergency_stop = 0;
- 		if (is_ext_pwr_online(cm)) {
- 			if (!try_charger_enable(cm, true))
--				uevent_notify(cm, "CHARGING");
-+				power_supply_changed(&cm->charger_psy);
- 		}
- 	}
- 
-@@ -793,7 +724,7 @@ static void fullbatt_handler(struct charger_manager *cm)
- 
- out:
- 	dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--	uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+	power_supply_changed(&cm->charger_psy);
- }
- 
- /**
-@@ -807,9 +738,9 @@ static void battout_handler(struct charger_manager *cm)
- 
- 	if (!is_batt_present(cm)) {
- 		dev_emerg(cm->dev, "Battery Pulled Out!\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_OUT]);
-+		power_supply_changed(&cm->charger_psy);
- 	} else {
--		uevent_notify(cm, "Battery Reinserted?");
-+		power_supply_changed(&cm->charger_psy);
- 	}
- }
- 
-@@ -826,7 +757,7 @@ static void misc_event_handler(struct charger_manager *cm,
- 
- 	if (is_polling_required(cm) && cm->desc->polling_interval_ms)
- 		schedule_work(&setup_polling);
--	uevent_notify(cm, default_event_names[type]);
-+	power_supply_changed(&cm->charger_psy);
- }
- 
- static int charger_get_property(struct power_supply *psy,
-@@ -1988,7 +1919,7 @@ void cm_notify_event(struct power_supply *psy, enum cm_event_types type,
- 		break;
- 	case CM_EVENT_UNKNOWN:
- 	case CM_EVENT_OTHERS:
--		uevent_notify(cm, msg ? msg : default_event_names[type]);
-+		power_supply_changed(&cm->charger_psy);
- 		break;
- 	default:
- 		dev_err(cm->dev, "%s: type not specified\n", __func__);
+[Changes in V2]
+- Rebase patch series on latest of battery-2.6.git.
+- Seperate 'power: charger-manager: Rearrange data and monitor ~' patch into
+  several patches depends on its purpose.
+- Add 2 patches related with polling mode.
+
+Jonghwa Lee (11):
+  power: charger-manager: Use alarmtimer for battery monitoring in
+    suspend.
+  power: charger-manager: Use thermal subsystem interface only to get
+    temperature.
+  power: charger-manager: Use power_supply_changed() not private
+    uevent.
+  power: charger-manager: Remove deprecated function,
+    cm_notify_event().
+  power: charger-manager: Fix to use CHARGE_NOW/FULL property
+    correctly.
+  power: charger-manager: Concentrate scattered power_supply_changed()
+    calls.
+  power: charger-manager: Get external power souce information only
+    from EXTCON.
+  power: charger-manager: Make chraging decision focusing on battery
+    status.
+  power: charger-manager: Not to start charging directly in cable
+    nofitication.
+  power: charger-manager: Support different polling mode for sleep
+    state.
+  power: charger-manager: Support to change polling rate in runtime.
+
+ .../bindings/power_supply/charger-manager.txt      |    1 -
+ drivers/power/Kconfig                              |    3 +-
+ drivers/power/charger-manager.c                    | 1026 ++++++--------------
+ include/linux/power/charger-manager.h              |   66 +-
+ 4 files changed, 293 insertions(+), 803 deletions(-)
+
 -- 
 1.7.9.5
