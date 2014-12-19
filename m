@@ -1,90 +1,71 @@
 From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH RESEND v2 02/10] power: charger-manager: Use
- power_supply_changed() not private uevent.
-Date: Fri, 19 Dec 2014 17:21:50 +0900
-Message-ID: <5493E01E.6090806@samsung.com>
-References: <1443120167.38671418974875751.JavaMail.weblogic@epmlwas08d>
+Subject: Re: [PATCH RESEND v2 03/10] power: charger-manager: Remove deprecated
+ function, cm_notify_event().
+Date: Fri, 19 Dec 2014 17:32:41 +0900
+Message-ID: <5493E2A9.6050407@samsung.com>
+References: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:12765 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:15452 "EHLO
 	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373AbaLSIV7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 03:21:59 -0500
-In-reply-to: <1443120167.38671418974875751.JavaMail.weblogic@epmlwas08d>
+	with ESMTP id S1751821AbaLSIcr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 03:32:47 -0500
+In-reply-to: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com
-Cc: =?UTF-8?B?7J207KKF7ZmU?= <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>, =?UTF-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>, =?UTF-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
 
-On 2014=EB=85=84 12=EC=9B=94 19=EC=9D=BC 16:41, MyungJoo Ham wrote:
+On 2014=EB=85=84 12=EC=9B=94 19=EC=9D=BC 16:52, MyungJoo Ham wrote:
 
 >>  =20
->>  Whenever battery status is changed, charger manager tries to trigge=
-r uevent
->> through private interface. This patch modifies it to use power_suppl=
-y_changed()
->> since it belongs to power supply subsystem.
+>>  cm_notify_event() is introduced to get event associated with batter=
+y status
+>> externally, but no one had been used. Moreover it makes charger mana=
+ger
+>> driver more complicated. This patch tries to drop the function and a=
+ll data
+>> related to simplify the driver.
 >>
 >> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 >=20
-> The original uevent_notify() has two additional mechanisms:
-> C1. Save events in suspend-again context and show them up at wakeup.
-> C2. If the new event is a duplicated event, ignore it.
+> You are not just removing cm_notify_event() and its related.
 >=20
-> Questions:
-> Q1. Have you checked if C1 is met with the modification? Besides, hav=
-e
-> you made it sure that the modification won't change the behavior of
-> suspend-again context? (whether "theoretical" or "experimental")
-
-
-It won't ruin suspend-again context because it just changes the locatio=
-n where
-the charger manager's notice to go.
-
-> Q2. Do you still support C2?
->   For example, if we have notifited the user that we are charging
->   30 seconds ago, we should never bother the user with another messag=
-e
->   that declares that it is charging unless we have notified that
->   we are not charging since then.
+> You are hereby removing the much of software charger control
+> and suspend-related operations. Could you please be more specific
+> on why? (many of such features are to comply with operators' requirem=
+ents)
 >=20
 
 
-Above case never happens. If charging state is not changed, the report =
-will not
-be triggered. Maybe current driver will send same event repeatedly even=
- though,
-these patch series will guarantee not to do so.
+Unfortunately, all those codes are only for cm_notify_event(). Currentl=
+y, and
+since charger-manager has been introduced then, there's no one to use i=
+t. And
+the works of cm_notify_event() are is just notifying the event to user =
+space or
+reset the polling work. We may need passive method to get event related=
+ with
+battery status externally, if so we can use power_supply class notifica=
+tion
+method, power_supply_notifier.
 
-And also if we have a status changing while short time wake-up which ex=
-pects
-suspend-again proceeds in near future, I think it is better to notify i=
-t to the
-user not to keep until undetermined 'TRUE' wake-up.
+I decided to remove it to make driver simple and clean.
 
 Thanks,
 Jonghwa
 
-> Cheers,
-> MyungJoo.
+
+> (Or we may meet next Monday for some discussions :) )
 >=20
 >> ---
->>  drivers/power/charger-manager.c |   91 +++++-----------------------=
+>>  .../bindings/power_supply/charger-manager.txt      |    1 -
+>>  drivers/power/charger-manager.c                    |  196 +--------=
 -----------
->>  1 file changed, 11 insertions(+), 80 deletions(-)
+>>  include/linux/power/charger-manager.h              |   19 +-
+>>  3 files changed, 8 insertions(+), 208 deletions(-)
 >>
-> N=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BDr=EF=BF=BD=EF=BF=BDy=EF=
-=BF=BD=EF=BF=BD=EF=BF=BDb=EF=BF=BDX=EF=BF=BD=EF=BF=BD=C7=A7v=EF=BF=BD^=EF=
-=BF=BD)=DE=BA{.n=EF=BF=BD+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD{=EF=BF=BD=
-=EF=BF=BDh=EF=BF=BD=EF=BF=BD=17=EF=BF=BD=EF=BF=BD=DC=A8}=EF=BF=BD=EF=BF=
-=BD=EF=BF=BD=C6=A0z=EF=BF=BD&j:+v=EF=BF=BD=EF=BF=BD=EF=BF=BD=07=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BDzZ+=EF=BF=BD=EF=BF=BD+zf=EF=BF=BD=EF=BF=BD=EF=
-=BF=BDh=EF=BF=BD=EF=BF=BD=EF=BF=BD~=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-i=EF=BF=BD=EF=BF=BD=EF=BF=BDz=EF=BF=BD=1E=EF=BF=BDw=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD?=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD&=EF=BF=BD)=DF=A2=1Bfl=3D=3D=
-=3D
 
 
