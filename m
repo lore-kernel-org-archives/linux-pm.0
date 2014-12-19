@@ -1,29 +1,45 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: Fwd: next boot: 101 boots: 89 pass, 12 fail (next-20141216)
-Date: Thu, 18 Dec 2014 14:51:39 -0800
-Message-ID: <CAMAWPa92=-XPQAGr55xvfJniaMKQSUnr=bzcvAEPxM7wd=Abtg@mail.gmail.com>
-References: <E1Y0lcK-00026B-7I@ip-10-35-177-41.ec2.internal>
-	<CAMAWPa98kyaUJpt=GLw4cH7fkg+8BkrA0kds=H-2-4fWXy_tqw@mail.gmail.com>
-	<54909E30.4040300@ti.com>
-	<CAKohponYEqhPjZmk_WH+TbNPLHEM5HWxta7CLUoM5+2iHYw_zw@mail.gmail.com>
-	<CAMAWPa-_OZC3ynKYxbtXK4=z-z720JxXigT23umscMTm8VWAzA@mail.gmail.com>
-	<CAKohpokWe+MGNM7N8recCsV7O6pFDdJ89QKnqyj9TK_WRtW7yQ@mail.gmail.com>
-	<54935728.9010405@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Stop BUGing the system
+Date: Fri, 19 Dec 2014 07:11:19 +0530
+Message-ID: <CAKohponxz0=n5g9uBOt=JqBMdtdi9mnsrh34emxZDO=PJikVaw@mail.gmail.com>
+References: <1418831495-26958-1-git-send-email-nm@ti.com>
+	<CAKohponF61J6pWOtfg_722dQDbXtxrmt2dG+rKY7SKbE3xKGZg@mail.gmail.com>
+	<20141218144915.GA29004@kahuna>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <54935728.9010405@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:38361 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751785AbaLSBlU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 20:41:20 -0500
+Received: by mail-ob0-f177.google.com with SMTP id va2so9043640obc.8
+        for <linux-pm@vger.kernel.org>; Thu, 18 Dec 2014 17:41:19 -0800 (PST)
+In-Reply-To: <20141218144915.GA29004@kahuna>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Dec 18, 2014 at 2:37 PM, Nishanth Menon <nm@ti.com> wrote:
+On 18 December 2014 at 20:19, Nishanth Menon <nm@ti.com> wrote:
+> I can add "could be unstable" -> the point being there can be psuedo
+> errors reported in the system - example - clock framework bugs. Dont
+> just stop the boot. example: what if cpufreq was a driver module - it
+> would not have rescued the system because cpufreq had'nt detected the
+> logic - if we are going to force this on the system, we should probably
+> not do this in cpufreq code, instead should be somewhere generic.
+>
+> While I do empathise (and had infact advocated in the past) of not
+> favouring system attempting to continue at an invalid configuration and
+> our attempt to rescue has failed - given that we cannot provide a
+> consistent behavior (it is not a core system behavior) and potential of
+> a false-postive (example clk framework or underlying bug), it should be
+> good enough to "enhance" WARN to be "severe sounding enough" to
+> flag it for developer and continue while keeping the system alive as
+> much as possible.
 
-> script download fail does imply my farm has still issues to resolve..
-> but anyways.. more or less we are back operational again since it was
-> broken by next-20141216
+There is no way out for the kernel to know if its a false positive or a real
+bug. And in the worst case, it can screw up a platform completely.
 
-I'm not seeing any more failures in next-20141218 either.
+I am still not sure if changing it to a WARN would be good idea.
 
-Kevin
+@Rafael: Thoughts ?
