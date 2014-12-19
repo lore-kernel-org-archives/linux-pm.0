@@ -1,8 +1,8 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH RESEND v2 09/10] power: charger-manager: Support different
- polling mode for sleep state.
-Date: Fri, 19 Dec 2014 11:47:29 +0900
-Message-ID: <1418957250-6542-10-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH RESEND v2 05/10] power: charger-manager: Concentrate scattered
+ power_supply_changed() calls.
+Date: Fri, 19 Dec 2014 11:47:25 +0900
+Message-ID: <1418957250-6542-6-git-send-email-jonghwa3.lee@samsung.com>
 References: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
@@ -11,90 +11,87 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add additional polling mode for sleep state to define different mode with
-normal state. With this change, charger-manager can work differently in
-normal state or sleep state. e.g, polling aways for normal and polling
-only when charing for sleep. If there is no defined polling mode for
-sleep state it just follows the normal state's.
-In addition to, polling rate is still same in sleep.
+Current charger-manager calls power_suuply_changed() whenever charging
+status is changed. This patch removes seperated power_supply_changed()
+use and let it be called at end of try_charger_enable() function which
+is called to set charging/discharging.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c       |   20 +++++++++++++++++---
- include/linux/power/charger-manager.h |    9 ++++++---
- 2 files changed, 23 insertions(+), 6 deletions(-)
+ drivers/power/charger-manager.c |   18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 1ccb9be..0a0834f 100644
+index 687f109..bb44588 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -291,7 +291,15 @@ static bool is_full_charged(struct charger_manager *cm)
-  */
- static bool is_polling_required(struct charger_manager *cm)
- {
--	switch (cm->desc->polling_mode) {
-+	enum polling_modes polling_mode;
-+
-+	if (cm_suspended
-+		&& cm->desc->poll_mode_sleep >= 0)
-+		polling_mode = cm->desc->poll_mode_sleep;
-+	else
-+		polling_mode = cm->desc->poll_mode_normal;
-+
-+	switch (polling_mode) {
- 	case CM_POLL_DISABLE:
- 		return false;
- 	case CM_POLL_ALWAYS:
-@@ -302,7 +310,7 @@ static bool is_polling_required(struct charger_manager *cm)
- 		return is_charging(cm);
- 	default:
- 		dev_warn(cm->dev, "Incorrect polling_mode (%d)\n",
--			 cm->desc->polling_mode);
-+			 polling_mode);
+@@ -382,8 +382,10 @@ static int try_charger_enable(struct charger_manager *cm, bool enable)
+ 		}
  	}
  
- 	return false;
-@@ -1158,7 +1166,13 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
- 	of_property_read_string(np, "cm-name", &desc->psy_name);
+-	if (!err)
++	if (!err) {
+ 		cm->charger_enabled = enable;
++		power_supply_changed(&cm->charger_psy);
++	}
  
- 	of_property_read_u32(np, "cm-poll-mode", &poll_mode);
--	desc->polling_mode = poll_mode;
-+	desc->poll_mode_normal = poll_mode;
-+
-+	/* Polling mode in sleep state */
-+	if (!of_property_read_u32(np, "cm-poll-mode-sleep", &poll_mode))
-+		desc->poll_mode_sleep = poll_mode;
-+	else
-+		desc->poll_mode_sleep = -EINVAL;
+ 	return err;
+ }
+@@ -436,10 +438,8 @@ static void fullbatt_vchk(struct charger_manager *cm)
  
- 	of_property_read_u32(np, "cm-poll-interval",
- 				&desc->polling_interval_ms);
-diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
-index 37fb181..a30a0b6 100644
---- a/include/linux/power/charger-manager.h
-+++ b/include/linux/power/charger-manager.h
-@@ -131,8 +131,10 @@ struct charger_regulator {
+ 	dev_info(cm->dev, "VBATT dropped %duV after full-batt\n", diff);
+ 
+-	if (diff > desc->fullbatt_vchkdrop_uV) {
++	if (diff > desc->fullbatt_vchkdrop_uV)
+ 		try_charger_restart(cm);
+-		power_supply_changed(&cm->charger_psy);
+-	}
+ }
+ 
  /**
-  * struct charger_desc
-  * @psy_name: the name of power-supply-class for charger manager
-- * @polling_mode:
-- *	Determine which polling mode will be used
-+ * @poll_mode_normal:
-+ *	Determine which polling mode will be used in normal state.
-+ * @poll_mode_sleep:
-+ *	Determine which polling mode will be used in sleep state.
-  * @fullbatt_vchkdrop_uV:
-  *	Check voltage drop after the battery is fully charged.
-  *	If it has dropped more than fullbatt_vchkdrop_uV
-@@ -170,7 +172,8 @@ struct charger_regulator {
- struct charger_desc {
- 	const char *psy_name;
+@@ -469,7 +469,6 @@ static int check_charging_duration(struct charger_manager *cm)
+ 		if (duration > desc->charging_max_duration_ms) {
+ 			dev_info(cm->dev, "Charging duration exceed %ums\n",
+ 				 desc->charging_max_duration_ms);
+-			power_supply_changed(&cm->charger_psy);
+ 			try_charger_enable(cm, false);
+ 			ret = true;
+ 		}
+@@ -480,7 +479,6 @@ static int check_charging_duration(struct charger_manager *cm)
+ 				is_ext_pwr_online(cm)) {
+ 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
+ 				 desc->discharging_max_duration_ms);
+-			power_supply_changed(&cm->charger_psy);
+ 			try_charger_enable(cm, true);
+ 			ret = true;
+ 		}
+@@ -561,8 +559,7 @@ static bool _cm_monitor(struct charger_manager *cm)
+ 	 */
+ 	if (temp_alrt) {
+ 		cm->emergency_stop = temp_alrt;
+-		if (!try_charger_enable(cm, false))
+-			power_supply_changed(&cm->charger_psy);
++		try_charger_enable(cm, false);
  
--	enum polling_modes polling_mode;
-+	enum polling_modes poll_mode_normal;
-+	enum polling_modes poll_mode_sleep;
- 	unsigned int polling_interval_ms;
+ 	/*
+ 	 * Check whole charging duration and discharing duration
+@@ -587,16 +584,13 @@ static bool _cm_monitor(struct charger_manager *cm)
+ 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
+ 			cm->charger_enabled) {
+ 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
+-		power_supply_changed(&cm->charger_psy);
+-
+ 		try_charger_enable(cm, false);
  
- 	unsigned int fullbatt_vchkdrop_uV;
+ 		fullbatt_vchk(cm);
+ 	} else {
+ 		cm->emergency_stop = 0;
+ 		if (is_ext_pwr_online(cm)) {
+-			if (!try_charger_enable(cm, true))
+-				power_supply_changed(&cm->charger_psy);
++			try_charger_enable(cm, true);
+ 		}
+ 	}
+ 
 -- 
 1.7.9.5
