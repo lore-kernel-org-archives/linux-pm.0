@@ -1,282 +1,613 @@
-From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-Subject: [PATCH v9] cpufreq: Add SFI based cpufreq driver support
-Date: Fri, 19 Dec 2014 23:13:51 +0530
-Message-ID: <20141219174344.GA823@intel-desktop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 4/4] PM: Eliminate CONFIG_PM_RUNTIME
+Date: Fri, 19 Dec 2014 22:41:54 +0100
+Message-ID: <9470157.PyHoGoSGz1@vostro.rjw.lan>
+References: <472992175.g1ArEYGFPo@vostro.rjw.lan> <2635409.SWsBMlb9s4@vostro.rjw.lan> <CAMuHMdUn3KSTdh4nFL=G54SM7NWpQsmeg1GYYRz=+uXH9rbEGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:51652 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbaLSRmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 19 Dec 2014 12:42:04 -0500
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUn3KSTdh4nFL=G54SM7NWpQsmeg1GYYRz=+uXH9rbEGg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Christian Daudt <bcm@fixthebug.org>, Matt Porter <mporter@linaro.org>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Maxime Ripard <maxime.ripard@free-electrons.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Tony Lindgren <tony@atomide.com>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mark Brown <broonie@kernel.org>, Olof Johansson <olof@lixom.net>, linux-ar
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com
 
-This adds the SFI based cpu freq driver for some of the Intel's
-Silvermont based Atom architectures like Z34xx and Z35xx.
+On Friday, December 19, 2014 09:13:29 AM Geert Uytterhoeven wrote:
+> On Fri, Dec 19, 2014 at 3:03 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > --- linux-pm.orig/arch/mips/configs/lemote2f_defconfig
+> > +++ linux-pm/arch/mips/configs/lemote2f_defconfig
+> > @@ -37,7 +37,7 @@ CONFIG_MIPS32_N32=y
+> >  CONFIG_PM=y
+>   ^^^^^^^^^^^
+> >  CONFIG_HIBERNATION=y
+> >  CONFIG_PM_STD_PARTITION="/dev/hda3"
+> > -CONFIG_PM_RUNTIME=y
+> > +CONFIG_PM=y
+>    ^^^^^^^^^^^
+> Now we have two of them
+> 
+> >  CONFIG_CPU_FREQ=y
+> >  CONFIG_CPU_FREQ_DEBUG=y
+> >  CONFIG_CPU_FREQ_STAT=m
+> 
+> Other defconfig files may be affected, too.
 
-Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
-Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Good catch, I felt I might have forgotten about something ...
+
+Fixed up patch is appended, thanks!
+
+
 ---
-v2:
-(v2-v3: comments from Viresh)
-* rephrase the Kconfig text
-* merge the header file as its not being shared with anyone
-* remove the unnecessary checks in sfi_cpufreq_target
-* style changes in kzalloc
-* fix the potential memory leak sfi_cpufreq_cpu_init
-* move the cpufreq driver flag to the structure definition
-* remove the redundant init of policy->cpu and policy->cur
-* remove the unnecessary check while init the freq table
-* merge the for loops in cpu_init
-* use cpufreq_generic_attr rather than the custom one
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: PM: Eliminate CONFIG_PM_RUNTIME
 
-v3:
-* Add this change log
-* remove the left over not used cached_freq var
-* merge yet another for loop in cpu_init
+Having switched over all of the users of CONFIG_PM_RUNTIME to use
+CONFIG_PM directly, turn the latter into a user-selectable option
+and drop the former entirely from the tree.
 
-v4:
-* remove unnecessary pr_debug
-* rephrase Kconfig text
-* remove unused macro SFI_CPU_MAX
-* Add Viresh's Acked-by
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ arch/arm/configs/ape6evm_defconfig         |    2 +-
+ arch/arm/configs/armadillo800eva_defconfig |    2 +-
+ arch/arm/configs/bcm_defconfig             |    2 +-
+ arch/arm/configs/bockw_defconfig           |    2 +-
+ arch/arm/configs/davinci_all_defconfig     |    2 +-
+ arch/arm/configs/exynos_defconfig          |    2 +-
+ arch/arm/configs/ezx_defconfig             |    1 -
+ arch/arm/configs/hisi_defconfig            |    2 +-
+ arch/arm/configs/imote2_defconfig          |    1 -
+ arch/arm/configs/imx_v6_v7_defconfig       |    2 +-
+ arch/arm/configs/keystone_defconfig        |    2 +-
+ arch/arm/configs/kzm9g_defconfig           |    2 +-
+ arch/arm/configs/lager_defconfig           |    2 +-
+ arch/arm/configs/mackerel_defconfig        |    1 -
+ arch/arm/configs/marzen_defconfig          |    2 +-
+ arch/arm/configs/omap1_defconfig           |    1 -
+ arch/arm/configs/prima2_defconfig          |    2 +-
+ arch/arm/configs/sama5_defconfig           |    2 +-
+ arch/arm/configs/shmobile_defconfig        |    2 +-
+ arch/arm/configs/sunxi_defconfig           |    2 +-
+ arch/arm/configs/tegra_defconfig           |    2 +-
+ arch/arm/configs/u8500_defconfig           |    2 +-
+ arch/arm/configs/vt8500_v6_v7_defconfig    |    2 +-
+ arch/arm/mach-omap2/Kconfig                |    6 +++---
+ arch/mips/configs/db1xxx_defconfig         |    2 +-
+ arch/mips/configs/lemote2f_defconfig       |    1 -
+ arch/mips/configs/loongson3_defconfig      |    2 +-
+ arch/mips/configs/nlm_xlp_defconfig        |    2 +-
+ arch/mips/configs/nlm_xlr_defconfig        |    2 +-
+ arch/powerpc/configs/ps3_defconfig         |    2 +-
+ arch/sh/Kconfig                            |    2 +-
+ arch/sh/configs/apsh4ad0a_defconfig        |    2 +-
+ arch/sh/configs/sdk7786_defconfig          |    2 +-
+ drivers/usb/host/isp1760-hcd.c             |    2 +-
+ drivers/usb/host/oxu210hp-hcd.c            |    2 +-
+ include/linux/devfreq.h                    |    2 +-
+ kernel/power/Kconfig                       |   16 ++++++----------
+ 37 files changed, 39 insertions(+), 48 deletions(-)
 
-v5:
-(comments from Len Brown)
-* rename few private functions with sfi_cpufreq_ prefix
-* move the PERF_CTL_MASK to msr-index.h
-* make the driver.get current freq to refer PERF_CTRL
-* remove sfi_processor_px, rather reuse sfi_freq_table_entry
-* remove unnecessary memcpy, rather just point to the freq table
-* consolidate get_performance_states with parse_freq
-* remove extract_freq and make get_cur_freq to read from MSR directly
-* move the state_count check while registering the perf states
-
-v6:
-* release the mutex in case of error in register_performance
-(comments from Viresh)
-* drop local perf pointer in ->target and ->init
-* fix the order of freeing memories in the error path of ->init
-* remove alloc_percpu, rather allocate it at runtime in ->init
-
-v7:
-(comments from Len Brown)
-* drop the unnecessary mutex
-* move sfi_table_parse to __init as it is global to the system
-* drop ->get callback
-* consolidate few global data structures
-
-v8:
-(Viresh)
-* drop per-cpu usage
-(Len Brown)
-* drop the usage of SFI_FREQ_MAX
-* remove the logic of detecting transition_latency
-* remove the last redundant pr_debug in ->init
-
-v9:
-(Len Brown)
-* set up the freq table only once in __init and
-  point all cpus to it
-
- arch/x86/include/uapi/asm/msr-index.h |    1 +
- drivers/cpufreq/Kconfig.x86           |   10 +++
- drivers/cpufreq/Makefile              |    1 +
- drivers/cpufreq/sfi-cpufreq.c         |  136 +++++++++++++++++++++++++++++++++
- 4 files changed, 148 insertions(+)
- create mode 100644 drivers/cpufreq/sfi-cpufreq.c
-
-diff --git a/arch/x86/include/uapi/asm/msr-index.h b/arch/x86/include/uapi/asm/msr-index.h
-index c8aa65d56027..d11e1c57cfc5 100644
---- a/arch/x86/include/uapi/asm/msr-index.h
-+++ b/arch/x86/include/uapi/asm/msr-index.h
-@@ -358,6 +358,7 @@
+Index: linux-pm/arch/arm/configs/ape6evm_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/ape6evm_defconfig
++++ linux-pm/arch/arm/configs/ape6evm_defconfig
+@@ -33,7 +33,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ CONFIG_BINFMT_MISC=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/armadillo800eva_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/armadillo800eva_defconfig
++++ linux-pm/arch/arm/configs/armadillo800eva_defconfig
+@@ -43,7 +43,7 @@ CONFIG_KEXEC=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/bcm_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/bcm_defconfig
++++ linux-pm/arch/arm/configs/bcm_defconfig
+@@ -39,7 +39,7 @@ CONFIG_CPU_IDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_PACKET_DIAG=y
+Index: linux-pm/arch/arm/configs/bockw_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/bockw_defconfig
++++ linux-pm/arch/arm/configs/bockw_defconfig
+@@ -29,7 +29,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_VFP=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/davinci_all_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/davinci_all_defconfig
++++ linux-pm/arch/arm/configs/davinci_all_defconfig
+@@ -49,7 +49,7 @@ CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+ CONFIG_CPU_IDLE=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/exynos_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/exynos_defconfig
++++ linux-pm/arch/arm/configs/exynos_defconfig
+@@ -27,7 +27,7 @@ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M console=ttySAC1,115200 init=/linuxrc mem=256M"
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/ezx_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/ezx_defconfig
++++ linux-pm/arch/arm/configs/ezx_defconfig
+@@ -39,7 +39,6 @@ CONFIG_BINFMT_AOUT=m
+ CONFIG_BINFMT_MISC=m
+ CONFIG_PM=y
+ CONFIG_APM_EMULATION=y
+-CONFIG_PM_RUNTIME=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/hisi_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/hisi_defconfig
++++ linux-pm/arch/arm/configs/hisi_defconfig
+@@ -18,7 +18,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_NEON=y
+ CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_FROM_BOOTLOADER=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/imote2_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/imote2_defconfig
++++ linux-pm/arch/arm/configs/imote2_defconfig
+@@ -31,7 +31,6 @@ CONFIG_BINFMT_AOUT=m
+ CONFIG_BINFMT_MISC=m
+ CONFIG_PM=y
+ CONFIG_APM_EMULATION=y
+-CONFIG_PM_RUNTIME=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/imx_v6_v7_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/imx_v6_v7_defconfig
++++ linux-pm/arch/arm/configs/imx_v6_v7_defconfig
+@@ -54,7 +54,7 @@ CONFIG_ARM_IMX6Q_CPUFREQ=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+ CONFIG_PM_TEST_SUSPEND=y
+ CONFIG_NET=y
+Index: linux-pm/arch/arm/configs/keystone_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/keystone_defconfig
++++ linux-pm/arch/arm/configs/keystone_defconfig
+@@ -30,7 +30,7 @@ CONFIG_HIGHMEM=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_SUSPEND is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/kzm9g_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/kzm9g_defconfig
++++ linux-pm/arch/arm/configs/kzm9g_defconfig
+@@ -43,7 +43,7 @@ CONFIG_KEXEC=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/lager_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/lager_defconfig
++++ linux-pm/arch/arm/configs/lager_defconfig
+@@ -37,7 +37,7 @@ CONFIG_AUTO_ZRELADDR=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/mackerel_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/mackerel_defconfig
++++ linux-pm/arch/arm/configs/mackerel_defconfig
+@@ -28,7 +28,6 @@ CONFIG_KEXEC=y
+ CONFIG_VFP=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+ CONFIG_PM=y
+-CONFIG_PM_RUNTIME=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/marzen_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/marzen_defconfig
++++ linux-pm/arch/arm/configs/marzen_defconfig
+@@ -33,7 +33,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_VFP=y
+ CONFIG_KEXEC=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/omap1_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/omap1_defconfig
++++ linux-pm/arch/arm/configs/omap1_defconfig
+@@ -63,7 +63,6 @@ CONFIG_FPE_NWFPE=y
+ CONFIG_BINFMT_MISC=y
+ CONFIG_PM=y
+ # CONFIG_SUSPEND is not set
+-CONFIG_PM_RUNTIME=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/prima2_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/prima2_defconfig
++++ linux-pm/arch/arm/configs/prima2_defconfig
+@@ -18,7 +18,7 @@ CONFIG_PREEMPT=y
+ CONFIG_AEABI=y
+ CONFIG_KEXEC=y
+ CONFIG_BINFMT_MISC=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+Index: linux-pm/arch/arm/configs/sama5_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/sama5_defconfig
++++ linux-pm/arch/arm/configs/sama5_defconfig
+@@ -32,7 +32,7 @@ CONFIG_VFP=y
+ CONFIG_NEON=y
+ CONFIG_KERNEL_MODE_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+ CONFIG_PM_ADVANCED_DEBUG=y
+ CONFIG_NET=y
+Index: linux-pm/arch/arm/configs/shmobile_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/shmobile_defconfig
++++ linux-pm/arch/arm/configs/shmobile_defconfig
+@@ -39,7 +39,7 @@ CONFIG_KEXEC=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/sunxi_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/sunxi_defconfig
++++ linux-pm/arch/arm/configs/sunxi_defconfig
+@@ -11,7 +11,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/tegra_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/tegra_defconfig
++++ linux-pm/arch/arm/configs/tegra_defconfig
+@@ -46,7 +46,7 @@ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/u8500_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/u8500_defconfig
++++ linux-pm/arch/arm/configs/u8500_defconfig
+@@ -25,7 +25,7 @@ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_U8500_CPUIDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/arm/configs/vt8500_v6_v7_defconfig
+===================================================================
+--- linux-pm.orig/arch/arm/configs/vt8500_v6_v7_defconfig
++++ linux-pm/arch/arm/configs/vt8500_v6_v7_defconfig
+@@ -16,7 +16,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_UNIX=y
+ CONFIG_INET=y
+Index: linux-pm/arch/mips/configs/db1xxx_defconfig
+===================================================================
+--- linux-pm.orig/arch/mips/configs/db1xxx_defconfig
++++ linux-pm/arch/mips/configs/db1xxx_defconfig
+@@ -36,7 +36,7 @@ CONFIG_PCI=y
+ CONFIG_PCI_REALLOC_ENABLE_AUTO=y
+ CONFIG_PCCARD=y
+ CONFIG_PCMCIA_ALCHEMY_DEVBOARD=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_PACKET_DIAG=y
+Index: linux-pm/arch/mips/configs/lemote2f_defconfig
+===================================================================
+--- linux-pm.orig/arch/mips/configs/lemote2f_defconfig
++++ linux-pm/arch/mips/configs/lemote2f_defconfig
+@@ -37,7 +37,6 @@ CONFIG_MIPS32_N32=y
+ CONFIG_PM=y
+ CONFIG_HIBERNATION=y
+ CONFIG_PM_STD_PARTITION="/dev/hda3"
+-CONFIG_PM_RUNTIME=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_DEBUG=y
+ CONFIG_CPU_FREQ_STAT=m
+Index: linux-pm/arch/mips/configs/loongson3_defconfig
+===================================================================
+--- linux-pm.orig/arch/mips/configs/loongson3_defconfig
++++ linux-pm/arch/mips/configs/loongson3_defconfig
+@@ -58,7 +58,7 @@ CONFIG_BINFMT_MISC=m
+ CONFIG_MIPS32_COMPAT=y
+ CONFIG_MIPS32_O32=y
+ CONFIG_MIPS32_N32=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+Index: linux-pm/arch/mips/configs/nlm_xlp_defconfig
+===================================================================
+--- linux-pm.orig/arch/mips/configs/nlm_xlp_defconfig
++++ linux-pm/arch/mips/configs/nlm_xlp_defconfig
+@@ -61,7 +61,7 @@ CONFIG_BINFMT_MISC=y
+ CONFIG_MIPS32_COMPAT=y
+ CONFIG_MIPS32_O32=y
+ CONFIG_MIPS32_N32=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+Index: linux-pm/arch/mips/configs/nlm_xlr_defconfig
+===================================================================
+--- linux-pm.orig/arch/mips/configs/nlm_xlr_defconfig
++++ linux-pm/arch/mips/configs/nlm_xlr_defconfig
+@@ -41,7 +41,7 @@ CONFIG_PCI=y
+ CONFIG_PCI_MSI=y
+ CONFIG_PCI_DEBUG=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+Index: linux-pm/arch/powerpc/configs/ps3_defconfig
+===================================================================
+--- linux-pm.orig/arch/powerpc/configs/ps3_defconfig
++++ linux-pm/arch/powerpc/configs/ps3_defconfig
+@@ -36,7 +36,7 @@ CONFIG_KEXEC=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_CMDLINE_BOOL=y
+ CONFIG_CMDLINE=""
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+ # CONFIG_SECCOMP is not set
+ # CONFIG_PCI is not set
+Index: linux-pm/arch/sh/configs/apsh4ad0a_defconfig
+===================================================================
+--- linux-pm.orig/arch/sh/configs/apsh4ad0a_defconfig
++++ linux-pm/arch/sh/configs/apsh4ad0a_defconfig
+@@ -47,7 +47,7 @@ CONFIG_PREEMPT=y
+ CONFIG_BINFMT_MISC=y
+ CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+Index: linux-pm/arch/sh/configs/sdk7786_defconfig
+===================================================================
+--- linux-pm.orig/arch/sh/configs/sdk7786_defconfig
++++ linux-pm/arch/sh/configs/sdk7786_defconfig
+@@ -82,7 +82,7 @@ CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
+ CONFIG_BINFMT_MISC=y
+ CONFIG_PM=y
+ CONFIG_PM_DEBUG=y
+-CONFIG_PM_RUNTIME=y
++CONFIG_PM=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+Index: linux-pm/arch/arm/mach-omap2/Kconfig
+===================================================================
+--- linux-pm.orig/arch/arm/mach-omap2/Kconfig
++++ linux-pm/arch/arm/mach-omap2/Kconfig
+@@ -15,7 +15,7 @@ config ARCH_OMAP3
+ 	select ARM_CPU_SUSPEND if PM
+ 	select OMAP_INTERCONNECT
+ 	select PM_OPP if PM
+-	select PM_RUNTIME if CPU_IDLE
++	select PM if CPU_IDLE
+ 	select SOC_HAS_OMAP2_SDRC
  
- #define MSR_IA32_PERF_STATUS		0x00000198
- #define MSR_IA32_PERF_CTL		0x00000199
-+#define INTEL_PERF_CTL_MASK		0xffff
- #define MSR_AMD_PSTATE_DEF_BASE		0xc0010064
- #define MSR_AMD_PERF_STATUS		0xc0010063
- #define MSR_AMD_PERF_CTL		0xc0010062
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 89ae88f91895..c59bdcb83217 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -57,6 +57,16 @@ config X86_ACPI_CPUFREQ_CPB
- 	  By enabling this option the acpi_cpufreq driver provides the old
- 	  entry in addition to the new boost ones, for compatibility reasons.
+ config ARCH_OMAP4
+@@ -32,7 +32,7 @@ config ARCH_OMAP4
+ 	select PL310_ERRATA_588369 if CACHE_L2X0
+ 	select PL310_ERRATA_727915 if CACHE_L2X0
+ 	select PM_OPP if PM
+-	select PM_RUNTIME if CPU_IDLE
++	select PM if CPU_IDLE
+ 	select ARM_ERRATA_754322
+ 	select ARM_ERRATA_775420
  
-+config X86_SFI_CPUFREQ
-+	tristate "SFI Performance-States driver"
-+	depends on X86_INTEL_MID && SFI
-+	help
-+	  This adds a CPUFreq driver for some Silvermont based Intel Atom
-+	  architectures like Z34xx and Z35xx which enumerate processor
-+	  performance states through SFI.
-+
-+	  If in doubt, say N.
-+
- config ELAN_CPUFREQ
- 	tristate "AMD Elan SC400 and SC410"
- 	depends on MELAN
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b3ca7b0b2c33..8b4220ac888b 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
- obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
- obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
-+obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
+@@ -103,7 +103,7 @@ config ARCH_OMAP2PLUS_TYPICAL
+ 	select I2C_OMAP
+ 	select MENELAUS if ARCH_OMAP2
+ 	select NEON if CPU_V7
+-	select PM_RUNTIME
++	select PM
+ 	select REGULATOR
+ 	select TWL4030_CORE if ARCH_OMAP3 || ARCH_OMAP4
+ 	select TWL4030_POWER if ARCH_OMAP3 || ARCH_OMAP4
+Index: linux-pm/arch/sh/Kconfig
+===================================================================
+--- linux-pm.orig/arch/sh/Kconfig
++++ linux-pm/arch/sh/Kconfig
+@@ -223,7 +223,7 @@ config CPU_SHX3
+ config ARCH_SHMOBILE
+ 	bool
+ 	select ARCH_SUSPEND_POSSIBLE
+-	select PM_RUNTIME
++	select PM
  
- ##################################################################################
- # ARM SoC drivers
-diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
-new file mode 100644
-index 000000000000..ffa3389e535b
---- /dev/null
-+++ b/drivers/cpufreq/sfi-cpufreq.c
-@@ -0,0 +1,136 @@
-+/*
-+ *  SFI Performance States Driver
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  Author: Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>
-+ *  Author: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sfi.h>
-+#include <linux/slab.h>
-+#include <linux/smp.h>
-+
-+#include <asm/msr.h>
-+
-+struct cpufreq_frequency_table *freq_table;
-+static struct sfi_freq_table_entry *sfi_cpufreq_array;
-+static int num_freq_table_entries;
-+
-+static int sfi_parse_freq(struct sfi_table_header *table)
-+{
-+	struct sfi_table_simple *sb;
-+	struct sfi_freq_table_entry *pentry;
-+	int totallen;
-+
-+	sb = (struct sfi_table_simple *)table;
-+	num_freq_table_entries = SFI_GET_NUM_ENTRIES(sb,
-+			struct sfi_freq_table_entry);
-+	if (num_freq_table_entries <= 1) {
-+		pr_err("No p-states discovered\n");
-+		return -ENODEV;
-+	}
-+
-+	pentry = (struct sfi_freq_table_entry *)sb->pentry;
-+	totallen = num_freq_table_entries * sizeof(*pentry);
-+
-+	sfi_cpufreq_array = kzalloc(totallen, GFP_KERNEL);
-+	if (!sfi_cpufreq_array)
-+		return -ENOMEM;
-+
-+	memcpy(sfi_cpufreq_array, pentry, totallen);
-+
-+	return 0;
-+}
-+
-+static int sfi_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	unsigned int next_perf_state = 0; /* Index into perf table */
-+	u32 lo, hi;
-+
-+	next_perf_state = policy->freq_table[index].driver_data;
-+
-+	rdmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, &lo, &hi);
-+	lo = (lo & ~INTEL_PERF_CTL_MASK) |
-+		((u32) sfi_cpufreq_array[next_perf_state].ctrl_val &
-+		INTEL_PERF_CTL_MASK);
-+	wrmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, lo, hi);
-+
-+	return 0;
-+}
-+
-+static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
-+	policy->cpuinfo.transition_latency = 100000;	/* 100us */
-+
-+	return cpufreq_table_validate_and_show(policy, freq_table);
-+}
-+
-+static struct cpufreq_driver sfi_cpufreq_driver = {
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= sfi_cpufreq_target,
-+	.init		= sfi_cpufreq_cpu_init,
-+	.name		= "sfi-cpufreq",
-+	.attr		= cpufreq_generic_attr,
-+};
-+
-+static int __init sfi_cpufreq_init(void)
-+{
-+	int ret, i;
-+
-+	/* parse the freq table from SFI */
-+	ret = sfi_table_parse(SFI_SIG_FREQ, NULL, NULL, sfi_parse_freq);
-+	if (ret)
-+		return ret;
-+
-+	freq_table = kzalloc(sizeof(*freq_table) *
-+			(num_freq_table_entries + 1), GFP_KERNEL);
-+	if (!freq_table) {
-+		ret = -ENOMEM;
-+		goto err_free_array;
-+	}
-+
-+	for (i = 0; i < num_freq_table_entries; i++) {
-+		freq_table[i].driver_data = i;
-+		freq_table[i].frequency = sfi_cpufreq_array[i].freq_mhz * 1000;
-+	}
-+	freq_table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	ret = cpufreq_register_driver(&sfi_cpufreq_driver);
-+	if (ret)
-+		goto err_free_tbl;
-+
-+	return ret;
-+
-+err_free_tbl:
-+	kfree(freq_table);
-+err_free_array:
-+	kfree(sfi_cpufreq_array);
-+	return ret;
-+}
-+late_initcall(sfi_cpufreq_init);
-+
-+static void __exit sfi_cpufreq_exit(void)
-+{
-+	cpufreq_unregister_driver(&sfi_cpufreq_driver);
-+	kfree(freq_table);
-+	kfree(sfi_cpufreq_array);
-+}
-+module_exit(sfi_cpufreq_exit);
-+
-+MODULE_AUTHOR("Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>");
-+MODULE_DESCRIPTION("SFI Performance-States Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
+ config CPU_HAS_PMU
+        depends on CPU_SH4 || CPU_SH4A
+Index: linux-pm/drivers/usb/host/isp1760-hcd.c
+===================================================================
+--- linux-pm.orig/drivers/usb/host/isp1760-hcd.c
++++ linux-pm/drivers/usb/host/isp1760-hcd.c
+@@ -1739,7 +1739,7 @@ static int isp1760_hub_status_data(struc
+ 	int retval = 1;
+ 	unsigned long flags;
+ 
+-	/* if !PM_RUNTIME, root hub timers won't get shut down ... */
++	/* if !PM, root hub timers won't get shut down ... */
+ 	if (!HC_IS_RUNNING(hcd->state))
+ 		return 0;
+ 
+Index: linux-pm/drivers/usb/host/oxu210hp-hcd.c
+===================================================================
+--- linux-pm.orig/drivers/usb/host/oxu210hp-hcd.c
++++ linux-pm/drivers/usb/host/oxu210hp-hcd.c
+@@ -3087,7 +3087,7 @@ static int oxu_hub_status_data(struct us
+ 	int ports, i, retval = 1;
+ 	unsigned long flags;
+ 
+-	/* if !PM_RUNTIME, root hub timers won't get shut down ... */
++	/* if !PM, root hub timers won't get shut down ... */
+ 	if (!HC_IS_RUNNING(hcd->state))
+ 		return 0;
+ 
+Index: linux-pm/include/linux/devfreq.h
+===================================================================
+--- linux-pm.orig/include/linux/devfreq.h
++++ linux-pm/include/linux/devfreq.h
+@@ -188,7 +188,7 @@ extern struct devfreq *devm_devfreq_add_
+ extern void devm_devfreq_remove_device(struct device *dev,
+ 				  struct devfreq *devfreq);
+ 
+-/* Supposed to be called by PM_SLEEP/PM_RUNTIME callbacks */
++/* Supposed to be called by PM callbacks */
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
+ 
+Index: linux-pm/kernel/power/Kconfig
+===================================================================
+--- linux-pm.orig/kernel/power/Kconfig
++++ linux-pm/kernel/power/Kconfig
+@@ -94,7 +94,7 @@ config PM_STD_PARTITION
+ config PM_SLEEP
+ 	def_bool y
+ 	depends on SUSPEND || HIBERNATE_CALLBACKS
+-	select PM_RUNTIME
++	select PM
+ 
+ config PM_SLEEP_SMP
+ 	def_bool y
+@@ -130,23 +130,19 @@ config PM_WAKELOCKS_GC
+ 	depends on PM_WAKELOCKS
+ 	default y
+ 
+-config PM_RUNTIME
+-	bool "Run-time PM core functionality"
++config PM
++	bool "Device power management core functionality"
+ 	---help---
+ 	  Enable functionality allowing I/O devices to be put into energy-saving
+-	  (low power) states at run time (or autosuspended) after a specified
+-	  period of inactivity and woken up in response to a hardware-generated
++	  (low power) states, for example after a specified period of inactivity
++	  (autosuspended), and woken up in response to a hardware-generated
+ 	  wake-up event or a driver's request.
+ 
+ 	  Hardware support is generally required for this functionality to work
+ 	  and the bus type drivers of the buses the devices are on are
+-	  responsible for the actual handling of the autosuspend requests and
++	  responsible for the actual handling of device suspend requests and
+ 	  wake-up events.
+ 
+-config PM
+-	def_bool y
+-	depends on PM_SLEEP || PM_RUNTIME
+-
+ config PM_DEBUG
+ 	bool "Power Management Debug Support"
+ 	depends on PM
