@@ -1,144 +1,50 @@
-From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use PWM
- FAN as a cooling device
-Date: Fri, 19 Dec 2014 17:25:58 +0100
-Message-ID: <20141219172558.6216c1cd@amdc2363>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
- <5492E46C.3080100@roeck-us.net>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH v8] cpufreq: Add SFI based cpufreq driver support
+Date: Fri, 19 Dec 2014 11:31:06 -0500
+Message-ID: <CAJvTdKmPpBr_B-1Go7Cc+cBPF3RiRx7te_9ezH09s0HXUVjN6w@mail.gmail.com>
+References: <20141218085900.GA31027@intel-desktop>
+	<CAJvTdKkpsVGoN=v8h_=4uW=MJ=THPL1C4SKAMM9MBrQM4k30FA@mail.gmail.com>
+	<20141219150832.GA21139@intel-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <5492E46C.3080100-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f41.google.com ([209.85.213.41]:53540 "EHLO
+	mail-yh0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbaLSQbH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 11:31:07 -0500
+Received: by mail-yh0-f41.google.com with SMTP id a41so547587yho.0
+        for <linux-pm@vger.kernel.org>; Fri, 19 Dec 2014 08:31:06 -0800 (PST)
+In-Reply-To: <20141219150832.GA21139@intel-desktop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com
 
-Hi Guenter,
+> * If you set the transition_latency as -1/ETERNAL, then the
+> interactive and ondemand governors will not load because
+> the following condition will be true in __cpufreq_governor
+> and thus fallback to performance.
+>
+>  if (policy->governor->max_transition_latency &&
+>             policy->cpuinfo.transition_latency >
+>             policy->governor->max_transition_latency) {
+>
+> $cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_transition_latency
+> 4294967295
+>
+> am i missing something?
 
-> On 12/18/2014 02:13 AM, Lukasz Majewski wrote:
-> > Several new properties to allow PWM fan working as a cooling device
-> > have been combined into this single commit.
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> > ---
-> >   .../devicetree/bindings/hwmon/pwm-fan.txt          | 28
-> > ++++++++++++++++++++++ 1 file changed, 28 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt index
-> > 610757c..3877810 100644 ---
-> > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt +++
-> > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt @@ -3,10
-> > +3,38 @@ Bindings for a fan connected to the PWM lines Required
-> > properties:
-> >   - compatible	: "pwm-fan"
-> >   - pwms		: the PWM that is used to control the PWM
-> > fan +- cooling-pwm-values      : PWM duty cycle values relative to
-> > +			    cooling-max-pwm-value correspondig to
-> > +			    proper cooling states
-> 
-> I don't understand what you mean with "relative to". Please elaborate.
-> Do you mean "associated with" ?
+Oops, I goofed.
+When i saw the definition of
+#define CPUFREQ_ETERNAL                 (-1)
 
-I meant that cooling-pwm-values is no greater than
-cooling-max-pwm-value (which was present in some earlier version of
-this patch and had value of 255).
+I assumed that this was a signed comparison,
+but it is UN-signed, and so you are right -- we need to
+supply a positive number under 10000 to load ondemand,
+and it must be under 500 to have no effect
+on ondemand's sample interval.
 
-This description is wrong and will be reworded.
+100 meets that criteria.
 
-> 
-> Where is "cooling-max-pwm-value" defined, 
-
-It was present in some early version of this patch.
-
-> and how is this all expected
-> to relate to the maximum duty cycle value provided by the pwm device ?
-> 
-> > +- default-pulse-width     : Property specifying default pulse
-> > width for FAN
-> > +			    at system boot (zero to disable FAN on
-> > boot).
-> > +			    Allowed range is 0 to 255
-> 
-> You'll need dt maintainer approval for the new properties.
-
-I'm wondering how this patch series will get merged. It touches three
-different subsystems (thermal, hwmon and device tree for Exynos). 
-
-For me it would be best to use thermal tree (hence Odroid U3 fan is
-supposed to work as a cooling device) with ACKs from other subsystems
-maintainers.
-
-> 
-> One thing I wonder about though is why you use "default-pulse-width"
-> and not "default-pwm". Seems to be arbitrary. I don't see
-> "pulse-width" used anywhere in the upstream kernel.
-
-Believe or not I've also considered the default-pwm name.
-
-> 
-> I am somewhat concerned that you define the new properties as
-> mandatory. That means existing configurations will fail, which does
-> not seem to be a good idea. It would be more appropriate to not
-> configure the thermal device if the new properties are not provided.
-
-Very good point. I will do that for v2.
-
-> 
-> The newly introduced semantics also conflicts with the current
-> semantics, which sets the initial duty cycle initially to the maximum
-> allowed duty cycle as reported by the pwm device itself.
-
-Ok. I will stick to above policy and then the "default-pulse-width"
-property can be removed.
-
-> 
-> Guenter
-> 
-> > +
-> > +Thorough description of the following bindings:
-> > +		cooling-min-state = <0>;
-> > +		cooling-max-state = <3>;
-> > +		#cooling-cells = <2>;
-> > +		thermal-zone {
-> > +			cpu_thermal: cpu-thermal {
-> > +			cooling-maps {
-> > +				map0 {
-> > +				     trip = <&cpu_alert1>;
-> > +				     cooling-device = <&fan0 0 1>;
-> > +				};
-> > +			};
-> > +		};
-> > +
-> > +for PWM FAN used as cooling device can be found at:
-> > +./Documentation/devicetree/bindings/thermal/thermal.txt
-> >
-> >   Example:
-> >   	pwm-fan {
-> >   		compatible = "pwm-fan";
-> >   		status = "okay";
-> >   		pwms = <&pwm 0 10000 0>;
-> > +		cooling-min-state = <0>;
-> > +		cooling-max-state = <3>;
-> > +		#cooling-cells = <2>;
-> > +		cooling-pwm-values = <0 102 170 255>;
-> > +		default-pulse-width = <0>;
-> >   	};
-> >
-> 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks,
+Len Brown, Intel Open Source Technology Center
