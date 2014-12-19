@@ -1,56 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH 2/2] iommu: rockchip: Handle system-wide and runtime PM
-Date: Fri, 19 Dec 2014 03:27:35 +0100
-Message-ID: <8712967.RZO6JKCTcJ@vostro.rjw.lan>
-References: <1418286387-9663-1-git-send-email-tfiga@chromium.org> <7hppbg7j9r.fsf@deeprootsystems.com> <1649547.QECLmuJenN@avalon>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCHv4 1/8] devfreq: event: Add new devfreq_event class to
+ provide basic data for devfreq governor
+Date: Fri, 19 Dec 2014 02:11:31 +0000 (GMT)
+Message-ID: <1107836838.16761418955089663.JavaMail.weblogic@epmlwas08d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50058 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751614AbaLSCFs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Dec 2014 21:05:48 -0500
-In-Reply-To: <1649547.QECLmuJenN@avalon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
+Cc: =?utf-8?Q?=EA=B9=80=EA=B5=AD=EC=A7=84?= <kgene.kim@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Tomasz Figa <tfiga@chromium.org>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Joerg Roedel <joro@8bytes.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Daniel Kurtz <djkurtz@chromium.org>
 
-On Thursday, December 18, 2014 11:28:58 PM Laurent Pinchart wrote:
-> Hi Kevin,
-> 
-
-[cut]
-
-> > >> 
-> > >> It would be better to be able to reference count the DMA engine from the
-> > >> bus master IMO and arguably you can use the runtime PM framework for
-> > >> that. Namely, give bus masters someting like
-> > >> 
-> > >> 	pm_runtime_get_my_DMA_engine(bus_master_device)
-> > >> 	pm_runtime_put_my_DMA_engine(bus_master_device)
-> > >> 
-> > >> and let them call these as they see fit.
-> > > 
-> > > Please note that we're not talking about DMA engines here, but about
-> > > IOMMUs. DMA is involved through the DMA mapping API which hides the IOMMU
-> > > completely from the bus master drivers, not the DMA engine API.
-> > > 
-> > > Exposing the IOMMU is something we want to avoid, but DMA mapping
-> > > start/stop operations could certainly be implemented.
-> > 
-> > The problem with that is it only solves the IOMMU problem.  We have a
-> > more generic PM dependency problem of which this IOMMU example is only a
-> > subset, so I think we need a more generic solution.
-> 
-> I agree that a more generic solution is needed at least to support ACPI _DEP, 
-> but that might not be optimal in the IOMMU use case as explained above.
-
-Well, since we need it anyway, why don't we implement it and then figure out
-if anything more specific needs to be done for the IOMMU case?
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+PiAgIA0KPiAgRGVhciBNeXVuZ2pvbywNCj4gDQo+IFRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQo+
+IA0KPiBPbiAxMi8xOC8yMDE0IDAzOjI0IFBNLCBNeXVuZ0pvbyBIYW0gd3JvdGU6DQo+ID4gSGkg
+Q2hhbndvbywNCj4gPiANCj4gPiBJIGxvdmUgdGhlIGlkZWEgYW5kIEkgbm93IGhhdmUgYSBsaXR0
+bGUgbWVjaGFuaWNhbCBpc3N1ZXMgaW4geW91ciBjb2RlLg0KPiA+IA0KPiA+PiAtLS0NCj4gPj4g
+IGRyaXZlcnMvZGV2ZnJlcS9LY29uZmlnICAgICAgICAgfCAgIDIgKw0KPiA+PiAgZHJpdmVycy9k
+ZXZmcmVxL01ha2VmaWxlICAgICAgICB8ICAgNSArLQ0KPiA+PiAgZHJpdmVycy9kZXZmcmVxL2Rl
+dmZyZXEtZXZlbnQuYyB8IDQ0OSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrDQo+ID4+ICBkcml2ZXJzL2RldmZyZXEvZXZlbnQvTWFrZWZpbGUgIHwgICAxICsNCj4gPj4g
+IGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oICAgICAgICAgfCAxNjAgKysrKysrKysrKysrKysNCj4g
+Pj4gIDUgZmlsZXMgY2hhbmdlZCwgNjE2IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4g
+Pj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS1ldmVudC5jDQo+
+ID4+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9kZXZmcmVxL2V2ZW50L01ha2VmaWxlDQo+
+ID4+DQoNCltdDQoNCj4gDQo+ID4gDQo+ID4gDQo+ID4gW3NuaXBdDQo+ID4gDQo+ID4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS1ldmVudC5jIGIvZHJpdmVycy9kZXZmcmVx
+L2RldmZyZXEtZXZlbnQuYw0KPiA+PiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+PiBpbmRleCAw
+MDAwMDAwLi4wZTE5NDhlDQo+ID4+IC0tLSAvZGV2L251bGwNCj4gPj4gKysrIGIvZHJpdmVycy9k
+ZXZmcmVxL2RldmZyZXEtZXZlbnQuYw0KPiA+PiBAQCAtMCwwICsxLDQ0OSBAQA0KPiA+PiArLyoN
+Cj4gPj4gKyAqIGRldmZyZXEtZXZlbnQ6IEdlbmVyaWMgREVWRlJFUSBFdmVudCBjbGFzcyBkcml2
+ZXINCj4gPiANCj4gPiBERVZGUkVRIGlzIGEgZ2VuZXJpYyBEVkZTIG1lY2hhbmlzbSAob3Igc3Vi
+c3lzdGVtKS4NCj4gPiANCj4gPiBQbHVzLCBJIHRob3VnaHQgZGV2ZnJlcS1ldmVudCBpcyBjb25z
+aWRlcmVkIHRvIGJlIGEgImZyYW1ld29yayINCj4gPiBmb3IgZGV2ZnJlcSBldmVudCBjbGFzcyBk
+cml2ZXJzLiBBbSBJIG1pc3Rha2VuPw0KPiANCj4gWW91J3JlIHJpZ2h0LiBqdXN0ICJjbGFzcyBk
+cml2ZXIiIGRlc2NyaXB0aW9uIGlzIG5vdCBwcm9wZXIuDQo+IEknbGwgbW9kaWZ5IHRoZSBkZXNj
+cmlwdGlvbiBvZiBkZXZmcmVxLWV2ZW50LmMgYXMgZm9sbG93aW5nOg0KPiBvciBJZiB5b3UgaGF2
+ZSBvdGhlciBvcGluaW9uLCB3b3VsZCB5b3UgcGxlYXNlIGxldCBtZSBrbm93IGFib3V0IGl0Pw0K
+PiANCj4gCWRldmZyZXEtZXZlbnQ6IERFVkZSRVEtRXZlbnQgRnJhbWV3b3JrIHRvIHByb3ZpZGUg
+cmF3IGRhdGEgb2YgTm9uLUNQVSBEZXZpY2VzLg0KDQpkZXZmcmVxLWV2ZW50OiBhIGZyYW1ld29y
+ayB0byBwcm92aWRlIHJhdyBkYXRhIGFuZCBldmVudHMgb2YgZGV2ZnJlcSBkZXZpY2VzDQoNCnNo
+b3VsZCBiZSBlbm91Z2guDQoNCg0KW10NCj4gPiBbc25pcCAvIHJldmVyc2VkIG1heWJlLi4gc29y
+cnldDQo+ID4gDQo+ID4+ICsvKioNCj4gPj4gKyAqIGRldmZyZXFfZXZlbnRfaXNfZW5hYmxlZCgp
+IC0gQ2hlY2sgd2hldGhlciBkZXZmcmVxLWV2ZW50IGRldiBpcyBlbmFibGVkIG9yDQo+ID4+ICsg
+KiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbm90Lg0KPiA+PiArICogQGVkZXYgICAgICAg
+OiB0aGUgZGV2ZnJlcS1ldmVudCBkZXZpY2UNCj4gPj4gKyAqDQo+ID4+ICsgKiBOb3RlIHRoYXQg
+dGhpcyBmdW5jdGlvbiBjaGVjayB3aGV0aGVyIGRldmZyZXEtZXZlbnQgZGV2IGlzIGVuYWJsZWQg
+b3Igbm90Lg0KPiA+PiArICogSWYgcmV0dXJuIHRydWUsIHRoZSBkZXZmcmVxLWV2ZW50IGRldiBp
+cyBlbmFiZWxkLiBJZiByZXR1cm4gZmFsc2UsIHRoZQ0KPiA+PiArICogZGV2ZnJlcS1ldmVudCBk
+ZXYgaXMgZGlzYWJsZWQuDQo+ID4+ICsgKi8NCj4gPj4gK2Jvb2wgZGV2ZnJlcV9ldmVudF9pc19l
+bmFibGVkKHN0cnVjdCBkZXZmcmVxX2V2ZW50X2RldiAqZWRldikNCj4gPj4gK3sNCj4gPj4gKyAg
+ICAgICBib29sIGVuYWJsZWQgPSBmYWxzZTsNCj4gPj4gKw0KPiA+PiArICAgICAgIGlmICghZWRl
+diB8fCAhZWRldi0+ZGVzYykNCj4gPj4gKyAgICAgICAgICAgICAgIHJldHVybiBlbmFibGVkOw0K
+PiA+PiArDQo+ID4+ICsgICAgICAgbXV0ZXhfbG9jaygmZWRldi0+bG9jayk7DQo+ID4+ICsNCj4g
+Pj4gKyAgICAgICBpZiAoZWRldi0+ZW5hYmxlX2NvdW50ID4gMCkNCj4gPj4gKyAgICAgICAgICAg
+ICAgIGVuYWJsZWQgPSB0cnVlOw0KPiA+PiArDQo+ID4+ICsgICAgICAgaWYgKGVkZXYtPmRlc2Mt
+Pm9wcyAmJiBlZGV2LT5kZXNjLT5vcHMtPmlzX2VuYWJsZWQpDQo+ID4+ICsgICAgICAgICAgICAg
+ICBlbmFibGVkIHw9IGVkZXYtPmRlc2MtPm9wcy0+aXNfZW5hYmxlZChlZGV2KTsNCj4gPiANCj4g
+PiBXaGF0IGRvZXMgaXQgbWVhbiB3aGVuIGVuYWJsZWRfY291bnQgPiAwIGFuZCBvcHMtPmlzX2Vu
+YWJsZWQoKSBpcyBmYWxzZT8gb3IuLg0KPiA+IFdoYXQgZG9lcyBpdCBtZWFuIHdoZW4gZW5hYmxl
+ZF9jb3VudCA9IDAgYW5kIG9wcy0+aXNfZW5hYmxlZCgpIGlzIHRydWU/DQo+ID4gDQo+ID4gSWYg
+eW91IGRvIGVuYWJsZV9jb3VudCBpbiB0aGUgc3Vic3lzdGVtLCB3aHkgd291bGQgd2UgcmVseSBv
+bg0KPiA+IG9wcy0+aXNfZW5hYmxlZCgpPyBBcmUgeW91IGFzc3VtaW5nIHRoYXQgYSBkZXZpY2Ug
+TUFZIHR1cm4gaXRzZWxmIG9mZg0KPiA+IHdpdGhvdXQgYW55IGtlcm5lbCBjb250cm9sIChvcHMt
+PmRpc2FibGUoKSkgYW5kIGl0IGlzIHN0aWxsIGEgY29ycmVjdA0KPiA+IGJlaGFiaW9yPw0KPiAN
+Cj4gWW91J3JlIHJpZ2h0LiBkZXZmcmVxX2V2ZW50X2lzX2VuYWJsZWQoKSBoYXMgYW1iaWd1b3Vz
+IG9wZXJhdGlvbiBhY2NvcmRpbmcgdG8geW91ciBjb21tZW50Lg0KPiANCj4gSSdsbCBvbmx5IGNv
+bnRyb2wgdGhlIGVuYWJsZV9jb3VudCBpbiB0aGUgc3Vic3lzdGVtIHdpdGhvdXQgb3BzLT5pc19l
+bmFibGVkKCkNCj4gYW5kIHRoZW4gcmVtb3ZlIHRoZSBpc19lbmFibGVkIGZ1bmN0aW9uIGluIHRo
+ZSBzdHJ1Y3RyZSBkZXZmcmVxX2V2ZW50X29wcy4NCj4gDQo+IEJlc3QgUmVnYXJkcywNCj4gQ2hh
+bndvbyBDaG9pDQo+IA0KDQpbT2ZmLVRvcGljXQ0KDQpUaGUgbmFtZSBvZiBkZXZmcmVxLWV2ZW50
+IG1heSBsb29rIHF1aXRlIGludGVyc2VjdGluZyB3aXRoIGlycS1kcml2ZW4gZ292ZXJub3JzLA0K
+d2hpY2ggYXJlIGJlaW5nIHByb3Bvc2VkIHRoZXNlIGRheXMuDQoNCkFsdGhvdWdoIHRoZXkgbWF5
+IGxvb2sgaW50ZXJzZWN0aW5nLCB3ZSBjYW4gaGF2ZSB0aGVtIGluZGVwZW5kZW50bHk7DQp0aGlz
+IGFzIGEgc3ViLWNsYXNzIGFuZCB0aGF0IGFzIGEgZ292ZXJub3IuIEFuZCB3ZSBjYW4gY29uc2lk
+ZXIgdG8NCnByb3ZpZGUgYSBjb21tb24gaW5mcmFzdHJ1Y3R1cmUgZm9yIGlycS1kcml2ZW4gbWVj
+aGFuaXNtcyBpbiBkZXZmcmVxIG9yDQpkZXZmcmVxLWV2ZW50IHdoZW4gd2UgaXJxLWRyaXZlbiBE
+VkZTIGJlY29tZSBtb3JlIGdlbmVyYWwsIHdoaWNoIEkNCmV4cGVjdCBpbiAyIH4gMyB5ZWFycy4N
+Cg0KU28gZm9yIG5vdywgYm90aCBjYW4gZ28gaW5kZXBlbmRlbnRseS4NCg0KDQpDaGVlcnMhDQpN
+eXVuZ0pvbw0K
