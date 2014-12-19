@@ -1,77 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Enable runtime PM automatically?
-Date: Fri, 19 Dec 2014 08:59:53 +0100
-Message-ID: <CAMuHMdWmy82=cnoSVD3gdEu=5Ttr1j-PJv6EXKYwbR3o_FEDiA@mail.gmail.com>
-References: <CAMuHMdWY_ne+S3zKrEYqVyU8=S-at=+rGuEkYNauF4s2KaKNdw@mail.gmail.com>
-	<7hppbg63zo.fsf@deeprootsystems.com>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH 4/4] PM: Eliminate CONFIG_PM_RUNTIME
+Date: Fri, 19 Dec 2014 09:13:29 +0100
+Message-ID: <CAMuHMdUn3KSTdh4nFL=G54SM7NWpQsmeg1GYYRz=+uXH9rbEGg@mail.gmail.com>
+References: <472992175.g1ArEYGFPo@vostro.rjw.lan>
+	<2635409.SWsBMlb9s4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7hppbg63zo.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <2635409.SWsBMlb9s4-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Christian Daudt <bcm-xK7y4jjYLqYh9ZMKESR00Q@public.gmane.org>, Matt Porter <mporter-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, linux-ar
 List-Id: linux-pm@vger.kernel.org
 
-Hi Kevin,
+On Fri, Dec 19, 2014 at 3:03 AM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+> --- linux-pm.orig/arch/mips/configs/lemote2f_defconfig
+> +++ linux-pm/arch/mips/configs/lemote2f_defconfig
+> @@ -37,7 +37,7 @@ CONFIG_MIPS32_N32=y
+>  CONFIG_PM=y
+  ^^^^^^^^^^^
+>  CONFIG_HIBERNATION=y
+>  CONFIG_PM_STD_PARTITION="/dev/hda3"
+> -CONFIG_PM_RUNTIME=y
+> +CONFIG_PM=y
+   ^^^^^^^^^^^
+Now we have two of them
 
-Thanks for your comments!
+>  CONFIG_CPU_FREQ=y
+>  CONFIG_CPU_FREQ_DEBUG=y
+>  CONFIG_CPU_FREQ_STAT=m
 
-On Thu, Dec 18, 2014 at 10:29 PM, Kevin Hilman <khilman@kernel.org> wrote:
->> However, if PM domains are active, drivers must be runtime PM-aware for the
->> gpd_dev_ops.start() method to be called in the first place (perhaps this is just
->> one bug that's easy to fix --- the device is "assumed suspended", but can be
->> used). They must
->>   1. call pm_runtime_enable() to enable runtime PM for the device,
->>   2. call pm_runtime_get_sync() to prevent the device from being put in a
->>     low-power state at any time. This second call has the
->> "side-effect" of calling
->>     gpd_dev_ops.start().
->>
->> Hence, if PM domains are enabled, wouldn't it make sense to
->>   1. enable runtime PM by default, for all devices (bound and unbound),
->>   2. call pm_runtime_get_sync(), for all devices bound to a driver.
->> Of course we have to keep track if drivers call any of the pm_runtime_*()
->> methods theirselves, as that would have to move them from automatic to
->> manual mode.
->>
->> Would this be feasible?
->
-> We have to be careful about where the PM core's _get_sync() call goes.
->
-> Because you're talking about "bound" devices, I guess you mean after the
-> driver probes?  Otherwise, it gets tricky if the _get_sync() is before
-> the driver probes, because the device driver may have work it wants to
-> do in its runtime PM callbacks, which are not initialized/available
-> before the driver probes.  Doing this before probe also makes it rather
-> difficult to know for sure the actual physical state of the device, and
-> make sure it matches the runtime PM state of the device.  Rafael
-> mentioned this also, and I'm not sure how we can be sure of the physical
-> state.
-
-Yes, it's complicated by the fact that there are multiple sets of callbacks
-(PM domain, device type, class type, bus type, driver).
-However, the PM domain one has the highest priority, and is always
-(also for devices not bound to a driver) available.
-
-> Some thoughts: devices without drivers would be runtime resumed by the
-> core, but will never be suspended, so the PM domain will never shut
-> down.  I guess the core will have to keep track of the devices it
-> automatically runtime resumed and decide to runtime suspend them too?
-> Hmm, where would that go?
-
-No, devices without a driver just need to become runtime PM enabled.
-They will only be resumed when a dependent device (e.g. a child) is resumed,
-and are suspended again after all dependents are suspended. That's how
-simple-pm-bus behaves.
+Other defconfig files may be affected, too.
 
 Gr{oetje,eeting}s,
 
                         Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
                                 -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
