@@ -1,8 +1,8 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH V3 10/11] power: charger-manager: Support different polling
- mode for sleep state.
-Date: Fri, 19 Dec 2014 17:55:22 +0900
-Message-ID: <1418979323-7188-11-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH V3 07/11] power: charger-manager: Get external power souce
+ information only from EXTCON.
+Date: Fri, 19 Dec 2014 17:55:19 +0900
+Message-ID: <1418979323-7188-8-git-send-email-jonghwa3.lee@samsung.com>
 References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
@@ -11,90 +11,69 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add additional polling mode for sleep state to define different mode with
-normal state. With this change, charger-manager can work differently in
-normal state or sleep state. e.g, polling aways for normal and polling
-only when charing for sleep. If there is no defined polling mode for
-sleep state it just follows the normal state's.
-In addition to, polling rate is still same in sleep.
+When charger-manager checks whether external power source is available,
+it gets information from charger IC driver. However, it's not correct source,
+charger IC doesn't have responsibilty to give cable connection status.
+The charger-manager already gets cable information from EXTCON susbsystem,
+so it can re-use it.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c       |   20 +++++++++++++++++---
- include/linux/power/charger-manager.h |    9 ++++++---
- 2 files changed, 23 insertions(+), 6 deletions(-)
+ drivers/power/charger-manager.c |   34 ++++++++++++++--------------------
+ 1 file changed, 14 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 4f8b0e6..f5787bc 100644
+index d29155d..dc15436 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -291,7 +291,15 @@ static bool is_full_charged(struct charger_manager *cm)
+@@ -115,34 +115,28 @@ static bool is_batt_present(struct charger_manager *cm)
+  * is_ext_pwr_online - See if an external power source is attached to charge
+  * @cm: the Charger Manager representing the battery.
+  *
+- * Returns true if at least one of the chargers of the battery has an external
+- * power source attached to charge the battery regardless of whether it is
+- * actually charging or not.
++ * Returns true if there is external power source.
++ * Cable connection information is only obtained by EXTCON class notification.
   */
- static bool is_polling_required(struct charger_manager *cm)
+ static bool is_ext_pwr_online(struct charger_manager *cm)
  {
--	switch (cm->desc->polling_mode) {
-+	enum polling_modes polling_mode;
-+
-+	if (cm_suspended
-+		&& cm->desc->poll_mode_sleep >= 0)
-+		polling_mode = cm->desc->poll_mode_sleep;
-+	else
-+		polling_mode = cm->desc->poll_mode_normal;
-+
-+	switch (polling_mode) {
- 	case CM_POLL_DISABLE:
- 		return false;
- 	case CM_POLL_ALWAYS:
-@@ -302,7 +310,7 @@ static bool is_polling_required(struct charger_manager *cm)
- 		return is_charging(cm);
- 	default:
- 		dev_warn(cm->dev, "Incorrect polling_mode (%d)\n",
--			 cm->desc->polling_mode);
-+			 polling_mode);
+-	union power_supply_propval val;
+-	struct power_supply *psy;
+-	bool online = false;
+-	int i, ret;
+ 
+-	/* If at least one of them has one, it's yes. */
+-	for (i = 0; cm->desc->psy_charger_stat[i]; i++) {
+-		psy = power_supply_get_by_name(cm->desc->psy_charger_stat[i]);
+-		if (!psy) {
+-			dev_err(cm->dev, "Cannot find power supply \"%s\"\n",
+-					cm->desc->psy_charger_stat[i]);
+-			continue;
+-		}
++	struct charger_desc *desc = cm->desc;
++	struct charger_regulator *regulators = desc->charger_regulators;
++	struct charger_cable *cables;
++	int i, j, num_cables;
+ 
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
+-		if (ret == 0 && val.intval) {
+-			online = true;
+-			break;
++	/* If at least one of them has one, it's yes. */
++	for (i = 0; i < desc->num_charger_regulators; i++) {
++		cables = regulators[i].cables;
++		num_cables = regulators[i].num_cables;
++		for (j = 0; j < num_cables; j++) {
++			if (cables[j].attached)
++				return true;
+ 		}
  	}
  
- 	return false;
-@@ -1158,7 +1166,13 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
- 	of_property_read_string(np, "cm-name", &desc->psy_name);
+-	return online;
++	return false;
+ }
  
- 	of_property_read_u32(np, "cm-poll-mode", &poll_mode);
--	desc->polling_mode = poll_mode;
-+	desc->poll_mode_normal = poll_mode;
-+
-+	/* Polling mode in sleep state */
-+	if (!of_property_read_u32(np, "cm-poll-mode-sleep", &poll_mode))
-+		desc->poll_mode_sleep = poll_mode;
-+	else
-+		desc->poll_mode_sleep = -EINVAL;
- 
- 	of_property_read_u32(np, "cm-poll-interval",
- 				&desc->polling_interval_ms);
-diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
-index 37fb181..a30a0b6 100644
---- a/include/linux/power/charger-manager.h
-+++ b/include/linux/power/charger-manager.h
-@@ -131,8 +131,10 @@ struct charger_regulator {
  /**
-  * struct charger_desc
-  * @psy_name: the name of power-supply-class for charger manager
-- * @polling_mode:
-- *	Determine which polling mode will be used
-+ * @poll_mode_normal:
-+ *	Determine which polling mode will be used in normal state.
-+ * @poll_mode_sleep:
-+ *	Determine which polling mode will be used in sleep state.
-  * @fullbatt_vchkdrop_uV:
-  *	Check voltage drop after the battery is fully charged.
-  *	If it has dropped more than fullbatt_vchkdrop_uV
-@@ -170,7 +172,8 @@ struct charger_regulator {
- struct charger_desc {
- 	const char *psy_name;
- 
--	enum polling_modes polling_mode;
-+	enum polling_modes poll_mode_normal;
-+	enum polling_modes poll_mode_sleep;
- 	unsigned int polling_interval_ms;
- 
- 	unsigned int fullbatt_vchkdrop_uV;
 -- 
 1.7.9.5
