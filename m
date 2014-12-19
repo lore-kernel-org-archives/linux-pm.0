@@ -1,97 +1,61 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH V3 06/11] power: charger-manager: Concentrate scattered
- power_supply_changed() calls.
-Date: Fri, 19 Dec 2014 17:55:18 +0900
-Message-ID: <1418979323-7188-7-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH V3 09/11] power: charger-manager: Not to start charging
+ directly in cable nofitication.
+Date: Fri, 19 Dec 2014 17:55:21 +0900
+Message-ID: <1418979323-7188-10-git-send-email-jonghwa3.lee@samsung.com>
 References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:54612 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbaLSIze (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 03:55:34 -0500
 In-reply-to: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-Current charger-manager calls power_suuply_changed() whenever charging
-status is changed. This patch removes seperated power_supply_changed()
-use and let it be called at end of try_charger_enable() function which
-is called to set charging/discharging.
+This patch prevents direct charging control in cable notification.
+It sets only input current limit according to cable type and yields charging
+control to be done by cm_monitor() where charging management proceeds.
+It may loose few ms to enable charging compared to before, even though it's
+more important that charging is enabled always in safe context.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c |   18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/power/charger-manager.c |   12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 7bbaef6..d29155d 100644
+index 44cc19a..4f8b0e6 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -382,8 +382,10 @@ static int try_charger_enable(struct charger_manager *cm, bool enable)
- 		}
+@@ -849,7 +849,8 @@ static void charger_extcon_work(struct work_struct *work)
+ 			cable->min_uA, cable->max_uA);
  	}
  
--	if (!err)
-+	if (!err) {
- 		cm->charger_enabled = enable;
-+		power_supply_changed(&cm->charger_psy);
-+	}
- 
- 	return err;
- }
-@@ -436,10 +438,8 @@ static void fullbatt_vchk(struct charger_manager *cm)
- 
- 	dev_info(cm->dev, "VBATT dropped %duV after full-batt\n", diff);
- 
--	if (diff > desc->fullbatt_vchkdrop_uV) {
-+	if (diff > desc->fullbatt_vchkdrop_uV)
- 		try_charger_restart(cm);
--		power_supply_changed(&cm->charger_psy);
--	}
+-	try_charger_enable(cable->cm, cable->attached);
++	cancel_delayed_work(&cm_monitor_work);
++	queue_delayed_work(cm_wq, &cm_monitor_work, 0);
  }
  
  /**
-@@ -469,7 +469,6 @@ static int check_charging_duration(struct charger_manager *cm)
- 		if (duration > desc->charging_max_duration_ms) {
- 			dev_info(cm->dev, "Charging duration exceed %ums\n",
- 				 desc->charging_max_duration_ms);
--			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, false);
- 			ret = true;
- 		}
-@@ -480,7 +479,6 @@ static int check_charging_duration(struct charger_manager *cm)
- 				is_ext_pwr_online(cm)) {
- 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
- 				 desc->discharging_max_duration_ms);
--			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, true);
- 			ret = true;
- 		}
-@@ -561,8 +559,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	 */
- 	if (temp_alrt) {
- 		cm->emergency_stop = temp_alrt;
--		if (!try_charger_enable(cm, false))
--			power_supply_changed(&cm->charger_psy);
-+		try_charger_enable(cm, false);
+@@ -873,15 +874,6 @@ static int charger_extcon_notifier(struct notifier_block *self,
+ 	cable->attached = event;
  
  	/*
- 	 * Check whole charging duration and discharing duration
-@@ -587,16 +584,13 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
- 			cm->charger_enabled) {
- 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--		power_supply_changed(&cm->charger_psy);
+-	 * Setup monitoring to check battery state
+-	 * when charger cable is attached.
+-	 */
+-	if (cable->attached && is_polling_required(cable->cm)) {
+-		cancel_work_sync(&setup_polling);
+-		schedule_work(&setup_polling);
+-	}
 -
- 		try_charger_enable(cm, false);
- 
- 		fullbatt_vchk(cm);
- 	} else {
- 		cm->emergency_stop = 0;
- 		if (is_ext_pwr_online(cm)) {
--			if (!try_charger_enable(cm, true))
--				power_supply_changed(&cm->charger_psy);
-+			try_charger_enable(cm, true);
- 		}
- 	}
- 
+-	/*
+ 	 * Setup work for controlling charger(regulator)
+ 	 * according to charger cable.
+ 	 */
 -- 
 1.7.9.5
+
