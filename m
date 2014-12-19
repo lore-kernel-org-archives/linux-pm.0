@@ -1,8 +1,8 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH RESEND v2 02/10] power: charger-manager: Use
- power_supply_changed() not private uevent.
-Date: Fri, 19 Dec 2014 11:47:22 +0900
-Message-ID: <1418957250-6542-3-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH RESEND v2 01/10] power: charger-manager: Use thermal subsystem
+ interface only to get temperature.
+Date: Fri, 19 Dec 2014 11:47:21 +0900
+Message-ID: <1418957250-6542-2-git-send-email-jonghwa3.lee@samsung.com>
 References: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1418957250-6542-1-git-send-email-jonghwa3.lee@samsung.com>
@@ -11,201 +11,229 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Whenever battery status is changed, charger manager tries to trigger uevent
-through private interface. This patch modifies it to use power_supply_changed()
-since it belongs to power supply subsystem.
+It drops the way of using power_supply interface to reference battery's
+temperature. Then it tries to use thermal subsystem's only. This makes driver
+more simple and also can remove ifdeferies.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c |   91 +++++----------------------------------
- 1 file changed, 11 insertions(+), 80 deletions(-)
+ drivers/power/Kconfig                 |    1 +
+ drivers/power/charger-manager.c       |  113 ++++++++-------------------------
+ include/linux/power/charger-manager.h |    3 +-
+ 3 files changed, 28 insertions(+), 89 deletions(-)
 
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 8ff2511..115d153 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -317,6 +317,7 @@ config CHARGER_MANAGER
+ 	bool "Battery charger manager for multiple chargers"
+ 	depends on REGULATOR
+ 	select EXTCON
++	select THERMAL
+ 	help
+           Say Y to enable charger-manager support, which allows multiple
+           chargers attached to a battery and multiple batteries attached to a
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index b4b101c..33a1a4d 100644
+index 22246b9..b4b101c 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -28,18 +28,6 @@
+@@ -28,13 +28,6 @@
  #include <linux/of.h>
  #include <linux/thermal.h>
  
--static const char * const default_event_names[] = {
--	[CM_EVENT_UNKNOWN] = "Unknown",
--	[CM_EVENT_BATT_FULL] = "Battery Full",
--	[CM_EVENT_BATT_IN] = "Battery Inserted",
--	[CM_EVENT_BATT_OUT] = "Battery Pulled Out",
--	[CM_EVENT_BATT_OVERHEAT] = "Battery Overheat",
--	[CM_EVENT_BATT_COLD] = "Battery Cold",
--	[CM_EVENT_EXT_PWR_IN_OUT] = "External Power Attach/Detach",
--	[CM_EVENT_CHG_START_STOP] = "Charging Start/Stop",
--	[CM_EVENT_OTHERS] = "Other battery events"
--};
+-/*
+- * Default termperature threshold for charging.
+- * Every temperature units are in tenth of centigrade.
+- */
+-#define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
+-#define CM_DEFAULT_CHARGE_TEMP_MAX	500
 -
- /*
-  * Regard CM_JIFFIES_SMALL jiffies is small enough to ignore for
-  * delayed works so that we can run delayed works with CM_JIFFIES_SMALL
-@@ -56,8 +44,6 @@ static const char * const default_event_names[] = {
-  */
- #define CM_RTC_SMALL		(2)
- 
--#define UEVENT_BUF_SIZE		32
--
- static LIST_HEAD(cm_list);
- static DEFINE_MUTEX(cm_list_mtx);
- 
-@@ -423,61 +409,6 @@ static int try_charger_restart(struct charger_manager *cm)
+ static const char * const default_event_names[] = {
+ 	[CM_EVENT_UNKNOWN] = "Unknown",
+ 	[CM_EVENT_BATT_FULL] = "Battery Full",
+@@ -572,40 +565,18 @@ static int check_charging_duration(struct charger_manager *cm)
+ 	return ret;
  }
  
- /**
-- * uevent_notify - Let users know something has changed.
-- * @cm: the Charger Manager representing the battery.
-- * @event: the event string.
-- *
-- * If @event is null, it implies that uevent_notify is called
-- * by resume function. When called in the resume function, cm_suspended
-- * should be already reset to false in order to let uevent_notify
-- * notify the recent event during the suspend to users. While
-- * suspended, uevent_notify does not notify users, but tracks
-- * events so that uevent_notify can notify users later after resumed.
-- */
--static void uevent_notify(struct charger_manager *cm, const char *event)
+-static int cm_get_battery_temperature_by_psy(struct charger_manager *cm,
+-					int *temp)
 -{
--	static char env_str[UEVENT_BUF_SIZE + 1] = "";
--	static char env_str_save[UEVENT_BUF_SIZE + 1] = "";
+-	struct power_supply *fuel_gauge;
 -
--	if (cm_suspended) {
--		/* Nothing in suspended-event buffer */
--		if (env_str_save[0] == 0) {
--			if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--				return; /* status not changed */
--			strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--			return;
--		}
+-	fuel_gauge = power_supply_get_by_name(cm->desc->psy_fuel_gauge);
+-	if (!fuel_gauge)
+-		return -ENODEV;
 -
--		if (!strncmp(env_str_save, event, UEVENT_BUF_SIZE))
--			return; /* Duplicated. */
--		strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--		return;
--	}
--
--	if (event == NULL) {
--		/* No messages pending */
--		if (!env_str_save[0])
--			return;
--
--		strncpy(env_str, env_str_save, UEVENT_BUF_SIZE);
--		kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--		env_str_save[0] = 0;
--
--		return;
--	}
--
--	/* status not changed */
--	if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--		return;
--
--	/* save the status and notify the update */
--	strncpy(env_str, event, UEVENT_BUF_SIZE);
--	kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--
--	dev_info(cm->dev, "%s\n", event);
+-	return fuel_gauge->get_property(fuel_gauge,
+-				POWER_SUPPLY_PROP_TEMP,
+-				(union power_supply_propval *)temp);
 -}
 -
--/**
-  * fullbatt_vchk - Check voltage drop some times after "FULL" event.
-  * @work: the work_struct appointing the function
-  *
-@@ -514,7 +445,7 @@ static void fullbatt_vchk(struct work_struct *work)
+ static int cm_get_battery_temperature(struct charger_manager *cm,
+ 					int *temp)
+ {
+ 	int ret;
  
- 	if (diff > desc->fullbatt_vchkdrop_uV) {
- 		try_charger_restart(cm);
--		uevent_notify(cm, "Recharging");
-+		power_supply_changed(&cm->charger_psy);
- 	}
+-	if (!cm->desc->measure_battery_temp)
++	if (!cm->tzd_batt)
+ 		return -ENODEV;
+ 
+-#ifdef CONFIG_THERMAL
+-	if (cm->tzd_batt) {
+-		ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
+-		if (!ret)
+-			/* Calibrate temperature unit */
+-			*temp /= 100;
+-	} else
+-#endif
+-	{
+-		/* if-else continued from CONFIG_THERMAL */
+-		ret = cm_get_battery_temperature_by_psy(cm, temp);
+-	}
++	ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
++	if (!ret)
++		/* Calibrate temperature unit */
++		*temp /= 100;
+ 
+ 	return ret;
  }
+@@ -623,7 +594,7 @@ static int cm_check_thermal_status(struct charger_manager *cm)
+ 		 * occur hazadous result. We have to handle it
+ 		 * depending on battery type.
+ 		 */
+-		dev_err(cm->dev, "Failed to get battery temperature\n");
++		dev_dbg(cm->dev, "Failed to get battery temperature\n");
+ 		return 0;
+ 	}
  
-@@ -545,7 +476,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 		if (duration > desc->charging_max_duration_ms) {
- 			dev_info(cm->dev, "Charging duration exceed %ums\n",
- 				 desc->charging_max_duration_ms);
--			uevent_notify(cm, "Discharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, false);
- 			ret = true;
- 		}
-@@ -556,7 +487,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 				is_ext_pwr_online(cm)) {
- 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
- 				 desc->discharging_max_duration_ms);
--			uevent_notify(cm, "Recharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, true);
- 			ret = true;
- 		}
-@@ -638,7 +569,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	if (temp_alrt) {
- 		cm->emergency_stop = temp_alrt;
- 		if (!try_charger_enable(cm, false))
--			uevent_notify(cm, default_event_names[temp_alrt]);
-+			power_supply_changed(&cm->charger_psy);
- 
+@@ -1007,12 +978,11 @@ static enum power_supply_property default_charger_props[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_TEMP,
  	/*
- 	 * Check whole charging duration and discharing duration
-@@ -663,7 +594,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
- 			cm->charger_enabled) {
- 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+		power_supply_changed(&cm->charger_psy);
+ 	 * Optional properties are:
+ 	 * POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	 * POWER_SUPPLY_PROP_CURRENT_NOW,
+-	 * POWER_SUPPLY_PROP_TEMP, and
+-	 * POWER_SUPPLY_PROP_TEMP_AMBIENT,
+ 	 */
+ };
  
- 		try_charger_enable(cm, false);
+@@ -1417,49 +1387,6 @@ err:
+ 	return ret;
+ }
  
-@@ -672,7 +603,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 		cm->emergency_stop = 0;
- 		if (is_ext_pwr_online(cm)) {
- 			if (!try_charger_enable(cm, true))
--				uevent_notify(cm, "CHARGING");
-+				power_supply_changed(&cm->charger_psy);
- 		}
+-static int cm_init_thermal_data(struct charger_manager *cm,
+-		struct power_supply *fuel_gauge)
+-{
+-	struct charger_desc *desc = cm->desc;
+-	union power_supply_propval val;
+-	int ret;
+-
+-	/* Verify whether fuel gauge provides battery temperature */
+-	ret = fuel_gauge->get_property(fuel_gauge,
+-					POWER_SUPPLY_PROP_TEMP, &val);
+-
+-	if (!ret) {
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_TEMP;
+-		cm->charger_psy.num_properties++;
+-		cm->desc->measure_battery_temp = true;
+-	}
+-#ifdef CONFIG_THERMAL
+-	if (ret && desc->thermal_zone) {
+-		cm->tzd_batt =
+-			thermal_zone_get_zone_by_name(desc->thermal_zone);
+-		if (IS_ERR(cm->tzd_batt))
+-			return PTR_ERR(cm->tzd_batt);
+-
+-		/* Use external thermometer */
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_TEMP_AMBIENT;
+-		cm->charger_psy.num_properties++;
+-		cm->desc->measure_battery_temp = true;
+-		ret = 0;
+-	}
+-#endif
+-	if (cm->desc->measure_battery_temp) {
+-		/* NOTICE : Default allowable minimum charge temperature is 0 */
+-		if (!desc->temp_max)
+-			desc->temp_max = CM_DEFAULT_CHARGE_TEMP_MAX;
+-		if (!desc->temp_diff)
+-			desc->temp_diff = CM_DEFAULT_RECHARGE_TEMP_DIFF;
+-	}
+-
+-	return ret;
+-}
+-
+ static struct of_device_id charger_manager_match[] = {
+ 	{
+ 		.compatible = "charger-manager",
+@@ -1474,6 +1401,7 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
+ 	u32 poll_mode = CM_POLL_DISABLE;
+ 	u32 battery_stat = CM_NO_BATTERY;
+ 	int num_chgs = 0;
++	bool monitor_temp = false;
+ 
+ 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+ 	if (!desc)
+@@ -1517,14 +1445,16 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
+ 
+ 	of_property_read_string(np, "cm-fuel-gauge", &desc->psy_fuel_gauge);
+ 
+-	of_property_read_string(np, "cm-thermal-zone", &desc->thermal_zone);
+-
+-	of_property_read_u32(np, "cm-battery-cold", &desc->temp_min);
+-	if (of_get_property(np, "cm-battery-cold-in-minus", NULL))
+-		desc->temp_min *= -1;
+-	of_property_read_u32(np, "cm-battery-hot", &desc->temp_max);
++	if (!of_property_read_u32(np, "cm-battery-cold", &desc->temp_min))
++		monitor_temp = true;
++	if (!of_property_read_u32(np, "cm-battery-hot", &desc->temp_max))
++		monitor_temp = true;
+ 	of_property_read_u32(np, "cm-battery-temp-diff", &desc->temp_diff);
+ 
++	if (monitor_temp && of_property_read_string(np,
++				"cm-thermal-zone", &desc->thermal_zone))
++		desc->thermal_zone = desc->psy_fuel_gauge;
++
+ 	of_property_read_u32(np, "cm-charging-max",
+ 				&desc->charging_max_duration_ms);
+ 	of_property_read_u32(np, "cm-discharging-max",
+@@ -1733,7 +1663,16 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 		cm->charger_psy.num_properties++;
  	}
  
-@@ -793,7 +724,7 @@ static void fullbatt_handler(struct charger_manager *cm)
+-	ret = cm_init_thermal_data(cm, fuel_gauge);
++	if (desc->thermal_zone) {
++		cm->tzd_batt =
++			thermal_zone_get_zone_by_name(desc->thermal_zone);
++		if (!cm->tzd_batt) {
++			pr_err("Failed to get thermal zone (%s).\n",
++				desc->thermal_zone);
++			return -ENODEV;
++		}
++	}
++
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to initialize thermal data\n");
+ 		cm->desc->measure_battery_temp = false;
+diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+index 416ebeb..29d9b19 100644
+--- a/include/linux/power/charger-manager.h
++++ b/include/linux/power/charger-manager.h
+@@ -231,9 +231,8 @@ struct charger_manager {
+ 	struct device *dev;
+ 	struct charger_desc *desc;
  
- out:
- 	dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--	uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+	power_supply_changed(&cm->charger_psy);
- }
+-#ifdef CONFIG_THERMAL
+ 	struct thermal_zone_device *tzd_batt;
+-#endif
++
+ 	bool charger_enabled;
  
- /**
-@@ -807,9 +738,9 @@ static void battout_handler(struct charger_manager *cm)
- 
- 	if (!is_batt_present(cm)) {
- 		dev_emerg(cm->dev, "Battery Pulled Out!\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_OUT]);
-+		power_supply_changed(&cm->charger_psy);
- 	} else {
--		uevent_notify(cm, "Battery Reinserted?");
-+		power_supply_changed(&cm->charger_psy);
- 	}
- }
- 
-@@ -826,7 +757,7 @@ static void misc_event_handler(struct charger_manager *cm,
- 
- 	if (is_polling_required(cm) && cm->desc->polling_interval_ms)
- 		schedule_work(&setup_polling);
--	uevent_notify(cm, default_event_names[type]);
-+	power_supply_changed(&cm->charger_psy);
- }
- 
- static int charger_get_property(struct power_supply *psy,
-@@ -1988,7 +1919,7 @@ void cm_notify_event(struct power_supply *psy, enum cm_event_types type,
- 		break;
- 	case CM_EVENT_UNKNOWN:
- 	case CM_EVENT_OTHERS:
--		uevent_notify(cm, msg ? msg : default_event_names[type]);
-+		power_supply_changed(&cm->charger_psy);
- 		break;
- 	default:
- 		dev_err(cm->dev, "%s: type not specified\n", __func__);
+ 	unsigned long fullbatt_vchk_jiffies_at;
 -- 
 1.7.9.5
