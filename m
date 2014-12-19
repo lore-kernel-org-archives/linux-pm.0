@@ -1,45 +1,77 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH RESEND v2 03/10] power: charger-manager: Remove deprecated
- function, cm_notify_event().
-Date: Fri, 19 Dec 2014 07:52:04 +0000 (GMT)
-Message-ID: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
-Reply-To: myungjoo.ham@samsung.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Enable runtime PM automatically?
+Date: Fri, 19 Dec 2014 08:59:53 +0100
+Message-ID: <CAMuHMdWmy82=cnoSVD3gdEu=5Ttr1j-PJv6EXKYwbR3o_FEDiA@mail.gmail.com>
+References: <CAMuHMdWY_ne+S3zKrEYqVyU8=S-at=+rGuEkYNauF4s2KaKNdw@mail.gmail.com>
+	<7hppbg63zo.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:40479 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbaLSHwI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 02:52:08 -0500
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NGT00FOMKITJLB0@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 19 Dec 2014 16:52:05 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7hppbg63zo.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?=EC=9D=B4=EC=A2=85=ED=99=94?= <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
 
-PiAgIA0KPiAgY21fbm90aWZ5X2V2ZW50KCkgaXMgaW50cm9kdWNlZCB0byBnZXQgZXZlbnQgYXNz
-b2NpYXRlZCB3aXRoIGJhdHRlcnkgc3RhdHVzDQo+IGV4dGVybmFsbHksIGJ1dCBubyBvbmUgaGFk
-IGJlZW4gdXNlZC4gTW9yZW92ZXIgaXQgbWFrZXMgY2hhcmdlciBtYW5hZ2VyDQo+IGRyaXZlciBt
-b3JlIGNvbXBsaWNhdGVkLiBUaGlzIHBhdGNoIHRyaWVzIHRvIGRyb3AgdGhlIGZ1bmN0aW9uIGFu
-ZCBhbGwgZGF0YQ0KPiByZWxhdGVkIHRvIHNpbXBsaWZ5IHRoZSBkcml2ZXIuDQo+IA0KPiBTaWdu
-ZWQtb2ZmLWJ5OiBKb25naHdhIExlZSA8am9uZ2h3YTMubGVlQHNhbXN1bmcuY29tPg0KDQpZb3Ug
-YXJlIG5vdCBqdXN0IHJlbW92aW5nIGNtX25vdGlmeV9ldmVudCgpIGFuZCBpdHMgcmVsYXRlZC4N
-Cg0KWW91IGFyZSBoZXJlYnkgcmVtb3ZpbmcgdGhlIG11Y2ggb2Ygc29mdHdhcmUgY2hhcmdlciBj
-b250cm9sDQphbmQgc3VzcGVuZC1yZWxhdGVkIG9wZXJhdGlvbnMuIENvdWxkIHlvdSBwbGVhc2Ug
-YmUgbW9yZSBzcGVjaWZpYw0Kb24gd2h5PyAobWFueSBvZiBzdWNoIGZlYXR1cmVzIGFyZSB0byBj
-b21wbHkgd2l0aCBvcGVyYXRvcnMnIHJlcXVpcmVtZW50cykNCg0KKE9yIHdlIG1heSBtZWV0IG5l
-eHQgTW9uZGF5IGZvciBzb21lIGRpc2N1c3Npb25zIDopICkNCg0KPiAtLS0NCj4gIC4uLi9iaW5k
-aW5ncy9wb3dlcl9zdXBwbHkvY2hhcmdlci1tYW5hZ2VyLnR4dCAgICAgIHwgICAgMSAtDQo+ICBk
-cml2ZXJzL3Bvd2VyL2NoYXJnZXItbWFuYWdlci5jICAgICAgICAgICAgICAgICAgICB8ICAxOTYg
-Ky0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gIGluY2x1ZGUvbGludXgvcG93ZXIvY2hhcmdlci1tYW5h
-Z2VyLmggICAgICAgICAgICAgIHwgICAxOSArLQ0KPiAgMyBmaWxlcyBjaGFuZ2VkLCA4IGluc2Vy
-dGlvbnMoKyksIDIwOCBkZWxldGlvbnMoLSkNCj4gDQo=
+Hi Kevin,
 
+Thanks for your comments!
 
+On Thu, Dec 18, 2014 at 10:29 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>> However, if PM domains are active, drivers must be runtime PM-aware for the
+>> gpd_dev_ops.start() method to be called in the first place (perhaps this is just
+>> one bug that's easy to fix --- the device is "assumed suspended", but can be
+>> used). They must
+>>   1. call pm_runtime_enable() to enable runtime PM for the device,
+>>   2. call pm_runtime_get_sync() to prevent the device from being put in a
+>>     low-power state at any time. This second call has the
+>> "side-effect" of calling
+>>     gpd_dev_ops.start().
+>>
+>> Hence, if PM domains are enabled, wouldn't it make sense to
+>>   1. enable runtime PM by default, for all devices (bound and unbound),
+>>   2. call pm_runtime_get_sync(), for all devices bound to a driver.
+>> Of course we have to keep track if drivers call any of the pm_runtime_*()
+>> methods theirselves, as that would have to move them from automatic to
+>> manual mode.
+>>
+>> Would this be feasible?
+>
+> We have to be careful about where the PM core's _get_sync() call goes.
+>
+> Because you're talking about "bound" devices, I guess you mean after the
+> driver probes?  Otherwise, it gets tricky if the _get_sync() is before
+> the driver probes, because the device driver may have work it wants to
+> do in its runtime PM callbacks, which are not initialized/available
+> before the driver probes.  Doing this before probe also makes it rather
+> difficult to know for sure the actual physical state of the device, and
+> make sure it matches the runtime PM state of the device.  Rafael
+> mentioned this also, and I'm not sure how we can be sure of the physical
+> state.
+
+Yes, it's complicated by the fact that there are multiple sets of callbacks
+(PM domain, device type, class type, bus type, driver).
+However, the PM domain one has the highest priority, and is always
+(also for devices not bound to a driver) available.
+
+> Some thoughts: devices without drivers would be runtime resumed by the
+> core, but will never be suspended, so the PM domain will never shut
+> down.  I guess the core will have to keep track of the devices it
+> automatically runtime resumed and decide to runtime suspend them too?
+> Hmm, where would that go?
+
+No, devices without a driver just need to become runtime PM enabled.
+They will only be resumed when a dependent device (e.g. a child) is resumed,
+and are suspended again after all dependents are suspended. That's how
+simple-pm-bus behaves.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
