@@ -1,43 +1,33 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RESEND v2 03/10] power: charger-manager: Remove
- deprecated function, cm_notify_event().
-Date: Sat, 20 Dec 2014 01:16:22 +0100
-Message-ID: <20141220001622.GA1694@amd>
-References: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
+Subject: Re: [PATCH V3 01/11] power: charger-manager: Use alarmtimer for
+ battery monitoring in suspend.
+Date: Sat, 20 Dec 2014 01:21:30 +0100
+Message-ID: <20141220002129.GB1694@amd>
+References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1418979323-7188-2-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45305 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45805 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbaLTAQ0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 19:16:26 -0500
+	with ESMTP id S1751833AbaLTAVd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 19:21:33 -0500
 Content-Disposition: inline
-In-Reply-To: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
+In-Reply-To: <1418979323-7188-2-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: =?utf-8?B?7J207KKF7ZmU?= <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-On Fri 2014-12-19 07:52:07, MyungJoo Ham wrote:
-> >   
-> >  cm_notify_event() is introduced to get event associated with battery status
-> > externally, but no one had been used. Moreover it makes charger manager
-> > driver more complicated. This patch tries to drop the function and all data
-> > related to simplify the driver.
-> > 
-> > Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> 
-> You are not just removing cm_notify_event() and its related.
-> 
-> You are hereby removing the much of software charger control
-> and suspend-related operations. Could you please be more specific
-> on why? (many of such features are to comply with operators' requirements)
-> 
-> (Or we may meet next Monday for some discussions :) )
+On Fri 2014-12-19 17:55:13, Jonghwa Lee wrote:
+> To guerantee proper charing and managing batteries even in suspend,
+> charger-manager has used rtc device with rtc framework interface.
+> However, it is better to use alarmtimer for cleaner and more appropriate
+> operation.
+> This patch makes driver to use alamtimer for polling work in suspend and
 
-So... you'll meet in person and we will not see fireworks on the
-mailing list? :-).
-									Pavel
+alarmtimer.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
