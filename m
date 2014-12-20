@@ -1,34 +1,61 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v9] cpufreq: Add SFI based cpufreq driver support
-Date: Sat, 20 Dec 2014 13:44:26 -0500
-Message-ID: <CAJvTdKmPLHV9ge3MWRRWidN3MjPoNuUmEzvOU8dGm_fYT=WYZw@mail.gmail.com>
-References: <20141219174344.GA823@intel-desktop>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [RFC PATCH 2/2] iommu: rockchip: Handle system-wide and runtime PM
+Date: Sat, 20 Dec 2014 21:01:06 +0200
+Message-ID: <3922440.p7KFeqxHrO@avalon>
+References: <1418286387-9663-1-git-send-email-tfiga@chromium.org> <1649547.QECLmuJenN@avalon> <8712967.RZO6JKCTcJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:38112 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbaLTSo1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Dec 2014 13:44:27 -0500
-Received: by mail-yk0-f178.google.com with SMTP id 20so1273270yks.9
-        for <linux-pm@vger.kernel.org>; Sat, 20 Dec 2014 10:44:26 -0800 (PST)
-In-Reply-To: <20141219174344.GA823@intel-desktop>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:53315 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbaLTTBC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Dec 2014 14:01:02 -0500
+In-Reply-To: <8712967.RZO6JKCTcJ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Tomasz Figa <tfiga@chromium.org>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Joerg Roedel <joro@8bytes.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Daniel Kurtz <djkurtz@chromium.org>
 
-> v9:
+Hi Kevin,
+
+On Friday 19 December 2014 03:27:35 Rafael J. Wysocki wrote:
+> On Thursday, December 18, 2014 11:28:58 PM Laurent Pinchart wrote:
+> > Hi Kevin,
+> 
+> [cut]
+> 
+>>>>> It would be better to be able to reference count the DMA engine from
+>>>>> the bus master IMO and arguably you can use the runtime PM framework
+>>>>> for that. Namely, give bus masters someting like
+>>>>> 
+>>>>> 	pm_runtime_get_my_DMA_engine(bus_master_device)
+>>>>> 	pm_runtime_put_my_DMA_engine(bus_master_device)
+>>>>> 
+>>>>> and let them call these as they see fit.
+>>>> 
+>>>> Please note that we're not talking about DMA engines here, but about
+>>>> IOMMUs. DMA is involved through the DMA mapping API which hides the
+>>>> IOMMU completely from the bus master drivers, not the DMA engine API.
+>>>> 
+>>>> Exposing the IOMMU is something we want to avoid, but DMA mapping
+>>>> start/stop operations could certainly be implemented.
+>>> 
+>>> The problem with that is it only solves the IOMMU problem.  We have a
+>>> more generic PM dependency problem of which this IOMMU example is only a
+>>> subset, so I think we need a more generic solution.
+>> 
+>> I agree that a more generic solution is needed at least to support ACPI
+>> _DEP, but that might not be optimal in the IOMMU use case as explained
+>> above.
 >
->  arch/x86/include/uapi/asm/msr-index.h |    1 +
->  drivers/cpufreq/Kconfig.x86           |   10 +++
->  drivers/cpufreq/Makefile              |    1 +
->  drivers/cpufreq/sfi-cpufreq.c         |  136 +++++++++++++++++++++++++++++++++
->  4 files changed, 148 insertions(+)
->  create mode 100644 drivers/cpufreq/sfi-cpufreq.c
+> Well, since we need it anyway, why don't we implement it and then figure out
+> if anything more specific needs to be done for the IOMMU case?
 
-Good work!
-Applied.
+Patches are welcome ;-)
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+-- 
+Regards,
+
+Laurent Pinchart
+
