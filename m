@@ -1,51 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 4/4] PM: Eliminate CONFIG_PM_RUNTIME
-Date: Fri, 19 Dec 2014 23:25:51 +0100
-Message-ID: <1504884.AVoVpOfIGf@vostro.rjw.lan>
-References: <472992175.g1ArEYGFPo@vostro.rjw.lan> <9470157.PyHoGoSGz1@vostro.rjw.lan> <7h1tnv2tu9.fsf@deeprootsystems.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RESEND v2 03/10] power: charger-manager: Remove
+ deprecated function, cm_notify_event().
+Date: Sat, 20 Dec 2014 01:16:22 +0100
+Message-ID: <20141220001622.GA1694@amd>
+References: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7h1tnv2tu9.fsf@deeprootsystems.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Christian Daudt <bcm@fixthebug.org>, Matt Porter <mporter@linaro.org>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Maxime Ripard <maxime.ripard@free-electrons.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Tony Lindgren <tony@atomide.com>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mark Brown <broonie@kernel.org>, Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45305 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbaLTAQ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 19:16:26 -0500
+Content-Disposition: inline
+In-Reply-To: <1255984171.39711418975524329.JavaMail.weblogic@epmlwas08d>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: =?utf-8?B?7J207KKF7ZmU?= <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
 
-On Friday, December 19, 2014 01:49:34 PM Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+On Fri 2014-12-19 07:52:07, MyungJoo Ham wrote:
+> >   
+> >  cm_notify_event() is introduced to get event associated with battery status
+> > externally, but no one had been used. Moreover it makes charger manager
+> > driver more complicated. This patch tries to drop the function and all data
+> > related to simplify the driver.
+> > 
+> > Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 > 
-> [...]
+> You are not just removing cm_notify_event() and its related.
 > 
-> > Fixed up patch is appended, thanks!
-> >
-> >
-> > ---
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: PM: Eliminate CONFIG_PM_RUNTIME
-> >
-> > Having switched over all of the users of CONFIG_PM_RUNTIME to use
-> > CONFIG_PM directly, turn the latter into a user-selectable option
-> > and drop the former entirely from the tree.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> You are hereby removing the much of software charger control
+> and suspend-related operations. Could you please be more specific
+> on why? (many of such features are to comply with operators' requirements)
 > 
-> Acked-by: Kevin Hilman <khilman@linaro.org>
-> 
-> I assume you're planning to get this in early in the v3.19-rc cycle,
-> correct?  That way we can hopefully avoid conflicts with the various
-> defconfig changes we're taking through the arm-soc tree.
+> (Or we may meet next Monday for some discussions :) )
 
-I'm going to send a pull request with these changes tomorrow.
-
-> Also, thanks for taking care of all the tree-wide changes.  This is a
-> great change.
-
-Thanks!
-
-
+So... you'll meet in person and we will not see fireworks on the
+mailing list? :-).
+									Pavel
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
