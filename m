@@ -1,73 +1,94 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V3 11/11] power: charger-manager: Support to change
- polling rate in runtime.
-Date: Sat, 20 Dec 2014 01:29:08 +0100
-Message-ID: <20141220002908.GD1694@amd>
-References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
- <1418979323-7188-12-git-send-email-jonghwa3.lee@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] CONFIG_PM_RUNTIME elimination for 3.19-rc1
+Date: Sat, 20 Dec 2014 15:10:54 +0100
+Message-ID: <CAJZ5v0g=pxQKs0MhBETm9jL6cBF-hE8Mt=z4U=7AU7oZoELYxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46598 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbaLTA3M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Dec 2014 19:29:12 -0500
-Content-Disposition: inline
-In-Reply-To: <1418979323-7188-12-git-send-email-jonghwa3.lee@samsung.com>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:49748 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbaLTOKz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Dec 2014 09:10:55 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Hi Linus,
 
-> Add 'polling_ms' sysfs node to change charger-manager's monitoring rate
-> in runtime. It can set only bigger than 2 jiffies (for 200 HZ system it
-> is 10 msecs.) as it's allowed for minimum poling rate in previous.
+Please pull from
 
-New sysfs filesneed documentation.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-config-3.19-rc1
 
-> It resets poller and re-configure polling rate based on new input if next
+to receive material that finalizes the CONFIG_PM_RUNTIME elimination
+for v3.19-rc1 with top-most commit 464ed18ebdb6236fcff59d2a35d4d2e28
 
-re-configures...", if"
+ PM: Eliminate CONFIG_PM_RUNTIME
 
-> polling time is far enough. Otherwise, it just waits expiration of timer
+on top of commit c0f486fde3f353232c1cc2fd4d62783ac782a467
 
-"waits for"
+ Merge tag 'pm+acpi-3.19-rc1-2' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
 
-> and new polling rate will affects the next scheduling.
+This removes the last few uses of CONFIG_PM_RUNTIME introduced
+recently and makes that config option finally go away.
 
-"affect"?
+CONFIG_PM will be available directly from the menu now and
+also it will be selected automatically if CONFIG_SUSPEND or
+CONFIG_HIBERNATION is set.
 
+Thanks!
 
-> +static ssize_t show_polling_ms(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct charger_manager *cm;
-> +	ssize_t len;
-> +
-> +	list_for_each_entry(cm, &cm_list, entry)
-> +		if (cm->charger_psy.dev == dev)
-> +			break;
-> +
-> +	if (cm->charger_psy.dev != dev)
-> +		return -EINVAL;
+---------------
 
-Any chance to reorganize data structures so that this kind of list
-walking is not neccessary?
+Rafael J. Wysocki (4):
+      spi: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+      sound: sst-haswell-pcm: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+      tty: 8250_omap: Replace CONFIG_PM_RUNTIME with CONFIG_PM
+      PM: Eliminate CONFIG_PM_RUNTIME
 
-> +static ssize_t store_polling_ms(struct device *dev,
-> +				struct device_attribute *attr, const char *buf,
-> +				size_t count)
-> +{
-> +	struct charger_manager *cm;
-> +	int polling_ms;
-> +	int ret;
-> +
-> +	ret = sscanf(buf, "%d", &polling_ms);
+---------------
 
-"kstrtoul"?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ arch/arm/configs/ape6evm_defconfig         |  2 +-
+ arch/arm/configs/armadillo800eva_defconfig |  2 +-
+ arch/arm/configs/bcm_defconfig             |  2 +-
+ arch/arm/configs/bockw_defconfig           |  2 +-
+ arch/arm/configs/davinci_all_defconfig     |  2 +-
+ arch/arm/configs/exynos_defconfig          |  2 +-
+ arch/arm/configs/ezx_defconfig             |  1 -
+ arch/arm/configs/hisi_defconfig            |  2 +-
+ arch/arm/configs/imote2_defconfig          |  1 -
+ arch/arm/configs/imx_v6_v7_defconfig       |  2 +-
+ arch/arm/configs/keystone_defconfig        |  2 +-
+ arch/arm/configs/kzm9g_defconfig           |  2 +-
+ arch/arm/configs/lager_defconfig           |  2 +-
+ arch/arm/configs/mackerel_defconfig        |  1 -
+ arch/arm/configs/marzen_defconfig          |  2 +-
+ arch/arm/configs/omap1_defconfig           |  1 -
+ arch/arm/configs/prima2_defconfig          |  2 +-
+ arch/arm/configs/sama5_defconfig           |  2 +-
+ arch/arm/configs/shmobile_defconfig        |  2 +-
+ arch/arm/configs/sunxi_defconfig           |  2 +-
+ arch/arm/configs/tegra_defconfig           |  2 +-
+ arch/arm/configs/u8500_defconfig           |  2 +-
+ arch/arm/configs/vt8500_v6_v7_defconfig    |  2 +-
+ arch/arm/mach-omap2/Kconfig                |  6 +++---
+ arch/mips/configs/db1xxx_defconfig         |  2 +-
+ arch/mips/configs/lemote2f_defconfig       |  1 -
+ arch/mips/configs/loongson3_defconfig      |  2 +-
+ arch/mips/configs/nlm_xlp_defconfig        |  2 +-
+ arch/mips/configs/nlm_xlr_defconfig        |  2 +-
+ arch/powerpc/configs/ps3_defconfig         |  2 +-
+ arch/sh/Kconfig                            |  2 +-
+ arch/sh/configs/apsh4ad0a_defconfig        |  2 +-
+ arch/sh/configs/sdk7786_defconfig          |  2 +-
+ drivers/spi/spi-img-spfi.c                 |  4 ++--
+ drivers/spi/spi-meson-spifc.c              |  4 ++--
+ drivers/tty/serial/8250/8250_omap.c        | 14 +++++++-------
+ drivers/usb/host/isp1760-hcd.c             |  2 +-
+ drivers/usb/host/oxu210hp-hcd.c            |  2 +-
+ include/linux/devfreq.h                    |  2 +-
+ kernel/power/Kconfig                       | 16 ++++++----------
+ sound/soc/intel/sst-haswell-pcm.c          |  4 ++--
+ 41 files changed, 52 insertions(+), 61 deletions(-)
