@@ -1,71 +1,54 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v5 2/7] mfd: da9150: Add DT binding documentation for core
-Date: Mon, 22 Dec 2014 16:51:09 +0000
-Message-ID: <01a6a3c7dc0e6832c635957de7f425d9cd11ad1d.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 05/28] cpufreq: drop owner assignment from platform_drivers
+Date: Mon, 22 Dec 2014 23:39:32 +0100
+Message-ID: <2262992.pVJSfL5P4D@vostro.rjw.lan>
+References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de> <1419196495-9626-6-git-send-email-wsa@the-dreams.de> <CAKohpok_G3Gf3XbcK06ELM3ocWQmNPepx1i72VXR8sNbK1L81Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <CAKohpok_G3Gf3XbcK06ELM3ocWQmNPepx1i72VXR8sNbK1L81Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
----
- Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
+On Monday, December 22, 2014 07:14:56 AM Viresh Kumar wrote:
+> On 22 December 2014 at 02:44, Wolfram Sang <wsa@the-dreams.de> wrote:
+> > This platform_driver does not need to set an owner, it will be populated by the
+> > driver core.
+> >
+> > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> > ---
+> > Generated with coccinelle. SmPL file is in the introductory msg. The big
+> > cleanup was pulled in this merge window. This series catches the bits fallen
+> > through. The patches shall go in via the subsystem trees.
+> >
+> >  drivers/cpufreq/ls1x-cpufreq.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
+> > index 25fbd6a1374f..f0913eee2f50 100644
+> > --- a/drivers/cpufreq/ls1x-cpufreq.c
+> > +++ b/drivers/cpufreq/ls1x-cpufreq.c
+> > @@ -210,7 +210,6 @@ out:
+> >  static struct platform_driver ls1x_cpufreq_platdrv = {
+> >         .driver = {
+> >                 .name   = "ls1x-cpufreq",
+> > -               .owner  = THIS_MODULE,
+> >         },
+> >         .probe          = ls1x_cpufreq_probe,
+> >         .remove         = ls1x_cpufreq_remove,
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> --
 
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-new file mode 100644
-index 0000000..d0588ea
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -0,0 +1,43 @@
-+Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
-+
-+DA9150 consists of a group of sub-devices:
-+
-+Device			 Description
-+------			 -----------
-+da9150-gpadc		: General Purpose ADC
-+da9150-charger		: Battery Charger
-+
-+======
-+
-+Required properties:
-+- compatible : Should be "dlg,da9150"
-+- reg: Specifies the I2C slave address
-+- interrupt-parent: Specifies the phandle of the interrupt controller to which
-+  the IRQs from da9150 are delivered to.
-+- interrupts: IRQ line info for da9150 chip.
-+- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
-+  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
-+   further information relating to interrupt properties)
-+
-+Sub-devices:
-+- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
-+- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
-+
-+
-+Example:
-+
-+	charger_fg: da9150@58 {
-+		compatible = "dlg,da9150";
-+		reg = <0x58>;
-+		interrupt-parent = <&gpio6>;
-+		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-controller;
-+
-+		gpadc: da9150-gpadc {
-+			...
-+		};
-+
-+		da9150-charger {
-+			...
-+		};
-+	};
---
-1.9.3
+OK
+
+Wolfram, please feel free to push this through whatever tree you think is
+appropriate.
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
