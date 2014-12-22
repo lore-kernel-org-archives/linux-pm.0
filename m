@@ -1,660 +1,324 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
-Date: Mon, 22 Dec 2014 11:09:21 +0800
-Message-ID: <1419217761.19619.2.camel@rzhang1-toshiba>
-References: <54868CF6.6020505@intel.com>
-			 <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com>
-			 <20141211010226.GA26253@aaronlu.sh.intel.com>
-			 <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com>
-		 <1418265472.12435.68.camel@rzhang1-toshiba> <548934D0.8000502@intel.com>
-	 <1418286781.12435.73.camel@rzhang1-toshiba> <54895821.3050902@intel.com>
+Subject: Re: Fix: Bind Cooling Device Weight
+Date: Mon, 22 Dec 2014 11:18:35 +0800
+Message-ID: <1419218315.19619.6.camel@rzhang1-toshiba>
+References: <5492C634.5030604@arm.com> <20141218134334.GA6276@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <54895821.3050902@intel.com>
-Sender: linux-next-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com, lee.jones@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:15943 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbaLVDSq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 21 Dec 2014 22:18:46 -0500
+In-Reply-To: <20141218134334.GA6276@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Kapileshwar Singh <kapileshwar.singh@arm.com>, linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>
 
-On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
-> INT3406 ACPI device object resembles an ACPI video output device, but its
-> _BCM is said to be deprecated and should not be used. So we will make
-> use of the raw interface to do the actual cooling. Due to this, the
-> backlight core has some modifications. Also, to re-use some of the ACPI
-> video module's code, one function has been exported.
+On Thu, 2014-12-18 at 09:43 -0400, Eduardo Valentin wrote:
+> On Thu, Dec 18, 2014 at 12:19:00PM +0000, Kapileshwar Singh wrote:
+> > The Problem:
+> > 
+> > In the current code, the weight of the cooling device, which is read as
+> > contribution from the device tree in of-thermal.c as:
+> > 
+> > 
+> >         ret = of_property_read_u32(np, "contribution", &prop);
+> >         if (ret == 0)
+> >                 __tbp->usage = prop;
+> > 
+> > This is only stored in the private devicedata as:
+> > 
+> >         ((__thernal_zone *)cdev->devdata)->__tbp->usage
+> > 
+> > As of-thermal.c specifies its "bind" operation and does not populate
+> > tzd->tzp->tbp, this causes an erroneous access in the fair-share
+> > governor when it tries to access the weight:
+> > 
+> > instance->target = get_target_state(tz, cdev,
+> >                                         tzp->tbp[i].weight,
+> > cur_trip_level);
+> > 
+> > 
+> > The Proposed solution:
+> > 
+> > The proposed solution has the following changes:
+> > 
+> >  1. Passing the weight as an argument to thermal_zone_bind_cooling_device
+> > 
+> >  2. Storing the weight in the thermal_instance data structure created in
+> > the thermal_zone_bind_cooling_device function
+> > 
+> >  3. Changing the accesses in the governor accordingly.
 > 
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> Shouldn't we simply:
+> 1. In of-thermal, populate tzd->tzp->tbp by passing a tbp with correct
+> tbp's in the registration call:
+> 	zone = thermal_zone_device_register(child->name, tz->ntrips,
+> 						0,
+> 						tz,
+> 						ops,
+> /* This guy needs to be filled properly */	tzp,
+> 						tz->passive_delay,
+> 						tz->polling_delay);
+> 
+Agreed.
 
-Jingoo and Lee,
+> 2. Add a proper check in the governor to avoid accessing thermal zones
+> with missing data.
+> 
+> I know there is a check in place:
+>         if (!tz->tzp || !tz->tzp->tbp)
+> 	          return -EINVAL;
+> 
+> which based in your description seams to be failing. Here, I need more
+> info from your side describing what exactly you are seeing. Can you
+> please post the kernel log when the failure happens? Does it output a
+> kernel segfault or is the governor simply not working?
+> 
+> I would expect, with the current code, the governor be silent and
+> non-functional, which needs to be fixed too.
 
-are you okay with the changes in drivers/video/backlight/backlight.c and
-include/linux/backlight.h?
+Plus, I think we should add an optional .validate() callback for each
+governor, to check if the thermal zone meets the requirement of the
+governor or not before switching to it.
 
 thanks,
 rui
-> ---
-> v6: Fix an issue that wrongly set error path return value as reported
-> by Olof Johansson.
+> > 
+> >  I am not sure of what default value should be assigned to the weight
+> > member in the instance data structure and would like to leave this open
+> > to discussion.
+> > 
+> > Suggested Patch (Not Signed off):
+> > 
+> > diff --git a/drivers/thermal/db8500_thermal.c
+> > b/drivers/thermal/db8500_thermal.c
+> > index 1e3b3bf9f993..e3ccc2218eb3 100644
+> > --- a/drivers/thermal/db8500_thermal.c
+> > +++ b/drivers/thermal/db8500_thermal.c
+> > @@ -76,7 +76,7 @@ static int db8500_cdev_bind(struct thermal_zone_device
+> > *thermal,
+> >          upper = lower = i > max_state ? max_state : i;
+> >  
+> >          ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
+> > -            upper, lower);
+> > +            upper, lower, THERMAL_WEIGHT_DEFAULT);
+> >  
 > 
->  drivers/acpi/video.c                              |  77 ++++----
->  drivers/thermal/Kconfig                           |  26 +--
->  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
->  drivers/thermal/int340x_thermal/Makefile          |   1 +
->  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
->  drivers/video/backlight/backlight.c               |  44 +++--
->  include/acpi/video.h                              |  20 ++
->  include/linux/backlight.h                         |   2 +
->  8 files changed, 366 insertions(+), 74 deletions(-)
->  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+> I think spreading such parameter, which is known to be part of tbp, is
+> not a good thing to do. Can we avoid that?
 > 
-> diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-> index 807a88a0f394..32880e6c8da4 100644
-> --- a/drivers/acpi/video.c
-> +++ b/drivers/acpi/video.c
-> @@ -186,19 +186,6 @@ struct acpi_video_device_cap {
->  	u8 _DDC:1;		/* Return the EDID for this device */
->  };
->  
-> -struct acpi_video_brightness_flags {
-> -	u8 _BCL_no_ac_battery_levels:1;	/* no AC/Battery levels in _BCL */
-> -	u8 _BCL_reversed:1;		/* _BCL package is in a reversed order */
-> -	u8 _BQC_use_index:1;		/* _BQC returns an index value */
-> -};
-> -
-> -struct acpi_video_device_brightness {
-> -	int curr;
-> -	int count;
-> -	int *levels;
-> -	struct acpi_video_brightness_flags flags;
-> -};
-> -
->  struct acpi_video_device {
->  	unsigned long device_id;
->  	struct acpi_video_device_flags flags;
-> @@ -344,7 +331,7 @@ static const struct thermal_cooling_device_ops video_cooling_ops = {
->   */
->  
->  static int
-> -acpi_video_device_lcd_query_levels(struct acpi_video_device *device,
-> +acpi_video_device_lcd_query_levels(acpi_handle handle,
->  				   union acpi_object **levels)
->  {
->  	int status;
-> @@ -354,7 +341,7 @@ acpi_video_device_lcd_query_levels(struct acpi_video_device *device,
->  
->  	*levels = NULL;
->  
-> -	status = acpi_evaluate_object(device->dev->handle, "_BCL", NULL, &buffer);
-> +	status = acpi_evaluate_object(handle, "_BCL", NULL, &buffer);
->  	if (!ACPI_SUCCESS(status))
->  		return status;
->  	obj = (union acpi_object *)buffer.pointer;
-> @@ -727,29 +714,18 @@ static int acpi_video_bqc_quirk(struct acpi_video_device *device,
->  	return 0;
->  }
->  
-> -
-> -/*
-> - *  Arg:
-> - *	device	: video output device (LCD, CRT, ..)
-> - *
-> - *  Return Value:
-> - *	Maximum brightness level
-> - *
-> - *  Allocate and initialize device->brightness.
-> - */
-> -
-> -static int
-> -acpi_video_init_brightness(struct acpi_video_device *device)
-> +int acpi_video_get_levels(struct acpi_device *device,
-> +			  struct acpi_video_device_brightness **dev_br)
->  {
->  	union acpi_object *obj = NULL;
->  	int i, max_level = 0, count = 0, level_ac_battery = 0;
-> -	unsigned long long level, level_old;
->  	union acpi_object *o;
->  	struct acpi_video_device_brightness *br = NULL;
->  	int result = -EINVAL;
->  	u32 value;
->  
-> -	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-> +	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device->handle,
-> +								&obj))) {
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
->  						"LCD brightness level\n"));
->  		goto out;
-> @@ -822,6 +798,39 @@ acpi_video_init_brightness(struct acpi_video_device *device)
->  			    "Found unordered _BCL package"));
->  
->  	br->count = count;
-> +	*dev_br = br;
-> +	result = 0;
-> +
-> +out:
-> +	kfree(obj);
-> +	return result;
-> +out_free:
-> +	kfree(br);
-> +	goto out;
-> +}
-> +EXPORT_SYMBOL(acpi_video_get_levels);
-> +
-> +/*
-> + *  Arg:
-> + *	device	: video output device (LCD, CRT, ..)
-> + *
-> + *  Return Value:
-> + *	Maximum brightness level
-> + *
-> + *  Allocate and initialize device->brightness.
-> + */
-> +
-> +static int
-> +acpi_video_init_brightness(struct acpi_video_device *device)
-> +{
-> +	int i, max_level = 0;
-> +	unsigned long long level, level_old;
-> +	struct acpi_video_device_brightness *br = NULL;
-> +	int result = -EINVAL;
-> +
-> +	result = acpi_video_get_levels(device->dev, &br);
-> +	if (result)
-> +		return result;
->  	device->brightness = br;
->  
->  	/* _BQC uses INDEX while _BCL uses VALUE in some laptops */
-> @@ -864,17 +873,13 @@ set_level:
->  		goto out_free_levels;
->  
->  	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> -			  "found %d brightness levels\n", count - 2));
-> -	kfree(obj);
-> -	return result;
-> +			  "found %d brightness levels\n", br->count - 2));
-> +	return 0;
->  
->  out_free_levels:
->  	kfree(br->levels);
-> -out_free:
->  	kfree(br);
-> -out:
->  	device->brightness = NULL;
-> -	kfree(obj);
->  	return result;
->  }
->  
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index f554d25b4399..ac391d8d76b4 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -229,29 +229,9 @@ config INTEL_SOC_DTS_THERMAL
->  	  notification methods.The other trip is a critical trip point, which
->  	  was set by the driver based on the TJ MAX temperature.
->  
-> -config INT340X_THERMAL
-> -	tristate "ACPI INT340X thermal drivers"
-> -	depends on X86 && ACPI
-> -	select THERMAL_GOV_USER_SPACE
-> -	select ACPI_THERMAL_REL
-> -	select ACPI_FAN
-> -	help
-> -	  Newer laptops and tablets that use ACPI may have thermal sensors and
-> -	  other devices with thermal control capabilities outside the core
-> -	  CPU/SOC, for thermal safety reasons.
-> -	  They are exposed for the OS to use via the INT3400 ACPI device object
-> -	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-> -	  Enable this to expose the temperature information and cooling ability
-> -	  from these objects to userspace via the normal thermal framework.
-> -	  This means that a wide range of applications and GUI widgets can show
-> -	  the information to the user or use this information for making
-> -	  decisions. For example, the Intel Thermal Daemon can use this
-> -	  information to allow the user to select his laptop to run without
-> -	  turning on the fans.
-> -
-> -config ACPI_THERMAL_REL
-> -	tristate
-> -	depends on ACPI
-> +menu "ACPI INT340X thermal drivers"
-> +source drivers/thermal/int340x_thermal/Kconfig
-> +endmenu
->  
->  menu "Texas Instruments thermal drivers"
->  source "drivers/thermal/ti-soc-thermal/Kconfig"
-> diff --git a/drivers/thermal/int340x_thermal/Kconfig b/drivers/thermal/int340x_thermal/Kconfig
-> new file mode 100644
-> index 000000000000..b92892a6afe0
-> --- /dev/null
-> +++ b/drivers/thermal/int340x_thermal/Kconfig
-> @@ -0,0 +1,41 @@
-> +#
-> +# ACPI INT340x thermal drivers configuration
-> +#
-> +
-> +config INT340X_THERMAL
-> +	tristate "ACPI INT340X thermal drivers"
-> +	depends on X86 && ACPI
-> +	select THERMAL_GOV_USER_SPACE
-> +	select ACPI_THERMAL_REL
-> +	select ACPI_FAN
-> +	help
-> +	  Newer laptops and tablets that use ACPI may have thermal sensors and
-> +	  other devices with thermal control capabilities outside the core
-> +	  CPU/SOC, for thermal safety reasons.
-> +	  They are exposed for the OS to use via the INT3400 ACPI device object
-> +	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-> +	  Enable this to expose the temperature information and cooling ability
-> +	  from these objects to userspace via the normal thermal framework.
-> +	  This means that a wide range of applications and GUI widgets can show
-> +	  the information to the user or use this information for making
-> +	  decisions. For example, the Intel Thermal Daemon can use this
-> +	  information to allow the user to select his laptop to run without
-> +	  turning on the fans.
-> +
-> +if INT340X_THERMAL
-> +
-> +config ACPI_THERMAL_REL
-> +	tristate
-> +	depends on ACPI
-> +
-> +config INT3406_THERMAL
-> +	tristate "ACPI INT3406 display thermal driver"
-> +	depends on ACPI_VIDEO
-> +	help
-> +	  The display thermal device represents the LED/LCD display panel
-> +	  that may or may not include touch support. The main function of
-> +	  the display thermal device is to allow control of the display
-> +	  brightness in order to address a thermal condition or to reduce
-> +	  power consumed by display device.
-> +
-> +endif
-> diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-> index ffe40bffaf1a..a9d0429be412 100644
-> --- a/drivers/thermal/int340x_thermal/Makefile
-> +++ b/drivers/thermal/int340x_thermal/Makefile
-> @@ -1,4 +1,5 @@
->  obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
->  obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
->  obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-> +obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
->  obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-> diff --git a/drivers/thermal/int340x_thermal/int3406_thermal.c b/drivers/thermal/int340x_thermal/int3406_thermal.c
-> new file mode 100644
-> index 000000000000..2719e49a0af9
-> --- /dev/null
-> +++ b/drivers/thermal/int340x_thermal/int3406_thermal.c
-> @@ -0,0 +1,229 @@
-> +/*
-> + * INT3406 thermal driver for display participant device
-> + *
-> + * Copyright (C) 2014, Intel Corporation
-> + * Authors: Aaron Lu <aaron.lu@intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/acpi.h>
-> +#include <linux/backlight.h>
-> +#include <linux/thermal.h>
-> +#include <acpi/video.h>
-> +
-> +#define INT3406_BRIGHTNESS_LIMITS_CHANGED	0x80
-> +
-> +struct int3406_thermal_data {
-> +	int upper_limit;
-> +	int upper_limit_index;
-> +	int lower_limit;
-> +	int lower_limit_index;
-> +	acpi_handle handle;
-> +	struct acpi_video_device_brightness *br;
-> +	struct backlight_device *raw_bd;
-> +	struct thermal_cooling_device *cooling_dev;
-> +};
-> +
-> +static int int3406_thermal_to_raw(int level, struct int3406_thermal_data *d)
-> +{
-> +	int max_level = d->br->levels[d->br->count - 1];
-> +	int raw_max = d->raw_bd->props.max_brightness;
-> +
-> +	return level * raw_max / max_level;
-> +}
-> +
-> +static int int3406_thermal_to_acpi(int level, struct int3406_thermal_data *d)
-> +{
-> +	int raw_max = d->raw_bd->props.max_brightness;
-> +	int max_level = d->br->levels[d->br->count - 1];
-> +
-> +	return level * max_level / raw_max;
-> +}
-> +
-> +static int
-> +int3406_thermal_get_max_state(struct thermal_cooling_device *cooling_dev,
-> +			      unsigned long *state)
-> +{
-> +	struct int3406_thermal_data *d = cooling_dev->devdata;
-> +	int index = d->lower_limit_index ? d->lower_limit_index : 2;
-> +
-> +	*state = d->br->count - 1 - index;
-> +	return 0;
-> +}
-> +
-> +static int
-> +int3406_thermal_set_cur_state(struct thermal_cooling_device *cooling_dev,
-> +			      unsigned long state)
-> +{
-> +	struct int3406_thermal_data *d = cooling_dev->devdata;
-> +	int level, raw_level;
-> +
-> +	if (state > d->br->count - 3)
-> +		return -EINVAL;
-> +
-> +	state = d->br->count - 1 - state;
-> +	level = d->br->levels[state];
-> +
-> +	if ((d->upper_limit && level > d->upper_limit) ||
-> +	    (d->lower_limit && level < d->lower_limit))
-> +		return -EINVAL;
-> +
-> +	raw_level = int3406_thermal_to_raw(level, d);
-> +	return backlight_device_set_brightness(d->raw_bd, raw_level);
-> +}
-> +
-> +static int
-> +int3406_thermal_get_cur_state(struct thermal_cooling_device *cooling_dev,
-> +			      unsigned long *state)
-> +{
-> +	struct int3406_thermal_data *d = cooling_dev->devdata;
-> +	int raw_level, level, i;
-> +
-> +	raw_level = d->raw_bd->props.brightness;
-> +	level = int3406_thermal_to_acpi(raw_level, d);
-> +
-> +	/*
-> +	 * There is no 1:1 mapping between the firmware interface level with the
-> +	 * raw interface level, we will have to find one that is close enough.
-> +	 */
-> +	for (i = 2; i < d->br->count - 1; i++) {
-> +		if (level >= d->br->levels[i] && level <= d->br->levels[i + 1])
-> +			break;
-> +	}
-> +
-> +	*state = i;
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_cooling_device_ops video_cooling_ops = {
-> +	.get_max_state = int3406_thermal_get_max_state,
-> +	.get_cur_state = int3406_thermal_get_cur_state,
-> +	.set_cur_state = int3406_thermal_set_cur_state,
-> +};
-> +
-> +static int int3406_thermal_get_index(int *array, int nr, int value)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < nr; i++) {
-> +		if (array[i] == value)
-> +			break;
-> +	}
-> +	return i == nr ? -ENOENT : i;
-> +}
-> +
-> +static void int3406_thermal_get_limit(struct int3406_thermal_data *d)
-> +{
-> +	acpi_status status;
-> +	unsigned long long lower_limit, upper_limit;
-> +	int index;
-> +
-> +	status = acpi_evaluate_integer(d->handle, "DDDL", NULL, &lower_limit);
-> +	if (ACPI_SUCCESS(status)) {
-> +		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-> +						  lower_limit);
-> +		if (index > 0) {
-> +			d->lower_limit = (int)lower_limit;
-> +			d->lower_limit_index = index;
-> +		}
-> +	}
-> +
-> +	status = acpi_evaluate_integer(d->handle, "DDPC", NULL, &upper_limit);
-> +	if (ACPI_SUCCESS(status)) {
-> +		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-> +						  upper_limit);
-> +		if (index > 0) {
-> +			d->upper_limit = (int)upper_limit;
-> +			d->upper_limit_index = index;
-> +		}
-> +	}
-> +}
-> +
-> +static void int3406_notify(acpi_handle handle, u32 event, void *data)
-> +{
-> +	if (event == INT3406_BRIGHTNESS_LIMITS_CHANGED)
-> +		int3406_thermal_get_limit(data);
-> +}
-> +
-> +static int int3406_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-> +	struct int3406_thermal_data *d;
-> +	struct backlight_device *bd;
-> +	int ret;
-> +
-> +	if (!ACPI_HANDLE(&pdev->dev))
-> +		return -ENODEV;
-> +
-> +	d = devm_kzalloc(&pdev->dev, sizeof(*d), GFP_KERNEL);
-> +	if (!d)
-> +		return -ENOMEM;
-> +	d->handle = ACPI_HANDLE(&pdev->dev);
-> +
-> +	bd = backlight_device_get_by_type(BACKLIGHT_RAW);
-> +	if (!bd)
-> +		return -ENODEV;
-> +	d->raw_bd = bd;
-> +
-> +	ret = acpi_video_get_levels(ACPI_COMPANION(&pdev->dev), &d->br);
-> +	if (ret)
-> +		return ret;
-> +
-> +	int3406_thermal_get_limit(d);
-> +
-> +	d->cooling_dev = thermal_cooling_device_register(acpi_device_bid(adev),
-> +							 d, &video_cooling_ops);
-> +	if (IS_ERR(d->cooling_dev))
-> +		goto err;
-> +
-> +	ret = acpi_install_notify_handler(adev->handle, ACPI_DEVICE_NOTIFY,
-> +					  int3406_notify, d);
-> +	if (ret)
-> +		goto err_cdev;
-> +
-> +	platform_set_drvdata(pdev, d);
-> +
-> +	return 0;
-> +
-> +err_cdev:
-> +	thermal_cooling_device_unregister(d->cooling_dev);
-> +err:
-> +	kfree(d->br);
-> +	return -ENODEV;
-> +}
-> +
-> +static int int3406_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct int3406_thermal_data *d = platform_get_drvdata(pdev);
-> +
-> +	thermal_cooling_device_unregister(platform_get_drvdata(pdev));
-> +	kfree(d->br);
-> +	return 0;
-> +}
-> +
-> +static const struct acpi_device_id int3406_thermal_match[] = {
-> +	{"INT3406", 0},
-> +	{}
-> +};
-> +
-> +MODULE_DEVICE_TABLE(acpi, int3406_thermal_match);
-> +
-> +static struct platform_driver int3406_thermal_driver = {
-> +	.probe = int3406_thermal_probe,
-> +	.remove = int3406_thermal_remove,
-> +	.driver = {
-> +		   .name = "int3406 thermal",
-> +		   .acpi_match_table = int3406_thermal_match,
-> +		   },
-> +};
-> +
-> +module_platform_driver(int3406_thermal_driver);
-> +
-> +MODULE_DESCRIPTION("INT3406 Thermal driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index bddc8b17a4d8..bea749329236 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -164,28 +164,19 @@ static ssize_t brightness_show(struct device *dev,
->  	return sprintf(buf, "%d\n", bd->props.brightness);
->  }
->  
-> -static ssize_t brightness_store(struct device *dev,
-> -		struct device_attribute *attr, const char *buf, size_t count)
-> +int backlight_device_set_brightness(struct backlight_device *bd, int brightness)
->  {
-> -	int rc;
-> -	struct backlight_device *bd = to_backlight_device(dev);
-> -	unsigned long brightness;
-> -
-> -	rc = kstrtoul(buf, 0, &brightness);
-> -	if (rc)
-> -		return rc;
-> -
-> -	rc = -ENXIO;
-> +	int rc = -ENXIO;
->  
->  	mutex_lock(&bd->ops_lock);
->  	if (bd->ops) {
->  		if (brightness > bd->props.max_brightness)
->  			rc = -EINVAL;
->  		else {
-> -			pr_debug("set brightness to %lu\n", brightness);
-> +			pr_debug("set brightness to %u\n", brightness);
->  			bd->props.brightness = brightness;
->  			backlight_update_status(bd);
-> -			rc = count;
-> +			rc = 0;
->  		}
->  	}
->  	mutex_unlock(&bd->ops_lock);
-> @@ -194,6 +185,23 @@ static ssize_t brightness_store(struct device *dev,
->  
->  	return rc;
->  }
-> +EXPORT_SYMBOL(backlight_device_set_brightness);
-> +
-> +static ssize_t brightness_store(struct device *dev,
-> +		struct device_attribute *attr, const char *buf, size_t count)
-> +{
-> +	int rc;
-> +	struct backlight_device *bd = to_backlight_device(dev);
-> +	unsigned long brightness;
-> +
-> +	rc = kstrtoul(buf, 0, &brightness);
-> +	if (rc)
-> +		return rc;
-> +
-> +	rc = backlight_device_set_brightness(bd, brightness);
-> +
-> +	return rc ? rc : count;
-> +}
->  static DEVICE_ATTR_RW(brightness);
->  
->  static ssize_t type_show(struct device *dev, struct device_attribute *attr,
-> @@ -380,7 +388,7 @@ struct backlight_device *backlight_device_register(const char *name,
->  }
->  EXPORT_SYMBOL(backlight_device_register);
->  
-> -bool backlight_device_registered(enum backlight_type type)
-> +struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
->  {
->  	bool found = false;
->  	struct backlight_device *bd;
-> @@ -394,7 +402,13 @@ bool backlight_device_registered(enum backlight_type type)
->  	}
->  	mutex_unlock(&backlight_dev_list_mutex);
->  
-> -	return found;
-> +	return found ? bd : NULL;
-> +}
-> +EXPORT_SYMBOL(backlight_device_get_by_type);
-> +
-> +bool backlight_device_registered(enum backlight_type type)
-> +{
-> +	return backlight_device_get_by_type(type) ? true : false;
->  }
->  EXPORT_SYMBOL(backlight_device_registered);
->  
-> diff --git a/include/acpi/video.h b/include/acpi/video.h
-> index 843ef1adfbfa..956300d2f214 100644
-> --- a/include/acpi/video.h
-> +++ b/include/acpi/video.h
-> @@ -3,6 +3,19 @@
->  
->  #include <linux/errno.h> /* for ENODEV */
->  
-> +struct acpi_video_brightness_flags {
-> +	u8 _BCL_no_ac_battery_levels:1;	/* no AC/Battery levels in _BCL */
-> +	u8 _BCL_reversed:1;		/* _BCL package is in a reversed order */
-> +	u8 _BQC_use_index:1;		/* _BQC returns an index value */
-> +};
-> +
-> +struct acpi_video_device_brightness {
-> +	int curr;
-> +	int count;
-> +	int *levels;
-> +	struct acpi_video_brightness_flags flags;
-> +};
-> +
->  struct acpi_device;
->  
->  #define ACPI_VIDEO_CLASS	"video"
-> @@ -22,6 +35,8 @@ extern void acpi_video_unregister(void);
->  extern void acpi_video_unregister_backlight(void);
->  extern int acpi_video_get_edid(struct acpi_device *device, int type,
->  			       int device_id, void **edid);
-> +extern int acpi_video_get_levels(struct acpi_device *device,
-> +				struct acpi_video_device_brightness **dev_br);
->  extern bool acpi_video_verify_backlight_support(void);
->  #else
->  static inline int acpi_video_register(void) { return 0; }
-> @@ -32,6 +47,11 @@ static inline int acpi_video_get_edid(struct acpi_device *device, int type,
->  {
->  	return -ENODEV;
->  }
-> +static int acpi_video_get_levels(struct acpi_device *device,
-> +			struct acpi_video_device_brightness **dev_br)
-> +{
-> +	return -ENODEV;
-> +}
->  static inline bool acpi_video_verify_backlight_support(void) { return false; }
->  #endif
->  
-> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-> index adb14a8616df..c59a020df3f8 100644
-> --- a/include/linux/backlight.h
-> +++ b/include/linux/backlight.h
-> @@ -140,6 +140,8 @@ extern void backlight_force_update(struct backlight_device *bd,
->  extern bool backlight_device_registered(enum backlight_type type);
->  extern int backlight_register_notifier(struct notifier_block *nb);
->  extern int backlight_unregister_notifier(struct notifier_block *nb);
-> +extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
-> +extern int backlight_device_set_brightness(struct backlight_device *bd, int brightness);
->  
->  #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
->  
+> 
+> Cheers, Eduardo
+> >          dev_info(&cdev->device, "%s bind to %d: %d-%s\n", cdev->type,
+> >              i, ret, ret ? "fail" : "succeed");
+> > diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> > index 6e0a3fbfae86..c3b25187b467 100644
+> > --- a/drivers/thermal/fair_share.c
+> > +++ b/drivers/thermal/fair_share.c
+> > @@ -109,7 +109,7 @@ static int fair_share_throttle(struct
+> > thermal_zone_device *tz, int trip)
+> >              continue;
+> >  
+> >          instance->target = get_target_state(tz, cdev,
+> > -                    tzp->tbp[i].weight, cur_trip_level);
+> > +                    instance->weight, cur_trip_level);
+> >  
+> >          instance->cdev->updated = false;
+> >          thermal_cdev_update(cdev);
+> > diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> > index 5a1f1070b702..74d0c9951eef 100644
+> > --- a/drivers/thermal/imx_thermal.c
+> > +++ b/drivers/thermal/imx_thermal.c
+> > @@ -307,7 +307,8 @@ static int imx_bind(struct thermal_zone_device *tz,
+> >  
+> >      ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
+> >                             THERMAL_NO_LIMIT,
+> > -                           THERMAL_NO_LIMIT);
+> > +                           THERMAL_NO_LIMIT
+> > +                           THERMAL_WEIGHT_DEFAULT);
+> >      if (ret) {
+> >          dev_err(&tz->device,
+> >              "binding zone %s with cdev %s failed:%d\n",
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> > index e032b9bf4085..cf4036cbb671 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -157,7 +157,8 @@ static int of_thermal_bind(struct
+> > thermal_zone_device *thermal,
+> >              ret = thermal_zone_bind_cooling_device(thermal,
+> >                          tbp->trip_id, cdev,
+> >                          tbp->max,
+> > -                        tbp->min);
+> > +                        tbp->min,
+> > +                        tbp->usage);
+> >              if (ret)
+> >                  return ret;
+> >          }
+> > diff --git a/drivers/thermal/samsung/exynos_thermal_common.c
+> > b/drivers/thermal/samsung/exynos_thermal_common.c
+> > index b6be572704a4..d653798b519f 100644
+> > --- a/drivers/thermal/samsung/exynos_thermal_common.c
+> > +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+> > @@ -163,7 +163,7 @@ static int exynos_bind(struct thermal_zone_device
+> > *thermal,
+> >          case MONITOR_ZONE:
+> >          case WARN_ZONE:
+> >              if (thermal_zone_bind_cooling_device(thermal, i, cdev,
+> > -                                level, 0)) {
+> > +                                level, 0, THERMAL_WEIGHT_DEFAULT)) {
+> >                  dev_err(data->dev,
+> >                      "error unbinding cdev inst=%d\n", i);
+> >                  ret = -EINVAL;
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index 4921e084c20b..199866864ef1 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -277,7 +277,8 @@ static void print_bind_err_msg(struct
+> > thermal_zone_device *tz,
+> >  
+> >  static void __bind(struct thermal_zone_device *tz, int mask,
+> >              struct thermal_cooling_device *cdev,
+> > -            unsigned long *limits)
+> > +            unsigned long *limits,
+> > +            unsigned int weight)
+> >  {
+> >      int i, ret;
+> >  
+> > @@ -292,7 +293,8 @@ static void __bind(struct thermal_zone_device *tz,
+> > int mask,
+> >                  upper = limits[i * 2 + 1];
+> >              }
+> >              ret = thermal_zone_bind_cooling_device(tz, i, cdev,
+> > -                                   upper, lower);
+> > +                                   upper, lower,
+> > +                                   weight);
+> >              if (ret)
+> >                  print_bind_err_msg(tz, cdev, ret);
+> >          }
+> > @@ -339,7 +341,8 @@ static void bind_cdev(struct thermal_cooling_device
+> > *cdev)
+> >                  continue;
+> >              tzp->tbp[i].cdev = cdev;
+> >              __bind(pos, tzp->tbp[i].trip_mask, cdev,
+> > -                   tzp->tbp[i].binding_limits);
+> > +                   tzp->tbp[i].binding_limits,
+> > +                   tzp->tbp[i].weight);
+> >          }
+> >      }
+> >  
+> > @@ -378,7 +381,8 @@ static void bind_tz(struct thermal_zone_device *tz)
+> >                  continue;
+> >              tzp->tbp[i].cdev = pos;
+> >              __bind(tz, tzp->tbp[i].trip_mask, pos,
+> > -                   tzp->tbp[i].binding_limits);
+> > +                   tzp->tbp[i].binding_limits,
+> > +                   tzp->tbp[i].weight);
+> >          }
+> >      }
+> >  exit:
+> > @@ -770,7 +774,8 @@ passive_store(struct device *dev, struct
+> > device_attribute *attr,
+> >                  thermal_zone_bind_cooling_device(tz,
+> >                          THERMAL_TRIPS_NONE, cdev,
+> >                          THERMAL_NO_LIMIT,
+> > -                        THERMAL_NO_LIMIT);
+> > +                        THERMAL_NO_LIMIT,
+> > +                        THERMAL_WEIGHT_DEFAULT);
+> >          }
+> >          mutex_unlock(&thermal_list_lock);
+> >          if (!tz->passive_delay)
+> > @@ -1009,7 +1014,9 @@ thermal_cooling_device_trip_point_show(struct
+> > device *dev,
+> >   * @lower:    the Minimum cooling state can be used for this trip point.
+> >   *        THERMAL_NO_LIMIT means no lower limit,
+> >   *        and the cooling device can be in cooling state 0.
+> > - *
+> > + * @weight:    The weight of the cooling device to be bound to the
+> > +        thermal zone. THERMAL_WEIGHT_DEFAULT for default value
+> > +
+> >   * This interface function bind a thermal cooling device to the certain
+> > trip
+> >   * point of a thermal zone device.
+> >   * This function is usually called in the thermal zone device .bind
+> > callback.
+> > @@ -1019,7 +1026,8 @@ thermal_cooling_device_trip_point_show(struct
+> > device *dev,
+> >  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+> >                       int trip,
+> >                       struct thermal_cooling_device *cdev,
+> > -                     unsigned long upper, unsigned long lower)
+> > +                     unsigned long upper, unsigned long lower,
+> > +                     unsigned int weight)
+> >  {
+> >      struct thermal_instance *dev;
+> >      struct thermal_instance *pos;
+> > @@ -1062,6 +1070,7 @@ int thermal_zone_bind_cooling_device(struct
+> > thermal_zone_device *tz,
+> >      dev->upper = upper;
+> >      dev->lower = lower;
+> >      dev->target = THERMAL_NO_TARGET;
+> > +    dev->weight = weight;
+> >  
+> >      result = get_idr(&tz->idr, &tz->lock, &dev->id);
+> >      if (result)
+> > diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+> > index b907be823527..1c61abe7801f 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -48,6 +48,7 @@ struct thermal_instance {
+> >      struct device_attribute attr;
+> >      struct list_head tz_node; /* node in tz->thermal_instances */
+> >      struct list_head cdev_node; /* node in cdev->thermal_instances */
+> > +    unsigned int weight; /* The weight of the cooling device */
+> >  };
+> >  
+> >  int thermal_register_governor(struct thermal_governor *);
+> > diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > index 9eec26dc0448..772549ec9bd8 100644
+> > --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > @@ -147,7 +147,8 @@ static int ti_thermal_bind(struct
+> > thermal_zone_device *thermal,
+> >      return thermal_zone_bind_cooling_device(thermal, 0, cdev,
+> >      /* bind with min and max states defined by cpu_cooling */
+> >                          THERMAL_NO_LIMIT,
+> > -                        THERMAL_NO_LIMIT);
+> > +                        THERMAL_NO_LIMIT,
+> > +                        THERMAL_WEIGHT_DEFAULT);
+> >  }
+> >  
+> >  /* Unbind callback functions for thermal zone */
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index fc4fdcbbdecc..674795ba0900 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -40,6 +40,9 @@
+> >  /* No upper/lower limit requirement */
+> >  #define THERMAL_NO_LIMIT    ((u32)~0)
+> >  
+> > +/* Default weight of a bound cooling device */
+> > +#define THERMAL_WEIGHT_DEFAULT 1
+> > +
+> >  /* Unit conversion macros */
+> >  #define KELVIN_TO_CELSIUS(t)    (long)(((long)t-2732 >= 0) ?    \
+> >                  ((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+> > @@ -375,7 +378,8 @@ void thermal_zone_device_unregister(struct
+> > thermal_zone_device *);
+> >  
+> >  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+> >                       struct thermal_cooling_device *,
+> > -                     unsigned long, unsigned long);
+> > +                     unsigned long, unsigned long,
+> > +                     unsigned int);
+> >  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+> >                         struct thermal_cooling_device *);
+> >  void thermal_zone_device_update(struct thermal_zone_device *);
+> > 
+> > 
+
+
