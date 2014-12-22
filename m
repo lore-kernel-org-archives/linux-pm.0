@@ -1,49 +1,127 @@
-From: sriram@marirs.net.in
-Subject: [PATCH] cpupower Makefile change
-Date: Mon, 22 Dec 2014 22:17:37 +0530
-Message-ID: <1419266857.3837604.205784097.7B0DB495@webmail.messagingengine.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v5 0/7] Add initial support for DA9150 Charger & Fuel-Gauge IC
+Date: Mon, 22 Dec 2014 16:50:57 +0000
+Message-ID: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out1-smtp.messagingengine.com ([66.111.4.25]:57811 "EHLO
-	out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754939AbaLVQrj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Dec 2014 11:47:39 -0500
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-	by mailout.nyi.internal (Postfix) with ESMTP id 5E80520B83
-	for <linux-pm@vger.kernel.org>; Mon, 22 Dec 2014 11:47:38 -0500 (EST)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, trenn@suse.de
 
-The cpupower tool, when compiled against libcpupower.so fail's to run as
-the linker file path's are missing during compilation. So added changes
-in the Makefile to run cpupower tool, which helps us run the tool
-without doing a 'make install'. 
+This patch set adds initial support for the Dialog DA9150 Integrated Charger &
+Fuel-Gauge IC. The device also provides GPIO and GPADC functionality.
 
+In this patch set the following is provided:
+ - MFD Core support and DT bindings documentation.
+ - IIO GPADC support and DT bindings documentation.
+ - Power Supply Charger support and DT bindings documentation.
+ - Update to MAINTAINERS file to add DA9150 files to Dialog support list.
+ - Update to IIO ABI document to add info regarding input current readings.
 
-Signed-off-by: Sriram Raghunathan <sriram@marirs.net.in>
----
- tools/power/cpupower/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+To keep patch submission from being too large, support for GPIO and Fuel-Gauge
+will come after initial support patches are accepted.
 
-diff --git a/tools/power/cpupower/Makefile
-b/tools/power/cpupower/Makefile
-index 2e2ba2e..3ed7c04 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -209,7 +209,7 @@ $(OUTPUT)%.o: %.c
- 
- $(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_MAJ)
- 	$(ECHO) "  CC      " $@
--       $(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -lrt
--lpci -L$(OUTPUT) -o $@
-+       $(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower
--Wl,-rpath=./ -lrt -lpci -L$(OUTPUT) -o $@
- 	$(QUIET) $(STRIPCMD) $@
- 
- $(OUTPUT)po/$(PACKAGE).pot: $(UTIL_SRC)
--- 
-1.8.3.2
+This patch set is baselined against the v3.19-rc1 kernel version.
 
+Changes in v5:
+- Use sizeof(*gpadc) instead of sizeof(struct da9150_gpadc) in GPADC driver.
+- Fix erroneous goto for IRQ failure in GPADC driver. Now returns err directly.
+- Remove IIO ABI document patch as this has been taken by maintainer.
+
+Changes in v4:
+- Correct MODULE_AUTHOR lines so e-mail addresses correctly surrounded with <>.
+- Update to MFD binding document to remove unnecesary I2C reference, make
+  module description generic, and add link to interrupt binding documentation.
+- For GPADC driver, irq request moved above iio related calls in probe() to
+  mirror correctly the remove() function ordering, as requested.
+- For charger driver, remove additional sysfs entries as these are not necessary
+  (debug only).
+- For charger driver, add helper function for requesting IRQs, to make probe()
+  function cleaner/simpler.
+
+Changes in v3:
+- IRQ register and remove helper functions removed from MFD, deemed unnecessary.
+  Drivers using helper functions updated to use direct calls to relevant
+  kernel framework functions.
+- MFD I2C file removed and code folded into -core file as requested.
+- MFD core now buildable as driver module.
+- Platform data structure definition moved into core header, pdata.h removed.
+- Update functions in GPADC driver to be static, where appropriate.
+- Change units of GPADC readings to match ABI documentation. Updates to charger
+  driver also made to align with this modification.
+- Refactor GPADC temp calculations to use scale & offset method.
+- Scale values now returned as FRACTIONAL to allow for accurate conversion in
+  user-space.
+- Tidy up of GPADC scale, offset and raw functions to return from case statements
+  with correct return types.
+- Update GPADC channel macros naming to prefix with DA9150, prevent conflict.
+- GPADC GPIO voltage readings actually in 6V range, updated accordingly.
+- Addition to IIO ABI document to add details on input current readings.
+- Small style updates to address comments.
+
+Changes in v2:
+ - Drop devicetree prefix patch as this is being dealt with separately.
+ - IIO framework fix patch removed from set, has already been accepted/merged.
+ - Use __ instead of _ for protecting #ifdefs in headers.
+ - Moved private data & definitions to source files and remove unwanted headers.
+ - Bug fix to EXPORT_SYMBOL for common functions in MFD core used by
+   sub-devices, so they can be correctly built as kernel modules.
+ - Removed unnecessary channels from GPADC IIO driver to simplify code.
+ - For GPADC IIO driver, VBAT reading now provides scale and offset values as it
+   is a linear scale.
+ - GPADC read code refactored to make it tidier.
+ - Remove use of flag to indicate GPADC availability. IIO framework should
+   indicate need to defer if it's not yet instantiated.
+ - Unwanted comments removed.
+ - Removed conditional shutdown of device (Charger/MFD) as this is not needed.
+ - Removed AC type supply from charger as device cannot differentiate. Now just
+   uses USB supply type.
+ - Removed use of invalid-tbat flag from platform data as it doesn't really add
+   anything to the driver except forcing battery present status.
+ - Bug fix for checking of usb_phy validity in Charger probe() function.
+ - Addition of common IRQ release function to allow sub-devices to explicitly
+   tidy up IRQs when devm clean up is too late.
+ - Improved tidy up of resources in charger.
+ - Fix location of IIO GPADC related devicetree binding document so it now
+   resides correctly under 'adc' directory.
+ - Add update to MAINTAINERS file to include these files in Dialog support list.
+
+Adam Thomson (7):
+  mfd: Add support for DA9150 combined charger & fuel-gauge device
+  mfd: da9150: Add DT binding documentation for core
+  iio: Add support for DA9150 GPADC
+  iio: da9150: Add DT binding documentation for GPADC
+  power: Add support for DA9150 Charger
+  power: da9150: Add DT binding documentation for charger
+  MAINTAINERS: Include DA9150 files in Dialog Semiconductor support
+    list.
+
+ .../devicetree/bindings/iio/adc/da9150-gpadc.txt   |   16 +
+ Documentation/devicetree/bindings/mfd/da9150.txt   |   43 +
+ .../devicetree/bindings/power/da9150-charger.txt   |   26 +
+ MAINTAINERS                                        |    4 +
+ drivers/iio/adc/Kconfig                            |    9 +
+ drivers/iio/adc/Makefile                           |    1 +
+ drivers/iio/adc/da9150-gpadc.c                     |  409 +++++++
+ drivers/mfd/Kconfig                                |   12 +
+ drivers/mfd/Makefile                               |    2 +-
+ drivers/mfd/da9150-core.c                          |  413 +++++++
+ drivers/power/Kconfig                              |   12 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/da9150-charger.c                     |  666 +++++++++++
+ include/linux/mfd/da9150/core.h                    |   68 ++
+ include/linux/mfd/da9150/registers.h               | 1155 ++++++++++++++++++++
+ 15 files changed, 2836 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+ create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
+ create mode 100644 Documentation/devicetree/bindings/power/da9150-charger.txt
+ create mode 100644 drivers/iio/adc/da9150-gpadc.c
+ create mode 100644 drivers/mfd/da9150-core.c
+ create mode 100644 drivers/power/da9150-charger.c
+ create mode 100644 include/linux/mfd/da9150/core.h
+ create mode 100644 include/linux/mfd/da9150/registers.h
+
+--
+1.9.3
