@@ -1,93 +1,118 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
-Date: Mon, 22 Dec 2014 09:53:44 +0000
-Message-ID: <20141222095344.GE4525@x1>
-References: <54868CF6.6020505@intel.com>
- <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com>
- <20141211010226.GA26253@aaronlu.sh.intel.com>
- <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com>
- <1418265472.12435.68.camel@rzhang1-toshiba>
- <548934D0.8000502@intel.com>
- <1418286781.12435.73.camel@rzhang1-toshiba>
- <54895821.3050902@intel.com>
- <1419217761.19619.2.camel@rzhang1-toshiba>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Dongsu Park <dongsu.park@profitbricks.com>
+Subject: [RFC PATCH 16/17] fs: convert buffer head etc. to use immutable biovecs API.
+Date: Mon, 22 Dec 2014 12:48:43 +0100
+Message-ID: <4287748e7d1a0fce1c951567a7688821f1a21e5e.1419241597.git.dongsu.park@profitbricks.com>
+References: <cover.1419241597.git.dongsu.park@profitbricks.com>
+ <d26a9a0fc9a7d1529c115785ee5935d5750782bd.1419241597.git.dongsu.park@profitbricks.com>
+ <f67d71b4a375ab504c2fc02e94a9d2a651686cab.1419241597.git.dongsu.park@profitbricks.com>
+ <fe96db02d805ca6191dd605d03dac0d04c926fc1.1419241597.git.dongsu.park@profitbricks.com>
+ <bb0051ceb5805896089ded26c0f7f06758b25105.1419241597.git.dongsu.park@profitbricks.com>
+ <e4b7b017eaa81784889ebb2a4e6a7d4366adf13a.1419241597.git.dongsu.park@profitbricks.com>
+ <83a9ee8a309f8e08490c5dd715a608ea054f5c33.1419241597.git.dongsu.park@profitbricks.com>
+ <fc859b23b383f6f4c1e81f4210aa62cb1bdc935f.1419241597.git.dongsu.park@profitbricks.com>
+ <0b6ba533a64aec98e8447bfd30c6622d0729d12e.1419241597.git.dongsu.park@profitbricks.com>
+ <d42dae3d2a64fa4c3a0893f1af963151b31869e3.1419241597.git.dongsu.park@profitbricks.com>
+ <4334b90a56b96ad7a11e4ba7eb97c2cf4405950d.1419241597.git.dongsu.park@profitbricks.com>
+ <abe647cf7cf272220227fad4dac9c43641192f01.1419241597.git.dongsu.park@profitbricks.com>
+ <b7767767957ca758ac492e94dfb320bea4f52dd7.1419241597.git.dongsu.park@profitbricks.com>
+ <e35d37b66d621c51f2eb24ff024291bd1d53422e.1419241597.git.dongsu.park@profitbricks.com>
+ <a7118fb6a3353958a19f4d848472da2de76de238.1419241597.git.dongsu.park@profitbricks.com>
+ <a0e8166c0c5455755b0cd2d79e8066636c22aa77.1419241597.git.dongsu.park@profitbricks.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1419217761.19619.2.camel@rzhang1-toshiba>
+In-Reply-To: <a0e8166c0c5455755b0cd2d79e8066636c22aa77.1419241597.git.dongsu.park@profitbricks.com>
+In-Reply-To: <cover.1419241597.git.dongsu.park@profitbricks.com>
+References: <cover.1419241597.git.dongsu.park@profitbricks.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>, Kent Overstreet <kmo@daterainc.com>, Ming Lin <mlin@minggr.net>, Dongsu Park <dongsu.park@profitbricks.com>, Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 22 Dec 2014, Zhang Rui wrote:
+From: Kent Overstreet <kmo@daterainc.com>
 
-> On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
-> > INT3406 ACPI device object resembles an ACPI video output device, b=
-ut its
-> > _BCM is said to be deprecated and should not be used. So we will ma=
-ke
-> > use of the raw interface to do the actual cooling. Due to this, the
-> > backlight core has some modifications. Also, to re-use some of the =
-ACPI
-> > video module's code, one function has been exported.
-> >=20
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->=20
-> Jingoo and Lee,
->=20
-> are you okay with the changes in drivers/video/backlight/backlight.c =
-and
-> include/linux/backlight.h?
+Increase bio->bi_remaining instead of calling bio_get(),
+and call bio_end() instead of bio_put() upon buffer_head submission.
+Also make bio submission in kernel/power/block_io.c to properly submit
+bios by checking whether bio_chain is available or not.
 
-NB: Jingoo still needs to review the crux of the patch.
+Doing that, some codes that have been still using the older API
+can be converted in order to use the immutable biovecs API.
 
-> > ---
-> > v6: Fix an issue that wrongly set error path return value as report=
-ed
-> > by Olof Johansson.
-> >=20
-> >  drivers/acpi/video.c                              |  77 ++++----
-> >  drivers/thermal/Kconfig                           |  26 +--
-> >  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
-> >  drivers/thermal/int340x_thermal/Makefile          |   1 +
-> >  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++=
-++++++++++++
-> >  drivers/video/backlight/backlight.c               |  44 +++--
-> >  include/acpi/video.h                              |  20 ++
-> >  include/linux/backlight.h                         |   2 +
-> >  8 files changed, 366 insertions(+), 74 deletions(-)
-> >  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
-> >  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal=
-=2Ec
+Signed-off-by: Kent Overstreet <kmo@daterainc.com>
+[dpark: add more description in commit message]
+Signed-off-by: Dongsu Park <dongsu.park@profitbricks.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ fs/buffer.c             |  4 ++--
+ kernel/power/block_io.c | 23 ++++++++++++++++++-----
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
-I gather by the message at the top that you're looking for an Ack so
-this can be routed through another subsystem.  Not going to happen.
-
-So you're on v6 already and a) no one has mentioned that introducing a
-new driver AND making core framework changes (in a different subsystem
-to boot) in one patch is bad and b) this is the first time you've
-Cc'ed the maintainers of the aforementioned subsystem?
-
-Moving forward you should split this patch into component parts and
-resend -- only this time ensure you Cc all maintainers in the first
-instance, rather than as as afterthought.
-
-> > -config INT340X_THERMAL
-> > -	tristate "ACPI INT340X thermal drivers"
-> > -	depends on X86 && ACPI
-> > -	select THERMAL_GOV_USER_SPACE
-> > -	select ACPI_THERMAL_REL
-> > -	select ACPI_FAN
-
-This patch also relies on backlight as well, no?
-
-[...]
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 35ac0ec..78e63e3 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -3038,13 +3038,13 @@ int _submit_bh(int rw, struct buffer_head *bh, unsigned long bio_flags)
+ 	if (buffer_prio(bh))
+ 		rw |= REQ_PRIO;
+ 
+-	bio_get(bio);
++	atomic_inc(&bio->bi_remaining);
+ 	submit_bio(rw, bio);
+ 
+ 	if (bio_flagged(bio, BIO_EOPNOTSUPP))
+ 		ret = -EOPNOTSUPP;
+ 
+-	bio_put(bio);
++	bio_endio(bio, 0);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(_submit_bh);
+diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
+index 9a58bc2..7206408 100644
+--- a/kernel/power/block_io.c
++++ b/kernel/power/block_io.c
+@@ -34,7 +34,6 @@ static int submit(int rw, struct block_device *bdev, sector_t sector,
+ 	bio = bio_alloc(__GFP_WAIT | __GFP_HIGH, 1);
+ 	bio->bi_iter.bi_sector = sector;
+ 	bio->bi_bdev = bdev;
+-	bio->bi_end_io = end_swap_bio_read;
+ 
+ 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+ 		printk(KERN_ERR "PM: Adding page to bio failed at %llu\n",
+@@ -44,15 +43,29 @@ static int submit(int rw, struct block_device *bdev, sector_t sector,
+ 	}
+ 
+ 	lock_page(page);
+-	bio_get(bio);
+ 
+ 	if (bio_chain == NULL) {
+-		submit_bio(bio_rw, bio);
+-		wait_on_page_locked(page);
++		int err = submit_bio_wait(bio_rw, bio);
++
++		if (err) {
++			SetPageError(page);
++			ClearPageUptodate(page);
++			pr_alert("Read-error on swap-device (%u:%u:%llu)\n",
++				 imajor(bio->bi_bdev->bd_inode),
++				 iminor(bio->bi_bdev->bd_inode),
++				 (unsigned long long)bio->bi_iter.bi_sector);
++		} else {
++			SetPageUptodate(page);
++		}
++
+ 		if (rw == READ)
+-			bio_set_pages_dirty(bio);
++			set_page_dirty_lock(page);
++		unlock_page(page);
+ 		bio_put(bio);
+ 	} else {
++		bio->bi_end_io = end_swap_bio_read;
++		bio_get(bio);
++
+ 		if (rw == READ)
+ 			get_page(page);	/* These pages are freed later */
+ 		bio->bi_private = *bio_chain;
+-- 
+2.1.0
