@@ -1,51 +1,48 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: [PATCH 19/28] thermal: int340x_thermal: drop owner assignment from platform_drivers
-Date: Sun, 21 Dec 2014 22:14:40 +0100
-Message-ID: <1419196495-9626-20-git-send-email-wsa@the-dreams.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 05/28] cpufreq: drop owner assignment from platform_drivers
+Date: Mon, 22 Dec 2014 07:14:56 +0530
+Message-ID: <CAKohpok_G3Gf3XbcK06ELM3ocWQmNPepx1i72VXR8sNbK1L81Q@mail.gmail.com>
 References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+	<1419196495-9626-6-git-send-email-wsa@the-dreams.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:58625 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753491AbaLVBo5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Dec 2014 20:44:57 -0500
+Received: by mail-oi0-f53.google.com with SMTP id g201so8175511oib.12
+        for <linux-pm@vger.kernel.org>; Sun, 21 Dec 2014 17:44:57 -0800 (PST)
+In-Reply-To: <1419196495-9626-6-git-send-email-wsa@the-dreams.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This platform_driver does not need to set an owner, it will be populated by the
-driver core.
+On 22 December 2014 at 02:44, Wolfram Sang <wsa@the-dreams.de> wrote:
+> This platform_driver does not need to set an owner, it will be populated by the
+> driver core.
+>
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+> Generated with coccinelle. SmPL file is in the introductory msg. The big
+> cleanup was pulled in this merge window. This series catches the bits fallen
+> through. The patches shall go in via the subsystem trees.
+>
+>  drivers/cpufreq/ls1x-cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
+> index 25fbd6a1374f..f0913eee2f50 100644
+> --- a/drivers/cpufreq/ls1x-cpufreq.c
+> +++ b/drivers/cpufreq/ls1x-cpufreq.c
+> @@ -210,7 +210,6 @@ out:
+>  static struct platform_driver ls1x_cpufreq_platdrv = {
+>         .driver = {
+>                 .name   = "ls1x-cpufreq",
+> -               .owner  = THIS_MODULE,
+>         },
+>         .probe          = ls1x_cpufreq_probe,
+>         .remove         = ls1x_cpufreq_remove,
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
----
-Generated with coccinelle. SmPL file is in the introductory msg. The big
-cleanup was pulled in this merge window. This series catches the bits fallen
-through. The patches shall go in via the subsystem trees.
-
- drivers/thermal/int340x_thermal/int3400_thermal.c | 1 -
- drivers/thermal/int340x_thermal/int3402_thermal.c | 1 -
- 2 files changed, 2 deletions(-)
-
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index dcb306ea14a4..65a98a97df07 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -335,7 +335,6 @@ static struct platform_driver int3400_thermal_driver = {
- 	.remove = int3400_thermal_remove,
- 	.driver = {
- 		   .name = "int3400 thermal",
--		   .owner = THIS_MODULE,
- 		   .acpi_match_table = ACPI_PTR(int3400_thermal_match),
- 		   },
- };
-diff --git a/drivers/thermal/int340x_thermal/int3402_thermal.c b/drivers/thermal/int340x_thermal/int3402_thermal.c
-index a5d08c14ba24..c5cbc3af3a05 100644
---- a/drivers/thermal/int340x_thermal/int3402_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3402_thermal.c
-@@ -231,7 +231,6 @@ static struct platform_driver int3402_thermal_driver = {
- 	.remove = int3402_thermal_remove,
- 	.driver = {
- 		   .name = "int3402 thermal",
--		   .owner = THIS_MODULE,
- 		   .acpi_match_table = int3402_thermal_match,
- 		   },
- };
--- 
-2.1.3
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
