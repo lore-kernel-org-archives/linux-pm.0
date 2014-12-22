@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 3/8] hwmon: dts: Doc: Add DTS doc to explain how to use PWM
- FAN as a cooling device
-Date: Mon, 22 Dec 2014 17:27:43 +0100
-Message-ID: <1419265668-32283-4-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v2 5/8] hwmon: thermal: dts: Add properties to use pwm-fan
+ device as a cooling device in Odroid U3
+Date: Mon, 22 Dec 2014 17:27:45 +0100
+Message-ID: <1419265668-32283-6-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1419265668-32283-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -12,55 +12,64 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Several new properties to allow PWM fan working as a cooling device have been
-combined into this single commit.
+With those bindings it is possible to use pwm-fan device available in
+Odroid U3 as a cooling device.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
-- Rename cooling-pwm-values to cooling-levels
-- Remove default-pulse-width property and stick to default hwmon policy
+- Rename cooling-pwm-values property to cooling-levels
 ---
- .../devicetree/bindings/hwmon/pwm-fan.txt          | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-index 610757c..001446a 100644
---- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-+++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-@@ -3,10 +3,33 @@ Bindings for a fan connected to the PWM lines
- Required properties:
- - compatible	: "pwm-fan"
- - pwms		: the PWM that is used to control the PWM fan
-+- cooling-levels      : PWM duty cycle values in a range from 0 to 255
-+			which correspond to thermal cooling states
-+
-+Thorough description of the following bindings:
-+		cooling-min-state = <0>;
-+		cooling-max-state = <3>;
-+		#cooling-cells = <2>;
-+		thermal-zone {
-+			cpu_thermal: cpu-thermal {
-+			cooling-maps {
-+				map0 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&fan0 0 1>;
-+				};
-+			};
-+		};
-+
-+for PWM FAN used as cooling device can be found at:
-+./Documentation/devicetree/bindings/thermal/thermal.txt
+diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+index 60bd1e4..380035d 100644
+--- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
++++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+@@ -32,11 +32,42 @@
+ 		};
+ 	};
  
- Example:
- 	pwm-fan {
+-	pwm-fan {
++	fan0: pwm-fan {
  		compatible = "pwm-fan";
- 		status = "okay";
  		pwms = <&pwm 0 10000 0>;
 +		cooling-min-state = <0>;
 +		cooling-max-state = <3>;
 +		#cooling-cells = <2>;
 +		cooling-levels = <0 102 170 255>;
+ 		status = "okay";
  	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			cooling-maps {
++				map0 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&cpu0 7 7>;
++				};
++				map1 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&cpu0 13 13>;
++				};
++				map2 {
++				     trip = <&cpu_alert0>;
++				     cooling-device = <&fan0 0 1>;
++				};
++				map3 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&fan0 1 2>;
++				};
++				map4 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&fan0 2 3>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &pwm {
 -- 
 2.0.0.rc2
