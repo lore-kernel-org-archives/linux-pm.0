@@ -1,54 +1,38 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] regulator: rt5033-regulator: Use
- regulator_nodes/of_match in the descriptor
-Date: Mon, 22 Dec 2014 15:10:25 +0000
-Message-ID: <20141222151025.GY17800@sirena.org.uk>
-References: <1418901216-19030-1-git-send-email-beomho.seo@samsung.com>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH v2 00/17] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Mon, 22 Dec 2014 21:20:35 +0530
+Message-ID: <CAM4voakxJPjfGu3gkpCbDS+SY1TP39Of+0ed=5jS55ARn95pYg@mail.gmail.com>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+	<1418213396-743-1-git-send-email-l.majewski@samsung.com>
+	<20141210102712.GA2919@developer>
+	<20141210151925.61a0b091@amdc2363>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FvpZCdL3V2P9482l"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:44063 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754768AbaLVPKo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Dec 2014 10:10:44 -0500
-Content-Disposition: inline
-In-Reply-To: <1418901216-19030-1-git-send-email-beomho.seo@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20141210151925.61a0b091@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lgirdwood@gmail.com, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
+Hi Lukasz and Eduardo,
 
---FvpZCdL3V2P9482l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+[...]
+>
+> Although, this shouldn't be a problem.
+>
+>> That is why we had the cycle with cpufreq folks, remember?
+>>
+>> (I will have a look in your patches)
+>
+> It would be great if those patches could find their way to therma -next.
+> Then also Abhilash could benefit from them.
 
-On Thu, Dec 18, 2014 at 08:13:36PM +0900, Beomho Seo wrote:
-> This patch is add regulator_nodes/of_match in the regulator descriptor
-> for using information from DT instead of sppecific codes.
+I have a couple of 5420/5800 based chromebooks that I will test this
+series on. Is it OK for me to start basing my Exynos7 TMU support on
+this series ? Please let me know if I can help in any other way with
+this.
 
->  drivers/regulator/rt5033-regulator.c |    8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-
-This isn't replacing existing code with use of the framework, it's
-adding new bindings where there were none before so it needs to add a
-binding document too.
-
---FvpZCdL3V2P9482l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUmDRgAAoJECTWi3JdVIfQynIH/2xAjbwTHL8cbNpaumgU7CQf
-R+BFNItfngflNMPBm6LIlkp7Y9aAjbHinvwHXe57KhN5ei/mFyOcGdXdYArrUrwz
-C8Z/O2j5NFlj9lbcOozAAyclAkQKwJkA+Sih5DolEC9RNNP/l59fhaYZnKTu5QBp
-LXM+ZfK43onmC55uG6Ku/BQ3oHbJT/3efSi8HRezX3fwGAiM6Rnd9fBC+Ha2QHGq
-4RBQVYYejOkXYcs+XWhkQ88iqxDczh4wsBuQsIYD/X/ciiBpYpMX3iK88R5UTVDG
-J4SrvbuseEwRehxe/nvQKah136M5BnldRZNqleAkYuzOPj8LIjEdLcpchX5M10Y=
-=dlST
------END PGP SIGNATURE-----
-
---FvpZCdL3V2P9482l--
+Regards,
+Abhilash
