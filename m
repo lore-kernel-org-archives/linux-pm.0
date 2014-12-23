@@ -1,63 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 12/13] cpufreq: stats: Fix locking
-Date: Tue, 23 Dec 2014 16:25:42 +0530
-Message-ID: <CAKohpo=B99MdiJRvH021kOhU08V-W1g+a=FFpcC9tEHEDKjOvw@mail.gmail.com>
-References: <cover.1418902789.git.viresh.kumar@linaro.org>
-	<6277a557b0102524ca317bf0aa94d7b479375d6e.1418902789.git.viresh.kumar@linaro.org>
-	<CAKohpok+7b3t3-82EO+9tpmBHavMxBT1r2ORhPcQbT3hT=p9mA@mail.gmail.com>
-	<54994842.3000801@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f51.google.com ([209.85.218.51]:39639 "EHLO
-	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026AbaLWKzn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Dec 2014 05:55:43 -0500
-Received: by mail-oi0-f51.google.com with SMTP id e131so13254226oig.10
-        for <linux-pm@vger.kernel.org>; Tue, 23 Dec 2014 02:55:42 -0800 (PST)
-In-Reply-To: <54994842.3000801@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [RFC PATCH 0/4] devfreq: Add generic exynos memory-bus frequency driver
+Date: Tue, 23 Dec 2014 20:44:33 +0900
+Message-ID: <1419335077-31020-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 23 December 2014 at 16:17, Prarit Bhargava <prarit@redhat.com> wrote:
->>       sysfs_remove_group(&policy->kobj, &stats_attr_group);
->
-> ^^^ this line is not guaranteed to have removed the group files by the time it
+These patch-set adds the generic exynos bus frequency driver for memory bus
+with DEVFREQ framework. The Samsung Exynos SoCs have the common architecture
+for memory bus between DRAM memory and MMC/sub IP in SoC. This driver can
+support the memory bus frequency driver for Exynos SoCs.
 
-Strange .. Under what conditions can the above statement be true?
+Each memory bus block has a clock for memory bus speed and frequency
+table which is changed according to the utilization of memory bus on runtime.
+And then each memory bus group has the one more memory bus blocks and
+OPP table (including frequency and voltage), regulator, devfreq-event
+devices.
 
-> returns.  That is important in this code IMO, as we are adding and removing the
-> stats entries rapidly.  You may hit the dreaded "sysfs file already exists"
-> WARNING if this is done too fast, or if sysfs is locked for some other reason
-> and delays the removal of the group.  In the worst case, it is possible you hit
-> a NULL pointer due to stale data access (because you kfree and set to a NULL
-> pointer below).
+There are a little difference about the number of memory bus because each Exynos
+SoC have the different sub-IP and different memory bus speed. In spite of this
+difference among Exynos SoCs, we can support almost Exynos SoC by adding
+unique data of memory bus to devicetree file.
 
-Hmm, I have seen such stuff yet for sure. But anyway, that would be out of scope
-of this patch. As w or w/o locking, it is broken :)
+Chanwoo Choi (4):
+  devfreq: exynos: Add generic exynos memory bus frequency driver
+  devfreq: exynos: Add documentation for generic exynos memory bus frequency driver
+  ARM: dts: Add memory bus node for Exynos3250
+  ARM: dts: Add memory bus node for Exynos3250-based Rinato board
 
-> I've never found a good method to block this sort of add/remove sysfs file race
-> from happening.  Perhaps someone else may have a suggestion.  In the past I've
-> thought about adding a usage count to the sysfs file handlers themselves but
-> that seems to lead to blocking on userspace access...
+ .../devicetree/bindings/devfreq/exynos-busfreq.txt | 184 +++++++
+ arch/arm/boot/dts/exynos3250-rinato.dts            |  12 +
+ arch/arm/boot/dts/exynos3250.dtsi                  | 137 +++++
+ drivers/devfreq/Kconfig                            |  15 +
+ drivers/devfreq/Makefile                           |   1 +
+ drivers/devfreq/exynos-busfreq.c                   | 586 +++++++++++++++++++++
+ 6 files changed, 935 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-busfreq.txt
+ create mode 100644 drivers/devfreq/exynos-busfreq.c
 
-Some more details and we can drag Greg-kh into this, but lets be sure of what we
-are asking..
-
->>       kfree(stat->time_in_state);
->>       kfree(stat);
->>       policy->stats_data = NULL;
->> +     spin_unlock(&cpufreq_stats_lock);
->>  }
->
-> There may not be an easy way around this ...
-
-You were just completing the earlier horror story or is this a new comment which
-I couldn't understand ?
-
-Which IRC do you hangout on? Just in case I need..
+-- 
+1.8.5.5
 
 --
-viresh
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
