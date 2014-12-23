@@ -1,74 +1,93 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH v2 00/17] thermal: exynos: Thermal code rework to use
- device tree
-Date: Tue, 23 Dec 2014 20:57:38 +0530
-Message-ID: <CAM4voam14GOE2u1KaRubsrVGBPcWibOQBeibyM=C6SrBFjuiWg@mail.gmail.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
-	<1418213396-743-1-git-send-email-l.majewski@samsung.com>
-	<20141210102712.GA2919@developer>
-	<20141210151925.61a0b091@amdc2363>
-	<CAM4voakxJPjfGu3gkpCbDS+SY1TP39Of+0ed=5jS55ARn95pYg@mail.gmail.com>
-	<20141222172133.6e69fc21@amdc2363>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20141222172133.6e69fc21@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/3] Thermal/int340x/processor_thermal: Fix memory leak
+Date: Tue, 23 Dec 2014 15:23:35 -0800
+Message-ID: <1419377016-13688-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1419377016-13688-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:44063 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbaLWXYN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Dec 2014 18:24:13 -0500
+In-Reply-To: <1419377016-13688-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Hi Lukasz,
+Address memory leak for buffer allocated with ACPI_ALLOCATE_BUFFER.
 
-On Mon, Dec 22, 2014 at 9:51 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Abhilash,
->
->> Hi Lukasz and Eduardo,
->>
->> [...]
->> >
->> > Although, this shouldn't be a problem.
->> >
->> >> That is why we had the cycle with cpufreq folks, remember?
->> >>
->> >> (I will have a look in your patches)
->> >
->> > It would be great if those patches could find their way to therma
->> > -next. Then also Abhilash could benefit from them.
->>
->> I have a couple of 5420/5800 based chromebooks that I will test this
->> series on. Is it OK for me to start basing my Exynos7 TMU support on
->> this series ? Please let me know if I can help in any other way with
->> this.
->
-> I'm fine if you rebase on top of my patches.
->
-> However, it is up to Eduardo when he decides to pull them to -next
-> branch.
->
-> I hope that it will happen soon.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ .../int340x_thermal/processor_thermal_device.c     | 29 +++++++++++++++-------
+ 1 file changed, 20 insertions(+), 9 deletions(-)
 
-I tested a Peach Pit (5420 based chromebook) with your patches and
-they work well (temperatures and software tripping). However, my
-earlier comments with regards to duplicate exynos_tmu_initialize() and
-the thermal zone showing as disabled in sysfs .
+diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+index 3fc10ca..4329c75 100644
+--- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+@@ -127,6 +127,7 @@ static int proc_thermal_add(struct device *dev,
+ 	union acpi_object *elements, *ppcc;
+ 	union acpi_object *p;
+ 	int i;
++	int ret;
+ 
+ 	adev = ACPI_COMPANION(dev);
+ 
+@@ -137,16 +138,20 @@ static int proc_thermal_add(struct device *dev,
+ 	p = buf.pointer;
+ 	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
+ 		dev_err(dev, "Invalid PPCC data\n");
+-		return -EFAULT;
++		ret = -EFAULT;
++		goto free_buffer;
+ 	}
+ 	if (!p->package.count) {
+ 		dev_err(dev, "Invalid PPCC package size\n");
+-		return -EFAULT;
++		ret = -EFAULT;
++		goto free_buffer;
+ 	}
+ 
+ 	proc_priv = devm_kzalloc(dev, sizeof(*proc_priv), GFP_KERNEL);
+-	if (!proc_priv)
+-		return -ENOMEM;
++	if (!proc_priv) {
++		ret = -ENOMEM;
++		goto free_buffer;
++	}
+ 
+ 	proc_priv->dev = dev;
+ 	proc_priv->adev = adev;
+@@ -154,9 +159,10 @@ static int proc_thermal_add(struct device *dev,
+ 	for (i = 0; i < min((int)p->package.count - 1, 2); ++i) {
+ 		elements = &(p->package.elements[i+1]);
+ 		if (elements->type != ACPI_TYPE_PACKAGE ||
+-		    elements->package.count != 6)
+-			return -EFAULT;
+-
++		    elements->package.count != 6) {
++			ret = -EFAULT;
++			goto free_buffer;
++		}
+ 		ppcc = elements->package.elements;
+ 		proc_priv->power_limits[i].index = ppcc[0].integer.value;
+ 		proc_priv->power_limits[i].min_uw = ppcc[1].integer.value;
+@@ -168,8 +174,13 @@ static int proc_thermal_add(struct device *dev,
+ 
+ 	*priv = proc_priv;
+ 
+-	return sysfs_create_group(&dev->kobj,
+-				  &power_limit_attribute_group);
++	ret = sysfs_create_group(&dev->kobj,
++				 &power_limit_attribute_group);
++
++free_buffer:
++	kfree(buf.pointer);
++
++	return ret;
+ }
+ 
+ void proc_thermal_remove(struct proc_thermal_device *proc_priv)
+-- 
+1.9.3
 
-Also, I think the documentation for the dt properties are missing ?
-
-I will post my exynos7 work based on your patches soon. Please take a look.
-
-Regards,
-Abhilash
->
->>
->> Regards,
->> Abhilash
->
->
->
-> --
-> Best regards,
->
-> Lukasz Majewski
->
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
