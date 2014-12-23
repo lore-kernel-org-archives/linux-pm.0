@@ -1,86 +1,68 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH v2 2/2] power: collie_battery: support generating wakeup event
-Date: Tue, 23 Dec 2014 13:12:49 +0300
-Message-ID: <1419329569-5696-2-git-send-email-dbaryshkov@gmail.com>
-References: <1419329569-5696-1-git-send-email-dbaryshkov@gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 12/13] cpufreq: stats: Fix locking
+Date: Tue, 23 Dec 2014 05:47:30 -0500
+Message-ID: <54994842.3000801@redhat.com>
+References: <cover.1418902789.git.viresh.kumar@linaro.org> <6277a557b0102524ca317bf0aa94d7b479375d6e.1418902789.git.viresh.kumar@linaro.org> <CAKohpok+7b3t3-82EO+9tpmBHavMxBT1r2ORhPcQbT3hT=p9mA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:33974 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755693AbaLWKM4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Dec 2014 05:12:56 -0500
-Received: by mail-pd0-f171.google.com with SMTP id y13so7541124pdi.16
-        for <linux-pm@vger.kernel.org>; Tue, 23 Dec 2014 02:12:55 -0800 (PST)
-In-Reply-To: <1419329569-5696-1-git-send-email-dbaryshkov@gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:33372 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755333AbaLWKri (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Dec 2014 05:47:38 -0500
+In-Reply-To: <CAKohpok+7b3t3-82EO+9tpmBHavMxBT1r2ORhPcQbT3hT=p9mA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Teach collie_battery driver to communicate to the kernel that it can
-generate wakeup events. Handle enabling/disabling wakeup on battery full
-event in suspend/resume callbacks.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
-[Changes since V1: fix another possible imbalance.]
 
- drivers/power/collie_battery.c | 24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+On 12/23/2014 01:06 AM, Viresh Kumar wrote:
+> On 18 December 2014 at 17:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> Locking wasn't handled properly at places and this patch is an attempt to fix
+>> it. Specially while creating/removing stat tables.
+> 
+> Because we were required to allocated memory from within locks, we had to
+> use mutex here. So, just consider a mutex instead of spinlock everywhere in
+> this file.
 
-diff --git a/drivers/power/collie_battery.c b/drivers/power/collie_battery.c
-index d02ae02..594e4db 100644
---- a/drivers/power/collie_battery.c
-+++ b/drivers/power/collie_battery.c
-@@ -26,6 +26,7 @@
- static DEFINE_MUTEX(bat_lock); /* protects gpio pins */
- static struct work_struct bat_work;
- static struct ucb1x00 *ucb;
-+static int wakeup_enabled;
- 
- struct collie_bat {
- 	int status;
-@@ -291,11 +292,21 @@ static int collie_bat_suspend(struct ucb1x00_dev *dev)
- {
- 	/* flush all pending status updates */
- 	flush_work(&bat_work);
-+
-+	if (device_may_wakeup(&dev->ucb->dev) &&
-+	    collie_bat_main.status == POWER_SUPPLY_STATUS_CHARGING)
-+		wakeup_enabled = !enable_irq_wake(gpio_to_irq(COLLIE_GPIO_CO));
-+	else
-+		wakeup_enabled = 0;
-+
- 	return 0;
- }
- 
- static int collie_bat_resume(struct ucb1x00_dev *dev)
- {
-+	if (wakeup_enabled)
-+		disable_irq_wake(gpio_to_irq(COLLIE_GPIO_CO));
-+
- 	/* things may have changed while we were away */
- 	schedule_work(&bat_work);
- 	return 0;
-@@ -334,10 +345,15 @@ static int collie_bat_probe(struct ucb1x00_dev *dev)
- 				collie_bat_gpio_isr,
- 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
- 				"main full", &collie_bat_main);
--	if (!ret) {
--		schedule_work(&bat_work);
--		return 0;
--	}
-+	if (ret)
-+		goto err_irq;
-+
-+	device_init_wakeup(&ucb->dev, 1);
-+	schedule_work(&bat_work);
-+
-+	return 0;
-+
-+err_irq:
- 	power_supply_unregister(&collie_bat_bu.psy);
- err_psy_reg_bu:
- 	power_supply_unregister(&collie_bat_main.psy);
--- 
-2.1.3
+There is a subtle locking issue here that I want to make sure you're aware of
+(mostly because it has bitten me in the past a few times).
 
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 7701532b32c8..e18735816908 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -149,10 +149,12 @@ static void __cpufreq_stats_free_table(struct cpufreq_policy *policy)
+>  
+>  	pr_debug("%s: Free stat table\n", __func__);
+>  
+> +	spin_lock(&cpufreq_stats_lock);
+>  	sysfs_remove_group(&policy->kobj, &stats_attr_group);
+
+^^^ this line is not guaranteed to have removed the group files by the time it
+returns.  That is important in this code IMO, as we are adding and removing the
+stats entries rapidly.  You may hit the dreaded "sysfs file already exists"
+WARNING if this is done too fast, or if sysfs is locked for some other reason
+and delays the removal of the group.  In the worst case, it is possible you hit
+a NULL pointer due to stale data access (because you kfree and set to a NULL
+pointer below).
+
+I've never found a good method to block this sort of add/remove sysfs file race
+from happening.  Perhaps someone else may have a suggestion.  In the past I've
+thought about adding a usage count to the sysfs file handlers themselves but
+that seems to lead to blocking on userspace access...
+
+>  	kfree(stat->time_in_state);
+>  	kfree(stat);
+>  	policy->stats_data = NULL;
+> +	spin_unlock(&cpufreq_stats_lock);
+>  }
+
+There may not be an easy way around this ...
+
+P.
+
+> 
