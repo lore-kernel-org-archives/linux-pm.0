@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 4/4] Thermal/int340x/processor_thermal: Add thermal zone support
-Date: Tue, 23 Dec 2014 15:27:30 -0800
-Message-ID: <1419377250-13869-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/4] Thermal/int340x/int3402: Use int340x thermal API
+Date: Tue, 23 Dec 2014 15:27:28 -0800
+Message-ID: <1419377250-13869-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1419377250-13869-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:43130 "EHLO mga03.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:24262 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756563AbaLWX2H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1756513AbaLWX2H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Tue, 23 Dec 2014 18:28:07 -0500
 In-Reply-To: <1419377250-13869-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,154 +14,237 @@ List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added thermal zones for processor thermal using APIs provided by
-int340x thermal zone module.
-Like other INT340x devices, processor thermal device can also contain
-trip points and way to get temperature. On some platform there is
-no ACPI _TMP method, in those platform using IA64 architecture MSRs to
-get temperature.
+Using APIs from int340x thermal zone module to add and remove thermal
+zones.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- .../int340x_thermal/processor_thermal_device.c     | 90 ++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+ drivers/thermal/int340x_thermal/int3402_thermal.c | 189 ++--------------------
+ 1 file changed, 11 insertions(+), 178 deletions(-)
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 4329c75..8111f22 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -18,6 +18,8 @@
- #include <linux/pci.h>
+diff --git a/drivers/thermal/int340x_thermal/int3402_thermal.c b/drivers/thermal/int340x_thermal/int3402_thermal.c
+index a5d08c1..2f65db2 100644
+--- a/drivers/thermal/int340x_thermal/int3402_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3402_thermal.c
+@@ -14,152 +14,17 @@
  #include <linux/platform_device.h>
  #include <linux/acpi.h>
-+#include <linux/thermal.h>
+ #include <linux/thermal.h>
+-
+-#define ACPI_ACTIVE_COOLING_MAX_NR 10
+-
+-struct active_trip {
+-	unsigned long temp;
+-	int id;
+-	bool valid;
+-};
 +#include "int340x_thermal_zone.h"
  
- /* Broadwell-U/HSB thermal reporting device */
- #define PCI_DEVICE_ID_PROC_BDW_THERMAL	0x1603
-@@ -39,6 +41,7 @@ struct proc_thermal_device {
- 	struct device *dev;
- 	struct acpi_device *adev;
- 	struct power_config power_limits[2];
+ struct int3402_thermal_data {
+-	unsigned long *aux_trips;
+-	int aux_trip_nr;
+-	unsigned long psv_temp;
+-	int psv_trip_id;
+-	unsigned long crt_temp;
+-	int crt_trip_id;
+-	unsigned long hot_temp;
+-	int hot_trip_id;
+-	struct active_trip act_trips[ACPI_ACTIVE_COOLING_MAX_NR];
+ 	acpi_handle *handle;
 +	struct int34x_thermal_zone *int340x_zone;
  };
  
- enum proc_thermal_emum_mode_type {
-@@ -117,6 +120,72 @@ static struct attribute_group power_limit_attribute_group = {
- 	.name = "power_limits"
- };
- 
-+static int stored_tjmax; /* since it is fixed, we can have local storage */
-+
-+static int get_tjmax(void)
-+{
-+	u32 eax, edx;
-+	u32 val;
-+	int err;
-+
-+	err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &eax, &edx);
-+	if (err)
-+		return err;
-+
-+	val = (eax >> 16) & 0xff;
-+	if (val)
-+		return val;
-+
-+	return -EINVAL;
-+}
-+
-+static int read_temp_msr(unsigned long *temp)
-+{
-+	int cpu;
-+	u32 eax, edx;
-+	int err;
-+	unsigned long curr_temp_off = 0;
-+
-+	*temp = 0;
-+
-+	for_each_online_cpu(cpu) {
-+		err = rdmsr_safe_on_cpu(cpu, MSR_IA32_THERM_STATUS, &eax,
-+					&edx);
-+		if (err)
-+			goto err_ret;
-+		else {
-+			if (eax & 0x80000000) {
-+				curr_temp_off = (eax >> 16) & 0x7f;
-+				if (!*temp || curr_temp_off < *temp)
-+					*temp = curr_temp_off;
-+			} else {
-+				err = -EINVAL;
-+				goto err_ret;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+err_ret:
-+	return err;
-+}
-+
-+static int proc_thermal_get_zone_temp(struct thermal_zone_device *zone,
-+					 unsigned long *temp)
-+{
-+	int ret;
-+
-+	ret = read_temp_msr(temp);
-+	if (!ret)
-+		*temp = (stored_tjmax - *temp) * 1000;
-+
-+	return ret;
-+}
-+
-+static struct thermal_zone_device_ops proc_thermal_local_ops = {
-+	.get_temp       = proc_thermal_get_zone_temp,
-+};
-+
- static int proc_thermal_add(struct device *dev,
- 			    struct proc_thermal_device **priv)
+-static int int3402_thermal_get_zone_temp(struct thermal_zone_device *zone,
+-					 unsigned long *temp)
+-{
+-	struct int3402_thermal_data *d = zone->devdata;
+-	unsigned long long tmp;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(d->handle, "_TMP", NULL, &tmp);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	/* _TMP returns the temperature in tenths of degrees Kelvin */
+-	*temp = DECI_KELVIN_TO_MILLICELSIUS(tmp);
+-
+-	return 0;
+-}
+-
+-static int int3402_thermal_get_trip_temp(struct thermal_zone_device *zone,
+-					 int trip, unsigned long *temp)
+-{
+-	struct int3402_thermal_data *d = zone->devdata;
+-	int i;
+-
+-	if (trip < d->aux_trip_nr)
+-		*temp = d->aux_trips[trip];
+-	else if (trip == d->crt_trip_id)
+-		*temp = d->crt_temp;
+-	else if (trip == d->psv_trip_id)
+-		*temp = d->psv_temp;
+-	else if (trip == d->hot_trip_id)
+-		*temp = d->hot_temp;
+-	else {
+-		for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
+-			if (d->act_trips[i].valid &&
+-			    d->act_trips[i].id == trip) {
+-				*temp = d->act_trips[i].temp;
+-				break;
+-			}
+-		}
+-		if (i == ACPI_ACTIVE_COOLING_MAX_NR)
+-			return -EINVAL;
+-	}
+-	return 0;
+-}
+-
+-static int int3402_thermal_get_trip_type(struct thermal_zone_device *zone,
+-					 int trip, enum thermal_trip_type *type)
+-{
+-	struct int3402_thermal_data *d = zone->devdata;
+-	int i;
+-
+-	if (trip < d->aux_trip_nr)
+-		*type = THERMAL_TRIP_PASSIVE;
+-	else if (trip == d->crt_trip_id)
+-		*type = THERMAL_TRIP_CRITICAL;
+-	else if (trip == d->hot_trip_id)
+-		*type = THERMAL_TRIP_HOT;
+-	else if (trip == d->psv_trip_id)
+-		*type = THERMAL_TRIP_PASSIVE;
+-	else {
+-		for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
+-			if (d->act_trips[i].valid &&
+-			    d->act_trips[i].id == trip) {
+-				*type = THERMAL_TRIP_ACTIVE;
+-				break;
+-			}
+-		}
+-		if (i == ACPI_ACTIVE_COOLING_MAX_NR)
+-			return -EINVAL;
+-	}
+-	return 0;
+-}
+-
+-static int int3402_thermal_set_trip_temp(struct thermal_zone_device *zone, int trip,
+-				  unsigned long temp)
+-{
+-	struct int3402_thermal_data *d = zone->devdata;
+-	acpi_status status;
+-	char name[10];
+-
+-	snprintf(name, sizeof(name), "PAT%d", trip);
+-	status = acpi_execute_simple_method(d->handle, name,
+-			MILLICELSIUS_TO_DECI_KELVIN(temp));
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	d->aux_trips[trip] = temp;
+-	return 0;
+-}
+-
+-static struct thermal_zone_device_ops int3402_thermal_zone_ops = {
+-	.get_temp       = int3402_thermal_get_zone_temp,
+-	.get_trip_temp	= int3402_thermal_get_trip_temp,
+-	.get_trip_type	= int3402_thermal_get_trip_type,
+-	.set_trip_temp	= int3402_thermal_set_trip_temp,
+-};
+-
+-static struct thermal_zone_params int3402_thermal_params = {
+-	.governor_name = "user_space",
+-	.no_hwmon = true,
+-};
+-
+-static int int3402_thermal_get_temp(acpi_handle handle, char *name,
+-				    unsigned long *temp)
+-{
+-	unsigned long long r;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(handle, name, NULL, &r);
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	*temp = DECI_KELVIN_TO_MILLICELSIUS(r);
+-	return 0;
+-}
+-
+ static int int3402_thermal_probe(struct platform_device *pdev)
  {
-@@ -126,6 +195,8 @@ static int proc_thermal_add(struct device *dev,
- 	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *elements, *ppcc;
- 	union acpi_object *p;
-+	unsigned long long tmp;
-+	struct thermal_zone_device_ops *ops = NULL;
- 	int i;
- 	int ret;
+ 	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
+ 	struct int3402_thermal_data *d;
+-	struct thermal_zone_device *zone;
+-	acpi_status status;
+-	unsigned long long trip_cnt;
+-	int trip_mask = 0, i;
  
-@@ -176,6 +247,24 @@ static int proc_thermal_add(struct device *dev,
+ 	if (!acpi_has_method(adev->handle, "_TMP"))
+ 		return -ENODEV;
+@@ -168,54 +33,22 @@ static int int3402_thermal_probe(struct platform_device *pdev)
+ 	if (!d)
+ 		return -ENOMEM;
  
- 	ret = sysfs_create_group(&dev->kobj,
- 				 &power_limit_attribute_group);
-+	if (ret)
-+		goto free_buffer;
+-	status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
+-	if (ACPI_FAILURE(status))
+-		trip_cnt = 0;
+-	else {
+-		d->aux_trips = devm_kzalloc(&pdev->dev,
+-				sizeof(*d->aux_trips) * trip_cnt, GFP_KERNEL);
+-		if (!d->aux_trips)
+-			return -ENOMEM;
+-		trip_mask = trip_cnt - 1;
+-		d->handle = adev->handle;
+-		d->aux_trip_nr = trip_cnt;
+-	}
+-
+-	d->crt_trip_id = -1;
+-	if (!int3402_thermal_get_temp(adev->handle, "_CRT", &d->crt_temp))
+-		d->crt_trip_id = trip_cnt++;
+-	d->hot_trip_id = -1;
+-	if (!int3402_thermal_get_temp(adev->handle, "_HOT", &d->hot_temp))
+-		d->hot_trip_id = trip_cnt++;
+-	d->psv_trip_id = -1;
+-	if (!int3402_thermal_get_temp(adev->handle, "_PSV", &d->psv_temp))
+-		d->psv_trip_id = trip_cnt++;
+-	for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
+-		char name[5] = { '_', 'A', 'C', '0' + i, '\0' };
+-		if (int3402_thermal_get_temp(adev->handle, name,
+-					     &d->act_trips[i].temp))
+-			break;
+-		d->act_trips[i].id = trip_cnt++;
+-		d->act_trips[i].valid = true;
+-	}
+-
+-	zone = thermal_zone_device_register(acpi_device_bid(adev), trip_cnt,
+-					    trip_mask, d,
+-					    &int3402_thermal_zone_ops,
+-					    &int3402_thermal_params,
+-					    0, 0);
+-	if (IS_ERR(zone))
+-		return PTR_ERR(zone);
+-	platform_set_drvdata(pdev, zone);
++	d->int340x_zone = int340x_thermal_zone_add(adev, NULL);
++	if (IS_ERR(d->int340x_zone))
++		return PTR_ERR(d->int340x_zone);
 +
-+	status = acpi_evaluate_integer(adev->handle, "_TMP", NULL, &tmp);
-+	if (ACPI_FAILURE(status)) {
-+		/* there is no _TMP method, add local method */
-+		stored_tjmax = get_tjmax();
-+		if (stored_tjmax > 0)
-+			ops = &proc_thermal_local_ops;
-+	}
-+
-+	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
-+	if (IS_ERR(proc_priv->int340x_zone)) {
-+		sysfs_remove_group(&proc_priv->dev->kobj,
-+			   &power_limit_attribute_group);
-+		ret = PTR_ERR(proc_priv->int340x_zone);
-+	} else
-+		ret = 0;
++	d->handle = adev->handle;
++	platform_set_drvdata(pdev, d);
  
- free_buffer:
- 	kfree(buf.pointer);
-@@ -185,6 +274,7 @@ free_buffer:
- 
- void proc_thermal_remove(struct proc_thermal_device *proc_priv)
- {
-+	int340x_thermal_zone_remove(proc_priv->int340x_zone);
- 	sysfs_remove_group(&proc_priv->dev->kobj,
- 			   &power_limit_attribute_group);
+ 	return 0;
  }
+ 
+ static int int3402_thermal_remove(struct platform_device *pdev)
+ {
+-	struct thermal_zone_device *zone = platform_get_drvdata(pdev);
++	struct int3402_thermal_data *d = platform_get_drvdata(pdev);
++
++	int340x_thermal_zone_remove(d->int340x_zone);
+ 
+-	thermal_zone_device_unregister(zone);
+ 	return 0;
+ }
+ 
 -- 
 1.9.3
 
