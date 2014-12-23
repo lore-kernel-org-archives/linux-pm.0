@@ -1,36 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Notice] ACPI+PM core maintenance in vacation/travel mode through Jan 18, 2015
-Date: Mon, 22 Dec 2014 23:58:33 +0100
-Message-ID: <1654295.Ra13zpEXWc@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
+Date: Tue, 23 Dec 2014 09:26:49 +0800
+Message-ID: <5498C4D9.8050509@intel.com>
+References: <54868CF6.6020505@intel.com> <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com> <20141211010226.GA26253@aaronlu.sh.intel.com> <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com> <1418265472.12435.68.camel@rzhang1-toshiba> <548934D0.8000502@intel.com> <1418286781.12435.73.camel@rzhang1-toshiba> <54895821.3050902@intel.com> <1419217761.19619.2.camel@rzhang1-toshiba> <20141222095344.GE4525@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61878 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751753AbaLVWgk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Dec 2014 17:36:40 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20141222095344.GE4525@x1>
+Sender: linux-next-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi All,
+On 12/22/2014 05:53 PM, Lee Jones wrote:
+> On Mon, 22 Dec 2014, Zhang Rui wrote:
+> 
+>> On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
+>>> INT3406 ACPI device object resembles an ACPI video output device, but its
+>>> _BCM is said to be deprecated and should not be used. So we will make
+>>> use of the raw interface to do the actual cooling. Due to this, the
+>>> backlight core has some modifications. Also, to re-use some of the ACPI
+>>> video module's code, one function has been exported.
+>>>
+>>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>>
+>> Jingoo and Lee,
+>>
+>> are you okay with the changes in drivers/video/backlight/backlight.c and
+>> include/linux/backlight.h?
+> 
+> NB: Jingoo still needs to review the crux of the patch.
+> 
+>>> ---
+>>> v6: Fix an issue that wrongly set error path return value as reported
+>>> by Olof Johansson.
+>>>
+>>>  drivers/acpi/video.c                              |  77 ++++----
+>>>  drivers/thermal/Kconfig                           |  26 +--
+>>>  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
+>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
+>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
+>>>  drivers/video/backlight/backlight.c               |  44 +++--
+>>>  include/acpi/video.h                              |  20 ++
+>>>  include/linux/backlight.h                         |   2 +
+>>>  8 files changed, 366 insertions(+), 74 deletions(-)
+>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+> 
+> I gather by the message at the top that you're looking for an Ack so
+> this can be routed through another subsystem.  Not going to happen.
+> 
+> So you're on v6 already and a) no one has mentioned that introducing a
+> new driver AND making core framework changes (in a different subsystem
+> to boot) in one patch is bad and b) this is the first time you've
+> Cc'ed the maintainers of the aforementioned subsystem?
+> 
+> Moving forward you should split this patch into component parts and
+> resend -- only this time ensure you Cc all maintainers in the first
+> instance, rather than as as afterthought.
 
-I'm officially on vacation through January 10, 2015 and I'll be attending
-Linux.conf.au after that, so there will be less activity in the linux-pm tree
-in the following 4 weeks.
+OK, thanks for the suggestion.
 
-I have material for one more 3.19-rc pull request which is currently staged in
-my linux-next branch.  If you have sent any patches to me recently and they are
-not there, they are not regarded as 3.19 material and most likely won't be
-looked at till I'm back from the LCA.
+> 
+>>> -config INT340X_THERMAL
+>>> -	tristate "ACPI INT340X thermal drivers"
+>>> -	depends on X86 && ACPI
+>>> -	select THERMAL_GOV_USER_SPACE
+>>> -	select ACPI_THERMAL_REL
+>>> -	select ACPI_FAN
+> 
+> This patch also relies on backlight as well, no?
 
-And if you have something for me that is not a fix for a recent regression or
-similar and can wait, please don't add to the backlog I'll have to process when
-I'm back from the LCA and don't send it to me now if that's not a problem.
+Yes it does, will add it in next revision.
 
-Happy Holidays and all the best in the New Year to everyone!
+Regards,
+Aaron
 
-Rafael
-
+> 
+> [...]
+> 
