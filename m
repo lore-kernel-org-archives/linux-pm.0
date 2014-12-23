@@ -1,82 +1,181 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
-Date: Tue, 23 Dec 2014 09:26:49 +0800
-Message-ID: <5498C4D9.8050509@intel.com>
-References: <54868CF6.6020505@intel.com> <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com> <20141211010226.GA26253@aaronlu.sh.intel.com> <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com> <1418265472.12435.68.camel@rzhang1-toshiba> <548934D0.8000502@intel.com> <1418286781.12435.73.camel@rzhang1-toshiba> <54895821.3050902@intel.com> <1419217761.19619.2.camel@rzhang1-toshiba> <20141222095344.GE4525@x1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <20141222095344.GE4525@x1>
-Sender: linux-next-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv5 0/9] devfreq: Add devfreq-event class to provide raw data for
+ devfreq device
+Date: Tue, 23 Dec 2014 12:18:08 +0900
+Message-ID: <1419304697-14789-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:41892 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753871AbaLWDSV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Dec 2014 22:18:21 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-On 12/22/2014 05:53 PM, Lee Jones wrote:
-> On Mon, 22 Dec 2014, Zhang Rui wrote:
-> 
->> On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
->>> INT3406 ACPI device object resembles an ACPI video output device, but its
->>> _BCM is said to be deprecated and should not be used. So we will make
->>> use of the raw interface to do the actual cooling. Due to this, the
->>> backlight core has some modifications. Also, to re-use some of the ACPI
->>> video module's code, one function has been exported.
->>>
->>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->>
->> Jingoo and Lee,
->>
->> are you okay with the changes in drivers/video/backlight/backlight.c and
->> include/linux/backlight.h?
-> 
-> NB: Jingoo still needs to review the crux of the patch.
-> 
->>> ---
->>> v6: Fix an issue that wrongly set error path return value as reported
->>> by Olof Johansson.
->>>
->>>  drivers/acpi/video.c                              |  77 ++++----
->>>  drivers/thermal/Kconfig                           |  26 +--
->>>  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
->>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
->>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
->>>  drivers/video/backlight/backlight.c               |  44 +++--
->>>  include/acpi/video.h                              |  20 ++
->>>  include/linux/backlight.h                         |   2 +
->>>  8 files changed, 366 insertions(+), 74 deletions(-)
->>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
-> 
-> I gather by the message at the top that you're looking for an Ack so
-> this can be routed through another subsystem.  Not going to happen.
-> 
-> So you're on v6 already and a) no one has mentioned that introducing a
-> new driver AND making core framework changes (in a different subsystem
-> to boot) in one patch is bad and b) this is the first time you've
-> Cc'ed the maintainers of the aforementioned subsystem?
-> 
-> Moving forward you should split this patch into component parts and
-> resend -- only this time ensure you Cc all maintainers in the first
-> instance, rather than as as afterthought.
+This patchset add new devfreq_event class to provide raw data to determine
+current utilization of device  which is used for devfreq governor.
 
-OK, thanks for the suggestion.
+[Description of devfreq-event class]
+This patchset add new devfreq_event class for devfreq_event device which provide
+raw data (e.g., memory bus utilization/GPU utilization). This raw data from
+devfreq_event data would be used for the governor of devfreq subsystem.
+- devfreq_event device : Provide raw data for governor of existing devfreq device
+- devfreq device       : Monitor device state and change frequency/voltage of device
+                         using the raw data from devfreq_event device
 
-> 
->>> -config INT340X_THERMAL
->>> -	tristate "ACPI INT340X thermal drivers"
->>> -	depends on X86 && ACPI
->>> -	select THERMAL_GOV_USER_SPACE
->>> -	select ACPI_THERMAL_REL
->>> -	select ACPI_FAN
-> 
-> This patch also relies on backlight as well, no?
+The devfreq subsystem support generic DVFS(Dynamic Voltage/Frequency Scaling)
+for Non-CPU Devices. The devfreq device would dertermine current device state
+using various governor (e.g., ondemand, performance, powersave). After completed
+determination of system state, devfreq device would change the frequency/voltage
+of devfreq device according to the result of governor.
 
-Yes it does, will add it in next revision.
+But, devfreq governor must need basic data which indicates current device state.
+Existing devfreq subsystem only consider devfreq device which check current system
+state and determine proper system state using basic data. There is no subsystem
+for device providing basic data to devfreq device.
 
-Regards,
-Aaron
+The devfreq subsystem must need devfreq_event device(data-provider device) for
+existing devfreq device. So, this patch add new devfreq_event class for
+devfreq_event device which read various basic data(e.g, memory bus utilization,
+GPU utilization) and provide measured data to existing devfreq device through
+standard APIs of devfreq_event class.
 
-> 
-> [...]
-> 
+The following description explains the feature of two kind of devfreq class:
+- devfreq class (existing)
+ : devfreq consumer device use raw data from devfreq_event device for
+   determining proper current system state and change voltage/frequency
+   dynamically using various governors.
+- devfreq_event class (new)
+ : Provide measured raw data to devfreq device for governor
+
+Also, the devfreq-event device would support various type event as following:
+ : DEVFREQ_EVENT_TYPE_RAW_DATA
+ : DEVFREQ_EVENT_TYPE_UTILIZATION
+ : DEVFREQ_EVENT_TYPE_BANDWIDTH
+ : DEVFREQ_EVENT_TYPE_LATENCY
+
+[For example]
+If board dts includes PPMU_DMC0/DMC1/LEFTBUS/RIGHTBUS event node,
+would show following sysfs entry. Also devfreq driver(e.g., exynos4_bus.c)
+can get the instance of devfreq-event device by using provided API and then
+get raw data which reflect the current state of device.
+
+-sh-3.2# cd /sys/class/devfreq-event/
+-sh-3.2# ls -al
+total 0
+drwxr-xr-x  2 root root 0 Jan  9 16:47 .
+drwxr-xr-x 37 root root 0 Jan  9 16:47 ..
+lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.0 -> ../../devices/soc/106a0000.ppmu_dmc0/devfreq-event/event.0
+lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.1 -> ../../devices/soc/106b0000.ppmu_dmc1/devfreq-event/event.1
+lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.2 -> ../../devices/soc/112a0000.ppmu_rightbus/devfreq-event/event.2
+lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.3 -> ../../devices/soc/116a0000.ppmu_leftbus0/devfreq-event/event.3
+
+Changes from v4:
+1. devfreq-event class driver
+- Add devfreq_event_get_edev_count() function
+- Modify the simple description of devfreq-event framework in devfreq-event.c
+- Minimize the usage range of global lock usage in devfreq_event_add_edev()
+- Remove '_is_enabled()' function pointer in devfreq_event_ops structure
+- Add separte CONFIG_PM_DEVFREQ_EVENT configuration
+- Add new devfreq-event.h header file including devfreq-event helper functions
+2. exynos dts file
+- Add new patch to support PPMU with DEVFREQ-event on Exynos4412-based TRATS2
+
+Changes from v3:
+1. devfreq-event class driver
+- Fix return value of devfreq_event_get_event()
+- Add new structure devfreq_event_data for devfreq_event_get_event()
+- Modify the prototype of devfreq_event_get_event() function
+- Call of_node_put after calling of_parse_phandle() to decrement refcount
+2. exynos-ppmu driver
+- Modify usage of devfreq_event_get_event() function
+  according to new prototype of this funciton
+- Add the additional description to exynos-ppmu.txt how to add PPMU node
+  in board dts file
+- Use 'PPMU_EVENT' macro to remove duplicate codes
+- Add the support of PPMU for Exynos5260
+3. exynos dts file
+- Add missing PPMU_FSYS node to exynos3250.dtsi
+- Fix 'ppmu_mfc_l' node name as 'ppmu_mfc' because exynos3250 has only one MFC IP.
+- Add missing PPMU_ACP/G3D to exynos4.dtsi
+4. etc
+- Fix wrong abbreviation of PPMU (PPMU :Platform Performance Monitoring Unit)
+- Add new patch to support the PPMU of Exynos5260 SoC
+
+Changes from v2:
+1. devfreq-event class driver
+- Rename all the helper functions of devfreq-event device
+- Add devfreq_event_remove_edev() instead of devfreq_put_event_dev()
+- Add devfreq_event_release_edev() to initialize it before put device
+- Add the detailed description of devfreq-event API
+- Add the attributes of devfreq-event class (enable_count)
+- Check the overflow about event/total_event data in devfreq_event_get_event()
+- Remove the 'exclusive flag' feature
+- Set set_event()/get_event() functions as mandary
+- Add missing of_node_put() call
+- Change variable type of 'get_event()' funciton from 'int' to 'u64'
+2. exynos-ppmu driver
+- Remove un-used field (struct devfreq)
+- Use 'of_get_child_by_name()' instead of 'of_find_node_by_name()'
+- Add missing of_node_put() call
+- Fix wrong clock control
+- Use devfreq_event_remove_edev() instead of devfreq_remove_device()
+- Add the documentation for exynos-ppmu driver
+- Remove 'enable/disable/is_enabled/reset' function of exynos-ppmu driver
+3. exynos3250-rinato.dts
+- Add ppmu_{leftbus|rightbus} dt node and remove ppmu_cpu dt node
+
+Changes from v1:
+- Code clean
+- Add the description of devfreq-event structure
+- Add 'is_enabled' function to devfreq_event_ops structure
+- Add 'enable_count' field to devfreq_event_dev structure
+- Check whether devfreq-event device is enabled or not
+  during calling devfreq_event API
+- Define the type of devfreq-event device as following
+  : DEVFREQ_EVENT_TYPE_RAW_DATA
+  : DEVFREQ_EVENT_TYPE_UTILIZATION
+  : DEVFREQ_EVENT_TYPE_BANDWIDTH
+  : DEVFREQ_EVENT_TYPE_LATENCY
+- Add the exclusive feature of devfreq-event device.
+  If devfreq-event device is used on only on devfreq driver,
+  should used 'devfreq_enable_event_dev_exclusive()' function
+- Add new patch6 for test on Exynos3250-based Rinato board
+
+Chanwoo Choi (9):
+  devfreq: event: Add new devfreq_event class to provide basic data for devfreq governor
+  devfreq: event: Add the list of supported devfreq-event type
+  devfreq: event: Add exynos-ppmu devfreq-event driver
+  devfreq: event: Add documentation for exynos-ppmu devfreq-event driver
+  ARM: dts: Add PPMU dt node for Exynos3250 SoC
+  ARM: dts: Add PPMU dt node for Exynos4 SoCs
+  ARM: dts: Add PPMU dt node for Exynos5260 SoC
+  ARM: dts: exynos: Add PPMU node to Exynos3250-based Rinato board
+  ARM: dts: exynos: Add PPMU_CPU/DMC0/DMC1 node for Exynos4412-based TRATS2 board
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++
+ arch/arm/boot/dts/exynos3250-rinato.dts            |  40 ++
+ arch/arm/boot/dts/exynos3250.dtsi                  |  72 +++
+ arch/arm/boot/dts/exynos4.dtsi                     | 108 +++++
+ arch/arm/boot/dts/exynos4210.dtsi                  |   8 +
+ arch/arm/boot/dts/exynos4412-trats2.dts            |  30 ++
+ arch/arm/boot/dts/exynos5260.dtsi                  |  90 ++++
+ drivers/devfreq/Kconfig                            |   2 +
+ drivers/devfreq/Makefile                           |   6 +-
+ drivers/devfreq/devfreq-event.c                    | 510 +++++++++++++++++++++
+ drivers/devfreq/event/Kconfig                      |  25 +
+ drivers/devfreq/event/Makefile                     |   2 +
+ drivers/devfreq/event/exynos-ppmu.c                | 397 ++++++++++++++++
+ include/linux/devfreq-event.h                      | 189 ++++++++
+ 14 files changed, 1588 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Kconfig
+ create mode 100644 drivers/devfreq/event/Makefile
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+ create mode 100644 include/linux/devfreq-event.h
+
+-- 
+1.8.5.5
+
