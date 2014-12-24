@@ -1,73 +1,45 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: [PATCH v2] cpufreq: suspend cpufreq governors on shutdown
-Date: Tue, 23 Dec 2014 22:09:48 -0800
-Message-ID: <1419401388-20171-1-git-send-email-dianders@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: Heiko Stuebner <heiko@sntech.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chris Zhong <zyw@rock-chips.com>, linux-arm-kernel@lists.infradead.org, Sonny Rao <sonnyrao@chromium.org>, Dylan Reid <dgreid@chromium.org>, Doug Anderson <dianders@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Michal Privoznik <mprivozn@redhat.com>
+Subject: [PATCH] cpupower: Correctly detect if running as root
+Date: Wed, 24 Dec 2014 12:08:13 +0100
+Message-ID: <560101059564609c5c4808eb7aeb8203b6f5c214.1419419293.git.mprivozn@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:56847 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751778AbaLXLI1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Dec 2014 06:08:27 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We should stop cpufreq governors when we shut down the system.  If we
-don't do this, we can end up with this deadlock:
+Some operations, like frequency-set, need root privileges. However,
+the way that this is detected is not correct. The getuid() is called,
+while in fact geteuid() should be. This way we can allow
+distributions or users to set SETUID flags on the cpupower binary if
+they want to and let regular users change the cpu frequency governor.
 
-1. cpufreq governor may be running on a CPU other than CPU0.
-2. In machine_restart() we call smp_send_stop() which stops CPUs.
-   If one of these CPUs was actively running a cpufreq governor
-   then it may have the mutex / spinlock needed to access the main
-   PMIC in the system (perhaps over I2C)
-3. If a machine needs access to the main PMIC in order to shutdown
-   then it will never get it since the mutex was lost when the other
-   CPU stopped.
-4. We'll hang (possibly eventually hitting the hard lockup detector).
-
-Let's avoid the problem by stopping the cpufreq governor at shutdown,
-which is a sensible thing to do anyway.
-
-Signed-off-by: Doug Anderson <dianders@chromium.org>
+Signed-off-by: Michal Privoznik <mprivozn@redhat.com>
+Acked-by: Thomas Renninger <trenn@suse.de>
 ---
-Changes in v2:
-- Add a comment about why we register
-- Don't create cpufreq_shutdown() wrapper function
+ tools/power/cpupower/utils/cpupower.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/cpufreq/cpufreq.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a09a29c..33f3d65 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -27,6 +27,7 @@
- #include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
-+#include <linux/syscore_ops.h>
- #include <linux/tick.h>
- #include <trace/events/power.h>
+diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
+index 7cdcf88..9ea9143 100644
+--- a/tools/power/cpupower/utils/cpupower.c
++++ b/tools/power/cpupower/utils/cpupower.c
+@@ -199,7 +199,7 @@ int main(int argc, const char *argv[])
+ 	}
  
-@@ -2550,6 +2551,14 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- }
- EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
- 
-+/*
-+ * Stop cpufreq at shutdown to make sure it isn't holding any locks
-+ * or mutexes when secondary CPUs are halted.
-+ */
-+static struct syscore_ops cpufreq_syscore_ops = {
-+	.shutdown = cpufreq_suspend,
-+};
-+
- static int __init cpufreq_core_init(void)
- {
- 	if (cpufreq_disabled())
-@@ -2558,6 +2567,8 @@ static int __init cpufreq_core_init(void)
- 	cpufreq_global_kobject = kobject_create();
- 	BUG_ON(!cpufreq_global_kobject);
- 
-+	register_syscore_ops(&cpufreq_syscore_ops);
-+
- 	return 0;
- }
- core_initcall(cpufreq_core_init);
+ 	get_cpu_info(0, &cpupower_cpu_info);
+-	run_as_root = !getuid();
++	run_as_root = !geteuid();
+ 	if (run_as_root) {
+ 		ret = uname(&uts);
+ 		if (!ret && !strcmp(uts.machine, "x86_64") &&
 -- 
-2.2.0.rc0.207.ga3a616c
+2.0.5
+
