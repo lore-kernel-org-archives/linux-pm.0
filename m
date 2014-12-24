@@ -1,61 +1,72 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] regulator: rt5033-regulator: Use
- regulator_nodes/of_match in the descriptor
-Date: Wed, 24 Dec 2014 12:56:00 +0000
-Message-ID: <20141224125600.GB17800@sirena.org.uk>
-References: <1418901216-19030-1-git-send-email-beomho.seo@samsung.com>
- <20141222151025.GY17800@sirena.org.uk>
- <54992212.8050707@samsung.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Remove unused
+ function
+Date: Wed, 24 Dec 2014 08:57:14 -0600
+Message-ID: <549AD44A.8010603@ti.com>
+References: <1419183823-10787-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5O+LjL9oTw7vAELi"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:47234 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbaLXM4S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Dec 2014 07:56:18 -0500
-Content-Disposition: inline
-In-Reply-To: <54992212.8050707@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1419183823-10787-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Tero Kristo <t-kristo@ti.com>
+Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lgirdwood@gmail.com, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+
+On 12/21/2014 11:43 AM, Rickard Strandqvist wrote:
+> Remove the function ti_bandgap_write_thot() that is not used anywhere.
+> 
+> This was partially found by using a static code analysis program called cppcheck.
+> 
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c |   13 -------------
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.h |    1 -
+>  2 files changed, 14 deletions(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index 634b6ce..cbb6a5f 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -611,19 +611,6 @@ int ti_bandgap_read_thot(struct ti_bandgap *bgp, int id, int *thot)
+>  }
+>  
+>  /**
+> - * ti_bandgap_write_thot() - sets sensor current thot
+> - * @bgp: pointer to bandgap instance
+> - * @id: sensor id
+> - * @val: desired thot value
+> - *
+> - * Return: 0 on success or the proper error code
+> - */
+> -int ti_bandgap_write_thot(struct ti_bandgap *bgp, int id, int val)
+> -{
+> -	return _ti_bandgap_write_threshold(bgp, id, val, true);
+> -}
+> -
+> -/**
+>   * ti_bandgap_read_tcold() - reads sensor current tcold
+>   * @bgp: pointer to bandgap instance
+>   * @id: sensor id
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> index b3adf72..976afc0 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> @@ -371,7 +371,6 @@ struct ti_bandgap_data {
+>  };
+>  
+>  int ti_bandgap_read_thot(struct ti_bandgap *bgp, int id, int *thot);
+> -int ti_bandgap_write_thot(struct ti_bandgap *bgp, int id, int val);
+>  int ti_bandgap_read_tcold(struct ti_bandgap *bgp, int id, int *tcold);
+>  int ti_bandgap_write_tcold(struct ti_bandgap *bgp, int id, int val);
+>  int ti_bandgap_read_update_interval(struct ti_bandgap *bgp, int id,
+> 
+
+Not sure if removing support for programming of hot threshold is a
+good idea. how about ti_bandgap_write_tcold then?
 
 
---5O+LjL9oTw7vAELi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Dec 23, 2014 at 05:04:34PM +0900, Beomho Seo wrote:
-> On 12/23/2014 12:10 AM, Mark Brown wrote:
-
-> > This isn't replacing existing code with use of the framework, it's
-> > adding new bindings where there were none before so it needs to add a
-> > binding document too.
-
-> Actually, RT5033 device tree binding document sent at mainling list already.
-> link is below,
-> http://marc.info/?l=linux-pm&m=141890859525642&w=2
-> It include regulator device node but above patch not applied yet.
-> If you want, I will revise dt binding document patch and send to mailing list.
-
-OK, I've applied this but please in future send the code and binding
-documentation together to avoid such confusion.
-
---5O+LjL9oTw7vAELi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUmrfgAAoJECTWi3JdVIfQ5wsH/Au5IVLShw44GaOvb5kM8Xh5
-qoT0WC4zTJ8TMF/IDrXso52MNq6SJip6XIZNTyDvJ8Sh90FtMf8221yuqaaua2Cy
-/0fGPCPM1QdOIsPBs3UcoV0gatN3ivFbhUHXrqkKe+VoxruzUaOFEc88uJw+bLPV
-kh+r71McMbOAJpeAtxrk362DKF4SfqDZR0wynzuu8NqVY970a1Ds63Mwk5KGh383
-x3dG0mnqcYNYENcvsCWSM8hSQNCnG2/4dN1NvlpgbFWmOInyIYX8dHfDM6JX5San
-HZ1MPQcwqK6y36lHC8R5aXqhjT6ApmrMHE+S7J+g4Qw7EB4NRzg7dB4MMc6X0rM=
-=SD5D
------END PGP SIGNATURE-----
-
---5O+LjL9oTw7vAELi--
+-- 
+Regards,
+Nishanth Menon
