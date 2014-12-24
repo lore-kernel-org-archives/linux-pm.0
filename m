@@ -1,92 +1,75 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] Thermal/int340x/int3402: Provide notification support
-Date: Tue, 23 Dec 2014 15:29:57 -0800
-Message-ID: <1419377397-13983-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:53228 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbaLWXai (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Dec 2014 18:30:38 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Doug Anderson <dianders@chromium.org>
+Subject: [PATCH] cpufreq: suspend cpufreq governors on shutdown
+Date: Tue, 23 Dec 2014 16:11:41 -0800
+Message-ID: <1419379901-17182-1-git-send-email-dianders@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Heiko Stuebner <heiko@sntech.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chris Zhong <zyw@rock-chips.com>, linux-arm-kernel@lists.infradead.org, Sonny Rao <sonnyrao@chromium.org>, Dylan Reid <dgreid@chromium.org>, Doug Anderson <dianders@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-This driver supports programmable trips, but didn't register
-notification handler to receive threshold violation notification.
+We should stop cpufreq governors when we shut down the system.  If we
+don't do this, we can end up with this deadlock:
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+1. cpufreq governor may be running on a CPU other than CPU0.
+2. In machine_restart() we call smp_send_stop() which stops CPUs.
+   If one of these CPUs was actively running a cpufreq governor
+   then it may have the mutex / spinlock needed to access the main
+   PMIC in the system (perhaps over I2C)
+3. If a machine needs access to the main PMIC in order to shutdown
+   then it will never get it since the mutex was lost when the other
+   CPU stopped.
+
+Let's avoid the race by stopping the cpufreq governor at shutdown,
+which is a sensible thing to do anyway.
+
+Signed-off-by: Doug Anderson <dianders@chromium.org>
 ---
- drivers/thermal/int340x_thermal/int3402_thermal.c | 33 +++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+NOTE: This was developed / tested / on a 3.14 kernel with backports.
+I have confirmed that it compiles on a mainline kernel and doesn't
+crash, but I haven't verified that there isn't some other fix in
+mainline that also fixes this problem.  If you are aware of such a fix
+then please drop this patch.
 
-diff --git a/drivers/thermal/int340x_thermal/int3402_thermal.c b/drivers/thermal/int340x_thermal/int3402_thermal.c
-index 2f65db2..fcb2af1 100644
---- a/drivers/thermal/int340x_thermal/int3402_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3402_thermal.c
-@@ -16,15 +16,37 @@
- #include <linux/thermal.h>
- #include "int340x_thermal_zone.h"
+ drivers/cpufreq/cpufreq.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a09a29c..bd89721 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -27,6 +27,7 @@
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
++#include <linux/syscore_ops.h>
+ #include <linux/tick.h>
+ #include <trace/events/power.h>
  
-+#define INT3402_PERF_CHANGED_EVENT	0x80
-+#define INT3402_THERMAL_EVENT		0x90
-+
- struct int3402_thermal_data {
- 	acpi_handle *handle;
- 	struct int34x_thermal_zone *int340x_zone;
- };
+@@ -2550,6 +2551,15 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
  
-+static void int3402_notify(acpi_handle handle, u32 event, void *data)
++static void cpufreq_shutdown(void)
 +{
-+	struct int3402_thermal_data *priv = data;
-+
-+	if (!priv)
-+		return;
-+
-+	switch (event) {
-+	case INT3402_PERF_CHANGED_EVENT:
-+		break;
-+	case INT3402_THERMAL_EVENT:
-+		int340x_thermal_zone_device_update(priv->int340x_zone);
-+		break;
-+	default:
-+		break;
-+	}
++	cpufreq_suspend();
 +}
 +
- static int int3402_thermal_probe(struct platform_device *pdev)
- {
- 	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
- 	struct int3402_thermal_data *d;
-+	int ret;
- 
- 	if (!acpi_has_method(adev->handle, "_TMP"))
- 		return -ENODEV;
-@@ -37,6 +59,15 @@ static int int3402_thermal_probe(struct platform_device *pdev)
- 	if (IS_ERR(d->int340x_zone))
- 		return PTR_ERR(d->int340x_zone);
- 
-+	ret = acpi_install_notify_handler(adev->handle,
-+					  ACPI_DEVICE_NOTIFY,
-+					  int3402_notify,
-+					  d);
-+	if (ret) {
-+		int340x_thermal_zone_remove(d->int340x_zone);
-+		return ret;
-+	}
++static struct syscore_ops cpufreq_syscore_ops = {
++	.shutdown = cpufreq_shutdown,
++};
 +
- 	d->handle = adev->handle;
- 	platform_set_drvdata(pdev, d);
- 
-@@ -47,6 +78,8 @@ static int int3402_thermal_remove(struct platform_device *pdev)
+ static int __init cpufreq_core_init(void)
  {
- 	struct int3402_thermal_data *d = platform_get_drvdata(pdev);
+ 	if (cpufreq_disabled())
+@@ -2558,6 +2568,8 @@ static int __init cpufreq_core_init(void)
+ 	cpufreq_global_kobject = kobject_create();
+ 	BUG_ON(!cpufreq_global_kobject);
  
-+	acpi_remove_notify_handler(d->handle,
-+				   ACPI_DEVICE_NOTIFY, int3402_notify);
- 	int340x_thermal_zone_remove(d->int340x_zone);
- 
++	register_syscore_ops(&cpufreq_syscore_ops);
++
  	return 0;
+ }
+ core_initcall(cpufreq_core_init);
 -- 
-1.9.3
-
+2.2.0.rc0.207.ga3a616c
