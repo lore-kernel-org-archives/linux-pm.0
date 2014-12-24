@@ -1,96 +1,109 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 12/13] cpufreq: stats: Fix locking
-Date: Wed, 24 Dec 2014 14:01:01 -0500
-Message-ID: <549B0D6D.8010705@redhat.com>
-References: <cover.1418902789.git.viresh.kumar@linaro.org> <6277a557b0102524ca317bf0aa94d7b479375d6e.1418902789.git.viresh.kumar@linaro.org> <CAKohpok+7b3t3-82EO+9tpmBHavMxBT1r2ORhPcQbT3hT=p9mA@mail.gmail.com> <54994842.3000801@redhat.com> <CAKohpo=B99MdiJRvH021kOhU08V-W1g+a=FFpcC9tEHEDKjOvw@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 3/4] PM / OPP: take RCU lock in dev_pm_opp_get_opp_count
+Date: Wed, 24 Dec 2014 14:37:14 -0600
+Message-ID: <549B23FA.5050100@ti.com>
+References: <1418771379-24369-1-git-send-email-dtor@chromium.org>	<1418771379-24369-4-git-send-email-dtor@chromium.org>	<549AEE52.9080607@ti.com>	<CAE_wzQ92VK6Jv+j-LDTupMJzJj_AZyAqUe2Vxo5YRhkFEFF=sw@mail.gmail.com>	<549AF4F3.1090600@ti.com>	<CAE_wzQ-WQE1q4njE4TRFz55zs1+6SH7XZqXrk2tToyX-hRz+Fg@mail.gmail.com>	<549AF9C0.7010602@ti.com> <CAE_wzQ_djUapN-hwHUttcrfzUiWPHvW9OxV7zqrwidtYh8_FZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbaLXTBM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Dec 2014 14:01:12 -0500
-In-Reply-To: <CAKohpo=B99MdiJRvH021kOhU08V-W1g+a=FFpcC9tEHEDKjOvw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAE_wzQ_djUapN-hwHUttcrfzUiWPHvW9OxV7zqrwidtYh8_FZg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-On 12/23/2014 05:55 AM, Viresh Kumar wrote:
-> On 23 December 2014 at 16:17, Prarit Bhargava <prarit@redhat.com> wrote:
->>>       sysfs_remove_group(&policy->kobj, &stats_attr_group);
+On 12/24/2014 11:44 AM, Dmitry Torokhov wrote:
+> On Wed, Dec 24, 2014 at 9:37 AM, Nishanth Menon <nm@ti.com> wrote:
+>> On 12/24/2014 11:31 AM, Dmitry Torokhov wrote:
+>>> On Wed, Dec 24, 2014 at 9:16 AM, Nishanth Menon <nm@ti.com> wrote:
+>>>> On 12/24/2014 11:09 AM, Dmitry Torokhov wrote:
+>>>>> On Wed, Dec 24, 2014 at 8:48 AM, Nishanth Menon <nm@ti.com> wrote:
+>>>>>> On 12/16/2014 05:09 PM, Dmitry Torokhov wrote:
+>>>>>>> A lot of callers are missing the fact that dev_pm_opp_get_opp_count
+>>>>>>> needs to be called under RCU lock. Given that RCU locks can safely be
+>>>>>>> nested, instead of providing *_locked() API, let's take RCU lock inside
+>>>>>>> dev_pm_opp_get_opp_count() and leave callers as is.
+>>>>>>
+>>>>>> While it is true that we can safely do nested RCU locks, This also
+>>>>>> encourages wrong usage.
+>>>>>>
+>>>>>> count = dev_pm_opp_get_opp_count(dev)
+>>>>>> ^^ point A
+>>>>>> array   = kzalloc(count * sizeof (*array));
+>>>>>> rcu_read_lock();
+>>>>>> ^^ point B
+>>>>>> .. work down the list and add OPPs..
+>>>>>> ...
+>>>>>>
+>>>>>> Between A and B, we might have had list modification (dynamic OPP
+>>>>>> addition or deletion) - which implies that the count is no longer
+>>>>>> accurate between point A and B. instead, enforcing callers to have the
+>>>>>> responsibility of rcu_lock is exactly what we have to do since the OPP
+>>>>>> library has no clue how to enforce pointer or data accuracy.
+>>>>>
+>>>>> No, you seem to have a misconception that rcu_lock protects you past
+>>>>> the point B, but that is also wrong. The only thing rcu "lock"
+>>>>> provides is safe traversing the list and guarantee that elements will
+>>>>> not disappear while you are referencing them, but list can both
+>>>>> contract and expand under you. In that regard code in
+>>>>> drivers/cpufreq/cpufreq_opp.c is utterly wrong. If you want to count
+>>>>> the list and use number of elements you should be taking a mutex.
+>>>>> Luckily all cpufreq drivers at the moment only want to see if OPP
+>>>>> table is empty or not, so as a stop-gap we can take rcu_lock
+>>>>> automatically as we are getting count. We won't get necessarily
+>>>>> accurate result, but at least we will be safe traversing the list.
+>>>>
+>>>> So, instead of a half solution, lets consider this in the realm of
+>>>> dynamic OPPs as well. agreed to the point that we only have safe
+>>>> traversal and pointer validity. the real problem however is with
+>>>> "dynamic OPPs" (one of the original reasons why i did not add dynamic
+>>>> OPPs in the original version was to escape from it's complexity for
+>>>> users - anyways.. we are beyond that now). if OPPs can be removed on
+>>>> the fly, we need the following:
+>>>> a) use OPP notifiers to adequately handle list modification
+>>>> b) lock down list modification (and associated APIs) to ensure that
+>>>> the original cpufreq /devfreq list is correct.
+>>>>
+>>>> I still dont see the need to do this half solution.
+>>>
+>>> The need for half solution at the moment is that you can't safely
+>>> travel the lists and may crash on an invalid pointer.
 >>
->> ^^^ this line is not guaranteed to have removed the group files by the time it
+>> So, fix the cpufreq-dt instead of moving the hack inside OPP driver.
 > 
-> Strange .. Under what conditions can the above statement be true?
+> I started there, but it is not only cpufreq-dt that got it wrong. I
+> considered changing individual drivers (Viresh also suggested adding
+> _locked() variant API), but decided patching opp was less invasive for
+> now.
 
-Suppose the following happens:
+True. I had done an audit and cleanup, I think a couple or so years
+back and things ofcourse tend to go down the bitrot path without
+constant checkups :(
 
-1.  CPU A holds a file descriptor in userspace for one of the cpu stats files.
-
-2.  CPU B is removing the group
-
-3.  CPU B calls sysfs_remove_group, which does not remove the file because there
-is a use count on it (because CPU A holds the file open).
-
-4.  CPU B now brings up stats again ... and we hit the a collision in the sysfs
-space.
-
-FWIW: I've hit this scenario in all types of hotplug (memory, pci, and cpu).  I
-understand why the sysfs_group and sysfs_file remove functions do NOT block on
-use counts because it is entirely possible that userspace has done something
-braindead which would then prevent the kernel from making progress, or in the
-case of an error return (ex, -EBUSY) prevent hotplug from succeeding.  I dunno
-if there is a way out of this :/
-
-> 
->> returns.  That is important in this code IMO, as we are adding and removing the
->> stats entries rapidly.  You may hit the dreaded "sysfs file already exists"
->> WARNING if this is done too fast, or if sysfs is locked for some other reason
->> and delays the removal of the group.  In the worst case, it is possible you hit
->> a NULL pointer due to stale data access (because you kfree and set to a NULL
->> pointer below).
-> 
-> Hmm, I have seen such stuff yet for sure. But anyway, that would be out of scope
-> of this patch. As w or w/o locking, it is broken :)
-
-Yeah, I agree ... I'm just pointing it out as a problem here.  I'm simply trying
-to make you aware of the conditions on which this locking may fail.
-
-> 
->> I've never found a good method to block this sort of add/remove sysfs file race
->> from happening.  Perhaps someone else may have a suggestion.  In the past I've
->> thought about adding a usage count to the sysfs file handlers themselves but
->> that seems to lead to blocking on userspace access...
-> 
-> Some more details and we can drag Greg-kh into this, but lets be sure of what we
-> are asking..
-> 
->>>       kfree(stat->time_in_state);
->>>       kfree(stat);
->>>       policy->stats_data = NULL;
->>> +     spin_unlock(&cpufreq_stats_lock);
->>>  }
+>>> Going forward I think (I mentioned that in my other email) that we
+>>> should rework the OPP API so that callers fetch OPP table object for a
+>>> device at init/probe time and then use it to get OPPs. This way won't
+>>> have to travel two lists any time we want to reference an OPP.
+>>>
+>>> And instead of relying notifiers, maybe look into using OPP tables
+>>> directly in cpufreq drivers instead of converting OPP into static-ish
+>>> cpufreq tables.
+>>>
 >>
->> There may not be an easy way around this ...
+>> If you'd like a proper fix for OPP usage, I am all open to see such a
+>> proposal that works not just for cpufreq, but also for devfreq as well.
 > 
-> You were just completing the earlier horror story or is this a new comment which
-> I couldn't understand ?
+> Yeah, let's see what kind of time I have ;)
 
-Sorry -- completing the earlier horror story :)
+That would be nice. Thank you.
 
-> 
-> Which IRC do you hangout on? Just in case I need..
+if you could post the split off the remaining patches from the series
+esp patches #1 and #2 w.r.t 3.19-rc1 and repost, it will be nice to
+get them merged in as they do look like obvious improvements good to
+get in without depending on the remainder of the series which we can
+work on meanwhile.
 
-You can usually find me in freenode, #fedora-kernel.  I'm *really* bad about
-marking myself away though ;) so don't be annoyed if I don't answer right away.
-
-P.
-
-> 
-> --
-> viresh
-> 
+-- 
+Regards,
+Nishanth Menon
