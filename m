@@ -1,57 +1,99 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: Stop BUGing the system
-Date: Wed, 24 Dec 2014 09:06:05 -0600
-Message-ID: <549AD65D.4010000@ti.com>
-References: <1418831495-26958-1-git-send-email-nm@ti.com> <20141218144915.GA29004@kahuna> <CAKohponxz0=n5g9uBOt=JqBMdtdi9mnsrh34emxZDO=PJikVaw@mail.gmail.com> <3146996.LXve8MJFme@vostro.rjw.lan>
+Subject: Re: [PATCH 1/4] PM / OPP: add some lockdep annotations
+Date: Wed, 24 Dec 2014 10:28:42 -0600
+Message-ID: <549AE9BA.2050308@ti.com>
+References: <1418771379-24369-1-git-send-email-dtor@chromium.org> <1418771379-24369-2-git-send-email-dtor@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:46869 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbaLXPGK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Dec 2014 10:06:10 -0500
-In-Reply-To: <3146996.LXve8MJFme@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1418771379-24369-2-git-send-email-dtor@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Stefan Wahren <stefan.wahren@i2se.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12/18/2014 08:08 PM, Rafael J. Wysocki wrote:
-> On Friday, December 19, 2014 07:11:19 AM Viresh Kumar wrote:
->> On 18 December 2014 at 20:19, Nishanth Menon <nm@ti.com> wrote:
->>> I can add "could be unstable" -> the point being there can be psuedo
->>> errors reported in the system - example - clock framework bugs. Dont
->>> just stop the boot. example: what if cpufreq was a driver module - it
->>> would not have rescued the system because cpufreq had'nt detected the
->>> logic - if we are going to force this on the system, we should probably
->>> not do this in cpufreq code, instead should be somewhere generic.
->>>
->>> While I do empathise (and had infact advocated in the past) of not
->>> favouring system attempting to continue at an invalid configuration and
->>> our attempt to rescue has failed - given that we cannot provide a
->>> consistent behavior (it is not a core system behavior) and potential of
->>> a false-postive (example clk framework or underlying bug), it should be
->>> good enough to "enhance" WARN to be "severe sounding enough" to
->>> flag it for developer and continue while keeping the system alive as
->>> much as possible.
->>
->> There is no way out for the kernel to know if its a false positive or a real
->> bug. And in the worst case, it can screw up a platform completely.
->>
->> I am still not sure if changing it to a WARN would be good idea.
->>
->> @Rafael: Thoughts ?
+On 12/16/2014 05:09 PM, Dmitry Torokhov wrote:
+> Certain OPP APIs need to be called under RCU lock; let's add a few
+> rcu_lockdep_assert() calls to warn about potential misuse.
 > 
-> I'm a bit divided here.  On the one hand I don't like BUG_ON() as a rule and it
-> is used in too many places where it doesn't have to be used.
+> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+> ---
+>  drivers/base/power/opp.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 > 
-> On the other hand, in this particular case, I'm not sure if allowing the system
-> to run without cpufreq when it might rely on it for CPU cooling, for one example,
-> is a good idea.
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index d24dd614a..b78c14d 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -108,6 +108,14 @@ static LIST_HEAD(dev_opp_list);
+>  /* Lock to allow exclusive modification to the device and opp lists */
+>  static DEFINE_MUTEX(dev_opp_list_lock);
+>  
+> +#define opp_rcu_lockdep_assert()					\
+> +do {									\
+> +	rcu_lockdep_assert(rcu_read_lock_held() ||			\
+> +				lockdep_is_held(&dev_opp_list_lock),	\
+> +			   "Missing rcu_read_lock() or "		\
+> +			   "dev_opp_list_lock protection");		\
+> +} while (0)
+> +
+>  /**
+>   * find_device_opp() - find device_opp struct using device pointer
+>   * @dev:	device pointer used to lookup device OPPs
+> @@ -218,6 +226,8 @@ int dev_pm_opp_get_opp_count(struct device *dev)
+>  	struct dev_pm_opp *temp_opp;
+>  	int count = 0;
+>  
+> +	opp_rcu_lockdep_assert();
+> +
+>  	dev_opp = find_device_opp(dev);
+>  	if (IS_ERR(dev_opp)) {
+>  		int r = PTR_ERR(dev_opp);
+> @@ -267,6 +277,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+>  	struct device_opp *dev_opp;
+>  	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>  
+> +	opp_rcu_lockdep_assert();
+> +
+>  	dev_opp = find_device_opp(dev);
+>  	if (IS_ERR(dev_opp)) {
+>  		int r = PTR_ERR(dev_opp);
+> @@ -313,6 +325,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+>  	struct device_opp *dev_opp;
+>  	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>  
+> +	opp_rcu_lockdep_assert();
+> +
+>  	if (!dev || !freq) {
+>  		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+>  		return ERR_PTR(-EINVAL);
+> @@ -361,6 +375,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+>  	struct device_opp *dev_opp;
+>  	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
+>  
+> +	opp_rcu_lockdep_assert();
+> +
+>  	if (!dev || !freq) {
+>  		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+>  		return ERR_PTR(-EINVAL);
+> 
 
-but then, CPUFReq is not a mandatory feature - we could as well do the
-same with CPU_FREQ disabled.
+You should also add opp_rcu_lockdep_assert to the following functions:
+dev_pm_opp_get_voltage and dev_pm_opp_get_freq - both of which must be
+used under rcu read lock.
+
+dev_pm_opp_get_notifier references the RCU protected dev_opp list ->
+so that must also be under rcu read lock.
+
+
+love the concept, and I suggest splitting this into the following:
+
+RCU readers: trivial as rcu_read_lock_help dumps
+RCU updates: (adding, updating, removing): for the helper functions
+ensure mutex_lock held assertion.
+
+
 
 -- 
 Regards,
