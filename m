@@ -1,84 +1,56 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: suspend cpufreq governors on shutdown
-Date: Mon, 29 Dec 2014 09:45:42 +0530
-Message-ID: <CAKohpo=iEb19QGKUXJO1PURPjUkv1ZCeVFg-i+AFihi7Gmjf0Q@mail.gmail.com>
-References: <1419401388-20171-1-git-send-email-dianders@chromium.org>
+Subject: Re: [PATCH 00/13] cpufreq: stats: cleanups
+Date: Mon, 29 Dec 2014 10:11:40 +0530
+Message-ID: <CAKohpo=scqNCuXDF4E29fnYEJZ3ytwomBoJ5S20WrMD4PL0b9A@mail.gmail.com>
+References: <cover.1418902789.git.viresh.kumar@linaro.org>
+	<3949258.uE4XDaD9A7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:43834 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbaL2EPn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Dec 2014 23:15:43 -0500
-Received: by mail-oi0-f46.google.com with SMTP id h136so27809799oig.5
-        for <linux-pm@vger.kernel.org>; Sun, 28 Dec 2014 20:15:43 -0800 (PST)
-In-Reply-To: <1419401388-20171-1-git-send-email-dianders@chromium.org>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:48116 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbaL2Ell (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Dec 2014 23:41:41 -0500
+Received: by mail-oi0-f41.google.com with SMTP id i138so23323252oig.0
+        for <linux-pm@vger.kernel.org>; Sun, 28 Dec 2014 20:41:40 -0800 (PST)
+In-Reply-To: <3949258.uE4XDaD9A7@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Heiko Stuebner <heiko@sntech.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chris Zhong <zyw@rock-chips.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sonny Rao <sonnyrao@chromium.org>, Dylan Reid <dgreid@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Prarit Bhargava <prarit@redhat.com>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 24 December 2014 at 11:39, Doug Anderson <dianders@chromium.org> wrote:
-> We should stop cpufreq governors when we shut down the system.  If we
-> don't do this, we can end up with this deadlock:
+On 19 December 2014 at 07:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, December 18, 2014 05:30:17 PM Viresh Kumar wrote:
+>> Hi Rafael,
+>>
+>> I finally started looking at how to make cpufreq-core somewhat less complex with
+>> respect to locking, its state machine, etc..
+>>
+>> The first thing I had to get into was cpufreq-stats and so this series. Mostly
+>> cleanups to make things better..
+>>
+>> Please see if they make any sense at all.
+>>
+>> I know we are at Merge window right now and you wouldn't apply it even to
+>> linux-next. So, if they look fine, please don't hesitate in dropping a mail to
+>> confirm they look fine, so that I can send the next set of cleanups atleast for
+>> reviews. We can get these applied one by one then, once we are a bit confident
+>> of them.
 >
-> 1. cpufreq governor may be running on a CPU other than CPU0.
-> 2. In machine_restart() we call smp_send_stop() which stops CPUs.
->    If one of these CPUs was actively running a cpufreq governor
->    then it may have the mutex / spinlock needed to access the main
->    PMIC in the system (perhaps over I2C)
-> 3. If a machine needs access to the main PMIC in order to shutdown
->    then it will never get it since the mutex was lost when the other
->    CPU stopped.
-> 4. We'll hang (possibly eventually hitting the hard lockup detector).
+> Well, the timing is pretty bad for various reasons.  For one, this isn't 3.19
+> material, so I'm not even going to look at it tomorrow and I'm officially on
+> vacation from Monday onward pretty much through the first half of January.
 >
-> Let's avoid the problem by stopping the cpufreq governor at shutdown,
-> which is a sensible thing to do anyway.
+> If I have some time and really nothing else to do, I'll have a look at it, but
+> I can't promise anything.
 >
-> Signed-off-by: Doug Anderson <dianders@chromium.org>
-> ---
-> Changes in v2:
-> - Add a comment about why we register
-> - Don't create cpufreq_shutdown() wrapper function
->
->  drivers/cpufreq/cpufreq.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index a09a29c..33f3d65 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -27,6 +27,7 @@
->  #include <linux/mutex.h>
->  #include <linux/slab.h>
->  #include <linux/suspend.h>
-> +#include <linux/syscore_ops.h>
->  #include <linux/tick.h>
->  #include <trace/events/power.h>
->
-> @@ -2550,6 +2551,14 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
->
-> +/*
-> + * Stop cpufreq at shutdown to make sure it isn't holding any locks
-> + * or mutexes when secondary CPUs are halted.
-> + */
-> +static struct syscore_ops cpufreq_syscore_ops = {
-> +       .shutdown = cpufreq_suspend,
-> +};
-> +
->  static int __init cpufreq_core_init(void)
->  {
->         if (cpufreq_disabled())
-> @@ -2558,6 +2567,8 @@ static int __init cpufreq_core_init(void)
->         cpufreq_global_kobject = kobject_create();
->         BUG_ON(!cpufreq_global_kobject);
->
-> +       register_syscore_ops(&cpufreq_syscore_ops);
-> +
->         return 0;
->  }
->  core_initcall(cpufreq_core_init);
+> It would be good if you could ask poeple to have a look at it and give comments
+> in the meantime.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Prarit, any more comments about this series ?
+
+Latest stuff is here:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/stats/cleanups
+
+--
+viresh
