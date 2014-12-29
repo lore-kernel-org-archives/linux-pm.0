@@ -1,621 +1,218 @@
-From: Huacai Chen <chenhc@lemote.com>
-Subject: [PATCH V6 8/8] MIPS: Loongson: Make CPUFreq usable for Loongson-3
-Date: Sun, 28 Dec 2014 12:58:19 +0800
-Message-ID: <1419742699-15185-1-git-send-email-chenhc@lemote.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv6 2/9] devfreq: event: Add the list of supported devfreq-event
+ type
+Date: Mon, 29 Dec 2014 09:04:06 +0900
+Message-ID: <1419811453-16160-3-git-send-email-cw00.choi@samsung.com>
+References: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtpbgsg2.qq.com ([54.254.200.128]:47425 "EHLO smtpbgsg2.qq.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbaL1E6d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 27 Dec 2014 23:58:33 -0500
+Received: from mailout2.samsung.com ([203.254.224.25]:36389 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbaL2AE0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Dec 2014 19:04:26 -0500
+In-reply-to: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: John Crispin <john@phrozen.org>, "Steven J. Hill" <Steven.Hill@imgtec.com>, linux-mips@linux-mips.org, Fuxin Zhang <zhangfx@lemote.com>, Zhangjin Wu <wuzhangjin@gmail.com>, linux-pm@vger.kernel.org, Huacai Chen <chenhc@lemote.com>, Hongliang Tao <taohl@lemote.com>
+To: myungjoo.ham@samsung.com
+Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-Loongson-3A/3B support frequency scaling. But due to hardware
-limitation, Loongson-3A's frequency scaling is not independent for
-each core, we suggest enable Loongson-3A's CPUFreq only when there is
-one core online. Loongson-3B can adjust frequency independently for
-each core, so it can be always enabled.
+This patch adds the list of supported devfreq-event type as following.
+Each devfreq-event device driver would support the various devfreq-event type
+for devfreq governor at the same time.
+- DEVFREQ_EVENT_TYPE_RAW_DATA
+- DEVFREQ_EVENT_TYPE_UTILIZATION
+- DEVFREQ_EVENT_TYPE_BANDWIDTH
+- DEVFREQ_EVENT_TYPE_LATENCY
 
-Each package has only one register (ChipConfig or FreqCtrl) to control
-frequency, so we need spinlocks to protect register access for multi-
-cores. However, we cannot use spinlock when a core becomes into "wait"
-status (frequency = 0), so we only enable "wait" when there is one core
-in a package online.
-
-arch/mips/kernel/smp.c is modified to guarantee udelay_val has the
-correct value while both CPU hotplug and CPUFreq are enabled.
-
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
-Signed-off-by: Hongliang Tao <taohl@lemote.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- arch/mips/include/asm/mach-loongson/loongson.h |    1 +
- arch/mips/kernel/smp.c                         |    3 +-
- arch/mips/loongson/Kconfig                     |    1 +
- arch/mips/loongson/common/platform.c           |   13 +-
- arch/mips/loongson/loongson-3/Makefile         |    2 +-
- arch/mips/loongson/loongson-3/clock.c          |  191 +++++++++++++++++++
- drivers/cpufreq/Kconfig                        |   15 ++
- drivers/cpufreq/Makefile                       |    1 +
- drivers/cpufreq/loongson3_cpufreq.c            |  240 ++++++++++++++++++++++++
- 9 files changed, 462 insertions(+), 5 deletions(-)
- create mode 100644 arch/mips/loongson/loongson-3/clock.c
- create mode 100644 drivers/cpufreq/loongson3_cpufreq.c
+ drivers/devfreq/devfreq-event.c | 58 ++++++++++++++++++++++++++++++++++++-----
+ include/linux/devfreq-event.h   | 25 +++++++++++++++---
+ 2 files changed, 73 insertions(+), 10 deletions(-)
 
-diff --git a/arch/mips/include/asm/mach-loongson/loongson.h b/arch/mips/include/asm/mach-loongson/loongson.h
-index 9783103..ee18a50 100644
---- a/arch/mips/include/asm/mach-loongson/loongson.h
-+++ b/arch/mips/include/asm/mach-loongson/loongson.h
-@@ -278,6 +278,7 @@ extern u64 loongson_freqctrl[MAX_PACKAGES];
- #ifdef CONFIG_CPU_SUPPORTS_CPUFREQ
- #include <linux/cpufreq.h>
- extern struct cpufreq_frequency_table loongson2_clockmod_table[];
-+extern struct cpufreq_frequency_table loongson3_clockmod_table[];
- #endif
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index 81448ba..64c1764 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -20,6 +20,9 @@
+ #include <linux/list.h>
+ #include <linux/of.h>
  
- /*
-diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-index c94c4e9..01d676a 100644
---- a/arch/mips/kernel/smp.c
-+++ b/arch/mips/kernel/smp.c
-@@ -136,7 +136,8 @@ asmlinkage void start_secondary(void)
- 	calibrate_delay();
- 	preempt_disable();
- 	cpu = smp_processor_id();
--	cpu_data[cpu].udelay_val = loops_per_jiffy;
-+	if (!cpu_data[cpu].udelay_val)
-+		cpu_data[cpu].udelay_val = loops_per_jiffy;
++#define EVENT_TYPE_RAW_DATA_MAX		ULONG_MAX
++#define EVENT_TYPE_UTILIZATION_MAX	100
++
+ static struct class *devfreq_event_class;
  
- 	cpu_set(cpu, cpu_coherent_mask);
- 	notify_cpu_starting(cpu);
-diff --git a/arch/mips/loongson/Kconfig b/arch/mips/loongson/Kconfig
-index 156de85..58a926a 100644
---- a/arch/mips/loongson/Kconfig
-+++ b/arch/mips/loongson/Kconfig
-@@ -69,6 +69,7 @@ config LOONGSON_MACH3X
- 	select CSRC_R4K
- 	select CEVT_R4K
- 	select CPU_HAS_WB
-+	select HAVE_CLK
- 	select HW_HAS_PCI
- 	select ISA
- 	select HT_PCI
-diff --git a/arch/mips/loongson/common/platform.c b/arch/mips/loongson/common/platform.c
-index 0ed3832..7dd5ed4 100644
---- a/arch/mips/loongson/common/platform.c
-+++ b/arch/mips/loongson/common/platform.c
-@@ -17,15 +17,22 @@ static struct platform_device loongson2_cpufreq_device = {
- 	.id = -1,
+ /* The list of all devfreq event list */
+@@ -132,7 +135,8 @@ EXPORT_SYMBOL_GPL(devfreq_event_is_enabled);
+  * Note that this function set the event to the devfreq-event device to start
+  * for getting the event data which could be various event type.
+  */
+-int devfreq_event_set_event(struct devfreq_event_dev *edev)
++int devfreq_event_set_event(struct devfreq_event_dev *edev,
++				enum devfreq_event_type type)
+ {
+ 	int ret;
+ 
+@@ -146,7 +150,15 @@ int devfreq_event_set_event(struct devfreq_event_dev *edev)
+ 		return -EPERM;
+ 
+ 	mutex_lock(&edev->lock);
+-	ret = edev->desc->ops->set_event(edev);
++
++	if ((edev->desc->type & type) == 0) {
++		dev_err(&edev->dev, "unsupported devfreq-event type\n");
++		mutex_unlock(&edev->lock);
++		return -EINVAL;
++	}
++
++	ret = edev->desc->ops->set_event(edev, type);
++
+ 	mutex_unlock(&edev->lock);
+ 
+ 	return ret;
+@@ -162,6 +174,7 @@ EXPORT_SYMBOL_GPL(devfreq_event_set_event);
+  * after stoping the progress of whole sequence of devfreq-event dev.
+  */
+ int devfreq_event_get_event(struct devfreq_event_dev *edev,
++			    enum devfreq_event_type type,
+ 			    struct devfreq_event_data *edata)
+ {
+ 	int ret;
+@@ -175,18 +188,49 @@ int devfreq_event_get_event(struct devfreq_event_dev *edev,
+ 	if (!devfreq_event_is_enabled(edev))
+ 		return -EINVAL;
+ 
++	mutex_lock(&edev->lock);
++
++	if ((edev->desc->type & type) == 0) {
++		dev_err(&edev->dev, "unsupported devfreq-event type\n");
++		return -EINVAL;
++	}
++
+ 	edata->event = edata->total_event = 0;
++	ret = edev->desc->ops->get_event(edev, type, edata);
++	if (ret < 0
++		|| edata->total_event <= 0
++		|| edata->event > edata->total_event) {
++		edata->event = edata->total_event = 0;
++		mutex_unlock(&edev->lock);
++		return -EINVAL;
++	}
+ 
+-	mutex_lock(&edev->lock);
+-	ret = edev->desc->ops->get_event(edev, edata);
+-	mutex_unlock(&edev->lock);
++	switch (type) {
++	case DEVFREQ_EVENT_TYPE_RAW_DATA:
++	case DEVFREQ_EVENT_TYPE_BANDWIDTH:
++	case DEVFREQ_EVENT_TYPE_LATENCY:
++		if ((edata->event > EVENT_TYPE_RAW_DATA_MAX) ||
++			(edata->total_event > EVENT_TYPE_RAW_DATA_MAX)) {
++			edata->event = edata->total_event = 0;
++			ret = -EINVAL;
++		}
++		break;
++	case DEVFREQ_EVENT_TYPE_UTILIZATION:
++		edata->total_event = EVENT_TYPE_UTILIZATION_MAX;
+ 
+-	if ((edata->total_event <= 0)
+-		|| (edata->event > edata->total_event)) {
++		if (edata->event > EVENT_TYPE_UTILIZATION_MAX) {
++			edata->event = edata->total_event = 0;
++			ret = -EINVAL;
++		}
++		break;
++	default:
+ 		edata->event = edata->total_event = 0;
+ 		ret = -EINVAL;
++		break;
+ 	}
+ 
++	mutex_unlock(&edev->lock);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(devfreq_event_get_event);
+diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+index 6023be8..6b86c1d 100644
+--- a/include/linux/devfreq-event.h
++++ b/include/linux/devfreq-event.h
+@@ -36,6 +36,14 @@ struct devfreq_event_dev {
+ 	const struct devfreq_event_desc *desc;
  };
  
--static int __init loongson2_cpufreq_init(void)
-+static struct platform_device loongson3_cpufreq_device = {
-+	.name = "loongson3_cpufreq",
-+	.id = -1,
++/* The supported type by devfreq-event device */
++enum devfreq_event_type {
++	DEVFREQ_EVENT_TYPE_RAW_DATA	= BIT(0),
++	DEVFREQ_EVENT_TYPE_UTILIZATION	= BIT(1),
++	DEVFREQ_EVENT_TYPE_BANDWIDTH	= BIT(2),
++	DEVFREQ_EVENT_TYPE_LATENCY	= BIT(3),
 +};
 +
-+static int __init loongson_cpufreq_init(void)
- {
- 	struct cpuinfo_mips *c = &current_cpu_data;
+ /**
+  * struct devfreq_event_data - the devfreq-event data
+  *
+@@ -69,8 +77,10 @@ struct devfreq_event_ops {
+ 	int (*reset)(struct devfreq_event_dev *edev);
  
- 	/* Only 2F revision and it's successors support CPUFreq */
--	if ((c->processor_id & PRID_REV_MASK) >= PRID_REV_LOONGSON2F)
-+	if ((c->processor_id & PRID_REV_MASK) == PRID_REV_LOONGSON2F)
- 		return platform_device_register(&loongson2_cpufreq_device);
-+	if ((c->processor_id & PRID_REV_MASK) >= PRID_REV_LOONGSON3A)
-+		return platform_device_register(&loongson3_cpufreq_device);
+ 	/* Mandatory functions */
+-	int (*set_event)(struct devfreq_event_dev *edev);
++	int (*set_event)(struct devfreq_event_dev *edev,
++			 enum devfreq_event_type type);
+ 	int (*get_event)(struct devfreq_event_dev *edev,
++			 enum devfreq_event_type type,
+ 			 struct devfreq_event_data *edata);
+ };
  
- 	return -ENODEV;
+@@ -79,6 +89,10 @@ struct devfreq_event_ops {
+  *
+  * @name	: the name of devfreq-event device.
+  * @driver_data	: the private data for devfreq-event driver.
++ * @event_type	: the supported devfreq-event type among as following
++ *		  - DEVFREQ_EVENT_TYPE_UTILIZATION
++ *		  - DEVFREQ_EVENT_TYPE_BANDWIDTH
++ *		  - DEVFREQ_EVENT_TYPE_LATENCY
+  * @ops		: the operation to control devfreq-event device.
+  *
+  * Each devfreq-event device is described with a this structure.
+@@ -87,6 +101,7 @@ struct devfreq_event_ops {
+ struct devfreq_event_desc {
+ 	const char *name;
+ 	void *driver_data;
++	enum devfreq_event_type type;
+ 
+ 	struct devfreq_event_ops *ops;
+ };
+@@ -95,8 +110,10 @@ struct devfreq_event_desc {
+ extern int devfreq_event_enable_edev(struct devfreq_event_dev *edev);
+ extern int devfreq_event_disable_edev(struct devfreq_event_dev *edev);
+ extern bool devfreq_event_is_enabled(struct devfreq_event_dev *edev);
+-extern int devfreq_event_set_event(struct devfreq_event_dev *edev);
++extern int devfreq_event_set_event(struct devfreq_event_dev *edev,
++				enum devfreq_event_type type);
+ extern int devfreq_event_get_event(struct devfreq_event_dev *edev,
++				enum devfreq_event_type type,
+ 				struct devfreq_event_data *edata);
+ extern int devfreq_event_reset_event(struct devfreq_event_dev *edev);
+ extern void *devfreq_event_get_drvdata(struct devfreq_event_dev *edev);
+@@ -123,12 +140,14 @@ static inline bool devfreq_event_is_enabled(struct devfreq_event_dev *edev);
+ 	return false;
  }
  
--arch_initcall(loongson2_cpufreq_init);
-+arch_initcall(loongson_cpufreq_init);
-diff --git a/arch/mips/loongson/loongson-3/Makefile b/arch/mips/loongson/loongson-3/Makefile
-index 622fead..1be6a0c 100644
---- a/arch/mips/loongson/loongson-3/Makefile
-+++ b/arch/mips/loongson/loongson-3/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for Loongson-3 family machines
- #
--obj-y			+= irq.o cop2-ex.o platform.o
-+obj-y			+= irq.o cop2-ex.o platform.o clock.o
+-static inline int devfreq_event_set_event(struct devfreq_event_dev *edev);
++static inline int devfreq_event_set_event(struct devfreq_event_dev *edev,
++					enum devfreq_event_type type)
+ {
+ 	return -EINVAL;
+ }
  
- obj-$(CONFIG_SMP)	+= smp.o
- 
-diff --git a/arch/mips/loongson/loongson-3/clock.c b/arch/mips/loongson/loongson-3/clock.c
-new file mode 100644
-index 0000000..13dc471
---- /dev/null
-+++ b/arch/mips/loongson/loongson-3/clock.c
-@@ -0,0 +1,191 @@
-+/*
-+ * Copyright (C) 2008 - 2014 Lemote Inc.
-+ * Author: Yan Hua, yanh@lemote.com
-+ *         Chen Huacai, chenhc@lemote.com
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/cpufreq.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/clock.h>
-+
-+#include <loongson.h>
-+
-+static LIST_HEAD(clock_list);
-+static DEFINE_SPINLOCK(clock_lock);
-+static DEFINE_MUTEX(clock_list_sem);
-+
-+/* Minimum CLK support */
-+enum {
-+	DC_ZERO, DC_25PT = 2, DC_37PT, DC_50PT, DC_62PT, DC_75PT,
-+	DC_87PT, DC_DISABLE, DC_RESV
-+};
-+
-+struct cpufreq_frequency_table loongson3_clockmod_table[] = {
-+	{0, DC_RESV, CPUFREQ_ENTRY_INVALID},
-+	{0, DC_ZERO, CPUFREQ_ENTRY_INVALID},
-+	{0, DC_25PT, 0},
-+	{0, DC_37PT, 0},
-+	{0, DC_50PT, 0},
-+	{0, DC_62PT, 0},
-+	{0, DC_75PT, 0},
-+	{0, DC_87PT, 0},
-+	{0, DC_DISABLE, 0},
-+	{0, DC_RESV, CPUFREQ_TABLE_END},
-+};
-+EXPORT_SYMBOL_GPL(loongson3_clockmod_table);
-+
-+static struct clk cpu_clks[NR_CPUS];
-+static char clk_names[NR_CPUS][10];
-+
-+struct clk *cpu_clk_get(int cpu)
-+{
-+	return &cpu_clks[cpu];
-+}
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	int i;
-+	struct clk *clk;
-+
-+	if (!id)
-+		return NULL;
-+
-+	for_each_possible_cpu(i) {
-+		clk = &cpu_clks[i];
-+		if (strcmp(clk->name, id) == 0)
-+			return clk;
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+static void propagate_rate(struct clk *clk)
-+{
-+	struct clk *clkp;
-+
-+	list_for_each_entry(clkp, &clock_list, node) {
-+		if (likely(clkp->parent != clk))
-+			continue;
-+		if (likely(clkp->ops && clkp->ops->recalc))
-+			clkp->ops->recalc(clkp);
-+		if (unlikely(clkp->flags & CLK_RATE_PROPAGATES))
-+			propagate_rate(clkp);
-+	}
-+}
-+
-+int clk_enable(struct clk *clk)
-+{
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	if (!clk)
-+		return 0;
-+
-+	return (unsigned long)clk->rate;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+void clk_put(struct clk *clk)
-+{
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_set_rate(struct clk *clk, unsigned long rate)
-+{
-+	int regval, ret = 0;
-+	struct cpufreq_frequency_table *pos;
-+	int cpu = clk - cpu_clks;
-+	uint64_t core_id = cpu_data[cpu].core;
-+	uint64_t package_id = cpu_data[cpu].package;
-+
-+	if (likely(clk->ops && clk->ops->set_rate)) {
-+		unsigned long flags;
-+
-+		spin_lock_irqsave(&clock_lock, flags);
-+		ret = clk->ops->set_rate(clk, rate, 0);
-+		spin_unlock_irqrestore(&clock_lock, flags);
-+	}
-+
-+	if (unlikely(clk->flags & CLK_RATE_PROPAGATES))
-+		propagate_rate(clk);
-+
-+	cpufreq_for_each_valid_entry(pos, loongson3_clockmod_table)
-+		if (rate == pos->frequency)
-+			break;
-+	if (rate != pos->frequency)
-+		return -ENOTSUPP;
-+
-+	clk->rate = rate;
-+
-+	if (loongson_sysconf.cputype == Loongson_3A) {
-+		regval = LOONGSON_CHIPCFG(package_id);
-+		regval = (regval & ~0x7) | (pos->driver_data - 1);
-+		LOONGSON_CHIPCFG(package_id) = regval;
-+	} else if (loongson_sysconf.cputype == Loongson_3B) {
-+		regval = LOONGSON_FREQCTRL(package_id);
-+		regval = (regval & ~(0x7 << (core_id*4))) |
-+			((pos->driver_data - 1) << (core_id*4));
-+		LOONGSON_FREQCTRL(package_id) = regval;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(clk_set_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (likely(clk->ops && clk->ops->round_rate)) {
-+		unsigned long flags, rounded;
-+
-+		spin_lock_irqsave(&clock_lock, flags);
-+		rounded = clk->ops->round_rate(clk, rate);
-+		spin_unlock_irqrestore(&clock_lock, flags);
-+
-+		return rounded;
-+	}
-+
-+	return rate;
-+}
-+EXPORT_SYMBOL_GPL(clk_round_rate);
-+
-+static int loongson3_clock_init(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		sprintf(clk_names[i], "cpu%d_clk", i);
-+		cpu_clks[i].name = clk_names[i];
-+		cpu_clks[i].flags = CLK_ALWAYS_ENABLED | CLK_RATE_PROPAGATES;
-+		cpu_clks[i].rate = cpu_clock_freq / 1000;
-+	}
-+
-+	/* clock table init */
-+	for (i = 2;
-+	     (loongson3_clockmod_table[i].frequency != CPUFREQ_TABLE_END);
-+	     i++)
-+		loongson3_clockmod_table[i].frequency = ((cpu_clock_freq / 1000) * i) / 8;
-+
-+	return 0;
-+}
-+arch_initcall(loongson3_clock_init);
-+
-+MODULE_AUTHOR("Huacai Chen <chenhc@lemote.com>");
-+MODULE_DESCRIPTION("CPUFreq driver for Loongson 3A/3B");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 29b2ef5..c04623b 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -235,6 +235,7 @@ endif
- if MIPS
- config LOONGSON2_CPUFREQ
- 	tristate "Loongson2 CPUFreq Driver"
-+	depends on CPU_LOONGSON2
- 	help
- 	  This option adds a CPUFreq driver for loongson processors which
- 	  support software configurable cpu frequency.
-@@ -245,8 +246,22 @@ config LOONGSON2_CPUFREQ
- 
- 	  If in doubt, say N.
- 
-+config LOONGSON3_CPUFREQ
-+	tristate "Loongson3 CPUFreq Driver"
-+	depends on CPU_LOONGSON3
-+	help
-+	  This option adds a CPUFreq driver for loongson processors which
-+	  support software configurable cpu frequency.
-+
-+	  Loongson-3A and it's successors support this feature.
-+
-+	  For details, take a look at <file:Documentation/cpu-freq/>.
-+
-+	  If in doubt, say N.
-+
- config LOONGSON1_CPUFREQ
- 	tristate "Loongson1 CPUFreq Driver"
-+	depends on CPU_LOONGSON1
- 	help
- 	  This option adds a CPUFreq driver for loongson1 processors which
- 	  support software configurable cpu frequency.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b3ca7b0..7a2fdf6 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -97,6 +97,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
- obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
-+obj-$(CONFIG_LOONGSON3_CPUFREQ)		+= loongson3_cpufreq.o
- obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
- obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
- obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
-diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loongson3_cpufreq.c
-new file mode 100644
-index 0000000..3345002
---- /dev/null
-+++ b/drivers/cpufreq/loongson3_cpufreq.c
-@@ -0,0 +1,240 @@
-+/*
-+ * CPUFreq driver for the loongson-3 processors
-+ *
-+ * All revisions of Loongson-3 processor support this feature.
-+ *
-+ * Copyright (C) 2008 - 2014 Lemote Inc.
-+ * Author: Yan Hua, yanh@lemote.com
-+ *         Chen Huacai, chenhc@lemote.com
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+#include <linux/module.h>
-+#include <linux/time.h>
-+#include <linux/delay.h>
-+#include <linux/cpufreq.h>
-+#include <linux/platform_device.h>
-+#include <asm/idle.h>
-+#include <asm/clock.h>
-+#include <asm/cevt-r4k.h>
-+
-+#include <loongson.h>
-+
-+static uint nowait;
-+static spinlock_t cpufreq_reg_lock[MAX_PACKAGES];
-+
-+static void (*saved_cpu_wait)(void);
-+extern struct clk *cpu_clk_get(int cpu);
-+
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data);
-+
-+static struct notifier_block loongson3_cpufreq_notifier_block = {
-+	.notifier_call = loongson3_cpu_freq_notifier
-+};
-+
-+#ifdef CONFIG_SMP
-+static void set_shared_udelay_val(int cpu, unsigned long lpj)
-+{
-+	int i;
-+	cpumask_t *mask;
-+
-+	if (loongson_sysconf.cputype != Loongson_3A)
-+		cpu_data[cpu].udelay_val = lpj;
-+	else {
-+		mask = topology_core_cpumask(cpu);
-+		for_each_cpu(i, mask)
-+			cpu_data[i].udelay_val = lpj;
-+	}
-+}
-+
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data)
-+{
-+	struct cpufreq_freqs *freqs = (struct cpufreq_freqs *)data;
-+	unsigned long lpj, cpu = freqs->cpu;
-+	struct clock_event_device *cd = &per_cpu(mips_clockevent_device, cpu);
-+
-+	if (val == CPUFREQ_POSTCHANGE) {
-+		lpj = cpufreq_scale(loops_per_jiffy,
-+				cpu_clock_freq / 1000, freqs->new);
-+		set_shared_udelay_val(cpu, lpj);
-+		clockevent_set_clock(cd, freqs->new * 1000 / 2);
-+	}
-+
-+	return 0;
-+}
-+#else
-+static int loongson3_cpu_freq_notifier(struct notifier_block *nb,
-+					unsigned long val, void *data)
-+{
-+	if (val == CPUFREQ_POSTCHANGE)
-+		current_cpu_data.udelay_val = loops_per_jiffy;
-+
-+	return 0;
-+}
-+#endif
-+
-+static unsigned int loongson3_cpufreq_get(unsigned int cpu)
-+{
-+	return clk_get_rate(cpu_clk_get(cpu));
-+}
-+
-+/*
-+ * Here we notify other drivers of the proposed change and the final change.
-+ */
-+static int loongson3_cpufreq_target(struct cpufreq_policy *policy,
-+				     unsigned int index)
-+{
-+	unsigned int freq;
-+	unsigned int cpu = policy->cpu;
-+	unsigned int package = cpu_data[cpu].package;
-+
-+	if (!cpu_online(cpu))
-+		return -ENODEV;
-+
-+	freq =
-+	    ((cpu_clock_freq / 1000) *
-+	     loongson3_clockmod_table[index].driver_data) / 8;
-+
-+	/* setting the cpu frequency */
-+	spin_lock(&cpufreq_reg_lock[package]);
-+	clk_set_rate(policy->clk, freq);
-+	spin_unlock(&cpufreq_reg_lock[package]);
-+
-+	return 0;
-+}
-+
-+static int loongson3_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	if (!cpu_online(policy->cpu))
-+		return -ENODEV;
-+
-+	policy->clk = cpu_clk_get(policy->cpu);
-+	policy->cur = loongson3_cpufreq_get(policy->cpu);
-+
-+	policy->cpuinfo.transition_latency = 1000;
-+
-+	/* Loongson-3A: all cores in a package share one clock */
-+	if (loongson_sysconf.cputype == Loongson_3A)
-+		cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
-+
-+	return cpufreq_table_validate_and_show(policy,
-+			&loongson3_clockmod_table[0]);
-+}
-+
-+static int loongson3_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	return 0;
-+}
-+
-+static struct cpufreq_driver loongson3_cpufreq_driver = {
-+	.name = "loongson3",
-+	.init = loongson3_cpufreq_cpu_init,
-+	.verify = cpufreq_generic_frequency_table_verify,
-+	.target_index = loongson3_cpufreq_target,
-+	.get = loongson3_cpufreq_get,
-+	.exit = loongson3_cpufreq_exit,
-+	.attr = cpufreq_generic_attr,
-+};
-+
-+static struct platform_device_id platform_device_ids[] = {
-+	{
-+		.name = "loongson3_cpufreq",
-+	},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(platform, platform_device_ids);
-+
-+static struct platform_driver platform_driver = {
-+	.driver = {
-+		.name = "loongson3_cpufreq",
-+		.owner = THIS_MODULE,
-+	},
-+	.id_table = platform_device_ids,
-+};
-+
-+/*
-+ * This is the simple version of Loongson-3 wait, Maybe we need do this in
-+ * interrupt disabled content
-+ */
-+
-+void loongson3_cpu_wait(void)
-+{
-+	u32 cpu_freq, shared_cpus = 0;
-+	int i, cpu = smp_processor_id();
-+	uint64_t core_id = cpu_data[cpu].core;
-+	uint64_t package_id = cpu_data[cpu].package;
-+
-+	for_each_online_cpu(i)
-+		if (cpu_data[i].package == package_id)
-+			shared_cpus++;
-+
-+	if (shared_cpus > 1)
-+		goto out;
-+
-+	if (loongson_sysconf.cputype == Loongson_3A) {
-+		cpu_freq = LOONGSON_CHIPCFG(package_id);
-+		LOONGSON_CHIPCFG(package_id) &= ~0x7;    /* Put CPU into wait mode */
-+		LOONGSON_CHIPCFG(package_id) = cpu_freq; /* Restore CPU state */
-+	} else if (loongson_sysconf.cputype == Loongson_3B) {
-+		cpu_freq = LOONGSON_FREQCTRL(package_id);
-+		LOONGSON_FREQCTRL(package_id) &= ~(0x7 << (core_id*4)); /* Put CPU into wait mode */
-+		LOONGSON_FREQCTRL(package_id) = cpu_freq;               /* Restore CPU state */
-+	}
-+
-+out:
-+	local_irq_enable();
-+}
-+EXPORT_SYMBOL_GPL(loongson3_cpu_wait);
-+
-+static int __init cpufreq_init(void)
-+{
-+	int i, ret;
-+
-+	/* Register platform stuff */
-+	ret = platform_driver_register(&platform_driver);
-+	if (ret)
-+		return ret;
-+
-+	pr_info("cpufreq: Loongson-3 CPU frequency driver.\n");
-+
-+	for (i = 0; i < MAX_PACKAGES; i++)
-+		spin_lock_init(&cpufreq_reg_lock[i]);
-+
-+	cpufreq_register_notifier(&loongson3_cpufreq_notifier_block,
-+				  CPUFREQ_TRANSITION_NOTIFIER);
-+
-+	ret = cpufreq_register_driver(&loongson3_cpufreq_driver);
-+
-+	if (!ret && !nowait) {
-+		saved_cpu_wait = cpu_wait;
-+		cpu_wait = loongson3_cpu_wait;
-+	}
-+
-+	return ret;
-+}
-+
-+static void __exit cpufreq_exit(void)
-+{
-+	if (!nowait && saved_cpu_wait)
-+		cpu_wait = saved_cpu_wait;
-+	cpufreq_unregister_driver(&loongson3_cpufreq_driver);
-+	cpufreq_unregister_notifier(&loongson3_cpufreq_notifier_block,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+
-+	platform_driver_unregister(&platform_driver);
-+}
-+
-+module_init(cpufreq_init);
-+module_exit(cpufreq_exit);
-+
-+module_param(nowait, uint, 0644);
-+MODULE_PARM_DESC(nowait, "Disable Loongson-3A/3B specific wait");
-+
-+MODULE_AUTHOR("Huacai Chen <chenhc@lemote.com>");
-+MODULE_DESCRIPTION("CPUFreq driver for Loongson-3A/3B");
-+MODULE_LICENSE("GPL");
+ static inline int devfreq_event_get_event(struct devfreq_event_dev *edev,
++					enum devfreq_event_type type,
+ 					struct devfreq_event_data *edata)
+ {
+ 	return -EINVAL;
 -- 
-1.7.7.3
-
-
+1.8.5.5
 
