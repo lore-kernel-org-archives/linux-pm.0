@@ -1,56 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/13] cpufreq: stats: cleanups
-Date: Mon, 29 Dec 2014 10:11:40 +0530
-Message-ID: <CAKohpo=scqNCuXDF4E29fnYEJZ3ytwomBoJ5S20WrMD4PL0b9A@mail.gmail.com>
-References: <cover.1418902789.git.viresh.kumar@linaro.org>
-	<3949258.uE4XDaD9A7@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
+Date: Mon, 29 Dec 2014 14:03:07 +0800
+Message-ID: <54A0EE9B.9040803@intel.com>
+References: <54868CF6.6020505@intel.com> <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com> <20141211010226.GA26253@aaronlu.sh.intel.com> <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com> <1418265472.12435.68.camel@rzhang1-toshiba> <548934D0.8000502@intel.com> <1418286781.12435.73.camel@rzhang1-toshiba> <54895821.3050902@intel.com> <1419217761.19619.2.camel@rzhang1-toshiba> <20141222095344.GE4525@x1> <5498C4D9.8050509@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:48116 "EHLO
-	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbaL2Ell (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Dec 2014 23:41:41 -0500
-Received: by mail-oi0-f41.google.com with SMTP id i138so23323252oig.0
-        for <linux-pm@vger.kernel.org>; Sun, 28 Dec 2014 20:41:40 -0800 (PST)
-In-Reply-To: <3949258.uE4XDaD9A7@vostro.rjw.lan>
+Received: from mga14.intel.com ([192.55.52.115]:62546 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750843AbaL2GDU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Dec 2014 01:03:20 -0500
+In-Reply-To: <5498C4D9.8050509@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Prarit Bhargava <prarit@redhat.com>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Lee Jones <lee.jones@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com
 
-On 19 December 2014 at 07:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, December 18, 2014 05:30:17 PM Viresh Kumar wrote:
->> Hi Rafael,
+On 12/23/2014 09:26 AM, Aaron Lu wrote:
+> On 12/22/2014 05:53 PM, Lee Jones wrote:
+>> On Mon, 22 Dec 2014, Zhang Rui wrote:
 >>
->> I finally started looking at how to make cpufreq-core somewhat less complex with
->> respect to locking, its state machine, etc..
+>>> On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
+>>>> INT3406 ACPI device object resembles an ACPI video output device, but its
+>>>> _BCM is said to be deprecated and should not be used. So we will make
+>>>> use of the raw interface to do the actual cooling. Due to this, the
+>>>> backlight core has some modifications. Also, to re-use some of the ACPI
+>>>> video module's code, one function has been exported.
+>>>>
+>>>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>>>
+>>> Jingoo and Lee,
+>>>
+>>> are you okay with the changes in drivers/video/backlight/backlight.c and
+>>> include/linux/backlight.h?
 >>
->> The first thing I had to get into was cpufreq-stats and so this series. Mostly
->> cleanups to make things better..
+>> NB: Jingoo still needs to review the crux of the patch.
 >>
->> Please see if they make any sense at all.
+>>>> ---
+>>>> v6: Fix an issue that wrongly set error path return value as reported
+>>>> by Olof Johansson.
+>>>>
+>>>>  drivers/acpi/video.c                              |  77 ++++----
+>>>>  drivers/thermal/Kconfig                           |  26 +--
+>>>>  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
+>>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
+>>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
+>>>>  drivers/video/backlight/backlight.c               |  44 +++--
+>>>>  include/acpi/video.h                              |  20 ++
+>>>>  include/linux/backlight.h                         |   2 +
+>>>>  8 files changed, 366 insertions(+), 74 deletions(-)
+>>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+>>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
 >>
->> I know we are at Merge window right now and you wouldn't apply it even to
->> linux-next. So, if they look fine, please don't hesitate in dropping a mail to
->> confirm they look fine, so that I can send the next set of cleanups atleast for
->> reviews. We can get these applied one by one then, once we are a bit confident
->> of them.
->
-> Well, the timing is pretty bad for various reasons.  For one, this isn't 3.19
-> material, so I'm not even going to look at it tomorrow and I'm officially on
-> vacation from Monday onward pretty much through the first half of January.
->
-> If I have some time and really nothing else to do, I'll have a look at it, but
-> I can't promise anything.
->
-> It would be good if you could ask poeple to have a look at it and give comments
-> in the meantime.
+>> I gather by the message at the top that you're looking for an Ack so
+>> this can be routed through another subsystem.  Not going to happen.
+>>
+>> So you're on v6 already and a) no one has mentioned that introducing a
+>> new driver AND making core framework changes (in a different subsystem
+>> to boot) in one patch is bad and b) this is the first time you've
+>> Cc'ed the maintainers of the aforementioned subsystem?
+>>
+>> Moving forward you should split this patch into component parts and
+>> resend -- only this time ensure you Cc all maintainers in the first
+>> instance, rather than as as afterthought.
+> 
+> OK, thanks for the suggestion.
+> 
+>>
+>>>> -config INT340X_THERMAL
+>>>> -	tristate "ACPI INT340X thermal drivers"
+>>>> -	depends on X86 && ACPI
+>>>> -	select THERMAL_GOV_USER_SPACE
+>>>> -	select ACPI_THERMAL_REL
+>>>> -	select ACPI_FAN
+>>
+>> This patch also relies on backlight as well, no?
+> 
+> Yes it does, will add it in next revision.
 
-Prarit, any more comments about this series ?
+My fault. INT340X_THERMAL does not rely on backlight, INT3406 does.
+Since I have marked INT3406 depends on ACPI_VIDEO, which depends on
+BACKLIGHT, so we are good here.
 
-Latest stuff is here:
-git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/stats/cleanups
-
---
-viresh
+Thanks,
+Aaron
