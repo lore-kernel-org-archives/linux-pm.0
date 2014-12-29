@@ -1,187 +1,183 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv6 0/9] devfreq: Add devfreq-event class to provide raw data for
- devfreq device
-Date: Mon, 29 Dec 2014 09:04:04 +0900
-Message-ID: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Subject: [PATCHv6 6/9] ARM: dts: Add PPMU dt node for Exynos4 SoCs
+Date: Mon, 29 Dec 2014 09:04:10 +0900
+Message-ID: <1419811453-16160-7-git-send-email-cw00.choi@samsung.com>
+References: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:32506 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbaL2AEb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Dec 2014 19:04:31 -0500
+In-reply-to: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com
 Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-This patchset add new devfreq_event class to provide raw data to determine
-current utilization of device  which is used for devfreq governor.
+This patch add PPMU (Platform Performance Monitoring Unit) dt node for Exynos4
+(Exynos4210/4212/4412) SoC. PPMU dt node is used to monitor the utilization of
+each IP.
 
-[Description of devfreq-event class]
-This patchset add new devfreq_event class for devfreq_event device which provide
-raw data (e.g., memory bus utilization/GPU utilization). This raw data from
-devfreq_event data would be used for the governor of devfreq subsystem.
-- devfreq_event device : Provide raw data for governor of existing devfreq device
-- devfreq device       : Monitor device state and change frequency/voltage of device
-                         using the raw data from devfreq_event device
+The Exynos4210/Exynos4212/Exynos4412 SoC includes following PPMUs:
+- PPMU_DMC0      0x106A_0000
+- PPMU_DMC1      0x106B_0000
+- PPMU_CPU       0x106C_0000
+- PPMU_ACP       0x10AE_0000
+- PPMU_RIGHT_BUS 0x112A_0000
+- PPMU_LEFT_BUS  0x116A_0000
+- PPMU_FSYS      0x1263_0000
+- PPMU_LCD0      0x11E4_0000
+- PPMU_CAMIF     0x11AC_0000
+- PPMU_IMAGE     0x12AA_0000
+- PPMU_TV        0x12E4_0000
+- PPMU_3D        0x1322_0000
+- PPMU_MFC_LEFT  0x1366_0000
+- PPMU_MFC_RIGHT 0x1367_0000
 
-The devfreq subsystem support generic DVFS(Dynamic Voltage/Frequency Scaling)
-for Non-CPU Devices. The devfreq device would dertermine current device state
-using various governor (e.g., ondemand, performance, powersave). After completed
-determination of system state, devfreq device would change the frequency/voltage
-of devfreq device according to the result of governor.
+Additionally, the Exynos4210 SoC includes following PPMUs:
+- PPMU_LCD1      0x1224_0000
 
-But, devfreq governor must need basic data which indicates current device state.
-Existing devfreq subsystem only consider devfreq device which check current system
-state and determine proper system state using basic data. There is no subsystem
-for device providing basic data to devfreq device.
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ arch/arm/boot/dts/exynos4.dtsi    | 108 ++++++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/exynos4210.dtsi |   8 +++
+ 2 files changed, 116 insertions(+)
 
-The devfreq subsystem must need devfreq_event device(data-provider device) for
-existing devfreq device. So, this patch add new devfreq_event class for
-devfreq_event device which read various basic data(e.g, memory bus utilization,
-GPU utilization) and provide measured data to existing devfreq device through
-standard APIs of devfreq_event class.
-
-The following description explains the feature of two kind of devfreq class:
-- devfreq class (existing)
- : devfreq consumer device use raw data from devfreq_event device for
-   determining proper current system state and change voltage/frequency
-   dynamically using various governors.
-- devfreq_event class (new)
- : Provide measured raw data to devfreq device for governor
-
-Also, the devfreq-event device would support various type event as following:
- : DEVFREQ_EVENT_TYPE_RAW_DATA
- : DEVFREQ_EVENT_TYPE_UTILIZATION
- : DEVFREQ_EVENT_TYPE_BANDWIDTH
- : DEVFREQ_EVENT_TYPE_LATENCY
-
-[For example]
-If board dts includes PPMU_DMC0/DMC1/LEFTBUS/RIGHTBUS event node,
-would show following sysfs entry. Also devfreq driver(e.g., exynos4_bus.c)
-can get the instance of devfreq-event device by using provided API and then
-get raw data which reflect the current state of device.
-
--sh-3.2# cd /sys/class/devfreq-event/
--sh-3.2# ls -al
-total 0
-drwxr-xr-x  2 root root 0 Jan  9 16:47 .
-drwxr-xr-x 37 root root 0 Jan  9 16:47 ..
-lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.0 -> ../../devices/soc/106a0000.ppmu_dmc0/devfreq-event/event.0
-lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.1 -> ../../devices/soc/106b0000.ppmu_dmc1/devfreq-event/event.1
-lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.2 -> ../../devices/soc/112a0000.ppmu_rightbus/devfreq-event/event.2
-lrwxrwxrwx  1 root root 0 Jan  9 16:47 event.3 -> ../../devices/soc/116a0000.ppmu_leftbus0/devfreq-event/event.3
-
-Changes from v5:
-- Rebase these patch-set on v3.19-rc1 and Test it.
-1. exynos-ppmu.c
-- Change the error value when of_iomap() fail to map the memory
-- Remove owner setting of platform_driver
-- Add exynos_ppmu_disable() function
-2. exynos dts file
-- Add PPMU node to Exynos3250-based Monk board
-- Remove ppmu_cpu node on Exynos4412-based TRATS2 board and add ppmu_leftbus/rightbus node
-
-Changes from v4:
-1. devfreq-event class driver
-- Add devfreq_event_get_edev_count() function
-- Modify the simple description of devfreq-event framework in devfreq-event.c
-- Minimize the usage range of global lock usage in devfreq_event_add_edev()
-- Remove '_is_enabled()' function pointer in devfreq_event_ops structure
-- Add separte CONFIG_PM_DEVFREQ_EVENT configuration
-- Add new devfreq-event.h header file including devfreq-event helper functions
-2. exynos dts file
-- Add new patch to support PPMU with DEVFREQ-event on Exynos4412-based TRATS2
-
-Changes from v3:
-1. devfreq-event class driver
-- Fix return value of devfreq_event_get_event()
-- Add new structure devfreq_event_data for devfreq_event_get_event()
-- Modify the prototype of devfreq_event_get_event() function
-- Call of_node_put after calling of_parse_phandle() to decrement refcount
-2. exynos-ppmu driver
-- Modify usage of devfreq_event_get_event() function
-  according to new prototype of this funciton
-- Add the additional description to exynos-ppmu.txt how to add PPMU node
-  in board dts file
-- Use 'PPMU_EVENT' macro to remove duplicate codes
-- Add the support of PPMU for Exynos5260
-3. exynos dts file
-- Add missing PPMU_FSYS node to exynos3250.dtsi
-- Fix 'ppmu_mfc_l' node name as 'ppmu_mfc' because exynos3250 has only one MFC IP.
-- Add missing PPMU_ACP/G3D to exynos4.dtsi
-4. etc
-- Fix wrong abbreviation of PPMU (PPMU :Platform Performance Monitoring Unit)
-- Add new patch to support the PPMU of Exynos5260 SoC
-
-Changes from v2:
-1. devfreq-event class driver
-- Rename all the helper functions of devfreq-event device
-- Add devfreq_event_remove_edev() instead of devfreq_put_event_dev()
-- Add devfreq_event_release_edev() to initialize it before put device
-- Add the detailed description of devfreq-event API
-- Add the attributes of devfreq-event class (enable_count)
-- Check the overflow about event/total_event data in devfreq_event_get_event()
-- Remove the 'exclusive flag' feature
-- Set set_event()/get_event() functions as mandary
-- Add missing of_node_put() call
-- Change variable type of 'get_event()' funciton from 'int' to 'u64'
-2. exynos-ppmu driver
-- Remove un-used field (struct devfreq)
-- Use 'of_get_child_by_name()' instead of 'of_find_node_by_name()'
-- Add missing of_node_put() call
-- Fix wrong clock control
-- Use devfreq_event_remove_edev() instead of devfreq_remove_device()
-- Add the documentation for exynos-ppmu driver
-- Remove 'enable/disable/is_enabled/reset' function of exynos-ppmu driver
-3. exynos3250-rinato.dts
-- Add ppmu_{leftbus|rightbus} dt node and remove ppmu_cpu dt node
-
-Changes from v1:
-- Code clean
-- Add the description of devfreq-event structure
-- Add 'is_enabled' function to devfreq_event_ops structure
-- Add 'enable_count' field to devfreq_event_dev structure
-- Check whether devfreq-event device is enabled or not
-  during calling devfreq_event API
-- Define the type of devfreq-event device as following
-  : DEVFREQ_EVENT_TYPE_RAW_DATA
-  : DEVFREQ_EVENT_TYPE_UTILIZATION
-  : DEVFREQ_EVENT_TYPE_BANDWIDTH
-  : DEVFREQ_EVENT_TYPE_LATENCY
-- Add the exclusive feature of devfreq-event device.
-  If devfreq-event device is used on only on devfreq driver,
-  should used 'devfreq_enable_event_dev_exclusive()' function
-- Add new patch6 for test on Exynos3250-based Rinato board
-
-Chanwoo Choi (9):
-  devfreq: event: Add new devfreq_event class to provide basic data for devfreq governor
-  devfreq: event: Add the list of supported devfreq-event type
-  devfreq: event: Add exynos-ppmu devfreq-event driver
-  devfreq: event: Add documentation for exynos-ppmu devfreq-event driver
-  ARM: dts: Add PPMU dt node for Exynos3250 SoC
-  ARM: dts: Add PPMU dt node for Exynos4 SoCs
-  ARM: dts: Add PPMU dt node for Exynos5260 SoC
-  ARM: dts: exynos: Add PPMU node to Exynos3250-based Rinato/Monk board
-  ARM: dts: exynos: Add PPMU node for Exynos4412-based TRATS2 board
-
- .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++
- arch/arm/boot/dts/exynos3250-monk.dts              |  40 ++
- arch/arm/boot/dts/exynos3250-rinato.dts            |  40 ++
- arch/arm/boot/dts/exynos3250.dtsi                  |  74 +++
- arch/arm/boot/dts/exynos4.dtsi                     | 108 +++++
- arch/arm/boot/dts/exynos4210.dtsi                  |   8 +
- arch/arm/boot/dts/exynos4412-trats2.dts            |  40 ++
- arch/arm/boot/dts/exynos5260.dtsi                  |  90 ++++
- drivers/devfreq/Kconfig                            |   2 +
- drivers/devfreq/Makefile                           |   6 +-
- drivers/devfreq/devfreq-event.c                    | 510 +++++++++++++++++++++
- drivers/devfreq/event/Kconfig                      |  25 +
- drivers/devfreq/event/Makefile                     |   2 +
- drivers/devfreq/event/exynos-ppmu.c                | 410 +++++++++++++++++
- include/linux/devfreq-event.h                      | 189 ++++++++
- 15 files changed, 1653 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
- create mode 100644 drivers/devfreq/devfreq-event.c
- create mode 100644 drivers/devfreq/event/Kconfig
- create mode 100644 drivers/devfreq/event/Makefile
- create mode 100644 drivers/devfreq/event/exynos-ppmu.c
- create mode 100644 include/linux/devfreq-event.h
-
+diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
+index b8168f1..70064dc 100644
+--- a/arch/arm/boot/dts/exynos4.dtsi
++++ b/arch/arm/boot/dts/exynos4.dtsi
+@@ -645,4 +645,112 @@
+ 		samsung,sysreg = <&sys_reg>;
+ 		status = "disabled";
+ 	};
++
++	ppmu_dmc0: ppmu_dmc0@106a0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x106a0000 0x2000>;
++		clocks = <&clock CLK_PPMUDMC0>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_dmc1: ppmu_dmc1@106b0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x106b0000 0x2000>;
++		clocks = <&clock CLK_PPMUDMC1>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_cpu: ppmu_cpu@106c0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x106c0000 0x2000>;
++		clocks = <&clock CLK_PPMUCPU>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_acp: ppmu_acp@10ae0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x106e0000 0x2000>;
++		status = "disabled";
++	};
++
++	ppmu_rightbus: ppmu_rightbus@112a0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x112a0000 0x2000>;
++		clocks = <&clock CLK_PPMURIGHT>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_leftbus: ppmu_leftbus0@116a0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x116a0000 0x2000>;
++		clocks = <&clock CLK_PPMULEFT>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_camif: ppmu_camif@11ac0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x11ac0000 0x2000>;
++		clocks = <&clock CLK_PPMUCAMIF>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_lcd0: ppmu_lcd0@11e40000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x11e40000 0x2000>;
++		clocks = <&clock CLK_PPMULCD0>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_fsys: ppmu_g3d@12630000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x12630000 0x2000>;
++		status = "disabled";
++	};
++
++	ppmu_image: ppmu_image@12aa0000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x12aa0000 0x2000>;
++		clocks = <&clock CLK_PPMUIMAGE>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_tv: ppmu_tv@12e40000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x12e40000 0x2000>;
++		clocks = <&clock CLK_PPMUTV>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_g3d: ppmu_g3d@13220000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x13220000 0x2000>;
++		clocks = <&clock CLK_PPMUG3D>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_mfc_left: ppmu_mfc_left@13660000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x13660000 0x2000>;
++		clocks = <&clock CLK_PPMUMFC_L>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
++
++	ppmu_mfc_right: ppmu_mfc_right@13670000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x13670000 0x2000>;
++		clocks = <&clock CLK_PPMUMFC_R>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
+ };
+diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+index bcc9e63..b2598de 100644
+--- a/arch/arm/boot/dts/exynos4210.dtsi
++++ b/arch/arm/boot/dts/exynos4210.dtsi
+@@ -192,4 +192,12 @@
+ 			samsung,lcd-wb;
+ 		};
+ 	};
++
++	ppmu_lcd1: ppmu_lcd1@12240000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x12240000 0x2000>;
++		clocks = <&clock CLK_PPMULCD1>;
++		clock-names = "ppmu";
++		status = "disabled";
++	};
+ };
 -- 
 1.8.5.5
+
