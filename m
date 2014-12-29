@@ -1,122 +1,183 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv6 5/9] ARM: dts: Add PPMU dt node for Exynos3250 SoC
-Date: Mon, 29 Dec 2014 09:04:09 +0900
-Message-ID: <1419811453-16160-6-git-send-email-cw00.choi@samsung.com>
-References: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1419811453-16160-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal Management updates for 3.19-rc3
+Date: Mon, 29 Dec 2014 11:20:02 +0800
+Message-ID: <1419823202.26749.27.camel@rzhang1-toshiba>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:33276 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751607AbaL2DUN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 28 Dec 2014 22:20:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-This patch add PPMU (Platform Performance Monitoring Unit) dt node
-to estimate the utilization of each IP in Exynos SoC throught DEVFREQ Event
-subsystem.
+Hi, Linus,
 
-This patch adds following PPMU dt nodes:
-- PPMU_DMC0     0x106a0000
-- PPMU_DMC1     0x106b0000
-- PPMU_RIGHTBUS 0x112A0000
-- PPMU_LEFTBUS  0x116A0000
-- PPMU_CAMIF    0x11AC0000
-- PPMU_LCD0     0x11E40000
-- PPMU_FSYS     0x12630000
-- PPMU_3D       0x13220000
-- PPMU_MFC      0x13660000
-- PPMU_CPU      0x106c0000
+Please pull from
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/boot/dts/exynos3250.dtsi | 74 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 74 insertions(+)
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
-index 2246549..9ed1260 100644
---- a/arch/arm/boot/dts/exynos3250.dtsi
-+++ b/arch/arm/boot/dts/exynos3250.dtsi
-@@ -515,6 +515,80 @@
- 			compatible = "arm,cortex-a7-pmu";
- 			interrupts = <0 18 0>, <0 19 0>;
- 		};
-+
-+		ppmu_dmc0: ppmu_dmc0@106a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106a0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_dmc1: ppmu_dmc1@106b0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106b0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_cpu: ppmu_cpu@106c0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106c0000 0x2000>;
-+			status = "disabled";
-+		};
-+
-+		ppmu_rightbus: ppmu_rightbus@112a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x112a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMURIGHT>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_leftbus: ppmu_leftbus0@116a0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x116a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMULEFT>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_camif: ppmu_camif@11ac0000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x11ac0000 0x2000>;
-+			clocks = <&cmu CLK_PPMUCAMIF>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_lcd0: ppmu_lcd0@11e40000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x11e40000 0x2000>;
-+			clocks = <&cmu CLK_PPMULCD0>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_fsys: ppmu_fsys@12630000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x12630000 0x2000>;
-+			clocks = <&cmu CLK_PPMUFILE>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_g3d: ppmu_g3d@13220000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x13220000 0x2000>;
-+			clocks = <&cmu CLK_PPMUG3D>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
-+
-+		ppmu_mfc: ppmu_mfc@13660000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x13660000 0x2000>;
-+			clocks = <&cmu CLK_PPMUMFC_L>;
-+			clock-names = "ppmu";
-+			status = "disabled";
-+		};
- 	};
- };
- 
--- 
-1.8.5.5
+to get the latest Thermal Management changes for 3.19-rc3 with top-most
+commit 7429b1e0d00e62426c74a45195ba72149cb9ad64:
+
+  Merge branches 'thermal-core', 'thermal-soc' and 'thermal-int340x'
+of .git into next (2014-12-24 10:38:30 +0800)
+
+on top of commit 97bf6af1f928216fd6c5a66e8a57bfa95a659672:
+
+  Linux 3.19-rc1 (2014-12-20 17:08:50 -0800)
+
+These things were supposed to be sent for 3.19-rc2, but I just noticed
+that 3.19-rc2 was released today.
+
+First of all, the most important change is the thermal cpu cooling
+fixes. The major fix here is to have proper sequencing between cpufreq
+layer and thermal cpu cooling registration. A take away of this fix is
+an improvement in the thermal drivers code. Thermal drivers that require
+cpu cooling do not need to check for cpufreq layer. The requirement now
+is to propagate the error code, if any, while registering cpu cooling
+device. Thanks to Viresh for implementing the required CPUfreq changes.
+
+Second, a new driver is introduced for int340x processor thermal device.
+Given that int340x thermal is disabled by default, and this processor
+thermal device is only available on limited platforms, plus the driver
+does nothing but exposes some thermal limitation information for user
+space to use, thus I think it is safe to include it in this pull request
+after missing 3.19-rc2.
+
+Specifics:
+
+- Thermal cpu cooling fixes and cleanups.
+
+- introduce INT340X processor thermal reporting device driver. 
+
+- several small fixes and cleanups for int340x thermal drivers.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+
+Abhilash Kesavan (1):
+      drivers: thermal: Remove ARCH_HAS_BANDGAP dependency for samsung
+
+Dan Carpenter (1):
+      thermal: cpu_cooling: small memory leak on error
+
+Eduardo Valentin (3):
+      thermal: cpu_cooling: check for the readiness of cpufreq layer
+      thermal: db8500: Do not print error message in the EPROBE_DEFER
+case
+      thermal: ti-soc-thermal: Do not print error message in the
+EPROBE_DEFER case
+
+Fabio Estevam (1):
+      thermal: imx: Do not print error message in the EPROBE_DEFER case
+
+Ilkka Koskinen (1):
+      Thermal/int340x: Handle properly the case when _trt or _art acpi
+entry is missing
+
+Jacob Pan (1):
+      thermal/powerclamp: add ids for future xeon cpus
+
+Javi Merino (2):
+      thermal: cpu_cooling: return ERR_PTR() for !CPU_THERMAL or !
+THERMAL_OF
+      thermal: cpu_cooling: document node in struct
+cpufreq_cooling_device
+
+Lukasz Majewski (1):
+      thermal:core:fix: Check return code of the ->get_max_state()
+callback
+
+Punit Agrawal (1):
+      thermal: Fix cdev registration with THERMAL_NO_LIMIT on 64bit
+
+Srinivas Pandruvada (4):
+      thermal: int340x: Introduce processor reporting device
+      Thermal/int340x/int3403: Fix memory leak
+      Thermal/int340x/processor_thermal: Fix memory leak
+      Thermal/int340x/int3403: Free acpi notification handler
+
+Viresh Kumar (25):
+      thermal: db8500: pass cpu_present_mask to
+cpufreq_cooling_register()
+      thermal: imx: pass cpu_present_mask to cpufreq_cooling_register()
+      thermal: exynos: pass cpu_present_mask to
+cpufreq_cooling_register()
+      thermal: cpu_cooling: random comment fixups
+      thermal: cpu_cooling: fix doc comment over struct
+cpufreq_cooling_device
+      thermal: cpu_cooling: Add comment to clarify relation between
+cooling state and frequency
+      thermal: cpu_cooling: Pass variable instead of its type to
+sizeof()
+      thermal: cpu_cooling: no need to set cpufreq_state to zero
+      thermal: cpu_cooling: no need to set cpufreq_dev to NULL
+      thermal: cpu_cooling: no need to initialze 'ret'
+      thermal: cpu_cooling: propagate error returned by idr_alloc()
+      thermal: cpu_cooling: Don't match min/max frequencies for all CPUs
+on cooling register
+      thermal: cpu_cooling: don't iterate over all allowed_cpus to
+update cpufreq policy
+      thermal: cpu_cooling: Don't check is_cpufreq_valid()
+      thermal: cpu_cooling: do error handling at the bottom in
+__cpufreq_cooling_register()
+      thermal: cpu_cooling: initialize 'cpufreq_val' on registration
+      thermal: cpu_cooling: Merge cpufreq_apply_cooling() into
+cpufreq_set_cur_state()
+      thermal: cpu_cooling: remove unnecessary wrapper
+get_cpu_frequency()
+      thermal: cpu_cooling: find max level during device registration
+      thermal: cpu_cooling: get_property() doesn't need to support
+GET_MAXL anymore
+      thermal: cpu_cooling: use cpufreq_dev_list instead of
+cpufreq_dev_count
+      thermal: cpu_cooling: Pass 'cpufreq_dev' to get_property()
+      thermal: cpu_cooling: Store frequencies in descending order
+      thermal: cpu_cooling: Use cpufreq_dev->freq_table for finding
+level/freq
+      thermal: cpu_cooling: update copyright tags
+
+Wolfram Sang (2):
+      thermal: drop owner assignment from platform_drivers
+      thermal: int340x_thermal: drop owner assignment from
+platform_drivers
+
+Zhang Rui (2):
+      Merge branch 'fixes' of
+git://git.kernel.org/.../evalenti/linux-soc-thermal into thermal-soc
+      Merge branches 'thermal-core', 'thermal-soc' and 'thermal-int340x'
+of .git into next
+
+ drivers/thermal/cpu_cooling.c                      | 360
+++++++++-------------
+ drivers/thermal/db8500_cpufreq_cooling.c           |  20 +-
+ drivers/thermal/imx_thermal.c                      |  15 +-
+ drivers/thermal/int340x_thermal/Makefile           |   1 +
+ drivers/thermal/int340x_thermal/acpi_thermal_rel.c |   8 +-
+ drivers/thermal/int340x_thermal/int3400_thermal.c  |   1 -
+ drivers/thermal/int340x_thermal/int3402_thermal.c  |   1 -
+ drivers/thermal/int340x_thermal/int3403_thermal.c  |   4 +
+ .../int340x_thermal/processor_thermal_device.c     | 309
+++++++++++++++++++
+ drivers/thermal/intel_powerclamp.c                 |   1 +
+ drivers/thermal/rockchip_thermal.c                 |   1 -
+ drivers/thermal/samsung/Kconfig                    |   2 +-
+ drivers/thermal/samsung/exynos_thermal_common.c    |  12 +-
+ drivers/thermal/samsung/exynos_tmu.c               |   5 +-
+ drivers/thermal/thermal_core.c                     |   6 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  17 +-
+ include/dt-bindings/thermal/thermal.h              |   2 +-
+ include/linux/cpu_cooling.h                        |   6 +-
+ include/linux/thermal.h                            |   2 +-
+ 19 files changed, 497 insertions(+), 276 deletions(-)
+ create mode 100644
+drivers/thermal/int340x_thermal/processor_thermal_device.c
+
+
