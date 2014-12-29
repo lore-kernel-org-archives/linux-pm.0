@@ -1,181 +1,115 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
-Date: Mon, 29 Dec 2014 11:05:55 -0600
-Message-ID: <CAL_JsqJabcXe7-juTnJDcVdzpnFokYmt-N=bjZt5a+32Fzr_vg@mail.gmail.com>
-References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
- <CAKohpokUXvhqt+z4EPC9k=O8ZnQOqNSGGi8w6w4shYtbvv8mTw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management and ACPI material for 3.19-rc3
+Date: Mon, 29 Dec 2014 22:30:53 +0100
+Message-ID: <CAJZ5v0hYnuN-b3rMdc=UCUcVoUSyB39oCuSMoV08ZHAjKjwqcg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:53807 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbaL2RGR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Dec 2014 12:06:17 -0500
-In-Reply-To: <CAKohpokUXvhqt+z4EPC9k=O8ZnQOqNSGGi8w6w4shYtbvv8mTw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, santosh shilimkar <santosh.shilimkar@oracle.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Dec 9, 2014 at 9:51 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 4 December 2014 at 16:44, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> The shortcomings we are trying to solve here:
->>
->> - Some kind of compatibility string to probe the right cpufreq driver for
->>   platforms, when multiple drivers are available. For example: how to choose
->>   between cpufreq-dt and arm_big_little drivers.
->>
->> - Getting clock sharing information between CPUs. Single shared clock vs.
->>   independent clock per core vs. shared clock per cluster.
->>
->> - Support for turbo modes
->>
->> - Other per OPP settings: transition latencies, disabled status, etc.?
->
-> Some updates on the structure of bindings which I got up to with help of Arnd
-> and Rob over IRC, have got better examples to show how things would look
-> like:
->
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt
-> b/Documentation/devicetree/bindings/power/opp.txt
-> index 74499e5033fc..8ae574b84650 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -1,9 +1,292 @@
-> -* Generic OPP Interface
-> +Generic OPP (Operating Performance Points) Interface
-> +----------------------------------------------------
->
->  SoCs have a standard set of tuples consisting of frequency and
->  voltage pairs that the device will support per voltage domain. These
->  are called Operating Performance Points or OPPs.
->
-> +This documents defines OPP bindings with its required/optional properties.
-> +OPPs can be defined for any device, this file uses CPU device as an example to
-> +illustrate how to define OPPs.
-> +
-> +opp nodes and opp-lists
-> +
-> +- opp-listN:
-> +  List of nodes defining performance points. Following belong to the nodes
-> +  within the opp-lists.
-> +
-> +  Required properties:
-> +  - frequency-kHz: Frequency in kHz
+Hi Linus,
 
-s/kHz/khz/
+Please pull from
 
-> +  - voltage-uV: voltage in micro Volts
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.19-rc3
 
--microvolt is more consistent with regulator binding.
+to receive power management and ACPI material for v3.19-rc3 with
+top-most commit 651c3293bf333c774f3d4c9876a6552d0ac2f5b9
 
-The names are a bit redundant. perhaps opp-khz and opp-microvolt instead.
+ Merge branch 'acpi-video'
 
-> +
-> +  Optional properties:
-> +  - turbo-mode: Marks the volt-freq pair as turbo pair.
-> +  - status: Marks the node enabled/disabled.
-> +
-> +- oppN:
-> +  Operating performance point node per device. Devices using it should have its
-> +  phandle in their "operating-points-v2" property.
-> +
-> +  Required properties:
-> +  - compatible: allow OPPs to express their compatibility
-> +  - opp-list: phandle to opp-list defined above.
-> +
-> +  Optional properties:
-> +  - clocks: Tuple of clock providers
-> +  - clock-names: Clock names
-> +  - opp-supply: phandle to the parent supply/regulator node
-> +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +  - clock-latency: Specify the possible maximum transition latency for clock,
-> +    in unit of nanoseconds.
-> +
-> +Example 1: Simple case of dual-core cortex A9-single cluster, sharing
-> clock line.
-> +
-> +/ {
-> +       cpus {
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               cpu@0 {
-> +                       compatible = "arm,cortex-a9";
-> +                       reg = <0>;
-> +                       next-level-cache = <&L2>;
-> +                       operating-points-v2 = <&opp0>;
-> +
-> +                       opp0: opp0 {
+on top of commit b7392d2247cfe6771f95d256374f1a8e6a6f48d6
 
-I don't really like having this under cpu0 when it applies to all
-cpus. I would move it out of /cpus.
+ Linux 3.19-rc2
 
-> +                               compatible = "linux,cpu-dvfs";
+These are fixes (operating performance points library, cpufreq-dt
+driver, cpufreq core, ACPI backlight, cpupower tool), cleanups
+(cpuidle), new processor IDs for the RAPL (Running Average Power
+Limit) power capping driver, and a modification of the generic
+power domains framework allowing modular drivers to call one of
+its helper functions.
 
-This should not be linux specific. Probably not cpu specific either.
+Specifics:
 
-> +                               clocks = <&clk-controller 0>;
-> +                               clock-names = "cpu";
+ - Fix for a potential NULL pointer dereference in the cpufreq
+   core due to an initialization race condition (Ethan Zhao).
 
-clocks are an input to the cpu, not really an opp. You could have a an
-OPP which uses a different parent clock, but that is most likely a
-switch within the clock controller rather than 2 clock inputs to the
-cpu.
+ - Fixes for abuse of the OPP (Operating Performance Points) API
+   related to RCU and other minor issues in the OPP library and
+   the cpufreq-dt driver (Dmitry Torokhov).
 
-I think the clock binding for cpus should stand on its own independent of OPPs.
+ - cpuidle governors cleanup making them measure idle duration in
+   a better way without using the CPUIDLE_FLAG_TIME_INVALID flag
+   which allows that flag to be dropped from the ACPI cpuidle driver
+   and from the core too (Len Brown).
 
-> +                               opp-supply = <&cpu-supply0>;
+ - New ACPI backlight blacklist entries for Samsung machines
+   without a working native backlight interface that need to
+   use the ACPI backlight instead (Aaron Lu).
 
-Same comment as clocks applies here.
+ - New CPU IDs of future Intel Xeon CPUs for the Intel RAPL power
+   capping driver (Jacob Pan).
 
-> +                               voltage-tolerance = <2>; /* percentage */
-> +                               clock-latency = <300000>;
+ - Generic power domains framework modification to export the
+   of_genpd_get_from_provider() function to modular drivers that
+   will allow future driver modifications to be based on the mainline
+   (Amit Daniel Kachhap).
 
-These could be per entry. I'm not sure it is worth the savings to not
-just always specify them per entry.
+ - Two fixes for the cpupower tool (Michal Privoznik, Prarit Bhargava).
 
-We should append units (-us) to clock-latency unless there is a good
-reason to maintain compatibility.
+Thanks and Happy New Year!
 
-> +                               opp-list = <&opplist0>;
 
-With the above changes, having this list is unnecessary.
+---------------
 
-So, what I envision is like this:
+Aaron Lu (1):
+      ACPI / video: Add some Samsung models to disable_native_backlight list
 
-/cpus {
-  cpu@0 {
-    clocks = <...>;
-    cpu-supply = <...>;
-    operating-point-v2 = <&cpu0-opp>;
-   };
-  cpu@1 {
-    clocks = <...>;
-    cpu-supply = <...>;
-    operating-point-v2 = <&cpu1-opp>;
-   };
-};
+Amit Daniel Kachhap (1):
+      PM / Domains: Export of_genpd_get_from_provider function
 
-cpu0-opp : opp0 {
-  compatible = "operating-point-table";
-  entry0 {
-    opp-khz = <500000>;
-    opp-microvolt = <900000>;
-  };
-  entry1 {
-    opp-khz = <1000000>;
-    opp-microvolt = <1000000>;
-    turbo-mode;
-  };
-};
+Dmitry Torokhov (4):
+      PM / OPP: add some lockdep annotations
+      PM / OPP: fix warning in of_free_opp_table()
+      PM / OPP: take RCU lock in dev_pm_opp_get_opp_count
+      cpufreq-dt: defer probing if OPP table is not ready
 
-cpu1-opp : opp1 {
-  compatible = "operating-point-table";
-...
-};
+Ethan Zhao (1):
+      cpufreq: fix a NULL pointer dereference in __cpufreq_governor()
 
-We need to also consider if this all works for other non-cpu OPPs like
-GPUs or DRAM/bus.
+Jacob Pan (1):
+      powercap / RAPL: add IDs for future Xeon CPUs
 
-Rob
+Len Brown (3):
+      cpuidle: menu: Better idle duration measurement without using
+CPUIDLE_FLAG_TIME_INVALID
+      cpuidle: ladder: Better idle duration measurement without using
+CPUIDLE_FLAG_TIME_INVALID
+      cpuidle / ACPI: remove unused CPUIDLE_FLAG_TIME_INVALID
+
+Michal Privoznik (1):
+      tools / cpupower: Correctly detect if running as root
+
+Prarit Bhargava (1):
+      tools / cpupower: Fix no idle state information return value
+
+---------------
+
+ drivers/acpi/processor_idle.c              |  2 --
+ drivers/acpi/video.c                       | 17 +++++++++++++
+ drivers/base/power/domain.c                |  3 ++-
+ drivers/base/power/opp.c                   | 39 ++++++++++++++++++++++++------
+ drivers/cpufreq/cpufreq-dt.c               | 11 +++++++++
+ drivers/cpufreq/cpufreq.c                  |  6 +++++
+ drivers/cpuidle/governors/ladder.c         |  7 +-----
+ drivers/cpuidle/governors/menu.c           | 25 ++++++++-----------
+ drivers/powercap/intel_rapl.c              |  1 +
+ include/linux/cpuidle.h                    |  3 ---
+ include/linux/pm_domain.h                  |  8 ++++++
+ tools/power/cpupower/utils/cpupower.c      |  2 +-
+ tools/power/cpupower/utils/helpers/sysfs.c |  2 +-
+ 13 files changed, 89 insertions(+), 37 deletions(-)
