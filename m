@@ -1,87 +1,99 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v6] Thermal: introduce INT3406 thermal driver
-Date: Mon, 29 Dec 2014 14:03:07 +0800
-Message-ID: <54A0EE9B.9040803@intel.com>
-References: <54868CF6.6020505@intel.com> <CAOesGMirF-_H2ZzFR-VpwkEErZE2uQJSYx5EuePArQsEh=r_Kw@mail.gmail.com> <20141211010226.GA26253@aaronlu.sh.intel.com> <CAOesGMj_uObbxLdpobEhP=nRPsFUJNCtq01RH7ZSECd5=1Ti6Q@mail.gmail.com> <1418265472.12435.68.camel@rzhang1-toshiba> <548934D0.8000502@intel.com> <1418286781.12435.73.camel@rzhang1-toshiba> <54895821.3050902@intel.com> <1419217761.19619.2.camel@rzhang1-toshiba> <20141222095344.GE4525@x1> <5498C4D9.8050509@intel.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: Fix: Bind Cooling Device Weight
+Date: Mon, 29 Dec 2014 10:40:21 +0000
+Message-ID: <20141229104021.GD32102@e104805>
+References: <5492C634.5030604@arm.com>
+ <20141218134334.GA6276@developer>
+ <1419218315.19619.6.camel@rzhang1-toshiba>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:62546 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbaL2GDU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Dec 2014 01:03:20 -0500
-In-Reply-To: <5498C4D9.8050509@intel.com>
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:54082 "EHLO
+	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbaL2Kk3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Dec 2014 05:40:29 -0500
+Content-Disposition: inline
+In-Reply-To: <1419218315.19619.6.camel@rzhang1-toshiba>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Olof Johansson <olof@lixom.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, jg1.han@samsung.com
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kapileshwar Singh <Kapileshwar.Singh@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>
 
-On 12/23/2014 09:26 AM, Aaron Lu wrote:
-> On 12/22/2014 05:53 PM, Lee Jones wrote:
->> On Mon, 22 Dec 2014, Zhang Rui wrote:
->>
->>> On Thu, 2014-12-11 at 16:38 +0800, Aaron Lu wrote:
->>>> INT3406 ACPI device object resembles an ACPI video output device, but its
->>>> _BCM is said to be deprecated and should not be used. So we will make
->>>> use of the raw interface to do the actual cooling. Due to this, the
->>>> backlight core has some modifications. Also, to re-use some of the ACPI
->>>> video module's code, one function has been exported.
->>>>
->>>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->>>
->>> Jingoo and Lee,
->>>
->>> are you okay with the changes in drivers/video/backlight/backlight.c and
->>> include/linux/backlight.h?
->>
->> NB: Jingoo still needs to review the crux of the patch.
->>
->>>> ---
->>>> v6: Fix an issue that wrongly set error path return value as reported
->>>> by Olof Johansson.
->>>>
->>>>  drivers/acpi/video.c                              |  77 ++++----
->>>>  drivers/thermal/Kconfig                           |  26 +--
->>>>  drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
->>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
->>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
->>>>  drivers/video/backlight/backlight.c               |  44 +++--
->>>>  include/acpi/video.h                              |  20 ++
->>>>  include/linux/backlight.h                         |   2 +
->>>>  8 files changed, 366 insertions(+), 74 deletions(-)
->>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
->>
->> I gather by the message at the top that you're looking for an Ack so
->> this can be routed through another subsystem.  Not going to happen.
->>
->> So you're on v6 already and a) no one has mentioned that introducing a
->> new driver AND making core framework changes (in a different subsystem
->> to boot) in one patch is bad and b) this is the first time you've
->> Cc'ed the maintainers of the aforementioned subsystem?
->>
->> Moving forward you should split this patch into component parts and
->> resend -- only this time ensure you Cc all maintainers in the first
->> instance, rather than as as afterthought.
+On Mon, Dec 22, 2014 at 03:18:35AM +0000, Zhang Rui wrote:
+> On Thu, 2014-12-18 at 09:43 -0400, Eduardo Valentin wrote:
+> > On Thu, Dec 18, 2014 at 12:19:00PM +0000, Kapileshwar Singh wrote:
+> > > The Problem:
+> > > 
+> > > In the current code, the weight of the cooling device, which is read as
+> > > contribution from the device tree in of-thermal.c as:
+> > > 
+> > > 
+> > >         ret = of_property_read_u32(np, "contribution", &prop);
+> > >         if (ret == 0)
+> > >                 __tbp->usage = prop;
+> > > 
+> > > This is only stored in the private devicedata as:
+> > > 
+> > >         ((__thernal_zone *)cdev->devdata)->__tbp->usage
+> > > 
+> > > As of-thermal.c specifies its "bind" operation and does not populate
+> > > tzd->tzp->tbp, this causes an erroneous access in the fair-share
+> > > governor when it tries to access the weight:
+> > > 
+> > > instance->target = get_target_state(tz, cdev,
+> > >                                         tzp->tbp[i].weight,
+> > > cur_trip_level);
+> > > 
+> > > 
+> > > The Proposed solution:
+> > > 
+> > > The proposed solution has the following changes:
+> > > 
+> > >  1. Passing the weight as an argument to thermal_zone_bind_cooling_device
+> > > 
+> > >  2. Storing the weight in the thermal_instance data structure created in
+> > > the thermal_zone_bind_cooling_device function
+> > > 
+> > >  3. Changing the accesses in the governor accordingly.
+> > 
+> > Shouldn't we simply:
+> > 1. In of-thermal, populate tzd->tzp->tbp by passing a tbp with correct
+> > tbp's in the registration call:
+> > 	zone = thermal_zone_device_register(child->name, tz->ntrips,
+> > 						0,
+> > 						tz,
+> > 						ops,
+> > /* This guy needs to be filled properly */	tzp,
+> > 						tz->passive_delay,
+> > 						tz->polling_delay);
+> > 
+> Agreed.
 > 
-> OK, thanks for the suggestion.
+> > 2. Add a proper check in the governor to avoid accessing thermal zones
+> > with missing data.
+> > 
+> > I know there is a check in place:
+> >         if (!tz->tzp || !tz->tzp->tbp)
+> > 	          return -EINVAL;
+> > 
+> > which based in your description seams to be failing. Here, I need more
+> > info from your side describing what exactly you are seeing. Can you
+> > please post the kernel log when the failure happens? Does it output a
+> > kernel segfault or is the governor simply not working?
+> > 
+> > I would expect, with the current code, the governor be silent and
+> > non-functional, which needs to be fixed too.
 > 
->>
->>>> -config INT340X_THERMAL
->>>> -	tristate "ACPI INT340X thermal drivers"
->>>> -	depends on X86 && ACPI
->>>> -	select THERMAL_GOV_USER_SPACE
->>>> -	select ACPI_THERMAL_REL
->>>> -	select ACPI_FAN
->>
->> This patch also relies on backlight as well, no?
-> 
-> Yes it does, will add it in next revision.
+> Plus, I think we should add an optional .validate() callback for each
+> governor, to check if the thermal zone meets the requirement of the
+> governor or not before switching to it.
 
-My fault. INT340X_THERMAL does not rely on backlight, INT3406 does.
-Since I have marked INT3406 depends on ACPI_VIDEO, which depends on
-BACKLIGHT, so we are good here.
+The patch "thermal: let governors have private data for each thermal
+zone" that you applied[0] allows you to do that.  Governors
+can have a bind_to_tz() op that can fail.  If it does, then the switch
+doesn't happen and you continue with the old governor.
 
-Thanks,
-Aaron
+[0] http://article.gmane.org/gmane.linux.power-management.general/54163
+
+Cheers,
+Javi
