@@ -1,38 +1,62 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] MFD / PM: Replace CONFIG_PM_RUNTIME with CONFIG_PM
-Date: Wed, 31 Dec 2014 09:14:25 +0100
-Message-ID: <CACRpkdYJSE9r2XYojD3213--+05W7r-jEXcyM+2MiRwH86j8Ag@mail.gmail.com>
-References: <2857906.7ft1XTNUKe@vostro.rjw.lan>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH 05/28] cpufreq: drop owner assignment from
+ platform_drivers
+Date: Wed, 31 Dec 2014 11:23:26 +0100
+Message-ID: <20141231102326.GA1461@katana>
+References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
+ <1419196495-9626-6-git-send-email-wsa@the-dreams.de>
+ <CAKohpok_G3Gf3XbcK06ELM3ocWQmNPepx1i72VXR8sNbK1L81Q@mail.gmail.com>
+ <2262992.pVJSfL5P4D@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f180.google.com ([209.85.223.180]:45566 "EHLO
-	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbaLaIO0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Dec 2014 03:14:26 -0500
-Received: by mail-ie0-f180.google.com with SMTP id rp18so14689510iec.11
-        for <linux-pm@vger.kernel.org>; Wed, 31 Dec 2014 00:14:26 -0800 (PST)
-In-Reply-To: <2857906.7ft1XTNUKe@vostro.rjw.lan>
+Received: from sauhun.de ([89.238.76.85]:43306 "EHLO pokefinder.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751171AbaLaKXb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Dec 2014 05:23:31 -0500
+Content-Disposition: inline
+In-Reply-To: <2262992.pVJSfL5P4D@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Dec 4, 2014 at 1:54 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Mon, Dec 22, 2014 at 11:39:32PM +0100, Rafael J. Wysocki wrote:
+> On Monday, December 22, 2014 07:14:56 AM Viresh Kumar wrote:
+> > On 22 December 2014 at 02:44, Wolfram Sang <wsa@the-dreams.de> wrote:
+> > > This platform_driver does not need to set an owner, it will be populated by the
+> > > driver core.
+> > >
+> > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> > > ---
+> > > Generated with coccinelle. SmPL file is in the introductory msg. The big
+> > > cleanup was pulled in this merge window. This series catches the bits fallen
+> > > through. The patches shall go in via the subsystem trees.
+> > >
+> > >  drivers/cpufreq/ls1x-cpufreq.c | 1 -
+> > >  1 file changed, 1 deletion(-)
+> > >
+> > > diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
+> > > index 25fbd6a1374f..f0913eee2f50 100644
+> > > --- a/drivers/cpufreq/ls1x-cpufreq.c
+> > > +++ b/drivers/cpufreq/ls1x-cpufreq.c
+> > > @@ -210,7 +210,6 @@ out:
+> > >  static struct platform_driver ls1x_cpufreq_platdrv = {
+> > >         .driver = {
+> > >                 .name   = "ls1x-cpufreq",
+> > > -               .owner  = THIS_MODULE,
+> > >         },
+> > >         .probe          = ls1x_cpufreq_probe,
+> > >         .remove         = ls1x_cpufreq_remove,
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > --
+> 
+> OK
+> 
+> Wolfram, please feel free to push this through whatever tree you think is
+> appropriate.
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> After commit b2b49ccbdd54 (PM: Kconfig: Set PM_RUNTIME if PM_SLEEP is
-> selected) PM_RUNTIME is always set if PM is set, so #ifdef blocks
-> depending on CONFIG_PM_RUNTIME may now be changed to depend on
-> CONFIG_PM.
->
-> Replace CONFIG_PM_RUNTIME with CONFIG_PM everywhere under
-> drivers/mfd/.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I'd prefer if you take it. However, I'll send all leftover ones to Greg,
+so you can decide.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
-
-Yours,
-Linus Walleij
