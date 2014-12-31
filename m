@@ -1,45 +1,68 @@
 From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH 0/3] Support INT3406 Display thermal device
-Date: Wed, 31 Dec 2014 11:50:15 +0800
-Message-ID: <1419997818-19528-1-git-send-email-aaron.lu@intel.com>
+Subject: [PATCH 2/3] video / backlight: remove the backlight_device_registered API
+Date: Wed, 31 Dec 2014 11:50:17 +0800
+Message-ID: <1419997818-19528-3-git-send-email-aaron.lu@intel.com>
+References: <1419997818-19528-1-git-send-email-aaron.lu@intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1419997818-19528-1-git-send-email-aaron.lu@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Jingoo Han <jg1.han@samsung.com>, Lee Jones <lee.jones@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The display thermal device represents the LED/LCD display panel
-that may or may not include touch support. The main function of
-the display thermal device is to allow control of the display
-brightness in order to address a thermal condition or to reduce
-power consumed by display device.
+Since we will need the backlight_device_get_by_type API, we can use it
+instead of the backlight_device_registered API whenever necessary so
+remove the backlight_device_registered API.
 
-Due to the way this thermal device changes brightness level is said
-to be deprecated so we are using the raw interface to do the actual
-backlight change. This requires the backlight core support so two
-new APIs are added and exported in patch 1/3. With this, the previous
-API backlight_device_registered can be removed and this is done in
-patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/acpi/video.c                | 2 +-
+ drivers/video/backlight/backlight.c | 6 ------
+ include/linux/backlight.h           | 1 -
+ 3 files changed, 1 insertion(+), 8 deletions(-)
 
-Happy new year and best wishes!
-
-Aaron Lu (3):
-  video / backlight: add two APIs for drivers to use
-  video / backlight: remove the backlight_device_registered API
-  Thermal: introduce INT3406 thermal driver
-
- drivers/acpi/video.c                              |  79 ++++----
- drivers/thermal/Kconfig                           |  26 +--
- drivers/thermal/int340x_thermal/Kconfig           |  41 ++++
- drivers/thermal/int340x_thermal/Makefile          |   1 +
- drivers/thermal/int340x_thermal/int3406_thermal.c | 229 ++++++++++++++++++++++
- drivers/video/backlight/backlight.c               |  40 ++--
- include/acpi/video.h                              |  20 ++
- include/linux/backlight.h                         |   3 +-
- 8 files changed, 362 insertions(+), 77 deletions(-)
- create mode 100644 drivers/thermal/int340x_thermal/Kconfig
- create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
-
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 1eaadff2e198..98d3f0de811e 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -246,7 +246,7 @@ static bool acpi_video_use_native_backlight(void)
+ bool acpi_video_verify_backlight_support(void)
+ {
+ 	if (acpi_osi_is_win8() && acpi_video_use_native_backlight() &&
+-	    backlight_device_registered(BACKLIGHT_RAW))
++	    backlight_device_get_by_type(BACKLIGHT_RAW))
+ 		return false;
+ 	return acpi_video_backlight_support();
+ }
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bea749329236..aec173d9e1ee 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -406,12 +406,6 @@ struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+ }
+ EXPORT_SYMBOL(backlight_device_get_by_type);
+ 
+-bool backlight_device_registered(enum backlight_type type)
+-{
+-	return backlight_device_get_by_type(type) ? true : false;
+-}
+-EXPORT_SYMBOL(backlight_device_registered);
+-
+ /**
+  * backlight_device_unregister - unregisters a backlight device object.
+  * @bd: the backlight device object to be unregistered and freed.
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index c59a020df3f8..287a4460054c 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -137,7 +137,6 @@ extern void devm_backlight_device_unregister(struct device *dev,
+ 					struct backlight_device *bd);
+ extern void backlight_force_update(struct backlight_device *bd,
+ 				   enum backlight_update_reason reason);
+-extern bool backlight_device_registered(enum backlight_type type);
+ extern int backlight_register_notifier(struct notifier_block *nb);
+ extern int backlight_unregister_notifier(struct notifier_block *nb);
+ extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
 -- 
 2.1.0
 
