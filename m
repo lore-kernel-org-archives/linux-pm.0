@@ -1,62 +1,66 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 05/28] cpufreq: drop owner assignment from
- platform_drivers
-Date: Wed, 31 Dec 2014 11:23:26 +0100
-Message-ID: <20141231102326.GA1461@katana>
-References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
- <1419196495-9626-6-git-send-email-wsa@the-dreams.de>
- <CAKohpok_G3Gf3XbcK06ELM3ocWQmNPepx1i72VXR8sNbK1L81Q@mail.gmail.com>
- <2262992.pVJSfL5P4D@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Subject: [PATCH] power: ab8500_fg.c:  Remove unused function
+Date: Thu,  1 Jan 2015 18:04:52 +0100
+Message-ID: <1420131892-31486-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([89.238.76.85]:43306 "EHLO pokefinder.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbaLaKXb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Dec 2014 05:23:31 -0500
-Content-Disposition: inline
-In-Reply-To: <2262992.pVJSfL5P4D@vostro.rjw.lan>
+Received: from mail-wg0-f50.google.com ([74.125.82.50]:49709 "EHLO
+	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbbAARBw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jan 2015 12:01:52 -0500
+Received: by mail-wg0-f50.google.com with SMTP id a1so23422121wgh.9
+        for <linux-pm@vger.kernel.org>; Thu, 01 Jan 2015 09:01:51 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Mon, Dec 22, 2014 at 11:39:32PM +0100, Rafael J. Wysocki wrote:
-> On Monday, December 22, 2014 07:14:56 AM Viresh Kumar wrote:
-> > On 22 December 2014 at 02:44, Wolfram Sang <wsa@the-dreams.de> wrote:
-> > > This platform_driver does not need to set an owner, it will be populated by the
-> > > driver core.
-> > >
-> > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> > > ---
-> > > Generated with coccinelle. SmPL file is in the introductory msg. The big
-> > > cleanup was pulled in this merge window. This series catches the bits fallen
-> > > through. The patches shall go in via the subsystem trees.
-> > >
-> > >  drivers/cpufreq/ls1x-cpufreq.c | 1 -
-> > >  1 file changed, 1 deletion(-)
-> > >
-> > > diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
-> > > index 25fbd6a1374f..f0913eee2f50 100644
-> > > --- a/drivers/cpufreq/ls1x-cpufreq.c
-> > > +++ b/drivers/cpufreq/ls1x-cpufreq.c
-> > > @@ -210,7 +210,6 @@ out:
-> > >  static struct platform_driver ls1x_cpufreq_platdrv = {
-> > >         .driver = {
-> > >                 .name   = "ls1x-cpufreq",
-> > > -               .owner  = THIS_MODULE,
-> > >         },
-> > >         .probe          = ls1x_cpufreq_probe,
-> > >         .remove         = ls1x_cpufreq_remove,
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > --
-> 
-> OK
-> 
-> Wolfram, please feel free to push this through whatever tree you think is
-> appropriate.
+Remove the function ab8500_fg_reinit() that is not used anywhere.
 
-I'd prefer if you take it. However, I'll send all leftover ones to Greg,
-so you can decide.
+This was partially found by using a static code analysis program called cppcheck.
+
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/power/ab8500_fg.c            |   14 --------------
+ include/linux/mfd/abx500/ab8500-bm.h |    1 -
+ 2 files changed, 15 deletions(-)
+
+diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
+index 217da4b..72c82ab 100644
+--- a/drivers/power/ab8500_fg.c
++++ b/drivers/power/ab8500_fg.c
+@@ -2434,20 +2434,6 @@ static void ab8500_fg_reinit_work(struct work_struct *work)
+ 	}
+ }
+ 
+-/**
+- * ab8500_fg_reinit() - forces FG algorithm to reinitialize with current values
+- *
+- * This function can be used to force the FG algorithm to recalculate a new
+- * voltage based battery capacity.
+- */
+-void ab8500_fg_reinit(void)
+-{
+-	struct ab8500_fg *di = ab8500_fg_get();
+-	/* User won't be notified if a null pointer returned. */
+-	if (di != NULL)
+-		queue_delayed_work(di->fg_wq, &di->fg_reinit_work, 0);
+-}
+-
+ /* Exposure to the sysfs interface */
+ 
+ struct ab8500_fg_sysfs_entry {
+diff --git a/include/linux/mfd/abx500/ab8500-bm.h b/include/linux/mfd/abx500/ab8500-bm.h
+index cc892a8..12a5b39 100644
+--- a/include/linux/mfd/abx500/ab8500-bm.h
++++ b/include/linux/mfd/abx500/ab8500-bm.h
+@@ -461,7 +461,6 @@ struct ab8500_fg;
+ #ifdef CONFIG_AB8500_BM
+ extern struct abx500_bm_data ab8500_bm_data;
+ 
+-void ab8500_fg_reinit(void);
+ void ab8500_charger_usb_state_changed(u8 bm_usb_state, u16 mA);
+ struct ab8500_btemp *ab8500_btemp_get(void);
+ int ab8500_btemp_get_batctrl_temp(struct ab8500_btemp *btemp);
+-- 
+1.7.10.4
 
