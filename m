@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 04/14] cpufreq: stats: pass 'stat' to cpufreq_stats_update()
-Date: Fri,  2 Jan 2015 11:16:41 +0530
-Message-ID: <aec0c2c88ed01f32e2b5ea60c21f194b8049ef0f.1420177186.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 06/14] cpufreq: Remove (now) unused 'last_cpu' from struct cpufreq_policy
+Date: Fri,  2 Jan 2015 11:16:43 +0530
+Message-ID: <40ee1c730bd00fd8159bf61ce16a807d000e257b.1420177186.git.viresh.kumar@linaro.org>
 References: <cover.1420177186.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:42705 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbbABFrR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jan 2015 00:47:17 -0500
-Received: by mail-pa0-f41.google.com with SMTP id rd3so23664967pab.28
-        for <linux-pm@vger.kernel.org>; Thu, 01 Jan 2015 21:47:17 -0800 (PST)
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:49310 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbbABFrY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jan 2015 00:47:24 -0500
+Received: by mail-pd0-f170.google.com with SMTP id v10so23134514pde.15
+        for <linux-pm@vger.kernel.org>; Thu, 01 Jan 2015 21:47:24 -0800 (PST)
 In-Reply-To: <cover.1420177186.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1420177186.git.viresh.kumar@linaro.org>
 References: <cover.1420177186.git.viresh.kumar@linaro.org>
@@ -18,65 +18,44 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-cpufreq_stats_update() needs only 'stat' pointer for its use and nothing else.
-Currently it works fine as we have a per-cpu variable for storing stats. But
-later commits would remove it and hence we better pass 'stat' to
-cpufreq_stats_update().
+'last_cpu' was used only from cpufreq-stats and isn't used anymore. Get rid of
+it.
 
 Reviewed-by: Prarit Bhargava <prarit@redhat.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_stats.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq.c | 3 ---
+ include/linux/cpufreq.h   | 2 --
+ 2 files changed, 5 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 62b6133f06aa..ebd9e4c5c124 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -38,14 +38,11 @@ struct cpufreq_stats_attribute {
- 	ssize_t(*show) (struct cpufreq_stats *, char *);
- };
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a09a29c312a9..b88894578fd1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1091,10 +1091,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
+ 	}
  
--static int cpufreq_stats_update(unsigned int cpu)
-+static int cpufreq_stats_update(struct cpufreq_stats *stat)
- {
--	struct cpufreq_stats *stat;
--	unsigned long long cur_time;
-+	unsigned long long cur_time = get_jiffies_64();
+ 	down_write(&policy->rwsem);
+-
+-	policy->last_cpu = policy->cpu;
+ 	policy->cpu = cpu;
+-
+ 	up_write(&policy->rwsem);
  
--	cur_time = get_jiffies_64();
- 	spin_lock(&cpufreq_stats_lock);
--	stat = per_cpu(cpufreq_stats_table, cpu);
- 	if (stat->time_in_state)
- 		stat->time_in_state[stat->last_index] +=
- 			cur_time - stat->last_time;
-@@ -70,7 +67,7 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
- 	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
--	cpufreq_stats_update(stat->cpu);
-+	cpufreq_stats_update(stat);
- 	for (i = 0; i < stat->state_num; i++) {
- 		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
- 			(unsigned long long)
-@@ -88,7 +85,7 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
- 	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
--	cpufreq_stats_update(stat->cpu);
-+	cpufreq_stats_update(stat);
- 	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
- 	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
- 	for (i = 0; i < stat->state_num; i++) {
-@@ -313,7 +310,7 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
- 	if (old_index == -1 || new_index == -1)
- 		return 0;
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 3cb097b86d20..2d99f12e4199 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -66,8 +66,6 @@ struct cpufreq_policy {
+ 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
+-	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
+-					   * this policy */
+ 	struct clk		*clk;
+ 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
  
--	cpufreq_stats_update(freq->cpu);
-+	cpufreq_stats_update(stat);
- 
- 	if (old_index == new_index)
- 		return 0;
 -- 
 2.2.0
 
