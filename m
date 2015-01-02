@@ -1,112 +1,108 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 08/17] thermal: exynos: dts: Add default definition of
- the TMU sensor parameter
-Date: Fri, 2 Jan 2015 14:26:28 -0400
-Message-ID: <20150102182625.GB12310@developer>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1418213396-743-1-git-send-email-l.majewski@samsung.com>
- <1418213396-743-9-git-send-email-l.majewski@samsung.com>
- <20150102181139.GA12130@developer>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 2/8] thermal: Provide stub for thermal_cdev_update()
+ function
+Date: Fri, 2 Jan 2015 14:40:29 -0400
+Message-ID: <20150102184028.GA12371@developer>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+ <1419265668-32283-1-git-send-email-l.majewski@samsung.com>
+ <1419265668-32283-3-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20150102181139.GA12130@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+In-Reply-To: <1419265668-32283-3-git-send-email-l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Abhilash Kesavan <a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---uQr8t48UFsdbeI+V
+--h31gzZEtNLTqOjlF
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jan 02, 2015 at 02:11:41PM -0400, Eduardo Valentin wrote:
-> Lukasz,
+On Mon, Dec 22, 2014 at 05:27:42PM +0100, Lukasz Majewski wrote:
+> Odroid U3 fan can work without being registered as OF cooling device
+> (with CONFIG_THERMAL_OF disabled).
+> In this situation it can be controlled via PWM entry at
+> /sys/class/hwmon/hwmon0/pwm1.
 >=20
-> On Wed, Dec 10, 2014 at 01:09:47PM +0100, Lukasz Majewski wrote:
-> > Exynos 4 and 5 family of SoCs uses almost identical TMU sensor to measu=
-re the
-> > on chip temperature. For this reason it is possible to group TMU config=
-uration
-> > parameters in one dts file.
-> >=20
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> > Changes for v2:
-> > - None
-> > ---
-> >  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi | 24 +++++++++++++++=
-++++++++
-> >  1 file changed, 24 insertions(+)
-> >  create mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
-> >=20
-> > diff --git a/arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi b/arch/a=
-rm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
-> > new file mode 100644
-> > index 0000000..ee6d8bb
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
-> > @@ -0,0 +1,24 @@
-> > +/*
-> > + * Device tree sources for Exynos4412 TMU sensor configuration
-> > + *
-> > + * Copyright (c) 2014 Lukasz Majewski <l.majewski@samsung.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + */
-> > +
-> > +#include <dt-bindings/thermal/thermal_exynos.h>
-> > +
-> > +#thermal-sensor-cells =3D <0>;
-> > +gain =3D <8>;
-> > +reference_voltage =3D <16>;
-> > +noise_cancel_mode =3D <4>;
-> > +efuse_value =3D <55>;
-> > +min_efuse_value =3D <40>;
-> > +max_efuse_value =3D <100>;
-> > +first_point_trim =3D <25>;
-> > +second_point_trim =3D <85>;
-> > +default_temp_offset =3D <50>;
-> > +cal_type =3D <TYPE_ONE_POINT_TRIMMING>;
+> Therefore, the thermal_cdev_update() function needs a stub
+> to allow clean compilation.
+
+I am not sure I understand what you are attempting to do here. What is
+the relation that you see between CONFIG_OF_THERMAL and
+thermal_cdev_update?=20
+
 >=20
-> Are the above properties specific to exynos? For specific DT entries,
-> they need to be marked with a prefix. Please read the 'Device Specific
-> Data' section of Device tree Documentation [1].
+> Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+> Changes for v2:
+> - New patch
+> ---
+>  include/linux/thermal.h | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 >=20
-> [1] - http://devicetree.org/Device_Tree_Usage
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 871123c..b3515b5 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -332,6 +332,7 @@ struct thermal_cooling_device *
+>  thermal_of_cooling_device_register(struct device_node *np,
+>  				   char *type, void *devdata,
+>  				   const struct thermal_cooling_device_ops *);
+> +void thermal_cdev_update(struct thermal_cooling_device *);
+>  #else
+>  static inline struct thermal_zone_device *
+>  thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
+> @@ -353,6 +354,10 @@ thermal_of_cooling_device_register(struct device_nod=
+e *np,
+>  {
+>  	return NULL;
+>  }
+> +
+> +static inline void thermal_cdev_update(struct thermal_cooling_device *cd=
+ev)
+> +{
+> +}
+>  #endif
+>  struct thermal_zone_device *thermal_zone_device_register(const char *, i=
+nt, int,
+>  		void *, struct thermal_zone_device_ops *,
+> @@ -375,7 +380,6 @@ int thermal_zone_get_temp(struct thermal_zone_device =
+*tz, unsigned long *temp);
+>  int get_tz_trend(struct thermal_zone_device *, int);
+>  struct thermal_instance *get_thermal_instance(struct thermal_zone_device=
+ *,
+>  		struct thermal_cooling_device *, int);
+> -void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+> =20
+>  #ifdef CONFIG_NET
+> --=20
+> 2.0.0.rc2
+>=20
 
-
-BTW, you have to update:
-Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-
-
-> > --=20
-> > 2.0.0.rc2
-> >=20
-
-
-
---uQr8t48UFsdbeI+V
+--h31gzZEtNLTqOjlF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUpuLJAAoJEMLUO4d9pOJWp8sH/jqJ2+mWHZCNl3vsbiyJJ0Zx
-RuCZoNF5tgZwvc5Kq43uptIhK4jvk1Jo08MbJXJ+viyYry4B1U9NlZCaKLX+SQmS
-lAUCtcNEuadAIOzuyGi3CxDZt38c+iAObFzFf/5L8rmqUZhHcCv1wJNW4jsBzDis
-EaYmkMxQ4CzWSeY5Wi971W4t47REqalO7Zhqp6omfeYAKsrlF13kewQn3f+X6eZZ
-bE4uSxqp6TIdccsIjkAkigHeGxnhMQeyNwiG+8MN7+UbUoBv8up0RGw5bJ8TNGyS
-S3YlHvMwme0vkeHDUaodDj9ANWFwQi6e7hbr0YkyUUQAQOtOFiAQuVx/qq4bXoY=
-=/k+P
+iQEcBAEBAgAGBQJUpuYSAAoJEMLUO4d9pOJWor4IAINd5mQoeQJ/awjaWQXnVnYl
+JGk6RFP7Ai9JY7QP4udjOmievjqlIG5RMlarb5jF5DdJ6rBUiIz4a2WypCazUZv6
+A65X9xnemOuMb3jBGw8afE5VcFp3NZ3jo/AxNRHufDoo441P82U/ysvwS3yhQ2/F
+htsuIL/14ltdWELzO87pgI3vEshSawi+0Eyv8J6hbWIX9b+DinCGwm/+npVI5z74
+kyDktfZNxYLaJ/R/a4XdwPRXmbAerLABLuYqT8B9vq7zrB1myKVYCqOzr0xNXg/R
+Wv7lCGQVNS7Bg5YOhvurJ7FMxbhxJJAgv8ySj8hj2AC+PDabmJBXLlagbXobMBE=
+=x4Gp
 -----END PGP SIGNATURE-----
 
---uQr8t48UFsdbeI+V--
+--h31gzZEtNLTqOjlF--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
