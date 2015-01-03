@@ -1,131 +1,96 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] thermal: add omap3 support
-Date: Sat, 3 Jan 2015 23:02:19 +0100
-Message-ID: <20150103220219.GA26747@amd>
-References: <20150103111146.GB7065@amd>
- <20150103123426.GA26069@developer>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 07/14] cpufreq: stats: remove cpufreq_stats_update_policy_cpu()
+Date: Sat, 03 Jan 2015 23:25:02 +0100
+Message-ID: <2616922.JoeBe3VJ9b@vostro.rjw.lan>
+References: <cover.1420177186.git.viresh.kumar@linaro.org> <53e8e4e9a40d2759ebdecfe4649f9ecee112a330.1420177186.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43789 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbbACWCW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jan 2015 17:02:22 -0500
-Content-Disposition: inline
-In-Reply-To: <20150103123426.GA26069@developer>
+Received: from v094114.home.net.pl ([79.96.170.134]:53092 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752576AbbACWCu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jan 2015 17:02:50 -0500
+In-Reply-To: <53e8e4e9a40d2759ebdecfe4649f9ecee112a330.1420177186.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, nm@ti.com
-Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org
 
-Hi!
+On Friday, January 02, 2015 11:16:44 AM Viresh Kumar wrote:
+> cpufreq_stats_update_policy_cpu() doesn't do any useful stuff anymore and must
+> be removed.
 
-> Thanks for sending your code.
+Well, "can be" sounds more appropriate than "must be".  It wouldn't hurt to
+leave it as is, after all.
 
-You are welcome.
+> Along with it, also remove 'cpu' field from 'struct cpufreq_stats'
+> as that isn't used as well.
 
-> > Add support for omap3430 sensor. Tested on Nokia N900.
+It's the reverse.  Because the cpu field is not necessary any more, it can
+be dropped *along* *with* cpufreq_stats_update_policy_cpu().
+
+Modifying data structures is more important than dropping a trivial function
+and it should be described this way in the changelog.
+
+
+> Reviewed-by: Prarit Bhargava <prarit@redhat.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_stats.c | 14 --------------
+>  1 file changed, 14 deletions(-)
 > 
-> To my understanding, and as already mentioned by Nishanth Menon
-> (currently TIer), TI has intentionally avoided adding this support.
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 106c89ccef30..f458fdbc5bfd 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -18,7 +18,6 @@
+>  static spinlock_t cpufreq_stats_lock;
+>  
+>  struct cpufreq_stats {
+> -	unsigned int cpu;
+>  	unsigned int total_trans;
+>  	unsigned long long last_time;
+>  	unsigned int max_state;
+> @@ -194,7 +193,6 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
+>  	if (ret)
+>  		goto error_out;
+>  
+> -	stat->cpu = cpu;
+>  	policy->stats_data = stat;
+>  
+>  	cpufreq_for_each_valid_entry(pos, table)
+> @@ -251,24 +249,12 @@ static void cpufreq_stats_create_table(unsigned int cpu)
+>  	cpufreq_cpu_put(policy);
+>  }
+>  
+> -static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
+> -{
+> -	struct cpufreq_stats *stat = policy->stats_data;
+> -
+> -	stat->cpu = policy->cpu;
 
-Well, Nokia had similar code in their kernel.
+Well, if you wrote it the way I suggested in the previous patch, it would be
+more obvious ...
 
-> There is a hardware accuracy limitation in this sensor, and therefore it
-> is not advisable to use it, specially in Dynamic Thermal Management,
-> such as the thermal framework.
-
-We are talking cellphone here. Yes, sensor may be inacurate (but it
-seems to work pretty well; perhaps TI can point us to some docs that
-explains the details?), but it provides useful information (mostly
-room temperature). I don't think we'll ever run anywhere close to
-thermal limits where inacuracy would matter. (Battery can't really
-take > 60C. AFAICT CPU limit is 120C. Battery is close to the CPU.)
-
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
-> > index bd4c7be..a49495f 100644
-> > --- a/drivers/thermal/ti-soc-thermal/Kconfig
-> > +++ b/drivers/thermal/ti-soc-thermal/Kconfig
-> > @@ -21,6 +21,15 @@ config TI_THERMAL
-> >  	  This includes trip points definitions, extrapolation rules and
-> >  	  CPU cooling device bindings.
-> >  
-> > +config OMAP3_THERMAL
-> > +	bool "Texas Instruments OMAP3 thermal support"
-> > +	depends on TI_SOC_THERMAL
-> > +	depends on ARCH_OMAP3
-> > +	help
-> > +	  If you say yes here you get thermal support for the Texas Instruments
-> > +	  OMAP3 SoC family. The current chip supported are:
-> > +	   - OMAP3430
+> -}
+> -
+>  static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+>  		unsigned long val, void *data)
+>  {
+>  	int ret = 0;
+>  	struct cpufreq_policy *policy = data;
+>  
+> -	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
+> -		cpufreq_stats_update_policy_cpu(policy);
+> -		return 0;
+> -	}
+> -
+>  	if (val == CPUFREQ_CREATE_POLICY)
+>  		ret = __cpufreq_stats_create_table(policy);
+>  	else if (val == CPUFREQ_REMOVE_POLICY)
 > 
-> But if you insist :-), I believe the user deserves at least a fair
-> message saying this is on his / her own risk.
 
-Something like this?
-
-          If you say yes here you get thermal support for the Texas Instruments
-	  OMAP3 SoC family. The current chip supported are:
-	              - OMAP3430
-
-          OMAP3 chips normally don't need thermal management, and sensors in
-	  this generation are not very accurate, nor they are very close to
-          the important hotspots.
-
-          Say 'N' here.
-	  
-
-> > +static struct temp_sensor_registers
-> > +omap34xx_mpu_temp_sensor_registers = {
-> > +	.temp_sensor_ctrl = 0,
-> > +	.bgap_tempsoff_mask = 0, /* Unused, we don't have POWER_SWITCH */
-> > +	.bgap_soc_mask = BIT(8),
-> > +	.bgap_eocz_mask = BIT(7),
-> > +	.bgap_dtemp_mask = 0x7f,
-> > +
-> > +	.bgap_mode_ctrl = 0,
-> > +	.mode_ctrl_mask = BIT(9),
-> > +
-> > +	.bgap_efuse = 0,
-> 
-> The 0'ed filed may be removed here.
-
-Ok; I'll keep temp_sensors_ctrl / bgap_mode_ctrl, because it is actually used.
-
-
-> > diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> > index 634b6ce..3b4e72f 100644
-> > --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> > +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> > @@ -1509,6 +1531,12 @@ static SIMPLE_DEV_PM_OPS(ti_bandgap_dev_pm_ops, ti_bandgap_suspend,
-> >  #endif
-> >  
-> >  static const struct of_device_id of_ti_bandgap_match[] = {
-> > +#ifdef CONFIG_OMAP3_THERMAL
-> > +	{
-> > +		.compatible = "ti,omap34xx-bandgap",
-> 
-> This needs to be updated in the binding documentation.
-> Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-
-Ok.
-
-> > +		.data = (void *)&omap34xx_data,
-> 
-> 
-> Having a run time message intentionally advising users of the risk of
-> using this sensor is also required.
-
-Ok, what about?
-
-    if (TI_BANDGAP_HAS(bgp, UNRELIABLE))
-              dev_warn(&pdev->dev,
-                         "OMAP3 thermal sensor is unreliable and normally unneccessary\n");
-
-Will not fit in 80 columns, but keeping message on one line is more important.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
