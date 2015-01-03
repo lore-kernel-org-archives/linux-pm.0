@@ -1,241 +1,131 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 05/14] cpufreq: stats: get rid of per-cpu cpufreq_stats_table
-Date: Sat, 03 Jan 2015 23:20:07 +0100
-Message-ID: <2035066.1nOVW1Pe1d@vostro.rjw.lan>
-References: <cover.1420177186.git.viresh.kumar@linaro.org> <b7d24dcbe2aecf8627d5fbe0666ec88b8d8076d3.1420177186.git.viresh.kumar@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] thermal: add omap3 support
+Date: Sat, 3 Jan 2015 23:02:19 +0100
+Message-ID: <20150103220219.GA26747@amd>
+References: <20150103111146.GB7065@amd>
+ <20150103123426.GA26069@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63304 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751395AbbACV5y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jan 2015 16:57:54 -0500
-In-Reply-To: <b7d24dcbe2aecf8627d5fbe0666ec88b8d8076d3.1420177186.git.viresh.kumar@linaro.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43789 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbbACWCW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jan 2015 17:02:22 -0500
+Content-Disposition: inline
+In-Reply-To: <20150103123426.GA26069@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org
+To: Eduardo Valentin <edubezval@gmail.com>, nm@ti.com
+Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 
-On Friday, January 02, 2015 11:16:42 AM Viresh Kumar wrote:
-> Because all CPUs in a policy share clock line, they share stats as well.
+Hi!
 
-"All CPUs sharing a cpufreq policy share stats too."
+> Thanks for sending your code.
 
-Sharing a clock line is irrelevant here.
+You are welcome.
 
-> But cpufreq-stats maintains a per-cpu list of tables for managing this. Get rid of
-> it by assigning a special field for stats in 'struct cpufreq_policy'.
-
-"For this reason, add a stats pointer to struct cpufreq_policy and drop
- per-CPU variable cpufreq_stats_table used for accessing cpufreq stats
- so as to reduce code complexity."
-
+> > Add support for omap3430 sensor. Tested on Nokia N900.
 > 
-> Reviewed-by: Prarit Bhargava <prarit@redhat.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 51 ++++++++++++++++++-----------------------
->  include/linux/cpufreq.h         |  3 +++
->  2 files changed, 25 insertions(+), 29 deletions(-)
+> To my understanding, and as already mentioned by Nishanth Menon
+> (currently TIer), TI has intentionally avoided adding this support.
+
+Well, Nokia had similar code in their kernel.
+
+> There is a hardware accuracy limitation in this sensor, and therefore it
+> is not advisable to use it, specially in Dynamic Thermal Management,
+> such as the thermal framework.
+
+We are talking cellphone here. Yes, sensor may be inacurate (but it
+seems to work pretty well; perhaps TI can point us to some docs that
+explains the details?), but it provides useful information (mostly
+room temperature). I don't think we'll ever run anywhere close to
+thermal limits where inacuracy would matter. (Battery can't really
+take > 60C. AFAICT CPU limit is 120C. Battery is close to the CPU.)
+
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > 
+> > diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
+> > index bd4c7be..a49495f 100644
+> > --- a/drivers/thermal/ti-soc-thermal/Kconfig
+> > +++ b/drivers/thermal/ti-soc-thermal/Kconfig
+> > @@ -21,6 +21,15 @@ config TI_THERMAL
+> >  	  This includes trip points definitions, extrapolation rules and
+> >  	  CPU cooling device bindings.
+> >  
+> > +config OMAP3_THERMAL
+> > +	bool "Texas Instruments OMAP3 thermal support"
+> > +	depends on TI_SOC_THERMAL
+> > +	depends on ARCH_OMAP3
+> > +	help
+> > +	  If you say yes here you get thermal support for the Texas Instruments
+> > +	  OMAP3 SoC family. The current chip supported are:
+> > +	   - OMAP3430
 > 
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index ebd9e4c5c124..106c89ccef30 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -31,8 +31,6 @@ struct cpufreq_stats {
->  #endif
->  };
->  
-> -static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
-> -
->  struct cpufreq_stats_attribute {
->  	struct attribute attr;
->  	ssize_t(*show) (struct cpufreq_stats *, char *);
-> @@ -53,20 +51,17 @@ static int cpufreq_stats_update(struct cpufreq_stats *stat)
->  
->  static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
->  {
-> -	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-> -	if (!stat)
-> -		return 0;
-> -	return sprintf(buf, "%d\n",
-> -			per_cpu(cpufreq_stats_table, stat->cpu)->total_trans);
-> +	struct cpufreq_stats *stat = policy->stats_data;
-> +
-> +	return sprintf(buf, "%d\n", stat->total_trans);
+> But if you insist :-), I believe the user deserves at least a fair
+> message saying this is on his / her own risk.
 
-First off, why do you call the new field stats_data instead of stats?
-Moreover:
+Something like this?
 
-+	return sprintf(buf, "%d\n", policy->stats->total_trans);
+          If you say yes here you get thermal support for the Texas Instruments
+	  OMAP3 SoC family. The current chip supported are:
+	              - OMAP3430
 
-and then you don't need the extra line above.
+          OMAP3 chips normally don't need thermal management, and sensors in
+	  this generation are not very accurate, nor they are very close to
+          the important hotspots.
 
->  }
->  
->  static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
->  {
-> +	struct cpufreq_stats *stat = policy->stats_data;
->  	ssize_t len = 0;
->  	int i;
-> -	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-> -	if (!stat)
-> -		return 0;
-> +
->  	cpufreq_stats_update(stat);
->  	for (i = 0; i < stat->state_num; i++) {
->  		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
-> @@ -79,12 +74,10 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
->  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
->  static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  {
-> +	struct cpufreq_stats *stat = policy->stats_data;
->  	ssize_t len = 0;
->  	int i, j;
->  
-> -	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-> -	if (!stat)
-> -		return 0;
->  	cpufreq_stats_update(stat);
->  	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
->  	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
-> @@ -150,8 +143,9 @@ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
->  
->  static void __cpufreq_stats_free_table(struct cpufreq_policy *policy)
->  {
-> -	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-> +	struct cpufreq_stats *stat = policy->stats_data;
->  
-> +	/* Already freed */
->  	if (!stat)
->  		return;
->  
-> @@ -160,7 +154,7 @@ static void __cpufreq_stats_free_table(struct cpufreq_policy *policy)
->  	sysfs_remove_group(&policy->kobj, &stats_attr_group);
->  	kfree(stat->time_in_state);
->  	kfree(stat);
-> -	per_cpu(cpufreq_stats_table, policy->cpu) = NULL;
-> +	policy->stats_data = NULL;
->  }
->  
->  static void cpufreq_stats_free_table(unsigned int cpu)
-> @@ -189,7 +183,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  		return 0;
->  
->  	/* stats already initialized */
-> -	if (per_cpu(cpufreq_stats_table, cpu))
-> +	if (policy->stats_data)
->  		return -EEXIST;
->  
->  	stat = kzalloc(sizeof(*stat), GFP_KERNEL);
-> @@ -201,7 +195,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  		goto error_out;
->  
->  	stat->cpu = cpu;
-> -	per_cpu(cpufreq_stats_table, cpu) = stat;
-> +	policy->stats_data = stat;
->  
->  	cpufreq_for_each_valid_entry(pos, table)
->  		count++;
-> @@ -236,7 +230,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  	sysfs_remove_group(&policy->kobj, &stats_attr_group);
->  error_out:
->  	kfree(stat);
-> -	per_cpu(cpufreq_stats_table, cpu) = NULL;
-> +	policy->stats_data = NULL;
->  	return ret;
->  }
->  
-> @@ -259,14 +253,8 @@ static void cpufreq_stats_create_table(unsigned int cpu)
->  
->  static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
->  {
-> -	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table,
-> -			policy->last_cpu);
-> -
-> -	pr_debug("Updating stats_table for new_cpu %u from last_cpu %u\n",
-> -			policy->cpu, policy->last_cpu);
-> -	per_cpu(cpufreq_stats_table, policy->cpu) = per_cpu(cpufreq_stats_table,
-> -			policy->last_cpu);
-> -	per_cpu(cpufreq_stats_table, policy->last_cpu) = NULL;
-> +	struct cpufreq_stats *stat = policy->stats_data;
-> +
->  	stat->cpu = policy->cpu;
+          Say 'N' here.
+	  
 
-Why don't you change this line to
-
-	policy->stats->cpu = policy->cpu;
-
-and then you don't need the extra variable any more?
-
->  }
->  
-> @@ -293,15 +281,19 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
->  		unsigned long val, void *data)
->  {
->  	struct cpufreq_freqs *freq = data;
-> +	struct cpufreq_policy *policy = cpufreq_cpu_get(freq->cpu);
->  	struct cpufreq_stats *stat;
->  	int old_index, new_index;
->  
->  	if (val != CPUFREQ_POSTCHANGE)
->  		return 0;
->  
-> -	stat = per_cpu(cpufreq_stats_table, freq->cpu);
-> -	if (!stat)
-> -		return 0;
-> +	if (!policy) {
-> +		pr_err("%s: No policy found\n", __func__);
-
-Do we need the extra message here?  If so, can it be pr_debug()?
-
-> +		return -ENODEV;
-> +	}
-
-This changes the behavior in a subtle way.  Instead of returning 0 when stats
-are not present, we'll now return an error code for a missing policy.  Are you
-sure that this isn't going to break anything?
-
-> +
-> +	stat = policy->stats_data;
-
-Is stat guaraneed to be a valid pointer at this point?
-
->  
->  	old_index = stat->last_index;
->  	new_index = freq_table_get_index(stat, freq->new);
-> @@ -322,6 +314,7 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
->  #endif
->  	stat->total_trans++;
->  	spin_unlock(&cpufreq_stats_lock);
-> +	cpufreq_cpu_put(policy);
->  	return 0;
->  }
->  
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 4d078cebafd2..3cb097b86d20 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -113,6 +113,9 @@ struct cpufreq_policy {
->  	wait_queue_head_t	transition_wait;
->  	struct task_struct	*transition_task; /* Task which is doing the transition */
->  
-> +	/* cpufreq-stats data */
-> +	void			*stats_data;
-
-Why isn't that
-
-	struct cpufreq_stats	*stats;
-
-?
-
-> +
->  	/* For cpufreq driver's internal use */
->  	void			*driver_data;
->  };
+> > +static struct temp_sensor_registers
+> > +omap34xx_mpu_temp_sensor_registers = {
+> > +	.temp_sensor_ctrl = 0,
+> > +	.bgap_tempsoff_mask = 0, /* Unused, we don't have POWER_SWITCH */
+> > +	.bgap_soc_mask = BIT(8),
+> > +	.bgap_eocz_mask = BIT(7),
+> > +	.bgap_dtemp_mask = 0x7f,
+> > +
+> > +	.bgap_mode_ctrl = 0,
+> > +	.mode_ctrl_mask = BIT(9),
+> > +
+> > +	.bgap_efuse = 0,
 > 
+> The 0'ed filed may be removed here.
 
+Ok; I'll keep temp_sensors_ctrl / bgap_mode_ctrl, because it is actually used.
+
+
+> > diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > index 634b6ce..3b4e72f 100644
+> > --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > @@ -1509,6 +1531,12 @@ static SIMPLE_DEV_PM_OPS(ti_bandgap_dev_pm_ops, ti_bandgap_suspend,
+> >  #endif
+> >  
+> >  static const struct of_device_id of_ti_bandgap_match[] = {
+> > +#ifdef CONFIG_OMAP3_THERMAL
+> > +	{
+> > +		.compatible = "ti,omap34xx-bandgap",
+> 
+> This needs to be updated in the binding documentation.
+> Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+
+Ok.
+
+> > +		.data = (void *)&omap34xx_data,
+> 
+> 
+> Having a run time message intentionally advising users of the risk of
+> using this sensor is also required.
+
+Ok, what about?
+
+    if (TI_BANDGAP_HAS(bgp, UNRELIABLE))
+              dev_warn(&pdev->dev,
+                         "OMAP3 thermal sensor is unreliable and normally unneccessary\n");
+
+Will not fit in 80 columns, but keeping message on one line is more important.
+									Pavel
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
