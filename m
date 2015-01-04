@@ -1,47 +1,108 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] ARM: omap2plus_defconfig: use CONFIG_CPUFREQ_DT
-Date: Mon, 5 Jan 2015 11:17:45 -0800
-Message-ID: <20150105191745.GI4081@atomide.com>
-References: <1418404738-19124-1-git-send-email-nm@ti.com>
- <CAMuHMdW4CQz_n8b4-JOogDvc6ggBjWrFWcqr4Tezojj+mJD6pw@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] Thermal: imx: add clk disable/enable for suspend/resume
+Date: Sat, 3 Jan 2015 21:00:53 -0400
+Message-ID: <20150104010051.GA26438@developer>
+References: <1420468153-19142-1-git-send-email-b20788@freescale.com>
+ <CADTbHxpExF7Qzz9-HCVWWbU24ymBV1wLt4ON_6avY_oLkknFaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f177.google.com ([209.85.220.177]:61515 "EHLO
+	mail-vc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbbAET5u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 14:57:50 -0500
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdW4CQz_n8b4-JOogDvc6ggBjWrFWcqr4Tezojj+mJD6pw@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms@verge.net.au>, Linux-sh list <linux-sh@vger.kernel.org>
+In-Reply-To: <CADTbHxpExF7Qzz9-HCVWWbU24ymBV1wLt4ON_6avY_oLkknFaQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pankaj Jangra <jangra.pankaj9@gmail.com>
+Cc: Anson Huang <b20788@freescale.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rui.zhang@intel.com
 
-* Geert Uytterhoeven <geert@linux-m68k.org> [141215 02:44]:
-> On Fri, Dec 12, 2014 at 6:18 PM, Nishanth Menon <nm@ti.com> wrote:
-> > CONFIG_GENERIC_CPUFREQ_CPU0 disappeared with commit bbcf071969b20f
-> > ("cpufreq: cpu0: rename driver and internals to 'cpufreq_dt'")
-> >
-> > Use the renamed CONFIG_CPUFREQ_DT generic driver. It looks like with
-> > v3.18-rc1, commit bbcf071969b20f and fdc509b15eb3eb came in via
-> > different trees causing the resultant v3.18-rc1 to be non-functional for
-> > cpufreq as default supported with omap2plus_defconfig.
-> >
-> > Fixes: fdc509b15eb3eb ("ARM: omap2plus_defconfig: Add cpufreq to defconfig")
-> > Signed-off-by: Nishanth Menon <nm@ti.com>
-> > ---
-> >
-> > NOTE: as of v3.18 tag, The following still need to be fixed - I do not have all
-> > the platforms impacted to make a generic change, so CCying folks who might be interested
-> >
-> > arch/arm/configs/shmobile_defconfig:CONFIG_GENERIC_CPUFREQ_CPU0=y
-> 
-> Thanks!
-> 
-> FTR: this has been fixed in Simon's defconfig-for-v3.20 branch.
-> 
-> > arch/arm/configs/multi_v7_defconfig:CONFIG_GENERIC_CPUFREQ_CPU0=y
 
-Oops looks like this is still missing from omap2plus_defconfig, so
-applying into omap-for-v3.19/fixes.
+--Q68bSM7Ycu6FN28Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
+Hello,
 
-Tony
+On Mon, Jan 05, 2015 at 10:34:11PM +0530, Pankaj Jangra wrote:
+> Hi Anson,
+>=20
+> On Mon, Jan 5, 2015 at 7:59 PM, Anson Huang <b20788@freescale.com> wrote:
+>=20
+> > Thermal sensor's clk is from pll3_usb_otg, per hardware
+> > design requirement, need to make sure pll3_usb_otg is disabled
+> > before STOP mode is entered, otherwise, all PFDs under it may
+> > enter incorrect state, this patch disables pll3_usb_otg before
+> > suspend and enables it after resume.
+> >
+> > Signed-off-by: Anson Huang <b20788@freescale.com>
+> >
+> > +++ b/drivers/thermal/imx_thermal.c
+> > @@ -600,6 +600,8 @@ static int imx_thermal_suspend(struct device *dev)
+> >         regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP=
+);
+> >         regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
+> >         data->mode =3D THERMAL_DEVICE_DISABLED;
+> > +       if (!IS_ERR(data->thermal_clk))
+> >
+> I think you do not need to check for the error condition here. Because
+> during the probe of driver, this condition is already checked and if the
+> clock get is failed,
+> it will fail the driver probing itself.
+>=20
+
+Agreed here, no need for this extra check.
+
+> +               clk_disable_unprepare(data->thermal_clk);
+>=20
+>=20
+> >         return 0;
+> >  }
+> > @@ -609,6 +611,8 @@ static int imx_thermal_resume(struct device *dev)
+> >         struct imx_thermal_data *data =3D dev_get_drvdata(dev);
+> >         struct regmap *map =3D data->tempmon;
+> >
+> > +       if (!IS_ERR(data->thermal_clk))
+> >
+> Same as above.
+>=20
+> > +               clk_prepare_enable(data->thermal_clk);
+> >         /* Enabled thermal sensor after resume */
+> >         regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+> >         regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP=
+);
+> > --
+> >
+>=20
+> Else changes looks good to me.
+>=20
+> -- Pankaj Jangra
+>=20
+> > 1.9.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+
+--Q68bSM7Ycu6FN28Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUqJC6AAoJEMLUO4d9pOJW0UoIAIQl8dL45l3dijE6jZaQPpqt
+4V2M9iYDzsE4cBg49Fmk+Y3nSDO6Vjn5eleOxgKIQNNnAdNuCZxWJyOXwQrOvsr1
+x4UPyI+9n/iMoQPtmnL5kMBOTNmymeoctW4m6w9M06gInIXk8dksi8YwThylFle3
+587BF2cFFo9RY6J2dnd2k2+1t2HTVV44kT7OtWkMbmIrIxqSma0VRdLhtAOoa+sg
+GYYf13vS9CQZIvM+GpuooMIphwBfYnFTxtvUM25o8HygztOw1DPtCQRsNflaSDgX
+bZEQZ6h0UM++ltAvl4DM+EhnOVWDvHFke2RKoxnI7rp5umU9s8zJoOsbLZ/EJ3I=
+=WRjH
+-----END PGP SIGNATURE-----
+
+--Q68bSM7Ycu6FN28Q--
