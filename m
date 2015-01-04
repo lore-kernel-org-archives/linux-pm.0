@@ -1,173 +1,494 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Subject: Re: [PATCH] power: avs: smartreflex: Remove unused function
-Date: Sun, 4 Jan 2015 17:06:12 +0100
-Message-ID: <CAKXHbyPiWcVxPwVicz15hQ0GWETkZUPW6n5b9zCJnH+cFrAhaw@mail.gmail.com>
-References: <1420300731-8910-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-	<20150103175346.GB20341@kahuna>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v5 3/7] iio: Add support for DA9150 GPADC
+Date: Sun, 04 Jan 2015 17:22:26 +0000
+Message-ID: <54A976D2.9040104@kernel.org>
+References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com> <58b7b001b38662c36595412f96c7d2eb5c3adcad.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f180.google.com ([209.85.223.180]:46140 "EHLO
-	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbbADQGN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jan 2015 11:06:13 -0500
-Received: by mail-ie0-f180.google.com with SMTP id rp18so17896690iec.25
-        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 08:06:13 -0800 (PST)
-Received: from mail-ie0-f180.google.com (mail-ie0-f180.google.com. [209.85.223.180])
-        by mx.google.com with ESMTPSA id qa8sm2362718igb.13.2015.01.04.08.06.12
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
-        Sun, 04 Jan 2015 08:06:12 -0800 (PST)
-Received: by mail-ie0-f180.google.com with SMTP id rp18so18649857iec.11
-        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 08:06:12 -0800 (PST)
-In-Reply-To: <20150103175346.GB20341@kahuna>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <58b7b001b38662c36595412f96c7d2eb5c3adcad.1419264383.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-2015-01-03 18:53 GMT+01:00 Nishanth Menon <nm@ti.com>:
-> On 16:58-20150103, Rickard Strandqvist wrote:
->> Remove the function sr_configure_minmax() that is not used anywhere.
->>
->> This was partially found by using a static code analysis program called cppcheck.
->>
->> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
->> ---
->>  drivers/power/avs/smartreflex.c   |   86 -------------------------------------
->>  include/linux/power/smartreflex.h |    1 -
->>  2 files changed, 87 deletions(-)
->>
->> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
->> index db9973b..62b8351 100644
->> --- a/drivers/power/avs/smartreflex.c
->> +++ b/drivers/power/avs/smartreflex.c
->> @@ -460,92 +460,6 @@ int sr_disable_errgen(struct omap_sr *sr)
->>  }
->>
->>  /**
->> - * sr_configure_minmax() - Configures the SmartReflex to perform AVS using the
->> - *                    minmaxavg module.
->> - * @sr:                      SR module to be configured.
->> - *
->> - * This API is to be called from the smartreflex class driver to
->> - * configure the minmaxavg module inside the smartreflex module.
->> - * SR settings if using the ERROR module inside Smartreflex.
->> - * SR CLASS 3 by default uses only the ERROR module where as
->> - * SR CLASS 2 can choose between ERROR module and MINMAXAVG
->> - * module. Returns 0 on success and error value in case of failure.
->> - */
->> -int sr_configure_minmax(struct omap_sr *sr)
->> -{
->> -     u32 sr_config, sr_avgwt;
->> -     u32 senp_en = 0, senn_en = 0;
->> -     u8 senp_shift, senn_shift;
->> -
->> -     if (!sr) {
->> -             pr_warn("%s: NULL omap_sr from %pF\n", __func__,
->> -                     (void *)_RET_IP_);
->> -             return -EINVAL;
->> -     }
->> -
->> -     if (!sr->clk_length)
->> -             sr_set_clk_length(sr);
->> -
->> -     senp_en = sr->senp_mod;
->> -     senn_en = sr->senn_mod;
->> -
->> -     sr_config = (sr->clk_length << SRCONFIG_SRCLKLENGTH_SHIFT) |
->> -             SRCONFIG_SENENABLE |
->> -             (sr->accum_data << SRCONFIG_ACCUMDATA_SHIFT);
->> -
->> -     switch (sr->ip_type) {
->> -     case SR_TYPE_V1:
->> -             sr_config |= SRCONFIG_DELAYCTRL;
->> -             senn_shift = SRCONFIG_SENNENABLE_V1_SHIFT;
->> -             senp_shift = SRCONFIG_SENPENABLE_V1_SHIFT;
->> -             break;
->> -     case SR_TYPE_V2:
->> -             senn_shift = SRCONFIG_SENNENABLE_V2_SHIFT;
->> -             senp_shift = SRCONFIG_SENPENABLE_V2_SHIFT;
->> -             break;
->> -     default:
->> -             dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
->> -                     "module without specifying the ip\n", __func__);
->> -             return -EINVAL;
->> -     }
->> -
->> -     sr_config |= ((senn_en << senn_shift) | (senp_en << senp_shift));
->> -     sr_write_reg(sr, SRCONFIG, sr_config);
->> -     sr_avgwt = (sr->senp_avgweight << AVGWEIGHT_SENPAVGWEIGHT_SHIFT) |
->> -             (sr->senn_avgweight << AVGWEIGHT_SENNAVGWEIGHT_SHIFT);
->> -     sr_write_reg(sr, AVGWEIGHT, sr_avgwt);
->> -
->> -     /*
->> -      * Enabling the interrupts if MINMAXAVG module is used.
->> -      * TODO: check if all the interrupts are mandatory
->> -      */
->> -     switch (sr->ip_type) {
->> -     case SR_TYPE_V1:
->> -             sr_modify_reg(sr, ERRCONFIG_V1,
->> -                     (ERRCONFIG_MCUACCUMINTEN | ERRCONFIG_MCUVALIDINTEN |
->> -                     ERRCONFIG_MCUBOUNDINTEN),
->> -                     (ERRCONFIG_MCUACCUMINTEN | ERRCONFIG_MCUACCUMINTST |
->> -                      ERRCONFIG_MCUVALIDINTEN | ERRCONFIG_MCUVALIDINTST |
->> -                      ERRCONFIG_MCUBOUNDINTEN | ERRCONFIG_MCUBOUNDINTST));
->> -             break;
->> -     case SR_TYPE_V2:
->> -             sr_write_reg(sr, IRQSTATUS,
->> -                     IRQSTATUS_MCUACCUMINT | IRQSTATUS_MCVALIDINT |
->> -                     IRQSTATUS_MCBOUNDSINT | IRQSTATUS_MCUDISABLEACKINT);
->> -             sr_write_reg(sr, IRQENABLE_SET,
->> -                     IRQENABLE_MCUACCUMINT | IRQENABLE_MCUVALIDINT |
->> -                     IRQENABLE_MCUBOUNDSINT | IRQENABLE_MCUDISABLEACKINT);
->> -             break;
->> -     default:
->> -             dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
->> -                     "module without specifying the ip\n", __func__);
->> -             return -EINVAL;
->> -     }
->> -
->> -     return 0;
->> -}
->> -
->> -/**
->>   * sr_enable() - Enables the smartreflex module.
->>   * @sr:              pointer to which the SR module to be configured belongs to.
->>   * @volt:    The voltage at which the Voltage domain associated with
->> diff --git a/include/linux/power/smartreflex.h b/include/linux/power/smartreflex.h
->> index d8b187c3..ffd31af 100644
->> --- a/include/linux/power/smartreflex.h
->> +++ b/include/linux/power/smartreflex.h
->> @@ -303,7 +303,6 @@ int sr_enable(struct omap_sr *sr, unsigned long volt);
->>  void sr_disable(struct omap_sr *sr);
->>  int sr_configure_errgen(struct omap_sr *sr);
->>  int sr_disable_errgen(struct omap_sr *sr);
->> -int sr_configure_minmax(struct omap_sr *sr);
->>
->>  /* API to register the smartreflex class driver with the smartreflex driver */
->>  int sr_register_class(struct omap_sr_class_data *class_data);
->> --
->> 1.7.10.4
->>
->
-> This is potentially used by downstream drivers which are pending cleanup
-> of remaining OMAP infrastructure since the transition from hwmod to
-> devicetree has multiple impact including the conversion of vc/vp back
-> into devicetree supported world (proper regulator framework). while we
-> can throw away code by looking at a specific snapshot, it might just
-> confuse the future transition.
->
+On 22/12/14 16:51, Adam Thomson wrote:
+> This patch adds support for DA9150 Charger & Fuel-Gauge IC GPADC.
+> 
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+One last query from me.
+
+Using the extended channel names in IIO is only really appropriate when
+they don't correspond to simple pins on the side of the chip. For those
+just drop the extname bit.  Some of the channels you have here, definitely
+need them though.
+
+Drop those first 4 or convince me otherwise and add
+Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/iio/adc/Kconfig        |   9 +
+>  drivers/iio/adc/Makefile       |   1 +
+>  drivers/iio/adc/da9150-gpadc.c | 409 +++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 419 insertions(+)
+>  create mode 100644 drivers/iio/adc/da9150-gpadc.c
+> 
+> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> index 0f79e47..6e00b81 100644
+> --- a/drivers/iio/adc/Kconfig
+> +++ b/drivers/iio/adc/Kconfig
+> @@ -135,6 +135,15 @@ config AXP288_ADC
+>  	  device. Depending on platform configuration, this general purpose ADC can
+>  	  be used for sampling sensors such as thermal resistors.
+> 
+> +config DA9150_GPADC
+> +	tristate "Dialog DA9150 GPADC driver support"
+> +	depends on MFD_DA9150
+> +	help
+> +	  Say yes here to build support for Dialog DA9150 GPADC.
+> +
+> +	  This driver can also be built as a module. If chosen, the module name
+> +	  will be da9150-gpadc.
+> +
+>  config EXYNOS_ADC
+>  	tristate "Exynos ADC driver support"
+>  	depends on ARCH_EXYNOS || ARCH_S3C24XX || ARCH_S3C64XX || (OF && COMPILE_TEST)
+> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+> index 701fdb7..d56ee9b 100644
+> --- a/drivers/iio/adc/Makefile
+> +++ b/drivers/iio/adc/Makefile
+> @@ -15,6 +15,7 @@ obj-$(CONFIG_AD7887) += ad7887.o
+>  obj-$(CONFIG_AD799X) += ad799x.o
+>  obj-$(CONFIG_AT91_ADC) += at91_adc.o
+>  obj-$(CONFIG_AXP288_ADC) += axp288_adc.o
+> +obj-$(CONFIG_DA9150_GPADC) += da9150-gpadc.o
+>  obj-$(CONFIG_EXYNOS_ADC) += exynos_adc.o
+>  obj-$(CONFIG_LP8788_ADC) += lp8788_adc.o
+>  obj-$(CONFIG_MAX1027) += max1027.o
+> diff --git a/drivers/iio/adc/da9150-gpadc.c b/drivers/iio/adc/da9150-gpadc.c
+> new file mode 100644
+> index 0000000..3f7bc81
+> --- /dev/null
+> +++ b/drivers/iio/adc/da9150-gpadc.c
+> @@ -0,0 +1,409 @@
+> +/*
+> + * DA9150 GPADC Driver
+> + *
+> + * Copyright (c) 2014 Dialog Semiconductor
+> + *
+> + * Author: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/slab.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/mutex.h>
+> +#include <linux/completion.h>
+> +#include <linux/iio/iio.h>
+> +#include <linux/iio/machine.h>
+> +#include <linux/iio/driver.h>
+> +#include <linux/mfd/da9150/core.h>
+> +#include <linux/mfd/da9150/registers.h>
+> +
+> +/* Channels */
+> +enum da9150_gpadc_hw_channel {
+> +	DA9150_GPADC_HW_CHAN_GPIOA_2V = 0,
+> +	DA9150_GPADC_HW_CHAN_GPIOA_2V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOB_2V,
+> +	DA9150_GPADC_HW_CHAN_GPIOB_2V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOC_2V,
+> +	DA9150_GPADC_HW_CHAN_GPIOC_2V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOD_2V,
+> +	DA9150_GPADC_HW_CHAN_GPIOD_2V_,
+> +	DA9150_GPADC_HW_CHAN_IBUS_SENSE,
+> +	DA9150_GPADC_HW_CHAN_IBUS_SENSE_,
+> +	DA9150_GPADC_HW_CHAN_VBUS_DIV,
+> +	DA9150_GPADC_HW_CHAN_VBUS_DIV_,
+> +	DA9150_GPADC_HW_CHAN_ID,
+> +	DA9150_GPADC_HW_CHAN_ID_,
+> +	DA9150_GPADC_HW_CHAN_VSYS,
+> +	DA9150_GPADC_HW_CHAN_VSYS_,
+> +	DA9150_GPADC_HW_CHAN_GPIOA_6V,
+> +	DA9150_GPADC_HW_CHAN_GPIOA_6V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOB_6V,
+> +	DA9150_GPADC_HW_CHAN_GPIOB_6V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOC_6V,
+> +	DA9150_GPADC_HW_CHAN_GPIOC_6V_,
+> +	DA9150_GPADC_HW_CHAN_GPIOD_6V,
+> +	DA9150_GPADC_HW_CHAN_GPIOD_6V_,
+> +	DA9150_GPADC_HW_CHAN_VBAT,
+> +	DA9150_GPADC_HW_CHAN_VBAT_,
+> +	DA9150_GPADC_HW_CHAN_TBAT,
+> +	DA9150_GPADC_HW_CHAN_TBAT_,
+> +	DA9150_GPADC_HW_CHAN_TJUNC_CORE,
+> +	DA9150_GPADC_HW_CHAN_TJUNC_CORE_,
+> +	DA9150_GPADC_HW_CHAN_TJUNC_OVP,
+> +	DA9150_GPADC_HW_CHAN_TJUNC_OVP_,
+> +};
+> +
+> +enum da9150_gpadc_channel {
+> +	DA9150_GPADC_CHAN_GPIOA = 0,
+> +	DA9150_GPADC_CHAN_GPIOB,
+> +	DA9150_GPADC_CHAN_GPIOC,
+> +	DA9150_GPADC_CHAN_GPIOD,
+> +	DA9150_GPADC_CHAN_IBUS,
+> +	DA9150_GPADC_CHAN_VBUS,
+> +	DA9150_GPADC_CHAN_ID,
+> +	DA9150_GPADC_CHAN_VSYS,
+> +	DA9150_GPADC_CHAN_VBAT,
+> +	DA9150_GPADC_CHAN_TBAT,
+> +	DA9150_GPADC_CHAN_TJUNC_CORE,
+> +	DA9150_GPADC_CHAN_TJUNC_OVP,
+> +};
+> +
+> +/* Private data */
+> +struct da9150_gpadc {
+> +	struct da9150 *da9150;
+> +	struct device *dev;
+> +
+> +	struct mutex lock;
+> +	struct completion complete;
+> +};
+> +
+> +
+> +static irqreturn_t da9150_gpadc_irq(int irq, void *data)
+> +{
+> +
+> +	struct da9150_gpadc *gpadc = data;
+> +
+> +	complete(&gpadc->complete);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int da9150_gpadc_read_adc(struct da9150_gpadc *gpadc, int hw_chan)
+> +{
+> +	u8 result_regs[2];
+> +	int result;
+> +
+> +	mutex_lock(&gpadc->lock);
+> +
+> +	/* Set channel & enable measurement */
+> +	da9150_reg_write(gpadc->da9150, DA9150_GPADC_MAN,
+> +			 (DA9150_GPADC_EN_MASK |
+> +			  hw_chan << DA9150_GPADC_MUX_SHIFT));
+> +
+> +	/* Consume left-over completion from a previous timeout */
+> +	try_wait_for_completion(&gpadc->complete);
+> +
+> +	/* Check for actual completion */
+> +	wait_for_completion_timeout(&gpadc->complete, msecs_to_jiffies(5));
+> +
+> +	/* Read result and status from device */
+> +	da9150_bulk_read(gpadc->da9150, DA9150_GPADC_RES_A, 2, result_regs);
+> +
+> +	mutex_unlock(&gpadc->lock);
+> +
+> +	/* Check to make sure device really has completed reading */
+> +	if (result_regs[1] & DA9150_GPADC_RUN_MASK) {
+> +		dev_err(gpadc->dev, "Timeout on channel %d of GPADC\n",
+> +			hw_chan);
+> +		return -ETIMEDOUT;
+> +	}
+> +
+> +	/* LSBs - 2 bits */
+> +	result = (result_regs[1] & DA9150_GPADC_RES_L_MASK) >>
+> +		 DA9150_GPADC_RES_L_SHIFT;
+> +	/* MSBs - 8 bits */
+> +	result |= result_regs[0] << DA9150_GPADC_RES_L_BITS;
+> +
+> +	return result;
+> +}
+> +
+> +static inline int da9150_gpadc_gpio_6v_voltage_now(int raw_val)
+> +{
+> +	/* Convert to mV */
+> +	return (6 * ((raw_val * 1000) + 500)) / 1024;
+> +}
+> +
+> +static inline int da9150_gpadc_ibus_current_avg(int raw_val)
+> +{
+> +	/* Convert to mA */
+> +	return (4 * ((raw_val * 1000) + 500)) / 2048;
+> +}
+> +
+> +static inline int da9150_gpadc_vbus_21v_voltage_now(int raw_val)
+> +{
+> +	/* Convert to mV */
+> +	return (21 * ((raw_val * 1000) + 500)) / 1024;
+> +}
+> +
+> +static inline int da9150_gpadc_vsys_6v_voltage_now(int raw_val)
+> +{
+> +	/* Convert to mV */
+> +	return (3 * ((raw_val * 1000) + 500)) / 512;
+> +}
+> +
+> +static int da9150_gpadc_read_processed(struct da9150_gpadc *gpadc, int channel,
+> +				       int hw_chan, int *val)
+> +{
+> +	int raw_val;
+> +
+> +	raw_val = da9150_gpadc_read_adc(gpadc, hw_chan);
+> +	if (raw_val < 0)
+> +		return raw_val;
+> +
+> +	switch (channel) {
+> +	case DA9150_GPADC_CHAN_GPIOA:
+> +	case DA9150_GPADC_CHAN_GPIOB:
+> +	case DA9150_GPADC_CHAN_GPIOC:
+> +	case DA9150_GPADC_CHAN_GPIOD:
+> +		*val = da9150_gpadc_gpio_6v_voltage_now(raw_val);
+> +		break;
+> +	case DA9150_GPADC_CHAN_IBUS:
+> +		*val = da9150_gpadc_ibus_current_avg(raw_val);
+> +		break;
+> +	case DA9150_GPADC_CHAN_VBUS:
+> +		*val = da9150_gpadc_vbus_21v_voltage_now(raw_val);
+> +		break;
+> +	case DA9150_GPADC_CHAN_VSYS:
+> +		*val = da9150_gpadc_vsys_6v_voltage_now(raw_val);
+> +		break;
+> +	default:
+> +		/* No processing for other channels so return raw value */
+> +		*val = raw_val;
+> +		break;
+> +	}
+> +
+> +	return IIO_VAL_INT;
+> +}
+> +
+> +static int da9150_gpadc_read_scale(int channel, int *val, int *val2)
+> +{
+> +	switch (channel) {
+> +	case DA9150_GPADC_CHAN_VBAT:
+> +		*val = 2932;
+> +		*val2 = 1000;
+> +		return IIO_VAL_FRACTIONAL;
+> +	case DA9150_GPADC_CHAN_TJUNC_CORE:
+> +	case DA9150_GPADC_CHAN_TJUNC_OVP:
+> +		*val = 1000000;
+> +		*val2 = 4420;
+> +		return IIO_VAL_FRACTIONAL;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int da9150_gpadc_read_offset(int channel, int *val)
+> +{
+> +	switch (channel) {
+> +	case DA9150_GPADC_CHAN_VBAT:
+> +		*val = 1500000 / 2932;
+> +		return IIO_VAL_INT;
+> +	case DA9150_GPADC_CHAN_TJUNC_CORE:
+> +	case DA9150_GPADC_CHAN_TJUNC_OVP:
+> +		*val = -144;
+> +		return IIO_VAL_INT;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int da9150_gpadc_read_raw(struct iio_dev *indio_dev,
+> +				 struct iio_chan_spec const *chan,
+> +				 int *val, int *val2, long mask)
+> +{
+> +	struct da9150_gpadc *gpadc = iio_priv(indio_dev);
+> +
+> +	if ((chan->channel < DA9150_GPADC_CHAN_GPIOA) ||
+> +	    (chan->channel > DA9150_GPADC_CHAN_TJUNC_OVP))
+> +		return -EINVAL;
+> +
+> +	switch (mask) {
+> +	case IIO_CHAN_INFO_RAW:
+> +	case IIO_CHAN_INFO_PROCESSED:
+> +		return da9150_gpadc_read_processed(gpadc, chan->channel,
+> +						   chan->address, val);
+> +	case IIO_CHAN_INFO_SCALE:
+> +		return da9150_gpadc_read_scale(chan->channel, val, val2);
+> +	case IIO_CHAN_INFO_OFFSET:
+> +		return da9150_gpadc_read_offset(chan->channel, val);
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static const struct iio_info da9150_gpadc_info = {
+> +	.read_raw = &da9150_gpadc_read_raw,
+> +	.driver_module = THIS_MODULE,
+> +};
+> +
+> +#define DA9150_GPADC_CHANNEL(_id, _hw_id, _type, chan_info,	\
+> +			     _ext_name) {			\
+> +	.type = _type,						\
+> +	.indexed = 1,						\
+> +	.channel = DA9150_GPADC_CHAN_##_id,			\
+> +	.address = DA9150_GPADC_HW_CHAN_##_hw_id,		\
+> +	.info_mask_separate = chan_info,			\
+> +	.extend_name = _ext_name,				\
+> +	.datasheet_name = #_id,					\
+> +}
+> +
+> +#define DA9150_GPADC_CHANNEL_RAW(_id, _hw_id, _type, _ext_name)	\
+> +	DA9150_GPADC_CHANNEL(_id, _hw_id, _type,		\
+> +			     BIT(IIO_CHAN_INFO_RAW), _ext_name)
+> +
+> +#define DA9150_GPADC_CHANNEL_SCALED(_id, _hw_id, _type, _ext_name)	\
+> +	DA9150_GPADC_CHANNEL(_id, _hw_id, _type,			\
+> +			     BIT(IIO_CHAN_INFO_RAW) |			\
+> +			     BIT(IIO_CHAN_INFO_SCALE) |			\
+> +			     BIT(IIO_CHAN_INFO_OFFSET),			\
+> +			     _ext_name)
+> +
+> +#define DA9150_GPADC_CHANNEL_PROCESSED(_id, _hw_id, _type, _ext_name)	\
+> +	DA9150_GPADC_CHANNEL(_id, _hw_id, _type,			\
+> +			     BIT(IIO_CHAN_INFO_PROCESSED), _ext_name)
+> +
+> +/* Supported channels */
+> +static const struct iio_chan_spec da9150_gpadc_channels[] = {
+> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOA, GPIOA_6V, IIO_VOLTAGE, "GPIOA"),
+> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOB, GPIOB_6V, IIO_VOLTAGE, "GPIOB"),
+> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOC, GPIOC_6V, IIO_VOLTAGE, "GPIOC"),
+> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOD, GPIOD_6V, IIO_VOLTAGE, "GPIOD"),
+I'm not sure some of these really deserve extended names.  Those are usually
+reserved for naming strange internal adc channels etc.  These first 4 are
+presumably just for input pins?  Those should just be channels 0..3
+On another note, unless you want really weird sysfs attribute names, the
+extended names want to be lowercase.
+
+> +	DA9150_GPADC_CHANNEL_PROCESSED(IBUS, IBUS_SENSE, IIO_CURRENT, "IBUS"),
+> +	DA9150_GPADC_CHANNEL_PROCESSED(VBUS, VBUS_DIV_, IIO_VOLTAGE, "VBUS"),
+> +	DA9150_GPADC_CHANNEL_RAW(ID, ID, IIO_VOLTAGE, "ID"),
+You hae an identifier voltage? That's certainly unusual but if so - fair enough
+and it defintely needs the extname!
+> +	DA9150_GPADC_CHANNEL_PROCESSED(VSYS, VSYS, IIO_VOLTAGE, "VSYS"),
+> +	DA9150_GPADC_CHANNEL_SCALED(VBAT, VBAT, IIO_VOLTAGE, "VBAT"),
+> +	DA9150_GPADC_CHANNEL_RAW(TBAT, TBAT, IIO_VOLTAGE, "TBAT"),
+> +	DA9150_GPADC_CHANNEL_SCALED(TJUNC_CORE, TJUNC_CORE, IIO_TEMP,
+> +				    "TJUNC_CORE"),
+tjunc_core is a good use of extname ;)
+> +	DA9150_GPADC_CHANNEL_SCALED(TJUNC_OVP, TJUNC_OVP, IIO_TEMP,
+> +				    "TJUNC_OVP"),
+> +};
+> +
+> +/* Default maps used by da9150-charger */
+> +static struct iio_map da9150_gpadc_default_maps[] = {
+> +	{
+> +		.consumer_dev_name = "da9150-charger",
+> +		.consumer_channel = "CHAN_IBUS",
+> +		.adc_channel_label = "IBUS",
+> +	},
+> +	{
+> +		.consumer_dev_name = "da9150-charger",
+> +		.consumer_channel = "CHAN_VBUS",
+> +		.adc_channel_label = "VBUS",
+> +	},
+> +	{
+> +		.consumer_dev_name = "da9150-charger",
+> +		.consumer_channel = "CHAN_TJUNC",
+> +		.adc_channel_label = "TJUNC_CORE",
+> +	},
+> +	{
+> +		.consumer_dev_name = "da9150-charger",
+> +		.consumer_channel = "CHAN_VBAT",
+> +		.adc_channel_label = "VBAT",
+> +	},
+> +	{},
+> +};
+> +
+> +static int da9150_gpadc_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct da9150 *da9150 = dev_get_drvdata(dev->parent);
+> +	struct da9150_gpadc *gpadc;
+> +	struct iio_dev *indio_dev;
+> +	int irq, ret;
+> +
+> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*gpadc));
+> +	if (!indio_dev) {
+> +		dev_err(&pdev->dev, "Failed to allocate IIO device\n");
+> +		return -ENOMEM;
+> +	}
+> +	gpadc = iio_priv(indio_dev);
+> +
+> +	platform_set_drvdata(pdev, indio_dev);
+> +	gpadc->da9150 = da9150;
+> +	gpadc->dev = dev;
+> +	mutex_init(&gpadc->lock);
+> +	init_completion(&gpadc->complete);
+> +
+> +	irq = platform_get_irq_byname(pdev, "GPADC");
+> +	if (irq < 0) {
+> +		dev_err(dev, "Failed to get IRQ: %d\n", irq);
+> +		return irq;
+> +	}
+> +
+> +	ret = devm_request_threaded_irq(dev, irq, NULL, da9150_gpadc_irq,
+> +					IRQF_ONESHOT, "GPADC", gpadc);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to request IRQ %d: %d\n", irq, ret);
+> +		return ret;
+> +	}
+> +
+> +	ret = iio_map_array_register(indio_dev, da9150_gpadc_default_maps);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to register IIO maps: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	indio_dev->name = dev_name(dev);
+> +	indio_dev->dev.parent = dev;
+> +	indio_dev->dev.of_node = pdev->dev.of_node;
+> +	indio_dev->info = &da9150_gpadc_info;
+> +	indio_dev->modes = INDIO_DIRECT_MODE;
+> +	indio_dev->channels = da9150_gpadc_channels;
+> +	indio_dev->num_channels = ARRAY_SIZE(da9150_gpadc_channels);
+> +
+> +	ret = iio_device_register(indio_dev);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to register IIO device: %d\n", ret);
+> +		goto iio_map_unreg;
+> +	}
+> +
+> +	return 0;
+> +
+> +iio_map_unreg:
+> +	iio_map_array_unregister(indio_dev);
+> +
+> +	return ret;
+> +}
+> +
+> +static int da9150_gpadc_remove(struct platform_device *pdev)
+> +{
+> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+> +
+> +	iio_device_unregister(indio_dev);
+> +	iio_map_array_unregister(indio_dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver da9150_gpadc_driver = {
+> +	.driver = {
+> +		.name = "da9150-gpadc",
+> +	},
+> +	.probe = da9150_gpadc_probe,
+> +	.remove = da9150_gpadc_remove,
+> +};
+> +
+> +module_platform_driver(da9150_gpadc_driver);
+> +
+> +MODULE_DESCRIPTION("GPADC Driver for DA9150");
+> +MODULE_AUTHOR("Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>");
+> +MODULE_LICENSE("GPL");
 > --
-> Regards,
-> Nishanth Menon
-
-
-Hi
-
-Quite ok, I'm just trying to draw attention to the I discover, then
-it's up to you if it is something that should be addressed.
-
-
-Kind regards
-Rickard Strandqvist
+> 1.9.3
+> 
