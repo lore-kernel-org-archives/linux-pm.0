@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC PATCHv2 15/19] x86/olpc/xo15/sci: Use newly added
- power_supply_put API
-Date: Mon, 05 Jan 2015 16:47:58 +0100
-Message-ID: <1420472882-10463-16-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC PATCHv2 07/19] mfd: ab8500: Use power_supply_*() API for
+ accessing function attrs
+Date: Mon, 05 Jan 2015 16:47:50 +0100
+Message-ID: <1420472882-10463-8-git-send-email-k.kozlowski@samsung.com>
 References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,35 +22,43 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebast
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace direct usage of put_device() with new API: power_supply_put().
+Replace direct calls to power supply function attributes with wrappers.
+Wrappers provide safe access in case of unregistering the power
+supply (e.g. by removing the driver). Replace:
+ - get_property -> power_supply_get_property
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
- arch/x86/platform/olpc/olpc-xo15-sci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/platform/olpc/olpc-xo15-sci.c b/arch/x86/platform/olpc/olpc-xo15-sci.c
-index 08e350e757dc..55130846ac87 100644
---- a/arch/x86/platform/olpc/olpc-xo15-sci.c
-+++ b/arch/x86/platform/olpc/olpc-xo15-sci.c
-@@ -83,7 +83,7 @@ static void battery_status_changed(void)
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index cfff0b643f1b..d4a4b24be7c6 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+ 		if (!psy)
+ 			continue;
  
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
+ 
+ 		if (!ret && val.intval) {
+ 			charger_present = true;
+@@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+ 	/* Check if battery is known */
+ 	psy = power_supply_get_by_name("ab8500_btemp");
  	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
-@@ -93,7 +93,7 @@ static void ac_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+-					&val);
++		ret = power_supply_get_property(psy,
++				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+ 		if (!ret && val.intval != POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+ 			printk(KERN_INFO
+ 			       "Charger \"%s\" is connected with known battery."
 -- 
 1.9.1
