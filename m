@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC PATCHv2 06/19] power: ab8500: Use power_supply_*() API for
- accessing function attrs
-Date: Mon, 05 Jan 2015 16:47:49 +0100
-Message-ID: <1420472882-10463-7-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC PATCHv2 10/19] power: charger-manager: Use power_supply_*() API
+ for accessing function attrs
+Date: Mon, 05 Jan 2015 16:47:53 +0100
+Message-ID: <1420472882-10463-11-git-send-email-k.kozlowski@samsung.com>
 References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -30,74 +30,153 @@ supply (e.g. by removing the driver). Replace:
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/power/ab8500_btemp.c    | 2 +-
- drivers/power/ab8500_charger.c  | 2 +-
- drivers/power/ab8500_fg.c       | 2 +-
- drivers/power/abx500_chargalg.c | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/power/charger-manager.c | 37 ++++++++++++++++++++-----------------
+ 1 file changed, 20 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/power/ab8500_btemp.c b/drivers/power/ab8500_btemp.c
-index 4ebf7b0819f7..78207ca5871f 100644
---- a/drivers/power/ab8500_btemp.c
-+++ b/drivers/power/ab8500_btemp.c
-@@ -938,7 +938,7 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
- 		enum power_supply_property prop;
- 		prop = ext->properties[j];
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index 034c77bf0fc0..1d5065ebbd83 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -112,8 +112,8 @@ static bool is_batt_present(struct charger_manager *cm)
+ 		if (!psy)
+ 			break;
  
--		if (ext->get_property(ext, prop, &ret))
-+		if (power_supply_get_property(ext, prop, &ret))
+-		ret = psy->get_property(psy,
+-				POWER_SUPPLY_PROP_PRESENT, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT,
++				&val);
+ 		if (ret == 0 && val.intval)
+ 			present = true;
+ 		break;
+@@ -127,8 +127,8 @@ static bool is_batt_present(struct charger_manager *cm)
+ 				continue;
+ 			}
+ 
+-			ret = psy->get_property(psy, POWER_SUPPLY_PROP_PRESENT,
+-					&val);
++			ret = power_supply_get_property(psy,
++				POWER_SUPPLY_PROP_PRESENT, &val);
+ 			if (ret == 0 && val.intval) {
+ 				present = true;
+ 				break;
+@@ -164,7 +164,8 @@ static bool is_ext_pwr_online(struct charger_manager *cm)
  			continue;
+ 		}
  
- 		switch (prop) {
-diff --git a/drivers/power/ab8500_charger.c b/drivers/power/ab8500_charger.c
-index 8c8d170ff0f8..b6566d7d41d8 100644
---- a/drivers/power/ab8500_charger.c
-+++ b/drivers/power/ab8500_charger.c
-@@ -1957,7 +1957,7 @@ static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
- 		enum power_supply_property prop;
- 		prop = ext->properties[j];
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
+ 		if (ret == 0 && val.intval) {
+ 			online = true;
+ 			break;
+@@ -192,7 +193,7 @@ static int get_batt_uV(struct charger_manager *cm, int *uV)
+ 	if (!fuel_gauge)
+ 		return -ENODEV;
  
--		if (ext->get_property(ext, prop, &ret))
-+		if (power_supply_get_property(ext, prop, &ret))
- 			continue;
+-	ret = fuel_gauge->get_property(fuel_gauge,
++	ret = power_supply_get_property(fuel_gauge,
+ 				POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
+ 	if (ret)
+ 		return ret;
+@@ -232,7 +233,8 @@ static bool is_charging(struct charger_manager *cm)
+ 		}
  
- 		switch (prop) {
-diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
-index 69b80bcaa9e7..5f4f900bfcb9 100644
---- a/drivers/power/ab8500_fg.c
-+++ b/drivers/power/ab8500_fg.c
-@@ -2200,7 +2200,7 @@ static int ab8500_fg_get_ext_psy_data(struct device *dev, void *data)
- 		enum power_supply_property prop;
- 		prop = ext->properties[j];
+ 		/* 2. The charger should be online (ext-power) */
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
+ 		if (ret) {
+ 			dev_warn(cm->dev, "Cannot read ONLINE value from %s\n",
+ 				 cm->desc->psy_charger_stat[i]);
+@@ -245,7 +247,8 @@ static bool is_charging(struct charger_manager *cm)
+ 		 * 3. The charger should not be FULL, DISCHARGING,
+ 		 * or NOT_CHARGING.
+ 		 */
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_STATUS,
++				&val);
+ 		if (ret) {
+ 			dev_warn(cm->dev, "Cannot read STATUS value from %s\n",
+ 				 cm->desc->psy_charger_stat[i]);
+@@ -288,7 +291,7 @@ static bool is_full_charged(struct charger_manager *cm)
+ 		val.intval = 0;
  
--		if (ext->get_property(ext, prop, &ret))
-+		if (power_supply_get_property(ext, prop, &ret))
- 			continue;
+ 		/* Not full if capacity of fuel gauge isn't full */
+-		ret = fuel_gauge->get_property(fuel_gauge,
++		ret = power_supply_get_property(fuel_gauge,
+ 				POWER_SUPPLY_PROP_CHARGE_FULL, &val);
+ 		if (!ret && val.intval > desc->fullbatt_full_capacity)
+ 			return true;
+@@ -305,7 +308,7 @@ static bool is_full_charged(struct charger_manager *cm)
+ 	if (desc->fullbatt_soc > 0) {
+ 		val.intval = 0;
  
- 		switch (prop) {
-diff --git a/drivers/power/abx500_chargalg.c b/drivers/power/abx500_chargalg.c
-index ab54b8dea670..2049813d740d 100644
---- a/drivers/power/abx500_chargalg.c
-+++ b/drivers/power/abx500_chargalg.c
-@@ -1001,7 +1001,7 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
- 	 * property because of handling that sysfs entry on its own, this is
- 	 * the place to get the battery capacity.
- 	 */
--	if (!ext->get_property(ext, POWER_SUPPLY_PROP_CAPACITY, &ret)) {
-+	if (!power_supply_get_property(ext, POWER_SUPPLY_PROP_CAPACITY, &ret)) {
- 		di->batt_data.percent = ret.intval;
- 		capacity_updated = true;
+-		ret = fuel_gauge->get_property(fuel_gauge,
++		ret = power_supply_get_property(fuel_gauge,
+ 				POWER_SUPPLY_PROP_CAPACITY, &val);
+ 		if (!ret && val.intval >= desc->fullbatt_soc)
+ 			return true;
+@@ -589,7 +592,7 @@ static int cm_get_battery_temperature_by_psy(struct charger_manager *cm,
+ 	if (!fuel_gauge)
+ 		return -ENODEV;
+ 
+-	return fuel_gauge->get_property(fuel_gauge,
++	return power_supply_get_property(fuel_gauge,
+ 				POWER_SUPPLY_PROP_TEMP,
+ 				(union power_supply_propval *)temp);
+ }
+@@ -910,7 +913,7 @@ static int charger_get_property(struct power_supply *psy,
+ 			ret = -ENODEV;
+ 			break;
+ 		}
+-		ret = fuel_gauge->get_property(fuel_gauge,
++		ret = power_supply_get_property(fuel_gauge,
+ 				POWER_SUPPLY_PROP_CURRENT_NOW, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP:
+@@ -933,7 +936,7 @@ static int charger_get_property(struct power_supply *psy,
+ 		mdelay(2000);
+ 		pr_err("End wait...\n");
+ 
+-		ret = fuel_gauge->get_property(fuel_gauge,
++		ret = power_supply_get_property(fuel_gauge,
+ 					POWER_SUPPLY_PROP_CAPACITY, val);
+ 		if (ret)
+ 			break;
+@@ -989,7 +992,7 @@ static int charger_get_property(struct power_supply *psy,
+ 				break;
+ 			}
+ 
+-			ret = fuel_gauge->get_property(fuel_gauge,
++			ret = power_supply_get_property(fuel_gauge,
+ 						POWER_SUPPLY_PROP_CHARGE_NOW,
+ 						val);
+ 			if (ret) {
+@@ -1559,7 +1562,7 @@ static int cm_init_thermal_data(struct charger_manager *cm,
+ 	int ret;
+ 
+ 	/* Verify whether fuel gauge provides battery temperature */
+-	ret = fuel_gauge->get_property(fuel_gauge,
++	ret = power_supply_get_property(fuel_gauge,
+ 					POWER_SUPPLY_PROP_TEMP, &val);
+ 
+ 	if (!ret) {
+@@ -1851,13 +1854,13 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	cm->charger_psy.num_properties = psy_default.num_properties;
+ 
+ 	/* Find which optional psy-properties are available */
+-	if (!fuel_gauge->get_property(fuel_gauge,
++	if (!power_supply_get_property(fuel_gauge,
+ 					  POWER_SUPPLY_PROP_CHARGE_NOW, &val)) {
+ 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+ 				POWER_SUPPLY_PROP_CHARGE_NOW;
+ 		cm->charger_psy.num_properties++;
  	}
-@@ -1019,7 +1019,7 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
- 			ext->type == POWER_SUPPLY_TYPE_USB)
- 			di->usb_chg = psy_to_ux500_charger(ext);
- 
--		if (ext->get_property(ext, prop, &ret))
-+		if (power_supply_get_property(ext, prop, &ret))
- 			continue;
- 		switch (prop) {
- 		case POWER_SUPPLY_PROP_PRESENT:
+-	if (!fuel_gauge->get_property(fuel_gauge,
++	if (!power_supply_get_property(fuel_gauge,
+ 					  POWER_SUPPLY_PROP_CURRENT_NOW,
+ 					  &val)) {
+ 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
 -- 
 1.9.1
