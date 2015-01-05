@@ -1,35 +1,141 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 08/14] cpufreq: remove CPUFREQ_UPDATE_POLICY_CPU notifications
-Date: Mon, 5 Jan 2015 09:57:52 +0530
-Message-ID: <CAKohpon5r2a+VZPPV1K_oODbSzje+RM-jTHDOH5251yKjE0zQg@mail.gmail.com>
-References: <cover.1420177186.git.viresh.kumar@linaro.org>
-	<dd0f0186a7a3cc759d48ea1c7d3c6494e69db6b9.1420177186.git.viresh.kumar@linaro.org>
-	<2433937.yfFORihJWM@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 1/3] video / backlight: add two APIs for drivers to use
+Date: Mon, 05 Jan 2015 13:46:39 +0800
+Message-ID: <54AA253F.2030207@intel.com>
+References: <1419997818-19528-1-git-send-email-aaron.lu@intel.com> <1419997818-19528-2-git-send-email-aaron.lu@intel.com> <000b01d026f1$408e3620$c1aaa260$%han@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:57866 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbbAEE1x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jan 2015 23:27:53 -0500
-Received: by mail-ob0-f176.google.com with SMTP id vb8so59505269obc.7
-        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 20:27:52 -0800 (PST)
-In-Reply-To: <2433937.yfFORihJWM@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <000b01d026f1$408e3620$c1aaa260$%han@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Lee Jones' <lee.jones@linaro.org>, 'Zhang Rui' <rui.zhang@intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-On 4 January 2015 at 03:58, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, January 02, 2015 11:16:45 AM Viresh Kumar wrote:
->> CPUFREQ_UPDATE_POLICY_CPU notifications were used only from cpufreq-stats which
->> doesn't use it anymore. Remove them.
+On 01/03/2015 09:04 AM, Jingoo Han wrote:
+> On Wednesday, December 31, 2014 12:50 PM, Aaron Lu wrote:
 >>
->> This also fixes the value of other notification macros, hopefully all users are
->> using macro's instead of direct values and nothing will break :)
->
-> The paragraph above is completely unclear to me.  Do you mean that it changes
-> the definitions of CPUFREQ_CREATE_POLICY and CPUFREQ_REMOVE_POLICY too which
-> may affect code that uses numbers instead of these symbols?
+>> It is useful to get the backlight device's pointer and use it to set
+>> backlight in some cases(the following patch will make use of it) so add
+>> the two APIs and export them.
+>>
+>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> 
+> Acked-by: Jingoo Han <jg1.han@samsung.com>
 
-Yeah. I will try to rewrite it a bit..
+Thanks for the review!
+
+Regards,
+Aaron
+
+> 
+> Best regards,
+> Jingoo Han
+> 
+>> ---
+>>  drivers/video/backlight/backlight.c | 44 ++++++++++++++++++++++++-------------
+>>  include/linux/backlight.h           |  2 ++
+>>  2 files changed, 31 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+>> index bddc8b17a4d8..bea749329236 100644
+>> --- a/drivers/video/backlight/backlight.c
+>> +++ b/drivers/video/backlight/backlight.c
+>> @@ -164,28 +164,19 @@ static ssize_t brightness_show(struct device *dev,
+>>  	return sprintf(buf, "%d\n", bd->props.brightness);
+>>  }
+>>
+>> -static ssize_t brightness_store(struct device *dev,
+>> -		struct device_attribute *attr, const char *buf, size_t count)
+>> +int backlight_device_set_brightness(struct backlight_device *bd, int brightness)
+>>  {
+>> -	int rc;
+>> -	struct backlight_device *bd = to_backlight_device(dev);
+>> -	unsigned long brightness;
+>> -
+>> -	rc = kstrtoul(buf, 0, &brightness);
+>> -	if (rc)
+>> -		return rc;
+>> -
+>> -	rc = -ENXIO;
+>> +	int rc = -ENXIO;
+>>
+>>  	mutex_lock(&bd->ops_lock);
+>>  	if (bd->ops) {
+>>  		if (brightness > bd->props.max_brightness)
+>>  			rc = -EINVAL;
+>>  		else {
+>> -			pr_debug("set brightness to %lu\n", brightness);
+>> +			pr_debug("set brightness to %u\n", brightness);
+>>  			bd->props.brightness = brightness;
+>>  			backlight_update_status(bd);
+>> -			rc = count;
+>> +			rc = 0;
+>>  		}
+>>  	}
+>>  	mutex_unlock(&bd->ops_lock);
+>> @@ -194,6 +185,23 @@ static ssize_t brightness_store(struct device *dev,
+>>
+>>  	return rc;
+>>  }
+>> +EXPORT_SYMBOL(backlight_device_set_brightness);
+>> +
+>> +static ssize_t brightness_store(struct device *dev,
+>> +		struct device_attribute *attr, const char *buf, size_t count)
+>> +{
+>> +	int rc;
+>> +	struct backlight_device *bd = to_backlight_device(dev);
+>> +	unsigned long brightness;
+>> +
+>> +	rc = kstrtoul(buf, 0, &brightness);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	rc = backlight_device_set_brightness(bd, brightness);
+>> +
+>> +	return rc ? rc : count;
+>> +}
+>>  static DEVICE_ATTR_RW(brightness);
+>>
+>>  static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+>> @@ -380,7 +388,7 @@ struct backlight_device *backlight_device_register(const char *name,
+>>  }
+>>  EXPORT_SYMBOL(backlight_device_register);
+>>
+>> -bool backlight_device_registered(enum backlight_type type)
+>> +struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+>>  {
+>>  	bool found = false;
+>>  	struct backlight_device *bd;
+>> @@ -394,7 +402,13 @@ bool backlight_device_registered(enum backlight_type type)
+>>  	}
+>>  	mutex_unlock(&backlight_dev_list_mutex);
+>>
+>> -	return found;
+>> +	return found ? bd : NULL;
+>> +}
+>> +EXPORT_SYMBOL(backlight_device_get_by_type);
+>> +
+>> +bool backlight_device_registered(enum backlight_type type)
+>> +{
+>> +	return backlight_device_get_by_type(type) ? true : false;
+>>  }
+>>  EXPORT_SYMBOL(backlight_device_registered);
+>>
+>> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+>> index adb14a8616df..c59a020df3f8 100644
+>> --- a/include/linux/backlight.h
+>> +++ b/include/linux/backlight.h
+>> @@ -140,6 +140,8 @@ extern void backlight_force_update(struct backlight_device *bd,
+>>  extern bool backlight_device_registered(enum backlight_type type);
+>>  extern int backlight_register_notifier(struct notifier_block *nb);
+>>  extern int backlight_unregister_notifier(struct notifier_block *nb);
+>> +extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
+>> +extern int backlight_device_set_brightness(struct backlight_device *bd, int brightness);
+>>
+>>  #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
+>>
+>> --
+>> 2.1.0
+> 
