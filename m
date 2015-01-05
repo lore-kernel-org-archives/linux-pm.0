@@ -1,74 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 13/14] cpufreq: stats: Fix locking
-Date: Tue, 06 Jan 2015 00:35:29 +0100
-Message-ID: <21209857.m88aJg9vUk@vostro.rjw.lan>
-References: <cover.1420177186.git.viresh.kumar@linaro.org> <2107105.bVfAua7dNn@vostro.rjw.lan> <CAKohpon2gVxVQp7Yg4+DNKg=WAp35rAi=Bynu8igjNw9NutVDQ@mail.gmail.com>
+Subject: Re: [PATCH V2 05/14] cpufreq: stats: get rid of per-cpu cpufreq_stats_table
+Date: Tue, 06 Jan 2015 00:38:33 +0100
+Message-ID: <4032433.AHjvo9fo3u@vostro.rjw.lan>
+References: <cover.1420177186.git.viresh.kumar@linaro.org> <2035066.1nOVW1Pe1d@vostro.rjw.lan> <CAKohponaosUYjBXp9YVdKkmZLpKKTeOfPnqJD1vMqazR_TTAfQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65488 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61786 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753024AbbAEXNN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 18:13:13 -0500
-In-Reply-To: <CAKohpon2gVxVQp7Yg4+DNKg=WAp35rAi=Bynu8igjNw9NutVDQ@mail.gmail.com>
+	with SMTP id S1753885AbbAEXQR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 18:16:17 -0500
+In-Reply-To: <CAKohponaosUYjBXp9YVdKkmZLpKKTeOfPnqJD1vMqazR_TTAfQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-On Monday, January 05, 2015 01:36:39 PM Viresh Kumar wrote:
-> On 4 January 2015 at 04:13, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > This is pants, sorry.
+On Monday, January 05, 2015 09:53:45 AM Viresh Kumar wrote:
+> On 4 January 2015 at 03:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > 
-> I am sorry :(
+> All comments accepted before this ..
 > 
-> > Whenever you change locking, you need to know exactly (a) what is wrong with
-> > the way it is currently done and (b) how you are going to improve it.  All of
-> > that needs to be described here.
+> >> @@ -293,15 +281,19 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+> >>               unsigned long val, void *data)
+> >>  {
+> >>       struct cpufreq_freqs *freq = data;
+> >> +     struct cpufreq_policy *policy = cpufreq_cpu_get(freq->cpu);
+> >>       struct cpufreq_stats *stat;
+> >>       int old_index, new_index;
+> >>
+> >>       if (val != CPUFREQ_POSTCHANGE)
+> >>               return 0;
+> >>
+> >> -     stat = per_cpu(cpufreq_stats_table, freq->cpu);
+> >> -     if (!stat)
+> >> -             return 0;
+> >> +     if (!policy) {
+> >> +             pr_err("%s: No policy found\n", __func__);
+> >
+> > Do we need the extra message here?  If so, can it be pr_debug()?
 > 
-> Thanks for kicking me here..
+> Because we are in the POSTCHANGE stage right now, the policy
+> isn't allowed to be NULL. And so this is an error and I used pr_err.
 > 
-> > For example, you seem to be thinking that locking is missing from
-> > __cpufreq_stats_free_table(), so you are adding it in there.  Thus you need to
-> > describe (a) why it is missing (eg. what races are possible because of that)
-> > and (b) why adding it the way you do is going to improve the situation.
+> >> +             return -ENODEV;
+> >> +     }
+> >
+> > This changes the behavior in a subtle way.  Instead of returning 0 when stats
+> > are not present, we'll now return an error code for a missing policy.  Are you
+> > sure that this isn't going to break anything?
 > 
-> Yeah, that's what I thought. That race between create/free of stats will
-> be eliminated by this..
+> Something I didn't looked at earlier. This *can* break things a bit.
+> If I understand it clearly now, the notifiers aren't allowed to return these
+> errors. They should return:
 > 
-> But now as you forced me to write it properly, I am failing to understand why
-> do we need to have any locking in place for stats ?
+> NOTIFY_DONE or NOTIFY_OK or NOTIFY_BAD
 > 
-> These are the reasons why I think we can remove all locking stuff
-> from stats:
+> And this is what the notifier chain does to the return value:
 > 
-> 1.) create/free calls to stats can't run in parallel. They are all sequential.
-> It happens with:
-> - cpu hotplug: which is sequential with proper locking in place.
-> - driver unregister: again sequential
-> - stats unregister: again sequential
+>     if ((ret & NOTIFY_STOP_MASK) == NOTIFY_STOP_MASK)
+>             break;
 > 
-> So, actually we will never try to allocate stats for a single policy in parallel
-> threads. Same goes for freeing as well..
+> So, if the return error has its 15th bit set, then we will break the loop.
+> (NOTIFY_STOP_MASK 0x8000).
 > 
-> 2.) Any race possible with sysfs reads ?
+> It wouldn't happen in this case, but probably we should just return
+> NOTIFY_DONE (0)..
 > 
-> These routines are called from show() routine from cpufreq.c and it has
-> policy locks on the way. So, policy can't go away and so will stats.
-> 
-> Also, if stats unregister we will unregister the notifiers first. And that will
-> again make things fall in line.
+> Right ?
 
-That sounds about right.
+Looks correct to me.
 
-> What else are we protecting? Maybe the calls to cpufreq_stats_update()
-> can happen in parallel and so we may need locking only within that routine.
+> >> +
+> >> +     stat = policy->stats_data;
+> >
+> > Is stat guaraneed to be a valid pointer at this point?
 > 
-> I might be missing the obvious logic, but then what exactly ?
+> We better check it as well for some corner cases where we failed
+> to create a table.
 
-Hard to say from the top of my head and I'm not sure if I have the time to
-have a deeper look into that during the next few days.
+Exactly. :-)
 
 
 -- 
