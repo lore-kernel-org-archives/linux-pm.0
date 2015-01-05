@@ -1,71 +1,37 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add linux-omap to list of reviewers for TI
- Thermal
-Date: Mon, 5 Jan 2015 17:44:38 -0400
-Message-ID: <20150105214436.GF31536@developer>
-References: <1420312410-4469-1-git-send-email-nm@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vA66WO2vHvL/CRSR"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1420312410-4469-1-git-send-email-nm@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 1/1] MAINTAINERS: update ti-soc-thermal status
+Date: Mon,  5 Jan 2015 17:50:00 -0400
+Message-ID: <1420494600-3709-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f170.google.com ([209.85.220.170]:39900 "EHLO
+	mail-vc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbbAEVuY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 16:50:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org
+Cc: Eduardo Valentin <edubezval@gmail.com>
 
+Changing to Maintained.
 
---vA66WO2vHvL/CRSR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Sat, Jan 03, 2015 at 01:13:30PM -0600, Nishanth Menon wrote:
-> Add linux-omap mailing list to the TI THERMAL list for wider review.
->=20
-> Reported-by: Pavel Machek <pavel@ucw.cz>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
->  MAINTAINERS |    1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ddb9ac8..dc9efd5 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9533,6 +9533,7 @@ F:	drivers/platform/x86/thinkpad_acpi.c
->  TI BANDGAP AND THERMAL DRIVER
->  M:	Eduardo Valentin <edubezval@gmail.com>
->  L:	linux-pm@vger.kernel.org
-> +L:	linux-omap@vger.kernel.org
+diff --git a/MAINTAINERS b/MAINTAINERS
+index dc9efd5..bc91817 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9534,7 +9534,7 @@ TI BANDGAP AND THERMAL DRIVER
+ M:	Eduardo Valentin <edubezval@gmail.com>
+ L:	linux-pm@vger.kernel.org
+ L:	linux-omap@vger.kernel.org
+-S:	Supported
++S:	Maintained
+ F:	drivers/thermal/ti-soc-thermal/
+ 
+ TI CLOCK DRIVER
+-- 
+2.1.3
 
-OK. I will queue this one.
-
->  S:	Supported
-
-I will also change this to random fixes too..
-
->  F:	drivers/thermal/ti-soc-thermal/
-> =20
-> --=20
-> 1.7.9.5
->=20
-
---vA66WO2vHvL/CRSR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUqwW8AAoJEMLUO4d9pOJWHP8H+wXIW37g71icS28bcsQrguaC
-jeJhyJd1knZ2eiJh7GrMBKtswiI4qnr1j8/y8OjUdliBnr+B38gs6T8oqazuJvql
-DCCGUJ6IKNDqoAqrOS+/Eeh74QS1faOk3LUUPi957UCMuU6ictYUpBuYh8WDK99c
-ev3lHt528RmwGQ0n2pSfEkD5OQbP1fSztXo4x0/XI1PkRaIUg4hk0VG8mEEPqGo5
-cDVdxe82/4yADRBiowMmb6VawdNOqGAg2kwUecU8PJIw5D3TbNgtOOPHi8uGzK9p
-5qVrrfIS51QzVCzd3x0aM8LeQJk1iQnSK35nua+EZyGiAwZcjmCsj7aG/9HLQAc=
-=s2wk
------END PGP SIGNATURE-----
-
---vA66WO2vHvL/CRSR--
