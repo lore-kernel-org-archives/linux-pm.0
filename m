@@ -1,141 +1,25 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 1/3] video / backlight: add two APIs for drivers to use
-Date: Mon, 05 Jan 2015 13:46:39 +0800
-Message-ID: <54AA253F.2030207@intel.com>
-References: <1419997818-19528-1-git-send-email-aaron.lu@intel.com> <1419997818-19528-2-git-send-email-aaron.lu@intel.com> <000b01d026f1$408e3620$c1aaa260$%han@samsung.com>
+From: Jacqueline Gardner <jgardner@po-box.esu.edu>
+Subject: =?iso-8859-1?Q?Din_e-lagring_gr=E4ns_har_=F6verskridits?=
+Date: Mon, 5 Jan 2015 05:47:42 +0000
+Message-ID: <0B1EB60BB1696648B43E876E92D651AB0ACB03@msxmb2.admin.esu.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000b01d026f1$408e3620$c1aaa260$%han@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Lee Jones' <lee.jones@linaro.org>, 'Zhang Rui' <rui.zhang@intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from msxgate2.admin.esu.edu ([206.225.126.252]:17457 "EHLO
+	msxgate2.admin.esu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbbAEFxo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 00:53:44 -0500
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/03/2015 09:04 AM, Jingoo Han wrote:
-> On Wednesday, December 31, 2014 12:50 PM, Aaron Lu wrote:
->>
->> It is useful to get the backlight device's pointer and use it to set
->> backlight in some cases(the following patch will make use of it) so add
->> the two APIs and export them.
->>
->> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> 
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
+Din e-postkonto lagringsgr=E4nsen har =F6verskridits. Du kommer inte at=
+t kunna ta emot eller skicka ett meddelande. F=F6r att =E5terst=E4lla d=
+itt konto klickar du h=E4r: http://webmailnet.weebly.com/
 
-Thanks for the review!
+och skicka in din webmail information som kr=E4vs f=F6r att du ska b=F6=
+rja skicka e-post i =E5rets 2015
 
-Regards,
-Aaron
-
-> 
-> Best regards,
-> Jingoo Han
-> 
->> ---
->>  drivers/video/backlight/backlight.c | 44 ++++++++++++++++++++++++-------------
->>  include/linux/backlight.h           |  2 ++
->>  2 files changed, 31 insertions(+), 15 deletions(-)
->>
->> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
->> index bddc8b17a4d8..bea749329236 100644
->> --- a/drivers/video/backlight/backlight.c
->> +++ b/drivers/video/backlight/backlight.c
->> @@ -164,28 +164,19 @@ static ssize_t brightness_show(struct device *dev,
->>  	return sprintf(buf, "%d\n", bd->props.brightness);
->>  }
->>
->> -static ssize_t brightness_store(struct device *dev,
->> -		struct device_attribute *attr, const char *buf, size_t count)
->> +int backlight_device_set_brightness(struct backlight_device *bd, int brightness)
->>  {
->> -	int rc;
->> -	struct backlight_device *bd = to_backlight_device(dev);
->> -	unsigned long brightness;
->> -
->> -	rc = kstrtoul(buf, 0, &brightness);
->> -	if (rc)
->> -		return rc;
->> -
->> -	rc = -ENXIO;
->> +	int rc = -ENXIO;
->>
->>  	mutex_lock(&bd->ops_lock);
->>  	if (bd->ops) {
->>  		if (brightness > bd->props.max_brightness)
->>  			rc = -EINVAL;
->>  		else {
->> -			pr_debug("set brightness to %lu\n", brightness);
->> +			pr_debug("set brightness to %u\n", brightness);
->>  			bd->props.brightness = brightness;
->>  			backlight_update_status(bd);
->> -			rc = count;
->> +			rc = 0;
->>  		}
->>  	}
->>  	mutex_unlock(&bd->ops_lock);
->> @@ -194,6 +185,23 @@ static ssize_t brightness_store(struct device *dev,
->>
->>  	return rc;
->>  }
->> +EXPORT_SYMBOL(backlight_device_set_brightness);
->> +
->> +static ssize_t brightness_store(struct device *dev,
->> +		struct device_attribute *attr, const char *buf, size_t count)
->> +{
->> +	int rc;
->> +	struct backlight_device *bd = to_backlight_device(dev);
->> +	unsigned long brightness;
->> +
->> +	rc = kstrtoul(buf, 0, &brightness);
->> +	if (rc)
->> +		return rc;
->> +
->> +	rc = backlight_device_set_brightness(bd, brightness);
->> +
->> +	return rc ? rc : count;
->> +}
->>  static DEVICE_ATTR_RW(brightness);
->>
->>  static ssize_t type_show(struct device *dev, struct device_attribute *attr,
->> @@ -380,7 +388,7 @@ struct backlight_device *backlight_device_register(const char *name,
->>  }
->>  EXPORT_SYMBOL(backlight_device_register);
->>
->> -bool backlight_device_registered(enum backlight_type type)
->> +struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
->>  {
->>  	bool found = false;
->>  	struct backlight_device *bd;
->> @@ -394,7 +402,13 @@ bool backlight_device_registered(enum backlight_type type)
->>  	}
->>  	mutex_unlock(&backlight_dev_list_mutex);
->>
->> -	return found;
->> +	return found ? bd : NULL;
->> +}
->> +EXPORT_SYMBOL(backlight_device_get_by_type);
->> +
->> +bool backlight_device_registered(enum backlight_type type)
->> +{
->> +	return backlight_device_get_by_type(type) ? true : false;
->>  }
->>  EXPORT_SYMBOL(backlight_device_registered);
->>
->> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
->> index adb14a8616df..c59a020df3f8 100644
->> --- a/include/linux/backlight.h
->> +++ b/include/linux/backlight.h
->> @@ -140,6 +140,8 @@ extern void backlight_force_update(struct backlight_device *bd,
->>  extern bool backlight_device_registered(enum backlight_type type);
->>  extern int backlight_register_notifier(struct notifier_block *nb);
->>  extern int backlight_unregister_notifier(struct notifier_block *nb);
->> +extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
->> +extern int backlight_device_set_brightness(struct backlight_device *bd, int brightness);
->>
->>  #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
->>
->> --
->> 2.1.0
-> 
+Tack.
+IT-s=E4kerhet servicekontor 2015
