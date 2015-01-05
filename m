@@ -1,55 +1,44 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] int340x_thermal/processor_thermal_device: return failure
- when there is no ACPI device object
-Date: Mon, 05 Jan 2015 09:20:47 +0800
-Message-ID: <1420420847.32092.1.camel@rzhang1-toshiba>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 04/14] cpufreq: stats: pass 'stat' to cpufreq_stats_update()
+Date: Mon, 5 Jan 2015 09:34:39 +0530
+Message-ID: <CAKohpondSRi1ce5o_vcLUH7LBYiiSn4uuzFWphs9TPYXCSu_sA@mail.gmail.com>
+References: <cover.1420177186.git.viresh.kumar@linaro.org>
+	<aec0c2c88ed01f32e2b5ea60c21f194b8049ef0f.1420177186.git.viresh.kumar@linaro.org>
+	<3547984.Vd8ZHeRe7a@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:5088 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbbAEBUv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 4 Jan 2015 20:20:51 -0500
+Received: from mail-oi0-f43.google.com ([209.85.218.43]:50414 "EHLO
+	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbbAEEEj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jan 2015 23:04:39 -0500
+Received: by mail-oi0-f43.google.com with SMTP id i138so41812784oig.2
+        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 20:04:39 -0800 (PST)
+In-Reply-To: <3547984.Vd8ZHeRe7a@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
->From cd4c9293694090b02d305f2e3364618752e07693 Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Sun, 4 Jan 2015 16:35:59 +0800
-Subject: [PATCH] int340x_thermal/processor_thermal_device: return failure when
- there is no ACPI device object
+On 4 January 2015 at 03:34, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> What about:
+>
+> "It is better to pass a struct cpufreq_stats pointer to cpufreq_stats_update()
+>  instead of a CPU number, because ..."
 
-processor_thermal_device driver needs ACPI support to work. Thus, the driver
-probing should fail when there is no ACPI device object asscociated.
+Sure.
 
-This fixes a NULL pointer dereference when the driver is loaded
-with INT340X feature disabled in BIOS.
+>> +static int cpufreq_stats_update(struct cpufreq_stats *stat)
+>>  {
+>> -     struct cpufreq_stats *stat;
+>> -     unsigned long long cur_time;
+>> +     unsigned long long cur_time = get_jiffies_64();
+>>
+>> -     cur_time = get_jiffies_64();
+>
+> Unrelated change.
 
-Reported-by: Chen Yu <yu.c.chen@intel.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Tested-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/thermal/int340x_thermal/processor_thermal_device.c | 2 ++
- 1 file changed, 2 insertions(+)
+Yeah, it was too small of a change so not that significant as well.
+And so folded it into this commit only :(
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 31bb553..0fe5dbb 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -130,6 +130,8 @@ static int proc_thermal_add(struct device *dev,
- 	int ret;
- 
- 	adev = ACPI_COMPANION(dev);
-+	if (!adev)
-+		return -ENODEV;
- 
- 	status = acpi_evaluate_object(adev->handle, "PPCC", NULL, &buf);
- 	if (ACPI_FAILURE(status))
--- 
-1.9.1
-
-
-
+Will send it separately in v3..
