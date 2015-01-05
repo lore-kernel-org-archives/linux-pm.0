@@ -1,49 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: s3c64xx: force regulator descriptor to NULL
- when disabled
-Date: Mon, 5 Jan 2015 12:25:29 +0530
-Message-ID: <CAKohpomzrWs_bRrLF=_NhxEUv2ZrngnT_+QETFXEdGaJURO8aw@mail.gmail.com>
-References: <1420298974-3478-1-git-send-email-paolo.teti@gmail.com>
+From: Anson Huang <b20788@freescale.com>
+Subject: [PATCH] Thermal: imx: add clk disable/enable for suspend/resume
+Date: Mon, 5 Jan 2015 22:29:13 +0800
+Message-ID: <1420468153-19142-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:55680 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbbAEGz3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 01:55:29 -0500
-Received: by mail-ob0-f179.google.com with SMTP id va2so59712343obc.10
-        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 22:55:29 -0800 (PST)
-In-Reply-To: <1420298974-3478-1-git-send-email-paolo.teti@gmail.com>
+Received: from mail-by2on0137.outbound.protection.outlook.com ([207.46.100.137]:54592
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751068AbbAEHHV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 Jan 2015 02:07:21 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paolo Teti <paolo.teti@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com
 
-On 3 January 2015 at 20:59, Paolo Teti <paolo.teti@gmail.com> wrote:
-> Be sure 'vddarm' is NULL when regulator is disabled, otherwise few line
-> later this test
->
-> if (!vddarm && freq->frequency > clk_get_rate(policy->clk) / 1000)
->
-> may be false braking assumption that if not regulator is available
-> the maximum frequency We can support is the start-up frequency.
->
-> Signed-off-by: Paolo Teti <paolo.teti@gmail.com>
-> ---
->  drivers/cpufreq/s3c64xx-cpufreq.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> index 176e84c..8a9e082 100644
-> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> @@ -175,6 +175,8 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
->         } else {
->                 s3c64xx_cpufreq_config_regulator();
->         }
-> +#else
-> +       vddarm = NULL;
->  #endif
+Thermal sensor's clk is from pll3_usb_otg, per hardware
+design requirement, need to make sure pll3_usb_otg is disabled
+before STOP mode is entered, otherwise, all PFDs under it may
+enter incorrect state, this patch disables pll3_usb_otg before
+suspend and enables it after resume.
 
-vddarm is a global variable in this file and so is by default initialized
-to NULL. Why do you need to do this here as well ?
+Signed-off-by: Anson Huang <b20788@freescale.com>
+---
+ drivers/thermal/imx_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 461bf3d..03894da 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -600,6 +600,8 @@ static int imx_thermal_suspend(struct device *dev)
+ 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
+ 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
+ 	data->mode = THERMAL_DEVICE_DISABLED;
++	if (!IS_ERR(data->thermal_clk))
++		clk_disable_unprepare(data->thermal_clk);
+ 
+ 	return 0;
+ }
+@@ -609,6 +611,8 @@ static int imx_thermal_resume(struct device *dev)
+ 	struct imx_thermal_data *data = dev_get_drvdata(dev);
+ 	struct regmap *map = data->tempmon;
+ 
++	if (!IS_ERR(data->thermal_clk))
++		clk_prepare_enable(data->thermal_clk);
+ 	/* Enabled thermal sensor after resume */
+ 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+ 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
+-- 
+1.9.1
+
