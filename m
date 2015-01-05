@@ -1,81 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 04/14] cpufreq: stats: pass 'stat' to
- cpufreq_stats_update() *
-Date: Mon, 5 Jan 2015 12:55:35 +0530
-Message-ID: <CAKohpo=G6n7vfptvxgON3Lbz=ObBm1_GoNCFFOC1DawSwH4C=A@mail.gmail.com>
+Subject: Re: [PATCH V2 13/14] cpufreq: stats: Fix locking
+Date: Mon, 5 Jan 2015 13:36:39 +0530
+Message-ID: <CAKohpon2gVxVQp7Yg4+DNKg=WAp35rAi=Bynu8igjNw9NutVDQ@mail.gmail.com>
 References: <cover.1420177186.git.viresh.kumar@linaro.org>
-	<aec0c2c88ed01f32e2b5ea60c21f194b8049ef0f.1420177186.git.viresh.kumar@linaro.org>
-	<3547984.Vd8ZHeRe7a@vostro.rjw.lan>
-	<CAKohpondSRi1ce5o_vcLUH7LBYiiSn4uuzFWphs9TPYXCSu_sA@mail.gmail.com>
-	<OF5E9CEA82.619493CC-ONC1257DC4.0027BC08-C1257DC4.0027BC14@lonatigroup.com>
+	<0447fedc2d07cd35eed66d7de97ad4e0940b6110.1420177186.git.viresh.kumar@linaro.org>
+	<2107105.bVfAua7dNn@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:36427 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbbAEHZf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 02:25:35 -0500
-Received: by mail-oi0-f47.google.com with SMTP id v63so46795456oia.6
-        for <linux-pm@vger.kernel.org>; Sun, 04 Jan 2015 23:25:35 -0800 (PST)
-In-Reply-To: <OF5E9CEA82.619493CC-ONC1257DC4.0027BC08-C1257DC4.0027BC14@lonatigroup.com>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:40430 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbbAEIGk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 03:06:40 -0500
+Received: by mail-ob0-f176.google.com with SMTP id vb8so59999919obc.7
+        for <linux-pm@vger.kernel.org>; Mon, 05 Jan 2015 00:06:39 -0800 (PST)
+In-Reply-To: <2107105.bVfAua7dNn@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Luigi Fioretti <luigi.fioretti@dinema.it>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Saravana Kannan <skannan@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-On 5 January 2015 at 12:44, Luigi Fioretti <luigi.fioretti@dinema.it> wrote:
-> Hi,
-> thanks for your help but I don't think to be solution.
-> I had apply this patch :
->
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2010-December/036055.html
->
-> You can read the first problems here:
-> http://lists.linaro.org/pipermail/linaro-kernel/2014-March/012635.html
->
-> I had found a solution to this problem, and I write to you into my first
-> e-mail.
-> Now I have this problems:
-> When resume  and run this function
+On 4 January 2015 at 04:13, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> This is pants, sorry.
 
-What does all this has to do with the mail below ?
+I am sorry :(
 
-> -----linaro-kernel-bounces@lists.linaro.org ha scritto: -----
-> Per: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Da: Viresh Kumar
-> Inviato da: linaro-kernel-bounces@lists.linaro.org
-> Data: 05/01/2015 05.05AM
-> Cc: Prarit Bhargava <prarit@redhat.com>, Lists linaro-kernel
-> <linaro-kernel@lists.linaro.org>, Saravana Kannan <skannan@codeaurora.org>,
-> "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-> Oggetto: Re: [PATCH V2 04/14] cpufreq: stats: pass 'stat' to
-> cpufreq_stats_update() *
->
-> On 4 January 2015 at 03:34, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> What about:
->>
->> "It is better to pass a struct cpufreq_stats pointer to
->> cpufreq_stats_update()
->>  instead of a CPU number, because ..."
->
-> Sure.
->
->>> +static int cpufreq_stats_update(struct cpufreq_stats *stat)
->>>  {
->>> -     struct cpufreq_stats *stat;
->>> -     unsigned long long cur_time;
->>> +     unsigned long long cur_time = get_jiffies_64();
->>>
->>> -     cur_time = get_jiffies_64();
->>
->> Unrelated change.
->
-> Yeah, it was too small of a change so not that significant as well.
-> And so folded it into this commit only :(
->
-> Will send it separately in v3..
->
-> _______________________________________________
-> linaro-kernel mailing list
-> linaro-kernel@lists.linaro.org
-> http://lists.linaro.org/mailman/listinfo/linaro-kernel
+> Whenever you change locking, you need to know exactly (a) what is wrong with
+> the way it is currently done and (b) how you are going to improve it.  All of
+> that needs to be described here.
+
+Thanks for kicking me here..
+
+> For example, you seem to be thinking that locking is missing from
+> __cpufreq_stats_free_table(), so you are adding it in there.  Thus you need to
+> describe (a) why it is missing (eg. what races are possible because of that)
+> and (b) why adding it the way you do is going to improve the situation.
+
+Yeah, that's what I thought. That race between create/free of stats will
+be eliminated by this..
+
+But now as you forced me to write it properly, I am failing to understand why
+do we need to have any locking in place for stats ?
+
+These are the reasons why I think we can remove all locking stuff
+from stats:
+
+1.) create/free calls to stats can't run in parallel. They are all sequential.
+It happens with:
+- cpu hotplug: which is sequential with proper locking in place.
+- driver unregister: again sequential
+- stats unregister: again sequential
+
+So, actually we will never try to allocate stats for a single policy in parallel
+threads. Same goes for freeing as well..
+
+2.) Any race possible with sysfs reads ?
+
+These routines are called from show() routine from cpufreq.c and it has
+policy locks on the way. So, policy can't go away and so will stats.
+
+Also, if stats unregister we will unregister the notifiers first. And that will
+again make things fall in line.
+
+What else are we protecting? Maybe the calls to cpufreq_stats_update()
+can happen in parallel and so we may need locking only within that routine.
+
+I might be missing the obvious logic, but then what exactly ?
+
+--
+viresh
