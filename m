@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC PATCHv2 03/19] power_supply: Add API for safe access of power
- supply function attrs
-Date: Mon, 05 Jan 2015 16:47:46 +0100
-Message-ID: <1420472882-10463-4-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC PATCHv2 05/19] power: 88pm860x_charger: Use power_supply_*() API
+ for accessing function attrs
+Date: Mon, 05 Jan 2015 16:47:48 +0100
+Message-ID: <1420472882-10463-6-git-send-email-k.kozlowski@samsung.com>
 References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,142 +22,67 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebast
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add simple wrappers for accessing power supply's function attributes:
+Replace direct calls to power supply function attributes with wrappers.
+Wrappers provide safe access in case of unregistering the power
+supply (e.g. by removing the driver). Replace:
  - get_property -> power_supply_get_property
  - set_property -> power_supply_set_property
- - property_is_writeable -> power_supply_property_is_writeable
- - external_power_changed -> power_supply_external_power_changed
-
-This API along with usage counter adds a safe way of accessing a power
-supply from another driver. If power supply is unregistered after
-obtaining reference to it by some driver, then the API wrappers won't be
-executed in invalid (freed) context.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/power/power_supply_core.c | 47 ++++++++++++++++++++++++++++++++++++++-
- include/linux/power_supply.h      | 16 +++++++++++++
- 2 files changed, 62 insertions(+), 1 deletion(-)
+ drivers/power/88pm860x_charger.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index b748391c3e17..fdec3c29fc3c 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -314,7 +314,8 @@ EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
+diff --git a/drivers/power/88pm860x_charger.c b/drivers/power/88pm860x_charger.c
+index 650930e4fa79..59d62665b526 100644
+--- a/drivers/power/88pm860x_charger.c
++++ b/drivers/power/88pm860x_charger.c
+@@ -296,12 +296,13 @@ static int set_charging_fsm(struct pm860x_charger_info *info)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		return -EINVAL;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &data);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
++			&data);
+ 	if (ret)
+ 		return ret;
+ 	vbatt = data.intval / 1000;
  
- int power_supply_set_battery_charged(struct power_supply *psy)
- {
--	if (psy->type == POWER_SUPPLY_TYPE_BATTERY && psy->set_charged) {
-+	if (psy->use_cnt >= 0 && psy->type == POWER_SUPPLY_TYPE_BATTERY &&
-+			psy->set_charged) {
- 		psy->set_charged(psy);
- 		return 0;
- 	}
-@@ -366,6 +367,47 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
- EXPORT_SYMBOL_GPL(power_supply_get_by_phandle);
- #endif /* CONFIG_OF */
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
+ 	if (ret)
+ 		return ret;
  
-+int power_supply_get_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    union power_supply_propval *val)
-+{
-+	if (psy->use_cnt <= 0)
-+		return -ENODEV;
-+
-+	return psy->get_property(psy, psp, val);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_property);
-+
-+int power_supply_set_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    const union power_supply_propval *val)
-+{
-+	if (psy->use_cnt <= 0 || !psy->set_property)
-+		return -ENODEV;
-+
-+	return psy->set_property(psy, psp, val);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_set_property);
-+
-+int power_supply_property_is_writeable(struct power_supply *psy,
-+					enum power_supply_property psp)
-+{
-+	if (psy->use_cnt <= 0 || !psy->property_is_writeable)
-+		return -ENODEV;
-+
-+	return psy->property_is_writeable(psy, psp);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
-+
-+void power_supply_external_power_changed(struct power_supply *psy)
-+{
-+	if (psy->use_cnt <= 0 || !psy->external_power_changed)
-+		return;
-+
-+	psy->external_power_changed(psy);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_external_power_changed);
-+
- int power_supply_powers(struct power_supply *psy, struct device *dev)
- {
- 	return sysfs_create_link(&psy->dev->kobj, &dev->kobj, "powers");
-@@ -555,6 +597,7 @@ static int __power_supply_register(struct device *parent,
- 	dev->release = power_supply_dev_release;
- 	dev_set_drvdata(dev, psy);
- 	psy->dev = dev;
-+	psy->use_cnt++;
- 	if (cfg) {
- 		psy->drv_data = cfg->drv_data;
- 		psy->of_node = cfg->of_node;
-@@ -629,6 +672,8 @@ EXPORT_SYMBOL_GPL(power_supply_register_no_ws);
+@@ -430,7 +431,7 @@ static irqreturn_t pm860x_temp_handler(int irq, void *data)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		goto out;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
+ 	if (ret)
+ 		goto out;
+ 	value = temp.intval / 10;
+@@ -485,7 +486,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		goto out;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
++			&val);
+ 	if (ret)
+ 		goto out;
+ 	vbatt = val.intval / 1000;
+@@ -500,7 +502,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
+ 	if (ret < 0)
+ 		goto out;
+ 	if (vbatt > CHARGE_THRESHOLD && ret & STATUS2_CHG)
+-		psy->set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL, &val);
++		power_supply_set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL,
++				&val);
  
- void power_supply_unregister(struct power_supply *psy)
- {
-+	psy->use_cnt--;
-+	WARN_ON(psy->use_cnt);
- 	cancel_work_sync(&psy->changed_work);
- 	sysfs_remove_link(&psy->dev->kobj, "powers");
- 	power_supply_remove_triggers(psy);
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index b203a26d5c54..c2c17ac3a608 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -199,6 +199,12 @@ struct power_supply {
- 	size_t num_supplies;
- 	struct device_node *of_node;
- 
-+	/*
-+	 * Functions for drivers implementing power supply class.
-+	 * These shouldn't be called directly by other drivers for accessing
-+	 * this power supply. Instead use power_supply_*() functions (for
-+	 * example power_supply_get_property()).
-+	 */
- 	int (*get_property)(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val);
-@@ -227,6 +233,7 @@ struct power_supply {
- 	struct work_struct changed_work;
- 	spinlock_t changed_lock;
- 	bool changed;
-+	int use_cnt;
- #ifdef CONFIG_THERMAL
- 	struct thermal_zone_device *tzd;
- 	struct thermal_cooling_device *tcd;
-@@ -287,6 +294,15 @@ extern int power_supply_is_system_supplied(void);
- static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
- #endif
- 
-+extern int power_supply_get_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    union power_supply_propval *val);
-+extern int power_supply_set_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    const union power_supply_propval *val);
-+extern int power_supply_property_is_writeable(struct power_supply *psy,
-+					enum power_supply_property psp);
-+extern void power_supply_external_power_changed(struct power_supply *psy);
- extern int power_supply_register(struct device *parent,
- 				 struct power_supply *psy,
- 				 const struct power_supply_config *cfg);
+ out:
+ 	mutex_unlock(&info->lock);
 -- 
 1.9.1
