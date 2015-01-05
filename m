@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC PATCHv2 14/19] x86/olpc/xo1/sci: Use newly added power_supply_put
- API
-Date: Mon, 05 Jan 2015 16:47:57 +0100
-Message-ID: <1420472882-10463-15-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC PATCHv2 18/19] mfd: ab8500: Decrement the power supply's device
+ reference counter
+Date: Mon, 05 Jan 2015 16:48:01 +0100
+Message-ID: <1420472882-10463-19-git-send-email-k.kozlowski@samsung.com>
 References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,35 +11,36 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebast
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace direct usage of put_device() with new API: power_supply_put().
+Use power_supply_put() to decrement the power supply's device reference
+counter.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
- arch/x86/platform/olpc/olpc-xo1-sci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/ab8500-sysctrl.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/platform/olpc/olpc-xo1-sci.c b/arch/x86/platform/olpc/olpc-xo1-sci.c
-index 9a2e590dd202..7fa8b3b53bc0 100644
---- a/arch/x86/platform/olpc/olpc-xo1-sci.c
-+++ b/arch/x86/platform/olpc/olpc-xo1-sci.c
-@@ -61,7 +61,7 @@ static void battery_status_changed(void)
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index d4a4b24be7c6..0d1825696153 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -51,6 +51,7 @@ static void ab8500_power_off(void)
  
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
+ 		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+ 				&val);
++		power_supply_put(psy);
+ 
+ 		if (!ret && val.intval) {
+ 			charger_present = true;
+@@ -73,6 +74,7 @@ static void ab8500_power_off(void)
+ 			       pss[i]);
+ 			machine_restart("charging");
+ 		}
 +		power_supply_put(psy);
  	}
- }
  
-@@ -71,7 +71,7 @@ static void ac_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
+ shutdown:
 -- 
 1.9.1
