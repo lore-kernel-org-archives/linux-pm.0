@@ -1,70 +1,86 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC PATCHv2 16/19] power: 88pm860x_charger: Decrement the power
- supply's device reference counter
-Date: Mon, 05 Jan 2015 16:47:59 +0100
-Message-ID: <1420472882-10463-17-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC PATCHv2 01/19] power_supply: Add driver private data
+Date: Mon, 05 Jan 2015 16:47:44 +0100
+Message-ID: <1420472882-10463-2-git-send-email-k.kozlowski@samsung.com>
 References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:56286 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754224AbbAEPsb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 10:48:31 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Use power_supply_put() to decrement the power supply's device reference
-counter.
+Allow drivers to store private data inside power_supply structure for
+later usage in power supply operations.
+
+Usage of driver private data is necessary to access driver's state
+container object from power supply calls (like get_property()) if struct
+'power_supply' is a stored there as a pointer, for example:
+
+struct some_driver_info {
+	struct i2c_client       *client;
+	struct power_supply     *power_supply;
+	...
+}
+
+In such case one cannot use container_of() and must store pointer to
+state container as private data.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/power/88pm860x_charger.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/power/power_supply_core.c | 6 ++++++
+ include/linux/power_supply.h      | 4 ++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/drivers/power/88pm860x_charger.c b/drivers/power/88pm860x_charger.c
-index 59d62665b526..f88caee01ee9 100644
---- a/drivers/power/88pm860x_charger.c
-+++ b/drivers/power/88pm860x_charger.c
-@@ -298,13 +298,18 @@ static int set_charging_fsm(struct pm860x_charger_info *info)
- 		return -EINVAL;
- 	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 			&data);
--	if (ret)
-+	if (ret) {
-+		power_supply_put(psy);
- 		return ret;
-+	}
- 	vbatt = data.intval / 1000;
- 
- 	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
--	if (ret)
-+	if (ret) {
-+		power_supply_put(psy);
- 		return ret;
-+	}
-+	power_supply_put(psy);
- 
- 	mutex_lock(&info->lock);
- 	info->present = data.intval;
-@@ -447,6 +452,7 @@ static irqreturn_t pm860x_temp_handler(int irq, void *data)
- 
- 	set_charging_fsm(info);
- out:
-+	power_supply_put(psy);
- 	return IRQ_HANDLED;
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 694e8cddd5c1..84ef3f40e7bf 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -629,6 +629,12 @@ void power_supply_unregister(struct power_supply *psy)
  }
+ EXPORT_SYMBOL_GPL(power_supply_unregister);
  
-@@ -507,6 +513,7 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
++void *power_supply_get_drvdata(struct power_supply *psy)
++{
++	return psy->drv_data;
++}
++EXPORT_SYMBOL_GPL(power_supply_get_drvdata);
++
+ static int __init power_supply_class_init(void)
+ {
+ 	power_supply_class = class_create(THIS_MODULE, "power_supply");
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 096dbced02ac..a5743f24e03e 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -209,6 +209,9 @@ struct power_supply {
+ 	/* For APM emulation, think legacy userspace. */
+ 	int use_for_apm;
  
- out:
- 	mutex_unlock(&info->lock);
-+	power_supply_put(psy);
- 	dev_dbg(info->dev, "%s, Allowed: %d\n", __func__, info->allowed);
- 	set_charging_fsm(info);
++	/* Driver private data */
++	void *drv_data;
++
+ 	/* private */
+ 	struct device *dev;
+ 	struct work_struct changed_work;
+@@ -281,6 +284,7 @@ extern int power_supply_register_no_ws(struct device *parent,
+ extern void power_supply_unregister(struct power_supply *psy);
+ extern int power_supply_powers(struct power_supply *psy, struct device *dev);
+ 
++extern void *power_supply_get_drvdata(struct power_supply *psy);
+ /* For APM emulation, think legacy userspace. */
+ extern struct class *power_supply_class;
  
 -- 
 1.9.1
-
