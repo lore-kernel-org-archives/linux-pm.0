@@ -1,76 +1,56 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v4 4/4] Documentation: power: max77693-charger: Document
- exported sysfs entry
-Date: Mon, 05 Jan 2015 11:16:59 +0100
-Message-ID: <1420453019-28614-5-git-send-email-k.kozlowski@samsung.com>
-References: <1420453019-28614-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1420453019-28614-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2] dmaengine: shdma: Runtime-resume device in .shutdown()
+Date: Mon,  5 Jan 2015 11:46:29 +0100
+Message-ID: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
+Cc: dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Document the settings exported by max77693 charger driver through sysfs
-entries:
- - fast_charge_timer
- - top_off_threshold_current
- - top_off_timer
+During system reboot, the sh-dma-engine device may be runtime-suspended,
+causing a crash:
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+    Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+    Internal error: : 1406 [#1] SMP ARM
+    ...
+    PC is at sh_dmae_ctl_stop+0x28/0x64
+    LR is at sh_dmae_ctl_stop+0x24/0x64
+
+If the sh-dma-engine is runtime-suspended, its module clock is turned
+off, and its registers cannot be accessed.
+
+To fix this, change the driver's .shutdown() callback:
+  - If the device is runtime suspended, do nothing,
+  - Else, explicitly runtime-resume the device, to avoid the device from
+    being suspended while sh_dmae_ctl_stop() is being executed.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- Documentation/ABI/testing/sysfs-class-power | 42 +++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
+v2:
+  - Do nothing if we're runtime suspended.
+---
+ drivers/dma/sh/shdmac.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 909e7602c717..369d2a2d7d3e 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -32,3 +32,45 @@ Description:
- 		Valid values:
- 		- 5, 6 or 7 (hours),
- 		- 0: disabled.
+diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+index aec8a84784a469d7..2de30e8e7d9290b9 100644
+--- a/drivers/dma/sh/shdmac.c
++++ b/drivers/dma/sh/shdmac.c
+@@ -585,7 +585,13 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+ static void sh_dmae_shutdown(struct platform_device *pdev)
+ {
+ 	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
 +
-+What:		/sys/class/power_supply/max77693-charger/device/fast_charge_timer
-+Date:		January 2015
-+KernelVersion:	3.19.0
-+Contact:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-+Description:
-+		This entry shows and sets the maximum time the max77693
-+		charger operates in fast-charge mode. When the timer expires
-+		the device will terminate fast-charge mode (charging current
-+		will drop to 0 A) and will trigger interrupt.
++	if (pm_runtime_suspended(&pdev->dev))
++		return;
 +
-+		Valid values:
-+		- 4 - 16 (hours), step by 2 (rounded down)
-+		- 0: disabled.
-+
-+What:		/sys/class/power_supply/max77693-charger/device/top_off_threshold_current
-+Date:		January 2015
-+KernelVersion:	3.19.0
-+Contact:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-+Description:
-+		This entry shows and sets the charging current threshold for
-+		entering top-off charging mode. When charging current in fast
-+		charge mode drops below this value, the charger will trigger
-+		interrupt and start top-off charging mode.
-+
-+		Valid values:
-+		- 100000 - 200000 (microamps), step by 25000 (rounded down)
-+		- 200000 - 350000 (microamps), step by 50000 (rounded down)
-+		- 0: disabled.
-+
-+What:		/sys/class/power_supply/max77693-charger/device/top_off_timer
-+Date:		January 2015
-+KernelVersion:	3.19.0
-+Contact:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-+Description:
-+		This entry shows and sets the maximum time the max77693
-+		charger operates in top-off charge mode. When the timer expires
-+		the device will terminate top-off charge mode (charging current
-+		will drop to 0 A) and will trigger interrupt.
-+
-+		Valid values:
-+		- 0 - 70 (minutes), step by 10 (rounded down)
++	pm_runtime_get_sync(&pdev->dev);
+ 	sh_dmae_ctl_stop(shdev);
++	pm_runtime_put(&pdev->dev);
+ }
+ 
+ static int sh_dmae_runtime_suspend(struct device *dev)
 -- 
 1.9.1
+
