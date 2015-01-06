@@ -1,139 +1,202 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 04/17] ARM: dts: sunxi: Add dtsi for AXP209 PMIC
-Date: Wed, 7 Jan 2015 03:09:09 +0800
-Message-ID: <CAGb2v6653HaBidzGhNSbiiWM5iUJDQ8_TyDsSLu=nSYju+a+Vg@mail.gmail.com>
-References: <1420511727-8242-1-git-send-email-wens@csie.org>
- <1420511727-8242-5-git-send-email-wens@csie.org> <20150106155838.GS7853@lukather>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH RESEND 3/3] Documentation: Add documentation for rt5033
+ multifunction device
+Date: Wed, 07 Jan 2015 08:34:57 +0900
+Message-ID: <54AC7121.60303@samsung.com>
+References: <1420523117-6814-1-git-send-email-beomho.seo@samsung.com>
+ <1420523117-6814-4-git-send-email-beomho.seo@samsung.com>
+ <CAL_Jsq+Sz_iCkaDWzssA6DFeLX8fQ2hqKut0Gv6i5P706bmvpA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f182.google.com ([209.85.223.182]:63881 "EHLO
-	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932436AbbAFTJb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 14:09:31 -0500
-In-Reply-To: <20150106155838.GS7853@lukather>
+Received: from mailout1.samsung.com ([203.254.224.24]:53453 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbbAFXfA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 18:35:00 -0500
+In-reply-to: <CAL_Jsq+Sz_iCkaDWzssA6DFeLX8fQ2hqKut0Gv6i5P706bmvpA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lee.jone@linaro.org, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, dbaryshkov@gmail.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, InKi Dae <inki.dae@samsung.com>, sw0312.kim@samsung.com, Lee Jones <lee.jones@linaro.org>, beomho.seo@samsung.com
 
-Hi,
+Thank you for review.
 
-On Tue, Jan 6, 2015 at 11:58 PM, Maxime Ripard
-<maxime.ripard@free-electrons.com> wrote:
-> Hi,
->
-> On Tue, Jan 06, 2015 at 10:35:14AM +0800, Chen-Yu Tsai wrote:
->> The AXP209 PMIC is used with some Allwinner SoCs. This patch adds
->> a dtsi file listing all the regulator nodes. The regulators are
->> initialized based on their device node names.
+On 01/07/2015 01:54 AM, Rob Herring wrote:
+> On Mon, Jan 5, 2015 at 11:45 PM, Beomho Seo <beomho.seo@samsung.com> wrote:
+>> This patch device tree binding documentation for rt5033 multifunction device.
 >>
->> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+>> Cc: Sebastian Reichel <sre@kernel.org>
+>> Cc: Lee Jones <lee.jones@linaro.org>
+>> Cc: Mark Brown <broonie@kernel.org>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Pawel Moll <pawel.moll@arm.com>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
+>> Cc: Kumar Gala <galak@codeaurora.org>
+>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 >> ---
->>  arch/arm/boot/dts/axp209.dtsi | 87 +++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 87 insertions(+)
->>  create mode 100644 arch/arm/boot/dts/axp209.dtsi
+>>  Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 ++++++++++++++++++++
+>>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+>>  2 files changed, 109 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
 >>
->> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+>> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Documentation/devicetree/bindings/mfd/rt5033.txt
 >> new file mode 100644
->> index 000000000000..3c38cbafe285
+>> index 0000000..52a6d33
 >> --- /dev/null
->> +++ b/arch/arm/boot/dts/axp209.dtsi
->> @@ -0,0 +1,87 @@
->> +/*
->> + * Copyright 2015 Chen-Yu Tsai
->> + *
->> + * Chen-Yu Tsai <wens@csie.org>
->> + *
->> + * This file is dual-licensed: you can use it either under the terms
->> + * of the GPL or the X11 license, at your option. Note that this dual
->> + * licensing only applies to this file, and not this project as a
->> + * whole.
->> + *
->> + *  a) This file is free software; you can redistribute it and/or
->> + *     modify it under the terms of the GNU General Public License as
->> + *     published by the Free Software Foundation; either version 2 of the
->> + *     License, or (at your option) any later version.
->> + *
->> + *     This file is distributed in the hope that it will be useful,
->> + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + *     GNU General Public License for more details.
->> + *
->> + *     You should have received a copy of the GNU General Public
->> + *     License along with this file; if not, write to the Free
->> + *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
->> + *     MA 02110-1301 USA
->> + *
->> + * Or, alternatively,
->> + *
->> + *  b) Permission is hereby granted, free of charge, to any person
->> + *     obtaining a copy of this software and associated documentation
->> + *     files (the "Software"), to deal in the Software without
->> + *     restriction, including without limitation the rights to use,
->> + *     copy, modify, merge, publish, distribute, sublicense, and/or
->> + *     sell copies of the Software, and to permit persons to whom the
->> + *     Software is furnished to do so, subject to the following
->> + *     conditions:
->> + *
->> + *     The above copyright notice and this permission notice shall be
->> + *     included in all copies or substantial portions of the Software.
->> + *
->> + *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
->> + *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
->> + *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
->> + *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
->> + *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
->> + *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
->> + *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
->> + *     OTHER DEALINGS IN THE SOFTWARE.
->> + */
+>> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
+>> @@ -0,0 +1,108 @@
+>> +Richtek RT5033 Power management Integrated Circuit
 >> +
->> +/*
->> + * AXP202/209 Integrated Power Management Chip
->> + * http://www.x-powers.com/product/AXP20X.php
->> + * http://dl.linux-sunxi.org/AXP/AXP209%20Datasheet%20v1.0_cn.pdf
->> + */
+>> +RT5033 is a Multifunction device which includes battery charger, fuel gauge,
+>> +flash LED current source, LDO and synchronous Buck converter for portable
+>> +applications. It is interfaced to host controller using i2c interface.
 >> +
->> +&axp209 {
->> +     regulators {
->> +             /* Default work frequency for buck regulators */
->> +             x-powers,dcdc-freq = <1500>;
+>> +Required properties:
+>> +- compatible : Must be "richtek,rt5033"
+>> +- reg : Specifies the i2c slave address of general part.
+>> +- interrupts : This i2c devices has an IRQ line connected to the main SoC.
+>> +- interrupt-parent : The parent interrupt controller.
 >> +
->> +             /* This section lists all the regulators */
->
-> I don't think this comment is necessary.
->
->> +             reg_dcdc2: dcdc2 {
->> +             };
->> +
->> +             reg_dcdc3: dcdc3 {
->> +             };
->> +
->> +             reg_ldo1: ldo1 {
->> +                     /* LDO1 is a fixed output regulator */
->> +                     regulator-always-on;
->> +                     regulator-min-microvolt = <1300000>;
->> +                     regulator-max-microvolt = <1300000>;
->> +             };
->> +
->> +             reg_ldo2: ldo2 {
->> +             };
->> +
->> +             reg_ldo3: ldo3 {
->> +             };
->> +
->> +             reg_ldo4: ldo4 {
->> +             };
->> +
->> +             reg_ldo5: ldo5 {
->> +             };
->
-> Some default names for the regulator would be great!
+>> +Optional node:
+>> +Regulators: The regulators of RT5033 have to be instantiated under sub-node
+>> +named "regulators" usinge the following format.
+> 
+> s/usinge/using/
+> 
 
-Default names are already given through the regulator driver.
-They are full uppercase names, like in the datasheet.
+I will fix wrong typo.
 
-I could add lowercase names here for the default.
+>> +
+>> +       regulators {
+>> +               regulator-name {
+>> +                       regulator-name = LDO/BUCK
+>> +                       regulator subnodes called X, Y and Z
+>> +               };
+>> +       };
+>> +       refer Documentation/devicetree/bindings/regulator/regulator.txt
+>> +
+>> +
+>> +Battery charger: There battery charger of RT5033 have to be instantiated under
+>> +sub-node named "charger" using the following format.
+>> +
+>> +Required properties:
+>> +- compatible : Must be "richtek,rt5033-charger".
+>> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge current levels
+>> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
+>> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode. Battery
+>> +  voltage is below pre-charge threshold voltage, the charger is in pre-charge
+>> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V programmed
+>> +  by I2C per 0.1 V.
+>> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge current
+>> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
+>> +- richtek,const-uvolt :  Battery regulation voltage of constant voltage mode.
+>> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
+>> +- richtek,eoc-uamp : This property is end of charge current. Its level 150 mA
+>> +  to 200 mA.
+> 
+> Please align -uamp and -uvolt names with regulator binding suffixes.
+> 
 
-ChenYu
+OK. I will fix it.
+
+>> +       charger {
+>> +               compatible = "richtek,rt5033-charger";
+>> +               richtek,pre-uamp = <350000>;
+>> +               richtek,pre-threshold-uvolt = <3400000>;
+>> +               richtek,fast-uamp = <2000000>;
+>> +               richtek,const-uvolt = <4350000>;
+>> +               richtek,eoc-uamp = <250000>;
+>> +       };
+>> +
+>> +
+>> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "fuelgauge"
+>> +using the following format.
+>> +
+>> +Required properties:
+>> +- compatible = Must be "richtek,rt5033-battery".
+>> +
+>> +       i2c_fuel: i2c@1 {
+> 
+> Drop the @1.
+> 
+
+OK. I will fix it.
+
+>> +               compatible = "i2c-gpio";
+>> +               standard i2c-gpio constraints...
+>> +               fuelgauge {
+>> +                       compatible = "richtek,rt5033-battery".
+>> +               };
+>> +       };
+> 
+> I'm a bit confused by this. The fuelgauge is an i2c device hanging off
+> the rt5033 or a 2nd i2c slave on the rt5033?
+>
+
+It is 2nd i2c slave on the rt5033.
+
+>> +
+>> +
+>> +Example:
+>> +
+>> +               rt5033@34 {
+>> +                       compatible = "richtek,rt5033";
+>> +                       reg = <0x34>;
+>> +                       interrupt-parent = <&gpx1>;
+>> +                       interrupts = <5 0>;
+>> +
+>> +                       regulators {
+>> +                               buck_reg: BUCK {
+>> +                                       regulator-name = "BUCK";
+>> +                                       regulator-min-microvolt = <1200000>;
+>> +                                       regulator-max-microvolt = <1200000>;
+>> +                                       regulator-always-on;
+>> +                               };
+>> +                       };
+>> +
+>> +                       charger {
+>> +                               compatible = "richtek,rt5033-charger";
+>> +                               richtek,pre-uamp = <350000>;
+>> +                               richtek,pre-threshold-uvolt = <3400000>;
+>> +                               richtek,fast-uamp = <2000000>;
+>> +                               richtek,const-uvolt = <4350000>;
+>> +                               richtek,eoc-uamp = <250000>;
+>> +                       };
+>> +
+>> +               };
+>> +
+>> +               i2c_fuel: i2c@10 {
+>> +                       compatible = "i2c-gpio";
+>> +                       gpios = <&gpm3 1 0
+>> +                               &gpm3 0 0>;
+>> +
+>> +                       fuel: rt5033-battery@35 {
+>> +                               compatible = "richtek,rt5033-battery";
+>> +                               interrupt-parent = <&gpx2>;
+>> +                               interrupts = <3 0>;
+>> +                               reg = <0x35>;
+>> +                       };
+>> +               };
+>> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> index 723999d..611b543 100644
+>> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> @@ -124,6 +124,7 @@ ralink      Mediatek/Ralink Technology Corp.
+>>  ramtron        Ramtron International
+>>  realtek Realtek Semiconductor Corp.
+>>  renesas        Renesas Electronics Corporation
+>> +richtek        Richtek Technology Corporation
+>>  ricoh  Ricoh Co. Ltd.
+>>  rockchip       Fuzhou Rockchip Electronics Co., Ltd
+>>  samsung        Samsung Semiconductor
+>> --
+>> 1.7.9.5
+>>
+> 
+
+Best regards,
+Beomho Seo
+
