@@ -1,326 +1,173 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v6 7/9] thermal: introduce the Power Allocator
- governor
-Date: Tue, 6 Jan 2015 14:50:43 +0000
-Message-ID: <20150106145043.GI2885@e104805>
-References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
- <1417806260-9264-8-git-send-email-javi.merino@arm.com>
- <20150102154617.GB10683@developer>
- <20150106132341.GF2885@e104805>
- <20150106141830.GA6107@developer>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 03/17] Input: sun4i-ts: Add thermal zone sensor support
+Date: Tue, 6 Jan 2015 11:24:28 -0400
+Message-ID: <20150106152425.GA6276@developer>
+References: <1420511727-8242-1-git-send-email-wens@csie.org>
+ <1420511727-8242-4-git-send-email-wens@csie.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:56003 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbbAFOux (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 09:50:53 -0500
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150106141830.GA6107@developer>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1420511727-8242-4-git-send-email-wens@csie.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-Hi Eduardo,
 
-On Tue, Jan 06, 2015 at 02:18:36PM +0000, Eduardo Valentin wrote:
-> On Tue, Jan 06, 2015 at 01:23:42PM +0000, Javi Merino wrote:
-> > On Fri, Jan 02, 2015 at 03:46:24PM +0000, Eduardo Valentin wrote:
-> > > On Fri, Dec 05, 2014 at 07:04:18PM +0000, Javi Merino wrote:
-> > > > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> > > > new file mode 100644
-> > > > index 000000000000..09e98991efbb
-> > > > --- /dev/null
-> > > > +++ b/drivers/thermal/power_allocator.c
-> > > > @@ -0,0 +1,511 @@
-> > > > +/*
-> > > > + * A power allocator to manage temperature
-> > > > + *
-> > > > + * Copyright (C) 2014 ARM Ltd.
-> > > > + *
-> > > > + * This program is free software; you can redistribute it and/or modify
-> > > > + * it under the terms of the GNU General Public License version 2 as
-> > > > + * published by the Free Software Foundation.
-> > > > + *
-> > > > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> > > > + * kind, whether express or implied; without even the implied warranty
-> > > > + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> > > > + * GNU General Public License for more details.
-> > > > + */
-> > > > +
-> > > > +#define pr_fmt(fmt) "Power allocator: " fmt
-> > > > +
-> > > > +#include <linux/rculist.h>
-> > > > +#include <linux/slab.h>
-> > > > +#include <linux/thermal.h>
-> > > > +
-> > > > +#include "thermal_core.h"
-> > > > +
-> > > > +#define FRAC_BITS 10
-> > > > +#define int_to_frac(x) ((x) << FRAC_BITS)
-> > > > +#define frac_to_int(x) ((x) >> FRAC_BITS)
-> > > > +
-> > > > +/**
-> > > > + * mul_frac() - multiply two fixed-point numbers
-> > > > + * @x:	first multiplicand
-> > > > + * @y:	second multiplicand
-> > > > + *
-> > > 
-> > > If it is a kernel doc, needs a description.
-> > 
-> > Other parts of the kernel are more liberal in this regard,
-> > specially fro trivial functions like this.  Also, kernel-doc creates a
-> > documentation just fine:
-> > 
-> > $ scripts/kernel-doc -function mul_frac drivers/thermal/power_allocator.c | nroff -man
-> > mul_frac(9)                 Kernel Hacker's Manual                 mul_frac(9)
-> > 
-> > 
-> > 
-> > NAME
-> >        mul_frac - multiply two fixed-point numbers
-> > 
-> > SYNOPSIS
-> >        s64 mul_frac (s64 x, s64 y);
-> > 
-> > ARGUMENTS
-> >        x           first multiplicand
-> > 
-> >        y           second multiplicand
-> > 
-> > RETURN
-> >        the  result of multiplying two fixed-point numbers.  The result is also
-> >        a fixed-point number.
-> > 
-> > 
-> > 
-> > January 2015                       mul_frac                        mul_frac(9)
-> > 
-> > 
-> > I'll add the long description if you want to, but this is not a
-> > warning.
-> > 
-> 
-> 
-> As long as there is no kerneldoc warning/errors, I am fine taking it. I
-> must confess I haven't run kerneldoc script in your patch as I got it
-> with encoding scrambled, so I was just pointing the missing entries.
+--W/nzBZO5zC0uMSeA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, I'll make sure kernel-doc doesn't scream.
+Hello Chen-Yu,
 
-> > > > + * Return: the result of multiplying two fixed-point numbers.  The
-> > > > + * result is also a fixed-point number.
-> > > > + */
-> > > > +static inline s64 mul_frac(s64 x, s64 y)
-> > > > +{
-> > > > +	return (x * y) >> FRAC_BITS;
-> > > > +}
-> > > > +
-> > > > +enum power_allocator_trip_levels {
-> > > > +	TRIP_SWITCH_ON = 0,	/* Switch on PID controller */
-> > > > +	TRIP_MAX_DESIRED_TEMPERATURE, /* Temperature we are controlling for */
-> > > > +
-> > > > +	THERMAL_TRIP_NUM,
-> > > > +};
-> > > > +
-> > > > +/**
-> > > > + * struct power_allocator_params - parameters for the power allocator governor
-> > > > + * @k_po:	Proportional parameter of the PID controller when overshooting
-> > > > + *		(i.e., when temperature is below the target)
-> > > > + * @k_pu:	Proportional parameter of the PID controller when undershooting
-> > > > + * @k_i:	Integral parameter of the PID controller
-> > > > + * @k_d:	Derivative parameter of the PID controller
-> > > > + * @integral_cutoff:	threshold below which the error is no longer accumulated
-> > > > +			in the PID controller
-> > > > + * @err_integral:	accumulated error in the PID controller.
-> > > > + * @prev_err:	error in the previous iteration of the PID controller.
-> > > > + *		Used to calculate the derivative term.
-> > > > + */
-> > > > +struct power_allocator_params {
-> > > > +	s32 k_po;
-> > > > +	s32 k_pu;
-> > > > +	s32 k_i;
-> > > > +	s32 k_d;
-> > > > +	s32 integral_cutoff;
-> > > > +	s64 err_integral;
-> > > > +	s32 prev_err;
-> > > > +};
-> > > > +
-> > > > +/**
-> > > > + * get_actor_weight() - get the weight for the power actor
-> > > > + * @tz:		thermal zone we are operating in
-> > > > + * @actor:	the power actor
-> > > > + *
-> > > 
-> > > 
-> > > ditto
-> > > 
-> > > > + * Returns: The weight inside the thermal binding parameters of the
-> > > 
-> > > s/Returns:/Return:/g
-> > 
-> > Yep.
-> > 
-> > > Please run the kernel doc script on your patches and avoid adding
-> > > warnings / errors.
-> > 
-> > Actually, kernel-doc doesn't complain about Returns vs Return and it
-> > doesn't really care if there is no description in a function as I said
-> > before.
-> > 
-> > Is there a better way than running "scripts/kernel-doc -function
-> > $FUNCTION $FILE" ?  It would be great if scripts/check-patch.pl
-> > checked this as well.
-> 
-> I usually run 
-> $ ./scripts/kernel-doc -text -v drivers/thermal/thermal_core.c > /dev/null
-> 
-> to see what it complain.
 
-I'll do that from now on.
+On Tue, Jan 06, 2015 at 10:35:13AM +0800, Chen-Yu Tsai wrote:
+> The touchscreen controller has a temperature sensor embedded in the SoC,
+> which already has hwmon support in the driver.
+>=20
+> Add DT thermal zone support so we can use it with cpufreq for thermal
+> throttling.
+>=20
+> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+> ---
+>  .../bindings/input/touchscreen/sun4i.txt           |  1 +
+>  drivers/input/touchscreen/sun4i-ts.c               | 27 ++++++++++++++++=
+++++++
+>  2 files changed, 28 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/input/touchscreen/sun4i.tx=
+t b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> index aef57791f40b..7f1110adbd24 100644
+> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> @@ -5,6 +5,7 @@ Required properties:
+>   - compatible: "allwinner,sun4i-a10-ts"
+>   - reg: mmio address range of the chip
+>   - interrupts: interrupt to which the chip is connected
+> + - #thermal-sensor-cells: shall be 0
+> =20
 
-> as for checkpatch.pl, well, I agree. But as it is not there, I have its
-> execution in my own internal scripts that I run on top of patches I
-> receive.
-> 
-> > 
-[...]
-> > > > +/**
-> > > > + * divvy_up_power() - divvy the allocated power between the actors
-> > > > + * @req_power:	each actor's requested power
-> > > > + * @max_power:	each actor's maximum available power
-> > > > + * @num_actors:	size of the @req_power, @max_power and @granted_power's array
-> > > > + * @total_req_power: sum of @req_power
-> > > > + * @power_range:	total allocated power
-> > > > + * @granted_power:	output array: each actor's granted power
-> > > > + *
-> > > > + * This function divides the total allocated power (@power_range)
-> > > > + * fairly between the actors.  It first tries to give each actor a
-> > > > + * share of the @power_range according to how much power it requested
-> > > > + * compared to the rest of the actors.  For example, if only one actor
-> > > > + * requests power, then it receives all the @power_range.  If
-> > > > + * three actors each requests 1mW, each receives a third of the
-> > > > + * @power_range.
-> > > > + *
-> > > > + * If any actor received more than their maximum power, then that
-> > > > + * surplus is re-divvied among the actors based on how far they are
-> > > > + * from their respective maximums.
-> > > > + *
-> > > > + * Granted power for each actor is written to @granted_power, which
-> > > > + * should've been allocated by the calling function.
-> > > > + */
-> > > > +static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
-> > > > +			u32 total_req_power, u32 power_range,
-> > > > +			u32 *granted_power)
-> > > > +{
-> > > > +	u32 extra_power, capped_extra_power, extra_actor_power[num_actors];
-> > > > +	int i;
-> > > > +
-> > > > +	if (!total_req_power) {
-> > > > +		/*
-> > > > +		 * Nobody requested anything, so just give everybody
-> > > > +		 * the maximum power
-> > > > +		 */
-> > > > +		for (i = 0; i < num_actors; i++)
-> > > > +			granted_power[i] = max_power[i];
-> > > > +
-> > > > +		return;
-> > > > +	}
-> > > > +
-> > > > +	capped_extra_power = 0;
-> > > > +	extra_power = 0;
-> > > > +	for (i = 0; i < num_actors; i++) {
-> > > > +		u64 req_range = req_power[i] * power_range;
-> > > > +
-> > > > +		granted_power[i] = div_u64(req_range, total_req_power);
-> > > > +
-> > > > +		if (granted_power[i] > max_power[i]) {
-> > > > +			extra_power += granted_power[i] - max_power[i];
-> > > > +			granted_power[i] = max_power[i];
-> > > 
-> > > shouldn't we continue here?
-> > 
-> > No, you would leave the extra_actor_power[i] uninitialized.
-> > 
-> > > > +		}
-> > > > +
-> > > > +		extra_actor_power[i] = max_power[i] - granted_power[i];
-> > > 
-> > > Do we care when max_power[i] < granted_power[i]?
-> > 
-> > That can't happen, the above "if" prevents it.
-> > 
-> > > What happens to (overflowed) extra_actor_power[i]?
-> > 
-> > extra_actor_power[i] can't overflow, it's a u32 and is asigned the
-> > result of substracting two u32s.  The code make sure that the minuend is
-> > bigger or equal than the sustraend.
-> > 
-> 
-> I see now. Maybe I need extra coffee :-)
+You may want to update your Example section too, below.
+Example:
 
-:)
+	rtp: rtp@01c25000 {
+		compatible =3D "allwinner,sun4i-a10-ts";
+		reg =3D <0x01c25000 0x100>;
+		interrupts =3D <29>;
+		allwinner,ts-attached;
+		#thermal-sensor-cells =3D <0>;
+	};
 
-[...]
-> > > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > > > index 1155457caf52..b23e019b1761 100644
-> > > > --- a/include/linux/thermal.h
-> > > > +++ b/include/linux/thermal.h
-> > > > @@ -61,6 +61,8 @@
-> > > >  #define DEFAULT_THERMAL_GOVERNOR       "fair_share"
-> > > >  #elif defined(CONFIG_THERMAL_DEFAULT_GOV_USER_SPACE)
-> > > >  #define DEFAULT_THERMAL_GOVERNOR       "user_space"
-> > > > +#elif defined(CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR)
-> > > > +#define DEFAULT_THERMAL_GOVERNOR       "power_allocator"
-> > > >  #endif
-> > > >  
-> > > >  struct thermal_zone_device;
-> > > > @@ -255,9 +257,14 @@ struct thermal_bind_params {
-> > > >  
-> > > >  	/*
-> > > >  	 * This is a measure of 'how effectively these devices can
-> > > > -	 * cool 'this' thermal zone. The shall be determined by platform
-> > > > -	 * characterization. This is on a 'percentage' scale.
-> > > > -	 * See Documentation/thermal/sysfs-api.txt for more information.
-> > > > +	 * cool 'this' thermal zone. The shall be determined by
-> > > > +	 * platform characterization. For the fair-share governor,
-> > > > +	 * this is on a 'percentage' scale.  See
-> > > > +	 * Documentation/thermal/sysfs-api.txt for more
-> > > > +	 * information. For the power_allocator governor, they are
-> > > > +	 * relative to each other, see
-> > > > +	 * Documentation/thermal/power_allocator.txt for more
-> > > > +	 * information.
-> > > 
-> > > What happens if we register a thermal zone with relative weights, at
-> > > fist the user uses power allocator, but then wants to, for some reason,
-> > > use fair share? (or vice-versa).
-> > > 
-> > > Can't power allocator use percentages too?
-> > 
-> > The problem with percentages is that they are hard to use as they
-> > depend on each other.  For example, you need to know how many cooling
-> > devices there are and that number needs to remain fixed.  You can't
-> > add a new cooling device without changing the weights of all the other
-> > existing cooling devices.  If the thermal zone is already created it's
-> > hard to change the weights so you really can't add or remove cooling
-> > devices.
-> > 
-> > We were talking in another thread of ignoring a cooling device on some
-> > error.  How do you do that if the percentages must add to a hundred?
-> > 
-> > I thought that we could reuse the "weight" parameter but if you think
-> > we are abusing by making it mean different things for different
-> > governors we can create a new one instead.
-> > 
-> 
-> yeah, I am concerned about the inconsistence. If you can make both
-> governor to use the data standardized with same unit (percentage or
-> relative values), then I am fine with that. Either way: (a) make power
-> allocator to use percentage; or (b) make fair share to use relative
-> values.
 
-Ok, I'll send a path for (b) then.
+>  Optional properties:
+>   - allwinner,ts-attached: boolean indicating that an actual touchscreen =
+is
+> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchsc=
+reen/sun4i-ts.c
+> index 28a06749ae42..b6e9043446d6 100644
+> --- a/drivers/input/touchscreen/sun4i-ts.c
+> +++ b/drivers/input/touchscreen/sun4i-ts.c
+> @@ -34,6 +34,7 @@
+> =20
+>  #include <linux/err.h>
+>  #include <linux/hwmon.h>
+> +#include <linux/thermal.h>
+>  #include <linux/init.h>
+>  #include <linux/input.h>
+>  #include <linux/interrupt.h>
+> @@ -107,6 +108,7 @@
+>  struct sun4i_ts_data {
+>  	struct device *dev;
+>  	struct input_dev *input;
+> +	struct thermal_zone_device *tz;
+>  	void __iomem *base;
+>  	unsigned int irq;
+>  	bool ignore_fifo_data;
+> @@ -180,6 +182,23 @@ static void sun4i_ts_close(struct input_dev *dev)
+>  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
+>  }
+> =20
+> +static int get_temp(void *data, long *temp)
+> +{
+> +	struct sun4i_ts_data *ts =3D data;
+> +
+> +	/* No temp_data until the first irq */
+> +	if (ts->temp_data =3D=3D -1)
+> +		return -EAGAIN;
+> +
+> +	*temp =3D (ts->temp_data - 1447) * 100;
+> +
 
-Cheers,
-Javi
+Care to explain the formula in a simple comment?
+
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
+> +	.get_temp =3D get_temp,
+> +};
+> +
+>  static ssize_t show_temp(struct device *dev, struct device_attribute *de=
+vattr,
+>  			 char *buf)
+>  {
+> @@ -288,6 +307,11 @@ static int sun4i_ts_probe(struct platform_device *pd=
+ev)
+>  	if (IS_ERR(hwmon))
+>  		return PTR_ERR(hwmon);
+> =20
+> +	ts->tz =3D thermal_zone_of_sensor_register(ts->dev, 0, ts,
+> +						 &sun4i_ts_tz_ops);
+> +	if (IS_ERR(ts->tz))
+> +		ts->tz =3D NULL;
+> +
+>  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
+> =20
+>  	if (ts_attached) {
+
+here.. if input_register_device fails, you will keep an orphan thermal zone
+registered in your system:
+
+		error =3D input_register_device(ts->input);
+		if (error) {
+			writel(0, ts->base + TP_INT_FIFOC);
+			return error;
+		}
+		...
+
+
+> @@ -310,6 +334,9 @@ static int sun4i_ts_remove(struct platform_device *pd=
+ev)
+>  	if (ts->input)
+>  		input_unregister_device(ts->input);
+> =20
+> +	if (ts->tz)
+> +		thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
+> +
+>  	/* Deactivate all IRQs */
+>  	writel(0, ts->base + TP_INT_FIFOC);
+> =20
+> --=20
+> 2.1.4
+>=20
+
+--W/nzBZO5zC0uMSeA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUq/4hAAoJEMLUO4d9pOJWpvYH/i9gXbl2AqfwK/ITQL1jxC2D
+ko9ycv0NoWRE2o/SvpYLakYnkA7FIyFWl1jszZKPaYA/vuxp2u/u2v0pCxg+gVai
+vUYFHzblHfETuzvSaddy+ufBPv/4VJk31fNGYncqEsRHUITKhY4pKYr9U5wQtSTc
+C2AJJYK5aqUTB840mjKtHAnKipA1+Q9Vkz47eYVAuy/8zoFVkXnycwHVcu9goNMU
+K4K+uFwBMSN6AP4QMwncnGGFvcu4l7fZTPH7IV50ChfGbYSvV30By28FAa2n4Euv
+mTcY21qPUEAAntg45zX2c6xrk54db//vVnCyQWntNazGUFMqgUOajCHGqmgGsCk=
+=GYdh
+-----END PGP SIGNATURE-----
+
+--W/nzBZO5zC0uMSeA--
