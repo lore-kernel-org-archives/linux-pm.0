@@ -1,41 +1,61 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Tue, 6 Jan 2015 15:38:26 +0000
-Message-ID: <20150106153825.GH12302@n2100.arm.linux.org.uk>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
- <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com>
- <20141215174336.GJ11285@n2100.arm.linux.org.uk>
- <3353119.0CuA8fKaup@vostro.rjw.lan>
- <20141215230922.GL11285@n2100.arm.linux.org.uk>
- <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 09/16] cpufreq: Remove (now) unused 'last_cpu' from struct cpufreq_policy
+Date: Tue,  6 Jan 2015 21:09:08 +0530
+Message-ID: <7232c5e26ffa4cef447dbeed344249d673201330.1420558386.git.viresh.kumar@linaro.org>
+References: <cover.1420558386.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:47249 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751785AbbAFPim (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 10:38:42 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:56300 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754388AbbAFPkC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 10:40:02 -0500
+Received: by mail-pd0-f178.google.com with SMTP id r10so30452846pdi.23
+        for <linux-pm@vger.kernel.org>; Tue, 06 Jan 2015 07:40:01 -0800 (PST)
+In-Reply-To: <cover.1420558386.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1420558386.git.viresh.kumar@linaro.org>
+References: <cover.1420558386.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Dec 16, 2014 at 09:11:53AM +0530, Viresh Kumar wrote:
-> On 16 December 2014 at 04:39, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
-> > Well, here's a patch which I'm running on top of 3.18 at the moment,
-> > which is basically what I described in my email, and I'm running with it
-> > and it is without any lockdep complaint.
-> 
-> We need two separate patches now, one for 3.18 and other one for 3.19-rc.
-> 3.19 has see lots of changes in this particular file and so we need to
-> change few things here.
+'last_cpu' was used only from cpufreq-stats and isn't used anymore. Get rid of
+it.
 
-I'm sorry, I don't have the bandwidth to create a patch for 3.19-rc
-right now.
+Reviewed-by: Prarit Bhargava <prarit@redhat.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 3 ---
+ include/linux/cpufreq.h   | 2 --
+ 2 files changed, 5 deletions(-)
 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a09a29c312a9..b88894578fd1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1091,10 +1091,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
+ 	}
+ 
+ 	down_write(&policy->rwsem);
+-
+-	policy->last_cpu = policy->cpu;
+ 	policy->cpu = cpu;
+-
+ 	up_write(&policy->rwsem);
+ 
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 60b7b496565d..7e1a389b4e92 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -66,8 +66,6 @@ struct cpufreq_policy {
+ 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
+-	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
+-					   * this policy */
+ 	struct clk		*clk;
+ 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
+ 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+2.2.0
+
