@@ -1,54 +1,95 @@
-From: yoshihiro shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH 1/2] thermal: rcar: fix ENR register value
-Date: Tue, 6 Jan 2015 11:13:15 +0000
-Message-ID: <HKNPR06MB3222B99D5607F24B6BC31C3D8590@HKNPR06MB322.apcprd06.prod.outlook.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 2/2] thermal: rcar: change type of ctemp in
+ rcar_thermal_update_temp()
+Date: Tue, 6 Jan 2015 09:03:24 -0400
+Message-ID: <20150106130321.GA4661@developer>
 References: <1420538528-5236-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
-	<1420538528-5236-2-git-send-email-yoshihiro.shimoda.uh@renesas.com>
- <CAMuHMdVRz5ys3u72M1+FnZsJ5qiEokO3KMzjhkWArme0zAR7mA@mail.gmail.com>
+ <1420538528-5236-3-git-send-email-yoshihiro.shimoda.uh@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor4.renesas.com ([210.160.252.174]:21202 "EHLO
-	relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753240AbbAFLNU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 06:13:20 -0500
-In-Reply-To: <CAMuHMdVRz5ys3u72M1+FnZsJ5qiEokO3KMzjhkWArme0zAR7mA@mail.gmail.com>
-Content-Language: ja-JP
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1420538528-5236-3-git-send-email-yoshihiro.shimoda.uh@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-SGkgR2VlcnQtc2FuLA0KDQo+IEhpIFNoaW1vZGEtc2FuLA0KPiANCj4gT24gVHVlLCBKYW4gNiwg
-MjAxNSBhdCAxMTowMiBBTSwgWW9zaGloaXJvIFNoaW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2Rh
-LnVoQHJlbmVzYXMuY29tPiB3cm90ZToNCj4gPiBTaW5jZSB0aGUgd3JpdGUgdmFsdWUgc2hvdWxk
-IGFsd2F5cyBiZSAwIGZvciBiaXQgMzEtNCBvZiBFTlIgcmVnaXN0ZXINCj4gPiBvbiBSLUNhciBI
-MiwgdGhpcyBwYXRjaCBmaXhlcyB0aGUgdmFsdWUuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBZ
-b3NoaWhpcm8gU2hpbW9kYSA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+DQo+ID4g
-LS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1hbC9yY2FyX3RoZXJtYWwuYyB8ICAgIDIgKy0NCj4gPiAg
-MSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3JjYXJfdGhlcm1hbC5jIGIvZHJpdmVycy90aGVy
-bWFsL3JjYXJfdGhlcm1hbC5jDQo+ID4gaW5kZXggODgwM2U2OS4uYmJkZjY0ZSAxMDA2NDQNCj4g
-PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvcmNhcl90aGVybWFsLmMNCj4gPiArKysgYi9kcml2ZXJz
-L3RoZXJtYWwvcmNhcl90aGVybWFsLmMNCj4gPiBAQCAtNDA5LDcgKzQwOSw3IEBAIHN0YXRpYyBp
-bnQgcmNhcl90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4g
-ICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIFBUUl9FUlIoY29tbW9uLT5iYXNlKTsNCj4g
-Pg0KPiA+ICAgICAgICAgICAgICAgICAvKiBlbmFibGUgdGVtcGVyYXR1cmUgY29tcGFyYXRpb24g
-Ki8NCj4gPiAtICAgICAgICAgICAgICAgcmNhcl90aGVybWFsX2NvbW1vbl93cml0ZShjb21tb24s
-IEVOUiwgMHgwMDAzMDMwMyk7DQo+ID4gKyAgICAgICAgICAgICAgIHJjYXJfdGhlcm1hbF9jb21t
-b25fd3JpdGUoY29tbW9uLCBFTlIsIDB4MDAwMDAwMDMpOw0KPiANCj4gV2hpbGUgeW91ciBwYXRj
-aCBpcyBjb3JyZWN0IGZvciBSLUNhciBnZW4yLCB0aGlzIGRyaXZlciBpcyBhbHNvIHVzZWQgb24N
-Cj4gUi1Nb2JpbGUgQVBFNiAocjhhNzNhNCksIHdoaWNoIGRvZXMgaGF2ZSAzIHRoZXJtYWwgem9u
-ZXMuDQo+IFNvIEkgdGhpbmsgeW91IHNob3VsZCBjb3VudCB0aGUgb3RoZXIgSS9PIHJlc291cmNl
-IHNldHMgdG8gY2FsY3VsYXRlDQo+IHRoZSBjb3JyZWN0IG1hc2suDQoNClRoYW5rIHlvdSBmb3Ig
-dGhlIHJldmlldyBhbmQgc3VnZ2VzdGlvbiENCkFzIHlvdSBzYXksIEkgZGlkbid0IGNhcmUgYWJv
-dXQgUi1Nb2JpbGUgQVBFNi4NClNvLCBJIHdpbGwgbW9kaWZ5IHRoaXMgY29kZSB0b21vcnJvdy4N
-Cg0KQmVzdCByZWdhcmRzLA0KWW9zaGloaXJvIFNoaW1vZGENCg0KPiBHcntvZXRqZSxlZXRpbmd9
-cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0KPiAtLQ0KPiBHZWVy
-dCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdl
-ZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGgg
-dGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0DQo+IHdoZW4gSSdt
-IHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRo
-aW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51
-cyBUb3J2YWxkcw0K
+
+--dDRMvlgZJXvWKvBx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Shimoda-san,
+
+On Tue, Jan 06, 2015 at 07:02:08PM +0900, Yoshihiro Shimoda wrote:
+> Since the ctemp is used for rcar_thermal_write() in
+> rcar_thermal_update_temp(), the type of ctemp should be "u32" instead
+> of "int".
+
+In your V2, can you please include in your description that you are also
+updating the helper variables 'old' and 'new'?
+
+The description does not mention it.
+
+>=20
+> Signed-off-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> ---
+>  drivers/thermal/rcar_thermal.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_therma=
+l.c
+> index bbdf64e..6dcead1 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -63,7 +63,7 @@ struct rcar_thermal_priv {
+>  	struct mutex lock;
+>  	struct list_head list;
+>  	int id;
+> -	int ctemp;
+> +	u32 ctemp;
+>  };
+> =20
+>  #define rcar_thermal_for_each_priv(pos, common)	\
+> @@ -145,7 +145,7 @@ static int rcar_thermal_update_temp(struct rcar_therm=
+al_priv *priv)
+>  {
+>  	struct device *dev =3D rcar_priv_to_dev(priv);
+>  	int i;
+> -	int ctemp, old, new;
+> +	u32 ctemp, old, new;
+
+But you also update them, as necessary.
+
+>  	int ret =3D -EINVAL;
+> =20
+>  	mutex_lock(&priv->lock);
+> --=20
+> 1.7.9.5
+>=20
+
+
+BR,=20
+
+Eduardo Valentin
+
+--dDRMvlgZJXvWKvBx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUq90QAAoJEMLUO4d9pOJWXXEIAILMKJ6OSTDOli3j+uaL0WZG
+9XStcpVB+6iOiqHsEwC5tVHyomqHw6947KOaevHChJUDouRrckXYj7N6OINbcUuf
+V9aX4W3xxEm9jtsL5zBa8u7GLWexSs2KoL3Xv+vvMDzI9zRebWnfT6nEaLMljo1q
+ZRgNIPcHQI6652+fEWsuBERlV15n7K3wjLSaOlt4EcaksDjfdAwtnJCExMEhHsTM
+pzkRXg6dQujNmf28zH74ff/0mWGtkMU35VyT4yGErBm//4OIZ1/FwSupz2pbAF3z
+7ylNNwZ+4QuF6IJX5GbnZKMTo+xapCxCy4U/f4YT9FA45eSneg98sFCyjlww8Ig=
+=Eval
+-----END PGP SIGNATURE-----
+
+--dDRMvlgZJXvWKvBx--
