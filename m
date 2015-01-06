@@ -1,7 +1,7 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: [PATCH 06/17] ARM: dts: sun7i: Add cpu clock reference and operating points to dtsi
-Date: Tue,  6 Jan 2015 10:35:16 +0800
-Message-ID: <1420511727-8242-7-git-send-email-wens@csie.org>
+Subject: [PATCH 07/17] ARM: dts: sun7i: Add cpu thermal zones to dtsi
+Date: Tue,  6 Jan 2015 10:35:17 +0800
+Message-ID: <1420511727-8242-8-git-send-email-wens@csie.org>
 References: <1420511727-8242-1-git-send-email-wens@csie.org>
 Return-path: <linux-input-owner@vger.kernel.org>
 In-Reply-To: <1420511727-8242-1-git-send-email-wens@csie.org>
@@ -10,50 +10,57 @@ To: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.to
 Cc: Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpu core is clocked from the "cpu" clock. Add a reference to it
-in the first cpu node. Also add "cpu0" label to the node.
-
-The operating points were taken from the A20 FEX files in the
-sunxi-boards repository. Not all boards have the same settings. The
-settings in this patch are the most generic ones.
+The core temperature sensor now supports thermal zones. Add a thermal
+zone mapping for the cpus with passive cooling (cpufreq throttling).
 
 Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 ---
- arch/arm/boot/dts/sun7i-a20.dtsi | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/sun7i-a20.dtsi | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sun7i-a20.dtsi b/arch/arm/boot/dts/sun7i-a20.dtsi
-index 01c7133e699c..887b0521bbfb 100644
+index 887b0521bbfb..951e99ed3aa9 100644
 --- a/arch/arm/boot/dts/sun7i-a20.dtsi
 +++ b/arch/arm/boot/dts/sun7i-a20.dtsi
-@@ -82,10 +82,26 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&cpu>;
-+			clock-latency = <244144>; /* 8 32k periods */
-+			operating-points = <
-+				/* kHz    uV */
-+				1008000 1450000
-+				960000  1400000
-+				912000  1400000
-+				864000  1300000
-+				720000  1200000
-+				528000  1100000
-+				312000  1000000
-+				144000  900000
-+				>;
-+			#cooling-cells = <2>;
-+			cooling-min-level = <0>;
-+			cooling-max-level = <7>;
+@@ -111,6 +111,38 @@
  		};
+ 	};
  
- 		cpu@1 {
++	thermal-zones {
++		cpu_thermal {
++			/* milliseconds */
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++			thermal-sensors = <&rtp>;
++
++			cooling-maps {
++				map0 {
++					trip = <&cpu_alert0>;
++					cooling-device = <&cpu0 (-1) (-1)>;
++				};
++			};
++
++			trips {
++				cpu_alert0: cpu_alert0 {
++					/* milliCelsius */
++					temperature = <75000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				cpu_crit: cpu_crit {
++					/* milliCelsius */
++					temperature = <100000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++		};
++	};
++
+ 	memory {
+ 		reg = <0x40000000 0x80000000>;
+ 	};
 -- 
 2.1.4
 
