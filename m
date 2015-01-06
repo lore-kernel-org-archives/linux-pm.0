@@ -1,45 +1,29 @@
-From: Anson Huang <b20788@freescale.com>
-Subject: [PATCH V2] Thermal: imx: add clk disable/enable for suspend/resume
-Date: Tue, 6 Jan 2015 18:50:22 +0800
-Message-ID: <1420541422-27602-1-git-send-email-b20788@freescale.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 13/14] cpufreq: stats: Fix locking
+Date: Tue, 6 Jan 2015 09:04:46 +0530
+Message-ID: <CAKohpo=5ry7HQQ5vrxnsqdtaKz-ePJm9+sVyo3vKymWNxWifDg@mail.gmail.com>
+References: <cover.1420177186.git.viresh.kumar@linaro.org>
+	<2107105.bVfAua7dNn@vostro.rjw.lan>
+	<CAKohpon2gVxVQp7Yg4+DNKg=WAp35rAi=Bynu8igjNw9NutVDQ@mail.gmail.com>
+	<21209857.m88aJg9vUk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: edubezval@gmail.com, rui.zhang@intel.com, jangra.pankaj9@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:56848 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754319AbbAFDer (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jan 2015 22:34:47 -0500
+Received: by mail-ob0-f179.google.com with SMTP id va2so64050157obc.10
+        for <linux-pm@vger.kernel.org>; Mon, 05 Jan 2015 19:34:46 -0800 (PST)
+In-Reply-To: <21209857.m88aJg9vUk@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-Thermal sensor's clk is from pll3_usb_otg, per hardware
-design requirement, need to make sure pll3_usb_otg is disabled
-before STOP mode is entered, otherwise, all PFDs under it may
-enter incorrect state, this patch disables pll3_usb_otg before
-suspend and enables it after resume.
+On 6 January 2015 at 05:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Hard to say from the top of my head and I'm not sure if I have the time to
+> have a deeper look into that during the next few days.
 
-Signed-off-by: Anson Huang <b20788@freescale.com>
----
- drivers/thermal/imx_thermal.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 461bf3d..dc8bcd8 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -600,6 +600,7 @@ static int imx_thermal_suspend(struct device *dev)
- 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
- 	data->mode = THERMAL_DEVICE_DISABLED;
-+	clk_disable_unprepare(data->thermal_clk);
- 
- 	return 0;
- }
-@@ -609,6 +610,7 @@ static int imx_thermal_resume(struct device *dev)
- 	struct imx_thermal_data *data = dev_get_drvdata(dev);
- 	struct regmap *map = data->tempmon;
- 
-+	clk_prepare_enable(data->thermal_clk);
- 	/* Enabled thermal sensor after resume */
- 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
--- 
-1.9.1
+Ok, let me resend the patches then with better improved logs. And lets
+see if something is still missing.
