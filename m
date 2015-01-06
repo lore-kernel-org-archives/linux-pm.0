@@ -1,7 +1,7 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: [PATCH 09/17] ARM: dts: sun7i: cubietruck: add axp209 regulator nodes
-Date: Tue,  6 Jan 2015 10:35:19 +0800
-Message-ID: <1420511727-8242-10-git-send-email-wens@csie.org>
+Subject: [PATCH 15/17] ARM: dts: sun4i: cubieboard: add axp209 regulator nodes
+Date: Tue,  6 Jan 2015 10:35:25 +0800
+Message-ID: <1420511727-8242-16-git-send-email-wens@csie.org>
 References: <1420511727-8242-1-git-send-email-wens@csie.org>
 Return-path: <linux-input-owner@vger.kernel.org>
 In-Reply-To: <1420511727-8242-1-git-send-email-wens@csie.org>
@@ -26,29 +26,28 @@ Also get rid of axp209 properties already set in axp209.dtsi.
 
 Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 ---
- arch/arm/boot/dts/sun7i-a20-cubietruck.dts | 35 ++++++++++++++++++++++++++----
+ arch/arm/boot/dts/sun4i-a10-cubieboard.dts | 35 ++++++++++++++++++++++++++----
  1 file changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-index a281d259b9b8..48ceb4130b3b 100644
---- a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-+++ b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-@@ -126,13 +126,9 @@
+diff --git a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
+index 140e3ee0c15f..312bb288d764 100644
+--- a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
++++ b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
+@@ -134,12 +134,8 @@
  			status = "okay";
  
  			axp209: pmic@34 {
 -				compatible = "x-powers,axp209";
  				reg = <0x34>;
- 				interrupt-parent = <&nmi_intc>;
- 				interrupts = <0 8>;
+ 				interrupts = <0>;
 -
 -				interrupt-controller;
 -				#interrupt-cells = <1>;
  			};
  		};
  
-@@ -218,3 +214,34 @@
- 		gpio = <&pio 7 9 0>;
+@@ -185,3 +181,34 @@
+ 		status = "okay";
  	};
  };
 +
