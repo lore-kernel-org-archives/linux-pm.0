@@ -1,55 +1,38 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v6 9/9] of: thermal: Introduce sustainable power for
- a thermal zone
-Date: Tue, 6 Jan 2015 09:42:15 +0000
-Message-ID: <20150106094215.GB2885@e104805>
-References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
- <1417806260-9264-10-git-send-email-javi.merino@arm.com>
- <20150102155256.GD10683@developer>
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: [PATCH 1/2] thermal: rcar: fix ENR register value
+Date: Tue, 6 Jan 2015 19:02:07 +0900
+Message-ID: <1420538528-5236-2-git-send-email-yoshihiro.shimoda.uh@renesas.com>
+References: <1420538528-5236-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150102155256.GD10683@developer>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1420538528-5236-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 02, 2015 at 03:53:00PM +0000, Eduardo Valentin wrote:
-> On Fri, Dec 05, 2014 at 07:04:20PM +0000, Javi Merino wrote:
-> > From: Punit Agrawal <punit.agrawal@arm.com>
-> > 
-> > Introduce an optional property called, sustainable-power, which
-> > represents the power (in mW) which the thermal zone can safely
-> > dissipate.
-> > 
-> > If provided the property is parsed and associated with the thermal
-> > zone via the thermal zone parameters.
-> > 
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > ---
-> >  Documentation/devicetree/bindings/thermal/thermal.txt | 4 ++++
-> >  drivers/thermal/of-thermal.c                          | 4 ++++
-> >  2 files changed, 8 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > index f5db6b72a36f..c6eb9a8d2aed 100644
-> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > @@ -167,6 +167,10 @@ Optional property:
-> >  			by means of sensor ID. Additional coefficients are
-> >  			interpreted as constant offset.
-> >  
-> > +- sustainable-power:	An estimate of the sustainable power (in mW) that the
-> > +  Type: unsigned	thermal zone can dissipate.
-> > +  Size: one cell
-> > +
-> 
-> Please, include examples of this property, as you mentioned in the
-> governor documentation.
+Since the write value should always be 0 for bit 31-4 of ENR register
+on R-Car H2, this patch fixes the value.
 
-I'd rather put a pointer to the documentation instead of repeating the
-same thing here.  What do you think?
+Signed-off-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+---
+ drivers/thermal/rcar_thermal.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 8803e69..bbdf64e 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -409,7 +409,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 			return PTR_ERR(common->base);
+ 
+ 		/* enable temperature comparation */
+-		rcar_thermal_common_write(common, ENR, 0x00030303);
++		rcar_thermal_common_write(common, ENR, 0x00000003);
+ 
+ 		idle = 0; /* polling delay is not needed */
+ 	}
+-- 
+1.7.9.5
+
