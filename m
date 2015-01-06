@@ -1,175 +1,64 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH RESEND 3/3] Documentation: Add documentation for rt5033
- multifunction device
-Date: Tue, 6 Jan 2015 10:54:01 -0600
-Message-ID: <CAL_Jsq+Sz_iCkaDWzssA6DFeLX8fQ2hqKut0Gv6i5P706bmvpA@mail.gmail.com>
-References: <1420523117-6814-1-git-send-email-beomho.seo@samsung.com> <1420523117-6814-4-git-send-email-beomho.seo@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1420523117-6814-4-git-send-email-beomho.seo@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lee.jone@linaro.org, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, dbaryshkov@gmail.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, InKi Dae <inki.dae@samsung.com>, sw0312.kim@samsung.com, Lee Jones <lee.jones@linaro.org>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] Documentation: thermal: document of_cpufreq_cooling_register()
+Date: Tue,  6 Jan 2015 18:14:25 +0000
+Message-ID: <1420568065-5153-1-git-send-email-javi.merino@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:56153 "EHLO
+	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932365AbbAFSO6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jan 2015 13:14:58 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
+Cc: Javi Merino <javi.merino@arm.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Mon, Jan 5, 2015 at 11:45 PM, Beomho Seo <beomho.seo@samsung.com> wrote:
-> This patch device tree binding documentation for rt5033 multifunction device.
->
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  Documentation/devicetree/bindings/mfd/rt5033.txt   |  108 ++++++++++++++++++++
->  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->  2 files changed, 109 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->
-> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Documentation/devicetree/bindings/mfd/rt5033.txt
-> new file mode 100644
-> index 0000000..52a6d33
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
-> @@ -0,0 +1,108 @@
-> +Richtek RT5033 Power management Integrated Circuit
-> +
-> +RT5033 is a Multifunction device which includes battery charger, fuel gauge,
-> +flash LED current source, LDO and synchronous Buck converter for portable
-> +applications. It is interfaced to host controller using i2c interface.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033"
-> +- reg : Specifies the i2c slave address of general part.
-> +- interrupts : This i2c devices has an IRQ line connected to the main SoC.
-> +- interrupt-parent : The parent interrupt controller.
-> +
-> +Optional node:
-> +Regulators: The regulators of RT5033 have to be instantiated under sub-node
-> +named "regulators" usinge the following format.
+Commit 39d99cff76bf ("thermal: cpu_cooling: introduce
+of_cpufreq_cooling_register") taught the cpu cooling device to register
+devices that were linked to the device tree but didn't update the
+cpu-cooling-api documentation.  Fix it.
 
-s/usinge/using/
+Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ Documentation/thermal/cpu-cooling-api.txt | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-> +
-> +       regulators {
-> +               regulator-name {
-> +                       regulator-name = LDO/BUCK
-> +                       regulator subnodes called X, Y and Z
-> +               };
-> +       };
-> +       refer Documentation/devicetree/bindings/regulator/regulator.txt
-> +
-> +
-> +Battery charger: There battery charger of RT5033 have to be instantiated under
-> +sub-node named "charger" using the following format.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033-charger".
-> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge current levels
-> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
-> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode. Battery
-> +  voltage is below pre-charge threshold voltage, the charger is in pre-charge
-> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V programmed
-> +  by I2C per 0.1 V.
-> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge current
-> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
-> +- richtek,const-uvolt :  Battery regulation voltage of constant voltage mode.
-> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
-> +- richtek,eoc-uamp : This property is end of charge current. Its level 150 mA
-> +  to 200 mA.
+diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
+index fca24c931ec8..753e47cc2e20 100644
+--- a/Documentation/thermal/cpu-cooling-api.txt
++++ b/Documentation/thermal/cpu-cooling-api.txt
+@@ -3,7 +3,7 @@ CPU cooling APIs How To
+ 
+ Written by Amit Daniel Kachhap <amit.kachhap@linaro.org>
+ 
+-Updated: 12 May 2012
++Updated: 6 Jan 2015
+ 
+ Copyright (c)  2012 Samsung Electronics Co., Ltd(http://www.samsung.com)
+ 
+@@ -25,7 +25,18 @@ the user. The registration APIs returns the cooling device pointer.
+ 
+    clip_cpus: cpumask of cpus where the frequency constraints will happen.
+ 
+-1.1.2 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
++1.1.2 struct thermal_cooling_device *of_cpufreq_cooling_register(
++	struct device_node *np, const struct cpumask *clip_cpus)
++
++    This interface function registers the cpufreq cooling device with
++    the name "thermal-cpufreq-%x" linking it with a device tree node, in
++    order to bind it via the thermal DT code. This api can support multiple
++    instances of cpufreq cooling devices.
++
++    np: pointer to the cooling device device tree node
++    clip_cpus: cpumask of cpus where the frequency constraints will happen.
++
++1.1.3 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+     This interface function unregisters the "thermal-cpufreq-%x" cooling device.
+ 
+-- 
+1.9.1
 
-Please align -uamp and -uvolt names with regulator binding suffixes.
-
-> +       charger {
-> +               compatible = "richtek,rt5033-charger";
-> +               richtek,pre-uamp = <350000>;
-> +               richtek,pre-threshold-uvolt = <3400000>;
-> +               richtek,fast-uamp = <2000000>;
-> +               richtek,const-uvolt = <4350000>;
-> +               richtek,eoc-uamp = <250000>;
-> +       };
-> +
-> +
-> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "fuelgauge"
-> +using the following format.
-> +
-> +Required properties:
-> +- compatible = Must be "richtek,rt5033-battery".
-> +
-> +       i2c_fuel: i2c@1 {
-
-Drop the @1.
-
-> +               compatible = "i2c-gpio";
-> +               standard i2c-gpio constraints...
-> +               fuelgauge {
-> +                       compatible = "richtek,rt5033-battery".
-> +               };
-> +       };
-
-I'm a bit confused by this. The fuelgauge is an i2c device hanging off
-the rt5033 or a 2nd i2c slave on the rt5033?
-
-> +
-> +
-> +Example:
-> +
-> +               rt5033@34 {
-> +                       compatible = "richtek,rt5033";
-> +                       reg = <0x34>;
-> +                       interrupt-parent = <&gpx1>;
-> +                       interrupts = <5 0>;
-> +
-> +                       regulators {
-> +                               buck_reg: BUCK {
-> +                                       regulator-name = "BUCK";
-> +                                       regulator-min-microvolt = <1200000>;
-> +                                       regulator-max-microvolt = <1200000>;
-> +                                       regulator-always-on;
-> +                               };
-> +                       };
-> +
-> +                       charger {
-> +                               compatible = "richtek,rt5033-charger";
-> +                               richtek,pre-uamp = <350000>;
-> +                               richtek,pre-threshold-uvolt = <3400000>;
-> +                               richtek,fast-uamp = <2000000>;
-> +                               richtek,const-uvolt = <4350000>;
-> +                               richtek,eoc-uamp = <250000>;
-> +                       };
-> +
-> +               };
-> +
-> +               i2c_fuel: i2c@10 {
-> +                       compatible = "i2c-gpio";
-> +                       gpios = <&gpm3 1 0
-> +                               &gpm3 0 0>;
-> +
-> +                       fuel: rt5033-battery@35 {
-> +                               compatible = "richtek,rt5033-battery";
-> +                               interrupt-parent = <&gpx2>;
-> +                               interrupts = <3 0>;
-> +                               reg = <0x35>;
-> +                       };
-> +               };
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> index 723999d..611b543 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -124,6 +124,7 @@ ralink      Mediatek/Ralink Technology Corp.
->  ramtron        Ramtron International
->  realtek Realtek Semiconductor Corp.
->  renesas        Renesas Electronics Corporation
-> +richtek        Richtek Technology Corporation
->  ricoh  Ricoh Co. Ltd.
->  rockchip       Fuzhou Rockchip Electronics Co., Ltd
->  samsung        Samsung Semiconductor
-> --
-> 1.7.9.5
->
