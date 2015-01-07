@@ -1,787 +1,318 @@
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Subject: Re: Fix: Bind Cooling Device Weight
-Date: Wed, 07 Jan 2015 14:08:43 +0000
-Message-ID: <54AD3DEB.3070606@arm.com>
-References: <5492C634.5030604@arm.com> <20141218134334.GA6276@developer> <54930473.2060901@arm.com> <1419218610.19619.10.camel@rzhang1-toshiba> <5498488A.6080209@arm.com> <20150105213106.GB31536@developer> <54AC0F7C.9060606@arm.com> <20150106183701.GA11119@developer>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v5 3/7] iio: Add support for DA9150 GPADC
+Date: Wed, 7 Jan 2015 16:03:50 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB526A19@SW-EX-MBX01.diasemi.com>
+References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
+ <58b7b001b38662c36595412f96c7d2eb5c3adcad.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
+ <54A976D2.9040104@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:42379 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbbAGOIs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jan 2015 09:08:48 -0500
-In-Reply-To: <20150106183701.GA11119@developer>
+Received: from mail1.bemta14.messagelabs.com ([193.109.254.118]:7833 "EHLO
+	mail1.bemta14.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752568AbbAGQEC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jan 2015 11:04:02 -0500
+In-Reply-To: <54A976D2.9040104@kernel.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>
+To: Jonathan Cameron <jic23@kernel.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Hartmut Knaack <knaack.h@gmx.de>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-Hi Eduardo,
-
-Thanks again for looking into this.
-
-On 06/01/15 18:37, Eduardo Valentin wrote:
-> Hello KP,
-> 
-> On Tue, Jan 06, 2015 at 04:38:20PM +0000, Kapileshwar Singh wrote:
->> Thanks for looking into this Eduardo!
->>
->> The patch (appended) aims at accomplishing the following:
->>
->>     * populate the thermal_zone_parameters and tbps correctly in of-thermal
->>     * provide a match callback for of-thermal
->>     * Remove the of-thermal specific bind and unbind operations.
->>
->> I also see that in of-thermal.c:
->>
->> struct __thermal_bind_params {
->>         struct device_node *cooling_device;
->>
->> The device_node is named as cooling_device which is a misnomer and would like to change it to (as a separate patch)
->>
->> struct __thermal_bind_params {
->>         struct device_node *cdev_node;
->>
->> Cheers!
->> KP
->>
->> Possible Patch:
-> 
-> Can you please resend this patch separately? Just asking because it got
-> the same encoding issue that Javi had. Maybe, discussing with him to do
-> the same fix for you, the you resend it. 
-> 
-> It is a bit annoying to review your patches with encoding scrambled, as
-> most of the scripting we have is not useful. Besides, we cannot apply
-> it.
-> 
-
-Apologies for the garbling of the patches and would have this fixed for further iterations.
-
->>
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index e032b9bf4085..04bd5f5a806c 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -138,60 +138,6 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
->>  	return 0;
->>  }
->>  
->> -static int of_thermal_bind(struct thermal_zone_device *thermal,
->> -			   struct thermal_cooling_device *cdev)
->> -{
->> -	struct __thermal_zone *data = thermal->devdata;
->> -	int i;
->> -
->> -	if (!data || IS_ERR(data))
->> -		return -ENODEV;
->> -
->> -	/* find where to bind */
->> -	for (i = 0; i < data->num_tbps; i++) {
->> -		struct __thermal_bind_params *tbp = data->tbps + i;
->> -
->> -		if (tbp->cooling_device == cdev->np) {
->> -			int ret;
->> -
->> -			ret = thermal_zone_bind_cooling_device(thermal,
->> -						tbp->trip_id, cdev,
->> -						tbp->max,
->> -						tbp->min);
->> -			if (ret)
->> -				return ret;
->> -		}
->> -	}
->> -
->> -	return 0;
->> -}
->> -
->> -static int of_thermal_unbind(struct thermal_zone_device *thermal,
->> -			     struct thermal_cooling_device *cdev)
->> -{
->> -	struct __thermal_zone *data = thermal->devdata;
->> -	int i;
->> -
->> -	if (!data || IS_ERR(data))
->> -		return -ENODEV;
->> -
->> -	/* find where to unbind */
->> -	for (i = 0; i < data->num_tbps; i++) {
->> -		struct __thermal_bind_params *tbp = data->tbps + i;
->> -
->> -		if (tbp->cooling_device == cdev->np) {
->> -			int ret;
->> -
->> -			ret = thermal_zone_unbind_cooling_device(thermal,
->> -						tbp->trip_id, cdev);
->> -			if (ret)
->> -				return ret;
->> -		}
->> -	}
->> -
->> -	return 0;
->> -}
->> -
->>  static int of_thermal_get_mode(struct thermal_zone_device *tz,
->>  			       enum thermal_device_mode *mode)
->>  {
->> @@ -314,9 +260,6 @@ static struct thermal_zone_device_ops of_thermal_ops = {
->>  	.get_trip_hyst = of_thermal_get_trip_hyst,
->>  	.set_trip_hyst = of_thermal_set_trip_hyst,
->>  	.get_crit_temp = of_thermal_get_crit_temp,
->> -
->> -	.bind = of_thermal_bind,
->> -	.unbind = of_thermal_unbind,
->>  };
->>  
->>  /***   sensor API   ***/
->> @@ -553,6 +496,109 @@ static int thermal_of_populate_bind_params(struct device_node *np,
->>  	return ret;
->>  }
->>  
->> +int of_thermal_match_bind_param(struct thermal_zone_device *tz,
->> +				struct thermal_cooling_device *cdev)
->> +{
->> +	struct __thermal_zone *data = tz->devdata;
->> +	int i;
->> +
->> +	if (!data || IS_ERR(data))
->> +		return -ENODEV;
->> +
->> +	for (i = 0; i < data->num_tbps; i++) {
->> +		struct __thermal_bind_params *__tbp = data->tbps + i;
->> +
->> +		if (__tbp->cooling_device == cdev->np)
->> +			return 0;
->> +	}
->> +
->> +	return -1;
-> 
-
-We actually found that this patch suffers from a fundamental problem which boils down to a
-limitation of the match function.
-
-The match function, as it exists now, requires one function per cooling
-device and has insufficient data to be passed as arguments.
-
-
-tbp[i].match(tz, cdev)
-
-This only matches the cdev to the thermal zone but not necessarily to
-the correct bind parameters. For example:
-
-When the __bind calls for a match function the first cooling device that
-it tries to bind gets associated with the first set of bind parameters.
-
-Proposed changes:
-
-The match function can be changed to:
-
-	int (*match) (struct thermal_bind_params* param, struct thermal_cooling_device *cdev);
-
-where the invocation would be:
-	
-	match(&tbp[i], cdev).
-
-Some extra explanation (with the risk of being too verbose):
-
-	Just to throw some more light on what I think is going on in of-thermal
-
-	Lets say for a given device tree configuration (omitting weight/contribution):
-
-                        trips {
-                                threshold: trip-point@0 {
-                                        temperature = <55000>;
-                                        hysteresis = <1000>;
-                                        type = "passive";
-                                };
-                                target: trip-point@1 {
-                                        temperature = <65000>;
-                                        hysteresis = <1000>;
-                                        type = "passive";
-                                };
-                        };
-
-
-                        cooling-maps {
-                                map0 {
-                                     trip = <&target>;
-                                     cooling-device = <&cluster0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-                                };
-                                map1 {
-                                     trip = <&target>;
-                                     cooling-device = <&cluster1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-                                };
-
-                        };
-
-
-	The internal private data structure "__thermal_bind_params" is populated as:
-
-	__tbp[0].cooling_device = <node for cdev_cluster0>
-	__tbp[0].trip_id = 1;
-	__tbp[0].min = THERMAL_NO_LIMIT
-	__tbp[0].max = THERMAL_NO_LIMIT
-
-
-	__tbp[1].cooling_device = <node for cdev_cluster1>
-	__tbp[1].trip_id = 1;
-	__tbp[1].min = THERMAL_NO_LIMIT
-	__tbp[1].max = THERMAL_NO_LIMIT
-
-	The internal private data structure __thermal_trips data structure is populated as:
-
-	__trip[0].temperature = 55000
-	__trip[0].hysteresis = 1000
-	__trip[0].type = passive
-
-	__trip[1].temperature = 65000
-	__trip[1].hysteresis = 1000
-	__trip[1].type = passive
-
-	The expected thermal_bind_params (as I understand) should be:
-
-	tbp[0].cdev = cdev0 (cdev struct)
-	tbp[0].trip_mask = 0x2;
-	tbp[0].binding_limits = [THERMAL_NO_LIMIT, THERMAL_NO_LIMIT, THERMAL_NO_LIMIT, THERMAL_NO_LIMIT]
-
-
-	tbp[1].cdev = cdev1 (cdev struct)
-	tbp[1].trip_mask = 0x2;
-	tbp[1].binding_limits = [THERMAL_NO_LIMIT, THERMAL_NO_LIMIT, THERMAL_NO_LIMIT, THERMAL_NO_LIMIT]
-	
-Currently the match function (and my implementation) has no way of figuring out if the cooling device is associated with the correct set of trip_mask/weight etc.
-
-> Please, use kernel error codes.
-> 
->> +}
->> +
->> +static unsigned long* thermal_of_build_trip_limits(struct __thermal_zone *__tz)
->> +{
->> +
->> +	struct __thermal_bind_params *__tbp = __tz->tbps;
->> +	unsigned long *limits;
->> +	int i;
->> +
->> +	limits = kcalloc(2 * __tz->ntrips, sizeof(*limits), GFP_KERNEL);
->> +	if (!limits)
->> +		return ERR_PTR(ENOMEM);
->> +
->> +	for (i = 0; i < __tz->num_tbps; i++) {
->> +		limits[ __tbp->trip_id * 2 ] = __tbp[i].min;
->> +		limits[ __tbp->trip_id * 2 + 1] = __tbp[i].max;
-> 
-> Did I miss something or are you always assigning to the same index of
-> limits?
-
-You're right. This should be __tbp[i].trip_id
-
-> 
->> +	}
->> +
->> +	return limits;
->> +}
->> +
->> +static struct thermal_zone_params* of_thermal_populate_tzp(struct __thermal_zone *__tz)
->> +{
->> +	struct thermal_zone_params *tzp;
->> +	struct __thermal_bind_params *__tbp = __tz->tbps;
->> +	struct thermal_bind_params *tbp;
->> +	unsigned long *limits = NULL;
->> +	int err;
->> +	int i;
->> +
->> +	tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
->> +	if (!tzp)
->> +		return ERR_PTR(ENOMEM);
->> +
->> +	if (!__tbp || !__tz->num_tbps) {
->> +		err = ENODEV;
->> +		goto free_tzp;
->> +	}
->> +
->> +	tbp = kcalloc(__tz->num_tbps, sizeof(*tbp), GFP_KERNEL);
->> +	if (!tbp) {
->> +		err = ENOMEM;
->> +		goto free_tzp;
->> +	}
->> +
->> +	/* We have a number of trips in tz */
->> +	for (i = 0; i < __tz->num_tbps; i++) {
->> +		if (limits)
->> +			limits = kmemdup(&limits, 2 * __tz->ntrips * sizeof(*limits), GFP_KERNEL);
-> 
-> Why is this required?
-
-Would be correcting this in a future revision of this as the match
-function seems to rely on the order of the cooling devices that are matched.
-
-> 
->> +		else
->> +			limits = thermal_of_build_trip_limits(__tz);
->> +
->> +		if (IS_ERR(limits)) {
->> +			err = ENOMEM;
->> +			goto free_tbp;
->> +		}
->> +
->> +		tbp[i].weight = __tbp[i].usage;
->> +		tbp[i].binding_limits = limits;
->> +		tbp[i].match = of_thermal_match_bind_param;
->> +	}
->> +
->> +	tzp->tbp = tbp;
->> +	tzp->num_tbps = __tz->num_tbps;
->> +
->> +	/* No hwmon because there might be hwmon drivers registering */
->> +	tzp->no_hwmon = true;
->> +
->> +	return tzp;
->> +
->> +	/* Error handling code */
->> +	free_tbp:
-> 
-> it is common to have labels in the first column.
-
-Thanks. Will be updating the patch with the correct formatting.
-
-> 
->> +		/* Free all the correctly allocated binding_limits */
->> +		for (i = 0; i < __tz->num_tbps; i++) {
->> +			if (tbp[i].binding_limits)
->> +				kfree(tbp[i].binding_limits);
->> +		}
->> +
->> +		/* Free the binding parameters */
->> +		kfree(tbp);
->> +
->> +	free_tzp:
-> 
-> ditto.
-> 
->> +		kfree(tzp);
->> +		return ERR_PTR(err);
-> 
-> Remember to free the resources also in the of_thermal_destroy_zones().
-
-Thanks for pointing this out.
-
-> 
->> +}
->> +
->>  /**
->>   * It maps 'enum thermal_trip_type' found in include/linux/thermal.h
->>   * into the device tree binding of 'trip', property type.
->> @@ -812,15 +858,14 @@ int __init of_parse_thermal_zones(void)
->>  		if (!ops)
->>  			goto exit_free;
->>  
->> -		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
->> -		if (!tzp) {
->> +
->> +		tzp = of_thermal_populate_tzp(tz);
->> +
->> +		if (IS_ERR(tzp)) {
->>  			kfree(ops);
->>  			goto exit_free;
->>  		}
->>  
->> -		/* No hwmon because there might be hwmon drivers registering */
->> -		tzp->no_hwmon = true;
->> -
->>  		if (!of_property_read_u32(child, "sustainable-power", &prop))
->>  			tzp->sustainable_power = prop;
->>   
-> 
-> 
-> 
-> 
-> you may want to base your code on public trees, unless you want to make
-> this one part of Javi's series.
-
-Sure, would be basing the submission on a public tree.
-
-Regards! 
-KP
-> 
->>
->> On 05/01/15 21:31, Eduardo Valentin wrote:
->>> On Mon, Dec 22, 2014 at 04:36:26PM +0000, Kapileshwar Singh wrote:
->>>> Many thanks for looking through this! Had a few observations regarding
->>>> the same:
->>>> On 22/12/14 03:23, Zhang Rui wrote:
->>>>> On Thu, 2014-12-18 at 16:44 +0000, Kapileshwar Singh wrote:
->>>>>> Thanks for Reviewing this!
->>>>>>
->>>>>> On 18/12/14 13:43, Eduardo Valentin wrote:
->>>>>>> On Thu, Dec 18, 2014 at 12:19:00PM +0000, Kapileshwar Singh wrote:
->>>>>>>> The Problem:
->>>>>>>>
->>>>>>>> In the current code, the weight of the cooling device, which is read as
->>>>>>>> contribution from the device tree in of-thermal.c as:
->>>>>>>>
->>>>>>>>
->>>>>>>>         ret = of_property_read_u32(np, "contribution", &prop);
->>>>>>>>         if (ret == 0)
->>>>>>>>                 __tbp->usage = prop;
->>>>>>>>
->>>>>>>> This is only stored in the private devicedata as:
->>>>>>>>
->>>>>>>>         ((__thernal_zone *)cdev->devdata)->__tbp->usage
->>>>>>>>
->>>>>>>> As of-thermal.c specifies its "bind" operation and does not populate
->>>>>>>> tzd->tzp->tbp, this causes an erroneous access in the fair-share
->>>>>>>> governor when it tries to access the weight:
->>>>>>>>
->>>>>>>> instance->target = get_target_state(tz, cdev,
->>>>>>>>                                         tzp->tbp[i].weight,
->>>>>>>> cur_trip_level);
->>>>>>>>
->>>>>>>>
->>>>>>>> The Proposed solution:
->>>>>>>>
->>>>>>>> The proposed solution has the following changes:
->>>>>>>>
->>>>>>>>  1. Passing the weight as an argument to thermal_zone_bind_cooling_device
->>>>>>>>
->>>>>>>>  2. Storing the weight in the thermal_instance data structure created in
->>>>>>>> the thermal_zone_bind_cooling_device function
->>>>>>>>
->>>>>>>>  3. Changing the accesses in the governor accordingly.
->>>>>>> Shouldn't we simply:
->>>>>>> 1. In of-thermal, populate tzd->tzp->tbp by passing a tbp with correct
->>>>>>> tbp's in the registration call:
->>>>>>>     zone = thermal_zone_device_register(child->name, tz->ntrips,
->>>>>>>                                             0,
->>>>>>>                                             tz,
->>>>>>>                                             ops,
->>>>>>> /* This guy needs to be filled properly */  tzp,
->>>>>>>                                             tz->passive_delay,
->>>>>>>                                             tz->polling_delay);
->>>>>> The reason why I think this might not work is because we do not have the cooling device information (pointer) when we register the thermal zone device.
->>>>>>
->>>>> and I think that is why .match() callback in struct thermal_bind_params
->>>>> is introduced.
->>>> of-thermal defines a bind function and stores the binding information in
->>>> a private data structure.
->>>>
->>>> Looking at the code where a cooling device is bound
->>>> there seem to be two options:
->>>>
->>>> 1. There is a bind operation defined that figures out a set of bind
->>>> parameters and the cooling device associated with them (ops->bind)
->>>>    and calls back into thermal_zone_bind_cooling_device.
->>>>
->>>> 2. Or there can be bind parameters (tbp) defined that specify a match
->>>> operation to match the cooling device to the thermal zone device.
->>>>
->>>> 1 and 2 being mutually exclusive as follows (in thermal-core.c: bind_tz
->>>> and bind_cdev:
->>>>
->>>>                 if (pos->ops->bind) {
->>>>                         ret = pos->ops->bind(pos, cdev);
->>>>                         if (ret)
->>>>                                 print_bind_err_msg(pos, cdev, ret);
->>>>                         continue;
->>>>                 }
->>>>
->>>>                 tzp = pos->tzp;
->>>>                 if (!tzp || !tzp->tbp)
->>>>                         continue;
->>>>
->>>>                 for (i = 0; i < tzp->num_tbps; i++) {
->>>>                         if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
->>>>                                 continue;
->>>>                         if (tzp->tbp[i].match(pos, cdev))
->>>>                                 continue;
->>>>                         tzp->tbp[i].cdev = cdev;
->>>>                         __bind(pos, tzp->tbp[i].trip_mask, cdev,
->>>>                                tzp->tbp[i].binding_limits);
->>>>                 }
->>>>
->>>> the match function wont be called if a tz->ops->bind is defined.
->>> The above description is a correct understanding. You are right.
->>>
->>>> The fix suggested above would involve the removal of the
->>>> __thermal_zone and __thermal_bind_params private data structures and
->>>> also removing the bind operation from of-thermal.c.
->>>> Would that be a direction we would like to proceed in?
->>> well, we would need to see the code to answer that :-) But sounds like a
->>> sane idea, yes.
->>>
->>>> I also think since thermal_instance is populated by
->>>> thermal_zone_bind_cooling_device and represents a "bound" configuration
->>>> for both the branches (ops->bind and .match()) it could make sense to
->>>> add weight as a part of the thermal_instance as something
->>>> that is a part of the "bound" configuration.
->>>>
->>> here we jump into a different subject. Why would the weight be instance
->>> specific and not platform specific (as currently coded)?
->>>
->>>
->>>> I do realize that I could be completely wrong here and would appreciate
->>>> if you can point me towards the right direction.
->>>>
->>> there is no issue, the right direction is open discussion, as we are
->>> doing already.
->>>
->>>> Regards,
->>>> KP
->>>>
->>>>
->>>> thanks, rui
->>>>>>> 2. Add a proper check in the governor to avoid accessing thermal zones
->>>>>>> with missing data.
->>>>>>>
->>>>>>> I know there is a check in place:
->>>>>>>         if (!tz->tzp || !tz->tzp->tbp)
->>>>>>>               return -EINVAL;
->>>>>>>
->>>>>>> which based in your description seams to be failing. Here, I need more
->>>>>>> info from your side describing what exactly you are seeing. Can you
->>>>>>> please post the kernel log when the failure happens? Does it output a
->>>>>>> kernel segfault or is the governor simply not working?
->>>>>> There is no crash as such, it is more of a semantic failure where the weight being read from the device tree is not passed to the bind parameters.
->>>>>>
->>>>>> Cheers!
->>>>>> KP
->>>>>>
->>>>>>
->>>>>>> I would expect, with the current code, the governor be silent and
->>>>>>> non-functional, which needs to be fixed too.
->>>>>>>>  I am not sure of what default value should be assigned to the weight
->>>>>>>> member in the instance data structure and would like to leave this open
->>>>>>>> to discussion.
->>>>>>>>
->>>>>>>> Suggested Patch (Not Signed off):
->>>>>>>>
->>>>>>>> diff --git a/drivers/thermal/db8500_thermal.c
->>>>>>>> b/drivers/thermal/db8500_thermal.c
->>>>>>>> index 1e3b3bf9f993..e3ccc2218eb3 100644
->>>>>>>> --- a/drivers/thermal/db8500_thermal.c
->>>>>>>> +++ b/drivers/thermal/db8500_thermal.c
->>>>>>>> @@ -76,7 +76,7 @@ static int db8500_cdev_bind(struct thermal_zone_device
->>>>>>>> *thermal,
->>>>>>>>          upper = lower = i > max_state ? max_state : i;
->>>>>>>>
->>>>>>>>          ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
->>>>>>>> -            upper, lower);
->>>>>>>> +            upper, lower, THERMAL_WEIGHT_DEFAULT);
->>>>>>>>
->>>>>>> I think spreading such parameter, which is known to be part of tbp, is
->>>>>>> not a good thing to do. Can we avoid that?
->>>>>>>
->>>>>>>
->>>>>>> Cheers, Eduardo
->>>>>>>>          dev_info(&cdev->device, "%s bind to %d: %d-%s\n", cdev->type,
->>>>>>>>              i, ret, ret ? "fail" : "succeed");
->>>>>>>> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
->>>>>>>> index 6e0a3fbfae86..c3b25187b467 100644
->>>>>>>> --- a/drivers/thermal/fair_share.c
->>>>>>>> +++ b/drivers/thermal/fair_share.c
->>>>>>>> @@ -109,7 +109,7 @@ static int fair_share_throttle(struct
->>>>>>>> thermal_zone_device *tz, int trip)
->>>>>>>>              continue;
->>>>>>>>
->>>>>>>>          instance->target = get_target_state(tz, cdev,
->>>>>>>> -                    tzp->tbp[i].weight, cur_trip_level);
->>>>>>>> +                    instance->weight, cur_trip_level);
->>>>>>>>
->>>>>>>>          instance->cdev->updated = false;
->>>>>>>>          thermal_cdev_update(cdev);
->>>>>>>> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
->>>>>>>> index 5a1f1070b702..74d0c9951eef 100644
->>>>>>>> --- a/drivers/thermal/imx_thermal.c
->>>>>>>> +++ b/drivers/thermal/imx_thermal.c
->>>>>>>> @@ -307,7 +307,8 @@ static int imx_bind(struct thermal_zone_device *tz,
->>>>>>>>
->>>>>>>>      ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
->>>>>>>>                             THERMAL_NO_LIMIT,
->>>>>>>> -                           THERMAL_NO_LIMIT);
->>>>>>>> +                           THERMAL_NO_LIMIT
->>>>>>>> +                           THERMAL_WEIGHT_DEFAULT);
->>>>>>>>      if (ret) {
->>>>>>>>          dev_err(&tz->device,
->>>>>>>>              "binding zone %s with cdev %s failed:%d\n",
->>>>>>>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->>>>>>>> index e032b9bf4085..cf4036cbb671 100644
->>>>>>>> --- a/drivers/thermal/of-thermal.c
->>>>>>>> +++ b/drivers/thermal/of-thermal.c
->>>>>>>> @@ -157,7 +157,8 @@ static int of_thermal_bind(struct
->>>>>>>> thermal_zone_device *thermal,
->>>>>>>>              ret = thermal_zone_bind_cooling_device(thermal,
->>>>>>>>                          tbp->trip_id, cdev,
->>>>>>>>                          tbp->max,
->>>>>>>> -                        tbp->min);
->>>>>>>> +                        tbp->min,
->>>>>>>> +                        tbp->usage);
->>>>>>>>              if (ret)
->>>>>>>>                  return ret;
->>>>>>>>          }
->>>>>>>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c
->>>>>>>> b/drivers/thermal/samsung/exynos_thermal_common.c
->>>>>>>> index b6be572704a4..d653798b519f 100644
->>>>>>>> --- a/drivers/thermal/samsung/exynos_thermal_common.c
->>>>>>>> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
->>>>>>>> @@ -163,7 +163,7 @@ static int exynos_bind(struct thermal_zone_device
->>>>>>>> *thermal,
->>>>>>>>          case MONITOR_ZONE:
->>>>>>>>          case WARN_ZONE:
->>>>>>>>              if (thermal_zone_bind_cooling_device(thermal, i, cdev,
->>>>>>>> -                                level, 0)) {
->>>>>>>> +                                level, 0, THERMAL_WEIGHT_DEFAULT)) {
->>>>>>>>                  dev_err(data->dev,
->>>>>>>>                      "error unbinding cdev inst=%d\n", i);
->>>>>>>>                  ret = -EINVAL;
->>>>>>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->>>>>>>> index 4921e084c20b..199866864ef1 100644
->>>>>>>> --- a/drivers/thermal/thermal_core.c
->>>>>>>> +++ b/drivers/thermal/thermal_core.c
->>>>>>>> @@ -277,7 +277,8 @@ static void print_bind_err_msg(struct
->>>>>>>> thermal_zone_device *tz,
->>>>>>>>
->>>>>>>>  static void __bind(struct thermal_zone_device *tz, int mask,
->>>>>>>>              struct thermal_cooling_device *cdev,
->>>>>>>> -            unsigned long *limits)
->>>>>>>> +            unsigned long *limits,
->>>>>>>> +            unsigned int weight)
->>>>>>>>  {
->>>>>>>>      int i, ret;
->>>>>>>>
->>>>>>>> @@ -292,7 +293,8 @@ static void __bind(struct thermal_zone_device *tz,
->>>>>>>> int mask,
->>>>>>>>                  upper = limits[i * 2 + 1];
->>>>>>>>              }
->>>>>>>>              ret = thermal_zone_bind_cooling_device(tz, i, cdev,
->>>>>>>> -                                   upper, lower);
->>>>>>>> +                                   upper, lower,
->>>>>>>> +                                   weight);
->>>>>>>>              if (ret)
->>>>>>>>                  print_bind_err_msg(tz, cdev, ret);
->>>>>>>>          }
->>>>>>>> @@ -339,7 +341,8 @@ static void bind_cdev(struct thermal_cooling_device
->>>>>>>> *cdev)
->>>>>>>>                  continue;
->>>>>>>>              tzp->tbp[i].cdev = cdev;
->>>>>>>>              __bind(pos, tzp->tbp[i].trip_mask, cdev,
->>>>>>>> -                   tzp->tbp[i].binding_limits);
->>>>>>>> +                   tzp->tbp[i].binding_limits,
->>>>>>>> +                   tzp->tbp[i].weight);
->>>>>>>>          }
->>>>>>>>      }
->>>>>>>>
->>>>>>>> @@ -378,7 +381,8 @@ static void bind_tz(struct thermal_zone_device *tz)
->>>>>>>>                  continue;
->>>>>>>>              tzp->tbp[i].cdev = pos;
->>>>>>>>              __bind(tz, tzp->tbp[i].trip_mask, pos,
->>>>>>>> -                   tzp->tbp[i].binding_limits);
->>>>>>>> +                   tzp->tbp[i].binding_limits,
->>>>>>>> +                   tzp->tbp[i].weight);
->>>>>>>>          }
->>>>>>>>      }
->>>>>>>>  exit:
->>>>>>>> @@ -770,7 +774,8 @@ passive_store(struct device *dev, struct
->>>>>>>> device_attribute *attr,
->>>>>>>>                  thermal_zone_bind_cooling_device(tz,
->>>>>>>>                          THERMAL_TRIPS_NONE, cdev,
->>>>>>>>                          THERMAL_NO_LIMIT,
->>>>>>>> -                        THERMAL_NO_LIMIT);
->>>>>>>> +                        THERMAL_NO_LIMIT,
->>>>>>>> +                        THERMAL_WEIGHT_DEFAULT);
->>>>>>>>          }
->>>>>>>>          mutex_unlock(&thermal_list_lock);
->>>>>>>>          if (!tz->passive_delay)
->>>>>>>> @@ -1009,7 +1014,9 @@ thermal_cooling_device_trip_point_show(struct
->>>>>>>> device *dev,
->>>>>>>>   * @lower:    the Minimum cooling state can be used for this trip point.
->>>>>>>>   *        THERMAL_NO_LIMIT means no lower limit,
->>>>>>>>   *        and the cooling device can be in cooling state 0.
->>>>>>>> - *
->>>>>>>> + * @weight:    The weight of the cooling device to be bound to the
->>>>>>>> +        thermal zone. THERMAL_WEIGHT_DEFAULT for default value
->>>>>>>> +
->>>>>>>>   * This interface function bind a thermal cooling device to the certain
->>>>>>>> trip
->>>>>>>>   * point of a thermal zone device.
->>>>>>>>   * This function is usually called in the thermal zone device .bind
->>>>>>>> callback.
->>>>>>>> @@ -1019,7 +1026,8 @@ thermal_cooling_device_trip_point_show(struct
->>>>>>>> device *dev,
->>>>>>>>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->>>>>>>>                       int trip,
->>>>>>>>                       struct thermal_cooling_device *cdev,
->>>>>>>> -                     unsigned long upper, unsigned long lower)
->>>>>>>> +                     unsigned long upper, unsigned long lower,
->>>>>>>> +                     unsigned int weight)
->>>>>>>>  {
->>>>>>>>      struct thermal_instance *dev;
->>>>>>>>      struct thermal_instance *pos;
->>>>>>>> @@ -1062,6 +1070,7 @@ int thermal_zone_bind_cooling_device(struct
->>>>>>>> thermal_zone_device *tz,
->>>>>>>>      dev->upper = upper;
->>>>>>>>      dev->lower = lower;
->>>>>>>>      dev->target = THERMAL_NO_TARGET;
->>>>>>>> +    dev->weight = weight;
->>>>>>>>
->>>>>>>>      result = get_idr(&tz->idr, &tz->lock, &dev->id);
->>>>>>>>      if (result)
->>>>>>>> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
->>>>>>>> index b907be823527..1c61abe7801f 100644
->>>>>>>> --- a/drivers/thermal/thermal_core.h
->>>>>>>> +++ b/drivers/thermal/thermal_core.h
->>>>>>>> @@ -48,6 +48,7 @@ struct thermal_instance {
->>>>>>>>      struct device_attribute attr;
->>>>>>>>      struct list_head tz_node; /* node in tz->thermal_instances */
->>>>>>>>      struct list_head cdev_node; /* node in cdev->thermal_instances */
->>>>>>>> +    unsigned int weight; /* The weight of the cooling device */
->>>>>>>>  };
->>>>>>>>
->>>>>>>>  int thermal_register_governor(struct thermal_governor *);
->>>>>>>> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->>>>>>>> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->>>>>>>> index 9eec26dc0448..772549ec9bd8 100644
->>>>>>>> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->>>>>>>> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->>>>>>>> @@ -147,7 +147,8 @@ static int ti_thermal_bind(struct
->>>>>>>> thermal_zone_device *thermal,
->>>>>>>>      return thermal_zone_bind_cooling_device(thermal, 0, cdev,
->>>>>>>>      /* bind with min and max states defined by cpu_cooling */
->>>>>>>>                          THERMAL_NO_LIMIT,
->>>>>>>> -                        THERMAL_NO_LIMIT);
->>>>>>>> +                        THERMAL_NO_LIMIT,
->>>>>>>> +                        THERMAL_WEIGHT_DEFAULT);
->>>>>>>>  }
->>>>>>>>
->>>>>>>>  /* Unbind callback functions for thermal zone */
->>>>>>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>>>>>>> index fc4fdcbbdecc..674795ba0900 100644
->>>>>>>> --- a/include/linux/thermal.h
->>>>>>>> +++ b/include/linux/thermal.h
->>>>>>>> @@ -40,6 +40,9 @@
->>>>>>>>  /* No upper/lower limit requirement */
->>>>>>>>  #define THERMAL_NO_LIMIT    ((u32)~0)
->>>>>>>>
->>>>>>>> +/* Default weight of a bound cooling device */
->>>>>>>> +#define THERMAL_WEIGHT_DEFAULT 1
->>>>>>>> +
->>>>>>>>  /* Unit conversion macros */
->>>>>>>>  #define KELVIN_TO_CELSIUS(t)    (long)(((long)t-2732 >= 0) ?    \
->>>>>>>>                  ((long)t-2732+5)/10 : ((long)t-2732-5)/10)
->>>>>>>> @@ -375,7 +378,8 @@ void thermal_zone_device_unregister(struct
->>>>>>>> thermal_zone_device *);
->>>>>>>>
->>>>>>>>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
->>>>>>>>                       struct thermal_cooling_device *,
->>>>>>>> -                     unsigned long, unsigned long);
->>>>>>>> +                     unsigned long, unsigned long,
->>>>>>>> +                     unsigned int);
->>>>>>>>  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
->>>>>>>>                         struct thermal_cooling_device *);
->>>>>>>>  void thermal_zone_device_update(struct thermal_zone_device *);
->>>>>>>>
->>>>>>>>
->>>>>
->>>>
->>
->>
-
+T24gSmFudWFyeSA0LCAyMDE1IDE3OjIyLCBKb25hdGhhbiBDYW1lcm9uIHdyb3RlOg0KDQo+IE9u
+IDIyLzEyLzE0IDE2OjUxLCBBZGFtIFRob21zb24gd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBhZGRz
+IHN1cHBvcnQgZm9yIERBOTE1MCBDaGFyZ2VyICYgRnVlbC1HYXVnZSBJQyBHUEFEQy4NCj4gPg0K
+PiA+IFNpZ25lZC1vZmYtYnk6IEFkYW0gVGhvbXNvbiA8QWRhbS5UaG9tc29uLk9wZW5zb3VyY2VA
+ZGlhc2VtaS5jb20+DQo+IE9uZSBsYXN0IHF1ZXJ5IGZyb20gbWUuDQo+IA0KPiBVc2luZyB0aGUg
+ZXh0ZW5kZWQgY2hhbm5lbCBuYW1lcyBpbiBJSU8gaXMgb25seSByZWFsbHkgYXBwcm9wcmlhdGUg
+d2hlbg0KPiB0aGV5IGRvbid0IGNvcnJlc3BvbmQgdG8gc2ltcGxlIHBpbnMgb24gdGhlIHNpZGUg
+b2YgdGhlIGNoaXAuIEZvciB0aG9zZQ0KPiBqdXN0IGRyb3AgdGhlIGV4dG5hbWUgYml0LiAgU29t
+ZSBvZiB0aGUgY2hhbm5lbHMgeW91IGhhdmUgaGVyZSwgZGVmaW5pdGVseQ0KPiBuZWVkIHRoZW0g
+dGhvdWdoLg0KPiANCj4gRHJvcCB0aG9zZSBmaXJzdCA0IG9yIGNvbnZpbmNlIG1lIG90aGVyd2lz
+ZSBhbmQgYWRkDQo+IEFja2VkLWJ5OiBKb25hdGhhbiBDYW1lcm9uIDxqaWMyM0BrZXJuZWwub3Jn
+Pg0KDQpIYXZlIGFkZGVkIHJlc3BvbnNlcyBiZWxvdy4gSWYgdGhlIGNvbW1lbnRzIGFyZSBhY2Nl
+cHRlZCB0aGVuIEknbGwgcmVzcGluDQphbmQgYWRkIHlvdSdyZSAnQWNrZWQtYnknLiBJcyB0aGF0
+IG9rPw0KDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvaWlvL2FkYy9LY29uZmlnICAgICAgICB8ICAg
+OSArDQo+ID4gIGRyaXZlcnMvaWlvL2FkYy9NYWtlZmlsZSAgICAgICB8ICAgMSArDQo+ID4gIGRy
+aXZlcnMvaWlvL2FkYy9kYTkxNTAtZ3BhZGMuYyB8IDQwOQ0KPiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDQxOSBpbnNlcnRp
+b25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2lpby9hZGMvZGE5MTUwLWdw
+YWRjLmMNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lpby9hZGMvS2NvbmZpZyBiL2Ry
+aXZlcnMvaWlvL2FkYy9LY29uZmlnDQo+ID4gaW5kZXggMGY3OWU0Ny4uNmUwMGI4MSAxMDA2NDQN
+Cj4gPiAtLS0gYS9kcml2ZXJzL2lpby9hZGMvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZlcnMvaWlv
+L2FkYy9LY29uZmlnDQo+ID4gQEAgLTEzNSw2ICsxMzUsMTUgQEAgY29uZmlnIEFYUDI4OF9BREMN
+Cj4gPiAgCSAgZGV2aWNlLiBEZXBlbmRpbmcgb24gcGxhdGZvcm0gY29uZmlndXJhdGlvbiwgdGhp
+cyBnZW5lcmFsIHB1cnBvc2UgQURDIGNhbg0KPiA+ICAJICBiZSB1c2VkIGZvciBzYW1wbGluZyBz
+ZW5zb3JzIHN1Y2ggYXMgdGhlcm1hbCByZXNpc3RvcnMuDQo+ID4NCj4gPiArY29uZmlnIERBOTE1
+MF9HUEFEQw0KPiA+ICsJdHJpc3RhdGUgIkRpYWxvZyBEQTkxNTAgR1BBREMgZHJpdmVyIHN1cHBv
+cnQiDQo+ID4gKwlkZXBlbmRzIG9uIE1GRF9EQTkxNTANCj4gPiArCWhlbHANCj4gPiArCSAgU2F5
+IHllcyBoZXJlIHRvIGJ1aWxkIHN1cHBvcnQgZm9yIERpYWxvZyBEQTkxNTAgR1BBREMuDQo+ID4g
+Kw0KPiA+ICsJICBUaGlzIGRyaXZlciBjYW4gYWxzbyBiZSBidWlsdCBhcyBhIG1vZHVsZS4gSWYg
+Y2hvc2VuLCB0aGUgbW9kdWxlIG5hbWUNCj4gPiArCSAgd2lsbCBiZSBkYTkxNTAtZ3BhZGMuDQo+
+ID4gKw0KPiA+ICBjb25maWcgRVhZTk9TX0FEQw0KPiA+ICAJdHJpc3RhdGUgIkV4eW5vcyBBREMg
+ZHJpdmVyIHN1cHBvcnQiDQo+ID4gIAlkZXBlbmRzIG9uIEFSQ0hfRVhZTk9TIHx8IEFSQ0hfUzND
+MjRYWCB8fCBBUkNIX1MzQzY0WFggfHwgKE9GICYmDQo+IENPTVBJTEVfVEVTVCkNCj4gPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9paW8vYWRjL01ha2VmaWxlIGIvZHJpdmVycy9paW8vYWRjL01ha2Vm
+aWxlDQo+ID4gaW5kZXggNzAxZmRiNy4uZDU2ZWU5YiAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJz
+L2lpby9hZGMvTWFrZWZpbGUNCj4gPiArKysgYi9kcml2ZXJzL2lpby9hZGMvTWFrZWZpbGUNCj4g
+PiBAQCAtMTUsNiArMTUsNyBAQCBvYmotJChDT05GSUdfQUQ3ODg3KSArPSBhZDc4ODcubw0KPiA+
+ICBvYmotJChDT05GSUdfQUQ3OTlYKSArPSBhZDc5OXgubw0KPiA+ICBvYmotJChDT05GSUdfQVQ5
+MV9BREMpICs9IGF0OTFfYWRjLm8NCj4gPiAgb2JqLSQoQ09ORklHX0FYUDI4OF9BREMpICs9IGF4
+cDI4OF9hZGMubw0KPiA+ICtvYmotJChDT05GSUdfREE5MTUwX0dQQURDKSArPSBkYTkxNTAtZ3Bh
+ZGMubw0KPiA+ICBvYmotJChDT05GSUdfRVhZTk9TX0FEQykgKz0gZXh5bm9zX2FkYy5vDQo+ID4g
+IG9iai0kKENPTkZJR19MUDg3ODhfQURDKSArPSBscDg3ODhfYWRjLm8NCj4gPiAgb2JqLSQoQ09O
+RklHX01BWDEwMjcpICs9IG1heDEwMjcubw0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lpby9h
+ZGMvZGE5MTUwLWdwYWRjLmMgYi9kcml2ZXJzL2lpby9hZGMvZGE5MTUwLWdwYWRjLmMNCj4gPiBu
+ZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjNmN2JjODENCj4gPiAtLS0g
+L2Rldi9udWxsDQo+ID4gKysrIGIvZHJpdmVycy9paW8vYWRjL2RhOTE1MC1ncGFkYy5jDQo+ID4g
+QEAgLTAsMCArMSw0MDkgQEANCj4gPiArLyoNCj4gPiArICogREE5MTUwIEdQQURDIERyaXZlcg0K
+PiA+ICsgKg0KPiA+ICsgKiBDb3B5cmlnaHQgKGMpIDIwMTQgRGlhbG9nIFNlbWljb25kdWN0b3IN
+Cj4gPiArICoNCj4gPiArICogQXV0aG9yOiBBZGFtIFRob21zb24gPEFkYW0uVGhvbXNvbi5PcGVu
+c291cmNlQGRpYXNlbWkuY29tPg0KPiA+ICsgKg0KPiA+ICsgKiBUaGlzIHByb2dyYW0gaXMgZnJl
+ZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgIGl0IGFuZC9vciBtb2RpZnkgaXQNCj4g
+PiArICogdW5kZXIgIHRoZSB0ZXJtcyBvZiAgdGhlIEdOVSBHZW5lcmFsICBQdWJsaWMgTGljZW5z
+ZSBhcyBwdWJsaXNoZWQgYnkgdGhlDQo+ID4gKyAqIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsg
+IGVpdGhlciB2ZXJzaW9uIDIgb2YgdGhlICBMaWNlbnNlLCBvciAoYXQgeW91cg0KPiA+ICsgKiBv
+cHRpb24pIGFueSBsYXRlciB2ZXJzaW9uLg0KPiA+ICsgKi8NCj4gPiArDQo+ID4gKyNpbmNsdWRl
+IDxsaW51eC9rZXJuZWwuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4NCj4gPiArI2lu
+Y2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2
+aWNlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4NCj4gPiArI2luY2x1ZGUg
+PGxpbnV4L211dGV4Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9jb21wbGV0aW9uLmg+DQo+ID4g
+KyNpbmNsdWRlIDxsaW51eC9paW8vaWlvLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9paW8vbWFj
+aGluZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvaWlvL2RyaXZlci5oPg0KPiA+ICsjaW5jbHVk
+ZSA8bGludXgvbWZkL2RhOTE1MC9jb3JlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9tZmQvZGE5
+MTUwL3JlZ2lzdGVycy5oPg0KPiA+ICsNCj4gPiArLyogQ2hhbm5lbHMgKi8NCj4gPiArZW51bSBk
+YTkxNTBfZ3BhZGNfaHdfY2hhbm5lbCB7DQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9HUElP
+QV8yViA9IDAsDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9HUElPQV8yVl8sDQo+ID4gKwlE
+QTkxNTBfR1BBRENfSFdfQ0hBTl9HUElPQl8yViwNCj4gPiArCURBOTE1MF9HUEFEQ19IV19DSEFO
+X0dQSU9CXzJWXywNCj4gPiArCURBOTE1MF9HUEFEQ19IV19DSEFOX0dQSU9DXzJWLA0KPiA+ICsJ
+REE5MTUwX0dQQURDX0hXX0NIQU5fR1BJT0NfMlZfLA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NI
+QU5fR1BJT0RfMlYsDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9HUElPRF8yVl8sDQo+ID4g
+KwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9JQlVTX1NFTlNFLA0KPiA+ICsJREE5MTUwX0dQQURDX0hX
+X0NIQU5fSUJVU19TRU5TRV8sDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9WQlVTX0RJViwN
+Cj4gPiArCURBOTE1MF9HUEFEQ19IV19DSEFOX1ZCVVNfRElWXywNCj4gPiArCURBOTE1MF9HUEFE
+Q19IV19DSEFOX0lELA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fSURfLA0KPiA+ICsJREE5
+MTUwX0dQQURDX0hXX0NIQU5fVlNZUywNCj4gPiArCURBOTE1MF9HUEFEQ19IV19DSEFOX1ZTWVNf
+LA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fR1BJT0FfNlYsDQo+ID4gKwlEQTkxNTBfR1BB
+RENfSFdfQ0hBTl9HUElPQV82Vl8sDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9HUElPQl82
+ViwNCj4gPiArCURBOTE1MF9HUEFEQ19IV19DSEFOX0dQSU9CXzZWXywNCj4gPiArCURBOTE1MF9H
+UEFEQ19IV19DSEFOX0dQSU9DXzZWLA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fR1BJT0Nf
+NlZfLA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fR1BJT0RfNlYsDQo+ID4gKwlEQTkxNTBf
+R1BBRENfSFdfQ0hBTl9HUElPRF82Vl8sDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9WQkFU
+LA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fVkJBVF8sDQo+ID4gKwlEQTkxNTBfR1BBRENf
+SFdfQ0hBTl9UQkFULA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NIQU5fVEJBVF8sDQo+ID4gKwlE
+QTkxNTBfR1BBRENfSFdfQ0hBTl9USlVOQ19DT1JFLA0KPiA+ICsJREE5MTUwX0dQQURDX0hXX0NI
+QU5fVEpVTkNfQ09SRV8sDQo+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9USlVOQ19PVlAsDQo+
+ID4gKwlEQTkxNTBfR1BBRENfSFdfQ0hBTl9USlVOQ19PVlBfLA0KPiA+ICt9Ow0KPiA+ICsNCj4g
+PiArZW51bSBkYTkxNTBfZ3BhZGNfY2hhbm5lbCB7DQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTl9H
+UElPQSA9IDAsDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTl9HUElPQiwNCj4gPiArCURBOTE1MF9H
+UEFEQ19DSEFOX0dQSU9DLA0KPiA+ICsJREE5MTUwX0dQQURDX0NIQU5fR1BJT0QsDQo+ID4gKwlE
+QTkxNTBfR1BBRENfQ0hBTl9JQlVTLA0KPiA+ICsJREE5MTUwX0dQQURDX0NIQU5fVkJVUywNCj4g
+PiArCURBOTE1MF9HUEFEQ19DSEFOX0lELA0KPiA+ICsJREE5MTUwX0dQQURDX0NIQU5fVlNZUywN
+Cj4gPiArCURBOTE1MF9HUEFEQ19DSEFOX1ZCQVQsDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTl9U
+QkFULA0KPiA+ICsJREE5MTUwX0dQQURDX0NIQU5fVEpVTkNfQ09SRSwNCj4gPiArCURBOTE1MF9H
+UEFEQ19DSEFOX1RKVU5DX09WUCwNCj4gPiArfTsNCj4gPiArDQo+ID4gKy8qIFByaXZhdGUgZGF0
+YSAqLw0KPiA+ICtzdHJ1Y3QgZGE5MTUwX2dwYWRjIHsNCj4gPiArCXN0cnVjdCBkYTkxNTAgKmRh
+OTE1MDsNCj4gPiArCXN0cnVjdCBkZXZpY2UgKmRldjsNCj4gPiArDQo+ID4gKwlzdHJ1Y3QgbXV0
+ZXggbG9jazsNCj4gPiArCXN0cnVjdCBjb21wbGV0aW9uIGNvbXBsZXRlOw0KPiA+ICt9Ow0KPiA+
+ICsNCj4gPiArDQo+ID4gK3N0YXRpYyBpcnFyZXR1cm5fdCBkYTkxNTBfZ3BhZGNfaXJxKGludCBp
+cnEsIHZvaWQgKmRhdGEpDQo+ID4gK3sNCj4gPiArDQo+ID4gKwlzdHJ1Y3QgZGE5MTUwX2dwYWRj
+ICpncGFkYyA9IGRhdGE7DQo+ID4gKw0KPiA+ICsJY29tcGxldGUoJmdwYWRjLT5jb21wbGV0ZSk7
+DQo+ID4gKw0KPiA+ICsJcmV0dXJuIElSUV9IQU5ETEVEOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtz
+dGF0aWMgaW50IGRhOTE1MF9ncGFkY19yZWFkX2FkYyhzdHJ1Y3QgZGE5MTUwX2dwYWRjICpncGFk
+YywgaW50IGh3X2NoYW4pDQo+ID4gK3sNCj4gPiArCXU4IHJlc3VsdF9yZWdzWzJdOw0KPiA+ICsJ
+aW50IHJlc3VsdDsNCj4gPiArDQo+ID4gKwltdXRleF9sb2NrKCZncGFkYy0+bG9jayk7DQo+ID4g
+Kw0KPiA+ICsJLyogU2V0IGNoYW5uZWwgJiBlbmFibGUgbWVhc3VyZW1lbnQgKi8NCj4gPiArCWRh
+OTE1MF9yZWdfd3JpdGUoZ3BhZGMtPmRhOTE1MCwgREE5MTUwX0dQQURDX01BTiwNCj4gPiArCQkJ
+IChEQTkxNTBfR1BBRENfRU5fTUFTSyB8DQo+ID4gKwkJCSAgaHdfY2hhbiA8PCBEQTkxNTBfR1BB
+RENfTVVYX1NISUZUKSk7DQo+ID4gKw0KPiA+ICsJLyogQ29uc3VtZSBsZWZ0LW92ZXIgY29tcGxl
+dGlvbiBmcm9tIGEgcHJldmlvdXMgdGltZW91dCAqLw0KPiA+ICsJdHJ5X3dhaXRfZm9yX2NvbXBs
+ZXRpb24oJmdwYWRjLT5jb21wbGV0ZSk7DQo+ID4gKw0KPiA+ICsJLyogQ2hlY2sgZm9yIGFjdHVh
+bCBjb21wbGV0aW9uICovDQo+ID4gKwl3YWl0X2Zvcl9jb21wbGV0aW9uX3RpbWVvdXQoJmdwYWRj
+LT5jb21wbGV0ZSwgbXNlY3NfdG9famlmZmllcyg1KSk7DQo+ID4gKw0KPiA+ICsJLyogUmVhZCBy
+ZXN1bHQgYW5kIHN0YXR1cyBmcm9tIGRldmljZSAqLw0KPiA+ICsJZGE5MTUwX2J1bGtfcmVhZChn
+cGFkYy0+ZGE5MTUwLCBEQTkxNTBfR1BBRENfUkVTX0EsIDIsIHJlc3VsdF9yZWdzKTsNCj4gPiAr
+DQo+ID4gKwltdXRleF91bmxvY2soJmdwYWRjLT5sb2NrKTsNCj4gPiArDQo+ID4gKwkvKiBDaGVj
+ayB0byBtYWtlIHN1cmUgZGV2aWNlIHJlYWxseSBoYXMgY29tcGxldGVkIHJlYWRpbmcgKi8NCj4g
+PiArCWlmIChyZXN1bHRfcmVnc1sxXSAmIERBOTE1MF9HUEFEQ19SVU5fTUFTSykgew0KPiA+ICsJ
+CWRldl9lcnIoZ3BhZGMtPmRldiwgIlRpbWVvdXQgb24gY2hhbm5lbCAlZCBvZiBHUEFEQ1xuIiwN
+Cj4gPiArCQkJaHdfY2hhbik7DQo+ID4gKwkJcmV0dXJuIC1FVElNRURPVVQ7DQo+ID4gKwl9DQo+
+ID4gKw0KPiA+ICsJLyogTFNCcyAtIDIgYml0cyAqLw0KPiA+ICsJcmVzdWx0ID0gKHJlc3VsdF9y
+ZWdzWzFdICYgREE5MTUwX0dQQURDX1JFU19MX01BU0spID4+DQo+ID4gKwkJIERBOTE1MF9HUEFE
+Q19SRVNfTF9TSElGVDsNCj4gPiArCS8qIE1TQnMgLSA4IGJpdHMgKi8NCj4gPiArCXJlc3VsdCB8
+PSByZXN1bHRfcmVnc1swXSA8PCBEQTkxNTBfR1BBRENfUkVTX0xfQklUUzsNCj4gPiArDQo+ID4g
+KwlyZXR1cm4gcmVzdWx0Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW5saW5lIGludCBk
+YTkxNTBfZ3BhZGNfZ3Bpb182dl92b2x0YWdlX25vdyhpbnQgcmF3X3ZhbCkNCj4gPiArew0KPiA+
+ICsJLyogQ29udmVydCB0byBtViAqLw0KPiA+ICsJcmV0dXJuICg2ICogKChyYXdfdmFsICogMTAw
+MCkgKyA1MDApKSAvIDEwMjQ7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbmxpbmUgaW50
+IGRhOTE1MF9ncGFkY19pYnVzX2N1cnJlbnRfYXZnKGludCByYXdfdmFsKQ0KPiA+ICt7DQo+ID4g
+KwkvKiBDb252ZXJ0IHRvIG1BICovDQo+ID4gKwlyZXR1cm4gKDQgKiAoKHJhd192YWwgKiAxMDAw
+KSArIDUwMCkpIC8gMjA0ODsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGlubGluZSBpbnQg
+ZGE5MTUwX2dwYWRjX3ZidXNfMjF2X3ZvbHRhZ2Vfbm93KGludCByYXdfdmFsKQ0KPiA+ICt7DQo+
+ID4gKwkvKiBDb252ZXJ0IHRvIG1WICovDQo+ID4gKwlyZXR1cm4gKDIxICogKChyYXdfdmFsICog
+MTAwMCkgKyA1MDApKSAvIDEwMjQ7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbmxpbmUg
+aW50IGRhOTE1MF9ncGFkY192c3lzXzZ2X3ZvbHRhZ2Vfbm93KGludCByYXdfdmFsKQ0KPiA+ICt7
+DQo+ID4gKwkvKiBDb252ZXJ0IHRvIG1WICovDQo+ID4gKwlyZXR1cm4gKDMgKiAoKHJhd192YWwg
+KiAxMDAwKSArIDUwMCkpIC8gNTEyOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGRh
+OTE1MF9ncGFkY19yZWFkX3Byb2Nlc3NlZChzdHJ1Y3QgZGE5MTUwX2dwYWRjICpncGFkYywgaW50
+DQo+IGNoYW5uZWwsDQo+ID4gKwkJCQkgICAgICAgaW50IGh3X2NoYW4sIGludCAqdmFsKQ0KPiA+
+ICt7DQo+ID4gKwlpbnQgcmF3X3ZhbDsNCj4gPiArDQo+ID4gKwlyYXdfdmFsID0gZGE5MTUwX2dw
+YWRjX3JlYWRfYWRjKGdwYWRjLCBod19jaGFuKTsNCj4gPiArCWlmIChyYXdfdmFsIDwgMCkNCj4g
+PiArCQlyZXR1cm4gcmF3X3ZhbDsNCj4gPiArDQo+ID4gKwlzd2l0Y2ggKGNoYW5uZWwpIHsNCj4g
+PiArCWNhc2UgREE5MTUwX0dQQURDX0NIQU5fR1BJT0E6DQo+ID4gKwljYXNlIERBOTE1MF9HUEFE
+Q19DSEFOX0dQSU9COg0KPiA+ICsJY2FzZSBEQTkxNTBfR1BBRENfQ0hBTl9HUElPQzoNCj4gPiAr
+CWNhc2UgREE5MTUwX0dQQURDX0NIQU5fR1BJT0Q6DQo+ID4gKwkJKnZhbCA9IGRhOTE1MF9ncGFk
+Y19ncGlvXzZ2X3ZvbHRhZ2Vfbm93KHJhd192YWwpOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJY2Fz
+ZSBEQTkxNTBfR1BBRENfQ0hBTl9JQlVTOg0KPiA+ICsJCSp2YWwgPSBkYTkxNTBfZ3BhZGNfaWJ1
+c19jdXJyZW50X2F2ZyhyYXdfdmFsKTsNCj4gPiArCQlicmVhazsNCj4gPiArCWNhc2UgREE5MTUw
+X0dQQURDX0NIQU5fVkJVUzoNCj4gPiArCQkqdmFsID0gZGE5MTUwX2dwYWRjX3ZidXNfMjF2X3Zv
+bHRhZ2Vfbm93KHJhd192YWwpOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJY2FzZSBEQTkxNTBfR1BB
+RENfQ0hBTl9WU1lTOg0KPiA+ICsJCSp2YWwgPSBkYTkxNTBfZ3BhZGNfdnN5c182dl92b2x0YWdl
+X25vdyhyYXdfdmFsKTsNCj4gPiArCQlicmVhazsNCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJLyog
+Tm8gcHJvY2Vzc2luZyBmb3Igb3RoZXIgY2hhbm5lbHMgc28gcmV0dXJuIHJhdyB2YWx1ZSAqLw0K
+PiA+ICsJCSp2YWwgPSByYXdfdmFsOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJfQ0KPiA+ICsNCj4g
+PiArCXJldHVybiBJSU9fVkFMX0lOVDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGludCBk
+YTkxNTBfZ3BhZGNfcmVhZF9zY2FsZShpbnQgY2hhbm5lbCwgaW50ICp2YWwsIGludCAqdmFsMikN
+Cj4gPiArew0KPiA+ICsJc3dpdGNoIChjaGFubmVsKSB7DQo+ID4gKwljYXNlIERBOTE1MF9HUEFE
+Q19DSEFOX1ZCQVQ6DQo+ID4gKwkJKnZhbCA9IDI5MzI7DQo+ID4gKwkJKnZhbDIgPSAxMDAwOw0K
+PiA+ICsJCXJldHVybiBJSU9fVkFMX0ZSQUNUSU9OQUw7DQo+ID4gKwljYXNlIERBOTE1MF9HUEFE
+Q19DSEFOX1RKVU5DX0NPUkU6DQo+ID4gKwljYXNlIERBOTE1MF9HUEFEQ19DSEFOX1RKVU5DX09W
+UDoNCj4gPiArCQkqdmFsID0gMTAwMDAwMDsNCj4gPiArCQkqdmFsMiA9IDQ0MjA7DQo+ID4gKwkJ
+cmV0dXJuIElJT19WQUxfRlJBQ1RJT05BTDsNCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcmV0dXJu
+IC1FSU5WQUw7DQo+ID4gKwl9DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgZGE5MTUw
+X2dwYWRjX3JlYWRfb2Zmc2V0KGludCBjaGFubmVsLCBpbnQgKnZhbCkNCj4gPiArew0KPiA+ICsJ
+c3dpdGNoIChjaGFubmVsKSB7DQo+ID4gKwljYXNlIERBOTE1MF9HUEFEQ19DSEFOX1ZCQVQ6DQo+
+ID4gKwkJKnZhbCA9IDE1MDAwMDAgLyAyOTMyOw0KPiA+ICsJCXJldHVybiBJSU9fVkFMX0lOVDsN
+Cj4gPiArCWNhc2UgREE5MTUwX0dQQURDX0NIQU5fVEpVTkNfQ09SRToNCj4gPiArCWNhc2UgREE5
+MTUwX0dQQURDX0NIQU5fVEpVTkNfT1ZQOg0KPiA+ICsJCSp2YWwgPSAtMTQ0Ow0KPiA+ICsJCXJl
+dHVybiBJSU9fVkFMX0lOVDsNCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7
+DQo+ID4gKwl9DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgZGE5MTUwX2dwYWRjX3Jl
+YWRfcmF3KHN0cnVjdCBpaW9fZGV2ICppbmRpb19kZXYsDQo+ID4gKwkJCQkgc3RydWN0IGlpb19j
+aGFuX3NwZWMgY29uc3QgKmNoYW4sDQo+ID4gKwkJCQkgaW50ICp2YWwsIGludCAqdmFsMiwgbG9u
+ZyBtYXNrKQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgZGE5MTUwX2dwYWRjICpncGFkYyA9IGlpb19w
+cml2KGluZGlvX2Rldik7DQo+ID4gKw0KPiA+ICsJaWYgKChjaGFuLT5jaGFubmVsIDwgREE5MTUw
+X0dQQURDX0NIQU5fR1BJT0EpIHx8DQo+ID4gKwkgICAgKGNoYW4tPmNoYW5uZWwgPiBEQTkxNTBf
+R1BBRENfQ0hBTl9USlVOQ19PVlApKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsNCj4g
+PiArCXN3aXRjaCAobWFzaykgew0KPiA+ICsJY2FzZSBJSU9fQ0hBTl9JTkZPX1JBVzoNCj4gPiAr
+CWNhc2UgSUlPX0NIQU5fSU5GT19QUk9DRVNTRUQ6DQo+ID4gKwkJcmV0dXJuIGRhOTE1MF9ncGFk
+Y19yZWFkX3Byb2Nlc3NlZChncGFkYywgY2hhbi0+Y2hhbm5lbCwNCj4gPiArCQkJCQkJICAgY2hh
+bi0+YWRkcmVzcywgdmFsKTsNCj4gPiArCWNhc2UgSUlPX0NIQU5fSU5GT19TQ0FMRToNCj4gPiAr
+CQlyZXR1cm4gZGE5MTUwX2dwYWRjX3JlYWRfc2NhbGUoY2hhbi0+Y2hhbm5lbCwgdmFsLCB2YWwy
+KTsNCj4gPiArCWNhc2UgSUlPX0NIQU5fSU5GT19PRkZTRVQ6DQo+ID4gKwkJcmV0dXJuIGRhOTE1
+MF9ncGFkY19yZWFkX29mZnNldChjaGFuLT5jaGFubmVsLCB2YWwpOw0KPiA+ICsJZGVmYXVsdDoN
+Cj4gPiArCQlyZXR1cm4gLUVJTlZBTDsNCj4gPiArCX0NCj4gPiArfQ0KPiA+ICsNCj4gPiArc3Rh
+dGljIGNvbnN0IHN0cnVjdCBpaW9faW5mbyBkYTkxNTBfZ3BhZGNfaW5mbyA9IHsNCj4gPiArCS5y
+ZWFkX3JhdyA9ICZkYTkxNTBfZ3BhZGNfcmVhZF9yYXcsDQo+ID4gKwkuZHJpdmVyX21vZHVsZSA9
+IFRISVNfTU9EVUxFLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArI2RlZmluZSBEQTkxNTBfR1BBRENf
+Q0hBTk5FTChfaWQsIF9od19pZCwgX3R5cGUsIGNoYW5faW5mbywJXA0KPiA+ICsJCQkgICAgIF9l
+eHRfbmFtZSkgewkJCVwNCj4gPiArCS50eXBlID0gX3R5cGUsCQkJCQkJXA0KPiA+ICsJLmluZGV4
+ZWQgPSAxLAkJCQkJCVwNCj4gPiArCS5jaGFubmVsID0gREE5MTUwX0dQQURDX0NIQU5fIyNfaWQs
+CQkJXA0KPiA+ICsJLmFkZHJlc3MgPSBEQTkxNTBfR1BBRENfSFdfQ0hBTl8jI19od19pZCwJCVwN
+Cj4gPiArCS5pbmZvX21hc2tfc2VwYXJhdGUgPSBjaGFuX2luZm8sCQkJXA0KPiA+ICsJLmV4dGVu
+ZF9uYW1lID0gX2V4dF9uYW1lLAkJCQlcDQo+ID4gKwkuZGF0YXNoZWV0X25hbWUgPSAjX2lkLAkJ
+CQkJXA0KPiA+ICt9DQo+ID4gKw0KPiA+ICsjZGVmaW5lIERBOTE1MF9HUEFEQ19DSEFOTkVMX1JB
+VyhfaWQsIF9od19pZCwgX3R5cGUsIF9leHRfbmFtZSkJXA0KPiA+ICsJREE5MTUwX0dQQURDX0NI
+QU5ORUwoX2lkLCBfaHdfaWQsIF90eXBlLAkJXA0KPiA+ICsJCQkgICAgIEJJVChJSU9fQ0hBTl9J
+TkZPX1JBVyksIF9leHRfbmFtZSkNCj4gPiArDQo+ID4gKyNkZWZpbmUgREE5MTUwX0dQQURDX0NI
+QU5ORUxfU0NBTEVEKF9pZCwgX2h3X2lkLCBfdHlwZSwgX2V4dF9uYW1lKQlcDQo+ID4gKwlEQTkx
+NTBfR1BBRENfQ0hBTk5FTChfaWQsIF9od19pZCwgX3R5cGUsCQkJXA0KPiA+ICsJCQkgICAgIEJJ
+VChJSU9fQ0hBTl9JTkZPX1JBVykgfAkJCVwNCj4gPiArCQkJICAgICBCSVQoSUlPX0NIQU5fSU5G
+T19TQ0FMRSkgfAkJCVwNCj4gPiArCQkJICAgICBCSVQoSUlPX0NIQU5fSU5GT19PRkZTRVQpLAkJ
+CVwNCj4gPiArCQkJICAgICBfZXh0X25hbWUpDQo+ID4gKw0KPiA+ICsjZGVmaW5lIERBOTE1MF9H
+UEFEQ19DSEFOTkVMX1BST0NFU1NFRChfaWQsIF9od19pZCwgX3R5cGUsIF9leHRfbmFtZSkNCj4g
+CVwNCj4gPiArCURBOTE1MF9HUEFEQ19DSEFOTkVMKF9pZCwgX2h3X2lkLCBfdHlwZSwJCQlcDQo+
+ID4gKwkJCSAgICAgQklUKElJT19DSEFOX0lORk9fUFJPQ0VTU0VEKSwgX2V4dF9uYW1lKQ0KPiA+
+ICsNCj4gPiArLyogU3VwcG9ydGVkIGNoYW5uZWxzICovDQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1
+Y3QgaWlvX2NoYW5fc3BlYyBkYTkxNTBfZ3BhZGNfY2hhbm5lbHNbXSA9IHsNCj4gPiArCURBOTE1
+MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NFRChHUElPQSwgR1BJT0FfNlYsIElJT19WT0xUQUdFLA0K
+PiAiR1BJT0EiKSwNCj4gPiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NFRChHUElPQiwg
+R1BJT0JfNlYsIElJT19WT0xUQUdFLA0KPiAiR1BJT0IiKSwNCj4gPiArCURBOTE1MF9HUEFEQ19D
+SEFOTkVMX1BST0NFU1NFRChHUElPQywgR1BJT0NfNlYsIElJT19WT0xUQUdFLA0KPiAiR1BJT0Mi
+KSwNCj4gPiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NFRChHUElPRCwgR1BJT0RfNlYs
+IElJT19WT0xUQUdFLA0KPiAiR1BJT0QiKSwNCj4gSSdtIG5vdCBzdXJlIHNvbWUgb2YgdGhlc2Ug
+cmVhbGx5IGRlc2VydmUgZXh0ZW5kZWQgbmFtZXMuICBUaG9zZSBhcmUgdXN1YWxseQ0KPiByZXNl
+cnZlZCBmb3IgbmFtaW5nIHN0cmFuZ2UgaW50ZXJuYWwgYWRjIGNoYW5uZWxzIGV0Yy4gIFRoZXNl
+IGZpcnN0IDQgYXJlDQo+IHByZXN1bWFibHkganVzdCBmb3IgaW5wdXQgcGlucz8gIFRob3NlIHNo
+b3VsZCBqdXN0IGJlIGNoYW5uZWxzIDAuLjMNCj4gT24gYW5vdGhlciBub3RlLCB1bmxlc3MgeW91
+IHdhbnQgcmVhbGx5IHdlaXJkIHN5c2ZzIGF0dHJpYnV0ZSBuYW1lcywgdGhlDQo+IGV4dGVuZGVk
+IG5hbWVzIHdhbnQgdG8gYmUgbG93ZXJjYXNlLg0KPiANCg0KSSdkIHByZWZlciB0byBrZWVwIHRo
+ZSBuYW1lcyBiZWNhdXNlIHRoZSBpbnB1dCBwaW5zIGFyZSBtdXhlZCB3aXRoIEdQSU9zIG9mIHRo
+ZQ0KY2hpcCwgc28gdGhvdWdodCBpdCBzZW5zaWJsZSB0byBzaG93IHRoYXQgdGhpcyBpcyB0aGUg
+Y2FzZS4gQW0gaGFwcHkgdG8gY2hhbmdlDQp0byBsb3dlci1jYXNlIHRvIGZvbGxvdyBjb252ZW50
+aW9uLg0KDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTk5FTF9QUk9DRVNTRUQoSUJVUywgSUJVU19T
+RU5TRSwgSUlPX0NVUlJFTlQsDQo+ICJJQlVTIiksDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTk5F
+TF9QUk9DRVNTRUQoVkJVUywgVkJVU19ESVZfLCBJSU9fVk9MVEFHRSwNCj4gIlZCVVMiKSwNCj4g
+PiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1JBVyhJRCwgSUQsIElJT19WT0xUQUdFLCAiSUQiKSwN
+Cj4gWW91IGhhZSBhbiBpZGVudGlmaWVyIHZvbHRhZ2U/IFRoYXQncyBjZXJ0YWlubHkgdW51c3Vh
+bCBidXQgaWYgc28gLSBmYWlyIGVub3VnaA0KPiBhbmQgaXQgZGVmaW50ZWx5IG5lZWRzIHRoZSBl
+eHRuYW1lIQ0KDQpUaGFua3MgZm9yIHBvaW50aW5nIHRoYXQgb3V0LiBIYXZpbmcgY2hlY2tlZCBh
+Z2FpbiwgdGhpcyBpcyBub3QgbmVlZGVkIGFuZCBjYW4NCmJlIGRpc3BlbnNlZCB3aXRoLg0KDQo+
+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTk5FTF9QUk9DRVNTRUQoVlNZUywgVlNZUywgSUlPX1ZPTFRB
+R0UsICJWU1lTIiksDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTk5FTF9TQ0FMRUQoVkJBVCwgVkJB
+VCwgSUlPX1ZPTFRBR0UsICJWQkFUIiksDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hBTk5FTF9SQVco
+VEJBVCwgVEJBVCwgSUlPX1ZPTFRBR0UsICJUQkFUIiksDQo+ID4gKwlEQTkxNTBfR1BBRENfQ0hB
+Tk5FTF9TQ0FMRUQoVEpVTkNfQ09SRSwgVEpVTkNfQ09SRSwNCj4gSUlPX1RFTVAsDQo+ID4gKwkJ
+CQkgICAgIlRKVU5DX0NPUkUiKSwNCj4gdGp1bmNfY29yZSBpcyBhIGdvb2QgdXNlIG9mIGV4dG5h
+bWUgOykNCj4gPiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1NDQUxFRChUSlVOQ19PVlAsIFRKVU5D
+X09WUCwgSUlPX1RFTVAsDQo+ID4gKwkJCQkgICAgIlRKVU5DX09WUCIpLA0KPiA+ICt9Ow0KPiA+
+ICsNCj4gPiArLyogRGVmYXVsdCBtYXBzIHVzZWQgYnkgZGE5MTUwLWNoYXJnZXIgKi8NCj4gPiAr
+c3RhdGljIHN0cnVjdCBpaW9fbWFwIGRhOTE1MF9ncGFkY19kZWZhdWx0X21hcHNbXSA9IHsNCj4g
+PiArCXsNCj4gPiArCQkuY29uc3VtZXJfZGV2X25hbWUgPSAiZGE5MTUwLWNoYXJnZXIiLA0KPiA+
+ICsJCS5jb25zdW1lcl9jaGFubmVsID0gIkNIQU5fSUJVUyIsDQo+ID4gKwkJLmFkY19jaGFubmVs
+X2xhYmVsID0gIklCVVMiLA0KPiA+ICsJfSwNCj4gPiArCXsNCj4gPiArCQkuY29uc3VtZXJfZGV2
+X25hbWUgPSAiZGE5MTUwLWNoYXJnZXIiLA0KPiA+ICsJCS5jb25zdW1lcl9jaGFubmVsID0gIkNI
+QU5fVkJVUyIsDQo+ID4gKwkJLmFkY19jaGFubmVsX2xhYmVsID0gIlZCVVMiLA0KPiA+ICsJfSwN
+Cj4gPiArCXsNCj4gPiArCQkuY29uc3VtZXJfZGV2X25hbWUgPSAiZGE5MTUwLWNoYXJnZXIiLA0K
+PiA+ICsJCS5jb25zdW1lcl9jaGFubmVsID0gIkNIQU5fVEpVTkMiLA0KPiA+ICsJCS5hZGNfY2hh
+bm5lbF9sYWJlbCA9ICJUSlVOQ19DT1JFIiwNCj4gPiArCX0sDQo+ID4gKwl7DQo+ID4gKwkJLmNv
+bnN1bWVyX2Rldl9uYW1lID0gImRhOTE1MC1jaGFyZ2VyIiwNCj4gPiArCQkuY29uc3VtZXJfY2hh
+bm5lbCA9ICJDSEFOX1ZCQVQiLA0KPiA+ICsJCS5hZGNfY2hhbm5lbF9sYWJlbCA9ICJWQkFUIiwN
+Cj4gPiArCX0sDQo+ID4gKwl7fSwNCj4gPiArfTsNCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgZGE5
+MTUwX2dwYWRjX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gK3sNCj4g
+PiArCXN0cnVjdCBkZXZpY2UgKmRldiA9ICZwZGV2LT5kZXY7DQo+ID4gKwlzdHJ1Y3QgZGE5MTUw
+ICpkYTkxNTAgPSBkZXZfZ2V0X2RydmRhdGEoZGV2LT5wYXJlbnQpOw0KPiA+ICsJc3RydWN0IGRh
+OTE1MF9ncGFkYyAqZ3BhZGM7DQo+ID4gKwlzdHJ1Y3QgaWlvX2RldiAqaW5kaW9fZGV2Ow0KPiA+
+ICsJaW50IGlycSwgcmV0Ow0KPiA+ICsNCj4gPiArCWluZGlvX2RldiA9IGRldm1faWlvX2Rldmlj
+ZV9hbGxvYygmcGRldi0+ZGV2LCBzaXplb2YoKmdwYWRjKSk7DQo+ID4gKwlpZiAoIWluZGlvX2Rl
+dikgew0KPiA+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byBhbGxvY2F0ZSBJSU8g
+ZGV2aWNlXG4iKTsNCj4gPiArCQlyZXR1cm4gLUVOT01FTTsNCj4gPiArCX0NCj4gPiArCWdwYWRj
+ID0gaWlvX3ByaXYoaW5kaW9fZGV2KTsNCj4gPiArDQo+ID4gKwlwbGF0Zm9ybV9zZXRfZHJ2ZGF0
+YShwZGV2LCBpbmRpb19kZXYpOw0KPiA+ICsJZ3BhZGMtPmRhOTE1MCA9IGRhOTE1MDsNCj4gPiAr
+CWdwYWRjLT5kZXYgPSBkZXY7DQo+ID4gKwltdXRleF9pbml0KCZncGFkYy0+bG9jayk7DQo+ID4g
+Kwlpbml0X2NvbXBsZXRpb24oJmdwYWRjLT5jb21wbGV0ZSk7DQo+ID4gKw0KPiA+ICsJaXJxID0g
+cGxhdGZvcm1fZ2V0X2lycV9ieW5hbWUocGRldiwgIkdQQURDIik7DQo+ID4gKwlpZiAoaXJxIDwg
+MCkgew0KPiA+ICsJCWRldl9lcnIoZGV2LCAiRmFpbGVkIHRvIGdldCBJUlE6ICVkXG4iLCBpcnEp
+Ow0KPiA+ICsJCXJldHVybiBpcnE7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJcmV0ID0gZGV2bV9y
+ZXF1ZXN0X3RocmVhZGVkX2lycShkZXYsIGlycSwgTlVMTCwgZGE5MTUwX2dwYWRjX2lycSwNCj4g
+PiArCQkJCQlJUlFGX09ORVNIT1QsICJHUEFEQyIsIGdwYWRjKTsNCj4gPiArCWlmIChyZXQpIHsN
+Cj4gPiArCQlkZXZfZXJyKGRldiwgIkZhaWxlZCB0byByZXF1ZXN0IElSUSAlZDogJWRcbiIsIGly
+cSwgcmV0KTsNCj4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCXJldCA9
+IGlpb19tYXBfYXJyYXlfcmVnaXN0ZXIoaW5kaW9fZGV2LCBkYTkxNTBfZ3BhZGNfZGVmYXVsdF9t
+YXBzKTsNCj4gPiArCWlmIChyZXQpIHsNCj4gPiArCQlkZXZfZXJyKGRldiwgIkZhaWxlZCB0byBy
+ZWdpc3RlciBJSU8gbWFwczogJWRcbiIsIHJldCk7DQo+ID4gKwkJcmV0dXJuIHJldDsNCj4gPiAr
+CX0NCj4gPiArDQo+ID4gKwlpbmRpb19kZXYtPm5hbWUgPSBkZXZfbmFtZShkZXYpOw0KPiA+ICsJ
+aW5kaW9fZGV2LT5kZXYucGFyZW50ID0gZGV2Ow0KPiA+ICsJaW5kaW9fZGV2LT5kZXYub2Zfbm9k
+ZSA9IHBkZXYtPmRldi5vZl9ub2RlOw0KPiA+ICsJaW5kaW9fZGV2LT5pbmZvID0gJmRhOTE1MF9n
+cGFkY19pbmZvOw0KPiA+ICsJaW5kaW9fZGV2LT5tb2RlcyA9IElORElPX0RJUkVDVF9NT0RFOw0K
+PiA+ICsJaW5kaW9fZGV2LT5jaGFubmVscyA9IGRhOTE1MF9ncGFkY19jaGFubmVsczsNCj4gPiAr
+CWluZGlvX2Rldi0+bnVtX2NoYW5uZWxzID0gQVJSQVlfU0laRShkYTkxNTBfZ3BhZGNfY2hhbm5l
+bHMpOw0KPiA+ICsNCj4gPiArCXJldCA9IGlpb19kZXZpY2VfcmVnaXN0ZXIoaW5kaW9fZGV2KTsN
+Cj4gPiArCWlmIChyZXQpIHsNCj4gPiArCQlkZXZfZXJyKGRldiwgIkZhaWxlZCB0byByZWdpc3Rl
+ciBJSU8gZGV2aWNlOiAlZFxuIiwgcmV0KTsNCj4gPiArCQlnb3RvIGlpb19tYXBfdW5yZWc7DQo+
+ID4gKwl9DQo+ID4gKw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gKw0KPiA+ICtpaW9fbWFwX3VucmVn
+Og0KPiA+ICsJaWlvX21hcF9hcnJheV91bnJlZ2lzdGVyKGluZGlvX2Rldik7DQo+ID4gKw0KPiA+
+ICsJcmV0dXJuIHJldDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGludCBkYTkxNTBfZ3Bh
+ZGNfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gK3sNCj4gPiArCXN0
+cnVjdCBpaW9fZGV2ICppbmRpb19kZXYgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4g
+PiArDQo+ID4gKwlpaW9fZGV2aWNlX3VucmVnaXN0ZXIoaW5kaW9fZGV2KTsNCj4gPiArCWlpb19t
+YXBfYXJyYXlfdW5yZWdpc3RlcihpbmRpb19kZXYpOw0KPiA+ICsNCj4gPiArCXJldHVybiAwOw0K
+PiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBkYTkxNTBf
+Z3BhZGNfZHJpdmVyID0gew0KPiA+ICsJLmRyaXZlciA9IHsNCj4gPiArCQkubmFtZSA9ICJkYTkx
+NTAtZ3BhZGMiLA0KPiA+ICsJfSwNCj4gPiArCS5wcm9iZSA9IGRhOTE1MF9ncGFkY19wcm9iZSwN
+Cj4gPiArCS5yZW1vdmUgPSBkYTkxNTBfZ3BhZGNfcmVtb3ZlLA0KPiA+ICt9Ow0KPiA+ICsNCj4g
+PiArbW9kdWxlX3BsYXRmb3JtX2RyaXZlcihkYTkxNTBfZ3BhZGNfZHJpdmVyKTsNCj4gPiArDQo+
+ID4gK01PRFVMRV9ERVNDUklQVElPTigiR1BBREMgRHJpdmVyIGZvciBEQTkxNTAiKTsNCj4gPiAr
+TU9EVUxFX0FVVEhPUigiQWRhbSBUaG9tc29uDQo+IDxBZGFtLlRob21zb24uT3BlbnNvdXJjZUBk
+aWFzZW1pLmNvbT4iKTsNCj4gPiArTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOw0KPiA+IC0tDQo+ID4g
+MS45LjMNCj4gPg0K
