@@ -1,42 +1,39 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 1/2] thermal: rcar: fix ENR register value
-Date: Wed, 7 Jan 2015 09:26:31 +0100
-Message-ID: <CAMuHMdX=cGJjqf79pQ_Snd6Oz1=WOXkHwka6EKQnxEvztDzyqw@mail.gmail.com>
-References: <1420593191-3736-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
-	<1420593191-3736-2-git-send-email-yoshihiro.shimoda.uh@renesas.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH 01/17] ARM: sunxi: Register cpufreq-dt for sun[45678]i
+Date: Wed, 7 Jan 2015 17:07:10 +0800
+Message-ID: <CAGb2v64Qv1Nhy2w--4T7ujw9NC17QhJdmrn0VyDtTajv+tu+NQ@mail.gmail.com>
+References: <1420511727-8242-1-git-send-email-wens@csie.org>
+ <1420511727-8242-2-git-send-email-wens@csie.org> <20150106155532.GR7853@lukather>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1420593191-3736-2-git-send-email-yoshihiro.shimoda.uh@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20150106155532.GR7853@lukather>
+Sender: linux-input-owner@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 7, 2015 at 2:13 AM, Yoshihiro Shimoda
-<yoshihiro.shimoda.uh@renesas.com> wrote:
-> On R-Mobile APE6, since it has 3 thermal zones, ENR register
-> has enable bits in bit 19-16, bit 11-8 and bit 3-0.
+Hi,
+
+On Tue, Jan 6, 2015 at 11:55 PM, Maxime Ripard
+<maxime.ripard@free-electrons.com> wrote:
+> Hi,
 >
-> However, on R-Car gen2, since it has 1 thermal zone, ENR register has
-> enable bits in bit 3-0. (In other words, the write value should always
-> be 0 for bit 31-4 of ENR register.)
+> On Tue, Jan 06, 2015 at 10:35:11AM +0800, Chen-Yu Tsai wrote:
+>> On sun[45678]i, we have one cluster of identical cores sharing a
+>> clock, which is ideal for using cpufreq-dt. Register a platform
+>> device for cpufreq-dt.
+>>
+>> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 >
-> So, this patch fixes the ENR register value using I/O resource sets.
->
-> Signed-off-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> While I don't have anything against this patch, I seem to recall that
+> it was not necessary anymore, or that there was some work in the
+> direction of removing that kind of code, have you looked into that?
 
-Thanks for the update!
+I believe you are referring to the work done by Viresh Kumar (CCed),
+specifically the 2 series "[RFC V1 0/8] CPUFreq: create platform-dev
+for DT based cpufreq drivers" and "[RFC] OPP: Redefine bindings to
+overcome shortcomings". So far the new code has not appeared in
+linux-next. If it does, I will happily use it.
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ChenYu
