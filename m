@@ -1,66 +1,67 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH 01/17] ARM: sunxi: Register cpufreq-dt for sun[45678]i
-Date: Wed, 7 Jan 2015 11:23:19 +0100
-Message-ID: <20150107102319.GH7853@lukather>
-References: <1420511727-8242-1-git-send-email-wens@csie.org>
- <1420511727-8242-2-git-send-email-wens@csie.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2 0/2] thermal: rcar: minor fixes
+Date: Wed, 7 Jan 2015 09:30:15 -0400
+Message-ID: <20150107133013.GA9484@developer>
+References: <1420593191-3736-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2ctSxJPqE6GQjdSc"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:51393 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752306AbbAGKZd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jan 2015 05:25:33 -0500
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Return-path: <linux-sh-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1420511727-8242-2-git-send-email-wens@csie.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1420593191-3736-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
 
---2ctSxJPqE6GQjdSc
+--fdj2RfSjLxBAspz7
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 06, 2015 at 10:35:11AM +0800, Chen-Yu Tsai wrote:
-> On sun[45678]i, we have one cluster of identical cores sharing a
-> clock, which is ideal for using cpufreq-dt. Register a platform
-> device for cpufreq-dt.
+On Wed, Jan 07, 2015 at 10:13:09AM +0900, Yoshihiro Shimoda wrote:
+> This patch series is based on linux-soc-thermal.git / fixes branch.
+> (commit id =3D 5a723e81923410f0d3ae4c38974607b13befdda9)
 >=20
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+> Changes from v1:
+>  - The driver calculate the ENR value using IO resource sets in patch 1.
+>  - Update description about the helper variables 'old' and 'new' in patch=
+ 2.
+>  - Add "Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>" in patch =
+2.
+>=20
+> Yoshihiro Shimoda (2):
+>   thermal: rcar: fix ENR register value
+>   thermal: rcar: change type of ctemp in rcar_thermal_update_temp()
 
-Applied, thanks!
+Applied to my -fixes branch.
 
-Maxime
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Thanks
 
---2ctSxJPqE6GQjdSc
+>=20
+>  drivers/thermal/rcar_thermal.c |   15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
+>=20
+> --=20
+> 1.7.9.5
+>=20
+
+--fdj2RfSjLxBAspz7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUrQkXAAoJEBx+YmzsjxAgiXEP/RVnuo/EamHWVEQb97QErYZh
-3PL8lon+nUg5ZTl2XaH2fJ2hmtmPgeKA+7YaGQCa2Qf+A8D0HEnD44EKIrGCsiin
-sPug2udPI1cvR+guCvL/goznyG+w/j1++iq0OFM7Gbp/d7KOcaGLwbEGsB4osd0j
-Htbw4clCcP50RV3KYirDc4Y2i8jIShEwTSb8qnYir8g54Okzsm8i16OUdB8Du4mG
-z+4m71KHoxVCLxxw/hg/1DCKQHOOKB/5hnQCrFzhvxx/HQ1LcbslpdmQ5/bTg3E/
-jFzWINPL7/kXSXwVuoKmdzQVyE2bH7Ywxb+D32/zRgQoaoUE6yfzIryx04Lv0jsD
-U7eNvPEmmGBAlGUEwLxueedT9OondGMoqHl3tR6ZQ+71nf1YbYxuSqKlr2oyULaM
-g72xAnalZptFXIiltAbTBJNOP1IFj6vv4MoQTpld1cshgxaUTR4Vg8uinH4Z/4nc
-g6X4LH2/4C7bDj+aWEV1cZFdp4zoKJWvLOeMHzfMpCkl8CmrhMQJYdgYn5BLJo2u
-MVp0vw/Yor98O8lKZxy+KPD8PN9WDRuZBnPxDPL/K7iS5YkNwYhbDt0nHUgws6H0
-yBkQdASQjE5uePWiUd4gSBPO9VhH7Q2s7NQDIy66bzmnASOF7D6if9CK7NO3/MNd
-LWSN87SbwE2sGajKiipn
-=pl9a
+iQEcBAEBAgAGBQJUrTTFAAoJEMLUO4d9pOJW20gIAJTpQlix/dDIrfzA3F5uPiZH
+e38+vL3e7dBZGztbnviZNB76REU+lO3TPB9eZi/p0S884CM7r67j/w0o8zLbN8Vs
+1GlAlRJiGnbt6BjfTxnR+VwmuSHjjb1i3Si4bJGYOT4Y6QiBRT6O6p0zax1oe7K8
+j2lKhD9tMgiv10MpXiaaulSmYbHDqxJUyiZrbjB+7TnXhDTQrOAim8f3Mo/pl8tC
+ORvoR0UzzRl/+zyj/eEQKnxvY8vEZiqhRxK3Rf9TBpcAmtBgMOmcvjt8ILbMg9cR
+whOKc02QwQYyspQcHZ97n1kUHTF6jDTArXRhRXoAzjnEjNoKEHqUuDbwG6eqBnU=
+=lBbn
 -----END PGP SIGNATURE-----
 
---2ctSxJPqE6GQjdSc--
+--fdj2RfSjLxBAspz7--
