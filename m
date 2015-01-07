@@ -1,142 +1,151 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv7 05/10] devfreq: event: Add documentation for exynos-ppmu
- devfreq-event driver
-Date: Thu, 08 Jan 2015 08:51:12 +0900
-Message-ID: <1420674677-3077-6-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCHv7 08/10] ARM: dts: Add PPMU dt node for Exynos5260 SoC
+Date: Thu, 08 Jan 2015 08:51:15 +0900
+Message-ID: <1420674677-3077-9-git-send-email-cw00.choi@samsung.com>
 References: <1420674677-3077-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:14581 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755928AbbAGXvZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jan 2015 18:51:25 -0500
 In-reply-to: <1420674677-3077-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Jonghwan Choi <jhbird.choi@samsung.com>
 
-This patch adds the documentation for Exynos PPMU (Platform Performance
-Monitoring Unit) devfreq-event driver.
+This patch adds PPMU (Performance Profiling Monitoring Unit) dt node
+Exynos5260 SoC.
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Exynos5260 SoC has following PPMU IPs:
+- PPMU_DREX0_S0 0x10c60000
+- PPMU_DREX0_S1 0x10c70000
+- PPMU_DREX1_S0 0x10c80000
+- PPMU_DREX1_S1 0x10c90000
+- PPMU_EAGLE    0x10cc0000
+- PPMU_KFC      0x10cd0000
+- PPMU_MFC      0x11040000
+- PPMU_G3D      0x11880000
+- PPMU_FSYS     0x12220000
+- PPMU_ISP      0x13370000
+- PPMU_FICM     0x13cb0000
+- PPMU_GSCL     0x13e60000
+- PPMU_MSCL     0x13ee0000
+- PPMU_FIMD0X   0x145b0000
+- PPMU_FIMD1X   0x145c0000
+
+The drivers/devfreq/exynos/exynos5_bus.c supports the memory bus frequency/
+voltage scaling of Exynos5260 SoC with DEVFREQ framework.
+
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++++++++++++++++++
- 1 file changed, 110 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ arch/arm/boot/dts/exynos5260.dtsi | 90 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-new file mode 100644
-index 0000000..e665d30
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-@@ -0,0 +1,110 @@
+diff --git a/arch/arm/boot/dts/exynos5260.dtsi b/arch/arm/boot/dts/exynos5260.dtsi
+index 36da38e..26f3074 100644
+--- a/arch/arm/boot/dts/exynos5260.dtsi
++++ b/arch/arm/boot/dts/exynos5260.dtsi
+@@ -307,6 +307,96 @@
+ 			fifo-depth = <64>;
+ 			status = "disabled";
+ 		};
 +
-+* Samsung Exynos PPMU (Performance Profiling Monitoring Unit) device
-+
-+The Samsung Exynos SoC have PPMU (Performance Profiling Monitoring Unit) for
-+each IPs. PPMU provides the primitive values to get performance data. These
-+events provide useful information about the behavior of the SoC that you can
-+use when analyzing system performance, and made visible and can be counted
-+using login in each IP (DMC, CPU, RIGHTBUS, LEFTBUS, CAM interface, LCD, G3D,
-+MFC). The Exynos PPMU driver use the devfreq-event class to provide event data
-+to various devfreq device. The devfreq device would use the event data when
-+derterming the current state of each IP.
-+
-+Required properties:
-+- compatible: Should be "samsung,exynos-ppmu".
-+- reg: physical base address of each PPMU and length of memory mapped region.
-+
-+Optional properties:
-+- clock-names : the name of clock used by the PPMU, "ppmu"
-+- clocks : phandles for clock specified in "clock-names" property
-+- #clock-cells: should be 1.
-+
-+Example1 : PPMU nodes in exynos3250.dtsi are listed below.
-+
-+		ppmu_dmc0: ppmu_dmc0@106a0000 {
++		ppmu_drex0_s0: ppmu_drex0_s0@10c60000 {
 +			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106a0000 0x2000>;
++			reg = <0x10c60000 0x2000>;
 +			status = "disabled";
 +		};
 +
-+		ppmu_dmc1: ppmu_dmc1@106b0000 {
++		ppmu_drex0_s1: ppmu_drex0_s1@10c70000 {
 +			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106b0000 0x2000>;
++			reg = <0x10c70000 0x2000>;
 +			status = "disabled";
 +		};
 +
-+		ppmu_cpu: ppmu_cpu@106c0000 {
++		ppmu_drex1_s0: ppmu_drex1_s0@10c80000 {
 +			compatible = "samsung,exynos-ppmu";
-+			reg = <0x106c0000 0x2000>;
++			reg = <0x10c80000 0x2000>;
 +			status = "disabled";
 +		};
 +
-+		ppmu_rightbus: ppmu_rightbus@112a0000 {
++		ppmu_drex1_s1: ppmu_drex1_s1@10c90000 {
 +			compatible = "samsung,exynos-ppmu";
-+			reg = <0x112a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMURIGHT>;
-+			clock-names = "ppmu";
++			reg = <0x10c90000 0x2000>;
 +			status = "disabled";
 +		};
 +
-+		ppmu_leftbus: ppmu_leftbus0@116a0000 {
++		ppmu_eagle: ppmu_eagle@10cc0000 {
 +			compatible = "samsung,exynos-ppmu";
-+			reg = <0x116a0000 0x2000>;
-+			clocks = <&cmu CLK_PPMULEFT>;
-+			clock-names = "ppmu";
++			reg = <0x10cc0000 0x2000>;
 +			status = "disabled";
 +		};
 +
-+Example2 : Events of each PPMU node in exynos3250-rinato.dts are listed below.
-+
-+	&ppmu_dmc0 {
-+		status = "okay";
-+
-+		events {
-+			ppmu_dmc0_3: ppmu-event3-dmc0 {
-+				event-name = "ppmu-event3-dmc0";
-+			};
-+
-+			ppmu_dmc0_2: ppmu-event2-dmc0 {
-+				event-name = "ppmu-event2-dmc0";
-+			};
-+
-+			ppmu_dmc0_1: ppmu-event1-dmc0 {
-+				event-name = "ppmu-event1-dmc0";
-+			};
-+
-+			ppmu_dmc0_0: ppmu-event0-dmc0 {
-+				event-name = "ppmu-event0-dmc0";
-+			};
++		ppmu_kfc: ppmu_kfc@10cd0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x10cd0000 0x2000>;
++			status = "disabled";
 +		};
-+	};
 +
-+	&ppmu_dmc1 {
-+		status = "okay";
-+
-+		events {
-+			ppmu_dmc1_3: ppmu-event3-dmc1 {
-+				event-name = "ppmu-event3-dmc1";
-+			};
++		ppmu_mfc: ppmu_mfc@11040000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x11040000 0x2000>;
++			status = "disabled";
 +		};
-+	};
 +
-+	&ppmu_leftbus {
-+		status = "okay";
-+
-+		events {
-+			ppmu_leftbus_3: ppmu-event3-leftbus {
-+				event-name = "ppmu-event3-leftbus";
-+			};
++		ppmu_g3d: ppmu_g3d@11880000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x11880000 0x2000>;
++			status = "disabled";
 +		};
-+	};
 +
-+	&ppmu_rightbus {
-+		status = "okay";
-+
-+		events {
-+			ppmu_rightbus_3: ppmu-event3-rightbus {
-+				event-name = "ppmu-event3-rightbus";
-+			};
++		ppmu_fsys: ppmu_fsys@12220000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x12220000 0x2000>;
++			status = "disabled";
 +		};
-+	};
++
++		ppmu_isp: ppmu_isp@13370000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x13370000 0x2000>;
++			status = "disabled";
++		};
++
++		ppmu_fimc: ppmu_fimc@13cb0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x13cb0000 0x2000>;
++			status = "disabled";
++		};
++
++		ppmu_gscl: ppmu_gscl@13e60000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x13e60000 0x2000>;
++			status = "disabled";
++		};
++
++		ppmu_mscl: ppmu_gscl@13ee0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x13ee0000 0x2000>;
++			status = "disabled";
++		};
++
++		ppmu_fimd0x: ppmu_fimd0x@145b0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x145b0000 0x2000>;
++			status = "disabled";
++		};
++
++		ppmu_fimd1x: ppmu_fimd1x@145c0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x145c0000 0x2000>;
++			status = "disabled";
++		};
+ 	};
+ };
+ 
 -- 
 1.8.5.5
+
