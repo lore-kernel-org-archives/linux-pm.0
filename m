@@ -1,96 +1,210 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver if
- MCPM is unavailable
-Date: Thu, 8 Jan 2015 12:29:58 +0000
-Message-ID: <20150108122958.GB32308@red-moon>
-References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
- <54AE459B.8010703@linaro.org>
- <54AE4ADF.3030307@arm.com>
- <54AE55CE.6040201@linaro.org>
- <54AE5C8F.9080600@arm.com>
- <54AE65EC.3050808@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:57785 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754642AbbAHMaI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 07:30:08 -0500
-Content-Disposition: inline
-In-Reply-To: <54AE65EC.3050808@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: [PATCH v7 06/16] clk: tegra: Add Tegra124 DFLL clocksource platform driver
+Date: Thu,  8 Jan 2015 15:22:09 +0200
+Message-ID: <1420723339-30735-7-git-send-email-mikko.perttunen@kapsi.fi>
+References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>
 
-On Thu, Jan 08, 2015 at 11:11:40AM +0000, Daniel Lezcano wrote:
+From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-[...]
+Add basic platform driver support for the fast CPU cluster DFLL
+clocksource found on Tegra124 SoCs. This small driver selects the
+appropriate Tegra124-specific characterization data and integration
+code. It relies on the DFLL common code to do most of the work.
 
-> >> IMO, it would be better to be more strict with the mcpm
-> >> initialization and not let the system boot if something is wrong with
-> >> it which I believe is coming from the firmware and let the user to
-> >> figure out what is really happening by letting him to disable mcpm in
-> >> the kernel configuration (which in turn will disable cpuidle).
-> >
-> > Again I fully agree, but in this case I manually switched to legacy boot
-> > mode on TC2 and used same kernel with MCPM config enabled. Do you mean
-> > to say we should not support that even when developer understand the
-> > consequence of that ?
-> 
-> Well, I see there are the exynos5410/5420/5422. For the 5422 on 
-> chromebook2 MCPM works well, IIUC. But for the 5422 on odroid-xu3, MCPM 
-> does not work, hence cpuidle neither because of the firmware.
-> 
-> Silently disabling cpuidle because mcpm did not initialize will hide the 
-> issue.
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+---
+ drivers/clk/tegra/Makefile                 |   2 +
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c | 165 +++++++++++++++++++++++++++++
+ 2 files changed, 167 insertions(+)
+ create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
 
-No. MCPM *will* initialize, Sudeep's patch does not silently disable
-CPUidle.
-To put it differently MCPM will initialize if CCI is in the DT and it
-is "available", so unless defined differently in the dts mcpm will be
-available and CPUidle will be initialized (and break if there is an issue
-with the platform FW/HW).
-
-I agree the mechanism to define if MCPM is available can be improved
-but that's what it is at the moment.
-
-The problem here is to boot a platform with different boot methods
-and still have a single kernel image.
-
-> I understand your point about switching to legacy without recompiling 
-> the kernel.
-> 
-> I suggest we add a big fat WARN_ON when the mcpm initialization fails 
-> with your patch.
-
-I think there are multiple facets we are tackling at once here and they
-should not be mixed.
-
-1) We left static idle states there to cope with legacy DTBs that were
-   published before we introduced idle states bindings. If we want to
-   boot eg vexpress in legacy mode but single kernel image with MCPM on,
-   we could remove the idle states in DT and the problem would be
-   solved; we can't do that since we were forced to leave the static
-   idle tables. Overall I think this is not the way to fix the issue.
-2) The idle driver should be initialized if there is an idle state entry
-   method, which in this case is MCPM. If I boot vexpress with MCPM
-   enabled but legacy boot method (ie spin table) with a single kernel image
-   I do not want to warn if the idle states entry method (MCPM) can't be
-   initialized (and I do not want to get a warning if the idle driver is
-   triggering a mcpm_cpu_suspend), so Sudeep's patch is valid and I am
-   against adding a:
-
-   if (WARN_ON(!mcpm_is_available())
-
-3) Sudeep's patch is not hiding anything. If CCI is in DT, CCI is
-   probed so mcpm_is_available() == true. If the firmware is borked
-   the idle states will be entered and we will notice there is something
-   wrong
-
-So overall I think Sudeep's patch is sound. I also think we should
-improve the way we detect if MCPM is available, and again, I think the
-CPU operations on arm64 are a good example that we can and we should
-replicate.
-
-Lorenzo
+diff --git a/drivers/clk/tegra/Makefile b/drivers/clk/tegra/Makefile
+index 47320ca..2f87188 100644
+--- a/drivers/clk/tegra/Makefile
++++ b/drivers/clk/tegra/Makefile
+@@ -16,3 +16,5 @@ obj-$(CONFIG_ARCH_TEGRA_2x_SOC)         += clk-tegra20.o
+ obj-$(CONFIG_ARCH_TEGRA_3x_SOC)         += clk-tegra30.o
+ obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= clk-tegra114.o
+ obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= clk-tegra124.o
++obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= clk-tegra124-dfll-fcpu.o
++obj-y					+= cvb.o
+diff --git a/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c b/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+new file mode 100644
+index 0000000..13d2fae
+--- /dev/null
++++ b/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+@@ -0,0 +1,165 @@
++/*
++ * Tegra124 DFLL FCPU clock source driver
++ *
++ * Copyright (C) 2012-2014 NVIDIA Corporation.  All rights reserved.
++ *
++ * Aleksandr Frid <afrid@nvidia.com>
++ * Paul Walmsley <pwalmsley@nvidia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <soc/tegra/fuse.h>
++
++#include "clk.h"
++#include "clk-dfll.h"
++#include "cvb.h"
++
++/* Maximum CPU frequency, indexed by CPU speedo id */
++static const unsigned long cpu_max_freq_table[] = {
++	[0] = 2014500000UL,
++	[1] = 2320500000UL,
++	[2] = 2116500000UL,
++	[3] = 2524500000UL,
++};
++
++static const struct cvb_table tegra124_cpu_cvb_tables[] = {
++	{
++		.speedo_id = -1,
++		.process_id = -1,
++		.min_millivolts = 900,
++		.max_millivolts = 1260,
++		.alignment = {
++			.step_uv = 10000, /* 10mV */
++		},
++		.speedo_scale = 100,
++		.voltage_scale = 1000,
++		.cvb_table = {
++			{204000000UL,   {1112619, -29295, 402} },
++			{306000000UL,	{1150460, -30585, 402} },
++			{408000000UL,	{1190122, -31865, 402} },
++			{510000000UL,	{1231606, -33155, 402} },
++			{612000000UL,	{1274912, -34435, 402} },
++			{714000000UL,	{1320040, -35725, 402} },
++			{816000000UL,	{1366990, -37005, 402} },
++			{918000000UL,	{1415762, -38295, 402} },
++			{1020000000UL,	{1466355, -39575, 402} },
++			{1122000000UL,	{1518771, -40865, 402} },
++			{1224000000UL,	{1573009, -42145, 402} },
++			{1326000000UL,	{1629068, -43435, 402} },
++			{1428000000UL,	{1686950, -44715, 402} },
++			{1530000000UL,	{1746653, -46005, 402} },
++			{1632000000UL,	{1808179, -47285, 402} },
++			{1734000000UL,	{1871526, -48575, 402} },
++			{1836000000UL,	{1936696, -49855, 402} },
++			{1938000000UL,	{2003687, -51145, 402} },
++			{2014500000UL,	{2054787, -52095, 402} },
++			{2116500000UL,	{2124957, -53385, 402} },
++			{2218500000UL,	{2196950, -54665, 402} },
++			{2320500000UL,	{2270765, -55955, 402} },
++			{2422500000UL,	{2346401, -57235, 402} },
++			{2524500000UL,	{2437299, -58535, 402} },
++			{0,		{      0,      0,   0} },
++		},
++		.cpu_dfll_data = {
++			.tune0_low = 0x005020ff,
++			.tune0_high = 0x005040ff,
++			.tune1 = 0x00000060,
++		}
++	},
++};
++
++static struct tegra_dfll_soc_data soc;
++
++static int tegra124_dfll_fcpu_probe(struct platform_device *pdev)
++{
++	return tegra_dfll_register(pdev, &soc);
++}
++
++static struct of_device_id tegra124_dfll_fcpu_of_match[] = {
++	{ .compatible = "nvidia,tegra124-dfll", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, tegra124_dfll_fcpu_of_match);
++
++static const struct dev_pm_ops tegra124_dfll_pm_ops = {
++	SET_RUNTIME_PM_OPS(tegra_dfll_runtime_suspend,
++			   tegra_dfll_runtime_resume, NULL)
++};
++
++static struct platform_driver tegra124_dfll_fcpu_driver = {
++	.probe		= tegra124_dfll_fcpu_probe,
++	.remove		= tegra_dfll_unregister,
++	.driver		= {
++		.name		= "tegra124-dfll",
++		.owner		= THIS_MODULE,
++		.of_match_table = tegra124_dfll_fcpu_of_match,
++		.pm		= &tegra124_dfll_pm_ops,
++	},
++};
++
++static int __init tegra124_dfll_fcpu_init(void)
++{
++	int process_id, speedo_id, speedo_value;
++	const struct cvb_table *cvb;
++
++	process_id = tegra_sku_info.cpu_process_id;
++	speedo_id = tegra_sku_info.cpu_speedo_id;
++	speedo_value = tegra_sku_info.cpu_speedo_value;
++
++	if (speedo_id >= ARRAY_SIZE(cpu_max_freq_table)) {
++		pr_err("unknown max CPU freq for speedo_id=%d\n", speedo_id);
++		return -ENODEV;
++	}
++
++	soc.opp_dev = get_cpu_device(0);
++	if (!soc.opp_dev) {
++		pr_err("no CPU0 device\n");
++		return -ENODEV;
++	}
++
++	cvb = tegra_cvb_build_opp_table(tegra124_cpu_cvb_tables,
++					ARRAY_SIZE(tegra124_cpu_cvb_tables),
++					process_id, speedo_id, speedo_value,
++					cpu_max_freq_table[speedo_id],
++					soc.opp_dev);
++	if (IS_ERR(cvb)) {
++		pr_err("couldn't build OPP table: %ld\n", PTR_ERR(cvb));
++		return PTR_ERR(cvb);
++	}
++
++	soc.assert_dvco_reset = tegra124_clock_assert_dfll_dvco_reset;
++	soc.deassert_dvco_reset = tegra124_clock_deassert_dfll_dvco_reset;
++	soc.min_millivolts = cvb->min_millivolts;
++	soc.tune0_low = cvb->cpu_dfll_data.tune0_low;
++	soc.tune0_high = cvb->cpu_dfll_data.tune0_high;
++	soc.tune1 = cvb->cpu_dfll_data.tune1;
++
++	return platform_driver_register(&tegra124_dfll_fcpu_driver);
++}
++module_init(tegra124_dfll_fcpu_init);
++
++static void __exit tegra124_dfll_fcpu_exit(void)
++{
++	platform_driver_unregister(&tegra124_dfll_fcpu_driver);
++}
++module_exit(tegra124_dfll_fcpu_exit);
++
++MODULE_DESCRIPTION("Tegra124 DFLL clock source driver");
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Aleksandr Frid <afrid@nvidia.com>");
++MODULE_AUTHOR("Paul Walmsley <pwalmsley@nvidia.com>");
+-- 
+2.2.1
