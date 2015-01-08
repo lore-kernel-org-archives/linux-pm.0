@@ -1,40 +1,43 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver if
- MCPM is unavailable
-Date: Thu, 8 Jan 2015 14:46:59 +0000
-Message-ID: <20150108144659.GA5756@red-moon>
-References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
- <54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>
- <54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>
- <54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon>
- <54AE8D9F.6090400@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <54AE8D9F.6090400@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] PM / clock_ops: initialize ret to avoid garbage being returned
+Date: Thu,  8 Jan 2015 15:31:01 +0000
+Message-ID: <1420731061-5029-1-git-send-email-colin.king@canonical.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from youngberry.canonical.com ([91.189.89.112]:33798 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756486AbbAHPcH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 10:32:07 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2015 at 02:01:03PM +0000, Daniel Lezcano wrote:
+From: Colin Ian King <colin.king@canonical.com>
 
-[...]
+cppcheck detected an unitialised ret:
+  [drivers/base/power/clock_ops.c:53]: (error) Uninitialized variable: ret
 
-> > So overall I think Sudeep's patch is sound.
-> 
-> Ok, I will pick Sudeep's patch. Shall I add your acked-by ?
+ret is only assigned if ce->status < PCE_STATUS_ERROR, if this is false
+then __pm_clk_enable returns whatever garbage ret picks up from the stack.
 
-Yes please, thanks a lot.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/base/power/clock_ops.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index d626576..5bd283d 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -39,7 +39,7 @@ struct pm_clock_entry {
+  */
+ static inline int __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
+ {
+-	int ret;
++	int ret = 0;
+ 
+ 	if (ce->status < PCE_STATUS_ERROR) {
+ 		ret = clk_enable(ce->clk);
+-- 
+1.7.9.5
+
