@@ -1,167 +1,99 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 03/17] Input: sun4i-ts: Add thermal zone sensor support
-Date: Thu, 8 Jan 2015 21:33:54 +0800
-Message-ID: <CAGb2v64F8mQRka=L1qWKe=WNOUYtiC5RSZUDORr3Ynd3Djf20g@mail.gmail.com>
-References: <1420511727-8242-1-git-send-email-wens@csie.org>
- <1420511727-8242-4-git-send-email-wens@csie.org> <20150106152425.GA6276@developer>
- <CAGb2v66L-ZD1Ep-rnKXKP7PuJH+dA=26tV35KyKCNnKHgM4Hmg@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver
+ if MCPM is unavailable
+Date: Thu, 08 Jan 2015 15:01:03 +0100
+Message-ID: <54AE8D9F.6090400@linaro.org>
+References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
+ <54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>
+ <54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>
+ <54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <CAGb2v66L-ZD1Ep-rnKXKP7PuJH+dA=26tV35KyKCNnKHgM4Hmg@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20150108122958.GB32308@red-moon>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 8, 2015 at 12:24 AM, Chen-Yu Tsai <wens@csie.org> wrote:
-> Hi,
->
-> On Tue, Jan 6, 2015 at 11:24 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
->> Hello Chen-Yu,
->>
->>
->> On Tue, Jan 06, 2015 at 10:35:13AM +0800, Chen-Yu Tsai wrote:
->>> The touchscreen controller has a temperature sensor embedded in the SoC,
->>> which already has hwmon support in the driver.
->>>
->>> Add DT thermal zone support so we can use it with cpufreq for thermal
->>> throttling.
->>>
->>> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
->>> ---
->>>  .../bindings/input/touchscreen/sun4i.txt           |  1 +
->>>  drivers/input/touchscreen/sun4i-ts.c               | 27 ++++++++++++++++++++++
->>>  2 files changed, 28 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
->>> index aef57791f40b..7f1110adbd24 100644
->>> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
->>> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
->>> @@ -5,6 +5,7 @@ Required properties:
->>>   - compatible: "allwinner,sun4i-a10-ts"
->>>   - reg: mmio address range of the chip
->>>   - interrupts: interrupt to which the chip is connected
->>> + - #thermal-sensor-cells: shall be 0
->>>
->>
->> You may want to update your Example section too, below.
->> Example:
->>
->>         rtp: rtp@01c25000 {
->>                 compatible = "allwinner,sun4i-a10-ts";
->>                 reg = <0x01c25000 0x100>;
->>                 interrupts = <29>;
->>                 allwinner,ts-attached;
->>                 #thermal-sensor-cells = <0>;
->>         };
->
-> Ok.
->
->>
->>
->>>  Optional properties:
->>>   - allwinner,ts-attached: boolean indicating that an actual touchscreen is
->>> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchscreen/sun4i-ts.c
->>> index 28a06749ae42..b6e9043446d6 100644
->>> --- a/drivers/input/touchscreen/sun4i-ts.c
->>> +++ b/drivers/input/touchscreen/sun4i-ts.c
->>> @@ -34,6 +34,7 @@
->>>
->>>  #include <linux/err.h>
->>>  #include <linux/hwmon.h>
->>> +#include <linux/thermal.h>
->>>  #include <linux/init.h>
->>>  #include <linux/input.h>
->>>  #include <linux/interrupt.h>
->>> @@ -107,6 +108,7 @@
->>>  struct sun4i_ts_data {
->>>       struct device *dev;
->>>       struct input_dev *input;
->>> +     struct thermal_zone_device *tz;
->>>       void __iomem *base;
->>>       unsigned int irq;
->>>       bool ignore_fifo_data;
->>> @@ -180,6 +182,23 @@ static void sun4i_ts_close(struct input_dev *dev)
->>>       writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
->>>  }
->>>
->>> +static int get_temp(void *data, long *temp)
->>> +{
->>> +     struct sun4i_ts_data *ts = data;
->>> +
->>> +     /* No temp_data until the first irq */
->>> +     if (ts->temp_data == -1)
->>> +             return -EAGAIN;
->>> +
->>> +     *temp = (ts->temp_data - 1447) * 100;
->>> +
->>
->> Care to explain the formula in a simple comment?
->
-> This was just copied from the hwmon section. AFAIK there is no documentation
-> for the formula. It was probably copied from Allwinner's SDK code.
->
-> Hans? Do you remember where you got this?
-
-So this is from the AXP209 datasheet. The Allwinner SoC datasheets don't
-mention the formula to calculate the temperature. But since Allwinner
-and X-powers are affiliated, it's possible they use the same formula.
-
-http://comments.gmane.org/gmane.comp.hardware.netbook.arm.sunxi/3838
-
->>> +     return 0;
->>> +}
->>> +
->>> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops = {
->>> +     .get_temp = get_temp,
->>> +};
->>> +
->>>  static ssize_t show_temp(struct device *dev, struct device_attribute *devattr,
->>>                        char *buf)
->>>  {
->>> @@ -288,6 +307,11 @@ static int sun4i_ts_probe(struct platform_device *pdev)
->>>       if (IS_ERR(hwmon))
->>>               return PTR_ERR(hwmon);
->>>
->>> +     ts->tz = thermal_zone_of_sensor_register(ts->dev, 0, ts,
->>> +                                              &sun4i_ts_tz_ops);
->>> +     if (IS_ERR(ts->tz))
->>> +             ts->tz = NULL;
->>> +
->>>       writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
->>>
->>>       if (ts_attached) {
->>
->> here.. if input_register_device fails, you will keep an orphan thermal zone
->> registered in your system:
->>
->>                 error = input_register_device(ts->input);
->>                 if (error) {
->>                         writel(0, ts->base + TP_INT_FIFOC);
->
-> Will add an unregister call here.
->
->
-> Thanks for the review.
->
-> ChenYu
->
->>                         return error;
->>                 }
->>                 ...
->>
->>
->>> @@ -310,6 +334,9 @@ static int sun4i_ts_remove(struct platform_device *pdev)
->>>       if (ts->input)
->>>               input_unregister_device(ts->input);
->>>
->>> +     if (ts->tz)
->>> +             thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
->>> +
->>>       /* Deactivate all IRQs */
->>>       writel(0, ts->base + TP_INT_FIFOC);
->>>
->>> --
->>> 2.1.4
->>>
+T24gMDEvMDgvMjAxNSAwMToyOSBQTSwgTG9yZW56byBQaWVyYWxpc2kgd3JvdGU6Cj4gT24gVGh1
+LCBKYW4gMDgsIDIwMTUgYXQgMTE6MTE6NDBBTSArMDAwMCwgRGFuaWVsIExlemNhbm8gd3JvdGU6
+Cj4KPiBbLi4uXQo+Cj4+Pj4gSU1PLCBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8gYmUgbW9yZSBzdHJp
+Y3Qgd2l0aCB0aGUgbWNwbQo+Pj4+IGluaXRpYWxpemF0aW9uIGFuZCBub3QgbGV0IHRoZSBzeXN0
+ZW0gYm9vdCBpZiBzb21ldGhpbmcgaXMgd3Jvbmcgd2l0aAo+Pj4+IGl0IHdoaWNoIEkgYmVsaWV2
+ZSBpcyBjb21pbmcgZnJvbSB0aGUgZmlybXdhcmUgYW5kIGxldCB0aGUgdXNlciB0bwo+Pj4+IGZp
+Z3VyZSBvdXQgd2hhdCBpcyByZWFsbHkgaGFwcGVuaW5nIGJ5IGxldHRpbmcgaGltIHRvIGRpc2Fi
+bGUgbWNwbSBpbgo+Pj4+IHRoZSBrZXJuZWwgY29uZmlndXJhdGlvbiAod2hpY2ggaW4gdHVybiB3
+aWxsIGRpc2FibGUgY3B1aWRsZSkuCj4+Pgo+Pj4gQWdhaW4gSSBmdWxseSBhZ3JlZSwgYnV0IGlu
+IHRoaXMgY2FzZSBJIG1hbnVhbGx5IHN3aXRjaGVkIHRvIGxlZ2FjeSBib290Cj4+PiBtb2RlIG9u
+IFRDMiBhbmQgdXNlZCBzYW1lIGtlcm5lbCB3aXRoIE1DUE0gY29uZmlnIGVuYWJsZWQuIERvIHlv
+dSBtZWFuCj4+PiB0byBzYXkgd2Ugc2hvdWxkIG5vdCBzdXBwb3J0IHRoYXQgZXZlbiB3aGVuIGRl
+dmVsb3BlciB1bmRlcnN0YW5kIHRoZQo+Pj4gY29uc2VxdWVuY2Ugb2YgdGhhdCA/Cj4+Cj4+IFdl
+bGwsIEkgc2VlIHRoZXJlIGFyZSB0aGUgZXh5bm9zNTQxMC81NDIwLzU0MjIuIEZvciB0aGUgNTQy
+MiBvbgo+PiBjaHJvbWVib29rMiBNQ1BNIHdvcmtzIHdlbGwsIElJVUMuIEJ1dCBmb3IgdGhlIDU0
+MjIgb24gb2Ryb2lkLXh1MywgTUNQTQo+PiBkb2VzIG5vdCB3b3JrLCBoZW5jZSBjcHVpZGxlIG5l
+aXRoZXIgYmVjYXVzZSBvZiB0aGUgZmlybXdhcmUuCj4+Cj4+IFNpbGVudGx5IGRpc2FibGluZyBj
+cHVpZGxlIGJlY2F1c2UgbWNwbSBkaWQgbm90IGluaXRpYWxpemUgd2lsbCBoaWRlIHRoZQo+PiBp
+c3N1ZS4KPgo+IE5vLiBNQ1BNICp3aWxsKiBpbml0aWFsaXplLCBTdWRlZXAncyBwYXRjaCBkb2Vz
+IG5vdCBzaWxlbnRseSBkaXNhYmxlCj4gQ1BVaWRsZS4KPiBUbyBwdXQgaXQgZGlmZmVyZW50bHkg
+TUNQTSB3aWxsIGluaXRpYWxpemUgaWYgQ0NJIGlzIGluIHRoZSBEVCBhbmQgaXQKPiBpcyAiYXZh
+aWxhYmxlIiwgc28gdW5sZXNzIGRlZmluZWQgZGlmZmVyZW50bHkgaW4gdGhlIGR0cyBtY3BtIHdp
+bGwgYmUKPiBhdmFpbGFibGUgYW5kIENQVWlkbGUgd2lsbCBiZSBpbml0aWFsaXplZCAoYW5kIGJy
+ZWFrIGlmIHRoZXJlIGlzIGFuIGlzc3VlCj4gd2l0aCB0aGUgcGxhdGZvcm0gRlcvSFcpLgo+Cj4g
+SSBhZ3JlZSB0aGUgbWVjaGFuaXNtIHRvIGRlZmluZSBpZiBNQ1BNIGlzIGF2YWlsYWJsZSBjYW4g
+YmUgaW1wcm92ZWQKPiBidXQgdGhhdCdzIHdoYXQgaXQgaXMgYXQgdGhlIG1vbWVudC4KPgo+IFRo
+ZSBwcm9ibGVtIGhlcmUgaXMgdG8gYm9vdCBhIHBsYXRmb3JtIHdpdGggZGlmZmVyZW50IGJvb3Qg
+bWV0aG9kcwo+IGFuZCBzdGlsbCBoYXZlIGEgc2luZ2xlIGtlcm5lbCBpbWFnZS4KPgo+PiBJIHVu
+ZGVyc3RhbmQgeW91ciBwb2ludCBhYm91dCBzd2l0Y2hpbmcgdG8gbGVnYWN5IHdpdGhvdXQgcmVj
+b21waWxpbmcKPj4gdGhlIGtlcm5lbC4KPj4KPj4gSSBzdWdnZXN0IHdlIGFkZCBhIGJpZyBmYXQg
+V0FSTl9PTiB3aGVuIHRoZSBtY3BtIGluaXRpYWxpemF0aW9uIGZhaWxzCj4+IHdpdGggeW91ciBw
+YXRjaC4KPgo+IEkgdGhpbmsgdGhlcmUgYXJlIG11bHRpcGxlIGZhY2V0cyB3ZSBhcmUgdGFja2xp
+bmcgYXQgb25jZSBoZXJlIGFuZCB0aGV5Cj4gc2hvdWxkIG5vdCBiZSBtaXhlZC4KClllcywgSSBh
+Z3JlZS4KCj4gMSkgV2UgbGVmdCBzdGF0aWMgaWRsZSBzdGF0ZXMgdGhlcmUgdG8gY29wZSB3aXRo
+IGxlZ2FjeSBEVEJzIHRoYXQgd2VyZQo+ICAgICBwdWJsaXNoZWQgYmVmb3JlIHdlIGludHJvZHVj
+ZWQgaWRsZSBzdGF0ZXMgYmluZGluZ3MuIElmIHdlIHdhbnQgdG8KPiAgICAgYm9vdCBlZyB2ZXhw
+cmVzcyBpbiBsZWdhY3kgbW9kZSBidXQgc2luZ2xlIGtlcm5lbCBpbWFnZSB3aXRoIE1DUE0gb24s
+Cj4gICAgIHdlIGNvdWxkIHJlbW92ZSB0aGUgaWRsZSBzdGF0ZXMgaW4gRFQgYW5kIHRoZSBwcm9i
+bGVtIHdvdWxkIGJlCj4gICAgIHNvbHZlZDsgd2UgY2FuJ3QgZG8gdGhhdCBzaW5jZSB3ZSB3ZXJl
+IGZvcmNlZCB0byBsZWF2ZSB0aGUgc3RhdGljCj4gICAgIGlkbGUgdGFibGVzLiBPdmVyYWxsIEkg
+dGhpbmsgdGhpcyBpcyBub3QgdGhlIHdheSB0byBmaXggdGhlIGlzc3VlLgo+IDIpIFRoZSBpZGxl
+IGRyaXZlciBzaG91bGQgYmUgaW5pdGlhbGl6ZWQgaWYgdGhlcmUgaXMgYW4gaWRsZSBzdGF0ZSBl
+bnRyeQo+ICAgICBtZXRob2QsIHdoaWNoIGluIHRoaXMgY2FzZSBpcyBNQ1BNLiBJZiBJIGJvb3Qg
+dmV4cHJlc3Mgd2l0aCBNQ1BNCj4gICAgIGVuYWJsZWQgYnV0IGxlZ2FjeSBib290IG1ldGhvZCAo
+aWUgc3BpbiB0YWJsZSkgd2l0aCBhIHNpbmdsZSBrZXJuZWwgaW1hZ2UKPiAgICAgSSBkbyBub3Qg
+d2FudCB0byB3YXJuIGlmIHRoZSBpZGxlIHN0YXRlcyBlbnRyeSBtZXRob2QgKE1DUE0pIGNhbid0
+IGJlCj4gICAgIGluaXRpYWxpemVkIChhbmQgSSBkbyBub3Qgd2FudCB0byBnZXQgYSB3YXJuaW5n
+IGlmIHRoZSBpZGxlIGRyaXZlciBpcwo+ICAgICB0cmlnZ2VyaW5nIGEgbWNwbV9jcHVfc3VzcGVu
+ZCksIHNvIFN1ZGVlcCdzIHBhdGNoIGlzIHZhbGlkIGFuZCBJIGFtCj4gICAgIGFnYWluc3QgYWRk
+aW5nIGE6Cj4KPiAgICAgaWYgKFdBUk5fT04oIW1jcG1faXNfYXZhaWxhYmxlKCkpCj4KPiAzKSBT
+dWRlZXAncyBwYXRjaCBpcyBub3QgaGlkaW5nIGFueXRoaW5nLiBJZiBDQ0kgaXMgaW4gRFQsIEND
+SSBpcwo+ICAgICBwcm9iZWQgc28gbWNwbV9pc19hdmFpbGFibGUoKSA9PSB0cnVlLiBJZiB0aGUg
+ZmlybXdhcmUgaXMgYm9ya2VkCj4gICAgIHRoZSBpZGxlIHN0YXRlcyB3aWxsIGJlIGVudGVyZWQg
+YW5kIHdlIHdpbGwgbm90aWNlIHRoZXJlIGlzIHNvbWV0aGluZwo+ICAgICB3cm9uZwo+Cj4gU28g
+b3ZlcmFsbCBJIHRoaW5rIFN1ZGVlcCdzIHBhdGNoIGlzIHNvdW5kLgoKT2ssIEkgd2lsbCBwaWNr
+IFN1ZGVlcCdzIHBhdGNoLiBTaGFsbCBJIGFkZCB5b3VyIGFja2VkLWJ5ID8KCj4gSSBhbHNvIHRo
+aW5rIHdlIHNob3VsZAo+IGltcHJvdmUgdGhlIHdheSB3ZSBkZXRlY3QgaWYgTUNQTSBpcyBhdmFp
+bGFibGUsCgpZZXMsIEkgYWdyZWUuCgo+IGFuZCBhZ2FpbiwgSSB0aGluayB0aGUKPiBDUFUgb3Bl
+cmF0aW9ucyBvbiBhcm02NCBhcmUgYSBnb29kIGV4YW1wbGUgdGhhdCB3ZSBjYW4gYW5kIHdlIHNo
+b3VsZAo+IHJlcGxpY2F0ZS4KCk9rLCBJIHRoaW5rIHRoYXQgd2lsbCByYWlzZSBhbm90aGVyIHRo
+cmVhZCBzb29uIDopCgpUaGFua3MgZm9yIHlvdXIgZmVlZGJhY2tzLgoKICAgLS0gRGFuaWVsCgoK
+PiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3Jp
+YmUgbGludXgtcG0iIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2Vy
+Lmtlcm5lbC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwu
+b3JnL21ham9yZG9tby1pbmZvLmh0bWwKPgoKCi0tIAogIDxodHRwOi8vd3d3LmxpbmFyby5vcmcv
+PiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxv
+dyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9v
+ayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93
+d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdAps
+aW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVh
+ZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
