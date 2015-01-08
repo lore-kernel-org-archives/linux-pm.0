@@ -1,145 +1,87 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv3 6/8] ARM: dts: Add memory bus node for Exynos4210
-Date: Thu, 08 Jan 2015 10:40:55 +0900
-Message-ID: <1420681257-3078-7-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCHv3 4/8] clk: samsung: exynos4: Add divider clock id for memory
+ bus frequency
+Date: Thu, 08 Jan 2015 10:40:53 +0900
+Message-ID: <1420681257-3078-5-git-send-email-cw00.choi@samsung.com>
 References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:40189 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbbAHBlG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jan 2015 20:41:06 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds the memory bus node for Exynos4210 SoC. Exynos4210 SoC has
-one memory bus to translate data between DRAM and eMMC/sub-IPs because
-Exynos4210 must need only one regulator for memory bus.
+This patch adds the divider clock id for Exynos4 memory bus frequency.
+The clock id is used fo DVFS (Dynamic Voltage/Frequency Scaling)
+feature of exynos memory bus frequency.
 
-Following list specifies the detailed relation between memory bus clock and
-sub-IPs:
-- DMC/ACP clock : DMC (Dynamic Memory Controller)
-- ACLK200 clock : LCD0
-- ACLK100 clock : PERIL/PERIR/MFC(PCLK)
-- ACLK160 clock : CAM/TV/LCD0/LCD1
-- ACLK133 clock : FSYS/GPS
-- GDL/GDR clock : leftbus/rightbus
-- SCLK_MFC clock : MFC
-
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- arch/arm/boot/dts/exynos4210.dtsi | 93 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 93 insertions(+)
+ drivers/clk/samsung/clk-exynos4.c   | 10 +++++-----
+ include/dt-bindings/clock/exynos4.h |  7 ++++++-
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index b2598de..c039409 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -48,6 +48,99 @@
- 		};
- 	};
+diff --git a/drivers/clk/samsung/clk-exynos4.c b/drivers/clk/samsung/clk-exynos4.c
+index 88e8c6b..51462e8 100644
+--- a/drivers/clk/samsung/clk-exynos4.c
++++ b/drivers/clk/samsung/clk-exynos4.c
+@@ -703,12 +703,12 @@ static struct samsung_mux_clock exynos4x12_mux_clks[] __initdata = {
  
-+	memory_bus: memory_bus@0 {
-+		compatible = "samsung,exynos-memory-bus";
-+
-+		operating-points = <
-+			400000 1150000
-+			267000 1050000
-+			133000 1025000>;
-+		status = "disabled";
-+
-+		blocks {
-+			dmc_block: memory_bus_block1 {
-+				clocks = <&clock CLK_DIV_DMC>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					400000
-+					267000
-+					133000>;
-+			};
-+
-+			acp_block: memory_bus_block2 {
-+				clocks = <&clock CLK_DIV_ACP>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					133000>;
-+			};
-+
-+			peri_block: memory_bus_block3 {
-+				clocks = <&clock CLK_ACLK100>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					100000
-+					100000
-+					100000>;
-+			};
-+
-+			fsys_block: memory_bus_block4 {
-+				clocks = <&clock CLK_ACLK133>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					133000
-+					133000
-+					100000>;
-+			};
-+
-+			display_block: memory_bus_block5 {
-+				clocks = <&clock CLK_ACLK160>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					160000
-+					133000
-+					100000>;
-+			};
-+
-+			lcd0_block: memory_bus_block6 {
-+				clocks = <&clock CLK_ACLK200>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			leftbus_block: memory_bus_block7 {
-+				clocks = <&clock CLK_DIV_GDL>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			rightbus_block: memory_bus_block8 {
-+				clocks = <&clock CLK_DIV_GDR>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			mfc_block: memory_bus_block9 {
-+				clocks = <&clock CLK_SCLK_MFC>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+		};
-+	};
-+
- 	pmu_system_controller: system-controller@10020000 {
- 		clock-names = "clkout0", "clkout1", "clkout2", "clkout3",
- 				"clkout4", "clkout8", "clkout9";
+ /* list of divider clocks supported in all exynos4 soc's */
+ static struct samsung_div_clock exynos4_div_clks[] __initdata = {
+-	DIV(0, "div_gdl", "mout_gdl", DIV_LEFTBUS, 0, 3),
++	DIV(CLK_DIV_GDL, "div_gdl", "mout_gdl", DIV_LEFTBUS, 0, 3),
+ 	DIV(0, "div_gpl", "div_gdl", DIV_LEFTBUS, 4, 3),
+ 	DIV(0, "div_clkout_leftbus", "mout_clkout_leftbus",
+ 			CLKOUT_CMU_LEFTBUS, 8, 6),
+ 
+-	DIV(0, "div_gdr", "mout_gdr", DIV_RIGHTBUS, 0, 3),
++	DIV(CLK_DIV_GDR, "div_gdr", "mout_gdr", DIV_RIGHTBUS, 0, 3),
+ 	DIV(0, "div_gpr", "div_gdr", DIV_RIGHTBUS, 4, 3),
+ 	DIV(0, "div_clkout_rightbus", "mout_clkout_rightbus",
+ 			CLKOUT_CMU_RIGHTBUS, 8, 6),
+@@ -781,10 +781,10 @@ static struct samsung_div_clock exynos4_div_clks[] __initdata = {
+ 			CLK_SET_RATE_PARENT, 0),
+ 	DIV(0, "div_clkout_top", "mout_clkout_top", CLKOUT_CMU_TOP, 8, 6),
+ 
+-	DIV(0, "div_acp", "mout_dmc_bus", DIV_DMC0, 0, 3),
++	DIV(CLK_DIV_ACP, "div_acp", "mout_dmc_bus", DIV_DMC0, 0, 3),
+ 	DIV(0, "div_acp_pclk", "div_acp", DIV_DMC0, 4, 3),
+ 	DIV(0, "div_dphy", "mout_dphy", DIV_DMC0, 8, 3),
+-	DIV(0, "div_dmc", "mout_dmc_bus", DIV_DMC0, 12, 3),
++	DIV(CLK_DIV_DMC, "div_dmc", "mout_dmc_bus", DIV_DMC0, 12, 3),
+ 	DIV(0, "div_dmcd", "div_dmc", DIV_DMC0, 16, 3),
+ 	DIV(0, "div_dmcp", "div_dmcd", DIV_DMC0, 20, 3),
+ 	DIV(0, "div_pwi", "mout_pwi", DIV_DMC1, 8, 4),
+@@ -829,7 +829,7 @@ static struct samsung_div_clock exynos4x12_div_clks[] __initdata = {
+ 	DIV_F(CLK_DIV_MCUISP1, "div_mcuisp1", "div_mcuisp0", E4X12_DIV_ISP1,
+ 						8, 3, CLK_GET_RATE_NOCACHE, 0),
+ 	DIV(CLK_SCLK_FIMG2D, "sclk_fimg2d", "mout_g2d", DIV_DMC1, 0, 4),
+-	DIV(0, "div_c2c", "mout_c2c", DIV_DMC1, 4, 3),
++	DIV(CLK_DIV_C2C, "div_c2c", "mout_c2c", DIV_DMC1, 4, 3),
+ 	DIV(0, "div_c2c_aclk", "div_c2c", DIV_DMC1, 12, 3),
+ };
+ 
+diff --git a/include/dt-bindings/clock/exynos4.h b/include/dt-bindings/clock/exynos4.h
+index 34fe28c..c4b1676 100644
+--- a/include/dt-bindings/clock/exynos4.h
++++ b/include/dt-bindings/clock/exynos4.h
+@@ -262,8 +262,13 @@
+ #define CLK_DIV_MCUISP1		453 /* Exynos4x12 only */
+ #define CLK_DIV_ACLK200		454 /* Exynos4x12 only */
+ #define CLK_DIV_ACLK400_MCUISP	455 /* Exynos4x12 only */
++#define CLK_DIV_ACP		456
++#define CLK_DIV_DMC		457
++#define CLK_DIV_C2C		458 /* Exynos4x12 only */
++#define CLK_DIV_GDL		459
++#define CLK_DIV_GDR		460
+ 
+ /* must be greater than maximal clock id */
+-#define CLK_NR_CLKS		456
++#define CLK_NR_CLKS		461
+ 
+ #endif /* _DT_BINDINGS_CLOCK_EXYNOS_4_H */
 -- 
 1.8.5.5
-
