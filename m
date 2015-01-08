@@ -1,76 +1,205 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PCI / PM: Avoid resuming PCI devices during system
- suspend
-Date: Thu, 8 Jan 2015 10:51:06 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
-References: <1460212.bInrzeZle0@vostro.rjw.lan>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V2] (gpio-fan): Add thermal control hooks
+Date: Thu, 8 Jan 2015 12:05:03 -0600
+Message-ID: <1420740303-12529-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1460212.bInrzeZle0@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.de>, Eduardo Valentin <edubezval@gmail.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 8 Jan 2015, Rafael J. Wysocki wrote:
+Allow gpio-fan to be used as thermal cooling device for platforms that
+use GPIO maps to control fans.
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
-> domain during system suspend) modified the ACPI PM domain's system
-> suspend callbacks to allow devices attached to it to be left in the
-> runtime-suspended state during system suspend so as to optimize
-> the suspend process.
-> 
-> This was based on the general mechanism introduced by commit
-> aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
-> devices unnecessarily).
-> 
-> Extend that approach to PCI devices by modifying the PCI bus type's
-> ->prepare callback to return 1 for devices that are runtime-suspended
-> when it is being executed and that are in a suitable power state and
-> need not be resumed going forward.
+As part of this change, we make the shutdown and remove logic the same
+as well.
 
-Does this correctly handle PCI devices that aren't included in the ACPI
-tables?  For example, add-on PCI cards?
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
 
-> +/**
-> + * pci_dev_keep_suspended - Check if the device can stay in the suspended state.
-> + * @dev: Device to check.
-> + *
-> + * Return 'true' if the device is runtime-suspended, it doesn't have to be
-> + * reconfigured for system wakeup and the current power state of it is
-> + * suitable for the upcoming (system) transition.
-> + */
-> +bool pci_dev_keep_suspended(struct pci_dev *dev)
-> +{
-> +	if (!pm_runtime_suspended(&dev->dev) || platform_pci_need_resume(dev))
-> +		return false;
-> +
-> +	return pci_target_state(dev) == dev->current_state;
-> +}
+Changes since v1:
+	- review comments incorporated (hopefully correct)
+	- checkpatch verified
+	- retested :).
 
-So if platform_pci_need_resume() returns "false", you will try to keep 
-the device suspended.  And platform_pci_need_resume() simply invokes 
-the .need_resume method of the pci_platform_pm structure.
+V1: https://patchwork.kernel.org/patch/5587061/
 
-> +static bool acpi_pci_need_resume(struct pci_dev *dev)
-> +{
-> +	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
-> +
-> +	if (!adev || !acpi_device_power_manageable(adev))
-> +		return false;
+ .../devicetree/bindings/gpio/gpio-fan.txt          |   13 +++
+ drivers/hwmon/gpio-fan.c                           |   83 ++++++++++++++++++--
+ 2 files changed, 89 insertions(+), 7 deletions(-)
 
-And this says if the device doesn't appear in ACPI then it doesn't need 
-to be resumed.
-
-But what if it uses PME and it currently has the wrong wakeup setting?  
-Shouldn't this routine start out with
-
-	if (!adev)
-		return true;
-
-?  Or should there maybe be an explicit test for devices using PME?
-
-Alan Stern
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-fan.txt b/Documentation/devicetree/bindings/gpio/gpio-fan.txt
+index 2dd457a3469a..43ca2a45b862 100644
+--- a/Documentation/devicetree/bindings/gpio/gpio-fan.txt
++++ b/Documentation/devicetree/bindings/gpio/gpio-fan.txt
+@@ -11,6 +11,9 @@ Required properties:
+ Optional properties:
+ - alarm-gpios: This pin going active indicates something is wrong with
+   the fan, and a udev event will be fired.
++- cooling-cells: If used as a cooling device, must be <2>
++  Also see: Documentation/devicetree/bindings/thermal/thermal.txt
++  min and max states are derived from the speed-map of the fan.
+ 
+ Examples:
+ 
+@@ -23,3 +26,13 @@ Examples:
+ 				      6000 2>;
+ 		alarm-gpios = <&gpio1 15 1>;
+ 	};
++	gpio_fan_cool: gpio_fan {
++		compatible = "gpio-fan";
++		gpios = <&gpio2 14 1
++			 &gpio2 13 1>;
++		gpio-fan,speed-map =	<0    0>,
++					<3000 1>,
++					<6000 2>;
++		alarm-gpios = <&gpio2 15 1>;
++		#cooling-cells = <2>; /* min followed by max */
++	};
+diff --git a/drivers/hwmon/gpio-fan.c b/drivers/hwmon/gpio-fan.c
+index 36abf814b8c7..20232c11b579 100644
+--- a/drivers/hwmon/gpio-fan.c
++++ b/drivers/hwmon/gpio-fan.c
+@@ -34,10 +34,13 @@
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <linux/of_gpio.h>
++#include <linux/thermal.h>
+ 
+ struct gpio_fan_data {
+ 	struct platform_device	*pdev;
+ 	struct device		*hwmon_dev;
++	/* Cooling device if any */
++	struct thermal_cooling_device *cdev;
+ 	struct mutex		lock; /* lock GPIOs operations. */
+ 	int			num_ctrl;
+ 	unsigned		*ctrl;
+@@ -387,6 +390,53 @@ static int fan_ctrl_init(struct gpio_fan_data *fan_data,
+ 	return 0;
+ }
+ 
++static int gpio_fan_get_max_state(struct thermal_cooling_device *cdev,
++				  unsigned long *state)
++{
++	struct gpio_fan_data *fan_data = cdev->devdata;
++
++	if (!fan_data)
++		return -EINVAL;
++
++	*state = fan_data->num_speed - 1;
++	return 0;
++}
++
++static int gpio_fan_get_cur_state(struct thermal_cooling_device *cdev,
++				  unsigned long *state)
++{
++	struct gpio_fan_data *fan_data = cdev->devdata;
++	int r;
++
++	if (!fan_data)
++		return -EINVAL;
++
++	r = get_fan_speed_index(fan_data);
++	if (r < 0)
++		return r;
++
++	*state = r;
++	return 0;
++}
++
++static int gpio_fan_set_cur_state(struct thermal_cooling_device *cdev,
++				  unsigned long state)
++{
++	struct gpio_fan_data *fan_data = cdev->devdata;
++
++	if (!fan_data)
++		return -EINVAL;
++
++	set_fan_speed(fan_data, state);
++	return 0;
++}
++
++static const struct thermal_cooling_device_ops gpio_fan_cool_ops = {
++	.get_max_state = gpio_fan_get_max_state,
++	.get_cur_state = gpio_fan_get_cur_state,
++	.set_cur_state = gpio_fan_set_cur_state,
++};
++
+ #ifdef CONFIG_OF_GPIO
+ /*
+  * Translate OpenFirmware node properties into platform_data
+@@ -495,6 +545,11 @@ static int gpio_fan_probe(struct platform_device *pdev)
+ 	struct gpio_fan_data *fan_data;
+ 	struct gpio_fan_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 
++	fan_data = devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
++				GFP_KERNEL);
++	if (!fan_data)
++		return -ENOMEM;
++
+ #ifdef CONFIG_OF_GPIO
+ 	if (!pdata) {
+ 		pdata = devm_kzalloc(&pdev->dev,
+@@ -506,17 +561,20 @@ static int gpio_fan_probe(struct platform_device *pdev)
+ 		err = gpio_fan_get_of_pdata(&pdev->dev, pdata);
+ 		if (err)
+ 			return err;
++		/* Optional cooling device register for Device tree platforms */
++		fan_data->cdev =
++			thermal_of_cooling_device_register(pdev->dev.of_node,
++							   "gpio-fan", fan_data,
++							   &gpio_fan_cool_ops);
+ 	}
+ #else /* CONFIG_OF_GPIO */
+ 	if (!pdata)
+ 		return -EINVAL;
++	/* Optional cooling device register for non Device tree platforms */
++	fan_data->cdev = thermal_cooling_device_register("gpio-fan", fan_data,
++							 &gpio_fan_cool_ops);
+ #endif /* CONFIG_OF_GPIO */
+ 
+-	fan_data = devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
+-				GFP_KERNEL);
+-	if (!fan_data)
+-		return -ENOMEM;
+-
+ 	fan_data->pdev = pdev;
+ 	platform_set_drvdata(pdev, fan_data);
+ 	mutex_init(&fan_data->lock);
+@@ -550,12 +608,22 @@ static int gpio_fan_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void gpio_fan_shutdown(struct platform_device *pdev)
++static int gpio_fan_remove(struct platform_device *pdev)
+ {
+-	struct gpio_fan_data *fan_data = dev_get_drvdata(&pdev->dev);
++	struct gpio_fan_data *fan_data = platform_get_drvdata(pdev);
++
++	if (!IS_ERR(fan_data->cdev))
++		thermal_cooling_device_unregister(fan_data->cdev);
+ 
+ 	if (fan_data->ctrl)
+ 		set_fan_speed(fan_data, 0);
++
++	return 0;
++}
++
++static void gpio_fan_shutdown(struct platform_device *pdev)
++{
++	gpio_fan_remove(pdev);
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
+@@ -589,6 +657,7 @@ static SIMPLE_DEV_PM_OPS(gpio_fan_pm, gpio_fan_suspend, gpio_fan_resume);
+ 
+ static struct platform_driver gpio_fan_driver = {
+ 	.probe		= gpio_fan_probe,
++	.remove		= gpio_fan_remove,
+ 	.shutdown	= gpio_fan_shutdown,
+ 	.driver	= {
+ 		.name	= "gpio-fan",
+-- 
+1.7.9.5
