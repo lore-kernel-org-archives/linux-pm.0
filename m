@@ -1,60 +1,247 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Thu, 8 Jan 2015 13:17:35 -0800
-Message-ID: <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCHv3 2/8] devfreq: exynos: Add documentation for generic
+ exynos memory bus frequency driver
+Date: Thu, 8 Jan 2015 15:18:53 -0600
+Message-ID: <CAL_Jsq+5sdsm_-VW-ta+qV-NBao-XTHvsYWcbMdZmbP0Nw43Cw@mail.gmail.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com> <1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:38706 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752315AbbAHVRm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Jan 2015 16:17:42 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id EFF87204E0
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2015 21:17:40 +0000 (UTC)
-Received: from mail-wi0-f182.google.com (mail-wi0-f182.google.com [209.85.212.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id CFE93204E1
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2015 21:17:37 +0000 (UTC)
-Received: by mail-wi0-f182.google.com with SMTP id h11so5984428wiw.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2015 13:17:35 -0800 (PST)
-In-Reply-To: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kgene@kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mark Rutland <mark.rutland@arm.com>, a.kesavan@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, k.kozlowski@samsung.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, InKi Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
-On Fri, Nov 21, 2014 at 5:31 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
-> Changes since v11:
-> - Rebased on top of git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
->
-> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
-> drivers and enables the use of cpufreq-dt driver for these platforms. This
-> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+Adding Viresh.
+
+On Wed, Jan 7, 2015 at 7:40 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch adds the documentation for generic exynos memory bus frequency
 > driver.
 >
-> This series is based on the following branch.
-> git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  .../devicetree/bindings/devfreq/exynos-busfreq.txt | 184 +++++++++++++++++++++
+>  1 file changed, 184 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-busfreq.txt
 >
-> This series depends on the following patch which can be picked from
-> git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git samsung/dt
-> e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
+> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-busfreq.txt b/Documentation/devicetree/bindings/devfreq/exynos-busfreq.txt
+> new file mode 100644
+> index 0000000..c601e88
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/exynos-busfreq.txt
+> @@ -0,0 +1,184 @@
+> +
+> +* Generic Exynos Memory Bus device
+> +
+> +The Samsung Exynos SoCs have many memory buses for data transfer between DRAM
+> +memory and MMC/sub-IP in SoC. Almost Exynos SoCs have the common architecture
+> +for memory buses. Generally, Exynos SoC express the memory bus by using memory
+> +bus group and block. The memory bus group has one more memory bus blocks and
+> +OPP table (including frequency and voltage for DVFS), regulator, devfreq-event
+> +devices. Each memory bus block has a clock for own memory bus speen and
+> +frequency table for DVFS. There are a little different among Exynos SoCs
+> +because each Exynos SoC has the different sub-IP and differnt memory bus.
+> +So, this difference should be specified in devicetree file.
+> +
+> +Required properties for memory bus group:
+> +- compatible: Should be "samsung,exynos-memory-bus".
+> +- operating-points: the OPP table including frequency/voltage information to
+> +                  support DVFS (Dynamic Voltage/Frequency Scaling) feature.
+> +- devfreq-events: the devfreq-event device to monitor the curret state of
+> +                  memory bus group.
+
+I don't understand what goes in here.
+
+> +- vdd-mem-supply: the regulator to provide memory bus group with the voltage.
+> +
+> +Required properties for memory bus block:
+> +- clock-names : the name of clock used by the memory bus, "memory-bus".
+> +- clocks : phandles for clock specified in "clock-names" property.
+> +- #clock-cells: should be 1.
+> +- frequency: the frequency table to support DVFS feature.
+
+So you have just defined a new OPP table format. We already have one
+and Viresh is working to create a more extendable one. He asked about
+what's needed in devfreq, so Viresh here you go. :)
+
+> +
+> +Example1 : Memory bus group/block in exynos3250.dtsi are listed below.
+> +       Exynos3250 has two memory bus group (MIF, INT group). MIF memory bus
+> +       group includes one memory bus block between DRAM and eMMC. Also, INT
+> +       memory bus group includes eight memory bus blocks which support each
+> +       sub-IPs between DRAM and sub-IPs.
+> +
+> +       memory_bus_mif: memory_bus@0 {
+> +               compatible = "samsung,exynos-memory-bus";
+> +
+> +               operating-points = <
+> +                       400000 875000
+> +                       200000 800000
+> +                       133000 800000
+> +                       100000 800000
+> +                       50000  800000>;
+> +               status = "disabled";
+
+Why is this not part of the DDR controller or /memory node?
+
+> +               blocks {
+> +                       dmc_block: memory_bus_block1 {
+> +                               clocks = <&cmu_dmc CLK_DIV_DMC>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       400000
+> +                                       200000
+> +                                       133000
+> +                                       100000
+> +                                       50000>;
+
+This is just duplicated from the operating-points table.
+
+> +                       };
+> +               };
+> +       };
+> +
+> +       memory_bus_int: memory_bus@1 {
+> +               compatible = "samsung,exynos-memory-bus";
+> +
+> +               operating-points = <
+> +                       400000 950000
+> +                       200000 950000
+> +                       133000 925000
+> +                       100000 850000
+> +                       80000  850000
+> +                       50000  850000>;
+> +
+> +               status = "disabled";
+> +
+> +               blocks {
+> +                       peri_block: memory_bus_block1 {
+
+Why is this and the following nodes not part of the respective
+peripheral nodes or buses. If you need more hierarchy in your bus add
+that to DT first. I'm sure just a flat "simple-bus" was done which
+doesn't reflect the actual bus and now you need it to.
+
+> +                               clocks = <&cmu CLK_DIV_ACLK_100>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       100000
+> +                                       100000
+> +                                       100000
+> +                                       100000
+> +                                       50000
+> +                                       50000>;
+> +                       };
+
+This just looks like constraints on the clock frequency. This should
+be added in a standard way to the clock binding.
+
+
+> +
+> +                       display_block: memory_bus_block2 {
+> +                               clocks = <&cmu CLK_DIV_ACLK_160>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       200000
+> +                                       160000
+> +                                       100000
+> +                                       80000
+> +                                       80000
+> +                                       50000>;
+> +                       };
+> +
+> +                       isp_block: memory_bus_block3 {
+> +                               clocks = <&cmu CLK_DIV_ACLK_200>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       200000
+> +                                       200000
+> +                                       100000
+> +                                       80000
+> +                                       50000
+> +                                       50000>;
+> +                       };
+> +
+> +                       gps_block: memory_bus_block4 {
+> +                               clocks = <&cmu CLK_DIV_ACLK_266>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       300000
+> +                                       200000
+> +                                       133000
+> +                                       100000
+> +                                       50000
+> +                                       50000>;
+> +                       };
+> +
+> +                       mcuisp_block: memory_bus_block5 {
+> +                               clocks = <&cmu CLK_DIV_ACLK_400_MCUISP>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       400000
+> +                                       200000
+> +                                       50000
+> +                                       50000
+> +                                       50000
+> +                                       50000>;
+> +                       };
+> +
+> +                       leftbus_block: memory_bus_block6 {
+> +                               clocks = <&cmu CLK_DIV_GDL>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       200000
+> +                                       200000
+> +                                       133000
+> +                                       100000
+> +                                       100000
+> +                                       100000>;
+> +                       };
+> +
+> +                       rightbus_block: memory_bus_block7 {
+> +                               clocks = <&cmu CLK_DIV_GDR>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       200000
+> +                                       200000
+> +                                       133000
+> +                                       100000
+> +                                       100000
+> +                                       100000>;
+> +                       };
+> +
+> +                       mfc_block: memory_bus_block8 {
+> +                               clocks = <&cmu CLK_SCLK_MFC>;
+> +                               clock-names = "memory-bus";
+> +                               frequency = <
+> +                                       200000
+> +                                       200000
+> +                                       200000
+> +                                       133000
+> +                                       100000
+> +                                       80000>;
+> +                       };
+> +               };
+> +       };
+> +
+> +Example2 : Usage case to handle the frequency/voltage of memory bus on runtime
+> +       in exynos3250-rinato.dts are listed below.
+> +
+> +       &memory_bus_mif {
+> +               devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
+> +               vdd-mem-supply = <&buck1_reg>;
+> +               status = "okay";
+> +       };
+> +
+> +       &memory_bus_int {
+> +               devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
+> +               vdd-mem-supply = <&buck3_reg>;
+> +               status = "okay";
+> +       };
+> --
+> 1.8.5.5
 >
-> This patch series has been tested on Exynos4210/5250/5420 based boards.
-> Tomasz Figa had plans to take this in the Samsung clock tree for v3.19
-> (http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
-> Sylwester, could you consider to merge this in your tree?
-
-CPUfreq for exynos is still not upstream.  What's the status of this
-series?  It's been ver a month since there's been any activity here
-(or any responses to the issues I reported.)
-
-On a related note, this series only does frequency scaling. Is there
-any work going on to also enable voltage scaling for the CPU rails as
-well?
-
-Thanks,
-
-Kevin
