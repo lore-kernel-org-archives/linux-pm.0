@@ -1,103 +1,265 @@
-From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Subject: [PATCH v7 01/16] clk: tegra: Add binding for the Tegra124 DFLL clocksource
-Date: Thu,  8 Jan 2015 15:22:04 +0200
-Message-ID: <1420723339-30735-2-git-send-email-mikko.perttunen@kapsi.fi>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: [PATCH v7 04/16] clk: tegra: Add functions for parsing CVB tables
+Date: Thu,  8 Jan 2015 15:22:07 +0200
+Message-ID: <1420723339-30735-5-git-send-email-mikko.perttunen@kapsi.fi>
 References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1420723339-30735-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kapsi.fi ([217.30.184.167]:59773 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756537AbbAHN2G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Jan 2015 08:28:06 -0500
+In-Reply-To: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 
-From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-The DFLL is the main clocksource for the fast CPU cluster on Tegra124
-and also provides automatic CPU rail voltage scaling as well. The DFLL
-is a separate IP block from the usual Tegra124 clock-and-reset
-controller, so it gets its own node in the device tree.
+Tegra CVB tables encode the relationship between operating voltage
+and optimal frequency as a function of the so-called speedo value.
+The speedo value is written to the on-chip fuses at the factory,
+which allows the voltage-frequency operating points to be calculated
+on an per-chip basis.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Add utility functions to parse the Tegra-specific tables and export the
+voltage-frequency pairs to the generic OPP framework for other drivers
+to use.
+
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
 ---
- .../bindings/clock/nvidia,tegra124-dfll.txt        | 69 ++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ arch/arm/mach-tegra/Kconfig |   1 +
+ drivers/clk/tegra/cvb.c     | 133 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/tegra/cvb.h     |  67 ++++++++++++++++++++++
+ 3 files changed, 201 insertions(+)
+ create mode 100644 drivers/clk/tegra/cvb.c
+ create mode 100644 drivers/clk/tegra/cvb.h
 
-diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
+index d0be9a1..6c2f628 100644
+--- a/arch/arm/mach-tegra/Kconfig
++++ b/arch/arm/mach-tegra/Kconfig
+@@ -8,6 +8,7 @@ menuconfig ARCH_TEGRA
+ 	select HAVE_ARM_SCU if SMP
+ 	select HAVE_ARM_TWD if SMP
+ 	select PINCTRL
++	select PM_OPP
+ 	select ARCH_HAS_RESET_CONTROLLER
+ 	select RESET_CONTROLLER
+ 	select SOC_BUS
+diff --git a/drivers/clk/tegra/cvb.c b/drivers/clk/tegra/cvb.c
 new file mode 100644
-index 0000000..54c62ac
+index 0000000..69c74ee
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-@@ -0,0 +1,69 @@
-+NVIDIA Tegra124 DFLL FCPU clocksource
++++ b/drivers/clk/tegra/cvb.c
+@@ -0,0 +1,133 @@
++/*
++ * Utility functions for parsing Tegra CVB voltage tables
++ *
++ * Copyright (C) 2012-2014 NVIDIA Corporation.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++#include <linux/err.h>
++#include <linux/kernel.h>
++#include <linux/pm_opp.h>
 +
-+This binding uses the common clock binding:
-+Documentation/devicetree/bindings/clock/clock-bindings.txt
++#include "cvb.h"
 +
-+The DFLL IP block on Tegra is a root clocksource designed for clocking
-+the fast CPU cluster. It consists of a free-running voltage controlled
-+oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
-+control module that will automatically adjust the VDD_CPU voltage by
-+communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
++/* cvb_mv = ((c2 * speedo / s_scale + c1) * speedo / s_scale + c0) */
++static inline int get_cvb_voltage(int speedo, int s_scale,
++				  const struct cvb_coefficients *cvb)
++{
++	int mv;
 +
-+Required properties:
-+- compatible : should be "nvidia,tegra124-dfll-fcpu"
-+- reg : Defines the following set of registers, in the order listed:
-+        - registers for the DFLL control logic.
-+        - registers for the I2C output logic.
-+        - registers for the integrated I2C master controller.
-+        - look-up table RAM for voltage register values.
-+- interrupts: Should contain the DFLL block interrupt.
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - soc: Clock source for the DFLL control logic.
-+  - ref: The closed loop reference clock
-+  - i2c: Clock source for the integrated I2C master.
-+- #clock-cells: Must be 0.
-+- clock-output-names: Name of the clock output.
-+- vdd-cpu-supply: Regulator for the CPU voltage rail that the DFLL
-+  hardware will start controlling.
++	/* apply only speedo scale: output mv = cvb_mv * v_scale */
++	mv = DIV_ROUND_CLOSEST(cvb->c2 * speedo, s_scale);
++	mv = DIV_ROUND_CLOSEST((mv + cvb->c1) * speedo, s_scale) + cvb->c0;
++	return mv;
++}
 +
-+Required properties for the control loop parameters:
-+- nvidia,sample-rate: Sample rate of the DFLL control loop.
-+- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
-+- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
-+- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TRM.
-+- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TRM.
-+- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TRM.
-+- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in the TRM.
++static int round_cvb_voltage(int mv, int v_scale,
++			     const struct rail_alignment *align)
++{
++	/* combined: apply voltage scale and round to cvb alignment step */
++	int uv;
++	int step = (align->step_uv ? : 1000) * v_scale;
++	int offset = align->offset_uv * v_scale;
 +
-+Required properties for I2C mode:
-+- nvidia,i2c-fs-rate: I2C transfer rate, if using FS mode.
++	uv = max(mv * 1000, offset) - offset;
++	uv = DIV_ROUND_UP(uv, step) * align->step_uv + align->offset_uv;
++	return uv / 1000;
++}
 +
-+Example:
-+
-+dfll@0,70110000 {
-+        compatible = "nvidia,tegra124-dfll";
-+        reg = <0 0x70110000 0 0x100>, /* DFLL control */
-+              <0 0x70110000 0 0x100>, /* I2C output control */
-+              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
-+              <0 0x70110200 0 0x100>; /* Look-up table RAM */
-+        interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
-+                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
-+                 <&tegra_car TEGRA124_CLK_I2C5>;
-+        clock-names = "soc", "ref", "i2c";
-+        #clock-cells = <0>;
-+        clock-output-names = "dfllCPU_out";
-+        vdd-cpu-supply = <&vdd_cpu>;
-+        status = "okay";
-+
-+        nvidia,sample-rate = <12500>;
-+        nvidia,droop-ctrl = <0x00000f00>;
-+        nvidia,force-mode = <1>;
-+        nvidia,cf = <10>;
-+        nvidia,ci = <0>;
-+        nvidia,cg = <2>;
-+
-+        nvidia,i2c-fs-rate = <400000>;
++enum {
++	DOWN,
++	UP
 +};
++
++static int round_voltage(int mv, const struct rail_alignment *align, int up)
++{
++	if (align->step_uv) {
++		int uv;
++
++		uv = max(mv * 1000, align->offset_uv) - align->offset_uv;
++		uv = (uv + (up ? align->step_uv - 1 : 0)) / align->step_uv;
++		return (uv * align->step_uv + align->offset_uv) / 1000;
++	}
++	return mv;
++}
++
++static int build_opp_table(const struct cvb_table *d,
++			   int speedo_value,
++			   unsigned long max_freq,
++			   struct device *opp_dev)
++{
++	int i, ret, dfll_mv, min_mv, max_mv;
++	const struct cvb_table_freq_entry *table = NULL;
++	const struct rail_alignment *align = &d->alignment;
++
++	min_mv = round_voltage(d->min_millivolts, align, UP);
++	max_mv = round_voltage(d->max_millivolts, align, DOWN);
++
++	for (i = 0; i < MAX_DVFS_FREQS; i++) {
++		table = &d->cvb_table[i];
++		if (!table->freq || (table->freq > max_freq))
++			break;
++
++		dfll_mv = get_cvb_voltage(
++			speedo_value, d->speedo_scale, &table->coefficients);
++		dfll_mv = round_cvb_voltage(dfll_mv, d->voltage_scale, align);
++		dfll_mv = clamp(dfll_mv, min_mv, max_mv);
++
++		ret = dev_pm_opp_add(opp_dev, table->freq, dfll_mv * 1000);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++/**
++ * tegra_cvb_build_opp_table - build OPP table from Tegra CVB tables
++ * @cvb_tables: array of CVB tables
++ * @sz: size of the previously mentioned array
++ * @process_id: process id of the HW module
++ * @speedo_id: speedo id of the HW module
++ * @speedo_value: speedo value of the HW module
++ * @max_rate: highest safe clock rate
++ * @opp_dev: the struct device * for which the OPP table is built
++ *
++ * On Tegra, a CVB table encodes the relationship between operating voltage
++ * and safe maximal frequency for a given module (e.g. GPU or CPU). This
++ * function calculates the optimal voltage-frequency operating points
++ * for the given arguments and exports them via the OPP library for the
++ * given @opp_dev. Returns a pointer to the struct cvb_table that matched
++ * or an ERR_PTR on failure.
++ */
++const struct cvb_table *tegra_cvb_build_opp_table(
++		const struct cvb_table *cvb_tables,
++		size_t sz, int process_id,
++		int speedo_id, int speedo_value,
++		unsigned long max_rate,
++		struct device *opp_dev)
++{
++	int i, ret;
++
++	for (i = 0; i < sz; i++) {
++		const struct cvb_table *d = &cvb_tables[i];
++
++		if (d->speedo_id != -1 && d->speedo_id != speedo_id)
++			continue;
++		if (d->process_id != -1 && d->process_id != process_id)
++			continue;
++
++		ret = build_opp_table(d, speedo_value, max_rate, opp_dev);
++		return ret ? ERR_PTR(ret) : d;
++	}
++
++	return ERR_PTR(-EINVAL);
++}
+diff --git a/drivers/clk/tegra/cvb.h b/drivers/clk/tegra/cvb.h
+new file mode 100644
+index 0000000..f62cdc4
+--- /dev/null
++++ b/drivers/clk/tegra/cvb.h
+@@ -0,0 +1,67 @@
++/*
++ * Utility functions for parsing Tegra CVB voltage tables
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++
++#ifndef __DRIVERS_CLK_TEGRA_CVB_H
++#define __DRIVERS_CLK_TEGRA_CVB_H
++
++#include <linux/types.h>
++
++struct device;
++
++#define MAX_DVFS_FREQS	40
++
++struct rail_alignment {
++	int offset_uv;
++	int step_uv;
++};
++
++struct cvb_coefficients {
++	int c0;
++	int c1;
++	int c2;
++};
++
++struct cvb_table_freq_entry {
++	unsigned long freq;
++	struct cvb_coefficients coefficients;
++};
++
++struct cvb_cpu_dfll_data {
++	u32 tune0_low;
++	u32 tune0_high;
++	u32 tune1;
++};
++
++struct cvb_table {
++	int speedo_id;
++	int process_id;
++
++	int min_millivolts;
++	int max_millivolts;
++	struct rail_alignment alignment;
++
++	int speedo_scale;
++	int voltage_scale;
++	struct cvb_table_freq_entry cvb_table[MAX_DVFS_FREQS];
++	struct cvb_cpu_dfll_data cpu_dfll_data;
++};
++
++const struct cvb_table *tegra_cvb_build_opp_table(
++		const struct cvb_table *cvb_tables,
++		size_t sz, int process_id,
++		int speedo_id, int speedo_value,
++		unsigned long max_rate,
++		struct device *opp_dev);
++
++#endif
 -- 
 2.2.1
+
