@@ -1,43 +1,76 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] PM / clock_ops: initialize ret to avoid garbage being returned
-Date: Thu,  8 Jan 2015 15:31:01 +0000
-Message-ID: <1420731061-5029-1-git-send-email-colin.king@canonical.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:33798 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756486AbbAHPcH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 10:32:07 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PCI / PM: Avoid resuming PCI devices during system
+ suspend
+Date: Thu, 8 Jan 2015 10:51:06 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
+References: <1460212.bInrzeZle0@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1460212.bInrzeZle0@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+On Thu, 8 Jan 2015, Rafael J. Wysocki wrote:
 
-cppcheck detected an unitialised ret:
-  [drivers/base/power/clock_ops.c:53]: (error) Uninitialized variable: ret
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
+> domain during system suspend) modified the ACPI PM domain's system
+> suspend callbacks to allow devices attached to it to be left in the
+> runtime-suspended state during system suspend so as to optimize
+> the suspend process.
+> 
+> This was based on the general mechanism introduced by commit
+> aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
+> devices unnecessarily).
+> 
+> Extend that approach to PCI devices by modifying the PCI bus type's
+> ->prepare callback to return 1 for devices that are runtime-suspended
+> when it is being executed and that are in a suitable power state and
+> need not be resumed going forward.
 
-ret is only assigned if ce->status < PCE_STATUS_ERROR, if this is false
-then __pm_clk_enable returns whatever garbage ret picks up from the stack.
+Does this correctly handle PCI devices that aren't included in the ACPI
+tables?  For example, add-on PCI cards?
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/base/power/clock_ops.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +/**
+> + * pci_dev_keep_suspended - Check if the device can stay in the suspended state.
+> + * @dev: Device to check.
+> + *
+> + * Return 'true' if the device is runtime-suspended, it doesn't have to be
+> + * reconfigured for system wakeup and the current power state of it is
+> + * suitable for the upcoming (system) transition.
+> + */
+> +bool pci_dev_keep_suspended(struct pci_dev *dev)
+> +{
+> +	if (!pm_runtime_suspended(&dev->dev) || platform_pci_need_resume(dev))
+> +		return false;
+> +
+> +	return pci_target_state(dev) == dev->current_state;
+> +}
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index d626576..5bd283d 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -39,7 +39,7 @@ struct pm_clock_entry {
-  */
- static inline int __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
- {
--	int ret;
-+	int ret = 0;
- 
- 	if (ce->status < PCE_STATUS_ERROR) {
- 		ret = clk_enable(ce->clk);
--- 
-1.7.9.5
+So if platform_pci_need_resume() returns "false", you will try to keep 
+the device suspended.  And platform_pci_need_resume() simply invokes 
+the .need_resume method of the pci_platform_pm structure.
 
+> +static bool acpi_pci_need_resume(struct pci_dev *dev)
+> +{
+> +	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+> +
+> +	if (!adev || !acpi_device_power_manageable(adev))
+> +		return false;
+
+And this says if the device doesn't appear in ACPI then it doesn't need 
+to be resumed.
+
+But what if it uses PME and it currently has the wrong wakeup setting?  
+Shouldn't this routine start out with
+
+	if (!adev)
+		return true;
+
+?  Or should there maybe be an explicit test for devices using PME?
+
+Alan Stern
