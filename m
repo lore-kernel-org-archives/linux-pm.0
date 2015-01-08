@@ -1,105 +1,102 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver if MCPM is unavailable
-Date: Thu, 08 Jan 2015 12:27:36 -0800
-Message-ID: <7hh9w1vwzr.fsf@deeprootsystems.com>
-References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
-	<54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>
-	<54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>
-	<54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver
+ if MCPM is unavailable
+Date: Thu, 08 Jan 2015 21:51:40 +0100
+Message-ID: <54AEEDDC.3070609@linaro.org>
+References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>	<54AE459B.8010703@linaro.org>
+ <54AE4ADF.3030307@arm.com>	<54AE55CE.6040201@linaro.org>
+ <54AE5C8F.9080600@arm.com>	<54AE65EC.3050808@linaro.org>
+ <20150108122958.GB32308@red-moon> <7hh9w1vwzr.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:48404 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbbAHU1k (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 15:27:40 -0500
-Received: by mail-pa0-f50.google.com with SMTP id bj1so13815055pad.9
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2015 12:27:39 -0800 (PST)
-In-Reply-To: <20150108122958.GB32308@red-moon> (Lorenzo Pieralisi's message of
-	"Thu, 8 Jan 2015 12:29:58 +0000")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <7hh9w1vwzr.fsf@deeprootsystems.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kevin Hilman <khilman@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>
 
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
-
-> On Thu, Jan 08, 2015 at 11:11:40AM +0000, Daniel Lezcano wrote:
->
-> [...]
->
->> >> IMO, it would be better to be more strict with the mcpm
->> >> initialization and not let the system boot if something is wrong with
->> >> it which I believe is coming from the firmware and let the user to
->> >> figure out what is really happening by letting him to disable mcpm in
->> >> the kernel configuration (which in turn will disable cpuidle).
->> >
->> > Again I fully agree, but in this case I manually switched to legacy boot
->> > mode on TC2 and used same kernel with MCPM config enabled. Do you mean
->> > to say we should not support that even when developer understand the
->> > consequence of that ?
->> 
->> Well, I see there are the exynos5410/5420/5422. For the 5422 on 
->> chromebook2 MCPM works well, IIUC. But for the 5422 on odroid-xu3, MCPM 
->> does not work, hence cpuidle neither because of the firmware.
->> 
->> Silently disabling cpuidle because mcpm did not initialize will hide the 
->> issue.
->
-> No. MCPM *will* initialize, Sudeep's patch does not silently disable
-> CPUidle.
-> To put it differently MCPM will initialize if CCI is in the DT and it
-> is "available", so unless defined differently in the dts mcpm will be
-> available and CPUidle will be initialized (and break if there is an issue
-> with the platform FW/HW).
->
-> I agree the mechanism to define if MCPM is available can be improved
-> but that's what it is at the moment.
->
-> The problem here is to boot a platform with different boot methods
-> and still have a single kernel image.
->
->> I understand your point about switching to legacy without recompiling 
->> the kernel.
->> 
->> I suggest we add a big fat WARN_ON when the mcpm initialization fails 
->> with your patch.
->
-> I think there are multiple facets we are tackling at once here and they
-> should not be mixed.
->
-> 1) We left static idle states there to cope with legacy DTBs that were
->    published before we introduced idle states bindings. If we want to
->    boot eg vexpress in legacy mode but single kernel image with MCPM on,
->    we could remove the idle states in DT and the problem would be
->    solved; we can't do that since we were forced to leave the static
->    idle tables. Overall I think this is not the way to fix the issue.
-> 2) The idle driver should be initialized if there is an idle state entry
->    method, which in this case is MCPM. If I boot vexpress with MCPM
->    enabled but legacy boot method (ie spin table) with a single kernel image
->    I do not want to warn if the idle states entry method (MCPM) can't be
->    initialized (and I do not want to get a warning if the idle driver is
->    triggering a mcpm_cpu_suspend), so Sudeep's patch is valid and I am
->    against adding a:
->
->    if (WARN_ON(!mcpm_is_available())
->
-> 3) Sudeep's patch is not hiding anything. If CCI is in DT, CCI is
->    probed so mcpm_is_available() == true. If the firmware is borked
->    the idle states will be entered and we will notice there is something
->    wrong
->
-> So overall I think Sudeep's patch is sound. I also think we should
-> improve the way we detect if MCPM is available, and again, I think the
-> CPU operations on arm64 are a good example that we can and we should
-> replicate.
-
-This patch disables CPUidle all together, but shouldn't it just disable
-the states that rely on MCPM?  IOW, C1 should still work just fine since
-it doesn't use MCPM, right?  So, rather than fail the init, it should
-just drop any MCPM states (e.g. set ->state_count = 1)
-
-Kevin
-
-
-
+T24gMDEvMDgvMjAxNSAwOToyNyBQTSwgS2V2aW4gSGlsbWFuIHdyb3RlOgo+IExvcmVuem8gUGll
+cmFsaXNpIDxsb3JlbnpvLnBpZXJhbGlzaUBhcm0uY29tPiB3cml0ZXM6Cj4KPj4gT24gVGh1LCBK
+YW4gMDgsIDIwMTUgYXQgMTE6MTE6NDBBTSArMDAwMCwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+
+Cj4+IFsuLi5dCj4+Cj4+Pj4+IElNTywgaXQgd291bGQgYmUgYmV0dGVyIHRvIGJlIG1vcmUgc3Ry
+aWN0IHdpdGggdGhlIG1jcG0KPj4+Pj4gaW5pdGlhbGl6YXRpb24gYW5kIG5vdCBsZXQgdGhlIHN5
+c3RlbSBib290IGlmIHNvbWV0aGluZyBpcyB3cm9uZyB3aXRoCj4+Pj4+IGl0IHdoaWNoIEkgYmVs
+aWV2ZSBpcyBjb21pbmcgZnJvbSB0aGUgZmlybXdhcmUgYW5kIGxldCB0aGUgdXNlciB0bwo+Pj4+
+PiBmaWd1cmUgb3V0IHdoYXQgaXMgcmVhbGx5IGhhcHBlbmluZyBieSBsZXR0aW5nIGhpbSB0byBk
+aXNhYmxlIG1jcG0gaW4KPj4+Pj4gdGhlIGtlcm5lbCBjb25maWd1cmF0aW9uICh3aGljaCBpbiB0
+dXJuIHdpbGwgZGlzYWJsZSBjcHVpZGxlKS4KPj4+Pgo+Pj4+IEFnYWluIEkgZnVsbHkgYWdyZWUs
+IGJ1dCBpbiB0aGlzIGNhc2UgSSBtYW51YWxseSBzd2l0Y2hlZCB0byBsZWdhY3kgYm9vdAo+Pj4+
+IG1vZGUgb24gVEMyIGFuZCB1c2VkIHNhbWUga2VybmVsIHdpdGggTUNQTSBjb25maWcgZW5hYmxl
+ZC4gRG8geW91IG1lYW4KPj4+PiB0byBzYXkgd2Ugc2hvdWxkIG5vdCBzdXBwb3J0IHRoYXQgZXZl
+biB3aGVuIGRldmVsb3BlciB1bmRlcnN0YW5kIHRoZQo+Pj4+IGNvbnNlcXVlbmNlIG9mIHRoYXQg
+Pwo+Pj4KPj4+IFdlbGwsIEkgc2VlIHRoZXJlIGFyZSB0aGUgZXh5bm9zNTQxMC81NDIwLzU0MjIu
+IEZvciB0aGUgNTQyMiBvbgo+Pj4gY2hyb21lYm9vazIgTUNQTSB3b3JrcyB3ZWxsLCBJSVVDLiBC
+dXQgZm9yIHRoZSA1NDIyIG9uIG9kcm9pZC14dTMsIE1DUE0KPj4+IGRvZXMgbm90IHdvcmssIGhl
+bmNlIGNwdWlkbGUgbmVpdGhlciBiZWNhdXNlIG9mIHRoZSBmaXJtd2FyZS4KPj4+Cj4+PiBTaWxl
+bnRseSBkaXNhYmxpbmcgY3B1aWRsZSBiZWNhdXNlIG1jcG0gZGlkIG5vdCBpbml0aWFsaXplIHdp
+bGwgaGlkZSB0aGUKPj4+IGlzc3VlLgo+Pgo+PiBOby4gTUNQTSAqd2lsbCogaW5pdGlhbGl6ZSwg
+U3VkZWVwJ3MgcGF0Y2ggZG9lcyBub3Qgc2lsZW50bHkgZGlzYWJsZQo+PiBDUFVpZGxlLgo+PiBU
+byBwdXQgaXQgZGlmZmVyZW50bHkgTUNQTSB3aWxsIGluaXRpYWxpemUgaWYgQ0NJIGlzIGluIHRo
+ZSBEVCBhbmQgaXQKPj4gaXMgImF2YWlsYWJsZSIsIHNvIHVubGVzcyBkZWZpbmVkIGRpZmZlcmVu
+dGx5IGluIHRoZSBkdHMgbWNwbSB3aWxsIGJlCj4+IGF2YWlsYWJsZSBhbmQgQ1BVaWRsZSB3aWxs
+IGJlIGluaXRpYWxpemVkIChhbmQgYnJlYWsgaWYgdGhlcmUgaXMgYW4gaXNzdWUKPj4gd2l0aCB0
+aGUgcGxhdGZvcm0gRlcvSFcpLgo+Pgo+PiBJIGFncmVlIHRoZSBtZWNoYW5pc20gdG8gZGVmaW5l
+IGlmIE1DUE0gaXMgYXZhaWxhYmxlIGNhbiBiZSBpbXByb3ZlZAo+PiBidXQgdGhhdCdzIHdoYXQg
+aXQgaXMgYXQgdGhlIG1vbWVudC4KPj4KPj4gVGhlIHByb2JsZW0gaGVyZSBpcyB0byBib290IGEg
+cGxhdGZvcm0gd2l0aCBkaWZmZXJlbnQgYm9vdCBtZXRob2RzCj4+IGFuZCBzdGlsbCBoYXZlIGEg
+c2luZ2xlIGtlcm5lbCBpbWFnZS4KPj4KPj4+IEkgdW5kZXJzdGFuZCB5b3VyIHBvaW50IGFib3V0
+IHN3aXRjaGluZyB0byBsZWdhY3kgd2l0aG91dCByZWNvbXBpbGluZwo+Pj4gdGhlIGtlcm5lbC4K
+Pj4+Cj4+PiBJIHN1Z2dlc3Qgd2UgYWRkIGEgYmlnIGZhdCBXQVJOX09OIHdoZW4gdGhlIG1jcG0g
+aW5pdGlhbGl6YXRpb24gZmFpbHMKPj4+IHdpdGggeW91ciBwYXRjaC4KPj4KPj4gSSB0aGluayB0
+aGVyZSBhcmUgbXVsdGlwbGUgZmFjZXRzIHdlIGFyZSB0YWNrbGluZyBhdCBvbmNlIGhlcmUgYW5k
+IHRoZXkKPj4gc2hvdWxkIG5vdCBiZSBtaXhlZC4KPj4KPj4gMSkgV2UgbGVmdCBzdGF0aWMgaWRs
+ZSBzdGF0ZXMgdGhlcmUgdG8gY29wZSB3aXRoIGxlZ2FjeSBEVEJzIHRoYXQgd2VyZQo+PiAgICAg
+cHVibGlzaGVkIGJlZm9yZSB3ZSBpbnRyb2R1Y2VkIGlkbGUgc3RhdGVzIGJpbmRpbmdzLiBJZiB3
+ZSB3YW50IHRvCj4+ICAgICBib290IGVnIHZleHByZXNzIGluIGxlZ2FjeSBtb2RlIGJ1dCBzaW5n
+bGUga2VybmVsIGltYWdlIHdpdGggTUNQTSBvbiwKPj4gICAgIHdlIGNvdWxkIHJlbW92ZSB0aGUg
+aWRsZSBzdGF0ZXMgaW4gRFQgYW5kIHRoZSBwcm9ibGVtIHdvdWxkIGJlCj4+ICAgICBzb2x2ZWQ7
+IHdlIGNhbid0IGRvIHRoYXQgc2luY2Ugd2Ugd2VyZSBmb3JjZWQgdG8gbGVhdmUgdGhlIHN0YXRp
+Ywo+PiAgICAgaWRsZSB0YWJsZXMuIE92ZXJhbGwgSSB0aGluayB0aGlzIGlzIG5vdCB0aGUgd2F5
+IHRvIGZpeCB0aGUgaXNzdWUuCj4+IDIpIFRoZSBpZGxlIGRyaXZlciBzaG91bGQgYmUgaW5pdGlh
+bGl6ZWQgaWYgdGhlcmUgaXMgYW4gaWRsZSBzdGF0ZSBlbnRyeQo+PiAgICAgbWV0aG9kLCB3aGlj
+aCBpbiB0aGlzIGNhc2UgaXMgTUNQTS4gSWYgSSBib290IHZleHByZXNzIHdpdGggTUNQTQo+PiAg
+ICAgZW5hYmxlZCBidXQgbGVnYWN5IGJvb3QgbWV0aG9kIChpZSBzcGluIHRhYmxlKSB3aXRoIGEg
+c2luZ2xlIGtlcm5lbCBpbWFnZQo+PiAgICAgSSBkbyBub3Qgd2FudCB0byB3YXJuIGlmIHRoZSBp
+ZGxlIHN0YXRlcyBlbnRyeSBtZXRob2QgKE1DUE0pIGNhbid0IGJlCj4+ICAgICBpbml0aWFsaXpl
+ZCAoYW5kIEkgZG8gbm90IHdhbnQgdG8gZ2V0IGEgd2FybmluZyBpZiB0aGUgaWRsZSBkcml2ZXIg
+aXMKPj4gICAgIHRyaWdnZXJpbmcgYSBtY3BtX2NwdV9zdXNwZW5kKSwgc28gU3VkZWVwJ3MgcGF0
+Y2ggaXMgdmFsaWQgYW5kIEkgYW0KPj4gICAgIGFnYWluc3QgYWRkaW5nIGE6Cj4+Cj4+ICAgICBp
+ZiAoV0FSTl9PTighbWNwbV9pc19hdmFpbGFibGUoKSkKPj4KPj4gMykgU3VkZWVwJ3MgcGF0Y2gg
+aXMgbm90IGhpZGluZyBhbnl0aGluZy4gSWYgQ0NJIGlzIGluIERULCBDQ0kgaXMKPj4gICAgIHBy
+b2JlZCBzbyBtY3BtX2lzX2F2YWlsYWJsZSgpID09IHRydWUuIElmIHRoZSBmaXJtd2FyZSBpcyBi
+b3JrZWQKPj4gICAgIHRoZSBpZGxlIHN0YXRlcyB3aWxsIGJlIGVudGVyZWQgYW5kIHdlIHdpbGwg
+bm90aWNlIHRoZXJlIGlzIHNvbWV0aGluZwo+PiAgICAgd3JvbmcKPj4KPj4gU28gb3ZlcmFsbCBJ
+IHRoaW5rIFN1ZGVlcCdzIHBhdGNoIGlzIHNvdW5kLiBJIGFsc28gdGhpbmsgd2Ugc2hvdWxkCj4+
+IGltcHJvdmUgdGhlIHdheSB3ZSBkZXRlY3QgaWYgTUNQTSBpcyBhdmFpbGFibGUsIGFuZCBhZ2Fp
+biwgSSB0aGluayB0aGUKPj4gQ1BVIG9wZXJhdGlvbnMgb24gYXJtNjQgYXJlIGEgZ29vZCBleGFt
+cGxlIHRoYXQgd2UgY2FuIGFuZCB3ZSBzaG91bGQKPj4gcmVwbGljYXRlLgo+Cj4gVGhpcyBwYXRj
+aCBkaXNhYmxlcyBDUFVpZGxlIGFsbCB0b2dldGhlciwgYnV0IHNob3VsZG4ndCBpdCBqdXN0IGRp
+c2FibGUKPiB0aGUgc3RhdGVzIHRoYXQgcmVseSBvbiBNQ1BNPyAgSU9XLCBDMSBzaG91bGQgc3Rp
+bGwgd29yayBqdXN0IGZpbmUgc2luY2UKPiBpdCBkb2Vzbid0IHVzZSBNQ1BNLCByaWdodD8gIFNv
+LCByYXRoZXIgdGhhbiBmYWlsIHRoZSBpbml0LCBpdCBzaG91bGQKPiBqdXN0IGRyb3AgYW55IE1D
+UE0gc3RhdGVzIChlLmcuIHNldCAtPnN0YXRlX2NvdW50ID0gMSkKCldlbGwsIHRoYXQgbWVhbnMg
+d2Ugd2lsbCBoYXZlIGEgY3B1aWRsZSBkcml2ZXIgd2l0aCB0aGUgV0ZJIHN0YXRlIG9ubHkgCndo
+aWNoIGlzIHRoZSBkZWZhdWx0IGlkbGUgZnVuY3Rpb24gd2hlbiB0aGVyZSBpcyBubyBjcHVpZGxl
+IGRyaXZlciAoKyAKd2l0aG91dCB0aGUgZ292ZXJub3IgbWF0aCkuCgoKLS0gCiAgPGh0dHA6Ly93
+d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBB
+Uk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9M
+aW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0
+ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwg
+bWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8v
+bGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
