@@ -1,102 +1,60 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver
- if MCPM is unavailable
-Date: Thu, 08 Jan 2015 21:51:40 +0100
-Message-ID: <54AEEDDC.3070609@linaro.org>
-References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>	<54AE459B.8010703@linaro.org>
- <54AE4ADF.3030307@arm.com>	<54AE55CE.6040201@linaro.org>
- <54AE5C8F.9080600@arm.com>	<54AE65EC.3050808@linaro.org>
- <20150108122958.GB32308@red-moon> <7hh9w1vwzr.fsf@deeprootsystems.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Thu, 8 Jan 2015 13:17:35 -0800
+Message-ID: <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
+References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <7hh9w1vwzr.fsf@deeprootsystems.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kevin Hilman <khilman@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:38706 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752315AbbAHVRm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Jan 2015 16:17:42 -0500
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id EFF87204E0
+	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2015 21:17:40 +0000 (UTC)
+Received: from mail-wi0-f182.google.com (mail-wi0-f182.google.com [209.85.212.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(No client certificate requested)
+	by mail.kernel.org (Postfix) with ESMTPSA id CFE93204E1
+	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2015 21:17:37 +0000 (UTC)
+Received: by mail-wi0-f182.google.com with SMTP id h11so5984428wiw.3
+        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2015 13:17:35 -0800 (PST)
+In-Reply-To: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
-T24gMDEvMDgvMjAxNSAwOToyNyBQTSwgS2V2aW4gSGlsbWFuIHdyb3RlOgo+IExvcmVuem8gUGll
-cmFsaXNpIDxsb3JlbnpvLnBpZXJhbGlzaUBhcm0uY29tPiB3cml0ZXM6Cj4KPj4gT24gVGh1LCBK
-YW4gMDgsIDIwMTUgYXQgMTE6MTE6NDBBTSArMDAwMCwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+
-Cj4+IFsuLi5dCj4+Cj4+Pj4+IElNTywgaXQgd291bGQgYmUgYmV0dGVyIHRvIGJlIG1vcmUgc3Ry
-aWN0IHdpdGggdGhlIG1jcG0KPj4+Pj4gaW5pdGlhbGl6YXRpb24gYW5kIG5vdCBsZXQgdGhlIHN5
-c3RlbSBib290IGlmIHNvbWV0aGluZyBpcyB3cm9uZyB3aXRoCj4+Pj4+IGl0IHdoaWNoIEkgYmVs
-aWV2ZSBpcyBjb21pbmcgZnJvbSB0aGUgZmlybXdhcmUgYW5kIGxldCB0aGUgdXNlciB0bwo+Pj4+
-PiBmaWd1cmUgb3V0IHdoYXQgaXMgcmVhbGx5IGhhcHBlbmluZyBieSBsZXR0aW5nIGhpbSB0byBk
-aXNhYmxlIG1jcG0gaW4KPj4+Pj4gdGhlIGtlcm5lbCBjb25maWd1cmF0aW9uICh3aGljaCBpbiB0
-dXJuIHdpbGwgZGlzYWJsZSBjcHVpZGxlKS4KPj4+Pgo+Pj4+IEFnYWluIEkgZnVsbHkgYWdyZWUs
-IGJ1dCBpbiB0aGlzIGNhc2UgSSBtYW51YWxseSBzd2l0Y2hlZCB0byBsZWdhY3kgYm9vdAo+Pj4+
-IG1vZGUgb24gVEMyIGFuZCB1c2VkIHNhbWUga2VybmVsIHdpdGggTUNQTSBjb25maWcgZW5hYmxl
-ZC4gRG8geW91IG1lYW4KPj4+PiB0byBzYXkgd2Ugc2hvdWxkIG5vdCBzdXBwb3J0IHRoYXQgZXZl
-biB3aGVuIGRldmVsb3BlciB1bmRlcnN0YW5kIHRoZQo+Pj4+IGNvbnNlcXVlbmNlIG9mIHRoYXQg
-Pwo+Pj4KPj4+IFdlbGwsIEkgc2VlIHRoZXJlIGFyZSB0aGUgZXh5bm9zNTQxMC81NDIwLzU0MjIu
-IEZvciB0aGUgNTQyMiBvbgo+Pj4gY2hyb21lYm9vazIgTUNQTSB3b3JrcyB3ZWxsLCBJSVVDLiBC
-dXQgZm9yIHRoZSA1NDIyIG9uIG9kcm9pZC14dTMsIE1DUE0KPj4+IGRvZXMgbm90IHdvcmssIGhl
-bmNlIGNwdWlkbGUgbmVpdGhlciBiZWNhdXNlIG9mIHRoZSBmaXJtd2FyZS4KPj4+Cj4+PiBTaWxl
-bnRseSBkaXNhYmxpbmcgY3B1aWRsZSBiZWNhdXNlIG1jcG0gZGlkIG5vdCBpbml0aWFsaXplIHdp
-bGwgaGlkZSB0aGUKPj4+IGlzc3VlLgo+Pgo+PiBOby4gTUNQTSAqd2lsbCogaW5pdGlhbGl6ZSwg
-U3VkZWVwJ3MgcGF0Y2ggZG9lcyBub3Qgc2lsZW50bHkgZGlzYWJsZQo+PiBDUFVpZGxlLgo+PiBU
-byBwdXQgaXQgZGlmZmVyZW50bHkgTUNQTSB3aWxsIGluaXRpYWxpemUgaWYgQ0NJIGlzIGluIHRo
-ZSBEVCBhbmQgaXQKPj4gaXMgImF2YWlsYWJsZSIsIHNvIHVubGVzcyBkZWZpbmVkIGRpZmZlcmVu
-dGx5IGluIHRoZSBkdHMgbWNwbSB3aWxsIGJlCj4+IGF2YWlsYWJsZSBhbmQgQ1BVaWRsZSB3aWxs
-IGJlIGluaXRpYWxpemVkIChhbmQgYnJlYWsgaWYgdGhlcmUgaXMgYW4gaXNzdWUKPj4gd2l0aCB0
-aGUgcGxhdGZvcm0gRlcvSFcpLgo+Pgo+PiBJIGFncmVlIHRoZSBtZWNoYW5pc20gdG8gZGVmaW5l
-IGlmIE1DUE0gaXMgYXZhaWxhYmxlIGNhbiBiZSBpbXByb3ZlZAo+PiBidXQgdGhhdCdzIHdoYXQg
-aXQgaXMgYXQgdGhlIG1vbWVudC4KPj4KPj4gVGhlIHByb2JsZW0gaGVyZSBpcyB0byBib290IGEg
-cGxhdGZvcm0gd2l0aCBkaWZmZXJlbnQgYm9vdCBtZXRob2RzCj4+IGFuZCBzdGlsbCBoYXZlIGEg
-c2luZ2xlIGtlcm5lbCBpbWFnZS4KPj4KPj4+IEkgdW5kZXJzdGFuZCB5b3VyIHBvaW50IGFib3V0
-IHN3aXRjaGluZyB0byBsZWdhY3kgd2l0aG91dCByZWNvbXBpbGluZwo+Pj4gdGhlIGtlcm5lbC4K
-Pj4+Cj4+PiBJIHN1Z2dlc3Qgd2UgYWRkIGEgYmlnIGZhdCBXQVJOX09OIHdoZW4gdGhlIG1jcG0g
-aW5pdGlhbGl6YXRpb24gZmFpbHMKPj4+IHdpdGggeW91ciBwYXRjaC4KPj4KPj4gSSB0aGluayB0
-aGVyZSBhcmUgbXVsdGlwbGUgZmFjZXRzIHdlIGFyZSB0YWNrbGluZyBhdCBvbmNlIGhlcmUgYW5k
-IHRoZXkKPj4gc2hvdWxkIG5vdCBiZSBtaXhlZC4KPj4KPj4gMSkgV2UgbGVmdCBzdGF0aWMgaWRs
-ZSBzdGF0ZXMgdGhlcmUgdG8gY29wZSB3aXRoIGxlZ2FjeSBEVEJzIHRoYXQgd2VyZQo+PiAgICAg
-cHVibGlzaGVkIGJlZm9yZSB3ZSBpbnRyb2R1Y2VkIGlkbGUgc3RhdGVzIGJpbmRpbmdzLiBJZiB3
-ZSB3YW50IHRvCj4+ICAgICBib290IGVnIHZleHByZXNzIGluIGxlZ2FjeSBtb2RlIGJ1dCBzaW5n
-bGUga2VybmVsIGltYWdlIHdpdGggTUNQTSBvbiwKPj4gICAgIHdlIGNvdWxkIHJlbW92ZSB0aGUg
-aWRsZSBzdGF0ZXMgaW4gRFQgYW5kIHRoZSBwcm9ibGVtIHdvdWxkIGJlCj4+ICAgICBzb2x2ZWQ7
-IHdlIGNhbid0IGRvIHRoYXQgc2luY2Ugd2Ugd2VyZSBmb3JjZWQgdG8gbGVhdmUgdGhlIHN0YXRp
-Ywo+PiAgICAgaWRsZSB0YWJsZXMuIE92ZXJhbGwgSSB0aGluayB0aGlzIGlzIG5vdCB0aGUgd2F5
-IHRvIGZpeCB0aGUgaXNzdWUuCj4+IDIpIFRoZSBpZGxlIGRyaXZlciBzaG91bGQgYmUgaW5pdGlh
-bGl6ZWQgaWYgdGhlcmUgaXMgYW4gaWRsZSBzdGF0ZSBlbnRyeQo+PiAgICAgbWV0aG9kLCB3aGlj
-aCBpbiB0aGlzIGNhc2UgaXMgTUNQTS4gSWYgSSBib290IHZleHByZXNzIHdpdGggTUNQTQo+PiAg
-ICAgZW5hYmxlZCBidXQgbGVnYWN5IGJvb3QgbWV0aG9kIChpZSBzcGluIHRhYmxlKSB3aXRoIGEg
-c2luZ2xlIGtlcm5lbCBpbWFnZQo+PiAgICAgSSBkbyBub3Qgd2FudCB0byB3YXJuIGlmIHRoZSBp
-ZGxlIHN0YXRlcyBlbnRyeSBtZXRob2QgKE1DUE0pIGNhbid0IGJlCj4+ICAgICBpbml0aWFsaXpl
-ZCAoYW5kIEkgZG8gbm90IHdhbnQgdG8gZ2V0IGEgd2FybmluZyBpZiB0aGUgaWRsZSBkcml2ZXIg
-aXMKPj4gICAgIHRyaWdnZXJpbmcgYSBtY3BtX2NwdV9zdXNwZW5kKSwgc28gU3VkZWVwJ3MgcGF0
-Y2ggaXMgdmFsaWQgYW5kIEkgYW0KPj4gICAgIGFnYWluc3QgYWRkaW5nIGE6Cj4+Cj4+ICAgICBp
-ZiAoV0FSTl9PTighbWNwbV9pc19hdmFpbGFibGUoKSkKPj4KPj4gMykgU3VkZWVwJ3MgcGF0Y2gg
-aXMgbm90IGhpZGluZyBhbnl0aGluZy4gSWYgQ0NJIGlzIGluIERULCBDQ0kgaXMKPj4gICAgIHBy
-b2JlZCBzbyBtY3BtX2lzX2F2YWlsYWJsZSgpID09IHRydWUuIElmIHRoZSBmaXJtd2FyZSBpcyBi
-b3JrZWQKPj4gICAgIHRoZSBpZGxlIHN0YXRlcyB3aWxsIGJlIGVudGVyZWQgYW5kIHdlIHdpbGwg
-bm90aWNlIHRoZXJlIGlzIHNvbWV0aGluZwo+PiAgICAgd3JvbmcKPj4KPj4gU28gb3ZlcmFsbCBJ
-IHRoaW5rIFN1ZGVlcCdzIHBhdGNoIGlzIHNvdW5kLiBJIGFsc28gdGhpbmsgd2Ugc2hvdWxkCj4+
-IGltcHJvdmUgdGhlIHdheSB3ZSBkZXRlY3QgaWYgTUNQTSBpcyBhdmFpbGFibGUsIGFuZCBhZ2Fp
-biwgSSB0aGluayB0aGUKPj4gQ1BVIG9wZXJhdGlvbnMgb24gYXJtNjQgYXJlIGEgZ29vZCBleGFt
-cGxlIHRoYXQgd2UgY2FuIGFuZCB3ZSBzaG91bGQKPj4gcmVwbGljYXRlLgo+Cj4gVGhpcyBwYXRj
-aCBkaXNhYmxlcyBDUFVpZGxlIGFsbCB0b2dldGhlciwgYnV0IHNob3VsZG4ndCBpdCBqdXN0IGRp
-c2FibGUKPiB0aGUgc3RhdGVzIHRoYXQgcmVseSBvbiBNQ1BNPyAgSU9XLCBDMSBzaG91bGQgc3Rp
-bGwgd29yayBqdXN0IGZpbmUgc2luY2UKPiBpdCBkb2Vzbid0IHVzZSBNQ1BNLCByaWdodD8gIFNv
-LCByYXRoZXIgdGhhbiBmYWlsIHRoZSBpbml0LCBpdCBzaG91bGQKPiBqdXN0IGRyb3AgYW55IE1D
-UE0gc3RhdGVzIChlLmcuIHNldCAtPnN0YXRlX2NvdW50ID0gMSkKCldlbGwsIHRoYXQgbWVhbnMg
-d2Ugd2lsbCBoYXZlIGEgY3B1aWRsZSBkcml2ZXIgd2l0aCB0aGUgV0ZJIHN0YXRlIG9ubHkgCndo
-aWNoIGlzIHRoZSBkZWZhdWx0IGlkbGUgZnVuY3Rpb24gd2hlbiB0aGVyZSBpcyBubyBjcHVpZGxl
-IGRyaXZlciAoKyAKd2l0aG91dCB0aGUgZ292ZXJub3IgbWF0aCkuCgoKLS0gCiAgPGh0dHA6Ly93
-d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBB
-Uk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9M
-aW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0
-ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwg
-bWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8v
-bGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Fri, Nov 21, 2014 at 5:31 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+> Changes since v11:
+> - Rebased on top of git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
+>
+> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+> drivers and enables the use of cpufreq-dt driver for these platforms. This
+> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+> driver.
+>
+> This series is based on the following branch.
+> git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
+>
+> This series depends on the following patch which can be picked from
+> git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git samsung/dt
+> e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
+>
+> This patch series has been tested on Exynos4210/5250/5420 based boards.
+> Tomasz Figa had plans to take this in the Samsung clock tree for v3.19
+> (http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
+> Sylwester, could you consider to merge this in your tree?
+
+CPUfreq for exynos is still not upstream.  What's the status of this
+series?  It's been ver a month since there's been any activity here
+(or any responses to the issues I reported.)
+
+On a related note, this series only does frequency scaling. Is there
+any work going on to also enable voltage scaling for the CPU rails as
+well?
+
+Thanks,
+
+Kevin
