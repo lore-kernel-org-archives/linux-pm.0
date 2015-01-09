@@ -1,121 +1,59 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver if MCPM is unavailable
-Date: Fri, 09 Jan 2015 09:34:46 -0800
-Message-ID: <7hoaq7vow9.fsf@deeprootsystems.com>
-References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
-	<54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>
-	<54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>
-	<54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon>
-	<7hh9w1vwzr.fsf@deeprootsystems.com> <54AEEDDC.3070609@linaro.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] PCI: Add disabling pm async quirk for JMicron chips
+Date: Fri, 9 Jan 2015 10:46:52 -0700
+Message-ID: <20150109174652.GE6575@google.com>
+References: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
+ <Pine.LNX.4.44L0.1412051415180.13167-100000@ida.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:61009 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbbAIRet (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 12:34:49 -0500
-Received: by mail-pa0-f44.google.com with SMTP id et14so19686554pad.3
-        for <linux-pm@vger.kernel.org>; Fri, 09 Jan 2015 09:34:49 -0800 (PST)
-In-Reply-To: <54AEEDDC.3070609@linaro.org> (Daniel Lezcano's message of "Thu,
-	08 Jan 2015 21:51:40 +0100")
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:50462 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758137AbbAIRq4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 12:46:56 -0500
+Received: by mail-ob0-f176.google.com with SMTP id vb8so14270551obc.7
+        for <linux-pm@vger.kernel.org>; Fri, 09 Jan 2015 09:46:56 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1412051415180.13167-100000@ida.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Chuansheng Liu <chuansheng.liu@intel.com>, rjw@rjwysocki.net, mister.freeman@laposte.net, aaron.lu@intel.com, tj@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+On Fri, Dec 05, 2014 at 02:18:40PM -0500, Alan Stern wrote:
+> On Fri, 5 Dec 2014, Chuansheng Liu wrote:
+> 
+> > Some history from
+> > commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361")
+> > ==
+> > Since v3.15, the PM feature of async noirq
+> > commit 76569faa62c4 ("PM / sleep: Asynchronous threads for resume_noirq") is introduced.
+> > 
+> > Then Jay hit one system resuming issue that one of the JMicron controller
+> > can not be powered up successfully.
+> > 
+> > His device tree is like below:
+> >                  +-1c.4-[02]--+-00.0  JMicron Technology Corp. JMB363 SATA/IDE Controller
+> >                  |            \-00.1  JMicron Technology Corp. JMB363 SATA/IDE Controller
+> > 
+> > After investigation, we found the the Micron chip 363 included
+> > one SATA controller(0000:02:00.0) and one PATA controller(0000:02:00.1),
+> > these two controllers do not have parent-children relationship,
+> > but the PATA controller only can be powered on after the SATA controller
+> > has finished the powering on.
+> > 
+> > If we enabled the async noirq(), then the below error is hit during noirq
+> > phase:
+> > pata_jmicron 0000:02:00.1: Refused to change power state, currently in D3
+> > Here for JMicron chip 363/361, we need forcedly to disable the async method.
+> 
+> You know, this is exactly why device_pm_wait_for_dev() exists -- so 
+> that asynchronous power-management operations can wait for other 
+> devices even when there's no parent-child relation.
+> 
+> You should try to use device_pm_wait_for_dev() instead of disabling 
+> async suspend/resume.
 
-> On 01/08/2015 09:27 PM, Kevin Hilman wrote:
->> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
->>
->>> On Thu, Jan 08, 2015 at 11:11:40AM +0000, Daniel Lezcano wrote:
->>>
->>> [...]
->>>
->>>>>> IMO, it would be better to be more strict with the mcpm
->>>>>> initialization and not let the system boot if something is wrong with
->>>>>> it which I believe is coming from the firmware and let the user to
->>>>>> figure out what is really happening by letting him to disable mcpm in
->>>>>> the kernel configuration (which in turn will disable cpuidle).
->>>>>
->>>>> Again I fully agree, but in this case I manually switched to legacy boot
->>>>> mode on TC2 and used same kernel with MCPM config enabled. Do you mean
->>>>> to say we should not support that even when developer understand the
->>>>> consequence of that ?
->>>>
->>>> Well, I see there are the exynos5410/5420/5422. For the 5422 on
->>>> chromebook2 MCPM works well, IIUC. But for the 5422 on odroid-xu3, MCPM
->>>> does not work, hence cpuidle neither because of the firmware.
->>>>
->>>> Silently disabling cpuidle because mcpm did not initialize will hide the
->>>> issue.
->>>
->>> No. MCPM *will* initialize, Sudeep's patch does not silently disable
->>> CPUidle.
->>> To put it differently MCPM will initialize if CCI is in the DT and it
->>> is "available", so unless defined differently in the dts mcpm will be
->>> available and CPUidle will be initialized (and break if there is an issue
->>> with the platform FW/HW).
->>>
->>> I agree the mechanism to define if MCPM is available can be improved
->>> but that's what it is at the moment.
->>>
->>> The problem here is to boot a platform with different boot methods
->>> and still have a single kernel image.
->>>
->>>> I understand your point about switching to legacy without recompiling
->>>> the kernel.
->>>>
->>>> I suggest we add a big fat WARN_ON when the mcpm initialization fails
->>>> with your patch.
->>>
->>> I think there are multiple facets we are tackling at once here and they
->>> should not be mixed.
->>>
->>> 1) We left static idle states there to cope with legacy DTBs that were
->>>     published before we introduced idle states bindings. If we want to
->>>     boot eg vexpress in legacy mode but single kernel image with MCPM on,
->>>     we could remove the idle states in DT and the problem would be
->>>     solved; we can't do that since we were forced to leave the static
->>>     idle tables. Overall I think this is not the way to fix the issue.
->>> 2) The idle driver should be initialized if there is an idle state entry
->>>     method, which in this case is MCPM. If I boot vexpress with MCPM
->>>     enabled but legacy boot method (ie spin table) with a single kernel image
->>>     I do not want to warn if the idle states entry method (MCPM) can't be
->>>     initialized (and I do not want to get a warning if the idle driver is
->>>     triggering a mcpm_cpu_suspend), so Sudeep's patch is valid and I am
->>>     against adding a:
->>>
->>>     if (WARN_ON(!mcpm_is_available())
->>>
->>> 3) Sudeep's patch is not hiding anything. If CCI is in DT, CCI is
->>>     probed so mcpm_is_available() == true. If the firmware is borked
->>>     the idle states will be entered and we will notice there is something
->>>     wrong
->>>
->>> So overall I think Sudeep's patch is sound. I also think we should
->>> improve the way we detect if MCPM is available, and again, I think the
->>> CPU operations on arm64 are a good example that we can and we should
->>> replicate.
->>
->> This patch disables CPUidle all together, but shouldn't it just disable
->> the states that rely on MCPM?  IOW, C1 should still work just fine since
->> it doesn't use MCPM, right?  So, rather than fail the init, it should
->> just drop any MCPM states (e.g. set ->state_count = 1)
->
-> Well, that means we will have a cpuidle driver with the WFI state only
-> which is the default idle function when there is no cpuidle driver (+
-> without the governor math).
+Dropping this patch for now, waiting for a response to Alan's suggestion.
 
-Ah, OK.  Then it makes more sense to disable the driver all together.
-
-Feel free to add
-
-Acked-by: Kevin Hilman <khilman@linaro.org>
-
-Thanks,
-
-Kevin
-
-
-
+Bjorn
