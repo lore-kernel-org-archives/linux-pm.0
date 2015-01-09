@@ -1,251 +1,114 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
-Date: Fri, 9 Jan 2015 07:46:01 -0400
-Message-ID: <20150109114559.GA9510@developer>
-References: <1420740303-12529-1-git-send-email-nm@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1420740303-12529-1-git-send-email-nm-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3 0/4] drivers: bus: Add Simple Power-Managed Bus
+Date: Fri,  9 Jan 2015 14:12:31 +0100
+Message-ID: <1420809155-4015-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
+	Hi Simon, Magnus,
 
---k1lZvvs/B4yU6o8G
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The Renesas Bus State Controller (BSC) provides an external bus for
+connecting multiple external devices to an SoC, driving several chip
+select lines, for e.g. NOR FLASH, Ethernet and USB.
+On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+R-Mobile APE6 (r8a73a4) SoC.
 
-On Thu, Jan 08, 2015 at 12:05:03PM -0600, Nishanth Menon wrote:
-> Allow gpio-fan to be used as thermal cooling device for platforms that
-> use GPIO maps to control fans.
->=20
-> As part of this change, we make the shutdown and remove logic the same
-> as well.
->=20
-> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+compatibility seems suitable.  However, the BSC is special in two
+ways:
+  1. It is part of a PM domain (A4S),
+  2. It has a gateable functional clock (ZB).
+Before a device connected to the BSC can be accessed, the PM domain
+containing the BSC must be powered on, and the functional clock
+driving the BSC must be enabled.
 
-For the thermal part:
+Both special properties can be described in DT in a standardized way
+("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+example in the DT binding documentation).  Externally connected
+devices are described as children of the BSC node.
 
-Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Unfortunately this doesn't mean everything will work out-of-the-box.
+There are two problems:
+  1. Without a device driver bound to the bus device, this device is
+     not attached to the PM domain. And although a child device is
+     present and active, the PM domain may be powered down, as it's
+     considered unused by the PM domain core.
+  2. Without a device driver calling pm_runtime_enable(), its
+     functional clock is not enabled. Once runtime PM is enabled, the
+     R-Mobile PM domain platform driver manages the functional clock
+     using runtime PM.
 
-> ---
->=20
-> Changes since v1:
-> 	- review comments incorporated (hopefully correct)
-> 	- checkpatch verified
-> 	- retested :).
->=20
-> V1: https://patchwork.kernel.org/patch/5587061/
->=20
->  .../devicetree/bindings/gpio/gpio-fan.txt          |   13 +++
->  drivers/hwmon/gpio-fan.c                           |   83 ++++++++++++++=
-++++--
->  2 files changed, 89 insertions(+), 7 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/gpio/gpio-fan.txt b/Docume=
-ntation/devicetree/bindings/gpio/gpio-fan.txt
-> index 2dd457a3469a..43ca2a45b862 100644
-> --- a/Documentation/devicetree/bindings/gpio/gpio-fan.txt
-> +++ b/Documentation/devicetree/bindings/gpio/gpio-fan.txt
-> @@ -11,6 +11,9 @@ Required properties:
->  Optional properties:
->  - alarm-gpios: This pin going active indicates something is wrong with
->    the fan, and a udev event will be fired.
-> +- cooling-cells: If used as a cooling device, must be <2>
-> +  Also see: Documentation/devicetree/bindings/thermal/thermal.txt
-> +  min and max states are derived from the speed-map of the fan.
-> =20
->  Examples:
-> =20
-> @@ -23,3 +26,13 @@ Examples:
->  				      6000 2>;
->  		alarm-gpios =3D <&gpio1 15 1>;
->  	};
-> +	gpio_fan_cool: gpio_fan {
-> +		compatible =3D "gpio-fan";
-> +		gpios =3D <&gpio2 14 1
-> +			 &gpio2 13 1>;
-> +		gpio-fan,speed-map =3D	<0    0>,
-> +					<3000 1>,
-> +					<6000 2>;
-> +		alarm-gpios =3D <&gpio2 15 1>;
-> +		#cooling-cells =3D <2>; /* min followed by max */
-> +	};
-> diff --git a/drivers/hwmon/gpio-fan.c b/drivers/hwmon/gpio-fan.c
-> index 36abf814b8c7..20232c11b579 100644
-> --- a/drivers/hwmon/gpio-fan.c
-> +++ b/drivers/hwmon/gpio-fan.c
-> @@ -34,10 +34,13 @@
->  #include <linux/of.h>
->  #include <linux/of_platform.h>
->  #include <linux/of_gpio.h>
-> +#include <linux/thermal.h>
-> =20
->  struct gpio_fan_data {
->  	struct platform_device	*pdev;
->  	struct device		*hwmon_dev;
-> +	/* Cooling device if any */
-> +	struct thermal_cooling_device *cdev;
->  	struct mutex		lock; /* lock GPIOs operations. */
->  	int			num_ctrl;
->  	unsigned		*ctrl;
-> @@ -387,6 +390,53 @@ static int fan_ctrl_init(struct gpio_fan_data *fan_d=
-ata,
->  	return 0;
->  }
-> =20
-> +static int gpio_fan_get_max_state(struct thermal_cooling_device *cdev,
-> +				  unsigned long *state)
-> +{
-> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
-> +
-> +	if (!fan_data)
-> +		return -EINVAL;
-> +
-> +	*state =3D fan_data->num_speed - 1;
-> +	return 0;
-> +}
-> +
-> +static int gpio_fan_get_cur_state(struct thermal_cooling_device *cdev,
-> +				  unsigned long *state)
-> +{
-> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
-> +	int r;
-> +
-> +	if (!fan_data)
-> +		return -EINVAL;
-> +
-> +	r =3D get_fan_speed_index(fan_data);
-> +	if (r < 0)
-> +		return r;
-> +
-> +	*state =3D r;
-> +	return 0;
-> +}
-> +
-> +static int gpio_fan_set_cur_state(struct thermal_cooling_device *cdev,
-> +				  unsigned long state)
-> +{
-> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
-> +
-> +	if (!fan_data)
-> +		return -EINVAL;
-> +
-> +	set_fan_speed(fan_data, state);
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_cooling_device_ops gpio_fan_cool_ops =3D {
-> +	.get_max_state =3D gpio_fan_get_max_state,
-> +	.get_cur_state =3D gpio_fan_get_cur_state,
-> +	.set_cur_state =3D gpio_fan_set_cur_state,
-> +};
-> +
->  #ifdef CONFIG_OF_GPIO
->  /*
->   * Translate OpenFirmware node properties into platform_data
-> @@ -495,6 +545,11 @@ static int gpio_fan_probe(struct platform_device *pd=
-ev)
->  	struct gpio_fan_data *fan_data;
->  	struct gpio_fan_platform_data *pdata =3D dev_get_platdata(&pdev->dev);
-> =20
-> +	fan_data =3D devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
-> +				GFP_KERNEL);
-> +	if (!fan_data)
-> +		return -ENOMEM;
-> +
->  #ifdef CONFIG_OF_GPIO
->  	if (!pdata) {
->  		pdata =3D devm_kzalloc(&pdev->dev,
-> @@ -506,17 +561,20 @@ static int gpio_fan_probe(struct platform_device *p=
-dev)
->  		err =3D gpio_fan_get_of_pdata(&pdev->dev, pdata);
->  		if (err)
->  			return err;
-> +		/* Optional cooling device register for Device tree platforms */
-> +		fan_data->cdev =3D
-> +			thermal_of_cooling_device_register(pdev->dev.of_node,
-> +							   "gpio-fan", fan_data,
-> +							   &gpio_fan_cool_ops);
->  	}
->  #else /* CONFIG_OF_GPIO */
->  	if (!pdata)
->  		return -EINVAL;
-> +	/* Optional cooling device register for non Device tree platforms */
-> +	fan_data->cdev =3D thermal_cooling_device_register("gpio-fan", fan_data,
-> +							 &gpio_fan_cool_ops);
->  #endif /* CONFIG_OF_GPIO */
-> =20
-> -	fan_data =3D devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
-> -				GFP_KERNEL);
-> -	if (!fan_data)
-> -		return -ENOMEM;
-> -
->  	fan_data->pdev =3D pdev;
->  	platform_set_drvdata(pdev, fan_data);
->  	mutex_init(&fan_data->lock);
-> @@ -550,12 +608,22 @@ static int gpio_fan_probe(struct platform_device *p=
-dev)
->  	return 0;
->  }
-> =20
-> -static void gpio_fan_shutdown(struct platform_device *pdev)
-> +static int gpio_fan_remove(struct platform_device *pdev)
->  {
-> -	struct gpio_fan_data *fan_data =3D dev_get_drvdata(&pdev->dev);
-> +	struct gpio_fan_data *fan_data =3D platform_get_drvdata(pdev);
-> +
-> +	if (!IS_ERR(fan_data->cdev))
-> +		thermal_cooling_device_unregister(fan_data->cdev);
-> =20
->  	if (fan_data->ctrl)
->  		set_fan_speed(fan_data, 0);
-> +
-> +	return 0;
-> +}
-> +
-> +static void gpio_fan_shutdown(struct platform_device *pdev)
-> +{
-> +	gpio_fan_remove(pdev);
->  }
-> =20
->  #ifdef CONFIG_PM_SLEEP
-> @@ -589,6 +657,7 @@ static SIMPLE_DEV_PM_OPS(gpio_fan_pm, gpio_fan_suspen=
-d, gpio_fan_resume);
-> =20
->  static struct platform_driver gpio_fan_driver =3D {
->  	.probe		=3D gpio_fan_probe,
-> +	.remove		=3D gpio_fan_remove,
->  	.shutdown	=3D gpio_fan_shutdown,
->  	.driver	=3D {
->  		.name	=3D "gpio-fan",
-> --=20
-> 1.7.9.5
->=20
+As none of the above is really bus hardware-specific (PM domains and
+functional clocks in clock domains are handled from genpd and platform
+code), this series adds a Simple Power-Managed Bus driver for
+transparent busses, which just enables runtime PM for the bus device.
+Due to the child-parent relationship of devices connected to the bus,
+as long as the device drivers for the child devices are runtime PM
+enabled, the bus's PM domain will be powered, and the bus's clock will
+be enabled automatically when needed, for both runtime PM and s2ram.
 
---k1lZvvs/B4yU6o8G
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Currently this driver supports the Renesas Bus State Controller only,
+but support for other SoCs and other bus controllers can easily be
+added later by adding more compatible values.
+Note that this driver cannot just bind against "simple-bus", as that
+may prevent a device-specific driver from taking precedence.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+This was tested on sh73a0/kzm9g-multiplatform (by me), and on
+r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+Ethernet doesn't work, as the ZB clock is disabled by
+clk_disable_unused().
 
-iQEcBAEBAgAGBQJUr79uAAoJEMLUO4d9pOJWoS8H/ifD0Ym3utI4XqEzYJuODYCd
-i3fo96W/+yMFR4HIWrnAXKHv6p9Z9IoaYsUCO+igOhqmQjzwRQ8xMpx0vMfbGNfy
-wRLZdUAh7z0nexVMVgFCHZUTjztjxTczZh3Prs4jSuwv+o91+a5g+f5+mS+arQ/o
-pF8jqnFNkuBgzTWjKYNcyYj+Mrys4jt9j1T8eMlbzeW1M4O7af1+uL7QmphTz2bK
-Fb5yXqwKLKcGT3bPQgU3pG9lYrNwVYXJRqm03kLkr1Mi0P0nO/OQhhaWQ5PL8WSi
-UH6fp4OQa3WknYnt8dJv72YVY/eNFqL/alNcNWWTequ4OzHNZuwakeWs1l1WzrU=
-=w3qV
------END PGP SIGNATURE-----
+As drivers/bus doesn't have a maintainer, and this driver is needed to
+move two shmobile platforms away from legacy to multiplatform, I think
+this can go in through Simon's shmobile tree.  There are no conflicts
+with today's linux-next.
 
---k1lZvvs/B4yU6o8G--
+Changes compared to v2:
+  - Document required properties inherited from "simple-bus",
+  - Document required "reg" property for "renesas,bsc",
+  - Move "ranges" before "reg" in the example,
+  - Add Tested-by,
+  - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
+
+Changes compared to v1 (more detailed change logs in the individual
+patches):
+  - Added sorting of drivers/bus Kconfig and Makefile entries,
+  - Added DT binding documentation,
+  - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+    "Simple Power-Managed Bus Driver" (simple-pm-bus),
+  - Postponed adding power-domains properties to the dtsi,
+  - Added updates for r8a73a4/ape6evm.
+
+Thanks for applying!
+
+Geert Uytterhoeven (4):
+  drivers: bus: Sort Kconfig entries alphabetically
+  drivers: bus: Sort Makefile entries alphabetically
+  drivers: bus: Add Simple Power-Managed Bus DT Bindings
+  drivers: bus: Add Simple Power-Managed Bus Driver
+
+ .../devicetree/bindings/bus/simple-pm-bus.txt      | 52 +++++++++++++++++++++
+ drivers/bus/Kconfig                                | 53 ++++++++++++++--------
+ drivers/bus/Makefile                               | 15 +++---
+ drivers/bus/simple-pm-bus.c                        | 51 +++++++++++++++++++++
+ 4 files changed, 144 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+ create mode 100644 drivers/bus/simple-pm-bus.c
+
+-- 
+1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
