@@ -1,59 +1,213 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] PCI: Add disabling pm async quirk for JMicron chips
-Date: Fri, 9 Jan 2015 10:46:52 -0700
-Message-ID: <20150109174652.GE6575@google.com>
-References: <1417763857-11993-1-git-send-email-chuansheng.liu@intel.com>
- <Pine.LNX.4.44L0.1412051415180.13167-100000@ida.rowland.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 03/17] Input: sun4i-ts: Add thermal zone sensor support
+Date: Fri, 9 Jan 2015 14:07:44 -0400
+Message-ID: <20150109180742.GB9510@developer>
+References: <1420511727-8242-1-git-send-email-wens@csie.org>
+ <1420511727-8242-4-git-send-email-wens@csie.org>
+ <20150106152425.GA6276@developer>
+ <CAGb2v66L-ZD1Ep-rnKXKP7PuJH+dA=26tV35KyKCNnKHgM4Hmg@mail.gmail.com>
+ <CAGb2v64F8mQRka=L1qWKe=WNOUYtiC5RSZUDORr3Ynd3Djf20g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:50462 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758137AbbAIRq4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 12:46:56 -0500
-Received: by mail-ob0-f176.google.com with SMTP id vb8so14270551obc.7
-        for <linux-pm@vger.kernel.org>; Fri, 09 Jan 2015 09:46:56 -0800 (PST)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="aVD9QWMuhilNxW9f"
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1412051415180.13167-100000@ida.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAGb2v64F8mQRka=L1qWKe=WNOUYtiC5RSZUDORr3Ynd3Djf20g@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Chuansheng Liu <chuansheng.liu@intel.com>, rjw@rjwysocki.net, mister.freeman@laposte.net, aaron.lu@intel.com, tj@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 
-On Fri, Dec 05, 2014 at 02:18:40PM -0500, Alan Stern wrote:
-> On Fri, 5 Dec 2014, Chuansheng Liu wrote:
-> 
-> > Some history from
-> > commit e6b7e41cdd8c ("ata: Disabling the async PM for JMicron chip 363/361")
-> > ==
-> > Since v3.15, the PM feature of async noirq
-> > commit 76569faa62c4 ("PM / sleep: Asynchronous threads for resume_noirq") is introduced.
-> > 
-> > Then Jay hit one system resuming issue that one of the JMicron controller
-> > can not be powered up successfully.
-> > 
-> > His device tree is like below:
-> >                  +-1c.4-[02]--+-00.0  JMicron Technology Corp. JMB363 SATA/IDE Controller
-> >                  |            \-00.1  JMicron Technology Corp. JMB363 SATA/IDE Controller
-> > 
-> > After investigation, we found the the Micron chip 363 included
-> > one SATA controller(0000:02:00.0) and one PATA controller(0000:02:00.1),
-> > these two controllers do not have parent-children relationship,
-> > but the PATA controller only can be powered on after the SATA controller
-> > has finished the powering on.
-> > 
-> > If we enabled the async noirq(), then the below error is hit during noirq
-> > phase:
-> > pata_jmicron 0000:02:00.1: Refused to change power state, currently in D3
-> > Here for JMicron chip 363/361, we need forcedly to disable the async method.
-> 
-> You know, this is exactly why device_pm_wait_for_dev() exists -- so 
-> that asynchronous power-management operations can wait for other 
-> devices even when there's no parent-child relation.
-> 
-> You should try to use device_pm_wait_for_dev() instead of disabling 
-> async suspend/resume.
 
-Dropping this patch for now, waiting for a response to Alan's suggestion.
+--aVD9QWMuhilNxW9f
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Bjorn
+On Thu, Jan 08, 2015 at 09:33:54PM +0800, Chen-Yu Tsai wrote:
+> On Thu, Jan 8, 2015 at 12:24 AM, Chen-Yu Tsai <wens@csie.org> wrote:
+> > Hi,
+> >
+> > On Tue, Jan 6, 2015 at 11:24 PM, Eduardo Valentin <edubezval@gmail.com>=
+ wrote:
+> >> Hello Chen-Yu,
+> >>
+> >>
+> >> On Tue, Jan 06, 2015 at 10:35:13AM +0800, Chen-Yu Tsai wrote:
+> >>> The touchscreen controller has a temperature sensor embedded in the S=
+oC,
+> >>> which already has hwmon support in the driver.
+> >>>
+> >>> Add DT thermal zone support so we can use it with cpufreq for thermal
+> >>> throttling.
+> >>>
+> >>> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+> >>> ---
+> >>>  .../bindings/input/touchscreen/sun4i.txt           |  1 +
+> >>>  drivers/input/touchscreen/sun4i-ts.c               | 27 ++++++++++++=
+++++++++++
+> >>>  2 files changed, 28 insertions(+)
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/input/touchscreen/sun4=
+i.txt b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> >>> index aef57791f40b..7f1110adbd24 100644
+> >>> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> >>> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+> >>> @@ -5,6 +5,7 @@ Required properties:
+> >>>   - compatible: "allwinner,sun4i-a10-ts"
+> >>>   - reg: mmio address range of the chip
+> >>>   - interrupts: interrupt to which the chip is connected
+> >>> + - #thermal-sensor-cells: shall be 0
+> >>>
+> >>
+> >> You may want to update your Example section too, below.
+> >> Example:
+> >>
+> >>         rtp: rtp@01c25000 {
+> >>                 compatible =3D "allwinner,sun4i-a10-ts";
+> >>                 reg =3D <0x01c25000 0x100>;
+> >>                 interrupts =3D <29>;
+> >>                 allwinner,ts-attached;
+> >>                 #thermal-sensor-cells =3D <0>;
+> >>         };
+> >
+> > Ok.
+> >
+> >>
+> >>
+> >>>  Optional properties:
+> >>>   - allwinner,ts-attached: boolean indicating that an actual touchscr=
+een is
+> >>> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/tou=
+chscreen/sun4i-ts.c
+> >>> index 28a06749ae42..b6e9043446d6 100644
+> >>> --- a/drivers/input/touchscreen/sun4i-ts.c
+> >>> +++ b/drivers/input/touchscreen/sun4i-ts.c
+> >>> @@ -34,6 +34,7 @@
+> >>>
+> >>>  #include <linux/err.h>
+> >>>  #include <linux/hwmon.h>
+> >>> +#include <linux/thermal.h>
+> >>>  #include <linux/init.h>
+> >>>  #include <linux/input.h>
+> >>>  #include <linux/interrupt.h>
+> >>> @@ -107,6 +108,7 @@
+> >>>  struct sun4i_ts_data {
+> >>>       struct device *dev;
+> >>>       struct input_dev *input;
+> >>> +     struct thermal_zone_device *tz;
+> >>>       void __iomem *base;
+> >>>       unsigned int irq;
+> >>>       bool ignore_fifo_data;
+> >>> @@ -180,6 +182,23 @@ static void sun4i_ts_close(struct input_dev *dev)
+> >>>       writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
+> >>>  }
+> >>>
+> >>> +static int get_temp(void *data, long *temp)
+> >>> +{
+> >>> +     struct sun4i_ts_data *ts =3D data;
+> >>> +
+> >>> +     /* No temp_data until the first irq */
+> >>> +     if (ts->temp_data =3D=3D -1)
+> >>> +             return -EAGAIN;
+> >>> +
+> >>> +     *temp =3D (ts->temp_data - 1447) * 100;
+> >>> +
+> >>
+> >> Care to explain the formula in a simple comment?
+> >
+> > This was just copied from the hwmon section. AFAIK there is no document=
+ation
+> > for the formula. It was probably copied from Allwinner's SDK code.
+> >
+> > Hans? Do you remember where you got this?
+>=20
+> So this is from the AXP209 datasheet. The Allwinner SoC datasheets don't
+> mention the formula to calculate the temperature. But since Allwinner
+> and X-powers are affiliated, it's possible they use the same formula.
+>=20
+> http://comments.gmane.org/gmane.comp.hardware.netbook.arm.sunxi/3838
+
+Ok. We use in the thermal framework  miliCelsius as the temperature
+unit. Can you make sure the resulting temperature is in miliCelsius?
+
+Cheers,
+
+>=20
+> >>> +     return 0;
+> >>> +}
+> >>> +
+> >>> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
+> >>> +     .get_temp =3D get_temp,
+> >>> +};
+> >>> +
+> >>>  static ssize_t show_temp(struct device *dev, struct device_attribute=
+ *devattr,
+> >>>                        char *buf)
+> >>>  {
+> >>> @@ -288,6 +307,11 @@ static int sun4i_ts_probe(struct platform_device=
+ *pdev)
+> >>>       if (IS_ERR(hwmon))
+> >>>               return PTR_ERR(hwmon);
+> >>>
+> >>> +     ts->tz =3D thermal_zone_of_sensor_register(ts->dev, 0, ts,
+> >>> +                                              &sun4i_ts_tz_ops);
+> >>> +     if (IS_ERR(ts->tz))
+> >>> +             ts->tz =3D NULL;
+> >>> +
+> >>>       writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
+> >>>
+> >>>       if (ts_attached) {
+> >>
+> >> here.. if input_register_device fails, you will keep an orphan thermal=
+ zone
+> >> registered in your system:
+> >>
+> >>                 error =3D input_register_device(ts->input);
+> >>                 if (error) {
+> >>                         writel(0, ts->base + TP_INT_FIFOC);
+> >
+> > Will add an unregister call here.
+> >
+> >
+> > Thanks for the review.
+> >
+> > ChenYu
+> >
+> >>                         return error;
+> >>                 }
+> >>                 ...
+> >>
+> >>
+> >>> @@ -310,6 +334,9 @@ static int sun4i_ts_remove(struct platform_device=
+ *pdev)
+> >>>       if (ts->input)
+> >>>               input_unregister_device(ts->input);
+> >>>
+> >>> +     if (ts->tz)
+> >>> +             thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
+> >>> +
+> >>>       /* Deactivate all IRQs */
+> >>>       writel(0, ts->base + TP_INT_FIFOC);
+> >>>
+> >>> --
+> >>> 2.1.4
+> >>>
+
+--aVD9QWMuhilNxW9f
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUsBjlAAoJEMLUO4d9pOJWCfkIAIXJ0C9BfPxl39tC1xaJRfSZ
+VZh7BG4rclVRCwsCjMR6cjWnoL+9M/Goryy+/yxUZlwwczUNc0Af46tbJ3mosI4l
+c53ecdaf37hsNL5C46f5LDoFL2RmRD6HimHQO07qOkdwh8krt61NtmgtUlmMRjEd
+kkGUqKwcmjzAHue7EFow6B7QxcWKJzDhtPTDIyTbkQ2N+KLjIwNs3SDJEd8lVvIa
+Oo0ijdY05ont1g3Y7l3Kq+iyRz7aP4B8YM1J/j+OJfGoK+jnRvy8cB6AQSdVUsZg
+hJyv5M9jTB8Wz/Hj4UJ/bnNcBHhcbcQ73z7Y5Ld9Xdqan6fqdEpyZCslY3kza3E=
+=qCIs
+-----END PGP SIGNATURE-----
+
+--aVD9QWMuhilNxW9f--
