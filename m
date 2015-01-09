@@ -1,221 +1,121 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 1/9] Input: sun4i-ts: Add thermal zone sensor support
-Date: Fri, 9 Jan 2015 09:23:18 -0800
-Message-ID: <20150109172318.GA39037@dtor-ws>
-References: <1420798676-22856-1-git-send-email-wens@csie.org>
- <1420798676-22856-2-git-send-email-wens@csie.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver if MCPM is unavailable
+Date: Fri, 09 Jan 2015 09:34:46 -0800
+Message-ID: <7hoaq7vow9.fsf@deeprootsystems.com>
+References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>
+	<54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>
+	<54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>
+	<54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon>
+	<7hh9w1vwzr.fsf@deeprootsystems.com> <54AEEDDC.3070609@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f173.google.com ([209.85.213.173]:40054 "EHLO
-	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbbAIRXX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 12:23:23 -0500
-Content-Disposition: inline
-In-Reply-To: <1420798676-22856-2-git-send-email-wens@csie.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:61009 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbbAIRet (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 12:34:49 -0500
+Received: by mail-pa0-f44.google.com with SMTP id et14so19686554pad.3
+        for <linux-pm@vger.kernel.org>; Fri, 09 Jan 2015 09:34:49 -0800 (PST)
+In-Reply-To: <54AEEDDC.3070609@linaro.org> (Daniel Lezcano's message of "Thu,
+	08 Jan 2015 21:51:40 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>
 
-On Fri, Jan 09, 2015 at 06:17:48PM +0800, Chen-Yu Tsai wrote:
-> The touchscreen controller has a temperature sensor embedded in the S=
-oC,
-> which already has hwmon support in the driver.
->=20
-> Add DT thermal zone support so we can use it with cpufreq for thermal
-> throttling.
->=20
-> This also adds a comment stating that we do not know the actual formu=
-la
-> for calculating the temperature.
->=20
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-> ---
+Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+
+> On 01/08/2015 09:27 PM, Kevin Hilman wrote:
+>> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+>>
+>>> On Thu, Jan 08, 2015 at 11:11:40AM +0000, Daniel Lezcano wrote:
+>>>
+>>> [...]
+>>>
+>>>>>> IMO, it would be better to be more strict with the mcpm
+>>>>>> initialization and not let the system boot if something is wrong with
+>>>>>> it which I believe is coming from the firmware and let the user to
+>>>>>> figure out what is really happening by letting him to disable mcpm in
+>>>>>> the kernel configuration (which in turn will disable cpuidle).
+>>>>>
+>>>>> Again I fully agree, but in this case I manually switched to legacy boot
+>>>>> mode on TC2 and used same kernel with MCPM config enabled. Do you mean
+>>>>> to say we should not support that even when developer understand the
+>>>>> consequence of that ?
+>>>>
+>>>> Well, I see there are the exynos5410/5420/5422. For the 5422 on
+>>>> chromebook2 MCPM works well, IIUC. But for the 5422 on odroid-xu3, MCPM
+>>>> does not work, hence cpuidle neither because of the firmware.
+>>>>
+>>>> Silently disabling cpuidle because mcpm did not initialize will hide the
+>>>> issue.
+>>>
+>>> No. MCPM *will* initialize, Sudeep's patch does not silently disable
+>>> CPUidle.
+>>> To put it differently MCPM will initialize if CCI is in the DT and it
+>>> is "available", so unless defined differently in the dts mcpm will be
+>>> available and CPUidle will be initialized (and break if there is an issue
+>>> with the platform FW/HW).
+>>>
+>>> I agree the mechanism to define if MCPM is available can be improved
+>>> but that's what it is at the moment.
+>>>
+>>> The problem here is to boot a platform with different boot methods
+>>> and still have a single kernel image.
+>>>
+>>>> I understand your point about switching to legacy without recompiling
+>>>> the kernel.
+>>>>
+>>>> I suggest we add a big fat WARN_ON when the mcpm initialization fails
+>>>> with your patch.
+>>>
+>>> I think there are multiple facets we are tackling at once here and they
+>>> should not be mixed.
+>>>
+>>> 1) We left static idle states there to cope with legacy DTBs that were
+>>>     published before we introduced idle states bindings. If we want to
+>>>     boot eg vexpress in legacy mode but single kernel image with MCPM on,
+>>>     we could remove the idle states in DT and the problem would be
+>>>     solved; we can't do that since we were forced to leave the static
+>>>     idle tables. Overall I think this is not the way to fix the issue.
+>>> 2) The idle driver should be initialized if there is an idle state entry
+>>>     method, which in this case is MCPM. If I boot vexpress with MCPM
+>>>     enabled but legacy boot method (ie spin table) with a single kernel image
+>>>     I do not want to warn if the idle states entry method (MCPM) can't be
+>>>     initialized (and I do not want to get a warning if the idle driver is
+>>>     triggering a mcpm_cpu_suspend), so Sudeep's patch is valid and I am
+>>>     against adding a:
+>>>
+>>>     if (WARN_ON(!mcpm_is_available())
+>>>
+>>> 3) Sudeep's patch is not hiding anything. If CCI is in DT, CCI is
+>>>     probed so mcpm_is_available() == true. If the firmware is borked
+>>>     the idle states will be entered and we will notice there is something
+>>>     wrong
+>>>
+>>> So overall I think Sudeep's patch is sound. I also think we should
+>>> improve the way we detect if MCPM is available, and again, I think the
+>>> CPU operations on arm64 are a good example that we can and we should
+>>> replicate.
+>>
+>> This patch disables CPUidle all together, but shouldn't it just disable
+>> the states that rely on MCPM?  IOW, C1 should still work just fine since
+>> it doesn't use MCPM, right?  So, rather than fail the init, it should
+>> just drop any MCPM states (e.g. set ->state_count = 1)
+>
+> Well, that means we will have a cpuidle driver with the WFI state only
+> which is the default idle function when there is no cpuidle driver (+
+> without the governor math).
+
+Ah, OK.  Then it makes more sense to disable the driver all together.
+
+Feel free to add
+
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
+Thanks,
+
+Kevin
 
 
-  CC [M]  drivers/input/touchscreen/sun4i-ts.o
-drivers/input/touchscreen/sun4i-ts.c:208:15: error: variable
-=E2=80=98sun4i_ts_tz_ops=E2=80=99 has initializer but incomplete type
- static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
-               ^
-drivers/input/touchscreen/sun4i-ts.c:209:2: error: unknown field
-=E2=80=98get_temp=E2=80=99 specified in initializer
-  .get_temp =3D get_temp,
-  ^
-drivers/input/touchscreen/sun4i-ts.c:209:2: warning: excess elements in
-struct initializer [enabled by default]
-drivers/input/touchscreen/sun4i-ts.c:209:2: warning: (near
-initialization for =E2=80=98sun4i_ts_tz_ops=E2=80=99) [enabled by defau=
-lt]
-drivers/input/touchscreen/sun4i-ts.c: In function =E2=80=98sun4i_ts_pro=
-be=E2=80=99:
-drivers/input/touchscreen/sun4i-ts.c:331:8: warning: passing argument 4
-of =E2=80=98thermal_zone_of_sensor_register=E2=80=99 from incompatible =
-pointer type
-[enabled by default]
-        &sun4i_ts_tz_ops);
-        ^
-In file included from drivers/input/touchscreen/sun4i-ts.c:37:0:
-include/linux/thermal.h:302:1: note: expected =E2=80=98int (*)(void *, =
-long int
-*)=E2=80=99 but argument is of type =E2=80=98struct thermal_zone_of_dev=
-ice_ops *=E2=80=99
- thermal_zone_of_sensor_register(struct device *dev, int id,
- ^
-drivers/input/touchscreen/sun4i-ts.c:331:8: error: too few arguments to
-function =E2=80=98thermal_zone_of_sensor_register=E2=80=99
-        &sun4i_ts_tz_ops);
-        ^
-In file included from drivers/input/touchscreen/sun4i-ts.c:37:0:
-include/linux/thermal.h:302:1: note: declared here
- thermal_zone_of_sensor_register(struct device *dev, int id,
- ^
-make[1]: *** [drivers/input/touchscreen/sun4i-ts.o] Error 1
-make: *** [drivers/input/touchscreen/sun4i-ts.o] Error 2
 
->=20
-> changes since v1:
->=20
->     - clean up thermal zone sensor when input device register fails
->     - unconditionally unregister thermal zone sensor on removal.
->       the unregister function checks the pointers passed in.
->     - add comment explaining the lack of documents for the temperatur=
-e
->       calculation formula
->=20
-> ---
->  .../bindings/input/touchscreen/sun4i.txt           |  2 +
->  drivers/input/touchscreen/sun4i-ts.c               | 47 ++++++++++++=
-++++++++++
->  2 files changed, 49 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/input/touchscreen/sun4=
-i.txt b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> index aef57791f40b..a8405bab6c00 100644
-> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> @@ -5,6 +5,7 @@ Required properties:
->   - compatible: "allwinner,sun4i-a10-ts"
->   - reg: mmio address range of the chip
->   - interrupts: interrupt to which the chip is connected
-> + - #thermal-sensor-cells: shall be 0
-> =20
->  Optional properties:
->   - allwinner,ts-attached: boolean indicating that an actual touchscr=
-een is
-> @@ -17,4 +18,5 @@ Example:
->  		reg =3D <0x01c25000 0x100>;
->  		interrupts =3D <29>;
->  		allwinner,ts-attached;
-> +		#thermal-sensor-cells =3D <0>;
->  	};
-> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/tou=
-chscreen/sun4i-ts.c
-> index 28a06749ae42..aac49db0b09d 100644
-> --- a/drivers/input/touchscreen/sun4i-ts.c
-> +++ b/drivers/input/touchscreen/sun4i-ts.c
-> @@ -34,6 +34,7 @@
-> =20
->  #include <linux/err.h>
->  #include <linux/hwmon.h>
-> +#include <linux/thermal.h>
->  #include <linux/init.h>
->  #include <linux/input.h>
->  #include <linux/interrupt.h>
-> @@ -107,6 +108,7 @@
->  struct sun4i_ts_data {
->  	struct device *dev;
->  	struct input_dev *input;
-> +	struct thermal_zone_device *tz;
->  	void __iomem *base;
->  	unsigned int irq;
->  	bool ignore_fifo_data;
-> @@ -180,6 +182,33 @@ static void sun4i_ts_close(struct input_dev *dev=
-)
->  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
->  }
-> =20
-> +static int get_temp(void *data, long *temp)
-> +{
-> +	struct sun4i_ts_data *ts =3D data;
-> +
-> +	/* No temp_data until the first irq */
-> +	if (ts->temp_data =3D=3D -1)
-> +		return -EAGAIN;
-> +
-> +	/*
-> +	 * The user manuals do not contain the formula for calculating
-> +	 * the temperature. The formula used here is from the AXP209,
-> +	 * which is designed by X-Powers, an affiliate of Allwinner:
-> +	 *
-> +	 *     temperature =3D -144.7 + (value * 0.1)
-> +	 *
-> +	 * This should be replaced with the correct one if such information
-> +	 * becomes available.
-> +	 */
-> +	*temp =3D (ts->temp_data - 1447) * 100;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
-> +	.get_temp =3D get_temp,
-> +};
-> +
->  static ssize_t show_temp(struct device *dev, struct device_attribute=
- *devattr,
->  			 char *buf)
->  {
-> @@ -189,6 +218,16 @@ static ssize_t show_temp(struct device *dev, str=
-uct device_attribute *devattr,
->  	if (ts->temp_data =3D=3D -1)
->  		return -EAGAIN;
-> =20
-> +	/*
-> +	 * The user manuals do not contain the formula for calculating
-> +	 * the temperature. The formula used here is from the AXP209,
-> +	 * which is designed by X-Powers, an affiliate of Allwinner:
-> +	 *
-> +	 *     temperature =3D -144.7 + (value * 0.1)
-> +	 *
-> +	 * This should be replaced with the correct one if such information
-> +	 * becomes available.
-> +	 */
->  	return sprintf(buf, "%d\n", (ts->temp_data - 1447) * 100);
-
-Why duplicate it here, instead of doing:
-
-static int sun4i_get_temp(struct sun4i_ts_data *ts, int *temp)
-{
-	if (ts->temp_data =3D=3D -1)
-		return -EAGAIN;
-
-	/* comment */
-	*temp =3D (ts->temp_data - 1447) * 100);
-
-	return 0;
-}
-
-static int sun4i_tz_get_temp(void *data, long *temp)
-{
-	return sun4i_get_temp(data, temp);
-}
-
-static ssize_t sun4i_show_temp(...)
-{
-	error =3D sun4i_get_temp(ts, &temp);
-	if (error)
-		return error;
-
-	return sprintf(buf, "%d\n", temp);
-}
-
-Also, thermal core seems to allow creating hwmon devices for thermal
-zones, can we use this feature?
-
-Thanks.
-
---=20
-Dmitry
