@@ -1,61 +1,43 @@
-From: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v5 1/3] of: Add binding for NVIDIA Tegra ACTMON node
-Date: Fri, 9 Jan 2015 19:44:16 +0900
-Message-ID: <CAAVeFu+E-7YooJ=9jVXe48wb_hQi3qFmuo=mB_OzKcSEhRbX+g@mail.gmail.com>
-References: <1418719298-25314-1-git-send-email-tomeu.vizoso@collabora.com> <1418719298-25314-2-git-send-email-tomeu.vizoso@collabora.com>
+From: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+Subject: Re: [PATCH v2 0/8] Add Simple Power-Managed Bus Support
+Date: Fri, 9 Jan 2015 11:57:57 +0100
+Message-ID: <CAO3366x64phBJ=tHOK03P6Ok_6LxiyLyC9LhjcocuqTx=86cfA@mail.gmail.com>
+References: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
+	<CAMuHMdVeEmKiqGTOmevaBDbJ=nBTbSi6d6Xrm0eyvbMTtyU=sA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1418719298-25314-2-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Arto Merilainen <amerilainen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:47333 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757389AbbAIK56 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 05:57:58 -0500
+In-Reply-To: <CAMuHMdVeEmKiqGTOmevaBDbJ=nBTbSi6d6Xrm0eyvbMTtyU=sA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Dec 16, 2014 at 5:41 PM, Tomeu Vizoso
-<tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
-> This block gathers statistics about various counters and can be configured to
-> fire interrupts when thresholds are crossed.
+On Thu, Jan 8, 2015 at 8:28 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Wed, Dec 17, 2014 at 7:49 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+>> The Renesas Bus State Controller (BSC) provides an external bus for
+>> connecting multiple external devices to an SoC, driving several chip
+>> select lines, for e.g. NOR FLASH, Ethernet and USB.
+>> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+>> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+>> R-Mobile APE6 (r8a73a4) SoC.
 >
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> [...]
 >
-> ---
+>> This was tested on sh73a0/kzm9g-multiplatform. Without this, Ethernet
+>> doesn't work, as the ZB clock is disabled by clk_disable_unused().
+>> Testing on r8a73a4/ape6evm-multiplatform would be appreciated.
 >
-> v2:     * Add operating-points property
-> ---
->  .../devicetree/bindings/arm/tegra/actmon.txt       | 38 ++++++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/tegra/actmon.txt
->
-> diff --git a/Documentation/devicetree/bindings/arm/tegra/actmon.txt b/Documentation/devicetree/bindings/arm/tegra/actmon.txt
-> new file mode 100644
-> index 0000000..b4069df
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/tegra/actmon.txt
-> @@ -0,0 +1,38 @@
-> +Tegra124 Activity Monitor driver
+> Has anyone tried this on r8a73a4/ape6evm-multiplatform?
 
-Device Tree describes hardware and is supposed to be
-driver-independant, so that "driver" qualifier sounds weird to me -
-maybe remove it?
+Works like a charm.
 
-> +
-> +Required properties:
-> +
-> +- compatible: should be "nvidia,tegra124-actmon"
-> +- reg: offset and length of the register set for the device
-> +- interrupts: standard interrupt property
-> +- clocks: Must contain a phandle and clock specifier pair for each entry in clock-names. See ../clock/clock-bindings.txt for details.
+Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
 
-Mmm, shouldn't this line be wrapper at character 80? Same throughout this file.
-
-Also from this file the correct patch to clock-bindings.txt is
-../../clock/clock-bindings.txt (same for reset.txt later).
-
-Otherwise,
-
-Reviewed-by: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+CU
+Uli
