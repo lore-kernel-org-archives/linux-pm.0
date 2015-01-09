@@ -1,40 +1,75 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH v2 0/3] power: rt5033: Add Richtek RT533 drivers
-Date: Fri, 09 Jan 2015 17:45:10 +0900
-Message-ID: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
+From: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
+Subject: [PATCH 1/2] cpufreq-dt: check CPU clock/power domain during initializing
+Date: Fri,  9 Jan 2015 17:54:50 +0800
+Message-ID: <1420797291-15972-2-git-send-email-pi-cheng.chen@linaro.org>
+References: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org
-Cc: lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: "pi-cheng.chen" <pi-cheng.chen@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@linaro.org>, linaro-kernel@lists.linaro.org, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patchset adds driver for Richtek rt5033 chip The chip contains
-switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
-Additionally, This includes document for device tree of RT5033 device.
+Currently the DT based cpufreq driver is missing some way to check which
+CPUs share clocks. In the 1st patch, CPU clock/power domain information is
+added to the platform_data of cpufreq-dt so that cpufreq-dt driver could
+check which CPUs share clock/power.
 
-RT5033 core driver is applied by Lee Jones.
-RT5033 regulator driver have been merged by Mark Brown. commit is below,
+Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
+---
+ drivers/cpufreq/cpufreq-dt.c | 15 +++++++++++++++
+ include/linux/cpufreq-dt.h   |  6 ++++++
+ 2 files changed, 21 insertions(+)
 
-commit b1917578fd5d8efa67afa05a0d6d7e323f2802da
-
-Changes in v2:
-- Revise binding documentation..
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index fde97d6..ff8c266 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -296,6 +296,21 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	pd = cpufreq_get_driver_data();
+ 	if (!pd || !pd->independent_clocks)
+ 		cpumask_setall(policy->cpus);
++	else if (pd && !list_empty(&pd->domain_list)) {
++		struct list_head *domain_node;
++
++		list_for_each(domain_node, &pd->domain_list) {
++			struct cpufreq_cpu_domain *domain;
++
++			domain = container_of(domain_node,
++					      struct cpufreq_cpu_domain, node);
++			if (!cpumask_test_cpu(policy->cpu, &domain->cpus))
++				continue;
++
++			cpumask_copy(policy->cpus, &domain->cpus);
++			break;
++		}
++	}
  
-Beomho Seo (3):
-  power: rt5033_battery: Add RT5033 Fuel gauge device driver
-  power: rt5033_charger: Add RT5033 charger device driver
-  Documentation: Add documentation for rt5033 multifunction device
-
- Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++
- .../devicetree/bindings/vendor-prefixes.txt        |    1 +
- drivers/power/Kconfig                              |   16 +
- drivers/power/Makefile                             |    2 +
- drivers/power/rt5033_battery.c                     |  177 +++++++
- drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
- 6 files changed, 782 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
- create mode 100644 drivers/power/rt5033_battery.c
- create mode 100644 drivers/power/rt5033_charger.c
-
+ 	of_node_put(np);
+ 
+diff --git a/include/linux/cpufreq-dt.h b/include/linux/cpufreq-dt.h
+index 0414009..92bffd3 100644
+--- a/include/linux/cpufreq-dt.h
++++ b/include/linux/cpufreq-dt.h
+@@ -10,6 +10,11 @@
+ #ifndef __CPUFREQ_DT_H__
+ #define __CPUFREQ_DT_H__
+ 
++struct cpufreq_cpu_domain {
++	struct list_head node;
++	cpumask_t cpus;
++};
++
+ struct cpufreq_dt_platform_data {
+ 	/*
+ 	 * True when each CPU has its own clock to control its
+@@ -17,6 +22,7 @@ struct cpufreq_dt_platform_data {
+ 	 * clock.
+ 	 */
+ 	bool independent_clocks;
++	struct list_head domain_list;
+ };
+ 
+ #endif /* __CPUFREQ_DT_H__ */
 -- 
-1.7.9.5
+1.9.1
