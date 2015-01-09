@@ -1,525 +1,117 @@
-From: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
-Subject: [PATCH 2/2] cpufreq: add cpufreq driver for Mediatek MT8173 SoC
-Date: Fri,  9 Jan 2015 17:54:51 +0800
-Message-ID: <1420797291-15972-3-git-send-email-pi-cheng.chen@linaro.org>
-References: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: "pi-cheng.chen" <pi-cheng.chen@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@linaro.org>, linaro-kernel@lists.linaro.org, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: [PATCH v2 7/9] ARM: dts: sun5i: hsg-h702: add axp209 regulator nodes
+Date: Fri,  9 Jan 2015 18:17:54 +0800
+Message-ID: <1420798676-22856-8-git-send-email-wens@csie.org>
+References: <1420798676-22856-1-git-send-email-wens@csie.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:47083 "EHLO
+	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbbAIKSH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 05:18:07 -0500
+In-Reply-To: <1420798676-22856-1-git-send-email-wens@csie.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-When doing DVFS on MT8173 SoC, 2 rules should be followed to make sure the
-SoC works properly:
-1. When doing frequency scaling of CPUs, the clock source should be switched
-   to another PLL, then switched back to the orignal until it's stable.
-2. When doing voltage scaling of CA57 cluster, Vproc and Vsram need to be
-   controlled concurrently and 2 limitations should be followed:
-   a. Vsram > Vproc
-   b. Vsram - Vproc < 200 mV
+This patch adds the regulator nodes for the axp209 by including
+the axp209 dtsi. As the inputs of these regulators are from the
+axp209's PS output, which is basically just a mux over the 2
+inputs, it is considered to be unregulated. Thus we do not provide
+input supply properties for them.
 
-To address these needs, we reuse cpufreq-dt but do voltage scaling in the
-cpufreq notifier.
+The regulator names and constraints are based on the board
+schematics and the SoC datasheet.
 
-Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
+DCDC2 is used as the cpu power supply. This patch also references
+it from the cpu node.
+
+LDO3 powers the USB WiFi module. This patch also references it
+from the usb-phy node.
+
+Also get rid of axp209 properties already set in axp209.dtsi.
+
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 ---
- drivers/cpufreq/Kconfig.arm      |   6 +
- drivers/cpufreq/Makefile         |   1 +
- drivers/cpufreq/mt8173-cpufreq.c | 459 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 466 insertions(+)
- create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 0f9a2c3..97ed7dd 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -255,3 +255,9 @@ config ARM_PXA2xx_CPUFREQ
- 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+changes since v1:
+
+    - Use preprocessor include for axp209.dtsi
+
+---
+ arch/arm/boot/dts/sun5i-a13-hsg-h702.dts | 46 ++++++++++++++++++++++++++------
+ 1 file changed, 38 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/boot/dts/sun5i-a13-hsg-h702.dts b/arch/arm/boot/dts/sun5i-a13-hsg-h702.dts
+index 99a5968720b4..82637db1c55a 100644
+--- a/arch/arm/boot/dts/sun5i-a13-hsg-h702.dts
++++ b/arch/arm/boot/dts/sun5i-a13-hsg-h702.dts
+@@ -68,11 +68,7 @@
+ 		};
  
- 	  If in doubt, say N.
-+
-+config ARM_MT8173_CPUFREQ
-+	bool "Mediatek MT8173 CPUFreq support"
-+	depends on ARCH_MEDIATEK && CPUFREQ_DT && REGULATOR
-+	help
-+	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b3ca7b0..67b7f17 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
- obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-+obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
+ 		usbphy: phy@01c13400 {
+-			/*
+-			 * There doesn't seem to be a GPIO for controlling
+-			 * usb1 vbus, despite the fex file saying otherwise.
+-			 */
+-			usb1_vbus-supply = <&reg_vcc5v0>;
++			usb1_vbus-supply = <&reg_ldo3>;
+ 			status = "okay";
+ 		};
  
- ##################################################################################
- # PowerPC platform drivers
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-new file mode 100644
-index 0000000..b578c10
---- /dev/null
-+++ b/drivers/cpufreq/mt8173-cpufreq.c
-@@ -0,0 +1,459 @@
-+/*
-+* Copyright (c) 2015 Linaro.
-+* Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-+*
-+* This program is free software; you can redistribute it and/or modify
-+* it under the terms of the GNU General Public License version 2 as
-+* published by the Free Software Foundation.
-+*
-+* This program is distributed in the hope that it will be useful,
-+* but WITHOUT ANY WARRANTY; without even the implied warranty of
-+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+* GNU General Public License for more details.
-+*/
+@@ -105,11 +101,8 @@
+ 			status = "okay";
+ 
+ 			axp209: pmic@34 {
+-				compatible = "x-powers,axp209";
+ 				reg = <0x34>;
+ 				interrupts = <0>;
+-				interrupt-controller;
+-				#interrupt-cells = <1>;
+ 			};
+ 		};
+ 
+@@ -131,3 +124,40 @@
+ 		};
+ 	};
+ };
 +
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/cpufreq.h>
-+#include <linux/cpufreq-dt.h>
-+#include <linux/cpumask.h>
-+#include <linux/slab.h>
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/regulator/consumer.h>
-+#include <linux/cpu.h>
-+#include <linux/pm_opp.h>
++#include "axp209.dtsi"
 +
-+#define CPUCLK_MUX_ARMPLL	0x1
-+#define CPUCLK_MUX_MAINPLL	0x2
-+#define VOLT_SHIFT_LIMIT	150000
-+
-+enum {
-+	LITTLE_CLUSTER = 0,
-+	BIG_CLUSTER,
-+	NR_CLUSTERS
++&cpu0 {
++	cpu-supply = <&reg_dcdc2>;
 +};
 +
-+static struct cluster_dvfs_info {
-+	int cpu;
-+	struct cpumask cpus;
-+	struct device *cpu_dev;
-+	struct regulator *proc_reg;
-+	struct regulator *sram_reg;
-+	int inter_volt;
-+	u32 volt_tol;
-+} *dvfs_info;
-+
-+static unsigned long mainpll_freq;
-+static void __iomem *clk_mux_regs;
-+static spinlock_t lock;
-+
-+static void cpuclk_mux_set(int cluster, u32 sel)
-+{
-+	u32 val;
-+	u32 mask = 0x3;
-+
-+	if (cluster == BIG_CLUSTER) {
-+		mask <<= 2;
-+		sel <<= 2;
-+	}
-+
-+	spin_lock(&lock);
-+
-+	val = readl(clk_mux_regs);
-+	val = (val & ~mask) | sel;
-+	writel(val, clk_mux_regs);
-+
-+	spin_unlock(&lock);
-+}
-+
-+static int mt8173_cpufreq_voltage_step(struct cluster_dvfs_info *dvfs,
-+				       unsigned long old_vproc,
-+				       unsigned long new_vproc)
-+{
-+	int cur_vsram, cur_vproc, target_volt, tol;
-+
-+	if (old_vproc > new_vproc) {
-+		while (1) {
-+			cur_vsram = regulator_get_voltage(dvfs->sram_reg);
-+			if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
-+			    cur_vsram > new_vproc) {
-+				tol = new_vproc * dvfs->volt_tol / 100;
-+				regulator_set_voltage_tol(dvfs->proc_reg,
-+							  new_vproc, tol);
-+				break;
-+			}
-+
-+			target_volt = cur_vsram - VOLT_SHIFT_LIMIT;
-+			tol = target_volt * dvfs->volt_tol / 100;
-+			regulator_set_voltage_tol(dvfs->proc_reg, target_volt,
-+						  tol);
-+
-+			cur_vproc = regulator_get_voltage(dvfs->proc_reg);
-+			target_volt = cur_vproc + 1;
-+			tol = target_volt * dvfs->volt_tol / 100;
-+			regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
-+						  tol);
-+		}
-+	} else if (old_vproc < new_vproc) {
-+		while (1) {
-+			cur_vsram = regulator_get_voltage(dvfs->sram_reg);
-+			if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
-+			    cur_vsram > new_vproc) {
-+				tol = new_vproc * dvfs->volt_tol / 100;
-+				regulator_set_voltage_tol(dvfs->proc_reg,
-+							  new_vproc, tol);
-+				break;
-+			}
-+
-+			cur_vproc = regulator_get_voltage(dvfs->proc_reg);
-+			target_volt = cur_vproc + VOLT_SHIFT_LIMIT;
-+			tol = target_volt * dvfs->volt_tol / 100;
-+			regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
-+						  tol);
-+
-+			if (new_vproc - cur_vproc > VOLT_SHIFT_LIMIT) {
-+				cur_vsram = regulator_get_voltage(
-+							dvfs->sram_reg);
-+				target_volt = cur_vsram - 1;
-+				tol = target_volt * dvfs->volt_tol / 100;
-+				regulator_set_voltage_tol(dvfs->proc_reg,
-+							  target_volt, tol);
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int get_opp_voltage(struct device *dev, unsigned long freq_hz)
-+{
-+	struct dev_pm_opp *opp;
-+	int volt;
-+
-+	rcu_read_lock();
-+	opp = dev_pm_opp_find_freq_ceil(dev, &freq_hz);
-+	if (IS_ERR(opp)) {
-+		rcu_read_unlock();
-+		pr_err("%s: failed to find OPP for %lu\n", __func__, freq_hz);
-+		return PTR_ERR(opp);
-+	}
-+	volt = dev_pm_opp_get_voltage(opp);
-+	rcu_read_unlock();
-+
-+	return volt;
-+}
-+
-+static int mt8173_cpufreq_get_intermediate_voltage(int cluster)
-+{
-+	struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
-+
-+	if (dvfs->inter_volt == 0)
-+		dvfs->inter_volt = get_opp_voltage(dvfs->cpu_dev,
-+						   mainpll_freq);
-+
-+	return dvfs->inter_volt;
-+}
-+
-+static void mt8173_cpufreq_set_voltage(int cluster, int old_volt, int new_volt)
-+{
-+	struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
-+	int ret = 0;
-+
-+	if (cluster == LITTLE_CLUSTER) {
-+		int tol;
-+
-+		tol = new_volt * dvfs->volt_tol / 100;
-+		ret = regulator_set_voltage_tol(dvfs->proc_reg, new_volt, tol);
-+	} else {
-+		ret = mt8173_cpufreq_voltage_step(dvfs, old_volt, new_volt);
-+	}
-+
-+	if (ret)
-+		pr_err("%s: cluster%d failed to scale voltage (%dmV to %dmV)",
-+		       __func__, cluster, old_volt, new_volt);
-+}
-+
-+static int mt8173_cpufreq_notify(struct notifier_block *nb,
-+				 unsigned long action, void *data)
-+{
-+	struct cpufreq_freqs *freqs = data;
-+	struct cluster_dvfs_info *dvfs;
-+	unsigned long old_volt, new_volt, inter_volt;
-+	int cluster;
-+
-+	if (freqs->cpu == dvfs_info[BIG_CLUSTER].cpu)
-+		cluster = BIG_CLUSTER;
-+	else if (freqs->cpu == dvfs_info[LITTLE_CLUSTER].cpu)
-+		cluster = LITTLE_CLUSTER;
-+	else
-+		return NOTIFY_DONE;
-+
-+	dvfs = &dvfs_info[cluster];
-+
-+	old_volt = regulator_get_voltage(dvfs->proc_reg);
-+
-+	new_volt = get_opp_voltage(dvfs->cpu_dev, freqs->new * 1000);
-+	inter_volt = mt8173_cpufreq_get_intermediate_voltage(cluster);
-+
-+	if (action == CPUFREQ_PRECHANGE) {
-+		if (old_volt < inter_volt || old_volt < new_volt) {
-+			new_volt = inter_volt > new_volt ?
-+				   inter_volt : new_volt;
-+			mt8173_cpufreq_set_voltage(cluster, old_volt,
-+						   new_volt);
-+		}
-+
-+		cpuclk_mux_set(cluster, CPUCLK_MUX_MAINPLL);
-+	} else if (action == CPUFREQ_POSTCHANGE) {
-+		cpuclk_mux_set(cluster, CPUCLK_MUX_ARMPLL);
-+
-+		if (new_volt < old_volt)
-+			mt8173_cpufreq_set_voltage(cluster, old_volt,
-+						   new_volt);
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block mt8173_cpufreq_nb = {
-+	.notifier_call = mt8173_cpufreq_notify,
++&reg_dcdc2 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1500000>;
++	regulator-name = "vdd-cpu";
 +};
 +
-+static struct cpufreq_dt_platform_data *pd;
++&reg_dcdc3 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-int-dll";
++};
 +
-+static int cpu_in_domain_list(struct list_head *domain_list, int cpu)
-+{
-+	struct list_head *node;
++&reg_ldo1 {
++	regulator-name = "vdd-rtc";
++};
 +
-+	list_for_each(node, domain_list) {
-+		struct cpufreq_cpu_domain *domain;
++&reg_ldo2 {
++	regulator-always-on;
++	regulator-min-microvolt = <3000000>;
++	regulator-max-microvolt = <3000000>;
++	regulator-name = "avcc";
++};
 +
-+		domain = container_of(node, struct cpufreq_cpu_domain, node);
-+		if (cpumask_test_cpu(cpu, &domain->cpus))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static void cpufreq_dt_pdata_release(void)
-+{
-+	if (!pd)
-+		return;
-+
-+	if (!list_empty(&pd->domain_list)) {
-+		struct list_head *node, *tmp;
-+		struct cpufreq_cpu_domain *domain;
-+
-+		list_for_each_safe(node, tmp, &pd->domain_list) {
-+			list_del(node);
-+			domain = container_of(node, struct cpufreq_cpu_domain,
-+					      node);
-+			kfree(domain);
-+		}
-+	}
-+
-+	kfree(pd);
-+}
-+
-+static int cpufreq_dt_pdata_init(void)
-+{
-+	int cpu;
-+
-+	pd = kmalloc(sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	pd->independent_clocks = 1,
-+	INIT_LIST_HEAD(&pd->domain_list);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct cpufreq_cpu_domain *new_domain;
-+
-+		if (cpu_in_domain_list(&pd->domain_list, cpu))
-+			continue;
-+
-+		new_domain = kzalloc(sizeof(*new_domain), GFP_KERNEL);
-+		if (!new_domain) {
-+			cpufreq_dt_pdata_release();
-+			return -ENOMEM;
-+		}
-+
-+		cpumask_copy(&new_domain->cpus,
-+			     &cpu_topology[cpu].core_sibling);
-+		list_add(&new_domain->node, &pd->domain_list);
-+	}
-+
-+	return 0;
-+}
-+
-+static void mt8173_cpufreq_dvfs_info_release(void)
-+{
-+	int i;
-+
-+	if (!dvfs_info)
-+		return;
-+
-+	for (i = 0; i < NR_CLUSTERS; ++i) {
-+		struct cluster_dvfs_info *dvfs = &dvfs_info[i];
-+
-+		if (!IS_ERR_OR_NULL(dvfs->proc_reg))
-+			regulator_put(dvfs->proc_reg);
-+
-+		if (!IS_ERR_OR_NULL(dvfs->sram_reg))
-+			regulator_put(dvfs->sram_reg);
-+	}
-+
-+	if (clk_mux_regs)
-+		iounmap(clk_mux_regs);
-+}
-+
-+static int mt8173_cpufreq_dvfs_info_init(void)
-+{
-+	struct list_head *node;
-+	struct device_node *np;
-+	struct clk *mainpll;
-+	int i, ret;
-+
-+	dvfs_info = kzalloc(sizeof(*dvfs) * NR_CLUSTERS, GFP_KERNEL);
-+	if (!dvfs_info)
-+		return -ENOMEM;
-+
-+	list_for_each(node, &pd->domain_list) {
-+		struct cpufreq_cpu_domain *domain = container_of(
-+					node, struct cpufreq_cpu_domain, node);
-+		int cpu = cpumask_next(0, &domain->cpus);
-+
-+		np = of_get_cpu_node(cpu, NULL);
-+
-+		if (of_property_match_string(np, "compatible",
-+					     "arm,cortex-a53") >= 0)
-+			cpumask_copy(&dvfs_info[LITTLE_CLUSTER].cpus,
-+				     &domain->cpus);
-+		else if (of_property_match_string(np, "compatible",
-+						  "arm,cortex-a57") >= 0)
-+			cpumask_copy(&dvfs_info[BIG_CLUSTER].cpus,
-+				     &domain->cpus);
-+		else {
-+			of_node_put(np);
-+			pr_err("%s: unknown CPU core\n", __func__);
-+			return -EINVAL;
-+		}
-+
-+		of_node_put(np);
-+	}
-+
-+	for (i = 0; i < NR_CLUSTERS; i++) {
-+		struct cluster_dvfs_info *dvfs = &dvfs_info[i];
-+		int cpu;
-+
-+		for_each_cpu_mask(cpu, dvfs->cpus) {
-+			struct device_node *np;
-+
-+			dvfs->cpu_dev = get_cpu_device(cpu);
-+			dvfs->proc_reg = regulator_get(dvfs->cpu_dev, "proc");
-+			if (IS_ERR(dvfs->proc_reg))
-+				continue;
-+
-+			dvfs->cpu = cpu;
-+			dvfs->sram_reg = regulator_get(dvfs->cpu_dev, "sram");
-+
-+			np = of_node_get(dvfs->cpu_dev->of_node);
-+			of_property_read_u32(np, "voltage-tolerance",
-+					     &dvfs->volt_tol);
-+			of_node_put(np);
-+			break;
-+		}
-+
-+		if (IS_ERR(dvfs->proc_reg)) {
-+			pr_err("%s: no proc regulator for cluster %d\n",
-+			       __func__, i);
-+			ret = -ENODEV;
-+			goto dvfs_info_release;
-+		}
-+
-+		if (IS_ERR(dvfs->sram_reg) && BIG_CLUSTER == i) {
-+			pr_err("%s: no sram regulator for cluster %d\n",
-+			       __func__, i);
-+			ret = -ENODEV;
-+			goto dvfs_info_release;
-+		}
-+	}
-+
-+	mainpll = __clk_lookup("mainpll");
-+	if (!mainpll) {
-+		pr_err("failed to get mainpll clk\n");
-+		ret = -ENOENT;
-+		goto dvfs_info_release;
-+	}
-+	mainpll_freq = clk_get_rate(mainpll);
-+
-+	np = of_find_compatible_node(NULL, NULL, "mediatek,mt8173-infrasys");
-+	if (!np) {
-+		pr_err("failed to find clock mux registers\n");
-+		ret = -ENODEV;
-+		goto dvfs_info_release;
-+	}
-+
-+	clk_mux_regs = of_iomap(np, 0);
-+	if (!clk_mux_regs) {
-+		pr_err("failed to map clock mux registers\n");
-+		ret = -EFAULT;
-+		goto dvfs_info_release;
-+	}
-+	of_node_put(np);
-+
-+	spin_lock_init(&lock);
-+
-+	return 0;
-+
-+dvfs_info_release:
-+	mt8173_cpufreq_dvfs_info_release();
-+	return ret;
-+}
-+
-+static int mt8173_cpufreq_driver_init(void)
-+{
-+	int ret;
-+
-+	if (!of_machine_is_compatible("mediatek,mt8173"))
-+		return -ENODEV;
-+
-+	ret = cpufreq_dt_pdata_init();
-+	if (ret) {
-+		pr_err("failed to initialize platform data: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = mt8173_cpufreq_dvfs_info_init();
-+	if (ret) {
-+		pr_err("failed to initialize mt8173 dvfs info: %d\n", ret);
-+		goto dt_pdata_release;
-+	}
-+
-+	ret = cpufreq_register_notifier(&mt8173_cpufreq_nb,
-+					CPUFREQ_TRANSITION_NOTIFIER);
-+	if (ret) {
-+		pr_err("failed to register cpufreq notifier: %d\n", ret);
-+		goto dt_pdata_release;
-+	}
-+
-+	platform_device_register_data(NULL, "cpufreq-dt", -1,
-+				      pd, sizeof(*pd));
-+
-+	return 0;
-+
-+dt_pdata_release:
-+	cpufreq_dt_pdata_release();
-+	return ret;
-+}
-+
-+module_init(mt8173_cpufreq_driver_init);
-+
-+MODULE_AUTHOR("Pi-Cheng Chen <pi-cheng.chen@linaro.org>");
-+MODULE_DESCRIPTION("Mediatek MT8173 cpufreq driver");
-+MODULE_LICENSE("GPL");
-+
++&reg_ldo3 {
++	regulator-min-microvolt = <3300000>;
++	regulator-max-microvolt = <3300000>;
++	regulator-name = "vcc-wifi";
++};
 -- 
-1.9.1
+2.1.4
+
