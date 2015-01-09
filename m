@@ -1,38 +1,54 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
-Date: Thu, 08 Jan 2015 20:48:40 -0800
-Message-ID: <54AF5DA8.6080408@roeck-us.net>
-References: <1420740303-12529-1-git-send-email-nm@ti.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] drivers: cpuidle: don't initialize big.LITTLE driver
+ if MCPM is unavailable
+Date: Fri, 09 Jan 2015 10:28:31 +0530
+Message-ID: <54AF5FF7.5080308@arm.com>
+References: <1420698544-10277-1-git-send-email-sudeep.holla@arm.com>	<54AE459B.8010703@linaro.org> <54AE4ADF.3030307@arm.com>	<54AE55CE.6040201@linaro.org> <54AE5C8F.9080600@arm.com>	<54AE65EC.3050808@linaro.org> <20150108122958.GB32308@red-moon> <7hh9w1vwzr.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:44329 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbbAIEsm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 23:48:42 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Y9RV4-002Mj4-N4
-	for linux-pm@vger.kernel.org; Fri, 09 Jan 2015 04:48:43 +0000
-In-Reply-To: <1420740303-12529-1-git-send-email-nm@ti.com>
+Received: from service87.mimecast.com ([91.220.42.44]:39450 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbbAIE6h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jan 2015 23:58:37 -0500
+In-Reply-To: <7hh9w1vwzr.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Jean Delvare <jdelvare@suse.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <kevin.hilman@linaro.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>
 
-On 01/08/2015 10:05 AM, Nishanth Menon wrote:
-> Allow gpio-fan to be used as thermal cooling device for platforms that
-> use GPIO maps to control fans.
+Hi Kevin,
+
+On Friday 09 January 2015 01:57 AM, Kevin Hilman wrote:
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 >
-> As part of this change, we make the shutdown and remove logic the same
-> as well.
+>> On Thu, Jan 08, 2015 at 11:11:40AM +0000, Daniel Lezcano wrote:
+>>
+
+[...]
+
+>> 3) Sudeep's patch is not hiding anything. If CCI is in DT, CCI is
+>> probed so mcpm_is_available() == true. If the firmware is borked
+>> the idle states will be entered and we will notice there is
+>> something wrong
+>>
+>> So overall I think Sudeep's patch is sound. I also think we should
+>> improve the way we detect if MCPM is available, and again, I think
+>> the CPU operations on arm64 are a good example that we can and we
+>> should replicate.
 >
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
+> This patch disables CPUidle all together, but shouldn't it just
+> disable the states that rely on MCPM?  IOW, C1 should still work just
+> fine since it doesn't use MCPM, right?  So, rather than fail the
+> init, it should just drop any MCPM states (e.g. set ->state_count =
+> 1)
+>
 
-Applied to -next.
+As Daniel pointed out, if there's no cpuidle driver or if cpuidle fails
+to choose a convenient idle state, we fall back to the default arch idle
+method(arch_cpu_idle)
 
-Thanks,
-Guenter
+Regards,
+Sudeep
 
