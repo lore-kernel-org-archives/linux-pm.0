@@ -1,52 +1,251 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] treewide: Convert clockevents_notify to use int cpu
-Date: Fri, 9 Jan 2015 12:34:56 +0100
-Message-ID: <20150109113452.GF16465@ulmo>
-References: <1418254133.18092.22.camel@perches.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
+Date: Fri, 9 Jan 2015 07:46:01 -0400
+Message-ID: <20150109114559.GA9510@developer>
+References: <1420740303-12529-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DEueqSqTbz/jWVG1"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1418254133.18092.22.camel@perches.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org, linux-pm <linux-pm@vger.kernel.org>
+In-Reply-To: <1420740303-12529-1-git-send-email-nm-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---DEueqSqTbz/jWVG1
+--k1lZvvs/B4yU6o8G
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Dec 10, 2014 at 03:28:53PM -0800, Joe Perches wrote:
-[...]
->  arch/arm/mach-tegra/cpuidle-tegra114.c |  4 ++--
->  arch/arm/mach-tegra/cpuidle-tegra20.c  |  8 ++++----
->  arch/arm/mach-tegra/cpuidle-tegra30.c  |  8 ++++----
-[...]
+On Thu, Jan 08, 2015 at 12:05:03PM -0600, Nishanth Menon wrote:
+> Allow gpio-fan to be used as thermal cooling device for platforms that
+> use GPIO maps to control fans.
+>=20
+> As part of this change, we make the shutdown and remove logic the same
+> as well.
+>=20
+> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+For the thermal part:
 
---DEueqSqTbz/jWVG1
-Content-Type: application/pgp-signature
+Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+
+> ---
+>=20
+> Changes since v1:
+> 	- review comments incorporated (hopefully correct)
+> 	- checkpatch verified
+> 	- retested :).
+>=20
+> V1: https://patchwork.kernel.org/patch/5587061/
+>=20
+>  .../devicetree/bindings/gpio/gpio-fan.txt          |   13 +++
+>  drivers/hwmon/gpio-fan.c                           |   83 ++++++++++++++=
+++++--
+>  2 files changed, 89 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/gpio/gpio-fan.txt b/Docume=
+ntation/devicetree/bindings/gpio/gpio-fan.txt
+> index 2dd457a3469a..43ca2a45b862 100644
+> --- a/Documentation/devicetree/bindings/gpio/gpio-fan.txt
+> +++ b/Documentation/devicetree/bindings/gpio/gpio-fan.txt
+> @@ -11,6 +11,9 @@ Required properties:
+>  Optional properties:
+>  - alarm-gpios: This pin going active indicates something is wrong with
+>    the fan, and a udev event will be fired.
+> +- cooling-cells: If used as a cooling device, must be <2>
+> +  Also see: Documentation/devicetree/bindings/thermal/thermal.txt
+> +  min and max states are derived from the speed-map of the fan.
+> =20
+>  Examples:
+> =20
+> @@ -23,3 +26,13 @@ Examples:
+>  				      6000 2>;
+>  		alarm-gpios =3D <&gpio1 15 1>;
+>  	};
+> +	gpio_fan_cool: gpio_fan {
+> +		compatible =3D "gpio-fan";
+> +		gpios =3D <&gpio2 14 1
+> +			 &gpio2 13 1>;
+> +		gpio-fan,speed-map =3D	<0    0>,
+> +					<3000 1>,
+> +					<6000 2>;
+> +		alarm-gpios =3D <&gpio2 15 1>;
+> +		#cooling-cells =3D <2>; /* min followed by max */
+> +	};
+> diff --git a/drivers/hwmon/gpio-fan.c b/drivers/hwmon/gpio-fan.c
+> index 36abf814b8c7..20232c11b579 100644
+> --- a/drivers/hwmon/gpio-fan.c
+> +++ b/drivers/hwmon/gpio-fan.c
+> @@ -34,10 +34,13 @@
+>  #include <linux/of.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/of_gpio.h>
+> +#include <linux/thermal.h>
+> =20
+>  struct gpio_fan_data {
+>  	struct platform_device	*pdev;
+>  	struct device		*hwmon_dev;
+> +	/* Cooling device if any */
+> +	struct thermal_cooling_device *cdev;
+>  	struct mutex		lock; /* lock GPIOs operations. */
+>  	int			num_ctrl;
+>  	unsigned		*ctrl;
+> @@ -387,6 +390,53 @@ static int fan_ctrl_init(struct gpio_fan_data *fan_d=
+ata,
+>  	return 0;
+>  }
+> =20
+> +static int gpio_fan_get_max_state(struct thermal_cooling_device *cdev,
+> +				  unsigned long *state)
+> +{
+> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
+> +
+> +	if (!fan_data)
+> +		return -EINVAL;
+> +
+> +	*state =3D fan_data->num_speed - 1;
+> +	return 0;
+> +}
+> +
+> +static int gpio_fan_get_cur_state(struct thermal_cooling_device *cdev,
+> +				  unsigned long *state)
+> +{
+> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
+> +	int r;
+> +
+> +	if (!fan_data)
+> +		return -EINVAL;
+> +
+> +	r =3D get_fan_speed_index(fan_data);
+> +	if (r < 0)
+> +		return r;
+> +
+> +	*state =3D r;
+> +	return 0;
+> +}
+> +
+> +static int gpio_fan_set_cur_state(struct thermal_cooling_device *cdev,
+> +				  unsigned long state)
+> +{
+> +	struct gpio_fan_data *fan_data =3D cdev->devdata;
+> +
+> +	if (!fan_data)
+> +		return -EINVAL;
+> +
+> +	set_fan_speed(fan_data, state);
+> +	return 0;
+> +}
+> +
+> +static const struct thermal_cooling_device_ops gpio_fan_cool_ops =3D {
+> +	.get_max_state =3D gpio_fan_get_max_state,
+> +	.get_cur_state =3D gpio_fan_get_cur_state,
+> +	.set_cur_state =3D gpio_fan_set_cur_state,
+> +};
+> +
+>  #ifdef CONFIG_OF_GPIO
+>  /*
+>   * Translate OpenFirmware node properties into platform_data
+> @@ -495,6 +545,11 @@ static int gpio_fan_probe(struct platform_device *pd=
+ev)
+>  	struct gpio_fan_data *fan_data;
+>  	struct gpio_fan_platform_data *pdata =3D dev_get_platdata(&pdev->dev);
+> =20
+> +	fan_data =3D devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
+> +				GFP_KERNEL);
+> +	if (!fan_data)
+> +		return -ENOMEM;
+> +
+>  #ifdef CONFIG_OF_GPIO
+>  	if (!pdata) {
+>  		pdata =3D devm_kzalloc(&pdev->dev,
+> @@ -506,17 +561,20 @@ static int gpio_fan_probe(struct platform_device *p=
+dev)
+>  		err =3D gpio_fan_get_of_pdata(&pdev->dev, pdata);
+>  		if (err)
+>  			return err;
+> +		/* Optional cooling device register for Device tree platforms */
+> +		fan_data->cdev =3D
+> +			thermal_of_cooling_device_register(pdev->dev.of_node,
+> +							   "gpio-fan", fan_data,
+> +							   &gpio_fan_cool_ops);
+>  	}
+>  #else /* CONFIG_OF_GPIO */
+>  	if (!pdata)
+>  		return -EINVAL;
+> +	/* Optional cooling device register for non Device tree platforms */
+> +	fan_data->cdev =3D thermal_cooling_device_register("gpio-fan", fan_data,
+> +							 &gpio_fan_cool_ops);
+>  #endif /* CONFIG_OF_GPIO */
+> =20
+> -	fan_data =3D devm_kzalloc(&pdev->dev, sizeof(struct gpio_fan_data),
+> -				GFP_KERNEL);
+> -	if (!fan_data)
+> -		return -ENOMEM;
+> -
+>  	fan_data->pdev =3D pdev;
+>  	platform_set_drvdata(pdev, fan_data);
+>  	mutex_init(&fan_data->lock);
+> @@ -550,12 +608,22 @@ static int gpio_fan_probe(struct platform_device *p=
+dev)
+>  	return 0;
+>  }
+> =20
+> -static void gpio_fan_shutdown(struct platform_device *pdev)
+> +static int gpio_fan_remove(struct platform_device *pdev)
+>  {
+> -	struct gpio_fan_data *fan_data =3D dev_get_drvdata(&pdev->dev);
+> +	struct gpio_fan_data *fan_data =3D platform_get_drvdata(pdev);
+> +
+> +	if (!IS_ERR(fan_data->cdev))
+> +		thermal_cooling_device_unregister(fan_data->cdev);
+> =20
+>  	if (fan_data->ctrl)
+>  		set_fan_speed(fan_data, 0);
+> +
+> +	return 0;
+> +}
+> +
+> +static void gpio_fan_shutdown(struct platform_device *pdev)
+> +{
+> +	gpio_fan_remove(pdev);
+>  }
+> =20
+>  #ifdef CONFIG_PM_SLEEP
+> @@ -589,6 +657,7 @@ static SIMPLE_DEV_PM_OPS(gpio_fan_pm, gpio_fan_suspen=
+d, gpio_fan_resume);
+> =20
+>  static struct platform_driver gpio_fan_driver =3D {
+>  	.probe		=3D gpio_fan_probe,
+> +	.remove		=3D gpio_fan_remove,
+>  	.shutdown	=3D gpio_fan_shutdown,
+>  	.driver	=3D {
+>  		.name	=3D "gpio-fan",
+> --=20
+> 1.7.9.5
+>=20
+
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUr7zcAAoJEN0jrNd/PrOhrsAP/iWqYSubPYR6Plip5QDe/QoP
-9bcbtfr5b+PsC/H1evIRrWKNo5E68ZZNJpA4FfPSGs1NAqqfl0/7fG1s6j2E38dG
-UWwLGFQ/tzRJht0SzbehEIef8ZZ0w2Y9dmVoriQoQq0FjHJqbG3zf2tsPFkztIvI
-+zaOSc/FHTH6lN2fjqbySFT6+NF32Hx4IoO4pKrp2upqMh7LiWaAt6h6RE8Xb84o
-3eu0Ooyqc8g1vHmZu4vGB7eQsHHF3l3DBEdKLrnXaJXd92RlzQFy/rhoN2A+rClr
-kadKPbfH8HV4ENG1l5j2fPhzx/rsZMI1KLgKssm1xbGF8tPUromdroL3VuayI+y8
-WEO2LoXUb3RH5zh6QarQvZyCPzDba5s33sk8Z03NoazTtp1ldAE29UAORrzfdEFq
-YCDExJsxFZwYT1bkTvlMKjeL22SAh3LKiJuTCerqGvRZkAwVZnmdsTmnxjcotWRC
-SZvIJjoAbkanqyUZN7Jrz6Txl37ZPET6dZxFcqLXDoiPfAJ3H3rYVp8d6fSejcH5
-N2x8wGwwkWLQScxRVRv0aQsERpT6UHfYyADVBMPIKz2OhRXoy0nCSdFtB7KsY43r
-FxeOEM9JQvuuIiH/NsoNR19613E7pboA00siPF8QPyIE93JB9rSIQgqkK4SbbnL0
-Iumq7l9GgNhbA6mm931L
-=XFHi
+iQEcBAEBAgAGBQJUr79uAAoJEMLUO4d9pOJWoS8H/ifD0Ym3utI4XqEzYJuODYCd
+i3fo96W/+yMFR4HIWrnAXKHv6p9Z9IoaYsUCO+igOhqmQjzwRQ8xMpx0vMfbGNfy
+wRLZdUAh7z0nexVMVgFCHZUTjztjxTczZh3Prs4jSuwv+o91+a5g+f5+mS+arQ/o
+pF8jqnFNkuBgzTWjKYNcyYj+Mrys4jt9j1T8eMlbzeW1M4O7af1+uL7QmphTz2bK
+Fb5yXqwKLKcGT3bPQgU3pG9lYrNwVYXJRqm03kLkr1Mi0P0nO/OQhhaWQ5PL8WSi
+UH6fp4OQa3WknYnt8dJv72YVY/eNFqL/alNcNWWTequ4OzHNZuwakeWs1l1WzrU=
+=w3qV
 -----END PGP SIGNATURE-----
 
---DEueqSqTbz/jWVG1--
+--k1lZvvs/B4yU6o8G--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
