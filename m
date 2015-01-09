@@ -1,43 +1,99 @@
-From: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
-Subject: Re: [PATCH v2 0/8] Add Simple Power-Managed Bus Support
-Date: Fri, 9 Jan 2015 11:57:57 +0100
-Message-ID: <CAO3366x64phBJ=tHOK03P6Ok_6LxiyLyC9LhjcocuqTx=86cfA@mail.gmail.com>
-References: <1418842153-17113-1-git-send-email-geert+renesas@glider.be>
-	<CAMuHMdVeEmKiqGTOmevaBDbJ=nBTbSi6d6Xrm0eyvbMTtyU=sA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Michal Hocko <mhocko@suse.cz>
+Subject: [PATCH -v3 4/5] sysrq: convert printk to pr_* equivalent
+Date: Fri,  9 Jan 2015 12:05:54 +0100
+Message-ID: <1420801555-22659-5-git-send-email-mhocko@suse.cz>
+References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:47333 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757389AbbAIK56 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jan 2015 05:57:58 -0500
-In-Reply-To: <CAMuHMdVeEmKiqGTOmevaBDbJ=nBTbSi6d6Xrm0eyvbMTtyU=sA@mail.gmail.com>
+Received: from cantor2.suse.de ([195.135.220.15]:60717 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932822AbbAILGM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 Jan 2015 06:06:12 -0500
+In-Reply-To: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Thu, Jan 8, 2015 at 8:28 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Wed, Dec 17, 2014 at 7:49 PM, Geert Uytterhoeven
-> <geert+renesas@glider.be> wrote:
->> The Renesas Bus State Controller (BSC) provides an external bus for
->> connecting multiple external devices to an SoC, driving several chip
->> select lines, for e.g. NOR FLASH, Ethernet and USB.
->> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
->> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
->> R-Mobile APE6 (r8a73a4) SoC.
->
-> [...]
->
->> This was tested on sh73a0/kzm9g-multiplatform. Without this, Ethernet
->> doesn't work, as the ZB clock is disabled by clk_disable_unused().
->> Testing on r8a73a4/ape6evm-multiplatform would be appreciated.
->
-> Has anyone tried this on r8a73a4/ape6evm-multiplatform?
+While touching this area let's convert printk to pr_*. This also makes
+the printing of continuation lines done properly.
 
-Works like a charm.
+Signed-off-by: Michal Hocko <mhocko@suse.cz>
+Acked-by: Tejun Heo <tj@kernel.org>
+---
+ drivers/tty/sysrq.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
+index 42bad18c66c9..0071469ecbf1 100644
+--- a/drivers/tty/sysrq.c
++++ b/drivers/tty/sysrq.c
+@@ -90,7 +90,7 @@ static void sysrq_handle_loglevel(int key)
+ 
+ 	i = key - '0';
+ 	console_loglevel = CONSOLE_LOGLEVEL_DEFAULT;
+-	printk("Loglevel set to %d\n", i);
++	pr_info("Loglevel set to %d\n", i);
+ 	console_loglevel = i;
+ }
+ static struct sysrq_key_op sysrq_loglevel_op = {
+@@ -220,7 +220,7 @@ static void showacpu(void *dummy)
+ 		return;
+ 
+ 	spin_lock_irqsave(&show_lock, flags);
+-	printk(KERN_INFO "CPU%d:\n", smp_processor_id());
++	pr_info("CPU%d:\n", smp_processor_id());
+ 	show_stack(NULL, NULL);
+ 	spin_unlock_irqrestore(&show_lock, flags);
+ }
+@@ -243,7 +243,7 @@ static void sysrq_handle_showallcpus(int key)
+ 		struct pt_regs *regs = get_irq_regs();
+ 
+ 		if (regs) {
+-			printk(KERN_INFO "CPU%d:\n", smp_processor_id());
++			pr_info("CPU%d:\n", smp_processor_id());
+ 			show_regs(regs);
+ 		}
+ 		schedule_work(&sysrq_showallcpus);
+@@ -522,7 +522,7 @@ void __handle_sysrq(int key, bool check_mask)
+ 	 */
+ 	orig_log_level = console_loglevel;
+ 	console_loglevel = CONSOLE_LOGLEVEL_DEFAULT;
+-	printk(KERN_INFO "SysRq : ");
++	pr_info("SysRq : ");
+ 
+         op_p = __sysrq_get_key_op(key);
+         if (op_p) {
+@@ -531,14 +531,14 @@ void __handle_sysrq(int key, bool check_mask)
+ 		 * should not) and is the invoked operation enabled?
+ 		 */
+ 		if (!check_mask || sysrq_on_mask(op_p->enable_mask)) {
+-			printk("%s\n", op_p->action_msg);
++			pr_cont("%s\n", op_p->action_msg);
+ 			console_loglevel = orig_log_level;
+ 			op_p->handler(key);
+ 		} else {
+-			printk("This sysrq operation is disabled.\n");
++			pr_cont("This sysrq operation is disabled.\n");
+ 		}
+ 	} else {
+-		printk("HELP : ");
++		pr_cont("HELP : ");
+ 		/* Only print the help msg once per handler */
+ 		for (i = 0; i < ARRAY_SIZE(sysrq_key_table); i++) {
+ 			if (sysrq_key_table[i]) {
+@@ -549,10 +549,10 @@ void __handle_sysrq(int key, bool check_mask)
+ 					;
+ 				if (j != i)
+ 					continue;
+-				printk("%s ", sysrq_key_table[i]->help_msg);
++				pr_cont("%s ", sysrq_key_table[i]->help_msg);
+ 			}
+ 		}
+-		printk("\n");
++		pr_cont("\n");
+ 		console_loglevel = orig_log_level;
+ 	}
+ 	rcu_read_unlock();
+-- 
+2.1.4
 
-CU
-Uli
