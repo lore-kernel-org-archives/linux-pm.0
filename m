@@ -1,36 +1,80 @@
-From: George Bush <georgebush815@gmail.com>
-Subject: ARM64: hibernation: How to use hibernation/suspend-to-disk on ARMv8?
-Date: Sat, 10 Jan 2015 23:14:33 +0800
-Message-ID: <CADcZZT+nQ_0LfurU+z5wLC_OxNhEs6n0kCoLSkfoFCDqyOu04g@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH -v3 5/5] oom, PM: make OOM detection in the freezer path
+ raceless
+Date: Sat, 10 Jan 2015 14:43:22 -0500
+Message-ID: <20150110194322.GE25319@htj.dyndns.org>
+References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
+ <1420801555-22659-6-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: sebastian.capella@linaro.org, Russ.Dill@ti.com, rjw@rjwysocki.net, linux@arm.linux.org.uk, len.brown@intel.com, nico@linaro.org, santosh.shilimkar@ti.com, will.deacon@arm.com, jonathan.austin@arm.com, catalin.marinas@arm.com, u.kleine-koenig@pengutronix.de, sboyd@codeaurora.org, victor.kamensky@linaro.org, r.sricharan@ti.com, liuj97@gmail.com, lauraa@codeaurora.org, zhou0283@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-omap@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1420801555-22659-6-git-send-email-mhocko@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all
+On Fri, Jan 09, 2015 at 12:05:55PM +0100, Michal Hocko wrote:
+...
+> @@ -142,7 +118,6 @@ static bool check_frozen_processes(void)
+>  int freeze_processes(void)
+>  {
+>  	int error;
+> -	int oom_kills_saved;
+>  
+>  	error = __usermodehelper_disable(UMH_FREEZING);
+>  	if (error)
+> @@ -157,29 +132,22 @@ int freeze_processes(void)
+>  	pm_wakeup_clear();
+>  	pr_info("Freezing user space processes ... ");
+>  	pm_freezing = true;
+> -	oom_kills_saved = oom_kills_count();
+>  	error = try_to_freeze_tasks(true);
+>  	if (!error) {
+>  		__usermodehelper_set_disable_depth(UMH_DISABLED);
+> -		oom_killer_disable();
+> -
+> -		/*
+> -		 * There might have been an OOM kill while we were
+> -		 * freezing tasks and the killed task might be still
+> -		 * on the way out so we have to double check for race.
+> -		 */
+> -		if (oom_kills_count() != oom_kills_saved &&
+> -		    !check_frozen_processes()) {
+> -			__usermodehelper_set_disable_depth(UMH_ENABLED);
+> -			pr_cont("OOM in progress.");
+> -			error = -EBUSY;
+> -		} else {
+> -			pr_cont("done.");
+> -		}
+> +		pr_cont("done.");
+>  	}
+>  	pr_cont("\n");
+>  	BUG_ON(in_atomic());
+>  
+> +	/*
+> +	 * Now that the whole userspace is frozen we need to disbale
+> +	 * the OOM killer to disallow any further interference with
+> +	 * killable tasks.
+> +	 */
+> +	if (!error && !oom_killer_disable())
 
-I notice we have hibernation.c in arm/kernel, however, I don't find it in arm64.
-Does it mean arm64 do not support hibernation/suspend-to-disk function?
+So, previously, oom killer was disabled at the top of
+freeze_kernel_threads(), right?  I think that was the better spot to
+do that.  We don't want to disable oom killer before the system is
+just about to enter total quiescence which is freeze_kernel_threads().
+We want to delay this as long as possible.  Let's please disable oom
+killing in at the top of freeze_kernel_threads() and re-enable at the
+bottom of thaw_kernel_threads().
 
-I tried some path to search the reason, but found nothing, they all say arm64
-has the backward compatibility. So I send this email to the community and
-hope to get the reason.
-Thanks!
+Thanks.
 
-I ported the arm hibernation.c to arm64/kernel(with LP64), but failed in a
-strange way. When I do resume, the arch_restore_image() get a page_fault
-when it calls the copy_page(), like:
-"Unable to handle kernel paging request at virtual address 0xffffffbc055c3fa8"
-I'm sure the copy_page()'s parameters is in the memory area, why and how
-I get the strange address 0xffffffbc055c3fa8?
+-- 
+tejun
 
-vmalloc:         0xffffff8000000000 - 0xffffffbb00000000
-vmemmap:     0xffffffbc01400000 - 0xffffffbc04f88000
-modules:       0xffffffbffc000000   -  0xffffffc000000000
-memory:        0xffffffc000000000 - 0xffffffc0be800000
-
-
-Look forward to your reply, thanks!
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
