@@ -1,41 +1,215 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Subject: [PATCH] kernel: power: snapshot: Remove unused function
-Date: Sun, 11 Jan 2015 23:27:38 +0100
-Message-ID: <1421015258-24472-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:60302 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbbAKWYd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jan 2015 17:24:33 -0500
-Received: by mail-wg0-f41.google.com with SMTP id l18so16447293wgh.0
-        for <linux-pm@vger.kernel.org>; Sun, 11 Jan 2015 14:24:32 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
+Date: Mon, 12 Jan 2015 00:20:36 +0100
+Message-ID: <12360948.gSvRbI0dui@vostro.rjw.lan>
+References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com> <1025ebd0a9984037bf15adf3ae4889d9@BN1BFFO11FD013.protection.gbl> <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Remove the function get_safe_write_buffer() that is not used anywhere.
+On Friday, January 09, 2015 01:50:59 PM S=C3=B6ren Brinkmann wrote:
+> On Sat, 2014-11-08 at 03:56PM -0800, S=C3=B6ren Brinkmann wrote:
+> > Hi Rafael,
+> >=20
+> > On Thu, 2014-11-06 at 01:33AM +0100, Rafael J. Wysocki wrote:
+> > > On Thursday, October 02, 2014 09:01:15 AM S=C3=B6ren Brinkmann wr=
+ote:
+> > > > Hi Rafael,
+> > >=20
+> > > Hi,
+> > >=20
+> > > Sorry for the huge delay.
+> > >=20
+> > > > On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
+> > > > > On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann wro=
+te:
+> > > > > > On platforms that do not power off during suspend, successf=
+ully entering
+> > > > > > suspend races with timers.
+> > > > > >=20
+> > > > > > The race happening in a couple of location is:
+> > > > > >=20
+> > > > > >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+> > > > > >      ...
+> > > > > >   2. syscore_suspend()
+> > > > > >       -> timekeeping_suspend()
+> > > > > >        -> clockevents_notify(SUSPEND)
+> > > > > >         -> tick_suspend()   	(timers are turned off here)
+> > > > > >      ...
+> > > > > >   3. wfi            		(wait for wake-IRQ here)
+> > > > > >=20
+> > > > > > Between steps 1 and 2 the timers can still generate interru=
+pts that are
+> > > > > > not handled and stay pending until step 3. That pending IRQ=
+ causes an
+> > > > > > immediate - spurious - wake.
+> > > > > >=20
+> > > > > > The solution is to move the clockevents suspend/resume noti=
+fication
+> > > > > > out of the syscore_suspend step and explictly call them at =
+the appropriate
+> > > > > > time in the suspend/hibernation paths. I.e. timers are susp=
+end _before_
+> > > > > > IRQs get disabled. And accordingly in the resume path.
+> > > > > >=20
+> > > > > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> > > > > > ---
+> > > > > > Hi,
+> > > > > >=20
+> > > > > > there was not a lot of discussion on the last submission. J=
+ust one comment from
+> > > > > > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I =
+outlined in my
+> > > > > > response, does not apply, IMHO, since the platform does not=
+ re-enable
+> > > > > > interrupts.
+> > > > >=20
+> > > > > Well, you just don't agree with it.
+> > > > >=20
+> > > > > The problem with your approach is that timer interrupts aren'=
+t actually as
+> > > > > special as you think and any other IRQF_NO_SUSPEND interrupts=
+ would have caused
+> > > > > similar issues to appear under specific conditions.
+> > > > >=20
+> > > > > The solution I would suggest and that actually covers all IRQ=
+=46_NO_SUSPEND
+> > > > > interrupts would be to use a wait_event() loop like the one i=
+n freeze_enter()
+> > > > > (on top of the current linux-next or the pm-genirq branch of =
+linux-pm.git),
+> > > > > but wait for pm_abort_suspend to become true, to implement sy=
+stem suspend.
+> > > >=20
+> > > > sorry, it took me a while since I needed to get some dependenci=
+es ported
+> > > > to the pm-genirq base. Once I had that, it reproduced my origin=
+al issue.
+> > > > So far so good. I then looked into finding a solution following=
+ your
+> > > > guidance. I'm not sure I really found what you had in mind, but=
+ below is
+> > > > what I came up with, which seems to do it.
+> > > > Please let me know how far off I am.
+> > > >=20
+> > > > 	Thanks,
+> > > > 	S=C3=B6ren
+> > > >=20
+> > > > -------8<------------------8<----------------8<----------------=
+8<---------------
+> > > > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/w=
+akeup.c
+> > > > index c2744b30d5d9..a4f9914571f1 100644
+> > > > --- a/drivers/base/power/wakeup.c
+> > > > +++ b/drivers/base/power/wakeup.c
+> > > > @@ -25,7 +25,7 @@
+> > > >  bool events_check_enabled __read_mostly;
+> > > > =20
+> > > >  /* If set and the system is suspending, terminate the suspend.=
+ */
+> > > > -static bool pm_abort_suspend __read_mostly;
+> > > > +bool pm_abort_suspend __read_mostly;
+> > > > =20
+> > > >  /*
+> > > >   * Combined counters of registered wakeup events and wakeup ev=
+ents in progress.
+> > > > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> > > > index 6dadb25cb0d8..e6a6de8f76d0 100644
+> > > > --- a/kernel/power/suspend.c
+> > > > +++ b/kernel/power/suspend.c
+> > > > @@ -33,6 +33,7 @@
+> > > > =20
+> > > >  static const char *pm_labels[] =3D { "mem", "standby", "freeze=
+", };
+> > > >  const char *pm_states[PM_SUSPEND_MAX];
+> > > > +extern bool pm_abort_suspend;
+> > > > =20
+> > > >  static const struct platform_suspend_ops *suspend_ops;
+> > > >  static const struct platform_freeze_ops *freeze_ops;
+> > > > @@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_t =
+state, bool *wakeup)
+> > > >  	if (error || suspend_test(TEST_CPUS))
+> > > >  		goto Enable_cpus;
+> > > > =20
+> > > > -	arch_suspend_disable_irqs();
+> > > > -	BUG_ON(!irqs_disabled());
+> > > > -
+> > > > -	error =3D syscore_suspend();
+> > > > -	if (!error) {
+> > > > -		*wakeup =3D pm_wakeup_pending();
+> > > > -		if (!(suspend_test(TEST_CORE) || *wakeup)) {
+> > > > -			trace_suspend_resume(TPS("machine_suspend"),
+> > > > -				state, true);
+> > > > -			error =3D suspend_ops->enter(state);
+> > > > -			trace_suspend_resume(TPS("machine_suspend"),
+> > > > -				state, false);
+> > > > -			events_check_enabled =3D false;
+> > > > +	while (!pm_abort_suspend) {
+> > >=20
+> > > That won't work in general, because pm_abort_suspend may not be s=
+et on some
+> > > platforms on wakeup.  It is only set if a wakeup interrupt trigge=
+rs which
+> > > may not be the case on ACPI systems if the BIOS has woken up the =
+system.
+> > >=20
+> > > But that could be addressed by making those platforms simply set =
+pm_wakeup_pending
+> > > in their BIOS exit path.
+> > >=20
+> > > > +		arch_suspend_disable_irqs();
+> > > > +		BUG_ON(!irqs_disabled());
+> > > > +
+> > > > +		error =3D syscore_suspend();
+> > >=20
+> > > Also it shouldn't be necessary to do syscore_suspend()/syscore_re=
+sume() in
+> > > every iteration of the loop.
+> > >=20
+> > > > +		if (!error) {
+> > > > +			*wakeup =3D pm_wakeup_pending();
+> > >=20
+> > > Plus pm_wakeup_pending() returns true if pm_abort_suspend is set
+> > >=20
+> > > > +			if (!(suspend_test(TEST_CORE) || *wakeup)) {
+> > > > +				trace_suspend_resume(TPS("machine_suspend"),
+> > > > +					state, true);
+> > >=20
+> > > Did you try to add the loop here instead of above?  Like:
+> > >=20
+> > > 			for (;;) {
+> > > 				*wakeup =3D pm_wakeup_pending();
+> > > 				if (*wakeup)
+> > > 					break;
+> >=20
+> > I think, that doesn't work. I chose the start/end points of the loo=
+p
+> > to include the IRQ enable/disable calls. AFAICT, pm_abort_suspend i=
+s
+> > set in an ISR. Without enabling interrupts the abort condition of
+> > this loop never becomes true.
+>=20
+> Any further ideas how to resolve this?
 
-This was partially found by using a static code analysis program called cppcheck.
+Sorry about the delay, lost track of this.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- kernel/power/snapshot.c |    2 --
- 1 file changed, 2 deletions(-)
+You're right, the IRQ disabling/enabling needs to happen in the loop.
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 791a618..dac8919 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -2309,8 +2309,6 @@ static inline void free_highmem_data(void)
- 		free_image_page(buffer, PG_UNSAFE_CLEAR);
- }
- #else
--static inline int get_safe_write_buffer(void) { return 0; }
--
- static unsigned int
- count_highmem_image_pages(struct memory_bitmap *bm) { return 0; }
- 
--- 
-1.7.10.4
+So the direction of the patch looks OK, but it needs to ensure that pm_=
+wakeup_pending
+is set properly by all platforms.  Also it should be sufficient to chec=
+k
+pm_wakeup_pending() to detect wakeup.
 
+Have you tested the patch?=20
+
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
