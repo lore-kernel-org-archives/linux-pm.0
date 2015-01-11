@@ -1,211 +1,260 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v5 3/7] iio: Add support for DA9150 GPADC
-Date: Sat, 10 Jan 2015 22:19:15 +0000
-Message-ID: <54B1A563.5080404@kernel.org>
-References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com> <58b7b001b38662c36595412f96c7d2eb5c3adcad.1419264383.git.Adam.Thomson.Opensource@diasemi.com> <54A976D2.9040104@kernel.org> <2E89032DDAA8B9408CB92943514A0337AB526A19@SW-EX-MBX01.diasemi.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v2 1/9] Input: sun4i-ts: Add thermal zone sensor support
+Date: Sun, 11 Jan 2015 09:59:30 +0800
+Message-ID: <CAGb2v673E3g0xifb_HKFmz1ELscQ5kZ5vcQnnYz+awRzjyKH5w@mail.gmail.com>
+References: <1420798676-22856-1-git-send-email-wens@csie.org>
+ <1420798676-22856-2-git-send-email-wens@csie.org> <20150109172318.GA39037@dtor-ws>
+ <CAGb2v66xpzZ-tXcKgirk9US9FGBeoZidDoQ3imymMTL_Tu9PWQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB526A19-68WUHU125fLLPO1uwJ3ImwLouzNaz+3S@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f173.google.com ([209.85.223.173]:53720 "EHLO
+	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbbAKB7v convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 10 Jan 2015 20:59:51 -0500
+In-Reply-To: <CAGb2v66xpzZ-tXcKgirk9US9FGBeoZidDoQ3imymMTL_Tu9PWQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On 07/01/15 16:03, Opensource [Adam Thomson] wrote:
-> On January 4, 2015 17:22, Jonathan Cameron wrote:
-> 
->> On 22/12/14 16:51, Adam Thomson wrote:
->>> This patch adds support for DA9150 Charger & Fuel-Gauge IC GPADC.
+On Sat, Jan 10, 2015 at 2:28 AM, Chen-Yu Tsai <wens@csie.org> wrote:
+> On Sat, Jan 10, 2015 at 1:23 AM, Dmitry Torokhov
+> <dmitry.torokhov@gmail.com> wrote:
+>> On Fri, Jan 09, 2015 at 06:17:48PM +0800, Chen-Yu Tsai wrote:
+>>> The touchscreen controller has a temperature sensor embedded in the=
+ SoC,
+>>> which already has hwmon support in the driver.
 >>>
->>> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
->> One last query from me.
+>>> Add DT thermal zone support so we can use it with cpufreq for therm=
+al
+>>> throttling.
+>>>
+>>> This also adds a comment stating that we do not know the actual for=
+mula
+>>> for calculating the temperature.
+>>>
+>>> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+>>> ---
 >>
->> Using the extended channel names in IIO is only really appropriate when
->> they don't correspond to simple pins on the side of the chip. For those
->> just drop the extname bit.  Some of the channels you have here, definitely
->> need them though.
 >>
->> Drop those first 4 or convince me otherwise and add
->> Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> 
-> Have added responses below. If the comments are accepted then I'll respin
-> and add you're 'Acked-by'. Is that ok?
-> 
-Not accepted as yet :)
->>> +#define DA9150_GPADC_CHANNEL_PROCESSED(_id, _hw_id, _type, _ext_name)
->> 	\
->>> +	DA9150_GPADC_CHANNEL(_id, _hw_id, _type,			\
->>> +			     BIT(IIO_CHAN_INFO_PROCESSED), _ext_name)
->>> +
->>> +/* Supported channels */
->>> +static const struct iio_chan_spec da9150_gpadc_channels[] = {
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOA, GPIOA_6V, IIO_VOLTAGE,
->> "GPIOA"),
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOB, GPIOB_6V, IIO_VOLTAGE,
->> "GPIOB"),
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOC, GPIOC_6V, IIO_VOLTAGE,
->> "GPIOC"),
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(GPIOD, GPIOD_6V, IIO_VOLTAGE,
->> "GPIOD"),
->> I'm not sure some of these really deserve extended names.  Those are usually
->> reserved for naming strange internal adc channels etc.  These first 4 are
->> presumably just for input pins?  Those should just be channels 0..3
->> On another note, unless you want really weird sysfs attribute names, the
->> extended names want to be lowercase.
+>>   CC [M]  drivers/input/touchscreen/sun4i-ts.o
+>> drivers/input/touchscreen/sun4i-ts.c:208:15: error: variable
+>> =E2=80=98sun4i_ts_tz_ops=E2=80=99 has initializer but incomplete typ=
+e
+>>  static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
+>>                ^
+>> drivers/input/touchscreen/sun4i-ts.c:209:2: error: unknown field
+>> =E2=80=98get_temp=E2=80=99 specified in initializer
+>>   .get_temp =3D get_temp,
+>>   ^
+>> drivers/input/touchscreen/sun4i-ts.c:209:2: warning: excess elements=
+ in
+>> struct initializer [enabled by default]
+>> drivers/input/touchscreen/sun4i-ts.c:209:2: warning: (near
+>> initialization for =E2=80=98sun4i_ts_tz_ops=E2=80=99) [enabled by de=
+fault]
+>> drivers/input/touchscreen/sun4i-ts.c: In function =E2=80=98sun4i_ts_=
+probe=E2=80=99:
+>> drivers/input/touchscreen/sun4i-ts.c:331:8: warning: passing argumen=
+t 4
+>> of =E2=80=98thermal_zone_of_sensor_register=E2=80=99 from incompatib=
+le pointer type
+>> [enabled by default]
+>>         &sun4i_ts_tz_ops);
+>>         ^
+>> In file included from drivers/input/touchscreen/sun4i-ts.c:37:0:
+>> include/linux/thermal.h:302:1: note: expected =E2=80=98int (*)(void =
+*, long int
+>> *)=E2=80=99 but argument is of type =E2=80=98struct thermal_zone_of_=
+device_ops *=E2=80=99
+>>  thermal_zone_of_sensor_register(struct device *dev, int id,
+>>  ^
+>> drivers/input/touchscreen/sun4i-ts.c:331:8: error: too few arguments=
+ to
+>> function =E2=80=98thermal_zone_of_sensor_register=E2=80=99
+>>         &sun4i_ts_tz_ops);
+>>         ^
+>> In file included from drivers/input/touchscreen/sun4i-ts.c:37:0:
+>> include/linux/thermal.h:302:1: note: declared here
+>>  thermal_zone_of_sensor_register(struct device *dev, int id,
+>>  ^
+>> make[1]: *** [drivers/input/touchscreen/sun4i-ts.o] Error 1
+>> make: *** [drivers/input/touchscreen/sun4i-ts.o] Error 2
 >>
-> 
-> I'd prefer to keep the names because the input pins are muxed with GPIOs of the
-> chip, so thought it sensible to show that this is the case. Am happy to change
-> to lower-case to follow convention.
-Hmm.  It's a bit of an oddity as the point of the naming
-is about the uses, not which pins they are on.  If we exposed the
-'datasheet_name' parameter directly rather than just using it internally
-I'd suggest relying on that - but clearly you want it to be apparent
-in the interface.  Whether that is useful is the question I'd raise
-here (and is the reason datasheet_name is not exposed.
-
-The obvious question is does userspace care?  Answer is probably not.
-
-It cares what is being measured but this is about what pins it is
-on and doesn't provide any information on what is connected to them.
-
-
-> 
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(IBUS, IBUS_SENSE, IIO_CURRENT,
->> "IBUS"),
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(VBUS, VBUS_DIV_, IIO_VOLTAGE,
->> "VBUS"),
->>> +	DA9150_GPADC_CHANNEL_RAW(ID, ID, IIO_VOLTAGE, "ID"),
->> You hae an identifier voltage? That's certainly unusual but if so - fair enough
->> and it defintely needs the extname!
-> 
-> Thanks for pointing that out. Having checked again, this is not needed and can
-> be dispensed with.
-> 
->>> +	DA9150_GPADC_CHANNEL_PROCESSED(VSYS, VSYS, IIO_VOLTAGE, "VSYS"),
->>> +	DA9150_GPADC_CHANNEL_SCALED(VBAT, VBAT, IIO_VOLTAGE, "VBAT"),
->>> +	DA9150_GPADC_CHANNEL_RAW(TBAT, TBAT, IIO_VOLTAGE, "TBAT"),
->>> +	DA9150_GPADC_CHANNEL_SCALED(TJUNC_CORE, TJUNC_CORE,
->> IIO_TEMP,
->>> +				    "TJUNC_CORE"),
->> tjunc_core is a good use of extname ;)
->>> +	DA9150_GPADC_CHANNEL_SCALED(TJUNC_OVP, TJUNC_OVP, IIO_TEMP,
->>> +				    "TJUNC_OVP"),
->>> +};
->>> +
->>> +/* Default maps used by da9150-charger */
->>> +static struct iio_map da9150_gpadc_default_maps[] = {
->>> +	{
->>> +		.consumer_dev_name = "da9150-charger",
->>> +		.consumer_channel = "CHAN_IBUS",
->>> +		.adc_channel_label = "IBUS",
->>> +	},
->>> +	{
->>> +		.consumer_dev_name = "da9150-charger",
->>> +		.consumer_channel = "CHAN_VBUS",
->>> +		.adc_channel_label = "VBUS",
->>> +	},
->>> +	{
->>> +		.consumer_dev_name = "da9150-charger",
->>> +		.consumer_channel = "CHAN_TJUNC",
->>> +		.adc_channel_label = "TJUNC_CORE",
->>> +	},
->>> +	{
->>> +		.consumer_dev_name = "da9150-charger",
->>> +		.consumer_channel = "CHAN_VBAT",
->>> +		.adc_channel_label = "VBAT",
->>> +	},
->>> +	{},
->>> +};
->>> +
->>> +static int da9150_gpadc_probe(struct platform_device *pdev)
+>
+> struct thermal_zone_of_device_ops was introduced in 3.19-rc1 in
+>
+>     184a4bf623fa thermal: of: Extend current of-thermal.c code to
+> allow setting emulated temp
+>
+>>>
+>>> changes since v1:
+>>>
+>>>     - clean up thermal zone sensor when input device register fails
+>>>     - unconditionally unregister thermal zone sensor on removal.
+>>>       the unregister function checks the pointers passed in.
+>>>     - add comment explaining the lack of documents for the temperat=
+ure
+>>>       calculation formula
+>>>
+>>> ---
+>>>  .../bindings/input/touchscreen/sun4i.txt           |  2 +
+>>>  drivers/input/touchscreen/sun4i-ts.c               | 47 ++++++++++=
+++++++++++++
+>>>  2 files changed, 49 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/input/touchscreen/su=
+n4i.txt b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+>>> index aef57791f40b..a8405bab6c00 100644
+>>> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+>>> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
+>>> @@ -5,6 +5,7 @@ Required properties:
+>>>   - compatible: "allwinner,sun4i-a10-ts"
+>>>   - reg: mmio address range of the chip
+>>>   - interrupts: interrupt to which the chip is connected
+>>> + - #thermal-sensor-cells: shall be 0
+>>>
+>>>  Optional properties:
+>>>   - allwinner,ts-attached: boolean indicating that an actual touchs=
+creen is
+>>> @@ -17,4 +18,5 @@ Example:
+>>>               reg =3D <0x01c25000 0x100>;
+>>>               interrupts =3D <29>;
+>>>               allwinner,ts-attached;
+>>> +             #thermal-sensor-cells =3D <0>;
+>>>       };
+>>> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/t=
+ouchscreen/sun4i-ts.c
+>>> index 28a06749ae42..aac49db0b09d 100644
+>>> --- a/drivers/input/touchscreen/sun4i-ts.c
+>>> +++ b/drivers/input/touchscreen/sun4i-ts.c
+>>> @@ -34,6 +34,7 @@
+>>>
+>>>  #include <linux/err.h>
+>>>  #include <linux/hwmon.h>
+>>> +#include <linux/thermal.h>
+>>>  #include <linux/init.h>
+>>>  #include <linux/input.h>
+>>>  #include <linux/interrupt.h>
+>>> @@ -107,6 +108,7 @@
+>>>  struct sun4i_ts_data {
+>>>       struct device *dev;
+>>>       struct input_dev *input;
+>>> +     struct thermal_zone_device *tz;
+>>>       void __iomem *base;
+>>>       unsigned int irq;
+>>>       bool ignore_fifo_data;
+>>> @@ -180,6 +182,33 @@ static void sun4i_ts_close(struct input_dev *d=
+ev)
+>>>       writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
+>>>  }
+>>>
+>>> +static int get_temp(void *data, long *temp)
 >>> +{
->>> +	struct device *dev = &pdev->dev;
->>> +	struct da9150 *da9150 = dev_get_drvdata(dev->parent);
->>> +	struct da9150_gpadc *gpadc;
->>> +	struct iio_dev *indio_dev;
->>> +	int irq, ret;
+>>> +     struct sun4i_ts_data *ts =3D data;
 >>> +
->>> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*gpadc));
->>> +	if (!indio_dev) {
->>> +		dev_err(&pdev->dev, "Failed to allocate IIO device\n");
->>> +		return -ENOMEM;
->>> +	}
->>> +	gpadc = iio_priv(indio_dev);
+>>> +     /* No temp_data until the first irq */
+>>> +     if (ts->temp_data =3D=3D -1)
+>>> +             return -EAGAIN;
 >>> +
->>> +	platform_set_drvdata(pdev, indio_dev);
->>> +	gpadc->da9150 = da9150;
->>> +	gpadc->dev = dev;
->>> +	mutex_init(&gpadc->lock);
->>> +	init_completion(&gpadc->complete);
+>>> +     /*
+>>> +      * The user manuals do not contain the formula for calculatin=
+g
+>>> +      * the temperature. The formula used here is from the AXP209,
+>>> +      * which is designed by X-Powers, an affiliate of Allwinner:
+>>> +      *
+>>> +      *     temperature =3D -144.7 + (value * 0.1)
+>>> +      *
+>>> +      * This should be replaced with the correct one if such infor=
+mation
+>>> +      * becomes available.
+>>> +      */
+>>> +     *temp =3D (ts->temp_data - 1447) * 100;
 >>> +
->>> +	irq = platform_get_irq_byname(pdev, "GPADC");
->>> +	if (irq < 0) {
->>> +		dev_err(dev, "Failed to get IRQ: %d\n", irq);
->>> +		return irq;
->>> +	}
->>> +
->>> +	ret = devm_request_threaded_irq(dev, irq, NULL, da9150_gpadc_irq,
->>> +					IRQF_ONESHOT, "GPADC", gpadc);
->>> +	if (ret) {
->>> +		dev_err(dev, "Failed to request IRQ %d: %d\n", irq, ret);
->>> +		return ret;
->>> +	}
->>> +
->>> +	ret = iio_map_array_register(indio_dev, da9150_gpadc_default_maps);
->>> +	if (ret) {
->>> +		dev_err(dev, "Failed to register IIO maps: %d\n", ret);
->>> +		return ret;
->>> +	}
->>> +
->>> +	indio_dev->name = dev_name(dev);
->>> +	indio_dev->dev.parent = dev;
->>> +	indio_dev->dev.of_node = pdev->dev.of_node;
->>> +	indio_dev->info = &da9150_gpadc_info;
->>> +	indio_dev->modes = INDIO_DIRECT_MODE;
->>> +	indio_dev->channels = da9150_gpadc_channels;
->>> +	indio_dev->num_channels = ARRAY_SIZE(da9150_gpadc_channels);
->>> +
->>> +	ret = iio_device_register(indio_dev);
->>> +	if (ret) {
->>> +		dev_err(dev, "Failed to register IIO device: %d\n", ret);
->>> +		goto iio_map_unreg;
->>> +	}
->>> +
->>> +	return 0;
->>> +
->>> +iio_map_unreg:
->>> +	iio_map_array_unregister(indio_dev);
->>> +
->>> +	return ret;
+>>> +     return 0;
 >>> +}
 >>> +
->>> +static int da9150_gpadc_remove(struct platform_device *pdev)
->>> +{
->>> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
->>> +
->>> +	iio_device_unregister(indio_dev);
->>> +	iio_map_array_unregister(indio_dev);
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static struct platform_driver da9150_gpadc_driver = {
->>> +	.driver = {
->>> +		.name = "da9150-gpadc",
->>> +	},
->>> +	.probe = da9150_gpadc_probe,
->>> +	.remove = da9150_gpadc_remove,
+>>> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
+>>> +     .get_temp =3D get_temp,
 >>> +};
 >>> +
->>> +module_platform_driver(da9150_gpadc_driver);
->>> +
->>> +MODULE_DESCRIPTION("GPADC Driver for DA9150");
->>> +MODULE_AUTHOR("Adam Thomson
->> <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>");
->>> +MODULE_LICENSE("GPL");
->>> --
->>> 1.9.3
+>>>  static ssize_t show_temp(struct device *dev, struct device_attribu=
+te *devattr,
+>>>                        char *buf)
+>>>  {
+>>> @@ -189,6 +218,16 @@ static ssize_t show_temp(struct device *dev, s=
+truct device_attribute *devattr,
+>>>       if (ts->temp_data =3D=3D -1)
+>>>               return -EAGAIN;
 >>>
+>>> +     /*
+>>> +      * The user manuals do not contain the formula for calculatin=
+g
+>>> +      * the temperature. The formula used here is from the AXP209,
+>>> +      * which is designed by X-Powers, an affiliate of Allwinner:
+>>> +      *
+>>> +      *     temperature =3D -144.7 + (value * 0.1)
+>>> +      *
+>>> +      * This should be replaced with the correct one if such infor=
+mation
+>>> +      * becomes available.
+>>> +      */
+>>>       return sprintf(buf, "%d\n", (ts->temp_data - 1447) * 100);
+>>
+>> Why duplicate it here, instead of doing:
+>>
+>> static int sun4i_get_temp(struct sun4i_ts_data *ts, int *temp)
+>> {
+>>         if (ts->temp_data =3D=3D -1)
+>>                 return -EAGAIN;
+>>
+>>         /* comment */
+>>         *temp =3D (ts->temp_data - 1447) * 100);
+>>
+>>         return 0;
+>> }
+>>
+>> static int sun4i_tz_get_temp(void *data, long *temp)
+>> {
+>>         return sun4i_get_temp(data, temp);
+>> }
+>>
+>> static ssize_t sun4i_show_temp(...)
+>> {
+>>         error =3D sun4i_get_temp(ts, &temp);
+>>         if (error)
+>>                 return error;
+>>
+>>         return sprintf(buf, "%d\n", temp);
+>> }
+>
+> I suppose that would be better, especially after I added the large co=
+mment.
+>
+>> Also, thermal core seems to allow creating hwmon devices for thermal
+>> zones, can we use this feature?
+>
+> For thermal sensors that also have hwmon devices registered, that ste=
+p is
+> skipped.
+>
+> I sort of like having separate hwmon bits, just for a nicer, more inf=
+ormative
+> label. But I am not opposed to removing the bits from the driver and =
+having
+> it go through the thermal core. We could also remove the build depend=
+ency
+> on HWMON as a result.
+
+OK. Just took a look at the thermal core. For DT based thermal zones, i=
+t
+does not create hwmon devices at all, possible to avoid duplicate devic=
+es
+which it cannot know about.
+
+I'll clean up the duplicate code and send v3.
+
+
+ChenYu
