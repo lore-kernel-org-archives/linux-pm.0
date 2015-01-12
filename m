@@ -1,148 +1,143 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv8 2/9] devfreq: event: Add resource-managed function for
- devfreq-event device
-Date: Mon, 12 Jan 2015 21:34:50 +0900
-Message-ID: <1421066097-26237-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCHv8 4/9] devfreq: event: Add documentation for exynos-ppmu
+ devfreq-event driver
+Date: Mon, 12 Jan 2015 21:34:52 +0900
+Message-ID: <1421066097-26237-5-git-send-email-cw00.choi@samsung.com>
 References: <1421066097-26237-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1421066097-26237-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: mark.rutland@arm.com, k.kozlowski@samsung.com, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tomasz.figa@gmail.com, linux-kernel@vger.kernel.org, inki.dae@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch add the resource-managed function for devfreq-event device as
-following functions. The devm_devfreq_event_add_edev() manages automatically
-the memory of devfreq-event device using resource management.
-- devm_devfreq_event_add_edev()
-- devm_devfreq_event_remove_edev()
+This patch adds the documentation for Exynos PPMU (Platform Performance
+Monitoring Unit) devfreq-event driver.
 
-Cc: Myungjoo Ham <myungjoo.ham@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq-event.c | 63 +++++++++++++++++++++++++++++++++++++++++
- include/linux/devfreq-event.h   | 16 +++++++++++
- 2 files changed, 79 insertions(+)
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++++++++++++++++++
+ 1 file changed, 110 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
 
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index 9ba5ba4..57529af 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -389,6 +389,69 @@ int devfreq_event_remove_edev(struct devfreq_event_dev *edev)
- }
- EXPORT_SYMBOL_GPL(devfreq_event_remove_edev);
- 
-+static int devm_devfreq_event_match(struct device *dev, void *res, void *data)
-+{
-+	struct devfreq_event_dev **r = res;
+diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+new file mode 100644
+index 0000000..b54bf3a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+@@ -0,0 +1,110 @@
 +
-+	if (WARN_ON(!r || !*r))
-+		return 0;
++* Samsung Exynos PPMU (Platform Performance Monitoring Unit) device
 +
-+	return *r == data;
-+}
++The Samsung Exynos SoC has PPMU (Platform Performance Monitoring Unit) for
++each IP. PPMU provides the primitive values to get performance data. These
++PPMU events provide information of the SoC's behaviors so that you may
++use to analyze system performance, to make behaviors visible and to count
++usages of each IP (DMC, CPU, RIGHTBUS, LEFTBUS, CAM interface, LCD, G3D, MFC).
++The Exynos PPMU driver uses the devfreq-event class to provide event data
++to various devfreq devices. The devfreq devices would use the event data when
++derterming the current state of each IP.
 +
-+static void devm_devfreq_event_release(struct device *dev, void *res)
-+{
-+	devfreq_event_remove_edev(*(struct devfreq_event_dev **)res);
-+}
++Required properties:
++- compatible: Should be "samsung,exynos-ppmu".
++- reg: physical base address of each PPMU and length of memory mapped region.
 +
-+/**
-+ * devm_devfreq_event_add_edev() - Resource-managed devfreq_event_add_edev()
-+ * @dev		: the device owning the devfreq-event device being created
-+ * @desc	: the devfreq-event device's decriptor which include essential
-+ *		  data for devfreq-event device.
-+ *
-+ * Note that this function manages automatically the memory of devfreq-event
-+ * device using device resource management and simplify the free operation
-+ * for memory of devfreq-event device.
-+ */
-+struct devfreq_event_dev *devm_devfreq_event_add_edev(struct device *dev,
-+						struct devfreq_event_desc *desc)
-+{
-+	struct devfreq_event_dev **ptr, *edev;
++Optional properties:
++- clock-names : the name of clock used by the PPMU, "ppmu"
++- clocks : phandles for clock specified in "clock-names" property
++- #clock-cells: should be 1.
 +
-+	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return ERR_PTR(-ENOMEM);
++Example1 : PPMU nodes in exynos3250.dtsi are listed below.
 +
-+	edev = devfreq_event_add_edev(dev, desc);
-+	if (IS_ERR(edev)) {
-+		devres_free(ptr);
-+		return ERR_PTR(-ENOMEM);
-+	}
++		ppmu_dmc0: ppmu_dmc0@106a0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x106a0000 0x2000>;
++			status = "disabled";
++		};
 +
-+	*ptr = edev;
-+	devres_add(dev, ptr);
++		ppmu_dmc1: ppmu_dmc1@106b0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x106b0000 0x2000>;
++			status = "disabled";
++		};
 +
-+	return edev;
-+}
-+EXPORT_SYMBOL_GPL(devm_devfreq_event_add_edev);
++		ppmu_cpu: ppmu_cpu@106c0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x106c0000 0x2000>;
++			status = "disabled";
++		};
 +
-+/**
-+ * devm_devfreq_event_remove_edev()- Resource-managed devfreq_event_remove_edev()
-+ * @dev		: the device owning the devfreq-event device being created
-+ * @edev	: the devfreq-event device
-+ *
-+ * Note that this function manages automatically the memory of devfreq-event
-+ * device using device resource management.
-+ */
-+void devm_devfreq_event_remove_edev(struct device *dev,
-+				struct devfreq_event_dev *edev)
-+{
-+	WARN_ON(devres_release(dev, devm_devfreq_event_release,
-+			       devm_devfreq_event_match, edev));
-+}
-+EXPORT_SYMBOL_GPL(devm_devfreq_event_remove_edev);
++		ppmu_rightbus: ppmu_rightbus@112a0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x112a0000 0x2000>;
++			clocks = <&cmu CLK_PPMURIGHT>;
++			clock-names = "ppmu";
++			status = "disabled";
++		};
 +
- /*
-  * Device attributes for devfreq-event class.
-  */
-diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
-index b7363f5..b6e3afa 100644
---- a/include/linux/devfreq-event.h
-+++ b/include/linux/devfreq-event.h
-@@ -106,6 +106,10 @@ extern int devfreq_event_get_edev_count(struct device *dev);
- extern struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
- 				struct devfreq_event_desc *desc);
- extern int devfreq_event_remove_edev(struct devfreq_event_dev *edev);
-+extern struct devfreq_event_dev *devm_devfreq_event_add_edev(struct device *dev,
-+				struct devfreq_event_desc *desc);
-+extern void devm_devfreq_event_remove_edev(struct device *dev,
-+				struct devfreq_event_dev *edev);
- 
- #else
- static inline int devfreq_event_enable_edev(struct devfreq_event_dev *edev)
-@@ -165,6 +169,18 @@ static inline int devfreq_event_remove_edev(struct devfreq_event_dev *edev)
- {
- 	return -EINVAL;
- }
++		ppmu_leftbus: ppmu_leftbus0@116a0000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x116a0000 0x2000>;
++			clocks = <&cmu CLK_PPMULEFT>;
++			clock-names = "ppmu";
++			status = "disabled";
++		};
 +
-+static inline struct devfreq_event_dev *devm_devfreq_event_add_edev(
-+					struct device *dev,
-+					struct devfreq_event_desc *desc)
-+{
-+	return ERR_PTR(-EINVAL);
-+}
++Example2 : Events of each PPMU node in exynos3250-rinato.dts are listed below.
 +
-+static inline void devm_devfreq_event_remove_edev(struct device *dev,
-+					struct devfreq_event_dev *edev)
-+{
-+}
- #endif /* CONFIG_PM_DEVFREQ_EVENT */
- 
- #endif /* __LINUX_DEVFREQ_EVENT_H__ */
++	&ppmu_dmc0 {
++		status = "okay";
++
++		events {
++			ppmu_dmc0_3: ppmu-event3-dmc0 {
++				event-name = "ppmu-event3-dmc0";
++			};
++
++			ppmu_dmc0_2: ppmu-event2-dmc0 {
++				event-name = "ppmu-event2-dmc0";
++			};
++
++			ppmu_dmc0_1: ppmu-event1-dmc0 {
++				event-name = "ppmu-event1-dmc0";
++			};
++
++			ppmu_dmc0_0: ppmu-event0-dmc0 {
++				event-name = "ppmu-event0-dmc0";
++			};
++		};
++	};
++
++	&ppmu_dmc1 {
++		status = "okay";
++
++		events {
++			ppmu_dmc1_3: ppmu-event3-dmc1 {
++				event-name = "ppmu-event3-dmc1";
++			};
++		};
++	};
++
++	&ppmu_leftbus {
++		status = "okay";
++
++		events {
++			ppmu_leftbus_3: ppmu-event3-leftbus {
++				event-name = "ppmu-event3-leftbus";
++			};
++		};
++	};
++
++	&ppmu_rightbus {
++		status = "okay";
++
++		events {
++			ppmu_rightbus_3: ppmu-event3-rightbus {
++				event-name = "ppmu-event3-rightbus";
++			};
++		};
++	};
 -- 
 1.8.5.5
