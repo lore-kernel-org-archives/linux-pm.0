@@ -1,46 +1,83 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: ARM64: hibernation: How to use hibernation/suspend-to-disk on ARMv8?
-Date: Mon, 12 Jan 2015 11:45:39 +0530
-Message-ID: <CAP245DUypHRtjdF4+nRc0UX-VWqyne6NMsgoWaBxKTXFP4QAOw@mail.gmail.com>
-References: <CADcZZT+nQ_0LfurU+z5wLC_OxNhEs6n0kCoLSkfoFCDqyOu04g@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCHv7 02/10] devfreq: event: Add the list of supported
+ devfreq-event type
+Date: Mon, 12 Jan 2015 07:15:54 +0000 (GMT)
+Message-ID: <768125446.886831421046952335.JavaMail.weblogic@epmlwas09a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CADcZZT+nQ_0LfurU+z5wLC_OxNhEs6n0kCoLSkfoFCDqyOu04g@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: George Bush <georgebush815@gmail.com>
-Cc: Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "Brown, Len" <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, jonathan.austin@arm.com, Catalin Marinas <catalin.marinas@arm.com>, u.kleine-koenig@pengutronix.de, Stephen Boyd <sboyd@codeaurora.org>, victor.kamensky@linaro.org, r.sricharan@ti.com, liuj97@gmail.com, lauraa@codeaurora.org, zhou0283@gmail.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org, Lists LAKML <linux-arm-kernel@lists.infradead.org>, Sebastian Capella <capellas@broadcom.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:31970 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbbALHP4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 02:15:56 -0500
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NI1001O3YUJHP30@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 12 Jan 2015 16:15:55 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-(Fixing Sebastian's email address)
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBsaXN0IG9mIHN1cHBvcnRlZCBkZXZmcmVxLWV2
+ZW50IHR5cGUgYXMgZm9sbG93aW5nLg0KPiBFYWNoIGRldmZyZXEtZXZlbnQgZGV2aWNlIGRyaXZl
+ciB3b3VsZCBzdXBwb3J0IHRoZSB2YXJpb3VzIGRldmZyZXEtZXZlbnQgdHlwZQ0KPiBmb3IgZGV2
+ZnJlcSBnb3Zlcm5vciBhdCB0aGUgc2FtZSB0aW1lLg0KPiAtIERFVkZSRVFfRVZFTlRfVFlQRV9S
+QVdfREFUQQ0KPiAtIERFVkZSRVFfRVZFTlRfVFlQRV9VVElMSVpBVElPTg0KPiAtIERFVkZSRVFf
+RVZFTlRfVFlQRV9CQU5EV0lEVEgNCj4gLSBERVZGUkVRX0VWRU5UX1RZUEVfTEFURU5DWQ0KDQpE
+aWQgeW91IHRyeSB0byBzYXk6DQoNCkEgZGV2ZnJlcS1ldmVudCBkZXZpY2UgbWF5IHN1cHBvcnQg
+bXVsdGlwbGUgZGV2ZnJlcS1ldmVudCB0eXBlcw0Kc2ltdWx0YW5lb3VzbHkuDQoNCklmIHNvLCB5
+b3VyIHN3aXRjaCBleHByZXNzaW9ucyBhcmUgZ29pbmcgdG8gc2NyZXcgdXAuDQoNCg0KPiANCj4g
+Q2M6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KPiBDYzogS3l1bmdt
+aW4gUGFyayA8a3l1bmdtaW4ucGFya0BzYW1zdW5nLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogQ2hh
+bndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZm
+cmVxL2RldmZyZXEtZXZlbnQuYyB8IDU4ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKy0tLS0tDQo+ICBpbmNsdWRlL2xpbnV4L2RldmZyZXEtZXZlbnQuaCAgIHwgMjUgKysrKysr
+KysrKysrKysrLS0tDQo+ICAyIGZpbGVzIGNoYW5nZWQsIDczIGluc2VydGlvbnMoKyksIDEwIGRl
+bGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2
+ZW50LmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS1ldmVudC5jDQo+IGluZGV4IDgxNDQ4YmEu
+LjY0YzE3NjQgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2ZW50LmMN
+Cj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEtZXZlbnQuYw0KPiAgDQpbXQ0KPiAtCW11
+dGV4X2xvY2soJmVkZXYtPmxvY2spOw0KPiAtCXJldCA9IGVkZXYtPmRlc2MtPm9wcy0+Z2V0X2V2
+ZW50KGVkZXYsIGVkYXRhKTsNCj4gLQltdXRleF91bmxvY2soJmVkZXYtPmxvY2spOw0KPiArCXN3
+aXRjaCAodHlwZSkgew0KDQpCaXR3aXNlIHZhbHVlIHdpdGggc3dpdGNoPyAod2hhdCBpZiB0eXBl
+ID0gUkFXX0RBVEEgfCBCQU5EV0lEVEgsIG1lYW5pbmcNCnRoaXMgaXMgcmF3IGRhdGEgb2YgdGhl
+IGJhbmR3aXRkaC4pDQoNCj4gKwljYXNlIERFVkZSRVFfRVZFTlRfVFlQRV9SQVdfREFUQToNCj4g
+KwljYXNlIERFVkZSRVFfRVZFTlRfVFlQRV9CQU5EV0lEVEg6DQo+ICsJY2FzZSBERVZGUkVRX0VW
+RU5UX1RZUEVfTEFURU5DWToNCj4gKwkJaWYgKChlZGF0YS0+ZXZlbnQgPiBFVkVOVF9UWVBFX1JB
+V19EQVRBX01BWCkgfHwNCj4gKwkJCShlZGF0YS0+dG90YWxfZXZlbnQgPiBFVkVOVF9UWVBFX1JB
+V19EQVRBX01BWCkpIHsNCg0KSXMgaXQgcG9zc2libGUgZm9yIHVuc2lnbmVkIGxvbmcgZWRhdGEt
+PmV2ZW50L3RvdGFsX2V2ZW50IHRvIGJlDQogID4gRVZFTlRfVFlQRV9SQVdfREFUQV9NQVggPSBV
+TE9OR19NQVg/DQoNCldoYXQgd2FzIHlvdXIgaW50ZW50aW9uPw0KDQpJZiB5b3Ugd2VyZSB0cnlp
+bmcgdG8gZGV0ZWN0IG92ZXJmbG93LCB5b3UgbmVlZCB0byByZXRoaW5rIGFib3V0IGl0Lg0KSWYg
+bm90LCAob3ZlcmZsb3cgaXMgaGFybWxlc3Mgb3Igbm90IGdvaW5nIHRvIGhhcHBlbikgeW91IGRv
+bid0IG5lZWQgdG8NCmNoZWNrIGl0Lg0KDQoNCj4gKwkJCWVkYXRhLT5ldmVudCA9IGVkYXRhLT50
+b3RhbF9ldmVudCA9IDA7DQo+ICsJCQlyZXQgPSAtRUlOVkFMOw0KPiArCQl9DQo+ICsJCWJyZWFr
+Ow0KPiArCWNhc2UgREVWRlJFUV9FVkVOVF9UWVBFX1VUSUxJWkFUSU9OOg0KPiArCQllZGF0YS0+
+dG90YWxfZXZlbnQgPSBFVkVOVF9UWVBFX1VUSUxJWkFUSU9OX01BWDsNCj4gIA0KPiAtCWlmICgo
+ZWRhdGEtPnRvdGFsX2V2ZW50IDw9IDApDQo+IC0JCXx8IChlZGF0YS0+ZXZlbnQgPiBlZGF0YS0+
+dG90YWxfZXZlbnQpKSB7DQo+ICsJCWlmIChlZGF0YS0+ZXZlbnQgPiBFVkVOVF9UWVBFX1VUSUxJ
+WkFUSU9OX01BWCkgew0KPiArCQkJZWRhdGEtPmV2ZW50ID0gZWRhdGEtPnRvdGFsX2V2ZW50ID0g
+MDsNCj4gKwkJCXJldCA9IC1FSU5WQUw7DQo+ICsJCX0NCj4gKwkJYnJlYWs7DQo+ICsJZGVmYXVs
+dDoNCj4gIAkJZWRhdGEtPmV2ZW50ID0gZWRhdGEtPnRvdGFsX2V2ZW50ID0gMDsNCj4gIAkJcmV0
+ID0gLUVJTlZBTDsNCj4gKwkJYnJlYWs7DQo+ICAJfQ0KPiAgDQo+ICsJbXV0ZXhfdW5sb2NrKCZl
+ZGV2LT5sb2NrKTsNCj4gKw0KPiAgCXJldHVybiByZXQ7DQo+ICB9DQo+ICBFWFBPUlRfU1lNQk9M
+X0dQTChkZXZmcmVxX2V2ZW50X2dldF9ldmVudCk7DQo+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xp
+bnV4L2RldmZyZXEtZXZlbnQuaCBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS1ldmVudC5oDQo+IGlu
+ZGV4IGI3MzYzZjUuLjEzYTU3MDMgMTAwNjQ0DQo+IC0tLSBhL2luY2x1ZGUvbGludXgvZGV2ZnJl
+cS1ldmVudC5oDQo+ICsrKyBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS1ldmVudC5oDQo+IEBAIC0z
+Niw2ICszNiwxNCBAQCBzdHJ1Y3QgZGV2ZnJlcV9ldmVudF9kZXYgew0KPiAgCWNvbnN0IHN0cnVj
+dCBkZXZmcmVxX2V2ZW50X2Rlc2MgKmRlc2M7DQo+ICB9Ow0KPiAgDQo+ICsvKiBUaGUgc3VwcG9y
+dGVkIHR5cGUgYnkgZGV2ZnJlcS1ldmVudCBkZXZpY2UgKi8NCj4gK2VudW0gZGV2ZnJlcV9ldmVu
+dF90eXBlIHsNCj4gKwlERVZGUkVRX0VWRU5UX1RZUEVfUkFXX0RBVEEJPSBCSVQoMCksDQo+ICsJ
+REVWRlJFUV9FVkVOVF9UWVBFX1VUSUxJWkFUSU9OCT0gQklUKDEpLA0KPiArCURFVkZSRVFfRVZF
+TlRfVFlQRV9CQU5EV0lEVEgJPSBCSVQoMiksDQo+ICsJREVWRlJFUV9FVkVOVF9UWVBFX0xBVEVO
+Q1kJPSBCSVQoMyksDQo+ICt9Ow0KPiArDQoNCihCZWluZyBjdXJpb3VzKSBJcyBpdCBwb3NzaWJs
+ZSB0byBoYXZlIG11bHRpcGxlIHR5cGVzDQpzaW11bHRhbmVvdXNseT8NCg0KDQpbXQ0K
 
-On Sat, Jan 10, 2015 at 8:44 PM, George Bush <georgebush815@gmail.com> wrote:
-> Hi all
->
-> I notice we have hibernation.c in arm/kernel, however, I don't find it in arm64.
-> Does it mean arm64 do not support hibernation/suspend-to-disk function?
 
-Correct. arm64 is a separate architecture and will need to implement
-something similar to SHA 603fb42a66499ab353466c7afa3d38beea20a8a9.
-
-> I tried some path to search the reason, but found nothing, they all say arm64
-> has the backward compatibility. So I send this email to the community and
-> hope to get the reason.
-> Thanks!
->
-> I ported the arm hibernation.c to arm64/kernel(with LP64), but failed in a
-> strange way. When I do resume, the arch_restore_image() get a page_fault
-> when it calls the copy_page(), like:
-
-I'm afraid I can't help with the memory management aspects of arm64
-but you've cc'ed the right people who'd know.
-
-> "Unable to handle kernel paging request at virtual address 0xffffffbc055c3fa8"
-> I'm sure the copy_page()'s parameters is in the memory area, why and how
-> I get the strange address 0xffffffbc055c3fa8?
->
-> vmalloc:         0xffffff8000000000 - 0xffffffbb00000000
-> vmemmap:     0xffffffbc01400000 - 0xffffffbc04f88000
-> modules:       0xffffffbffc000000   -  0xffffffc000000000
-> memory:        0xffffffc000000000 - 0xffffffc0be800000
->
