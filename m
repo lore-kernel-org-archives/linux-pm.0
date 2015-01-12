@@ -1,170 +1,86 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3] power: reset: Add reset driver for R-Mobile platforms
-Date: Mon, 12 Jan 2015 16:57:25 +0100
-Message-ID: <1421078245-5531-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH -v3 5/5] oom, PM: make OOM detection in the freezer path
+ raceless
+Date: Mon, 12 Jan 2015 17:10:11 +0100
+Message-ID: <20150112161011.GE4877@dhcp22.suse.cz>
+References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
+ <1420801555-22659-6-git-send-email-mhocko@suse.cz>
+ <20150110194322.GE25319@htj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20150110194322.GE25319@htj.dyndns.org>
+Sender: owner-linux-mm@kvack.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
-a restart handler to trigger a soft power-on reset through the R-Mobile
-System Controller.
-As this is controlled by DT, the priority of this restart handler is 192,
-to allow a watchdog driver to use priority 128.
+On Sat 10-01-15 14:43:22, Tejun Heo wrote:
+> On Fri, Jan 09, 2015 at 12:05:55PM +0100, Michal Hocko wrote:
+> ...
+> > @@ -142,7 +118,6 @@ static bool check_frozen_processes(void)
+> >  int freeze_processes(void)
+> >  {
+> >  	int error;
+> > -	int oom_kills_saved;
+> >  
+> >  	error = __usermodehelper_disable(UMH_FREEZING);
+> >  	if (error)
+> > @@ -157,29 +132,22 @@ int freeze_processes(void)
+> >  	pm_wakeup_clear();
+> >  	pr_info("Freezing user space processes ... ");
+> >  	pm_freezing = true;
+> > -	oom_kills_saved = oom_kills_count();
+> >  	error = try_to_freeze_tasks(true);
+> >  	if (!error) {
+> >  		__usermodehelper_set_disable_depth(UMH_DISABLED);
+> > -		oom_killer_disable();
+> > -
+> > -		/*
+> > -		 * There might have been an OOM kill while we were
+> > -		 * freezing tasks and the killed task might be still
+> > -		 * on the way out so we have to double check for race.
+> > -		 */
+> > -		if (oom_kills_count() != oom_kills_saved &&
+> > -		    !check_frozen_processes()) {
+> > -			__usermodehelper_set_disable_depth(UMH_ENABLED);
+> > -			pr_cont("OOM in progress.");
+> > -			error = -EBUSY;
+> > -		} else {
+> > -			pr_cont("done.");
+> > -		}
+> > +		pr_cont("done.");
+> >  	}
+> >  	pr_cont("\n");
+> >  	BUG_ON(in_atomic());
+> >  
+> > +	/*
+> > +	 * Now that the whole userspace is frozen we need to disbale
+> > +	 * the OOM killer to disallow any further interference with
+> > +	 * killable tasks.
+> > +	 */
+> > +	if (!error && !oom_killer_disable())
+> 
+> So, previously, oom killer was disabled at the top of
+> freeze_kernel_threads(), right?  I think that was the better spot to
+> do that.  We don't want to disable oom killer before the system is
+> just about to enter total quiescence which is freeze_kernel_threads().
+> We want to delay this as long as possible.  Let's please disable oom
+> killing in at the top of freeze_kernel_threads() and re-enable at the
+> bottom of thaw_kernel_threads().
 
-Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
-Bridge) semaphore should be acquired on systems where both the ARM and
-SH core are in use. The driver can be extended later to support this,
-when needed.
+Yes I had it this way but it didn't work out because thaw_kernel_threads
+is not called on the resume because it is only used as a fail
+path when kernel threads freezing fails. I would rather keep the
+enabling/disabling points as we had them. This is less risky IMHO.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
----
-Tested on R-Mobile A1 (r8a7740) and SH-Mobile AG5 (sh73a0).
-
-v3:
-  - Add DT priority explanation,
-  - Add Reviewed-by,
-v2:
-  - This can be considered v2 of "[PATCH 1/4] ARM: shmobile: R-Mobile: Add
-    SYSC restart handler"
-    (http://www.spinics.net/lists/arm-kernel/msg383402.html),
-  - Move to a standalone driver under drivers/power/reset that can be
-    modular,
-  - Use register_restart_handler() instead of setting arm_pm_restart,
----
- drivers/power/reset/Kconfig         |  6 +++
- drivers/power/reset/Makefile        |  1 +
- drivers/power/reset/rmobile-reset.c | 93 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 100 insertions(+)
- create mode 100644 drivers/power/reset/rmobile-reset.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 028e765045196f89..d743145e0001f466 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -159,5 +159,11 @@ config POWER_RESET_SYSCON
- 	help
- 	  Reboot support for generic SYSCON mapped register reset.
- 
-+config POWER_RESET_RMOBILE
-+	tristate "Renesas R-Mobile reset driver"
-+	depends on ARCH_RMOBILE || COMPILE_TEST
-+	help
-+	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
-+
- endif
- 
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 1d4804d6b3237c1c..1631652009acc32d 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -18,3 +18,4 @@ obj-$(CONFIG_POWER_RESET_VEXPRESS) += vexpress-poweroff.o
- obj-$(CONFIG_POWER_RESET_XGENE) += xgene-reboot.o
- obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
- obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
-+obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
-diff --git a/drivers/power/reset/rmobile-reset.c b/drivers/power/reset/rmobile-reset.c
-new file mode 100644
-index 0000000000000000..ff3bbcfd03d1e7b4
---- /dev/null
-+++ b/drivers/power/reset/rmobile-reset.c
-@@ -0,0 +1,93 @@
-+/*
-+ * Renesas R-Mobile Reset Driver
-+ *
-+ * Copyright (C) 2014 Glider bvba
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/printk.h>
-+#include <linux/reboot.h>
-+
-+
-+/* SYSC Register Bank 2 */
-+#define RESCNT2		0x20		/* Reset Control Register 2 */
-+
-+/* Reset Control Register 2 */
-+#define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
-+
-+
-+static void __iomem *sysc_base2;
-+
-+static int rmobile_reset_handler(struct notifier_block *this,
-+				 unsigned long mode, void *cmd)
-+{
-+	pr_debug("%s %lu\n", __func__, mode);
-+
-+	/* Let's assume we have acquired the HPB semaphore */
-+	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block rmobile_reset_nb = {
-+	.notifier_call = rmobile_reset_handler,
-+	.priority = 192,
-+};
-+
-+static int rmobile_reset_probe(struct platform_device *pdev)
-+{
-+	int error;
-+
-+	sysc_base2 = of_iomap(pdev->dev.of_node, 1);
-+	if (!sysc_base2)
-+		return -ENODEV;
-+
-+	error = register_restart_handler(&rmobile_reset_nb);
-+	if (error) {
-+		dev_err(&pdev->dev,
-+			"cannot register restart handler (err=%d)\n", error);
-+		goto fail_unmap;
-+	}
-+
-+	return 0;
-+
-+fail_unmap:
-+	iounmap(sysc_base2);
-+	return error;
-+}
-+
-+static int rmobile_reset_remove(struct platform_device *pdev)
-+{
-+	unregister_restart_handler(&rmobile_reset_nb);
-+	iounmap(sysc_base2);
-+	return 0;
-+}
-+
-+static const struct of_device_id rmobile_reset_of_match[] = {
-+	{ .compatible = "renesas,sysc-rmobile", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, rmobile_reset_of_match);
-+
-+static struct platform_driver rmobile_reset_driver = {
-+	.probe = rmobile_reset_probe,
-+	.remove = rmobile_reset_remove,
-+	.driver = {
-+		.name = "rmobile_reset",
-+		.of_match_table = rmobile_reset_of_match,
-+	},
-+};
-+
-+module_platform_driver(rmobile_reset_driver);
-+
-+MODULE_DESCRIPTION("Renesas R-Mobile Reset Driver");
-+MODULE_AUTHOR("Geert Uytterhoeven <geert+renesas@glider.be>");
-+MODULE_LICENSE("GPL v2");
 -- 
-1.9.1
+Michal Hocko
+SUSE Labs
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
