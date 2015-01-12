@@ -1,126 +1,74 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH v3 4/9] ARM: dts: sun7i: cubieboard2: add axp209
- regulator nodes
-Date: Mon, 12 Jan 2015 10:06:03 +0100
-Message-ID: <20150112090603.GE4891@lukather>
+Subject: Re: [PATCH v3 0/9] ARM: sunxi: Support cpufreq on sun[457]i
+Date: Mon, 12 Jan 2015 10:10:20 +0100
+Message-ID: <20150112091020.GA30908@lukather>
 References: <1421037249-28461-1-git-send-email-wens@csie.org>
- <1421037249-28461-5-git-send-email-wens@csie.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dFWYt1i2NyOo1oI9"
+	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:51640 "EHLO
+Received: from down.free-electrons.com ([37.187.137.238]:51690 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752387AbbALJKF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 04:10:05 -0500
+	with ESMTP id S1752241AbbALJPD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 04:15:03 -0500
 Content-Disposition: inline
-In-Reply-To: <1421037249-28461-5-git-send-email-wens@csie.org>
+In-Reply-To: <1421037249-28461-1-git-send-email-wens@csie.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Chen-Yu Tsai <wens@csie.org>
 Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
 
---dFWYt1i2NyOo1oI9
+--3MwIy2ne0vdjdPXF
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Chen-Yu,
+On Mon, Jan 12, 2015 at 12:34:00PM +0800, Chen-Yu Tsai wrote:
+> Hi,
+>=20
+> This is v3 of the cpufreq support series for sunxi. The series has been
+> rebased onto the latest sunxi-next. I've dropped all the patches Maxime
+> merged. This includes "ARM: sunxi: Register cpufreq-dt for sun[45678]i"
+> which was merged but not published yet.
+>=20
+> Individual changes since v2 are listed within each patch.
+>=20
+>=20
+> Original cover letter follows:
+>=20
+> This series adds support cpufreq support for sun[457]i using cpufreq-dt.
+> This also supports passive cpu cooling (thermal throttling) using thermal
+> zones with the temperature sensor in the SoC.
+>=20
+> The operating points for the supported platforms were taken from the
+> linux-sunxi FEX files repository. The majority of boards use the same
+> settings. Only with sun7i do we see slight variations, either disabling
+> some frequencies, or bumping up the voltage a bit. In either case this
+> can be done by limiting the constraints for the supply regulator, or=20
+> overriding the OPP table in the board dts file.
+>=20
+> On sun7i, there is an additional operating point not found in the FEX
+> files, 960 MHz @ 1.4V, which is the full speed setting in both u-boot-sun=
+xi
+> and mainline u-boot.
+>=20
+> The series has been tested on the 4 boards I have. With cpufreq active,
+> the effects are visible as a decrease in SoC internal temperature.
+> Stability for the operating points has been tested using:
+>=20
+>   http://linux-sunxi.org/Hardware_Reliability_Tests#Reliability_of_cpufre=
+q_voltage.2Ffrequency_settings
+>=20
+> More real world usage feedback is appreciated. Thermal throttling hasn't
+> been tested much, due to not being able to generate enough load without
+> the GPU for the SoC to heat up. Also on sun4i, the temperature sensor
+> still hasn't been calibrated, so the readings are highly inaccurate.
 
-On Mon, Jan 12, 2015 at 12:34:04PM +0800, Chen-Yu Tsai wrote:
-> This patch adds the regulator nodes for the axp209 by including
-> the axp209 dtsi. As the inputs of these regulators are from the
-> axp209's PS output, which is basically just a mux over the 2
-> inputs, it is considered to be unregulated. Thus we do not provide
-> input supply properties for them.
->=20
-> The regulator names and constraints are based on the board
-> schematics and the SoC datasheet.
->=20
-> DCDC2 is used as the cpu power supply. This patch also references
-> it from the cpu node.
->=20
-> Also get rid of axp209 properties already set in axp209.dtsi.
->=20
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-> ---
->=20
-> changes since v2
->=20
->     none
->=20
-> changes since v1:
->=20
->     - Use preprocessor include for axp209.dtsi
->     - Remove incorrectly squashed axp209.dtsi patch
->=20
-> ---
->  arch/arm/boot/dts/sun7i-a20-cubieboard2.dts | 35 +++++++++++++++++++++++=
-++----
->  1 file changed, 31 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts b/arch/arm/boot/=
-dts/sun7i-a20-cubieboard2.dts
-> index 18fc5db9c976..ec1fc2c8b3e3 100644
-> --- a/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts
-> +++ b/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts
-> @@ -88,13 +88,9 @@
->  			status =3D "okay";
-> =20
->  			axp209: pmic@34 {
-> -				compatible =3D "x-powers,axp209";
->  				reg =3D <0x34>;
->  				interrupt-parent =3D <&nmi_intc>;
->  				interrupts =3D <0 IRQ_TYPE_LEVEL_LOW>;
-> -
-> -				interrupt-controller;
-> -				#interrupt-cells =3D <1>;
->  			};
->  		};
-> =20
-> @@ -145,3 +141,34 @@
->  		status =3D "okay";
->  	};
->  };
-> +
-> +#include "axp209.dtsi"
-> +
-> +&cpu0 {
-> +	cpu-supply =3D <&reg_dcdc2>;
-> +};
-> +
-> +&reg_dcdc2 {
-> +	regulator-always-on;
-> +	regulator-min-microvolt =3D <1000000>;
-> +	regulator-max-microvolt =3D <1450000>;
-> +	regulator-name =3D "vdd-cpu";
-> +};
-> +
-> +&reg_dcdc3 {
-> +	regulator-always-on;
-> +	regulator-min-microvolt =3D <1000000>;
-> +	regulator-max-microvolt =3D <1400000>;
-> +	regulator-name =3D "vdd-int-dll";
-> +};
-> +
-> +&reg_ldo1 {
-> +	regulator-name =3D "vdd-rtc";
-> +};
-> +
-> +&reg_ldo2 {
-> +	regulator-always-on;
-> +	regulator-min-microvolt =3D <3000000>;
-> +	regulator-max-microvolt =3D <3000000>;
-> +	regulator-name =3D "avcc";
-> +};
+Applied 2, 3, 6 and 8.
 
-How do reg_vcc3v3 and the other reg used in this DT (ahci, USB) fit
-into that?
-
-Eventually, I think we would be able to remove
-sunxi-common-regulators.dtsi, or at least, expose the proper regulator
-hierarchy.
+There's still some discussions about the boards regulators, that apply
+to all of them, even though I commented on one in particular.
 
 Thanks!
 Maxime
@@ -130,26 +78,26 @@ Maxime Ripard, Free Electrons
 Embedded Linux, Kernel and Android engineering
 http://free-electrons.com
 
---dFWYt1i2NyOo1oI9
+--3MwIy2ne0vdjdPXF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUs457AAoJEBx+YmzsjxAgODMQAJO0tIp7Mmqkh3sYcJMZyT98
-VK7vXGz+WQIi8H8TGXoS+K4/NBugtPjpA+CNQI0a1nYQoC3fimHGmXRMO4r32fPo
-g2YhPwCEoanT/bbg4B8gP7wNKlmYNYrl7s3DpBHI6xGmisfYO4MJ815Ki8utX+yk
-sFm19F8qFDu209OaBLoLq7V2rN/OfJJVGTkwbn9JVhMgAjyoNxIlEs29SHVI/3ZA
-3d8hh0VTk4lYw1mSB1n89fxG5XcTaqcOigKjDThz0rXpGvNT5sz9Dpy5grQVce12
-QaCaHn3T+9BH05DXzNl8dgHMMnx4Xpu5/DlkPws3SGDD/IejZNpZF3hOsVDozg75
-S3S9e9CK/c/GeWr/JDK7pBfenhHra+2zDYCqNOs+wJm/Kz+tvgl07IFY9z2r6gJH
-5qrDuxbAF5TRlW1xgKHbxx4admIGEoop2yI9g+yG0pr7EmdKlwWA9B2ZlHHrfE+w
-6rRkEycXq+X3TURmUt7s9Bqn+xhSYjfLKVLl8Jl+lULxktQNsrMLemGA9KhaEW/7
-WXNmNTW9CMJXQFGfcruZe4bQRM3PAkdQvgVIYEBFwIXORYeGWCwLLyRRraLiuleI
-3YcpuQHjnISUQY8RdXRnHqlVmjS21RN5C7gT90h0WOm0RuVIBb8shiTtNRp6M2lB
-7hFFnEbsBXk2PsgxkUzL
-=D1N0
+iQIcBAEBAgAGBQJUs498AAoJEBx+YmzsjxAg4KYP/3P9GTDdT5So25vX0gHotk54
+MNPBMAxnP88DkrI65cpG9v935VVV2YqlEM/vwI/m0hOCFzNxlzrAGgbTCBKczr0S
+PFk4s++wubxtwRHolheRuUDdR/dS8ADd2PEwW4wVkIAUZpQayPZFoq5m3wu+UwhH
+MMwYHjFaSh82TjuS2ko+mq2io8YFw1AgGDBAPmjbkJZZugXXTQYDtHd9f78g91KN
+C8DXk3LwiZe8mM06DzHzru6qFgN8sVSNEx/8xWD4dgT7teGC/MFMMw5yZiP60C4u
+sE0hGC0IbL0G3jJ9IZq/ydrAAnqQRoUwM1vcr1qYA7OokN6+wXoa4MHulSiYIPQN
+0JVWvF0nLZPPfUVKa2xKNuahsRmAsRumegp9EkjbqmUqiTUs4WK2ZHiZaklESMcB
+kWrOdsTzVXeim1WySKIIk54V1f4lDukHfBf9IHgmybR/8dw2kRfveWdPd04uH8FO
+tweO+AKgEgak0FO0nNV/XNax+mipo0lHFI7kEfGCY4Q8woljYJwzj0xSTEGN1Ra+
+0gGB5+JlW+9XbX3fFv0GyO72Gv9T/Dxqyymm78Q68kVPGwtizBDkY73OVUPJggrT
+2oNl8Cq4PtAQPb2NXbux9M7a7uGBR5hzq1RWZgHlXkK9mlXfpnPGeTetS4wAvRWE
+ab7gH3nCDScrb/KP5STO
+=kEvG
 -----END PGP SIGNATURE-----
 
---dFWYt1i2NyOo1oI9--
+--3MwIy2ne0vdjdPXF--
