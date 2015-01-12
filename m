@@ -1,92 +1,50 @@
-From: Dongsu Park <dongsu.park@profitbricks.com>
-Subject: [PATCH v2 7/7] PM: submit bio in a sane way in cases without bio_chain
-Date: Mon, 12 Jan 2015 12:44:04 +0100
-Message-ID: <be07c413948b5504b78bbfc1e20395905525efd0.1421052656.git.dongsu.park@profitbricks.com>
-References: <cover.1421052656.git.dongsu.park@profitbricks.com>
- <19cceed4e701430bfb307301a38cdf8d40fbfcac.1421052656.git.dongsu.park@profitbricks.com>
- <0bdbbd2ef9d449be2d00e01ca7dc7f101b6cfb88.1421052656.git.dongsu.park@profitbricks.com>
- <0117035a25929ae97e2039edc895f582d53cf217.1421052656.git.dongsu.park@profitbricks.com>
- <63ea4e86f2a06cbe273692932bdf2499fef01644.1421052656.git.dongsu.park@profitbricks.com>
- <9ef99a9bae03003ae7b2fff1bf942e63aff6e45a.1421052656.git.dongsu.park@profitbricks.com>
- <962e0fd9683e2d523cadf8036769dfbaf3b21e77.1421052656.git.dongsu.park@profitbricks.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:47866 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbbALLoo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 06:44:44 -0500
-Received: by mail-wi0-f177.google.com with SMTP id l15so14000993wiw.4
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2015 03:44:43 -0800 (PST)
-In-Reply-To: <962e0fd9683e2d523cadf8036769dfbaf3b21e77.1421052656.git.dongsu.park@profitbricks.com>
-In-Reply-To: <cover.1421052656.git.dongsu.park@profitbricks.com>
-References: <cover.1421052656.git.dongsu.park@profitbricks.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: ARM64: hibernation: How to use hibernation/suspend-to-disk on
+ ARMv8?
+Date: Mon, 12 Jan 2015 11:54:15 +0000
+Message-ID: <20150112115415.GB14519@red-moon>
+References: <CADcZZT+nQ_0LfurU+z5wLC_OxNhEs6n0kCoLSkfoFCDqyOu04g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CADcZZT+nQ_0LfurU+z5wLC_OxNhEs6n0kCoLSkfoFCDqyOu04g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: George Bush <georgebush815@gmail.com>
+Cc: "sebastian.capella@linaro.org" <sebastian.capella@linaro.org>, "Russ.Dill@ti.com" <Russ.Dill@ti.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "len.brown@intel.com" <len.brown@intel.com>, "nico@linaro.org" <nico@linaro.org>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "victor.kamensky@linaro.org" <victor.kamensky@linaro.org>, "r.sricharan@ti.com" <r.sricharan@ti.com>, "liuj97@gmail.com" <liuj97@gmail.com>, "lauraa@codeaurora.org" <lauraa@codeaurora.org>, "zhou0283@gmail.com" <zhou0283@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>, Kent Overstreet <kmo@daterainc.com>, Jens Axboe <axboe@kernel.dk>, linux-pm@vger.kernel.org, Dongsu Park <dongsu.park@profitbricks.com>
 
-From: Kent Overstreet <kmo@daterainc.com>
+On Sat, Jan 10, 2015 at 03:14:33PM +0000, George Bush wrote:
+> Hi all
+> 
+> I notice we have hibernation.c in arm/kernel, however, I don't find it in arm64.
+> Does it mean arm64 do not support hibernation/suspend-to-disk function?
 
-Make bio submission in kernel/power/block_io.c to properly submit
-bios also when bio_chain is not available. In that case, it's not
-necessary to handle refcount with bio_get(), but it's saner to simply
-call a predefined helper submit_bio_wait(). So call bio_get() only
-when bio_chain is given.
+Yes, not at the moment, but we have planned to implement it.
 
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Kent Overstreet <kmo@daterainc.com>
-[dpark: add more description in commit message]
-Signed-off-by: Dongsu Park <dongsu.park@profitbricks.com>
----
- kernel/power/block_io.c | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+> I tried some path to search the reason, but found nothing, they all say arm64
+> has the backward compatibility. So I send this email to the community and
+> hope to get the reason.
+> Thanks!
+> 
+> I ported the arm hibernation.c to arm64/kernel(with LP64), but failed in a
+> strange way. When I do resume, the arch_restore_image() get a page_fault
+> when it calls the copy_page(), like:
+> "Unable to handle kernel paging request at virtual address 0xffffffbc055c3fa8"
+> I'm sure the copy_page()'s parameters is in the memory area, why and how
+> I get the strange address 0xffffffbc055c3fa8?
+> 
+> vmalloc:         0xffffff8000000000 - 0xffffffbb00000000
+> vmemmap:     0xffffffbc01400000 - 0xffffffbc04f88000
+> modules:       0xffffffbffc000000   -  0xffffffc000000000
+> memory:        0xffffffc000000000 - 0xffffffc0be800000
+> 
+> 
+> Look forward to your reply, thanks!
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index 9a58bc2..7206408 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -34,7 +34,6 @@ static int submit(int rw, struct block_device *bdev, sector_t sector,
- 	bio = bio_alloc(__GFP_WAIT | __GFP_HIGH, 1);
- 	bio->bi_iter.bi_sector = sector;
- 	bio->bi_bdev = bdev;
--	bio->bi_end_io = end_swap_bio_read;
- 
- 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
- 		printk(KERN_ERR "PM: Adding page to bio failed at %llu\n",
-@@ -44,15 +43,29 @@ static int submit(int rw, struct block_device *bdev, sector_t sector,
- 	}
- 
- 	lock_page(page);
--	bio_get(bio);
- 
- 	if (bio_chain == NULL) {
--		submit_bio(bio_rw, bio);
--		wait_on_page_locked(page);
-+		int err = submit_bio_wait(bio_rw, bio);
-+
-+		if (err) {
-+			SetPageError(page);
-+			ClearPageUptodate(page);
-+			pr_alert("Read-error on swap-device (%u:%u:%llu)\n",
-+				 imajor(bio->bi_bdev->bd_inode),
-+				 iminor(bio->bi_bdev->bd_inode),
-+				 (unsigned long long)bio->bi_iter.bi_sector);
-+		} else {
-+			SetPageUptodate(page);
-+		}
-+
- 		if (rw == READ)
--			bio_set_pages_dirty(bio);
-+			set_page_dirty_lock(page);
-+		unlock_page(page);
- 		bio_put(bio);
- 	} else {
-+		bio->bi_end_io = end_swap_bio_read;
-+		bio_get(bio);
-+
- 		if (rw == READ)
- 			get_page(page);	/* These pages are freed later */
- 		bio->bi_private = *bio_chain;
--- 
-2.1.0
+We need your patch, kernel version, config file, your board/SoC HW details
+before even assuming what is happening. Please provide them and I
+am happy to help you implement suspend-to-disk on arm64 properly.
 
+Thanks,
+Lorenzo
