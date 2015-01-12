@@ -1,216 +1,167 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 1/9] Input: sun4i-ts: Add thermal zone sensor support
-Date: Mon, 12 Jan 2015 08:08:05 -0400
-Message-ID: <20150112120803.GB24190@developer>
-References: <1421037249-28461-1-git-send-email-wens@csie.org>
- <1421037249-28461-2-git-send-email-wens@csie.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RASg3xLB4tUQ4RcS"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f44.google.com ([209.85.192.44]:48255 "EHLO
-	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751951AbbALMIP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 07:08:15 -0500
-Content-Disposition: inline
-In-Reply-To: <1421037249-28461-2-git-send-email-wens@csie.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv8 0/9] devfreq: Add devfreq-event class to provide raw data for
+ devfreq device
+Date: Mon, 12 Jan 2015 21:34:48 +0900
+Message-ID: <1421066097-26237-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
+This patchset add new devfreq_event class to provide raw data to determine
+current utilization of device  which is used for devfreq governor.
 
---RASg3xLB4tUQ4RcS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following description explains the feature of two kind of devfreq class:
+- devfreq class (existing)
+ : devfreq consumer device use raw data from devfreq_event device for
+   determining proper current system state and change voltage/frequency
+   dynamically using various governors.
+- devfreq_event class (new)
+ : Provide measured raw data to devfreq device for governor
 
-On Mon, Jan 12, 2015 at 12:34:01PM +0800, Chen-Yu Tsai wrote:
-> The touchscreen controller has a temperature sensor embedded in the SoC,
-> which already has hwmon support in the driver.
->=20
-> Add DT thermal zone support so we can use it with cpufreq for thermal
-> throttling.
->=20
-> This also adds a comment stating that we do not know the actual formula
-> for calculating the temperature.
->=20
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+---------
+Changelog:
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Changes from v7:
+(https://lkml.org/lkml/2015/1/7/795)
+- Use EXPORT_SYMBOL_GPL macro instead of EXPORT_SYMBOL
+- Fix the binding document of exynos-ppmu.c driver
+- Drop the devfreq-event type patch because it isnt' clear
+- Fix bug of devfreq_event_add_edev() when fail to execute device_register()
+- Modify resource free operation on following functions:
+  : devfreq_event_remove_edev()
+  : devfreq_event_release_edev()
 
-> ---
->=20
-> changes since v2:
->=20
->     - Use common function for temperature calculation
->=20
-> changes since v1:
->=20
->     - clean up thermal zone sensor when input device register fails
->     - unconditionally unregister thermal zone sensor on removal.
->       the unregister function checks the pointers passed in.
->     - add comment explaining the lack of documents for the temperature
->       calculation formula
->=20
-> ---
->  .../bindings/input/touchscreen/sun4i.txt           |  2 +
->  drivers/input/touchscreen/sun4i-ts.c               | 54 ++++++++++++++++=
-++++--
->  2 files changed, 52 insertions(+), 4 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/input/touchscreen/sun4i.tx=
-t b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> index aef57791f40b..a8405bab6c00 100644
-> --- a/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> +++ b/Documentation/devicetree/bindings/input/touchscreen/sun4i.txt
-> @@ -5,6 +5,7 @@ Required properties:
->   - compatible: "allwinner,sun4i-a10-ts"
->   - reg: mmio address range of the chip
->   - interrupts: interrupt to which the chip is connected
-> + - #thermal-sensor-cells: shall be 0
-> =20
->  Optional properties:
->   - allwinner,ts-attached: boolean indicating that an actual touchscreen =
-is
-> @@ -17,4 +18,5 @@ Example:
->  		reg =3D <0x01c25000 0x100>;
->  		interrupts =3D <29>;
->  		allwinner,ts-attached;
-> +		#thermal-sensor-cells =3D <0>;
->  	};
-> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchsc=
-reen/sun4i-ts.c
-> index 28a06749ae42..5851aa0bd78b 100644
-> --- a/drivers/input/touchscreen/sun4i-ts.c
-> +++ b/drivers/input/touchscreen/sun4i-ts.c
-> @@ -34,6 +34,7 @@
-> =20
->  #include <linux/err.h>
->  #include <linux/hwmon.h>
-> +#include <linux/thermal.h>
->  #include <linux/init.h>
->  #include <linux/input.h>
->  #include <linux/interrupt.h>
-> @@ -107,6 +108,7 @@
->  struct sun4i_ts_data {
->  	struct device *dev;
->  	struct input_dev *input;
-> +	struct thermal_zone_device *tz;
->  	void __iomem *base;
->  	unsigned int irq;
->  	bool ignore_fifo_data;
-> @@ -180,16 +182,48 @@ static void sun4i_ts_close(struct input_dev *dev)
->  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
->  }
-> =20
-> +static int get_temp(const struct sun4i_ts_data *ts, long *temp)
-> +{
-> +	/* No temp_data until the first irq */
-> +	if (ts->temp_data =3D=3D -1)
-> +		return -EAGAIN;
-> +
-> +	/*
-> +	 * The user manuals do not contain the formula for calculating
-> +	 * the temperature. The formula used here is from the AXP209,
-> +	 * which is designed by X-Powers, an affiliate of Allwinner:
-> +	 *
-> +	 *     temperature =3D -144.7 + (value * 0.1)
-> +	 *
-> +	 * This should be replaced with the correct one if such information
-> +	 * becomes available.
-> +	 */
-> +	*temp =3D (ts->temp_data - 1447) * 100;
-> +
-> +	return 0;
-> +}
-> +
-> +static int get_tz_temp(void *data, long *temp)
-> +{
-> +	return get_temp(data, temp);
-> +}
-> +
-> +static struct thermal_zone_of_device_ops sun4i_ts_tz_ops =3D {
-> +	.get_temp =3D get_tz_temp,
-> +};
-> +
->  static ssize_t show_temp(struct device *dev, struct device_attribute *de=
-vattr,
->  			 char *buf)
->  {
->  	struct sun4i_ts_data *ts =3D dev_get_drvdata(dev);
-> +	long temp;
-> +	int ret;
-> =20
-> -	/* No temp_data until the first irq */
-> -	if (ts->temp_data =3D=3D -1)
-> -		return -EAGAIN;
-> +	ret =3D get_temp(ts, &temp);
-> +	if (ret)
-> +		return ret;
-> =20
-> -	return sprintf(buf, "%d\n", (ts->temp_data - 1447) * 100);
-> +	return sprintf(buf, "%ld\n", temp);
->  }
-> =20
->  static ssize_t show_temp_label(struct device *dev,
-> @@ -283,17 +317,27 @@ static int sun4i_ts_probe(struct platform_device *p=
-dev)
->  	writel(STYLUS_UP_DEBOUN(5) | STYLUS_UP_DEBOUN_EN(1) | TP_MODE_EN(1),
->  	       ts->base + TP_CTRL1);
-> =20
-> +	/*
-> +	 * The thermal core does not register hwmon devices for DT-based
-> +	 * thermal zone sensors, such as this one.
-> +	 */
->  	hwmon =3D devm_hwmon_device_register_with_groups(ts->dev, "sun4i_ts",
->  						       ts, sun4i_ts_groups);
->  	if (IS_ERR(hwmon))
->  		return PTR_ERR(hwmon);
-> =20
-> +	ts->tz =3D thermal_zone_of_sensor_register(ts->dev, 0, ts,
-> +						 &sun4i_ts_tz_ops);
-> +	if (IS_ERR(ts->tz))
-> +		ts->tz =3D NULL;
-> +
->  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
-> =20
->  	if (ts_attached) {
->  		error =3D input_register_device(ts->input);
->  		if (error) {
->  			writel(0, ts->base + TP_INT_FIFOC);
-> +			thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
->  			return error;
->  		}
->  	}
-> @@ -310,6 +354,8 @@ static int sun4i_ts_remove(struct platform_device *pd=
-ev)
->  	if (ts->input)
->  		input_unregister_device(ts->input);
-> =20
-> +	thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
-> +
->  	/* Deactivate all IRQs */
->  	writel(0, ts->base + TP_INT_FIFOC);
-> =20
-> --=20
-> 2.1.4
->=20
+Changes from v6:
+(https://lkml.org/lkml/2014/12/28/139)
+- This patchset is based on v3.19-rc3.
+1. devfreq-event class driver
+- Fix build break if devfreq-event framework is off
+- Add resource-managed function for devfreq-event device
+: devm_devfreq_event_add_edev()
+: devm_devfreq_event_remove_edev()
 
---RASg3xLB4tUQ4RcS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Changes from v5:
+(https://lkml.org/lkml/2014/12/22/527)
+- Rebase these patch-set on v3.19-rc1 and Test it.
+1. exynos-ppmu.c
+- Change the error value when of_iomap() fail to map the memory
+- Remove owner setting of platform_driver
+- Add exynos_ppmu_disable() function
+2. exynos dts file
+- Add PPMU node to Exynos3250-based Monk board
+- Remove ppmu_cpu node on Exynos4412-based TRATS2 board and add ppmu_leftbus/rightbus node
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Changes from v4:
+(https://lkml.org/lkml/2014/12/16/511)
+1. devfreq-event class driver
+- Add devfreq_event_get_edev_count() function
+- Modify the simple description of devfreq-event framework in devfreq-event.c
+- Minimize the usage range of global lock usage in devfreq_event_add_edev()
+- Remove '_is_enabled()' function pointer in devfreq_event_ops structure
+- Add separte CONFIG_PM_DEVFREQ_EVENT configuration
+- Add new devfreq-event.h header file including devfreq-event helper functions
+2. exynos dts file
+- Add new patch to support PPMU with DEVFREQ-event on Exynos4412-based TRATS2
 
-iQEcBAEBAgAGBQJUs7kFAAoJEMLUO4d9pOJWjGIH/3TEu+IstATHJKifto5gOVpz
-kmIzP4nNMKd3Fxi0ujUbJ/lFd0Nh+KNcBD3J9f2ZI4fN/CI6SumUXgN1QrWs48Ej
-MSSoI9HVC2AnI4FYZyUC5TNb+Q4PJAHueeyOSSRNs5z2OF49vHBqLshKnyrQ41BL
-ybs9HXcLFqewJS90uAdFgosMGMHskV2LdnHXpvKzB7fbF42vnb0JkfbjiFagGHUl
-VQ6r4L/tiTPZmddIU8xt0WNmzLU557+PhkgM4qsTpS7WbVv0tOIqFwmKzRzjkfkK
-/VhRhdSt8Szci4HAqCxY+Lg8znaGuf7IKJZwXWIf8Iod+4U9xp/BUi/A2VMZwNQ=
-=4OLd
------END PGP SIGNATURE-----
+Changes from v3:
+(https://lkml.org/lkml/2014/12/12/219)
+1. devfreq-event class driver
+- Fix return value of devfreq_event_get_event()
+- Add new structure devfreq_event_data for devfreq_event_get_event()
+- Modify the prototype of devfreq_event_get_event() function
+- Call of_node_put after calling of_parse_phandle() to decrement refcount
+2. exynos-ppmu driver
+- Modify usage of devfreq_event_get_event() function
+  according to new prototype of this funciton
+- Add the additional description to exynos-ppmu.txt how to add PPMU node
+  in board dts file
+- Use 'PPMU_EVENT' macro to remove duplicate codes
+- Add the support of PPMU for Exynos5260
+3. exynos dts file
+- Add missing PPMU_FSYS node to exynos3250.dtsi
+- Fix 'ppmu_mfc_l' node name as 'ppmu_mfc' because exynos3250 has only one MFC IP.
+- Add missing PPMU_ACP/G3D to exynos4.dtsi
+4. etc
+- Fix wrong abbreviation of PPMU (PPMU :Platform Performance Monitoring Unit)
+- Add new patch to support the PPMU of Exynos5260 SoC
 
---RASg3xLB4tUQ4RcS--
+Changes from v2:
+(https://lkml.org/lkml/2014/12/9/304)
+1. devfreq-event class driver
+- Rename all the helper functions of devfreq-event device
+- Add devfreq_event_remove_edev() instead of devfreq_put_event_dev()
+- Add devfreq_event_release_edev() to initialize it before put device
+- Add the detailed description of devfreq-event API
+- Add the attributes of devfreq-event class (enable_count)
+- Check the overflow about event/total_event data in devfreq_event_get_event()
+- Remove the 'exclusive flag' feature
+- Set set_event()/get_event() functions as mandary
+- Add missing of_node_put() call
+- Change variable type of 'get_event()' funciton from 'int' to 'u64'
+2. exynos-ppmu driver
+- Remove un-used field (struct devfreq)
+- Use 'of_get_child_by_name()' instead of 'of_find_node_by_name()'
+- Add missing of_node_put() call
+- Fix wrong clock control
+- Use devfreq_event_remove_edev() instead of devfreq_remove_device()
+- Add the documentation for exynos-ppmu driver
+- Remove 'enable/disable/is_enabled/reset' function of exynos-ppmu driver
+3. exynos3250-rinato.dts
+- Add ppmu_{leftbus|rightbus} dt node and remove ppmu_cpu dt node
+
+Changes from v1:
+(https://lkml.org/lkml/2014/9/5/11)
+- Code clean
+- Add the description of devfreq-event structure
+- Add 'is_enabled' function to devfreq_event_ops structure
+- Add 'enable_count' field to devfreq_event_dev structure
+- Check whether devfreq-event device is enabled or not
+  during calling devfreq_event API
+- Define the type of devfreq-event device as following
+  : DEVFREQ_EVENT_TYPE_RAW_DATA
+  : DEVFREQ_EVENT_TYPE_UTILIZATION
+  : DEVFREQ_EVENT_TYPE_BANDWIDTH
+  : DEVFREQ_EVENT_TYPE_LATENCY
+- Add the exclusive feature of devfreq-event device.
+  If devfreq-event device is used on only on devfreq driver,
+  should used 'devfreq_enable_event_dev_exclusive()' function
+- Add new patch6 for test on Exynos3250-based Rinato board
+
+Chanwoo Choi (9):
+  devfreq: event: Add new devfreq_event class to provide basic data for devfreq governor
+  devfreq: event: Add resource-managed function for devfreq-event device
+  devfreq: event: Add exynos-ppmu devfreq-event driver
+  devfreq: event: Add documentation for exynos-ppmu devfreq-event driver
+  ARM: dts: Add PPMU dt node for Exynos3250 SoC
+  ARM: dts: Add PPMU dt node for Exynos4 SoCs
+  ARM: dts: Add PPMU dt node for Exynos5260 SoC
+  ARM: dts: exynos: Add PPMU node to Exynos3250-based Rinato/Monk board
+  ARM: dts: exynos: Add PPMU node for Exynos4412-based TRATS2 board
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++
+ arch/arm/boot/dts/exynos3250-monk.dts              |  40 ++
+ arch/arm/boot/dts/exynos3250-rinato.dts            |  40 ++
+ arch/arm/boot/dts/exynos3250.dtsi                  |  74 +++
+ arch/arm/boot/dts/exynos4.dtsi                     | 108 +++++
+ arch/arm/boot/dts/exynos4210.dtsi                  |   8 +
+ arch/arm/boot/dts/exynos4412-trats2.dts            |  40 ++
+ arch/arm/boot/dts/exynos5260.dtsi                  |  90 ++++
+ drivers/devfreq/Kconfig                            |   2 +
+ drivers/devfreq/Makefile                           |   6 +-
+ drivers/devfreq/devfreq-event.c                    | 511 +++++++++++++++++++++
+ drivers/devfreq/event/Kconfig                      |  25 +
+ drivers/devfreq/event/Makefile                     |   2 +
+ drivers/devfreq/event/exynos-ppmu.c                | 398 ++++++++++++++++
+ include/linux/devfreq-event.h                      | 186 ++++++++
+ 15 files changed, 1639 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Kconfig
+ create mode 100644 drivers/devfreq/event/Makefile
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+ create mode 100644 include/linux/devfreq-event.h
+
+-- 
+1.8.5.5
