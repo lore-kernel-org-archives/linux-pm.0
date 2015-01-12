@@ -1,210 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] PCI / PM: Avoid resuming PCI devices during system suspend
-Date: Mon, 12 Jan 2015 11:02:03 +0100
-Message-ID: <1654338.pQ8g9cpnmS@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCHv7 06/10] ARM: dts: Add PPMU dt node for Exynos3250 SoC
+Date: Mon, 12 Jan 2015 09:48:34 +0000 (GMT)
+Message-ID: <673354552.903841421056111417.JavaMail.weblogic@epmlwas01a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:50025 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbbALJsg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 04:48:36 -0500
+Received: from epcpsbgr2.samsung.com
+ (u142.gpu120.samsung.co.kr [203.254.230.142])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NI200CEG5WYTXA0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 12 Jan 2015 18:48:34 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Thursday, January 08, 2015 10:51:06 AM Alan Stern wrote:
-> On Thu, 8 Jan 2015, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
-> > domain during system suspend) modified the ACPI PM domain's system
-> > suspend callbacks to allow devices attached to it to be left in the
-> > runtime-suspended state during system suspend so as to optimize
-> > the suspend process.
-> > 
-> > This was based on the general mechanism introduced by commit
-> > aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
-> > devices unnecessarily).
-> > 
-> > Extend that approach to PCI devices by modifying the PCI bus type's
-> > ->prepare callback to return 1 for devices that are runtime-suspended
-> > when it is being executed and that are in a suitable power state and
-> > need not be resumed going forward.
-> 
-> Does this correctly handle PCI devices that aren't included in the ACPI
-> tables?  For example, add-on PCI cards?
-
-Well, it would if it took the case when a device was configured for remote
-wakeup at run time but was not supposed to wakeup the system from sleep into
-account.
-
-That needs to be checked in pci_dev_keep_suspended() rather than in the platform
-callback to cover all devices.
-
-Updated patch follows.
-
-Rafael
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGQgUFBNVSAoUGxhdGZvcm0gUGVyZm9ybWFuY2UgTW9uaXRv
+cmluZyBVbml0KSBkdCBub2RlDQo+IHRvIGVzdGltYXRlIHRoZSB1dGlsaXphdGlvbiBvZiBlYWNo
+IElQIGluIEV4eW5vcyBTb0MgdGhyb3VnaHQgREVWRlJFUSBFdmVudA0KPiBzdWJzeXN0ZW0uDQo+
+IA0KPiBUaGlzIHBhdGNoIGFkZHMgZm9sbG93aW5nIFBQTVUgZHQgbm9kZXM6DQo+IC0gUFBNVV9E
+TUMwICAgICAweDEwNmEwMDAwDQo+IC0gUFBNVV9ETUMxICAgICAweDEwNmIwMDAwDQo+IC0gUFBN
+VV9SSUdIVEJVUyAweDExMkEwMDAwDQo+IC0gUFBNVV9MRUZUQlVTICAweDExNkEwMDAwDQo+IC0g
+UFBNVV9DQU1JRiAgICAweDExQUMwMDAwDQo+IC0gUFBNVV9MQ0QwICAgICAweDExRTQwMDAwDQo+
+IC0gUFBNVV9GU1lTICAgICAweDEyNjMwMDAwDQo+IC0gUFBNVV8zRCAgICAgICAweDEzMjIwMDAw
+DQo+IC0gUFBNVV9NRkMgICAgICAweDEzNjYwMDAwDQo+IC0gUFBNVV9DUFUgICAgICAweDEwNmMw
+MDAwDQo+IA0KPiBDYzogS3VramluIEtpbSA8a2dlbmVAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9m
+Zi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+DQo+IEFja2VkLWJ5OiBL
+eXVuZ21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiAtLS0NCj4gIGFyY2gv
+YXJtL2Jvb3QvZHRzL2V4eW5vczMyNTAuZHRzaSB8IDc0ICsrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKw0KPiAgMSBmaWxlIGNoYW5nZWQsIDc0IGluc2VydGlvbnMoKykNCj4g
+DQoNCkFja2VkLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCg0K
 
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: PCI / PM: Avoid resuming PCI devices during system suspend
-
-Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
-domain during system suspend) modified the ACPI PM domain's system
-suspend callbacks to allow devices attached to it to be left in the
-runtime-suspended state during system suspend so as to optimize
-the suspend process.
-
-This was based on the general mechanism introduced by commit
-aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
-devices unnecessarily).
-
-Extend that approach to PCI devices by modifying the PCI bus type's
-->prepare callback to return 1 for devices that are runtime-suspended
-when it is being executed and that are in a suitable power state and
-need not be resumed going forward.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pci-acpi.c   |   12 ++++++++++++
- drivers/pci/pci-driver.c |   11 ++++++-----
- drivers/pci/pci.c        |   26 ++++++++++++++++++++++++++
- drivers/pci/pci.h        |    6 ++++++
- 4 files changed, 50 insertions(+), 5 deletions(-)
-
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -521,6 +521,11 @@ static inline int platform_pci_run_wake(
- 			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
- }
- 
-+static inline bool platform_pci_need_resume(struct pci_dev *dev)
-+{
-+	return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
-+}
-+
- /**
-  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
-  *                           given PCI device
-@@ -1999,6 +2004,27 @@ bool pci_dev_run_wake(struct pci_dev *de
- }
- EXPORT_SYMBOL_GPL(pci_dev_run_wake);
- 
-+/**
-+ * pci_dev_keep_suspended - Check if the device can stay in the suspended state.
-+ * @pci_dev: Device to check.
-+ *
-+ * Return 'true' if the device is runtime-suspended, it doesn't have to be
-+ * reconfigured due to wakeup settings difference between system and runtime
-+ * suspend and the current power state of it is suitable for the upcoming
-+ * (system) transition.
-+ */
-+bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
-+{
-+	struct device *dev = &pci_dev->dev;
-+
-+	if (!pm_runtime_suspended(dev)
-+	    || (device_can_wakeup(dev) && !device_may_wakeup(dev))
-+	    || platform_pci_need_resume(pci_dev))
-+		return false;
-+
-+	return pci_target_state(dev) == dev->current_state;
-+}
-+
- void pci_config_pm_runtime_get(struct pci_dev *pdev)
- {
- 	struct device *dev = &pdev->dev;
-Index: linux-pm/drivers/pci/pci.h
-===================================================================
---- linux-pm.orig/drivers/pci/pci.h
-+++ linux-pm/drivers/pci/pci.h
-@@ -50,6 +50,10 @@ int pci_probe_reset_function(struct pci_
-  *		for given device (the device's wake-up capability has to be
-  *		enabled by @sleep_wake for this feature to work)
-  *
-+ * @need_resume: returns 'true' if the given device (which is currently
-+ *		suspended) needs to be resumed to be configured for system
-+ *		wakeup.
-+ *
-  * If given platform is generally capable of power managing PCI devices, all of
-  * these callbacks are mandatory.
-  */
-@@ -59,6 +63,7 @@ struct pci_platform_pm_ops {
- 	pci_power_t (*choose_state)(struct pci_dev *dev);
- 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
- 	int (*run_wake)(struct pci_dev *dev, bool enable);
-+	bool (*need_resume)(struct pci_dev *dev);
- };
- 
- int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
-@@ -67,6 +72,7 @@ void pci_power_up(struct pci_dev *dev);
- void pci_disable_enabled_device(struct pci_dev *dev);
- int pci_finish_runtime_suspend(struct pci_dev *dev);
- int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
-+bool pci_dev_keep_suspended(struct pci_dev *dev);
- void pci_config_pm_runtime_get(struct pci_dev *dev);
- void pci_config_pm_runtime_put(struct pci_dev *dev);
- void pci_pm_init(struct pci_dev *dev);
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -501,12 +501,24 @@ static int acpi_pci_run_wake(struct pci_
- 	return 0;
- }
- 
-+static bool acpi_pci_need_resume(struct pci_dev *dev)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
-+
-+	if (!adev || !acpi_device_power_manageable(adev)
-+	    || acpi_target_system_state() == ACPI_STATE_S0)
-+		return false;
-+
-+	return !!adev->power.flags.dsw_present;
-+}
-+
- static struct pci_platform_pm_ops acpi_pci_platform_pm = {
- 	.is_manageable = acpi_pci_power_manageable,
- 	.set_state = acpi_pci_set_power_state,
- 	.choose_state = acpi_pci_choose_state,
- 	.sleep_wake = acpi_pci_sleep_wake,
- 	.run_wake = acpi_pci_run_wake,
-+	.need_resume = acpi_pci_need_resume,
- };
- 
- void acpi_pci_add_bus(struct pci_bus *bus)
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -653,7 +653,6 @@ static bool pci_has_legacy_pm_support(st
- static int pci_pm_prepare(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
--	int error = 0;
- 
- 	/*
- 	 * Devices having power.ignore_children set may still be necessary for
-@@ -662,10 +661,12 @@ static int pci_pm_prepare(struct device
- 	if (dev->power.ignore_children)
- 		pm_runtime_resume(dev);
- 
--	if (drv && drv->pm && drv->pm->prepare)
--		error = drv->pm->prepare(dev);
--
--	return error;
-+	if (drv && drv->pm && drv->pm->prepare) {
-+		int error = drv->pm->prepare(dev);
-+		if (error)
-+			return error;
-+	}
-+	return pci_dev_keep_suspended(to_pci_dev(dev));
- }
- 
- 
