@@ -1,32 +1,33 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCHv7 04/10] devfreq: event: Add exynos-ppmu devfreq-event
- driver
-Date: Mon, 12 Jan 2015 08:04:34 +0000 (GMT)
-Message-ID: <603055177.891931421049871049.JavaMail.weblogic@epmlwas09a>
-Reply-To: myungjoo.ham@samsung.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] kernel: power: snapshot: Remove unused function
+Date: Mon, 12 Jan 2015 09:09:10 +0100
+Message-ID: <20150112080910.GB27501@amd>
+References: <1421015258-24472-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52724 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbbALIJN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 03:09:13 -0500
+Content-Disposition: inline
+In-Reply-To: <1421015258-24472-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIGV4eW5vcy1wcG11IGRldmZyZXEtZXZlbnQgZHJpdmVy
-IHRvIGdldCBwZXJmb3JtYW5jZSBkYXRhDQo+IG9mIGVhY2ggSVAgZm9yIFNhbXN1bmcgRXh5bm9z
-IFNvQy4gVGhlc2UgZXZlbnQgZnJvbSBFeHlub3MgUFBNVSBwcm92aWRlDQo+IHVzZWZ1bCBpbmZv
-cm1hdGlvbiBhYm91dCB0aGUgYmVoYXZpb3Igb2YgdGhlIFNvQyB0aGF0IHlvdSBjYW4gdXNlIHdo
-ZW4NCj4gYW5hbHl6aW5nIHN5c3RlbSBwZXJmb3JtYW5jZSwgYW5kIG1hZGUgdmlzaWJsZSBhbmQg
-Y2FuIGJlIGNvdW50ZWQgdXNpbmcNCj4gbG9naWMgaW4gZWFjaCBJUC4NCj4gDQo+IFRoaXMgcGF0
-Y2ggaXMgYmFzZWQgb24gZXhpc3RpbmcgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3MtcHBt
-dS5jDQo+IA0KPiBDYzogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+
-IENjOiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiBTaWduZWQt
-b2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4NCj4gLS0tDQo+ICBk
-cml2ZXJzL2RldmZyZXEvZXZlbnQvS2NvbmZpZyAgICAgICB8ICAgOSArDQo+ICBkcml2ZXJzL2Rl
-dmZyZXEvZXZlbnQvTWFrZWZpbGUgICAgICB8ICAgMSArDQo+ICBkcml2ZXJzL2RldmZyZXEvZXZl
-bnQvZXh5bm9zLXBwbXUuYyB8IDM5OSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysNCj4gIDMgZmlsZXMgY2hhbmdlZCwgNDA5IGluc2VydGlvbnMoKykNCj4gIGNyZWF0ZSBtb2Rl
-IDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYw0KPiANCg0KQWNrZWQt
-Ynk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KDQo=
+On Sun 2015-01-11 23:27:38, Rickard Strandqvist wrote:
+> Remove the function get_safe_write_buffer() that is not used anywhere.
+> 
+> This was partially found by using a static code analysis program called cppcheck.
+> 
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+Rafael should take this, I guess...
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
