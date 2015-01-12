@@ -1,35 +1,60 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/TRIVIAL] thermal: rcar: Spelling/grammar: s/drier use .../driver uses ...s/
-Date: Mon, 12 Jan 2015 17:33:59 +0100
-Message-ID: <1421080439-17669-1-git-send-email-geert+renesas@glider.be>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PCI / PM: Avoid resuming PCI devices during system
+ suspend
+Date: Mon, 12 Jan 2015 11:39:18 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1501121134480.1707-100000@iolanthe.rowland.org>
+References: <1654338.pQ8g9cpnmS@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:58356 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbbALQeB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 11:34:01 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41591 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751639AbbALQqA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 11:46:00 -0500
+In-Reply-To: <1654338.pQ8g9cpnmS@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jiri Kosina <trivial@kernel.org>
-Cc: linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/thermal/rcar_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, 12 Jan 2015, Rafael J. Wysocki wrote:
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 8803e693fe6868a6..ce8ad180d10f83bf 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -390,7 +390,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 
- 		/*
- 		 * platform has IRQ support.
--		 * Then, drier use common register
-+		 * Then, driver uses common registers
- 		 */
- 
- 		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
--- 
-1.9.1
+> On Thursday, January 08, 2015 10:51:06 AM Alan Stern wrote:
+> > On Thu, 8 Jan 2015, Rafael J. Wysocki wrote:
+> > 
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
+> > > domain during system suspend) modified the ACPI PM domain's system
+> > > suspend callbacks to allow devices attached to it to be left in the
+> > > runtime-suspended state during system suspend so as to optimize
+> > > the suspend process.
+> > > 
+> > > This was based on the general mechanism introduced by commit
+> > > aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
+> > > devices unnecessarily).
+> > > 
+> > > Extend that approach to PCI devices by modifying the PCI bus type's
+> > > ->prepare callback to return 1 for devices that are runtime-suspended
+> > > when it is being executed and that are in a suitable power state and
+> > > need not be resumed going forward.
+> > 
+> > Does this correctly handle PCI devices that aren't included in the ACPI
+> > tables?  For example, add-on PCI cards?
+> 
+> Well, it would if it took the case when a device was configured for remote
+> wakeup at run time but was not supposed to wakeup the system from sleep into
+> account.
+> 
+> That needs to be checked in pci_dev_keep_suspended() rather than in the platform
+> callback to cover all devices.
+> 
+> Updated patch follows.
+> 
+> Rafael
+
+This looks better, thank you.
+
+Alan Stern
+
 
