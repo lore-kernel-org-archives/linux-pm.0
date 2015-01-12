@@ -1,151 +1,210 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v3 4/9] ARM: dts: sun7i: cubieboard2: add axp209 regulator nodes
-Date: Mon, 12 Jan 2015 17:38:12 +0800
-Message-ID: <CAGb2v66r6EG2F1-=Gaig7ZW58Z1KteQ5nDPfW5niisv7dCjY0Q@mail.gmail.com>
-References: <1421037249-28461-1-git-send-email-wens@csie.org>
- <1421037249-28461-5-git-send-email-wens@csie.org> <20150112090603.GE4891@lukather>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] PCI / PM: Avoid resuming PCI devices during system suspend
+Date: Mon, 12 Jan 2015 11:02:03 +0100
+Message-ID: <1654338.pQ8g9cpnmS@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f171.google.com ([209.85.223.171]:34107 "EHLO
-	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbbALJid (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 04:38:33 -0500
-In-Reply-To: <20150112090603.GE4891@lukather>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1501081041230.1633-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-Hi,
+On Thursday, January 08, 2015 10:51:06 AM Alan Stern wrote:
+> On Thu, 8 Jan 2015, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
+> > domain during system suspend) modified the ACPI PM domain's system
+> > suspend callbacks to allow devices attached to it to be left in the
+> > runtime-suspended state during system suspend so as to optimize
+> > the suspend process.
+> > 
+> > This was based on the general mechanism introduced by commit
+> > aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
+> > devices unnecessarily).
+> > 
+> > Extend that approach to PCI devices by modifying the PCI bus type's
+> > ->prepare callback to return 1 for devices that are runtime-suspended
+> > when it is being executed and that are in a suitable power state and
+> > need not be resumed going forward.
+> 
+> Does this correctly handle PCI devices that aren't included in the ACPI
+> tables?  For example, add-on PCI cards?
 
-On Mon, Jan 12, 2015 at 5:06 PM, Maxime Ripard
-<maxime.ripard@free-electrons.com> wrote:
-> Hi Chen-Yu,
->
-> On Mon, Jan 12, 2015 at 12:34:04PM +0800, Chen-Yu Tsai wrote:
->> This patch adds the regulator nodes for the axp209 by including
->> the axp209 dtsi. As the inputs of these regulators are from the
->> axp209's PS output, which is basically just a mux over the 2
->> inputs, it is considered to be unregulated. Thus we do not provide
->> input supply properties for them.
->>
->> The regulator names and constraints are based on the board
->> schematics and the SoC datasheet.
->>
->> DCDC2 is used as the cpu power supply. This patch also references
->> it from the cpu node.
->>
->> Also get rid of axp209 properties already set in axp209.dtsi.
->>
->> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
->> ---
->>
->> changes since v2
->>
->>     none
->>
->> changes since v1:
->>
->>     - Use preprocessor include for axp209.dtsi
->>     - Remove incorrectly squashed axp209.dtsi patch
->>
->> ---
->>  arch/arm/boot/dts/sun7i-a20-cubieboard2.dts | 35 +++++++++++++++++++++++++----
->>  1 file changed, 31 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts b/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts
->> index 18fc5db9c976..ec1fc2c8b3e3 100644
->> --- a/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts
->> +++ b/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts
->> @@ -88,13 +88,9 @@
->>                       status = "okay";
->>
->>                       axp209: pmic@34 {
->> -                             compatible = "x-powers,axp209";
->>                               reg = <0x34>;
->>                               interrupt-parent = <&nmi_intc>;
->>                               interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
->> -
->> -                             interrupt-controller;
->> -                             #interrupt-cells = <1>;
->>                       };
->>               };
->>
->> @@ -145,3 +141,34 @@
->>               status = "okay";
->>       };
->>  };
->> +
->> +#include "axp209.dtsi"
->> +
->> +&cpu0 {
->> +     cpu-supply = <&reg_dcdc2>;
->> +};
->> +
->> +&reg_dcdc2 {
->> +     regulator-always-on;
->> +     regulator-min-microvolt = <1000000>;
->> +     regulator-max-microvolt = <1450000>;
->> +     regulator-name = "vdd-cpu";
->> +};
->> +
->> +&reg_dcdc3 {
->> +     regulator-always-on;
->> +     regulator-min-microvolt = <1000000>;
->> +     regulator-max-microvolt = <1400000>;
->> +     regulator-name = "vdd-int-dll";
->> +};
->> +
->> +&reg_ldo1 {
->> +     regulator-name = "vdd-rtc";
->> +};
->> +
->> +&reg_ldo2 {
->> +     regulator-always-on;
->> +     regulator-min-microvolt = <3000000>;
->> +     regulator-max-microvolt = <3000000>;
->> +     regulator-name = "avcc";
->> +};
->
-> How do reg_vcc3v3 and the other reg used in this DT (ahci, USB) fit
-> into that?
+Well, it would if it took the case when a device was configured for remote
+wakeup at run time but was not supposed to wakeup the system from sleep into
+account.
 
-The following applies to boards that use AXP209.
+That needs to be checked in pci_dev_keep_suspended() rather than in the platform
+callback to cover all devices.
 
-reg_vcc3v3 or reg_vcc3v0 is an external buck regulator with it's
-enable pin tied to EXTEN on the AXP. This pin is controllable,
-but we do not have the driver for it. It is possible that multiple
-regulators are tied to this pin. I suggest not touching it without
-the correct schematics.
+Updated patch follows.
 
-The source for usb and ahci regulators, or reg_vcc5v if you will,
-is either the unregulated 5v from the power supply or the usb otg
-port. For the Cubietruck, there's an additional uncontrollable
-boost regulator that boosts the lipo battery's power up to 5v.
-
-On some of the Olimex boards that use higher input voltages, they
-use an uncontrollable buck regulator to step down the voltage to
-5v. The Olinuxino-Micro also has a boost regulator for the battery,
-tied to EXTEN.
-
-The AXP209 simply does not have enough outputs for all the needed
-voltages.
-
-You could probably chain the regulators in the DT via xxx-supply
-if it helps. But beyond that, it is hard to do anything meaningful
-at this point. Modeling them as fixed regulators beyond our control
-is simpler. We also do not have an IPSOUT regulator for the AXP.
-
-> Eventually, I think we would be able to remove
-> sunxi-common-regulators.dtsi, or at least, expose the proper regulator
-> hierarchy.
-
-The USB and SATA regulators are just GPIO enabled switches (MOSFETs)
-or current limiters. I think these will always exist because of the
-reference designs. Or do you want to move them back into the board
-dts files? FWIW, I like it the way it is now. Not that I don't like
-it to be accurate.
+Rafael
 
 
-ChenYu
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: PCI / PM: Avoid resuming PCI devices during system suspend
+
+Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
+domain during system suspend) modified the ACPI PM domain's system
+suspend callbacks to allow devices attached to it to be left in the
+runtime-suspended state during system suspend so as to optimize
+the suspend process.
+
+This was based on the general mechanism introduced by commit
+aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
+devices unnecessarily).
+
+Extend that approach to PCI devices by modifying the PCI bus type's
+->prepare callback to return 1 for devices that are runtime-suspended
+when it is being executed and that are in a suitable power state and
+need not be resumed going forward.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pci-acpi.c   |   12 ++++++++++++
+ drivers/pci/pci-driver.c |   11 ++++++-----
+ drivers/pci/pci.c        |   26 ++++++++++++++++++++++++++
+ drivers/pci/pci.h        |    6 ++++++
+ 4 files changed, 50 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/pci/pci.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.c
++++ linux-pm/drivers/pci/pci.c
+@@ -521,6 +521,11 @@ static inline int platform_pci_run_wake(
+ 			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
+ }
+ 
++static inline bool platform_pci_need_resume(struct pci_dev *dev)
++{
++	return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
++}
++
+ /**
+  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
+  *                           given PCI device
+@@ -1999,6 +2004,27 @@ bool pci_dev_run_wake(struct pci_dev *de
+ }
+ EXPORT_SYMBOL_GPL(pci_dev_run_wake);
+ 
++/**
++ * pci_dev_keep_suspended - Check if the device can stay in the suspended state.
++ * @pci_dev: Device to check.
++ *
++ * Return 'true' if the device is runtime-suspended, it doesn't have to be
++ * reconfigured due to wakeup settings difference between system and runtime
++ * suspend and the current power state of it is suitable for the upcoming
++ * (system) transition.
++ */
++bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
++{
++	struct device *dev = &pci_dev->dev;
++
++	if (!pm_runtime_suspended(dev)
++	    || (device_can_wakeup(dev) && !device_may_wakeup(dev))
++	    || platform_pci_need_resume(pci_dev))
++		return false;
++
++	return pci_target_state(dev) == dev->current_state;
++}
++
+ void pci_config_pm_runtime_get(struct pci_dev *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+Index: linux-pm/drivers/pci/pci.h
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.h
++++ linux-pm/drivers/pci/pci.h
+@@ -50,6 +50,10 @@ int pci_probe_reset_function(struct pci_
+  *		for given device (the device's wake-up capability has to be
+  *		enabled by @sleep_wake for this feature to work)
+  *
++ * @need_resume: returns 'true' if the given device (which is currently
++ *		suspended) needs to be resumed to be configured for system
++ *		wakeup.
++ *
+  * If given platform is generally capable of power managing PCI devices, all of
+  * these callbacks are mandatory.
+  */
+@@ -59,6 +63,7 @@ struct pci_platform_pm_ops {
+ 	pci_power_t (*choose_state)(struct pci_dev *dev);
+ 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+ 	int (*run_wake)(struct pci_dev *dev, bool enable);
++	bool (*need_resume)(struct pci_dev *dev);
+ };
+ 
+ int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+@@ -67,6 +72,7 @@ void pci_power_up(struct pci_dev *dev);
+ void pci_disable_enabled_device(struct pci_dev *dev);
+ int pci_finish_runtime_suspend(struct pci_dev *dev);
+ int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
++bool pci_dev_keep_suspended(struct pci_dev *dev);
+ void pci_config_pm_runtime_get(struct pci_dev *dev);
+ void pci_config_pm_runtime_put(struct pci_dev *dev);
+ void pci_pm_init(struct pci_dev *dev);
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -501,12 +501,24 @@ static int acpi_pci_run_wake(struct pci_
+ 	return 0;
+ }
+ 
++static bool acpi_pci_need_resume(struct pci_dev *dev)
++{
++	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
++
++	if (!adev || !acpi_device_power_manageable(adev)
++	    || acpi_target_system_state() == ACPI_STATE_S0)
++		return false;
++
++	return !!adev->power.flags.dsw_present;
++}
++
+ static struct pci_platform_pm_ops acpi_pci_platform_pm = {
+ 	.is_manageable = acpi_pci_power_manageable,
+ 	.set_state = acpi_pci_set_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+ 	.sleep_wake = acpi_pci_sleep_wake,
+ 	.run_wake = acpi_pci_run_wake,
++	.need_resume = acpi_pci_need_resume,
+ };
+ 
+ void acpi_pci_add_bus(struct pci_bus *bus)
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -653,7 +653,6 @@ static bool pci_has_legacy_pm_support(st
+ static int pci_pm_prepare(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+-	int error = 0;
+ 
+ 	/*
+ 	 * Devices having power.ignore_children set may still be necessary for
+@@ -662,10 +661,12 @@ static int pci_pm_prepare(struct device
+ 	if (dev->power.ignore_children)
+ 		pm_runtime_resume(dev);
+ 
+-	if (drv && drv->pm && drv->pm->prepare)
+-		error = drv->pm->prepare(dev);
+-
+-	return error;
++	if (drv && drv->pm && drv->pm->prepare) {
++		int error = drv->pm->prepare(dev);
++		if (error)
++			return error;
++	}
++	return pci_dev_keep_suspended(to_pci_dev(dev));
+ }
+ 
+ 
