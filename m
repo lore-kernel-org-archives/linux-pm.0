@@ -1,50 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3] power: reset: Add reset driver for R-Mobile platforms
-Date: Mon, 12 Jan 2015 20:24:34 +0100
-Message-ID: <CAMuHMdUmS+DszqpHn0Yd9OkHTNzm-jpp5JE+h-0Du-Wa+7_t8w@mail.gmail.com>
-References: <1421078245-5531-1-git-send-email-geert+renesas@glider.be>
-	<20150112190426.GA1714@earth.universe>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -v3 0/5] OOM vs PM freezer fixes
+Date: Mon, 12 Jan 2015 15:59:35 -0800
+Message-ID: <20150112155935.21b13bc41417ceedde9d640f@linux-foundation.org>
+References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20150112190426.GA1714@earth.universe>
-Sender: linux-sh-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Guenter Roeck <linux@roeck-us.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:37085 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751103AbbALX7g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 18:59:36 -0500
+In-Reply-To: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Tejun Heo <tj@kernel.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Mon, Jan 12, 2015 at 8:04 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> On Mon, Jan 12, 2015 at 04:57:25PM +0100, Geert Uytterhoeven wrote:
->> Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
->> a restart handler to trigger a soft power-on reset through the R-Mobile
->> System Controller.
->> As this is controlled by DT, the priority of this restart handler is 192,
->> to allow a watchdog driver to use priority 128.
->>
->> Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
->> Bridge) semaphore should be acquired on systems where both the ARM and
->> SH core are in use. The driver can be extended later to support this,
->> when needed.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
->> ---
->> Tested on R-Mobile A1 (r8a7740) and SH-Mobile AG5 (sh73a0).
+On Fri,  9 Jan 2015 12:05:50 +0100 Michal Hocko <mhocko@suse.cz> wrote:
+
+> Hi,
+
+I've been cheerily ignoring this discussion, sorry.  I trust everyone's
+all happy and ready to go with this?
+
+> [what changed since the last patchset]
 >
-> Please add DT binding documentation.
+> ...
+>
+> [testing results]
+>
+> ...
+>
+> [overview of the 5 patches]
+>
+> ...
+> 
 
-Sorry, I indeed should have referenced the DT binding documentation that's
-already queued up in -next for the PM domain support:
+That's nice, but it doesn't really tell us what the patchset does.  The
+first paragraph of the [5/5] changelog provides hints, but doesn't
+explain why we even need to fix a race which is "quite small and really
+unlikely".
 
-https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tree/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+So...  could we please have a few words describing the overall intent
+and effect of this patchset?
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks.
