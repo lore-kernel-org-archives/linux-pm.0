@@ -1,100 +1,29 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: [PATCH v3 9/9] ARM: dts: sun4i: cubieboard: add axp209 regulator nodes
-Date: Mon, 12 Jan 2015 12:34:09 +0800
-Message-ID: <1421037249-28461-10-git-send-email-wens@csie.org>
-References: <1421037249-28461-1-git-send-email-wens@csie.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/17] cpufreq: trivial cleanups
+Date: Mon, 12 Jan 2015 11:41:41 +0530
+Message-ID: <CAKohpon0j7=UW-8bCzCZpAzfr1hbdopdRdUk0P+9Syg9vqoZ9g@mail.gmail.com>
+References: <cover.1420181916.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:45013 "EHLO
-	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbbALEeX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jan 2015 23:34:23 -0500
-In-Reply-To: <1421037249-28461-1-git-send-email-wens@csie.org>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:53926 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbbALGLm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 01:11:42 -0500
+Received: by mail-oi0-f52.google.com with SMTP id a3so19191542oib.11
+        for <linux-pm@vger.kernel.org>; Sun, 11 Jan 2015 22:11:41 -0800 (PST)
+In-Reply-To: <cover.1420181916.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch adds the regulator nodes for the axp209 by including
-the axp209 dtsi. As the inputs of these regulators are from the
-axp209's PS output, which is basically just a mux over the 2
-inputs, it is considered to be unregulated. Thus we do not provide
-input supply properties for them.
+On 2 January 2015 at 12:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Along with the big changes I have for cpufreq core simplification, I also
+> accumulated these trivial cleanups. In order to not confuse the much dedicated
+> series on solving the real problems, I am sending these separately.
+>
+> These are independent of the stats cleanups sent earlier and so it doesn't
+> matter which one you apply first.
 
-The regulator names and constraints are based on the board
-schematics and the SoC datasheet.
-
-DCDC2 is used as the cpu power supply. This patch also references
-it from the cpu node.
-
-Also get rid of axp209 properties already set in axp209.dtsi.
-
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
----
-
-changes since v2:
-
-    none
-
-changes since v1:
-
-    - Use preprocessor include for axp209.dtsi
-
----
- arch/arm/boot/dts/sun4i-a10-cubieboard.dts | 35 ++++++++++++++++++++++++++----
- 1 file changed, 31 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
-index 87ac84db836d..4260c2b47607 100644
---- a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
-+++ b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
-@@ -137,12 +137,8 @@
- 			status = "okay";
- 
- 			axp209: pmic@34 {
--				compatible = "x-powers,axp209";
- 				reg = <0x34>;
- 				interrupts = <0>;
--
--				interrupt-controller;
--				#interrupt-cells = <1>;
- 			};
- 		};
- 
-@@ -188,3 +184,34 @@
- 		status = "okay";
- 	};
- };
-+
-+#include "axp209.dtsi"
-+
-+&cpu0 {
-+	cpu-supply = <&reg_dcdc2>;
-+};
-+
-+&reg_dcdc2 {
-+	regulator-always-on;
-+	regulator-min-microvolt = <1000000>;
-+	regulator-max-microvolt = <1450000>;
-+	regulator-name = "vdd-cpu";
-+};
-+
-+&reg_dcdc3 {
-+	regulator-always-on;
-+	regulator-min-microvolt = <1000000>;
-+	regulator-max-microvolt = <1400000>;
-+	regulator-name = "vdd-int-dll";
-+};
-+
-+&reg_ldo1 {
-+	regulator-name = "vdd-rtc";
-+};
-+
-+&reg_ldo2 {
-+	regulator-always-on;
-+	regulator-min-microvolt = <3000000>;
-+	regulator-max-microvolt = <3000000>;
-+	regulator-name = "avcc";
-+};
--- 
-2.1.4
-
+Ping for some reviews :)
