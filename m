@@ -1,65 +1,49 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH v2 0/3] power: rt5033: Add Richtek RT533 drivers
-Date: Mon, 12 Jan 2015 11:42:53 +0100
-Message-ID: <1421059373.22660.34.camel@x220>
-References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
-	 <1421059225.22660.33.camel@x220>
+From: vichy <vichy.kuo@gmail.com>
+Subject: Re: Auto suspend not working on usb hid devices
+Date: Mon, 12 Jan 2015 18:45:21 +0800
+Message-ID: <CAOVJa8HHwa-ZmwqgBozVuwWUZaBiVHb3-81sn3tOOp0_x5HNGw@mail.gmail.com>
+References: <CAOVJa8Hu5j04UKAPiQwhBYOuxvUdjbz_BASzcuPxJX63kE+Q2A@mail.gmail.com>
+	<Pine.LNX.4.44L0.1501111049520.31181-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1421059225.22660.33.camel@x220>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: Valentin Rothberg <valentinrothberg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, lee.jones@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:58531 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbbALKpV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 05:45:21 -0500
+Received: by mail-ob0-f172.google.com with SMTP id va8so21606374obc.3
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2015 02:45:21 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1501111049520.31181-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@vger.kernel.org
 
-[s/lee.jone@linaro.org/lee.jones@linaro.org]
+hi alan:
 
-On Mon, 2015-01-12 at 11:40 +0100, Paul Bolle wrote:
-> Beomho,
-> 
-> On Fri, 2015-01-09 at 17:45 +0900, Beomho Seo wrote:
-> > This patchset adds driver for Richtek rt5033 chip The chip contains
-> > switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
-> > Additionally, This includes document for device tree of RT5033 device.
-> > 
-> > RT5033 core driver is applied by Lee Jones.
-> > RT5033 regulator driver have been merged by Mark Brown. commit is below,
-> > 
-> > commit b1917578fd5d8efa67afa05a0d6d7e323f2802da
-> > 
-> > Changes in v2:
-> > - Revise binding documentation..
-> >  
-> > Beomho Seo (3):
-> >   power: rt5033_battery: Add RT5033 Fuel gauge device driver
-> >   power: rt5033_charger: Add RT5033 charger device driver
-> >   Documentation: Add documentation for rt5033 multifunction device
-> > 
-> >  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++
-> >  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
-> >  drivers/power/Kconfig                              |   16 +
-> >  drivers/power/Makefile                             |    2 +
-> >  drivers/power/rt5033_battery.c                     |  177 +++++++
-> >  drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
-> >  6 files changed, 782 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
-> >  create mode 100644 drivers/power/rt5033_battery.c
-> >  create mode 100644 drivers/power/rt5033_charger.c
-> 
-> This series adds two drivers that depend on MFD_RT5033. But there's
-> currently no Kconfig symbol MFD_RT5033.
-> 
-> The regulator driver mentioned above is another driver that depends on
-> MFD_RT5033. It was included first in next-20141117. It is also included
-> in mainline since v3.19-rc1. That regulator driver has never been
-> buildable, even if one bypasses its dependency on MFD_RT5033. That is
-> because it includes two headers that are not yet part of the tree
-> (linux/mfd/rt5033.h and linux/mfd/rt5033-private.h).
-> 
-> When is the Kconfig symbol MFD_RT5033 expected to be included in the
-> tree?
-> 
-> 
-> Paul Bolle
+2015-01-11 23:53 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> On Sun, 11 Jan 2015, vichy wrote:
+>
+>> hi all:
+>> I list below environment I have that autosuspend seems doesn't work on
+>> my platform.
+>> 1. kernel version 3.10.30
+>> 2. compile kernel with CONFIG_PM_RUNTIME=y
+>> 3. "echo 'rpm:rpm_suspend' > set_event"
+>> 4. insert hid devices and "echo auto > /sys/bus/usb/devices/6-1/power/control"
+>> 5. there is no any usb related runtime suspend output in trace.
+>>
+>> Did I miss any kernel configuration to let it work?
+>> Or where is the proper debug entry I can check why rpm_suspend isn't
+>> been called on my system?
+>
+> There are lots of reasons why a device might not be runtime suspended.
+> There is no single debug entry that presents them.  Some information
+> can be seen in the files in the device's /sys/.../power directory.
+
+I found the power/runtime_usage = 2 when device plug in and do nothing.
+Except update_autosuspend will increase runtime_usage, is there any
+function will increase it when we did not enable runtime
+suspend/resume?
+
+Thanks for your kind help,
