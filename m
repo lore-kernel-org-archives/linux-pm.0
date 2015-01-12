@@ -1,215 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Mon, 12 Jan 2015 00:20:36 +0100
-Message-ID: <12360948.gSvRbI0dui@vostro.rjw.lan>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com> <1025ebd0a9984037bf15adf3ae4889d9@BN1BFFO11FD013.protection.gbl> <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: [PATCH v3 0/9] ARM: sunxi: Support cpufreq on sun[457]i
+Date: Mon, 12 Jan 2015 12:34:00 +0800
+Message-ID: <1421037249-28461-1-git-send-email-wens@csie.org>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 09, 2015 01:50:59 PM S=C3=B6ren Brinkmann wrote:
-> On Sat, 2014-11-08 at 03:56PM -0800, S=C3=B6ren Brinkmann wrote:
-> > Hi Rafael,
-> >=20
-> > On Thu, 2014-11-06 at 01:33AM +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, October 02, 2014 09:01:15 AM S=C3=B6ren Brinkmann wr=
-ote:
-> > > > Hi Rafael,
-> > >=20
-> > > Hi,
-> > >=20
-> > > Sorry for the huge delay.
-> > >=20
-> > > > On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
-> > > > > On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann wro=
-te:
-> > > > > > On platforms that do not power off during suspend, successf=
-ully entering
-> > > > > > suspend races with timers.
-> > > > > >=20
-> > > > > > The race happening in a couple of location is:
-> > > > > >=20
-> > > > > >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> > > > > >      ...
-> > > > > >   2. syscore_suspend()
-> > > > > >       -> timekeeping_suspend()
-> > > > > >        -> clockevents_notify(SUSPEND)
-> > > > > >         -> tick_suspend()   	(timers are turned off here)
-> > > > > >      ...
-> > > > > >   3. wfi            		(wait for wake-IRQ here)
-> > > > > >=20
-> > > > > > Between steps 1 and 2 the timers can still generate interru=
-pts that are
-> > > > > > not handled and stay pending until step 3. That pending IRQ=
- causes an
-> > > > > > immediate - spurious - wake.
-> > > > > >=20
-> > > > > > The solution is to move the clockevents suspend/resume noti=
-fication
-> > > > > > out of the syscore_suspend step and explictly call them at =
-the appropriate
-> > > > > > time in the suspend/hibernation paths. I.e. timers are susp=
-end _before_
-> > > > > > IRQs get disabled. And accordingly in the resume path.
-> > > > > >=20
-> > > > > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > > > > ---
-> > > > > > Hi,
-> > > > > >=20
-> > > > > > there was not a lot of discussion on the last submission. J=
-ust one comment from
-> > > > > > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I =
-outlined in my
-> > > > > > response, does not apply, IMHO, since the platform does not=
- re-enable
-> > > > > > interrupts.
-> > > > >=20
-> > > > > Well, you just don't agree with it.
-> > > > >=20
-> > > > > The problem with your approach is that timer interrupts aren'=
-t actually as
-> > > > > special as you think and any other IRQF_NO_SUSPEND interrupts=
- would have caused
-> > > > > similar issues to appear under specific conditions.
-> > > > >=20
-> > > > > The solution I would suggest and that actually covers all IRQ=
-=46_NO_SUSPEND
-> > > > > interrupts would be to use a wait_event() loop like the one i=
-n freeze_enter()
-> > > > > (on top of the current linux-next or the pm-genirq branch of =
-linux-pm.git),
-> > > > > but wait for pm_abort_suspend to become true, to implement sy=
-stem suspend.
-> > > >=20
-> > > > sorry, it took me a while since I needed to get some dependenci=
-es ported
-> > > > to the pm-genirq base. Once I had that, it reproduced my origin=
-al issue.
-> > > > So far so good. I then looked into finding a solution following=
- your
-> > > > guidance. I'm not sure I really found what you had in mind, but=
- below is
-> > > > what I came up with, which seems to do it.
-> > > > Please let me know how far off I am.
-> > > >=20
-> > > > 	Thanks,
-> > > > 	S=C3=B6ren
-> > > >=20
-> > > > -------8<------------------8<----------------8<----------------=
-8<---------------
-> > > > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/w=
-akeup.c
-> > > > index c2744b30d5d9..a4f9914571f1 100644
-> > > > --- a/drivers/base/power/wakeup.c
-> > > > +++ b/drivers/base/power/wakeup.c
-> > > > @@ -25,7 +25,7 @@
-> > > >  bool events_check_enabled __read_mostly;
-> > > > =20
-> > > >  /* If set and the system is suspending, terminate the suspend.=
- */
-> > > > -static bool pm_abort_suspend __read_mostly;
-> > > > +bool pm_abort_suspend __read_mostly;
-> > > > =20
-> > > >  /*
-> > > >   * Combined counters of registered wakeup events and wakeup ev=
-ents in progress.
-> > > > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > > > index 6dadb25cb0d8..e6a6de8f76d0 100644
-> > > > --- a/kernel/power/suspend.c
-> > > > +++ b/kernel/power/suspend.c
-> > > > @@ -33,6 +33,7 @@
-> > > > =20
-> > > >  static const char *pm_labels[] =3D { "mem", "standby", "freeze=
-", };
-> > > >  const char *pm_states[PM_SUSPEND_MAX];
-> > > > +extern bool pm_abort_suspend;
-> > > > =20
-> > > >  static const struct platform_suspend_ops *suspend_ops;
-> > > >  static const struct platform_freeze_ops *freeze_ops;
-> > > > @@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_t =
-state, bool *wakeup)
-> > > >  	if (error || suspend_test(TEST_CPUS))
-> > > >  		goto Enable_cpus;
-> > > > =20
-> > > > -	arch_suspend_disable_irqs();
-> > > > -	BUG_ON(!irqs_disabled());
-> > > > -
-> > > > -	error =3D syscore_suspend();
-> > > > -	if (!error) {
-> > > > -		*wakeup =3D pm_wakeup_pending();
-> > > > -		if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> > > > -			trace_suspend_resume(TPS("machine_suspend"),
-> > > > -				state, true);
-> > > > -			error =3D suspend_ops->enter(state);
-> > > > -			trace_suspend_resume(TPS("machine_suspend"),
-> > > > -				state, false);
-> > > > -			events_check_enabled =3D false;
-> > > > +	while (!pm_abort_suspend) {
-> > >=20
-> > > That won't work in general, because pm_abort_suspend may not be s=
-et on some
-> > > platforms on wakeup.  It is only set if a wakeup interrupt trigge=
-rs which
-> > > may not be the case on ACPI systems if the BIOS has woken up the =
-system.
-> > >=20
-> > > But that could be addressed by making those platforms simply set =
-pm_wakeup_pending
-> > > in their BIOS exit path.
-> > >=20
-> > > > +		arch_suspend_disable_irqs();
-> > > > +		BUG_ON(!irqs_disabled());
-> > > > +
-> > > > +		error =3D syscore_suspend();
-> > >=20
-> > > Also it shouldn't be necessary to do syscore_suspend()/syscore_re=
-sume() in
-> > > every iteration of the loop.
-> > >=20
-> > > > +		if (!error) {
-> > > > +			*wakeup =3D pm_wakeup_pending();
-> > >=20
-> > > Plus pm_wakeup_pending() returns true if pm_abort_suspend is set
-> > >=20
-> > > > +			if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> > > > +				trace_suspend_resume(TPS("machine_suspend"),
-> > > > +					state, true);
-> > >=20
-> > > Did you try to add the loop here instead of above?  Like:
-> > >=20
-> > > 			for (;;) {
-> > > 				*wakeup =3D pm_wakeup_pending();
-> > > 				if (*wakeup)
-> > > 					break;
-> >=20
-> > I think, that doesn't work. I chose the start/end points of the loo=
-p
-> > to include the IRQ enable/disable calls. AFAICT, pm_abort_suspend i=
-s
-> > set in an ISR. Without enabling interrupts the abort condition of
-> > this loop never becomes true.
->=20
-> Any further ideas how to resolve this?
+Hi,
 
-Sorry about the delay, lost track of this.
+This is v3 of the cpufreq support series for sunxi. The series has been
+rebased onto the latest sunxi-next. I've dropped all the patches Maxime
+merged. This includes "ARM: sunxi: Register cpufreq-dt for sun[45678]i"
+which was merged but not published yet.
 
-You're right, the IRQ disabling/enabling needs to happen in the loop.
-
-So the direction of the patch looks OK, but it needs to ensure that pm_=
-wakeup_pending
-is set properly by all platforms.  Also it should be sufficient to chec=
-k
-pm_wakeup_pending() to detect wakeup.
-
-Have you tested the patch?=20
+Individual changes since v2 are listed within each patch.
 
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Original cover letter follows:
+
+This series adds support cpufreq support for sun[457]i using cpufreq-dt.
+This also supports passive cpu cooling (thermal throttling) using thermal
+zones with the temperature sensor in the SoC.
+
+The operating points for the supported platforms were taken from the
+linux-sunxi FEX files repository. The majority of boards use the same
+settings. Only with sun7i do we see slight variations, either disabling
+some frequencies, or bumping up the voltage a bit. In either case this
+can be done by limiting the constraints for the supply regulator, or 
+overriding the OPP table in the board dts file.
+
+On sun7i, there is an additional operating point not found in the FEX
+files, 960 MHz @ 1.4V, which is the full speed setting in both u-boot-sunxi
+and mainline u-boot.
+
+The series has been tested on the 4 boards I have. With cpufreq active,
+the effects are visible as a decrease in SoC internal temperature.
+Stability for the operating points has been tested using:
+
+  http://linux-sunxi.org/Hardware_Reliability_Tests#Reliability_of_cpufreq_voltage.2Ffrequency_settings
+
+More real world usage feedback is appreciated. Thermal throttling hasn't
+been tested much, due to not being able to generate enough load without
+the GPU for the SoC to heat up. Also on sun4i, the temperature sensor
+still hasn't been calibrated, so the readings are highly inaccurate.
+
+
+Chen-Yu Tsai (9):
+  Input: sun4i-ts: Add thermal zone sensor support
+  ARM: dts: sunxi: Add dtsi for AXP209 PMIC
+  ARM: dts: sun7i: Add cpu thermal zones to dtsi
+  ARM: dts: sun7i: cubieboard2: add axp209 regulator nodes
+  ARM: dts: sun7i: cubietruck: add axp209 regulator nodes
+  ARM: dts: sun5i: Add cpu thermal zones to dtsi
+  ARM: dts: sun5i: hsg-h702: add axp209 regulator nodes
+  ARM: dts: sun4i: Add cpu thermal zones to dtsi
+  ARM: dts: sun4i: cubieboard: add axp209 regulator nodes
+
+ .../bindings/input/touchscreen/sun4i.txt           |  2 +
+ arch/arm/boot/dts/axp209.dtsi                      | 97 ++++++++++++++++++++++
+ arch/arm/boot/dts/sun4i-a10-cubieboard.dts         | 35 +++++++-
+ arch/arm/boot/dts/sun4i-a10.dtsi                   | 34 ++++++++
+ arch/arm/boot/dts/sun5i-a13-hsg-h702.dts           | 46 ++++++++--
+ arch/arm/boot/dts/sun5i-a13.dtsi                   | 34 ++++++++
+ arch/arm/boot/dts/sun7i-a20-cubieboard2.dts        | 35 +++++++-
+ arch/arm/boot/dts/sun7i-a20-cubietruck.dts         | 35 +++++++-
+ arch/arm/boot/dts/sun7i-a20.dtsi                   | 33 ++++++++
+ drivers/input/touchscreen/sun4i-ts.c               | 54 +++++++++++-
+ 10 files changed, 381 insertions(+), 24 deletions(-)
+ create mode 100644 arch/arm/boot/dts/axp209.dtsi
+
+-- 
+2.1.4
+
