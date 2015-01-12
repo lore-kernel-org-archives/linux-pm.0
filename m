@@ -1,57 +1,61 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCHv7 00/10] devfreq: Add devfreq-event class to provide
- raw data for devfreq device
-Date: Mon, 12 Jan 2015 10:18:14 +0000 (GMT)
-Message-ID: <948926965.905951421057891449.JavaMail.weblogic@epmlwas01a>
-Reply-To: myungjoo.ham@samsung.com
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH v2 0/3] power: rt5033: Add Richtek RT533 drivers
+Date: Mon, 12 Jan 2015 11:40:25 +0100
+Message-ID: <1421059225.22660.33.camel@x220>
+References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:64446 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbbALKSQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jan 2015 05:18:16 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NI2002G67AF6WC0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 12 Jan 2015 19:18:15 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: Valentin Rothberg <valentinrothberg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>
-Cc: "kgene@kernel.org" <kgene@kernel.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-PiAgDQo+IE9uIDAxLzEyLzIwMTUgMDY6NTggUE0sIE15dW5nSm9vIEhhbSB3cm90ZToNCj4+PiAg
-IA0KPj4+ICBUaGlzIHBhdGNoc2V0IGFkZCBuZXcgZGV2ZnJlcV9ldmVudCBjbGFzcyB0byBwcm92
-aWRlIHJhdyBkYXRhIHRvIGRldGVybWluZQ0KPj4+IGN1cnJlbnQgdXRpbGl6YXRpb24gb2YgZGV2
-aWNlICB3aGljaCBpcyB1c2VkIGZvciBkZXZmcmVxIGdvdmVybm9yLg0KPj4+DQo+Pj4gVGhlIGZv
-bGxvd2luZyBkZXNjcmlwdGlvbiBleHBsYWlucyB0aGUgZmVhdHVyZSBvZiB0d28ga2luZCBvZiBk
-ZXZmcmVxIGNsYXNzOg0KPj4+IC0gZGV2ZnJlcSBjbGFzcyAoZXhpc3RpbmcpDQo+Pj4gIDogZGV2
-ZnJlcSBjb25zdW1lciBkZXZpY2UgdXNlIHJhdyBkYXRhIGZyb20gZGV2ZnJlcV9ldmVudCBkZXZp
-Y2UgZm9yDQo+Pj4gICAgZGV0ZXJtaW5pbmcgcHJvcGVyIGN1cnJlbnQgc3lzdGVtIHN0YXRlIGFu
-ZCBjaGFuZ2Ugdm9sdGFnZS9mcmVxdWVuY3kNCj4+PiAgICBkeW5hbWljYWxseSB1c2luZyB2YXJp
-b3VzIGdvdmVybm9ycy4NCj4+PiAtIGRldmZyZXFfZXZlbnQgY2xhc3MgKG5ldykNCj4+PiAgOiBQ
-cm92aWRlIG1lYXN1cmVkIHJhdyBkYXRhIHRvIGRldmZyZXEgZGV2aWNlIGZvciBnb3Zlcm5vcg0K
-Pj4+DQo+PiANCj4+IFF1ZXN0aW9uOiBBcHBseWluZyB0aGlzIHBhdGNoc2V0IHNlZW1zIHRvIGlt
-cGx5IHRoYXQNCj4+IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9zX3BwbXUuYyBiZWNvbWVz
-IG9ic29sZXRlLg0KPj4gSG93IGRvIHlvdSB3YW50IHRvIGFkZHJlc3MgaXQ/IERvIHlvdSB0aGlu
-ayBpdCdkIGJlIG9rIHRvIHJlbW92ZQ0KPj4gdGhzZSBvYnNvbGV0ZSBkcml2ZXJzIGFmdGVyIHlv
-dXIgc3VjY2Vzc2luZyBwYXRjaHNldD8NCj4+IA0KPj4gSWYgaXQgaXMgb2sgdG8gcmVtb3ZlIG9s
-ZCBkcml2ZXJzIGFmdGVyIGFwcGx5aW5nIHRoZSBuZXcgcGF0Y2hzZXQsDQo+PiBwbGVhc2UgaW5j
-bGRlIGEgcGF0Y2ggdGhhdCByZW1vdmVzIG9sZCBkcml2ZXJzIHVubGVzcyBzdWNoIGEgcmVtb3Zh
-bA0KPj4gbWlnaHQgcmVzdWx0IGluIGNvbXBhdGliaWxpdHkgaXNzdWVzIHdpdGggb2xkICh5ZXQg
-YW5vdGhlciBvYnNvbGV0ZSkNCj4+IGJvYXJkIGZpbGVzLCB3aGljaCBJIGRvbid0IHRoaW5rIHBy
-b2JhYmxlLg0KPg0KPkkgYWdyZWUgdG8gcmVtb3ZlICdkcnZpZXJzL2RldmZyZXEvZXh5bm9zL2V4
-eW5vc19wcG11LmMuDQo+QnV0LCBleGlzdGluZyBleHlub3NfcHBtdS5jIHdhcyB1c2VkIGZvciBk
-cml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmMuDQo+DQo+QmVmb3JlIHJlbW92aW5n
-IGV4aXN0aW5nICdleHlub3NfcHBtdS5jJywgbWlnaHQgbmVlZCB0byB0ZXN0IHRoZSBkZXZmcmVx
-LWV2ZW50IGNsYXNzDQo+b24gRXh5bm9zNTI2MCBTb0MuIEkgd2lsbCBqdXN0IHJlbW92ZSBvbGQg
-ZHJpdmVyKCdkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLntjfGh9JykNCj5vbiBu
-ZXh0IHBhdGNoc2V0Lg0KDQpUaGF0J3MgZmluZSB3aXRoIG1lLg0KDQoNCkNoZWVycywNCk15dW5n
-Sm9vDQoNCj4NCj5UbyBBYmhpbGFzaCwNCj5Db3VsZCB5b3UgdGVzdCB0aGlzIHBhdGNoLXNldCBv
-biBFeHlub3M1MjYwIFNvQz8NCj4NCj5CZXN0IFJlZ2FyZHMsDQo+Q2hhbndvbyBDaG9pDQo=
+Beomho,
+
+On Fri, 2015-01-09 at 17:45 +0900, Beomho Seo wrote:
+> This patchset adds driver for Richtek rt5033 chip The chip contains
+> switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
+> Additionally, This includes document for device tree of RT5033 device.
+> 
+> RT5033 core driver is applied by Lee Jones.
+> RT5033 regulator driver have been merged by Mark Brown. commit is below,
+> 
+> commit b1917578fd5d8efa67afa05a0d6d7e323f2802da
+> 
+> Changes in v2:
+> - Revise binding documentation..
+>  
+> Beomho Seo (3):
+>   power: rt5033_battery: Add RT5033 Fuel gauge device driver
+>   power: rt5033_charger: Add RT5033 charger device driver
+>   Documentation: Add documentation for rt5033 multifunction device
+> 
+>  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++
+>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+>  drivers/power/Kconfig                              |   16 +
+>  drivers/power/Makefile                             |    2 +
+>  drivers/power/rt5033_battery.c                     |  177 +++++++
+>  drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+>  6 files changed, 782 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+>  create mode 100644 drivers/power/rt5033_battery.c
+>  create mode 100644 drivers/power/rt5033_charger.c
+
+This series adds two drivers that depend on MFD_RT5033. But there's
+currently no Kconfig symbol MFD_RT5033.
+
+The regulator driver mentioned above is another driver that depends on
+MFD_RT5033. It was included first in next-20141117. It is also included
+in mainline since v3.19-rc1. That regulator driver has never been
+buildable, even if one bypasses its dependency on MFD_RT5033. That is
+because it includes two headers that are not yet part of the tree
+(linux/mfd/rt5033.h and linux/mfd/rt5033-private.h).
+
+When is the Kconfig symbol MFD_RT5033 expected to be included in the
+tree?
 
 
+Paul Bolle
