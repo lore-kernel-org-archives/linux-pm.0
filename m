@@ -1,81 +1,84 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 06/17] thermal: cpu_cooling: dts: Define device tree
- bindings for Exynos cpu cooling functionality
-Date: Tue, 13 Jan 2015 09:22:21 +0100
-Message-ID: <20150113092221.1326b147@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1418213396-743-1-git-send-email-l.majewski@samsung.com>
- <1418213396-743-7-git-send-email-l.majewski@samsung.com>
- <20150102181529.GC12130@developer> <20150112150916.43f5b7ff@amdc2363>
- <20150112142417.GA28377@developer>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH -v3 0/5] OOM vs PM freezer fixes
+Date: Tue, 13 Jan 2015 09:41:01 +0100
+Message-ID: <20150113084101.GB25318@dhcp22.suse.cz>
+References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
+ <20150112155935.21b13bc41417ceedde9d640f@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150112142417.GA28377@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20150112155935.21b13bc41417ceedde9d640f@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
-
+On Mon 12-01-15 15:59:35, Andrew Morton wrote:
+> On Fri,  9 Jan 2015 12:05:50 +0100 Michal Hocko <mhocko@suse.cz> wrote:
 > 
-> On Mon, Jan 12, 2015 at 03:09:16PM +0100, Lukasz Majewski wrote:
-> > Hi Eduardo,
-> > 
-> > > > Presented patch aims to move data necessary for correct CPU
-> > > > cooling device configuration from exynos_tmu_data.c to device
-> > > > tree.  
-> > > 
-> > > I believe the patch title is misleading. Looks like you are
-> > > changing something at cpu cooling, but in fact, you are changing
-> > > DTS files. I would suggest you to use a prefix like 'arm:
-> > > dts: ....'
-> > 
-> > Now this patch name is:
-> > thermal: cpu_cooling: dts: ......
-> > 
-> > All the code in this patch adds bindings for 'thermal-zone' to map
-> > cooling device to proper trip points.
-> > In fact this is solely related to cpu_cooling...
-> > 
-> > From the above, I think that the already provided convention is more
-> > suitable and "arm: dts: cpu_cooling: thermal" seems a bit awkward
-> > for me.
-> > 
-> > If you don't regard my justification as valid, then I will fix this.
+> > Hi,
 > 
-> Still, the naming is confusing. With that prefix you are saying this
-> patch is something generic about cpu cooling and thermal dts. And that
-> is not what this patch is about.
+> I've been cheerily ignoring this discussion, sorry.  I trust everyone's
+> all happy and ready to go with this?
 > 
-> Saying "arm: dts: add cpu cooling bindings for Exynos" is a short and
-> direct subject. Besides, you have the plus to call the attention of
-> the ARM and device tree maintainers. It will be also in my radar.
-
-Fair enough. Thanks for clarification.
-
-> 
-> 
-> The original subject also makes me think you are dealing with C code,
-> while the former says already upfront that you are talking about arm
-> dts bindings. 
-> 
-> Cheers,
+> > [what changed since the last patchset]
+> >
+> > ...
+> >
+> > [testing results]
+> >
+> > ...
+> >
+> > [overview of the 5 patches]
+> >
+> > ...
 > > 
-> > -- 
-> > Best regards,
-> > 
-> > Lukasz Majewski
-> > 
-> > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> 
+> That's nice, but it doesn't really tell us what the patchset does.  The
+> first paragraph of the [5/5] changelog provides hints, but doesn't
+> explain why we even need to fix a race which is "quite small and really
+> unlikely".
 
+The primary reason for ruling out OOM killer from PM freezing is
+described in the changelog of the original "fix" 5695be142e20 (OOM,
+PM: OOM killed task shouldn't escape PM suspend) for which this is a
+follow up:
+"
+    PM freezer relies on having all tasks frozen by the time devices are
+    getting frozen so that no task will touch them while they are getting
+    frozen. But OOM killer is allowed to kill an already frozen task in
+    order to handle OOM situtation. In order to protect from late wake ups
+    OOM killer is disabled after all tasks are frozen. This, however, still
+    keeps a window open when a killed task didn't manage to die by the time
+    freeze_processes finishes.
+"
 
+The original patch hasn't closed the race window completely because
+that would require a more complex solution as it can be seen by this
+patchset.
+ 
+> So...  could we please have a few words describing the overall intent
+> and effect of this patchset?
 
+The primary motivation was to close the race condition between OOM
+killer and PM freezer _completely_. As Tejun pointed out, even though
+the race condition is unlikely the harder it would be to debug weird
+bugs deep in the PM freezer when the debugging options are reduced
+considerably.  I can only speculate what might happen when a task is
+still runnable unexpectedly. I can imagine deadlocks or memory
+corruptions but I am, by no means, an expert in this area.
+
+On a plus side and as a side effect the oom enable/disable has a better
+(full barrier) semantic without polluting hot paths.
+
+Hope that clarifies the things a bit.
 -- 
-Best regards,
+Michal Hocko
+SUSE Labs
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
