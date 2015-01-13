@@ -1,46 +1,77 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [RFC v2 0/4] Add basic support for ASV
-Date: Tue, 13 Jan 2015 08:19:31 -0800
-Message-ID: <CAGa+x878dJrxc_QPg2_n3OiuswMbeVs=mXR=j71+EF=vDqs4ng@mail.gmail.com>
-References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
-	<CAJ0PZbS8FxRA_sPTOnWbZcNfUMp=k5Jf_tZHLg1fh6gsAGJ=Gw@mail.gmail.com>
-	<CAK9yfHzUAnBMB2Bp+eKzR3NH1iRguJn4K45gss5psWzG4Lc7tw@mail.gmail.com>
-	<CAM4voak0QaseYoRM+rsx2Fa8qs1z=w9iVep1smxx73_SUhmkJQ@mail.gmail.com>
-	<CAK9yfHzJL2ZKLyg7NtJisFUorTy0oVoOUwGtnWbQYGsysgG-UA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Subject: [PATCH 1/2] thermal: of: Match function to pass bindparam index
+Date: Tue, 13 Jan 2015 17:51:21 +0000
+Message-ID: <1421171482-16101-2-git-send-email-kapileshwar.singh@arm.com>
+References: <1421171482-16101-1-git-send-email-kapileshwar.singh@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f41.google.com ([209.85.216.41]:57576 "EHLO
-	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbbAMQTc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 11:19:32 -0500
-Received: by mail-qa0-f41.google.com with SMTP id bm13so2771253qab.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jan 2015 08:19:31 -0800 (PST)
-In-Reply-To: <CAK9yfHzJL2ZKLyg7NtJisFUorTy0oVoOUwGtnWbQYGsysgG-UA@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:48199 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbbAMRv1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 12:51:27 -0500
+In-Reply-To: <1421171482-16101-1-git-send-email-kapileshwar.singh@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yadwinder Singh Brar <yadi.brar01@gmail.com>, Sachin Kamat <spk.linux@gmail.com>
-Cc: Abhilash Kesavan <kesavan.abhilash@gmail.com>, MyungJoo Ham <myungjoo.ham@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Bresticker <abrestic@google.com>, Doug Anderson <dianders@google.com>, Tomasz Figa <tomasz.figa@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@arm.com, punit.agrawal@arm.com
 
-On Tue, Dec 3, 2013 at 10:00 PM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> Hi Abhilash,
->
-> On 3 December 2013 20:16, Abhilash Kesavan <kesavan.abhilash@gmail.com> wrote:
->> Hi Yadwinder and Sachin,
->
->> CC'ing Doug and Andrew who have also worked on ASV.
->>
->> I tested these patches on a 5250 Chromebook after modifying the
->> cpufreq code and a few other changes for booting the board. The driver
->> is retrieving the ASV fused group correctly. The behavior on an
->> unfused SMDK5250 is also fine.
->> I have a few minor comments on the patches.
->>
->
-> Thank you for testing and reviewing the patchset.
-> Will incorporate your comments in the next version.
+From: KP Singh <kapileshwar.singh@arm.com>
 
-Has there been an updated version of this series posted?    I can't
-seem to find one.
+The match function should pass the index of the binding parameters
+which the cooling device needs to be matched against. There are currently
+no implementations of match function within the kernel. A successful
+match requires:
 
-Kevin
+=09trip_mask =3D=3D expected_trip_mask;
+=09weight =3D=3D expected_weight;
+=09binding_limits =3D=3D expected_binding_limits;
+=09thermal_zone =3D=3D expected_thermal_zone;
+
+Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
+---
+ drivers/thermal/thermal_core.c |    4 ++--
+ include/linux/thermal.h        |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
+c
+index 87e0b0782023..db4d6407c1ec 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -276,7 +276,7 @@ static void bind_cdev(struct thermal_cooling_device *cd=
+ev)
+ =09=09for (i =3D 0; i < tzp->num_tbps; i++) {
+ =09=09=09if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
+ =09=09=09=09continue;
+-=09=09=09if (tzp->tbp[i].match(pos, cdev))
++=09=09=09if (tzp->tbp[i].match(pos, cdev, i))
+ =09=09=09=09continue;
+ =09=09=09tzp->tbp[i].cdev =3D cdev;
+ =09=09=09__bind(pos, tzp->tbp[i].trip_mask, cdev,
+@@ -315,7 +315,7 @@ static void bind_tz(struct thermal_zone_device *tz)
+ =09=09for (i =3D 0; i < tzp->num_tbps; i++) {
+ =09=09=09if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
+ =09=09=09=09continue;
+-=09=09=09if (tzp->tbp[i].match(tz, pos))
++=09=09=09if (tzp->tbp[i].match(tz, pos, i))
+ =09=09=09=09continue;
+ =09=09=09tzp->tbp[i].cdev =3D pos;
+ =09=09=09__bind(tz, tzp->tbp[i].trip_mask, pos,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index fc52e307efab..dc8cf6dc59e5 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -237,7 +237,7 @@ struct thermal_bind_params {
+ =09 */
+ =09unsigned long *binding_limits;
+ =09int (*match) (struct thermal_zone_device *tz,
+-=09=09=09struct thermal_cooling_device *cdev);
++=09=09      struct thermal_cooling_device *cdev, int index);
+ };
+=20
+ /* Structure to define Thermal Zone parameters */
+--=20
+1.7.9.5
+
+
