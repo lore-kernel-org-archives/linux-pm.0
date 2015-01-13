@@ -1,34 +1,76 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCHv3 3/8] ARM: dts: Add memory bus node for Exynos3250
-Date: Tue, 13 Jan 2015 09:14:07 +0000 (GMT)
-Message-ID: <823139081.971381421140443531.JavaMail.weblogic@epmlwas05d>
-Reply-To: myungjoo.ham@samsung.com
+From: vichy <vichy.kuo@gmail.com>
+Subject: Re: Auto suspend not working on usb hid devices
+Date: Tue, 13 Jan 2015 17:35:41 +0800
+Message-ID: <CAOVJa8GkYnT3MV-jgLhoagUL1N3GhTGooho=pbVr7LcUUWXwvQ@mail.gmail.com>
+References: <CAOVJa8H1JsarfphiWmTEw8MsJUxDcYi=c5GPJzvbvhziAiDcXA@mail.gmail.com>
+	<Pine.LNX.4.44L0.1501121011580.1707-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:34966 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbbAMJfm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 04:35:42 -0500
+Received: by mail-oi0-f46.google.com with SMTP id a3so1511243oib.5
+        for <linux-pm@vger.kernel.org>; Tue, 13 Jan 2015 01:35:42 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1501121011580.1707-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@vger.kernel.org
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBtZW1vcnkgYnVzIG5vZGUgZm9yIEV4eW5vczMy
-NTAgU29DLiBFeHlub3MzMjUwIGhhcw0KPiBmb2xsb3dpbmcgbWVtb3J5IGJ1c2VzIHRvIHRyYW5z
-bGF0ZSBkYXRhIGJldHdlZW4gRFJBTSBhbmQgZU1NQy9zdWItSVBzLg0KPiANCj4gRm9sbG93aW5n
-IGxpc3Qgc3BlY2lmaWVzIHRoZSBkZXRhaWxlZCByZWxhdGlvbiBiZXR3ZWVuIG1lbW9yeSBidXMg
-Y2xvY2sgYW5kIERNQw0KPiBJUCBpbiBNSUYgKE1lbW9yeSBJbnRlcmZhY2UpIGJsb2NrOg0KPiAt
-IERNQyBjbG9jayA6IERNQyAoRHluYW1pYyBNZW1vcnkgQ29udHJvbGxlcikNCj4gDQo+IEZvbGxv
-d2luZyBsaXN0IHNwZWNpZmllcyB0aGUgZGV0YWlsZWQgcmVsYXRpb24gYmV0d2VlbiBtZW1vcnkg
-YnVzIGNsb2NrIGFuZA0KPiBzdWItSVBzIGluIElOVCAoSW50ZXJuYWwpIGJsb2NrOg0KPiAtIEFD
-TEsxMDAgY2xvY2sgOiBQRVJJTA0KPiAtIEFDTEsxNjAgY2xvY2sgOiBMQ0QwDQo+IC0gQUNMSzIw
-MCBjbG9jayA6IEZTWVMNCj4gLSBBQ0xLMjY2IGNsb2NrIDogSVNQDQo+IC0gR0RML0dEUiBjbG9j
-ayA6IGxlZnRidXMvcmlnaHRidXMNCj4gLSBTQ0xLX01GQyBjbG9jayA6IE1GQw0KPiANCj4gQ2M6
-IEt1a2ppbiBLaW0gPGtnZW5lQGtlcm5lbC5vcmc+DQo+IENjOiBNeXVuZ2pvbyBIYW0gPG15dW5n
-am9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gQ2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtA
-c2Ftc3VuZy5jb20+DQo+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNh
-bXN1bmcuY29tPg0KPiBBY2tlZC1ieTogS3l1bmdtaW4gUGFyayA8a3l1bmdtaW4ucGFya0BzYW1z
-dW5nLmNvbT4NCg0KQWNrZWQtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcu
-Y29tPg0KDQoNCg0KPiAtLS0NCj4gIGFyY2gvYXJtL2Jvb3QvZHRzL2V4eW5vczMyNTAuZHRzaSB8
-IDEyNSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgMSBmaWxlIGNo
-YW5nZWQsIDEyNSBpbnNlcnRpb25zKCspDQo+IA0K
+hi alan:
+
+2015-01-12 23:18 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> On Mon, 12 Jan 2015, vichy wrote:
+>
+>> hi alan:
+>> > I found the power/runtime_usage = 2 when device plug in and do nothing.
+>> > Except update_autosuspend will increase runtime_usage, is there any
+>> > function will increase it when we did not enable runtime
+>> > suspend/resume?
+>> We found the runtime_usage will be 2 after calling usb_new_device.
+>> in usb_new_device,
+>>         pm_runtime_set_active(&udev->dev);
+>>         pm_runtime_get_noresume(&udev->dev);  // after calling left
+>> function, runtime_usage =1
+>>         pm_runtime_use_autosuspend(&udev->dev);
+>>         pm_runtime_enable(&udev->dev);
+>>
+>>        /* By default, forbid autosuspend for all devices.  It will be
+>>         * allowed for hubs during binding.
+>>         */
+>>        usb_disable_autosuspend(udev); // after calling left function,
+>> runtime_usage =2
+>>
+>> Under what circumstance, the runtime_usage will be 1 to let "echo auto
+>> > power/control" work?
+>
+> You need to look farther down in usb_new_device().  Near the end it
+> does this:
+>
+>         (void) usb_create_ep_devs(&udev->dev, &udev->ep0, udev);
+>         usb_mark_last_busy(udev);
+>         pm_runtime_put_sync_autosuspend(&udev->dev);
+>         return err;
+>
+> The pm_runtime_put_async_autosuspend() call decrements runtime_usage
+> back to 1.
+I purposely dump runtime_usage after calling
+pm_runtime_put_async_autosuspend(), but the value is still 2.
+I found the value increase/decrease like below:
+pm_runtime_get_noresume => 1
+usb_disable_autosuspend => 2
+usb_probe_device
+    -> usb_autoresume_device => 3
+usb_set_configuration
+    ->usb_autoresume_device =>4
+usb_set_configuration
+    ->usb_autosuspend_device =>3
+pm_runtime_put_sync_autosuspend => 2
+
+so even after calling pm_runtime_put_async_autosuspend() at end fo
+usb_new_device()
+the runtime_usage will not be back to 1
+
+Appreciate your kind help,
