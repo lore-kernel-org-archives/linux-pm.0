@@ -1,61 +1,46 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Auto suspend not working on usb hid devices
-Date: Tue, 13 Jan 2015 10:37:36 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1501131029040.1520-100000@iolanthe.rowland.org>
-References: <CAOVJa8GkYnT3MV-jgLhoagUL1N3GhTGooho=pbVr7LcUUWXwvQ@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [RFC v2 0/4] Add basic support for ASV
+Date: Tue, 13 Jan 2015 08:19:31 -0800
+Message-ID: <CAGa+x878dJrxc_QPg2_n3OiuswMbeVs=mXR=j71+EF=vDqs4ng@mail.gmail.com>
+References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
+	<CAJ0PZbS8FxRA_sPTOnWbZcNfUMp=k5Jf_tZHLg1fh6gsAGJ=Gw@mail.gmail.com>
+	<CAK9yfHzUAnBMB2Bp+eKzR3NH1iRguJn4K45gss5psWzG4Lc7tw@mail.gmail.com>
+	<CAM4voak0QaseYoRM+rsx2Fa8qs1z=w9iVep1smxx73_SUhmkJQ@mail.gmail.com>
+	<CAK9yfHzJL2ZKLyg7NtJisFUorTy0oVoOUwGtnWbQYGsysgG-UA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:41429 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751132AbbAMPhh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 10:37:37 -0500
-In-Reply-To: <CAOVJa8GkYnT3MV-jgLhoagUL1N3GhTGooho=pbVr7LcUUWXwvQ@mail.gmail.com>
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:57576 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbbAMQTc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 11:19:32 -0500
+Received: by mail-qa0-f41.google.com with SMTP id bm13so2771253qab.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Jan 2015 08:19:31 -0800 (PST)
+In-Reply-To: <CAK9yfHzJL2ZKLyg7NtJisFUorTy0oVoOUwGtnWbQYGsysgG-UA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: vichy <vichy.kuo@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Yadwinder Singh Brar <yadi.brar01@gmail.com>, Sachin Kamat <spk.linux@gmail.com>
+Cc: Abhilash Kesavan <kesavan.abhilash@gmail.com>, MyungJoo Ham <myungjoo.ham@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Bresticker <abrestic@google.com>, Doug Anderson <dianders@google.com>, Tomasz Figa <tomasz.figa@gmail.com>
 
-On Tue, 13 Jan 2015, vichy wrote:
+On Tue, Dec 3, 2013 at 10:00 PM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> Hi Abhilash,
+>
+> On 3 December 2013 20:16, Abhilash Kesavan <kesavan.abhilash@gmail.com> wrote:
+>> Hi Yadwinder and Sachin,
+>
+>> CC'ing Doug and Andrew who have also worked on ASV.
+>>
+>> I tested these patches on a 5250 Chromebook after modifying the
+>> cpufreq code and a few other changes for booting the board. The driver
+>> is retrieving the ASV fused group correctly. The behavior on an
+>> unfused SMDK5250 is also fine.
+>> I have a few minor comments on the patches.
+>>
+>
+> Thank you for testing and reviewing the patchset.
+> Will incorporate your comments in the next version.
 
-> I purposely dump runtime_usage after calling
-> pm_runtime_put_async_autosuspend(), but the value is still 2.
-> I found the value increase/decrease like below:
+Has there been an updated version of this series posted?    I can't
+seem to find one.
 
-In usb_new_device():
-> pm_runtime_get_noresume => 1
-> usb_disable_autosuspend => 2
-> usb_probe_device
->     -> usb_autoresume_device => 3
-
-That's where you go wrong.  usb_probe_device() does this:
-
-	if (!udriver->supports_autosuspend)
-		error = usb_autoresume_device(udev);
-
-and udriver->supports_autosuspend should be 1.  See the definition of 
-usb_generic_driver at the end of generic.c.
-
-> usb_set_configuration
->     ->usb_autoresume_device =>4
-> usb_set_configuration
->     ->usb_autosuspend_device =>3
-> pm_runtime_put_sync_autosuspend => 2
-> 
-> so even after calling pm_runtime_put_async_autosuspend() at end fo
-> usb_new_device()
-> the runtime_usage will not be back to 1
-
-It would be 1 if udriver in usb_probe_device() was equal to 
-usb_generic_driver.
-
-> is there any rule for us to determine where we add those
-> usb_autoresume_device/usb_autosuspend_device in usb driver?
-
-The rule is very simple: You autoresume in places where you need the 
-device to be active, and you autosuspend when you don't need the device 
-to be active any more.
-
-Alan Stern
-
-
+Kevin
