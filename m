@@ -1,84 +1,89 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH -v3 0/5] OOM vs PM freezer fixes
-Date: Tue, 13 Jan 2015 09:41:01 +0100
-Message-ID: <20150113084101.GB25318@dhcp22.suse.cz>
-References: <1420801555-22659-1-git-send-email-mhocko@suse.cz>
- <20150112155935.21b13bc41417ceedde9d640f@linux-foundation.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCHv3 1/8] devfreq: exynos: Add generic exynos memory bus
+ frequency driver
+Date: Tue, 13 Jan 2015 08:42:18 +0000 (GMT)
+Message-ID: <520952065.968311421138534993.JavaMail.weblogic@epmlwas05d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20150112155935.21b13bc41417ceedde9d640f@linux-foundation.org>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 12-01-15 15:59:35, Andrew Morton wrote:
-> On Fri,  9 Jan 2015 12:05:50 +0100 Michal Hocko <mhocko@suse.cz> wrote:
-> 
-> > Hi,
-> 
-> I've been cheerily ignoring this discussion, sorry.  I trust everyone's
-> all happy and ready to go with this?
-> 
-> > [what changed since the last patchset]
-> >
-> > ...
-> >
-> > [testing results]
-> >
-> > ...
-> >
-> > [overview of the 5 patches]
-> >
-> > ...
-> > 
-> 
-> That's nice, but it doesn't really tell us what the patchset does.  The
-> first paragraph of the [5/5] changelog provides hints, but doesn't
-> explain why we even need to fix a race which is "quite small and really
-> unlikely".
-
-The primary reason for ruling out OOM killer from PM freezing is
-described in the changelog of the original "fix" 5695be142e20 (OOM,
-PM: OOM killed task shouldn't escape PM suspend) for which this is a
-follow up:
-"
-    PM freezer relies on having all tasks frozen by the time devices are
-    getting frozen so that no task will touch them while they are getting
-    frozen. But OOM killer is allowed to kill an already frozen task in
-    order to handle OOM situtation. In order to protect from late wake ups
-    OOM killer is disabled after all tasks are frozen. This, however, still
-    keeps a window open when a killed task didn't manage to die by the time
-    freeze_processes finishes.
-"
-
-The original patch hasn't closed the race window completely because
-that would require a more complex solution as it can be seen by this
-patchset.
- 
-> So...  could we please have a few words describing the overall intent
-> and effect of this patchset?
-
-The primary motivation was to close the race condition between OOM
-killer and PM freezer _completely_. As Tejun pointed out, even though
-the race condition is unlikely the harder it would be to debug weird
-bugs deep in the PM freezer when the debugging options are reduced
-considerably.  I can only speculate what might happen when a task is
-still runnable unexpectedly. I can imagine deadlocks or memory
-corruptions but I am, by no means, an expert in this area.
-
-On a plus side and as a side effect the oom enable/disable has a better
-(full barrier) semantic without polluting hot paths.
-
-Hope that clarifies the things a bit.
--- 
-Michal Hocko
-SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBnZW5lcmljIGV4eW5vcyBidXMgZnJlcXVlbmN5
+IGRyaXZlciBmb3IgbWVtb3J5IGJ1cw0KPiB3aXRoIERFVkZSRVEgZnJhbWV3b3JrLiBUaGUgU2Ft
+c3VuZyBFeHlub3MgU29DcyBoYXZlIHRoZSBjb21tb24gYXJjaGl0ZWN0dXJlDQo+IGZvciBtZW1v
+cnkgYnVzIGJldHdlZW4gRFJBTSBtZW1vcnkgYW5kIE1NQy9zdWIgSVAgaW4gU29DLiBUaGlzIGRy
+aXZlciBjYW4NCj4gc3VwcG9ydCB0aGUgbWVtb3J5IGJ1cyBmcmVxdWVuY3kgZHJpdmVyIGZvciBF
+eHlub3MgU29Dcy4NCj4gDQo+IEVhY2ggbWVtb3J5IGJ1cyBibG9jayBoYXMgYSBjbG9jayBmb3Ig
+bWVtb3J5IGJ1cyBzcGVlZCBhbmQgZnJlcXVlbmN5DQo+IHRhYmxlIHdoaWNoIGlzIGNoYW5nZWQg
+YWNjb3JkaW5nIHRvIHRoZSB1dGlsaXphdGlvbiBvZiBtZW1vcnkgYnVzIG9uIHJ1bnRpbWUuDQo+
+IEFuZCB0aGVuIGVhY2ggbWVtb3J5IGJ1cyBncm91cCBoYXMgdGhlIG9uZSBtb3JlIG1lbW9yeSBi
+dXMgYmxvY2tzIGFuZA0KPiBPUFAgdGFibGUgKGluY2x1ZGluZyBmcmVxdWVuY3kgYW5kIHZvbHRh
+Z2UpLCByZWd1bGF0b3IsIGRldmZyZXEtZXZlbnQNCj4gZGV2aWNlcy4NCj4gDQo+IFRoZXJlIGFy
+ZSBhIGxpdHRsZSBkaWZmZXJlbmNlIGFib3V0IHRoZSBudW1iZXIgb2YgbWVtb3J5IGJ1cyBiZWNh
+dXNlIGVhY2ggRXh5bm9zDQo+IFNvQyBoYXZlIHRoZSBkaWZmZXJlbnQgc3ViLUlQIGFuZCBkaWZm
+ZXJlbnQgbWVtb3J5IGJ1cyBzcGVlZC4gSW4gc3BpdGUgb2YgdGhpcw0KPiBkaWZmZXJlbmNlIGFt
+b25nIEV4eW5vcyBTb0NzLCB3ZSBjYW4gc3VwcG9ydCBhbG1vc3QgRXh5bm9zIFNvQyBieSBhZGRp
+bmcNCj4gdW5pcXVlIGRhdGEgb2YgbWVtb3J5IGJ1cyB0byBkZXZpY2V0cmVlIGZpbGUuDQo+IA0K
+PiBDYzogTXl1bmdqb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+IENjOiBLeXVu
+Z21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiBDYzogS3VramluIEtpbSA8
+a2dlbmVAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9mZi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNo
+b2lAc2Ftc3VuZy5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAgICAg
+ICAgfCAgMTUgKw0KPiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAgICAgICAgfCAgIDEgKw0K
+PiAgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXNmcmVxLmMgfCA1ODkgKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrDQo+ICAzIGZpbGVzIGNoYW5nZWQsIDYwNSBpbnNlcnRp
+b25zKCspDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXNm
+cmVxLmMNCg0KRXh5bm9zIGRyaXZlcnMgYXJlIGxvY2F0ZWQgYXQgZHJpdmVycy9kZXZmcmVxL2V4
+eW5vcy8NClBsZWFzZSByZWxvY2F0ZS9yZW5hbWUgZXh5bm9zLWJ1c2ZyZXEuYw0KDQpbXQ0KDQo+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZXh5bm9zLWJ1c2ZyZXEuYyBiL2RyaXZlcnMv
+ZGV2ZnJlcS9leHlub3MtYnVzZnJlcS5jDQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4
+IDAwMDAwMDAuLmIxODBmNDMNCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9kcml2ZXJzL2RldmZy
+ZXEvZXh5bm9zLWJ1c2ZyZXEuYw0KDQpbXQ0KDQo+ICsNCj4gKyNkZWZpbmUgQlVTX1NBVFVSQVRJ
+T05fUkFUSU8JNDANCg0KSW4gb3JkZXIgdG8gYmUgYSBjb21tb24gZHJpdmVyLCB0aGlzIHNob3Vs
+ZCBiZSB0dW5hYmxlLg0KDQpCZWNhdXNlIC5kdHMgaXMgc3VwcG9zZWQgdG8gaGF2ZSBoYXJkd2Fy
+ZSBjb25maWd1cmF0aW9uIG9ubHksDQp5b3UgbWF5IGtlZXAgYSB0YWJsZSBvZiB7IGNoaXAtbmFt
+ZSwgc2F0dXJhdGlvbiByYXRpb30gaW4gdGhpcw0KZHJpdmVyIGFuZCBsb29rIHVwIHRoZSBzYXR1
+cmF0aW9uIHJhdGlvIGJhc2VkIG9uIHRoZSBjaGlwLW5hbWUuDQoNCj4gKyNkZWZpbmUgU0FGRVZP
+TFQJCTUwMDAwDQo+ICsNCj4gK3N0cnVjdCBleHlub3NfbWVtb3J5X2J1c19vcHBfaW5mbyB7DQo+
+ICsJdW5zaWduZWQgbG9uZyByYXRlOw0KPiArCXVuc2lnbmVkIGxvbmcgdm9sdDsNCj4gK307DQo+
+ICsNCj4gK3N0cnVjdCBleHlub3NfbWVtb3J5X2J1c19ibG9jayB7DQo+ICsJc3RydWN0IGNsayAq
+Y2xrOw0KPiArCXN0cnVjdCBleHlub3NfbWVtb3J5X2J1c19vcHBfaW5mbyAqZnJlcV90YWJsZTsN
+Cj4gK307DQo+ICsNCg0KW10NCg0KPiArI2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiArc3RhdGlj
+IGludCBleHlub3NfYnVzZnJlcV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiArew0KPiAr
+CXN0cnVjdCBleHlub3NfbWVtb3J5X2J1c19kYXRhICpkYXRhID0gZGV2X2dldF9kcnZkYXRhKGRl
+dik7DQo+ICsJaW50IHJldDsNCj4gKw0KPiArCXJldCA9IGV4eW5vc19idXNmcmVxX2VuYWJsZV9l
+ZGV2KGRhdGEpOw0KPiArCWlmIChyZXQgPCAwKSB7DQo+ICsJCWRldl9lcnIoZGV2LCAiZmFpbGVk
+IHRvIGVuYWJsZSB0aGUgZGV2ZnJlcS1ldmVudCBkZXZpY2VzXG4iKTsNCj4gKwkJcmV0dXJuIHJl
+dDsNCj4gKwl9DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludCBl
+eHlub3NfYnVzZnJlcV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gK3sNCj4gKwlzdHJ1
+Y3QgZXh5bm9zX21lbW9yeV9idXNfZGF0YSAqZGF0YSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0K
+PiArCWludCByZXQ7DQo+ICsNCj4gKwlyZXQgPSBleHlub3NfYnVzZnJlcV9kaXNhYmxlX2VkZXYo
+ZGF0YSk7DQo+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8g
+ZGlzYWJsZSB0aGUgZGV2ZnJlcS1ldmVudCBkZXZpY2VzXG4iKTsNCj4gKwkJcmV0dXJuIHJldDsN
+Cj4gKwl9DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKyNlbmRpZg0KDQpQbGVhc2UgZGlz
+YWJsZSByZWd1bGF0b3IgYXQgc3VzcGVuZCBhbmQgcmVzdW1lIGl0IGF0IHJlc3VtZS4NCg0KWW91
+IG1heSBpbnRlcmZlcmUgd2l0aCBsb3ctcG93ZXIgbW9kZSBvZiBjb3JyZXNwb25kaW5nIHZvbHRh
+Z2UgbGluZSwNCndoaWNoIGlzIG9mdGVuIGltcGxlbWVudGVkIHRvIGJlIGFjdGl2YXRlZCBpZiB0
+aGUgcmVndWxhdG9yIGlzDQpleHBsaWNpdGVseSBkaXNhYmxlZCBmb3IgImFsaXZlIiByZWd1bGF0
+b3JzIGxpa2UgdGhpcyBvbmUuDQoNCj4gKw0KPiArc3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1f
+b3BzIGV4eW5vc19idXNmcmVxX3BtID0gew0KPiArCVNFVF9TWVNURU1fU0xFRVBfUE1fT1BTKGV4
+eW5vc19idXNmcmVxX3N1c3BlbmQsIGV4eW5vc19idXNmcmVxX3Jlc3VtZSkNCj4gK307DQo+ICsN
+Cj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGV4eW5vc19idXNmcmVxX29mX21h
+dGNoW10gPSB7DQo+ICsJeyAuY29tcGF0aWJsZSA9ICJzYW1zdW5nLGV4eW5vcy1tZW1vcnktYnVz
+IiwgfSwNCj4gKwl7IC8qIHNlbnRpbmVsICovIH0sDQo+ICt9Ow0KPiArTU9EVUxFX0RFVklDRV9U
+QUJMRShvZiwgZXh5bm9zX2J1c2ZyZXFfb2ZfbWF0Y2gpOw0KPiArDQo+ICtzdGF0aWMgc3RydWN0
+IHBsYXRmb3JtX2RyaXZlciBleHlub3NfYnVzZnJlcV9wbGF0ZHJ2ID0gew0KPiArCS5wcm9iZQkJ
+PSBleHlub3NfYnVzZnJlcV9wcm9iZSwNCj4gKwkucmVtb3ZlCQk9IGV4eW5vc19idXNmcmVxX3Jl
+bW92ZSwNCj4gKwkuZHJpdmVyID0gew0KPiArCQkubmFtZQk9ICJleHlub3MtbWVtb3J5LWJ1cyIs
+DQo+ICsJCS5vd25lcgk9IFRISVNfTU9EVUxFLA0KPiArCQkucG0JPSAmZXh5bm9zX2J1c2ZyZXFf
+cG0sDQo+ICsJCS5vZl9tYXRjaF90YWJsZSA9IG9mX21hdGNoX3B0cihleHlub3NfYnVzZnJlcV9v
+Zl9tYXRjaCksDQo+ICsJfSwNCj4gK307DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKGV4eW5v
+c19idXNmcmVxX3BsYXRkcnYpOw0KPiArDQo+ICtNT0RVTEVfREVTQ1JJUFRJT04oIkdlbmVyaWMg
+RXh5bm9zIE1lbW9yeSBCdXMgRnJlcXVlbmN5IGRyaXZlciIpOw0KPiArTU9EVUxFX0FVVEhPUigi
+Q2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+Iik7DQo+ICtNT0RVTEVfTElDRU5T
+RSgiR1BMIHYyIik7DQo+IC0tIA0KPiAxLjguNS41DQo+IA0KPiANCg==
