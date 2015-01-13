@@ -1,89 +1,141 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCHv3 1/8] devfreq: exynos: Add generic exynos memory bus
  frequency driver
-Date: Tue, 13 Jan 2015 08:42:18 +0000 (GMT)
-Message-ID: <520952065.968311421138534993.JavaMail.weblogic@epmlwas05d>
-Reply-To: myungjoo.ham@samsung.com
+Date: Tue, 13 Jan 2015 17:55:22 +0900
+Message-ID: <54B4DD7A.504@samsung.com>
+References: <520952065.968311421138534993.JavaMail.weblogic@epmlwas05d>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:42723 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbbAMIzZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jan 2015 03:55:25 -0500
+In-reply-to: <520952065.968311421138534993.JavaMail.weblogic@epmlwas05d>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "kgene@kernel.org" <kgene@kernel.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBnZW5lcmljIGV4eW5vcyBidXMgZnJlcXVlbmN5
-IGRyaXZlciBmb3IgbWVtb3J5IGJ1cw0KPiB3aXRoIERFVkZSRVEgZnJhbWV3b3JrLiBUaGUgU2Ft
-c3VuZyBFeHlub3MgU29DcyBoYXZlIHRoZSBjb21tb24gYXJjaGl0ZWN0dXJlDQo+IGZvciBtZW1v
-cnkgYnVzIGJldHdlZW4gRFJBTSBtZW1vcnkgYW5kIE1NQy9zdWIgSVAgaW4gU29DLiBUaGlzIGRy
-aXZlciBjYW4NCj4gc3VwcG9ydCB0aGUgbWVtb3J5IGJ1cyBmcmVxdWVuY3kgZHJpdmVyIGZvciBF
-eHlub3MgU29Dcy4NCj4gDQo+IEVhY2ggbWVtb3J5IGJ1cyBibG9jayBoYXMgYSBjbG9jayBmb3Ig
-bWVtb3J5IGJ1cyBzcGVlZCBhbmQgZnJlcXVlbmN5DQo+IHRhYmxlIHdoaWNoIGlzIGNoYW5nZWQg
-YWNjb3JkaW5nIHRvIHRoZSB1dGlsaXphdGlvbiBvZiBtZW1vcnkgYnVzIG9uIHJ1bnRpbWUuDQo+
-IEFuZCB0aGVuIGVhY2ggbWVtb3J5IGJ1cyBncm91cCBoYXMgdGhlIG9uZSBtb3JlIG1lbW9yeSBi
-dXMgYmxvY2tzIGFuZA0KPiBPUFAgdGFibGUgKGluY2x1ZGluZyBmcmVxdWVuY3kgYW5kIHZvbHRh
-Z2UpLCByZWd1bGF0b3IsIGRldmZyZXEtZXZlbnQNCj4gZGV2aWNlcy4NCj4gDQo+IFRoZXJlIGFy
-ZSBhIGxpdHRsZSBkaWZmZXJlbmNlIGFib3V0IHRoZSBudW1iZXIgb2YgbWVtb3J5IGJ1cyBiZWNh
-dXNlIGVhY2ggRXh5bm9zDQo+IFNvQyBoYXZlIHRoZSBkaWZmZXJlbnQgc3ViLUlQIGFuZCBkaWZm
-ZXJlbnQgbWVtb3J5IGJ1cyBzcGVlZC4gSW4gc3BpdGUgb2YgdGhpcw0KPiBkaWZmZXJlbmNlIGFt
-b25nIEV4eW5vcyBTb0NzLCB3ZSBjYW4gc3VwcG9ydCBhbG1vc3QgRXh5bm9zIFNvQyBieSBhZGRp
-bmcNCj4gdW5pcXVlIGRhdGEgb2YgbWVtb3J5IGJ1cyB0byBkZXZpY2V0cmVlIGZpbGUuDQo+IA0K
-PiBDYzogTXl1bmdqb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+IENjOiBLeXVu
-Z21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiBDYzogS3VramluIEtpbSA8
-a2dlbmVAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9mZi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNo
-b2lAc2Ftc3VuZy5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAgICAg
-ICAgfCAgMTUgKw0KPiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAgICAgICAgfCAgIDEgKw0K
-PiAgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXNmcmVxLmMgfCA1ODkgKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrDQo+ICAzIGZpbGVzIGNoYW5nZWQsIDYwNSBpbnNlcnRp
-b25zKCspDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXNm
-cmVxLmMNCg0KRXh5bm9zIGRyaXZlcnMgYXJlIGxvY2F0ZWQgYXQgZHJpdmVycy9kZXZmcmVxL2V4
-eW5vcy8NClBsZWFzZSByZWxvY2F0ZS9yZW5hbWUgZXh5bm9zLWJ1c2ZyZXEuYw0KDQpbXQ0KDQo+
-IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZXh5bm9zLWJ1c2ZyZXEuYyBiL2RyaXZlcnMv
-ZGV2ZnJlcS9leHlub3MtYnVzZnJlcS5jDQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4
-IDAwMDAwMDAuLmIxODBmNDMNCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9kcml2ZXJzL2RldmZy
-ZXEvZXh5bm9zLWJ1c2ZyZXEuYw0KDQpbXQ0KDQo+ICsNCj4gKyNkZWZpbmUgQlVTX1NBVFVSQVRJ
-T05fUkFUSU8JNDANCg0KSW4gb3JkZXIgdG8gYmUgYSBjb21tb24gZHJpdmVyLCB0aGlzIHNob3Vs
-ZCBiZSB0dW5hYmxlLg0KDQpCZWNhdXNlIC5kdHMgaXMgc3VwcG9zZWQgdG8gaGF2ZSBoYXJkd2Fy
-ZSBjb25maWd1cmF0aW9uIG9ubHksDQp5b3UgbWF5IGtlZXAgYSB0YWJsZSBvZiB7IGNoaXAtbmFt
-ZSwgc2F0dXJhdGlvbiByYXRpb30gaW4gdGhpcw0KZHJpdmVyIGFuZCBsb29rIHVwIHRoZSBzYXR1
-cmF0aW9uIHJhdGlvIGJhc2VkIG9uIHRoZSBjaGlwLW5hbWUuDQoNCj4gKyNkZWZpbmUgU0FGRVZP
-TFQJCTUwMDAwDQo+ICsNCj4gK3N0cnVjdCBleHlub3NfbWVtb3J5X2J1c19vcHBfaW5mbyB7DQo+
-ICsJdW5zaWduZWQgbG9uZyByYXRlOw0KPiArCXVuc2lnbmVkIGxvbmcgdm9sdDsNCj4gK307DQo+
-ICsNCj4gK3N0cnVjdCBleHlub3NfbWVtb3J5X2J1c19ibG9jayB7DQo+ICsJc3RydWN0IGNsayAq
-Y2xrOw0KPiArCXN0cnVjdCBleHlub3NfbWVtb3J5X2J1c19vcHBfaW5mbyAqZnJlcV90YWJsZTsN
-Cj4gK307DQo+ICsNCg0KW10NCg0KPiArI2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiArc3RhdGlj
-IGludCBleHlub3NfYnVzZnJlcV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiArew0KPiAr
-CXN0cnVjdCBleHlub3NfbWVtb3J5X2J1c19kYXRhICpkYXRhID0gZGV2X2dldF9kcnZkYXRhKGRl
-dik7DQo+ICsJaW50IHJldDsNCj4gKw0KPiArCXJldCA9IGV4eW5vc19idXNmcmVxX2VuYWJsZV9l
-ZGV2KGRhdGEpOw0KPiArCWlmIChyZXQgPCAwKSB7DQo+ICsJCWRldl9lcnIoZGV2LCAiZmFpbGVk
-IHRvIGVuYWJsZSB0aGUgZGV2ZnJlcS1ldmVudCBkZXZpY2VzXG4iKTsNCj4gKwkJcmV0dXJuIHJl
-dDsNCj4gKwl9DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludCBl
-eHlub3NfYnVzZnJlcV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gK3sNCj4gKwlzdHJ1
-Y3QgZXh5bm9zX21lbW9yeV9idXNfZGF0YSAqZGF0YSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0K
-PiArCWludCByZXQ7DQo+ICsNCj4gKwlyZXQgPSBleHlub3NfYnVzZnJlcV9kaXNhYmxlX2VkZXYo
-ZGF0YSk7DQo+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8g
-ZGlzYWJsZSB0aGUgZGV2ZnJlcS1ldmVudCBkZXZpY2VzXG4iKTsNCj4gKwkJcmV0dXJuIHJldDsN
-Cj4gKwl9DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKyNlbmRpZg0KDQpQbGVhc2UgZGlz
-YWJsZSByZWd1bGF0b3IgYXQgc3VzcGVuZCBhbmQgcmVzdW1lIGl0IGF0IHJlc3VtZS4NCg0KWW91
-IG1heSBpbnRlcmZlcmUgd2l0aCBsb3ctcG93ZXIgbW9kZSBvZiBjb3JyZXNwb25kaW5nIHZvbHRh
-Z2UgbGluZSwNCndoaWNoIGlzIG9mdGVuIGltcGxlbWVudGVkIHRvIGJlIGFjdGl2YXRlZCBpZiB0
-aGUgcmVndWxhdG9yIGlzDQpleHBsaWNpdGVseSBkaXNhYmxlZCBmb3IgImFsaXZlIiByZWd1bGF0
-b3JzIGxpa2UgdGhpcyBvbmUuDQoNCj4gKw0KPiArc3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1f
-b3BzIGV4eW5vc19idXNmcmVxX3BtID0gew0KPiArCVNFVF9TWVNURU1fU0xFRVBfUE1fT1BTKGV4
-eW5vc19idXNmcmVxX3N1c3BlbmQsIGV4eW5vc19idXNmcmVxX3Jlc3VtZSkNCj4gK307DQo+ICsN
-Cj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGV4eW5vc19idXNmcmVxX29mX21h
-dGNoW10gPSB7DQo+ICsJeyAuY29tcGF0aWJsZSA9ICJzYW1zdW5nLGV4eW5vcy1tZW1vcnktYnVz
-IiwgfSwNCj4gKwl7IC8qIHNlbnRpbmVsICovIH0sDQo+ICt9Ow0KPiArTU9EVUxFX0RFVklDRV9U
-QUJMRShvZiwgZXh5bm9zX2J1c2ZyZXFfb2ZfbWF0Y2gpOw0KPiArDQo+ICtzdGF0aWMgc3RydWN0
-IHBsYXRmb3JtX2RyaXZlciBleHlub3NfYnVzZnJlcV9wbGF0ZHJ2ID0gew0KPiArCS5wcm9iZQkJ
-PSBleHlub3NfYnVzZnJlcV9wcm9iZSwNCj4gKwkucmVtb3ZlCQk9IGV4eW5vc19idXNmcmVxX3Jl
-bW92ZSwNCj4gKwkuZHJpdmVyID0gew0KPiArCQkubmFtZQk9ICJleHlub3MtbWVtb3J5LWJ1cyIs
-DQo+ICsJCS5vd25lcgk9IFRISVNfTU9EVUxFLA0KPiArCQkucG0JPSAmZXh5bm9zX2J1c2ZyZXFf
-cG0sDQo+ICsJCS5vZl9tYXRjaF90YWJsZSA9IG9mX21hdGNoX3B0cihleHlub3NfYnVzZnJlcV9v
-Zl9tYXRjaCksDQo+ICsJfSwNCj4gK307DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKGV4eW5v
-c19idXNmcmVxX3BsYXRkcnYpOw0KPiArDQo+ICtNT0RVTEVfREVTQ1JJUFRJT04oIkdlbmVyaWMg
-RXh5bm9zIE1lbW9yeSBCdXMgRnJlcXVlbmN5IGRyaXZlciIpOw0KPiArTU9EVUxFX0FVVEhPUigi
-Q2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+Iik7DQo+ICtNT0RVTEVfTElDRU5T
-RSgiR1BMIHYyIik7DQo+IC0tIA0KPiAxLjguNS41DQo+IA0KPiANCg==
+Dear Myungjoo,
+
+On 01/13/2015 05:42 PM, MyungJoo Ham wrote:
+>>   
+>>  This patch adds the generic exynos bus frequency driver for memory bus
+>> with DEVFREQ framework. The Samsung Exynos SoCs have the common architecture
+>> for memory bus between DRAM memory and MMC/sub IP in SoC. This driver can
+>> support the memory bus frequency driver for Exynos SoCs.
+>>
+>> Each memory bus block has a clock for memory bus speed and frequency
+>> table which is changed according to the utilization of memory bus on runtime.
+>> And then each memory bus group has the one more memory bus blocks and
+>> OPP table (including frequency and voltage), regulator, devfreq-event
+>> devices.
+>>
+>> There are a little difference about the number of memory bus because each Exynos
+>> SoC have the different sub-IP and different memory bus speed. In spite of this
+>> difference among Exynos SoCs, we can support almost Exynos SoC by adding
+>> unique data of memory bus to devicetree file.
+>>
+>> Cc: Myungjoo Ham <myungjoo.ham@samsung.com>
+>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+>> Cc: Kukjin Kim <kgene@kernel.org>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/Kconfig          |  15 +
+>>  drivers/devfreq/Makefile         |   1 +
+>>  drivers/devfreq/exynos-busfreq.c | 589 +++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 605 insertions(+)
+>>  create mode 100644 drivers/devfreq/exynos-busfreq.c
+> 
+> Exynos drivers are located at drivers/devfreq/exynos/
+> Please relocate/rename exynos-busfreq.c
+
+OK. I'll move it at drivers/devfreq/exynos directory.
+Do you prefer 'exynos-bus.c' instead of 'exynos-busfreq.c'?
+If you reply, I'll change it.
+
+> 
+> []
+> 
+>> diff --git a/drivers/devfreq/exynos-busfreq.c b/drivers/devfreq/exynos-busfreq.c
+>> new file mode 100644
+>> index 0000000..b180f43
+>> --- /dev/null
+>> +++ b/drivers/devfreq/exynos-busfreq.c
+> 
+> []
+> 
+>> +
+>> +#define BUS_SATURATION_RATIO	40
+> 
+> In order to be a common driver, this should be tunable.
+> 
+> Because .dts is supposed to have hardware configuration only,
+> you may keep a table of { chip-name, saturation ratio} in this
+> driver and look up the saturation ratio based on the chip-name.
+
+OK, I'll add new property for saturation_ratio.
+
+I'll implement to use default saturation_ratio value ,
+if dt node don't include saturation_ratio property.
+
+> 
+>> +#define SAFEVOLT		50000
+>> +
+>> +struct exynos_memory_bus_opp_info {
+>> +	unsigned long rate;
+>> +	unsigned long volt;
+>> +};
+>> +
+>> +struct exynos_memory_bus_block {
+>> +	struct clk *clk;
+>> +	struct exynos_memory_bus_opp_info *freq_table;
+>> +};
+>> +
+> 
+> []
+> 
+>> +#ifdef CONFIG_PM_SLEEP
+>> +static int exynos_busfreq_resume(struct device *dev)
+>> +{
+>> +	struct exynos_memory_bus_data *data = dev_get_drvdata(dev);
+>> +	int ret;
+>> +
+>> +	ret = exynos_busfreq_enable_edev(data);
+>> +	if (ret < 0) {
+>> +		dev_err(dev, "failed to enable the devfreq-event devices\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int exynos_busfreq_suspend(struct device *dev)
+>> +{
+>> +	struct exynos_memory_bus_data *data = dev_get_drvdata(dev);
+>> +	int ret;
+>> +
+>> +	ret = exynos_busfreq_disable_edev(data);
+>> +	if (ret < 0) {
+>> +		dev_err(dev, "failed to disable the devfreq-event devices\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +#endif
+> 
+> Please disable regulator at suspend and resume it at resume.
+> 
+> You may interfere with low-power mode of corresponding voltage line,
+> which is often implemented to be activated if the regulator is
+> explicitely disabled for "alive" regulators like this one.
+
+OK, I'll modify it.
+
+Thanks for your review.
+
+Best Regards,
+Chanwoo Choi
