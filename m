@@ -1,59 +1,203 @@
 From: Frans Klaver <frans.klaver@xsens.com>
-Subject: [PATCH RESEND 09/13] power: reset: ltc2952: fix C++ style function pointers
-Date: Wed, 14 Jan 2015 09:15:42 +0100
-Message-ID: <1421223346-27410-10-git-send-email-frans.klaver@xsens.com>
+Subject: [PATCH RESEND 03/13] power: reset: ltc2952: unroll gpio_desc array
+Date: Wed, 14 Jan 2015 09:15:36 +0100
+Message-ID: <1421223346-27410-4-git-send-email-frans.klaver@xsens.com>
 References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:41808 "EHLO
+Received: from filter1.ibarracuda.nl ([83.247.7.10]:41857 "EHLO
 	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbbANI2c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 03:28:32 -0500
+	with ESMTP id S1753333AbbANI2j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 03:28:39 -0500
 In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-The function pointers for the timers and pm_power_off are assigned with
-C++ style
-	foo = &func;
-
-Let's change it instead to the more C style
-	foo = func;
+The three gpio's used by this driver are stored in an array of pointers.
+This doesn't add much besides cleanups in a loop. In fact, it makes most
+of the usage sites harder to read. Unroll the loop, and live with the
+fact that cleanups become slightly larger.
 
 Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
 ---
- drivers/power/reset/ltc2952-poweroff.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/reset/ltc2952-poweroff.c | 86 +++++++++++++++-------------------
+ 1 file changed, 38 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 70d8e3a..8ab1da6 100644
+index 2c11316..fc583e0 100644
 --- a/drivers/power/reset/ltc2952-poweroff.c
 +++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -182,10 +182,10 @@ static void ltc2952_poweroff_default(struct ltc2952_poweroff *data)
- 	data->trigger_delay = ktime_set(2, 500L*1E6L);
+@@ -72,21 +72,14 @@ struct ltc2952_poweroff_data {
  
- 	hrtimer_init(&data->timer_trigger, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	data->timer_trigger.function = &ltc2952_poweroff_timer_trigger;
-+	data->timer_trigger.function = ltc2952_poweroff_timer_trigger;
+ 	struct device *dev;
  
- 	hrtimer_init(&data->timer_wde, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	data->timer_wde.function = &ltc2952_poweroff_timer_wde;
-+	data->timer_wde.function = ltc2952_poweroff_timer_wde;
+-	/**
+-	 * 0: trigger
+-	 * 1: watchdog
+-	 * 2: kill
+-	 */
+-	struct gpio_desc *gpio[3];
++	struct gpio_desc *gpio_trigger;
++	struct gpio_desc *gpio_watchdog;
++	struct gpio_desc *gpio_kill;
+ };
+ 
+ static int ltc2952_poweroff_panic;
+ static struct ltc2952_poweroff_data *ltc2952_data;
+ 
+-#define POWERPATH_IO_TRIGGER	0
+-#define POWERPATH_IO_WATCHDOG	1
+-#define POWERPATH_IO_KILL	2
+-
+ /**
+  * ltc2952_poweroff_timer_wde - Timer callback
+  * Toggles the watchdog reset signal each wde_interval
+@@ -105,8 +98,8 @@ static enum hrtimer_restart ltc2952_poweroff_timer_wde(struct hrtimer *timer)
+ 	if (ltc2952_poweroff_panic)
+ 		return HRTIMER_NORESTART;
+ 
+-	state = gpiod_get_value(ltc2952_data->gpio[POWERPATH_IO_WATCHDOG]);
+-	gpiod_set_value(ltc2952_data->gpio[POWERPATH_IO_WATCHDOG], !state);
++	state = gpiod_get_value(ltc2952_data->gpio_watchdog);
++	gpiod_set_value(ltc2952_data->gpio_watchdog, !state);
+ 
+ 	now = hrtimer_cb_get_time(timer);
+ 	overruns = hrtimer_forward(timer, now, ltc2952_data->wde_interval);
+@@ -120,7 +113,7 @@ static enum hrtimer_restart ltc2952_poweroff_timer_trigger(
+ 	int ret;
+ 
+ 	ret = hrtimer_start(&ltc2952_data->timer_wde,
+-		ltc2952_data->wde_interval, HRTIMER_MODE_REL);
++			    ltc2952_data->wde_interval, HRTIMER_MODE_REL);
+ 
+ 	if (ret) {
+ 		dev_err(ltc2952_data->dev, "unable to start the timer\n");
+@@ -180,7 +173,7 @@ irq_ok:
+ 
+ static void ltc2952_poweroff_kill(void)
+ {
+-	gpiod_set_value(ltc2952_data->gpio[POWERPATH_IO_KILL], 1);
++	gpiod_set_value(ltc2952_data->gpio_kill, 1);
  }
  
+ static int ltc2952_poweroff_suspend(struct platform_device *pdev,
+@@ -196,11 +189,6 @@ static int ltc2952_poweroff_resume(struct platform_device *pdev)
+ 
+ static void ltc2952_poweroff_default(struct ltc2952_poweroff_data *data)
+ {
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(data->gpio); i++)
+-		data->gpio[i] = NULL;
+-
+ 	data->wde_interval = ktime_set(0, 300L*1E6L);
+ 	data->trigger_delay = ktime_set(2, 500L*1E6L);
+ 
+@@ -214,45 +202,46 @@ static void ltc2952_poweroff_default(struct ltc2952_poweroff_data *data)
  static int ltc2952_poweroff_init(struct platform_device *pdev)
-@@ -270,7 +270,7 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ {
+ 	int ret, virq;
+-	unsigned int i;
+ 	struct ltc2952_poweroff_data *data;
  
- 	/* TODO: remove ltc2952_data */
- 	ltc2952_data = data;
--	pm_power_off = &ltc2952_poweroff_kill;
-+	pm_power_off = ltc2952_poweroff_kill;
+-	static char *name[] = {
+-		"trigger",
+-		"watchdog",
+-		"kill",
+-		NULL
+-	};
+-
+ 	data = ltc2952_data;
+ 	ltc2952_poweroff_default(ltc2952_data);
  
- 	data->panic_notifier.notifier_call = ltc2952_poweroff_notify_panic;
- 	atomic_notifier_chain_register(&panic_notifier_list,
+-	for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++) {
+-		ltc2952_data->gpio[i] = gpiod_get(&pdev->dev, name[i]);
++	ltc2952_data->gpio_watchdog = gpiod_get(&pdev->dev, "watchdog");
++	if (IS_ERR(ltc2952_data->gpio_watchdog)) {
++		ret = PTR_ERR(ltc2952_data->gpio_watchdog);
++		dev_err(&pdev->dev, "unable to claim gpio \"watchdog\"\n");
++		return ret;
++	}
+ 
+-		if (IS_ERR(ltc2952_data->gpio[i])) {
+-			ret = PTR_ERR(ltc2952_data->gpio[i]);
+-			dev_err(&pdev->dev,
+-				"unable to claim the following gpio: %s\n",
+-				name[i]);
+-			goto err_io;
+-		}
++	ltc2952_data->gpio_kill = gpiod_get(&pdev->dev, "kill");
++	if (IS_ERR(ltc2952_data->gpio_kill)) {
++		ret = PTR_ERR(ltc2952_data->gpio_kill);
++		dev_err(&pdev->dev, "unable to claim gpio \"kill\"\n");
++		goto err_kill;
++	}
++
++	ltc2952_data->gpio_trigger = gpiod_get(&pdev->dev, "trigger");
++	if (IS_ERR(ltc2952_data->gpio_trigger)) {
++		ret = PTR_ERR(ltc2952_data->gpio_trigger);
++		dev_err(&pdev->dev, "unable to claim gpio \"trigger\"\n");
++		goto err_trigger;
+ 	}
+ 
+ 	ret = gpiod_direction_output(
+-		ltc2952_data->gpio[POWERPATH_IO_WATCHDOG], 0);
++		ltc2952_data->gpio_watchdog, 0);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to use watchdog-gpio as output\n");
+ 		goto err_io;
+ 	}
+ 
+-	ret = gpiod_direction_output(ltc2952_data->gpio[POWERPATH_IO_KILL], 0);
++	ret = gpiod_direction_output(ltc2952_data->gpio_kill, 0);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to use kill-gpio as output\n");
+ 		goto err_io;
+ 	}
+ 
+-	virq = gpiod_to_irq(ltc2952_data->gpio[POWERPATH_IO_TRIGGER]);
++	virq = gpiod_to_irq(ltc2952_data->gpio_trigger);
+ 	if (virq < 0) {
+ 		dev_err(&pdev->dev, "cannot map GPIO as interrupt");
+ 		goto err_io;
+@@ -272,9 +261,11 @@ static int ltc2952_poweroff_init(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_io:
+-	for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
+-		if (ltc2952_data->gpio[i])
+-			gpiod_put(ltc2952_data->gpio[i]);
++	gpiod_put(ltc2952_data->gpio_trigger);
++err_trigger:
++	gpiod_put(ltc2952_data->gpio_kill);
++err_kill:
++	gpiod_put(ltc2952_data->gpio_watchdog);
+ 
+ 	return ret;
+ }
+@@ -308,14 +299,13 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ 
+ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+ {
+-	unsigned int i;
+-
+ 	pm_power_off = NULL;
+ 
+-	if (ltc2952_data)
+-		for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
+-			gpiod_put(ltc2952_data->gpio[i]);
+-
++	if (ltc2952_data) {
++		gpiod_put(ltc2952_data->gpio_trigger);
++		gpiod_put(ltc2952_data->gpio_watchdog);
++		gpiod_put(ltc2952_data->gpio_kill);
++	}
+ 	return 0;
+ }
+ 
 -- 
 2.1.0
 
