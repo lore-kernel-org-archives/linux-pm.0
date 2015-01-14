@@ -1,152 +1,141 @@
-From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use PWM
- FAN as a cooling device
-Date: Wed, 14 Jan 2015 14:56:32 +0100
-Message-ID: <20150114145632.3010f836@amdc2363>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 1/8] thermal: Provide stub for
+ thermal_of_cooling_device_register() function
+Date: Wed, 14 Jan 2015 16:01:06 +0100
+Message-ID: <20150114160106.20aa160b@amdc2363>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
- <1418899337.23532.9.camel@collabora.co.uk> <20141219163224.34796e5d@amdc2363>
- <20141219160237.GA2199@roeck-us.net> <20141219171301.1527d81e@amdc2363>
- <1420455034.15910.53.camel@collabora.co.uk>
+ <1419265668-32283-1-git-send-email-l.majewski@samsung.com>
+ <1419265668-32283-2-git-send-email-l.majewski@samsung.com>
+ <20150102185426.GC12485@developer> <20150102190339.GA22356@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1420455034.15910.53.camel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sjoerd Simons <sjoerd.simons-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
-Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20150102190339.GA22356@developer>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sjoerd,
+Hi Eduardo,
 
-> Hey Lukasz,
-> 
-> Blame the holiday season for my late reply ;)
-> 
-> On Fri, 2014-12-19 at 17:13 +0100, Lukasz Majewski wrote:
-> > Hi Guenter,
-> > 
-> > > On Fri, Dec 19, 2014 at 04:32:24PM +0100, Lukasz Majewski wrote:
-> > > > Hi Sjoerd,
-> > > > 
-> > > > Thanks for your feedback and sorry for a late reply.
-> > > > 
-> > > > > On Thu, 2014-12-18 at 11:13 +0100, Lukasz Majewski wrote:
-> > > > > > Several new properties to allow PWM fan working as a cooling
-> > > > > > device have been combined into this single commit.
-> > > > > > 
-> > > > > > Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> > > > > > ---
-> > > > > >  .../devicetree/bindings/hwmon/pwm-fan.txt          | 28
-> > > > > > ++++++++++++++++++++++ 1 file changed, 28 insertions(+)
-> > > > > > 
-> > > > > > diff --git
-> > > > > > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> > > > > > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt index
-> > > > > > 610757c..3877810 100644 ---
-> > > > > > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt +++
-> > > > > > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt @@
-> > > > > > -3,10 +3,38 @@ Bindings for a fan connected to the PWM
-> > > > > > lines Required properties:
-> > > > > >  - compatible	: "pwm-fan"
-> > > > > >  - pwms		: the PWM that is used to control the
-> > > > > > PWM fan +- cooling-pwm-values      : PWM duty cycle values
-> > > > > > relative to
-> > > > > > +			    cooling-max-pwm-value
-> > > > > > correspondig to
-> > > > > > +			    proper cooling states
-> > > > > > +- default-pulse-width     : Property specifying default
-> > > > > > pulse width for FAN
-> > > > > > +			    at system boot (zero to disable
-> > > > > > FAN on boot).
-> > > > > > +			    Allowed range is 0 to 255
-> > > > > 
-> > > > > The 0..255 range seems somewhat random. Would be nicer to
-> > > > > either use the approach of pwm-backlight (iotw, have the
-> > > > > range go from the first to the last entry of
-> > > > > cooling-pwm-values) 
-> > > > 
-> > > > I'm OK to change the default-pulse-width to be similar to
-> > > > "default-brightness-level" (as it is in
-> > > > Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt)
-> > > > 
-> > > > > or simply have be the duty
-> > > > > lenght in NS as entries instead of the current indirection.
-> > > > 
-> > > > I'd prefer to keep the indirection - as it is utilized in the
-> > > > current pwm-fan.c driver.
-> > > > 
-> > > FWIW, devicetree information is supposed to be implementation
-> > > independent. So this is a poor argument.
-> > 
-> > Many other pwm drivers use the indirection - e.g. mentioned
-> > pwm-backlight.
-> 
-> I don't specifically mind the indirection, i was just thinking out
-> loud whether it added value (but if it's quite common, might indeed
-> be good to keep the pattern). What i do dislike is the number of
-> levels is being set to an arbitrary levels, as that will very rarely
-> match the actual number of distinct pwm levels you 
-> 
-> One thing though, when following the pattern of the pwm-backlight
-> driver; In pwm-backlight the highest index of brightness-levels is
-> always 100% duty cycle.. On e.g. XU3 the vendor kernel never drives
-> the fan at 100% duty (maximum of 91%). So it would be nice if the dt
-> bindigns could model that e.g. by having:
-> 
-> pwm-levels = <20>; // 21 distinct pwm levels
-> valid-pwm-level = <5 15 18>; /* 5 15 and 18 are usable levels - pwm
-> will default to highest level */
-> 
+> On Fri, Jan 02, 2015 at 02:54:28PM -0400, Eduardo Valentin wrote:
+> > On Mon, Dec 22, 2014 at 05:27:41PM +0100, Lukasz Majewski wrote:
+> > > Odroid U3 fan can work without being registered as OF cooling
+> > > device (with CONFIG_THERMAL_OF disabled).
+> > > In this situation it can be controlled via PWM entry at
+> > > /sys/class/hwmon/hwmon0/pwm1.
+> > >=20
+> > > Therefore, the thermal_of_cooling_device_register() function
+> > > needs a stub to allow clean compilation.
+> > >=20
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> >=20
+> > Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>=20
+> Sorry, too fast,
+>=20
+> This is actually
+> Nacked-by: Eduardo Valentin <edubezval@gmail.com>
+>=20
+> :-)
+>=20
+> I get this error:
+> drivers/thermal/thermal_core.c:1210:1: error: redefinition of
+> =E2=80=98thermal_of_cooling_device_register=E2=80=99
+>  thermal_of_cooling_device_register(struct device_node *np,
+>   ^
+>   In file included from drivers/thermal/thermal_core.c:34:0:
+>   include/linux/thermal.h:321:1: note: previous definition of
+>   =E2=80=98thermal_of_cooling_device_register=E2=80=99 was here
+>    thermal_of_cooling_device_register(struct device_node *np,
+>     ^
+>=20
+>=20
+> We provide the function in thermal core even if CONFIG_THERMAL_OF is
+> not set.
 
-Could you review v2 of this patch series?
+Unfortunately the PWM fan subsystem can work perfectly fine without
+CONFIG_THERMAL.
 
-http://www.spinics.net/lists/devicetree/msg63159.html
+I think that it would be enough to make something like this in
+the ./include/linux/thermal.h:
 
-> 
-> > > > Enabling pan to full RPM was the default behaviour in the
-> > > > current pwm-fan.c file.
-> > > > 
-> > > > To be honest, there is no need to enable fan to full RPM speed
-> > > > in this board for following reasons:
-> > > > 1. In Odroid the FAN is optional (stacked on top of a heat
-> > > > sink) - very often it is just enough to only have the heat sink.
-> > > > 
-> > > > 2. Odroid has thermal enabled by default and IMHO it would be
-> > > > more feasible to allow thermal to control fan from the very
-> > > > beginning.
-> > > > 
-> > > > However, I can also understand if the policy for hwmon implies a
-> > > > rule to enable by default all fans to full RPM speed.
-> > > > 
-> > > Why and how does that all suggest that the current default
-> > > behavior should be changed ?
-> > 
-> > I wanted to avoid the unpleasant sound for full speed fan when
-> > thermal is not enabled by default.
-> > 
-> > But as I said, I fully understand the policy and I would be happy to
-> > comply with it as thermal should reduce the fan speed anyway at boot
-> > time.
-> 
-> Yeah, what happens on my XU3 is that u-boot sets the pwm to 100% duty
-> and the thermal infrastructure turns it off as soon as it gets into
-> control, which works quite nicely (and keeps my sanity as that fan at
-> 100% is *loud*)...  So if you want to avoid unpleasant sounds, just
-> build with thermal :p
-> 
-> 
+#ifdef CONFIG_THERMAL
+	static inline struct thermal_cooling_device *
+		thermal_of_cooling_device_register(struct device_node
+		*np, char *type, void *devdata,
+				   const struct
+		thermal_cooling_device_ops *ops) {
+		return NULL;
+	}
+#else
+	[ already present declaration of
+	thermal_of_cooling_device_register() ]
+#endif /* CONFIG_THERMAL */
 
 
 
--- 
+> >=20
+> > > ---
+> > > Changes for v2:
+> > > - None
+> > > ---
+> > >  include/linux/thermal.h | 14 +++++++++++---
+> > >  1 file changed, 11 insertions(+), 3 deletions(-)
+> > >=20
+> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > > index 2de3d9e..871123c 100644
+> > > --- a/include/linux/thermal.h
+> > > +++ b/include/linux/thermal.h
+> > > @@ -328,6 +328,10 @@ thermal_zone_of_sensor_register(struct
+> > > device *dev, int id, void *data, const struct
+> > > thermal_zone_of_device_ops *ops); void
+> > > thermal_zone_of_sensor_unregister(struct device *dev, struct
+> > > thermal_zone_device *tz); +struct thermal_cooling_device *
+> > > +thermal_of_cooling_device_register(struct device_node *np,
+> > > +				   char *type, void *devdata,
+> > > +				   const struct
+> > > thermal_cooling_device_ops *); #else
+> > >  static inline struct thermal_zone_device *
+> > >  thermal_zone_of_sensor_register(struct device *dev, int id, void
+> > > *data, @@ -342,6 +346,13 @@ void
+> > > thermal_zone_of_sensor_unregister(struct device *dev, {
+> > >  }
+> > > =20
+> > > +static inline struct thermal_cooling_device *
+> > > +thermal_of_cooling_device_register(struct device_node *np,
+> > > +				   char *type, void *devdata,
+> > > +				   const struct
+> > > thermal_cooling_device_ops *ops) +{
+> > > +	return NULL;
+> > > +}
+> > >  #endif
+> > >  struct thermal_zone_device *thermal_zone_device_register(const
+> > > char *, int, int, void *, struct thermal_zone_device_ops *,
+> > > @@ -357,9 +368,6 @@ void thermal_zone_device_update(struct
+> > > thermal_zone_device *);=20
+> > >  struct thermal_cooling_device
+> > > *thermal_cooling_device_register(char *, void *, const struct
+> > > thermal_cooling_device_ops *); -struct thermal_cooling_device *
+> > > -thermal_of_cooling_device_register(struct device_node *np, char
+> > > *, void *,
+> > > -				   const struct
+> > > thermal_cooling_device_ops *); void
+> > > thermal_cooling_device_unregister(struct thermal_cooling_device
+> > > *); struct thermal_zone_device
+> > > *thermal_zone_get_zone_by_name(const char *name); int
+> > > thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned
+> > > long *temp); -- 2.0.0.rc2
+> > >=20
+>=20
+>=20
+
+
+
+--=20
 Best regards,
 
 Lukasz Majewski
 
 Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
