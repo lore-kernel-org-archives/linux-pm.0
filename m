@@ -1,312 +1,90 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 13/16] thermal: exynos: dts: Provide device tree
- bindings identical to the one in exynos_tmu_data.c
-Date: Wed, 14 Jan 2015 15:05:52 -0400
-Message-ID: <20150114190550.GB4105@developer>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
- <1421242874-3425-14-git-send-email-l.majewski@samsung.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH v3 4/9] ARM: dts: sun7i: cubieboard2: add axp209
+ regulator nodes
+Date: Wed, 14 Jan 2015 20:30:08 +0100
+Message-ID: <20150114193008.GD4891@lukather>
+References: <1421037249-28461-1-git-send-email-wens@csie.org>
+ <1421037249-28461-5-git-send-email-wens@csie.org>
+ <20150112090603.GE4891@lukather>
+ <CAGb2v66r6EG2F1-=Gaig7ZW58Z1KteQ5nDPfW5niisv7dCjY0Q@mail.gmail.com>
+ <20150113094036.GR4891@lukather>
+ <CAGb2v65=Jfr56Yb2udNVy=shA9+AOPK9yjHTAOJZ7TFh5idTHA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RASg3xLB4tUQ4RcS"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="cC4dCx2W6DcYPM7t"
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1421242874-3425-14-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+In-Reply-To: <CAGb2v65=Jfr56Yb2udNVy=shA9+AOPK9yjHTAOJZ7TFh5idTHA@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---RASg3xLB4tUQ4RcS
+--cC4dCx2W6DcYPM7t
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 14, 2015 at 02:41:11PM +0100, Lukasz Majewski wrote:
-> Presented device tree bindings provide data already hardcoded in the
-> exynos_tmu_data.c file.
-> After this commit, it should be possible to reuse common thermal core
-> framework in Exynos SoCs.
+On Tue, Jan 13, 2015 at 06:30:51PM +0800, Chen-Yu Tsai wrote:
+> >> You could probably chain the regulators in the DT via xxx-supply
+> >> if it helps. But beyond that, it is hard to do anything meaningful
+> >> at this point. Modeling them as fixed regulators beyond our control
+> >> is simpler. We also do not have an IPSOUT regulator for the AXP.
+> >>
+> >> > Eventually, I think we would be able to remove
+> >> > sunxi-common-regulators.dtsi, or at least, expose the proper regulat=
+or
+> >> > hierarchy.
+> >>
+> >> The USB and SATA regulators are just GPIO enabled switches (MOSFETs)
+> >> or current limiters. I think these will always exist because of the
+> >> reference designs. Or do you want to move them back into the board
+> >> dts files? FWIW, I like it the way it is now. Not that I don't like
+> >> it to be accurate.
+> >
+> > At least providing the right hierarchy at the board level would be
+> > great. Adding the -supply property to all our fixed regulators
+> > wouldn't take too much code, and would be enough to model properly the
+> > regulator trees.
 >=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - Add proper TMU entries for exynos3250.dtsi
-> Changes for v3:
-> - Remove "type" DT properties, which will be extracted from compatible
-> - "samsung,tmu_" prefix for TMU specific properties has been added
+> These are all unrelated to axp209. You'd end up with
 >=20
-> ---
->  arch/arm/boot/dts/exynos3250.dtsi |  2 ++
->  arch/arm/boot/dts/exynos4.dtsi    |  4 ++++
->  arch/arm/boot/dts/exynos4210.dtsi | 21 ++++++++++++++++++++-
->  arch/arm/boot/dts/exynos4x12.dtsi |  1 +
->  arch/arm/boot/dts/exynos5250.dtsi |  5 +++--
->  arch/arm/boot/dts/exynos5420.dtsi | 28 ++++++++++++++++++++++++++++
->  arch/arm/boot/dts/exynos5440.dtsi | 18 ++++++++++++++++++
->  7 files changed, 76 insertions(+), 3 deletions(-)
+>     vin-supply =3D <&reg_vcc5v>;
 >=20
-> diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos=
-3250.dtsi
-> index 2246549..8cc078c 100644
-> --- a/arch/arm/boot/dts/exynos3250.dtsi
-> +++ b/arch/arm/boot/dts/exynos3250.dtsi
-> @@ -18,6 +18,7 @@
->   */
-> =20
->  #include "skeleton.dtsi"
-> +#include "exynos4-cpu-thermal.dtsi"
->  #include <dt-bindings/clock/exynos3250.h>
-> =20
->  / {
-> @@ -188,6 +189,7 @@
->  			interrupts =3D <0 216 0>;
->  			clocks =3D <&cmu CLK_TMU_APBIF>;
->  			clock-names =3D "tmu_apbif";
-> +			#include "exynos4412-tmu-sensor-conf.dtsi"
->  			status =3D "disabled";
->  		};
-> =20
-> diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.d=
-tsi
-> index b8168f1..f18d746 100644
-> --- a/arch/arm/boot/dts/exynos4.dtsi
-> +++ b/arch/arm/boot/dts/exynos4.dtsi
-> @@ -645,4 +645,8 @@
->  		samsung,sysreg =3D <&sys_reg>;
->  		status =3D "disabled";
->  	};
-> +
-> +	tmu: tmu@100C0000 {
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
-> +	};
->  };
-> diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos=
-4210.dtsi
-> index 2e66df8..7f0e012 100644
-> --- a/arch/arm/boot/dts/exynos4210.dtsi
-> +++ b/arch/arm/boot/dts/exynos4210.dtsi
-> @@ -21,6 +21,7 @@
-> =20
->  #include "exynos4.dtsi"
->  #include "exynos4210-pinctrl.dtsi"
-> +#include "exynos4-cpu-thermal.dtsi"
-> =20
->  / {
->  	compatible =3D "samsung,exynos4210", "samsung,exynos4";
-> @@ -146,16 +147,34 @@
->  		reg =3D <0x03860000 0x1000>;
->  	};
-> =20
-> -	tmu@100C0000 {
-> +	tmu: tmu@100C0000 {
->  		compatible =3D "samsung,exynos4210-tmu";
->  		interrupt-parent =3D <&combiner>;
->  		reg =3D <0x100C0000 0x100>;
->  		interrupts =3D <2 4>;
->  		clocks =3D <&clock CLK_TMU_APBIF>;
->  		clock-names =3D "tmu_apbif";
-> +		samsung,tmu_gain =3D <15>;
-> +		samsung,tmu_reference_voltage =3D <7>;
->  		status =3D "disabled";
->  	};
-> =20
-> +	thermal-zones {
-> +		cpu_thermal: cpu-thermal {
-> +			trips {
-> +			      cpu_alert0: cpu-alert-0 {
-> +				      temperature =3D <85000>; /* millicelsius */
-> +			      };
-> +			      cpu_alert1: cpu-alert-1 {
-> +				      temperature =3D <100000>; /* millicelsius */
-> +			      };
-> +			      cpu_alert2: cpu-alert-2 {
-> +				      temperature =3D <110000>; /* millicelsius */
-> +			      };
-> +			};
-> +		};
-> +	};
-> +
->  	g2d@12800000 {
->  		compatible =3D "samsung,s5pv210-g2d";
->  		reg =3D <0x12800000 0x1000>;
-> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos=
-4x12.dtsi
-> index 93b7040..3ee2031 100644
-> --- a/arch/arm/boot/dts/exynos4x12.dtsi
-> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
-> @@ -19,6 +19,7 @@
-> =20
->  #include "exynos4.dtsi"
->  #include "exynos4x12-pinctrl.dtsi"
-> +#include "exynos4-cpu-thermal.dtsi"
-> =20
->  / {
->  	aliases {
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos=
-5250.dtsi
-> index dd5c3a0..07fd73a 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -20,7 +20,7 @@
->  #include <dt-bindings/clock/exynos5250.h>
->  #include "exynos5.dtsi"
->  #include "exynos5250-pinctrl.dtsi"
-> -
-> +#include "exynos4-cpu-thermal.dtsi"
->  #include <dt-bindings/clock/exynos-audss-clk.h>
-> =20
->  / {
-> @@ -236,12 +236,13 @@
->  		status =3D "disabled";
->  	};
-> =20
-> -	tmu@10060000 {
-> +	tmu: tmu@10060000 {
->  		compatible =3D "samsung,exynos5250-tmu";
->  		reg =3D <0x10060000 0x100>;
->  		interrupts =3D <0 65 0>;
->  		clocks =3D <&clock CLK_TMU>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	thermal-zones {
-> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos=
-5420.dtsi
-> index 517e50f..f5771e5 100644
-> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> @@ -761,6 +761,7 @@
->  		interrupts =3D <0 65 0>;
->  		clocks =3D <&clock CLK_TMU>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_cpu1: tmu@10064000 {
-> @@ -769,6 +770,7 @@
->  		interrupts =3D <0 183 0>;
->  		clocks =3D <&clock CLK_TMU>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_cpu2: tmu@10068000 {
-> @@ -777,6 +779,7 @@
->  		interrupts =3D <0 184 0>;
->  		clocks =3D <&clock CLK_TMU>, <&clock CLK_TMU>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_cpu3: tmu@1006c000 {
-> @@ -785,6 +788,7 @@
->  		interrupts =3D <0 185 0>;
->  		clocks =3D <&clock CLK_TMU>, <&clock CLK_TMU_GPU>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_gpu: tmu@100a0000 {
-> @@ -793,6 +797,30 @@
->  		interrupts =3D <0 215 0>;
->  		clocks =3D <&clock CLK_TMU_GPU>, <&clock CLK_TMU>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
-> +	};
-> +
-> +	thermal-zones {
-> +		cpu0_thermal: cpu0-thermal {
-> +			thermal-sensors =3D <&tmu_cpu0>;
-> +			#include "exynos5420-trip-points.dtsi"
-> +		};
-> +		cpu1_thermal: cpu1-thermal {
-> +		       thermal-sensors =3D <&tmu_cpu1>;
-> +		       #include "exynos5420-trip-points.dtsi"
-> +		};
-> +		cpu2_thermal: cpu2-thermal {
-> +		       thermal-sensors =3D <&tmu_cpu2>;
-> +		       #include "exynos5420-trip-points.dtsi"
-> +		};
-> +		cpu3_thermal: cpu3-thermal {
-> +		       thermal-sensors =3D <&tmu_cpu3>;
-> +		       #include "exynos5420-trip-points.dtsi"
-> +		};
-> +		gpu_thermal: gpu-thermal {
-> +		       thermal-sensors =3D <&tmu_gpu>;
-> +		       #include "exynos5420-trip-points.dtsi"
-> +		};
->  	};
-> =20
->          watchdog: watchdog@101D0000 {
-> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos=
-5440.dtsi
-> index 8f3373c..59d9416 100644
-> --- a/arch/arm/boot/dts/exynos5440.dtsi
-> +++ b/arch/arm/boot/dts/exynos5440.dtsi
-> @@ -219,6 +219,7 @@
->  		interrupts =3D <0 58 0>;
->  		clocks =3D <&clock CLK_B_125>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos5440-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmuctrl_1: tmuctrl@16011C {
-> @@ -227,6 +228,7 @@
->  		interrupts =3D <0 58 0>;
->  		clocks =3D <&clock CLK_B_125>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos5440-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmuctrl_2: tmuctrl@160120 {
-> @@ -235,6 +237,22 @@
->  		interrupts =3D <0 58 0>;
->  		clocks =3D <&clock CLK_B_125>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos5440-tmu-sensor-conf.dtsi"
-> +	};
-> +
-> +	thermal-zones {
-> +		cpu0_thermal: cpu0-thermal {
-> +			thermal-sensors =3D <&tmuctrl_0>;
-> +			#include "exynos5440-trip-points.dtsi"
-> +		};
-> +		cpu1_thermal: cpu1-thermal {
-> +		       thermal-sensors =3D <&tmuctrl_1>;
-> +		       #include "exynos5440-trip-points.dtsi"
-> +		};
-> +		cpu2_thermal: cpu2-thermal {
-> +		       thermal-sensors =3D <&tmuctrl_2>;
-> +		       #include "exynos5440-trip-points.dtsi"
-> +		};
+> for the usb and sata power regulators. You could put these
+> in sunxi-common-regulators, and override them for boards
+> that actually have something controllable.
 
-For all thermal zones added in this patch, can you please make sure they
-all've got the mandatory fields?
+Ok. Fine then.
 
->  	};
-> =20
->  	sata@210000 {
-> --=20
-> 2.0.0.rc2
->=20
+Maxime
 
---RASg3xLB4tUQ4RcS
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--cC4dCx2W6DcYPM7t
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQEcBAEBAgAGBQJUtr4FAAoJEMLUO4d9pOJWjIkH/0484r4nyy5TEKp9aqTTqG7v
-qji2m5VEradajWYxIQbGwje7Qz+zgfp+ox1paLZ4ISHXzeaM1p+I6X1XTuIMN3KD
-vI8R6Ebq14ZWXtVKzioK1YMcGxreYCSsXIRZkiN0YYXNFZWfxkYcNcyn8V4UpFHQ
-upIye3gIEuhmOI4/nP0lHb3vozPgxBpidMldlx2j6yPhStZ/rNuyrtO2QNq8RYjS
-EeUrJwstrhrjCaRd2ayieyr/JtdCsnOzhcRI+bnf0LbZzHgXG+KXNb6HanYVJqOT
-yj1FiEwDZv3B8pj5oWUyRm7hTRM51X3VEdxGmVcotrieryglMOqxG//WubVVG2M=
-=ZmDg
+iQIcBAEBAgAGBQJUtsPAAAoJEBx+YmzsjxAgVsIQAKJQF/3Jugi/nlhA2hYvTekV
+7BdfxtqgjtNNFT+P3ZOPj4/04jjAiGVnw+8T4p2UqQigFu/4U0B7UBHygHt8a3sm
+VYwu8XQyFAvwdY8AKVQtelFTfX8YjnJcCoXKkEOEpwg5SBgmkpFpWEi7Z79gqOC8
+KvGQLTi6jcKxTcTI8eIthHP+lD6V/Y4IUj8X/OB1tVmItafy2TrCZr+tw3nVtW9V
+b2249hPpEGPyEQ225yEtigp+XCD0nafrv+5spcUfAA7JW9J2p0S3PTb4JHxmDGq5
+u+JPfCSsFCV7q60szk0r2GvH245yIyugOpyJHpwXJSytZxlGZ0DSOKeRqbfyTIiH
+i6/Tu4wXBH6vXbBolF4ky33CN+begrJ7wI/6vTC8fCSYKm2keGFeB1LxiKPGbq2u
+72s14SX9UkpyUlQoDPZymilb8mvDWBgCySWitL/YQb+0qjLE5uEZzLV1oPcGvtr8
++QQkoGUKs0uLkD99F8Woag53wd45D667vyIHjIhG9xIlQniKA/UiJCpY5aLp4hkf
+N5Dqq3a3ZqL6GPFCE6bCIMzA8h8sXqm+77R8sWoXh8trTA3f6+bf745Dnd1VGiAk
+DOnt00LnPzbnRq+u2wo9wTbw6aEsHP9ulQPaxfnrsYPqcJ7AIX46/RTkhyW0y6EG
+WZEVmucqiQ1KHlj34n4c
+=4wTz
 -----END PGP SIGNATURE-----
 
---RASg3xLB4tUQ4RcS--
+--cC4dCx2W6DcYPM7t--
