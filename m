@@ -1,598 +1,531 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Wed, 14 Jan 2015 08:24:04 +0800
-Message-ID: <54B5B724.4020108@linux.intel.com>
-References: <54866625.8010406@linux.intel.com>
+From: Yingjoe Chen <yingjoe.chen@mediatek.com>
+Subject: Re: [PATCH 2/2] cpufreq: add cpufreq driver for Mediatek MT8173 SoC
+Date: Wed, 14 Jan 2015 15:43:39 +0800
+Message-ID: <1421221419.31355.123.camel@mtksdaap41>
+References: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1420797291-15972-3-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:7983 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbbANAYI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Jan 2015 19:24:08 -0500
-In-Reply-To: <54866625.8010406@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1420797291-15972-3-git-send-email-pi-cheng.chen@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linaro-kernel@lists.linaro.org, Mike Turquette <mturquette@linaro.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Matthias Brugger <matthias.bgg@gmail.com>, Eddie Huang <eddie.huang@mediatek.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Happy New Year, can you please take a look at this patch now?
 
-Thanks,
--Aubrey
+Hi,
 
-On 2014/12/9 11:01, Li, Aubrey wrote:
-> The patch is based on v3.18.
+On Fri, 2015-01-09 at 17:54 +0800, pi-cheng.chen wrote:
+> When doing DVFS on MT8173 SoC, 2 rules should be followed to make sure the
+> SoC works properly:
+> 1. When doing frequency scaling of CPUs, the clock source should be switched
+>    to another PLL, then switched back to the orignal until it's stable.
+> 2. When doing voltage scaling of CA57 cluster, Vproc and Vsram need to be
+>    controlled concurrently and 2 limitations should be followed:
+>    a. Vsram > Vproc
+>    b. Vsram - Vproc < 200 mV
+
+It seems to me this is not much different then other mtk big little
+SoCs. Is it possible to aim to support both mt8173 & mt8135 with this
+driver?
+
+> To address these needs, we reuse cpufreq-dt but do voltage scaling in the
+> cpufreq notifier.
 > 
-> Freeze is a general power saving state that processes are frozen, devices
-> are suspended and CPUs are in idle state. However, when the system enters
-> freeze state, there are a few timers keep ticking and hence consumes more
-> power unnecessarily. The observed timer events in freeze state are:
-> - tick_sched_timer
-> - watchdog lockup detector
-> - realtime scheduler period timer
-> 
-> The system power consumption in freeze state will be reduced significantly
-> if we quiesce these timers.
-> 
-> The patch is tested on:
-> - Sandybrdige-EP system, both RTC alarm and power button are able to wake
->   the system up from freeze state.
-> - HP laptop EliteBook 8460p, both RTC alarm and power button are able to
->   wake the system up from freeze state.
-> - Baytrail-T(ASUS_T100) platform, power button is able to wake the system
->   up from freeze state.
-> 
-> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Alan Cox <alan@linux.intel.com>
+> Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
 > ---
->  drivers/cpuidle/cpuidle.c   | 13 ++++++++
->  include/linux/clockchips.h  |  4 +++
->  include/linux/suspend.h     |  4 +++
->  include/linux/timekeeping.h |  2 ++
->  kernel/power/suspend.c      | 50 ++++++++++++++++++++++++++---
->  kernel/sched/idle.c         | 45 ++++++++++++++++++++++++++
->  kernel/softirq.c            |  5 +--
->  kernel/time/clockevents.c   | 13 ++++++++
->  kernel/time/tick-common.c   | 53 +++++++++++++++++++++++++++++++
->  kernel/time/tick-internal.h |  3 ++
->  kernel/time/timekeeping.c   | 77 +++++++++++++++++++++++++++++++++------------
->  11 files changed, 243 insertions(+), 26 deletions(-)
+>  drivers/cpufreq/Kconfig.arm      |   6 +
+>  drivers/cpufreq/Makefile         |   1 +
+>  drivers/cpufreq/mt8173-cpufreq.c | 459 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 466 insertions(+)
+>  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
 > 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 125150d..b9a3ada 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -20,6 +20,7 @@
->  #include <linux/hrtimer.h>
->  #include <linux/module.h>
->  #include <trace/events/power.h>
-> +#include <linux/suspend.h>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 0f9a2c3..97ed7dd 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -255,3 +255,9 @@ config ARM_PXA2xx_CPUFREQ
+>  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
 >  
->  #include "cpuidle.h"
->  
-> @@ -119,6 +120,18 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->  	ktime_t time_start, time_end;
->  	s64 diff;
->  
-> +	/*
-> +	 * under the freeze scenario, the timekeeping is suspended
-> +	 * as well as the clock source device, so we bypass the idle
-> +	 * counter update in freeze idle
-> +	 */
-> +	if (in_freeze()) {
-> +		entered_state = target_state->enter(dev, drv, index);
-> +		if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-> +			local_irq_enable();
-> +		return entered_state;
-> +	}
+>  	  If in doubt, say N.
 > +
->  	trace_cpu_idle_rcuidle(index, dev->cpu);
->  	time_start = ktime_get();
+> +config ARM_MT8173_CPUFREQ
+> +	bool "Mediatek MT8173 CPUFreq support"
+> +	depends on ARCH_MEDIATEK && CPUFREQ_DT && REGULATOR
+> +	help
+> +	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index b3ca7b0..67b7f17 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
 >  
-> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-> index 2e4cb67..d118e0b 100644
-> --- a/include/linux/clockchips.h
-> +++ b/include/linux/clockchips.h
-> @@ -18,6 +18,9 @@ enum clock_event_nofitiers {
->  	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
->  	CLOCK_EVT_NOTIFY_SUSPEND,
->  	CLOCK_EVT_NOTIFY_RESUME,
-> +	CLOCK_EVT_NOTIFY_FREEZE_PREPARE,
-> +	CLOCK_EVT_NOTIFY_FREEZE,
-> +	CLOCK_EVT_NOTIFY_UNFREEZE,
->  	CLOCK_EVT_NOTIFY_CPU_DYING,
->  	CLOCK_EVT_NOTIFY_CPU_DEAD,
->  };
-> @@ -95,6 +98,7 @@ enum clock_event_mode {
->   */
->  struct clock_event_device {
->  	void			(*event_handler)(struct clock_event_device *);
-> +	void			(*real_handler)(struct clock_event_device *);
->  	int			(*set_next_event)(unsigned long evt,
->  						  struct clock_event_device *);
->  	int			(*set_next_ktime)(ktime_t expires,
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 3388c1b..86a651c 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -203,6 +203,8 @@ extern void suspend_set_ops(const struct platform_suspend_ops *ops);
->  extern int suspend_valid_only_mem(suspend_state_t state);
->  extern void freeze_set_ops(const struct platform_freeze_ops *ops);
->  extern void freeze_wake(void);
-> +extern bool in_freeze(void);
-> +extern bool idle_should_freeze(void);
->  
->  /**
->   * arch_suspend_disable_irqs - disable IRQs for suspend
-> @@ -230,6 +232,8 @@ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
->  static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
->  static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
->  static inline void freeze_wake(void) {}
-> +static inline bool in_freeze(void) { return false; }
-> +static inline bool idle_should_freeze(void) { return false; }
->  #endif /* !CONFIG_SUSPEND */
->  
->  /* struct pbe is used for creating lists of pages that should be restored
-> diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
-> index 1caa6b0..07957a9 100644
-> --- a/include/linux/timekeeping.h
-> +++ b/include/linux/timekeeping.h
-> @@ -5,6 +5,8 @@
->  
->  void timekeeping_init(void);
->  extern int timekeeping_suspended;
-> +extern void timekeeping_freeze(void);
-> +extern void timekeeping_unfreeze(void);
->  
->  /*
->   * Get and set timeofday
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index c347e3c..6467fb8 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -28,6 +28,7 @@
->  #include <linux/ftrace.h>
->  #include <trace/events/power.h>
->  #include <linux/compiler.h>
-> +#include <linux/clockchips.h>
->  
->  #include "power.h"
->  
-> @@ -37,7 +38,15 @@ const char *pm_states[PM_SUSPEND_MAX];
->  static const struct platform_suspend_ops *suspend_ops;
->  static const struct platform_freeze_ops *freeze_ops;
->  static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
-> -static bool suspend_freeze_wake;
+>  ##################################################################################
+>  # PowerPC platform drivers
+> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+> new file mode 100644
+> index 0000000..b578c10
+> --- /dev/null
+> +++ b/drivers/cpufreq/mt8173-cpufreq.c
+> @@ -0,0 +1,459 @@
+> +/*
+> +* Copyright (c) 2015 Linaro.
+> +* Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> +*
+> +* This program is free software; you can redistribute it and/or modify
+> +* it under the terms of the GNU General Public License version 2 as
+> +* published by the Free Software Foundation.
+> +*
+> +* This program is distributed in the hope that it will be useful,
+> +* but WITHOUT ANY WARRANTY; without even the implied warranty of
+> +* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> +* GNU General Public License for more details.
+> +*/
 > +
-> +/* freeze state machine */
-> +enum freeze_state {
-> +	FREEZE_STATE_NONE,      /* not in freeze */
-> +	FREEZE_STATE_ENTER,     /* enter freeze */
-> +	FREEZE_STATE_WAKE,      /* in freeze wakeup context */
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/cpufreq-dt.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/slab.h>
+> +#include <linux/clk.h>
+> +#include <linux/clk-provider.h>
+> +#include <linux/regulator/consumer.h>
+> +#include <linux/cpu.h>
+> +#include <linux/pm_opp.h>
+> +
+> +#define CPUCLK_MUX_ARMPLL	0x1
+> +#define CPUCLK_MUX_MAINPLL	0x2
+> +#define VOLT_SHIFT_LIMIT	150000
+> +
+> +enum {
+> +	LITTLE_CLUSTER = 0,
+> +	BIG_CLUSTER,
+> +	NR_CLUSTERS
 > +};
 > +
-> +static enum freeze_state suspend_freeze_state;
->  
->  void freeze_set_ops(const struct platform_freeze_ops *ops)
->  {
-> @@ -46,23 +55,56 @@ void freeze_set_ops(const struct platform_freeze_ops *ops)
->  	unlock_system_sleep();
->  }
->  
-> +bool in_freeze(void)
+> +static struct cluster_dvfs_info {
+> +	int cpu;
+> +	struct cpumask cpus;
+> +	struct device *cpu_dev;
+> +	struct regulator *proc_reg;
+> +	struct regulator *sram_reg;
+> +	int inter_volt;
+> +	u32 volt_tol;
+> +} *dvfs_info;
+> +
+> +static unsigned long mainpll_freq;
+> +static void __iomem *clk_mux_regs;
+> +static spinlock_t lock;
+> +
+> +static void cpuclk_mux_set(int cluster, u32 sel)
 > +{
-> +	return (suspend_freeze_state > FREEZE_STATE_NONE);
-> +}
-> +EXPORT_SYMBOL_GPL(in_freeze);
+> +	u32 val;
+> +	u32 mask = 0x3;
 > +
-> +bool idle_should_freeze(void)
-> +{
-> +	return (suspend_freeze_state == FREEZE_STATE_ENTER);
-> +}
-> +EXPORT_SYMBOL_GPL(idle_should_freeze);
-> +
->  static void freeze_begin(void)
->  {
-> -	suspend_freeze_wake = false;
-> +	suspend_freeze_state = FREEZE_STATE_NONE;
->  }
->  
->  static void freeze_enter(void)
->  {
-> +	suspend_freeze_state = FREEZE_STATE_ENTER;
-> +	get_online_cpus();
->  	cpuidle_use_deepest_state(true);
->  	cpuidle_resume();
-> -	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_FREEZE_PREPARE, NULL);
-> +	/*
-> +	 * push all the CPUs into freeze idle loop
-> +	 */
-> +	wake_up_all_idle_cpus();
-> +	printk(KERN_INFO "PM: suspend to idle\n");
-> +	/*
-> +	 * put the current CPU into wait queue so that this CPU
-> +	 * is able to enter freeze idle loop as well
-> +	 */
-> +	wait_event(suspend_freeze_wait_head,
-> +		(suspend_freeze_state == FREEZE_STATE_WAKE));
-> +	printk(KERN_INFO "PM: resume from freeze\n");
->  	cpuidle_pause();
->  	cpuidle_use_deepest_state(false);
-> +	put_online_cpus();
-> +	suspend_freeze_state = FREEZE_STATE_NONE;
->  }
->  
->  void freeze_wake(void)
->  {
-> -	suspend_freeze_wake = true;
-> +	if (!in_freeze())
-> +		return;
-> +	/*
-> +	 * wake freeze task up
-> +	 */
-> +	suspend_freeze_state = FREEZE_STATE_WAKE;
->  	wake_up(&suspend_freeze_wait_head);
->  }
->  EXPORT_SYMBOL_GPL(freeze_wake);
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index c47fce7..f28f8cb 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -7,6 +7,7 @@
->  #include <linux/tick.h>
->  #include <linux/mm.h>
->  #include <linux/stackprotector.h>
-> +#include <linux/suspend.h>
->  
->  #include <asm/tlb.h>
->  
-> @@ -182,6 +183,45 @@ exit_idle:
->  }
->  
->  /*
-> + * cpu idle freeze function
-> + */
-> +static void cpu_idle_freeze(void)
-> +{
-> +	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-> +	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> +
-> +	/*
-> +	 * suspend tick, the last CPU suspend timekeeping
-> +	 */
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_FREEZE, NULL);
-> +	/*
-> +	 * idle loop here if idle_should_freeze()
-> +	 */
-> +	while (idle_should_freeze()) {
-> +		int next_state;
-> +		/*
-> +		 * interrupt must be disabled before cpu enters idle
-> +		 */
-> +		local_irq_disable();
-> +
-> +		next_state = cpuidle_select(drv, dev);
-> +		if (next_state < 0) {
-> +			arch_cpu_idle();
-> +			continue;
-> +		}
-> +		/*
-> +		 * cpuidle_enter will return with interrupt enabled
-> +		 */
-> +		cpuidle_enter(drv, dev, next_state);
+> +	if (cluster == BIG_CLUSTER) {
+> +		mask <<= 2;
+> +		sel <<= 2;
 > +	}
 > +
-> +	/*
-> +	 * resume tick, the first wakeup CPU resume timekeeping
-> +	 */
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_UNFREEZE, NULL);
+> +	spin_lock(&lock);
+> +
+> +	val = readl(clk_mux_regs);
+> +	val = (val & ~mask) | sel;
+> +	writel(val, clk_mux_regs);
+> +
+> +	spin_unlock(&lock);
 > +}
 > +
-> +/*
->   * Generic idle loop implementation
->   *
->   * Called with polling cleared.
-> @@ -208,6 +248,11 @@ static void cpu_idle_loop(void)
->  			if (cpu_is_offline(smp_processor_id()))
->  				arch_cpu_idle_dead();
->  
-> +			if (idle_should_freeze()) {
-> +				cpu_idle_freeze();
-> +				continue;
+> +static int mt8173_cpufreq_voltage_step(struct cluster_dvfs_info *dvfs,
+> +				       unsigned long old_vproc,
+> +				       unsigned long new_vproc)
+> +{
+> +	int cur_vsram, cur_vproc, target_volt, tol;
+> +
+> +	if (old_vproc > new_vproc) {
+> +		while (1) {
+> +			cur_vsram = regulator_get_voltage(dvfs->sram_reg);
+> +			if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
+> +			    cur_vsram > new_vproc) {
+> +				tol = new_vproc * dvfs->volt_tol / 100;
+> +				regulator_set_voltage_tol(dvfs->proc_reg,
+> +							  new_vproc, tol);
+> +				break;
 > +			}
 > +
->  			local_irq_disable();
->  			arch_cpu_idle_enter();
->  
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index 0699add..a231bf6 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -26,6 +26,7 @@
->  #include <linux/smpboot.h>
->  #include <linux/tick.h>
->  #include <linux/irq.h>
-> +#include <linux/suspend.h>
->  
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/irq.h>
-> @@ -321,7 +322,7 @@ asmlinkage __visible void do_softirq(void)
->  void irq_enter(void)
->  {
->  	rcu_irq_enter();
-> -	if (is_idle_task(current) && !in_interrupt()) {
-> +	if (is_idle_task(current) && !in_interrupt() && !in_freeze()) {
->  		/*
->  		 * Prevent raise_softirq from needlessly waking up ksoftirqd
->  		 * here, as softirq will be serviced on return from interrupt.
-> @@ -364,7 +365,7 @@ static inline void tick_irq_exit(void)
->  
->  	/* Make sure that timer wheel updates are propagated */
->  	if ((idle_cpu(cpu) && !need_resched()) || tick_nohz_full_cpu(cpu)) {
-> -		if (!in_interrupt())
-> +		if (!in_interrupt() && !in_freeze())
->  			tick_nohz_irq_exit();
->  	}
->  #endif
-> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-> index 5544990..6d9a4a3 100644
-> --- a/kernel/time/clockevents.c
-> +++ b/kernel/time/clockevents.c
-> @@ -17,6 +17,7 @@
->  #include <linux/module.h>
->  #include <linux/smp.h>
->  #include <linux/device.h>
-> +#include <linux/suspend.h>
->  
->  #include "tick-internal.h"
->  
-> @@ -579,6 +580,18 @@ int clockevents_notify(unsigned long reason, void *arg)
->  		tick_resume();
->  		break;
->  
-> +	case CLOCK_EVT_NOTIFY_FREEZE_PREPARE:
-> +		tick_freeze_prepare();
-> +		break;
-> +
-> +	case CLOCK_EVT_NOTIFY_FREEZE:
-> +		tick_freeze();
-> +		break;
-> +
-> +	case CLOCK_EVT_NOTIFY_UNFREEZE:
-> +		tick_unfreeze();
-> +		break;
-> +
->  	case CLOCK_EVT_NOTIFY_CPU_DEAD:
->  		tick_shutdown_broadcast_oneshot(arg);
->  		tick_shutdown_broadcast(arg);
-> diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-> index 7efeedf..0bbc886 100644
-> --- a/kernel/time/tick-common.c
-> +++ b/kernel/time/tick-common.c
-> @@ -19,6 +19,7 @@
->  #include <linux/profile.h>
->  #include <linux/sched.h>
->  #include <linux/module.h>
-> +#include <linux/suspend.h>
->  
->  #include <asm/irq_regs.h>
->  
-> @@ -51,6 +52,16 @@ ktime_t tick_period;
->  int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
->  
->  /*
-> + * Tick device is per CPU device, when we freeze the timekeeping stuff, we
-> + * want to freeze the tick device on all of the online CPUs.
-> + *
-> + * tick_freeze_target_depth is a counter used for freezing tick device, the
-> + * initial value of it is online CPU number. When it is counted down to ZERO,
-> + * all of the tick devices are freezed.
-> + */
-> +static unsigned int tick_freeze_target_depth;
-> +
-> +/*
->   * Debugging: see timer_list.c
->   */
->  struct tick_device *tick_get_device(int cpu)
-> @@ -375,15 +386,21 @@ void tick_shutdown(unsigned int *cpup)
->  void tick_suspend(void)
->  {
->  	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-> +	struct clock_event_device *dev = td->evtdev;
->  
-> +	dev->real_handler = dev->event_handler;
-> +	dev->event_handler = clockevents_handle_noop;
->  	clockevents_shutdown(td->evtdev);
->  }
->  
->  void tick_resume(void)
->  {
->  	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-> +	struct clock_event_device *dev = td->evtdev;
->  	int broadcast = tick_resume_broadcast();
->  
-> +	dev->event_handler = dev->real_handler;
-> +	dev->real_handler = NULL;
->  	clockevents_set_mode(td->evtdev, CLOCK_EVT_MODE_RESUME);
->  
->  	if (!broadcast) {
-> @@ -394,6 +411,42 @@ void tick_resume(void)
->  	}
->  }
->  
-> +void tick_freeze_prepare(void)
-> +{
-> +	tick_freeze_target_depth = num_online_cpus();
-> +}
-> +
-> +void tick_freeze(void)
-> +{
-> +	/*
-> +	 * This is serialized against a concurrent wakeup
-> +	 * via clockevents_lock
-> +	 */
-> +	tick_freeze_target_depth--;
-> +	tick_suspend();
-> +
-> +	/*
-> +	 * the last tick_suspend CPU suspends timekeeping
-> +	 */
-> +	if (!tick_freeze_target_depth)
-> +		timekeeping_freeze();
-> +}
-> +
-> +void tick_unfreeze(void)
-> +{
-> +	/*
-> +	 * the first wakeup CPU resumes timekeeping
-> +	 */
-> +	if (timekeeping_suspended) {
-> +		timekeeping_unfreeze();
-> +		touch_softlockup_watchdog();
-> +		tick_resume();
-> +		hrtimers_resume();
-> +	} else {
-> +		tick_resume();
-> +	}
-> +}
-> +
->  /**
->   * tick_init - initialize the tick control
->   */
-> diff --git a/kernel/time/tick-internal.h b/kernel/time/tick-internal.h
-> index 366aeb4..8b5bab6 100644
-> --- a/kernel/time/tick-internal.h
-> +++ b/kernel/time/tick-internal.h
-> @@ -27,6 +27,9 @@ extern void tick_handover_do_timer(int *cpup);
->  extern void tick_shutdown(unsigned int *cpup);
->  extern void tick_suspend(void);
->  extern void tick_resume(void);
-> +extern void tick_freeze_prepare(void);
-> +extern void tick_freeze(void);
-> +extern void tick_unfreeze(void);
->  extern bool tick_check_replacement(struct clock_event_device *curdev,
->  				   struct clock_event_device *newdev);
->  extern void tick_install_replacement(struct clock_event_device *dev);
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index ec1791f..a11065f 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -1107,14 +1107,7 @@ void timekeeping_inject_sleeptime(struct timespec *delta)
->  	clock_was_set();
->  }
->  
-> -/**
-> - * timekeeping_resume - Resumes the generic timekeeping subsystem.
-> - *
-> - * This is for the generic clocksource timekeeping.
-> - * xtime/wall_to_monotonic/jiffies/etc are
-> - * still managed by arch specific suspend/resume code.
-> - */
-> -static void timekeeping_resume(void)
-> +static void timekeeping_resume_compensate_time(void)
->  {
->  	struct timekeeper *tk = &tk_core.timekeeper;
->  	struct clocksource *clock = tk->tkr.clock;
-> @@ -1127,9 +1120,6 @@ static void timekeeping_resume(void)
->  	read_persistent_clock(&tmp);
->  	ts_new = timespec_to_timespec64(tmp);
->  
-> -	clockevents_resume();
-> -	clocksource_resume();
-> -
->  	raw_spin_lock_irqsave(&timekeeper_lock, flags);
->  	write_seqcount_begin(&tk_core.seq);
->  
-> @@ -1186,16 +1176,9 @@ static void timekeeping_resume(void)
->  	timekeeping_update(tk, TK_MIRROR | TK_CLOCK_WAS_SET);
->  	write_seqcount_end(&tk_core.seq);
->  	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-> -
-> -	touch_softlockup_watchdog();
-> -
-> -	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-> -
-> -	/* Resume hrtimers */
-> -	hrtimers_resume();
->  }
->  
-> -static int timekeeping_suspend(void)
-> +static void timekeeping_suspend_get_time(void)
->  {
->  	struct timekeeper *tk = &tk_core.timekeeper;
->  	unsigned long flags;
-> @@ -1242,11 +1225,65 @@ static int timekeeping_suspend(void)
->  	timekeeping_update(tk, TK_MIRROR);
->  	write_seqcount_end(&tk_core.seq);
->  	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-> +}
->  
-> -	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +/*
-> + * The following operations:
-> + *	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> + *	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-> + * are moved out of
-> + *	timekeeping_freeze() and timekeeping_unfreeze()
-> + * and, replaced by
-> + *	tick_suspend() and tick_resume()
-> + * and, put into:
-> + *	tick_freeze() and tick_unfreeze()
-> + * so we avoid clockevents_lock multiple access
-> + */
-> +void timekeeping_freeze(void)
-> +{
-> +	/*
-> +	 * clockevents_lock being held
-> +	 */
-> +	timekeeping_suspend_get_time();
->  	clocksource_suspend();
->  	clockevents_suspend();
-> +}
->  
-> +void timekeeping_unfreeze(void)
-> +{
-> +	/*
-> +	 * clockevents_lock being held
-> +	 */
-> +	clockevents_resume();
-> +	clocksource_resume();
-> +	timekeeping_resume_compensate_time();
-> +}
-> +
-> +/**
-> + * timekeeping_resume - Resumes the generic timekeeping subsystem.
-> + *
-> + * This is for the generic clocksource timekeeping.
-> + * xtime/wall_to_monotonic/jiffies/etc are
-> + * still managed by arch specific suspend/resume code.
-> + */
-> +static void timekeeping_resume(void)
-> +{
-> +	clockevents_resume();
-> +	clocksource_resume();
-> +	timekeeping_resume_compensate_time();
-> +
-> +	touch_softlockup_watchdog();
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-> +	/* Resume hrtimers */
-> +	hrtimers_resume();
-> +}
-> +
-> +static int timekeeping_suspend(void)
-> +{
-> +	timekeeping_suspend_get_time();
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +	clocksource_suspend();
-> +	clockevents_suspend();
->  	return 0;
->  }
->  
-> 
+> +			target_volt = cur_vsram - VOLT_SHIFT_LIMIT;
+> +			tol = target_volt * dvfs->volt_tol / 100;
 
+I don't quite get the logic for tol calculation here. What's the
+expected value for volt_tol? Care to explain?
+
+> +			regulator_set_voltage_tol(dvfs->proc_reg, target_volt,
+> +						  tol);
+> +
+> +			cur_vproc = regulator_get_voltage(dvfs->proc_reg);
+> +			target_volt = cur_vproc + 1;
+> +			tol = target_volt * dvfs->volt_tol / 100;
+> +			regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
+> +						  tol);
+> +		}
+> +	} else if (old_vproc < new_vproc) {
+> +		while (1) {
+> +			cur_vsram = regulator_get_voltage(dvfs->sram_reg);
+> +			if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
+> +			    cur_vsram > new_vproc) {
+> +				tol = new_vproc * dvfs->volt_tol / 100;
+> +				regulator_set_voltage_tol(dvfs->proc_reg,
+> +							  new_vproc, tol);
+> +				break;
+> +			}
+> +
+> +			cur_vproc = regulator_get_voltage(dvfs->proc_reg);
+> +			target_volt = cur_vproc + VOLT_SHIFT_LIMIT;
+> +			tol = target_volt * dvfs->volt_tol / 100;
+> +			regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
+> +						  tol);
+> +
+> +			if (new_vproc - cur_vproc > VOLT_SHIFT_LIMIT) {
+> +				cur_vsram = regulator_get_voltage(
+> +							dvfs->sram_reg);
+> +				target_volt = cur_vsram - 1;
+> +				tol = target_volt * dvfs->volt_tol / 100;
+> +				regulator_set_voltage_tol(dvfs->proc_reg,
+> +							  target_volt, tol);
+> +			}
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int get_opp_voltage(struct device *dev, unsigned long freq_hz)
+> +{
+> +	struct dev_pm_opp *opp;
+> +	int volt;
+> +
+> +	rcu_read_lock();
+> +	opp = dev_pm_opp_find_freq_ceil(dev, &freq_hz);
+> +	if (IS_ERR(opp)) {
+> +		rcu_read_unlock();
+> +		pr_err("%s: failed to find OPP for %lu\n", __func__, freq_hz);
+> +		return PTR_ERR(opp);
+> +	}
+> +	volt = dev_pm_opp_get_voltage(opp);
+> +	rcu_read_unlock();
+> +
+> +	return volt;
+> +}
+> +
+> +static int mt8173_cpufreq_get_intermediate_voltage(int cluster)
+> +{
+> +	struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
+> +
+> +	if (dvfs->inter_volt == 0)
+> +		dvfs->inter_volt = get_opp_voltage(dvfs->cpu_dev,
+> +						   mainpll_freq);
+> +
+> +	return dvfs->inter_volt;
+> +}
+> +
+> +static void mt8173_cpufreq_set_voltage(int cluster, int old_volt, int new_volt)
+> +{
+> +	struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
+> +	int ret = 0;
+> +
+> +	if (cluster == LITTLE_CLUSTER) {
+> +		int tol;
+> +
+> +		tol = new_volt * dvfs->volt_tol / 100;
+> +		ret = regulator_set_voltage_tol(dvfs->proc_reg, new_volt, tol);
+> +	} else {
+> +		ret = mt8173_cpufreq_voltage_step(dvfs, old_volt, new_volt);
+> +	}
+> +
+> +	if (ret)
+> +		pr_err("%s: cluster%d failed to scale voltage (%dmV to %dmV)",
+> +		       __func__, cluster, old_volt, new_volt);
+> +}
+
+It seems the only reason to check if it is a BIG or LITTLE cluster is to
+control vsram correctly. If we assume we need to do the control whenever
+sram_reg exists, we can drop all the BIG/LITTLE cluster check. I think
+this will make code looks more compact and generic.
+
+> +
+> +static int mt8173_cpufreq_notify(struct notifier_block *nb,
+> +				 unsigned long action, void *data)
+> +{
+> +	struct cpufreq_freqs *freqs = data;
+> +	struct cluster_dvfs_info *dvfs;
+> +	unsigned long old_volt, new_volt, inter_volt;
+> +	int cluster;
+> +
+> +	if (freqs->cpu == dvfs_info[BIG_CLUSTER].cpu)
+> +		cluster = BIG_CLUSTER;
+> +	else if (freqs->cpu == dvfs_info[LITTLE_CLUSTER].cpu)
+> +		cluster = LITTLE_CLUSTER;
+> +	else
+> +		return NOTIFY_DONE;
+> +
+> +	dvfs = &dvfs_info[cluster];
+> +
+> +	old_volt = regulator_get_voltage(dvfs->proc_reg);
+> +
+> +	new_volt = get_opp_voltage(dvfs->cpu_dev, freqs->new * 1000);
+> +	inter_volt = mt8173_cpufreq_get_intermediate_voltage(cluster);
+
+This is only used in PRECHANGE, please move this inside the if.
+
+> +
+> +	if (action == CPUFREQ_PRECHANGE) {
+> +		if (old_volt < inter_volt || old_volt < new_volt) {
+> +			new_volt = inter_volt > new_volt ?
+> +				   inter_volt : new_volt;
+> +			mt8173_cpufreq_set_voltage(cluster, old_volt,
+> +						   new_volt);
+> +		}
+> +
+> +		cpuclk_mux_set(cluster, CPUCLK_MUX_MAINPLL);
+> +	} else if (action == CPUFREQ_POSTCHANGE) {
+> +		cpuclk_mux_set(cluster, CPUCLK_MUX_ARMPLL);
+> +
+> +		if (new_volt < old_volt)
+> +			mt8173_cpufreq_set_voltage(cluster, old_volt,
+> +						   new_volt);
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block mt8173_cpufreq_nb = {
+> +	.notifier_call = mt8173_cpufreq_notify,
+> +};
+> +
+> +static struct cpufreq_dt_platform_data *pd;
+
+Please drop this global variable. You can return it from
+cpufreq_dt_pdata_init and pass to all the function need it.
+
+> +
+> +static int cpu_in_domain_list(struct list_head *domain_list, int cpu)
+> +{
+> +	struct list_head *node;
+> +
+> +	list_for_each(node, domain_list) {
+> +		struct cpufreq_cpu_domain *domain;
+> +
+> +		domain = container_of(node, struct cpufreq_cpu_domain, node);
+> +		if (cpumask_test_cpu(cpu, &domain->cpus))
+> +			return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void cpufreq_dt_pdata_release(void)
+> +{
+> +	if (!pd)
+> +		return;
+> +
+> +	if (!list_empty(&pd->domain_list)) {
+> +		struct list_head *node, *tmp;
+> +		struct cpufreq_cpu_domain *domain;
+> +
+> +		list_for_each_safe(node, tmp, &pd->domain_list) {
+> +			list_del(node);
+> +			domain = container_of(node, struct cpufreq_cpu_domain,
+> +					      node);
+> +			kfree(domain);
+> +		}
+> +	}
+> +
+> +	kfree(pd);
+> +}
+> +
+> +static int cpufreq_dt_pdata_init(void)
+> +{
+> +	int cpu;
+> +
+> +	pd = kmalloc(sizeof(*pd), GFP_KERNEL);
+> +	if (!pd)
+> +		return -ENOMEM;
+> +
+> +	pd->independent_clocks = 1,
+> +	INIT_LIST_HEAD(&pd->domain_list);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		struct cpufreq_cpu_domain *new_domain;
+> +
+> +		if (cpu_in_domain_list(&pd->domain_list, cpu))
+> +			continue;
+> +
+> +		new_domain = kzalloc(sizeof(*new_domain), GFP_KERNEL);
+> +		if (!new_domain) {
+> +			cpufreq_dt_pdata_release();
+> +			return -ENOMEM;
+> +		}
+> +
+> +		cpumask_copy(&new_domain->cpus,
+> +			     &cpu_topology[cpu].core_sibling);
+> +		list_add(&new_domain->node, &pd->domain_list);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void mt8173_cpufreq_dvfs_info_release(void)
+> +{
+> +	int i;
+> +
+> +	if (!dvfs_info)
+> +		return;
+> +
+> +	for (i = 0; i < NR_CLUSTERS; ++i) {
+> +		struct cluster_dvfs_info *dvfs = &dvfs_info[i];
+> +
+> +		if (!IS_ERR_OR_NULL(dvfs->proc_reg))
+> +			regulator_put(dvfs->proc_reg);
+> +
+> +		if (!IS_ERR_OR_NULL(dvfs->sram_reg))
+> +			regulator_put(dvfs->sram_reg);
+> +	}
+> +
+> +	if (clk_mux_regs)
+> +		iounmap(clk_mux_regs);
+> +}
+> +
+> +static int mt8173_cpufreq_dvfs_info_init(void)
+> +{
+> +	struct list_head *node;
+> +	struct device_node *np;
+> +	struct clk *mainpll;
+> +	int i, ret;
+> +
+> +	dvfs_info = kzalloc(sizeof(*dvfs) * NR_CLUSTERS, GFP_KERNEL);
+> +	if (!dvfs_info)
+> +		return -ENOMEM;
+> +
+> +	list_for_each(node, &pd->domain_list) {
+> +		struct cpufreq_cpu_domain *domain = container_of(
+> +					node, struct cpufreq_cpu_domain, node);
+> +		int cpu = cpumask_next(0, &domain->cpus);
+> +
+> +		np = of_get_cpu_node(cpu, NULL);
+> +
+> +		if (of_property_match_string(np, "compatible",
+> +					     "arm,cortex-a53") >= 0)
+> +			cpumask_copy(&dvfs_info[LITTLE_CLUSTER].cpus,
+> +				     &domain->cpus);
+> +		else if (of_property_match_string(np, "compatible",
+> +						  "arm,cortex-a57") >= 0)
+> +			cpumask_copy(&dvfs_info[BIG_CLUSTER].cpus,
+> +				     &domain->cpus);
+> +		else {
+> +			of_node_put(np);
+> +			pr_err("%s: unknown CPU core\n", __func__);
+> +			return -EINVAL;
+> +		}
+> +
+> +		of_node_put(np);
+> +	}
+
+It seems you hardcode the match CPU here to know which is big/little
+cluster. If we still need this information, should we add this to
+topology, maybe something similar to capacity in arm topology, instead
+of coding here?
+
+> +
+> +	for (i = 0; i < NR_CLUSTERS; i++) {
+> +		struct cluster_dvfs_info *dvfs = &dvfs_info[i];
+> +		int cpu;
+> +
+> +		for_each_cpu_mask(cpu, dvfs->cpus) {
+> +			struct device_node *np;
+> +
+> +			dvfs->cpu_dev = get_cpu_device(cpu);
+> +			dvfs->proc_reg = regulator_get(dvfs->cpu_dev, "proc");
+> +			if (IS_ERR(dvfs->proc_reg))
+> +				continue;
+> +
+> +			dvfs->cpu = cpu;
+> +			dvfs->sram_reg = regulator_get(dvfs->cpu_dev, "sram");
+> +
+> +			np = of_node_get(dvfs->cpu_dev->of_node);
+> +			of_property_read_u32(np, "voltage-tolerance",
+> +					     &dvfs->volt_tol);
+> +			of_node_put(np);
+> +			break;
+> +		}
+> +
+> +		if (IS_ERR(dvfs->proc_reg)) {
+> +			pr_err("%s: no proc regulator for cluster %d\n",
+> +			       __func__, i);
+> +			ret = -ENODEV;
+> +			goto dvfs_info_release;
+> +		}
+> +
+> +		if (IS_ERR(dvfs->sram_reg) && BIG_CLUSTER == i) {
+> +			pr_err("%s: no sram regulator for cluster %d\n",
+> +			       __func__, i);
+> +			ret = -ENODEV;
+> +			goto dvfs_info_release;
+> +		}
+> +	}
+> +
+> +	mainpll = __clk_lookup("mainpll");
+> +	if (!mainpll) {
+> +		pr_err("failed to get mainpll clk\n");
+> +		ret = -ENOENT;
+> +		goto dvfs_info_release;
+> +	}
+> +	mainpll_freq = clk_get_rate(mainpll);
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "mediatek,mt8173-infrasys");
+> +	if (!np) {
+> +		pr_err("failed to find clock mux registers\n");
+> +		ret = -ENODEV;
+> +		goto dvfs_info_release;
+> +	}
+> +
+> +	clk_mux_regs = of_iomap(np, 0);
+> +	if (!clk_mux_regs) {
+> +		pr_err("failed to map clock mux registers\n");
+> +		ret = -EFAULT;
+> +		goto dvfs_info_release;
+> +	}
+> +	of_node_put(np);
+
+This is already used by mt8173 clock driver, and you are directly
+accessing it registers to control clock mux. I think you should add
+these 2 clk to clock driver and use clk API to control it. Also you can
+drop the lock init below if you do this.
+
+Joe.C
+
+> +
+> +	spin_lock_init(&lock);
+> +
+> +	return 0;
+> +
+> +dvfs_info_release:
+> +	mt8173_cpufreq_dvfs_info_release();
+> +	return ret;
+> +}
