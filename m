@@ -1,62 +1,53 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM domain code
-Date: Wed, 14 Jan 2015 11:50:48 +0100
-Message-ID: <1421232648-15204-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 4/4] ARM: shmobile: sh73a0 dtsi: Add memory-controller nodes
+Date: Wed, 14 Jan 2015 12:13:02 +0100
+Message-ID: <1421233982-15883-5-git-send-email-geert+renesas@glider.be>
+References: <1421233982-15883-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1421233982-15883-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Fix two DT refcount imbalances in the PM domain code that scans the DT
-topology:
+Add device nodes for the two SDRAM Bus State Controllers.
+The SBSCs are located in the A4BC0 resp. A4BC1 PM domains, which must
+not be powered down, else the system will crash.
 
-  1. Add missing of_node_put() after of_find_compatible_node().
-
-  2. If CONFIG_OF_DYNAMIC=y:
-
-	ERROR: Bad of_node_put() on /system-controller@e6180000
-	<backtrace>
-
-     of_find_node_by_name() calls of_node_put() on its "from" parameter,
-     which must not be done on the for_each_compatible_node() iterator,
-     as it causes a zero refcount later.
-     Use of_get_child_by_name() instead to fix this.
+References to the A4BC0 and A4BC1 PM domains will be added later.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Fixes: d7a3a10c8391fdcd ("ARM: shmobile: R-Mobile: Add DT support for PM domains")
-in Simon's git://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
-tag renesas-dt-pm-for-v3.20
----
- arch/arm/mach-shmobile/pm-rmobile.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/sh73a0.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 07fb4ea4d8e94258..85a7fdd9823bc5a6 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -270,8 +270,10 @@ static void __init get_special_pds(void)
+diff --git a/arch/arm/boot/dts/sh73a0.dtsi b/arch/arm/boot/dts/sh73a0.dtsi
+index 46954ac26dd9fb41..8d9c2ce593745b1f 100644
+--- a/arch/arm/boot/dts/sh73a0.dtsi
++++ b/arch/arm/boot/dts/sh73a0.dtsi
+@@ -43,6 +43,22 @@
+ 		      <0xf0000100 0x100>;
+ 	};
  
- 	/* PM domain containing Coresight-ETM */
- 	np = of_find_compatible_node(NULL, NULL, "arm,coresight-etm3x");
--	if (np)
-+	if (np) {
- 		debug_pd = of_parse_phandle(np, "power-domains", 0);
-+		of_node_put(np);
-+	}
- }
- 
- static void __init put_special_pds(void)
-@@ -363,7 +365,7 @@ static int __init rmobile_init_pm_domains(void)
- 			continue;
- 		}
- 
--		pmd = of_find_node_by_name(np, "pm-domains");
-+		pmd = of_get_child_by_name(np, "pm-domains");
- 		if (!pmd) {
- 			pr_warn("%s lacks pm-domains node\n", np->full_name);
- 			continue;
++	sbsc2: memory-controller@fb400000 {
++		compatible = "renesas,sbsc-sh73a0";
++		reg = <0xfb400000 0x400>;
++		interrupts = <0 37 IRQ_TYPE_LEVEL_HIGH>,
++			     <0 38 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "sec", "temp";
++	};
++
++	sbsc1: memory-controller@fe400000 {
++		compatible = "renesas,sbsc-sh73a0";
++		reg = <0xfe400000 0x400>;
++		interrupts = <0 35 IRQ_TYPE_LEVEL_HIGH>,
++			     <0 36 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "sec", "temp";
++	};
++
+ 	pmu {
+ 		compatible = "arm,cortex-a9-pmu";
+ 		interrupts = <0 55 IRQ_TYPE_LEVEL_HIGH>,
 -- 
 1.9.1
 
