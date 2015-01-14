@@ -1,268 +1,152 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3 16/16] thermal: exynos: Remove exynos_tmu_data.c file
-Date: Wed, 14 Jan 2015 14:41:14 +0100
-Message-ID: <1421242874-3425-17-git-send-email-l.majewski@samsung.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:23150 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbbANNt2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 08:49:28 -0500
-In-reply-to: <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 2/9] hwmon: dts: Doc: Add DTS doc to explain how to use PWM
+ FAN as a cooling device
+Date: Wed, 14 Jan 2015 14:56:32 +0100
+Message-ID: <20150114145632.3010f836@amdc2363>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+ <1418897591-18332-3-git-send-email-l.majewski@samsung.com>
+ <1418899337.23532.9.camel@collabora.co.uk> <20141219163224.34796e5d@amdc2363>
+ <20141219160237.GA2199@roeck-us.net> <20141219171301.1527d81e@amdc2363>
+ <1420455034.15910.53.camel@collabora.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1420455034.15910.53.camel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sjoerd Simons <sjoerd.simons-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-Data already present in the exynos_tmu_data.c file has been moved to the
-appropriate device tree files.
+Hi Sjoerd,
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- None
-Changes for v3:
-- None
----
- drivers/thermal/samsung/exynos_tmu_data.c | 228 ------------------------------
- 1 file changed, 228 deletions(-)
- delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+> Hey Lukasz,
+> 
+> Blame the holiday season for my late reply ;)
+> 
+> On Fri, 2014-12-19 at 17:13 +0100, Lukasz Majewski wrote:
+> > Hi Guenter,
+> > 
+> > > On Fri, Dec 19, 2014 at 04:32:24PM +0100, Lukasz Majewski wrote:
+> > > > Hi Sjoerd,
+> > > > 
+> > > > Thanks for your feedback and sorry for a late reply.
+> > > > 
+> > > > > On Thu, 2014-12-18 at 11:13 +0100, Lukasz Majewski wrote:
+> > > > > > Several new properties to allow PWM fan working as a cooling
+> > > > > > device have been combined into this single commit.
+> > > > > > 
+> > > > > > Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> > > > > > ---
+> > > > > >  .../devicetree/bindings/hwmon/pwm-fan.txt          | 28
+> > > > > > ++++++++++++++++++++++ 1 file changed, 28 insertions(+)
+> > > > > > 
+> > > > > > diff --git
+> > > > > > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> > > > > > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt index
+> > > > > > 610757c..3877810 100644 ---
+> > > > > > a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt +++
+> > > > > > b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt @@
+> > > > > > -3,10 +3,38 @@ Bindings for a fan connected to the PWM
+> > > > > > lines Required properties:
+> > > > > >  - compatible	: "pwm-fan"
+> > > > > >  - pwms		: the PWM that is used to control the
+> > > > > > PWM fan +- cooling-pwm-values      : PWM duty cycle values
+> > > > > > relative to
+> > > > > > +			    cooling-max-pwm-value
+> > > > > > correspondig to
+> > > > > > +			    proper cooling states
+> > > > > > +- default-pulse-width     : Property specifying default
+> > > > > > pulse width for FAN
+> > > > > > +			    at system boot (zero to disable
+> > > > > > FAN on boot).
+> > > > > > +			    Allowed range is 0 to 255
+> > > > > 
+> > > > > The 0..255 range seems somewhat random. Would be nicer to
+> > > > > either use the approach of pwm-backlight (iotw, have the
+> > > > > range go from the first to the last entry of
+> > > > > cooling-pwm-values) 
+> > > > 
+> > > > I'm OK to change the default-pulse-width to be similar to
+> > > > "default-brightness-level" (as it is in
+> > > > Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt)
+> > > > 
+> > > > > or simply have be the duty
+> > > > > lenght in NS as entries instead of the current indirection.
+> > > > 
+> > > > I'd prefer to keep the indirection - as it is utilized in the
+> > > > current pwm-fan.c driver.
+> > > > 
+> > > FWIW, devicetree information is supposed to be implementation
+> > > independent. So this is a poor argument.
+> > 
+> > Many other pwm drivers use the indirection - e.g. mentioned
+> > pwm-backlight.
+> 
+> I don't specifically mind the indirection, i was just thinking out
+> loud whether it added value (but if it's quite common, might indeed
+> be good to keep the pattern). What i do dislike is the number of
+> levels is being set to an arbitrary levels, as that will very rarely
+> match the actual number of distinct pwm levels you 
+> 
+> One thing though, when following the pattern of the pwm-backlight
+> driver; In pwm-backlight the highest index of brightness-levels is
+> always 100% duty cycle.. On e.g. XU3 the vendor kernel never drives
+> the fan at 100% duty (maximum of 91%). So it would be nice if the dt
+> bindigns could model that e.g. by having:
+> 
+> pwm-levels = <20>; // 21 distinct pwm levels
+> valid-pwm-level = <5 15 18>; /* 5 15 and 18 are usable levels - pwm
+> will default to highest level */
+> 
 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-deleted file mode 100644
-index a993f3d..0000000
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ /dev/null
-@@ -1,228 +0,0 @@
--/*
-- * exynos_tmu_data.c - Samsung EXYNOS tmu data file
-- *
-- *  Copyright (C) 2013 Samsung Electronics
-- *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- *
-- */
--
--#include "exynos_thermal_common.h"
--#include "exynos_tmu.h"
--
--struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
--	.tmu_data = {
--		{
--		.threshold = 80,
--		.trigger_levels[0] = 5,
--		.trigger_levels[1] = 20,
--		.trigger_levels[2] = 30,
--		.trigger_enable[0] = true,
--		.trigger_enable[1] = true,
--		.trigger_enable[2] = true,
--		.trigger_enable[3] = false,
--		.trigger_type[0] = THROTTLE_ACTIVE,
--		.trigger_type[1] = THROTTLE_ACTIVE,
--		.trigger_type[2] = SW_TRIP,
--		.max_trigger_level = 4,
--		.non_hw_trigger_levels = 3,
--		.gain = 15,
--		.reference_voltage = 7,
--		.cal_type = TYPE_ONE_POINT_TRIMMING,
--		.min_efuse_value = 40,
--		.max_efuse_value = 100,
--		.first_point_trim = 25,
--		.second_point_trim = 85,
--		.default_temp_offset = 50,
--		.type = SOC_ARCH_EXYNOS4210,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define EXYNOS3250_TMU_DATA \
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 70, \
--	.trigger_levels[1] = 95, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_TWO_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50
--
--struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS3250_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS3250,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define EXYNOS4412_TMU_DATA \
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 70, \
--	.trigger_levels[1] = 95, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50
--
--struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS4412_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS4412,
--		},
--	},
--	.tmu_count = 1,
--};
--
--struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS4412_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS5250,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define __EXYNOS5260_TMU_DATA	\
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 85, \
--	.trigger_levels[1] = 103, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50,
--
--#define EXYNOS5260_TMU_DATA \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5260
--
--struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--	},
--	.tmu_count = 5,
--};
--
--#define EXYNOS5420_TMU_DATA \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5420
--
--#define EXYNOS5420_TMU_DATA_SHARED \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
--
--struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5420_TMU_DATA },
--		{ EXYNOS5420_TMU_DATA },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--	},
--	.tmu_count = 5,
--};
--
--#define EXYNOS5440_TMU_DATA \
--	.trigger_levels[0] = 100, \
--	.trigger_levels[4] = 105, \
--	.trigger_enable[0] = 1, \
--	.trigger_type[0] = SW_TRIP, \
--	.trigger_type[4] = HW_TRIP, \
--	.max_trigger_level = 5, \
--	.non_hw_trigger_levels = 1, \
--	.gain = 5, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 0x5b2d, \
--	.min_efuse_value = 16, \
--	.max_efuse_value = 76, \
--	.first_point_trim = 25, \
--	.second_point_trim = 70, \
--	.default_temp_offset = 25, \
--	.type = SOC_ARCH_EXYNOS5440
--
--struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5440_TMU_DATA } ,
--		{ EXYNOS5440_TMU_DATA } ,
--		{ EXYNOS5440_TMU_DATA } ,
--	},
--	.tmu_count = 3,
--};
+Could you review v2 of this patch series?
+
+http://www.spinics.net/lists/devicetree/msg63159.html
+
+> 
+> > > > Enabling pan to full RPM was the default behaviour in the
+> > > > current pwm-fan.c file.
+> > > > 
+> > > > To be honest, there is no need to enable fan to full RPM speed
+> > > > in this board for following reasons:
+> > > > 1. In Odroid the FAN is optional (stacked on top of a heat
+> > > > sink) - very often it is just enough to only have the heat sink.
+> > > > 
+> > > > 2. Odroid has thermal enabled by default and IMHO it would be
+> > > > more feasible to allow thermal to control fan from the very
+> > > > beginning.
+> > > > 
+> > > > However, I can also understand if the policy for hwmon implies a
+> > > > rule to enable by default all fans to full RPM speed.
+> > > > 
+> > > Why and how does that all suggest that the current default
+> > > behavior should be changed ?
+> > 
+> > I wanted to avoid the unpleasant sound for full speed fan when
+> > thermal is not enabled by default.
+> > 
+> > But as I said, I fully understand the policy and I would be happy to
+> > comply with it as thermal should reduce the fan speed anyway at boot
+> > time.
+> 
+> Yeah, what happens on my XU3 is that u-boot sets the pwm to 100% duty
+> and the thermal infrastructure turns it off as soon as it gets into
+> control, which works quite nicely (and keeps my sanity as that fan at
+> 100% is *loud*)...  So if you want to avoid unpleasant sounds, just
+> build with thermal :p
+> 
+> 
+
+
+
 -- 
-2.0.0.rc2
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
