@@ -1,136 +1,264 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 09/16] dts: Documentation: Extending documentation
- entry for exynos-thermal
-Date: Wed, 14 Jan 2015 14:52:25 -0400
-Message-ID: <20150114185223.GE3672@developer>
+Subject: Re: [PATCH v3 06/16] arm: dts: Adding CPU cooling binding for Exynos
+ SoCs
+Date: Wed, 14 Jan 2015 14:57:28 -0400
+Message-ID: <20150114185726.GF3672@developer>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
- <1421242874-3425-10-git-send-email-l.majewski@samsung.com>
+ <1421242874-3425-7-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bi5JUZtvcfApsciF"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="/aVve/J9H4Wl5yVO"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f46.google.com ([209.85.192.46]:54758 "EHLO
+	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbbANS5k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 13:57:40 -0500
 Content-Disposition: inline
-In-Reply-To: <1421242874-3425-10-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+In-Reply-To: <1421242874-3425-7-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
 
---bi5JUZtvcfApsciF
+--/aVve/J9H4Wl5yVO
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 14, 2015 at 02:41:07PM +0100, Lukasz Majewski wrote:
-> Properties necessary for providing Exynos thermal configuration via device
-> tree.
+On Wed, Jan 14, 2015 at 02:41:04PM +0100, Lukasz Majewski wrote:
+> Presented patch aims to move data necessary for correct CPU cooling device
+> configuration from exynos_tmu_data.c to device tree.
 >=20
 > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > ---
+> Changes for v2:
+> - None
 > Changes for v3:
-> - New patch
->=20
+> - Adjust CPU's DT nodes to work with newest ti-soc-thermal/next branch
+> - Patch title has been changed from "thermal: cpu_cooling: dts: ..."
 > ---
->  .../devicetree/bindings/thermal/exynos-thermal.txt      | 17 +++++++++++=
-++++++
->  1 file changed, 17 insertions(+)
+>  arch/arm/boot/dts/exynos4210-trats.dts          | 15 +++++++++++++++
+>  arch/arm/boot/dts/exynos4210.dtsi               |  5 ++++-
+>  arch/arm/boot/dts/exynos4212.dtsi               |  5 ++++-
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 15 +++++++++++++++
+>  arch/arm/boot/dts/exynos4412-trats2.dts         | 15 +++++++++++++++
+>  arch/arm/boot/dts/exynos4412.dtsi               |  5 ++++-
+>  arch/arm/boot/dts/exynos5250.dtsi               | 20 +++++++++++++++++++-
+>  7 files changed, 76 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt=
- b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index ae738f5..0f44932 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -39,6 +39,18 @@
->  - vtmu-supply: This entry is optional and provides the regulator node su=
-pplying
->  		voltage to TMU. If needed this entry can be placed inside
->  		board/platform specific dts file.
-> +Following properties are mandatory (depending on SoC):
-> +- samsung,tmu_gain: Gain value for internal TMU operation.
-> +- samsung,tmu_reference_voltage: Value of TMU IP block's reference volta=
-ge
-> +- samsung,tmu_noise_cancel_mode: Mode for noise cancellation
-> +- samsung,tmu_efuse_value: Default level of temperature - it is needed w=
-hen
-> +			   in factory fusing produced wrong value
-> +- samsung,tmu_min_efuse_value: Minimum temperature fused value
-> +- samsung,tmu_max_efuse_value: Maximum temperature fused value
-> +- samsung,tmu_first_point_trim: First point trimming value
-> +- samsung,tmu_second_point_trim: Second point trimming value
-> +- samsung,tmu_default_temp_offset: Default temperature offset
-> +- samsung,tmu_cal_type: Callibration type
+> diff --git a/arch/arm/boot/dts/exynos4210-trats.dts b/arch/arm/boot/dts/e=
+xynos4210-trats.dts
+> index 61009f4..4cd8926 100644
+> --- a/arch/arm/boot/dts/exynos4210-trats.dts
+> +++ b/arch/arm/boot/dts/exynos4210-trats.dts
+> @@ -428,6 +428,21 @@
+>  		status =3D "okay";
+>  	};
 > =20
->  Example 1):
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			cooling-maps {
+> +				map0 {
+> +				    /* Corresponds to 800MHz at freq_table */
+> +				    cooling-device =3D <&cpu0 2 2>;
+> +				};
+> +				map1 {
+> +				   /* Corresponds to 200MHz at freq_table */
+> +				   cooling-device =3D <&cpu0 4 4>;
+> +			       };
+> +		       };
+> +		};
+
+The cpu_thermal zone above is incomplete. It is missing the following
+mandatory properties (according to
+Documentation/devicetree/bindings/thermal/thermal.txt):
+- polling-delay:=20
+- polling-delay-passive:
+- thermal-sensors:
+- trips:=20
+
+> +	};
+> +
+>  	camera {
+>  		pinctrl-names =3D "default";
+>  		pinctrl-0 =3D <>;
+> diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos=
+4210.dtsi
+> index bcc9e63..2e66df8 100644
+> --- a/arch/arm/boot/dts/exynos4210.dtsi
+> +++ b/arch/arm/boot/dts/exynos4210.dtsi
+> @@ -35,10 +35,13 @@
+>  		#address-cells =3D <1>;
+>  		#size-cells =3D <0>;
 > =20
-> @@ -51,6 +63,7 @@ Example 1):
+> -		cpu@900 {
+> +		cpu0: cpu@900 {
+>  			device_type =3D "cpu";
+>  			compatible =3D "arm,cortex-a9";
+>  			reg =3D <0x900>;
+> +			cooling-min-level =3D <4>;
+> +			cooling-max-level =3D <2>;
+> +			#cooling-cells =3D <2>; /* min followed by max */
+>  		};
+> =20
+>  		cpu@901 {
+> diff --git a/arch/arm/boot/dts/exynos4212.dtsi b/arch/arm/boot/dts/exynos=
+4212.dtsi
+> index dd0a43e..5be03288 100644
+> --- a/arch/arm/boot/dts/exynos4212.dtsi
+> +++ b/arch/arm/boot/dts/exynos4212.dtsi
+> @@ -26,10 +26,13 @@
+>  		#address-cells =3D <1>;
+>  		#size-cells =3D <0>;
+> =20
+> -		cpu@A00 {
+> +		cpu0: cpu@A00 {
+>  			device_type =3D "cpu";
+>  			compatible =3D "arm,cortex-a9";
+>  			reg =3D <0xA00>;
+> +			cooling-min-level =3D <13>;
+> +			cooling-max-level =3D <7>;
+> +			#cooling-cells =3D <2>; /* min followed by max */
+>  		};
+> =20
+>  		cpu@A01 {
+> diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/b=
+oot/dts/exynos4412-odroid-common.dtsi
+> index c7517fc..4838a2a 100644
+> --- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+> +++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+> @@ -401,6 +401,21 @@
+>  		vtmu-supply =3D <&ldo10_reg>;
+>  		status =3D "okay";
+>  	};
+> +
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			cooling-maps {
+> +				map0 {
+> +				    /* Corresponds to 800MHz at freq_table */
+> +				    cooling-device =3D <&cpu0 7 7>;
+> +				};
+> +				map1 {
+> +				   /* Corresponds to 200MHz at freq_table */
+> +				   cooling-device =3D <&cpu0 13 13>;
+> +			       };
+> +		       };
+> +		};
+> +	};
+>  };
+> =20
+>  &pinctrl_1 {
+> diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/=
+exynos4412-trats2.dts
+> index 29231b4..8c2c584 100644
+> --- a/arch/arm/boot/dts/exynos4412-trats2.dts
+> +++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+> @@ -863,6 +863,21 @@
+>  		pulldown-ohm =3D <100000>; /* 100K */
+>  		io-channels =3D <&adc 2>;  /* Battery temperature */
+>  	};
+> +
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			cooling-maps {
+> +				map0 {
+> +				    /* Corresponds to 800MHz at freq_table */
+> +				    cooling-device =3D <&cpu0 7 7>;
+> +				};
+> +				map1 {
+> +				   /* Corresponds to 200MHz at freq_table */
+> +				   cooling-device =3D <&cpu0 13 13>;
+> +			       };
+> +		       };
+> +		};
+> +	};
+>  };
+> =20
+>  &pinctrl_0 {
+> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos=
+4412.dtsi
+> index 0f6ec93..68ad43b 100644
+> --- a/arch/arm/boot/dts/exynos4412.dtsi
+> +++ b/arch/arm/boot/dts/exynos4412.dtsi
+> @@ -26,10 +26,13 @@
+>  		#address-cells =3D <1>;
+>  		#size-cells =3D <0>;
+> =20
+> -		cpu@A00 {
+> +		cpu0: cpu@A00 {
+>  			device_type =3D "cpu";
+>  			compatible =3D "arm,cortex-a9";
+>  			reg =3D <0xA00>;
+> +			cooling-min-level =3D <13>;
+> +			cooling-max-level =3D <7>;
+> +			#cooling-cells =3D <2>; /* min followed by max */
+>  		};
+> =20
+>  		cpu@A01 {
+> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos=
+5250.dtsi
+> index 0a229fc..dd5c3a0 100644
+> --- a/arch/arm/boot/dts/exynos5250.dtsi
+> +++ b/arch/arm/boot/dts/exynos5250.dtsi
+> @@ -58,11 +58,14 @@
+>  		#address-cells =3D <1>;
+>  		#size-cells =3D <0>;
+> =20
+> -		cpu@0 {
+> +		cpu0: cpu@0 {
+>  			device_type =3D "cpu";
+>  			compatible =3D "arm,cortex-a15";
+>  			reg =3D <0>;
+>  			clock-frequency =3D <1700000000>;
+> +			cooling-min-level =3D <15>;
+> +			cooling-max-level =3D <9>;
+> +			#cooling-cells =3D <2>; /* min followed by max */
+>  		};
+>  		cpu@1 {
+>  			device_type =3D "cpu";
+> @@ -241,6 +244,21 @@
 >  		clock-names =3D "tmu_apbif";
->  		status =3D "disabled";
->  		vtmu-supply =3D <&tmu_regulator_node>;
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
 >  	};
 > =20
->  Example 2):
-> @@ -61,6 +74,7 @@ Example 2):
->  		interrupts =3D <0 58 0>;
->  		clocks =3D <&clock 21>;
->  		clock-names =3D "tmu_apbif";
-> +		#include "exynos5440-tmu-sensor-conf.dtsi"
-
-Did I miss something or at this point the above file does not exist yet?
-
-Please make sure each commit / patch is in a compilable/usable/working
-state.
-
->  	};
-> =20
->  Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
-> @@ -70,6 +84,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIM=
-INFO register")
->  		interrupts =3D <0 184 0>;
->  		clocks =3D <&clock 318>, <&clock 318>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_cpu3: tmu@1006c000 {
-> @@ -78,6 +93,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIM=
-INFO register")
->  		interrupts =3D <0 185 0>;
->  		clocks =3D <&clock 318>, <&clock 319>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  	tmu_gpu: tmu@100a0000 {
-> @@ -86,6 +102,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRI=
-MINFO register")
->  		interrupts =3D <0 215 0>;
->  		clocks =3D <&clock 319>, <&clock 318>;
->  		clock-names =3D "tmu_apbif", "tmu_triminfo_apbif";
-> +		#include "exynos4412-tmu-sensor-conf.dtsi"
->  	};
-> =20
->  Note: For multi-instance tmu each instance should have an alias correctly
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			cooling-maps {
+> +				map0 {
+> +				    /* Corresponds to 800MHz at freq_table */
+> +				    cooling-device =3D <&cpu0 9 9>;
+> +				};
+> +				map1 {
+> +				   /* Corresponds to 200MHz at freq_table */
+> +				   cooling-device =3D <&cpu0 15 15>;
+> +			       };
+> +		       };
+> +		};
+> +	};
+> +
+>  	serial@12C00000 {
+>  		clocks =3D <&clock CLK_UART0>, <&clock CLK_SCLK_UART0>;
+>  		clock-names =3D "uart", "clk_uart_baud0";
 > --=20
 > 2.0.0.rc2
 >=20
 
---bi5JUZtvcfApsciF
+--/aVve/J9H4Wl5yVO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUtrrfAAoJEMLUO4d9pOJWVhoH/jv9/hm7FUmPL3eXMMRcWT6Q
-bhkdzWC11Vuxp2gHoKFzH1CFamJoL03ggJl0xFLh1DKz1bGcTYDeBCNC6ox3Ncq3
-AivqP1fEk1wpZSb8afEFFhREjzWlBogjNotaTPp0taViigpKh2TZdq5CDU8ISxHg
-p2pbTz6uACtIhxc0yMrxF0O4rrfnrPQsNC70qoP8Tqf18c/pZzIY5WkFOfMEgUNE
-k/KpGhdNRMQeBNIx67CsgQjAIwsTqAoOopb7SbAOwAPXj7Ne469p/mnqDhj+ZuN6
-WKkf9C/R4KOEddVUFYnVIj7my3jDZytZX3Vwoc+/WKb0bMmBvTa8W3ugy/qWzJQ=
-=4bA4
+iQEcBAEBAgAGBQJUtrwMAAoJEMLUO4d9pOJW3AcH/A7q76cWzYqW9sth3gDoE7BT
+GVNNqQu58ozhd4mY5JTbI5b9qM8XkgufxGQoibxx4zmEIM47MPzP9pNKlWBwlb6c
+TCjjF1ZZaRxKRNXWhZcPiyJnHEhYee7vB2wpOLIqW/eQwTLqeHne8kX3qH660pf+
+VDN8+JGBFJDVt9/QqgnSQ2r8FRnXJluXGnFlWXOKQDRJt3XB4aB3vabeHYc2T42b
+DzSH9URK6l14/hgMJsC6EgeO/GwjyF8q5e0aWLeub+DzccEwD5c1u0n3s2kED5hz
+PPiJ/PysAGSWOkMCgFMFJB01YpKDP/3q1XbJl5AONK+MY7TviTLo/Zu2G9M3FKw=
+=Fu6R
 -----END PGP SIGNATURE-----
 
---bi5JUZtvcfApsciF--
+--/aVve/J9H4Wl5yVO--
