@@ -1,71 +1,65 @@
 From: Frans Klaver <frans.klaver@xsens.com>
-Subject: [PATCH RESEND 08/13] power: reset: ltc2952: cleanup control flow in poweroff_handler
-Date: Wed, 14 Jan 2015 09:15:41 +0100
-Message-ID: <1421223346-27410-9-git-send-email-frans.klaver@xsens.com>
+Subject: [PATCH RESEND 13/13] power: reset: ltc2952: document optional trigger behavior
+Date: Wed, 14 Jan 2015 09:15:46 +0100
+Message-ID: <1421223346-27410-14-git-send-email-frans.klaver@xsens.com>
 References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:42162 "EHLO
+Received: from filter1.ibarracuda.nl ([83.247.7.10]:42267 "EHLO
 	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbbANI3M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 03:29:12 -0500
+	with ESMTP id S1752849AbbANI31 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 03:29:27 -0500
 In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-ltc2952_poweroff_handler uses gotos to return from the function. Since
-we don't do cleanups exiting this function, just return IRQ_HANDLED on
-the spot and be done with it.
+Document the fact that the trigger signal is now optional, and describe
+the behavior when this is used.
 
-While at it, remove the variable 'ret'. It was never used very much.
+While at it, fix a typo, and paraphrase a sentence to be less platform
+specific.
 
 Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
 ---
- drivers/power/reset/ltc2952-poweroff.c | 18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+ .../devicetree/bindings/power/reset/ltc2952-poweroff.txt    | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index af3cb6e..70d8e3a 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -153,29 +153,21 @@ ltc2952_poweroff_timer_trigger(struct hrtimer *timer)
-  */
- static irqreturn_t ltc2952_poweroff_handler(int irq, void *dev_id)
- {
--	int ret;
- 	struct ltc2952_poweroff *data = dev_id;
+diff --git a/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
+index 0c94c63..cd2d7f5 100644
+--- a/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
++++ b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
+@@ -1,20 +1,23 @@
+ Binding for the LTC2952 PowerPath controller
  
--	if (data->kernel_panic)
--		goto irq_ok;
--
--	if (hrtimer_active(&data->timer_wde)) {
-+	if (data->kernel_panic || hrtimer_active(&data->timer_wde)) {
- 		/* shutdown is already triggered, nothing to do any more */
--		goto irq_ok;
-+		return IRQ_HANDLED;
- 	}
+ This chip is used to externally trigger a system shut down. Once the trigger has
+-been sent, the chips' watchdog has to be reset to gracefully shut down.
+-If the Linux systems decides to shut down it powers off the platform via the
+-kill signal.
++been sent, the chip's watchdog has to be reset to gracefully shut down.
++A full powerdown can be triggered via the kill signal.
  
- 	if (!hrtimer_active(&data->timer_trigger)) {
--		ret = hrtimer_start(&data->timer_trigger, data->trigger_delay,
--			HRTIMER_MODE_REL);
--
--		if (ret)
-+		if (hrtimer_start(&data->timer_trigger, data->trigger_delay,
-+				  HRTIMER_MODE_REL))
- 			dev_err(data->dev, "unable to start the wait timer\n");
- 	} else {
--		ret = hrtimer_cancel(&data->timer_trigger);
-+		hrtimer_cancel(&data->timer_trigger);
- 		/* omitting return value check, timer should have been valid */
- 	}
--
--irq_ok:
- 	return IRQ_HANDLED;
- }
+ Required properties:
  
+ - compatible:		Must contain: "lltc,ltc2952"
+-- trigger-gpios:	phandle + gpio-specifier for the GPIO connected to the
+-			chip's trigger line
+ - watchdog-gpios:	phandle + gpio-specifier for the GPIO connected to the
+ 			chip's watchdog line
+ - kill-gpios:		phandle + gpio-specifier for the GPIO connected to the
+ 			chip's kill line
+ 
++Optional properties:
++- trigger-gpios:	phandle + gpio-specifier for the GPIO connected to the
++			chip's trigger line. If this property is not set, the
++			trigger function is ignored and the chip is kept alive
++			until an explicit kill signal is received
++
+ Example:
+ 
+ ltc2952 {
 -- 
 2.1.0
 
