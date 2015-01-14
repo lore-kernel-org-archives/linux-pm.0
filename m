@@ -1,10 +1,11 @@
 From: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH RESEND 02/13] power: reset: ltc2952: prefer devm_request_irq over request_irq
-Date: Wed, 14 Jan 2015 09:15:35 +0100
-Message-ID: <1421223346-27410-3-git-send-email-frans.klaver@xsens.com>
+Subject: [PATCH RESEND 06/13] power: reset: ltc2952: remove global variable poweroff_panic
+Date: Wed, 14 Jan 2015 09:15:39 +0100
+Message-ID: <1421223346-27410-7-git-send-email-frans.klaver@xsens.com>
 References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=y
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
@@ -12,66 +13,149 @@ To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Cc: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux-93MfrKQ0iTlmR6Xm/wNWPw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Make use of the fact that we allocated resources can be automatically
-deallocated. This reduces cleanup code and chance of errors. It also
-removes the need for the virq member of the ltc2952_poweroff_data
-struct.
+As per Documentation/CodingStyle ch.4, we should keep global variables
+to a mininum. Move the panic state into the driver data, regardless of
+whether panic is a system state or not.
+
+This removes the need for the custom _init and _exit functions, so
+replace them with a call to the module_platform_driver() macro.
 
 Signed-off-by: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
 ---
- drivers/power/reset/ltc2952-poweroff.c | 19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ drivers/power/reset/ltc2952-poweroff.c | 57 +++++++++++++-------------=
+--------
+ 1 file changed, 22 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 951a90d..2c11316 100644
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/res=
+et/ltc2952-poweroff.c
+index 9d493b5..bc8d228 100644
 --- a/drivers/power/reset/ltc2952-poweroff.c
 +++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -72,8 +72,6 @@ struct ltc2952_poweroff_data {
- 
- 	struct device *dev;
- 
--	unsigned int virq;
--
- 	/**
- 	 * 0: trigger
- 	 * 1: watchdog
-@@ -260,13 +258,11 @@ static int ltc2952_poweroff_init(struct platform_device *pdev)
- 		goto err_io;
- 	}
- 
--	ltc2952_data->virq = virq;
--	ret = request_irq(virq,
--		ltc2952_poweroff_handler,
--		(IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
--		"ltc2952-poweroff",
--		ltc2952_data
--	);
-+	ret = devm_request_irq(&pdev->dev, virq,
-+			       ltc2952_poweroff_handler,
-+			       (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
-+			       "ltc2952-poweroff",
-+			       ltc2952_data);
- 
- 	if (ret) {
- 		dev_err(&pdev->dev, "cannot configure an interrupt handler\n");
-@@ -316,12 +312,9 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
- 
- 	pm_power_off = NULL;
- 
--	if (ltc2952_data) {
--		free_irq(ltc2952_data->virq, ltc2952_data);
--
-+	if (ltc2952_data)
- 		for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
- 			gpiod_put(ltc2952_data->gpio[i]);
--	}
- 
+@@ -75,6 +75,9 @@ struct ltc2952_poweroff {
+ 	struct gpio_desc *gpio_trigger;
+ 	struct gpio_desc *gpio_watchdog;
+ 	struct gpio_desc *gpio_kill;
++
++	bool kernel_panic;
++	struct notifier_block panic_notifier;
+ };
+=20
+ #define to_ltc2952(p, m) container_of(p, struct ltc2952_poweroff, m)
+@@ -84,7 +87,6 @@ struct ltc2952_poweroff {
+  * remove it entirely once we don't need the global state anymore.
+  */
+ static struct ltc2952_poweroff *ltc2952_data;
+-static int ltc2952_poweroff_panic;
+=20
+ /**
+  * ltc2952_poweroff_timer_wde - Timer callback
+@@ -102,7 +104,7 @@ static enum hrtimer_restart ltc2952_poweroff_timer_=
+wde(struct hrtimer *timer)
+ 	unsigned long overruns;
+ 	struct ltc2952_poweroff *data =3D to_ltc2952(timer, timer_wde);
+=20
+-	if (ltc2952_poweroff_panic)
++	if (data->kernel_panic)
+ 		return HRTIMER_NORESTART;
+=20
+ 	state =3D gpiod_get_value(data->gpio_watchdog);
+@@ -154,7 +156,7 @@ static irqreturn_t ltc2952_poweroff_handler(int irq=
+, void *dev_id)
+ 	int ret;
+ 	struct ltc2952_poweroff *data =3D dev_id;
+=20
+-	if (ltc2952_poweroff_panic)
++	if (data->kernel_panic)
+ 		goto irq_ok;
+=20
+ 	if (hrtimer_active(&data->timer_wde)) {
+@@ -255,6 +257,15 @@ static int ltc2952_poweroff_init(struct platform_d=
+evice *pdev)
  	return 0;
  }
--- 
+=20
++static int ltc2952_poweroff_notify_panic(struct notifier_block *nb,
++					 unsigned long code, void *unused)
++{
++	struct ltc2952_poweroff *data =3D to_ltc2952(nb, panic_notifier);
++
++	data->kernel_panic =3D true;
++	return NOTIFY_DONE;
++}
++
+ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -280,6 +291,9 @@ static int ltc2952_poweroff_probe(struct platform_d=
+evice *pdev)
+ 	ltc2952_data =3D data;
+ 	pm_power_off =3D &ltc2952_poweroff_kill;
+=20
++	data->panic_notifier.notifier_call =3D ltc2952_poweroff_notify_panic;
++	atomic_notifier_chain_register(&panic_notifier_list,
++				       &data->panic_notifier);
+ 	dev_info(&pdev->dev, "probe successful\n");
+=20
+ 	return 0;
+@@ -287,8 +301,11 @@ static int ltc2952_poweroff_probe(struct platform_=
+device *pdev)
+=20
+ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+ {
+-	pm_power_off =3D NULL;
++	struct ltc2952_poweroff *data =3D platform_get_drvdata(pdev);
+=20
++	pm_power_off =3D NULL;
++	atomic_notifier_chain_unregister(&panic_notifier_list,
++					 &data->panic_notifier);
+ 	return 0;
+ }
+=20
+@@ -310,37 +327,7 @@ static struct platform_driver ltc2952_poweroff_dri=
+ver =3D {
+ 	.resume =3D ltc2952_poweroff_resume,
+ };
+=20
+-static int ltc2952_poweroff_notify_panic(struct notifier_block *nb,
+-	unsigned long code, void *unused)
+-{
+-	ltc2952_poweroff_panic =3D 1;
+-	return NOTIFY_DONE;
+-}
+-
+-static struct notifier_block ltc2952_poweroff_panic_nb =3D {
+-	.notifier_call =3D ltc2952_poweroff_notify_panic,
+-};
+-
+-static int __init ltc2952_poweroff_platform_init(void)
+-{
+-	ltc2952_poweroff_panic =3D 0;
+-
+-	atomic_notifier_chain_register(&panic_notifier_list,
+-		&ltc2952_poweroff_panic_nb);
+-
+-	return platform_driver_register(&ltc2952_poweroff_driver);
+-}
+-
+-static void __exit ltc2952_poweroff_platform_exit(void)
+-{
+-	atomic_notifier_chain_unregister(&panic_notifier_list,
+-		&ltc2952_poweroff_panic_nb);
+-
+-	platform_driver_unregister(&ltc2952_poweroff_driver);
+-}
+-
+-module_init(ltc2952_poweroff_platform_init);
+-module_exit(ltc2952_poweroff_platform_exit);
++module_platform_driver(ltc2952_poweroff_driver);
+=20
+ MODULE_AUTHOR("Ren=E9 Moll <rene.moll-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>");
+ MODULE_DESCRIPTION("LTC PowerPath power-off driver");
+--=20
 2.1.0
 
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 More majordomo info at  http://vger.kernel.org/majordomo-info.html
