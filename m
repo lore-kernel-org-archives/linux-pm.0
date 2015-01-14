@@ -1,42 +1,77 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: [PATCH RESEND 10/13] power: reset: ltc2952: disable timers in _remove
-Date: Wed, 14 Jan 2015 09:15:43 +0100
-Message-ID: <1421223346-27410-11-git-send-email-frans.klaver@xsens.com>
+From: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH RESEND 02/13] power: reset: ltc2952: prefer devm_request_irq over request_irq
+Date: Wed, 14 Jan 2015 09:15:35 +0100
+Message-ID: <1421223346-27410-3-git-send-email-frans.klaver@xsens.com>
 References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:42244 "EHLO
-	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbbANI3X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 03:29:23 -0500
-In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux-93MfrKQ0iTlmR6Xm/wNWPw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Disable the timers when ltc2952_poweroff is removed. We don't want to
-risk calling functions on data that no longer exist.
+Make use of the fact that we allocated resources can be automatically
+deallocated. This reduces cleanup code and chance of errors. It also
+removes the need for the virq member of the ltc2952_poweroff_data
+struct.
 
-Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
+Signed-off-by: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
 ---
- drivers/power/reset/ltc2952-poweroff.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/power/reset/ltc2952-poweroff.c | 19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 8ab1da6..2f3fd5b 100644
+index 951a90d..2c11316 100644
 --- a/drivers/power/reset/ltc2952-poweroff.c
 +++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -285,6 +285,8 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
- 	struct ltc2952_poweroff *data = platform_get_drvdata(pdev);
+@@ -72,8 +72,6 @@ struct ltc2952_poweroff_data {
+ 
+ 	struct device *dev;
+ 
+-	unsigned int virq;
+-
+ 	/**
+ 	 * 0: trigger
+ 	 * 1: watchdog
+@@ -260,13 +258,11 @@ static int ltc2952_poweroff_init(struct platform_device *pdev)
+ 		goto err_io;
+ 	}
+ 
+-	ltc2952_data->virq = virq;
+-	ret = request_irq(virq,
+-		ltc2952_poweroff_handler,
+-		(IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
+-		"ltc2952-poweroff",
+-		ltc2952_data
+-	);
++	ret = devm_request_irq(&pdev->dev, virq,
++			       ltc2952_poweroff_handler,
++			       (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
++			       "ltc2952-poweroff",
++			       ltc2952_data);
+ 
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "cannot configure an interrupt handler\n");
+@@ -316,12 +312,9 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
  
  	pm_power_off = NULL;
-+	hrtimer_cancel(&data->timer_trigger);
-+	hrtimer_cancel(&data->timer_wde);
- 	atomic_notifier_chain_unregister(&panic_notifier_list,
- 					 &data->panic_notifier);
+ 
+-	if (ltc2952_data) {
+-		free_irq(ltc2952_data->virq, ltc2952_data);
+-
++	if (ltc2952_data)
+ 		for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
+ 			gpiod_put(ltc2952_data->gpio[i]);
+-	}
+ 
  	return 0;
+ }
 -- 
 2.1.0
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
