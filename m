@@ -1,61 +1,122 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: [PATCH RESEND 11/13] power: reset: ltc2952: check trigger value before starting timer
-Date: Wed, 14 Jan 2015 09:15:44 +0100
-Message-ID: <1421223346-27410-12-git-send-email-frans.klaver@xsens.com>
-References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
+From: Igor Gnatenko <i.gnatenko.brain-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [REGRESSION] iwlfiwi with Intel Centrino N1000 won't work with
+ power_save
+Date: Wed, 14 Jan 2015 11:40:18 +0300
+Message-ID: <1421224818.2012.4.camel@gmail.com>
+References: <1421224274.2012.2.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
+	boundary="=-igDySlFRcnmfR7Ew40dR"
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1421224274.2012.2.camel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-wireless <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "Wysocki, Rafael" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alex Nik <rage.iz.me-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-In ltc2952_poweroff_handler it is theoretically possible that the timer
-fails to start on first pass (button press), but succeeds in starting on
-the second (button release). This will cause the button press to be
-misinterpreted, and will incorrectly shut down the system. Because a
-picture says more than a thousand words:
 
-Expected behavior:
-tmr:      ++++++++++
-btn: -----__________-----
+--=-igDySlFRcnmfR7Ew40dR
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Faulty behavior:
-tmr:                +++++
-btn: -----__________-----
+On Wed, 2015-01-14 at 11:31 +0300, Igor Gnatenko wrote:
+> Hi,
+>=20
+> I got report from people that on Intel Centrino N1000 wifi won't=20
+> work after
+> updating to 3.17.8. I see in that release Fedora maints enabled=20
+> POWERCAP and
+> INTEL RAPL. We got working wifi only after disabling powersave via=20
+> `iw dev wlp2s0 set power_save off`.
+>=20
+> How we can debug this?
+>=20
+> lspci above.
+>=20
+> 02:00.0 Network controller [0280]: Intel Corporation Centrino=20
+> Wireless- N 1000 [Condor Peak] [8086:0084]
+>         Subsystem: Intel Corporation Centrino Wireless-N 1000 BGN
+> [8086:1315]
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B- DisINTx+
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast=20
+> >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 0, Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 28
+>         Region 0: Memory at d1500000 (64-bit, non-prefetchable)
+> [size=3D8K]
+>         Capabilities: [c8] Power Management version 3
+>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA=20
+> PME(D0+,D1-
+> ,D2-,D3hot+,D3cold+)
+>                 Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0=20
+> PME-
+>         Capabilities: [d0] MSI: Enable+ Count=3D1/1 Maskable- 64bit+
+>                 Address: 00000000fee0800c  Data: 4122
+>         Capabilities: [e0] Express (v1) Endpoint, MSI 00
+>                 DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency=20
+> L0s
+> <512ns, L1 unlimited
+>                 ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+
+>                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
+> Unsupported-
+>                 RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
+>                 MaxPayload 128 bytes, MaxReadReq 128 bytes
+>                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq-
+> AuxPwr+ TransPend-
+>                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s=20
+> L1,
+> Exit Latency L0s <128ns, L1 <32us
+>                 ClockPM+ Surprise- LLActRep- BwNot- ASPMOptComp-
+>                 LnkCtl: ASPM Disabled; RCB 64 bytes Disabled-=20
+> CommClk+
+>                 ExtSynch- ClockPM+ AutWidDis- BWInt- AutBWInt-
+>                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train-
+> SlotClk+ DLActive- BWMgmt- ABWMgmt-
+>         Capabilities: [100 v1] Advanced Error Reporting
+>                 UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
+> UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+>                 UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
+> UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+>                 UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt-
+> UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+>                 CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout-
+> NonFatalErr-
+>                 CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout-
+> NonFatalErr+
+>                 AERCap: First Error Pointer: 00, GenCap- CGenEn-
+> ChkCap- ChkEn-
+>         Capabilities: [140 v1] Device Serial Number 74-e5-0b-ff-ff-
+> cc-
+> 82-24
+>         Kernel driver in use: iwlwifi
+>         Kernel modules: iwlwifi
+> --
+> -Igor Gnatenko
+CC linux-pm@
+--=20
+-Igor Gnatenko
+--=-igDySlFRcnmfR7Ew40dR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-Legend:
-+ timer runs
-_ button pressed
-- button depressed
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-To prevent this from happening, check the value of the gpio before
-starting the timer. If the button is active, we should start the timer,
-else we should stop it.
+iQEcBAABAgAGBQJUtityAAoJEGmy9zExMnyPrxkH/i/qwLf400p7IH/AeYKdv2cf
+WqFMS+otRs+urkKlT4sagbxCumxmoyw2Ay66sywDrjLO075PMSVKr2aqGXXP/zTG
+o4OakEY9Jn5FwbLY04r5qSXFMFDh/jeI7QvLHz0MaDkBuFQaaIg6uGbI383ubKb2
+lLThaEiKY1t8CcF+O0g00SpBPLKf0FKmd0+Gaz2c5xMAKY5hfzhzmtdHQe3YEJsz
+BsJQuOQOmW3eyiL2DMRfrX2kuf7JblotUo0rR4JSCCJDdzerf2EO9uT3tw7RCWkD
+Yaa5FbIDKN0jHkx10oghOwB1o4/a6zmNDo/Qvk3BFZtbY0JMIV+si1IblVCh378=
+=ZgoJ
+-----END PGP SIGNATURE-----
 
-The situation described can now still occur if the polarity of the input
-pin is set incorrectly, but that at least is predictable behavior and
-can be detected during the first tests.
+--=-igDySlFRcnmfR7Ew40dR--
 
-Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
----
- drivers/power/reset/ltc2952-poweroff.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 2f3fd5b..fda2735 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -160,7 +160,7 @@ static irqreturn_t ltc2952_poweroff_handler(int irq, void *dev_id)
- 		return IRQ_HANDLED;
- 	}
- 
--	if (!hrtimer_active(&data->timer_trigger)) {
-+	if (gpiod_get_value(data->gpio_trigger)) {
- 		if (hrtimer_start(&data->timer_trigger, data->trigger_delay,
- 				  HRTIMER_MODE_REL))
- 			dev_err(data->dev, "unable to start the wait timer\n");
--- 
-2.1.0
+--
+To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
