@@ -1,90 +1,75 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH v3 4/9] ARM: dts: sun7i: cubieboard2: add axp209
- regulator nodes
-Date: Wed, 14 Jan 2015 20:30:08 +0100
-Message-ID: <20150114193008.GD4891@lukather>
-References: <1421037249-28461-1-git-send-email-wens@csie.org>
- <1421037249-28461-5-git-send-email-wens@csie.org>
- <20150112090603.GE4891@lukather>
- <CAGb2v66r6EG2F1-=Gaig7ZW58Z1KteQ5nDPfW5niisv7dCjY0Q@mail.gmail.com>
- <20150113094036.GR4891@lukather>
- <CAGb2v65=Jfr56Yb2udNVy=shA9+AOPK9yjHTAOJZ7TFh5idTHA@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM
+ domain code
+Date: Thu, 15 Jan 2015 08:38:46 +0900
+Message-ID: <20150114233845.GB10479@verge.net.au>
+References: <1421232648-15204-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cC4dCx2W6DcYPM7t"
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAGb2v65=Jfr56Yb2udNVy=shA9+AOPK9yjHTAOJZ7TFh5idTHA@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+In-Reply-To: <1421232648-15204-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jan 14, 2015 at 11:50:48AM +0100, Geert Uytterhoeven wrote:
+> Fix two DT refcount imbalances in the PM domain code that scans the DT
+> topology:
+> 
+>   1. Add missing of_node_put() after of_find_compatible_node().
+> 
+>   2. If CONFIG_OF_DYNAMIC=y:
+> 
+> 	ERROR: Bad of_node_put() on /system-controller@e6180000
+> 	<backtrace>
+> 
+>      of_find_node_by_name() calls of_node_put() on its "from" parameter,
+>      which must not be done on the for_each_compatible_node() iterator,
+>      as it causes a zero refcount later.
+>      Use of_get_child_by_name() instead to fix this.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Fixes: d7a3a10c8391fdcd ("ARM: shmobile: R-Mobile: Add DT support for PM domains")
+> in Simon's git://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
+> tag renesas-dt-pm-for-v3.20
 
---cC4dCx2W6DcYPM7t
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks.
 
-On Tue, Jan 13, 2015 at 06:30:51PM +0800, Chen-Yu Tsai wrote:
-> >> You could probably chain the regulators in the DT via xxx-supply
-> >> if it helps. But beyond that, it is hard to do anything meaningful
-> >> at this point. Modeling them as fixed regulators beyond our control
-> >> is simpler. We also do not have an IPSOUT regulator for the AXP.
-> >>
-> >> > Eventually, I think we would be able to remove
-> >> > sunxi-common-regulators.dtsi, or at least, expose the proper regulat=
-or
-> >> > hierarchy.
-> >>
-> >> The USB and SATA regulators are just GPIO enabled switches (MOSFETs)
-> >> or current limiters. I think these will always exist because of the
-> >> reference designs. Or do you want to move them back into the board
-> >> dts files? FWIW, I like it the way it is now. Not that I don't like
-> >> it to be accurate.
-> >
-> > At least providing the right hierarchy at the board level would be
-> > great. Adding the -supply property to all our fixed regulators
-> > wouldn't take too much code, and would be enough to model properly the
-> > regulator trees.
->=20
-> These are all unrelated to axp209. You'd end up with
->=20
->     vin-supply =3D <&reg_vcc5v>;
->=20
-> for the usb and sata power regulators. You could put these
-> in sunxi-common-regulators, and override them for boards
-> that actually have something controllable.
+As the patch above is not in the ARM SoC tree yet I have decided
+to squash this patch into it.
 
-Ok. Fine then.
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---cC4dCx2W6DcYPM7t
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtsPAAAoJEBx+YmzsjxAgVsIQAKJQF/3Jugi/nlhA2hYvTekV
-7BdfxtqgjtNNFT+P3ZOPj4/04jjAiGVnw+8T4p2UqQigFu/4U0B7UBHygHt8a3sm
-VYwu8XQyFAvwdY8AKVQtelFTfX8YjnJcCoXKkEOEpwg5SBgmkpFpWEi7Z79gqOC8
-KvGQLTi6jcKxTcTI8eIthHP+lD6V/Y4IUj8X/OB1tVmItafy2TrCZr+tw3nVtW9V
-b2249hPpEGPyEQ225yEtigp+XCD0nafrv+5spcUfAA7JW9J2p0S3PTb4JHxmDGq5
-u+JPfCSsFCV7q60szk0r2GvH245yIyugOpyJHpwXJSytZxlGZ0DSOKeRqbfyTIiH
-i6/Tu4wXBH6vXbBolF4ky33CN+begrJ7wI/6vTC8fCSYKm2keGFeB1LxiKPGbq2u
-72s14SX9UkpyUlQoDPZymilb8mvDWBgCySWitL/YQb+0qjLE5uEZzLV1oPcGvtr8
-+QQkoGUKs0uLkD99F8Woag53wd45D667vyIHjIhG9xIlQniKA/UiJCpY5aLp4hkf
-N5Dqq3a3ZqL6GPFCE6bCIMzA8h8sXqm+77R8sWoXh8trTA3f6+bf745Dnd1VGiAk
-DOnt00LnPzbnRq+u2wo9wTbw6aEsHP9ulQPaxfnrsYPqcJ7AIX46/RTkhyW0y6EG
-WZEVmucqiQ1KHlj34n4c
-=4wTz
------END PGP SIGNATURE-----
-
---cC4dCx2W6DcYPM7t--
+> ---
+>  arch/arm/mach-shmobile/pm-rmobile.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> index 07fb4ea4d8e94258..85a7fdd9823bc5a6 100644
+> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> @@ -270,8 +270,10 @@ static void __init get_special_pds(void)
+>  
+>  	/* PM domain containing Coresight-ETM */
+>  	np = of_find_compatible_node(NULL, NULL, "arm,coresight-etm3x");
+> -	if (np)
+> +	if (np) {
+>  		debug_pd = of_parse_phandle(np, "power-domains", 0);
+> +		of_node_put(np);
+> +	}
+>  }
+>  
+>  static void __init put_special_pds(void)
+> @@ -363,7 +365,7 @@ static int __init rmobile_init_pm_domains(void)
+>  			continue;
+>  		}
+>  
+> -		pmd = of_find_node_by_name(np, "pm-domains");
+> +		pmd = of_get_child_by_name(np, "pm-domains");
+>  		if (!pmd) {
+>  			pr_warn("%s lacks pm-domains node\n", np->full_name);
+>  			continue;
+> -- 
+> 1.9.1
+> 
