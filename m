@@ -1,117 +1,62 @@
-From: Emmanuel Grumbach <egrumbach@gmail.com>
-Subject: Re: [REGRESSION] iwlfiwi with Intel Centrino N1000 won't work with power_save
-Date: Wed, 14 Jan 2015 12:36:31 +0200
-Message-ID: <CANUX_P2-=HmRyxUukG5YyVu+=P4YtsDwQjJFZEj6_L6EQoNLtA@mail.gmail.com>
-References: <1421224274.2012.2.camel@gmail.com>
-	<1421224818.2012.4.camel@gmail.com>
-	<CANUX_P1DwErJr6O2OGR7Sr12g3-OKYKEBTQ+wSZiSS=NUoCqEw@mail.gmail.com>
-	<CAFMg4WBnNhVWf8ouFqWVwpbp5TQ0XrxTC_8vvLDSVBemA0N-Kw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f41.google.com ([209.85.215.41]:42447 "EHLO
-	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbbANKgd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 05:36:33 -0500
-In-Reply-To: <CAFMg4WBnNhVWf8ouFqWVwpbp5TQ0XrxTC_8vvLDSVBemA0N-Kw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM domain code
+Date: Wed, 14 Jan 2015 11:50:48 +0100
+Message-ID: <1421232648-15204-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Igor Gnatenko <i.gnatenko.brain@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>, "Wysocki, Rafael" <rafael@kernel.org>, Alex Nik <rage.iz.me@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>
 
->>>> Hi,
->>>>
->>>> I got report from people that on Intel Centrino N1000 wifi won't
->>>> work after
->>>> updating to 3.17.8. I see in that release Fedora maints enabled
->>>> POWERCAP and
->>>> INTEL RAPL. We got working wifi only after disabling powersave via
->>>> `iw dev wlp2s0 set power_save off`.
->>
->> What kernel version did you have before?
->> BTW - for this device, power save is supposed to be disabled by
->> default, but I need to check
-> 3.17.4
+Fix two DT refcount imbalances in the PM domain code that scans the DT
+topology:
 
-$ git log --oneline v3.17.4..v3.17.8 -- drivers/net/wireless/iwlwifi/
-fb14996 iwlwifi: mvm: check TLV flag before trying to use hotspot
-firmware commands
-4e709ff iwlwifi: mvm: ROC - bug fixes around time events and locking
-85ebf94 iwlwifi: pcie: fix prph dump length
+  1. Add missing of_node_put() after of_find_compatible_node().
 
-none of these are related to the device your are reporting about.
+  2. If CONFIG_OF_DYNAMIC=y:
 
->>>>
->>>> How we can debug this?
->>>>
->>>> lspci above.
->>>>
->>>> 02:00.0 Network controller [0280]: Intel Corporation Centrino
->>>> Wireless- N 1000 [Condor Peak] [8086:0084]
->>>>         Subsystem: Intel Corporation Centrino Wireless-N 1000 BGN
->>>> [8086:1315]
->>>>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->>>> ParErr- Stepping- SERR- FastB2B- DisINTx+
->>>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast
->>>> >TAbort-
->>>> <TAbort- <MAbort- >SERR- <PERR- INTx-
->>>>         Latency: 0, Cache Line Size: 64 bytes
->>>>         Interrupt: pin A routed to IRQ 28
->>>>         Region 0: Memory at d1500000 (64-bit, non-prefetchable)
->>>> [size=8K]
->>>>         Capabilities: [c8] Power Management version 3
->>>>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
->>>> PME(D0+,D1-
->>>> ,D2-,D3hot+,D3cold+)
->>>>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0
->>>> PME-
->>>>         Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
->>>>                 Address: 00000000fee0800c  Data: 4122
->>>>         Capabilities: [e0] Express (v1) Endpoint, MSI 00
->>>>                 DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency
->>>> L0s
->>>> <512ns, L1 unlimited
->>>>                 ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+
->>>>                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
->>>> Unsupported-
->>>>                 RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
->>>>                 MaxPayload 128 bytes, MaxReadReq 128 bytes
->>>>                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq-
->>>> AuxPwr+ TransPend-
->>>>                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s
->>>> L1,
->>>> Exit Latency L0s <128ns, L1 <32us
->>>>                 ClockPM+ Surprise- LLActRep- BwNot- ASPMOptComp-
->>>>                 LnkCtl: ASPM Disabled; RCB 64 bytes Disabled-
->>>> CommClk+
->>>>                 ExtSynch- ClockPM+ AutWidDis- BWInt- AutBWInt-
->>>>                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train-
->>>> SlotClk+ DLActive- BWMgmt- ABWMgmt-
->>>>         Capabilities: [100 v1] Advanced Error Reporting
->>>>                 UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
->>>> UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->>>>                 UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
->>>> UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->>>>                 UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt-
->>>> UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
->>>>                 CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout-
->>>> NonFatalErr-
->>>>                 CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout-
->>>> NonFatalErr+
->>>>                 AERCap: First Error Pointer: 00, GenCap- CGenEn-
->>>> ChkCap- ChkEn-
->>>>         Capabilities: [140 v1] Device Serial Number 74-e5-0b-ff-ff-
->>>> cc-
->>>> 82-24
->>>>         Kernel driver in use: iwlwifi
->>>>         Kernel modules: iwlwifi
->>>> --
->>>> -Igor Gnatenko
->>> CC linux-pm@
->>> --
->>> -Igor Gnatenko
->
->
->
-> --
-> -Igor Gnatenko
+	ERROR: Bad of_node_put() on /system-controller@e6180000
+	<backtrace>
+
+     of_find_node_by_name() calls of_node_put() on its "from" parameter,
+     which must not be done on the for_each_compatible_node() iterator,
+     as it causes a zero refcount later.
+     Use of_get_child_by_name() instead to fix this.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Fixes: d7a3a10c8391fdcd ("ARM: shmobile: R-Mobile: Add DT support for PM domains")
+in Simon's git://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
+tag renesas-dt-pm-for-v3.20
+---
+ arch/arm/mach-shmobile/pm-rmobile.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 07fb4ea4d8e94258..85a7fdd9823bc5a6 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -270,8 +270,10 @@ static void __init get_special_pds(void)
+ 
+ 	/* PM domain containing Coresight-ETM */
+ 	np = of_find_compatible_node(NULL, NULL, "arm,coresight-etm3x");
+-	if (np)
++	if (np) {
+ 		debug_pd = of_parse_phandle(np, "power-domains", 0);
++		of_node_put(np);
++	}
+ }
+ 
+ static void __init put_special_pds(void)
+@@ -363,7 +365,7 @@ static int __init rmobile_init_pm_domains(void)
+ 			continue;
+ 		}
+ 
+-		pmd = of_find_node_by_name(np, "pm-domains");
++		pmd = of_get_child_by_name(np, "pm-domains");
+ 		if (!pmd) {
+ 			pr_warn("%s lacks pm-domains node\n", np->full_name);
+ 			continue;
+-- 
+1.9.1
+
