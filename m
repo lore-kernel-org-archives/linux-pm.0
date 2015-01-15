@@ -1,59 +1,842 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH RESEND V2 2/2] power: collie_battery: support generating
- wakeup event
-Date: Thu, 15 Jan 2015 14:44:33 +0100
-Message-ID: <20150115134432.GB512@earth.universe>
-References: <1421287238-23522-1-git-send-email-dbaryshkov@gmail.com>
- <1421287238-23522-2-git-send-email-dbaryshkov@gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v3 14/16] thermal: samsung: core: Exynos TMU rework to use
+ device tree for configuration
+Date: Thu, 15 Jan 2015 16:17:52 +0100
+Message-ID: <20150115161752.27283867@amdc2363>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
+ <1421242874-3425-15-git-send-email-l.majewski@samsung.com>
+ <20150114184633.GC3672@developer>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="hQiwHBbRI9kgIhsi"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1421287238-23522-2-git-send-email-dbaryshkov@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:30203 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbbAOPSJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Jan 2015 10:18:09 -0500
+In-reply-to: <20150114184633.GC3672@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+
+Hi Eduardo,
+
+> On Wed, Jan 14, 2015 at 02:41:12PM +0100, Lukasz Majewski wrote:
+> > This patch brings support for providing configuration via device
+> > tree. Previously this data has been hardcoded in the
+> > exynos_tmu_data.c file. Such approach was not scalable and very
+> > often required copying the whole data.
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > ---
+> > Changes for v2:
+> > - Adjust exynos_tmu.c code to the newest ti-soc-thermal repository
+> > - Usage of of-thermal.c exported trip points table
+> > Changes for v3:
+> > - Adding exynos_of_get_soc_type() method to set SOC type from
+> > device's compatible string
+> > - "samsung,tmu_" prefix for TMU specific properties has been added
+> > 
+> > ---
+> >  drivers/thermal/samsung/Makefile     |   2 -
+> >  drivers/thermal/samsung/exynos_tmu.c | 345
+> > +++++++++++++++++++++++------------
+> > drivers/thermal/samsung/exynos_tmu.h |  53 +----- 3 files changed,
+> > 226 insertions(+), 174 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/samsung/Makefile
+> > b/drivers/thermal/samsung/Makefile index c09d830..1e47d0d 100644
+> > --- a/drivers/thermal/samsung/Makefile
+> > +++ b/drivers/thermal/samsung/Makefile
+> > @@ -3,5 +3,3 @@
+> >  #
+> >  obj-$(CONFIG_EXYNOS_THERMAL)			+=
+> > exynos_thermal.o exynos_thermal-y				:=
+> > exynos_tmu.o -exynos_thermal-y				+=
+> > exynos_tmu_data.o
+> 
+> Can this makefile change be part of the patch that removes
+> exynos_tmu_data.c?
+> 
+> > -exynos_thermal-$(CONFIG_EXYNOS_THERMAL_CORE)	+=
+> > exynos_thermal_common.o
+> 
+> Can this makefile change be part of the patch that removes
+> exynos_thermal_common.c?
+
+Unfortunately, this code cannot be moved to the next patch, in which I
+remove the files, since this causes build break of the series.
+
+The code structure as is, provides working, bisectable thermal
+solution - thermal and cpu_cooling functionality is preserved across
+all commits in the series.
+
+> 
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > b/drivers/thermal/samsung/exynos_tmu.c index ae30f6a..633a9e2 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -1,6 +1,10 @@
+> >  /*
+> >   * exynos_tmu.c - Samsung EXYNOS TMU (Thermal Management Unit)
+> >   *
+> > + *  Copyright (C) 2014 Samsung Electronics
+> > + *  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > + *  Lukasz Majewski <l.majewski@samsung.com>
+> > + *
+> >   *  Copyright (C) 2011 Samsung Electronics
+> >   *  Donggeun Kim <dg77.kim@samsung.com>
+> >   *  Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> > @@ -31,8 +35,8 @@
+> >  #include <linux/platform_device.h>
+> >  #include <linux/regulator/consumer.h>
+> >  
+> > -#include "exynos_thermal_common.h"
+> >  #include "exynos_tmu.h"
+> > +#include "../thermal_core.h"
+> >  
+> >  /* Exynos generic registers */
+> >  #define EXYNOS_TMU_REG_TRIMINFO		0x0
+> > @@ -115,6 +119,7 @@
+> >  #define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
+> >  #define EXYNOS5440_EFUSE_SWAP_OFFSET		8
+> >  
+> > +#define MCELSIUS	1000
+> >  /**
+> >   * struct exynos_tmu_data : A structure to hold the private data
+> > of the TMU driver
+> > @@ -150,7 +155,8 @@ struct exynos_tmu_data {
+> >  	struct clk *clk, *clk_sec;
+> >  	u8 temp_error1, temp_error2;
+> >  	struct regulator *regulator;
+> > -	struct thermal_sensor_conf *reg_conf;
+> > +	struct thermal_zone_device *tzd;
+> > +
+> >  	int (*tmu_initialize)(struct platform_device *pdev);
+> >  	void (*tmu_control)(struct platform_device *pdev, bool on);
+> >  	int (*tmu_read)(struct exynos_tmu_data *data);
+> > @@ -159,6 +165,33 @@ struct exynos_tmu_data {
+> >  	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
+> >  };
+> >  
+> > +static void exynos_report_trigger(struct exynos_tmu_data *p)
+> > +{
+> > +	char data[10], *envp[] = { data, NULL };
+> > +	struct thermal_zone_device *tz = p->tzd;
+> > +	unsigned long temp;
+> > +	unsigned int i;
+> > +
+> > +	if (!p) {
+> > +		pr_err("Wrong temperature configuration data\n");
+> > +		return;
+> > +	}
+> > +
+> > +	thermal_zone_device_update(tz);
+> > +
+> > +	mutex_lock(&tz->lock);
+> > +	/* Find the level for which trip happened */
+> > +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+> > +		tz->ops->get_trip_temp(tz, i, &temp);
+> > +		if (tz->last_temperature < temp)
+> > +			break;
+> > +	}
+> > +
+> > +	snprintf(data, sizeof(data), "%u", i);
+> > +	kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, envp);
+> > +	mutex_unlock(&tz->lock);
+> > +}
+> > +
+> >  /*
+> >   * TMU treats temperature as a mapped temperature code.
+> >   * The temperature is converted differently depending on the
+> > calibration type. @@ -234,14 +267,25 @@ static void
+> > sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info) 
+> >  static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold,
+> > bool falling) {
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> > +	struct thermal_zone_device *tz = data->tzd;
+> > +	const struct thermal_trip * const trips =
+> > +		of_thermal_get_trip_points(tz);
+> > +	unsigned long temp;
+> >  	int i;
+> >  
+> > -	for (i = 0; i < pdata->non_hw_trigger_levels; i++) {
+> > -		u8 temp = pdata->trigger_levels[i];
+> > +	if (!trips) {
+> > +		pr_err("%s: Cannot get trip points from
+> > of-thermal.c!\n",
+> > +		       __func__);
+> > +		return 0;
+> > +	}
+> > +
+> > +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+> > +		if (trips[i].type == THERMAL_TRIP_CRITICAL)
+> > +			continue;
+> >  
+> > +		temp = trips[i].temperature / MCELSIUS;
+> >  		if (falling)
+> > -			temp -= pdata->threshold_falling;
+> > +			temp -= (trips[i].hysteresis / MCELSIUS);
+> >  		else
+> >  			threshold &= ~(0xff << 8 * i);
+> >  
+> > @@ -305,9 +349,19 @@ static void exynos_tmu_control(struct
+> > platform_device *pdev, bool on) static int
+> > exynos4210_tmu_initialize(struct platform_device *pdev) {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> > -	unsigned int status;
+> > +	struct thermal_zone_device *tz = data->tzd;
+> > +	const struct thermal_trip * const trips =
+> > +		of_thermal_get_trip_points(tz);
+> >  	int ret = 0, threshold_code, i;
+> > +	unsigned long reference, temp;
+> > +	unsigned int status;
+> > +
+> > +	if (!trips) {
+> > +		pr_err("%s: Cannot get trip points from
+> > of-thermal.c!\n",
+> > +		       __func__);
+> > +		ret = -ENODEV;
+> > +		goto out;
+> > +	}
+> >  
+> >  	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
+> >  	if (!status) {
+> > @@ -318,12 +372,19 @@ static int exynos4210_tmu_initialize(struct
+> > platform_device *pdev) sanitize_temp_error(data, readl(data->base +
+> > EXYNOS_TMU_REG_TRIMINFO)); 
+> >  	/* Write temperature code for threshold */
+> > -	threshold_code = temp_to_code(data, pdata->threshold);
+> > +	reference = trips[0].temperature / MCELSIUS;
+> > +	threshold_code = temp_to_code(data, reference);
+> > +	if (threshold_code < 0) {
+> > +		ret = threshold_code;
+> > +		goto out;
+> > +	}
+> >  	writeb(threshold_code, data->base +
+> > EXYNOS4210_TMU_REG_THRESHOLD_TEMP); 
+> > -	for (i = 0; i < pdata->non_hw_trigger_levels; i++)
+> > -		writeb(pdata->trigger_levels[i], data->base +
+> > +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+> > +		temp = trips[i].temperature / MCELSIUS;
+> > +		writeb(temp - reference, data->base +
+> >  		       EXYNOS4210_TMU_REG_TRIG_LEVEL0 + i * 4);
+> > +	}
+> >  
+> >  	data->tmu_clear_irqs(data);
+> >  out:
+> > @@ -333,9 +394,11 @@ out:
+> >  static int exynos4412_tmu_initialize(struct platform_device *pdev)
+> >  {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> > +	const struct thermal_trip * const trips =
+> > +		of_thermal_get_trip_points(data->tzd);
+> >  	unsigned int status, trim_info, con, ctrl,
+> > rising_threshold; int ret = 0, threshold_code, i;
+> > +	unsigned long crit_temp = 0;
+> >  
+> >  	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
+> >  	if (!status) {
+> > @@ -373,17 +436,29 @@ static int exynos4412_tmu_initialize(struct
+> > platform_device *pdev) data->tmu_clear_irqs(data);
+> >  
+> >  	/* if last threshold limit is also present */
+> > -	i = pdata->max_trigger_level - 1;
+> > -	if (pdata->trigger_levels[i] && pdata->trigger_type[i] ==
+> > HW_TRIP) {
+> > -		threshold_code = temp_to_code(data,
+> > pdata->trigger_levels[i]);
+> > -		/* 1-4 level to be assigned in th0 reg */
+> > -		rising_threshold &= ~(0xff << 8 * i);
+> > -		rising_threshold |= threshold_code << 8 * i;
+> > -		writel(rising_threshold, data->base +
+> > EXYNOS_THD_TEMP_RISE);
+> > -		con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
+> > -		con |= (1 << EXYNOS_TMU_THERM_TRIP_EN_SHIFT);
+> > -		writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+> > +	for (i = 0; i < of_thermal_get_ntrips(data->tzd); i++) {
+> > +		if (trips[i].type == THERMAL_TRIP_CRITICAL) {
+> > +			crit_temp = trips[i].temperature;
+> > +			break;
+> > +		}
+> >  	}
+> > +
+> > +	if (i == of_thermal_get_ntrips(data->tzd)) {
+> > +		pr_err("%s: No CRITICAL trip point defined at
+> > of-thermal.c!\n",
+> > +		       __func__);
+> > +		ret = -EINVAL;
+> > +		goto out;
+> > +	}
+> > +
+> > +	threshold_code = temp_to_code(data, crit_temp / MCELSIUS);
+> > +	/* 1-4 level to be assigned in th0 reg */
+> > +	rising_threshold &= ~(0xff << 8 * i);
+> > +	rising_threshold |= threshold_code << 8 * i;
+> > +	writel(rising_threshold, data->base +
+> > EXYNOS_THD_TEMP_RISE);
+> > +	con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
+> > +	con |= (1 << EXYNOS_TMU_THERM_TRIP_EN_SHIFT);
+> > +	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+> > +
+> >  out:
+> >  	return ret;
+> >  }
+> > @@ -391,9 +466,9 @@ out:
+> >  static int exynos5440_tmu_initialize(struct platform_device *pdev)
+> >  {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> >  	unsigned int trim_info = 0, con, rising_threshold;
+> > -	int ret = 0, threshold_code, i;
+> > +	int ret = 0, threshold_code;
+> > +	unsigned long crit_temp = 0;
+> >  
+> >  	/*
+> >  	 * For exynos5440 soc triminfo value is swapped between
+> > TMU0 and @@ -422,9 +497,8 @@ static int
+> > exynos5440_tmu_initialize(struct platform_device *pdev)
+> > data->tmu_clear_irqs(data); 
+> >  	/* if last threshold limit is also present */
+> > -	i = pdata->max_trigger_level - 1;
+> > -	if (pdata->trigger_levels[i] && pdata->trigger_type[i] ==
+> > HW_TRIP) {
+> > -		threshold_code = temp_to_code(data,
+> > pdata->trigger_levels[i]);
+> > +	if (!data->tzd->ops->get_crit_temp(data->tzd, &crit_temp))
+> > {
+> > +		threshold_code = temp_to_code(data, crit_temp /
+> > MCELSIUS); /* 5th level to be assigned in th2 reg */
+> >  		rising_threshold =
+> >  			threshold_code <<
+> > EXYNOS5440_TMU_TH_RISE4_SHIFT; @@ -442,7 +516,7 @@ static int
+> > exynos5440_tmu_initialize(struct platform_device *pdev) static void
+> > exynos4210_tmu_control(struct platform_device *pdev, bool on) {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> > +	struct thermal_zone_device *tz = data->tzd;
+> >  	unsigned int con, interrupt_en;
+> >  
+> >  	con = get_con_reg(data, readl(data->base +
+> > EXYNOS_TMU_REG_CONTROL)); @@ -450,10 +524,15 @@ static void
+> > exynos4210_tmu_control(struct platform_device *pdev, bool on) if
+> > (on) { con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> >  		interrupt_en =
+> > -			pdata->trigger_enable[3] <<
+> > EXYNOS_TMU_INTEN_RISE3_SHIFT |
+> > -			pdata->trigger_enable[2] <<
+> > EXYNOS_TMU_INTEN_RISE2_SHIFT |
+> > -			pdata->trigger_enable[1] <<
+> > EXYNOS_TMU_INTEN_RISE1_SHIFT |
+> > -			pdata->trigger_enable[0] <<
+> > EXYNOS_TMU_INTEN_RISE0_SHIFT;
+> > +			(of_thermal_is_trip_valid(tz, 3)
+> > +			 << EXYNOS_TMU_INTEN_RISE3_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 2)
+> > +			 << EXYNOS_TMU_INTEN_RISE2_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 1)
+> > +			 << EXYNOS_TMU_INTEN_RISE1_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 0)
+> > +			 << EXYNOS_TMU_INTEN_RISE0_SHIFT);
+> > +
+> >  		if (data->soc != SOC_ARCH_EXYNOS4210)
+> >  			interrupt_en |=
+> >  				interrupt_en <<
+> > EXYNOS_TMU_INTEN_FALL0_SHIFT; @@ -468,7 +547,7 @@ static void
+> > exynos4210_tmu_control(struct platform_device *pdev, bool on)
+> > static void exynos5440_tmu_control(struct platform_device *pdev,
+> > bool on) { struct exynos_tmu_data *data =
+> > platform_get_drvdata(pdev);
+> > -	struct exynos_tmu_platform_data *pdata = data->pdata;
+> > +	struct thermal_zone_device *tz = data->tzd;
+> >  	unsigned int con, interrupt_en;
+> >  
+> >  	con = get_con_reg(data, readl(data->base +
+> > EXYNOS5440_TMU_S0_7_CTRL)); @@ -476,11 +555,16 @@ static void
+> > exynos5440_tmu_control(struct platform_device *pdev, bool on) if
+> > (on) { con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> >  		interrupt_en =
+> > -			pdata->trigger_enable[3] <<
+> > EXYNOS5440_TMU_INTEN_RISE3_SHIFT |
+> > -			pdata->trigger_enable[2] <<
+> > EXYNOS5440_TMU_INTEN_RISE2_SHIFT |
+> > -			pdata->trigger_enable[1] <<
+> > EXYNOS5440_TMU_INTEN_RISE1_SHIFT |
+> > -			pdata->trigger_enable[0] <<
+> > EXYNOS5440_TMU_INTEN_RISE0_SHIFT;
+> > -		interrupt_en |= interrupt_en <<
+> > EXYNOS5440_TMU_INTEN_FALL0_SHIFT;
+> > +			(of_thermal_is_trip_valid(tz, 3)
+> > +			 << EXYNOS5440_TMU_INTEN_RISE3_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 2)
+> > +			 << EXYNOS5440_TMU_INTEN_RISE2_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 1)
+> > +			 << EXYNOS5440_TMU_INTEN_RISE1_SHIFT) |
+> > +			(of_thermal_is_trip_valid(tz, 0)
+> > +			 << EXYNOS5440_TMU_INTEN_RISE0_SHIFT);
+> > +		interrupt_en |=
+> > +			interrupt_en <<
+> > EXYNOS5440_TMU_INTEN_FALL0_SHIFT; } else {
+> >  		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> >  		interrupt_en = 0; /* Disable all interrupts */
+> > @@ -489,19 +573,22 @@ static void exynos5440_tmu_control(struct
+> > platform_device *pdev, bool on) writel(con, data->base +
+> > EXYNOS5440_TMU_S0_7_CTRL); }
+> >  
+> > -static int exynos_tmu_read(struct exynos_tmu_data *data)
+> > +int exynos_get_temp(void *p, long *temp)
+> >  {
+> > -	int ret;
+> > +	struct exynos_tmu_data *data = p;
+> > +
+> > +	if (!data)
+> > +		return -EINVAL;
+> >  
+> >  	mutex_lock(&data->lock);
+> >  	clk_enable(data->clk);
+> > -	ret = data->tmu_read(data);
+> > -	if (ret >= 0)
+> > -		ret = code_to_temp(data, ret);
+> > +
+> > +	*temp = code_to_temp(data, data->tmu_read(data)) *
+> > MCELSIUS; +
+> >  	clk_disable(data->clk);
+> >  	mutex_unlock(&data->lock);
+> >  
+> > -	return ret;
+> > +	return 0;
+> >  }
+> >  
+> >  #ifdef CONFIG_THERMAL_EMULATION
+> > @@ -613,7 +700,7 @@ static void exynos_tmu_work(struct work_struct
+> > *work) if (!IS_ERR(data->clk_sec))
+> >  		clk_disable(data->clk_sec);
+> >  
+> > -	exynos_report_trigger(data->reg_conf);
+> > +	exynos_report_trigger(data);
+> >  	mutex_lock(&data->lock);
+> >  	clk_enable(data->clk);
+> >  
+> > @@ -673,55 +760,89 @@ static irqreturn_t exynos_tmu_irq(int irq,
+> > void *id) static const struct of_device_id exynos_tmu_match[] = {
+> >  	{
+> >  		.compatible = "samsung,exynos3250-tmu",
+> > -		.data = &exynos3250_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos4210-tmu",
+> > -		.data = &exynos4210_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos4412-tmu",
+> > -		.data = &exynos4412_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos5250-tmu",
+> > -		.data = &exynos5250_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos5260-tmu",
+> > -		.data = &exynos5260_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos5420-tmu",
+> > -		.data = &exynos5420_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible =
+> > "samsung,exynos5420-tmu-ext-triminfo",
+> > -		.data = &exynos5420_default_tmu_data,
+> >  	},
+> >  	{
+> >  		.compatible = "samsung,exynos5440-tmu",
+> > -		.data = &exynos5440_default_tmu_data,
+> >  	},
+> >  	{},
+> >  };
+> >  MODULE_DEVICE_TABLE(of, exynos_tmu_match);
+> >  
+> > -static inline struct  exynos_tmu_platform_data
+> > *exynos_get_driver_data(
+> > -			struct platform_device *pdev, int id)
+> > +static int exynos_of_get_soc_type(struct device_node *np)
+> >  {
+> > -	struct  exynos_tmu_init_data *data_table;
+> > -	struct exynos_tmu_platform_data *tmu_data;
+> > -	const struct of_device_id *match;
+> > +	if (of_device_is_compatible(np, "samsung,exynos3250-tmu"))
+> > +		return SOC_ARCH_EXYNOS3250;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos4210-tmu"))
+> > +		return SOC_ARCH_EXYNOS4210;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos4412-tmu"))
+> > +		return SOC_ARCH_EXYNOS4412;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos5250-tmu"))
+> > +		return SOC_ARCH_EXYNOS5250;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos5260-tmu"))
+> > +		return SOC_ARCH_EXYNOS5260;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos5420-tmu"))
+> > +		return SOC_ARCH_EXYNOS5420;
+> > +	else if (of_device_is_compatible(np,
+> > +
+> > "samsung,exynos5420-tmu-ext-triminfo"))
+> > +		return SOC_ARCH_EXYNOS5420_TRIMINFO;
+> > +	else if (of_device_is_compatible(np,
+> > "samsung,exynos5440-tmu"))
+> > +		return SOC_ARCH_EXYNOS5440;
+> > +
+> > +	return -EINVAL;
+> > +}
+> >  
+> > -	match = of_match_node(exynos_tmu_match, pdev->dev.of_node);
+> > -	if (!match)
+> > -		return NULL;
+> > -	data_table = (struct exynos_tmu_init_data *) match->data;
+> > -	if (!data_table || id >= data_table->tmu_count)
+> > -		return NULL;
+> > -	tmu_data = data_table->tmu_data;
+> > -	return (struct exynos_tmu_platform_data *) (tmu_data + id);
+> > +static int exynos_of_sensor_conf(struct device_node *np,
+> > +				 struct exynos_tmu_platform_data
+> > *pdata) +{
+> > +	u32 value;
+> > +	int ret;
+> > +
+> > +	of_node_get(np);
+> > +
+> > +	ret = of_property_read_u32(np, "samsung,tmu_gain", &value);
+> > +	pdata->gain = (u8) value;
+> > +	of_property_read_u32(np, "samsung,tmu_reference_voltage",
+> > &value);
+> > +	pdata->reference_voltage = (u8) value;
+> > +	of_property_read_u32(np, "samsung,tmu_noise_cancel_mode",
+> > &value);
+> > +	pdata->noise_cancel_mode = (u8) value;
+> > +
+> > +	of_property_read_u32(np, "samsung,tmu_efuse_value",
+> > +			     &pdata->efuse_value);
+> > +	of_property_read_u32(np, "samsung,tmu_min_efuse_value",
+> > +			     &pdata->min_efuse_value);
+> > +	of_property_read_u32(np, "samsung,tmu_max_efuse_value",
+> > +			     &pdata->max_efuse_value);
+> > +
+> > +	of_property_read_u32(np, "samsung,tmu_first_point_trim",
+> > &value);
+> > +	pdata->first_point_trim = (u8) value;
+> > +	of_property_read_u32(np, "samsung,tmu_second_point_trim",
+> > &value);
+> > +	pdata->second_point_trim = (u8) value;
+> > +	of_property_read_u32(np,
+> > "samsung,tmu_default_temp_offset", &value);
+> > +	pdata->default_temp_offset = (u8) value;
+> > +
+> > +	of_property_read_u32(np, "samsung,tmu_cal_type",
+> > &pdata->cal_type);
+> > +	of_property_read_u32(np, "samsung,tmu_cal_mode",
+> > &pdata->cal_mode); +
+> > +	of_node_put(np);
+> > +	return 0;
+> >  }
+> >  
+> >  static int exynos_map_dt_data(struct platform_device *pdev)
+> > @@ -771,14 +892,15 @@ static int exynos_map_dt_data(struct
+> > platform_device *pdev) return -EADDRNOTAVAIL;
+> >  	}
+> >  
+> > -	pdata = exynos_get_driver_data(pdev, data->id);
+> > -	if (!pdata) {
+> > -		dev_err(&pdev->dev, "No platform init data
+> > supplied.\n");
+> > -		return -ENODEV;
+> > -	}
+> > +	pdata = devm_kzalloc(&pdev->dev,
+> > +			     sizeof(struct
+> > exynos_tmu_platform_data),
+> > +			     GFP_KERNEL);
+> > +	if (!pdata)
+> > +		return -ENOMEM;
+> >  
+> > +	exynos_of_sensor_conf(pdev->dev.of_node, pdata);
+> >  	data->pdata = pdata;
+> > -	data->soc = pdata->type;
+> > +	data->soc = exynos_of_get_soc_type(pdev->dev.of_node);
+> >  
+> >  	switch (data->soc) {
+> >  	case SOC_ARCH_EXYNOS4210:
+> > @@ -834,12 +956,16 @@ static int exynos_map_dt_data(struct
+> > platform_device *pdev) return 0;
+> >  }
+> >  
+> > +static struct thermal_zone_of_device_ops exynos_sensor_ops = {
+> > +	.get_temp = exynos_get_temp,
+> > +	.set_emul_temp = exynos_tmu_set_emulation,
+> > +};
+> > +
+> >  static int exynos_tmu_probe(struct platform_device *pdev)
+> >  {
+> > -	struct exynos_tmu_data *data;
+> >  	struct exynos_tmu_platform_data *pdata;
+> > -	struct thermal_sensor_conf *sensor_conf;
+> > -	int ret, i;
+> > +	struct exynos_tmu_data *data;
+> > +	int ret;
+> >  
+> >  	data = devm_kzalloc(&pdev->dev, sizeof(struct
+> > exynos_tmu_data), GFP_KERNEL);
+> > @@ -849,9 +975,15 @@ static int exynos_tmu_probe(struct
+> > platform_device *pdev) platform_set_drvdata(pdev, data);
+> >  	mutex_init(&data->lock);
+> >  
+> > +	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0,
+> > data,
+> > +
+> > &exynos_sensor_ops);
+> > +	if (IS_ERR(data->tzd)) {
+> > +		pr_err("thermal: tz: %p ERROR\n", data->tzd);
+> > +		return PTR_ERR(data->tzd);
+> > +	}
+> >  	ret = exynos_map_dt_data(pdev);
+> >  	if (ret)
+> > -		return ret;
+> > +		goto err_sensor;
+> >  
+> >  	pdata = data->pdata;
+> >  
+> > @@ -860,20 +992,22 @@ static int exynos_tmu_probe(struct
+> > platform_device *pdev) data->clk = devm_clk_get(&pdev->dev,
+> > "tmu_apbif"); if (IS_ERR(data->clk)) {
+> >  		dev_err(&pdev->dev, "Failed to get clock\n");
+> > -		return  PTR_ERR(data->clk);
+> > +		ret = PTR_ERR(data->clk);
+> > +		goto err_sensor;
+> >  	}
+> >  
+> >  	data->clk_sec = devm_clk_get(&pdev->dev,
+> > "tmu_triminfo_apbif"); if (IS_ERR(data->clk_sec)) {
+> >  		if (data->soc == SOC_ARCH_EXYNOS5420_TRIMINFO) {
+> >  			dev_err(&pdev->dev, "Failed to get
+> > triminfo clock\n");
+> > -			return PTR_ERR(data->clk_sec);
+> > +			ret = PTR_ERR(data->clk_sec);
+> > +			goto err_sensor;
+> >  		}
+> >  	} else {
+> >  		ret = clk_prepare(data->clk_sec);
+> >  		if (ret) {
+> >  			dev_err(&pdev->dev, "Failed to get
+> > clock\n");
+> > -			return ret;
+> > +			goto err_sensor;
+> >  		}
+> >  	}
+> >  
+> > @@ -889,45 +1023,6 @@ static int exynos_tmu_probe(struct
+> > platform_device *pdev) goto err_clk;
+> >  	}
+> >  
+> > -	exynos_tmu_control(pdev, true);
+> > -
+> > -	/* Allocate a structure to register with the exynos core
+> > thermal */
+> > -	sensor_conf = devm_kzalloc(&pdev->dev,
+> > -				sizeof(struct
+> > thermal_sensor_conf), GFP_KERNEL);
+> > -	if (!sensor_conf) {
+> > -		ret = -ENOMEM;
+> > -		goto err_clk;
+> > -	}
+> > -	sprintf(sensor_conf->name, "therm_zone%d", data->id);
+> > -	sensor_conf->read_temperature = (int (*)(void
+> > *))exynos_tmu_read;
+> > -	sensor_conf->write_emul_temp =
+> > -		(int (*)(void *, unsigned
+> > long))exynos_tmu_set_emulation;
+> > -	sensor_conf->driver_data = data;
+> > -	sensor_conf->trip_data.trip_count =
+> > pdata->trigger_enable[0] +
+> > -			pdata->trigger_enable[1] +
+> > pdata->trigger_enable[2]+
+> > -			pdata->trigger_enable[3];
+> > -
+> > -	for (i = 0; i < sensor_conf->trip_data.trip_count; i++) {
+> > -		sensor_conf->trip_data.trip_val[i] =
+> > -			pdata->threshold +
+> > pdata->trigger_levels[i];
+> > -		sensor_conf->trip_data.trip_type[i] =
+> > -					pdata->trigger_type[i];
+> > -	}
+> > -
+> > -	sensor_conf->trip_data.trigger_falling =
+> > pdata->threshold_falling; -
+> > -	sensor_conf->dev = &pdev->dev;
+> > -	/* Register the sensor with thermal management interface */
+> > -	ret = exynos_register_thermal(sensor_conf);
+> > -	if (ret) {
+> > -		if (ret != -EPROBE_DEFER)
+> > -			dev_err(&pdev->dev,
+> > -				"Failed to register thermal
+> > interface: %d\n",
+> > -				ret);
+> > -		goto err_clk;
+> > -	}
+> > -	data->reg_conf = sensor_conf;
+> > -
+> >  	ret = devm_request_irq(&pdev->dev, data->irq,
+> > exynos_tmu_irq, IRQF_TRIGGER_RISING | IRQF_SHARED,
+> > dev_name(&pdev->dev), data); if (ret) {
+> > @@ -935,21 +1030,31 @@ static int exynos_tmu_probe(struct
+> > platform_device *pdev) goto err_clk;
+> >  	}
+> >  
+> > +	ret = exynos_tmu_initialize(pdev);
+> > +	if (ret) {
+> > +		dev_err(&pdev->dev, "Failed to initialize TMU\n");
+> > +		goto err_clk;
+> > +	}
+> > +	exynos_tmu_control(pdev, true);
+> >  	return 0;
+> > +
+> >  err_clk:
+> >  	clk_unprepare(data->clk);
+> >  err_clk_sec:
+> >  	if (!IS_ERR(data->clk_sec))
+> >  		clk_unprepare(data->clk_sec);
+> > +err_sensor:
+> > +	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+> > +
+> >  	return ret;
+> >  }
+> >  
+> >  static int exynos_tmu_remove(struct platform_device *pdev)
+> >  {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > +	struct thermal_zone_device *tzd = data->tzd;
+> >  
+> > -	exynos_unregister_thermal(data->reg_conf);
+> > -
+> > +	thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
+> >  	exynos_tmu_control(pdev, false);
+> >  
+> >  	clk_unprepare(data->clk);
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.h
+> > b/drivers/thermal/samsung/exynos_tmu.h index 627dec9..d876d4c 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.h
+> > +++ b/drivers/thermal/samsung/exynos_tmu.h
+> > @@ -23,8 +23,7 @@
+> >  #ifndef _EXYNOS_TMU_H
+> >  #define _EXYNOS_TMU_H
+> >  #include <linux/cpu_cooling.h>
+> > -
+> > -#include "exynos_thermal_common.h"
+> > +#include <dt-bindings/thermal/thermal_exynos.h>
+> >  
+> >  enum soc_type {
+> >  	SOC_ARCH_EXYNOS3250 = 1,
+> > @@ -36,38 +35,9 @@ enum soc_type {
+> >  	SOC_ARCH_EXYNOS5420_TRIMINFO,
+> >  	SOC_ARCH_EXYNOS5440,
+> >  };
+> > -#include <dt-bindings/thermal/thermal_exynos.h>
+> >  
+> >  /**
+> >   * struct exynos_tmu_platform_data
+> > - * @threshold: basic temperature for generating interrupt
+> > - *	       25 <= threshold <= 125 [unit: degree Celsius]
+> > - * @threshold_falling: differntial value for setting threshold
+> > - *		       of temperature falling interrupt.
+> > - * @trigger_levels: array for each interrupt levels
+> > - *	[unit: degree Celsius]
+> > - *	0: temperature for trigger_level0 interrupt
+> > - *	   condition for trigger_level0 interrupt:
+> > - *		current temperature > threshold +
+> > trigger_levels[0]
+> > - *	1: temperature for trigger_level1 interrupt
+> > - *	   condition for trigger_level1 interrupt:
+> > - *		current temperature > threshold +
+> > trigger_levels[1]
+> > - *	2: temperature for trigger_level2 interrupt
+> > - *	   condition for trigger_level2 interrupt:
+> > - *		current temperature > threshold +
+> > trigger_levels[2]
+> > - *	3: temperature for trigger_level3 interrupt
+> > - *	   condition for trigger_level3 interrupt:
+> > - *		current temperature > threshold +
+> > trigger_levels[3]
+> > - * @trigger_type: defines the type of trigger. Possible values are,
+> > - *	THROTTLE_ACTIVE trigger type
+> > - *	THROTTLE_PASSIVE trigger type
+> > - *	SW_TRIP trigger type
+> > - *	HW_TRIP
+> > - * @trigger_enable[]: array to denote which trigger levels are
+> > enabled.
+> > - *	1 = enable trigger_level[] interrupt,
+> > - *	0 = disable trigger_level[] interrupt
+> > - * @max_trigger_level: max trigger level supported by the TMU
+> > - * @non_hw_trigger_levels: number of defined non-hardware trigger
+> > levels
+> >   * @gain: gain of amplifier in the positive-TC generator block
+> >   *	0 < gain <= 15
+> >   * @reference_voltage: reference voltage of amplifier
+> > @@ -79,21 +49,12 @@ enum soc_type {
+> >   * @efuse_value: platform defined fuse value
+> >   * @min_efuse_value: minimum valid trimming data
+> >   * @max_efuse_value: maximum valid trimming data
+> > - * @first_point_trim: temp value of the first point trimming
+> > - * @second_point_trim: temp value of the second point trimming
+> >   * @default_temp_offset: default temperature offset in case of no
+> > trimming
+> >   * @cal_type: calibration type for temperature
+> >   *
+> >   * This structure is required for configuration of exynos_tmu
+> > driver. */
+> >  struct exynos_tmu_platform_data {
+> > -	u8 threshold;
+> > -	u8 threshold_falling;
+> > -	u8 trigger_levels[MAX_TRIP_COUNT];
+> > -	enum trigger_type trigger_type[MAX_TRIP_COUNT];
+> > -	bool trigger_enable[MAX_TRIP_COUNT];
+> > -	u8 max_trigger_level;
+> > -	u8 non_hw_trigger_levels;
+> >  	u8 gain;
+> >  	u8 reference_voltage;
+> >  	u8 noise_cancel_mode;
+> > @@ -110,18 +71,6 @@ struct exynos_tmu_platform_data {
+> >  	u32 cal_mode;
+> >  };
+> >  
+> > -/**
+> > - * struct exynos_tmu_init_data
+> > - * @tmu_count: number of TMU instances.
+> > - * @tmu_data: platform data of all TMU instances.
+> > - * This structure is required to store data for multi-instance
+> > exynos tmu
+> > - * driver.
+> > - */
+> > -struct exynos_tmu_init_data {
+> > -	int tmu_count;
+> > -	struct exynos_tmu_platform_data tmu_data[];
+> > -};
+> > -
+> >  extern struct exynos_tmu_init_data const
+> > exynos3250_default_tmu_data; extern struct exynos_tmu_init_data
+> > const exynos4210_default_tmu_data; extern struct
+> > exynos_tmu_init_data const exynos4412_default_tmu_data; -- 
+> > 2.0.0.rc2
+> > 
 
 
---hQiwHBbRI9kgIhsi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Hi,
+-- 
+Best regards,
 
-On Thu, Jan 15, 2015 at 05:00:38AM +0300, Dmitry Eremin-Solenikov wrote:
-> Teach collie_battery driver to communicate to the kernel that it can
-> generate wakeup events. Handle enabling/disabling wakeup on battery full
-> event in suspend/resume callbacks.
+Lukasz Majewski
 
-Thanks, applied:
-
-http://git.infradead.org/battery-2.6.git/commit/a465005643a4c1e02681b02075082fc6c7fa076a
-
--- Sebastian
-
---hQiwHBbRI9kgIhsi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUt8RAAAoJENju1/PIO/qaFyoQAILosLE0+WzG2mjx3bGHFB8I
-cJeAeijse4T7zQdoonKZyZVYj96gp0HW155aVERjVbjVjeFwwnwmcOTML2fI2W3O
-EUvFE3k8TapPxrgl/0oCkmpz30RbNpSRk/THQN48u8KmFoL1BFiP1VWU1AeFdeVa
-QRMkLc88eCI2bPEqwdjr4kfPcWfXEbQLWriXSgugEecyNZsMi2pqL3xvzTov266z
-NBpLRCMjvv9K7CrRUdO+hHZZmyI7dMls9lTUGBRIKWgQtlUGk8nCyEOa5X0BlOTQ
-PiMhjOgGid1HAsbYRGLH/niX4O9ZF8JGX4cFzCtujr1bWdz/abprGB1cHuvCWM91
-xPFWK1errV9ihj78OD8zyLHgnKRZkt0iM3TbULphdH6iTAsWnhr6HXmI03crinab
-IqS1eRTgjhay+dUrbrPorbJuh2AZMh1bek516L8zIa/S4hWxchr4dG6hosQ7To4M
-BdBeQpeuXu2640EZtXYMWwCD8izeorvXJz8UQ8y/nsecvuzCW+z8k0aNQtE4d9xR
-10Un9q57TWpkQxuiRe90uVBnAulb1NPy78n1r2lvoeBF/0T4Lqvr24vMikfGw/Mt
-viEf0I/GKEtpI4GG1ngQpa/r0iT+tIMTnkS1BLSmiFHJqwThIFZaybtHqFpeTCfe
-qvI74D92H040S+PZzmOA
-=Jbte
------END PGP SIGNATURE-----
-
---hQiwHBbRI9kgIhsi--
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
