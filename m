@@ -1,26 +1,38 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v4 6/9] ARM: dts: Add memory bus node for Exynos4210
-Date: Thu, 15 Jan 2015 10:50:54 +0900
-Message-ID: <1421286657-4720-7-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v4 5/9] ARM: dts: Add memory bus node for Exynos4x12
+Date: Thu, 15 Jan 2015 10:50:53 +0900
+Message-ID: <1421286657-4720-6-git-send-email-cw00.choi@samsung.com>
 References: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: mark.rutland@arm.com, k.kozlowski@samsung.com, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tomasz.figa@gmail.com, linux-kernel@vger.kernel.org, inki.dae@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the memory bus node for Exynos4210 SoC. Exynos4210 SoC has
-one memory bus to translate data between DRAM and eMMC/sub-IPs because
-Exynos4210 must need only one regulator for memory bus.
+This patch adds the memory bus node for Exynos4x12 SoC. Exynos4x12 SoC has
+two memory bus to translate data between DRAM and eMMC/sub-IPs.
+
+Following list specifies the detailed relation between memory bus clock and DMC
+IP in MIF (Memory Interface) block:
+- DMC/ACP clock : DMC (Dynamic Memory Controller)
 
 Following list specifies the detailed relation between memory bus clock and
-sub-IPs:
-- DMC/ACP clock : DMC (Dynamic Memory Controller)
-- ACLK200 clock : LCD0
+sub-IPs in INT (Internal) block:
 - ACLK100 clock : PERIL/PERIR/MFC(PCLK)
-- ACLK160 clock : CAM/TV/LCD0/LCD1
-- ACLK133 clock : FSYS/GPS
+- ACLK160 clock : CAM/TV/LCD
+- ACLK133 clock : FSYS
 - GDL/GDR clock : leftbus/rightbus
 - SCLK_MFC clock : MFC
 
@@ -28,25 +40,28 @@ Cc: Kukjin Kim <kgene@kernel.org>
 Cc: Myungjoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
- arch/arm/boot/dts/exynos4210.dtsi | 93 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 93 insertions(+)
+ arch/arm/boot/dts/exynos4x12.dtsi | 121 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index b2598de..c039409 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -48,6 +48,99 @@
- 		};
+diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+index 93b7040..44f6272 100644
+--- a/arch/arm/boot/dts/exynos4x12.dtsi
++++ b/arch/arm/boot/dts/exynos4x12.dtsi
+@@ -31,6 +31,127 @@
+ 		mshc0 = &mshc_0;
  	};
  
-+	memory_bus: memory_bus@0 {
++	memory_bus_mif: memory_bus@0 {
 +		compatible = "samsung,exynos-memory-bus";
 +
 +		operating-points = <
-+			400000 1150000
-+			267000 1050000
-+			133000 1025000>;
++			400000 1100000
++			200000 1000000
++			160000 950000
++			133000 950000
++			100000 950000>;
 +		status = "disabled";
 +
 +		blocks {
@@ -55,8 +70,10 @@ index b2598de..c039409 100644
 +				clock-names = "memory-bus";
 +				frequency = <
 +					400000
-+					267000
-+					133000>;
++					200000
++					160000
++					133000
++					100000>;
 +			};
 +
 +			acp_block: memory_bus_block2 {
@@ -65,76 +82,100 @@ index b2598de..c039409 100644
 +				frequency = <
 +					200000
 +					160000
-+					133000>;
-+			};
-+
-+			peri_block: memory_bus_block3 {
-+				clocks = <&clock CLK_ACLK100>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					100000
-+					100000
-+					100000>;
-+			};
-+
-+			fsys_block: memory_bus_block4 {
-+				clocks = <&clock CLK_ACLK133>;
-+				clock-names = "memory-bus";
-+				frequency = <
 +					133000
 +					133000
 +					100000>;
 +			};
 +
-+			display_block: memory_bus_block5 {
-+				clocks = <&clock CLK_ACLK160>;
++			c2c_block: memory_bus_block3 {
++				clocks = <&clock CLK_DIV_C2C>;
 +				clock-names = "memory-bus";
 +				frequency = <
++					400000
++					200000
 +					160000
 +					133000
-+					100000>;
-+			};
-+
-+			lcd0_block: memory_bus_block6 {
-+				clocks = <&clock CLK_ACLK200>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			leftbus_block: memory_bus_block7 {
-+				clocks = <&clock CLK_DIV_GDL>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			rightbus_block: memory_bus_block8 {
-+				clocks = <&clock CLK_DIV_GDR>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
-+					100000>;
-+			};
-+
-+			mfc_block: memory_bus_block9 {
-+				clocks = <&clock CLK_SCLK_MFC>;
-+				clock-names = "memory-bus";
-+				frequency = <
-+					200000
-+					160000
 +					100000>;
 +			};
 +		};
 +	};
 +
- 	pmu_system_controller: system-controller@10020000 {
- 		clock-names = "clkout0", "clkout1", "clkout2", "clkout3",
- 				"clkout4", "clkout8", "clkout9";
++	memory_bus_int: memory_bus@1 {
++		compatible = "samsung,exynos-memory-bus";
++
++		operating-points = <
++			200000 1000000
++			160000 950000
++			133000 925000
++			100000 900000>;
++
++		status = "disabled";
++
++		blocks {
++			peri_block: memory_bus_block1 {
++				clocks = <&clock CLK_ACLK100>;
++				clock-names = "memory-bus";
++				frequency = <
++					100000
++					100000
++					100000
++					100000>;
++			};
++
++			fsys_block: memory_bus_block2 {
++				clocks = <&clock CLK_ACLK133>;
++				clock-names = "memory-bus";
++				frequency = <
++					133000
++					133000
++					100000
++					100000>;
++			};
++
++			display_block: memory_bus_block3 {
++				clocks = <&clock CLK_ACLK160>;
++				clock-names = "memory-bus";
++				frequency = <
++					160000
++					160000
++					133000
++					100000>;
++			};
++
++			leftbus_block: memory_bus_block4 {
++				clocks = <&clock CLK_DIV_GDL>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					160000
++					133000
++					100000>;
++			};
++
++			rightbus_block: memory_bus_block5 {
++				clocks = <&clock CLK_DIV_GDR>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					160000
++					133000
++					100000>;
++			};
++
++			mfc_block: memory_bus_block6 {
++				clocks = <&clock CLK_SCLK_MFC>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					160000
++					133000
++					100000>;
++			};
++		};
++	};
++
+ 	sysram@02020000 {
+ 		compatible = "mmio-sram";
+ 		reg = <0x02020000 0x40000>;
 -- 
 1.8.5.5
