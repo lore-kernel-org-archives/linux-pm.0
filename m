@@ -1,168 +1,63 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation failure caused by commit b81975eade8c
-Date: Thu, 15 Jan 2015 21:04:35 +0800
-Message-ID: <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com>
-References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com>
- <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH RESEND V2 1/2] power: gpio-charger: balance
+ enable/disable_irq_wake calls
+Date: Thu, 15 Jan 2015 14:44:01 +0100
+Message-ID: <20150115134401.GA512@earth.universe>
+References: <1421287238-23522-1-git-send-email-dbaryshkov@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:3394 "EHLO mga02.intel.com"
+Received: from mail.kernel.org ([198.145.29.136]:49664 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbbAONCt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Jan 2015 08:02:49 -0500
-In-Reply-To: <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com>
+	id S1754803AbbAONoT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Jan 2015 08:44:19 -0500
+Content-Disposition: inline
+In-Reply-To: <1421287238-23522-1-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Thomas Gleixner <tglx@linutronix.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, linux-pci@vger.kernel.org
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stable@vger.kernel.org
 
-Commit b81975eade8c ("x86, irq: Clean up irqdomain transition code")
-breaks xen IRQ allocation because xen_smp_prepare_cpus() doesn't invoke
-setup_IO_APIC(), so no irqdomains created for IOAPICs and
-mp_map_pin_to_irq() fails at the very beginning.
 
-Currently Xen Domain0 has special treatment for ACPI SCI interrupt,
-that is initialize irq for ACPI SCI at early stage in a special way as:
-xen_init_IRQ()
-	->pci_xen_initial_domain()
-		->xen_setup_acpi_sci()
-			Allocate and initialize irq for ACPI SCI
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Function xen_setup_acpi_sci() calls acpi_gsi_to_irq() to get an irq
-number for ACPI SCI. But unfortunately acpi_gsi_to_irq() depends on
-IOAPIC irqdomains through following path
-acpi_gsi_to_irq()
-	->mp_map_gsi_to_irq()
-		->mp_map_pin_to_irq()
-			->check IOAPIC irqdomain
+Hi,
 
-For PV domains, it uses Xen event based interrupt manangement and
-doesn't make uses of native IOAPIC, so no irqdomains created for IOAPIC.
-This causes Xen domain0 fails to install interrupt handler for ACPI SCI
-and all ACPI events will be lost. Please refer to:
-https://lkml.org/lkml/2014/12/19/178
+On Thu, Jan 15, 2015 at 05:00:37AM +0300, Dmitry Eremin-Solenikov wrote:
+> enable_irq_wakeup returns 0 in case it correctly enabled the IRQ to
+> generate the wakeup event (and thus resume should call disable_irq_wake).
+> Currently gpio-charger driver has this logic inverted. Correct that thus
+> correcting enable/disable_irq_wake() calls balance.
 
-So the fix is to get rid of special treatment for ACPI SCI, just treat
-ACPI SCI as normal GSI interrupt as:
-acpi_gsi_to_irq()
-	->acpi_register_gsi()
-		->acpi_register_gsi_xen()
-			->xen_register_gsi()
+Thanks, applied:
 
-With above change, there's no need for xen_setup_acpi_sci() anymore.
-The above change also works with bare metal kernel too.
+http://git.infradead.org/battery-2.6.git/commit/9a2fb8ac9677ab9cf17ab336e06b59d93a57f4a4
 
-Note: we need to test this patch on those special AMD systems which
-override normal SCI GSI (9) with strange GSI (20).
+-- Sebastian
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/kernel/acpi/boot.c |   26 ++++++++++++------------
- arch/x86/pci/xen.c          |   47 -------------------------------------------
- 2 files changed, 13 insertions(+), 60 deletions(-)
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 4433a4be8171..395c4c615293 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -611,20 +611,20 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
- 
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
- {
--	int irq;
--
--	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
--		*irqp = gsi;
--	} else {
--		mutex_lock(&acpi_ioapic_lock);
--		irq = mp_map_gsi_to_irq(gsi,
--					IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
--		mutex_unlock(&acpi_ioapic_lock);
--		if (irq < 0)
--			return -1;
--		*irqp = irq;
-+	int rc, irq, trigger, polarity;
-+
-+	rc = acpi_get_override_irq(gsi, &trigger, &polarity);
-+	if (rc == 0) {
-+		trigger = trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE;
-+		polarity = polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH;
-+		irq = acpi_register_gsi(NULL, gsi, trigger, polarity);
-+		if (irq >= 0) {
-+			*irqp = irq;
-+			return 0;
-+		}
- 	}
--	return 0;
-+
-+	return -1;
- }
- EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
- 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index c489ef2c1a39..6e5e89c3c644 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -471,52 +471,6 @@ int __init pci_xen_hvm_init(void)
- }
- 
- #ifdef CONFIG_XEN_DOM0
--static __init void xen_setup_acpi_sci(void)
--{
--	int rc;
--	int trigger, polarity;
--	int gsi = acpi_sci_override_gsi;
--	int irq = -1;
--	int gsi_override = -1;
--
--	if (!gsi)
--		return;
--
--	rc = acpi_get_override_irq(gsi, &trigger, &polarity);
--	if (rc) {
--		printk(KERN_WARNING "xen: acpi_get_override_irq failed for acpi"
--				" sci, rc=%d\n", rc);
--		return;
--	}
--	trigger = trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE;
--	polarity = polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH;
--
--	printk(KERN_INFO "xen: sci override: global_irq=%d trigger=%d "
--			"polarity=%d\n", gsi, trigger, polarity);
--
--	/* Before we bind the GSI to a Linux IRQ, check whether
--	 * we need to override it with bus_irq (IRQ) value. Usually for
--	 * IRQs below IRQ_LEGACY_IRQ this holds IRQ == GSI, as so:
--	 *  ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
--	 * but there are oddballs where the IRQ != GSI:
--	 *  ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low level)
--	 * which ends up being: gsi_to_irq[9] == 20
--	 * (which is what acpi_gsi_to_irq ends up calling when starting the
--	 * the ACPI interpreter and keels over since IRQ 9 has not been
--	 * setup as we had setup IRQ 20 for it).
--	 */
--	if (acpi_gsi_to_irq(gsi, &irq) == 0) {
--		/* Use the provided value if it's valid. */
--		if (irq >= 0)
--			gsi_override = irq;
--	}
--
--	gsi = xen_register_gsi(gsi, gsi_override, trigger, polarity);
--	printk(KERN_INFO "xen: acpi sci %d\n", gsi);
--
--	return;
--}
--
- int __init pci_xen_initial_domain(void)
- {
- 	int irq;
-@@ -527,7 +481,6 @@ int __init pci_xen_initial_domain(void)
- 	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
- 	pci_msi_ignore_mask = 1;
- #endif
--	xen_setup_acpi_sci();
- 	__acpi_register_gsi = acpi_register_gsi_xen;
- 	/* Pre-allocate legacy irqs */
- 	for (irq = 0; irq < nr_legacy_irqs(); irq++) {
--- 
-1.7.10.4
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iQIcBAEBCgAGBQJUt8QeAAoJENju1/PIO/qaigcP/398h9E7Sxd7qF2uSnK/896o
+Zgf/Chpp3xskn7VgpkEdv1v+NRP6PTWMf3n4xQnCaURO4QZ1wM53LlgXjvvEkXU1
+6zjdTsjt6NOTvHzygSmuVnG9nMttXpSllUKZdnlMwqXMCvcRNFc3mQAlgvCeutM4
+lmp/i8vDtDPcG9yLa1RzfLylEQufxIuESAFyzYxRK6CfKB7nCrVW1UTi46jfhDYy
+EGj3ub0Hw4VcIGsuK35Ux3wGzZo+5K4bviX915QsBBshTddKYniWYc8ZzlKfQMgZ
+2zw3gc8jAVWpcFTpW7Kzyoeo1pipKO+TyxIUdVC7QHzdHpy3EUuqBstl8d2rSeUm
+3Nvezru4H1Ikss4ekud3hLNBh8rBRJdLkX9ti7S4oO91QMpj2lNTw6k/9sS2Jf7p
+PfkK6AJvUrrK0oR2e9Uv39Hijw6oklF2QdDTvz7bDLqIdeX72aOdO0WOeHMY+V9z
+/E4Z5tljxCWjKTDnqn3gd9jXJbYa82iu0UJsKvm09GAMs6Bi40xvvN3W71H+tHJ4
+PMJ9NC7myo+lF+Ok4jIIw6lSb+Cqv60pc38zGacgKgZtcgvY62T05digf8Nra/BP
+Yo8ZlOl5ye8nogudnZcTHQxZYv5Iy46hIy+f42rD4EsQ/bYwfjxUnbIdOIY3jL2y
+sIjNb6L8hGpQacpIZydB
+=3B6e
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
