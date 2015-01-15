@@ -1,98 +1,50 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v4 4/9] clk: samsung: exynos4: Add divider clock id for memory
- bus frequency
-Date: Thu, 15 Jan 2015 10:50:52 +0900
-Message-ID: <1421286657-4720-5-git-send-email-cw00.choi@samsung.com>
-References: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: mark.rutland@arm.com, k.kozlowski@samsung.com, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tomasz.figa@gmail.com, linux-kernel@vger.kernel.org, inki.dae@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, a.kesavan@samsung.com, linux-arm-kernel@lists.infradead.org
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH RESEND V2 1/2] power: gpio-charger: balance enable/disable_irq_wake calls
+Date: Thu, 15 Jan 2015 05:00:37 +0300
+Message-ID: <1421287238-23522-1-git-send-email-dbaryshkov@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f178.google.com ([209.85.223.178]:47408 "EHLO
+	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbbAOCAt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jan 2015 21:00:49 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stable@vger.kernel.org
 
-This patch adds the divider clock id for Exynos4 memory bus frequency.
-The clock id is used fo DVFS (Dynamic Voltage/Frequency Scaling)
-feature of exynos memory bus frequency.
+enable_irq_wakeup returns 0 in case it correctly enabled the IRQ to
+generate the wakeup event (and thus resume should call disable_irq_wake).
+Currently gpio-charger driver has this logic inverted. Correct that thus
+correcting enable/disable_irq_wake() calls balance.
 
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/clk/samsung/clk-exynos4.c   | 10 +++++-----
- include/dt-bindings/clock/exynos4.h |  7 ++++++-
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/power/gpio-charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clk/samsung/clk-exynos4.c b/drivers/clk/samsung/clk-exynos4.c
-index 88e8c6b..51462e8 100644
---- a/drivers/clk/samsung/clk-exynos4.c
-+++ b/drivers/clk/samsung/clk-exynos4.c
-@@ -703,12 +703,12 @@ static struct samsung_mux_clock exynos4x12_mux_clks[] __initdata = {
+diff --git a/drivers/power/gpio-charger.c b/drivers/power/gpio-charger.c
+index 7536933..e5deb11 100644
+--- a/drivers/power/gpio-charger.c
++++ b/drivers/power/gpio-charger.c
+@@ -168,7 +168,7 @@ static int gpio_charger_suspend(struct device *dev)
  
- /* list of divider clocks supported in all exynos4 soc's */
- static struct samsung_div_clock exynos4_div_clks[] __initdata = {
--	DIV(0, "div_gdl", "mout_gdl", DIV_LEFTBUS, 0, 3),
-+	DIV(CLK_DIV_GDL, "div_gdl", "mout_gdl", DIV_LEFTBUS, 0, 3),
- 	DIV(0, "div_gpl", "div_gdl", DIV_LEFTBUS, 4, 3),
- 	DIV(0, "div_clkout_leftbus", "mout_clkout_leftbus",
- 			CLKOUT_CMU_LEFTBUS, 8, 6),
+ 	if (device_may_wakeup(dev))
+ 		gpio_charger->wakeup_enabled =
+-			enable_irq_wake(gpio_charger->irq);
++			!enable_irq_wake(gpio_charger->irq);
  
--	DIV(0, "div_gdr", "mout_gdr", DIV_RIGHTBUS, 0, 3),
-+	DIV(CLK_DIV_GDR, "div_gdr", "mout_gdr", DIV_RIGHTBUS, 0, 3),
- 	DIV(0, "div_gpr", "div_gdr", DIV_RIGHTBUS, 4, 3),
- 	DIV(0, "div_clkout_rightbus", "mout_clkout_rightbus",
- 			CLKOUT_CMU_RIGHTBUS, 8, 6),
-@@ -781,10 +781,10 @@ static struct samsung_div_clock exynos4_div_clks[] __initdata = {
- 			CLK_SET_RATE_PARENT, 0),
- 	DIV(0, "div_clkout_top", "mout_clkout_top", CLKOUT_CMU_TOP, 8, 6),
+ 	return 0;
+ }
+@@ -178,7 +178,7 @@ static int gpio_charger_resume(struct device *dev)
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct gpio_charger *gpio_charger = platform_get_drvdata(pdev);
  
--	DIV(0, "div_acp", "mout_dmc_bus", DIV_DMC0, 0, 3),
-+	DIV(CLK_DIV_ACP, "div_acp", "mout_dmc_bus", DIV_DMC0, 0, 3),
- 	DIV(0, "div_acp_pclk", "div_acp", DIV_DMC0, 4, 3),
- 	DIV(0, "div_dphy", "mout_dphy", DIV_DMC0, 8, 3),
--	DIV(0, "div_dmc", "mout_dmc_bus", DIV_DMC0, 12, 3),
-+	DIV(CLK_DIV_DMC, "div_dmc", "mout_dmc_bus", DIV_DMC0, 12, 3),
- 	DIV(0, "div_dmcd", "div_dmc", DIV_DMC0, 16, 3),
- 	DIV(0, "div_dmcp", "div_dmcd", DIV_DMC0, 20, 3),
- 	DIV(0, "div_pwi", "mout_pwi", DIV_DMC1, 8, 4),
-@@ -829,7 +829,7 @@ static struct samsung_div_clock exynos4x12_div_clks[] __initdata = {
- 	DIV_F(CLK_DIV_MCUISP1, "div_mcuisp1", "div_mcuisp0", E4X12_DIV_ISP1,
- 						8, 3, CLK_GET_RATE_NOCACHE, 0),
- 	DIV(CLK_SCLK_FIMG2D, "sclk_fimg2d", "mout_g2d", DIV_DMC1, 0, 4),
--	DIV(0, "div_c2c", "mout_c2c", DIV_DMC1, 4, 3),
-+	DIV(CLK_DIV_C2C, "div_c2c", "mout_c2c", DIV_DMC1, 4, 3),
- 	DIV(0, "div_c2c_aclk", "div_c2c", DIV_DMC1, 12, 3),
- };
+-	if (gpio_charger->wakeup_enabled)
++	if (device_may_wakeup(dev) && gpio_charger->wakeup_enabled)
+ 		disable_irq_wake(gpio_charger->irq);
+ 	power_supply_changed(&gpio_charger->charger);
  
-diff --git a/include/dt-bindings/clock/exynos4.h b/include/dt-bindings/clock/exynos4.h
-index 34fe28c..c4b1676 100644
---- a/include/dt-bindings/clock/exynos4.h
-+++ b/include/dt-bindings/clock/exynos4.h
-@@ -262,8 +262,13 @@
- #define CLK_DIV_MCUISP1		453 /* Exynos4x12 only */
- #define CLK_DIV_ACLK200		454 /* Exynos4x12 only */
- #define CLK_DIV_ACLK400_MCUISP	455 /* Exynos4x12 only */
-+#define CLK_DIV_ACP		456
-+#define CLK_DIV_DMC		457
-+#define CLK_DIV_C2C		458 /* Exynos4x12 only */
-+#define CLK_DIV_GDL		459
-+#define CLK_DIV_GDR		460
- 
- /* must be greater than maximal clock id */
--#define CLK_NR_CLKS		456
-+#define CLK_NR_CLKS		461
- 
- #endif /* _DT_BINDINGS_CLOCK_EXYNOS_4_H */
 -- 
-1.8.5.5
+2.1.4
+
