@@ -1,65 +1,222 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/3] power: rt5033_battery: Add RT5033 Fuel gauge
- device driver
-Date: Thu, 15 Jan 2015 02:01:34 +0100
-Message-ID: <20150115010134.GB20141@earth.universe>
-References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
- <1420793114-20586-2-git-send-email-beomho.seo@samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="/NkBOFFp2J2Af1nK"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46377 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753960AbbAOBBr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Jan 2015 20:01:47 -0500
-Content-Disposition: inline
-In-Reply-To: <1420793114-20586-2-git-send-email-beomho.seo@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v4 2/9] devfreq: exynos: Add documentation for generic exynos
+ memory bus frequency driver
+Date: Thu, 15 Jan 2015 10:50:50 +0900
+Message-ID: <1421286657-4720-3-git-send-email-cw00.choi@samsung.com>
+References: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1421286657-4720-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, David Woodhouse <dwmw2@infradead.org>
 
+This patch adds the documentation for generic exynos memory bus frequency
+driver.
 
---/NkBOFFp2J2Af1nK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ .../devicetree/bindings/devfreq/exynos-bus.txt     | 188 +++++++++++++++++++++
+ 1 file changed, 188 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
 
-Hi,
-
-On Fri, Jan 09, 2015 at 05:45:11PM +0900, Beomho Seo wrote:
-> This patch adds device driver of Richtek PMIC.
-> The driver support battery fuel gange. Fuel gauge calculates and determines the
-> battery state of charge(SOC) according to battery open circuit voltage(OCV).
-> Also, this driver provides battery average voltage, voltage and bettery present
-> property.
-
-Thanks, applied:
-
-http://git.infradead.org/battery-2.6.git/commit/3cfb56d7ff013762a17b6a1b78bb3b0e4a6a6588
-
--- Sebastian
-
---/NkBOFFp2J2Af1nK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUtxFuAAoJENju1/PIO/qaRsYP/0aeGZE1rBRba2Bknvr8zYLJ
-aThRVS21wC+yYdjEAU1gTMvGG+iKjM4hZvVRrWbADXSTrXQkgdxTvcHReLkjoTL4
-nsvCZ+5As4NkUVSx2MbeqCvFiW3YXCZBX6Uup8rtMnt5tIhkb434Fu/xKzvj2pUS
-b9qbraDGaYd0vNHiH7L2XX2zf5rBT3vwWITwgxsyCJoPkwBVAPFugTJ8aYwTc4ji
-xmTN3Gj9MtLacj8TjEhYiSYIs5u917ghdTQjyxVt7cNktvn3TrH/pA9RVOzNsuw+
-HHD9S7TZ+s+0FrPoEton1LGYb52UZ1HdSEgBsdaVEkEJ69fDnL4qBX2Duxg22SB0
-HCGSKJvFp6zUsNs5BhAm5jQboErJzSB3D8T5IAgaq2qXXbi9AQTeI7B8o7FzovtR
-exisPArq9bLjfzptqLU5ZMsuDLy4CCgvILS2N64dpqROYUTtmrIwFmJAqsBMRrjT
-H/f2FUc/wz+R9OsiQB/XVjYlsNUt4vahPjO8gVSa0IaBq3ixSK3EKi+rmwy8t9JZ
-9alDfcQEhcbcqtD6b6NPwmCpQO1bpY1q/xSJ7god3KUJcI6r7tXcTnE8SLyl53HK
-N702P5Gf599AKSxG2AEkkGlkHWGYGnfBkQvRmE7qmQV0npIVdty6lTklnmsZeebE
-DjQnmWVh/XVCIAJJr+DJ
-=K3c+
------END PGP SIGNATURE-----
-
---/NkBOFFp2J2Af1nK--
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+new file mode 100644
+index 0000000..6323dcf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+@@ -0,0 +1,188 @@
++
++* Generic Exynos Memory Bus device
++
++The Samsung Exynos SoCs have many memory buses for data transfer between DRAM
++memory and MMC/sub-IP in SoC. Almost Exynos SoCs have the common architecture
++for memory buses. Generally, Exynos SoC express the memory bus by using memory
++bus group and block. The memory bus group has one more memory bus blocks and
++OPP table (including frequency and voltage for DVFS), regulator, devfreq-event
++devices. Each memory bus block has a clock for own memory bus speen and
++frequency table for DVFS. There are a little different among Exynos SoCs
++because each Exynos SoC has the different sub-IP and differnt memory bus.
++So, this difference should be specified in devicetree file.
++
++Required properties for memory bus group:
++- compatible: Should be "samsung,exynos-memory-bus".
++- operating-points: the OPP table including frequency/voltage information to
++                  support DVFS (Dynamic Voltage/Frequency Scaling) feature.
++- devfreq-events: the devfreq-event device to monitor the curret state of
++                  memory bus group.
++- vdd-mem-supply: the regulator to provide memory bus group with the voltage.
++
++Optional properties for memory bus group:
++- exynos,saturation-ratio: the percentage value which is used to calibrate
++                   the memory performance count againt memory cycle count.
++
++Required properties for memory bus block:
++- clock-names : the name of clock used by the memory bus, "memory-bus".
++- clocks : phandles for clock specified in "clock-names" property.
++- #clock-cells: should be 1.
++- frequency: the frequency table to support DVFS feature.
++
++Example1 : Memory bus group/block in exynos3250.dtsi are listed below.
++	Exynos3250 has two memory bus group (MIF, INT group). MIF (Memory
++	Interface) memory bus group includes one memory bus block between
++	DRAM and eMMC. Also, INT (Internal) memory bus group includes eight
++	memory bus blocks which support each sub-IP between DRAM and sub-IP.
++
++	memory_bus_mif: memory_bus@0 {
++		compatible = "samsung,exynos-memory-bus";
++
++		operating-points = <
++			400000 875000
++			200000 800000
++			133000 800000
++			100000 800000
++			50000  800000>;
++		status = "disabled";
++
++		blocks {
++			dmc_block: memory_bus_block1 {
++				clocks = <&cmu_dmc CLK_DIV_DMC>;
++				clock-names = "memory-bus";
++				frequency = <
++					400000
++					200000
++					133000
++					100000
++					50000>;
++			};
++		};
++	};
++
++	memory_bus_int: memory_bus@1 {
++		compatible = "samsung,exynos-memory-bus";
++
++		operating-points = <
++			400000 950000
++			200000 950000
++			133000 925000
++			100000 850000
++			80000  850000
++			50000  850000>;
++
++		status = "disabled";
++
++		blocks {
++			peri_block: memory_bus_block1 {
++				clocks = <&cmu CLK_DIV_ACLK_100>;
++				clock-names = "memory-bus";
++				frequency = <
++					100000
++					100000
++					100000
++					100000
++					50000
++					50000>;
++			};
++
++			display_block: memory_bus_block2 {
++				clocks = <&cmu CLK_DIV_ACLK_160>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					160000
++					100000
++					80000
++					80000
++					50000>;
++			};
++
++			isp_block: memory_bus_block3 {
++				clocks = <&cmu CLK_DIV_ACLK_200>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					200000
++					100000
++					80000
++					50000
++					50000>;
++			};
++
++			gps_block: memory_bus_block4 {
++				clocks = <&cmu CLK_DIV_ACLK_266>;
++				clock-names = "memory-bus";
++				frequency = <
++					300000
++					200000
++					133000
++					100000
++					50000
++					50000>;
++			};
++
++			mcuisp_block: memory_bus_block5 {
++				clocks = <&cmu CLK_DIV_ACLK_400_MCUISP>;
++				clock-names = "memory-bus";
++				frequency = <
++					400000
++					200000
++					50000
++					50000
++					50000
++					50000>;
++			};
++
++			leftbus_block: memory_bus_block6 {
++				clocks = <&cmu CLK_DIV_GDL>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					200000
++					133000
++					100000
++					100000
++					100000>;
++			};
++
++			rightbus_block: memory_bus_block7 {
++				clocks = <&cmu CLK_DIV_GDR>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					200000
++					133000
++					100000
++					100000
++					100000>;
++			};
++
++			mfc_block: memory_bus_block8 {
++				clocks = <&cmu CLK_SCLK_MFC>;
++				clock-names = "memory-bus";
++				frequency = <
++					200000
++					200000
++					200000
++					133000
++					100000
++					80000>;
++			};
++		};
++	};
++
++Example2 : Usage case to handle the frequency/voltage of memory bus on runtime
++	in exynos3250-rinato.dts are listed below.
++
++	&memory_bus_mif {
++		devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
++		vdd-mem-supply = <&buck1_reg>;
++		status = "okay";
++	};
++
++	&memory_bus_int {
++		devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
++		vdd-mem-supply = <&buck3_reg>;
++		status = "okay";
++	};
+-- 
+1.8.5.5
