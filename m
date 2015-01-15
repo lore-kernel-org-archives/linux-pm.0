@@ -1,70 +1,65 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH RESEND 00/13] ltc2952 modernization and new functionality
-Date: Thu, 15 Jan 2015 01:52:49 +0100
-Message-ID: <20150115005249.GA20141@earth.universe>
-References: <1421223346-27410-1-git-send-email-frans.klaver@xsens.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/3] power: rt5033_battery: Add RT5033 Fuel gauge
+ device driver
+Date: Thu, 15 Jan 2015 02:01:34 +0100
+Message-ID: <20150115010134.GB20141@earth.universe>
+References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
+ <1420793114-20586-2-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="/NkBOFFp2J2Af1nK"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:46377 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753960AbbAOBBr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Jan 2015 20:01:47 -0500
 Content-Disposition: inline
-In-Reply-To: <1421223346-27410-1-git-send-email-frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Frans Klaver <frans.klaver-MHHw4NDrbWwAvxtiuMwx3w@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?iso-8859-1?Q?Ren=E9?= Moll <linux-93MfrKQ0iTlmR6Xm/wNWPw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1420793114-20586-2-git-send-email-beomho.seo@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, David Woodhouse <dwmw2@infradead.org>
 
 
---qMm9M+Fa2AknHoGS
+--/NkBOFFp2J2Af1nK
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jan 14, 2015 at 09:15:33AM +0100, Frans Klaver wrote:
-> Here's a resend of an earlier cleanup and improvement series for
-> the ltc2952 driver.
->=20
-> This series implements devm_* usage, reduction of globals, some
-> cleanup and finally makes the input trigger optional.
->=20
-> From the changes to the previous submissions I did not include
-> renaming kill to poweroff. The name poweroff is already used a
-> lot. Besides that, the control is referred to as kill in the
-> ltc2952 datasheet.
+On Fri, Jan 09, 2015 at 05:45:11PM +0900, Beomho Seo wrote:
+> This patch adds device driver of Richtek PMIC.
+> The driver support battery fuel gange. Fuel gauge calculates and determines the
+> battery state of charge(SOC) according to battery open circuit voltage(OCV).
+> Also, this driver provides battery average voltage, voltage and bettery present
+> property.
 
-Thanks for the cleanup, applied:
+Thanks, applied:
 
-http://git.infradead.org/battery-2.6.git/commit/d84ba07c27fafca3cc77b25a1e2=
-04383a4b5af91
+http://git.infradead.org/battery-2.6.git/commit/3cfb56d7ff013762a17b6a1b78bb3b0e4a6a6588
 
 -- Sebastian
 
---qMm9M+Fa2AknHoGS
+--/NkBOFFp2J2Af1nK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUtw9eAAoJENju1/PIO/qatb8P/3bKXUeBEJ6n6pixVf8aTdGh
-BpVzDkCa4ezxb2esvDxT0YKWcquVV68bXlpYwnU5C324emSmgxY+EN8RyzQTO4FH
-M5mESt6eTnZBwx87RNUD59kEyaKiKaxH2F3p+BNdv1ikSLiHYmvNGXyw6NoabNxE
-TGKawixtJwfA0Y9VRHUqSIvrZfPAAV7x2N3qX1PMTEVBRttAunAMLNlOQ8rQsWel
-2qtDatDqvPwJ/FQQnDmdd1ExRXEokvYQyFYS9qLoqyayioFeroZpBlnMOr091bJP
-+OTwPi7c/z8iZuJtbYcvMsu3y5TAUNjM1E1vAH3gO4H81tKQPuPZ2jK8NJ2mLvYl
-W+WnbfbuL2rmZlOqErhXhOLCrRWwn1rkVrO/ITmXGlvdr5CMIYmzQNBeSsQnl6VJ
-QUyLfupWFW2xK/exZKLPvy8+orFBlk9JhZyF3SVzis1Hr0Rw1CbyBd+9SmPTtP6U
-KIrtzE7+CLtsp8OLiZW+yNz++d7CBXx77DebRHa+hGX80FFAL8VYIeJhlRSS53Fc
-tRl8BiyEVpRjRS5blJAqOEUR2ZM2U8Xl/dUYqiE2oyCig/xcjQx0iIxjQXeCWUZQ
-iwzw5nlGLMjiLYCm1PNiEyxAUwdRfObIGeCoNc0zoccgFqBXzW4rbV1jBw6E8Nxl
-lwWRJ8d7S27+zTE+aSSg
-=8HFH
+iQIcBAEBCgAGBQJUtxFuAAoJENju1/PIO/qaRsYP/0aeGZE1rBRba2Bknvr8zYLJ
+aThRVS21wC+yYdjEAU1gTMvGG+iKjM4hZvVRrWbADXSTrXQkgdxTvcHReLkjoTL4
+nsvCZ+5As4NkUVSx2MbeqCvFiW3YXCZBX6Uup8rtMnt5tIhkb434Fu/xKzvj2pUS
+b9qbraDGaYd0vNHiH7L2XX2zf5rBT3vwWITwgxsyCJoPkwBVAPFugTJ8aYwTc4ji
+xmTN3Gj9MtLacj8TjEhYiSYIs5u917ghdTQjyxVt7cNktvn3TrH/pA9RVOzNsuw+
+HHD9S7TZ+s+0FrPoEton1LGYb52UZ1HdSEgBsdaVEkEJ69fDnL4qBX2Duxg22SB0
+HCGSKJvFp6zUsNs5BhAm5jQboErJzSB3D8T5IAgaq2qXXbi9AQTeI7B8o7FzovtR
+exisPArq9bLjfzptqLU5ZMsuDLy4CCgvILS2N64dpqROYUTtmrIwFmJAqsBMRrjT
+H/f2FUc/wz+R9OsiQB/XVjYlsNUt4vahPjO8gVSa0IaBq3ixSK3EKi+rmwy8t9JZ
+9alDfcQEhcbcqtD6b6NPwmCpQO1bpY1q/xSJ7god3KUJcI6r7tXcTnE8SLyl53HK
+N702P5Gf599AKSxG2AEkkGlkHWGYGnfBkQvRmE7qmQV0npIVdty6lTklnmsZeebE
+DjQnmWVh/XVCIAJJr+DJ
+=K3c+
 -----END PGP SIGNATURE-----
 
---qMm9M+Fa2AknHoGS--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--/NkBOFFp2J2Af1nK--
