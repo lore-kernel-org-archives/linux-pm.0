@@ -1,46 +1,52 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v4 04/17] arm: dts: odroid: Add LD010 regulator node necessary
- for TMU on Odroid
-Date: Fri, 16 Jan 2015 12:30:48 +0100
-Message-ID: <1421407861-25099-5-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v4 05/17] arm: dts: odroid: Enable TMU at Exynos4412 based
+ Odroid U3 device
+Date: Fri, 16 Jan 2015 12:30:49 +0100
+Message-ID: <1421407861-25099-6-git-send-email-l.majewski@samsung.com>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:49201 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754681AbbAPLb7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 06:31:59 -0500
 In-reply-to: <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
-List-Id: linux-pm@vger.kernel.org
+
+This commit enables TMU IP block on the Exynos4412 Odroid U3
+device.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
 - None
 Changes for v3:
-- Patch title has been changed from thermal: dts: exynos to arm: dts: Odroid
-Changes for v4:
 - None
+Changes for v4:
+- Rename patch title from "thermal: dts:" to "arm: dts: odroid"
 ---
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 3fbf588..0adb57c 100644
+index 0adb57c..c7517fc 100644
 --- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
 +++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -231,6 +231,13 @@
- 					regulator-always-on;
- 				};
- 
-+				ldo10_reg: LDO10 {
-+					regulator-name = "VDD18_MIPIHSI_1.8V";
-+					regulator-min-microvolt = <1800000>;
-+					regulator-max-microvolt = <1800000>;
-+					regulator-always-on;
-+				};
+@@ -396,6 +396,11 @@
+ 	ehci: ehci@12580000 {
+ 		status = "okay";
+ 	};
 +
- 				ldo11_reg: LDO11 {
- 					regulator-name = "VDD18_ABB1_1.8V";
- 					regulator-min-microvolt = <1800000>;
++	tmu@100C0000 {
++		vtmu-supply = <&ldo10_reg>;
++		status = "okay";
++	};
+ };
+ 
+ &pinctrl_1 {
 -- 
 2.0.0.rc2
+
