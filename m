@@ -1,32 +1,69 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Auto suspend not working on usb hid devices
-Date: Fri, 16 Jan 2015 10:23:04 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1501161021260.1469-100000@iolanthe.rowland.org>
-References: <CAOVJa8E28LTMMUa7tjNSitYb33VZNiWH9Nob=Zt_J81fmV8TUw@mail.gmail.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation failure caused
+ by commit b81975eade8c
+Date: Fri, 16 Jan 2015 13:13:18 -0500
+Message-ID: <20150116181318.GA22690@l.oracle.com>
+References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com>
+ <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com>
+ <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:60255 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752893AbbAPPXF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 10:23:05 -0500
-In-Reply-To: <CAOVJa8E28LTMMUa7tjNSitYb33VZNiWH9Nob=Zt_J81fmV8TUw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: vichy <vichy.kuo@gmail.com>
-Cc: linux-pm@vger.kernel.org
 
-On Fri, 16 Jan 2015, vichy wrote:
+On Thu, Jan 15, 2015 at 09:04:35PM +0800, Jiang Liu wrote:
+> Commit b81975eade8c ("x86, irq: Clean up irqdomain transition code")
+> breaks xen IRQ allocation because xen_smp_prepare_cpus() doesn't invoke
+> setup_IO_APIC(), so no irqdomains created for IOAPICs and
+> mp_map_pin_to_irq() fails at the very beginning.
+> 
+> Currently Xen Domain0 has special treatment for ACPI SCI interrupt,
+> that is initialize irq for ACPI SCI at early stage in a special way as:
+> xen_init_IRQ()
+> 	->pci_xen_initial_domain()
+> 		->xen_setup_acpi_sci()
+> 			Allocate and initialize irq for ACPI SCI
+> 
+> Function xen_setup_acpi_sci() calls acpi_gsi_to_irq() to get an irq
+> number for ACPI SCI. But unfortunately acpi_gsi_to_irq() depends on
+> IOAPIC irqdomains through following path
+> acpi_gsi_to_irq()
+> 	->mp_map_gsi_to_irq()
+> 		->mp_map_pin_to_irq()
+> 			->check IOAPIC irqdomain
+> 
+> For PV domains, it uses Xen event based interrupt manangement and
+> doesn't make uses of native IOAPIC, so no irqdomains created for IOAPIC.
+> This causes Xen domain0 fails to install interrupt handler for ACPI SCI
+> and all ACPI events will be lost. Please refer to:
+> https://lkml.org/lkml/2014/12/19/178
+> 
+> So the fix is to get rid of special treatment for ACPI SCI, just treat
+> ACPI SCI as normal GSI interrupt as:
+> acpi_gsi_to_irq()
+> 	->acpi_register_gsi()
+> 		->acpi_register_gsi_xen()
+> 			->xen_register_gsi()
+> 
+> With above change, there's no need for xen_setup_acpi_sci() anymore.
+> The above change also works with bare metal kernel too.
+> 
+> Note: we need to test this patch on those special AMD systems which
+> override normal SCI GSI (9) with strange GSI (20).
 
-> I found the usb storage interface driver also set supports_autosuspend
-> =1 and I found the runtime_usage =1 .
-> But the device doesn't go into runtime suspend, even I put control as auto.
-> is there any condition purposely abandon usb storage device to do so?
-
-In order to suspend a USB storage device, you have to enable suspend 
-not just for that device but also for all its children.  In particular, 
-if the device is a disk or flash drive then you have to enable suspend 
-for the corresponding SCSI device.
-
-Alan Stern
-
+[    0.000000] DMI: Supermicro X8DTN/X8DTN, BIOS 2.1c       10/28/2011
+..
+     0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low level)
+[    0.000000] ACPI: IRQ0 used by override.
+..
+    6.358737] xen: registering gsi 20 triggering 0 polarity 1
+[    6.358756] xen: --> pirq=20 -> irq=20 (gsi=20)
+...
+-bash-4.1# cat /proc/interrupts |grep acpi
+ 20:          0          0          0  xen-pirq-ioapic-level  acpi
