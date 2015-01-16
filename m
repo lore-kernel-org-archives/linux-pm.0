@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1 4/4] Thermal/int340x/processor_thermal: Add thermal zone support
-Date: Fri, 16 Jan 2015 15:05:48 -0800
-Message-ID: <1421449548-2172-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 1/4] Thermal/int340x: Add common thermal zone handler
+Date: Fri, 16 Jan 2015 15:05:45 -0800
+Message-ID: <1421449548-2172-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1421449548-2172-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga03.intel.com ([134.134.136.65]:32583 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbbAPXGf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1750983AbbAPXGf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Fri, 16 Jan 2015 18:06:35 -0500
 In-Reply-To: <1421449548-2172-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,154 +14,373 @@ List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added thermal zones for processor thermal using APIs provided by
-int340x thermal zone module.
-Like other INT340x devices, processor thermal device can also contain
-trip points and way to get temperature. On some platform there is
-no ACPI _TMP method, in those platform using IA64 architecture MSRs to
-get temperature.
+Most of the processing for each int340x driver to add a thermal zone
+is very similar and every driver has to duplicate code.
+Created a common module, which exports API to add and remove zones.
+In this way, we not only avoid duplicate code but also helps in
+bug fixes and enhancements.
+If for some driver default processing for thermal zone callback is
+not enough they can overide individual callback.
+The code for this driver is primarily copied from int3402_thermal.c.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- .../int340x_thermal/processor_thermal_device.c     | 90 ++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+ drivers/thermal/int340x_thermal/Makefile           |   1 +
+ .../thermal/int340x_thermal/int340x_thermal_zone.c | 262 +++++++++++++++++++++
+ .../thermal/int340x_thermal/int340x_thermal_zone.h |  65 +++++
+ 3 files changed, 328 insertions(+)
+ create mode 100644 drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+ create mode 100644 drivers/thermal/int340x_thermal/int340x_thermal_zone.h
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 0fe5dbb..7c3848d 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -18,6 +18,8 @@
- #include <linux/pci.h>
- #include <linux/platform_device.h>
- #include <linux/acpi.h>
+diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
+index d441369..ba77a34 100644
+--- a/drivers/thermal/int340x_thermal/Makefile
++++ b/drivers/thermal/int340x_thermal/Makefile
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
++obj-$(CONFIG_INT340X_THERMAL)	+= int340x_thermal_zone.o
+ obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
+ obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
+ obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device.o
+diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+new file mode 100644
+index 0000000..4ab69e93
+--- /dev/null
++++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+@@ -0,0 +1,262 @@
++/*
++ * int340x_thermal_zone.c
++ * Copyright (c) 2014, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/acpi.h>
 +#include <linux/thermal.h>
 +#include "int340x_thermal_zone.h"
- 
- /* Broadwell-U/HSB thermal reporting device */
- #define PCI_DEVICE_ID_PROC_BDW_THERMAL	0x1603
-@@ -39,6 +41,7 @@ struct proc_thermal_device {
- 	struct device *dev;
- 	struct acpi_device *adev;
- 	struct power_config power_limits[2];
-+	struct int34x_thermal_zone *int340x_zone;
- };
- 
- enum proc_thermal_emum_mode_type {
-@@ -117,6 +120,72 @@ static struct attribute_group power_limit_attribute_group = {
- 	.name = "power_limits"
- };
- 
-+static int stored_tjmax; /* since it is fixed, we can have local storage */
 +
-+static int get_tjmax(void)
++static int int340x_thermal_get_zone_temp(struct thermal_zone_device *zone,
++					 unsigned long *temp)
 +{
-+	u32 eax, edx;
-+	u32 val;
-+	int err;
++	struct int34x_thermal_zone *d = zone->devdata;
++	unsigned long long tmp;
++	acpi_status status;
 +
-+	err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &eax, &edx);
-+	if (err)
-+		return err;
++	if (d->override_ops && d->override_ops->get_temp)
++		return d->override_ops->get_temp(zone, temp);
 +
-+	val = (eax >> 16) & 0xff;
-+	if (val)
-+		return val;
++	status = acpi_evaluate_integer(d->adev->handle, "_TMP", NULL, &tmp);
++	if (ACPI_FAILURE(status))
++		return -EIO;
 +
-+	return -EINVAL;
++	/* _TMP returns the temperature in tenths of degrees Kelvin */
++	*temp = DECI_KELVIN_TO_MILLICELSIUS(tmp);
++
++	return 0;
 +}
 +
-+static int read_temp_msr(unsigned long *temp)
++static int int340x_thermal_get_trip_temp(struct thermal_zone_device *zone,
++					 int trip, unsigned long *temp)
 +{
-+	int cpu;
-+	u32 eax, edx;
-+	int err;
-+	unsigned long curr_temp_off = 0;
++	struct int34x_thermal_zone *d = zone->devdata;
++	int i;
 +
-+	*temp = 0;
++	if (d->override_ops && d->override_ops->get_trip_temp)
++		return d->override_ops->get_trip_temp(zone, trip, temp);
 +
-+	for_each_online_cpu(cpu) {
-+		err = rdmsr_safe_on_cpu(cpu, MSR_IA32_THERM_STATUS, &eax,
-+					&edx);
-+		if (err)
-+			goto err_ret;
-+		else {
-+			if (eax & 0x80000000) {
-+				curr_temp_off = (eax >> 16) & 0x7f;
-+				if (!*temp || curr_temp_off < *temp)
-+					*temp = curr_temp_off;
-+			} else {
-+				err = -EINVAL;
-+				goto err_ret;
++	if (trip < d->aux_trip_nr)
++		*temp = d->aux_trips[trip];
++	else if (trip == d->crt_trip_id)
++		*temp = d->crt_temp;
++	else if (trip == d->psv_trip_id)
++		*temp = d->psv_temp;
++	else if (trip == d->hot_trip_id)
++		*temp = d->hot_temp;
++	else {
++		for (i = 0; i < INT340X_THERMAL_MAX_ACT_TRIP_COUNT; i++) {
++			if (d->act_trips[i].valid &&
++			    d->act_trips[i].id == trip) {
++				*temp = d->act_trips[i].temp;
++				break;
 +			}
 +		}
++		if (i == INT340X_THERMAL_MAX_ACT_TRIP_COUNT)
++			return -EINVAL;
 +	}
 +
 +	return 0;
-+err_ret:
-+	return err;
 +}
 +
-+static int proc_thermal_get_zone_temp(struct thermal_zone_device *zone,
-+					 unsigned long *temp)
++static int int340x_thermal_get_trip_type(struct thermal_zone_device *zone,
++					 int trip,
++					 enum thermal_trip_type *type)
 +{
-+	int ret;
++	struct int34x_thermal_zone *d = zone->devdata;
++	int i;
 +
-+	ret = read_temp_msr(temp);
-+	if (!ret)
-+		*temp = (stored_tjmax - *temp) * 1000;
++	if (d->override_ops && d->override_ops->get_trip_type)
++		return d->override_ops->get_trip_type(zone, trip, type);
 +
-+	return ret;
-+}
-+
-+static struct thermal_zone_device_ops proc_thermal_local_ops = {
-+	.get_temp       = proc_thermal_get_zone_temp,
-+};
-+
- static int proc_thermal_add(struct device *dev,
- 			    struct proc_thermal_device **priv)
- {
-@@ -126,6 +195,8 @@ static int proc_thermal_add(struct device *dev,
- 	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *elements, *ppcc;
- 	union acpi_object *p;
-+	unsigned long long tmp;
-+	struct thermal_zone_device_ops *ops = NULL;
- 	int i;
- 	int ret;
- 
-@@ -178,6 +249,24 @@ static int proc_thermal_add(struct device *dev,
- 
- 	ret = sysfs_create_group(&dev->kobj,
- 				 &power_limit_attribute_group);
-+	if (ret)
-+		goto free_buffer;
-+
-+	status = acpi_evaluate_integer(adev->handle, "_TMP", NULL, &tmp);
-+	if (ACPI_FAILURE(status)) {
-+		/* there is no _TMP method, add local method */
-+		stored_tjmax = get_tjmax();
-+		if (stored_tjmax > 0)
-+			ops = &proc_thermal_local_ops;
++	if (trip < d->aux_trip_nr)
++		*type = THERMAL_TRIP_PASSIVE;
++	else if (trip == d->crt_trip_id)
++		*type = THERMAL_TRIP_CRITICAL;
++	else if (trip == d->hot_trip_id)
++		*type = THERMAL_TRIP_HOT;
++	else if (trip == d->psv_trip_id)
++		*type = THERMAL_TRIP_PASSIVE;
++	else {
++		for (i = 0; i < INT340X_THERMAL_MAX_ACT_TRIP_COUNT; i++) {
++			if (d->act_trips[i].valid &&
++			    d->act_trips[i].id == trip) {
++				*type = THERMAL_TRIP_ACTIVE;
++				break;
++			}
++		}
++		if (i == INT340X_THERMAL_MAX_ACT_TRIP_COUNT)
++			return -EINVAL;
 +	}
 +
-+	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
-+	if (IS_ERR(proc_priv->int340x_zone)) {
-+		sysfs_remove_group(&proc_priv->dev->kobj,
-+			   &power_limit_attribute_group);
-+		ret = PTR_ERR(proc_priv->int340x_zone);
-+	} else
-+		ret = 0;
- 
- free_buffer:
- 	kfree(buf.pointer);
-@@ -187,6 +276,7 @@ free_buffer:
- 
- void proc_thermal_remove(struct proc_thermal_device *proc_priv)
- {
-+	int340x_thermal_zone_remove(proc_priv->int340x_zone);
- 	sysfs_remove_group(&proc_priv->dev->kobj,
- 			   &power_limit_attribute_group);
- }
++	return 0;
++}
++
++static int int340x_thermal_set_trip_temp(struct thermal_zone_device *zone,
++				      int trip, unsigned long temp)
++{
++	struct int34x_thermal_zone *d = zone->devdata;
++	acpi_status status;
++	char name[10];
++
++	if (d->override_ops && d->override_ops->set_trip_temp)
++		return d->override_ops->set_trip_temp(zone, trip, temp);
++
++	snprintf(name, sizeof(name), "PAT%d", trip);
++	status = acpi_execute_simple_method(d->adev->handle, name,
++			MILLICELSIUS_TO_DECI_KELVIN(temp));
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	d->aux_trips[trip] = temp;
++
++	return 0;
++}
++
++
++static int int340x_thermal_get_trip_hyst(struct thermal_zone_device *zone,
++		int trip, unsigned long *temp)
++{
++	struct int34x_thermal_zone *d = zone->devdata;
++	acpi_status status;
++	unsigned long long hyst;
++
++	if (d->override_ops && d->override_ops->get_trip_hyst)
++		return d->override_ops->get_trip_hyst(zone, trip, temp);
++
++	status = acpi_evaluate_integer(d->adev->handle, "GTSH", NULL, &hyst);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = hyst * 100;
++
++	return 0;
++}
++
++static struct thermal_zone_device_ops int340x_thermal_zone_ops = {
++	.get_temp       = int340x_thermal_get_zone_temp,
++	.get_trip_temp	= int340x_thermal_get_trip_temp,
++	.get_trip_type	= int340x_thermal_get_trip_type,
++	.set_trip_temp	= int340x_thermal_set_trip_temp,
++	.get_trip_hyst =  int340x_thermal_get_trip_hyst,
++};
++
++static int int340x_thermal_get_trip_config(acpi_handle handle, char *name,
++				      unsigned long *temp)
++{
++	unsigned long long r;
++	acpi_status status;
++
++	status = acpi_evaluate_integer(handle, name, NULL, &r);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = DECI_KELVIN_TO_MILLICELSIUS(r);
++
++	return 0;
++}
++
++static struct thermal_zone_params int340x_thermal_params = {
++	.governor_name = "user_space",
++	.no_hwmon = true,
++};
++
++struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
++				struct thermal_zone_device_ops *override_ops)
++{
++	struct int34x_thermal_zone *int34x_thermal_zone;
++	acpi_status status;
++	unsigned long long trip_cnt;
++	int trip_mask = 0, i;
++	int ret;
++
++	int34x_thermal_zone = kzalloc(sizeof(*int34x_thermal_zone),
++				      GFP_KERNEL);
++	if (!int34x_thermal_zone)
++		return ERR_PTR(-ENOMEM);
++
++	int34x_thermal_zone->adev = adev;
++	int34x_thermal_zone->override_ops = override_ops;
++
++	status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
++	if (ACPI_FAILURE(status))
++		trip_cnt = 0;
++	else {
++		int34x_thermal_zone->aux_trips = kzalloc(
++				sizeof(*int34x_thermal_zone->aux_trips) *
++				trip_cnt, GFP_KERNEL);
++		if (!int34x_thermal_zone->aux_trips) {
++			ret = -ENOMEM;
++			goto free_mem;
++		}
++		trip_mask = BIT(trip_cnt) - 1;
++		int34x_thermal_zone->aux_trip_nr = trip_cnt;
++	}
++
++	int34x_thermal_zone->crt_trip_id = -1;
++	if (!int340x_thermal_get_trip_config(adev->handle, "_CRT",
++					     &int34x_thermal_zone->crt_temp))
++		int34x_thermal_zone->crt_trip_id = trip_cnt++;
++	int34x_thermal_zone->hot_trip_id = -1;
++	if (!int340x_thermal_get_trip_config(adev->handle, "_HOT",
++					     &int34x_thermal_zone->hot_temp))
++		int34x_thermal_zone->hot_trip_id = trip_cnt++;
++	int34x_thermal_zone->psv_trip_id = -1;
++	if (!int340x_thermal_get_trip_config(adev->handle, "_PSV",
++					     &int34x_thermal_zone->psv_temp))
++		int34x_thermal_zone->psv_trip_id = trip_cnt++;
++	for (i = 0; i < INT340X_THERMAL_MAX_ACT_TRIP_COUNT; i++) {
++		char name[5] = { '_', 'A', 'C', '0' + i, '\0' };
++
++		if (int340x_thermal_get_trip_config(adev->handle, name,
++				&int34x_thermal_zone->act_trips[i].temp))
++			break;
++
++		int34x_thermal_zone->act_trips[i].id = trip_cnt++;
++		int34x_thermal_zone->act_trips[i].valid = true;
++	}
++
++	int34x_thermal_zone->zone = thermal_zone_device_register(
++						acpi_device_bid(adev),
++						trip_cnt,
++						trip_mask, int34x_thermal_zone,
++						&int340x_thermal_zone_ops,
++						&int340x_thermal_params,
++						0, 0);
++	if (IS_ERR(int34x_thermal_zone->zone)) {
++		ret = PTR_ERR(int34x_thermal_zone->zone);
++		goto free_mem;
++	}
++
++	return int34x_thermal_zone;
++
++free_mem:
++	kfree(int34x_thermal_zone);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(int340x_thermal_zone_add);
++
++void int340x_thermal_zone_remove(struct int34x_thermal_zone
++				 *int34x_thermal_zone)
++{
++	thermal_zone_device_unregister(int34x_thermal_zone->zone);
++	kfree(int34x_thermal_zone);
++}
++EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
++
++MODULE_AUTHOR("Aaron Lu <aaron.lu@intel.com>");
++MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
++MODULE_DESCRIPTION("Intel INT340x common thermal zone handler");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.h b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
+new file mode 100644
+index 0000000..d1406ce
+--- /dev/null
++++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
+@@ -0,0 +1,65 @@
++/*
++ * int340x_thermal_zone.h
++ * Copyright (c) 2014, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++
++#ifndef __INT340X_THERMAL_ZONE_H__
++#define __INT340X_THERMAL_ZONE_H__
++
++#define INT340X_THERMAL_MAX_ACT_TRIP_COUNT	10
++
++struct active_trip {
++	unsigned long temp;
++	int id;
++	bool valid;
++};
++
++struct int34x_thermal_zone {
++	struct acpi_device *adev;
++	struct active_trip act_trips[INT340X_THERMAL_MAX_ACT_TRIP_COUNT];
++	unsigned long *aux_trips;
++	int aux_trip_nr;
++	unsigned long psv_temp;
++	int psv_trip_id;
++	unsigned long crt_temp;
++	int crt_trip_id;
++	unsigned long hot_temp;
++	int hot_trip_id;
++	struct thermal_zone_device *zone;
++	struct thermal_zone_device_ops *override_ops;
++	void *priv_data;
++};
++
++struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *,
++				struct thermal_zone_device_ops *override_ops);
++void int340x_thermal_zone_remove(struct int34x_thermal_zone *);
++
++static inline void int340x_thermal_zone_set_priv_data(
++			struct int34x_thermal_zone *tzone, void *priv_data)
++{
++	tzone->priv_data = priv_data;
++}
++
++static inline void *int340x_thermal_zone_get_priv_data(
++			struct int34x_thermal_zone *tzone)
++{
++	return tzone->priv_data;
++}
++
++static inline void int340x_thermal_zone_device_update(
++			struct int34x_thermal_zone *tzone)
++{
++	thermal_zone_device_update(tzone->zone);
++}
++
++#endif
 -- 
 1.9.1
 
