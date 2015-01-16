@@ -1,152 +1,126 @@
-From: Tobias Jakobi <liquid.acid@gmx.net>
-Subject: Re: [PATCH v3 00/16] thermal: exynos: Thermal code rework to
- use device tree
-Date: Fri, 16 Jan 2015 01:00:31 +0100
-Message-ID: <54B8549F.60707@gmx.net>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com> <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 0/6] ARM: shmobile: sh73a0: DT PM domain support
+Date: Fri, 16 Jan 2015 10:13:15 +0900
+Message-ID: <20150116011315.GA7830@verge.net.au>
+References: <1421237484-16847-1-git-send-email-geert+renesas@glider.be>
+ <20150114235302.GC10479@verge.net.au>
+ <CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.15.19]:62531 "EHLO mout.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbbAPAB2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Jan 2015 19:01:28 -0500
-In-Reply-To: <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
-Hello,
+On Thu, Jan 15, 2015 at 10:32:23AM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
+> 
+> On Thu, Jan 15, 2015 at 12:53 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Wed, Jan 14, 2015 at 01:11:18PM +0100, Geert Uytterhoeven wrote:
+> >> This patch series enables DT support for PM domains on the Renesas
+> >> SH-Mobile AG5 (sh73a0) SoC.
+> >>
+> >> This series builds further on the DT PM Domain support for R-Mobile A1
+> >> (r8a7740).  Due to the similarity of the SYSC System-Controller on the
+> >> various SH-Mobile/R-Mobile SoCs, and the abstraction of PM domains in
+> >> DT, the same driver can handle sh73a0 after some small modifications,
+> >> without changing the DT bindings.
+> >>
+> >> Compared to r8a7740, the only significant change is the move of the
+> >> memory-controller(s) to separate PM domains on sh73a0 (and also on
+> >> R-Mobile APE6 (r8a73a4)). Hence a provision must be made to not turn off
+> >> these PM domains inadvertently, cfr. the series "[PATCH 0/4] ARM:
+> >> shmobile: Add DT support for memory controllers" I've just sent.
+> >>
+> >> This series has been sent before, as part of the series "[PATCH RFC
+> >> 0/7] ARM: shmobile: sh73a0: DT PM domain support"
+> >> (https://lkml.org/lkml/2014/11/19/404).
+> >> Changes since v1 (more detailed changelogs in the individual patches):
+> >>   - Factored out addition of the memory-controller in a separate
+> >>     series.
+> >>
+> >> Dependencies:
+> >>   1. Patches 1-4 (DT binding doc, C code) depend on:
+> >>        a. The R-Mobile DT PM Domain work for r8a7740, queued in tag
+> >>           renesas-dt-pm-for-v3.20 of Simon's repository,
+> >
+> > In response to a request from Olof renesas-dt-pm-for-v3.20 has been
+> > withdrawn and the patches split between the soc-for-v3.20 and dt-for-v3.20
+> > branches. I am assuming that the patches that 1-4 depend on are
+> > now all in the soc-for-v3.20 branch. Could you check?
+> 
+> OK, soc-for-v3.20 now.
+> 
+> >>        b. "ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM domain
+> >>          code"
+> >>          (http://www.spinics.net/lists/arm-kernel/msg391084.html),
+> >
+> > FWIW, I have squashed that patch into the patch that adds the problem
+> > and the result is in the soc-for-v3.20. I will to push that result
+> > a little later today.
+> 
+> Thanks!
+> 
+> >>   2. Patch 5 (dtsi) depends on:
+> >>        a. The multiplatform work for sh73a0, queued in branch
+> >>           sh73a0-multiplatform-for-v3.20 of Simon's repository,
+> >>        b. Series "[PATCH 0/4] ARM: shmobile: Add DT support for memory
+> >>           controllers"
+> >>         (http://marc.info/?l=linux-sh&m=142123399414888).
+> >
+> > This may be awkward to get into v3.20 unless we can adopt a looser approach
+> > to the dependencies.
+> >
+> > To that end I suggest that it could be queued up in the branch that has the
+> > multiplatform work (a) but not the memory controller work (b) as the latter
+> > seems to more naturally fit into the dt branch. What I am hoping that such
+> > an approach would lead to code that compiles and boots in both branches.
+> > And that new functionality becomes available when the branched are combined
+> > (e.g. in v3.20-rcX).
+> 
+> "ARM: shmobile: sh73a0 dtsi: Add PM domain support" relies on the clocks
+> properties already being present on all device nodes (incl. the Bus State
+> Controller), hence it depends on sh73a0-multiplatform-for-v3.20.
+> "ARM: shmobile: sh73a0 dtsi: Add PM domain support" adds a power-domains
+> property to the memory-controller node, so it depends on that, too.
+> 
+> Leaving the memory-controller part out makes it unbootable, as the
+> memory-controller will be powered down when PM domains become
+> activated. Yes, hardware power domains are even more fun than (common)
+> clocks when trying to split the commits across multiple branches ;-)
+> 
+> > If this is not possible then I can merge the pre-requisites and put
+> > patch 5 on top. But I feel that the ARM SoC maintainers would prefer
+> > that I didn't do that unless it is absolutely necessary.
+> 
+> Merging dt-for-v3.20 into sh73a0-multiplatform-for-v3.20 before applying
+> patch 5 seems like the only sensible solution.
 
-while looking through the patchset I noticed the following. In patch
-07/16 code is added to drivers/cpufreq/exynos-cpufreq.c, which reminded
-me of the cpufreq patchset by Thomas Abraham. If I remember correctly
-then the ultimate goal of the cpufreq 'conversion' is to get rid of the
-exynos-cpufreq driver is use the cpufreq-cpu0 (now cpufreq-dt) driver
-for everything.
+Thanks, I understand. I'll see about making it so.
 
-Now, this cpufreq patchset hasn't been updated in a while, so I'm not
-sure if maybe plans have changed already. But if the goal still is to
-remove exynos-cpufreq in the end, wouldn't it be better to not add new
-(functionality-providing) code to it, like this series does?
+> As soon as that gets combined with soc-for-v3.20, the PM domains are
+> activated, and patch 6 can be applied.
 
-With best wishes,
-Tobias
+Got it.
 
+> > In case you are wondering: branch gymnastics are not my favourite pass time :^)
+> >
+> >>   3. Patch 6 (drivers/sh) depends on all of the above.
+> >
+> > That part is clear enough :)
+> >
+> > My intention here is to send a pull request to Linus for this change
+> > once all the other patches have hit his tree. With a bit of luck that
+> > would be around v3.20-rc2.
+> 
+> OK, that would be appied to sh-drivers-for-v3.20, right?
 
-Lukasz Majewski wrote:
-> 1. Introduction
-> 
-> Following patches aim to clean up the current implementation of the thermal
-> framework on Exynos devices.
-> 
-> The main goal was to use a generic code for reading thermal configuration
-> (of-thermal.c). Due to that redundant exynos_thermal_common.[h|c] files
-> were removed.
-> 
-> Around 400 lines of code (LOC) were removed directly by this patch, which
-> is around 20% of the Exynos thermal code base.
-> 
-> This work should NOT bring any functional changes to Exynos thermal 
-> subsystem.
-> 
-> 2. Patch-set structure
-> 
-> Then the cpu_cooling functionality has been preserved to allow cooling
-> devices by reducing operating frequency. Definition of trip points and
-> cpufreq's cooling properties were moved to device tree.
-> 
-> Then the rework of the way in which configuration data is provided to
-> the Exynos thermal subsystem was performed. Now device tree is used for
-> configuration.
-> 
-> 3. Dead code removal
-> 
-> Thermal support for some SoCs, previously available in the exynos_tmu_data.c 
-> file, was removed since, as of (almost) 3.19-rc3, they didn't have TMU bindings.
-> 
-> Moreover, support for cpu_cooling devices was preserved only on those
-> SoCs which had available and working cpufreq driver.
-> 
-> 4. Testing
-> 
-> Test devices:
-> - Exynos4210 - Trats (TMU zone + cpu_cooling)
-> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
-> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
-> - Exynos5420 - Arndale-octa (only TMU zones)
-> 
-> Unfortunately, I don't posses Exynos5440 for testing. Its functionality
-> has been preserved in the code, but not tested on the hardware. I would
-> be grateful for help in testing.
-> 
-> 
-> 5. This work apply on the following tree:
-> 
-> kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
-> SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
-> 
-> Lukasz Majewski (16):
->   thermal: exynos: cosmetic: Correct comment format
->   thermal: exynos: Provide thermal_exynos.h file to be included in
->     device tree files
->   arm: dts: trats: Enable TMU on the Exynos4210 trats device
->   arm: dts: odroid: Add LD010 regulator node necessary for TMU on Odroid
->   thermal: dts: Enable TMU at Exynos4412 based Odroid U3 device
->   arm: dts: Adding CPU cooling binding for Exynos SoCs
->   thermal: exynos: Modify exynos thermal code to use device tree for cpu
->     cooling configuration
->   thermal: exynos: dts: Add default definition of the TMU sensor
->     parameter
->   dts: Documentation: Extending documentation entry for exynos-thermal
->   thermal: dts: Default trip points definition for Exynos5420 SoCs
->   thermal: exynos: dts: Define default thermal-zones for Exynos4
->   thermal: dts: exynos: Trip points and sensor configuration data for
->     Exynos5440
->   thermal: exynos: dts: Provide device tree bindings identical to the
->     one in exynos_tmu_data.c
->   thermal: samsung: core: Exynos TMU rework to use device tree for
->     configuration
->   thermal: exynos: Remove exynos_thermal_common.[c|h] files
->   thermal: exynos: Remove exynos_tmu_data.c file
-> 
->  .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
->  arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
->  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
->  arch/arm/boot/dts/exynos4.dtsi                     |   4 +
->  arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
->  arch/arm/boot/dts/exynos4210.dtsi                  |  26 +-
->  arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
->  arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
->  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
->  arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
->  arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
->  arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
->  arch/arm/boot/dts/exynos5250.dtsi                  |  25 +-
->  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
->  arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
->  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
->  arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
->  arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
->  drivers/cpufreq/exynos-cpufreq.c                   |  30 +-
->  drivers/thermal/samsung/Makefile                   |   2 -
->  drivers/thermal/samsung/exynos_thermal_common.c    | 427 ---------------------
->  drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
->  drivers/thermal/samsung/exynos_tmu.c               | 354 +++++++++++------
->  drivers/thermal/samsung/exynos_tmu.h               |  68 +---
->  drivers/thermal/samsung/exynos_tmu_data.c          | 264 -------------
->  include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
->  26 files changed, 630 insertions(+), 1001 deletions(-)
->  create mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
->  create mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
->  create mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi
->  create mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
->  create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
->  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
->  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
->  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
->  create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
-> 
+Yes, thats right.
 
+> Thanks a lot!
+> My local patch queue has shrunk considerably during the last few days...
+
+:^)
