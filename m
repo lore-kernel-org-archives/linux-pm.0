@@ -1,265 +1,130 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v4 17/17] thermal: exynos: Remove exynos_tmu_data.c file
-Date: Fri, 16 Jan 2015 12:31:01 +0100
-Message-ID: <1421407861-25099-18-git-send-email-l.majewski@samsung.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: RFC on cpufreq implementation
+Date: Fri, 16 Jan 2015 12:43:15 +0100
+Message-ID: <1421408595.7058.8.camel@AMDC1943>
+References: <54B7F7CD.7030903@free.fr> <1421399293.11224.7.camel@AMDC1943>
+ <54B8F19F.8060108@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <54B8F19F.8060108@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Data already present in the exynos_tmu_data.c file has been moved to the
-appropriate device tree files.
+On pi=C4=85, 2015-01-16 at 12:10 +0100, Mason wrote:
+> On 16/01/2015 10:08, Krzysztof Kozlowski wrote:
+>=20
+> > On 2015-01-15 at 18:24 +0100, Mason wrote:
+> > =20
+> >> This is a follow-up to my previous thread.
+> >> "How many frequencies would cpufreq optimally like to manage?"
+> >> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
+> >>
+> >> As I originally wrote, I'm running 3.14 on an ARM Cortex-A9
+> >> based SoC (namely Tango4 from Sigma Designs). I'd like to get
+> >> some feedback on the cpufreq driver I wrote for that platform.
+> >>
+> >> I decided to expose only a small subset of frequencies (namely
+> >> {999,500,333,111} MHz) because, in my tests, the ondemand gov
+> >> chose mostly min and max, and the intermediate frequencies not
+> >> so much; so I figured "2 intermediate freqs" is good enough.
+> >> (I'm ready to hear otherwise.)
+>=20
+> I'll take a closer look at other drivers, but I'd like to hear
+> opinions on the subject.
+>=20
+> >> I tried to use as much generic framework as possible, but I've
+> >> read about the clk framework, and it looks to be an even greater
+> >> generalization. Are new platforms encouraged to use that, rather
+> >> than provide a cpufreq driver? Does it work when voltage scaling
+> >> comes in play? (This SoC doesn't have it, but the next will.)
+> >
+> > The clock framework generalizes clocks, not cpufreq. Ideally you sh=
+ould
+> > use clock framework in cpufreq driver. So instead manually setting
+> > divider just do something like:
+> >
+> > ret =3D clk_set_rate(cpu_clk, freq_exact);
+> > if (ret) {
+> > 	dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
+> > 	return ret;
+> > }
+>=20
+> I will give clk a closer look.
+>=20
+> > For voltage scaling you should use regulator framework.
+>=20
+> OK. I'm also interested in frequency-throttling when temperatures
+> rise beyond specific thresholds. What subsystem ties sensors and
+> cpufreq together?
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- None
-Changes for v3:
-- None
-Changes for v4:
-- None
----
- drivers/thermal/samsung/exynos_tmu_data.c | 228 ------------------------------
- 1 file changed, 228 deletions(-)
- delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+I believe thermal.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-deleted file mode 100644
-index a993f3d..0000000
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ /dev/null
-@@ -1,228 +0,0 @@
--/*
-- * exynos_tmu_data.c - Samsung EXYNOS tmu data file
-- *
-- *  Copyright (C) 2013 Samsung Electronics
-- *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- *
-- */
--
--#include "exynos_thermal_common.h"
--#include "exynos_tmu.h"
--
--struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
--	.tmu_data = {
--		{
--		.threshold = 80,
--		.trigger_levels[0] = 5,
--		.trigger_levels[1] = 20,
--		.trigger_levels[2] = 30,
--		.trigger_enable[0] = true,
--		.trigger_enable[1] = true,
--		.trigger_enable[2] = true,
--		.trigger_enable[3] = false,
--		.trigger_type[0] = THROTTLE_ACTIVE,
--		.trigger_type[1] = THROTTLE_ACTIVE,
--		.trigger_type[2] = SW_TRIP,
--		.max_trigger_level = 4,
--		.non_hw_trigger_levels = 3,
--		.gain = 15,
--		.reference_voltage = 7,
--		.cal_type = TYPE_ONE_POINT_TRIMMING,
--		.min_efuse_value = 40,
--		.max_efuse_value = 100,
--		.first_point_trim = 25,
--		.second_point_trim = 85,
--		.default_temp_offset = 50,
--		.type = SOC_ARCH_EXYNOS4210,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define EXYNOS3250_TMU_DATA \
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 70, \
--	.trigger_levels[1] = 95, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_TWO_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50
--
--struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS3250_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS3250,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define EXYNOS4412_TMU_DATA \
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 70, \
--	.trigger_levels[1] = 95, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50
--
--struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS4412_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS4412,
--		},
--	},
--	.tmu_count = 1,
--};
--
--struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
--	.tmu_data = {
--		{
--			EXYNOS4412_TMU_DATA,
--			.type = SOC_ARCH_EXYNOS5250,
--		},
--	},
--	.tmu_count = 1,
--};
--
--#define __EXYNOS5260_TMU_DATA	\
--	.threshold_falling = 10, \
--	.trigger_levels[0] = 85, \
--	.trigger_levels[1] = 103, \
--	.trigger_levels[2] = 110, \
--	.trigger_levels[3] = 120, \
--	.trigger_enable[0] = true, \
--	.trigger_enable[1] = true, \
--	.trigger_enable[2] = true, \
--	.trigger_enable[3] = false, \
--	.trigger_type[0] = THROTTLE_ACTIVE, \
--	.trigger_type[1] = THROTTLE_ACTIVE, \
--	.trigger_type[2] = SW_TRIP, \
--	.trigger_type[3] = HW_TRIP, \
--	.max_trigger_level = 4, \
--	.non_hw_trigger_levels = 3, \
--	.gain = 8, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 55, \
--	.min_efuse_value = 40, \
--	.max_efuse_value = 100, \
--	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50,
--
--#define EXYNOS5260_TMU_DATA \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5260
--
--struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--		{ EXYNOS5260_TMU_DATA },
--	},
--	.tmu_count = 5,
--};
--
--#define EXYNOS5420_TMU_DATA \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5420
--
--#define EXYNOS5420_TMU_DATA_SHARED \
--	__EXYNOS5260_TMU_DATA \
--	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
--
--struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5420_TMU_DATA },
--		{ EXYNOS5420_TMU_DATA },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--		{ EXYNOS5420_TMU_DATA_SHARED },
--	},
--	.tmu_count = 5,
--};
--
--#define EXYNOS5440_TMU_DATA \
--	.trigger_levels[0] = 100, \
--	.trigger_levels[4] = 105, \
--	.trigger_enable[0] = 1, \
--	.trigger_type[0] = SW_TRIP, \
--	.trigger_type[4] = HW_TRIP, \
--	.max_trigger_level = 5, \
--	.non_hw_trigger_levels = 1, \
--	.gain = 5, \
--	.reference_voltage = 16, \
--	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 0x5b2d, \
--	.min_efuse_value = 16, \
--	.max_efuse_value = 76, \
--	.first_point_trim = 25, \
--	.second_point_trim = 70, \
--	.default_temp_offset = 25, \
--	.type = SOC_ARCH_EXYNOS5440
--
--struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
--	.tmu_data = {
--		{ EXYNOS5440_TMU_DATA } ,
--		{ EXYNOS5440_TMU_DATA } ,
--		{ EXYNOS5440_TMU_DATA } ,
--	},
--	.tmu_count = 3,
--};
--- 
-2.0.0.rc2
+>=20
+> > Actually I think existing cpufreq-dt could serve your purpose. Why =
+don't
+> > you try it? Or look at it and use as an example.
+>=20
+> Will do. I've heard of device tree, but know nothing about it.
+
+Indeed it is driver meant to be used with Device Tree but beside DT cod=
+e
+it nicely shows how to scale the frequency CPU. If you don't use DT the=
+n
+you can use only the set_target() as starting point.
+
+On 3.14 the "cpufreq-dt" could be called "cpufreq-cpu0".
+
+>=20
+> >> I'm also wondering how cpufreq and cpuidle interact? Is one a
+> >> subset of the other? Are they orthogonal?
+> >
+> > cpuidle and cpufreq are different subsystems. They don't interact, =
+yet.
+> > There are efforts to combine scheduler, cpufreq and cpuidle but thi=
+s is
+> > future. If your SoC has some deeper low power states than developin=
+g
+> > cpuidle driver makes sense. If not - WFI will be used.
+>=20
+> AFAIU, there are no deeper power states on the Cortex-A9.
+>=20
+> I didn't find where WFI is called :-(
+>=20
+> In kernel/cpu/idle.c (file seems to have been removed in 3.15)
+> cpu_idle_loop() calls arch_cpu_idle()
+> http://lxr.free-electrons.com/source/kernel/cpu/idle.c?v=3D3.14#L98
+>=20
+> In arch/kernel/process.c
+> http://lxr.free-electrons.com/source/arch/arm/kernel/process.c?v=3D3.=
+14#L173
+> /*
+>   * Called from the core idle loop.
+>   */
+> void arch_cpu_idle(void)
+> {
+> 	if (cpuidle_idle_call())
+> 		default_idle();
+> }
+>=20
+> default_idle calls cpu_do_idle (by default), a macro for cpu_v7_do_id=
+le
+> which executes dsb+wfi, BUT...
+>=20
+> ifndef CONFIG_CPU_IDLE then
+> static inline int cpuidle_idle_call(void) { return -ENODEV; }
+>=20
+> Does that mean I MUST define CONFIG_CPU_IDLE if I want the idle
+> loop to call wfi (to save power), even if I don't have a cpuidle
+> driver?
+
+On current kernels you don't have to. But on 3.14... seems yes.
+
+Best regards,
+Krzysztof
+>=20
+> Regards.
+
