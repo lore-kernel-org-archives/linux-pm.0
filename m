@@ -1,107 +1,96 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] MAINTAINERS: Add entry for Maxim PMIC-s on Samsung boards
-Date: Fri, 16 Jan 2015 13:21:34 +0100
-Message-ID: <1421410894.8119.9.camel@AMDC1943>
-References: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
- <54B8FB31.5090105@samsung.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 0/6] ARM: shmobile: sh73a0: DT PM domain support
+Date: Fri, 16 Jan 2015 21:45:03 +0900
+Message-ID: <20150116124502.GC6285@verge.net.au>
+References: <1421237484-16847-1-git-send-email-geert+renesas@glider.be>
+ <20150114235302.GC10479@verge.net.au>
+ <CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
+ <20150116011315.GA7830@verge.net.au>
+ <20150116024724.GA31654@verge.net.au>
+ <CAMuHMdU4hj2p-N8abT-BSadznqF7=0-08o9F4_7+qjdvv6Whmw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:41368 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbbAPMVn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 07:21:43 -0500
-In-reply-to: <54B8FB31.5090105@samsung.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:33715 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbbAPMpK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 07:45:10 -0500
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdU4hj2p-N8abT-BSadznqF7=0-08o9F4_7+qjdvv6Whmw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On pi=C4=85, 2015-01-16 at 20:51 +0900, Chanwoo Choi wrote:
-> Hi Krzysztof,
->=20
-> On 01/16/2015 08:19 PM, Krzysztof Kozlowski wrote:
-> > Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693 =
-MUIC
-> > drivers:
-> >  - mfd (all of them),
-> >  - extcon (extcon-max14577, extcon-max77693)
-> >  - power (max14577_charger.c, 77693 on LKML [1]),
-> >  - regulator (all of them),
-> >  - clock (clk-max77686.c)
-> >  - RTC (rtc-max77686.c).
-> >=20
-> > Lately I am the author of major contributors to them. These
-> > drivers are used on Exynos-based boards (Trats 2, Gear 1 and Gear 2=
-).
-> >=20
-> > [1] https://lkml.org/lkml/2015/1/5/139
-> >=20
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> > cc: Chanwoo Choi <cw00.choi@samsung.com>
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > Cc: Lee Jones <lee.jones@linaro.org>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> > Cc: David Woodhouse <dwmw2@infradead.org>
-> > Cc: Liam Girdwood <lgirdwood@gmail.com>
-> > Cc: Mark Brown <broonie@kernel.org>
-> > Cc: Mike Turquette <mturquette@linaro.org>
-> > Cc: Stephen Boyd <sboyd@codeaurora.org>
-> > Cc: Alessandro Zummo <a.zummo@towertech.it>
-> > ---
-> >  MAINTAINERS | 15 +++++++++++++++
-> >  1 file changed, 15 insertions(+)
-> >=20
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index f017a30eb280..b033fb499186 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -6143,6 +6143,21 @@ F:	Documentation/devicetree/bindings/i2c/max=
-6697.txt
-> >  F:	drivers/hwmon/max6697.c
-> >  F:	include/linux/platform_data/max6697.h
-> > =20
-> > +MAXIM PMIC AND MUIC DRIVERS FOR EXYNOS BASED BOARDS
-> > +M:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > +L:	linux-kernel@vger.kernel.org
-> > +S:	Supported
-> > +F:	drivers/*/*max14577*.c
-> > +F:	drivers/*/*max77686*.c
-> > +F:	drivers/*/*max77693*.c
->=20
-> I knew that you did implement max14577 series because I did cowork to=
- implement it with you.
->=20
-> But,
-> The drivers/extcon/extcon-max77693.c was implemented by me
-> and extcon-max14577.c was implemented by me and you.
->=20
-> The initial version of drivers/mfd/max77876.c, drivers/regulator/max7=
-7686.c
-> was implemented by Jonghwa Lee(jonghwa3.lee@samsung.com).
->=20
-> The initial version of drivers/mfd/max77693.c was implmented by me
-> and drivers/mfd/max77693.c by Jonghwa Lee.
->=20
+On Fri, Jan 16, 2015 at 10:51:29AM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
+> 
+> On Fri, Jan 16, 2015 at 3:47 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Fri, Jan 16, 2015 at 10:13:15AM +0900, Simon Horman wrote:
+> >> On Thu, Jan 15, 2015 at 10:32:23AM +0100, Geert Uytterhoeven wrote:
+> >> > On Thu, Jan 15, 2015 at 12:53 AM, Simon Horman <horms@verge.net.au> wrote:
+> >> > > On Wed, Jan 14, 2015 at 01:11:18PM +0100, Geert Uytterhoeven wrote:
+> >> > >> This patch series enables DT support for PM domains on the Renesas
+> >> > >> SH-Mobile AG5 (sh73a0) SoC.
+> >> > >>
+> >> > >> This series builds further on the DT PM Domain support for R-Mobile A1
+> >> > >> (r8a7740).  Due to the similarity of the SYSC System-Controller on the
+> >> > >> various SH-Mobile/R-Mobile SoCs, and the abstraction of PM domains in
+> >> > >> DT, the same driver can handle sh73a0 after some small modifications,
+> >> > >> without changing the DT bindings.
+> >> > >>
+> >> > >> Compared to r8a7740, the only significant change is the move of the
+> >> > >> memory-controller(s) to separate PM domains on sh73a0 (and also on
+> >> > >> R-Mobile APE6 (r8a73a4)). Hence a provision must be made to not turn off
+> >> > >> these PM domains inadvertently, cfr. the series "[PATCH 0/4] ARM:
+> >> > >> shmobile: Add DT support for memory controllers" I've just sent.
+> >> > >>
+> >> > >> This series has been sent before, as part of the series "[PATCH RFC
+> >> > >> 0/7] ARM: shmobile: sh73a0: DT PM domain support"
+> >> > >> (https://lkml.org/lkml/2014/11/19/404).
+> >> > >> Changes since v1 (more detailed changelogs in the individual patches):
+> >> > >>   - Factored out addition of the memory-controller in a separate
+> >> > >>     series.
+> >> > >>
+> >> > >> Dependencies:
+> >> > >>   1. Patches 1-4 (DT binding doc, C code) depend on:
+> >> > >>        a. The R-Mobile DT PM Domain work for r8a7740, queued in tag
+> >> > >>           renesas-dt-pm-for-v3.20 of Simon's repository,
+> >> > >
+> >> > > In response to a request from Olof renesas-dt-pm-for-v3.20 has been
+> >> > > withdrawn and the patches split between the soc-for-v3.20 and dt-for-v3.20
+> >> > > branches. I am assuming that the patches that 1-4 depend on are
+> >> > > now all in the soc-for-v3.20 branch. Could you check?
+> >> >
+> >> > OK, soc-for-v3.20 now.
+> >> >
+> >> > >>        b. "ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM domain
+> >> > >>          code"
+> >> > >>          (http://www.spinics.net/lists/arm-kernel/msg391084.html),
+> >> > >
+> >> > > FWIW, I have squashed that patch into the patch that adds the problem
+> >> > > and the result is in the soc-for-v3.20. I will to push that result
+> >> > > a little later today.
+> >> >
+> >> > Thanks!
+> >> >
+> >> > >>   2. Patch 5 (dtsi) depends on:
+> >> > >>        a. The multiplatform work for sh73a0, queued in branch
+> >> > >>           sh73a0-multiplatform-for-v3.20 of Simon's repository,
+> >> > >>        b. Series "[PATCH 0/4] ARM: shmobile: Add DT support for memory
+> >> > >>           controllers"
+> >> > >>         (http://marc.info/?l=linux-sh&m=142123399414888).
+> >> > >
+> >> > > This may be awkward to get into v3.20 unless we can adopt a looser approach
+> >> > > to the dependencies.
+> 
+> > Please take a look at renesas-next-20150115-v3.19-rc1.
+> 
+> s/20150115/20150116/?
+> 
+> > This series should be queued-up there.
+> 
+> If you add patch 6 to sh-drivers-for-v3.20 and merge it in -next,
+> everything is fine!
 
-Yes, your are right. However I do not change the ownership or authorshi=
-p
-of these drivers here. You and the others will still be the authors.
-Being the initial author is somehow different then reviewing and
-developing the driver further.
-
-Although you didn't say that explicitly here but if you think there
-should be an entry also for you than I would appreciate it fully.
-
-Best regards,
-Krzysztof
-
-> Best Regards,
-> Chanwoo Choi
->=20
->=20
->=20
-
+Thanks, I thought I had that one but I must have missed it somehow.
