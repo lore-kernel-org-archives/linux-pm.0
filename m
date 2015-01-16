@@ -1,69 +1,69 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] MAINTAINERS: Add entry for Maxim PMIC-s on Samsung boards
-Date: Fri, 16 Jan 2015 12:19:50 +0100
-Message-ID: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
+From: vichy <vichy.kuo@gmail.com>
+Subject: Re: Auto suspend not working on usb hid devices
+Date: Fri, 16 Jan 2015 19:21:48 +0800
+Message-ID: <CAOVJa8E28LTMMUa7tjNSitYb33VZNiWH9Nob=Zt_J81fmV8TUw@mail.gmail.com>
+References: <CAOVJa8GkYnT3MV-jgLhoagUL1N3GhTGooho=pbVr7LcUUWXwvQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1501131029040.1520-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:57716 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbbAPLVt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 06:21:49 -0500
+Received: by mail-ob0-f181.google.com with SMTP id gq1so18437076obb.12
+        for <linux-pm@vger.kernel.org>; Fri, 16 Jan 2015 03:21:48 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1501131029040.1520-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@vger.kernel.org
 
-Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693 MUIC
-drivers:
- - mfd (all of them),
- - extcon (extcon-max14577, extcon-max77693)
- - power (max14577_charger.c, 77693 on LKML [1]),
- - regulator (all of them),
- - clock (clk-max77686.c)
- - RTC (rtc-max77686.c).
+hi alan:
 
-Lately I am the author of major contributors to them. These
-drivers are used on Exynos-based boards (Trats 2, Gear 1 and Gear 2).
-
-[1] https://lkml.org/lkml/2015/1/5/139
-
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-cc: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Mike Turquette <mturquette@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
----
- MAINTAINERS | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f017a30eb280..b033fb499186 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6143,6 +6143,21 @@ F:	Documentation/devicetree/bindings/i2c/max6697.txt
- F:	drivers/hwmon/max6697.c
- F:	include/linux/platform_data/max6697.h
- 
-+MAXIM PMIC AND MUIC DRIVERS FOR EXYNOS BASED BOARDS
-+M:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-+L:	linux-kernel@vger.kernel.org
-+S:	Supported
-+F:	drivers/*/*max14577*.c
-+F:	drivers/*/*max77686*.c
-+F:	drivers/*/*max77693*.c
-+F:	Documentation/devicetree/bindings/mfd/max14577.txt
-+F:	Documentation/devicetree/bindings/mfd/max77686.txt
-+F:	Documentation/devicetree/bindings/mfd/max77693.txt
-+F:	Documentation/devicetree/bindings/clock/maxim,max77686.txt
-+F:	include/linux/mfd/max14577*.h
-+F:	include/linux/mfd/max77686*.h
-+F:	include/linux/mfd/max77693*.h
-+
- MAXIRADIO FM RADIO RECEIVER DRIVER
- M:	Hans Verkuil <hverkuil@xs4all.nl>
- L:	linux-media@vger.kernel.org
--- 
-1.9.1
+2015-01-13 23:37 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> On Tue, 13 Jan 2015, vichy wrote:
+>
+>> I purposely dump runtime_usage after calling
+>> pm_runtime_put_async_autosuspend(), but the value is still 2.
+>> I found the value increase/decrease like below:
+>
+> In usb_new_device():
+>> pm_runtime_get_noresume => 1
+>> usb_disable_autosuspend => 2
+>> usb_probe_device
+>>     -> usb_autoresume_device => 3
+>
+> That's where you go wrong.  usb_probe_device() does this:
+>
+>         if (!udriver->supports_autosuspend)
+>                 error = usb_autoresume_device(udev);
+>
+> and udriver->supports_autosuspend should be 1.  See the definition of
+> usb_generic_driver at the end of generic.c.
+>
+>> usb_set_configuration
+>>     ->usb_autoresume_device =>4
+>> usb_set_configuration
+>>     ->usb_autosuspend_device =>3
+>> pm_runtime_put_sync_autosuspend => 2
+>>
+>> so even after calling pm_runtime_put_async_autosuspend() at end fo
+>> usb_new_device()
+>> the runtime_usage will not be back to 1
+>
+> It would be 1 if udriver in usb_probe_device() was equal to
+> usb_generic_driver.
+>
+>> is there any rule for us to determine where we add those
+>> usb_autoresume_device/usb_autosuspend_device in usb driver?
+>
+> The rule is very simple: You autoresume in places where you need the
+> device to be active, and you autosuspend when you don't need the device
+> to be active any more.
+>
+I found the usb storage interface driver also set supports_autosuspend
+=1 and I found the runtime_usage =1 .
+But the device doesn't go into runtime suspend, even I put control as auto.
+is there any condition purposely abandon usb storage device to do so?
+sincerely thanks for your help,
