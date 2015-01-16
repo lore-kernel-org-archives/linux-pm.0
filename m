@@ -1,64 +1,108 @@
-From: Sebastian Reichel <sre@kernel.org>
+From: Chanwoo Choi <cwchoi00@gmail.com>
 Subject: Re: [PATCH] MAINTAINERS: Add entry for Maxim PMIC-s on Samsung boards
-Date: Fri, 16 Jan 2015 19:57:28 +0100
-Message-ID: <20150116185727.GB6422@earth.universe>
+Date: Sat, 17 Jan 2015 07:58:06 +0900
+Message-ID: <CAGTfZH3PGh27ap192LK=fHBb-ox2ZTTau-CLpFoguyLLs9X32A@mail.gmail.com>
 References: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
+	<54B8FB31.5090105@samsung.com>
+	<1421410894.8119.9.camel@AMDC1943>
+Reply-To: cw00.choi@samsung.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f173.google.com ([209.85.213.173]:47280 "EHLO
+	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbbAPW6I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 17:58:08 -0500
+In-Reply-To: <1421410894.8119.9.camel@AMDC1943>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: rtc-linux@googlegroups.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
 
+On Fri, Jan 16, 2015 at 9:21 PM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> On pi=C4=85, 2015-01-16 at 20:51 +0900, Chanwoo Choi wrote:
+>> Hi Krzysztof,
+>>
+>> On 01/16/2015 08:19 PM, Krzysztof Kozlowski wrote:
+>> > Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693=
+ MUIC
+>> > drivers:
+>> >  - mfd (all of them),
+>> >  - extcon (extcon-max14577, extcon-max77693)
+>> >  - power (max14577_charger.c, 77693 on LKML [1]),
+>> >  - regulator (all of them),
+>> >  - clock (clk-max77686.c)
+>> >  - RTC (rtc-max77686.c).
+>> >
+>> > Lately I am the author of major contributors to them. These
+>> > drivers are used on Exynos-based boards (Trats 2, Gear 1 and Gear =
+2).
+>> >
+>> > [1] https://lkml.org/lkml/2015/1/5/139
+>> >
+>> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+>> > cc: Chanwoo Choi <cw00.choi@samsung.com>
+>> > Cc: Samuel Ortiz <sameo@linux.intel.com>
+>> > Cc: Lee Jones <lee.jones@linaro.org>
+>> > Cc: Sebastian Reichel <sre@kernel.org>
+>> > Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> > Cc: David Woodhouse <dwmw2@infradead.org>
+>> > Cc: Liam Girdwood <lgirdwood@gmail.com>
+>> > Cc: Mark Brown <broonie@kernel.org>
+>> > Cc: Mike Turquette <mturquette@linaro.org>
+>> > Cc: Stephen Boyd <sboyd@codeaurora.org>
+>> > Cc: Alessandro Zummo <a.zummo@towertech.it>
+>> > ---
+>> >  MAINTAINERS | 15 +++++++++++++++
+>> >  1 file changed, 15 insertions(+)
+>> >
+>> > diff --git a/MAINTAINERS b/MAINTAINERS
+>> > index f017a30eb280..b033fb499186 100644
+>> > --- a/MAINTAINERS
+>> > +++ b/MAINTAINERS
+>> > @@ -6143,6 +6143,21 @@ F:   Documentation/devicetree/bindings/i2c/=
+max6697.txt
+>> >  F: drivers/hwmon/max6697.c
+>> >  F: include/linux/platform_data/max6697.h
+>> >
+>> > +MAXIM PMIC AND MUIC DRIVERS FOR EXYNOS BASED BOARDS
+>> > +M: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> > +L: linux-kernel@vger.kernel.org
+>> > +S: Supported
+>> > +F: drivers/*/*max14577*.c
+>> > +F: drivers/*/*max77686*.c
+>> > +F: drivers/*/*max77693*.c
+>>
+>> I knew that you did implement max14577 series because I did cowork t=
+o implement it with you.
+>>
+>> But,
+>> The drivers/extcon/extcon-max77693.c was implemented by me
+>> and extcon-max14577.c was implemented by me and you.
+>>
+>> The initial version of drivers/mfd/max77876.c, drivers/regulator/max=
+77686.c
+>> was implemented by Jonghwa Lee(jonghwa3.lee@samsung.com).
+>>
+>> The initial version of drivers/mfd/max77693.c was implmented by me
+>> and drivers/mfd/max77693.c by Jonghwa Lee.
+>>
+>
+> Yes, your are right. However I do not change the ownership or authors=
+hip
+> of these drivers here. You and the others will still be the authors.
+> Being the initial author is somehow different then reviewing and
+> developing the driver further.
+>
+> Although you didn't say that explicitly here but if you think there
+> should be an entry also for you than I would appreciate it fully.
 
---yEPQxsgoJgBvi8ip
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, If you agree,I think you better add an entry for me. Except for
+power-supply drivers, I did co-work to implement these drivers with you=
+=2E
 
-Hi,
-
-On Fri, Jan 16, 2015 at 12:19:50PM +0100, Krzysztof Kozlowski wrote:
-> Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693 MUIC
-> drivers:
->  - mfd (all of them),
->  - extcon (extcon-max14577, extcon-max77693)
->  - power (max14577_charger.c, 77693 on LKML [1]),
->  - regulator (all of them),
->  - clock (clk-max77686.c)
->  - RTC (rtc-max77686.c).
->=20
-> Lately I am the author of major contributors to them. These
-> drivers are used on Exynos-based boards (Trats 2, Gear 1 and Gear 2).
-
-Acked-By: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
---yEPQxsgoJgBvi8ip
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUuV8UAAoJENju1/PIO/qajo0P/R4YpdVXsja1M96iSi8WGJm/
-cTm/1qXQaltsC7+0G1W6aF9o/5ofNsH+ybc4pVcMLTnvZVT1JgQK+i0LoMbN7gHk
-N5w7qH7JJ4z6wPQ+4v7YBpGZZsIlpZL3IW/HsV3lxw6JrQXlKTj8PFjp5sQ8sVFb
-OZJbO7yRU3rF7crcC2oCodBWys9dDeSgfx04Gzee+7RF9JA+bQ8M93+XD0EsmH+Y
-7l5QbMmjH10rNOiMqQ5NxubQNgB+dOJRDFJdNiMIBglQwT5mDXup0Siu7OjqiAKy
-3cq7tODHV6D0ZSwrpDnP2xf9Nl5m0d0Iioav3toZrXBGlhrd70dqnqEfpebj5T2L
-Sq1IG93vOJBbO6prSY9C3QF9kfIt0PCf6ZaugwfTOiUNob2phhegHEAbVTJViRsn
-aMqDZ8zfoQKJPyYUjJ6Wqc8pIxz28ROCWNnmBIdERnw1px+2HjejJKp2dLKjupz5
-Qn8PDdSgLhaBmNTHJt3e73/eR9Bwys150uOV7BCruf3KS3+kxoDg4eO7gPw0beyu
-VvZjW+WJ22HYa9/rM+Dci/HER+JUv0HsgtGj645NrMA1L6Z4L+IFZMHXfbwHLBri
-0jtKypTbYbPJxmw/3eCZgoVqo03fkZuIU2wEtnCkD6c8hb8WBl7oxlHYPQ5Wvp+s
-hUavmfMWQ6i/bX/jgzwu
-=lpyl
------END PGP SIGNATURE-----
-
---yEPQxsgoJgBvi8ip--
+Best Regards,
+Chanwoo Choi
