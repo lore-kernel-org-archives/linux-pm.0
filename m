@@ -1,52 +1,32 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: RFC on cpufreq implementation
-Date: Fri, 16 Jan 2015 15:00:14 +0100
-Message-ID: <54B9196E.1030302@free.fr>
-References: <54B7F7CD.7030903@free.fr> <1421399293.11224.7.camel@AMDC1943> <54B8F19F.8060108@free.fr>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Auto suspend not working on usb hid devices
+Date: Fri, 16 Jan 2015 10:23:04 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1501161021260.1469-100000@iolanthe.rowland.org>
+References: <CAOVJa8E28LTMMUa7tjNSitYb33VZNiWH9Nob=Zt_J81fmV8TUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54B8F19F.8060108@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:60255 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752893AbbAPPXF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jan 2015 10:23:05 -0500
+In-Reply-To: <CAOVJa8E28LTMMUa7tjNSitYb33VZNiWH9Nob=Zt_J81fmV8TUw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: vichy <vichy.kuo@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On 16/01/2015 12:10, Mason wrote:
+On Fri, 16 Jan 2015, vichy wrote:
 
-> I didn't find where WFI is called :-(
->
-> In kernel/cpu/idle.c (file seems to have been removed in 3.15)
-> cpu_idle_loop() calls arch_cpu_idle()
-> http://lxr.free-electrons.com/source/kernel/cpu/idle.c?v=3.14#L98
->
-> In arch/kernel/process.c
-> http://lxr.free-electrons.com/source/arch/arm/kernel/process.c?v=3.14#L173
-> /*
->   * Called from the core idle loop.
->   */
-> void arch_cpu_idle(void)
-> {
->      if (cpuidle_idle_call())
->          default_idle();
-> }
->
-> default_idle calls cpu_do_idle (by default), a macro for cpu_v7_do_idle
-> which executes dsb+wfi, BUT...
->
-> ifndef CONFIG_CPU_IDLE then
-> static inline int cpuidle_idle_call(void) { return -ENODEV; }
->
-> Does that mean I MUST define CONFIG_CPU_IDLE if I want the idle
-> loop to call wfi (to save power), even if I don't have a cpuidle
-> driver?
+> I found the usb storage interface driver also set supports_autosuspend
+> =1 and I found the runtime_usage =1 .
+> But the device doesn't go into runtime suspend, even I put control as auto.
+> is there any condition purposely abandon usb storage device to do so?
 
-For the record, I read the code wrong.
+In order to suspend a USB storage device, you have to enable suspend 
+not just for that device but also for all its children.  In particular, 
+if the device is a disk or flash drive then you have to enable suspend 
+for the corresponding SCSI device.
 
-cpuidle_idle_call() always returns -ENODEV, so the test
-"if (cpuidle_idle_call())" is always true, and we always
-call default_idle() and everything works as expected.
-
-Sorry for the noise.
+Alan Stern
 
