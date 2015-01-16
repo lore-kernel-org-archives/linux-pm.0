@@ -1,46 +1,40 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: Add entry for Maxim PMIC-s on Samsung boards
-Date: Fri, 16 Jan 2015 23:01:23 +0000
-Message-ID: <20150116230123.GN3856@sirena.org.uk>
-References: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="yK/6QRnH3Zanb0EF"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 0/4] common thermal zone handler
+Date: Fri, 16 Jan 2015 15:05:44 -0800
+Message-ID: <1421449548-2172-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:32583 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750934AbbAPXGd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Jan 2015 18:06:33 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+v1
+If thermal zone device creation fails, fail the INT340x zone
+creation
 
---yK/6QRnH3Zanb0EF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+v0
+Base version 
 
-On Fri, Jan 16, 2015 at 12:19:50PM +0100, Krzysztof Kozlowski wrote:
-> Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693 MUIC
-> drivers:
+Srinivas Pandruvada (4):
+  Thermal/int340x: Add common thermal zone handler
+  Thermal/int340x/int3402: Use int340x thermal API
+  Thermal/int340x/int3403: Use int340x thermal API
+  Thermal/int340x/processor_thermal: Add thermal zone support
 
-Acked-by: Mark Brown <broonie@kernel.org>
+ drivers/thermal/int340x_thermal/Makefile           |   1 +
+ drivers/thermal/int340x_thermal/int3402_thermal.c  | 189 +--------------
+ drivers/thermal/int340x_thermal/int3403_thermal.c  | 208 +---------------
+ .../thermal/int340x_thermal/int340x_thermal_zone.c | 262 +++++++++++++++++++++
+ .../thermal/int340x_thermal/int340x_thermal_zone.h |  65 +++++
+ .../int340x_thermal/processor_thermal_device.c     |  90 +++++++
+ 6 files changed, 439 insertions(+), 376 deletions(-)
+ create mode 100644 drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+ create mode 100644 drivers/thermal/int340x_thermal/int340x_thermal_zone.h
 
-(and any future versions adding Chanwoo or other people.)
+-- 
+1.9.1
 
---yK/6QRnH3Zanb0EF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJUuZhCAAoJECTWi3JdVIfQupMH/RiNLTh4xVnOnKYkML69LNdi
-tGAOlV8FmTdG7CxBQAm5My6Xk7X78YYwmzb8qD+LNFH+iLu7GFqlpHCcch1kgnQK
-MSyaI/4TPjyD3d2TpIx1jQYZERPcmqJPaNIOoffp/nUEA2pwj5wvIlFPCiz15FBm
-zxp0cd4NXsOfbX8nh5R7gVepCZ2jx1Wd9/vipFevNe0B98r35bTS93jbGr//RT1B
-IaOCIm41myBIRAHzYzkR8j8UwkVDXkmRs6lGSuhm3TbJCaFlHcu8uvOq/xMgrdxL
-ROUa022dN0xi5pSQJp5fmriiGOpodfib/DTHQrb1+7jY9tCfaDlsBFNKMHHO9qQ=
-=S+fB
------END PGP SIGNATURE-----
-
---yK/6QRnH3Zanb0EF--
