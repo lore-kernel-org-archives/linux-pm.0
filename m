@@ -1,96 +1,48 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PCI: keep enable status consistent for device without
- driver
-Date: Sat, 17 Jan 2015 09:28:06 +0100
-Message-ID: <20150117082806.GA3107@amd>
-References: <1421300208-7087-1-git-send-email-yinghai@kernel.org>
- <20150115235559.GC29776@google.com>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH v2 0/6] ARM: shmobile: sh73a0: DT PM domain support
+Date: Sat, 17 Jan 2015 15:12:19 +0100
+Message-ID: <CAMuHMdX40LTdKt_nBb_U4eXWMuPXSYfC0Q4PvA42grdocCZfAA@mail.gmail.com>
+References: <1421237484-16847-1-git-send-email-geert+renesas@glider.be>
+	<20150114235302.GC10479@verge.net.au>
+	<CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
+	<20150116011315.GA7830@verge.net.au>
+	<20150116024724.GA31654@verge.net.au>
+	<CAMuHMdU4hj2p-N8abT-BSadznqF7=0-08o9F4_7+qjdvv6Whmw@mail.gmail.com>
+	<20150116124502.GC6285@verge.net.au>
+	<20150117011414.GC397@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58527 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbbAQI2I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Jan 2015 03:28:08 -0500
-Content-Disposition: inline
-In-Reply-To: <20150115235559.GC29776@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150117011414.GC397-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Wilmer van der Gaast <kernel@wilmer.gaast.net>, Zhang Rui <rui.zhang@intel.com>, linux-pci@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, stern@rowland.harvard.edu, oneukum@suse.de
 
-On Thu 2015-01-15 17:55:59, Bjorn Helgaas wrote:
-> [+cc Rafael, Pavel, linux-pm]
-> 
-> On Wed, Jan 14, 2015 at 09:36:48PM -0800, Yinghai Lu wrote:
-> > Wilmer reported continuous suspend/resume does not work after
-> > commit 928bea964827 ("PCI: Delay enabling bridges until they're needed").
-> > 
-> > For pci bridge without driver, FW enable it already.
-> > In pci_pm_resume/pci_pm_reenable_device after first resume
-> > will not reenable the device, aka the status is not the same
-> > as that before first suspend.
-> > 
-> > Try to update enable status according to register value before
-> > calling pci_reenable_device, so we will not miss those pm
-> > operation calling for next suspend/resume.
-> > 
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=86421
-> > Fixes: 928bea964827 ("PCI: Delay enabling bridges until they're needed")
-> > Reported-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
-> > Bisected-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
-> > Tested-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > CC: stable@vger.kernel.org  # v3.10+
-> 
-> 928bea964827 appeared in v3.12.  Did you mean v3.12+ instead of v3.10+?
-> 
-> I'd really like to get Rafael and Pavel to take a look at this.
-> 
-> > ---
-> >  drivers/pci/pci-driver.c |    9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/pci/pci-driver.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci-driver.c
-> > +++ linux-2.6/drivers/pci/pci-driver.c
-> > @@ -519,8 +519,17 @@ static void pci_pm_set_unknown_state(str
-> >   */
-> >  static int pci_pm_reenable_device(struct pci_dev *pci_dev)
-> >  {
-> > +	u16 cmd;
-> >  	int retval;
-> >  
-> > +	/* update enable_cnt according to cmd register */
-> > +	pci_read_config_word(pci_dev, PCI_COMMAND, &cmd);
-> > +	if (!pci_dev->is_busmaster && (cmd & PCI_COMMAND_MASTER))
-> > +		pci_dev->is_busmaster = true;
-> 
-> 
-> > +	if (!pci_is_enabled(pci_dev) &&
-> > +	    (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)))
-> > +		atomic_inc(&pci_dev->enable_cnt);
-> 
-> This doesn't feel right because we're handling enable_cnt differently here
-> than we do on initial boot.
-> 
-> On initial boot, I don't think we set enable_cnt based on whether firmware
-> left the IO or MEMORY bits set in the command register.  Why should we
-> modify enable_cnt based on the command register during resume?
-> 
-> I could certainly believe we should do something during initial boot, too.
-> It just seems like we should look at the command register in both places or
-> neither place.
-> 
-> I have the same question about is_busmaster above.
+Hi Simon,
 
-Yep, that sounds like strange thing to do.
+On Sat, Jan 17, 2015 at 2:14 AM, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org> wrote:
+>> > If you add patch 6 to sh-drivers-for-v3.20 and merge it in -next,
+>> > everything is fine!
+>>
+>> Thanks, I thought I had that one but I must have missed it somehow.
+>
+> I have made a second attempt and this time I hope that I haven't missed
+> anything. Please see renesas-next-20150117-v3.19-rc1.
 
-Adding more cc's.
+Thanks, looks better!
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
