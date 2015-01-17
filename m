@@ -1,167 +1,99 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 4/4] Thermal/int340x/processor_thermal: Add thermal zone support
-Date: Fri, 16 Jan 2015 15:59:06 -0800
-Message-ID: <1421452746-2975-5-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1421452746-2975-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:38396 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbbAPX77 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Jan 2015 18:59:59 -0500
-In-Reply-To: <1421452746-2975-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 0/6] ARM: shmobile: sh73a0: DT PM domain support
+Date: Sat, 17 Jan 2015 10:14:14 +0900
+Message-ID: <20150117011414.GC397@verge.net.au>
+References: <1421237484-16847-1-git-send-email-geert+renesas@glider.be>
+ <20150114235302.GC10479@verge.net.au>
+ <CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
+ <20150116011315.GA7830@verge.net.au>
+ <20150116024724.GA31654@verge.net.au>
+ <CAMuHMdU4hj2p-N8abT-BSadznqF7=0-08o9F4_7+qjdvv6Whmw@mail.gmail.com>
+ <20150116124502.GC6285@verge.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150116124502.GC6285@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added thermal zones for processor thermal using APIs provided by
-int340x thermal zone module.
-Like other INT340x devices, processor thermal device can also contain
-trip points and way to get temperature. On some platform there is
-no ACPI _TMP method, in those platform using IA64 architecture MSRs to
-get temperature.
+On Fri, Jan 16, 2015 at 09:45:03PM +0900, Simon Horman wrote:
+> On Fri, Jan 16, 2015 at 10:51:29AM +0100, Geert Uytterhoeven wrote:
+> > Hi Simon,
+> > 
+> > On Fri, Jan 16, 2015 at 3:47 AM, Simon Horman <horms@verge.net.au> wrote:
+> > > On Fri, Jan 16, 2015 at 10:13:15AM +0900, Simon Horman wrote:
+> > >> On Thu, Jan 15, 2015 at 10:32:23AM +0100, Geert Uytterhoeven wrote:
+> > >> > On Thu, Jan 15, 2015 at 12:53 AM, Simon Horman <horms@verge.net.au> wrote:
+> > >> > > On Wed, Jan 14, 2015 at 01:11:18PM +0100, Geert Uytterhoeven wrote:
+> > >> > >> This patch series enables DT support for PM domains on the Renesas
+> > >> > >> SH-Mobile AG5 (sh73a0) SoC.
+> > >> > >>
+> > >> > >> This series builds further on the DT PM Domain support for R-Mobile A1
+> > >> > >> (r8a7740).  Due to the similarity of the SYSC System-Controller on the
+> > >> > >> various SH-Mobile/R-Mobile SoCs, and the abstraction of PM domains in
+> > >> > >> DT, the same driver can handle sh73a0 after some small modifications,
+> > >> > >> without changing the DT bindings.
+> > >> > >>
+> > >> > >> Compared to r8a7740, the only significant change is the move of the
+> > >> > >> memory-controller(s) to separate PM domains on sh73a0 (and also on
+> > >> > >> R-Mobile APE6 (r8a73a4)). Hence a provision must be made to not turn off
+> > >> > >> these PM domains inadvertently, cfr. the series "[PATCH 0/4] ARM:
+> > >> > >> shmobile: Add DT support for memory controllers" I've just sent.
+> > >> > >>
+> > >> > >> This series has been sent before, as part of the series "[PATCH RFC
+> > >> > >> 0/7] ARM: shmobile: sh73a0: DT PM domain support"
+> > >> > >> (https://lkml.org/lkml/2014/11/19/404).
+> > >> > >> Changes since v1 (more detailed changelogs in the individual patches):
+> > >> > >>   - Factored out addition of the memory-controller in a separate
+> > >> > >>     series.
+> > >> > >>
+> > >> > >> Dependencies:
+> > >> > >>   1. Patches 1-4 (DT binding doc, C code) depend on:
+> > >> > >>        a. The R-Mobile DT PM Domain work for r8a7740, queued in tag
+> > >> > >>           renesas-dt-pm-for-v3.20 of Simon's repository,
+> > >> > >
+> > >> > > In response to a request from Olof renesas-dt-pm-for-v3.20 has been
+> > >> > > withdrawn and the patches split between the soc-for-v3.20 and dt-for-v3.20
+> > >> > > branches. I am assuming that the patches that 1-4 depend on are
+> > >> > > now all in the soc-for-v3.20 branch. Could you check?
+> > >> >
+> > >> > OK, soc-for-v3.20 now.
+> > >> >
+> > >> > >>        b. "ARM: shmobile: R-Mobile: Fix DT refcount bugs in PM domain
+> > >> > >>          code"
+> > >> > >>          (http://www.spinics.net/lists/arm-kernel/msg391084.html),
+> > >> > >
+> > >> > > FWIW, I have squashed that patch into the patch that adds the problem
+> > >> > > and the result is in the soc-for-v3.20. I will to push that result
+> > >> > > a little later today.
+> > >> >
+> > >> > Thanks!
+> > >> >
+> > >> > >>   2. Patch 5 (dtsi) depends on:
+> > >> > >>        a. The multiplatform work for sh73a0, queued in branch
+> > >> > >>           sh73a0-multiplatform-for-v3.20 of Simon's repository,
+> > >> > >>        b. Series "[PATCH 0/4] ARM: shmobile: Add DT support for memory
+> > >> > >>           controllers"
+> > >> > >>         (http://marc.info/?l=linux-sh&m=142123399414888).
+> > >> > >
+> > >> > > This may be awkward to get into v3.20 unless we can adopt a looser approach
+> > >> > > to the dependencies.
+> > 
+> > > Please take a look at renesas-next-20150115-v3.19-rc1.
+> > 
+> > s/20150115/20150116/?
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- .../int340x_thermal/processor_thermal_device.c     | 90 ++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+Yes, 16 :)
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 0fe5dbb..7c3848d 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -18,6 +18,8 @@
- #include <linux/pci.h>
- #include <linux/platform_device.h>
- #include <linux/acpi.h>
-+#include <linux/thermal.h>
-+#include "int340x_thermal_zone.h"
- 
- /* Broadwell-U/HSB thermal reporting device */
- #define PCI_DEVICE_ID_PROC_BDW_THERMAL	0x1603
-@@ -39,6 +41,7 @@ struct proc_thermal_device {
- 	struct device *dev;
- 	struct acpi_device *adev;
- 	struct power_config power_limits[2];
-+	struct int34x_thermal_zone *int340x_zone;
- };
- 
- enum proc_thermal_emum_mode_type {
-@@ -117,6 +120,72 @@ static struct attribute_group power_limit_attribute_group = {
- 	.name = "power_limits"
- };
- 
-+static int stored_tjmax; /* since it is fixed, we can have local storage */
-+
-+static int get_tjmax(void)
-+{
-+	u32 eax, edx;
-+	u32 val;
-+	int err;
-+
-+	err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &eax, &edx);
-+	if (err)
-+		return err;
-+
-+	val = (eax >> 16) & 0xff;
-+	if (val)
-+		return val;
-+
-+	return -EINVAL;
-+}
-+
-+static int read_temp_msr(unsigned long *temp)
-+{
-+	int cpu;
-+	u32 eax, edx;
-+	int err;
-+	unsigned long curr_temp_off = 0;
-+
-+	*temp = 0;
-+
-+	for_each_online_cpu(cpu) {
-+		err = rdmsr_safe_on_cpu(cpu, MSR_IA32_THERM_STATUS, &eax,
-+					&edx);
-+		if (err)
-+			goto err_ret;
-+		else {
-+			if (eax & 0x80000000) {
-+				curr_temp_off = (eax >> 16) & 0x7f;
-+				if (!*temp || curr_temp_off < *temp)
-+					*temp = curr_temp_off;
-+			} else {
-+				err = -EINVAL;
-+				goto err_ret;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+err_ret:
-+	return err;
-+}
-+
-+static int proc_thermal_get_zone_temp(struct thermal_zone_device *zone,
-+					 unsigned long *temp)
-+{
-+	int ret;
-+
-+	ret = read_temp_msr(temp);
-+	if (!ret)
-+		*temp = (stored_tjmax - *temp) * 1000;
-+
-+	return ret;
-+}
-+
-+static struct thermal_zone_device_ops proc_thermal_local_ops = {
-+	.get_temp       = proc_thermal_get_zone_temp,
-+};
-+
- static int proc_thermal_add(struct device *dev,
- 			    struct proc_thermal_device **priv)
- {
-@@ -126,6 +195,8 @@ static int proc_thermal_add(struct device *dev,
- 	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *elements, *ppcc;
- 	union acpi_object *p;
-+	unsigned long long tmp;
-+	struct thermal_zone_device_ops *ops = NULL;
- 	int i;
- 	int ret;
- 
-@@ -178,6 +249,24 @@ static int proc_thermal_add(struct device *dev,
- 
- 	ret = sysfs_create_group(&dev->kobj,
- 				 &power_limit_attribute_group);
-+	if (ret)
-+		goto free_buffer;
-+
-+	status = acpi_evaluate_integer(adev->handle, "_TMP", NULL, &tmp);
-+	if (ACPI_FAILURE(status)) {
-+		/* there is no _TMP method, add local method */
-+		stored_tjmax = get_tjmax();
-+		if (stored_tjmax > 0)
-+			ops = &proc_thermal_local_ops;
-+	}
-+
-+	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
-+	if (IS_ERR(proc_priv->int340x_zone)) {
-+		sysfs_remove_group(&proc_priv->dev->kobj,
-+			   &power_limit_attribute_group);
-+		ret = PTR_ERR(proc_priv->int340x_zone);
-+	} else
-+		ret = 0;
- 
- free_buffer:
- 	kfree(buf.pointer);
-@@ -187,6 +276,7 @@ free_buffer:
- 
- void proc_thermal_remove(struct proc_thermal_device *proc_priv)
- {
-+	int340x_thermal_zone_remove(proc_priv->int340x_zone);
- 	sysfs_remove_group(&proc_priv->dev->kobj,
- 			   &power_limit_attribute_group);
- }
--- 
-1.9.1
+> > > This series should be queued-up there.
+> > 
+> > If you add patch 6 to sh-drivers-for-v3.20 and merge it in -next,
+> > everything is fine!
+> 
+> Thanks, I thought I had that one but I must have missed it somehow.
 
+I have made a second attempt and this time I hope that I haven't missed
+anything. Please see renesas-next-20150117-v3.19-rc1.
