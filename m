@@ -1,91 +1,102 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH] MAINTAINERS: Add entry for Maxim PMIC-s on Samsung boards
-Date: Sun, 18 Jan 2015 10:17:44 +0000
-Message-ID: <20150118101744.GF3574@x1>
-References: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 3/3] power/axp288_fuel_gauge: axp288 fuel gauge driver
+Date: Sun, 18 Jan 2015 11:49:27 +0100
+Message-ID: <20150118104923.GA11147@earth.universe>
+References: <20150107212655.GD3440@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f175.google.com ([209.85.213.175]:42090 "EHLO
-	mail-ig0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbbARKRv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 05:17:51 -0500
-Received: by mail-ig0-f175.google.com with SMTP id r2so9542686igi.2
-        for <linux-pm@vger.kernel.org>; Sun, 18 Jan 2015 02:17:50 -0800 (PST)
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1421407190-6771-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150107212655.GD3440-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Alessandro Zummo <a.zummo@towertech.it>
 
-On Fri, 16 Jan 2015, Krzysztof Kozlowski wrote:
 
-> Add myself as supporter for Maxim 77686 PMIC and Maxim 14577/77693 MU=
-IC
-> drivers:
->  - mfd (all of them),
->  - extcon (extcon-max14577, extcon-max77693)
->  - power (max14577_charger.c, 77693 on LKML [1]),
->  - regulator (all of them),
->  - clock (clk-max77686.c)
->  - RTC (rtc-max77686.c).
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Jan 07, 2015 at 01:26:55PM -0800, Todd E Brandt wrote:
+> X-Power AXP288 PMIC Fuel Gauge Driver
 >=20
-> Lately I am the author of major contributors to them. These
-> drivers are used on Exynos-based boards (Trats 2, Gear 1 and Gear 2).
+>  new power_supply driver at driver/power
+>  interfaces with the axp20x mfd driver as a cell
+>  provides battery info and monitors for changes
+>  generates alerts on temperature and capacity issues
 >=20
-> [1] https://lkml.org/lkml/2015/1/5/139
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Liam Girdwood <lgirdwood@gmail.com>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Mike Turquette <mturquette@linaro.org>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: Alessandro Zummo <a.zummo@towertech.it>
-> ---
->  MAINTAINERS | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index f017a30eb280..b033fb499186 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6143,6 +6143,21 @@ F:	Documentation/devicetree/bindings/i2c/max66=
-97.txt
->  F:	drivers/hwmon/max6697.c
->  F:	include/linux/platform_data/max6697.h
-> =20
-> +MAXIM PMIC AND MUIC DRIVERS FOR EXYNOS BASED BOARDS
-> +M:	Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> +L:	linux-kernel@vger.kernel.org
-> +S:	Supported
-> +F:	drivers/*/*max14577*.c
-> +F:	drivers/*/*max77686*.c
-> +F:	drivers/*/*max77693*.c
-> +F:	Documentation/devicetree/bindings/mfd/max14577.txt
-> +F:	Documentation/devicetree/bindings/mfd/max77686.txt
-> +F:	Documentation/devicetree/bindings/mfd/max77693.txt
-> +F:	Documentation/devicetree/bindings/clock/maxim,max77686.txt
-> +F:	include/linux/mfd/max14577*.h
-> +F:	include/linux/mfd/max77686*.h
-> +F:	include/linux/mfd/max77693*.h
+> [...]
+>
+> +static int fuel_gauge_battery_health(struct axp288_fg_info *info)
+> +{
+> +	int temp, vocv;
+> +	int ret, health =3D POWER_SUPPLY_HEALTH_UNKNOWN;
+> +
+> +	ret =3D fuel_gauge_get_btemp(info, &temp);
+> +	if (ret < 0)
+> +		goto health_read_fail;
+> +
+> +	ret =3D fuel_gauge_get_vocv(info, &vocv);
+> +	if (ret < 0)
+> +		goto health_read_fail;
+> +
+> +	if (vocv > info->pdata->max_volt)
+> +		health =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> +	else if (temp > info->pdata->max_temp ||
+> +			temp < info->pdata->min_temp)
+> +		health =3D POWER_SUPPLY_HEALTH_OVERHEAT;
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+if (temp < info->pdata->min_temp)
+    health =3D POWER_SUPPLY_HEALTH_COLD;
 
->  MAXIRADIO FM RADIO RECEIVER DRIVER
->  M:	Hans Verkuil <hverkuil@xs4all.nl>
->  L:	linux-media@vger.kernel.org
+> +	else if (vocv < info->pdata->min_volt)
+> +		health =3D POWER_SUPPLY_HEALTH_DEAD;
+> +	else
+> +		health =3D POWER_SUPPLY_HEALTH_GOOD;
+> +
+> +health_read_fail:
+> +	return health;
+> +}
+>
+> [...]
+>
+> +static int axp288_fuel_gauge_remove(struct platform_device *pdev)
+> +{
+> +	return 0;
+> +}
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+You can drop this function if nothing needs to be cleaned, but
+that's not the case, so where is the cleanup code?
+
+> [...]
+
+-- Sebastian
+
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUu4+wAAoJENju1/PIO/qaqiAP/Ai1gGGYOSSK9/MJsxQgkce5
+eeZpk+3mCUsle1Ks1CfaGQ84WtrEp9j3gnT3pZRSlOa4EaHsuuZ4U/T4cx+u+C9G
+hmgKs2ATX2H++5ehsv/sNdmUABpSAa/U7jbxQiWYT+QFEdsTnhSNjIwECPVQ+qFp
+PT9cRWiszwXcLWn5/3Sn/hxYDYgvYiWYlT4jV4kMr5j/zJsMEatW7zHIoqhoMO4a
+y6Wm2HVr1A2+psIDw95UA3vUg+hPZELLeyLc0cKi6aXJ3JNZX8JuzOFAjL8mLMcH
+IXRCDtogt+fVO37mTQKxy/zmMNcwtEa0Qu33i1kK9uAQXfQBmCw0mlkT3FCchSXP
+j4hvp2SY3Z6zpl1YD0Dllgx36FzglKP8d3R5TTkYDbFLoBePscWgbhATGTCHJCkC
+fIxqJxZ1KT7C//du2JYx9HFgIqzzLBxGs47VinFOKc+8ekfzMLyjUaN4B7Iw1sKt
+a8irTX9EpStBYwzW22IUdv+2I6SQ3Igox3X+XNtPmUKHiAvulWdtBh//rkGvYApl
+0dLfVA5P2/fNLc19VwzvzfSe5U0ed25/lkXElx1+Tn/mlXiwzIuZsbO/vwWPK4f6
+7cnzv9piYWuZQ2ckRvcdpJtDTC0EHiUnhVceQr9j6XUvok7ntYDzzQVnDJMHfFdO
+Fx6HusY6m2rIjmRnkyS7
+=umqx
+-----END PGP SIGNATURE-----
+
+--liOOAslEiF7prFVr--
