@@ -1,111 +1,237 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v1] thermal: rockchip: make temperature reporting much
- more accurate
-Date: Sun, 18 Jan 2015 11:21:33 -0800
-Message-ID: <20150118192133.GA15457@dtor-glaptop>
-References: <1421597753-2082-1-git-send-email-wxt@rock-chips.com>
- <1421597753-2082-2-git-send-email-wxt@rock-chips.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: [PATCHv2] cleanup ti-soc-thermal
+Date: Sun, 18 Jan 2015 21:17:10 +0100
+Message-ID: <20150118201710.GA27800@amd>
+References: <20150103111904.GA11545@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:63135 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbbARTVh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 14:21:37 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32780 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbbARURN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 15:17:13 -0500
 Content-Disposition: inline
-In-Reply-To: <1421597753-2082-2-git-send-email-wxt@rock-chips.com>
+In-Reply-To: <20150103111904.GA11545@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Mon, Jan 19, 2015 at 12:15:53AM +0800, Caesar Wang wrote:
-> In general, the kernel should report temperature readings exactly as
-> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
-> increments,but we ought to do more accurate. The temperature will do
-> linear interpolation between the entries in the table.
-> 
-> Test= $md5sum /dev/zero &
-> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
-> sleep .5; done
-> 
-> e.g. We can get the result as follows:
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39086
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39994
-> 
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Simplify code by removing goto's where they point to simple return.
 
-I did several review this patch on the Chrome OS gerrit, so
+Avoid confusing |= on error values.
 
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Correct whitespace.
 
-> 
-> ---
-> 
->  drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
->  1 file changed, 17 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 1bcddfc..a7ae23a 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
->  
->  static long rk_tsadcv2_code_to_temp(u32 code)
->  {
-> -	int high, low, mid;
-> -
-> -	low = 0;
-> -	high = ARRAY_SIZE(v2_code_table) - 1;
-> -	mid = (high + low) / 2;
-> +	unsigned int low = 0;
-> +	unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
-> +	unsigned int mid = (low + high) / 2;
-> +	unsigned int scale;
->  
->  	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
->  		return 125000; /* No code available, return max temperature */
->  
->  	while (low <= high) {
-> -		if (code >= v2_code_table[mid].code && code <
-> -		    v2_code_table[mid - 1].code)
-> -			return v2_code_table[mid].temp;
-> +		if (code >= v2_code_table[mid].code &&
-> +		    code < v2_code_table[mid - 1].code)
-> +			break;
->  		else if (code < v2_code_table[mid].code)
->  			low = mid + 1;
->  		else
-> @@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
->  		mid = (low + high) / 2;
->  	}
->  
-> -	return 125000;
-> +	/*
-> +	 * The 5C granularity provided by the table is too much. Let's
-> +	 * assume that the relationship between sensor readings and
-> +	 * temperature between 2 table entries is linear and extrapolate
-> +	 * to produce less granular result.
-> +	 */
-> +	scale = (v2_code_table[mid].temp - v2_code_table[mid - 1].temp) /
-> +		(v2_code_table[mid - 1].code - v2_code_table[mid].code);
-> +	return v2_code_table[mid - 1].temp +
-> +			(v2_code_table[mid - 1].code - code) * scale;
->  }
->  
->  /**
-> -- 
-> 1.9.1
-> 
-> 
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Thanks.
+---
+
+Please apply,
+								Pavel
+
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 634b6ce..2fde78c 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -103,19 +105,15 @@ do {								\
+  */
+ static int ti_bandgap_power(struct ti_bandgap *bgp, bool on)
+ {
+-	int i, ret = 0;
++	int i;
+ 
+-	if (!TI_BANDGAP_HAS(bgp, POWER_SWITCH)) {
+-		ret = -ENOTSUPP;
+-		goto exit;
+-	}
++	if (!TI_BANDGAP_HAS(bgp, POWER_SWITCH))
++		return -ENOTSUPP;
+ 
+ 	for (i = 0; i < bgp->conf->sensor_count; i++)
+ 		/* active on 0 */
+ 		RMW_BITS(bgp, i, temp_sensor_ctrl, bgap_tempsoff_mask, !on);
+-
+-exit:
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -263,18 +261,13 @@ static
+ int ti_bandgap_adc_to_mcelsius(struct ti_bandgap *bgp, int adc_val, int *t)
+ {
+ 	const struct ti_bandgap_data *conf = bgp->conf;
+-	int ret = 0;
+ 
+ 	/* look up for temperature in the table and return the temperature */
+-	if (adc_val < conf->adc_start_val || adc_val > conf->adc_end_val) {
+-		ret = -ERANGE;
+-		goto exit;
+-	}
++	if (adc_val < conf->adc_start_val || adc_val > conf->adc_end_val)
++		return -ERANGE;
+ 
+ 	*t = bgp->conf->conv_table[adc_val - conf->adc_start_val];
+-
+-exit:
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -295,16 +288,14 @@ int ti_bandgap_mcelsius_to_adc(struct ti_bandgap *bgp, long temp, int *adc)
+ {
+ 	const struct ti_bandgap_data *conf = bgp->conf;
+ 	const int *conv_table = bgp->conf->conv_table;
+-	int high, low, mid, ret = 0;
++	int high, low, mid;
+ 
+ 	low = 0;
+ 	high = conf->adc_end_val - conf->adc_start_val;
+ 	mid = (high + low) / 2;
+ 
+-	if (temp < conv_table[low] || temp > conv_table[high]) {
+-		ret = -ERANGE;
+-		goto exit;
+-	}
++	if (temp < conv_table[low] || temp > conv_table[high])
++		return -ERANGE;
+ 
+ 	while (low < high) {
+ 		if (temp < conv_table[mid])
+@@ -315,9 +306,7 @@ int ti_bandgap_mcelsius_to_adc(struct ti_bandgap *bgp, long temp, int *adc)
+ 	}
+ 
+ 	*adc = conf->adc_start_val + low;
+-
+-exit:
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -343,13 +332,11 @@ int ti_bandgap_add_hyst(struct ti_bandgap *bgp, int adc_val, int hyst_val,
+ 	 */
+ 	ret = ti_bandgap_adc_to_mcelsius(bgp, adc_val, &temp);
+ 	if (ret < 0)
+-		goto exit;
++		return ret;
+ 
+ 	temp += hyst_val;
+ 
+ 	ret = ti_bandgap_mcelsius_to_adc(bgp, temp, sum);
+-
+-exit:
+ 	return ret;
+ }
+ 
+@@ -468,22 +455,18 @@ exit:
+  */
+ static inline int ti_bandgap_validate(struct ti_bandgap *bgp, int id)
+ {
+-	int ret = 0;
+-
+ 	if (!bgp || IS_ERR(bgp)) {
+ 		pr_err("%s: invalid bandgap pointer\n", __func__);
+-		ret = -EINVAL;
+-		goto exit;
++		return -EINVAL;
+ 	}
+ 
+ 	if ((id < 0) || (id >= bgp->conf->sensor_count)) {
+ 		dev_err(bgp->dev, "%s: sensor id out of range (%d)\n",
+ 			__func__, id);
+-		ret = -ERANGE;
++		return -ERANGE;
+ 	}
+ 
+-exit:
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -511,12 +494,10 @@ static int _ti_bandgap_write_threshold(struct ti_bandgap *bgp, int id, int val,
+ 
+ 	ret = ti_bandgap_validate(bgp, id);
+ 	if (ret)
+-		goto exit;
++		return ret;
+ 
+-	if (!TI_BANDGAP_HAS(bgp, TALERT)) {
+-		ret = -ENOTSUPP;
+-		goto exit;
+-	}
++	if (!TI_BANDGAP_HAS(bgp, TALERT))
++		return -ENOTSUPP;
+ 
+ 	ts_data = bgp->conf->sensors[id].ts_data;
+ 	tsr = bgp->conf->sensors[id].registers;
+@@ -529,17 +510,15 @@ static int _ti_bandgap_write_threshold(struct ti_bandgap *bgp, int id, int val,
+ 	}
+ 
+ 	if (ret)
+-		goto exit;
++		return ret;
+ 
+ 	ret = ti_bandgap_mcelsius_to_adc(bgp, val, &adc_val);
+ 	if (ret < 0)
+-		goto exit;
++		return ret;
+ 
+ 	spin_lock(&bgp->lock);
+ 	ret = ti_bandgap_update_alert_threshold(bgp, id, adc_val, hot);
+ 	spin_unlock(&bgp->lock);
+-
+-exit:
+ 	return ret;
+ }
+ 
+@@ -582,7 +561,7 @@ static int _ti_bandgap_read_threshold(struct ti_bandgap *bgp, int id,
+ 
+ 	temp = ti_bandgap_readl(bgp, tsr->bgap_threshold);
+ 	temp = (temp & mask) >> __ffs(mask);
+-	ret |= ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
++	ret = ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
+ 	if (ret) {
+ 		dev_err(bgp->dev, "failed to read thot\n");
+ 		ret = -EIO;
+@@ -852,6 +831,6 @@ int ti_bandgap_read_temperature(struct ti_bandgap *bgp, int id,
+ 	spin_unlock(&bgp->lock);
+ 
+-	ret |= ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
++	ret = ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
+ 	if (ret)
+ 		return -EIO;
+ 
+@@ -1220,11 +1222,10 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 		goto free_irqs;
+ 	}
+ 
+-	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
++	bgp->div_clk = clk_get(NULL, bgp->conf->div_ck_name);
+ 	ret = IS_ERR(bgp->div_clk);
+ 	if (ret) {
+-		dev_err(&pdev->dev,
+-			"failed to request div_ts_ck clock ref\n");
++		dev_err(&pdev->dev, "failed to request div_ts_ck clock ref\n");
+ 		ret = PTR_ERR(bgp->div_clk);
+ 		goto free_irqs;
+ 	}
+index 5fd0386..33b2c01 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -76,7 +76,7 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
+ }
+ 
+ /* thermal zone ops */
+-/* Get temperature callback function for thermal zone*/
++/* Get temperature callback function for thermal zone */
+ static inline int __ti_thermal_get_temp(void *devdata, long *temp)
+ {
+ 	struct thermal_zone_device *pcb_tz = NULL;
+
 
 -- 
-Dmitry
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
