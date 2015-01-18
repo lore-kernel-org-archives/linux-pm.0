@@ -1,87 +1,111 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 0/4] power: Add max77693 charger driver
-Date: Sun, 18 Jan 2015 18:00:02 +0000
-Message-ID: <20150118180002.GJ3574@x1>
-References: <1420453019-28614-1-git-send-email-k.kozlowski@samsung.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v1] thermal: rockchip: make temperature reporting much
+ more accurate
+Date: Sun, 18 Jan 2015 11:21:33 -0800
+Message-ID: <20150118192133.GA15457@dtor-glaptop>
+References: <1421597753-2082-1-git-send-email-wxt@rock-chips.com>
+ <1421597753-2082-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:63135 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbbARTVh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 14:21:37 -0500
 Content-Disposition: inline
-In-Reply-To: <1420453019-28614-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1421597753-2082-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Tell us what you need?
+On Mon, Jan 19, 2015 at 12:15:53AM +0800, Caesar Wang wrote:
+> In general, the kernel should report temperature readings exactly as
+> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
+> increments,but we ought to do more accurate. The temperature will do
+> linear interpolation between the entries in the table.
+> 
+> Test= $md5sum /dev/zero &
+> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
+> sleep .5; done
+> 
+> e.g. We can get the result as follows:
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39086
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39994
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
-> Changes since v3
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> 1. Patch 3/4: Don't create platform data structure for charger settin=
-gs
->    because driver won't be used on non-DT SoCs (its for Exynos based
->    Trats2).
-> 2. Patch 3/4: Drop Sebastian's ack [1] because of change above.
->=20
-> Changes since v2
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> 1. Add ack from Sebastian Reichel (charger driver).
-> 2. Drop patch "mfd: max77693: Map charger device to its own of_node"
->    (applied by Lee Jones).
->=20
->=20
-> Changes since v1
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> 1. Add patch 2/5: mfd: max77693: Map charger device to its own of_nod=
-e
->    (forgot to send it in v1)
-> 2. Remove patches for DTS and configs. I'll send them later.
-> 3. Add ack from Lee Jones (patch 3/5).
->=20
->=20
-> Description
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> The patchset adds max77693 charger driver present on Trats2 board
-> (and Galaxy S III). The driver configures battery charger and exposes
-> power supply interface.
->=20
-> Driver is necessary to provide full charging stack on Trats2 device
-> (extcon, charger-manager etc.).
->=20
-> [1] https://lkml.org/lkml/2014/10/27/774
->=20
->=20
-> Best regards,
-> Krzysztof
->=20
->=20
->=20
-> Krzysztof Kozlowski (4):
->   devicetree: power/mfd: max77693: Document new bindings for charger
->   mfd: max77693: Add defines for MAX77693 charger driver
->   power: max77693: Add charger driver for Maxim 77693
->   Documentation: power: max77693-charger: Document exported sysfs ent=
-ry
->=20
->  Documentation/ABI/testing/sysfs-class-power        |  42 ++
->  Documentation/devicetree/bindings/mfd/max77693.txt |  45 ++
->  drivers/power/Kconfig                              |   6 +
->  drivers/power/Makefile                             |   1 +
->  drivers/power/max77693_charger.c                   | 758 +++++++++++=
-++++++++++
->  include/linux/mfd/max77693-private.h               | 108 +++
->  6 files changed, 960 insertions(+)
->  create mode 100644 drivers/power/max77693_charger.c
->=20
+I did several review this patch on the Chrome OS gerrit, so
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+> 
+> ---
+> 
+>  drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
+>  1 file changed, 17 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 1bcddfc..a7ae23a 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
+>  
+>  static long rk_tsadcv2_code_to_temp(u32 code)
+>  {
+> -	int high, low, mid;
+> -
+> -	low = 0;
+> -	high = ARRAY_SIZE(v2_code_table) - 1;
+> -	mid = (high + low) / 2;
+> +	unsigned int low = 0;
+> +	unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
+> +	unsigned int mid = (low + high) / 2;
+> +	unsigned int scale;
+>  
+>  	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
+>  		return 125000; /* No code available, return max temperature */
+>  
+>  	while (low <= high) {
+> -		if (code >= v2_code_table[mid].code && code <
+> -		    v2_code_table[mid - 1].code)
+> -			return v2_code_table[mid].temp;
+> +		if (code >= v2_code_table[mid].code &&
+> +		    code < v2_code_table[mid - 1].code)
+> +			break;
+>  		else if (code < v2_code_table[mid].code)
+>  			low = mid + 1;
+>  		else
+> @@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
+>  		mid = (low + high) / 2;
+>  	}
+>  
+> -	return 125000;
+> +	/*
+> +	 * The 5C granularity provided by the table is too much. Let's
+> +	 * assume that the relationship between sensor readings and
+> +	 * temperature between 2 table entries is linear and extrapolate
+> +	 * to produce less granular result.
+> +	 */
+> +	scale = (v2_code_table[mid].temp - v2_code_table[mid - 1].temp) /
+> +		(v2_code_table[mid - 1].code - v2_code_table[mid].code);
+> +	return v2_code_table[mid - 1].temp +
+> +			(v2_code_table[mid - 1].code - code) * scale;
+>  }
+>  
+>  /**
+> -- 
+> 1.9.1
+> 
+> 
+
+Thanks.
+
+-- 
+Dmitry
