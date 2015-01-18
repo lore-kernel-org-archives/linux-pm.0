@@ -1,67 +1,54 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq24190: Fix ignored supplicants
-Date: Sun, 18 Jan 2015 11:54:03 +0100
-Message-ID: <20150118105403.GB11147@earth.universe>
-References: <1420447908-4389-1-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH] power: max17042: Constify struct regmap_config
+Date: Sun, 18 Jan 2015 11:55:17 +0100
+Message-ID: <20150118105516.GC11147@earth.universe>
+References: <1420447817-4262-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:36832 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbbARKyJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 18 Jan 2015 05:54:09 -0500
+	protocol="application/pgp-signature"; boundary="zCKi3GIZzVBPywwA"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1420447908-4389-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1420447817-4262-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---bCsyhTFzCvuiizWE
+--zCKi3GIZzVBPywwA
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Jan 05, 2015 at 09:51:48AM +0100, Krzysztof Kozlowski wrote:
-> The driver mismatched 'num_supplicants' with 'num_supplies' of
-> power_supply structure.
->=20
-> It provided list of supplicants (power_supply.supplied_to) but did
-> not set the number of supplicants. Instead it set the num_supplies which
-> is used when iterating over number of supplies (power_supply.supplied_fro=
-m).
->=20
-> As a result the list of supplicants was ignored by core because its size
-> was 0.
+On Mon, Jan 05, 2015 at 09:50:17AM +0100, Krzysztof Kozlowski wrote:
+> The regmap_config struct may be const because it is not modified by the
+> driver and regmap_init() accepts pointer to const.
 
 Thanks, applied.
 
 -- Sebastian
 
---bCsyhTFzCvuiizWE
+--zCKi3GIZzVBPywwA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUu5DKAAoJENju1/PIO/qaygEP/35fzlaFXPukzaXdJ3ifxHzQ
-/Ik7Ur+DUAKnl3STzOi6XW1RraNM5v00yCB8wrCdoW6fsgk7aLIzj8v08Encq/Ku
-/8jncC8s2Au0BdFHiF7xkDO76KncThZoJ0smpNqPtVyHoMT+EuDm2YeZXbFKeZYK
-OuCUC4F6GXWAJjaETF6t8Ntf1bpS5fh9R5A6RhAa9E78zR63KMCi74wtpMM5uagU
-JCq8iCdBwcheILaeTBx/cFj5F0+feeqiEsKBbfmvh2DO/VV21XxHjWt3Ku/R3CDT
-Ux728KSE8MKJprB7gxD/4ZiTIgXv41bkw6BxOkcpfJPZ/FxMVZGtBmCeUc55drAy
-lee35y6JJ/WN0CX9qqHa9HSFovIPQI5hNSuL5SWLSqm5G2JlpGq7lQWo3TOfe/T7
-ffsHizd3BjHQ2KHQqwnVNeByUXMmm/43WgqD0yitMiLKqoYo2UZuzdnzo0Yt76UT
-FRQ1AkTJo45SILSHQGTrKQn1Zh17zFotybqt8P3qKMldhPTmktZFb0tvLompamMS
-JhKaf+CaPRfkS8K2erdnQ42Rs09L9TNc4YpjGPyskRW4OuyLp8CYQsUSR/L26gB2
-YmJUisEpxNeUh1qaxZwZrvjcSOrhQdvUAzx0uXHwQ7L6Kt1LQgzuypEQhdwpqRto
-VnJts7ggRRhpqXIdG1Nb
-=dJz+
+iQIcBAEBCgAGBQJUu5EUAAoJENju1/PIO/qa1GsP/0Q9lqklWni26ZpUEN6RKsuZ
+0VQHa6Qr9U0hhrsf2Z3+FdWgUViT5qdbPfjWXNincnfI1Wu2Xrye1RcNCrUDJQku
+/k2OcFEl1Ns+u4e4yr0UWrsdtLTTFQ0fYX6Jh969WjnD+u2xmSRGK3J8szk7ruty
+OTmneFmwiLEJtXno5chtrBfC6lZwK3Ck/IT56tK9UYvtMHWEnK9hBz2683qSAhOr
+otM/tuqpm5Fe40L6GsOhTJv3QmrW+56VFArylfagBHX2mZj2yUV5q51fMVpuDBu3
+vW9rk9o5c/0pSwpOkpeOATMDj51yVU45N0CX06bcOHcbZEhwPpd2JcPPfiGfu7am
+jgcwRp4k4xvaUWIW9/Ruz2XfZRvH7le6ChsBTxxfwpKD9ekO9QMvxfPxtV1IDz6M
+mRC98hdhtSJzNcU8RYfjFvH+kdSEnb59fKnPQMAimS25kGl6wNvESUpUMGuAVQBe
+wIk8qEJa9IXN2foeTSmhF4Yb8OyIThG0kgyF1tMLLBpUSuwoDFJh0af76HSpAAXw
+x5JM7TiTQMn2unqJ6CD8CNesaudt1xmEKPwNvRehImdE33Sekue1ygfapACFoiXE
+o/GY+uWTnGc7jv/CM738a29V+dUGTVKKLsj/YGZLXwNFv7Ag1i1Qk9qZKH0jgqYO
+htaphqu3myds9SdQshsU
+=RZSl
 -----END PGP SIGNATURE-----
 
---bCsyhTFzCvuiizWE--
+--zCKi3GIZzVBPywwA--
