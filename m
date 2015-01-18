@@ -1,89 +1,46 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v1] thermal: rockchip: make temperature reporting much more accurate
-Date: Mon, 19 Jan 2015 00:15:53 +0800
-Message-ID: <1421597753-2082-2-git-send-email-wxt@rock-chips.com>
-References: <1421597753-2082-1-git-send-email-wxt@rock-chips.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 0/3] power: rt5033: Add Richtek RT533 drivers
+Date: Sun, 18 Jan 2015 17:20:03 +0000
+Message-ID: <20150118172003.GC3574@x1>
+References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
+ <1421059225.22660.33.camel@x220>
+ <54B3A72A.8020700@samsung.com>
+ <1421061017.22660.41.camel@x220>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1421597753-2082-1-git-send-email-wxt@rock-chips.com>
+Content-Disposition: inline
+In-Reply-To: <1421061017.22660.41.camel@x220>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Caesar Wang <wxt@rock-chips.com>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Beomho Seo <beomho.seo@samsung.com>, Valentin Rothberg <valentinrothberg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-In general, the kernel should report temperature readings exactly as
-reported by the hardware. The cpu / gpu thermal driver works in 5 degree
-increments,but we ought to do more accurate. The temperature will do
-linear interpolation between the entries in the table.
+On Mon, 12 Jan 2015, Paul Bolle wrote:
 
-Test= $md5sum /dev/zero &
-$while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
-sleep .5; done
+> Hi Beomho,
+>=20
+> On Mon, 2015-01-12 at 19:51 +0900, Beomho Seo wrote:
+> > On 01/12/2015 07:40 PM, Paul Bolle wrote:
+> > > When is the Kconfig symbol MFD_RT5033 expected to be included in =
+the
+> > > tree?=20
+> >=20
+> > MFD_RT5033 have been applied in 09 Dec 2014.
+> > http://marc.info/?l=3Dlinux-pm&m=3D141822463218774&w=3D2
+> > According to the mail, That is expected to include next version.
+>=20
+> I see. I'd expected v3.20 stuff to be included in linux-next by now, =
+but
+> I guess that this commit will be added in a few weeks or so.
 
-e.g. We can get the result as follows:
-    /sys/class/thermal/thermal_zone1/temp:39994
-    /sys/class/thermal/thermal_zone2/temp:39086
-    /sys/class/thermal/thermal_zone1/temp:39994
-    /sys/class/thermal/thermal_zone2/temp:39540
-    /sys/class/thermal/thermal_zone1/temp:39540
-    /sys/class/thermal/thermal_zone2/temp:39540
-    /sys/class/thermal/thermal_zone1/temp:39540
-    /sys/class/thermal/thermal_zone2/temp:39994
+Sorry for the delay, I've been on vacation for a few weeks.
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+It will be in within the next couple of days.
 
----
-
- drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 1bcddfc..a7ae23a 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
- 
- static long rk_tsadcv2_code_to_temp(u32 code)
- {
--	int high, low, mid;
--
--	low = 0;
--	high = ARRAY_SIZE(v2_code_table) - 1;
--	mid = (high + low) / 2;
-+	unsigned int low = 0;
-+	unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
-+	unsigned int mid = (low + high) / 2;
-+	unsigned int scale;
- 
- 	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
- 		return 125000; /* No code available, return max temperature */
- 
- 	while (low <= high) {
--		if (code >= v2_code_table[mid].code && code <
--		    v2_code_table[mid - 1].code)
--			return v2_code_table[mid].temp;
-+		if (code >= v2_code_table[mid].code &&
-+		    code < v2_code_table[mid - 1].code)
-+			break;
- 		else if (code < v2_code_table[mid].code)
- 			low = mid + 1;
- 		else
-@@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
- 		mid = (low + high) / 2;
- 	}
- 
--	return 125000;
-+	/*
-+	 * The 5C granularity provided by the table is too much. Let's
-+	 * assume that the relationship between sensor readings and
-+	 * temperature between 2 table entries is linear and extrapolate
-+	 * to produce less granular result.
-+	 */
-+	scale = (v2_code_table[mid].temp - v2_code_table[mid - 1].temp) /
-+		(v2_code_table[mid - 1].code - v2_code_table[mid].code);
-+	return v2_code_table[mid - 1].temp +
-+			(v2_code_table[mid - 1].code - code) * scale;
- }
- 
- /**
--- 
-1.9.1
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
