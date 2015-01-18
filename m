@@ -1,56 +1,34 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / clock_ops: initialize ret to avoid garbage being
- returned
-Date: Sun, 18 Jan 2015 22:00:36 +0100
-Message-ID: <20150118210036.GA31807@amd>
-References: <1420731061-5029-1-git-send-email-colin.king@canonical.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v2 0/1] thermal: rockchip: make temperature reporting much more accurate
+Date: Mon, 19 Jan 2015 07:55:48 +0800
+Message-ID: <1421625349-14101-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38118 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbbARVAi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 16:00:38 -0500
-Content-Disposition: inline
-In-Reply-To: <1420731061-5029-1-git-send-email-colin.king@canonical.com>
+Received: from regular1.263xmail.com ([211.150.99.130]:52731 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbbARX4V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 18:56:21 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Colin King <colin.king@canonical.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On Thu 2015-01-08 15:31:01, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> cppcheck detected an unitialised ret:
->   [drivers/base/power/clock_ops.c:53]: (error) Uninitialized variable: ret
-> 
-> ret is only assigned if ce->status < PCE_STATUS_ERROR, if this is false
-> then __pm_clk_enable returns whatever garbage ret picks up from the stack.
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-> ---
->  drivers/base/power/clock_ops.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index d626576..5bd283d 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -39,7 +39,7 @@ struct pm_clock_entry {
->   */
->  static inline int __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce)
->  {
-> -	int ret;
-> +	int ret = 0;
->  
->  	if (ce->status < PCE_STATUS_ERROR) {
->  		ret = clk_enable(ce->clk);
+This patch is merged on chromiumos/third_party/kernel.
+https://chromium-review.googlesource.com/#/c/239190/
 
-Actually, is this right solution? If clock entry has an error, we
-won't enable it, and should probably return some kind of error...?
+Tested on veyron boards.
 
-									Pavel
+
+Changes in v2:
+Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Caesar Wang (1):
+  thermal: rockchip: make temperature reporting much more accurate
+
+ drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.9.1
+
+
