@@ -1,43 +1,51 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 0/3] power: rt5033: Add Richtek RT533 drivers
-Date: Sun, 18 Jan 2015 17:20:03 +0000
-Message-ID: <20150118172003.GC3574@x1>
-References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
- <1421059225.22660.33.camel@x220>
- <54B3A72A.8020700@samsung.com>
- <1421061017.22660.41.camel@x220>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
+Date: Sun, 18 Jan 2015 17:47:50 +0000
+Message-ID: <20150118174750.GG3574@x1>
+References: <20150107212328.GA3440@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1421061017.22660.41.camel@x220>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Beomho Seo <beomho.seo@samsung.com>, Valentin Rothberg <valentinrothberg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+In-Reply-To: <20150107212328.GA3440-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 12 Jan 2015, Paul Bolle wrote:
+So now I have this odd looking front cover letter randomly in my
+inbox.
 
-> Hi Beomho,
+Please sent patch-sets threaded, so that they cling together.
+
+> X-Power AXP288 PMIC Fuel Gauge Driver
 >=20
-> On Mon, 2015-01-12 at 19:51 +0900, Beomho Seo wrote:
-> > On 01/12/2015 07:40 PM, Paul Bolle wrote:
-> > > When is the Kconfig symbol MFD_RT5033 expected to be included in =
-the
-> > > tree?=20
-> >=20
-> > MFD_RT5033 have been applied in 09 Dec 2014.
-> > http://marc.info/?l=3Dlinux-pm&m=3D141822463218774&w=3D2
-> > According to the mail, That is expected to include next version.
->=20
-> I see. I'd expected v3.20 stuff to be included in linux-next by now, =
-but
-> I guess that this commit will be added in a few weeks or so.
+>  new power_supply driver at driver/power
+>  interfaces with the axp20x mfd driver as a cell
+>  provides battery info and monitors for changes
+>  generates alerts on temperature and capacity issues
 
-Sorry for the delay, I've been on vacation for a few weeks.
+Use the full 76 chars for full sentences, or if this is a
+bullet-pointed list, use actual bullet points.
 
-It will be in within the next couple of days.
+> (1/3) mfd/axp20x.c: change the battery cell name to fuel_gauge
+> (2/3) mfd/axp20x.h: add the register defs and platform struct for fue=
+l gauge
+> (3/3) power/axp288_fuel_gauge.c: axp288 fuel gauge driver
+
+Don't hand-roll your own cover letters, use --cover-letter when
+creating your patch-sets instead.
+
+> Signed-off-by: Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ----
+>  drivers/mfd/axp20x.c              |   10 +-
+>  drivers/power/Kconfig             |    9 +
+>  drivers/power/Makefile            |    1 +
+>  drivers/power/axp288_fuel_gauge.c | 1108 +++++++++++++++++++++++++++=
+++++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/axp20x.h        |   43 ++-
+>  5 files changed, 1164 insertions(+), 7 deletions(-)
 
 --=20
 Lee Jones
