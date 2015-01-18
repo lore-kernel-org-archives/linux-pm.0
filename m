@@ -1,102 +1,67 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/3] power/axp288_fuel_gauge: axp288 fuel gauge driver
-Date: Sun, 18 Jan 2015 11:49:27 +0100
-Message-ID: <20150118104923.GA11147@earth.universe>
-References: <20150107212655.GD3440@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: bq24190: Fix ignored supplicants
+Date: Sun, 18 Jan 2015 11:54:03 +0100
+Message-ID: <20150118105403.GB11147@earth.universe>
+References: <1420447908-4389-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:36832 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751853AbbARKyJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 18 Jan 2015 05:54:09 -0500
 Content-Disposition: inline
-In-Reply-To: <20150107212655.GD3440-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+In-Reply-To: <1420447908-4389-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
 
---liOOAslEiF7prFVr
+--bCsyhTFzCvuiizWE
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jan 07, 2015 at 01:26:55PM -0800, Todd E Brandt wrote:
-> X-Power AXP288 PMIC Fuel Gauge Driver
+On Mon, Jan 05, 2015 at 09:51:48AM +0100, Krzysztof Kozlowski wrote:
+> The driver mismatched 'num_supplicants' with 'num_supplies' of
+> power_supply structure.
 >=20
->  new power_supply driver at driver/power
->  interfaces with the axp20x mfd driver as a cell
->  provides battery info and monitors for changes
->  generates alerts on temperature and capacity issues
+> It provided list of supplicants (power_supply.supplied_to) but did
+> not set the number of supplicants. Instead it set the num_supplies which
+> is used when iterating over number of supplies (power_supply.supplied_fro=
+m).
 >=20
-> [...]
->
-> +static int fuel_gauge_battery_health(struct axp288_fg_info *info)
-> +{
-> +	int temp, vocv;
-> +	int ret, health =3D POWER_SUPPLY_HEALTH_UNKNOWN;
-> +
-> +	ret =3D fuel_gauge_get_btemp(info, &temp);
-> +	if (ret < 0)
-> +		goto health_read_fail;
-> +
-> +	ret =3D fuel_gauge_get_vocv(info, &vocv);
-> +	if (ret < 0)
-> +		goto health_read_fail;
-> +
-> +	if (vocv > info->pdata->max_volt)
-> +		health =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> +	else if (temp > info->pdata->max_temp ||
-> +			temp < info->pdata->min_temp)
-> +		health =3D POWER_SUPPLY_HEALTH_OVERHEAT;
+> As a result the list of supplicants was ignored by core because its size
+> was 0.
 
-if (temp < info->pdata->min_temp)
-    health =3D POWER_SUPPLY_HEALTH_COLD;
-
-> +	else if (vocv < info->pdata->min_volt)
-> +		health =3D POWER_SUPPLY_HEALTH_DEAD;
-> +	else
-> +		health =3D POWER_SUPPLY_HEALTH_GOOD;
-> +
-> +health_read_fail:
-> +	return health;
-> +}
->
-> [...]
->
-> +static int axp288_fuel_gauge_remove(struct platform_device *pdev)
-> +{
-> +	return 0;
-> +}
-
-You can drop this function if nothing needs to be cleaned, but
-that's not the case, so where is the cleanup code?
-
-> [...]
+Thanks, applied.
 
 -- Sebastian
 
---liOOAslEiF7prFVr
+--bCsyhTFzCvuiizWE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUu4+wAAoJENju1/PIO/qaqiAP/Ai1gGGYOSSK9/MJsxQgkce5
-eeZpk+3mCUsle1Ks1CfaGQ84WtrEp9j3gnT3pZRSlOa4EaHsuuZ4U/T4cx+u+C9G
-hmgKs2ATX2H++5ehsv/sNdmUABpSAa/U7jbxQiWYT+QFEdsTnhSNjIwECPVQ+qFp
-PT9cRWiszwXcLWn5/3Sn/hxYDYgvYiWYlT4jV4kMr5j/zJsMEatW7zHIoqhoMO4a
-y6Wm2HVr1A2+psIDw95UA3vUg+hPZELLeyLc0cKi6aXJ3JNZX8JuzOFAjL8mLMcH
-IXRCDtogt+fVO37mTQKxy/zmMNcwtEa0Qu33i1kK9uAQXfQBmCw0mlkT3FCchSXP
-j4hvp2SY3Z6zpl1YD0Dllgx36FzglKP8d3R5TTkYDbFLoBePscWgbhATGTCHJCkC
-fIxqJxZ1KT7C//du2JYx9HFgIqzzLBxGs47VinFOKc+8ekfzMLyjUaN4B7Iw1sKt
-a8irTX9EpStBYwzW22IUdv+2I6SQ3Igox3X+XNtPmUKHiAvulWdtBh//rkGvYApl
-0dLfVA5P2/fNLc19VwzvzfSe5U0ed25/lkXElx1+Tn/mlXiwzIuZsbO/vwWPK4f6
-7cnzv9piYWuZQ2ckRvcdpJtDTC0EHiUnhVceQr9j6XUvok7ntYDzzQVnDJMHfFdO
-Fx6HusY6m2rIjmRnkyS7
-=umqx
+iQIcBAEBCgAGBQJUu5DKAAoJENju1/PIO/qaygEP/35fzlaFXPukzaXdJ3ifxHzQ
+/Ik7Ur+DUAKnl3STzOi6XW1RraNM5v00yCB8wrCdoW6fsgk7aLIzj8v08Encq/Ku
+/8jncC8s2Au0BdFHiF7xkDO76KncThZoJ0smpNqPtVyHoMT+EuDm2YeZXbFKeZYK
+OuCUC4F6GXWAJjaETF6t8Ntf1bpS5fh9R5A6RhAa9E78zR63KMCi74wtpMM5uagU
+JCq8iCdBwcheILaeTBx/cFj5F0+feeqiEsKBbfmvh2DO/VV21XxHjWt3Ku/R3CDT
+Ux728KSE8MKJprB7gxD/4ZiTIgXv41bkw6BxOkcpfJPZ/FxMVZGtBmCeUc55drAy
+lee35y6JJ/WN0CX9qqHa9HSFovIPQI5hNSuL5SWLSqm5G2JlpGq7lQWo3TOfe/T7
+ffsHizd3BjHQ2KHQqwnVNeByUXMmm/43WgqD0yitMiLKqoYo2UZuzdnzo0Yt76UT
+FRQ1AkTJo45SILSHQGTrKQn1Zh17zFotybqt8P3qKMldhPTmktZFb0tvLompamMS
+JhKaf+CaPRfkS8K2erdnQ42Rs09L9TNc4YpjGPyskRW4OuyLp8CYQsUSR/L26gB2
+YmJUisEpxNeUh1qaxZwZrvjcSOrhQdvUAzx0uXHwQ7L6Kt1LQgzuypEQhdwpqRto
+VnJts7ggRRhpqXIdG1Nb
+=dJz+
 -----END PGP SIGNATURE-----
 
---liOOAslEiF7prFVr--
+--bCsyhTFzCvuiizWE--
