@@ -1,70 +1,74 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: RFC on cpufreq implementation
-Date: Mon, 19 Jan 2015 23:13:53 +0100
-Message-ID: <54BD81A1.6030301@free.fr>
-References: <54B7F7CD.7030903@free.fr>
-	<CAHLCerMq0HnhS3ki3U1te5A8+NiDwpFNL_5_bm-CR4LoYFLo=A@mail.gmail.com>
+From: Tobias Jakobi <liquid.acid@gmx.net>
+Subject: Re: [PATCH v3 00/16] thermal: exynos: Thermal code rework to
+ use device tree
+Date: Tue, 20 Jan 2015 00:29:59 +0100
+Message-ID: <54BD9377.30606@gmx.net>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com> <1421242874-3425-1-git-send-email-l.majewski@samsung.com> <54B8549F.60707@gmx.net> <20150116092946.38860303@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerMq0HnhS3ki3U1te5A8+NiDwpFNL_5_bm-CR4LoYFLo=A@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.17.21]:60603 "EHLO mout.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751552AbbASXaI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 19 Jan 2015 18:30:08 -0500
+In-Reply-To: <20150116092946.38860303@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, tomasz.figa@gmail.com
 
-On 19/01/2015 10:22, Amit Kucheria wrote:
+Hello!
 
-> On Thu, Jan 15, 2015 at 10:54 PM, Mason wrote:
+Lukasz Majewski wrote:
+> We all know that this code is floating around - early version of this
+> work was posted in the Q3 2013.
 > 
->> This is a follow-up to my previous thread.
->> "How many frequencies would cpufreq optimally like to manage?"
->> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
->>
->> As I originally wrote, I'm running 3.14 on an ARM Cortex-A9
->> based SoC (namely Tango4 from Sigma Designs). I'd like to get
->> some feedback on the cpufreq driver I wrote for that platform.
->>
->> I decided to expose only a small subset of frequencies (namely
->> {999,500,333,111} MHz) because, in my tests, the ondemand gov
->> chose mostly min and max, and the intermediate frequencies not
->> so much; so I figured "2 intermediate freqs" is good enough.
->> (I'm ready to hear otherwise.)
+> To be fair - this code is both needed and welcome, but new problems
+> with it are found (please search for recent comment from Kevin
+> Hilman).
 > 
-> How many states are really enough depends on the main workloads
-> running on your system. In a closed system (limited number of
-> applications) you can easily characterise your workloads and see what
-> operating points (OPP = voltage, frequency pair) the system spends
-> most of its time in (CPU_FREQ_STAT_DETAILS) and optimize out the
-> remaining OPPs.
+> From my side, I focus on the code which is in Eduardo Valentin's next
+> (3.19-rc3), since I don't know when and if eventually cpufreq rework
+> would be merged.
+I'm sorry, my wording wasn't the best here. I'm not critizing the work
+done here, merely voicing my concern (and also interest!) about how the
+new stuff interacts with code that may eventually get merged.
+You're aware of it, that's enough for me to know.
 
-Testing with CPU_FREQ_STAT_DETAILS enabled is on my TODO list.
-Thanks for reminding me!
 
-> In an open-ended system where you don't control what applications will
-> run on the system (e.g. android phone), it is probably a good idea to
-> expose more OPPs while keeping in mind that exposing 50 frequencies is
-> probably overkill (and silly) since you're spending more time reaching
-> the "optimum" OPP. Pick some high-impact ones e.g. ones that allow you
-> to lower your voltage.
-
-The current SoC does not support dynamic voltage scaling at all.
-So I'm just tweaking the frequency. IIUC, if I divide freq by 4,
-power should be divided by 4?
-
->> I tried to use as much generic framework as possible, but I've
->> read about the clk framework, and it looks to be an even greater
->> generalization. Are new platforms encouraged to use that, rather
->> than provide a cpufreq driver? Does it work when voltage scaling
->> comes in play? (This SoC doesn't have it, but the next will.)
->>
->> I'm also wondering how cpufreq and cpuidle interact? Is one a
->> subset of the other? Are they orthogonal?
+> The code which touches exynos-cpufreq.c is around 30 LOC, only for
+> preserving cpu cooling functionality.
 > 
-> These queries have been answered by Krzysztof.
+> Is it worth to wait for code developed for so long to happily apply 30
+> LOC and delay removal of around 400 LOC in other subsystem (thermal)?
+No, of course not. That was pretty stupid of me :(
 
-The current SoC does not support any "deep" sleep; I was told that
-the core just powers "itself" down after a WFI, nothing fancier.
 
-Regards.
+> I rise my hand as a volunteer to fix any thermal related issues which
+> show up after cpufreq rework code applying to Exynos.
+That's certainly good to hear!
+
+
+> This series is NOT providing any NEW functionality. It in fact
+> preserves functionality, which allows using CPU frequency as a mean to
+> cool the device.
+I've got a question concerning this. Is this only needed for
+exynos-cpufreq, or does cpufreq-dt also need something like that.
+
+The point is that I'm still working with a rather old version of the
+cpufreq series, a version which still had the Exynos4x12 code in it
+(this was removed later, if I remember correctly because of problems
+with how to properly describe boost configuration in DT).
+
+
+Anyway, to not get completly off-topic here, I noticed some small issue
+with v3 of the thermal series. I've enabled CONFIG_THERMAL_HWMON so that
+I can use lm_sensors to query temperature of the board. However while
+the thermal_zone is created, there is no hwmon node to be found. This
+was working properly without the thermal series.
+
+
+With best wishes,
+Tobias
+
