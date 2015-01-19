@@ -1,142 +1,42 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH v2] thermal: rockchip: make temperature reporting much
- more accurate
-Date: Mon, 19 Jan 2015 12:23:49 +0800
-Message-ID: <CAGS+omDiajqKxYFqdBXTeax+eeE-TD1WJ+C5odCbZBg6FELXDA@mail.gmail.com>
-References: <1421625349-14101-1-git-send-email-wxt@rock-chips.com> <1421625349-14101-2-git-send-email-wxt@rock-chips.com>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation failure caused
+ by commit b81975eade8c
+Date: Mon, 19 Jan 2015 12:39:27 +0800
+Message-ID: <54BC8A7F.5070502@linux.intel.com>
+References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com> <20150116181318.GA22690@l.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f176.google.com ([209.85.220.176]:52711 "EHLO
-	mail-vc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbbASEYL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 23:24:11 -0500
-Received: by mail-vc0-f176.google.com with SMTP id hq12so9539839vcb.7
-        for <linux-pm@vger.kernel.org>; Sun, 18 Jan 2015 20:24:10 -0800 (PST)
-In-Reply-To: <1421625349-14101-2-git-send-email-wxt@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150116181318.GA22690@l.oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Caesar,
 
-Some drive-by review comments inline...
-
-On Mon, Jan 19, 2015 at 7:55 AM, Caesar Wang <wxt@rock-chips.com> wrote:
-> In general, the kernel should report temperature readings exactly as
-> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
-> increments,but we ought to do more accurate. The temperature will do
-> linear interpolation between the entries in the table.
->
-> Test= $md5sum /dev/zero &
-> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
-> sleep .5; done
->
-> e.g. We can get the result as follows:
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39086
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39994
->
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> ---
->
-> Changes in v2:
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
->  drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
->  1 file changed, 17 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 1bcddfc..a7ae23a 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
->
->  static long rk_tsadcv2_code_to_temp(u32 code)
->  {
-> -       int high, low, mid;
-> -
-> -       low = 0;
-> -       high = ARRAY_SIZE(v2_code_table) - 1;
-> -       mid = (high + low) / 2;
-> +       unsigned int low = 0;
-> +       unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
-> +       unsigned int mid = (low + high) / 2;
-> +       unsigned int scale;
->
->         if (code > v2_code_table[low].code || code < v2_code_table[high].code)
->                 return 125000; /* No code available, return max temperature */
-
-I think if the temp sensor reading was invalid we should return an
-error code rather than just silently returning "max temp".
-Returning an error here could then be propagated up by its only
-caller, the ->get_temp() callback.
-
-Note: 'code < v2_code_table[high].code' is always false, since code is
-unsigned, and the last entry is 0.
-
-Also, the check above doesn't reject "code == 0xfff".
-Even worse, I believe in that case the below algorithm will eventually
-set mid=0 and access v2_code_table[-1].code.
-
->
->         while (low <= high) {
-> -               if (code >= v2_code_table[mid].code && code <
-> -                   v2_code_table[mid - 1].code)
-> -                       return v2_code_table[mid].temp;
-> +               if (code >= v2_code_table[mid].code &&
-> +                   code < v2_code_table[mid - 1].code)
-> +                       break;
->                 else if (code < v2_code_table[mid].code)
->                         low = mid + 1;
->                 else
-> @@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
->                 mid = (low + high) / 2;
->         }
->
-> -       return 125000;
-> +       /*
-> +        * The 5C granularity provided by the table is too much. Let's
-> +        * assume that the relationship between sensor readings and
-> +        * temperature between 2 table entries is linear and extrapolate
-
-I think this is "interpolate", not "extrapolate".
-
-> +        * to produce less granular result.
-> +        */
-> +       scale = (v2_code_table[mid].temp - v2_code_table[mid - 1].temp) /
-> +               (v2_code_table[mid - 1].code - v2_code_table[mid].code);
-> +       return v2_code_table[mid - 1].temp +
-> +                       (v2_code_table[mid - 1].code - code) * scale;
-
-Assuming the product fits in an unsigned long (and it will, since code
-is only 12-bits), it is more precise to multiply first and then
-divide, something like this:
-
-   num = v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
-   num *= v2_code_table[mid - 1].code - code;
-   denom = v2_code_table[mid - 1].code - v2_code_table[mid].code;
-   return v2_code_table[mid - 1].temp + (num / denom);
-
--Daniel
-
->  }
->
->  /**
-> --
-> 1.9.1
->
->
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+On 2015/1/17 2:13, Konrad Rzeszutek Wilk wrote:
+> On Thu, Jan 15, 2015 at 09:04:35PM +0800, Jiang Liu wrote:
+<snit>
+>>
+>> Note: we need to test this patch on those special AMD systems which
+>> override normal SCI GSI (9) with strange GSI (20).
+> 
+> [    0.000000] DMI: Supermicro X8DTN/X8DTN, BIOS 2.1c       10/28/2011
+> ..
+>      0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low level)
+> [    0.000000] ACPI: IRQ0 used by override.
+> ..
+>     6.358737] xen: registering gsi 20 triggering 0 polarity 1
+> [    6.358756] xen: --> pirq=20 -> irq=20 (gsi=20)
+> ...
+> -bash-4.1# cat /proc/interrupts |grep acpi
+>  20:          0          0          0  xen-pirq-ioapic-level  acpi
+> 
+Thanks Konrad, it works as expected. Previously IRQ9 was assigned
+to ACPI SCI GSI 20, now it assigns IRQ20. But that's OK, ACPI has
+no special requirement about the assigned IRQ number, we could
+assign any valid IRQ number for ACPI SCI GSI.
+Thanks!
+Gerry
