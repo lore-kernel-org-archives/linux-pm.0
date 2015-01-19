@@ -1,102 +1,142 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] PCI: keep enable status consistent for device without driver
-Date: Sun, 18 Jan 2015 18:29:27 -0800
-Message-ID: <CAE9FiQUDjmZT2bSMBz6XxE5Vb80bF0=mrCOP0zcHuHOV=voD8A@mail.gmail.com>
-References: <1421300208-7087-1-git-send-email-yinghai@kernel.org>
-	<20150115235559.GC29776@google.com>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH v2] thermal: rockchip: make temperature reporting much
+ more accurate
+Date: Mon, 19 Jan 2015 12:23:49 +0800
+Message-ID: <CAGS+omDiajqKxYFqdBXTeax+eeE-TD1WJ+C5odCbZBg6FELXDA@mail.gmail.com>
+References: <1421625349-14101-1-git-send-email-wxt@rock-chips.com> <1421625349-14101-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f172.google.com ([209.85.213.172]:61291 "EHLO
-	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbbASC33 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 21:29:29 -0500
-In-Reply-To: <20150115235559.GC29776@google.com>
+Received: from mail-vc0-f176.google.com ([209.85.220.176]:52711 "EHLO
+	mail-vc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbbASEYL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jan 2015 23:24:11 -0500
+Received: by mail-vc0-f176.google.com with SMTP id hq12so9539839vcb.7
+        for <linux-pm@vger.kernel.org>; Sun, 18 Jan 2015 20:24:10 -0800 (PST)
+In-Reply-To: <1421625349-14101-2-git-send-email-wxt@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Wilmer van der Gaast <kernel@wilmer.gaast.net>, Zhang Rui <rui.zhang@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, Jan 15, 2015 at 3:55 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> [+cc Rafael, Pavel, linux-pm]
->
-> On Wed, Jan 14, 2015 at 09:36:48PM -0800, Yinghai Lu wrote:
->> Wilmer reported continuous suspend/resume does not work after
->> commit 928bea964827 ("PCI: Delay enabling bridges until they're needed").
->>
->> For pci bridge without driver, FW enable it already.
->> In pci_pm_resume/pci_pm_reenable_device after first resume
->> will not reenable the device, aka the status is not the same
->> as that before first suspend.
->>
->> Try to update enable status according to register value before
->> calling pci_reenable_device, so we will not miss those pm
->> operation calling for next suspend/resume.
->>
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=86421
->> Fixes: 928bea964827 ("PCI: Delay enabling bridges until they're needed")
->> Reported-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
->> Bisected-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
->> Tested-by: Wilmer van der Gaast <kernel@wilmer.gaast.net>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> CC: stable@vger.kernel.org  # v3.10+
->
-> 928bea964827 appeared in v3.12.  Did you mean v3.12+ instead of v3.10+?
+Hi Caesar,
 
-Yes.
+Some drive-by review comments inline...
 
-get confused that Wilmer can not use 3.10 stable kernel.
+On Mon, Jan 19, 2015 at 7:55 AM, Caesar Wang <wxt@rock-chips.com> wrote:
+> In general, the kernel should report temperature readings exactly as
+> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
+> increments,but we ought to do more accurate. The temperature will do
+> linear interpolation between the entries in the table.
+>
+> Test= $md5sum /dev/zero &
+> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
+> sleep .5; done
+>
+> e.g. We can get the result as follows:
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39086
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39994
+>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>
+> ---
+>
+> Changes in v2:
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>
+>  drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
+>  1 file changed, 17 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 1bcddfc..a7ae23a 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
+>
+>  static long rk_tsadcv2_code_to_temp(u32 code)
+>  {
+> -       int high, low, mid;
+> -
+> -       low = 0;
+> -       high = ARRAY_SIZE(v2_code_table) - 1;
+> -       mid = (high + low) / 2;
+> +       unsigned int low = 0;
+> +       unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
+> +       unsigned int mid = (low + high) / 2;
+> +       unsigned int scale;
+>
+>         if (code > v2_code_table[low].code || code < v2_code_table[high].code)
+>                 return 125000; /* No code available, return max temperature */
+
+I think if the temp sensor reading was invalid we should return an
+error code rather than just silently returning "max temp".
+Returning an error here could then be propagated up by its only
+caller, the ->get_temp() callback.
+
+Note: 'code < v2_code_table[high].code' is always false, since code is
+unsigned, and the last entry is 0.
+
+Also, the check above doesn't reject "code == 0xfff".
+Even worse, I believe in that case the below algorithm will eventually
+set mid=0 and access v2_code_table[-1].code.
 
 >
-> I'd really like to get Rafael and Pavel to take a look at this.
+>         while (low <= high) {
+> -               if (code >= v2_code_table[mid].code && code <
+> -                   v2_code_table[mid - 1].code)
+> -                       return v2_code_table[mid].temp;
+> +               if (code >= v2_code_table[mid].code &&
+> +                   code < v2_code_table[mid - 1].code)
+> +                       break;
+>                 else if (code < v2_code_table[mid].code)
+>                         low = mid + 1;
+>                 else
+> @@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
+>                 mid = (low + high) / 2;
+>         }
 >
->> ---
->>  drivers/pci/pci-driver.c |    9 +++++++++
->>  1 file changed, 9 insertions(+)
->>
->> Index: linux-2.6/drivers/pci/pci-driver.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/pci/pci-driver.c
->> +++ linux-2.6/drivers/pci/pci-driver.c
->> @@ -519,8 +519,17 @@ static void pci_pm_set_unknown_state(str
->>   */
->>  static int pci_pm_reenable_device(struct pci_dev *pci_dev)
->>  {
->> +     u16 cmd;
->>       int retval;
->>
->> +     /* update enable_cnt according to cmd register */
->> +     pci_read_config_word(pci_dev, PCI_COMMAND, &cmd);
->> +     if (!pci_dev->is_busmaster && (cmd & PCI_COMMAND_MASTER))
->> +             pci_dev->is_busmaster = true;
->
->
->> +     if (!pci_is_enabled(pci_dev) &&
->> +         (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)))
->> +             atomic_inc(&pci_dev->enable_cnt);
->
-> This doesn't feel right because we're handling enable_cnt differently here
-> than we do on initial boot.
->
-> On initial boot, I don't think we set enable_cnt based on whether firmware
-> left the IO or MEMORY bits set in the command register.  Why should we
-> modify enable_cnt based on the command register during resume?
->
-> I could certainly believe we should do something during initial boot, too.
-> It just seems like we should look at the command register in both places or
-> neither place.
->
+> -       return 125000;
+> +       /*
+> +        * The 5C granularity provided by the table is too much. Let's
+> +        * assume that the relationship between sensor readings and
+> +        * temperature between 2 table entries is linear and extrapolate
 
-BIOS set power state correctly, so first suspend/resume will work.
+I think this is "interpolate", not "extrapolate".
 
-late because setting power state will rely on the enable-cnt, first resume would
-not set the power state related correctly, then second suspend/resume will not
-work anymore.
+> +        * to produce less granular result.
+> +        */
+> +       scale = (v2_code_table[mid].temp - v2_code_table[mid - 1].temp) /
+> +               (v2_code_table[mid - 1].code - v2_code_table[mid].code);
+> +       return v2_code_table[mid - 1].temp +
+> +                       (v2_code_table[mid - 1].code - code) * scale;
 
-will check if we can change to:
-check hw status, and then enable the pci device on boot path instead.
+Assuming the product fits in an unsigned long (and it will, since code
+is only 12-bits), it is more precise to multiply first and then
+divide, something like this:
 
-Thanks
+   num = v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
+   num *= v2_code_table[mid - 1].code - code;
+   denom = v2_code_table[mid - 1].code - v2_code_table[mid].code;
+   return v2_code_table[mid - 1].temp + (num / denom);
 
-Yinghai
+-Daniel
+
+>  }
+>
+>  /**
+> --
+> 1.9.1
+>
+>
+>
+> _______________________________________________
+> Linux-rockchip mailing list
+> Linux-rockchip@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-rockchip
