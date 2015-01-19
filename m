@@ -1,18 +1,22 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
 Subject: Re: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation failure caused
  by commit b81975eade8c
-Date: Mon, 19 Jan 2015 12:39:27 +0800
-Message-ID: <54BC8A7F.5070502@linux.intel.com>
+Date: Mon, 19 Jan 2015 12:41:24 +0800
+Message-ID: <54BC8AF4.6010504@linux.intel.com>
 References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com> <20150116181318.GA22690@l.oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:13310 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751185AbbASEl3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 18 Jan 2015 23:41:29 -0500
 In-Reply-To: <20150116181318.GA22690@l.oracle.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 Cc: Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, linux-pci@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 
 On 2015/1/17 2:13, Konrad Rzeszutek Wilk wrote:
@@ -33,10 +37,7 @@ On 2015/1/17 2:13, Konrad Rzeszutek Wilk wrote:
 > ...
 > -bash-4.1# cat /proc/interrupts |grep acpi
 >  20:          0          0          0  xen-pirq-ioapic-level  acpi
-> 
-Thanks Konrad, it works as expected. Previously IRQ9 was assigned
-to ACPI SCI GSI 20, now it assigns IRQ20. But that's OK, ACPI has
-no special requirement about the assigned IRQ number, we could
-assign any valid IRQ number for ACPI SCI GSI.
+Hi Konrad,
+	May I assume an Tested-by from you here?
 Thanks!
 Gerry
