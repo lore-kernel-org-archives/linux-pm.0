@@ -1,61 +1,37 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: RFC on cpufreq implementation
-Date: Mon, 19 Jan 2015 14:52:52 +0530
-Message-ID: <CAHLCerMq0HnhS3ki3U1te5A8+NiDwpFNL_5_bm-CR4LoYFLo=A@mail.gmail.com>
-References: <54B7F7CD.7030903@free.fr>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v4 4/9] clk: samsung: exynos4: Add divider clock id for
+ memory bus frequency
+Date: Mon, 19 Jan 2015 09:31:34 +0000 (GMT)
+Message-ID: <889613260.1254421421659891455.JavaMail.weblogic@epmlwas05d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:46480 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbbASJWx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 04:22:53 -0500
-Received: by mail-lb0-f178.google.com with SMTP id u14so26985749lbd.9
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jan 2015 01:22:52 -0800 (PST)
-In-Reply-To: <54B7F7CD.7030903@free.fr>
+Received: from mailout2.samsung.com ([203.254.224.25]:45983 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbbASJbw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 04:31:52 -0500
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NIF00L753SMN9D0@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 19 Jan 2015 18:31:34 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-On Thu, Jan 15, 2015 at 10:54 PM, Mason <mpeg.blue@free.fr> wrote:
-> Hello,
->
-> This is a follow-up to my previous thread.
-> "How many frequencies would cpufreq optimally like to manage?"
-> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
->
-> As I originally wrote, I'm running 3.14 on an ARM Cortex-A9
-> based SoC (namely Tango4 from Sigma Designs). I'd like to get
-> some feedback on the cpufreq driver I wrote for that platform.
->
-> I decided to expose only a small subset of frequencies (namely
-> {999,500,333,111} MHz) because, in my tests, the ondemand gov
-> chose mostly min and max, and the intermediate frequencies not
-> so much; so I figured "2 intermediate freqs" is good enough.
-> (I'm ready to hear otherwise.)
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBkaXZpZGVyIGNsb2NrIGlkIGZvciBFeHlub3M0
+IG1lbW9yeSBidXMgZnJlcXVlbmN5Lg0KPiBUaGUgY2xvY2sgaWQgaXMgdXNlZCBmbyBEVkZTIChE
+eW5hbWljIFZvbHRhZ2UvRnJlcXVlbmN5IFNjYWxpbmcpDQo+IGZlYXR1cmUgb2YgZXh5bm9zIG1l
+bW9yeSBidXMgZnJlcXVlbmN5Lg0KPiANCj4gQ2M6IFN5bHdlc3RlciBOYXdyb2NraSA8cy5uYXdy
+b2NraUBzYW1zdW5nLmNvbT4NCj4gQ2M6IFRvbWFzeiBGaWdhIDx0b21hc3ouZmlnYUBnbWFpbC5j
+b20+DQo+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29t
+Pg0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoN
+CkFueXdheSwgeW91IHdpbGwgbmVlZCByZXZpZXdzIGZyb20gU3lsd2VzdGVyIGFuZC9vciBUb21h
+c3ogZm9yIHRoaXMgb25lLg0KDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg==
 
-How many states are really enough depends on the main workloads
-running on your system. In a closed system (limited number of
-applications) you can easily characterise your workloads and see what
-operating points (OPP = voltage, frequency pair) the system spends
-most of its time in (CPU_FREQ_STAT_DETAILS) and optimize out the
-remaining OPPs.
 
-In an open-ended system where you don't control what applications will
-run on the system (e.g. android phone), it is probably a good idea to
-expose more OPPs while keeping in mind that exposing 50 frequencies is
-probably overkill (and silly) since you're spending more time reaching
-the "optimum" OPP. Pick some high-impact ones e.g. ones that allow you
-to lower your voltage.
-
-> I tried to use as much generic framework as possible, but I've
-> read about the clk framework, and it looks to be an even greater
-> generalization. Are new platforms encouraged to use that, rather
-> than provide a cpufreq driver? Does it work when voltage scaling
-> comes in play? (This SoC doesn't have it, but the next will.)
->
-> I'm also wondering how cpufreq and cpuidle interact? Is one a
-> subset of the other? Are they orthogonal?
-
-These queries have been answered by Krzysztof.
