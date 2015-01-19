@@ -1,94 +1,92 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 11/18] thermal: exynos: dts: Define default thermal-zones
- for Exynos4
-Date: Mon, 19 Jan 2015 12:20:55 +0100
-Message-ID: <1421666462-7606-12-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 09/18] dts: Documentation: Extending documentation entry for
+ exynos-thermal
+Date: Mon, 19 Jan 2015 12:20:53 +0100
+Message-ID: <1421666462-7606-10-git-send-email-l.majewski@samsung.com>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:57977 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbbASLXF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 06:23:05 -0500
 In-reply-to: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-Trip points corresponding to the one defined in the exynos_tmu_data.c
-for Exynos4 have been included.
-This thermal-zones attribute is afterwards reused for Exynos4210, Exynos4412
-and Exynos5250.
+Properties necessary for providing Exynos thermal configuration via device
+tree.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
-Changes for v2:
-- None
 Changes for v3:
-- None
+- New patch
 Changes for v4:
-- None
+- Remove entry regarding Exynos5440
 Changes for v5:
 - None
----
- arch/arm/boot/dts/exynos4-cpu-thermal.dtsi | 52 ++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
- create mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
 
-diff --git a/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi b/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
-new file mode 100644
-index 0000000..506600a
---- /dev/null
-+++ b/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
-@@ -0,0 +1,52 @@
-+/*
-+ * Device tree sources for Exynos4 thermal zone
-+ *
-+ * Copyright (c) 2014 Lukasz Majewski <l.majewski@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+/ {
-+  thermal-zones {
-+	cpu_thermal: cpu-thermal {
-+		thermal-sensors = <&tmu 0>;
-+		polling-delay-passive = <0>;
-+		polling-delay = <0>;
-+		trips {
-+			cpu_alert0: cpu-alert-0 {
-+				temperature = <70000>; /* millicelsius */
-+				hysteresis = <10000>; /* millicelsius */
-+				type = "active";
-+			};
-+			cpu_alert1: cpu-alert-1 {
-+				temperature = <95000>; /* millicelsius */
-+				hysteresis = <10000>; /* millicelsius */
-+				type = "active";
-+			};
-+			cpu_alert2: cpu-alert-2 {
-+				temperature = <110000>; /* millicelsius */
-+				hysteresis = <10000>; /* millicelsius */
-+				type = "active";
-+			};
-+			cpu_crit0: cpu-crit-0 {
-+				temperature = <120000>; /* millicelsius */
-+				hysteresis = <0>; /* millicelsius */
-+				type = "critical";
-+			};
-+		};
-+		cooling-maps {
-+			map0 {
-+			    trip = <&cpu_alert0>;
-+			};
-+			map1 {
-+			    trip = <&cpu_alert1>;
-+			};
-+		};
-+	};
-+  };
-+};
+---
+ .../devicetree/bindings/thermal/exynos-thermal.txt       | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+index ae738f5..8497794 100644
+--- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+@@ -39,6 +39,18 @@
+ - vtmu-supply: This entry is optional and provides the regulator node supplying
+ 		voltage to TMU. If needed this entry can be placed inside
+ 		board/platform specific dts file.
++Following properties are mandatory (depending on SoC):
++- samsung,tmu_gain: Gain value for internal TMU operation.
++- samsung,tmu_reference_voltage: Value of TMU IP block's reference voltage
++- samsung,tmu_noise_cancel_mode: Mode for noise cancellation
++- samsung,tmu_efuse_value: Default level of temperature - it is needed when
++			   in factory fusing produced wrong value
++- samsung,tmu_min_efuse_value: Minimum temperature fused value
++- samsung,tmu_max_efuse_value: Maximum temperature fused value
++- samsung,tmu_first_point_trim: First point trimming value
++- samsung,tmu_second_point_trim: Second point trimming value
++- samsung,tmu_default_temp_offset: Default temperature offset
++- samsung,tmu_cal_type: Callibration type
+ 
+ Example 1):
+ 
+@@ -51,6 +63,7 @@ Example 1):
+ 		clock-names = "tmu_apbif";
+ 		status = "disabled";
+ 		vtmu-supply = <&tmu_regulator_node>;
++		#include "exynos4412-tmu-sensor-conf.dtsi"
+ 	};
+ 
+ Example 2):
+@@ -70,6 +83,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
+ 		interrupts = <0 184 0>;
+ 		clocks = <&clock 318>, <&clock 318>;
+ 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
++		#include "exynos4412-tmu-sensor-conf.dtsi"
+ 	};
+ 
+ 	tmu_cpu3: tmu@1006c000 {
+@@ -78,6 +92,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
+ 		interrupts = <0 185 0>;
+ 		clocks = <&clock 318>, <&clock 319>;
+ 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
++		#include "exynos4412-tmu-sensor-conf.dtsi"
+ 	};
+ 
+ 	tmu_gpu: tmu@100a0000 {
+@@ -86,6 +101,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
+ 		interrupts = <0 215 0>;
+ 		clocks = <&clock 319>, <&clock 318>;
+ 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
++		#include "exynos4412-tmu-sensor-conf.dtsi"
+ 	};
+ 
+ Note: For multi-instance tmu each instance should have an alias correctly
 -- 
 2.0.0.rc2
+
