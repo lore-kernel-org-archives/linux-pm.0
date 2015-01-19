@@ -1,43 +1,101 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation failure caused
- by commit b81975eade8c
-Date: Mon, 19 Jan 2015 12:41:24 +0800
-Message-ID: <54BC8AF4.6010504@linux.intel.com>
-References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com> <1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com> <20150116181318.GA22690@l.oracle.com>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v4 0/4] power: Add max77693 charger driver
+Date: Mon, 19 Jan 2015 08:40:26 +0100
+Message-ID: <1421653226.4247.5.camel@AMDC1943>
+References: <1420453019-28614-1-git-send-email-k.kozlowski@samsung.com>
+ <20150118180002.GJ3574@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:13310 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbbASEl3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 18 Jan 2015 23:41:29 -0500
-In-Reply-To: <20150116181318.GA22690@l.oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <20150118180002.GJ3574@x1>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, linux-pci@vger.kernel.org
+
+On nie, 2015-01-18 at 18:00 +0000, Lee Jones wrote:
+> Tell us what you need?
+
+Hi Lee,
 
 
-On 2015/1/17 2:13, Konrad Rzeszutek Wilk wrote:
-> On Thu, Jan 15, 2015 at 09:04:35PM +0800, Jiang Liu wrote:
-<snit>
->>
->> Note: we need to test this patch on those special AMD systems which
->> override normal SCI GSI (9) with strange GSI (20).
+All I need is... acks or applying of patchset by Sebastian. Sebastian
+acked main patch (3/4) but then I changed it [1].
+
+You already acked the MFD change (patch 2/4: mfd: max77693: Add defines
+for MAX77693 charger driver).
+
+The patch with bindings (1/4: devicetree: power/mfd: max77693: Document
+new bindings for charger) actually adds bindings for charger so rather
+Sebastian's opinion is needed.
+
+Other patches are from power supply subsystem.
+Thanks for asking!
+
+
+Dear Sebastian,
+
+You already looked at the patchset [1], so maybe you could pick it up?
+
+[1] https://lkml.org/lkml/2014/10/27/774
+
+Best regards,
+Krzysztof
+
 > 
-> [    0.000000] DMI: Supermicro X8DTN/X8DTN, BIOS 2.1c       10/28/2011
-> ..
->      0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low level)
-> [    0.000000] ACPI: IRQ0 used by override.
-> ..
->     6.358737] xen: registering gsi 20 triggering 0 polarity 1
-> [    6.358756] xen: --> pirq=20 -> irq=20 (gsi=20)
-> ...
-> -bash-4.1# cat /proc/interrupts |grep acpi
->  20:          0          0          0  xen-pirq-ioapic-level  acpi
-Hi Konrad,
-	May I assume an Tested-by from you here?
-Thanks!
-Gerry
+> > Changes since v3
+> > ================
+> > 1. Patch 3/4: Don't create platform data structure for charger settings
+> >    because driver won't be used on non-DT SoCs (its for Exynos based
+> >    Trats2).
+> > 2. Patch 3/4: Drop Sebastian's ack [1] because of change above.
+> > 
+> > Changes since v2
+> > ================
+> > 1. Add ack from Sebastian Reichel (charger driver).
+> > 2. Drop patch "mfd: max77693: Map charger device to its own of_node"
+> >    (applied by Lee Jones).
+> > 
+> > 
+> > Changes since v1
+> > ================
+> > 1. Add patch 2/5: mfd: max77693: Map charger device to its own of_node
+> >    (forgot to send it in v1)
+> > 2. Remove patches for DTS and configs. I'll send them later.
+> > 3. Add ack from Lee Jones (patch 3/5).
+> > 
+> > 
+> > Description
+> > ===========
+> > The patchset adds max77693 charger driver present on Trats2 board
+> > (and Galaxy S III). The driver configures battery charger and exposes
+> > power supply interface.
+> > 
+> > Driver is necessary to provide full charging stack on Trats2 device
+> > (extcon, charger-manager etc.).
+> > 
+> > [1] https://lkml.org/lkml/2014/10/27/774
+> > 
+> > 
+> > Best regards,
+> > Krzysztof
+> > 
+> > 
+> > 
+> > Krzysztof Kozlowski (4):
+> >   devicetree: power/mfd: max77693: Document new bindings for charger
+> >   mfd: max77693: Add defines for MAX77693 charger driver
+> >   power: max77693: Add charger driver for Maxim 77693
+> >   Documentation: power: max77693-charger: Document exported sysfs entry
+> > 
+> >  Documentation/ABI/testing/sysfs-class-power        |  42 ++
+> >  Documentation/devicetree/bindings/mfd/max77693.txt |  45 ++
+> >  drivers/power/Kconfig                              |   6 +
+> >  drivers/power/Makefile                             |   1 +
+> >  drivers/power/max77693_charger.c                   | 758 +++++++++++++++++++++
+> >  include/linux/mfd/max77693-private.h               | 108 +++
+> >  6 files changed, 960 insertions(+)
+> >  create mode 100644 drivers/power/max77693_charger.c
+> > 
+> 
