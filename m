@@ -1,53 +1,115 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 04/18] arm: dts: odroid: Add LDO10 regulator node necessary
- for TMU on Odroid
-Date: Mon, 19 Jan 2015 12:20:48 +0100
-Message-ID: <1421666462-7606-5-git-send-email-l.majewski@samsung.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle/powernv: Read target_residency value of idle states
+ from DT if available
+Date: Mon, 19 Jan 2015 17:02:51 +0530
+Message-ID: <20150119113251.23984.16931.stgit@preeti.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:62310 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbbASLWt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 06:22:49 -0500
-In-reply-to: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+Received: from e32.co.us.ibm.com ([32.97.110.150]:56188 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbbASLdC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 06:33:02 -0500
+Received: from /spool/local
+	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 19 Jan 2015 04:33:01 -0700
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+To: rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, benh@kernel.crashing.org, linux-kernel@vger.kernel.org, mpe@ellerman.id.au, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- None
-Changes for v3:
-- Patch title has been changed from thermal: dts: exynos to arm: dts: Odroid
-Changes for v4:
-- None
-Changes for v5:
-- None
----
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+The device tree now exposes the residency values for different idle states. Read
+these values instead of calculating residency from the latency values. The values
+exposed in the DT are validated for optimal power efficiency. However to maintain
+compatibility with the older firmware code which does not expose residency
+values, use default values as a fallback mechanism. While at it, clump
+the common parts of device tree parsing into one chunk.
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 3fbf588..0adb57c 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -231,6 +231,13 @@
- 					regulator-always-on;
- 				};
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+
+ drivers/cpuidle/cpuidle-powernv.c |   39 ++++++++++++++++++++++++-------------
+ 1 file changed, 25 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 2726663..9e732e1 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
+ 	int dt_idle_states;
+ 	const __be32 *idle_state_flags;
+ 	const __be32 *idle_state_latency;
+-	u32 len_flags, flags, latency_ns;
++	const __be32 *idle_state_residency;
++	u32 len_flags, flags, latency_ns, residency_ns;
+ 	int i;
  
-+				ldo10_reg: LDO10 {
-+					regulator-name = "VDD18_MIPIHSI_1.8V";
-+					regulator-min-microvolt = <1800000>;
-+					regulator-max-microvolt = <1800000>;
-+					regulator-always-on;
-+				};
+ 	/* Currently we have snooze statically defined */
+@@ -186,14 +187,21 @@ static int powernv_add_idle_states(void)
+ 		return nr_idle_states;
+ 	}
+ 
++	idle_state_residency = of_get_property(power_mgt,
++			"ibm,cpu-idle-state-residency-ns", NULL);
++	if (!idle_state_residency) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
++		pr_warn("Falling back to default values\n");
++	}
 +
- 				ldo11_reg: LDO11 {
- 					regulator-name = "VDD18_ABB1_1.8V";
- 					regulator-min-microvolt = <1800000>;
--- 
-2.0.0.rc2
+ 	dt_idle_states = len_flags / sizeof(u32);
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 
+ 		flags = be32_to_cpu(idle_state_flags[i]);
+-
+-		/* Cpuidle accepts exit_latency in us and we estimate
+-		 * target residency to be 10x exit_latency
++		/*
++		 * Cpuidle accepts exit_latency and target_residency in us.
++		 * Use default target_residency values if f/w does not expose it.
+ 		 */
+ 		latency_ns = be32_to_cpu(idle_state_latency[i]);
+ 		if (flags & OPAL_PM_NAP_ENABLED) {
+@@ -201,12 +209,8 @@ static int powernv_add_idle_states(void)
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+ 			powernv_states[nr_idle_states].flags = 0;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+-			nr_idle_states++;
+ 		}
+ 
+ 		if (flags & OPAL_PM_SLEEP_ENABLED ||
+@@ -215,13 +219,20 @@ static int powernv_add_idle_states(void)
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+-			nr_idle_states++;
+ 		}
++
++		powernv_states[nr_idle_states].exit_latency =
++				((unsigned int)latency_ns) / 1000;
++
++		if (idle_state_residency) {
++			residency_ns = be32_to_cpu(idle_state_residency[i]);
++			powernv_states[nr_idle_states].target_residency =
++				((unsigned int)residency_ns) / 1000;
++		}
++
++		nr_idle_states++;
+ 	}
+ 
+ 	return nr_idle_states;
 
