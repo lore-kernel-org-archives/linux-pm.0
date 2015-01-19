@@ -1,193 +1,63 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 3/3] Documentation: Add documentation for rt5033
- multifunction device
-Date: Mon, 19 Jan 2015 08:15:02 +0000
-Message-ID: <20150119081502.GD21886@x1>
-References: <1420793114-20586-1-git-send-email-beomho.seo@samsung.com>
- <1420793114-20586-4-git-send-email-beomho.seo@samsung.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v4 1/9] devfreq: exynos: Add generic exynos memory bus
+ frequency driver
+Date: Mon, 19 Jan 2015 09:20:17 +0000 (GMT)
+Message-ID: <27342443.1253691421659213933.JavaMail.weblogic@epmlwas05d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f169.google.com ([209.85.213.169]:34500 "EHLO
-	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbbASIPJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 03:15:09 -0500
-Received: by mail-ig0-f169.google.com with SMTP id hl2so3781564igb.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jan 2015 00:15:08 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1420793114-20586-4-git-send-email-beomho.seo@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
-DT Ack please gents.
-
-> This patch device tree binding documentation for rt5033 multifunction=
- device.
->=20
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
-> Changes in v2
-> - Fix incorrect typo.
-> - Align -uamp and -uvolt names with regulator binding suffixes.
-> - Drop incorrect phandle.
-> - Fix incorrect example.
-> ---
->  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++++++++=
-++++++++++
->  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->  2 files changed, 102 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Docum=
-entation/devicetree/bindings/mfd/rt5033.txt
-> new file mode 100644
-> index 0000000..64b23e8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
-> @@ -0,0 +1,101 @@
-> +Richtek RT5033 Power management Integrated Circuit
-> +
-> +RT5033 is a Multifunction device which includes battery charger, fue=
-l gauge,
-> +flash LED current source, LDO and synchronous Buck converter for por=
-table
-> +applications. It is interfaced to host controller using i2c interfac=
-e.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033"
-> +- reg : Specifies the i2c slave address of general part.
-> +- interrupts : This i2c devices has an IRQ line connected to the mai=
-n SoC.
-> +- interrupt-parent : The parent interrupt controller.
-> +
-> +Optional node:
-> +Regulators: The regulators of RT5033 have to be instantiated under s=
-ub-node
-> +named "regulators" using the following format.
-> +
-> +	regulators {
-> +		regulator-name {
-> +			regulator-name =3D LDO/BUCK
-> +			regulator subnodes called X, Y and Z
-> +		};
-> +	};
-> +	refer Documentation/devicetree/bindings/regulator/regulator.txt
-> +
-> +
-> +Battery charger: There battery charger of RT5033 have to be instanti=
-ated under
-> +sub-node named "charger" using the following format.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033-charger".
-> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge curr=
-ent levels
-> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
-> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge c=
-urrent
-> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
-> +- richtek,eoc-uamp : This property is end of charge current. Its lev=
-el 150 mA
-> +  to 200 mA.
-> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode=
-=2E Battery
-> +  voltage is below pre-charge threshold voltage, the charger is in p=
-re-charge
-> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V progr=
-ammed
-> +  by I2C per 0.1 V.
-> +- richtek,const-uvolt :  Battery regulation voltage of constant volt=
-age mode.
-> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
-> +
-> +	charger {
-> +		compatible =3D "richtek,rt5033-charger";
-> +		richtek,pre-uamp =3D <350000>;
-> +		richtek,fast-uamp =3D <2000000>;
-> +		richtek,eoc-uamp =3D <250000>;
-> +		richtek,pre-threshold-uvolt =3D <3400000>;
-> +		richtek,const-uvolt =3D <4350000>;
-> +
-> +	};
-> +
-> +
-> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "=
-fuelgauge"
-> +using the following format.
-> +
-> +Required properties:
-> +- compatible =3D Must be "richtek,rt5033-battery".
-> +
-> +	rt5033@35 {
-> +		compatible =3D "richtek,rt5033-battery";
-> +		interrupt-parent =3D <&gpx2>;
-> +		interrupts =3D <3 0>;
-> +		reg =3D <0x35>;
-> +	};
-> +
-> +Example:
-> +
-> +		rt5033@34 {
-> +			compatible =3D "richtek,rt5033";
-> +			reg =3D <0x34>;
-> +			interrupt-parent =3D <&gpx1>;
-> +			interrupts =3D <5 0>;
-> +
-> +			regulators {
-> +				buck_reg: BUCK {
-> +					regulator-name =3D "BUCK";
-> +					regulator-min-microvolt =3D <1200000>;
-> +					regulator-max-microvolt =3D <1200000>;
-> +					regulator-always-on;
-> +				};
-> +			};
-> +
-> +			charger {
-> +				compatible =3D "richtek,rt5033-charger";
-> +				richtek,pre-uamp =3D <350000>;
-> +				richtek,fast-uamp =3D <2000000>;
-> +				richtek,eoc-uamp =3D <250000>;
-> +				richtek,pre-threshold-uvolt =3D <3400000>;
-> +				richtek,const-uvolt =3D <4350000>;
-> +			};
-> +
-> +		};
-> +
-> +		rt5033@35 {
-> +				compatible =3D "richtek,rt5033-battery";
-> +				interrupt-parent =3D <&gpx2>;
-> +				interrupts =3D <3 0>;
-> +				reg =3D <0x35>;
-> +		};
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/=
-Documentation/devicetree/bindings/vendor-prefixes.txt
-> index 723999d..611b543 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -124,6 +124,7 @@ ralink	Mediatek/Ralink Technology Corp.
->  ramtron	Ramtron International
->  realtek Realtek Semiconductor Corp.
->  renesas	Renesas Electronics Corporation
-> +richtek	Richtek Technology Corporation
->  ricoh	Ricoh Co. Ltd.
->  rockchip	Fuzhou Rockchip Electronics Co., Ltd
->  samsung	Samsung Semiconductor
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBnZW5lcmljIGV4eW5vcyBidXMgZnJlcXVlbmN5
+IGRyaXZlciBmb3IgbWVtb3J5IGJ1cw0KPiB3aXRoIERFVkZSRVEgZnJhbWV3b3JrLiBUaGUgU2Ft
+c3VuZyBFeHlub3MgU29DcyBoYXZlIHRoZSBjb21tb24gYXJjaGl0ZWN0dXJlDQo+IGZvciBtZW1v
+cnkgYnVzIGJldHdlZW4gRFJBTSBtZW1vcnkgYW5kIE1NQy9zdWIgSVAgaW4gU29DLiBUaGlzIGRy
+aXZlciBjYW4NCj4gc3VwcG9ydCB0aGUgbWVtb3J5IGJ1cyBmcmVxdWVuY3kgZHJpdmVyIGZvciBF
+eHlub3MgU29Dcy4NCj4gDQo+IEVhY2ggbWVtb3J5IGJ1cyBibG9jayBoYXMgYSBjbG9jayBmb3Ig
+bWVtb3J5IGJ1cyBzcGVlZCBhbmQgZnJlcXVlbmN5DQo+IHRhYmxlIHdoaWNoIGlzIGNoYW5nZWQg
+YWNjb3JkaW5nIHRvIHRoZSB1dGlsaXphdGlvbiBvZiBtZW1vcnkgYnVzIG9uIHJ1bnRpbWUuDQo+
+IEFuZCB0aGVuIGVhY2ggbWVtb3J5IGJ1cyBncm91cCBoYXMgdGhlIG9uZSBtb3JlIG1lbW9yeSBi
+dXMgYmxvY2tzIGFuZA0KPiBPUFAgdGFibGUgKGluY2x1ZGluZyBmcmVxdWVuY3kgYW5kIHZvbHRh
+Z2UpLCByZWd1bGF0b3IsIGRldmZyZXEtZXZlbnQNCj4gZGV2aWNlcy4NCj4gDQo+IFRoZXJlIGFy
+ZSBhIGxpdHRsZSBkaWZmZXJlbmNlIGFib3V0IHRoZSBudW1iZXIgb2YgbWVtb3J5IGJ1cyBiZWNh
+dXNlIGVhY2ggRXh5bm9zDQo+IFNvQyBoYXZlIHRoZSBkaWZmZXJlbnQgc3ViLUlQIGFuZCBkaWZm
+ZXJlbnQgbWVtb3J5IGJ1cyBzcGVlZC4gSW4gc3BpdGUgb2YgdGhpcw0KPiBkaWZmZXJlbmNlIGFt
+b25nIEV4eW5vcyBTb0NzLCB3ZSBjYW4gc3VwcG9ydCBhbG1vc3QgRXh5bm9zIFNvQyBieSBhZGRp
+bmcNCj4gdW5pcXVlIGRhdGEgb2YgbWVtb3J5IGJ1cyB0byBkZXZpY2V0cmVlIGZpbGUuDQo+IA0K
+PiBDYzogTXl1bmdqb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+IENjOiBLeXVu
+Z21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiBDYzogS3VramluIEtpbSA8
+a2dlbmVAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9mZi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNo
+b2lAc2Ftc3VuZy5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAgICAg
+ICAgICAgfCAgMTUgKw0KPiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAgICAgICAgICAgfCAg
+IDEgKw0KPiAgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9NYWtlZmlsZSAgICAgfCAgIDEgKw0KPiAg
+ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3MtYnVzLmMgfCA1OTggKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrDQo+ICA0IGZpbGVzIGNoYW5nZWQsIDYxNSBpbnNlcnRpb25z
+KCspDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3Mt
+YnVzLmMNCj4gDQoNCltdDQoNCj4gK3N0YXRpYyB2b2lkIGV4eW5vc19idXNfZXhpdChzdHJ1Y3Qg
+ZGV2aWNlICpkZXYpDQo+ICt7DQo+ICsJc3RydWN0IGV4eW5vc19tZW1vcnlfYnVzICpidXMgPSBk
+ZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4gKwlpbnQgaSwgcmV0Ow0KPiArDQo+ICsJcmV0ID0gZXh5
+bm9zX2J1c19kaXNhYmxlX2VkZXYoYnVzKTsNCj4gKwlpZiAocmV0IDwgMCkNCj4gKwkJZGV2X3dh
+cm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgdGhlIGRldmZyZXEtZXZlbnQgZGV2aWNlc1xuIik7
+DQo+ICsNCj4gKwlmb3IgKGkgPSAwOyBpIDwgYnVzLT5ibG9ja19jb3VudDsgaSsrKQ0KPiArCQlj
+bGtfZGlzYWJsZV91bnByZXBhcmUoYnVzLT5ibG9ja1tpXS5jbGspOw0KPiArDQo+ICsJaWYgKHJl
+Z3VsYXRvcl9pc19lbmFibGVkKGJ1cy0+cmVndWxhdG9yKSkNCj4gKwkJcmVndWxhdG9yX2Rpc2Fi
+bGUoYnVzLT5yZWd1bGF0b3IpOw0KDQpUaGlzIGlzX2VuYWJsZWQgY2hlY2sgaXMgaXRjaHkuDQoN
+CldoeSBkbyB5b3UgbmVlZCB0aGlzIGhlcmU/DQpQbGVhc2UgbGV0IG1lIGtub3cgd2hhdCBraW5k
+IG9mIGVycm9ycyBoZXJlLg0KKG5vdGUgdGhhdCB0aGlzIG1heSBzaW1wbHkgaGlkZSBlcnJvcnMg
+bWFkZSBieSBvdGhlciBkcml2ZXJzKQ0KDQpBZGRpbmcgdGhpcyBjb25kaXRpb24gZG9lcyBub3Qg
+aW50cm9kdWNlIGFkZGl0aW9uYWwgZXJyb3IsIGJ1dA0KY291bGQgeW91IHBsZWFzZSBsZXQgbWUg
+a25vdyB3aHkgaXQgaXMgaGVyZT8gVGhpcyBpcyBzdXBwb3NlZCB0byBiZQ0KcGFpcmVkIHdpdGgg
+cHJvYmUuDQoNCg0KRXhjZXB0IHRoaXMgcG9pbnQgKHZhbGlkIGlmIGFkZHJlc3NlZCBvciB7ZXhw
+bGFpbmVkIGFuZCB1bmRlcnN0b29kfSksDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxteXVuZ2pv
+by5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KPiArDQo+ICsJb2Zf
+ZnJlZV9vcHBfdGFibGUoZGV2KTsNCj4gK30NCj4gKw0KPiArc3RhdGljIHN0cnVjdCBkZXZmcmVx
+X2Rldl9wcm9maWxlIGV4eW5vc19tZW1vcnlfYnVzX3Byb2ZpbGUgPSB7DQo+ICsJLnBvbGxpbmdf
+bXMJPSAxMDAsDQo+ICsJLnRhcmdldAkJPSBleHlub3NfYnVzX3RhcmdldCwNCj4gKwkuZ2V0X2Rl
+dl9zdGF0dXMJPSBleHlub3NfYnVzX2dldF9kZXZfc3RhdHVzLA0KPiArCS5leGl0CQk9IGV4eW5v
+c19idXNfZXhpdCwNCj4gK307DQo+ICsNCg0KW10NCg==
