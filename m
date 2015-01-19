@@ -1,63 +1,61 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4 1/9] devfreq: exynos: Add generic exynos memory bus
- frequency driver
-Date: Mon, 19 Jan 2015 09:20:17 +0000 (GMT)
-Message-ID: <27342443.1253691421659213933.JavaMail.weblogic@epmlwas05d>
-Reply-To: myungjoo.ham@samsung.com
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: RFC on cpufreq implementation
+Date: Mon, 19 Jan 2015 14:52:52 +0530
+Message-ID: <CAHLCerMq0HnhS3ki3U1te5A8+NiDwpFNL_5_bm-CR4LoYFLo=A@mail.gmail.com>
+References: <54B7F7CD.7030903@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:46480 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbbASJWx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jan 2015 04:22:53 -0500
+Received: by mail-lb0-f178.google.com with SMTP id u14so26985749lbd.9
+        for <linux-pm@vger.kernel.org>; Mon, 19 Jan 2015 01:22:52 -0800 (PST)
+In-Reply-To: <54B7F7CD.7030903@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBnZW5lcmljIGV4eW5vcyBidXMgZnJlcXVlbmN5
-IGRyaXZlciBmb3IgbWVtb3J5IGJ1cw0KPiB3aXRoIERFVkZSRVEgZnJhbWV3b3JrLiBUaGUgU2Ft
-c3VuZyBFeHlub3MgU29DcyBoYXZlIHRoZSBjb21tb24gYXJjaGl0ZWN0dXJlDQo+IGZvciBtZW1v
-cnkgYnVzIGJldHdlZW4gRFJBTSBtZW1vcnkgYW5kIE1NQy9zdWIgSVAgaW4gU29DLiBUaGlzIGRy
-aXZlciBjYW4NCj4gc3VwcG9ydCB0aGUgbWVtb3J5IGJ1cyBmcmVxdWVuY3kgZHJpdmVyIGZvciBF
-eHlub3MgU29Dcy4NCj4gDQo+IEVhY2ggbWVtb3J5IGJ1cyBibG9jayBoYXMgYSBjbG9jayBmb3Ig
-bWVtb3J5IGJ1cyBzcGVlZCBhbmQgZnJlcXVlbmN5DQo+IHRhYmxlIHdoaWNoIGlzIGNoYW5nZWQg
-YWNjb3JkaW5nIHRvIHRoZSB1dGlsaXphdGlvbiBvZiBtZW1vcnkgYnVzIG9uIHJ1bnRpbWUuDQo+
-IEFuZCB0aGVuIGVhY2ggbWVtb3J5IGJ1cyBncm91cCBoYXMgdGhlIG9uZSBtb3JlIG1lbW9yeSBi
-dXMgYmxvY2tzIGFuZA0KPiBPUFAgdGFibGUgKGluY2x1ZGluZyBmcmVxdWVuY3kgYW5kIHZvbHRh
-Z2UpLCByZWd1bGF0b3IsIGRldmZyZXEtZXZlbnQNCj4gZGV2aWNlcy4NCj4gDQo+IFRoZXJlIGFy
-ZSBhIGxpdHRsZSBkaWZmZXJlbmNlIGFib3V0IHRoZSBudW1iZXIgb2YgbWVtb3J5IGJ1cyBiZWNh
-dXNlIGVhY2ggRXh5bm9zDQo+IFNvQyBoYXZlIHRoZSBkaWZmZXJlbnQgc3ViLUlQIGFuZCBkaWZm
-ZXJlbnQgbWVtb3J5IGJ1cyBzcGVlZC4gSW4gc3BpdGUgb2YgdGhpcw0KPiBkaWZmZXJlbmNlIGFt
-b25nIEV4eW5vcyBTb0NzLCB3ZSBjYW4gc3VwcG9ydCBhbG1vc3QgRXh5bm9zIFNvQyBieSBhZGRp
-bmcNCj4gdW5pcXVlIGRhdGEgb2YgbWVtb3J5IGJ1cyB0byBkZXZpY2V0cmVlIGZpbGUuDQo+IA0K
-PiBDYzogTXl1bmdqb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+IENjOiBLeXVu
-Z21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiBDYzogS3VramluIEtpbSA8
-a2dlbmVAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9mZi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNo
-b2lAc2Ftc3VuZy5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAgICAg
-ICAgICAgfCAgMTUgKw0KPiAgZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlICAgICAgICAgICAgfCAg
-IDEgKw0KPiAgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9NYWtlZmlsZSAgICAgfCAgIDEgKw0KPiAg
-ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3MtYnVzLmMgfCA1OTggKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrDQo+ICA0IGZpbGVzIGNoYW5nZWQsIDYxNSBpbnNlcnRpb25z
-KCspDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3Mt
-YnVzLmMNCj4gDQoNCltdDQoNCj4gK3N0YXRpYyB2b2lkIGV4eW5vc19idXNfZXhpdChzdHJ1Y3Qg
-ZGV2aWNlICpkZXYpDQo+ICt7DQo+ICsJc3RydWN0IGV4eW5vc19tZW1vcnlfYnVzICpidXMgPSBk
-ZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4gKwlpbnQgaSwgcmV0Ow0KPiArDQo+ICsJcmV0ID0gZXh5
-bm9zX2J1c19kaXNhYmxlX2VkZXYoYnVzKTsNCj4gKwlpZiAocmV0IDwgMCkNCj4gKwkJZGV2X3dh
-cm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgdGhlIGRldmZyZXEtZXZlbnQgZGV2aWNlc1xuIik7
-DQo+ICsNCj4gKwlmb3IgKGkgPSAwOyBpIDwgYnVzLT5ibG9ja19jb3VudDsgaSsrKQ0KPiArCQlj
-bGtfZGlzYWJsZV91bnByZXBhcmUoYnVzLT5ibG9ja1tpXS5jbGspOw0KPiArDQo+ICsJaWYgKHJl
-Z3VsYXRvcl9pc19lbmFibGVkKGJ1cy0+cmVndWxhdG9yKSkNCj4gKwkJcmVndWxhdG9yX2Rpc2Fi
-bGUoYnVzLT5yZWd1bGF0b3IpOw0KDQpUaGlzIGlzX2VuYWJsZWQgY2hlY2sgaXMgaXRjaHkuDQoN
-CldoeSBkbyB5b3UgbmVlZCB0aGlzIGhlcmU/DQpQbGVhc2UgbGV0IG1lIGtub3cgd2hhdCBraW5k
-IG9mIGVycm9ycyBoZXJlLg0KKG5vdGUgdGhhdCB0aGlzIG1heSBzaW1wbHkgaGlkZSBlcnJvcnMg
-bWFkZSBieSBvdGhlciBkcml2ZXJzKQ0KDQpBZGRpbmcgdGhpcyBjb25kaXRpb24gZG9lcyBub3Qg
-aW50cm9kdWNlIGFkZGl0aW9uYWwgZXJyb3IsIGJ1dA0KY291bGQgeW91IHBsZWFzZSBsZXQgbWUg
-a25vdyB3aHkgaXQgaXMgaGVyZT8gVGhpcyBpcyBzdXBwb3NlZCB0byBiZQ0KcGFpcmVkIHdpdGgg
-cHJvYmUuDQoNCg0KRXhjZXB0IHRoaXMgcG9pbnQgKHZhbGlkIGlmIGFkZHJlc3NlZCBvciB7ZXhw
-bGFpbmVkIGFuZCB1bmRlcnN0b29kfSksDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxteXVuZ2pv
-by5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KPiArDQo+ICsJb2Zf
-ZnJlZV9vcHBfdGFibGUoZGV2KTsNCj4gK30NCj4gKw0KPiArc3RhdGljIHN0cnVjdCBkZXZmcmVx
-X2Rldl9wcm9maWxlIGV4eW5vc19tZW1vcnlfYnVzX3Byb2ZpbGUgPSB7DQo+ICsJLnBvbGxpbmdf
-bXMJPSAxMDAsDQo+ICsJLnRhcmdldAkJPSBleHlub3NfYnVzX3RhcmdldCwNCj4gKwkuZ2V0X2Rl
-dl9zdGF0dXMJPSBleHlub3NfYnVzX2dldF9kZXZfc3RhdHVzLA0KPiArCS5leGl0CQk9IGV4eW5v
-c19idXNfZXhpdCwNCj4gK307DQo+ICsNCg0KW10NCg==
+On Thu, Jan 15, 2015 at 10:54 PM, Mason <mpeg.blue@free.fr> wrote:
+> Hello,
+>
+> This is a follow-up to my previous thread.
+> "How many frequencies would cpufreq optimally like to manage?"
+> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
+>
+> As I originally wrote, I'm running 3.14 on an ARM Cortex-A9
+> based SoC (namely Tango4 from Sigma Designs). I'd like to get
+> some feedback on the cpufreq driver I wrote for that platform.
+>
+> I decided to expose only a small subset of frequencies (namely
+> {999,500,333,111} MHz) because, in my tests, the ondemand gov
+> chose mostly min and max, and the intermediate frequencies not
+> so much; so I figured "2 intermediate freqs" is good enough.
+> (I'm ready to hear otherwise.)
+
+How many states are really enough depends on the main workloads
+running on your system. In a closed system (limited number of
+applications) you can easily characterise your workloads and see what
+operating points (OPP = voltage, frequency pair) the system spends
+most of its time in (CPU_FREQ_STAT_DETAILS) and optimize out the
+remaining OPPs.
+
+In an open-ended system where you don't control what applications will
+run on the system (e.g. android phone), it is probably a good idea to
+expose more OPPs while keeping in mind that exposing 50 frequencies is
+probably overkill (and silly) since you're spending more time reaching
+the "optimum" OPP. Pick some high-impact ones e.g. ones that allow you
+to lower your voltage.
+
+> I tried to use as much generic framework as possible, but I've
+> read about the clk framework, and it looks to be an even greater
+> generalization. Are new platforms encouraged to use that, rather
+> than provide a cpufreq driver? Does it work when voltage scaling
+> comes in play? (This SoC doesn't have it, but the next will.)
+>
+> I'm also wondering how cpufreq and cpuidle interact? Is one a
+> subset of the other? Are they orthogonal?
+
+These queries have been answered by Krzysztof.
