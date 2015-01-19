@@ -1,30 +1,157 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4 9/9] devfreq: exynos: Remove unused exynos4 memory
- busfreq driver
-Date: Mon, 19 Jan 2015 09:39:00 +0000 (GMT)
-Message-ID: <821926569.1255301421660336040.JavaMail.weblogic@epmlwas05d>
-Reply-To: myungjoo.ham@samsung.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv8 7/9] ARM: dts: Add PPMU dt node for Exynos5260 SoC
+Date: Mon, 19 Jan 2015 19:01:40 +0900
+Message-ID: <54BCD604.3030105@samsung.com>
+References: <1421066097-26237-1-git-send-email-cw00.choi@samsung.com>
+ <1421066097-26237-8-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-MIME-version: 1.0
+In-reply-to: <1421066097-26237-8-git-send-email-cw00.choi@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCByZW1vdmVzIHRoZSB1bnVzZWQgZXh5bm9zNCBtZW1vcnkgYnVz
-ZnJlcSBkcml2ZXIgYnkgYWRkaW5nIGdlbmVyaWMNCj4gZXh5bm9zIG1lbW9yeSBidXMgZnJlcXVl
-bmN5IGRyaXZlci4NCj4gDQo+IENjOiBNeXVuZ2pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5n
-LmNvbT4NCj4gQ2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQo+
-IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPg0KDQpS
-ZXZpZXdlZC1ieTogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCj4g
-LS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvS2NvbmZpZyAgICAgICAgICAgICAgfCAgIDEyIC0NCj4g
-IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvTWFrZWZpbGUgICAgICB8ICAgIDEgLQ0KPiAgZHJpdmVy
-cy9kZXZmcmVxL2V4eW5vcy9leHlub3M0X2J1cy5jIHwgMTA1NSAtLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmgg
-fCAgMTEwIC0tLS0NCj4gIDQgZmlsZXMgY2hhbmdlZCwgMTE3OCBkZWxldGlvbnMoLSkNCj4gIGRl
-bGV0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmMNCj4g
-IGRlbGV0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmgN
-Cj4gDQo=
+Dear all,
+
+I'll drop this patch because I can't test it on Exynos5260-based board.
+
+Best Regards,
+Chanwoo Choi
+
+On 01/12/2015 09:34 PM, Chanwoo Choi wrote:
+> This patch adds PPMU (Performance Profiling Monitoring Unit) dt node
+> Exynos5260 SoC.
+> 
+> Exynos5260 SoC has following PPMU IPs:
+> - PPMU_DREX0_S0 0x10c60000
+> - PPMU_DREX0_S1 0x10c70000
+> - PPMU_DREX1_S0 0x10c80000
+> - PPMU_DREX1_S1 0x10c90000
+> - PPMU_EAGLE    0x10cc0000
+> - PPMU_KFC      0x10cd0000
+> - PPMU_MFC      0x11040000
+> - PPMU_G3D      0x11880000
+> - PPMU_FSYS     0x12220000
+> - PPMU_ISP      0x13370000
+> - PPMU_FICM     0x13cb0000
+> - PPMU_GSCL     0x13e60000
+> - PPMU_MSCL     0x13ee0000
+> - PPMU_FIMD0X   0x145b0000
+> - PPMU_FIMD1X   0x145c0000
+> 
+> The drivers/devfreq/exynos/exynos5_bus.c supports the memory bus frequency/
+> voltage scaling of Exynos5260 SoC with DEVFREQ framework.
+> 
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Abhilash Kesavan <a.kesavan@samsung.com>
+> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos5260.dtsi | 90 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 90 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/exynos5260.dtsi b/arch/arm/boot/dts/exynos5260.dtsi
+> index 36da38e..26f3074 100644
+> --- a/arch/arm/boot/dts/exynos5260.dtsi
+> +++ b/arch/arm/boot/dts/exynos5260.dtsi
+> @@ -307,6 +307,96 @@
+>  			fifo-depth = <64>;
+>  			status = "disabled";
+>  		};
+> +
+> +		ppmu_drex0_s0: ppmu_drex0_s0@10c60000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10c60000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_drex0_s1: ppmu_drex0_s1@10c70000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10c70000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_drex1_s0: ppmu_drex1_s0@10c80000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10c80000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_drex1_s1: ppmu_drex1_s1@10c90000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10c90000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_eagle: ppmu_eagle@10cc0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10cc0000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_kfc: ppmu_kfc@10cd0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x10cd0000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_mfc: ppmu_mfc@11040000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x11040000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_g3d: ppmu_g3d@11880000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x11880000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_fsys: ppmu_fsys@12220000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x12220000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_isp: ppmu_isp@13370000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x13370000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_fimc: ppmu_fimc@13cb0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x13cb0000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_gscl: ppmu_gscl@13e60000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x13e60000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_mscl: ppmu_gscl@13ee0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x13ee0000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_fimd0x: ppmu_fimd0x@145b0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x145b0000 0x2000>;
+> +			status = "disabled";
+> +		};
+> +
+> +		ppmu_fimd1x: ppmu_fimd1x@145c0000 {
+> +			compatible = "samsung,exynos-ppmu";
+> +			reg = <0x145c0000 0x2000>;
+> +			status = "disabled";
+> +		};
+>  	};
+>  };
+>  
+> 
