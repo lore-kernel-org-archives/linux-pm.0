@@ -1,207 +1,99 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v5 1/7] mfd: Add support for DA9150 combined charger &
- fuel-gauge device
-Date: Tue, 20 Jan 2015 10:50:22 +0000
-Message-ID: <20150120105022.GA13701@x1>
-References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
- <8768cf84babd1bc3e16dadc25bdbb50cebfb44b6.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
- <20150119113332.GP21886@x1>
- <2E89032DDAA8B9408CB92943514A0337AB52874E@SW-EX-MBX01.diasemi.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCHv3 2/8] devfreq: exynos: Add documentation for generic
+ exynos memory bus frequency driver
+Date: Tue, 20 Jan 2015 16:52:19 +0530
+Message-ID: <CAKohpokSuVhH3hHFF+mLtJXvjt=bmJy1oZRBOttCNXORBS1Y0A@mail.gmail.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
+	<1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
+	<CAL_Jsq+5sdsm_-VW-ta+qV-NBao-XTHvsYWcbMdZmbP0Nw43Cw@mail.gmail.com>
+	<CAKohpomqosqxeDANC=NLBVmOUHyUoqd7Zhph7r6f7+ufYN48EQ@mail.gmail.com>
+	<54BE108F.8090506@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f180.google.com ([209.85.213.180]:45883 "EHLO
-	mail-ig0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753386AbbATKua (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 05:50:30 -0500
-Received: by mail-ig0-f180.google.com with SMTP id b16so9498911igk.1
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2015 02:50:29 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB52874E@SW-EX-MBX01.diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <54BE108F.8090506@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Rob Herring <robherring2@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mark Rutland <mark.rutland@arm.com>, a.kesavan@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, InKi Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-On Mon, 19 Jan 2015, Opensource [Adam Thomson] wrote:
+On 20 January 2015 at 13:53, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> But, the frequency of OPPs is only used for devfreq ondemand governor.
+> After deciding the proper frequency of memory bus on ondemand governor,
+> exynos-bus.c (exynos memory bus frequency driver) use the frequency table
+> of memory bus blocks on below to change the clock rate of memory bus block.
 
-> On January 19, 2015 11:34, Lee Jones wrote:
->=20
-> > On Mon, 22 Dec 2014, Adam Thomson wrote:
-> >=20
-> > > DA9150 is a combined Charger and Fuel-Gauge IC, with additional
-> > > GPIO and GPADC functionality.
-> > >
-> > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > > ---
-> > >  drivers/mfd/Kconfig                  |   12 +
-> > >  drivers/mfd/Makefile                 |    2 +-
-> > >  drivers/mfd/da9150-core.c            |  413 ++++++++++++
-> > >  include/linux/mfd/da9150/core.h      |   68 ++
-> > >  include/linux/mfd/da9150/registers.h | 1155
-> > ++++++++++++++++++++++++++++++++++
-> > >  5 files changed, 1649 insertions(+), 1 deletion(-)
-> > >  create mode 100644 drivers/mfd/da9150-core.c
-> > >  create mode 100644 include/linux/mfd/da9150/core.h
-> > >  create mode 100644 include/linux/mfd/da9150/registers.h
-> > >
-> > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> > > index 2e6b731..56e80d2 100644
-> > > --- a/drivers/mfd/Kconfig
-> > > +++ b/drivers/mfd/Kconfig
-> > > @@ -195,6 +195,18 @@ config MFD_DA9063
-> > >  	  Additional drivers must be enabled in order to use the functi=
-onality
-> > >  	  of the device.
-> > >
-> > > +config MFD_DA9150
-> > > +	tristate "Dialog Semiconductor DA9150 Charger Fuel-Gauge chip"
-> > > +	depends on I2C=3Dy
-> > > +	select MFD_CORE
-> > > +	select REGMAP_I2C
-> > > +	select REGMAP_IRQ
-> > > +	help
-> > > +	  This adds support for the DA9150 integrated charger and fuel-=
-gauge
-> > > +	  chip. This driver provides common support for accessing the d=
-evice.
-> > > +	  Additional drivers must be enabled in order to use the specif=
-ic
-> > > +	  features of the device.
-> > > +
-> > >  config MFD_DLN2
-> > >  	tristate "Diolan DLN2 support"
-> > >  	select MFD_CORE
-> > > diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> > > index 53467e2..f06f4c6 100644
-> > > --- a/drivers/mfd/Makefile
-> > > +++ b/drivers/mfd/Makefile
-> > > @@ -113,7 +113,7 @@ obj-$(CONFIG_MFD_DA9055)	+=3D da9055.o
-> > >
-> > >  da9063-objs			:=3D da9063-core.o da9063-irq.o da9063-i2c.o
-> > >  obj-$(CONFIG_MFD_DA9063)	+=3D da9063.o
-> > > -
-> > > +obj-$(CONFIG_MFD_DA9150)	+=3D da9150-core.o
-> > >  obj-$(CONFIG_MFD_MAX14577)	+=3D max14577.o
-> > >  obj-$(CONFIG_MFD_MAX77686)	+=3D max77686.o
-> > >  obj-$(CONFIG_MFD_MAX77693)	+=3D max77693.o
-> > > diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.=
-c
-> > > new file mode 100644
-> > > index 0000000..4d757b9
-> > > --- /dev/null
-> > > +++ b/drivers/mfd/da9150-core.c
-> > > @@ -0,0 +1,413 @@
-> > > +/*
-> > > + * DA9150 Core MFD Driver
-> > > + *
-> > > + * Copyright (c) 2014 Dialog Semiconductor
-> > > + *
-> > > + * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > > + *
-> > > + * This program is free software; you can redistribute  it and/o=
-r modify it
-> > > + * under  the terms of  the GNU General  Public License as publi=
-shed by the
-> > > + * Free Software Foundation;  either version 2 of the  License, =
-or (at your
-> > > + * option) any later version.
-> > > + */
-> >=20
-> > [...]
-> >=20
-> > > +u8 da9150_reg_read(struct da9150 *da9150, u16 reg)
-> > > +{
-> > > +	int val, ret;
-> > > +
-> > > +	ret =3D regmap_read(da9150->regmap, reg, &val);
-> > > +	if (ret)
-> > > +		dev_err(da9150->dev, "Failed to read from reg 0x%x: %d\n",
-> > > +			reg, ret);
-> > > +
-> > > +	return (u8) val;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(da9150_reg_read);
-> > > +
-> > > +void da9150_reg_write(struct da9150 *da9150, u16 reg, u8 val)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	ret =3D regmap_write(da9150->regmap, reg, val);
-> > > +	if (ret)
-> > > +		dev_err(da9150->dev, "Failed to write to reg 0x%x: %d\n",
-> > > +			reg, ret);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(da9150_reg_write);
-> > > +
-> > > +void da9150_set_bits(struct da9150 *da9150, u16 reg, u8 mask, u8=
- val)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	ret =3D regmap_update_bits(da9150->regmap, reg, mask, val);
-> > > +	if (ret)
-> > > +		dev_err(da9150->dev, "Failed to set bits in reg 0x%x: %d\n",
-> > > +			reg, ret);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(da9150_set_bits);
-> > > +
-> > > +void da9150_bulk_read(struct da9150 *da9150, u16 reg, int count,=
- u8 *buf)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	ret =3D regmap_bulk_read(da9150->regmap, reg, buf, count);
-> > > +	if (ret)
-> > > +		dev_err(da9150->dev, "Failed to bulk read from reg 0x%x: %d\n"=
-,
-> > > +			reg, ret);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(da9150_bulk_read);
-> > > +
-> > > +void da9150_bulk_write(struct da9150 *da9150, u16 reg, int count=
-, const u8
-> > *buf)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	ret =3D regmap_raw_write(da9150->regmap, reg, buf, count);
-> > > +	if (ret)
-> > > +		dev_err(da9150->dev, "Failed to bulk write to reg 0x%x %d\n",
-> > > +			reg, ret);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(da9150_bulk_write);
-> >=20
-> > I've never been a fan of this type of aggregation.  Can you explain=
- to
-> > me what the point of them is?
->=20
-> I refer you back to our previous discussion some time back:
->=20
-> https://lkml.org/lkml/2014/9/9/284
->=20
-> 'The reason for these is because future patches to add additional fun=
-ctionality
-> will introduce I2C access functions which do not use regmap and acces=
-s the
-> device via a separate I2C address for this purpose. I will need to pr=
-ovide
-> access functions for that, and so having a common style of I2C access=
- makes
-> sense for this driver. Means any access just needs to provide the MFD=
- private
-> data, and the relevant functions take care of the rest. I think this =
-is cleaner
-> in this instance.'
+> Firs of all,
+> I explain the hierarchy of Exynos memory buses.
+>
+> For example of Exynos3250 memory bus,
+> This patch divide the memory bus group according to power rail (regulator).
+> - MIF (Memory Interface ) memory bus group uses the VDD_MIF regulator.
+> - INT (Internal) memory bus group uses the VDD_INT regulator.
+>
+> Each memory bus group contains only one power rail(regulator) and one more memory bus blocks as follwing:
+>
+> - MIF memory bus group
+> power rail(VDD_MIF)-->|--- memory bus for DMC (Dynamic Memory Controller) block (dmc clock)
+>
+> - INT memory bus group
+>                       |--- memory bus for PERI block (aclk_100 clock)
+>                       |
+>                       |--- memory bus for DISPLAY block (aclk_160 clock)
+>                       |
+>                       |--- memory bus for ISP block (aclk_200 clock)
+>                       |
+>                       |--- memory bus for GPS block (aclk_266 clock)
+> power rail(VDD_INT)-->|
+>                       |--- memory bus for MCUISP block (aclk_400_mcuisp clock)
+>                       |
+>                       |--- memory bus for Leftbus block (gdl clock)
+>                       |
+>                       |--- memory bus for Rightbus block (gdr clock)
+>                       |
+>                       |--- memory bus for MFC block (mfc clock)
+>
+>
+> Exynos3250 has following table for INT memory bus group:
+> All clocks of INT memory bus group have to contain the same entry count
+> againt the number of 'virtual freqw'. So, each memory bus clock could have duplicate clocks.
+>
+> ------------------------------------------------------------------------
+> Level|virtual freq|PERI's clk|Display's clk|ISP's clk|GPS's clk| voltage|
+> ------------------------------------------------------------------------
+> L6   |400000      |100000    |200000       |200000   |300000   | 95000  |
+> L5   |200000      |100000    |160000       |200000   |200000   | 95000  |
+> L4   |133000      |100000    |100000       |100000   |133000   | 92500  |
+> L3   |100000      |100000    |80000        |80000    |100000   | 85000  |
+> L2   |80000       |50000     |80000        |50000    |50000    | 85000  |
+> L1   |50000       |50000     |50000        |50000    |50000    | 85000  |
+> -------------------------------------------------------------------------
+> (Except for mcuisp, leftbus, rightbus, mfc block)
+>
+> This table is used for devfreq ondemand governor as following:
+> 1. ondemand governor in devfreq use the 'virtual freq' to devcide the proper
+>    frequency for memory bus.
+> 2. ondemand governor executes the *_target() function to set clock rate and voltage.
+> 3. *_target() function in exynos-bus.c changes the clock rate of {PERIS|Display|ISP|GPS} clk
+>    according to decided 'Level' by devfreq ondemand governor.
 
-Well at least I'm consistent.
+I see..
 
-=46or my own reference:
-  Acked-by: Lee Jones <lee.jones@linaro.org>
+Please confirm if my understanding is correct.
+- mem-bus-group: all blocks sharing a regulator
+- mem-bus-block: individual blocks managing their clock rate
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+What you do in kernel is register group as a device (with virtual OPPs)
+and then manage blocks within the driver. And so you need to do this
+dummy mapping of virtual to physical frequencies.
+
+It *may* not have done it this way, if I was to design this driver.
+
+Each bus-block is a separately controllable device and so must be registered
+separately. In that case all bus-blocks will have separate OPP tables and
+all this dummy-v2p mapping will go away.
+
+I believe that you are over complicating stuff without any need..
+
+--
+viresh
