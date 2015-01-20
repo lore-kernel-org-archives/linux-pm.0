@@ -1,117 +1,180 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v3 00/16] thermal: exynos: Thermal code rework to use
- device tree
-Date: Tue, 20 Jan 2015 09:17:29 +0100
-Message-ID: <20150120091729.3d01a0cf@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
- <54B8549F.60707@gmx.net> <20150116092946.38860303@amdc2363>
- <54BD9377.30606@gmx.net>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv3 2/8] devfreq: exynos: Add documentation for generic
+ exynos memory bus frequency driver
+Date: Tue, 20 Jan 2015 17:23:43 +0900
+Message-ID: <54BE108F.8090506@samsung.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
+ <1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
+ <CAL_Jsq+5sdsm_-VW-ta+qV-NBao-XTHvsYWcbMdZmbP0Nw43Cw@mail.gmail.com>
+ <CAKohpomqosqxeDANC=NLBVmOUHyUoqd7Zhph7r6f7+ufYN48EQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <54BD9377.30606@gmx.net>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tobias Jakobi <liquid.acid@gmx.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, tomasz.figa@gmail.com
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpomqosqxeDANC=NLBVmOUHyUoqd7Zhph7r6f7+ufYN48EQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mark Rutland <mark.rutland@arm.com>, a.kesavan@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, InKi Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tobias,
+Hi Viresh,
 
-> Hello!
-> 
-> Lukasz Majewski wrote:
-> > We all know that this code is floating around - early version of
-> > this work was posted in the Q3 2013.
-> > 
-> > To be fair - this code is both needed and welcome, but new problems
-> > with it are found (please search for recent comment from Kevin
-> > Hilman).
-> > 
-> > From my side, I focus on the code which is in Eduardo Valentin's
-> > next (3.19-rc3), since I don't know when and if eventually cpufreq
-> > rework would be merged.
-> I'm sorry, my wording wasn't the best here. I'm not critizing the work
-> done here, merely voicing my concern (and also interest!) about how
-> the new stuff interacts with code that may eventually get merged.
-> You're aware of it, that's enough for me to know.
+I explained the relation between memory bus group and memory bus block on following patch[1].
+- [1] https://lkml.org/lkml/2015/1/8/642
 
-I'm aware of Thomas work and probably will integrate it when finally it
-is merged.
+On 01/20/2015 04:19 PM, Viresh Kumar wrote:
+> On 9 January 2015 at 02:48, Rob Herring <robherring2@gmail.com> wrote:
+>> Adding Viresh.
+> 
+> Sorry for being too late, I was very busy with other cpufreq stuff I was doing
+> and saved this thread for later as it required me to understand it properly..
+> 
+>>> +Required properties for memory bus block:
+>>> +- clock-names : the name of clock used by the memory bus, "memory-bus".
+>>> +- clocks : phandles for clock specified in "clock-names" property.
+>>> +- #clock-cells: should be 1.
+>>> +- frequency: the frequency table to support DVFS feature.
+>>
+>> So you have just defined a new OPP table format. We already have one
+>> and Viresh is working to create a more extendable one. He asked about
+>> what's needed in devfreq, so Viresh here you go. :)
+> 
+> I failed to understand what's new here, probably I need more clarity on
+> what we are doing here..
+> 
+> So, this is what I see from OPPs point of view, everything else stripped out.
+> 
+>>> +       memory_bus_int: memory_bus@1 {
+> 
+>>> +               operating-points = <
+>>> +                       400000 950000
+>>> +                       200000 950000
+>>> +                       133000 925000
+>>> +                       100000 850000
+>>> +                       80000  850000
+>>> +                       50000  850000>;
+> 
+> So these are the OPPs your "groups" support and below ones are
+> the frequencies that each block will support. Right ?
 
-> 
-> 
-> > The code which touches exynos-cpufreq.c is around 30 LOC, only for
-> > preserving cpu cooling functionality.
-> > 
-> > Is it worth to wait for code developed for so long to happily apply
-> > 30 LOC and delay removal of around 400 LOC in other subsystem
-> > (thermal)?
-> No, of course not. That was pretty stupid of me :(
-> 
-> 
-> > I rise my hand as a volunteer to fix any thermal related issues
-> > which show up after cpufreq rework code applying to Exynos.
-> That's certainly good to hear!
-> 
-> 
-> > This series is NOT providing any NEW functionality. It in fact
-> > preserves functionality, which allows using CPU frequency as a mean
-> > to cool the device.
-> I've got a question concerning this. Is this only needed for
-> exynos-cpufreq, or does cpufreq-dt also need something like that.
-
-In the __cpufreq_add_dev() you have cpufreq_driver->ready() callback
-which in the cpufreq-dt.c has call to of_cpufreq_cooling_register().
-
-It seems like cpufreq-dt is ready for handling cpu cooling devices.
+Right.
+But, the frequency of OPPs is only used for devfreq ondemand governor.
+After deciding the proper frequency of memory bus on ondemand governor,
+exynos-bus.c (exynos memory bus frequency driver) use the frequency table
+of memory bus blocks on below to change the clock rate of memory bus block.
 
 > 
-> The point is that I'm still working with a rather old version of the
-> cpufreq series, a version which still had the Exynos4x12 code in it
-> (this was removed later, if I remember correctly because of problems
-> with how to properly describe boost configuration in DT).
+>>> +               blocks {
+> 
+>>> +                               frequency = <
+>>> +                                       100000
+>>> +                                       100000
+>>> +                                       100000
+>>> +                                       100000
+> 
+> Why this replication here ?
 
-Is your board Odroid-U3/Trats2 ?
+Firs of all,
+I explain the hierarchy of Exynos memory buses.
+
+For example of Exynos3250 memory bus,
+This patch divide the memory bus group according to power rail (regulator).
+- MIF (Memory Interface ) memory bus group uses the VDD_MIF regulator.
+- INT (Internal) memory bus group uses the VDD_INT regulator.
+
+Each memory bus group contains only one power rail(regulator) and one more memory bus blocks as follwing:
+
+- MIF memory bus group                     
+power rail(VDD_MIF)-->|--- memory bus for DMC (Dynamic Memory Controller) block (dmc clock)
+
+- INT memory bus group
+                      |--- memory bus for PERI block (aclk_100 clock)
+                      |
+                      |--- memory bus for DISPLAY block (aclk_160 clock)
+                      |  
+                      |--- memory bus for ISP block (aclk_200 clock)
+                      |
+                      |--- memory bus for GPS block (aclk_266 clock)
+power rail(VDD_INT)-->|
+                      |--- memory bus for MCUISP block (aclk_400_mcuisp clock)
+                      |
+                      |--- memory bus for Leftbus block (gdl clock)
+                      |
+                      |--- memory bus for Rightbus block (gdr clock)
+                      |
+                      |--- memory bus for MFC block (mfc clock)
+
+
+Exynos3250 has following table for INT memory bus group:
+All clocks of INT memory bus group have to contain the same entry count
+againt the number of 'virtual freqw'. So, each memory bus clock could have duplicate clocks.
+
+------------------------------------------------------------------------
+Level|virtual freq|PERI's clk|Display's clk|ISP's clk|GPS's clk| voltage|
+------------------------------------------------------------------------
+L6   |400000      |100000    |200000       |200000   |300000   | 95000  |
+L5   |200000      |100000    |160000       |200000   |200000   | 95000  |
+L4   |133000      |100000    |100000       |100000   |133000   | 92500  |
+L3   |100000      |100000    |80000        |80000    |100000   | 85000  |
+L2   |80000       |50000     |80000        |50000    |50000    | 85000  |
+L1   |50000       |50000     |50000        |50000    |50000    | 85000  |
+-------------------------------------------------------------------------
+(Except for mcuisp, leftbus, rightbus, mfc block)
+
+This table is used for devfreq ondemand governor as following:
+1. ondemand governor in devfreq use the 'virtual freq' to devcide the proper
+   frequency for memory bus. 
+2. ondemand governor executes the *_target() function to set clock rate and voltage.
+3. *_target() function in exynos-bus.c changes the clock rate of {PERIS|Display|ISP|GPS} clk
+   according to decided 'Level' by devfreq ondemand governor.
 
 > 
+>>> +                                       50000
+>>> +                                       50000>;
+>>> +                       };
 > 
-> Anyway, to not get completly off-topic here, I noticed some small
-> issue with v3 of the thermal series. I've enabled
-> CONFIG_THERMAL_HWMON so that I can use lm_sensors to query
-> temperature of the board. However while the thermal_zone is created,
-> there is no hwmon node to be found. 
+> How are the above two tables (operating-points and frequency) related
+> here? What about the voltages at which these frequencies are possible ?
 
-I'm not surprised, that some use cases (about which I wasn't even
-aware) show up. 
-I've already fixed issues reported by Abhilash (with v5 and a following
-patch) and look closer into the THERMAL_HWMON.
-
-I've also done some work regarding FAN controlled by hwmon for Odroid
-U3.
-Could you look on following series:
-http://www.spinics.net/lists/linux-samsung-soc/msg40471.html
-
-I can only guess that your board might need similar entries for your
-DTS file(s).
-
-> This was working properly without
-> the thermal series.
-
-Thanks for testing the patch set :-)
+I explained it on the upper.
 
 > 
+>>> +                       display_block: memory_bus_block2 {
 > 
-> With best wishes,
-> Tobias
+>>> +                               frequency = <
+>>> +                                       200000
+>>> +                                       160000
+>>> +                                       100000
+>>> +                                       80000
+>>> +                                       80000
+>>> +                                       50000>;
+>>> +                       };
 > 
+>>> +                       isp_block: memory_bus_block3 {
+> 
+>>> +                               frequency = <
+>>> +                                       200000
+>>> +                                       200000
+>>> +                                       100000
+>>> +                                       80000
+>>> +                                       50000
+>>> +                                       50000>;
+>>> +                       };
+> 
+>>> +                       gps_block: memory_bus_block4 {
+> 
+>>> +                               frequency = <
+>>> +                                       300000
+>>> +                                       200000
+>>> +                                       133000
+>>> +                                       100000
+>>> +                                       50000
+>>> +                                       50000>;
+>>> +                       };
+> 
+> same for others as well..
 
+I explained it on the upper.
 
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Best Regards,
+Chanwoo Choi
