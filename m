@@ -1,70 +1,115 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RFC PATCHv2 18/19] mfd: ab8500: Decrement the power supply's
- device reference counter
-Date: Tue, 20 Jan 2015 13:36:34 +0000
-Message-ID: <20150120133634.GH13701@x1>
-References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
- <1420472882-10463-19-git-send-email-k.kozlowski@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: of: Match function to pass bindparam index
+Date: Tue, 20 Jan 2015 09:44:10 -0400
+Message-ID: <20150120134408.GA5830@developer.hsd1.ca.comcast.net>
+References: <1421171482-16101-1-git-send-email-kapileshwar.singh@arm.com>
+ <1421171482-16101-2-git-send-email-kapileshwar.singh@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f174.google.com ([209.85.213.174]:58565 "EHLO
-	mail-ig0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbbATNgl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 08:36:41 -0500
-Received: by mail-ig0-f174.google.com with SMTP id b16so10297154igk.1
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2015 05:36:41 -0800 (PST)
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:39054 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbbATNpl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 08:45:41 -0500
+Received: by mail-pd0-f180.google.com with SMTP id ft15so13891723pdb.11
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2015 05:45:40 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1420472882-10463-19-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1421171482-16101-2-git-send-email-kapileshwar.singh@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+To: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, javi.merino@arm.com, punit.agrawal@arm.com
 
-On Mon, 05 Jan 2015, Krzysztof Kozlowski wrote:
 
-> Use power_supply_put() to decrement the power supply's device referen=
-ce
-> counter.
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Jan 13, 2015 at 05:51:21PM +0000, Kapileshwar Singh wrote:
+> From: KP Singh <kapileshwar.singh@arm.com>
+
+The encoding still seams to be scrambled to me.
+
 >=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+> The match function should pass the index of the binding parameters
+> which the cooling device needs to be matched against. There are currently
+> no implementations of match function within the kernel. A successful
+> match requires:
+>=20
+> 	trip_mask =3D=3D expected_trip_mask;
+> 	weight =3D=3D expected_weight;
+> 	binding_limits =3D=3D expected_binding_limits;
+> 	thermal_zone =3D=3D expected_thermal_zone;
 
-You've sent this to me already Acked.  I don't see 00/00, so I have no
-idea what's going on.  Do you want me to take this patch?  Can it be
-taking on its own?
+ok. The .match callback is documented under
+Documentation/thermal/sysfs-api.txt. Can you please also make sure the
+documentation is sane after your change?
 
+>=20
+> Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
 > ---
->  drivers/mfd/ab8500-sysctrl.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/thermal/thermal_core.c |    4 ++--
+>  include/linux/thermal.h        |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 >=20
-> diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctr=
-l.c
-> index d4a4b24be7c6..0d1825696153 100644
-> --- a/drivers/mfd/ab8500-sysctrl.c
-> +++ b/drivers/mfd/ab8500-sysctrl.c
-> @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 87e0b0782023..db4d6407c1ec 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -276,7 +276,7 @@ static void bind_cdev(struct thermal_cooling_device *=
+cdev)
+>  		for (i =3D 0; i < tzp->num_tbps; i++) {
+>  			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
+>  				continue;
+> -			if (tzp->tbp[i].match(pos, cdev))
+> +			if (tzp->tbp[i].match(pos, cdev, i))
+>  				continue;
+>  			tzp->tbp[i].cdev =3D cdev;
+>  			__bind(pos, tzp->tbp[i].trip_mask, cdev,
+> @@ -315,7 +315,7 @@ static void bind_tz(struct thermal_zone_device *tz)
+>  		for (i =3D 0; i < tzp->num_tbps; i++) {
+>  			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
+>  				continue;
+> -			if (tzp->tbp[i].match(tz, pos))
+> +			if (tzp->tbp[i].match(tz, pos, i))
+>  				continue;
+>  			tzp->tbp[i].cdev =3D pos;
+>  			__bind(tz, tzp->tbp[i].trip_mask, pos,
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index fc52e307efab..dc8cf6dc59e5 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -237,7 +237,7 @@ struct thermal_bind_params {
+>  	 */
+>  	unsigned long *binding_limits;
+>  	int (*match) (struct thermal_zone_device *tz,
+> -			struct thermal_cooling_device *cdev);
+> +		      struct thermal_cooling_device *cdev, int index);
+>  };
 > =20
->  		ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
->  				&val);
-> +		power_supply_put(psy);
-> =20
->  		if (!ret && val.intval) {
->  			charger_present =3D true;
-> @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
->  			       pss[i]);
->  			machine_restart("charging");
->  		}
-> +		power_supply_put(psy);
->  	}
-> =20
->  shutdown:
+>  /* Structure to define Thermal Zone parameters */
+> --=20
+> 1.7.9.5
+>=20
+>=20
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUvlueAAoJEMLUO4d9pOJWPHAH/A0XbCLeJufZ4IJj4RtU+00J
+sCX/RGXVeezENfyiqq2FVcvgcU65NWESX24KIqafvdwePpo4RU5qf3WvewgWPlVn
+ssbDXOVy+N4d3CAnYlvotm6vz62P+qIYUUtAg+4ohEEtuxdwJkJvMSSGLFQGN5yN
+2bWQjN4K2xXoqHT3AgGSD1RwgeoBMyZ82ehVaIxInw5CN5pcMnUs3UgYRO19RF4z
+1LXf1puceE6xxYs2pYJzBlaZKPRkGmOZ3qC9nd8goeTasw7M+XRln1RVt74orlcT
+W25qZSPj+rK7ND8lg6n8pIDZZ2HTLzQhyarM1mQNruLygbD0cgV2+W5zuesC4u4=
+=j7OV
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
