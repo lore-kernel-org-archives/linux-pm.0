@@ -1,199 +1,116 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: cpuidle/powernv: Read target_residency value of idle states from
- DT if available
-Date: Tue, 20 Jan 2015 16:56:49 +0530
-Message-ID: <54BE3B79.9070004@linux.vnet.ibm.com>
-References: <20150120054506.F13591402E0@ozlabs.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv3 2/8] devfreq: exynos: Add documentation for generic
+ exynos memory bus frequency driver
+Date: Tue, 20 Jan 2015 20:37:52 +0900
+Message-ID: <54BE3E10.2080906@samsung.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
+ <1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
+ <CAL_Jsq+5sdsm_-VW-ta+qV-NBao-XTHvsYWcbMdZmbP0Nw43Cw@mail.gmail.com>
+ <CAKohpomqosqxeDANC=NLBVmOUHyUoqd7Zhph7r6f7+ufYN48EQ@mail.gmail.com>
+ <54BE108F.8090506@samsung.com>
+ <CAKohpokSuVhH3hHFF+mLtJXvjt=bmJy1oZRBOttCNXORBS1Y0A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:48716 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753658AbbATL1F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Jan 2015 06:27:05 -0500
-Received: from /spool/local
-	by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 20 Jan 2015 06:27:05 -0500
-In-Reply-To: <20150120054506.F13591402E0@ozlabs.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpokSuVhH3hHFF+mLtJXvjt=bmJy1oZRBOttCNXORBS1Y0A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mark Rutland <mark.rutland@arm.com>, a.kesavan@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, InKi Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>, rafael.j.wysocki@intel.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 01/20/2015 11:15 AM, Michael Ellerman wrote:
-> On Mon, 2015-19-01 at 11:32:51 UTC, Preeti U Murthy wrote:
->> The device tree now exposes the residency values for different idle states. Read
->> these values instead of calculating residency from the latency values. The values
->> exposed in the DT are validated for optimal power efficiency. However to maintain
->> compatibility with the older firmware code which does not expose residency
->> values, use default values as a fallback mechanism. While at it, clump
->> the common parts of device tree parsing into one chunk.
+On 01/20/2015 08:22 PM, Viresh Kumar wrote:
+> On 20 January 2015 at 13:53, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> But, the frequency of OPPs is only used for devfreq ondemand governor.
+>> After deciding the proper frequency of memory bus on ondemand governor,
+>> exynos-bus.c (exynos memory bus frequency driver) use the frequency table
+>> of memory bus blocks on below to change the clock rate of memory bus block.
+> 
+>> Firs of all,
+>> I explain the hierarchy of Exynos memory buses.
 >>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
+>> For example of Exynos3250 memory bus,
+>> This patch divide the memory bus group according to power rail (regulator).
+>> - MIF (Memory Interface ) memory bus group uses the VDD_MIF regulator.
+>> - INT (Internal) memory bus group uses the VDD_INT regulator.
 >>
->>  drivers/cpuidle/cpuidle-powernv.c |   39 ++++++++++++++++++++++++-------------
->>  1 file changed, 25 insertions(+), 14 deletions(-)
+>> Each memory bus group contains only one power rail(regulator) and one more memory bus blocks as follwing:
 >>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->> index 2726663..9e732e1 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
->>  	int dt_idle_states;
->>  	const __be32 *idle_state_flags;
->>  	const __be32 *idle_state_latency;
->> -	u32 len_flags, flags, latency_ns;
->> +	const __be32 *idle_state_residency;
->> +	u32 len_flags, flags, latency_ns, residency_ns;
->>  	int i;
->>  
->>  	/* Currently we have snooze statically defined */
->> @@ -186,14 +187,21 @@ static int powernv_add_idle_states(void)
->>  		return nr_idle_states;
->>  	}
->>  
->> +	idle_state_residency = of_get_property(power_mgt,
->> +			"ibm,cpu-idle-state-residency-ns", NULL);
->> +	if (!idle_state_residency) {
->> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
->> +		pr_warn("Falling back to default values\n");
->> +	}
+>> - MIF memory bus group
+>> power rail(VDD_MIF)-->|--- memory bus for DMC (Dynamic Memory Controller) block (dmc clock)
+>>
+>> - INT memory bus group
+>>                       |--- memory bus for PERI block (aclk_100 clock)
+>>                       |
+>>                       |--- memory bus for DISPLAY block (aclk_160 clock)
+>>                       |
+>>                       |--- memory bus for ISP block (aclk_200 clock)
+>>                       |
+>>                       |--- memory bus for GPS block (aclk_266 clock)
+>> power rail(VDD_INT)-->|
+>>                       |--- memory bus for MCUISP block (aclk_400_mcuisp clock)
+>>                       |
+>>                       |--- memory bus for Leftbus block (gdl clock)
+>>                       |
+>>                       |--- memory bus for Rightbus block (gdr clock)
+>>                       |
+>>                       |--- memory bus for MFC block (mfc clock)
+>>
+>>
+>> Exynos3250 has following table for INT memory bus group:
+>> All clocks of INT memory bus group have to contain the same entry count
+>> againt the number of 'virtual freqw'. So, each memory bus clock could have duplicate clocks.
+>>
+>> ------------------------------------------------------------------------
+>> Level|virtual freq|PERI's clk|Display's clk|ISP's clk|GPS's clk| voltage|
+>> ------------------------------------------------------------------------
+>> L6   |400000      |100000    |200000       |200000   |300000   | 95000  |
+>> L5   |200000      |100000    |160000       |200000   |200000   | 95000  |
+>> L4   |133000      |100000    |100000       |100000   |133000   | 92500  |
+>> L3   |100000      |100000    |80000        |80000    |100000   | 85000  |
+>> L2   |80000       |50000     |80000        |50000    |50000    | 85000  |
+>> L1   |50000       |50000     |50000        |50000    |50000    | 85000  |
+>> -------------------------------------------------------------------------
+>> (Except for mcuisp, leftbus, rightbus, mfc block)
+>>
+>> This table is used for devfreq ondemand governor as following:
+>> 1. ondemand governor in devfreq use the 'virtual freq' to devcide the proper
+>>    frequency for memory bus.
+>> 2. ondemand governor executes the *_target() function to set clock rate and voltage.
+>> 3. *_target() function in exynos-bus.c changes the clock rate of {PERIS|Display|ISP|GPS} clk
+>>    according to decided 'Level' by devfreq ondemand governor.
 > 
-> This would be better done with something like:
+> I see..
 > 
-> 	rc = of_read_property_u32(power_mgt, "ibm,cpu-idle-state-residency-ns", &residency_ns);
-> 	if (!rc) {
-> 		pr_info("cpuidle-powernv: missing ibm,cpu-idle-state-residency-ns\n");
-> 		residency_ns = 300000;
-> 	}
+> Please confirm if my understanding is correct.
+> - mem-bus-group: all blocks sharing a regulator
+> - mem-bus-block: individual blocks managing their clock rate
 
-This looks like a better API, but the default residency values are different
-for each idle state. So perhaps a patch like the below ?
-
---------------------------Start Patch------------------------------------------
-
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-
----
- drivers/cpuidle/cpuidle-powernv.c |   54 +++++++++++++++++++++++--------------
- 1 file changed, 33 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index aedec09..2031560 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -13,6 +13,7 @@
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
- #include <linux/of.h>
-+#include <linux/slab.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -159,9 +160,9 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	const __be32 *idle_state_latency;
--	u32 len_flags, flags, latency_ns;
--	int i;
-+	u32 len_flags, flags;
-+	u32 *latency_ns, *residency_ns;
-+	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
- 
-@@ -177,34 +178,39 @@ static int powernv_add_idle_states(void)
- 		return nr_idle_states;
- 	}
- 
--	idle_state_latency = of_get_property(power_mgt,
--			"ibm,cpu-idle-state-latencies-ns", NULL);
--	if (!idle_state_latency) {
-+	dt_idle_states = len_flags / sizeof(u32);
-+
-+	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32(power_mgt,
-+			"ibm,cpu-idle-state-latencies-ns", latency_ns);
-+	if (rc) {
- 		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
- 		return nr_idle_states;
- 	}
- 
--	dt_idle_states = len_flags / sizeof(u32);
-+	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32(power_mgt,
-+			"ibm,cpu-idle-state-residency-ns", residency_ns);
-+	if (rc) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
-+		pr_warn("Falling back to default values\n");
-+	}
-+
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
- 		flags = be32_to_cpu(idle_state_flags[i]);
--
--		/* Cpuidle accepts exit_latency in us and we estimate
--		 * target residency to be 10x exit_latency
-+		/*
-+		 * Cpuidle accepts exit_latency and target_residency in us.
-+		 * Use default target_residency values if f/w does not expose it.
- 		 */
--		latency_ns = be32_to_cpu(idle_state_latency[i]);
- 		if (flags & OPAL_PM_NAP_ENABLED) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
--			nr_idle_states++;
- 		}
- 
- 		if (flags & OPAL_PM_SLEEP_ENABLED ||
-@@ -213,13 +219,19 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
--			nr_idle_states++;
- 		}
-+
-+		powernv_states[nr_idle_states].exit_latency =
-+				((unsigned int)latency_ns[i]) / 1000;
-+
-+		if (!rc) {
-+			powernv_states[nr_idle_states].target_residency =
-+				((unsigned int)residency_ns[i]) / 1000;
-+		}
-+
-+		nr_idle_states++;
- 	}
- 
- 	return nr_idle_states;
-
-Regards
-Preeti U Murthy
+Right and mem-bus-blcoks are included in a mem-bus-group.
 
 > 
-> cheers
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> What you do in kernel is register group as a device (with virtual OPPs)
+> and then manage blocks within the driver. And so you need to do this
+> dummy mapping of virtual to physical frequencies.
+
+Right.
+
+> 
+> It *may* not have done it this way, if I was to design this driver.
+> 
+> Each bus-block is a separately controllable device and so must be registered
+> separately. In that case all bus-blocks will have separate OPP tables and
+> all this dummy-v2p mapping will go away.
+
+If each bus-block has separate regulator independently, each bus-block can be registered
+separately. But, exynos bus-blocks in mem-bus-group share the same regulator.
+
+> 
+> I believe that you are over complicating stuff without any need..
+> 
+> --
+> viresh
 > 
 
+Best Regards,
+Chanwoo Choi
