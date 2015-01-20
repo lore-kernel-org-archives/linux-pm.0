@@ -1,625 +1,180 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: add cpufreq driver for Mediatek MT8173 SoC
-Date: Tue, 20 Jan 2015 15:06:15 +0800
-Message-ID: <CALx668VdmCgvJzGhm5Nmxdms221v++x0CB0DAj67mmLmoYEZFA@mail.gmail.com>
-References: <1420797291-15972-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1420797291-15972-3-git-send-email-pi-cheng.chen@linaro.org>
-	<CAKohpokoS9UiwuuzzAs=1RCaAkBpVDK_AVNNGe7VCe=7SScmnw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f181.google.com ([209.85.217.181]:48052 "EHLO
-	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbbATHGR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 02:06:17 -0500
-Received: by mail-lb0-f181.google.com with SMTP id u10so1321022lbd.12
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jan 2015 23:06:15 -0800 (PST)
-In-Reply-To: <CAKohpokoS9UiwuuzzAs=1RCaAkBpVDK_AVNNGe7VCe=7SScmnw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v9 0/7] devfreq: Add devfreq-event class to provide raw data
+ for devfreq device
+Date: Tue, 20 Jan 2015 16:10:02 +0900
+Message-ID: <1421737809-4010-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>
 
-Hi Viresh,
+This patchset add new devfreq_event class to provide raw data to determine
+current utilization of device  which is used for devfreq governor.
 
-Thanks for reviewing.
+The following description explains the feature of two kind of devfreq class:
+- devfreq class (existing)
+ : devfreq consumer device use raw data from devfreq_event device for
+   determining proper current system state and change voltage/frequency
+   dynamically using various governors.
+- devfreq_event class (new)
+ : Provide measured raw data to devfreq device for governor
 
-On 19 January 2015 at 18:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 9 January 2015 at 15:24, pi-cheng.chen <pi-cheng.chen@linaro.org> wrote:
->> When doing DVFS on MT8173 SoC, 2 rules should be followed to make sure the
->> SoC works properly:
->> 1. When doing frequency scaling of CPUs, the clock source should be switched
->>    to another PLL, then switched back to the orignal until it's stable.
->> 2. When doing voltage scaling of CA57 cluster, Vproc and Vsram need to be
->>    controlled concurrently and 2 limitations should be followed:
->>    a. Vsram > Vproc
->>    b. Vsram - Vproc < 200 mV
->>
->> To address these needs, we reuse cpufreq-dt but do voltage scaling in the
->> cpufreq notifier.
->
-> I haven't understood how is all this working..
-> - How are you switching to intermediate freq when its support isn't there
-> in cpufreq-dt.
-> - How is changing of volt after switching to freq working? Specially when freq
-> is higher than older freq and it requires changing of voltage before freq..
->
+Changelog:
 
-I was trying to switch clock source to the intermediate clock in the
-pre-notitifer
-and post-notifier by calling the function cpuclk_mux_set defined below and I
-understand it's not a goood idea. I will try to work on adding
-intermediate freqs
-suppport in cpufreq-dt so that it will also greatly reduce the
-complexity of this
-driver.
+Changes from v8:
+(https://lkml.org/lkml/2015/1/12/299)
+- Fix issue of devfreq-event.c driver by Myunjoo's comment
+  : Merge patch2 (resource-managed function) with patch1
+  : Fix bug in devfreq_event_{enable|disable}_edev() about enable_count operation
+  : Simplify error checking code in devfreq_event_get_event()
+  : Define devfreq_event_get_drvdata() as static inline function type
+  : Reduce the time of critical section scope in devfreq_event_remove_edev()
+  : Rename field name of devfreq_event_data structure
+    (total_event / event -> total_count / load_count)
+- Drop following patch[1] because Exynos5260 cannot be tested for exynos-ppmu.c driver
+  [1] [PATCHv8 7/9] ARM: dts: Add PPMU dt node for Exynos5260 SoC
+      - https://lkml.org/lkml/2015/1/12/301
+- Clean-up exynos-ppmu.c without update
 
-Voltage changing was also handled in pre-notifier and post-notifier. Please see
-below.
+Changes from v7:
+(https://lkml.org/lkml/2015/1/7/795)
+- Use EXPORT_SYMBOL_GPL macro instead of EXPORT_SYMBOL
+- Fix the binding document of exynos-ppmu.c driver
+- Drop the devfreq-event type patch because it isnt' clear
+- Fix bug of devfreq_event_add_edev() when fail to execute device_register()
+- Modify resource free operation on following functions:
+  : devfreq_event_remove_edev()
+  : devfreq_event_release_edev()
 
->>
->> Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
->> ---
->>  drivers/cpufreq/Kconfig.arm      |   6 +
->>  drivers/cpufreq/Makefile         |   1 +
->>  drivers/cpufreq/mt8173-cpufreq.c | 459 +++++++++++++++++++++++++++++++++++++++
->>  3 files changed, 466 insertions(+)
->>  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
->>
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 0f9a2c3..97ed7dd 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -255,3 +255,9 @@ config ARM_PXA2xx_CPUFREQ
->>           This add the CPUFreq driver support for Intel PXA2xx SOCs.
->>
->>           If in doubt, say N.
->> +
->> +config ARM_MT8173_CPUFREQ
->> +       bool "Mediatek MT8173 CPUFreq support"
->> +       depends on ARCH_MEDIATEK && CPUFREQ_DT && REGULATOR
->> +       help
->> +         This adds the CPUFreq driver support for Mediatek MT8173 SoC.
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index b3ca7b0..67b7f17 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)      += sa1110-cpufreq.o
->>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
->>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra-cpufreq.o
->>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
->> +obj-$(CONFIG_ARM_MT8173_CPUFREQ)       += mt8173-cpufreq.o
->
-> Add this in alphanumeric order please.
->
+Changes from v6:
+(https://lkml.org/lkml/2014/12/28/139)
+- This patchset is based on v3.19-rc3.
+1. devfreq-event class driver
+- Fix build break if devfreq-event framework is off
+- Add resource-managed function for devfreq-event device
+: devm_devfreq_event_add_edev()
+: devm_devfreq_event_remove_edev()
 
-Will fix it.
+Changes from v5:
+(https://lkml.org/lkml/2014/12/22/527)
+- Rebase these patch-set on v3.19-rc1 and Test it.
+1. exynos-ppmu.c
+- Change the error value when of_iomap() fail to map the memory
+- Remove owner setting of platform_driver
+- Add exynos_ppmu_disable() function
+2. exynos dts file
+- Add PPMU node to Exynos3250-based Monk board
+- Remove ppmu_cpu node on Exynos4412-based TRATS2 board and add ppmu_leftbus/rightbus node
 
->>
->>  ##################################################################################
->>  # PowerPC platform drivers
->> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
->> new file mode 100644
->> index 0000000..b578c10
->> --- /dev/null
->> +++ b/drivers/cpufreq/mt8173-cpufreq.c
->> @@ -0,0 +1,459 @@
->> +/*
->> +* Copyright (c) 2015 Linaro.
->> +* Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
->> +*
->> +* This program is free software; you can redistribute it and/or modify
->> +* it under the terms of the GNU General Public License version 2 as
->> +* published by the Free Software Foundation.
->> +*
->> +* This program is distributed in the hope that it will be useful,
->> +* but WITHOUT ANY WARRANTY; without even the implied warranty of
->> +* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> +* GNU General Public License for more details.
->> +*/
->> +
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/of_address.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/cpufreq.h>
->> +#include <linux/cpufreq-dt.h>
->> +#include <linux/cpumask.h>
->> +#include <linux/slab.h>
->> +#include <linux/clk.h>
->> +#include <linux/clk-provider.h>
->
-> This driver isn't a clock provider, right? Then why are
-> you including this file?
->
+Changes from v4:
+(https://lkml.org/lkml/2014/12/16/511)
+1. devfreq-event class driver
+- Add devfreq_event_get_edev_count() function
+- Modify the simple description of devfreq-event framework in devfreq-event.c
+- Minimize the usage range of global lock usage in devfreq_event_add_edev()
+- Remove '_is_enabled()' function pointer in devfreq_event_ops structure
+- Add separte CONFIG_PM_DEVFREQ_EVENT configuration
+- Add new devfreq-event.h header file including devfreq-event helper functions
+2. exynos dts file
+- Add new patch to support PPMU with DEVFREQ-event on Exynos4412-based TRATS2
 
-I included this file because I was using __clk_lookup to get the
-intermediate clk and I just realize it is not a right way.
-Thank Mike for pointing me out the right API to do it.
-Will fix it.
+Changes from v3:
+(https://lkml.org/lkml/2014/12/12/219)
+1. devfreq-event class driver
+- Fix return value of devfreq_event_get_event()
+- Add new structure devfreq_event_data for devfreq_event_get_event()
+- Modify the prototype of devfreq_event_get_event() function
+- Call of_node_put after calling of_parse_phandle() to decrement refcount
+2. exynos-ppmu driver
+- Modify usage of devfreq_event_get_event() function
+  according to new prototype of this funciton
+- Add the additional description to exynos-ppmu.txt how to add PPMU node
+  in board dts file
+- Use 'PPMU_EVENT' macro to remove duplicate codes
+- Add the support of PPMU for Exynos5260
+3. exynos dts file
+- Add missing PPMU_FSYS node to exynos3250.dtsi
+- Fix 'ppmu_mfc_l' node name as 'ppmu_mfc' because exynos3250 has only one MFC IP.
+- Add missing PPMU_ACP/G3D to exynos4.dtsi
+4. etc
+- Fix wrong abbreviation of PPMU (PPMU :Platform Performance Monitoring Unit)
+- Add new patch to support the PPMU of Exynos5260 SoC
 
->> +#include <linux/regulator/consumer.h>
->> +#include <linux/cpu.h>
->> +#include <linux/pm_opp.h>
->
-> keep them in alphanumeric order please.
->
+Changes from v2:
+(https://lkml.org/lkml/2014/12/9/304)
+1. devfreq-event class driver
+- Rename all the helper functions of devfreq-event device
+- Add devfreq_event_remove_edev() instead of devfreq_put_event_dev()
+- Add devfreq_event_release_edev() to initialize it before put device
+- Add the detailed description of devfreq-event API
+- Add the attributes of devfreq-event class (enable_count)
+- Check the overflow about event/total_event data in devfreq_event_get_event()
+- Remove the 'exclusive flag' feature
+- Set set_event()/get_event() functions as mandary
+- Add missing of_node_put() call
+- Change variable type of 'get_event()' funciton from 'int' to 'u64'
+2. exynos-ppmu driver
+- Remove un-used field (struct devfreq)
+- Use 'of_get_child_by_name()' instead of 'of_find_node_by_name()'
+- Add missing of_node_put() call
+- Fix wrong clock control
+- Use devfreq_event_remove_edev() instead of devfreq_remove_device()
+- Add the documentation for exynos-ppmu driver
+- Remove 'enable/disable/is_enabled/reset' function of exynos-ppmu driver
+3. exynos3250-rinato.dts
+- Add ppmu_{leftbus|rightbus} dt node and remove ppmu_cpu dt node
 
-Will fix it.
+Changes from v1:
+(https://lkml.org/lkml/2014/9/5/11)
+- Code clean
+- Add the description of devfreq-event structure
+- Add 'is_enabled' function to devfreq_event_ops structure
+- Add 'enable_count' field to devfreq_event_dev structure
+- Check whether devfreq-event device is enabled or not
+  during calling devfreq_event API
+- Define the type of devfreq-event device as following
+  : DEVFREQ_EVENT_TYPE_RAW_DATA
+  : DEVFREQ_EVENT_TYPE_UTILIZATION
+  : DEVFREQ_EVENT_TYPE_BANDWIDTH
+  : DEVFREQ_EVENT_TYPE_LATENCY
+- Add the exclusive feature of devfreq-event device.
+  If devfreq-event device is used on only on devfreq driver,
+  should used 'devfreq_enable_event_dev_exclusive()' function
+- Add new patch6 for test on Exynos3250-based Rinato board
 
->> +
->> +#define CPUCLK_MUX_ARMPLL      0x1
->> +#define CPUCLK_MUX_MAINPLL     0x2
->> +#define VOLT_SHIFT_LIMIT       150000
->> +
->> +enum {
->> +       LITTLE_CLUSTER = 0,
->> +       BIG_CLUSTER,
->> +       NR_CLUSTERS
->> +};
->> +
->> +static struct cluster_dvfs_info {
->> +       int cpu;
->> +       struct cpumask cpus;
->> +       struct device *cpu_dev;
->> +       struct regulator *proc_reg;
->> +       struct regulator *sram_reg;
->> +       int inter_volt;
->> +       u32 volt_tol;
->> +} *dvfs_info;
->> +
->> +static unsigned long mainpll_freq;
->> +static void __iomem *clk_mux_regs;
->> +static spinlock_t lock;
->> +
->> +static void cpuclk_mux_set(int cluster, u32 sel)
->> +{
->> +       u32 val;
->> +       u32 mask = 0x3;
->> +
->> +       if (cluster == BIG_CLUSTER) {
->> +               mask <<= 2;
->> +               sel <<= 2;
->> +       }
->> +
->> +       spin_lock(&lock);
->> +
->> +       val = readl(clk_mux_regs);
->> +       val = (val & ~mask) | sel;
->> +       writel(val, clk_mux_regs);
->> +
->> +       spin_unlock(&lock);
->> +}
->> +
->> +static int mt8173_cpufreq_voltage_step(struct cluster_dvfs_info *dvfs,
->> +                                      unsigned long old_vproc,
->> +                                      unsigned long new_vproc)
->> +{
->> +       int cur_vsram, cur_vproc, target_volt, tol;
->> +
->> +       if (old_vproc > new_vproc) {
->> +               while (1) {
->> +                       cur_vsram = regulator_get_voltage(dvfs->sram_reg);
->> +                       if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
->> +                           cur_vsram > new_vproc) {
->> +                               tol = new_vproc * dvfs->volt_tol / 100;
->> +                               regulator_set_voltage_tol(dvfs->proc_reg,
->> +                                                         new_vproc, tol);
->> +                               break;
->> +                       }
->> +
->> +                       target_volt = cur_vsram - VOLT_SHIFT_LIMIT;
->> +                       tol = target_volt * dvfs->volt_tol / 100;
->> +                       regulator_set_voltage_tol(dvfs->proc_reg, target_volt,
->> +                                                 tol);
->> +
->> +                       cur_vproc = regulator_get_voltage(dvfs->proc_reg);
->> +                       target_volt = cur_vproc + 1;
->> +                       tol = target_volt * dvfs->volt_tol / 100;
->> +                       regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
->> +                                                 tol);
->> +               }
->> +       } else if (old_vproc < new_vproc) {
->> +               while (1) {
->> +                       cur_vsram = regulator_get_voltage(dvfs->sram_reg);
->> +                       if (cur_vsram - new_vproc < VOLT_SHIFT_LIMIT &&
->> +                           cur_vsram > new_vproc) {
->> +                               tol = new_vproc * dvfs->volt_tol / 100;
->> +                               regulator_set_voltage_tol(dvfs->proc_reg,
->> +                                                         new_vproc, tol);
->> +                               break;
->> +                       }
->> +
->> +                       cur_vproc = regulator_get_voltage(dvfs->proc_reg);
->> +                       target_volt = cur_vproc + VOLT_SHIFT_LIMIT;
->> +                       tol = target_volt * dvfs->volt_tol / 100;
->> +                       regulator_set_voltage_tol(dvfs->sram_reg, target_volt,
->> +                                                 tol);
->> +
->> +                       if (new_vproc - cur_vproc > VOLT_SHIFT_LIMIT) {
->> +                               cur_vsram = regulator_get_voltage(
->> +                                                       dvfs->sram_reg);
->> +                               target_volt = cur_vsram - 1;
->> +                               tol = target_volt * dvfs->volt_tol / 100;
->> +                               regulator_set_voltage_tol(dvfs->proc_reg,
->> +                                                         target_volt, tol);
->> +                       }
->> +               }
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static int get_opp_voltage(struct device *dev, unsigned long freq_hz)
->> +{
->> +       struct dev_pm_opp *opp;
->> +       int volt;
->> +
->> +       rcu_read_lock();
->> +       opp = dev_pm_opp_find_freq_ceil(dev, &freq_hz);
->> +       if (IS_ERR(opp)) {
->> +               rcu_read_unlock();
->> +               pr_err("%s: failed to find OPP for %lu\n", __func__, freq_hz);
->> +               return PTR_ERR(opp);
->> +       }
->> +       volt = dev_pm_opp_get_voltage(opp);
->> +       rcu_read_unlock();
->> +
->> +       return volt;
->> +}
->> +
->> +static int mt8173_cpufreq_get_intermediate_voltage(int cluster)
->> +{
->> +       struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
->> +
->> +       if (dvfs->inter_volt == 0)
->> +               dvfs->inter_volt = get_opp_voltage(dvfs->cpu_dev,
->> +                                                  mainpll_freq);
->> +
->> +       return dvfs->inter_volt;
->> +}
->> +
->> +static void mt8173_cpufreq_set_voltage(int cluster, int old_volt, int new_volt)
->> +{
->> +       struct cluster_dvfs_info *dvfs = &dvfs_info[cluster];
->> +       int ret = 0;
->> +
->> +       if (cluster == LITTLE_CLUSTER) {
->> +               int tol;
->> +
->> +               tol = new_volt * dvfs->volt_tol / 100;
->> +               ret = regulator_set_voltage_tol(dvfs->proc_reg, new_volt, tol);
->> +       } else {
->> +               ret = mt8173_cpufreq_voltage_step(dvfs, old_volt, new_volt);
->> +       }
->> +
->> +       if (ret)
->> +               pr_err("%s: cluster%d failed to scale voltage (%dmV to %dmV)",
->> +                      __func__, cluster, old_volt, new_volt);
->> +}
->> +
->> +static int mt8173_cpufreq_notify(struct notifier_block *nb,
->> +                                unsigned long action, void *data)
->> +{
->> +       struct cpufreq_freqs *freqs = data;
->> +       struct cluster_dvfs_info *dvfs;
->> +       unsigned long old_volt, new_volt, inter_volt;
->> +       int cluster;
->> +
->> +       if (freqs->cpu == dvfs_info[BIG_CLUSTER].cpu)
->
-> You should check it against cpumask. freqs->cpu can change on the event
-> of hotplug of CPUs.
->
+Chanwoo Choi (7):
+  devfreq: event: Add new devfreq_event class to provide basic data for devfreq governor
+  devfreq: event: Add exynos-ppmu devfreq-event driver
+  devfreq: event: Add documentation for exynos-ppmu devfreq-event driver
+  ARM: dts: Add PPMU dt node for Exynos3250 SoC
+  ARM: dts: Add PPMU dt node for Exynos4 SoCs
+  ARM: dts: exynos: Add PPMU node for Exynos3250-based Rinato/Monk board
+  ARM: dts: exynos: Add PPMU node for Exynos4412-based TRATS2 board
 
-Will fix it.
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++
+ arch/arm/boot/dts/exynos3250-monk.dts              |  40 ++
+ arch/arm/boot/dts/exynos3250-rinato.dts            |  40 ++
+ arch/arm/boot/dts/exynos3250.dtsi                  |  74 +++
+ arch/arm/boot/dts/exynos4.dtsi                     | 108 +++++
+ arch/arm/boot/dts/exynos4210.dtsi                  |   8 +
+ arch/arm/boot/dts/exynos4412-trats2.dts            |  40 ++
+ drivers/devfreq/Kconfig                            |   2 +
+ drivers/devfreq/Makefile                           |   6 +-
+ drivers/devfreq/devfreq-event.c                    | 498 +++++++++++++++++++++
+ drivers/devfreq/event/Kconfig                      |  25 ++
+ drivers/devfreq/event/Makefile                     |   2 +
+ drivers/devfreq/event/exynos-ppmu.c                | 374 ++++++++++++++++
+ drivers/devfreq/event/exynos-ppmu.h                |  93 ++++
+ include/linux/devfreq-event.h                      | 196 ++++++++
+ 15 files changed, 1615 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Kconfig
+ create mode 100644 drivers/devfreq/event/Makefile
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.h
+ create mode 100644 include/linux/devfreq-event.h
 
->> +               cluster = BIG_CLUSTER;
->> +       else if (freqs->cpu == dvfs_info[LITTLE_CLUSTER].cpu)
->> +               cluster = LITTLE_CLUSTER;
->> +       else
->> +               return NOTIFY_DONE;
->> +
->> +       dvfs = &dvfs_info[cluster];
->> +
->> +       old_volt = regulator_get_voltage(dvfs->proc_reg);
->> +
->> +       new_volt = get_opp_voltage(dvfs->cpu_dev, freqs->new * 1000);
->> +       inter_volt = mt8173_cpufreq_get_intermediate_voltage(cluster);
->> +
->> +       if (action == CPUFREQ_PRECHANGE) {
->> +               if (old_volt < inter_volt || old_volt < new_volt) {
->> +                       new_volt = inter_volt > new_volt ?
->> +                                  inter_volt : new_volt;
->> +                       mt8173_cpufreq_set_voltage(cluster, old_volt,
->> +                                                  new_volt);
->> +               }
->> +
->> +               cpuclk_mux_set(cluster, CPUCLK_MUX_MAINPLL);
->> +       } else if (action == CPUFREQ_POSTCHANGE) {
->> +               cpuclk_mux_set(cluster, CPUCLK_MUX_ARMPLL);
->> +
->> +               if (new_volt < old_volt)
->> +                       mt8173_cpufreq_set_voltage(cluster, old_volt,
->> +                                                  new_volt);
->> +       }
->> +
-
-Here is the place I am handling voltage changing.
-
->> +       return NOTIFY_OK;
->> +}
->> +
->> +static struct notifier_block mt8173_cpufreq_nb = {
->> +       .notifier_call = mt8173_cpufreq_notify,
->> +};
->> +
->> +static struct cpufreq_dt_platform_data *pd;
->> +
->> +static int cpu_in_domain_list(struct list_head *domain_list, int cpu)
->> +{
->> +       struct list_head *node;
->> +
->> +       list_for_each(node, domain_list) {
->> +               struct cpufreq_cpu_domain *domain;
->> +
->> +               domain = container_of(node, struct cpufreq_cpu_domain, node);
->> +               if (cpumask_test_cpu(cpu, &domain->cpus))
->> +                       return 1;
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static void cpufreq_dt_pdata_release(void)
->> +{
->> +       if (!pd)
->> +               return;
->> +
->> +       if (!list_empty(&pd->domain_list)) {
->> +               struct list_head *node, *tmp;
->> +               struct cpufreq_cpu_domain *domain;
->> +
->> +               list_for_each_safe(node, tmp, &pd->domain_list) {
->> +                       list_del(node);
->> +                       domain = container_of(node, struct cpufreq_cpu_domain,
->> +                                             node);
->> +                       kfree(domain);
->> +               }
->> +       }
->> +
->> +       kfree(pd);
->> +}
->> +
->> +static int cpufreq_dt_pdata_init(void)
->> +{
->> +       int cpu;
->> +
->> +       pd = kmalloc(sizeof(*pd), GFP_KERNEL);
->> +       if (!pd)
->> +               return -ENOMEM;
->> +
->> +       pd->independent_clocks = 1,
->> +       INIT_LIST_HEAD(&pd->domain_list);
->> +
->> +       for_each_possible_cpu(cpu) {
->> +               struct cpufreq_cpu_domain *new_domain;
->> +
->> +               if (cpu_in_domain_list(&pd->domain_list, cpu))
->> +                       continue;
->> +
->> +               new_domain = kzalloc(sizeof(*new_domain), GFP_KERNEL);
->> +               if (!new_domain) {
->> +                       cpufreq_dt_pdata_release();
->> +                       return -ENOMEM;
->> +               }
->> +
->> +               cpumask_copy(&new_domain->cpus,
->> +                            &cpu_topology[cpu].core_sibling);
->> +               list_add(&new_domain->node, &pd->domain_list);
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static void mt8173_cpufreq_dvfs_info_release(void)
->> +{
->> +       int i;
->> +
->> +       if (!dvfs_info)
->> +               return;
->> +
->> +       for (i = 0; i < NR_CLUSTERS; ++i) {
->> +               struct cluster_dvfs_info *dvfs = &dvfs_info[i];
->> +
->> +               if (!IS_ERR_OR_NULL(dvfs->proc_reg))
->> +                       regulator_put(dvfs->proc_reg);
->> +
->> +               if (!IS_ERR_OR_NULL(dvfs->sram_reg))
->> +                       regulator_put(dvfs->sram_reg);
->> +       }
->> +
->> +       if (clk_mux_regs)
->> +               iounmap(clk_mux_regs);
->> +}
->> +
->> +static int mt8173_cpufreq_dvfs_info_init(void)
->> +{
->> +       struct list_head *node;
->> +       struct device_node *np;
->> +       struct clk *mainpll;
->> +       int i, ret;
->> +
->> +       dvfs_info = kzalloc(sizeof(*dvfs) * NR_CLUSTERS, GFP_KERNEL);
->> +       if (!dvfs_info)
->> +               return -ENOMEM;
->> +
->> +       list_for_each(node, &pd->domain_list) {
->> +               struct cpufreq_cpu_domain *domain = container_of(
->> +                                       node, struct cpufreq_cpu_domain, node);
->> +               int cpu = cpumask_next(0, &domain->cpus);
->
-> cpumask_first() ?
->
-
-Yes. Will fix it.
-
->> +
->> +               np = of_get_cpu_node(cpu, NULL);
->
-> This can fail..
->
-
-I'll add error checking for this.
-
->> +
->> +               if (of_property_match_string(np, "compatible",
->> +                                            "arm,cortex-a53") >= 0)
->> +                       cpumask_copy(&dvfs_info[LITTLE_CLUSTER].cpus,
->> +                                    &domain->cpus);
->> +               else if (of_property_match_string(np, "compatible",
->> +                                                 "arm,cortex-a57") >= 0)
->> +                       cpumask_copy(&dvfs_info[BIG_CLUSTER].cpus,
->> +                                    &domain->cpus);
->> +               else {
->> +                       of_node_put(np);
->> +                       pr_err("%s: unknown CPU core\n", __func__);
->> +                       return -EINVAL;
->> +               }
->> +
->> +               of_node_put(np);
->> +       }
->> +
->> +       for (i = 0; i < NR_CLUSTERS; i++) {
->
-> You can merge this for-loop with the above for-loop..
->
-
-Will fix it.
-
->> +               struct cluster_dvfs_info *dvfs = &dvfs_info[i];
->> +               int cpu;
->> +
->> +               for_each_cpu_mask(cpu, dvfs->cpus) {
->> +                       struct device_node *np;
->> +
->> +                       dvfs->cpu_dev = get_cpu_device(cpu);
->> +                       dvfs->proc_reg = regulator_get(dvfs->cpu_dev, "proc");
->> +                       if (IS_ERR(dvfs->proc_reg))
->> +                               continue;
->> +
->> +                       dvfs->cpu = cpu;
->> +                       dvfs->sram_reg = regulator_get(dvfs->cpu_dev, "sram");
->> +
->> +                       np = of_node_get(dvfs->cpu_dev->of_node);
->> +                       of_property_read_u32(np, "voltage-tolerance",
->> +                                            &dvfs->volt_tol);
->> +                       of_node_put(np);
->> +                       break;
->> +               }
->> +
->> +               if (IS_ERR(dvfs->proc_reg)) {
->> +                       pr_err("%s: no proc regulator for cluster %d\n",
->> +                              __func__, i);
->> +                       ret = -ENODEV;
->> +                       goto dvfs_info_release;
->> +               }
->> +
->> +               if (IS_ERR(dvfs->sram_reg) && BIG_CLUSTER == i) {
->> +                       pr_err("%s: no sram regulator for cluster %d\n",
->> +                              __func__, i);
->> +                       ret = -ENODEV;
->> +                       goto dvfs_info_release;
->> +               }
->> +       }
->> +
->> +       mainpll = __clk_lookup("mainpll");
->> +       if (!mainpll) {
->> +               pr_err("failed to get mainpll clk\n");
->> +               ret = -ENOENT;
->> +               goto dvfs_info_release;
->> +       }
->> +       mainpll_freq = clk_get_rate(mainpll);
->> +
->> +       np = of_find_compatible_node(NULL, NULL, "mediatek,mt8173-infrasys");
->> +       if (!np) {
->> +               pr_err("failed to find clock mux registers\n");
->> +               ret = -ENODEV;
->> +               goto dvfs_info_release;
->> +       }
->> +
->> +       clk_mux_regs = of_iomap(np, 0);
->> +       if (!clk_mux_regs) {
->> +               pr_err("failed to map clock mux registers\n");
->> +               ret = -EFAULT;
->> +               goto dvfs_info_release;
->> +       }
->> +       of_node_put(np);
->> +
->> +       spin_lock_init(&lock);
->> +
->> +       return 0;
->> +
->> +dvfs_info_release:
->> +       mt8173_cpufreq_dvfs_info_release();
->> +       return ret;
->> +}
->> +
->> +static int mt8173_cpufreq_driver_init(void)
->> +{
->> +       int ret;
->> +
->> +       if (!of_machine_is_compatible("mediatek,mt8173"))
->> +               return -ENODEV;
->> +
->> +       ret = cpufreq_dt_pdata_init();
->> +       if (ret) {
->> +               pr_err("failed to initialize platform data: %d\n", ret);
->> +               return ret;
->> +       }
->> +
->> +       ret = mt8173_cpufreq_dvfs_info_init();
->> +       if (ret) {
->> +               pr_err("failed to initialize mt8173 dvfs info: %d\n", ret);
->> +               goto dt_pdata_release;
->> +       }
->> +
->> +       ret = cpufreq_register_notifier(&mt8173_cpufreq_nb,
->> +                                       CPUFREQ_TRANSITION_NOTIFIER);
->> +       if (ret) {
->> +               pr_err("failed to register cpufreq notifier: %d\n", ret);
->> +               goto dt_pdata_release;
->
-> dvfs_info_release here ?
->
-
-Yes. Will fix this error path.
-
->> +       }
->> +
->> +       platform_device_register_data(NULL, "cpufreq-dt", -1,
->> +                                     pd, sizeof(*pd));
->
-> can't this fail?
->
-
-Yes. I'll add error checking for this.
-
-Thanks again for your reviewing.
-
-Best Regards,
-Pi-Cheng
-
->> +
->> +       return 0;
->> +
->> +dt_pdata_release:
->> +       cpufreq_dt_pdata_release();
->> +       return ret;
->> +}
->> +
->> +module_init(mt8173_cpufreq_driver_init);
->> +
->> +MODULE_AUTHOR("Pi-Cheng Chen <pi-cheng.chen@linaro.org>");
->> +MODULE_DESCRIPTION("Mediatek MT8173 cpufreq driver");
->> +MODULE_LICENSE("GPL");
+-- 
+1.8.5.5
