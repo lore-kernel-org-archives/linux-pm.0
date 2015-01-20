@@ -1,170 +1,211 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] OPP: Redefine bindings to overcome shortcomings
-Date: Tue, 20 Jan 2015 12:51:01 +0530
-Message-ID: <CAKohpokvkbyWnetSN793am+s4QjxiKwPO2P0QMPWk7Js-btTLg@mail.gmail.com>
-References: <52c403454c3b8fc201abe7ac74cf657638479311.1417691389.git.viresh.kumar@linaro.org>
-	<CAKohpokUXvhqt+z4EPC9k=O8ZnQOqNSGGi8w6w4shYtbvv8mTw@mail.gmail.com>
-	<CAL_JsqJabcXe7-juTnJDcVdzpnFokYmt-N=bjZt5a+32Fzr_vg@mail.gmail.com>
-	<CAKohpo=HkixETTSsrRPHhUtWPVgn_7w0E2jYTokAYQRT5awk8Q@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv8 1/9] devfreq: event: Add new devfreq_event class to
+ provide basic data for devfreq governor
+Date: Tue, 20 Jan 2015 16:25:39 +0900
+Message-ID: <54BE02F3.4060808@samsung.com>
+References: <213049974.1319841421737167629.JavaMail.weblogic@epmlwas04a>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:33451 "EHLO
-	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752065AbbATHVC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 02:21:02 -0500
-Received: by mail-oi0-f43.google.com with SMTP id z81so2509201oif.2
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jan 2015 23:21:01 -0800 (PST)
-In-Reply-To: <CAKohpo=HkixETTSsrRPHhUtWPVgn_7w0E2jYTokAYQRT5awk8Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <213049974.1319841421737167629.JavaMail.weblogic@epmlwas04a>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "kgene@kernel.org" <kgene@kernel.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, santosh shilimkar <santosh.shilimkar@oracle.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 31 December 2014 at 10:17, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 29 December 2014 at 22:35, Rob Herring <robherring2@gmail.com> wrote:
->>> +  - frequency-kHz: Frequency in kHz
->>
->> s/kHz/khz/
->>
->>> +  - voltage-uV: voltage in micro Volts
->>
->> -microvolt is more consistent with regulator binding.
->>
->> The names are a bit redundant. perhaps opp-khz and opp-microvolt instead.
->
-> All accepted.
->
->>> +Example 1: Simple case of dual-core cortex A9-single cluster, sharing
->>> clock line.
->>> +
->>> +/ {
->>> +       cpus {
->>> +               #address-cells = <1>;
->>> +               #size-cells = <0>;
->>> +
->>> +               cpu@0 {
->>> +                       compatible = "arm,cortex-a9";
->>> +                       reg = <0>;
->>> +                       next-level-cache = <&L2>;
->>> +                       operating-points-v2 = <&opp0>;
->>> +
->>> +                       opp0: opp0 {
->>
->> I don't really like having this under cpu0 when it applies to all
->> cpus. I would move it out of /cpus.
->
-> That's how I had it initially, but then Arnd didn't like it much.
->
->>> +                               compatible = "linux,cpu-dvfs";
->>
->> This should not be linux specific. Probably not cpu specific either.
->
-> This was just an example of one of the bindings and there will be others
-> as well.
->
-> 'linux' here doesn't mean linux specific, but just that its first used by
-> Linux. That's what my understanding is atleast.
->
->>> +                               clocks = <&clk-controller 0>;
->>> +                               clock-names = "cpu";
->>
->> clocks are an input to the cpu, not really an opp. You could have a an
->> OPP which uses a different parent clock, but that is most likely a
->> switch within the clock controller rather than 2 clock inputs to the
->> cpu.
->>
->> I think the clock binding for cpus should stand on its own independent of OPPs.
->>
->>> +                               opp-supply = <&cpu-supply0>;
->>
->> Same comment as clocks applies here.
->
-> Both will be kept in the cpu node where they were initially.
->
->>> +                               voltage-tolerance = <2>; /* percentage */
->>> +                               clock-latency = <300000>;
->>
->> These could be per entry. I'm not sure it is worth the savings to not
->> just always specify them per entry.
->
-> Done.
->
->> We should append units (-us) to clock-latency unless there is a good
->> reason to maintain compatibility.
->
-> So you meant something like this:
->
-> clock-latency-us = <300000>;
->
-> right?
->
->>> +                               opp-list = <&opplist0>;
->>
->> With the above changes, having this list is unnecessary.
->
-> It might be for the use case I mentioned earlier about something
-> like Krait.
->
->> So, what I envision is like this:
->>
->> /cpus {
->>   cpu@0 {
->>     clocks = <...>;
->>     cpu-supply = <...>;
->>     operating-point-v2 = <&cpu0-opp>;
->>    };
->>   cpu@1 {
->>     clocks = <...>;
->>     cpu-supply = <...>;
->>     operating-point-v2 = <&cpu1-opp>;
->>    };
->> };
->
-> Looks fine..
->
->> cpu0-opp : opp0 {
->>   compatible = "operating-point-table";
->>   entry0 {
->>     opp-khz = <500000>;
->>     opp-microvolt = <900000>;
->>   };
->>   entry1 {
->>     opp-khz = <1000000>;
->>     opp-microvolt = <1000000>;
->>     turbo-mode;
->>   };
->> };
->> cpu1-opp : opp1 {
->>   compatible = "operating-point-table";
->> ...
->> };
->
-> What about something like Krait which wants to use exactly same
-> bindings for all CPUs but want to specify they are controlled separately.
->
-> So I had it like:
->
-> cpu0-opp : opp0 {
->   compatible = "operating-point-table";
->   opp-list = <&opplist0>;
->
->   opplist0: opp-list0 {
->           entry0 {
->             opp-khz = <500000>;
->             opp-microvolt = <900000>;
->           };
->           entry1 {
->             opp-khz = <1000000>;
->             opp-microvolt = <1000000>;
->             turbo-mode;
->           };
->   };
-> };
->
-> cpu1-opp : opp1 {
->   compatible = "operating-point-table";
->   opp-list = <&opplist0>;
-> };
+Dear Myungjoo,
 
-Gentle reminder, so that we can close this long standing issue soon..
+On 01/20/2015 03:59 PM, MyungJoo Ham wrote:
+>>  
+>> Dear Myungjoo,
+>>
+>> On 01/20/2015 01:34 PM, MyungJoo Ham wrote:
+>>>>   
+> []
+>>>> +
+>>>> +	mutex_lock(&edev->lock);
+>>>> +	if (edev->desc->ops && edev->desc->ops->enable) {
+>>>> +		ret = edev->desc->ops->enable(edev);
+>>>> +		if (ret < 0)
+>>>> +			goto err;
+>>>> +	}
+>>>
+>>> Is there any reason to call enable(edev) even when enable_count is already > 0 
+>>> while you do not call disable(edev) while enable_count > 0?
+>>>
+>>> I think this may incur errors in the related device drivers.
+>>> (e.g., incorrect pairing of clk/runtime-pm/regulator enable/disable
+>>> at the device driver side)
+>>
+>> You're right. This part has potential errors. I'll fix it as following:
+>> If edev is already enabled, devfreq_event_enable_edev() will just return
+>> without any operation because devfreq-event(edev) can handle only one event
+>> at the same time.
+>>
+>> 	mutex_lock(&edev->lock);
+>> 	if (edev->enable_count)
+>> 		dev_warn(&edev->dev, "%s is already enabled\n", edev->desc->name);
+>> 		ret = -EINVAL;
+>> 		goto err;
+>> 	}
+>>
+>> 	if (edev->desc->ops && edev->desc->ops->enable) {		
+>> 		ret = edev->desc->ops->enable(edev);
+>> 		if (ret < 0)
+>> 			goto err;
+>> 	}
+>> 	edev->enable_count++;
+> 
+> No, your suggested modification creates another bug.
+> 
+> It should not emit "warn" when enable_count > 0 at enable().
+> It is a natural behavior from drivers.
+> - You may have multiple drivers using edev.
+> - You may have multiple threads using edev.
+
+The devfreq-event cannot be used in multiple drivers in current version
+If multiple driver set the event to devfreq-event device by using
+devfreq_event_set_event() at the same time, previous event will be ignored.
+
+If multiple drivers want to use devfreq-event device at the same time,
+I have to implement additional feature.
+
+> 
+> Thus, the above 12 lines should be replaced with:
+> 
+> 	if (edev->desc->ops && edev->desc->ops->enable &&
+> 	    edev->enable_count == 0) {
+> 		ret = edev->desc->ops->enable(edev);
+> 		if (ret < 0)
+> 			goto err;
+> 	}
+> 	edev->enable_count++;
+> 
+>> 	
+>>
+>>>
+>>>> +	edev->enable_count++;
+>>>> +err:
+>>>> +	mutex_unlock(&edev->lock);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(devfreq_event_enable_edev);
+>>>> +
+>>>> +/**
+>>>> + * devfreq_event_disable_edev() - Disable the devfreq-event dev and decrease
+>>>> + *				  the enable_count of the devfreq-event dev.
+>>>> + * @edev	: the devfreq-event device
+>>>> + *
+>>>> + * Note that this function decrease the enable_count and disable the
+>>>> + * devfreq-event device. After the devfreq-event device is disabled,
+>>>> + * devfreq device can't use the devfreq-event device for get/set/reset
+>>>> + * operations.
+>>>> + */
+>>>> +int devfreq_event_disable_edev(struct devfreq_event_dev *edev)
+>>>> +{
+>>>> +	int ret = 0;
+>>>> +
+>>>> +	if (!edev || !edev->desc)
+>>>> +		return -EINVAL;
+>>>> +
+>>>> +	mutex_lock(&edev->lock);
+>>>> +	if (edev->enable_count > 0) {
+>>>> +		edev->enable_count--;
+>>>> +	} else {
+>>>> +		dev_warn(&edev->dev, "unbalanced enable_count\n");
+>>>> +		ret = -EINVAL;
+>>>> +		goto err;
+>>>> +	}
+>>>> +
+>>>> +	if (edev->desc->ops && edev->desc->ops->disable) {
+>>>> +		ret = edev->desc->ops->disable(edev);
+>>>> +		if (ret < 0) {
+>>>> +			edev->enable_count++;
+>>>> +			goto err;
+>>>> +		}
+> 
+> Anyway, have you seen other subsystems doing fall-back operations as you've
+> done by "edev->enable_count++" here? Or is this your own idea on falling back
+> from errors with a disable callback?
+
+I removed "edev->enable_count++" when fail to diable devfreq-event
+and modify it as following:
+
+	+int devfreq_event_disable_edev(struct devfreq_event_dev *edev)
+	+{
+	+	int ret = 0;
+	+
+	+	if (!edev || !edev->desc)
+	+		return -EINVAL;
+	+
+	+	mutex_lock(&edev->lock);
+	+	if (!edev->enable_count) {
+	+		dev_warn(&edev->dev,
+	+			"%s is already disabled\n", edev->desc->name);
+	+		goto err;
+	+	}
+	+	
+	+	if (edev->desc->ops && edev->desc->ops->disable) {
+	+		ret = edev->desc->ops->disable(edev);
+	+		if (ret < 0)
+	+			goto err;
+	+	}
+	+	edev->enable_count--;
+	+err:
+	+	mutex_unlock(&edev->lock);
+	+
+	+	return ret;
+	+}
+	+EXPORT_SYMBOL_GPL(devfreq_event_disable_edev);
+
+> 
+>>>> +	}
+>>>
+>>> You did it correctly with disable here;
+>>> not calling it when it is not required.
+> 
+> Uh..yeah.. the original patch was incorrect..
+> 
+>>
+>> As I explained, I'll fix it as following:
+>>
+>> 	mutex_lock(&edev->lock);
+>> 	if (!edev->enable_count) {
+>> 		dev_warn(&edev->dev, "%s is already disabled\n", edev->desc->name);
+>> 		ret = -EINVAL;
+>> 		goto err;
+>> 	}
+>>
+>> 	if (edev->desc->ops && edev->desc->ops->disable) {
+>> 		ret = edev->desc->ops->disable(edev);
+>> 		if (ret < 0)
+>> 			goto err;		
+>> 	}
+>> 	edev->enable_count--;
+> 
+> Uh.... I'd say it is still incorrect.
+
+I explained it about this problem on the upper.
+
+> 
+> 	mutex_lock(&edev->lock);
+> 	if (!edev->enable_count) {
+> 		dev_warn(&edev->dev, "%s is already disabled\n", edev->desc->name);
+> 		ret = -EINVAL;
+> 		goto err;
+> 	}
+> 
+> 	edev->enable_count--;
+> 	if (edev->desc->ops && edev->desc->ops->disable &&
+> 	    !edev->enable_count) {
+> 		ret = edev->desc->ops->disable(edev);
+> 		if (ret < 0)
+> 			goto err;		
+> 	}
+
+[snip]
+
+Best Regards,
+Chanwoo Choi
