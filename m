@@ -1,97 +1,74 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/3] mfd/axp20x: add support for fuel gauge cell driver
-Date: Tue, 20 Jan 2015 11:49:33 +0000
-Message-ID: <20150120114933.GJ13701@x1>
-References: <20150107212552.GC3440@linux.intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RFC PATCHv2 07/19] mfd: ab8500: Use power_supply_*() API for
+ accessing function attrs
+Date: Tue, 20 Jan 2015 13:36:17 +0000
+Message-ID: <20150120133617.GG13701@x1>
+References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
+ <1420472882-10463-8-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f171.google.com ([209.85.223.171]:45204 "EHLO
+	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbbATNgY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 08:36:24 -0500
+Received: by mail-ie0-f171.google.com with SMTP id tr6so6729295ieb.2
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2015 05:36:24 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20150107212552.GC3440-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+In-Reply-To: <1420472882-10463-8-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-=46YI: It's easier to track patch-sets when they are connected.  Please
-send them as 'threaded'.  Take a look at the man page for `git
-send-email` for more details.
+On Mon, 05 Jan 2015, Krzysztof Kozlowski wrote:
 
-> mfd/axp20x: add support for fuel gauge cell
+> Replace direct calls to power supply function attributes with wrapper=
+s.
+> Wrappers provide safe access in case of unregistering the power
+> supply (e.g. by removing the driver). Replace:
+>  - get_property -> power_supply_get_property
 >=20
-> Register definitions and platform data structure=20
-> for fuel gauge cell devices.
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+
+You've sent this to me already Acked.  I don't see 00/00, so I have no
+idea what's going on.  Do you want me to take this patch?  Can it be
+taking on its own?
+
+> ---
+>  drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 >=20
-> Signed-off-by: Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ----
->  include/linux/mfd/axp20x.h | 43 ++++++++++++++++++++++++++++++++++++=
-+++++--
->  1 file changed, 41 insertions(+), 2 deletions(-)
-
-Applied, thanks.
-
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 81589d1..dfabd6d 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -124,10 +124,27 @@ enum {
->  #define AXP288_PMIC_ADC_H               0x56
->  #define AXP288_PMIC_ADC_L               0x57
->  #define AXP288_ADC_TS_PIN_CTRL          0x84
-> -
->  #define AXP288_PMIC_ADC_EN              0x84
-> -#define AXP288_FG_TUNE5			0xed
+> diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctr=
+l.c
+> index cfff0b643f1b..d4a4b24be7c6 100644
+> --- a/drivers/mfd/ab8500-sysctrl.c
+> +++ b/drivers/mfd/ab8500-sysctrl.c
+> @@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+>  		if (!psy)
+>  			continue;
 > =20
-> +/* Fuel Gauge */
-> +#define AXP288_FG_RDC1_REG          0xba
-> +#define AXP288_FG_RDC0_REG          0xbb
-> +#define AXP288_FG_OCVH_REG          0xbc
-> +#define AXP288_FG_OCVL_REG          0xbd
-> +#define AXP288_FG_OCV_CURVE_REG     0xc0
-> +#define AXP288_FG_DES_CAP1_REG      0xe0
-> +#define AXP288_FG_DES_CAP0_REG      0xe1
-> +#define AXP288_FG_CC_MTR1_REG       0xe2
-> +#define AXP288_FG_CC_MTR0_REG       0xe3
-> +#define AXP288_FG_OCV_CAP_REG       0xe4
-> +#define AXP288_FG_CC_CAP_REG        0xe5
-> +#define AXP288_FG_LOW_CAP_REG       0xe6
-> +#define AXP288_FG_TUNE0             0xe8
-> +#define AXP288_FG_TUNE1             0xe9
-> +#define AXP288_FG_TUNE2             0xea
-> +#define AXP288_FG_TUNE3             0xeb
-> +#define AXP288_FG_TUNE4             0xec
-> +#define AXP288_FG_TUNE5             0xed
+> -		ret =3D psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
+> +		ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+> +				&val);
 > =20
->  /* Regulators IDs */
->  enum {
-> @@ -236,4 +253,26 @@ struct axp20x_dev {
->  	const struct regmap_irq_chip	*regmap_irq_chip;
->  };
-> =20
-> +#define BATTID_LEN				64
-> +#define OCV_CURVE_SIZE			32
-> +#define MAX_THERM_CURVE_SIZE	25
-> +#define PD_DEF_MIN_TEMP			0
-> +#define PD_DEF_MAX_TEMP			55
-> +
-> +struct axp20x_fg_pdata {
-> +	char battid[BATTID_LEN + 1];
-> +	int design_cap;
-> +	int min_volt;
-> +	int max_volt;
-> +	int max_temp;
-> +	int min_temp;
-> +	int cap1;
-> +	int cap0;
-> +	int rdc1;
-> +	int rdc0;
-> +	int ocv_curve[OCV_CURVE_SIZE];
-> +	int tcsz;
-> +	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
-> +};
-> +
->  #endif /* __LINUX_MFD_AXP20X_H */
+>  		if (!ret && val.intval) {
+>  			charger_present =3D true;
+> @@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+>  	/* Check if battery is known */
+>  	psy =3D power_supply_get_by_name("ab8500_btemp");
+>  	if (psy) {
+> -		ret =3D psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+> -					&val);
+> +		ret =3D power_supply_get_property(psy,
+> +				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+>  		if (!ret && val.intval !=3D POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+>  			printk(KERN_INFO
+>  			       "Charger \"%s\" is connected with known battery."
 
 --=20
 Lee Jones
