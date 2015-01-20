@@ -1,51 +1,56 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 2/2] thermal: of: Enable thermal_zoneX when sensor is
- correctly added
-Date: Tue, 20 Jan 2015 18:26:09 +0000
-Message-ID: <20150120182608.GA5760@e104805>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
- <1421667844-13627-3-git-send-email-l.majewski@samsung.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [Bugfix v4 1/2] xen/pci: Fix xen IRQ allocation
+ failure caused by commit b81975eade8c
+Date: Tue, 20 Jan 2015 14:12:42 -0500
+Message-ID: <20150120191242.GC13409@l.oracle.com>
+References: <1421204979-30619-1-git-send-email-jiang.liu@linux.intel.com>
+	<1421327077-19894-1-git-send-email-jiang.liu@linux.intel.com>
+	<1421327077-19894-2-git-send-email-jiang.liu@linux.intel.com>
+	<20150116181318.GA22690@l.oracle.com>
+	<54BC8AF4.6010504@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <xen-devel-bounces@lists.xen.org>
 Content-Disposition: inline
-In-Reply-To: <1421667844-13627-3-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+In-Reply-To: <54BC8AF4.6010504@linux.intel.com>
+List-Unsubscribe: <http://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+	<mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <http://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+	<mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Sender: xen-devel-bounces@lists.xen.org
+Errors-To: xen-devel-bounces@lists.xen.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tony Luck <tony.luck@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Sander Eikelenboom <linux@eikelenboom.it>, Ingo Molnar <mingo@redhat.com>, David Vrabel <david.vrabel@citrix.com>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Bjorn Helgaas <bhelgaas@google.com>, xen-devel@lists.xenproject.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 19, 2015 at 11:44:04AM +0000, Lukasz Majewski wrote:
-> Up till now the thermal_zone mode was by default "disabled". With this
-> patch the default behavior was changed to "enable".
+On Mon, Jan 19, 2015 at 12:41:24PM +0800, Jiang Liu wrote:
 > 
-> One can read the mode at:
-> /sys/class/thermal/thermal_zone0/mode
-> 
-> Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> On 2015/1/17 2:13, Konrad Rzeszutek Wilk wrote:
+> > On Thu, Jan 15, 2015 at 09:04:35PM +0800, Jiang Liu wrote:
+> <snit>
+> >>
+> >> Note: we need to test this patch on those special AMD systems which
+> >> override normal SCI GSI (9) with strange GSI (20).
+> > 
+> > [    0.000000] DMI: Supermicro X8DTN/X8DTN, BIOS 2.1c       10/28/2011
+> > ..
+> >      0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> > [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low level)
+> > [    0.000000] ACPI: IRQ0 used by override.
+> > ..
+> >     6.358737] xen: registering gsi 20 triggering 0 polarity 1
+> > [    6.358756] xen: --> pirq=20 -> irq=20 (gsi=20)
+> > ...
+> > -bash-4.1# cat /proc/interrupts |grep acpi
+> >  20:          0          0          0  xen-pirq-ioapic-level  acpi
+> Hi Konrad,
 
-We are facing the same issue with Juno.  When registering thermal
-zones from device tree they were coming up disabled.  I've tested it
-on my Juno board and it fixes it.
+> 	May I assume an Tested-by from you here?
 
-Tested-by: Javi Merino <javi.merino@arm.com>
-
-> ---
->  drivers/thermal/of-thermal.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index d717f3d..668fb1b 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -497,6 +497,9 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
->  		if (sensor_specs.np == sensor_np && id == sensor_id) {
->  			tzd = thermal_zone_of_add_sensor(child, sensor_np,
->  							 data, ops);
-> +			if (!IS_ERR(tzd))
-> +				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
-> +
->  			of_node_put(sensor_specs.np);
->  			of_node_put(child);
->  			goto exit;
+Yes for this particular use case. I hadn't yet tried to push the ACPI buttons
+(this printout was from an server in a basement).
+> Thanks!
+> Gerry
