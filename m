@@ -1,61 +1,68 @@
-From: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
-Date: Wed, 21 Jan 2015 12:58:17 -0800
-Message-ID: <20150121205817.GC15525@linux.intel.com>
-References: <20150107212328.GA3440@linux.intel.com>
- <20150118174750.GG3574@x1>
-Reply-To: todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH V3 02/11] power: charger-manager: Use thermal subsystem
+ interface only to get temperature.
+Date: Wed, 21 Jan 2015 23:38:48 +0100
+Message-ID: <20150121223848.GI13715@earth.universe>
+References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1418979323-7188-3-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7IgncvKP0CVPV/ZZ"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:39638 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbbAUWjF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Jan 2015 17:39:05 -0500
 Content-Disposition: inline
-In-Reply-To: <20150118174750.GG3574@x1>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+In-Reply-To: <1418979323-7188-3-git-send-email-jonghwa3.lee@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-On Sun, Jan 18, 2015 at 05:47:50PM +0000, Lee Jones wrote:
-> So now I have this odd looking front cover letter randomly in my
-> inbox.
->=20
-> Please sent patch-sets threaded, so that they cling together.
->=20
-> > X-Power AXP288 PMIC Fuel Gauge Driver
-> >=20
-> >  new power_supply driver at driver/power
-> >  interfaces with the axp20x mfd driver as a cell
-> >  provides battery info and monitors for changes
-> >  generates alerts on temperature and capacity issues
->=20
-> Use the full 76 chars for full sentences, or if this is a
-> bullet-pointed list, use actual bullet points.
->=20
-> > (1/3) mfd/axp20x.c: change the battery cell name to fuel_gauge
-> > (2/3) mfd/axp20x.h: add the register defs and platform struct for f=
-uel gauge
-> > (3/3) power/axp288_fuel_gauge.c: axp288 fuel gauge driver
->=20
-> Don't hand-roll your own cover letters, use --cover-letter when
-> creating your patch-sets instead.
 
-Sorry for for formatting issues, I'll do it correctly in my v2 submissi=
-on, thanks.
+--7IgncvKP0CVPV/ZZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->=20
-> > Signed-off-by: Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> > ----
-> >  drivers/mfd/axp20x.c              |   10 +-
-> >  drivers/power/Kconfig             |    9 +
-> >  drivers/power/Makefile            |    1 +
-> >  drivers/power/axp288_fuel_gauge.c | 1108 +++++++++++++++++++++++++=
-++++++++++++++++++++++++++++++++++++++
-> >  include/linux/mfd/axp20x.h        |   43 ++-
-> >  5 files changed, 1164 insertions(+), 7 deletions(-)
->=20
-> --=20
-> Lee Jones
-> Linaro STMicroelectronics Landing Team Lead
-> Linaro.org =E2=94=82 Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+Hi Jonghwa,
+
+On Fri, Dec 19, 2014 at 05:55:14PM +0900, Jonghwa Lee wrote:
+> It drops the way of using power_supply interface to reference battery's
+> temperature. Then it tries to use thermal subsystem's only. This makes driver
+> more simple and also can remove ifdeferies.
+
+this breaks allmodconfig, since CONFIG_THERMAL can be built as
+module and charger-manager will be builtin:
+
+drivers/built-in.o: In function `cm_get_battery_temperature.isra.4':
+binder.c:(.text+0x2f4008): undefined reference to `thermal_zone_get_temp'
+drivers/built-in.o: In function `charger_manager_probe':
+binder.c:(.text+0x2f62c4): undefined reference to `thermal_zone_get_zone_by_name'
+Makefile:917: recipe for target 'vmlinux' failed
+
+-- Sebastian
+
+--7IgncvKP0CVPV/ZZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUwCp1AAoJENju1/PIO/qaszMP/inSp4NXj4AusZcAjI6aIk4i
+7DxA5TcIUSWn/qKcXwVjythTlHRd3I9UhyTJdN3++QPLQFNcpJ7tQ4MNMzMVI1s9
+6P9oN2iHeGPM4U4TXxrbcZDvyZYhEkvTN7djqHBQvV3cszUNFiO33pR99ohw8+l2
+2j8BpIWXtwnjZSMvjdSXjTfhd60BgoUcQ1c0exbA0xaTZygv3OE6OdUQSdDbIGG6
+YJrfaXkAtPOvwIqv7UG5CPL8wUCqbBgb3Q4kqg8QoBrWqIJ21gsXtJTNi9pNLpyp
+R6QVKg5+ByXaD5I6iJJdIMs1m1wpqdwqe+bpsKtJPPMSa5a9eFXSnMAeSypPCp6d
+BBu5xkZ6cnU8X7iowNZulMx7tD+JYX72hudwJT0BxSAbq+PWZh6G8ST9tWSl/n1L
+H3fmDmbvWOv3pdfD661dzFbHQyqLb5oG7eocxAnyAT41bAXlbVYOKqxuA3fb4eIw
+KG66Mx2clZ4cwmXs0K4hgENpZc/dbU84j5GwuIZ9zxBlfMyH0Du0+ydFdDd/yFWi
+3aZMsWugbJhRjhDUZM3bGiTL2bpaxTgDsqQK9HDML4A0HEsK4qvYSeJkscO4V34t
+oH70XgUwl3lvQdS4NdsUQeIvHbp/9vpEcTh9R1ZXpKrYTiuFcRBpnUkWKiCs5SeD
+N30u8ZNvLkSWnT1UG8Ve
+=x//c
+-----END PGP SIGNATURE-----
+
+--7IgncvKP0CVPV/ZZ--
