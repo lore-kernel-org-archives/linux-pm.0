@@ -1,63 +1,103 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power: reset: Add reset driver for R-Mobile platforms
-Date: Wed, 21 Jan 2015 16:58:46 +0100
-Message-ID: <20150121155846.GE13715@earth.universe>
-References: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH] power: bq24190_charger: suppress build warning
+Date: Wed, 21 Jan 2015 17:05:33 +0100
+Message-ID: <20150121160533.GF13715@earth.universe>
+References: <1417704964-23155-1-git-send-email-prabhakar.csengg@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="LSp5EJdfMPwZcMS1"
-Return-path: <linux-sh-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="vKFfOv5t3oGVpiF+"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Simon Horman <horms@verge.net.au>, Arnd Bergmann <arnd@arndb.de>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
+In-Reply-To: <1417704964-23155-1-git-send-email-prabhakar.csengg@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---LSp5EJdfMPwZcMS1
-Content-Type: text/plain; charset=us-ascii
+--vKFfOv5t3oGVpiF+
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Dec 04, 2014 at 04:33:21PM +0100, Geert Uytterhoeven wrote:
-> Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
-> a restart handler to trigger a soft power-on reset through the R-Mobile
-> System Controller.
-> The priority of this restart handler is 192, to allow a watchdog driver
-> to use priority 128.
+On Thu, Dec 04, 2014 at 02:56:04PM +0000, Lad, Prabhakar wrote:
+> This patch fixes following build warning:
 >=20
-> Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
-> Bridge) semaphore should be acquired on systems where both the ARM and
-> SH core are in use. The driver can be extended later to support this,
-> when needed.
+> In file included from include/linux/printk.h:261:0,
+>                  from include/linux/kernel.h:13,
+>                  from include/linux/list.h:8,
+>                  from include/linux/module.h:9,
+>                  from drivers/power/bq24190_charger.c:11:
+> drivers/power/bq24190_charger.c: In function =E2=80=98bq24190_irq_handler=
+_thread=E2=80=99:
+> include/linux/dynamic_debug.h:86:20: warning: =E2=80=98ss_reg=E2=80=99 ma=
+y be used uninitialized in this function [-Wmaybe-uninitialized]
+>    __dynamic_dev_dbg(&descriptor, dev, fmt, \
+>                     ^
+> drivers/power/bq24190_charger.c:1211:5: note: =E2=80=98ss_reg=E2=80=99 wa=
+s declared here
+>   u8 ss_reg, f_reg;
+>      ^
+> In file included from include/linux/printk.h:261:0,
+>                  from include/linux/kernel.h:13,
+>                  from include/linux/list.h:8,
+>                  from include/linux/module.h:9,
+>                  from drivers/power/bq24190_charger.c:11:
+> include/linux/dynamic_debug.h:86:20: warning: =E2=80=98f_reg=E2=80=99 may=
+ be used uninitialized in this function [-Wmaybe-uninitialized]
+>    __dynamic_dev_dbg(&descriptor, dev, fmt, \
+>                     ^
+> drivers/power/bq24190_charger.c:1211:13: note: =E2=80=98f_reg=E2=80=99 wa=
+s declared here
+>   u8 ss_reg, f_reg;
+>=20
+> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+> ---
+>  drivers/power/bq24190_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_char=
+ger.c
+> index ad3ff8f..72e552d 100644
+> --- a/drivers/power/bq24190_charger.c
+> +++ b/drivers/power/bq24190_charger.c
+> @@ -1208,7 +1208,7 @@ static irqreturn_t bq24190_irq_handler_thread(int i=
+rq, void *data)
+>  {
+>  	struct bq24190_dev_info *bdi =3D data;
+>  	bool alert_userspace =3D false;
+> -	u8 ss_reg, f_reg;
+> +	u8 ss_reg =3D 0, f_reg =3D 0;
+>  	int ret;
+> =20
+>  	pm_runtime_get_sync(bdi->dev);
 
-Applied with Reviewed-By from Guenter Roeck.
+Thanks, applied.
 
 -- Sebastian
 
---LSp5EJdfMPwZcMS1
+--vKFfOv5t3oGVpiF+
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUv8yuAAoJENju1/PIO/qa3ZAP/im+KkTLmn41Z/SUdBT4wZSd
-v1R8kVWAc8Rf5ir9lxgaQToYqFQVPJOp6dIR1wMNgfNWUA//gT6XeC8UOUxxKE/m
-/w3RXzyKN6/DMYzFOtsrxoP5mzRmj33IXgNYY4JMEaclfy652J1NgOopF/3bgdrF
-9UYcqVoH2AoQ7gIwYhZFqrTzEMUYPvPPIoxdIe1EhmrxGTbA+bOTDEqAstRG3xCw
-M701RgoXSUPUYoAcBXX/LQHoL3arto2cTGkpkm/RX9bHZRwTXvhw2/EiSWf0e0jU
-mnbQRSBQbLBQ06mt2IJUhGih7EJq4s0U+f/ba84OpEmsQ9q5a049S+jNa2TlZSM/
-p7v9KvpjvtCjmK0iCub6Wa97fZCoFP5DduoyqVzmS/v1YdrhHzAMAO/BsY+XWiwv
-HuR/HpTd8yCahSLNM7B5clCjPUV7zjQkTQXFmnWUizbqtqVKCz6ENmJ/gNJBirPR
-QhtOBdN96nPEqMwGr61m18eVc+40XKS/tUHvdp8j1QE+JJrZZiRitP0LrcHterAt
-SvHx2LmXwMpXTST2r3YVlcLwyJQWu5lmnzrDARKJtcoFJHoOeOVt6WfxnTVTFTzj
-sJvvkLse0s/dGIdYYRkfMsmmx9xUw0c5hQYTHHWs5xZx/LtGGHWZbhCFr1fM9yZ6
-vVU9hkZV0AkeV5UW2BkJ
-=vnTs
+iQIcBAEBCgAGBQJUv85MAAoJENju1/PIO/qaUKgP/2q1N/MUWcK2XYRr6PYfJ55I
+uj3M89QPVjv+SSimIw1HSF4Byifv5ikSN2P7OuUxippDaT0hpJqirX7ouY3fm462
+LEWl6E4h+Lz2fu9Ug+MY03sJoIuPuXG4004AjMC3R2wjKhH9X9WOabf2+mwbotTB
+on1MA9Zmb2fAE7a7Xu4raMIOaZljCjRw5jc6HPlKZu/FHrlH0WePz0CrfcFYA7lB
+MvURRcmPVQpQGQZQS28dkjtHCvnYWRcLjISczYLxdFUlTtgc0gVK36yCjAmLSN1w
+WRCKh8hNQZD7FSOh/hsDPBV+LTrJLGabMS4BJl2MoZmcFSrjBXfXWFOfpLurjWGt
+GxEqQjBCuw+ZRDisnZWLyC/AN2b/eUE1Ik038zMM8f8yAzcU85eMbm3SOYu5QRbQ
+v12Wm2ndrSa016a7BBieX7TI09KWBpqYRdWSe1LOBK4WkoFz3THulHsFSrEIiSCl
+XxEz7HiHMG+jHFbuzuJ2yA7h3dsvs4AFcH/WnlhstZeopTyPBINVSBS0wJ1eDX5t
+Yuf77Bjqz0D7VwBN+JXl34jiWAOYF6bgsufHEw8p3nsMjmm1hx6aaUDVOswHkjDG
+boF7JzpK70sxu9EaObWmW7+FqfGCHUBamNZUk28a3PI3JU3QMYQ+UjPQ8EKT2cCt
+VJ4F5XlILQS/0qoW2hpw
+=rBKJ
 -----END PGP SIGNATURE-----
 
---LSp5EJdfMPwZcMS1--
+--vKFfOv5t3oGVpiF+--
