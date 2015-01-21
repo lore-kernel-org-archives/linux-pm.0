@@ -1,109 +1,71 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v3] thermal: rockchip: make temperature reporting much more accurate
-Date: Thu, 22 Jan 2015 01:29:30 +0800
-Message-ID: <1421861370-19422-2-git-send-email-wxt@rock-chips.com>
-References: <1421861370-19422-1-git-send-email-wxt@rock-chips.com>
+From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Subject: Re: [PATCH 1/3] mfd/axp20x: change battery cell name to fuel gauge
+Date: Wed, 21 Jan 2015 11:16:29 -0800
+Message-ID: <20150121191629.GA15525@linux.intel.com>
+References: <20150107212450.GB3440@linux.intel.com>
+ <20150120114725.GI13701@x1>
+Reply-To: todd.e.brandt@linux.intel.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.135]:46432 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbbAURaF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 12:30:05 -0500
-In-Reply-To: <1421861370-19422-1-git-send-email-wxt@rock-chips.com>
+Received: from mga02.intel.com ([134.134.136.20]:30062 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753297AbbAUTRL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Jan 2015 14:17:11 -0500
+Content-Disposition: inline
+In-Reply-To: <20150120114725.GI13701@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Caesar Wang <wxt@rock-chips.com>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com, todd.e.brandt@intel.com
 
-In general, the kernel should report temperature readings exactly as
-reported by the hardware. The cpu / gpu thermal driver works in 5 degree
-increments,but we ought to do more accurate. The temperature will do
-linear interpolation between the entries in the table.
-
-Test= $md5sum /dev/zero &
-$while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
-sleep .5; done
-
-e.g. We can get the result as follows:
-    /sys/class/thermal/thermal_zone1/temp:39994
-    /sys/class/thermal/thermal_zone2/temp:39086
-    /sys/class/thermal/thermal_zone1/temp:39994
-    /sys/class/thermal/thermal_zone2/temp:39540
-    /sys/class/thermal/thermal_zone1/temp:39540
-    /sys/class/thermal/thermal_zone2/temp:39540
-    /sys/class/thermal/thermal_zone1/temp:39540
-    /sys/class/thermal/thermal_zone2/temp:39994
-
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
----
-
-Changes in v3:
-Suggested-by Daniel Kurtz,
-the check doesn't reject "code == 0xfff"
-Fixed in rk_tsadcv2_code_to_temp(u32 code)
-
-Changes in v2:
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
- drivers/thermal/rockchip_thermal.c | 32 ++++++++++++++++++++++----------
- 1 file changed, 22 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 1bcddfc..ce18007 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -193,19 +193,22 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
- 
- static long rk_tsadcv2_code_to_temp(u32 code)
+On Tue, Jan 20, 2015 at 11:47:25AM +0000, Lee Jones wrote:
+> On Wed, 07 Jan 2015, Todd E Brandt wrote:
+>=20
+> > mfd/axp20x: change battery cell name to fuel gauge
+> >=20
+> > Name changes to the battery cell structure to a
+> > more generic cell type: fuel gauge.
+> >=20
+> > Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+> > ----
+> >  drivers/mfd/axp20x.c | 10 +++++-----
+> >  1 file changed, 5 insertions(+), 5 deletions(-)
+> >=20
+> > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> > index b1b580a..e75717e 100644
+> > --- a/drivers/mfd/axp20x.c
+> > +++ b/drivers/mfd/axp20x.c
+> > @@ -87,7 +87,7 @@ static struct resource axp20x_pek_resources[] =3D=
  {
--	int high, low, mid;
--
--	low = 0;
--	high = ARRAY_SIZE(v2_code_table) - 1;
--	mid = (high + low) / 2;
-+	unsigned int low = 0;
-+	unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
-+	unsigned int mid = (low + high) / 2;
-+	unsigned int num;
-+	unsigned long denom;
- 
-+	/* No code available, return callback */
- 	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
--		return 125000; /* No code available, return max temperature */
-+		return rk_tsadcv2_code_to_temp(code);
- 
- 	while (low <= high) {
--		if (code >= v2_code_table[mid].code && code <
--		    v2_code_table[mid - 1].code)
--			return v2_code_table[mid].temp;
-+		if (code >= v2_code_table[mid].code &&
-+		    code < v2_code_table[mid - 1].code)
-+			break;
-+		else if (code == TSADCV2_DATA_MASK)
-+			break;
- 		else if (code < v2_code_table[mid].code)
- 			low = mid + 1;
- 		else
-@@ -213,7 +216,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
- 		mid = (low + high) / 2;
- 	}
- 
--	return 125000;
-+	/*
-+	 * The 5C granularity provided by the table is too much. Let's
-+	 * assume that the relationship between sensor readings and
-+	 * temperature between 2 table entries is linear and interpolate
-+	 * to produce less granular result.
-+	 */
-+	num = v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
-+	num *= v2_code_table[mid - 1].code - code;
-+	denom = v2_code_table[mid - 1].code - v2_code_table[mid].code;
-+	return v2_code_table[mid - 1].temp + (num / denom);
- }
- 
- /**
--- 
-1.9.1
+> >  	},
+> >  };
+> > =20
+> > -static struct resource axp288_battery_resources[] =3D {
+> > +static struct resource axp288_fuel_gauge_resources[] =3D {
+> >  	{
+> >  		.start =3D AXP288_IRQ_QWBTU,
+> >  		.end   =3D AXP288_IRQ_QWBTU,
+> > @@ -236,7 +236,7 @@ static const struct i2c_device_id axp20x_i2c_id=
+[] =3D {
+> >  };
+> >  MODULE_DEVICE_TABLE(i2c, axp20x_i2c_id);
+> > =20
+> > -static const struct acpi_device_id axp20x_acpi_match[] =3D {
+> > +static struct acpi_device_id axp20x_acpi_match[] =3D {
+>=20
+> Why have you dropped the cost qualifier here?
 
+That's a bug, I shouldn't have removed the const qualifier, I'll submit=
+ a
+v2 patch with this change removed. Thanks for the catch.
 
+>=20
+> [...]
+>=20
+> --=20
+> Lee Jones
+> Linaro STMicroelectronics Landing Team Lead
+> Linaro.org =E2=94=82 Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
