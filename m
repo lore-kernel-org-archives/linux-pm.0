@@ -1,104 +1,100 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
-Date: Thu, 22 Jan 2015 18:02:07 +0530
-Message-ID: <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
-	<1421667844-13627-2-git-send-email-l.majewski@samsung.com>
-	<CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
-	<20150122100124.65e7a19e@amdc2363>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 00/16] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Wed, 21 Jan 2015 05:08:04 -0400
+Message-ID: <20150121090802.GC13468@developer.hsd1.ca.comcast.net>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1421242874-3425-1-git-send-email-l.majewski@samsung.com>
+ <54B8549F.60707@gmx.net>
+ <20150116092946.38860303@amdc2363>
+ <54BD9377.30606@gmx.net>
+ <20150120091729.3d01a0cf@amdc2363>
+ <54C04D02.90405@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ctP54qlpMx3WjD+/"
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150122100124.65e7a19e@amdc2363>
+Content-Disposition: inline
+In-Reply-To: <54C04D02.90405@gmx.net>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+To: Tobias Jakobi <liquid.acid@gmx.net>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, tomasz.figa@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
 
-On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Abhilash,
->
->> Hi Lukasz,
->>
->> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
->> <l.majewski@samsung.com> wrote:
->> > The exynos_map_dt_data() function must be called before
->> > thermal_zone_of_sensor_register(), and hence provide tmu_read()
->> > function, before it is needed.
->> >
->> > This change is driven by adding support for enabling thermal_zoneX
->> > when it is properly initialized.
->> >
->> > One can read the mode of operation
->> > at /sys/class/thermal/thermal_zone0/mode Such functionality was
->> > missing in the of-thermal.c code.
->> >
->> > Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
->> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> > ---
->> >  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
->> >  1 file changed, 4 insertions(+), 3 deletions(-)
->> >
->> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
->> > b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab 100644
->> > --- a/drivers/thermal/samsung/exynos_tmu.c
->> > +++ b/drivers/thermal/samsung/exynos_tmu.c
->> > @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
->> > platform_device *pdev) platform_set_drvdata(pdev, data);
->> >         mutex_init(&data->lock);
->> >
->> > +       ret = exynos_map_dt_data(pdev);
->> > +       if (ret)
->> > +               goto err_sensor;
->> > +
->> >         data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0,
->> > data, &exynos_sensor_ops);
->> >         if (IS_ERR(data->tzd)) {
->> >                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
->> >                 return PTR_ERR(data->tzd);
->> >         }
->> > -       ret = exynos_map_dt_data(pdev);
->> > -       if (ret)
->> > -               goto err_sensor;
->> >
->> >         pdata = data->pdata;
->>
->> I have been testing this along with your v5 patch set and am seeing
->> incorrect temperature being reported at boot-up on exynos7.
->
-> Does it show a maximal temperature value (0x1FF)?
+--ctP54qlpMx3WjD+/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I did not print the current temperature register, but I remember the
-message showing ~105C. Will give you the register value when I test
-with more debug prints tomorrow.
+On Thu, Jan 22, 2015 at 02:06:10AM +0100, Tobias Jakobi wrote:
+> Hello!
+>=20
+>=20
+> Lukasz Majewski wrote:
+> >> The point is that I'm still working with a rather old version of the
+> >> cpufreq series, a version which still had the Exynos4x12 code in it
+> >> (this was removed later, if I remember correctly because of problems
+> >> with how to properly describe boost configuration in DT).
+> >=20
+> > Is your board Odroid-U3/Trats2 ?
+> It's an Odroid-X2, so pretty similar to the U3, except that it doesn't
+> have any active cooling device.
+>=20
+>=20
+> >> Anyway, to not get completly off-topic here, I noticed some small
+> >> issue with v3 of the thermal series. I've enabled
+> >> CONFIG_THERMAL_HWMON so that I can use lm_sensors to query
+> >> temperature of the board. However while the thermal_zone is created,
+> >> there is no hwmon node to be found.=20
+> >=20
+> > I'm not surprised, that some use cases (about which I wasn't even
+> > aware) show up.=20
+> > I've already fixed issues reported by Abhilash (with v5 and a following
+> > patch) and look closer into the THERMAL_HWMON.
+> The problem seems to be that of_parse_thermal_zones always sets
+> 'no_hwmon' to true, so that thermal_zone_device_register never registers
+> a hwmon device when the underlaying thermal zone is setup through DT. I
+> don't understand the rationale behind this, even with the comment ('No
+> hwmon because there might be hwmon drivers registering').
+>=20
 
->
->>  It looks
->> like exynos_tmu_read gets called from thermal_zone_of_device_update
->> during boot-up, now that we have it populated early. However, as the
->> tmu initialization function has not been called yet it returns a wrong
->> value. Does that sound correct ?
->
-> No, this is a mistake. However, I'm wondering why on Exynos4/5 this
-> error didn't show up...
+The reason is that hwmon sensor device drivers also register via of-thermal.
+So, adding hwmon interface by default will create a cyclic problem.
 
-I have been lowering the software trip point temperature in the
-exynos7 dts file (to 55C) for testing purposes. Hence, when the
-temperature is read incorrectly as ~105C the board trips at boot-up
-itself. Maybe for exynos4/5 the incorrect value read during boot-up is
-in the non-tripping range and once the tmu is initialized later it
-continues to function properly thereafter ?
+Cheers,
 
->
-> The reordering is needed to be able to call set_mode callback at
-> of-thermal.c to set the mode.
->
-> If this change causes problems, then another solution (probably not so
-> neat) must be found.
+>=20
+> > I've also done some work regarding FAN controlled by hwmon for Odroid
+> > U3.
+> > Could you look on following series:
+> > http://www.spinics.net/lists/linux-samsung-soc/msg40471.html
+> >=20
+> > I can only guess that your board might need similar entries for your
+> > DTS file(s).
+>=20
+> Like I said, the X2 only has a passive heatsink, so no fan controlling he=
+re.
+>=20
+>=20
+> With best wishes,
+> Tobias
+>=20
 
-Please let me know if you need any further details.
+--ctP54qlpMx3WjD+/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Thanks,
-Abhilash
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUv2xpAAoJEMLUO4d9pOJWaxMH/21jWehzxIzAVttHU5WnoKOM
+r8DRa5M7TRpJkZ+oaO57AniVIqpO6FKdREJ6HKuk6yFhezm+TwknfdWGRn8MCNxU
+5y88/3H+7+xu+ryre9N0S4qdHoumGXwrWGZ9KsOCUB9jaxfG9liHrMw/sqIbAJAM
+RuW46/AwfdQ06HjDwweskdTBjwlEjCVbAGqtqOPHp3+SzTzae0acB6mwLY+nf8a0
+1BeonMKI8ugO90KccE/NKkdM8VP/17WXm2lISr1qCSSB52RDI8FGsXy4MsC6oSVd
+0OuVqWDAFVqdiNeRRXRwEviVlhz6zX68xDyNEcTqSvUDWYJDf/t8yrgldsNwVvQ=
+=zl+l
+-----END PGP SIGNATURE-----
+
+--ctP54qlpMx3WjD+/--
