@@ -1,67 +1,85 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH V3 01/11] power: charger-manager: Use alarmtimer for
- battery monitoring in suspend.
-Date: Wed, 21 Jan 2015 21:44:47 +0100
-Message-ID: <20150121204446.GH13715@earth.universe>
-References: <1418979323-7188-1-git-send-email-jonghwa3.lee@samsung.com>
- <1418979323-7188-2-git-send-email-jonghwa3.lee@samsung.com>
+From: Todd E Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH 3/3] power/axp288_fuel_gauge: axp288 fuel gauge driver
+Date: Wed, 21 Jan 2015 12:52:53 -0800
+Message-ID: <20150121205253.GB15525@linux.intel.com>
+References: <20150107212655.GD3440@linux.intel.com>
+ <20150118104923.GA11147@earth.universe>
+Reply-To: todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="xQmOcGOVkeO43v2v"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35136 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbbAUUo6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 21 Jan 2015 15:44:58 -0500
-Content-Disposition: inline
-In-Reply-To: <1418979323-7188-2-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com
-
-
---xQmOcGOVkeO43v2v
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20150118104923.GA11147-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Sun, Jan 18, 2015 at 11:49:27AM +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Jan 07, 2015 at 01:26:55PM -0800, Todd E Brandt wrote:
+> > X-Power AXP288 PMIC Fuel Gauge Driver
+> > 
+> >  new power_supply driver at driver/power
+> >  interfaces with the axp20x mfd driver as a cell
+> >  provides battery info and monitors for changes
+> >  generates alerts on temperature and capacity issues
+> > 
+> > [...]
+> >
+> > +static int fuel_gauge_battery_health(struct axp288_fg_info *info)
+> > +{
+> > +	int temp, vocv;
+> > +	int ret, health = POWER_SUPPLY_HEALTH_UNKNOWN;
+> > +
+> > +	ret = fuel_gauge_get_btemp(info, &temp);
+> > +	if (ret < 0)
+> > +		goto health_read_fail;
+> > +
+> > +	ret = fuel_gauge_get_vocv(info, &vocv);
+> > +	if (ret < 0)
+> > +		goto health_read_fail;
+> > +
+> > +	if (vocv > info->pdata->max_volt)
+> > +		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> > +	else if (temp > info->pdata->max_temp ||
+> > +			temp < info->pdata->min_temp)
+> > +		health = POWER_SUPPLY_HEALTH_OVERHEAT;
+> 
+> if (temp < info->pdata->min_temp)
+>     health = POWER_SUPPLY_HEALTH_COLD;
 
-On Fri, Dec 19, 2014 at 05:55:13PM +0900, Jonghwa Lee wrote:
-> To guerantee proper charing and managing batteries even in suspend,
-> charger-manager has used rtc device with rtc framework interface.
-> However, it is better to use alarmtimer for cleaner and more appropriate
-> operation.
-> This patch makes driver to use alamtimer for polling work in suspend and
-> removes all deprecated codes related with using rtc interface.
->=20
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Will add in v2, thanks.
 
-Thanks, applied.
+> 
+> > +	else if (vocv < info->pdata->min_volt)
+> > +		health = POWER_SUPPLY_HEALTH_DEAD;
+> > +	else
+> > +		health = POWER_SUPPLY_HEALTH_GOOD;
+> > +
+> > +health_read_fail:
+> > +	return health;
+> > +}
+> >
+> > [...]
+> >
+> > +static int axp288_fuel_gauge_remove(struct platform_device *pdev)
+> > +{
+> > +	return 0;
+> > +}
+> 
+> You can drop this function if nothing needs to be cleaned, but
+> that's not the case, so where is the cleanup code?
 
--- Sebastian
+You're right, I believe it needs:
 
---xQmOcGOVkeO43v2v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+cancel_delayed_work_sync(&info->status_monitor);
+power_supply_unregister(&info->bat);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+will add in v2, thanks
 
-iQIcBAEBCgAGBQJUwA+7AAoJENju1/PIO/qao0IP/37jVEZrzL/TcxlHZTpk3Zbl
-7jey7+yb18ER0Eb2dziYyWDnGSDZLIheOgwLebr6QAYcYcS7tKamFJugS6L377zt
-GkDcWkSeR2ybVRVMiKTNFVqkLEq1xGrPad11r7g+WlSckdUtfQlPcCpu/42jRwL/
-ijKT4KU6NMfZlFZpSihc023dHTwYIKlukEvFY8v/NbqHLUz+mG1T3LrasQ0ori5h
-xCKvjRmQl8cM6nb4PaSF/eKpdUV39mofSUklUIk6BN8iKlvO8YKR6HDGcGw9lPi0
-OHbBLA+VPZpPQr6LBOsjDhOUVZr9eEQybJFP7zPvAkJrriWCORqu0z3frgUO0+o2
-OesN5lQCzG0piMQGcG0bJe5ED/S3wdasEdAcbcaFBr3JkIjy6ATSpCyILWBB1Kvk
-tn8kLHW5FpyD8qjA+/IY1qs3YNo8hKxn6EpGO4iR4AuVkoCKdBZNR1553LooKyWi
-MtBbyawTYy3+roGCFXfgP87xxPCx9F2obLyacGfj2EEidCvatuWKAi3kqJJWQGh8
-oasjK4quoKKTGMhxBG5vOdAyniiFNAaEdvZspMHVHR8CYuKOdCGOUCNUUyX4TyLW
-YVKizgLvbwONXQoFm+KwW0v7FhlrIUDLXK81Spofuyl26NEURjXWpP2wRtEmTGh7
-qR2LQTCbo6o4F6a23U+d
-=bwgb
------END PGP SIGNATURE-----
-
---xQmOcGOVkeO43v2v--
+> 
+> > [...]
+> 
+> -- Sebastian
