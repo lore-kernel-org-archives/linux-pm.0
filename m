@@ -1,93 +1,153 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] ti-soc-thermal: implement eocz bit to make driver useful
- on omap3
-Date: Wed, 21 Jan 2015 01:21:57 -0400
-Message-ID: <20150121052156.GB13468@developer.hsd1.ca.comcast.net>
-References: <20150103114632.GA21883@amd>
- <20150103122634.GB22356@developer>
- <20150103162241.GA26680@amd>
- <20150105213557.GD31536@developer>
- <20150118201821.GA28530@amd>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [RFC PATCHv2 00/19] power_supply: Allow safe usage of power
+ supply
+Date: Wed, 21 Jan 2015 16:22:17 +0100
+Message-ID: <20150121152216.GD13715@earth.universe>
+References: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="kORqDWCi7qDJ0mEj"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:65203 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbbAUOVx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 09:21:53 -0500
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="8nsIa27JVQLqB7/C"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150118201821.GA28530@amd>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1420472882-10463-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
 
---kORqDWCi7qDJ0mEj
+--8nsIa27JVQLqB7/C
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jan 18, 2015 at 09:18:21PM +0100, Pavel Machek wrote:
-> Hi!
->=20
-> > > Ok, what do you suggest? AFAICT, without MODE_CONFIG, continuous ADC
-> > > mode is not available, so we have to force it periodically, so this
-> > > should be correct.
-> >=20
-> > I will have a better look and let you know. for now, adding a single
-> > read should not hurt ( but I will double check)
->=20
-> Any news there?
+Hi Krzysztof,
 
-I believe it is OK to keep your code the way you posted.
+On Mon, Jan 05, 2015 at 04:47:43PM +0100, Krzysztof Kozlowski wrote:
+> This is RFC, please don't apply yet but let me know if this approach
+> is OK.
 
-Thanks.
+I just reviewed the patchset. It looks fine to me.
 
+> TLDR
+> =3D=3D=3D=3D
+> Patchset tries to fix following race scenario:
 >=20
-> > > > > +		if (ret)
-> > > > > +			return ret;
-> > > > > +	}
-> > > > > +
-> > > > >  	spin_lock(&bgp->lock);
-> > > > >  	temp =3D ti_bandgap_read_temp(bgp, id);
-> > > > >  	spin_unlock(&bgp->lock);
-> > > > > =20
-> > > > > -	ret |=3D ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
-> > > > > +	ret =3D ti_bandgap_adc_to_mcelsius(bgp, temp, &temp);
-> > > >=20
-> > > > this one should be part of your clean up patch
-> > >=20
-> > > Ok, can you apply the cleanup patch and I'll prepare one on the top of
-> > > it?
-> >=20
-> > I mean, you should resend the cleanup patch including the above '|=3D' =
-removal, as you are already doing in the cleanup patch.
-> >=20
+> Thread 1: charger manager, CONSUMER
+> Thread 2: power supply driver, PROVIDER
 >=20
-> Ok, little patch-editing can not hurt :-).
+> THREAD 1 (charger manager)         THREAD 2 (power supply driver)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D         =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> psy =3D power_supply_get_by_name()
+>                                    Driver unbind, .remove
+>                                      power_supply_unregister()
+>                                      Device fully removed
+> psy->get_property()
 >=20
-> 									Pavel
-> --=20
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
+> To properly fix the race the patchset:
+> 1. Adds power_supply_get_property()-like API for safe access by consumer.
+> 2. Moves ownership of power_supply structure from driver (provider) to
+>    power supply core.
+> 3. Adds power_supply_put() which will reclaim memory.
 
---kORqDWCi7qDJ0mEj
+Looks fine to me, thanks for doing this :)
+
+> Description
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
+> This is a little different than my previous approaches [1][2] for fixing
+> usage of power supply by some consumer, if driver implementing it is
+> unbound.
+>=20
+> The patchset is quite big and touches power supply API so a lot of
+> changes in drivers are needed. These changes *are not finished yet*.
+> I've done them only for:
+>  - bq24190_charger.c
+>  - charger-manager.c
+>  - max14577_charger.c
+>  - max17040_battery.c
+>  - max17042_battery.c
+>  - sbs-battery.c
+>  - tps65090-charger.c
+> So allyesconfig won't build.
+>
+> If this approach is OK, I'll prepare full patchset changing all the
+> drivers.
+
+Please do :)
+
+> My previous approach [1][2] limited the race but did not close it.
+> Still the consumer of power supply by calling power_supply_get_propert(ps=
+y...)
+> may reference invalid memory because the producer freed it.
+>=20
+> Actually, because struct power_supply is exposed to consumers, the
+> core should be the owner of it. This is accomplished in patch 11/19
+> ("power_supply: Change ownership from driver to core").
+>=20
+> What the patchset does in steps
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> 1. Some preparation steps are necessary - patch 1 and 2. The driver
+>    implementing power supply won't be able to fill structure before
+>    calling power_supply_register(). So 'power_supply_config'
+>    is introduced in patch 2 ("power_supply: Move run-time configuration
+>    to separate structure"). Unfortunately this touches all drivers.
+
+$ grep -l power_supply_register **/*.c | grep -v mod.c | grep -v drivers/po=
+wer
+drivers/acpi/ac.c
+drivers/acpi/battery.c
+drivers/acpi/sbs.c
+drivers/hid/hid-input.c
+drivers/hid/hid-sony.c
+drivers/hid/hid-wiimote-modules.c
+drivers/hid/wacom_sys.c
+drivers/platform/x86/compal-laptop.c
+drivers/staging/nvec/nvec_power.c
+
+Please make sure to CC the respective maintainers for the patchset
+(e.g. current patch 14 and 15 should have CC'd x86 maintainers), so
+that they can Acknowledge the patchset.
+
+> 2. Safe API wrappers (and usage counter) are added (power_supply_*()).
+> 3. Patch 11: ownership of 'struct power_supply' is moved from driver
+>    to the core.
+> 4. power_supply_put() is added which reclaims resources.
+
+Looks fine to me.
+
+> The patchset is rebased on next-20141226. It should be pulled at once.
+> Bisectability is preserved.
+
+Fine with me, but I need acks from all involved maintainers. So for the
+patchset:
+
+Reviewed-By: Sebastian Reichel <sre@kernel.org>
+
+-- Sebastian
+
+--8nsIa27JVQLqB7/C
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQEcBAEBAgAGBQJUvzdpAAoJEMLUO4d9pOJWwjcH/32vXc//2M5ZyN6q35OPXZ93
-iOMnoRkEzBrUVtLrCShZ/48Q+eJcofcvSba5IYXfd4a2KBBfp+mKJFPvnYOvdzox
-AOGFKidlnmtX4fGYET7dj75e2Z+qnOY3rA0V0OsDbL6wgvX7/oRVZUa/FnCq6Ejx
-jhpd7kMAyrzfNDRFGLqt+PT/DYNCGP2hsLf7H6oAdzItvDeHXW1/hWrCfTluwZzr
-8IyNfBZKuoB7lwPpvKPQQkjbndxQLAYjZmwTPIilbOymRa1puCbvJOlgI6e/LSGe
-Mr1XNcyRVWaQ649K8xA4FtC6b9k5ffCWYGvhf35zJjHTYxw79enTCNB38h7uuiI=
-=tStF
+iQIcBAEBCgAGBQJUv8QlAAoJENju1/PIO/qa7/cQAKL4AwZTQPD1sNk+v+xDrjK4
+giJzRnjte1Bsa7AdXWLpXG71JlnE0LQ60RYl7avSUPNku46mMc4DdngQ1w8vcIiE
+2/JhPhgv82nqt9nwQdgUC0lcpS7tJMbjoJg8JlwL2Z1pZJ8HEKDoTwVGH3YLNdS/
+iRv3m9eEEwwzle47tY9gFIZ5QWkHk7q4oNnqS2AVzSi5WrVDZny0voV9ZyQSBtg8
+Vs93aSeQFV05gmZ+f2ngmiACbGYI/zqKhLFKf5QnaHvoW4me77Wl4Esbont0v1CL
+MBqhQyigb4g+c/ITiHkpeDk48w1roKcFy72c57Cr6BDV+WtMKpcQQgBaFdLOMYtI
+VgjMkkfEgYI6rSUuwp8XBXyWctw5oPz5qQai1wrUCGhQI2cCMM7N1KJyUVX2IkgM
+7UhAYqG3B2ZoGso9n9UPKmNX4CICY7PsstYfnK2NPDgX+fnT4xZR5K7TZcYQQ0++
+EYgndueCOgkauTxGFn5zUG3y3eENeTW9KA74a92AXqb/LY4pQ4VaD2KtbxT8Q8sl
+J7j1Y9t+DvDSGX4Jd/T5OT6oqic6/XiIjKdjDa/l3RZ5yDCZR1+71Id5hkRmnmgZ
+FCau1Ribghyn01e+VqondCc1dFGKFdRwGkwGfC2THDCiETL/ZaEJISbF0kBHHuTa
+1dYIesxaekwazsjW5OSQ
+=VBKQ
 -----END PGP SIGNATURE-----
 
---kORqDWCi7qDJ0mEj--
+--8nsIa27JVQLqB7/C--
