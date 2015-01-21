@@ -1,64 +1,184 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] power: ab8500_fg.c:  Remove unused function
-Date: Wed, 21 Jan 2015 14:32:15 +0100
-Message-ID: <20150121133214.GC13715@earth.universe>
-References: <1420131892-31486-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2] thermal: rockchip: make temperature reporting much
+ more accurate
+Date: Wed, 21 Jan 2015 01:15:01 -0400
+Message-ID: <20150121051459.GA13468@developer.hsd1.ca.comcast.net>
+References: <1421625349-14101-1-git-send-email-wxt@rock-chips.com>
+ <1421625349-14101-2-git-send-email-wxt@rock-chips.com>
+ <CAGS+omDiajqKxYFqdBXTeax+eeE-TD1WJ+C5odCbZBg6FELXDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="9Ek0hoCL9XbhcSqy"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:62870 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbbAUOOz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 09:14:55 -0500
 Content-Disposition: inline
-In-Reply-To: <1420131892-31486-1-git-send-email-rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rickard Strandqvist <rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <CAGS+omDiajqKxYFqdBXTeax+eeE-TD1WJ+C5odCbZBg6FELXDA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
 
---9Ek0hoCL9XbhcSqy
+--PNTmBPCT7hxwcZjr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Thu, Jan 01, 2015 at 06:04:52PM +0100, Rickard Strandqvist wrote:
-> Remove the function ab8500_fg_reinit() that is not used anywhere.
+On Mon, Jan 19, 2015 at 12:23:49PM +0800, Daniel Kurtz wrote:
+> Hi Caesar,
 >=20
-> This was partially found by using a static code analysis program called c=
-ppcheck.
+> Some drive-by review comments inline...
 >=20
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.s=
-e>
+> On Mon, Jan 19, 2015 at 7:55 AM, Caesar Wang <wxt@rock-chips.com> wrote:
+> > In general, the kernel should report temperature readings exactly as
+> > reported by the hardware. The cpu / gpu thermal driver works in 5 degree
+> > increments,but we ought to do more accurate. The temperature will do
+> > linear interpolation between the entries in the table.
+> >
+> > Test=3D $md5sum /dev/zero &
+> > $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
+> > sleep .5; done
+> >
+> > e.g. We can get the result as follows:
+> >     /sys/class/thermal/thermal_zone1/temp:39994
+> >     /sys/class/thermal/thermal_zone2/temp:39086
+> >     /sys/class/thermal/thermal_zone1/temp:39994
+> >     /sys/class/thermal/thermal_zone2/temp:39540
+> >     /sys/class/thermal/thermal_zone1/temp:39540
+> >     /sys/class/thermal/thermal_zone2/temp:39540
+> >     /sys/class/thermal/thermal_zone1/temp:39540
+> >     /sys/class/thermal/thermal_zone2/temp:39994
+> >
+> > Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> > Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> >
+> > ---
+> >
+> > Changes in v2:
+> > Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> >
+> >  drivers/thermal/rockchip_thermal.c | 26 +++++++++++++++++---------
+> >  1 file changed, 17 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockc=
+hip_thermal.c
+> > index 1bcddfc..a7ae23a 100644
+> > --- a/drivers/thermal/rockchip_thermal.c
+> > +++ b/drivers/thermal/rockchip_thermal.c
+> > @@ -193,19 +193,18 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
+> >
+> >  static long rk_tsadcv2_code_to_temp(u32 code)
+> >  {
+> > -       int high, low, mid;
+> > -
+> > -       low =3D 0;
+> > -       high =3D ARRAY_SIZE(v2_code_table) - 1;
+> > -       mid =3D (high + low) / 2;
+> > +       unsigned int low =3D 0;
+> > +       unsigned int high =3D ARRAY_SIZE(v2_code_table) - 1;
+> > +       unsigned int mid =3D (low + high) / 2;
+> > +       unsigned int scale;
+> >
+> >         if (code > v2_code_table[low].code || code < v2_code_table[high=
+].code)
+> >                 return 125000; /* No code available, return max tempera=
+ture */
+>=20
+> I think if the temp sensor reading was invalid we should return an
+> error code rather than just silently returning "max temp".
+> Returning an error here could then be propagated up by its only
+> caller, the ->get_temp() callback.
+>=20
 
-Thanks, applied with Acked-By from Arnd.
+Agreed here.
 
--- Sebastian
+> Note: 'code < v2_code_table[high].code' is always false, since code is
+> unsigned, and the last entry is 0.
+>=20
+> Also, the check above doesn't reject "code =3D=3D 0xfff".
+> Even worse, I believe in that case the below algorithm will eventually
+> set mid=3D0 and access v2_code_table[-1].code.
+>=20
 
---9Ek0hoCL9XbhcSqy
+yeah, if that can happen, then it must be fixed.
+
+
+> >
+> >         while (low <=3D high) {
+> > -               if (code >=3D v2_code_table[mid].code && code <
+> > -                   v2_code_table[mid - 1].code)
+> > -                       return v2_code_table[mid].temp;
+> > +               if (code >=3D v2_code_table[mid].code &&
+> > +                   code < v2_code_table[mid - 1].code)
+> > +                       break;
+> >                 else if (code < v2_code_table[mid].code)
+> >                         low =3D mid + 1;
+> >                 else
+> > @@ -213,7 +212,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
+> >                 mid =3D (low + high) / 2;
+> >         }
+> >
+> > -       return 125000;
+> > +       /*
+> > +        * The 5C granularity provided by the table is too much. Let's
+> > +        * assume that the relationship between sensor readings and
+> > +        * temperature between 2 table entries is linear and extrapolate
+>=20
+> I think this is "interpolate", not "extrapolate".
+
+
+in this case yes, agreed too.
+
+>=20
+> > +        * to produce less granular result.
+> > +        */
+> > +       scale =3D (v2_code_table[mid].temp - v2_code_table[mid - 1].tem=
+p) /
+> > +               (v2_code_table[mid - 1].code - v2_code_table[mid].code);
+> > +       return v2_code_table[mid - 1].temp +
+> > +                       (v2_code_table[mid - 1].code - code) * scale;
+>=20
+> Assuming the product fits in an unsigned long (and it will, since code
+> is only 12-bits), it is more precise to multiply first and then
+> divide, something like this:
+>=20
+>    num =3D v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
+>    num *=3D v2_code_table[mid - 1].code - code;
+>    denom =3D v2_code_table[mid - 1].code - v2_code_table[mid].code;
+>    return v2_code_table[mid - 1].temp + (num / denom);
+>=20
+> -Daniel
+>=20
+> >  }
+> >
+> >  /**
+> > --
+> > 1.9.1
+> >
+> >
+> >
+> > _______________________________________________
+> > Linux-rockchip mailing list
+> > Linux-rockchip@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-rockchip
+
+--PNTmBPCT7hxwcZjr
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBCgAGBQJUv6pbAAoJENju1/PIO/qajXoP/jPELH5fzUsSDUS8kb7N++4V
-3izCH/kVR/9oumc/LFXID5NfsCLLdbaUGDxyaLqxQeLsEp2D46lvUCbknZMtvbIH
-KuYbZDWyh41gl+LHThJdyyy2eHpOjumyq9aMyovRp6d+QaEBcQpJxPwO9TRmc3cS
-79Zu9atH2AjwjHzIdVRQqec4khd07/m2VphMRg6fqK7Y+RL3rYZ6fko7AHB+nnwX
-nzmtId2b1m1rMMR8L9DVgs8gTs9gCtieovee2CpvemkImUVqLpOIqdlSDjNDoAMr
-duobqXYH71dvNhOWiLDdrWQrnzPhBSRTurJrQvdyDJopMMgbivQkGReQQP/19pKS
-RJBHPegfXS6KnnADruJVZGGGbPhrISC5V0er/PfS9myLbxSpEOhFldRSXfv2tY4b
-I9k4kFQnRg5Xxvol8uL7ZIvP1Q9NSdTjc4ZK2erKct0nywvVKIUYVm+cH9rzdphB
-vH2/g7iAN3dkPXLgJzJkAlrViSsgYUsBHyfEonxALWizTJK8mCdZZHQnWUn8wKQO
-J3jpVNFpHwKW20QjUL4aYDcLFzJ4nerGWduhfUdtU5p38gBOWjf6cDR/L/80QKan
-Fj355KFyJxmizTuUnK25A82t7Z4zgbYCJb/ZO1SAIAs9q/K5H+rZD0oz4XV/Af67
-Q3xKfzK0UV7gBmdcQtlW
-=sxc2
+iQEcBAEBAgAGBQJUvzXKAAoJEMLUO4d9pOJWepgH/1X356E4Xcz1mSQnPOlz3WI6
+8UQOV9drl0cSMk4QiKLFDup+q6ZLW3CqAsDuaJvPI99dV5YtY8c7vFYDsPmhR8hg
+LL/3F3CMXiU6eMFmwtns9eTPSyR233olJmLLGK31/JwvyDihcUCVB9UTVEpt4rFX
+G+KjeKfix0DaGDwC+b2ub+93lyC7ZGrJ1v7aJiYFXfO/RhCQwZ/8ObCwrJjtoQ3T
+1ht3IWFoh7WM6ZuuBvvEvjkwjggZXHPZuN6PG0kTwW8bRQ9X9B8MKnhlzS6F0oN5
+vwXZPknc89h8n4T2kT2IgwrN1cWAs3LhxeptU2+BZ7kZZ+dXoISg+FSYgOku0nM=
+=uRVB
 -----END PGP SIGNATURE-----
 
---9Ek0hoCL9XbhcSqy--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--PNTmBPCT7hxwcZjr--
