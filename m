@@ -1,76 +1,63 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v6 2/7] mfd: da9150: Add DT binding documentation for core
-Date: Wed, 21 Jan 2015 15:46:43 +0000
-Message-ID: <ddb604ae2579aec0786afad0f3d0a7c5543031d9.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] power: reset: Add reset driver for R-Mobile platforms
+Date: Wed, 21 Jan 2015 16:58:46 +0100
+Message-ID: <20150121155846.GE13715@earth.universe>
+References: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta3.messagelabs.com ([195.245.230.174]:23410 "EHLO
-	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754163AbbAUPq6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 10:46:58 -0500
-In-Reply-To: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="LSp5EJdfMPwZcMS1"
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1417707201-589-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Simon Horman <horms@verge.net.au>, Arnd Bergmann <arnd@arndb.de>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
----
- Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
 
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-new file mode 100644
-index 0000000..d0588ea
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -0,0 +1,43 @@
-+Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
-+
-+DA9150 consists of a group of sub-devices:
-+
-+Device			 Description
-+------			 -----------
-+da9150-gpadc		: General Purpose ADC
-+da9150-charger		: Battery Charger
-+
-+======
-+
-+Required properties:
-+- compatible : Should be "dlg,da9150"
-+- reg: Specifies the I2C slave address
-+- interrupt-parent: Specifies the phandle of the interrupt controller to which
-+  the IRQs from da9150 are delivered to.
-+- interrupts: IRQ line info for da9150 chip.
-+- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
-+  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
-+   further information relating to interrupt properties)
-+
-+Sub-devices:
-+- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
-+- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
-+
-+
-+Example:
-+
-+	charger_fg: da9150@58 {
-+		compatible = "dlg,da9150";
-+		reg = <0x58>;
-+		interrupt-parent = <&gpio6>;
-+		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-controller;
-+
-+		gpadc: da9150-gpadc {
-+			...
-+		};
-+
-+		da9150-charger {
-+			...
-+		};
-+	};
---
-1.9.3
+--LSp5EJdfMPwZcMS1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi,
+
+On Thu, Dec 04, 2014 at 04:33:21PM +0100, Geert Uytterhoeven wrote:
+> Add a reset driver for Renesas R-Mobile and SH-Mobile SoCs. It registers
+> a restart handler to trigger a soft power-on reset through the R-Mobile
+> System Controller.
+> The priority of this restart handler is 192, to allow a watchdog driver
+> to use priority 128.
+>=20
+> Note that we do not use syscon-reboot, as the HPB (Peripheral Bus
+> Bridge) semaphore should be acquired on systems where both the ARM and
+> SH core are in use. The driver can be extended later to support this,
+> when needed.
+
+Applied with Reviewed-By from Guenter Roeck.
+
+-- Sebastian
+
+--LSp5EJdfMPwZcMS1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUv8yuAAoJENju1/PIO/qa3ZAP/im+KkTLmn41Z/SUdBT4wZSd
+v1R8kVWAc8Rf5ir9lxgaQToYqFQVPJOp6dIR1wMNgfNWUA//gT6XeC8UOUxxKE/m
+/w3RXzyKN6/DMYzFOtsrxoP5mzRmj33IXgNYY4JMEaclfy652J1NgOopF/3bgdrF
+9UYcqVoH2AoQ7gIwYhZFqrTzEMUYPvPPIoxdIe1EhmrxGTbA+bOTDEqAstRG3xCw
+M701RgoXSUPUYoAcBXX/LQHoL3arto2cTGkpkm/RX9bHZRwTXvhw2/EiSWf0e0jU
+mnbQRSBQbLBQ06mt2IJUhGih7EJq4s0U+f/ba84OpEmsQ9q5a049S+jNa2TlZSM/
+p7v9KvpjvtCjmK0iCub6Wa97fZCoFP5DduoyqVzmS/v1YdrhHzAMAO/BsY+XWiwv
+HuR/HpTd8yCahSLNM7B5clCjPUV7zjQkTQXFmnWUizbqtqVKCz6ENmJ/gNJBirPR
+QhtOBdN96nPEqMwGr61m18eVc+40XKS/tUHvdp8j1QE+JJrZZiRitP0LrcHterAt
+SvHx2LmXwMpXTST2r3YVlcLwyJQWu5lmnzrDARKJtcoFJHoOeOVt6WfxnTVTFTzj
+sJvvkLse0s/dGIdYYRkfMsmmx9xUw0c5hQYTHHWs5xZx/LtGGHWZbhCFr1fM9yZ6
+vVU9hkZV0AkeV5UW2BkJ
+=vnTs
+-----END PGP SIGNATURE-----
+
+--LSp5EJdfMPwZcMS1--
