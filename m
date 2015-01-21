@@ -1,45 +1,76 @@
-From: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v6 4/7] iio: da9150: Add DT binding documentation for GPADC
-Date: Wed, 21 Jan 2015 15:46:54 +0000
-Message-ID: <0305f31b0195454c3fd37bcaa949a7cf4201a8f9.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v6 2/7] mfd: da9150: Add DT binding documentation for core
+Date: Wed, 21 Jan 2015 15:46:43 +0000
+Message-ID: <ddb604ae2579aec0786afad0f3d0a7c5543031d9.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1421854282.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta3.messagelabs.com ([195.245.230.174]:23410 "EHLO
+	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754163AbbAUPq6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 10:46:58 -0500
+In-Reply-To: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 ---
- .../devicetree/bindings/iio/adc/da9150-gpadc.txt         | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+ Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt b/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
 new file mode 100644
-index 0000000..c07228d
+index 0000000..d0588ea
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
-@@ -0,0 +1,16 @@
-+Dialog Semiconductor DA9150 IIO GPADC bindings
++++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+@@ -0,0 +1,43 @@
++Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
++
++DA9150 consists of a group of sub-devices:
++
++Device			 Description
++------			 -----------
++da9150-gpadc		: General Purpose ADC
++da9150-charger		: Battery Charger
++
++======
 +
 +Required properties:
-+- compatible: "dlg,da9150-gpadc" for DA9150 IIO GPADC
-+- #io-channel-cells: Should be set to <1>
-+  (See Documentation/devicetree/bindings/iio/iio-bindings.txt for further info)
++- compatible : Should be "dlg,da9150"
++- reg: Specifies the I2C slave address
++- interrupt-parent: Specifies the phandle of the interrupt controller to which
++  the IRQs from da9150 are delivered to.
++- interrupts: IRQ line info for da9150 chip.
++- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
++  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
++   further information relating to interrupt properties)
 +
-+For further information on GPADC channels, see device datasheet.
++Sub-devices:
++- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
++- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
 +
 +
 +Example:
 +
-+	gpadc: da9150-gpadc {
-+		compatible = "dlg,da9150-gpadc";
-+		#io-channel-cells = <1>;
++	charger_fg: da9150@58 {
++		compatible = "dlg,da9150";
++		reg = <0x58>;
++		interrupt-parent = <&gpio6>;
++		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
++		interrupt-controller;
++
++		gpadc: da9150-gpadc {
++			...
++		};
++
++		da9150-charger {
++			...
++		};
 +	};
 --
 1.9.3
+
