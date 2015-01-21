@@ -1,103 +1,42 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq24190_charger: suppress build warning
-Date: Wed, 21 Jan 2015 17:05:33 +0100
-Message-ID: <20150121160533.GF13715@earth.universe>
-References: <1417704964-23155-1-git-send-email-prabhakar.csengg@gmail.com>
+From: Varka Bhadram <varkabhadram-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v6 3/7] iio: Add support for DA9150 GPADC
+Date: Wed, 21 Jan 2015 21:36:47 +0530
+Message-ID: <54BFCE97.4050007@gmail.com>
+References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com> <ae9b56cc8cd15bd72ea1b721ae02b1dde8632dbf.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="vKFfOv5t3oGVpiF+"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1417704964-23155-1-git-send-email-prabhakar.csengg@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ae9b56cc8cd15bd72ea1b721ae02b1dde8632dbf.1421854282.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---vKFfOv5t3oGVpiF+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 21 January 2015 09:16 PM, Adam Thomson wrote:
+> This patch adds support for DA9150 Charger & Fuel-Gauge IC GPADC.
+>
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+> Reviewed-by: Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>
+> Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Hi,
+(...)
 
-On Thu, Dec 04, 2014 at 02:56:04PM +0000, Lad, Prabhakar wrote:
-> This patch fixes following build warning:
->=20
-> In file included from include/linux/printk.h:261:0,
->                  from include/linux/kernel.h:13,
->                  from include/linux/list.h:8,
->                  from include/linux/module.h:9,
->                  from drivers/power/bq24190_charger.c:11:
-> drivers/power/bq24190_charger.c: In function =E2=80=98bq24190_irq_handler=
-_thread=E2=80=99:
-> include/linux/dynamic_debug.h:86:20: warning: =E2=80=98ss_reg=E2=80=99 ma=
-y be used uninitialized in this function [-Wmaybe-uninitialized]
->    __dynamic_dev_dbg(&descriptor, dev, fmt, \
->                     ^
-> drivers/power/bq24190_charger.c:1211:5: note: =E2=80=98ss_reg=E2=80=99 wa=
-s declared here
->   u8 ss_reg, f_reg;
->      ^
-> In file included from include/linux/printk.h:261:0,
->                  from include/linux/kernel.h:13,
->                  from include/linux/list.h:8,
->                  from include/linux/module.h:9,
->                  from drivers/power/bq24190_charger.c:11:
-> include/linux/dynamic_debug.h:86:20: warning: =E2=80=98f_reg=E2=80=99 may=
- be used uninitialized in this function [-Wmaybe-uninitialized]
->    __dynamic_dev_dbg(&descriptor, dev, fmt, \
->                     ^
-> drivers/power/bq24190_charger.c:1211:13: note: =E2=80=98f_reg=E2=80=99 wa=
-s declared here
->   u8 ss_reg, f_reg;
->=20
-> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-> ---
->  drivers/power/bq24190_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_char=
-ger.c
-> index ad3ff8f..72e552d 100644
-> --- a/drivers/power/bq24190_charger.c
-> +++ b/drivers/power/bq24190_charger.c
-> @@ -1208,7 +1208,7 @@ static irqreturn_t bq24190_irq_handler_thread(int i=
-rq, void *data)
->  {
->  	struct bq24190_dev_info *bdi =3D data;
->  	bool alert_userspace =3D false;
-> -	u8 ss_reg, f_reg;
-> +	u8 ss_reg =3D 0, f_reg =3D 0;
->  	int ret;
-> =20
->  	pm_runtime_get_sync(bdi->dev);
+> +
+> +static int da9150_gpadc_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct da9150 *da9150 = dev_get_drvdata(dev->parent);
+> +	struct da9150_gpadc *gpadc;
+> +	struct iio_dev *indio_dev;
+> +	int irq, ret;
+> +
+> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*gpadc));
 
-Thanks, applied.
+  You can directly use *dev* instead of *&pdev->dev*
 
--- Sebastian
 
---vKFfOv5t3oGVpiF+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUv85MAAoJENju1/PIO/qaUKgP/2q1N/MUWcK2XYRr6PYfJ55I
-uj3M89QPVjv+SSimIw1HSF4Byifv5ikSN2P7OuUxippDaT0hpJqirX7ouY3fm462
-LEWl6E4h+Lz2fu9Ug+MY03sJoIuPuXG4004AjMC3R2wjKhH9X9WOabf2+mwbotTB
-on1MA9Zmb2fAE7a7Xu4raMIOaZljCjRw5jc6HPlKZu/FHrlH0WePz0CrfcFYA7lB
-MvURRcmPVQpQGQZQS28dkjtHCvnYWRcLjISczYLxdFUlTtgc0gVK36yCjAmLSN1w
-WRCKh8hNQZD7FSOh/hsDPBV+LTrJLGabMS4BJl2MoZmcFSrjBXfXWFOfpLurjWGt
-GxEqQjBCuw+ZRDisnZWLyC/AN2b/eUE1Ik038zMM8f8yAzcU85eMbm3SOYu5QRbQ
-v12Wm2ndrSa016a7BBieX7TI09KWBpqYRdWSe1LOBK4WkoFz3THulHsFSrEIiSCl
-XxEz7HiHMG+jHFbuzuJ2yA7h3dsvs4AFcH/WnlhstZeopTyPBINVSBS0wJ1eDX5t
-Yuf77Bjqz0D7VwBN+JXl34jiWAOYF6bgsufHEw8p3nsMjmm1hx6aaUDVOswHkjDG
-boF7JzpK70sxu9EaObWmW7+FqfGCHUBamNZUk28a3PI3JU3QMYQ+UjPQ8EKT2cCt
-VJ4F5XlILQS/0qoW2hpw
-=rBKJ
------END PGP SIGNATURE-----
-
---vKFfOv5t3oGVpiF+--
+-- 
+Thanks and Regards,
+Varka Bhadram.
