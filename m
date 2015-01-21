@@ -1,81 +1,64 @@
-From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH v5 3/7] iio: Add support for DA9150 GPADC
-Date: Wed, 21 Jan 2015 11:02:07 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337AB528C82@SW-EX-MBX01.diasemi.com>
-References: <cover.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
- <58b7b001b38662c36595412f96c7d2eb5c3adcad.1419264383.git.Adam.Thomson.Opensource@diasemi.com>
- <54A976D2.9040104@kernel.org>
- <2E89032DDAA8B9408CB92943514A0337AB526A19@SW-EX-MBX01.diasemi.com>
- <54B1A563.5080404@kernel.org>
- <2E89032DDAA8B9408CB92943514A0337AB527B9D@SW-EX-MBX01.diasemi.com>
- <54BEBF58.30308@kernel.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: max77693: fix simple_return.cocci warnings
+Date: Wed, 21 Jan 2015 14:05:17 +0100
+Message-ID: <20150121130517.GA13715@earth.universe>
+References: <201501211232.F4NwbEWo%fengguang.wu@intel.com>
+ <20150121041134.GA205386@athens>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <54BEBF58.30308-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:37487 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750754AbbAUNF2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Jan 2015 08:05:28 -0500
+Content-Disposition: inline
+In-Reply-To: <20150121041134.GA205386@athens>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <fengguang.wu@intel.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, kbuild-all@01.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gSmFudWFyeSAyMCwgMjAxNSAyMDo0OSwgSm9uYXRoYW4gQ2FtZXJvbiB3cm90ZToNCg0KPiA+
-Pj4+PiArI2RlZmluZSBEQTkxNTBfR1BBRENfQ0hBTk5FTF9QUk9DRVNTRUQoX2lkLCBfaHdfaWQs
-IF90eXBlLA0KPiA+PiBfZXh0X25hbWUpDQo+ID4+Pj4gCVwNCj4gPj4+Pj4gKwlEQTkxNTBfR1BB
-RENfQ0hBTk5FTChfaWQsIF9od19pZCwgX3R5cGUsCQkJXA0KPiA+Pj4+PiArCQkJICAgICBCSVQo
-SUlPX0NIQU5fSU5GT19QUk9DRVNTRUQpLCBfZXh0X25hbWUpDQo+ID4+Pj4+ICsNCj4gPj4+Pj4g
-Ky8qIFN1cHBvcnRlZCBjaGFubmVscyAqLw0KPiA+Pj4+PiArc3RhdGljIGNvbnN0IHN0cnVjdCBp
-aW9fY2hhbl9zcGVjIGRhOTE1MF9ncGFkY19jaGFubmVsc1tdID0gew0KPiA+Pj4+PiArCURBOTE1
-MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NFRChHUElPQSwgR1BJT0FfNlYsIElJT19WT0xUQUdFLA0K
-PiA+Pj4+ICJHUElPQSIpLA0KPiA+Pj4+PiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NF
-RChHUElPQiwgR1BJT0JfNlYsIElJT19WT0xUQUdFLA0KPiA+Pj4+ICJHUElPQiIpLA0KPiA+Pj4+
-PiArCURBOTE1MF9HUEFEQ19DSEFOTkVMX1BST0NFU1NFRChHUElPQywgR1BJT0NfNlYsIElJT19W
-T0xUQUdFLA0KPiA+Pj4+ICJHUElPQyIpLA0KPiA+Pj4+PiArCURBOTE1MF9HUEFEQ19DSEFOTkVM
-X1BST0NFU1NFRChHUElPRCwgR1BJT0RfNlYsIElJT19WT0xUQUdFLA0KPiA+Pj4+ICJHUElPRCIp
-LA0KPiA+Pj4+IEknbSBub3Qgc3VyZSBzb21lIG9mIHRoZXNlIHJlYWxseSBkZXNlcnZlIGV4dGVu
-ZGVkIG5hbWVzLiAgVGhvc2UgYXJlIHVzdWFsbHkNCj4gPj4+PiByZXNlcnZlZCBmb3IgbmFtaW5n
-IHN0cmFuZ2UgaW50ZXJuYWwgYWRjIGNoYW5uZWxzIGV0Yy4gIFRoZXNlIGZpcnN0IDQgYXJlDQo+
-ID4+Pj4gcHJlc3VtYWJseSBqdXN0IGZvciBpbnB1dCBwaW5zPyAgVGhvc2Ugc2hvdWxkIGp1c3Qg
-YmUgY2hhbm5lbHMgMC4uMw0KPiA+Pj4+IE9uIGFub3RoZXIgbm90ZSwgdW5sZXNzIHlvdSB3YW50
-IHJlYWxseSB3ZWlyZCBzeXNmcyBhdHRyaWJ1dGUgbmFtZXMsIHRoZQ0KPiA+Pj4+IGV4dGVuZGVk
-IG5hbWVzIHdhbnQgdG8gYmUgbG93ZXJjYXNlLg0KPiA+Pj4+DQo+ID4+Pg0KPiA+Pj4gSSdkIHBy
-ZWZlciB0byBrZWVwIHRoZSBuYW1lcyBiZWNhdXNlIHRoZSBpbnB1dCBwaW5zIGFyZSBtdXhlZCB3
-aXRoIEdQSU9zIG9mIHRoZQ0KPiA+Pj4gY2hpcCwgc28gdGhvdWdodCBpdCBzZW5zaWJsZSB0byBz
-aG93IHRoYXQgdGhpcyBpcyB0aGUgY2FzZS4gQW0gaGFwcHkgdG8gY2hhbmdlDQo+ID4+PiB0byBs
-b3dlci1jYXNlIHRvIGZvbGxvdyBjb252ZW50aW9uLg0KPiA+PiBIbW0uICBJdCdzIGEgYml0IG9m
-IGFuIG9kZGl0eSBhcyB0aGUgcG9pbnQgb2YgdGhlIG5hbWluZw0KPiA+PiBpcyBhYm91dCB0aGUg
-dXNlcywgbm90IHdoaWNoIHBpbnMgdGhleSBhcmUgb24uICBJZiB3ZSBleHBvc2VkIHRoZQ0KPiA+
-PiAnZGF0YXNoZWV0X25hbWUnIHBhcmFtZXRlciBkaXJlY3RseSByYXRoZXIgdGhhbiBqdXN0IHVz
-aW5nIGl0IGludGVybmFsbHkNCj4gPj4gSSdkIHN1Z2dlc3QgcmVseWluZyBvbiB0aGF0IC0gYnV0
-IGNsZWFybHkgeW91IHdhbnQgaXQgdG8gYmUgYXBwYXJlbnQNCj4gPj4gaW4gdGhlIGludGVyZmFj
-ZS4gIFdoZXRoZXIgdGhhdCBpcyB1c2VmdWwgaXMgdGhlIHF1ZXN0aW9uIEknZCByYWlzZQ0KPiA+
-PiBoZXJlIChhbmQgaXMgdGhlIHJlYXNvbiBkYXRhc2hlZXRfbmFtZSBpcyBub3QgZXhwb3NlZC4N
-Cj4gPj4NCj4gPj4gVGhlIG9idmlvdXMgcXVlc3Rpb24gaXMgZG9lcyB1c2Vyc3BhY2UgY2FyZT8g
-IEFuc3dlciBpcyBwcm9iYWJseSBub3QuDQo+ID4+DQo+ID4+IEl0IGNhcmVzIHdoYXQgaXMgYmVp
-bmcgbWVhc3VyZWQgYnV0IHRoaXMgaXMgYWJvdXQgd2hhdCBwaW5zIGl0IGlzDQo+ID4+IG9uIGFu
-ZCBkb2Vzbid0IHByb3ZpZGUgYW55IGluZm9ybWF0aW9uIG9uIHdoYXQgaXMgY29ubmVjdGVkIHRv
-IHRoZW0uDQo+ID4+DQo+ID4NCj4gPiBTdXJlbHkgaXQgaGVscHMgd2hlbiB1c2luZyBzeXNmcyB0
-byBhY2Nlc3Mgd2hhdGV2ZXIgaXMgY29ubmVjdGVkIHRvIG9uZSBvZg0KPiA+IHRob3NlIHBpbnMg
-aWYgd2UgbGFiZWwgdGhlIHBpbiB3aXRoIHNvbWV0aGluZyBtZWFuaW5nZnVsPyBJZiBzYXkgeW91
-IGhhdmUgYQ0KPiA+IGRldmljZSBjb25uZWN0ZWQgdG8gR1BJQyBvZiB0aGUgY2hhcmdlciBJQywg
-aXQncyBlYXNpZXIgdG8gd29yayBvdXQgd2hpY2ggQURDDQo+ID4gY2hhbm5lbCB5b3UgbmVlZCB0
-byBhY2Nlc3MgdGhyb3VnaCBzeXNmcyBpZiB0aGUgbmFtaW5nIGlzIGFzIEkgaGF2ZSBub3csIHJh
-dGhlcg0KPiA+IHRoYW4gc29tZSBhcmJpdHJhcnkgbnVtYmVyIHdoaWNoIGRvZXNuJ3QgbmVjZXNz
-YXJpbHkgdGFsbHkgdG8gdGhlIGNoYW5uZWwgaW4gdGhlDQo+ID4gZGF0YXNoZWV0LiBZb3UnZCB0
-aGVuIG5lZWQgdG8gbG9vayBhdCB0aGUgY29kZSBhbmQgd29yayBvdXQgd2hpY2ggY2hhbm5lbA0K
-PiBudW1iZXINCj4gPiBHUElPQyBhY3R1YWxseSB3YXMuIE9yIGFtIEkganVzdCBtaXNzaW5nIHNv
-bWV0aGluZyBoZXJlPyA6KQ0KPiBOb3QgcmVhbGx5IGZvciB0aGUgdmFzdCBtYWpvcml0eSBvZiB1
-c2Vycy4gIFRoZXkgdGVuZCBub3QgdG8gaGF2ZSBhIGRldGFpbGVkDQo+IGJvYXJkIGxheW91dCBp
-biBmcm9udCBvZiB0aGVtLiAgSXQncyBtb3JlIGludGVyZXN0aW5nIGlmIHlvdSBrbm93ICd3aGF0
-JyB0aGV5DQo+IGFyZSBtZWFzdXJpbmcgKGhlbmNlIHdlIGRvIHVzZSB0aGVzZSBuYW1lcyB3aGVu
-IHRoYXQgaXMgdHJ1ZSAtIHN1Y2ggYXMNCj4gaW50ZXJuYWwgdm9sdGFnZSBtZWFzdXJlbWVudHMp
-Lg0KPiANCj4gVGhlIG51bWJlcnMgYWxtb3N0IG5ldmVyIHRhbGx5IHdpdGggdGhlIGRhdGFzaGVl
-dCwgYnV0IHRoZW4gZGF0YXNoZWV0IG51bWJlcmluZw0KPiBoYXMgYSBoYWJpdCBvZiBiZWluZyBp
-bmNvbnNpc3RlbnQgYXMgd2VsbCENCg0KQ2FuJ3Qgc2F5IEkgYWdyZWUgdGhhdCB0aGlzIHdvbid0
-IGJlIHVzZWZ1bC9pbmZvcm1hdGl2ZSB0byBtYW55IHVzZXJzLCBidXQgZG9uJ3QNCndhbnQgdG8g
-bWFrZSB0aGlzIGEgc3RpY2tpbmcgcG9pbnQgc28gd2lsbCB1cGRhdGUuDQo=
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Jan 21, 2015 at 12:11:34PM +0800, kbuild test robot wrote:
+> drivers/power/max77693_charger.c:615:1-4: WARNING: end returns can be sim=
+pified
+>=20
+>  Simplify a trivial if-return sequence.  Possibly combine with a
+>  preceding function call.
+> Generated by: scripts/coccinelle/misc/simple_return.cocci
+
+Thanks, applied with Reviewed-By from Krzysztof.
+
+-- Sebastian
+
+--vkogqOf2sHV7VnPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUv6QKAAoJENju1/PIO/qaqewP/25bCfmrK8G3DMlpyo15hjQ7
+MN0gfQiF+FEZ8pEoL/EOiUz84PKmfyRV5PPZRbHj/DgWwD9f1+4ykm1UPIVXUUrb
+4WwTxfU+x0YB/Wq9rJI65b9Oy5MwWXi2gUIbqglIDrdUXte1SsivPxEzJ+Z081TW
+bldOUynPjELCR5THDANBcWoDibiLwLOpL60pABGp4/cnTLO4khGkGQXg/o1GKhX0
+KvwN8U4vNSTsU6gxhWQGQ2iCjAvw6KHIQQVUeVjb+oFPGYVCX7iP5jMA9xnl/qNq
+MwMHfOfQeKEBbLqDkPl4d0N3xezdhJif+B4ehF7AbimZdnGJMSXdQQ5F+kGfnATz
+HV0LQ1rYovgvAfFzKL4TQR9lcpUXj6IwSznoEOPAw8UEmeIr+AwyGcf881vCtU6H
+oo1Lat/Dcc6ysPUkDSVmrA0wvWoeu1kLf3oNngJEuUP9B7ismu6PRJuT+d8X5gGg
+y2+g00KELebwo2/gZrZw7NYcWV+fgjO6oGqdqF1IY+G8kdFc8OYhGI3dGnwMIgHC
+LU8OBs+Q90XRcDo0e5l0cH4E1VtuYn1CPN6b2jS7Uc6VDmAUyEauQET10Z14eAfm
+xg2V0Rd7P37BPs6cwNgziiRAvSzRyw7vzL1T6Saqc5TA6XYETByN66+DwQbPhj+R
+qaH9i6EBHGutNI5Ci32r
+=STeL
+-----END PGP SIGNATURE-----
+
+--vkogqOf2sHV7VnPd--
