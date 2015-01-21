@@ -1,14 +1,14 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH v5 15/18] thermal: samsung: core: Exynos TMU rework to
  use device tree for configuration
-Date: Tue, 20 Jan 2015 23:18:18 -0400
-Message-ID: <20150121031816.GA22176@developer.hsd1.ca.comcast.net>
+Date: Tue, 20 Jan 2015 23:25:40 -0400
+Message-ID: <20150121032539.GB22176@developer.hsd1.ca.comcast.net>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
  <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
  <1421666462-7606-16-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+	protocol="application/pgp-signature"; boundary="1UWUbFP1cBYEclgG"
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <1421666462-7606-16-git-send-email-l.majewski@samsung.com>
@@ -18,7 +18,7 @@ Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin 
 List-Id: linux-pm@vger.kernel.org
 
 
---/04w6evG8XlLl3ft
+--1UWUbFP1cBYEclgG
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -44,23 +44,6 @@ On Mon, Jan 19, 2015 at 12:20:59PM +0100, Lukasz Majewski wrote:
 > - Remove duplicated exynos_tmu_initialize() - reported by Abhilash Kesavan
 >  <a.kesavan@samsung.com>
 >=20
-
-several checkpatch.pl items to be reviewed in this patch:
-CHECK: No space is necessary after a cast
-#509: FILE: drivers/thermal/samsung/exynos_tmu.c:821:
-+       pdata->gain =3D (u8) value;
-
-CHECK: No space is necessary after a cast
-#511: FILE: drivers/thermal/samsung/exynos_tmu.c:823:
-+       pdata->reference_voltage =3D (u8) value;
-
-
-Can you please make sure all of your patches pass:
-checkpatch.pl --strict
-
-?
-
-
 > ---
 >  drivers/thermal/samsung/Makefile     |   2 -
 >  drivers/thermal/samsung/exynos_tmu.c | 339 ++++++++++++++++++++++-------=
@@ -388,6 +371,9 @@ device *pdev, bool on)
 > =20
 > -static int exynos_tmu_read(struct exynos_tmu_data *data)
 > +int exynos_get_temp(void *p, long *temp)
+
+exynos_get_temp must be static.
+
 >  {
 > -	int ret;
 > +	struct exynos_tmu_data *data =3D p;
@@ -796,20 +782,20 @@ ng
 > 2.0.0.rc2
 >=20
 
---/04w6evG8XlLl3ft
+--1UWUbFP1cBYEclgG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUvxpvAAoJEMLUO4d9pOJWAIUH/12c4kTNaY4PHl8O9UDpGyir
-Evn8C7W5c+VVl0fz+gwIk36TFh0mrfqgNM7FZIbk7av7OxsnLEEV1MHVy90fokn5
-sBXqDQwqeBsiVcn0xGQXOmY8C2yZoGRBA86D2o217DvArY3nKb7Iz/oZZfMzgKU9
-6K3hMRunlg0Hb7kp/VOb6zM6dz2KnZlwKQlNiWT7r2/RA7YuCDDfiaxqFQS8Z8CA
-2fbfo4Ob05OscaH9amQbNrpcco4Vqih8uOfxtxEqjJspaUb9VoACwHN5QHjkOGoZ
-Vkg+VA8PSO78z6K7k+eRD18jWaZxkNNX/uvp/T1WC4SboR8VMW1b4tKgmnZ7lMo=
-=3yze
+iQEcBAEBAgAGBQJUvxwrAAoJEMLUO4d9pOJWnGIH/3tu80csEahr8QTbQKX68W/s
+n+44kX6P2Hg+9fT57lR++GJQRUuYSmAM063VnY50g+rh46D94VCCbGXcCWuQb5Ra
+JJ5WF+Upvz4rmd6Yu7/p/o5nbad1mkddGkwV5uW1yxh9jYs96VlarWnEtRcQJlfg
+77fWAwhdWcRQEdGv9/LcmI+s7rw5s3f7IUKtXnixK7KqO6B+OpMqAY/y2CNHXaLb
+/DyotOdN1diuCzoPN9EBKYIGQguv2eSzBxrU+KnBC2ARj7rFiHbp/O5CIkBUDPOm
+oI7lfSTwIbmHNGoNAYLVxi4I/mCxXaZhvhKIUihwDhfiJLWa5jAJFwcvSKtn4EE=
+=RYwt
 -----END PGP SIGNATURE-----
 
---/04w6evG8XlLl3ft--
+--1UWUbFP1cBYEclgG--
