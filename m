@@ -1,61 +1,39 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power/reset: vexpress: Remove non-DT code
-Date: Wed, 21 Jan 2015 03:46:27 +0100
-Message-ID: <20150121024626.GA28669@earth.universe>
-References: <1421774642-29843-1-git-send-email-pawel.moll@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCHv3 2/8] devfreq: exynos: Add documentation for generic
+ exynos memory bus frequency driver
+Date: Wed, 21 Jan 2015 08:47:20 +0530
+Message-ID: <CAKohpontEntV48XqNcJq+euT9SdEjkgn5Pa=sSUpgM8mfKKCUA@mail.gmail.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
+	<1420681257-3078-3-git-send-email-cw00.choi@samsung.com>
+	<CAL_Jsq+5sdsm_-VW-ta+qV-NBao-XTHvsYWcbMdZmbP0Nw43Cw@mail.gmail.com>
+	<CAKohpomqosqxeDANC=NLBVmOUHyUoqd7Zhph7r6f7+ufYN48EQ@mail.gmail.com>
+	<54BE108F.8090506@samsung.com>
+	<CAKohpokSuVhH3hHFF+mLtJXvjt=bmJy1oZRBOttCNXORBS1Y0A@mail.gmail.com>
+	<54BE3E10.2080906@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:37336 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbbAUCqg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Jan 2015 21:46:36 -0500
-Content-Disposition: inline
-In-Reply-To: <1421774642-29843-1-git-send-email-pawel.moll@arm.com>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:43199 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbbAUDRV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jan 2015 22:17:21 -0500
+Received: by mail-oi0-f52.google.com with SMTP id h136so13657579oig.11
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2015 19:17:20 -0800 (PST)
+In-Reply-To: <54BE3E10.2080906@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pawel Moll <pawel.moll@arm.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Rob Herring <robherring2@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mark Rutland <mark.rutland@arm.com>, a.kesavan@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, InKi Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
+On 20 January 2015 at 17:07, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> If each bus-block has separate regulator independently, each bus-block can be registered
+> separately. But, exynos bus-blocks in mem-bus-group share the same regulator.
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This can be managed easily within the driver. Just stay the highest
+voltage requested.
+I don't think its not manageable. But it will be much more convenient
+as that will show
+the correct picture and get rid of unnecessarily virtualizing things..
 
-Hi,
-
-On Tue, Jan 20, 2015 at 05:24:02PM +0000, Pawel Moll wrote:
-> Now, as all VE platforms have to be booted with DT,
-> the code handling non-DT case can be removed.
->=20
-> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
-
-Thanks, applied.
-
--- Sebastian
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUvxL/AAoJENju1/PIO/qaM0kP+QENC4g1acuuxuJ6jEgPaIE5
-sF3ePq+3Ply4KX7/J+WgPcH44CS3XqySsGxMrUGmygETeyH0FtYT62UoVvauVYeC
-A41F4O1fH/dSRUHj/oUL9NFIRv/CmIYEikSJy0MqtAo4c5U4uvNbrdd0I8M+lp9V
-kxZNob1J2Ecx73GNUBc4SL+a/up5Y51cDgLH7Pi6kAfxikQ+RrSMiPSOl2DbHubj
-m8EfS3o4mnibv+4/3zwPZ0EbLxYUB/zTwf49Nsrc3vUsWdsxlvsJR70E1uwy7R7T
-XQ4l5JD8lqjgqFwzfWxWZmo9qd1HaY0jYKxZnGC+CG6r7FWvSTiSxq47F3DUCHLr
-eK1g0XjVlUDoC7iiz4buAEky24LdZGFZyk/t1yMkqp66abVDJvjVSpLCZc6ccbrh
-tIHXesBU9V9gsflQwOQKzwZ19jsjqWEMtwgFF/hqMMom9Go0tioRIf90RZ1jlRpz
-xwbo6HIvuacYceGN9Iiz18bBqpoTp6gykO8jIEAKr3kRYyWl4FQGeaDKZQhAZ+TS
-ta1XJ+0mnKKFVQnxAxyVUNCFT9weV6VfPLDVNkERZ27UHKHZkfZK6U6CECvfvFWH
-FAnYTRD3X4E/nAsPH5EBLRuIa5868I45LcPeSylis4ioOgTIoAkZx6hC8hgCLv6p
-aGyVL+douIbEFALU67EY
-=o/0+
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
+--
+viresh
