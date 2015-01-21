@@ -1,42 +1,92 @@
-From: Varka Bhadram <varkabhadram-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v6 3/7] iio: Add support for DA9150 GPADC
-Date: Wed, 21 Jan 2015 21:36:47 +0530
-Message-ID: <54BFCE97.4050007@gmail.com>
-References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com> <ae9b56cc8cd15bd72ea1b721ae02b1dde8632dbf.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+From: Varka Bhadram <varkabhadram@gmail.com>
+Subject: Re: [PATCH v6 5/7] power: Add support for DA9150 Charger
+Date: Wed, 21 Jan 2015 21:44:42 +0530
+Message-ID: <54BFD072.8000707@gmail.com>
+References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com> <d9c5c61443e266880cab3cbe7502142439fe9886.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <ae9b56cc8cd15bd72ea1b721ae02b1dde8632dbf.1421854282.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:63968 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbbAUQOv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 11:14:51 -0500
+In-Reply-To: <d9c5c61443e266880cab3cbe7502142439fe9886.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
 
 On Wednesday 21 January 2015 09:16 PM, Adam Thomson wrote:
-> This patch adds support for DA9150 Charger & Fuel-Gauge IC GPADC.
+> This patch adds support for DA9150 Charger & Fuel-Gauge IC Charger.
 >
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> Reviewed-by: Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>
-> Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> ---
 
 (...)
 
+> +static int da9150_charger_register_irq(struct platform_device *pdev,
+> +				       irq_handler_t handler,
+> +				       const char *irq_name)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct da9150_charger *charger = platform_get_drvdata(pdev);
+> +	int irq, ret;
 > +
-> +static int da9150_gpadc_probe(struct platform_device *pdev)
+> +	irq = platform_get_irq_byname(pdev, irq_name);
+> +	if (irq < 0) {
+> +		dev_err(dev, "Failed to get IRQ CHG_STATUS: %d\n", irq);
+> +		return irq;
+> +	}
+> +
+> +	ret = request_threaded_irq(irq, NULL, handler, IRQF_ONESHOT, irq_name,
+> +				   charger);
+
+Why don you use devm_* API..?
+
+> +	if (ret)
+> +		dev_err(dev, "Failed to request IRQ %d: %d\n", irq, ret);
+> +
+> +	return ret;
+> +}
+> +
+> +static void da9150_charger_unregister_irq(struct platform_device *pdev,
+> +					  const char *irq_name)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct da9150_charger *charger = platform_get_drvdata(pdev);
+> +	int irq;
+> +
+> +	irq = platform_get_irq_byname(pdev, irq_name);
+> +	if (irq < 0) {
+> +		dev_err(dev, "Failed to get IRQ CHG_STATUS: %d\n", irq);
+> +		return;
+> +	}
+> +
+> +	free_irq(irq, charger);
+> +}
+> +
+> +static int da9150_charger_probe(struct platform_device *pdev)
 > +{
 > +	struct device *dev = &pdev->dev;
 > +	struct da9150 *da9150 = dev_get_drvdata(dev->parent);
-> +	struct da9150_gpadc *gpadc;
-> +	struct iio_dev *indio_dev;
-> +	int irq, ret;
+> +	struct da9150_charger *charger;
+> +	struct power_supply *usb, *battery;
+> +	u8 reg;
+> +	int ret;
 > +
-> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*gpadc));
+> +	charger = devm_kzalloc(dev, sizeof(struct da9150_charger), GFP_KERNEL);
+> +	if (charger == NULL)
+> +		return -ENOMEM;
 
-  You can directly use *dev* instead of *&pdev->dev*
+sizeof(struct da9150_charger) can be replaced with sizeof(*charger)...
 
+*!* operator can be used in comparison with NULL...
+
+(...)
 
 -- 
 Thanks and Regards,
 Varka Bhadram.
+
