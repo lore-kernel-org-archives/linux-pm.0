@@ -1,201 +1,145 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v4 2/2] Documentation: Add documentation for rt5033
- multifunction device
-Date: Thu, 22 Jan 2015 18:21:40 +0900
-Message-ID: <54C0C124.7010403@samsung.com>
-References: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
- <1421899601-19327-3-git-send-email-beomho.seo@samsung.com>
- <20150122074101.GK22024@x1> <54C0B1EA.7030901@samsung.com>
- <20150122090243.GA5465@x1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150122090243.GA5465@x1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3/resend 4/4] drivers: bus: Add Simple Power-Managed Bus Driver
+Date: Thu, 22 Jan 2015 10:34:13 +0100
+Message-ID: <1421919253-4784-5-git-send-email-geert+renesas@glider.be>
+References: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/22/2015 06:02 PM, Lee Jones wrote:
-> On Thu, 22 Jan 2015, Beomho Seo wrote:
-> 
->> On 01/22/2015 04:41 PM, Lee Jones wrote:
->>> On Thu, 22 Jan 2015, Beomho Seo wrote:
->>>
->>>> This patch device tree binding documentation for rt5033 multifunction device.
->>>>
->>>> Cc: Sebastian Reichel <sre@kernel.org>
->>>> Cc: Lee Jones <lee.jones@linaro.org>
->>>> Cc: Mark Brown <broonie@kernel.org>
->>>> Cc: Rob Herring <robh+dt@kernel.org>
->>>> Cc: Pawel Moll <pawel.moll@arm.com>
->>>> Cc: Mark Rutland <mark.rutland@arm.com>
->>>> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
->>>> Cc: Kumar Gala <galak@codeaurora.org>
->>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
->>>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>> Acked-by: Lee Jones <lee.jones@linaro.org>
->>>
->>> I did not Ack this patch.
->>>
->>> Your new vendor bindings require a DT Ack.
->>>
->>> Although, as the ones I'm concerned with are Regulator related, and
->>> Ack from Mark Brown will also suffice.
->>>
->>
->> I want to apologize for my mistake. I completely misunderstood your reply.
->> Unfortunately, This patch merged by Sebastian at his git.
->> Please tell me what to do.
-> 
-> That's strange, as I haven't heard anything from Sebastian.
-> 
-> Anyway, he needs to remove it from his tree until we receive a
-> suitable Ack.
-> 
+Add a driver for transparent busses that don't need a real driver (think
+"simple-bus"), where the bus controller is part of a PM domain, or under
+the control of a functional clock.  Typically, the bus controller's
+PM domain and/or clock must be enabled for child devices connected to
+the bus (either on-SoC or externally) to function.
 
-OK, If Sebastian remove it from his tree, I will fix Acked-by. And then
-wait receive a suitable Ack.
+Hence the sole purpose of this driver is to enable its clock and PM
+domain (if exist(s)), which are specified in the DT and managed from
+platform and PM domain code.
 
->>>> ---
->>>> Changes in v4
->>>> - none.
->>>> Changes in v3
->>>> - Add Acked-by
->>>> Changes in v2
->>>> - Fix incorrect typo.
->>>> - Align -uamp and -uvolt names with regulator binding suffixes.
->>>> - Drop incorrect phandle.
->>>> - Fix incorrect example.
->>>> ---
->>>>
->>>>  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++++++++++++++++++
->>>>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->>>>  2 files changed, 102 insertions(+)
->>>>  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Documentation/devicetree/bindings/mfd/rt5033.txt
->>>> new file mode 100644
->>>> index 0000000..64b23e8
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
->>>> @@ -0,0 +1,101 @@
->>>> +Richtek RT5033 Power management Integrated Circuit
->>>> +
->>>> +RT5033 is a Multifunction device which includes battery charger, fuel gauge,
->>>> +flash LED current source, LDO and synchronous Buck converter for portable
->>>> +applications. It is interfaced to host controller using i2c interface.
->>>> +
->>>> +Required properties:
->>>> +- compatible : Must be "richtek,rt5033"
->>>> +- reg : Specifies the i2c slave address of general part.
->>>> +- interrupts : This i2c devices has an IRQ line connected to the main SoC.
->>>> +- interrupt-parent : The parent interrupt controller.
->>>> +
->>>> +Optional node:
->>>> +Regulators: The regulators of RT5033 have to be instantiated under sub-node
->>>> +named "regulators" using the following format.
->>>> +
->>>> +	regulators {
->>>> +		regulator-name {
->>>> +			regulator-name = LDO/BUCK
->>>> +			regulator subnodes called X, Y and Z
->>>> +		};
->>>> +	};
->>>> +	refer Documentation/devicetree/bindings/regulator/regulator.txt
->>>> +
->>>> +
->>>> +Battery charger: There battery charger of RT5033 have to be instantiated under
->>>> +sub-node named "charger" using the following format.
->>>> +
->>>> +Required properties:
->>>> +- compatible : Must be "richtek,rt5033-charger".
->>>> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge current levels
->>>> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
->>>> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge current
->>>> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
->>>> +- richtek,eoc-uamp : This property is end of charge current. Its level 150 mA
->>>> +  to 200 mA.
->>>> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode. Battery
->>>> +  voltage is below pre-charge threshold voltage, the charger is in pre-charge
->>>> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V programmed
->>>> +  by I2C per 0.1 V.
->>>> +- richtek,const-uvolt :  Battery regulation voltage of constant voltage mode.
->>>> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
->>>> +
->>>> +	charger {
->>>> +		compatible = "richtek,rt5033-charger";
->>>> +		richtek,pre-uamp = <350000>;
->>>> +		richtek,fast-uamp = <2000000>;
->>>> +		richtek,eoc-uamp = <250000>;
->>>> +		richtek,pre-threshold-uvolt = <3400000>;
->>>> +		richtek,const-uvolt = <4350000>;
->>>> +
->>>> +	};
->>>> +
->>>> +
->>>> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "fuelgauge"
->>>> +using the following format.
->>>> +
->>>> +Required properties:
->>>> +- compatible = Must be "richtek,rt5033-battery".
->>>> +
->>>> +	rt5033@35 {
->>>> +		compatible = "richtek,rt5033-battery";
->>>> +		interrupt-parent = <&gpx2>;
->>>> +		interrupts = <3 0>;
->>>> +		reg = <0x35>;
->>>> +	};
->>>> +
->>>> +Example:
->>>> +
->>>> +		rt5033@34 {
->>>> +			compatible = "richtek,rt5033";
->>>> +			reg = <0x34>;
->>>> +			interrupt-parent = <&gpx1>;
->>>> +			interrupts = <5 0>;
->>>> +
->>>> +			regulators {
->>>> +				buck_reg: BUCK {
->>>> +					regulator-name = "BUCK";
->>>> +					regulator-min-microvolt = <1200000>;
->>>> +					regulator-max-microvolt = <1200000>;
->>>> +					regulator-always-on;
->>>> +				};
->>>> +			};
->>>> +
->>>> +			charger {
->>>> +				compatible = "richtek,rt5033-charger";
->>>> +				richtek,pre-uamp = <350000>;
->>>> +				richtek,fast-uamp = <2000000>;
->>>> +				richtek,eoc-uamp = <250000>;
->>>> +				richtek,pre-threshold-uvolt = <3400000>;
->>>> +				richtek,const-uvolt = <4350000>;
->>>> +			};
->>>> +
->>>> +		};
->>>> +
->>>> +		rt5033@35 {
->>>> +				compatible = "richtek,rt5033-battery";
->>>> +				interrupt-parent = <&gpx2>;
->>>> +				interrupts = <3 0>;
->>>> +				reg = <0x35>;
->>>> +		};
->>>> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
->>>> index b1df0ad..b6a2ca1 100644
->>>> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
->>>> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
->>>> @@ -134,6 +134,7 @@ ralink	Mediatek/Ralink Technology Corp.
->>>>  ramtron	Ramtron International
->>>>  realtek Realtek Semiconductor Corp.
->>>>  renesas	Renesas Electronics Corporation
->>>> +richtek	Richtek Technology Corporation
->>>>  ricoh	Ricoh Co. Ltd.
->>>>  rockchip	Fuzhou Rockchip Electronics Co., Ltd
->>>>  samsung	Samsung Semiconductor
->>>
->>
->> Thanks,
->> Beomho Seo
-> 
+Due to the child-parent relationship with devices connected to the bus,
+PM domain and clock state transitions are handled in the correct order.
+
+Currently this driver handles the Renesas Bus State Controller (BSC,
+sometimes called "LBSC within Bus Bridge", or "External Bus Interface")
+found on several Renesas ARM SoCs. Support for other bus controllers can
+easily be added by adding more compatible values.
+
+Note that this driver cannot just bind against "simple-bus", as that
+may prevent a device-specific driver from taking precedence.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+---
+v3:
+  - Add Tested-by,
+
+v2:
+  - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+    "Simple Power-Managed Bus Driver" (simple-pm-bus),
+  - Change module license to GPL v2,
+  - Change email address to geert+renesas@glider.be.
+---
+ drivers/bus/Kconfig         | 13 ++++++++++++
+ drivers/bus/Makefile        |  1 +
+ drivers/bus/simple-pm-bus.c | 51 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 65 insertions(+)
+ create mode 100644 drivers/bus/simple-pm-bus.c
+
+diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+index 626960819e6df16c..1addb707bf8100e3 100644
+--- a/drivers/bus/Kconfig
++++ b/drivers/bus/Kconfig
+@@ -58,6 +58,19 @@ config OMAP_OCP2SCP
+ 	  OCP2SCP and in OMAP5, both USB PHY and SATA PHY is connected via
+ 	  OCP2SCP.
+ 
++config SIMPLE_PM_BUS
++	bool "Simple Power-Managed Bus Driver"
++	depends on OF && PM
++	depends on ARCH_SHMOBILE || COMPILE_TEST
++	help
++	  Driver for transparent busses that don't need a real driver (think
++	  "simple-bus"), where the bus controller is part of a PM domain, or
++	  under the control of a functional clock, and thus relies on runtime
++	  PM for managing this PM domain and/or clock.
++	  An example of such a bus controller is the Renesas Bus State
++	  Controller (BSC, sometimes called "LBSC within Bus Bridge", or
++	  "External Bus Interface") as found on several Renesas ARM SoCs.
++
+ config VEXPRESS_CONFIG
+ 	bool "Versatile Express configuration bus"
+ 	default y if ARCH_VEXPRESS
+diff --git a/drivers/bus/Makefile b/drivers/bus/Makefile
+index 3cfaf2c7f25ac4f0..e023a2bec664d900 100644
+--- a/drivers/bus/Makefile
++++ b/drivers/bus/Makefile
+@@ -14,4 +14,5 @@ obj-$(CONFIG_MVEBU_MBUS) 	+= mvebu-mbus.o
+ obj-$(CONFIG_OMAP_INTERCONNECT)	+= omap_l3_smx.o omap_l3_noc.o
+ 
+ obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
++obj-$(CONFIG_SIMPLE_PM_BUS)	+= simple-pm-bus.o
+ obj-$(CONFIG_VEXPRESS_CONFIG)	+= vexpress-config.o
+diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
+new file mode 100644
+index 0000000000000000..e55872d2695bd551
+--- /dev/null
++++ b/drivers/bus/simple-pm-bus.c
+@@ -0,0 +1,51 @@
++/*
++ * Simple Power-Managed Bus Driver
++ *
++ * Copyright (C) 2014 Glider bvba
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
++
++
++static int simple_pm_bus_probe(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	pm_runtime_enable(&pdev->dev);
++	return 0;
++}
++
++static int simple_pm_bus_remove(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	pm_runtime_disable(&pdev->dev);
++	return 0;
++}
++
++static const struct of_device_id simple_pm_bus_of_match[] = {
++	{ .compatible = "renesas,bsc", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, simple_pm_bus_of_match);
++
++static struct platform_driver simple_pm_bus_driver = {
++	.probe = simple_pm_bus_probe,
++	.remove = simple_pm_bus_remove,
++	.driver = {
++		.name = "simple-pm-bus",
++		.of_match_table = simple_pm_bus_of_match,
++	},
++};
++
++module_platform_driver(simple_pm_bus_driver);
++
++MODULE_DESCRIPTION("Simple Power-Managed Bus Driver");
++MODULE_AUTHOR("Geert Uytterhoeven <geert+renesas@glider.be>");
++MODULE_LICENSE("GPL v2");
+-- 
+1.9.1
+
