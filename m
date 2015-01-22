@@ -1,52 +1,118 @@
-From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v3 1/2] power: rt5033_charger: Add RT5033 charger device
- driver
-Date: Thu, 22 Jan 2015 12:59:12 +0900
-Message-ID: <54C07590.9080707@samsung.com>
-References: <1421887092-4070-1-git-send-email-beomho.seo@samsung.com>
- <1421887092-4070-2-git-send-email-beomho.seo@samsung.com>
- <20150122031240.GA17627@earth.universe>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH v3] thermal: rockchip: make temperature reporting much
+ more accurate
+Date: Thu, 22 Jan 2015 12:01:46 +0800
+Message-ID: <CAGS+omAi+F1_1-8wmDMf9oUq6GCjXu8N4kyeNmKRWv8m3eaCrA@mail.gmail.com>
+References: <1421861370-19422-1-git-send-email-wxt@rock-chips.com> <1421861370-19422-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20150122031240.GA17627-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jone-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f171.google.com ([209.85.220.171]:62596 "EHLO
+	mail-vc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbbAVECH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 23:02:07 -0500
+Received: by mail-vc0-f171.google.com with SMTP id hq11so6211806vcb.2
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2015 20:02:07 -0800 (PST)
+In-Reply-To: <1421861370-19422-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Thank you for review.
+On Thu, Jan 22, 2015 at 1:29 AM, Caesar Wang <wxt@rock-chips.com> wrote:
+> In general, the kernel should report temperature readings exactly as
+> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
+> increments,but we ought to do more accurate. The temperature will do
+> linear interpolation between the entries in the table.
+>
+> Test= $md5sum /dev/zero &
+> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
+> sleep .5; done
+>
+> e.g. We can get the result as follows:
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39086
+>     /sys/class/thermal/thermal_zone1/temp:39994
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39540
+>     /sys/class/thermal/thermal_zone1/temp:39540
+>     /sys/class/thermal/thermal_zone2/temp:39994
+>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>
+> ---
+>
+> Changes in v3:
+> Suggested-by Daniel Kurtz,
+> the check doesn't reject "code == 0xfff"
+> Fixed in rk_tsadcv2_code_to_temp(u32 code)
+>
+> Changes in v2:
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>
+>  drivers/thermal/rockchip_thermal.c | 32 ++++++++++++++++++++++----------
+>  1 file changed, 22 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 1bcddfc..ce18007 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -193,19 +193,22 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
+>
+>  static long rk_tsadcv2_code_to_temp(u32 code)
+>  {
+> -       int high, low, mid;
+> -
+> -       low = 0;
+> -       high = ARRAY_SIZE(v2_code_table) - 1;
+> -       mid = (high + low) / 2;
+> +       unsigned int low = 0;
+> +       unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
+> +       unsigned int mid = (low + high) / 2;
+> +       unsigned int num;
+> +       unsigned long denom;
+>
+> +       /* No code available, return callback */
+>         if (code > v2_code_table[low].code || code < v2_code_table[high].code)
+> -               return 125000; /* No code available, return max temperature */
+> +               return rk_tsadcv2_code_to_temp(code);
 
-On 01/22/2015 12:12 PM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Thu, Jan 22, 2015 at 09:38:11AM +0900, Beomho Seo wrote:
->> This patch add device driver of Richtek RT5033 PMIC. The driver
->> support switching charger. rt5033 charger provide three charging
->> mode.  Three charging mode are pre charge mode, fast cahrge mode
->> and constant voltage mode. They are have vary charge rate, charge
->> parameters. The charge parameters can be controlled by i2c
->> interface.
->>
->> [...]
->>
->> +	charger->psy.name = "rt5033-charger",
->> +	charger->psy.type = POWER_SUPPLY_TYPE_BATTERY,
->>
->> [...]
-> 
-> POWER_SUPPLY_TYPE_MAINS?
-> 
-> -- Sebastian
-> 
+Isn't this an infinite recursion?
 
-OK I will change power supply type.
-
-Thanks,
-Beomho Seo
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>         while (low <= high) {
+> -               if (code >= v2_code_table[mid].code && code <
+> -                   v2_code_table[mid - 1].code)
+> -                       return v2_code_table[mid].temp;
+> +               if (code >= v2_code_table[mid].code &&
+> +                   code < v2_code_table[mid - 1].code)
+> +                       break;
+> +               else if (code == TSADCV2_DATA_MASK)
+> +                       break;
+>                 else if (code < v2_code_table[mid].code)
+>                         low = mid + 1;
+>                 else
+> @@ -213,7 +216,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
+>                 mid = (low + high) / 2;
+>         }
+>
+> -       return 125000;
+> +       /*
+> +        * The 5C granularity provided by the table is too much. Let's
+> +        * assume that the relationship between sensor readings and
+> +        * temperature between 2 table entries is linear and interpolate
+> +        * to produce less granular result.
+> +        */
+> +       num = v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
+> +       num *= v2_code_table[mid - 1].code - code;
+> +       denom = v2_code_table[mid - 1].code - v2_code_table[mid].code;
+> +       return v2_code_table[mid - 1].temp + (num / denom);
+>  }
+>
+>  /**
+> --
+> 1.9.1
+>
+>
