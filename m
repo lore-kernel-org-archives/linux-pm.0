@@ -1,169 +1,59 @@
-From: Caesar Wang <sasukewxt@163.com>
-Subject: Re: [PATCH v3] thermal: rockchip: make temperature reporting much
- more accurate
-Date: Thu, 22 Jan 2015 12:57:08 +0800
-Message-ID: <54C08324.4050605@163.com>
-References: <1421861370-19422-1-git-send-email-wxt@rock-chips.com> <1421861370-19422-2-git-send-email-wxt@rock-chips.com> <CAGS+omAi+F1_1-8wmDMf9oUq6GCjXu8N4kyeNmKRWv8m3eaCrA@mail.gmail.com> <54C07AD7.9020102@rock-chips.com> <CAGS+omDdbUBn5swOZ23K3MpjzV3UMk3xABLWxj1SFE+s=FcHQA@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v4 0/2] power: rt5033: Add Richtek RT533 drivers
+Date: Thu, 22 Jan 2015 06:12:06 +0100
+Message-ID: <20150122051205.GC19172@earth.universe>
+References: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m50-135.163.com ([123.125.50.135]:50177 "EHLO m50-135.163.com"
+Received: from mail.kernel.org ([198.145.29.136]:54923 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbbAVE6w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 21 Jan 2015 23:58:52 -0500
-In-Reply-To: <CAGS+omDdbUBn5swOZ23K3MpjzV3UMk3xABLWxj1SFE+s=FcHQA@mail.gmail.com>
+	id S1750799AbbAVFMS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Jan 2015 00:12:18 -0500
+Content-Disposition: inline
+In-Reply-To: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>, Caesar Wang <caesar.wang@rock-chips.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Caesar Wang <wxt@rock-chips.com>
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
 
-=E5=9C=A8 2015=E5=B9=B401=E6=9C=8822=E6=97=A5 12:25, Daniel Kurtz =E5=86=
-=99=E9=81=93:
-> On Thu, Jan 22, 2015 at 12:21 PM, Caesar Wang
-> <caesar.wang@rock-chips.com> wrote:
->> =E5=9C=A8 2015=E5=B9=B401=E6=9C=8822=E6=97=A5 12:01, Daniel Kurtz =E5=
-=86=99=E9=81=93:
->>
->>> On Thu, Jan 22, 2015 at 1:29 AM, Caesar Wang <wxt@rock-chips.com> w=
-rote:
->>>> In general, the kernel should report temperature readings exactly =
-as
->>>> reported by the hardware. The cpu / gpu thermal driver works in 5 =
-degree
->>>> increments,but we ought to do more accurate. The temperature will =
-do
->>>> linear interpolation between the entries in the table.
->>>>
->>>> Test=3D $md5sum /dev/zero &
->>>> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
->>>> sleep .5; done
->>>>
->>>> e.g. We can get the result as follows:
->>>>       /sys/class/thermal/thermal_zone1/temp:39994
->>>>       /sys/class/thermal/thermal_zone2/temp:39086
->>>>       /sys/class/thermal/thermal_zone1/temp:39994
->>>>       /sys/class/thermal/thermal_zone2/temp:39540
->>>>       /sys/class/thermal/thermal_zone1/temp:39540
->>>>       /sys/class/thermal/thermal_zone2/temp:39540
->>>>       /sys/class/thermal/thermal_zone1/temp:39540
->>>>       /sys/class/thermal/thermal_zone2/temp:39994
->>>>
->>>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->>>> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->>>>
->>>> ---
->>>>
->>>> Changes in v3:
->>>> Suggested-by Daniel Kurtz,
->>>> the check doesn't reject "code =3D=3D 0xfff"
->>>> Fixed in rk_tsadcv2_code_to_temp(u32 code)
->>>>
->>>> Changes in v2:
->>>> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->>>>
->>>>    drivers/thermal/rockchip_thermal.c | 32
->>>> ++++++++++++++++++++++----------
->>>>    1 file changed, 22 insertions(+), 10 deletions(-)
->>>>
->>>> diff --git a/drivers/thermal/rockchip_thermal.c
->>>> b/drivers/thermal/rockchip_thermal.c
->>>> index 1bcddfc..ce18007 100644
->>>> --- a/drivers/thermal/rockchip_thermal.c
->>>> +++ b/drivers/thermal/rockchip_thermal.c
->>>> @@ -193,19 +193,22 @@ static u32 rk_tsadcv2_temp_to_code(long temp=
-)
->>>>
->>>>    static long rk_tsadcv2_code_to_temp(u32 code)
->>>>    {
->>>> -       int high, low, mid;
->>>> -
->>>> -       low =3D 0;
->>>> -       high =3D ARRAY_SIZE(v2_code_table) - 1;
->>>> -       mid =3D (high + low) / 2;
->>>> +       unsigned int low =3D 0;
->>>> +       unsigned int high =3D ARRAY_SIZE(v2_code_table) - 1;
->>>> +       unsigned int mid =3D (low + high) / 2;
->>>> +       unsigned int num;
->>>> +       unsigned long denom;
->>>>
->>>> +       /* No code available, return callback */
->>>>           if (code > v2_code_table[low].code || code <
->>>> v2_code_table[high].code)
->>>> -               return 125000; /* No code available, return max
->>>> temperature */
->>>> +               return rk_tsadcv2_code_to_temp(code);
->>> Isn't this an infinite recursion?
->>
->> No, I think we can try check if it  is happened.
->> Maybe we can return a warning/error for it.
-> I mean, if the 'if' condition is true, then this will just call the
-> same function again with the same code, and again, and again...
-> Just return an error code here, -ENOENT maybe?
-> I am not sure what error code is appropriate.
+--uQr8t48UFsdbeI+V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Maybe "return -EAGAIN"
->
->>>>           while (low <=3D high) {
->>>> -               if (code >=3D v2_code_table[mid].code && code <
->>>> -                   v2_code_table[mid - 1].code)
->>>> -                       return v2_code_table[mid].temp;
->>>> +               if (code >=3D v2_code_table[mid].code &&
->>>> +                   code < v2_code_table[mid - 1].code)
->>>> +                       break;
->>>> +               else if (code =3D=3D TSADCV2_DATA_MASK)
->>>> +                       break;
->>>>                   else if (code < v2_code_table[mid].code)
->>>>                           low =3D mid + 1;
->>>>                   else
->>>> @@ -213,7 +216,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
->>>>                   mid =3D (low + high) / 2;
->>>>           }
->>>>
->>>> -       return 125000;
->>>> +       /*
->>>> +        * The 5C granularity provided by the table is too much. L=
-et's
->>>> +        * assume that the relationship between sensor readings an=
-d
->>>> +        * temperature between 2 table entries is linear and inter=
-polate
->>>> +        * to produce less granular result.
->>>> +        */
->>>> +       num =3D v2_code_table[mid].temp - v2_code_table[mid - 1].t=
-emp;
->>>> +       num *=3D v2_code_table[mid - 1].code - code;
->>>> +       denom =3D v2_code_table[mid - 1].code - v2_code_table[mid]=
-=2Ecode;
->>>> +       return v2_code_table[mid - 1].temp + (num / denom);
->>>>    }
->>>>
->>>>    /**
->>>> --
->>>> 1.9.1
->>>>
->>>>
->>>
->> --
->> Best regards
->> Caesar Wang (=E7=8E=8B=E6=99=93=E8=85=BE)
->> =E7=A6=8F=E5=B7=9E=E7=91=9E=E8=8A=AF=E5=BE=AE=E7=94=B5=E5=AD=90=E6=9C=
-=89=E9=99=90=E5=85=AC=E5=8F=B8
->> Fuzhou Rockchip Electronics Co.Ltd
->> =E7=A6=8F=E5=BB=BA=E7=9C=81=E7=A6=8F=E5=B7=9E=E5=B8=82=E9=93=9C=E7=9B=
-=98=E8=B7=AF=E8=BD=AF=E4=BB=B6=E5=A4=A7=E9=81=9389=E5=8F=B7=E8=BD=AF=E4=
-=BB=B6=E5=9B=ADA=E5=8C=BA18=E5=8F=B7=E6=A5=BC(350003)
->> Addr:No.18 Building, A District, No.89, software Boulevard Fuzhou,
->> Fujian,PRC
->> Email:wxt@rock-chips.com
->> Tel:+86-591-83991906/07->8221
->>
->>
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+Hi,
 
+On Thu, Jan 22, 2015 at 01:06:38PM +0900, Beomho Seo wrote:
+> This patchset adds driver for Richtek rt5033 chip The chip contains
+> switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
+> Additionally, This includes document for device tree of RT5033 device.
 
+Thanks, applied.
+
+-- Sebastian
+
+--uQr8t48UFsdbeI+V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUwIaiAAoJENju1/PIO/qa3bYQAJ9Ir4TKmRq6V+aicywjGOVi
+jaOxLf4edYqORMSujuRYyE/CJAC3dbOgAhvId8oDEO74RrqqWhDTIWpJySCPjbsl
+vWpuP0uPSXwIRfICLnUpigk4kmG6ZWQ2OwoCMCgq4BmRX1notPCxq3LK2wyrEA6g
+H0apy57x/G8z24BWUB5ym1ojM+zpRTMacN9Wfw3wq1HtAOQ/8pzH5n1pepKW5hvL
+IblAAFRDuGuBv89rXQ02x52MbqNdeqYOCF1jNSmyQoZzI8XQx6pBES1TpZGyKQHi
+dp5jtYA5Q4eE5tbyJKJRcrrsPZUz5ZCPeRJyfdYmyhdvTNZV6d3BZYPc7U100s9D
+NSev7hiLGdqH7pUhpB9+sgZ4Vsapo8WuLPjr2mVoutdh45Kv4QFYn1E7R+VLqKAb
+vTsceKgIVdezKuCcK82MDJgsMRAM2ZEzo/Q1+qh6FgJsIWdHR6D03sQfRxf6oY1g
+OLznqA42utioupn0y6QGs2RGV9WpQ09Ydm5P7qZGBL5n8xCWEXBPLD1vFBHk87xP
+D51j7mlD0p0mzet7vdPGfWB5Uac6grVG3DiC45o5UnKJwvRCurdrHXmb03yiEyF+
+mGArZ0kAjuXCQRnAVE0Q4bwez+845OcwRbjEiNHbuEMu6izxybxsQU1v9h0pEpz5
+ntC4TdPlr9l3Mgsg573Q
+=kqS0
+-----END PGP SIGNATURE-----
+
+--uQr8t48UFsdbeI+V--
