@@ -1,118 +1,48 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH v3] thermal: rockchip: make temperature reporting much
- more accurate
-Date: Thu, 22 Jan 2015 12:01:46 +0800
-Message-ID: <CAGS+omAi+F1_1-8wmDMf9oUq6GCjXu8N4kyeNmKRWv8m3eaCrA@mail.gmail.com>
-References: <1421861370-19422-1-git-send-email-wxt@rock-chips.com> <1421861370-19422-2-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f171.google.com ([209.85.220.171]:62596 "EHLO
-	mail-vc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbbAVECH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 23:02:07 -0500
-Received: by mail-vc0-f171.google.com with SMTP id hq11so6211806vcb.2
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2015 20:02:07 -0800 (PST)
-In-Reply-To: <1421861370-19422-2-git-send-email-wxt@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v4 0/2] power: rt5033: Add Richtek RT533 drivers
+Date: Thu, 22 Jan 2015 13:06:38 +0900
+Message-ID: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: lee.jone-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Thu, Jan 22, 2015 at 1:29 AM, Caesar Wang <wxt@rock-chips.com> wrote:
-> In general, the kernel should report temperature readings exactly as
-> reported by the hardware. The cpu / gpu thermal driver works in 5 degree
-> increments,but we ought to do more accurate. The temperature will do
-> linear interpolation between the entries in the table.
->
-> Test= $md5sum /dev/zero &
-> $while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;
-> sleep .5; done
->
-> e.g. We can get the result as follows:
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39086
->     /sys/class/thermal/thermal_zone1/temp:39994
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39540
->     /sys/class/thermal/thermal_zone1/temp:39540
->     /sys/class/thermal/thermal_zone2/temp:39994
->
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> ---
->
-> Changes in v3:
-> Suggested-by Daniel Kurtz,
-> the check doesn't reject "code == 0xfff"
-> Fixed in rk_tsadcv2_code_to_temp(u32 code)
->
-> Changes in v2:
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
->  drivers/thermal/rockchip_thermal.c | 32 ++++++++++++++++++++++----------
->  1 file changed, 22 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 1bcddfc..ce18007 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -193,19 +193,22 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
->
->  static long rk_tsadcv2_code_to_temp(u32 code)
->  {
-> -       int high, low, mid;
-> -
-> -       low = 0;
-> -       high = ARRAY_SIZE(v2_code_table) - 1;
-> -       mid = (high + low) / 2;
-> +       unsigned int low = 0;
-> +       unsigned int high = ARRAY_SIZE(v2_code_table) - 1;
-> +       unsigned int mid = (low + high) / 2;
-> +       unsigned int num;
-> +       unsigned long denom;
->
-> +       /* No code available, return callback */
->         if (code > v2_code_table[low].code || code < v2_code_table[high].code)
-> -               return 125000; /* No code available, return max temperature */
-> +               return rk_tsadcv2_code_to_temp(code);
+This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
+Additionally, This includes document for device tree of RT5033 device.
 
-Isn't this an infinite recursion?
+RT5033 core driver is applied by Lee Jones.
+RT5033 regulator driver is applied by Mark Brown.
+RT5033 fuelgauge driver is applied by Sebastian Reichel.
 
->
->         while (low <= high) {
-> -               if (code >= v2_code_table[mid].code && code <
-> -                   v2_code_table[mid - 1].code)
-> -                       return v2_code_table[mid].temp;
-> +               if (code >= v2_code_table[mid].code &&
-> +                   code < v2_code_table[mid - 1].code)
-> +                       break;
-> +               else if (code == TSADCV2_DATA_MASK)
-> +                       break;
->                 else if (code < v2_code_table[mid].code)
->                         low = mid + 1;
->                 else
-> @@ -213,7 +216,16 @@ static long rk_tsadcv2_code_to_temp(u32 code)
->                 mid = (low + high) / 2;
->         }
->
-> -       return 125000;
-> +       /*
-> +        * The 5C granularity provided by the table is too much. Let's
-> +        * assume that the relationship between sensor readings and
-> +        * temperature between 2 table entries is linear and interpolate
-> +        * to produce less granular result.
-> +        */
-> +       num = v2_code_table[mid].temp - v2_code_table[mid - 1].temp;
-> +       num *= v2_code_table[mid - 1].code - code;
-> +       denom = v2_code_table[mid - 1].code - v2_code_table[mid].code;
-> +       return v2_code_table[mid - 1].temp + (num / denom);
->  }
->
->  /**
-> --
-> 1.9.1
->
->
+Changes in v4:
+- Change power supply type.
+
+Changes in v3:
+- Applied one of patchset.
+- Add acked-by.
+
+Changes in v2:
+- Revise binding documentation..
+
+Beomho Seo (2):
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
+
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/power/Kconfig                              |    8 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ 5 files changed, 596 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/power/rt5033_charger.c
+
+-- 
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
