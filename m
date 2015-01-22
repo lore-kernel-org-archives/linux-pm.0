@@ -1,141 +1,59 @@
-From: =?windows-1252?Q?S=E9bastien_SZYMANSKI?=
- <sebastien.szymanski@armadeus.com>
-Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
- subsystem
-Date: Thu, 22 Jan 2015 10:37:33 +0100
-Message-ID: <54C0C4DD.2040302@armadeus.com>
-References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
- <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
- <20150121230148.GJ13715@earth.universe> <54C0AFE4.3020701@i2se.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <54C0AFE4.3020701@i2se.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stefan Wahren <stefan.wahren@i2se.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Marek Vasut <marex@denx.de>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3/resend 2/4] drivers: bus: Sort Makefile entries alphabetically
+Date: Thu, 22 Jan 2015 10:34:11 +0100
+Message-ID: <1421919253-4784-3-git-send-email-geert+renesas@glider.be>
+References: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:55928 "EHLO
+	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752346AbbAVJei (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jan 2015 04:34:38 -0500
+In-Reply-To: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hello,
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+---
+v3:
+  - Add Tested-by,
 
-On 01/22/2015 09:08 AM, Stefan Wahren wrote:
-> =
+v2:
+  - New.
+---
+ drivers/bus/Makefile | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> In the meantime i made some bugfixes on these patches. Now i think it
-> would be better to integrate the on-chip regulator driver into the patch
-> series. That would clarify the function of the power driver.
-> =
+diff --git a/drivers/bus/Makefile b/drivers/bus/Makefile
+index 2973c18cbcc27816..3cfaf2c7f25ac4f0 100644
+--- a/drivers/bus/Makefile
++++ b/drivers/bus/Makefile
+@@ -2,16 +2,16 @@
+ # Makefile for the bus drivers.
+ #
+ 
++# Interconnect bus drivers for ARM platforms
++obj-$(CONFIG_ARM_CCI)		+= arm-cci.o
++obj-$(CONFIG_ARM_CCN)		+= arm-ccn.o
++
+ obj-$(CONFIG_BRCMSTB_GISB_ARB)	+= brcmstb_gisb.o
+-obj-$(CONFIG_IMX_WEIM)	+= imx-weim.o
+-obj-$(CONFIG_MVEBU_MBUS) += mvebu-mbus.o
+-obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
++obj-$(CONFIG_IMX_WEIM)		+= imx-weim.o
++obj-$(CONFIG_MVEBU_MBUS) 	+= mvebu-mbus.o
+ 
+ # Interconnect bus driver for OMAP SoCs.
+ obj-$(CONFIG_OMAP_INTERCONNECT)	+= omap_l3_smx.o omap_l3_noc.o
+ 
+-# Interconnect bus drivers for ARM platforms
+-obj-$(CONFIG_ARM_CCI)		+= arm-cci.o
+-obj-$(CONFIG_ARM_CCN)		+= arm-ccn.o
+-
++obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
+ obj-$(CONFIG_VEXPRESS_CONFIG)	+= vexpress-config.o
+-- 
+1.9.1
 
-
-I was about to resend this series with a poweroff driver for the imx28
-SoCs. Should I wait this series get merged?
-
-I thought adding a poweroff child node like this:
-
-power: power@80044000 {
-	...
-	poweroff: poweroff@80044100 {
-		compatible =3D "fsl,imx28-poweroff";
-		reg =3D <0x80044100 0x10>;
-	};
-	...
-};
-
-Here is the driver:
-
-/*
- * MXS SoCs reset code.
- *
- * Copyright (c) 2015 Armadeus Systems.
- *
- * Author: S=E9bastien Szymanski <sebastien.szymanski@armadeus.com>
- *
- * based on imx-snvs-poweroff.c
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
-
-#include <linux/err.h>
-#include <linux/init.h>
-#include <linux/io.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/of_address.h>
-#include <linux/platform_device.h>
-
-#define MXS_SET_ADDR                    0x4
-
-#define POWER_RESET_UNLOCK__KEY         (0x3E77 << 16)
-#define POWER_RESET_PWD                 0x1
-
-static void __iomem *power_reset;
-
-static void do_mxs_poweroff(void)
-{
-        writel(POWER_RESET_UNLOCK__KEY | POWER_RESET_PWD,
-               power_reset + MXS_SET_ADDR);
-}
-
-static int mxs_poweroff_probe(struct platform_device *pdev)
-{
-        power_reset =3D of_iomap(pdev->dev.of_node, 0);
-        if (!power_reset) {
-                dev_err(&pdev->dev, "failed to get memory\n");
-                return -ENODEV;
-        }
-
-        pm_power_off =3D do_mxs_poweroff;
-
-        dev_info(&pdev->dev, "power off function set!\n");
-
-        return 0;
-}
-
-static const struct of_device_id of_mxs_poweroff_match[] =3D {
-        { .compatible =3D "fsl,imx28-poweroff", },
-        {},
-};
-MODULE_DEVICE_TABLE(of, of_mxs_poweroff_match);
-
-static struct platform_driver mxs_poweroff_driver =3D {
-        .probe =3D mxs_poweroff_probe,
-        .driver =3D {
-                .name =3D "mxs-poweroff",
-                .of_match_table =3D of_match_ptr(of_mxs_poweroff_match),
-        },
-};
-
-static int __init mxs_poweroff_init(void)
-{
-        return platform_driver_register(&mxs_poweroff_driver);
-}
-device_initcall(mxs_poweroff_init);
-
-Best Regards,
-
--- =
-
-S=E9bastien SZYMANSKI
-Software Engineer
-Armadeus Systems - A new vision of the embedded world
-sebastien.szymanski@armadeus.com
-Tel: +33 (0)9 72 29 41 44
-Fax: +33 (0)9 72 28 79 26
