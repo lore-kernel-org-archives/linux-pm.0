@@ -1,59 +1,65 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/9] power/reset: brcmstb: Add support for old 65nm chips
-Date: Thu, 22 Jan 2015 02:47:18 +0100
-Message-ID: <20150122014718.GO13715@earth.universe>
-References: <1416962994-27095-1-git-send-email-cernekee@gmail.com>
- <1416962994-27095-4-git-send-email-cernekee@gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] Add LTC2941/LTC2943 Battery Gauge Driver
+Date: Thu, 22 Jan 2015 03:24:27 +0100
+Message-ID: <20150122022426.GP13715@earth.universe>
+References: <20141027163842.GB20765@earth.universe>
+ <1414479912-3545-1-git-send-email-mike.looijmans@topic.nl>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="B3NBd8mrXZtPJEYR"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="fjEAjMKpll6GDq3U"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:48800 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752262AbbAVCYh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Jan 2015 21:24:37 -0500
 Content-Disposition: inline
-In-Reply-To: <1416962994-27095-4-git-send-email-cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-ci5G2KO2hbZ+pU9mqzGVBQ@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, marc.ceeeee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org
+In-Reply-To: <1414479912-3545-1-git-send-email-mike.looijmans@topic.nl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Looijmans <mike.looijmans@topic.nl>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 
 
---B3NBd8mrXZtPJEYR
+--fjEAjMKpll6GDq3U
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Nov 25, 2014 at 04:49:48PM -0800, Kevin Cernekee wrote:
-> The register bit fields are a little different, so add an entry and a
-> compatible string to accommodate them.
+On Tue, Oct 28, 2014 at 08:05:12AM +0100, Mike Looijmans wrote:
+> Both the LTC2941 and LTC2943 measure battery capacity.
+> The LTC2943 is compatible with the LTC2941, it adds voltage and
+> temperature monitoring, and uses a slightly different conversion
+> formula for the charge counter.
+>=20
+> To avoid confusion with e.g. the LTC2945, the driver is called
+> LTC2941 instead of LTC294X.
 
-Thanks, applied.
+Applied with .owner field removed.
 
 -- Sebastian
 
---B3NBd8mrXZtPJEYR
+--fjEAjMKpll6GDq3U
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUwFamAAoJENju1/PIO/qabr8P/1ea3h4M0xKnteM9XGvGal8q
-BHAQBk7O083ZW/D4qhdxJyy+X0Wq/9/CiYVNsJb4xqDMDW6lpVp2V7EI0XeljjhU
-Q171ZNF0jr+l3PiTyAL03yacpWzJ/QPZReJFwJCovN+/JUnVrz1mMzWFP4U5RyMY
-TwtXIc5DiAxuwVv7cfc4sst+zGzSZpsRNToNQILUf9MIFozjiNUtXP83Wcn+Oj0I
-lJ3YVtazMKwvpfN5ZAJ7+llZ2ye0rtr8pY6Pi/Okb0O8Lco6N9m3RCdti9nq3nxw
-YuJVgXxj9bj3xzjAXMINx1HV/yMdL3Z02qSzYaEWZJq/5h7Kk8ZadmUcXEi9keZV
-u3j6HJBcF4Mbh7Dbx227btBRmJUXTui57ssze4QTUxJ1gCilX+lsZEuiBeDC/XwB
-G/UxxYVq+2tpwlco97wZrW6DlljmrLyiMIlgSqfwb602ulunuWdJRvr8BzadFraU
-FG+jgYEEfz/w7sSzCuaPoGLlhc9C08CPowzDbn4PK6ubAptem29Uz2mulknEpUbs
-pa7qGDRTyXsoaLnquJJReDc5VkqVerV1aqmQ0rSlhXeMpzJDuhm+/4lrpR1jVRL0
-RwyqVbYUPQddAWU9rtWL7SBBmWqaSqAGbi8rmKSmqDuUsqyeSS+oJpCOkUP5sNGP
-UxmSuEUsuDskeTxzKPYO
-=Ix8s
+iQIcBAEBCgAGBQJUwF9RAAoJENju1/PIO/qa2NcP/2uJ/ZkUU9bdeoiGSTMZJM20
+fZJfmQlHjUFa7OhgsqocVO5O4upl5PdSEZC5xFNRYOW2yDGbggWlnGw1y111oo7f
+JIe9hqXvt/urX24gd4QAjDxIZfjQ7xiWwKH1mJE0egZ9/k89/tOZR00TN/aEMJ1e
+9rmZ3S5sASEq63V5fjLrDkoPuTjLQdRGgUcGoJoUNzBEzylATcD43Vo6hzi1b0oN
+jt23vsKfnHG7dKuqAhZIzmwo3n1PAqeFdvrmxf8jkq4iUEeEh5BBjZ90Vo+jQWdh
+uv/jHLrob6ETRlOpmqKsTpKfF/RIKRAUIDm+ED9BpxpCS098MHF8bqCUcb1Ci5ug
+9fZoqINxTa8gq44gzTE45S5ih+KPX4BANPzg3r70o3yJP8anKbURqTszRW4+TOnD
+Mavh1YyM+jPYPra9ZJNzunyEQKsF9/lT57Q7kRU4BgBXl+1m23GcwDUFAE5uLncY
+vvVtMY4mvbtS/wuphFGzEfV9S62q91SSGLrQcoqPTxY+37UhmarSSJ63aDANO4AY
+aTlsGnLHkYhPVMk/o+j/+XInuTvH7XgwZjRXdVegBAejYKdpjCg5McO+vpY2Nlfb
+IyU+JHEgHxuI1xCI04jwuCWsx9WVLOXUEGLx2tw0A0WZcoM1ekQqzRoe39XsDFfG
++IW7ZAycuCu8ap8GpM0B
+=5mh1
 -----END PGP SIGNATURE-----
 
---B3NBd8mrXZtPJEYR--
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--fjEAjMKpll6GDq3U--
