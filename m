@@ -1,250 +1,60 @@
-From: Joonyoung Shim <jy0922.shim@samsung.com>
-Subject: Re: [PATCH 1/2] power: reset: add driver for Hardkernel's Odroid boards
-Date: Thu, 22 Jan 2015 10:33:39 +0900
-Message-ID: <54C05373.60308@samsung.com>
-References: <1414588409-8065-1-git-send-email-m.szyprowski@samsung.com>
- <20150122010631.GL13715@earth.universe>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/9] power/reset: brcmstb: Make the driver buildable on
+ MIPS
+Date: Thu, 22 Jan 2015 02:46:35 +0100
+Message-ID: <20150122014635.GM13715@earth.universe>
+References: <1416962994-27095-1-git-send-email-cernekee@gmail.com>
+ <1416962994-27095-2-git-send-email-cernekee@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150122010631.GL13715@earth.universe>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Tobias Jakobi <Liquid.Acid@gmx.net>, Daniel Drake <drake@endlessm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hnsKUeImFCk/igEn"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1416962994-27095-2-git-send-email-cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-ci5G2KO2hbZ+pU9mqzGVBQ@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, marc.ceeeee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
+
+
+--hnsKUeImFCk/igEn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
 Hi,
 
-On 01/22/2015 10:06 AM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Wed, Oct 29, 2014 at 02:13:28PM +0100, Marek Szyprowski wrote:
->> This patch adds a driver implementing correct reboot and poweroff
->> procedures for Exynos4412-based Hardkernel's Odroid X/X2/U2/U3/U3+
->> boards.
-> 
-> Sorry it took so long. I have a couple of small requests before
-> applying this (comments inline).
-> 
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
->>  .../bindings/power/reset/odroid-reset.txt          |  18 ++++
->>  drivers/power/reset/Kconfig                        |   6 ++
->>  drivers/power/reset/Makefile                       |   1 +
->>  drivers/power/reset/odroid-reboot.c                | 119 +++++++++++++++++++++
->>  4 files changed, 144 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->>  create mode 100644 drivers/power/reset/odroid-reboot.c
->>
->> diff --git a/Documentation/devicetree/bindings/power/reset/odroid-reset.txt b/Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->> new file mode 100644
->> index 000000000000..86471a463518
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->> @@ -0,0 +1,18 @@
->> +* Device tree bindings for Hardkernel's Exynos4412 based Odroid boards
->> +
->> +This node is intended to allow proper system reboot and power off of
->> +Odroid X/X2/U2/U3/U3+ boards with eMMC storage. Without this node, board
->> +hangs during standard reset procedure.
->> +
->> +Required properties:
->> +- compatible:			hardkernel,odroid-reboot
->> +- samsung,pmureg-phandle:	phandle to Exynos PMU node
->> +- reset-gpios:			phandle and gpio-specifier to the GPIO pin
->> +				connected to the eMMC_nDET
->> +
->> +Example:
->> +odroid_reboot {
->> +	compatible = "hardkernel,odroid-reboot";
->> +	samsung,pmureg-phandle = <&pmu_system_controller>;
->> +	reset-gpio = <&gpk1 2 0>;
->> +};
->> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
->> index f65ff49bb275..f02b13d5344f 100644
->> --- a/drivers/power/reset/Kconfig
->> +++ b/drivers/power/reset/Kconfig
->> @@ -84,6 +84,12 @@ config POWER_RESET_LTC2952
->>  	  This driver supports an external powerdown trigger and board power
->>  	  down via the LTC2952. Bindings are made in the device tree.
->>  
->> +config POWER_RESET_ODROID
->> +	bool "Hardkernel's Exynos4412 based Odroid reboot driver"
->> +	depends on POWER_RESET && ARCH_EXYNOS
-> 
-> once the arm specific restart handler is gone you can add ||
-> COMPILE_TEST
-> 
->> +	help
->> +	  Power off and restart support for Odroid boards.
->> +
->>  config POWER_RESET_QNAP
->>  	bool "QNAP power-off driver"
->>  	depends on OF_GPIO && PLAT_ORION
->> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
->> index 76ce1c59469b..178ee86eb813 100644
->> --- a/drivers/power/reset/Makefile
->> +++ b/drivers/power/reset/Makefile
->> @@ -8,6 +8,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
->>  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
->>  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
->>  obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
->> +obj-$(CONFIG_POWER_RESET_ODROID) += odroid-reboot.o
->>  obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
->>  obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
->>  obj-$(CONFIG_POWER_RESET_SUN6I) += sun6i-reboot.o
->> diff --git a/drivers/power/reset/odroid-reboot.c b/drivers/power/reset/odroid-reboot.c
->> new file mode 100644
->> index 000000000000..823e93539220
->> --- /dev/null
->> +++ b/drivers/power/reset/odroid-reboot.c
->> @@ -0,0 +1,119 @@
->> +/*
->> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
->> + *		http://www.samsung.com
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; either version 2 of the License, or
->> + * (at your option) any later version.
->> + */
->> +
->> +#include <linux/delay.h>
->> +#include <linux/gpio.h>
->> +#include <linux/io.h>
->> +#include <linux/mfd/syscon.h>
->> +#include <linux/module.h>
->> +#include <linux/of_platform.h>
->> +#include <linux/of_gpio.h>
->> +#include <linux/reboot.h>
->> +#include <linux/regmap.h>
->> +
->> +#include <asm/system_misc.h>
->> +
->> +#define PS_HOLD_CONTROL	0x330C
->> +
->> +struct odroid_reboot_data {
->> +	struct device *dev;
->> +	int power_gpio;
->> +	struct regmap *reg_pmu;
->> +	void (*reboot_func)(enum reboot_mode mode, const char *cmd);
->> +};
->> +
->> +static struct odroid_reboot_data *reboot_data;
->> +
->> +static void odroid_reboot(enum reboot_mode mode, const char *cmd)
->> +{
->> +	local_irq_disable();
->> +
->> +	gpio_set_value(reboot_data->power_gpio, 0);
->> +	mdelay(150);
->> +	gpio_set_value(reboot_data->power_gpio, 1);
->> +
->> +	reboot_data->reboot_func(mode, cmd);
->> +
+On Tue, Nov 25, 2014 at 04:49:46PM -0800, Kevin Cernekee wrote:
+> Now that the driver doesn't use any ARM-specific headers, it is safe
+> to build on MIPS or with COMPILE_TEST.
 
-It is called do_kernel_restart() if arm_pm_restart is NULL from
-machine_restart of arch/arm/kernel/process.c
+Thanks, applied.
 
-How about this?
+-- Sebastian
 
-if (reboot_data->reboot_func)
-	reboot_data->reboot_func(mode, cmd);
-else
-	do_kernel_restart(cmd);
+--hnsKUeImFCk/igEn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
->> +	pr_emerg("%s: waiting for reboot\n", __func__);
->> +	while (1)
->> +		;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Then this endless loop is also unnecessary.
+iQIcBAEBCgAGBQJUwFZ4AAoJENju1/PIO/qahrAP/344bCXsWDwe0W4PQHH0n1S6
+xKRvwF2P76dxirhxsZmYBMyNmssgRaCOjDrRyg4lBj5POyW8yV1C5RS/qBDKiJEz
+eHTIG0xml/TEk36Pxa8WsvZCT9gBHNbrf8wbXK95g5h6uotHq11Fu9B+wxivBzkL
+w7dYlSo8q49HxB4HYGJPvAhqxN6n2zCiIzwMiJNrZJrybRdnSiKHFO3xFglE9Awy
+uqrJHS7zpS2VIImANDVQ20tiJiiQDe9xaxoMoVn5fWc4MNBODAoZ8cPVmXZp/uDR
+Q0qn1jfsYGJdlz5fR1kqHa2MsegOlnqDK3xQ6gLu5otg5fUZVYWHjiWYJTpp6Y5I
+qErECSY40QoBqZhBHyQaEcK5eq72AFTC86xmHmr7/yAgyBzqLZQSYeu2Y8tBEHPK
+wMaCBldfC7fxJXND42LGLKbH7lDOyaIisbcQGk583M10/xdPAYBYoQtnuVkMduAb
+4zrUqV4ORUUdf+Ikkr48F/09eTk0oKHKMOg2p9GIDJmLBX8yRg3lSItWYjcWIS/h
+cCJzzCrXirnh99g0tWO8KkKwzEVC7jnjEJ9WSpBBg7SkL9b+DuqHWUkUCkGfDRbB
+XsakBmCHTQxSrAWWYByWmqy3zMLdeJ/PgBGDA8W7PgxKfSr8BZ7h6DLxpIiONRwh
+DAkBpMuQ0NI7nFcYDkbt
+=FhZs
+-----END PGP SIGNATURE-----
 
-Thanks.
-
->> +}
->> +
->> +static void odroid_power_off(void)
->> +{
->> +	regmap_update_bits(reboot_data->reg_pmu, PS_HOLD_CONTROL, 0xffffffff, 0x5200);
->> +	while (1) {
->> +		pr_emerg("%s: should not reach here!\n", __func__);
->> +		msleep(1000);
->> +	}
->> +}
->> +
->> +static struct odroid_reboot_data *odroid_reboot_parse_dt(struct device *dev)
->> +{
->> +	struct device_node *np = dev->of_node;
->> +	struct odroid_reboot_data *data;
->> +
->> +	data = devm_kzalloc(dev, sizeof(struct odroid_reboot_data), GFP_KERNEL);
->> +	if (!data)
->> +		return NULL;
->> +
->> +	data->power_gpio = of_get_named_gpio(np, "reset-gpios", 0);
->> +	if (!gpio_is_valid(data->power_gpio)) {
->> +		dev_err(dev, "invalid reset gpio pin\n");
->> +		return NULL;
->> +	}
->> +	devm_gpio_request(dev, data->power_gpio, "reset");
-> 
-> please use gpiod interface.
-> 
->> +
->> +	data->reg_pmu = syscon_regmap_lookup_by_phandle(np,
->> +						"samsung,pmureg-phandle");
->> +	if (IS_ERR(data->reg_pmu)) {
->> +		dev_err(dev, "failed to map PMU registers\n");
->> +		return NULL;
->> +	}
->> +
->> +	return data;
->> +}
->> +
->> +static int odroid_reboot_probe(struct platform_device *pdev)
->> +{
->> +	struct device *dev = &pdev->dev;
->> +
->> +	if (pdev->dev.of_node)
->> +		reboot_data = odroid_reboot_parse_dt(dev);
->> +
->> +	if (!reboot_data)
->> +		return -EINVAL;
->> +
->> +	reboot_data->dev = &pdev->dev;
->> +	reboot_data->reboot_func = arm_pm_restart;
->> +
->> +	/* grab reboot arm specific hook */
->> +	arm_pm_restart = odroid_reboot;
-> 
-> please use register_restart_handler() and
-> unregister_restart_handler() in remove function.
-> 
->> +	/* register power off function */
->> +	pm_power_off = odroid_power_off;
->> +
->> +	return 0;
->> +}
->> +
->> +static struct of_device_id odroid_reboot_of_match[] = {
->> +	{ .compatible = "hardkernel,odroid-reboot", },
->> +	{ },
->> +};
->> +
->> +static struct platform_driver odroid_reboot_driver = {
->> +	.probe		= odroid_reboot_probe,
->> +	.driver		= {
->> +		.name	= "odroid-reboot",
->> +		.owner	= THIS_MODULE,
-> 
-> Please remove .owner line (not needed, will trigger a coccinelle
-> warning).
-> 
->> +		.of_match_table = of_match_ptr(odroid_reboot_of_match),
->> +	}
->> +};
->> +module_platform_driver(odroid_reboot_driver);
-> 
-> -- Sebastian
-> 
+--hnsKUeImFCk/igEn--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
