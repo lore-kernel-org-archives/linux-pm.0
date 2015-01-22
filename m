@@ -1,68 +1,45 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
- subsystem
-Date: Thu, 22 Jan 2015 00:01:49 +0100
-Message-ID: <20150121230148.GJ13715@earth.universe>
-References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
- <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2fjX3cMESU3XgGmZ"
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: [PATCH v3 0/2] power: rt5033: Add Richtek RT533 drivers
+Date: Thu, 22 Jan 2015 09:38:10 +0900
+Message-ID: <1421887092-4070-1-git-send-email-beomho.seo@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40699 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbbAUXB7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 21 Jan 2015 18:01:59 -0500
-Content-Disposition: inline
-In-Reply-To: <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:49290 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbbAVAiQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jan 2015 19:38:16 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org
+Cc: lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
 
+This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge.
+Additionally, This includes document for device tree of RT5033 device.
 
---2fjX3cMESU3XgGmZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+RT5033 core driver is applied by Lee Jones.
+RT5033 regulator driver is applied by Mark Brown.
+RT5033 fuelgauge driver is applied by Sebastian Reichel.
 
-Hi Stefan,
+Changes in v3:
+- Applied one of patchset.
+- Add acked-by.
 
-Sorry for the big delay.
+Changes in v2:
+- Revise binding documentation..
 
-On Thu, Nov 20, 2014 at 08:14:36PM +0000, Stefan Wahren wrote:
-> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
-> power subsystem. It's required to trigger the probing of the underlying
-> drivers like on-chip regulators. Additionally the drivers supports
-> the configuration of the DC-DC clock frequency to avoid possible
-> interferences.
+Beomho Seo (2):
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
 
-I would expect PLL to be board specific and part of DT. Why is it
-specified as parameter?
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/power/Kconfig                              |    8 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ 5 files changed, 596 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/power/rt5033_charger.c
 
-Apart from that the driver/patch looks fine to me.
+-- 
+1.7.9.5
 
--- Sebastian
-
---2fjX3cMESU3XgGmZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUwC/VAAoJENju1/PIO/qaHEUP/0ei1/4oIAp/vaGCDf6JGlWy
-IRQdVa9kTiE2OuRWtDJiQEkCQ0z1sgK+GVtdpOX8x9sfZ7oYW4/b5/N1IGT0DIWR
-CKerinJKd856v090rlYNlxXpp+ofcH0AaiXdjMws+rEgREl7ZJ2h672hofhaORdL
-ZqklhCvp9COz39VjITgf2Kk8m6LH4T4TPLG3bcTr/F320b3KbVBPPA4wy0RaTWPx
-Bjqrsyh6HZxT4e0wWfoSDNCsmn+TbxpBcENINRExFN47rsjWpaaUJqs4wyzWdu05
-ZiKUqUJ66ARS8ptCoI4lc0qSyHg1H3xxi74kqT+DVL09kHjpMix1cMywDrjAXjBq
-2uhYZ84x1gumH2UanvYp0hevmHw6gk6CJQzOSnnDrnJDU7e3cLRtbyAZiumBUM0K
-41pZD+ZJVl8eA1lHlMqQ3UJ8SWcW/sTV1XPxvxVSq5DWIg/pLpKL4hPQ3fG5uQq/
-9FuIUwM9AiLQRyc26RZcX0d+n+9TOPI4L1C696AH8d1POwfOH24N9RbS1dJqzCnC
-rS66ICHBJrOrDfE6cwziyXlEOtk4PnKNwlaL0Pz6KP38Q8IJEzag8rJvEGFkdcAW
-oEa6lnbFacG4wOOlbJti2uccmqoP1+4zXSfNfle0k3ifhQbXfen5VOiVV6nDmlRK
-d5Lb7u1tLAy837woOXWS
-=YmPR
------END PGP SIGNATURE-----
-
---2fjX3cMESU3XgGmZ--
