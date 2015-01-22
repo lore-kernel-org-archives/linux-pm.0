@@ -1,59 +1,127 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] Add devicetree binding documentation for the
- LTC2941/LTC2943 driver
-Date: Thu, 22 Jan 2015 03:24:54 +0100
-Message-ID: <20150122022453.GQ13715@earth.universe>
-References: <20141027163842.GB20765@earth.universe>
- <1414480084-3604-1-git-send-email-mike.looijmans@topic.nl>
+From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Subject: Re: [PATCH v3 0/4] drivers: bus: Add Simple Power-Managed Bus
+Date: Thu, 22 Jan 2015 11:44:27 +0900
+Message-ID: <20150122024425.GD31170@verge.net.au>
+References: <1420809155-4015-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="aNvCJ41Feu8IgPyB"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1414480084-3604-1-git-send-email-mike.looijmans-Oq418RWZeHk@public.gmane.org>
+In-Reply-To: <1420809155-4015-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Cc: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jan 09, 2015 at 02:12:31PM +0100, Geert Uytterhoeven wrote:
+> 	Hi Simon, Magnus,
+> 
+> The Renesas Bus State Controller (BSC) provides an external bus for
+> connecting multiple external devices to an SoC, driving several chip
+> select lines, for e.g. NOR FLASH, Ethernet and USB.
+> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+> R-Mobile APE6 (r8a73a4) SoC.
 
---aNvCJ41Feu8IgPyB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+For the record: Olof has asked for review comments for these patches
+so I have dropped them from next pending that activity.
 
-Hi,
-
-On Tue, Oct 28, 2014 at 08:08:04AM +0100, Mike Looijmans wrote:
-> This adds the devicetree binding documentation for the LTC2941 and LTC2943
-> driver. These are I2C connected battery gas gauge ICs.
-
-Thanks, applied.
-
--- Sebastian
-
---aNvCJ41Feu8IgPyB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUwF91AAoJENju1/PIO/qaqgEQAKYJbEKtdraEn5Jn3kY4hx0+
-99iNkLZo3rgDgkQ/Ume2RbGDzRFPXjJ4nl1oMbD2L1RtuRD6RzSCMqIlrjcNr916
-U0+LxKI6UZV8bSy7pb708mxMG1AA80xEmOjXchnXy8pFo1OaUZBN3Dmqcirz/RSG
-FXEho3o5U2Kuvebt9XV3nuUGcVaQ3g6zj6a9mkIHcRg3lgHak1DYvptz8fKOl6tq
-9ogd5zBhXIwfKMnV+hdBjebHnHIqaUm2bTtkoOeGmw40YSsnpNLIek1QETP28qap
-7LXHAq0PwWfP+vBiil15izH0nFVPhOk8cN3TbXdyin8qkADY6cEZAyjmj6OFqvSz
-dSBAz9aEAkv6atX2KE+3B3lJu/waAvyKKN0S9LUtK9yAnvBQwb6ao1aBZZcOPkRI
-+43OHDLYC+M5Rjvtw9JKNE2M8Gj3YwFb+VRRu75So+lkh+0bWGTamoYZxpsj7xV+
-BuFpFWkXN9C+kkKDqJS+hF5693emrqZP3pZjp2uBuxxs11u0rEHJXoEHOGGtZQAX
-bU+jdi9Nib5G4kRBAoJ0HADGksInqA542HfIqVXD1by2ogUW0l2Wc1hI88o0oQFV
-KNzjZtyRiQj7IfVh+vysBZNZH2HFjCZKTaXG1XLZwSwWzEDFhCZUfEmPfWkg7b+b
-aXKmcPJ2a+u/BV+SB0/C
-=ukVK
------END PGP SIGNATURE-----
-
---aNvCJ41Feu8IgPyB--
+> The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+> compatibility seems suitable.  However, the BSC is special in two
+> ways:
+>   1. It is part of a PM domain (A4S),
+>   2. It has a gateable functional clock (ZB).
+> Before a device connected to the BSC can be accessed, the PM domain
+> containing the BSC must be powered on, and the functional clock
+> driving the BSC must be enabled.
+> 
+> Both special properties can be described in DT in a standardized way
+> ("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+> example in the DT binding documentation).  Externally connected
+> devices are described as children of the BSC node.
+> 
+> Unfortunately this doesn't mean everything will work out-of-the-box.
+> There are two problems:
+>   1. Without a device driver bound to the bus device, this device is
+>      not attached to the PM domain. And although a child device is
+>      present and active, the PM domain may be powered down, as it's
+>      considered unused by the PM domain core.
+>   2. Without a device driver calling pm_runtime_enable(), its
+>      functional clock is not enabled. Once runtime PM is enabled, the
+>      R-Mobile PM domain platform driver manages the functional clock
+>      using runtime PM.
+> 
+> As none of the above is really bus hardware-specific (PM domains and
+> functional clocks in clock domains are handled from genpd and platform
+> code), this series adds a Simple Power-Managed Bus driver for
+> transparent busses, which just enables runtime PM for the bus device.
+> Due to the child-parent relationship of devices connected to the bus,
+> as long as the device drivers for the child devices are runtime PM
+> enabled, the bus's PM domain will be powered, and the bus's clock will
+> be enabled automatically when needed, for both runtime PM and s2ram.
+> 
+> Currently this driver supports the Renesas Bus State Controller only,
+> but support for other SoCs and other bus controllers can easily be
+> added later by adding more compatible values.
+> Note that this driver cannot just bind against "simple-bus", as that
+> may prevent a device-specific driver from taking precedence.
+> 
+> This was tested on sh73a0/kzm9g-multiplatform (by me), and on
+> r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+> Ethernet doesn't work, as the ZB clock is disabled by
+> clk_disable_unused().
+> 
+> As drivers/bus doesn't have a maintainer, and this driver is needed to
+> move two shmobile platforms away from legacy to multiplatform, I think
+> this can go in through Simon's shmobile tree.  There are no conflicts
+> with today's linux-next.
+> 
+> Changes compared to v2:
+>   - Document required properties inherited from "simple-bus",
+>   - Document required "reg" property for "renesas,bsc",
+>   - Move "ranges" before "reg" in the example,
+>   - Add Tested-by,
+>   - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
+> 
+> Changes compared to v1 (more detailed change logs in the individual
+> patches):
+>   - Added sorting of drivers/bus Kconfig and Makefile entries,
+>   - Added DT binding documentation,
+>   - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+>     "Simple Power-Managed Bus Driver" (simple-pm-bus),
+>   - Postponed adding power-domains properties to the dtsi,
+>   - Added updates for r8a73a4/ape6evm.
+> 
+> Thanks for applying!
+> 
+> Geert Uytterhoeven (4):
+>   drivers: bus: Sort Kconfig entries alphabetically
+>   drivers: bus: Sort Makefile entries alphabetically
+>   drivers: bus: Add Simple Power-Managed Bus DT Bindings
+>   drivers: bus: Add Simple Power-Managed Bus Driver
+> 
+>  .../devicetree/bindings/bus/simple-pm-bus.txt      | 52 +++++++++++++++++++++
+>  drivers/bus/Kconfig                                | 53 ++++++++++++++--------
+>  drivers/bus/Makefile                               | 15 +++---
+>  drivers/bus/simple-pm-bus.c                        | 51 +++++++++++++++++++++
+>  4 files changed, 144 insertions(+), 27 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+>  create mode 100644 drivers/bus/simple-pm-bus.c
+> 
+> -- 
+> 1.9.1
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> 
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
