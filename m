@@ -1,128 +1,44 @@
-From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Subject: Re: [PATCH v3 0/4] drivers: bus: Add Simple Power-Managed Bus
-Date: Thu, 22 Jan 2015 11:44:27 +0900
-Message-ID: <20150122024425.GD31170@verge.net.au>
-References: <1420809155-4015-1-git-send-email-geert+renesas@glider.be>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 0/6] ARM: shmobile: sh73a0: DT PM domain support
+Date: Thu, 22 Jan 2015 11:55:22 +0900
+Message-ID: <20150122025522.GJ31170@verge.net.au>
+References: <1421237484-16847-1-git-send-email-geert+renesas@glider.be>
+ <20150114235302.GC10479@verge.net.au>
+ <CAMuHMdVANePZ-fLzaLCEOm0vHR735C=u5_fDa4Uywi_P5ggjBg@mail.gmail.com>
+ <20150116011315.GA7830@verge.net.au>
+ <20150116024724.GA31654@verge.net.au>
+ <CAMuHMdU4hj2p-N8abT-BSadznqF7=0-08o9F4_7+qjdvv6Whmw@mail.gmail.com>
+ <20150116124502.GC6285@verge.net.au>
+ <20150117011414.GC397@verge.net.au>
+ <CAMuHMdX40LTdKt_nBb_U4eXWMuPXSYfC0Q4PvA42grdocCZfAA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1420809155-4015-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Cc: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <CAMuHMdX40LTdKt_nBb_U4eXWMuPXSYfC0Q4PvA42grdocCZfAA@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 09, 2015 at 02:12:31PM +0100, Geert Uytterhoeven wrote:
-> 	Hi Simon, Magnus,
+On Sat, Jan 17, 2015 at 03:12:19PM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
 > 
-> The Renesas Bus State Controller (BSC) provides an external bus for
-> connecting multiple external devices to an SoC, driving several chip
-> select lines, for e.g. NOR FLASH, Ethernet and USB.
-> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
-> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
-> R-Mobile APE6 (r8a73a4) SoC.
+> On Sat, Jan 17, 2015 at 2:14 AM, Simon Horman <horms@verge.net.au> wrote:
+> >> > If you add patch 6 to sh-drivers-for-v3.20 and merge it in -next,
+> >> > everything is fine!
+> >>
+> >> Thanks, I thought I had that one but I must have missed it somehow.
+> >
+> > I have made a second attempt and this time I hope that I haven't missed
+> > anything. Please see renesas-next-20150117-v3.19-rc1.
+> 
+> Thanks, looks better!
 
-For the record: Olof has asked for review comments for these patches
-so I have dropped them from next pending that activity.
+For the record: Olof has asked for review comments for the BSC driver and
+binding patches. Accordingly I have dropped them, and these patches which
+depend on them, from next.
 
-> The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
-> compatibility seems suitable.  However, the BSC is special in two
-> ways:
->   1. It is part of a PM domain (A4S),
->   2. It has a gateable functional clock (ZB).
-> Before a device connected to the BSC can be accessed, the PM domain
-> containing the BSC must be powered on, and the functional clock
-> driving the BSC must be enabled.
-> 
-> Both special properties can be described in DT in a standardized way
-> ("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
-> example in the DT binding documentation).  Externally connected
-> devices are described as children of the BSC node.
-> 
-> Unfortunately this doesn't mean everything will work out-of-the-box.
-> There are two problems:
->   1. Without a device driver bound to the bus device, this device is
->      not attached to the PM domain. And although a child device is
->      present and active, the PM domain may be powered down, as it's
->      considered unused by the PM domain core.
->   2. Without a device driver calling pm_runtime_enable(), its
->      functional clock is not enabled. Once runtime PM is enabled, the
->      R-Mobile PM domain platform driver manages the functional clock
->      using runtime PM.
-> 
-> As none of the above is really bus hardware-specific (PM domains and
-> functional clocks in clock domains are handled from genpd and platform
-> code), this series adds a Simple Power-Managed Bus driver for
-> transparent busses, which just enables runtime PM for the bus device.
-> Due to the child-parent relationship of devices connected to the bus,
-> as long as the device drivers for the child devices are runtime PM
-> enabled, the bus's PM domain will be powered, and the bus's clock will
-> be enabled automatically when needed, for both runtime PM and s2ram.
-> 
-> Currently this driver supports the Renesas Bus State Controller only,
-> but support for other SoCs and other bus controllers can easily be
-> added later by adding more compatible values.
-> Note that this driver cannot just bind against "simple-bus", as that
-> may prevent a device-specific driver from taking precedence.
-> 
-> This was tested on sh73a0/kzm9g-multiplatform (by me), and on
-> r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
-> Ethernet doesn't work, as the ZB clock is disabled by
-> clk_disable_unused().
-> 
-> As drivers/bus doesn't have a maintainer, and this driver is needed to
-> move two shmobile platforms away from legacy to multiplatform, I think
-> this can go in through Simon's shmobile tree.  There are no conflicts
-> with today's linux-next.
-> 
-> Changes compared to v2:
->   - Document required properties inherited from "simple-bus",
->   - Document required "reg" property for "renesas,bsc",
->   - Move "ranges" before "reg" in the example,
->   - Add Tested-by,
->   - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
-> 
-> Changes compared to v1 (more detailed change logs in the individual
-> patches):
->   - Added sorting of drivers/bus Kconfig and Makefile entries,
->   - Added DT binding documentation,
->   - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
->     "Simple Power-Managed Bus Driver" (simple-pm-bus),
->   - Postponed adding power-domains properties to the dtsi,
->   - Added updates for r8a73a4/ape6evm.
-> 
-> Thanks for applying!
-> 
-> Geert Uytterhoeven (4):
->   drivers: bus: Sort Kconfig entries alphabetically
->   drivers: bus: Sort Makefile entries alphabetically
->   drivers: bus: Add Simple Power-Managed Bus DT Bindings
->   drivers: bus: Add Simple Power-Managed Bus Driver
-> 
->  .../devicetree/bindings/bus/simple-pm-bus.txt      | 52 +++++++++++++++++++++
->  drivers/bus/Kconfig                                | 53 ++++++++++++++--------
->  drivers/bus/Makefile                               | 15 +++---
->  drivers/bus/simple-pm-bus.c                        | 51 +++++++++++++++++++++
->  4 files changed, 144 insertions(+), 27 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
->  create mode 100644 drivers/bus/simple-pm-bus.c
-> 
-> -- 
-> 1.9.1
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This dependency may be due to the way the branches are arranged, rather
+than actual dependencies of the code. But regardless I am dropping all
+effected branches for now.
