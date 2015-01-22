@@ -1,187 +1,71 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v4 2/2] Documentation: Add documentation for rt5033
- multifunction device
-Date: Thu, 22 Jan 2015 17:16:42 +0900
-Message-ID: <54C0B1EA.7030901@samsung.com>
-References: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
- <1421899601-19327-3-git-send-email-beomho.seo@samsung.com>
- <20150122074101.GK22024@x1>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
+Date: Thu, 22 Jan 2015 13:59:25 +0530
+Message-ID: <CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
+References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
+	<1421667844-13627-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150122074101.GK22024@x1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1421667844-13627-2-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/22/2015 04:41 PM, Lee Jones wrote:
-> On Thu, 22 Jan 2015, Beomho Seo wrote:
-> 
->> This patch device tree binding documentation for rt5033 multifunction device.
->>
->> Cc: Sebastian Reichel <sre@kernel.org>
->> Cc: Lee Jones <lee.jones@linaro.org>
->> Cc: Mark Brown <broonie@kernel.org>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Pawel Moll <pawel.moll@arm.com>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
->> Cc: Kumar Gala <galak@codeaurora.org>
->> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
->> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Acked-by: Lee Jones <lee.jones@linaro.org>
-> 
-> I did not Ack this patch.
-> 
-> Your new vendor bindings require a DT Ack.
-> 
-> Although, as the ones I'm concerned with are Regulator related, and
-> Ack from Mark Brown will also suffice.
-> 
+Hi Lukasz,
 
-I want to apologize for my mistake. I completely misunderstood your reply.
-Unfortunately, This patch merged by Sebastian at his git.
-Please tell me what to do.
+On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> The exynos_map_dt_data() function must be called before
+> thermal_zone_of_sensor_register(), and hence provide tmu_read() function,
+> before it is needed.
+>
+> This change is driven by adding support for enabling thermal_zoneX when
+> it is properly initialized.
+>
+> One can read the mode of operation at /sys/class/thermal/thermal_zone0/mode
+> Such functionality was missing in the of-thermal.c code.
+>
+> Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index 9d2d685..5d946ab 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>         platform_set_drvdata(pdev, data);
+>         mutex_init(&data->lock);
+>
+> +       ret = exynos_map_dt_data(pdev);
+> +       if (ret)
+> +               goto err_sensor;
+> +
+>         data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+>                                                     &exynos_sensor_ops);
+>         if (IS_ERR(data->tzd)) {
+>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
+>                 return PTR_ERR(data->tzd);
+>         }
+> -       ret = exynos_map_dt_data(pdev);
+> -       if (ret)
+> -               goto err_sensor;
+>
+>         pdata = data->pdata;
 
->> ---
->> Changes in v4
->> - none.
->> Changes in v3
->> - Add Acked-by
->> Changes in v2
->> - Fix incorrect typo.
->> - Align -uamp and -uvolt names with regulator binding suffixes.
->> - Drop incorrect phandle.
->> - Fix incorrect example.
->> ---
->>
->>  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++++++++++++++++++
->>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->>  2 files changed, 102 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->>
->> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Documentation/devicetree/bindings/mfd/rt5033.txt
->> new file mode 100644
->> index 0000000..64b23e8
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
->> @@ -0,0 +1,101 @@
->> +Richtek RT5033 Power management Integrated Circuit
->> +
->> +RT5033 is a Multifunction device which includes battery charger, fuel gauge,
->> +flash LED current source, LDO and synchronous Buck converter for portable
->> +applications. It is interfaced to host controller using i2c interface.
->> +
->> +Required properties:
->> +- compatible : Must be "richtek,rt5033"
->> +- reg : Specifies the i2c slave address of general part.
->> +- interrupts : This i2c devices has an IRQ line connected to the main SoC.
->> +- interrupt-parent : The parent interrupt controller.
->> +
->> +Optional node:
->> +Regulators: The regulators of RT5033 have to be instantiated under sub-node
->> +named "regulators" using the following format.
->> +
->> +	regulators {
->> +		regulator-name {
->> +			regulator-name = LDO/BUCK
->> +			regulator subnodes called X, Y and Z
->> +		};
->> +	};
->> +	refer Documentation/devicetree/bindings/regulator/regulator.txt
->> +
->> +
->> +Battery charger: There battery charger of RT5033 have to be instantiated under
->> +sub-node named "charger" using the following format.
->> +
->> +Required properties:
->> +- compatible : Must be "richtek,rt5033-charger".
->> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge current levels
->> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
->> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge current
->> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
->> +- richtek,eoc-uamp : This property is end of charge current. Its level 150 mA
->> +  to 200 mA.
->> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode. Battery
->> +  voltage is below pre-charge threshold voltage, the charger is in pre-charge
->> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V programmed
->> +  by I2C per 0.1 V.
->> +- richtek,const-uvolt :  Battery regulation voltage of constant voltage mode.
->> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
->> +
->> +	charger {
->> +		compatible = "richtek,rt5033-charger";
->> +		richtek,pre-uamp = <350000>;
->> +		richtek,fast-uamp = <2000000>;
->> +		richtek,eoc-uamp = <250000>;
->> +		richtek,pre-threshold-uvolt = <3400000>;
->> +		richtek,const-uvolt = <4350000>;
->> +
->> +	};
->> +
->> +
->> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "fuelgauge"
->> +using the following format.
->> +
->> +Required properties:
->> +- compatible = Must be "richtek,rt5033-battery".
->> +
->> +	rt5033@35 {
->> +		compatible = "richtek,rt5033-battery";
->> +		interrupt-parent = <&gpx2>;
->> +		interrupts = <3 0>;
->> +		reg = <0x35>;
->> +	};
->> +
->> +Example:
->> +
->> +		rt5033@34 {
->> +			compatible = "richtek,rt5033";
->> +			reg = <0x34>;
->> +			interrupt-parent = <&gpx1>;
->> +			interrupts = <5 0>;
->> +
->> +			regulators {
->> +				buck_reg: BUCK {
->> +					regulator-name = "BUCK";
->> +					regulator-min-microvolt = <1200000>;
->> +					regulator-max-microvolt = <1200000>;
->> +					regulator-always-on;
->> +				};
->> +			};
->> +
->> +			charger {
->> +				compatible = "richtek,rt5033-charger";
->> +				richtek,pre-uamp = <350000>;
->> +				richtek,fast-uamp = <2000000>;
->> +				richtek,eoc-uamp = <250000>;
->> +				richtek,pre-threshold-uvolt = <3400000>;
->> +				richtek,const-uvolt = <4350000>;
->> +			};
->> +
->> +		};
->> +
->> +		rt5033@35 {
->> +				compatible = "richtek,rt5033-battery";
->> +				interrupt-parent = <&gpx2>;
->> +				interrupts = <3 0>;
->> +				reg = <0x35>;
->> +		};
->> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
->> index b1df0ad..b6a2ca1 100644
->> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
->> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
->> @@ -134,6 +134,7 @@ ralink	Mediatek/Ralink Technology Corp.
->>  ramtron	Ramtron International
->>  realtek Realtek Semiconductor Corp.
->>  renesas	Renesas Electronics Corporation
->> +richtek	Richtek Technology Corporation
->>  ricoh	Ricoh Co. Ltd.
->>  rockchip	Fuzhou Rockchip Electronics Co., Ltd
->>  samsung	Samsung Semiconductor
-> 
+I have been testing this along with your v5 patch set and am seeing
+incorrect temperature being reported at boot-up on exynos7. It looks
+like exynos_tmu_read gets called from thermal_zone_of_device_update
+during boot-up, now that we have it populated early. However, as the
+tmu initialization function has not been called yet it returns a wrong
+value. Does that sound correct ?
 
-Thanks,
-Beomho Seo
+Regards,
+Abhilash
+>
+> --
+> 2.0.0.rc2
+>
