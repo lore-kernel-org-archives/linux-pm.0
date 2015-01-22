@@ -1,31 +1,104 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] treewide: Convert clockevents_notify to use int cpu
-Date: Thu, 22 Jan 2015 11:23:58 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1501221121570.5526@nanos>
-References: <1418254133.18092.22.camel@perches.com>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
+Date: Thu, 22 Jan 2015 18:02:07 +0530
+Message-ID: <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
+References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
+	<1421667844-13627-2-git-send-email-l.majewski@samsung.com>
+	<CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
+	<20150122100124.65e7a19e@amdc2363>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1418254133.18092.22.camel@perches.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org, linux-pm <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150122100124.65e7a19e@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 10 Dec 2014, Joe Perches wrote:
-> As far as I can tell, there's no value indirecting
-> the cpu passed to this function via a void *.
-> 
-> Update all the callers and called functions from within
-> clockevents_notify.
+Hi Lukasz,
 
-Aside of that there is no value for this 'notification' function at
-all. This should be seperate explicit calls. The notify function is a
-leftover from the original implementation which used actual notifier
-chains. I'll send out a cleanup series later today.
+On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Abhilash,
+>
+>> Hi Lukasz,
+>>
+>> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
+>> <l.majewski@samsung.com> wrote:
+>> > The exynos_map_dt_data() function must be called before
+>> > thermal_zone_of_sensor_register(), and hence provide tmu_read()
+>> > function, before it is needed.
+>> >
+>> > This change is driven by adding support for enabling thermal_zoneX
+>> > when it is properly initialized.
+>> >
+>> > One can read the mode of operation
+>> > at /sys/class/thermal/thermal_zone0/mode Such functionality was
+>> > missing in the of-thermal.c code.
+>> >
+>> > Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
+>> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>> > ---
+>> >  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
+>> >  1 file changed, 4 insertions(+), 3 deletions(-)
+>> >
+>> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+>> > b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab 100644
+>> > --- a/drivers/thermal/samsung/exynos_tmu.c
+>> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> > @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
+>> > platform_device *pdev) platform_set_drvdata(pdev, data);
+>> >         mutex_init(&data->lock);
+>> >
+>> > +       ret = exynos_map_dt_data(pdev);
+>> > +       if (ret)
+>> > +               goto err_sensor;
+>> > +
+>> >         data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0,
+>> > data, &exynos_sensor_ops);
+>> >         if (IS_ERR(data->tzd)) {
+>> >                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
+>> >                 return PTR_ERR(data->tzd);
+>> >         }
+>> > -       ret = exynos_map_dt_data(pdev);
+>> > -       if (ret)
+>> > -               goto err_sensor;
+>> >
+>> >         pdata = data->pdata;
+>>
+>> I have been testing this along with your v5 patch set and am seeing
+>> incorrect temperature being reported at boot-up on exynos7.
+>
+> Does it show a maximal temperature value (0x1FF)?
+
+I did not print the current temperature register, but I remember the
+message showing ~105C. Will give you the register value when I test
+with more debug prints tomorrow.
+
+>
+>>  It looks
+>> like exynos_tmu_read gets called from thermal_zone_of_device_update
+>> during boot-up, now that we have it populated early. However, as the
+>> tmu initialization function has not been called yet it returns a wrong
+>> value. Does that sound correct ?
+>
+> No, this is a mistake. However, I'm wondering why on Exynos4/5 this
+> error didn't show up...
+
+I have been lowering the software trip point temperature in the
+exynos7 dts file (to 55C) for testing purposes. Hence, when the
+temperature is read incorrectly as ~105C the board trips at boot-up
+itself. Maybe for exynos4/5 the incorrect value read during boot-up is
+in the non-tripping range and once the tmu is initialized later it
+continues to function properly thereafter ?
+
+>
+> The reordering is needed to be able to call set_mode callback at
+> of-thermal.c to set the mode.
+>
+> If this change causes problems, then another solution (probably not so
+> neat) must be found.
+
+Please let me know if you need any further details.
 
 Thanks,
-
-	tglx
-
-
+Abhilash
