@@ -1,204 +1,80 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 2/2] Documentation: Add documentation for rt5033
- multifunction device
-Date: Thu, 22 Jan 2015 07:41:01 +0000
-Message-ID: <20150122074101.GK22024@x1>
-References: <1421899601-19327-1-git-send-email-beomho.seo@samsung.com>
- <1421899601-19327-3-git-send-email-beomho.seo@samsung.com>
+Subject: Re: [PATCH v6 0/7] Add initial support for DA9150 Charger &
+ Fuel-Gauge IC
+Date: Thu, 22 Jan 2015 07:58:11 +0000
+Message-ID: <20150122075811.GO22024@x1>
+References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
+ <20150121165250.GG13715@earth.universe>
+ <C1079F30-5D1D-45AA-A129-FE1E68EA5DC5@jic23.retrosnub.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f182.google.com ([209.85.213.182]:50042 "EHLO
-	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbbAVHlJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jan 2015 02:41:09 -0500
-Received: by mail-ig0-f182.google.com with SMTP id r10so1104827igi.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2015 23:41:08 -0800 (PST)
+Received: from mail-ie0-f171.google.com ([209.85.223.171]:37910 "EHLO
+	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbbAVH6S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jan 2015 02:58:18 -0500
+Received: by mail-ie0-f171.google.com with SMTP id tr6so142210ieb.2
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2015 23:58:18 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1421899601-19327-3-git-send-email-beomho.seo@samsung.com>
+In-Reply-To: <C1079F30-5D1D-45AA-A129-FE1E68EA5DC5@jic23.retrosnub.co.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, lee.jone@linaro.org, broonie@kernel.org, dbaryshkov@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, cw00.choi@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+To: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
+Cc: Sebastian Reichel <sre@kernel.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Jonathan Cameron <jic23@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-On Thu, 22 Jan 2015, Beomho Seo wrote:
+On Wed, 21 Jan 2015, Jonathan Cameron wrote:
 
-> This patch device tree binding documentation for rt5033 multifunction=
- device.
 >=20
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-
-I did not Ack this patch.
-
-Your new vendor bindings require a DT Ack.
-
-Although, as the ones I'm concerned with are Regulator related, and
-Ack from Mark Brown will also suffice.
-
-> ---
-> Changes in v4
-> - none.
-> Changes in v3
-> - Add Acked-by
-> Changes in v2
-> - Fix incorrect typo.
-> - Align -uamp and -uvolt names with regulator binding suffixes.
-> - Drop incorrect phandle.
-> - Fix incorrect example.
-> ---
 >=20
->  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++++++++=
-++++++++++
->  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->  2 files changed, 102 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Docum=
-entation/devicetree/bindings/mfd/rt5033.txt
-> new file mode 100644
-> index 0000000..64b23e8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
-> @@ -0,0 +1,101 @@
-> +Richtek RT5033 Power management Integrated Circuit
-> +
-> +RT5033 is a Multifunction device which includes battery charger, fue=
-l gauge,
-> +flash LED current source, LDO and synchronous Buck converter for por=
-table
-> +applications. It is interfaced to host controller using i2c interfac=
-e.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033"
-> +- reg : Specifies the i2c slave address of general part.
-> +- interrupts : This i2c devices has an IRQ line connected to the mai=
-n SoC.
-> +- interrupt-parent : The parent interrupt controller.
-> +
-> +Optional node:
-> +Regulators: The regulators of RT5033 have to be instantiated under s=
-ub-node
-> +named "regulators" using the following format.
-> +
-> +	regulators {
-> +		regulator-name {
-> +			regulator-name =3D LDO/BUCK
-> +			regulator subnodes called X, Y and Z
-> +		};
-> +	};
-> +	refer Documentation/devicetree/bindings/regulator/regulator.txt
-> +
-> +
-> +Battery charger: There battery charger of RT5033 have to be instanti=
-ated under
-> +sub-node named "charger" using the following format.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033-charger".
-> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge curr=
-ent levels
-> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
-> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge c=
-urrent
-> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
-> +- richtek,eoc-uamp : This property is end of charge current. Its lev=
-el 150 mA
-> +  to 200 mA.
-> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode=
-=2E Battery
-> +  voltage is below pre-charge threshold voltage, the charger is in p=
-re-charge
-> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V progr=
-ammed
-> +  by I2C per 0.1 V.
-> +- richtek,const-uvolt :  Battery regulation voltage of constant volt=
-age mode.
-> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
-> +
-> +	charger {
-> +		compatible =3D "richtek,rt5033-charger";
-> +		richtek,pre-uamp =3D <350000>;
-> +		richtek,fast-uamp =3D <2000000>;
-> +		richtek,eoc-uamp =3D <250000>;
-> +		richtek,pre-threshold-uvolt =3D <3400000>;
-> +		richtek,const-uvolt =3D <4350000>;
-> +
-> +	};
-> +
-> +
-> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "=
-fuelgauge"
-> +using the following format.
-> +
-> +Required properties:
-> +- compatible =3D Must be "richtek,rt5033-battery".
-> +
-> +	rt5033@35 {
-> +		compatible =3D "richtek,rt5033-battery";
-> +		interrupt-parent =3D <&gpx2>;
-> +		interrupts =3D <3 0>;
-> +		reg =3D <0x35>;
-> +	};
-> +
-> +Example:
-> +
-> +		rt5033@34 {
-> +			compatible =3D "richtek,rt5033";
-> +			reg =3D <0x34>;
-> +			interrupt-parent =3D <&gpx1>;
-> +			interrupts =3D <5 0>;
-> +
-> +			regulators {
-> +				buck_reg: BUCK {
-> +					regulator-name =3D "BUCK";
-> +					regulator-min-microvolt =3D <1200000>;
-> +					regulator-max-microvolt =3D <1200000>;
-> +					regulator-always-on;
-> +				};
-> +			};
-> +
-> +			charger {
-> +				compatible =3D "richtek,rt5033-charger";
-> +				richtek,pre-uamp =3D <350000>;
-> +				richtek,fast-uamp =3D <2000000>;
-> +				richtek,eoc-uamp =3D <250000>;
-> +				richtek,pre-threshold-uvolt =3D <3400000>;
-> +				richtek,const-uvolt =3D <4350000>;
-> +			};
-> +
-> +		};
-> +
-> +		rt5033@35 {
-> +				compatible =3D "richtek,rt5033-battery";
-> +				interrupt-parent =3D <&gpx2>;
-> +				interrupts =3D <3 0>;
-> +				reg =3D <0x35>;
-> +		};
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/=
-Documentation/devicetree/bindings/vendor-prefixes.txt
-> index b1df0ad..b6a2ca1 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -134,6 +134,7 @@ ralink	Mediatek/Ralink Technology Corp.
->  ramtron	Ramtron International
->  realtek Realtek Semiconductor Corp.
->  renesas	Renesas Electronics Corporation
-> +richtek	Richtek Technology Corporation
->  ricoh	Ricoh Co. Ltd.
->  rockchip	Fuzhou Rockchip Electronics Co., Ltd
->  samsung	Samsung Semiconductor
+> On 21 January 2015 16:52:50 GMT+00:00, Sebastian Reichel <sre@kernel.=
+org> wrote:
+> >Hi,
+> >
+> >On Wed, Jan 21, 2015 at 03:46:25PM +0000, Adam Thomson wrote:
+> >> This patch set adds initial support for the Dialog DA9150 Integrat=
+ed
+> >Charger &
+> >> Fuel-Gauge IC. The device also provides GPIO and GPADC functionali=
+ty.
+> >>=20
+> >> In this patch set the following is provided:
+> >>  - MFD Core support and DT bindings documentation.
+> >>  - IIO GPADC support and DT bindings documentation.
+> >>  - Power Supply Charger support and DT bindings documentation.
+> >>  - Update to MAINTAINERS file to add DA9150 files to Dialog suppor=
+t
+> >list.
+> >>=20
+> >> To keep patch submission from being too large, support for GPIO an=
+d
+> >Fuel-Gauge
+> >> will come after initial support patches are accepted.
+> >>=20
+> >> This patch set is baselined against the v3.19-rc5 kernel version.
+> >>=20
+> >> Changes in v6:
+> >> - For GPADC driver, Use lower case extended names for IIO GPADC
+> >channels, and
+> >>   remove extended names for GPIO related channels.
+> >> - For charger driver, revert to no devm IRQ request/free functions=
+ as
+> >ordering
+> >>   is important, and probe failure scenario was not being correctly
+> >covered. A
+> >>   helper function for free IRQs has been added to make code cleane=
+r.
+> >
+> >Probably a devm_ variant of power_supply_register should be created,
+> >but for now this is ok for me.
+> >
+> >Jonathan, Lee: I assume you are ok with the whole patchset going
+> >through the power supply subsystem?
+> >
+> Fine by me if either power supply or MFD.
+
+I am, but there is a lot of MFD code here, so I'd like to take it in
+as well.  I'd like a tagged pull-request from Sebastian.
 
 --=20
 Lee Jones
