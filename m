@@ -1,226 +1,191 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Fri, 23 Jan 2015 09:46:47 -0800
-Message-ID: <5340dc237cfc4d48895a01087c3ffa4c@BL2FFO11FD015.protection.gbl>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com>
- <1025ebd0a9984037bf15adf3ae4889d9@BN1BFFO11FD013.protection.gbl>
- <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl>
- <12360948.gSvRbI0dui@vostro.rjw.lan>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH][v3] PCI / PM: Avoid resuming PCI devices during system suspend
+Date: Fri, 23 Jan 2015 14:55:25 -0600
+Message-ID: <CAErSpo6CFNBWp_CDZQc3XmCFzR5nEjWSfLSVG5c549pEHn4g4Q@mail.gmail.com>
+References: <1460212.bInrzeZle0@vostro.rjw.lan> <1520491.dCOodSBFV9@vostro.rjw.lan>
+ <20035664.sy5Q5n4bIK@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <12360948.gSvRbI0dui@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20035664.sy5Q5n4bIK@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2015-01-12 at 12:20AM +0100, Rafael J. Wysocki wrote:
-> On Friday, January 09, 2015 01:50:59 PM S=C3=B6ren Brinkmann wrote:
-> > On Sat, 2014-11-08 at 03:56PM -0800, S=C3=B6ren Brinkmann wrote:
-> > > Hi Rafael,
-> > >=20
-> > > On Thu, 2014-11-06 at 01:33AM +0100, Rafael J. Wysocki wrote:
-> > > > On Thursday, October 02, 2014 09:01:15 AM S=C3=B6ren Brinkmann =
-wrote:
-> > > > > Hi Rafael,
-> > > >=20
-> > > > Hi,
-> > > >=20
-> > > > Sorry for the huge delay.
-> > > >=20
-> > > > > On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
-> > > > > > On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann w=
-rote:
-> > > > > > > On platforms that do not power off during suspend, succes=
-sfully entering
-> > > > > > > suspend races with timers.
-> > > > > > >=20
-> > > > > > > The race happening in a couple of location is:
-> > > > > > >=20
-> > > > > > >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> > > > > > >      ...
-> > > > > > >   2. syscore_suspend()
-> > > > > > >       -> timekeeping_suspend()
-> > > > > > >        -> clockevents_notify(SUSPEND)
-> > > > > > >         -> tick_suspend()   	(timers are turned off here)
-> > > > > > >      ...
-> > > > > > >   3. wfi            		(wait for wake-IRQ here)
-> > > > > > >=20
-> > > > > > > Between steps 1 and 2 the timers can still generate inter=
-rupts that are
-> > > > > > > not handled and stay pending until step 3. That pending I=
-RQ causes an
-> > > > > > > immediate - spurious - wake.
-> > > > > > >=20
-> > > > > > > The solution is to move the clockevents suspend/resume no=
-tification
-> > > > > > > out of the syscore_suspend step and explictly call them a=
-t the appropriate
-> > > > > > > time in the suspend/hibernation paths. I.e. timers are su=
-spend _before_
-> > > > > > > IRQs get disabled. And accordingly in the resume path.
-> > > > > > >=20
-> > > > > > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.co=
-m>
-> > > > > > > ---
-> > > > > > > Hi,
-> > > > > > >=20
-> > > > > > > there was not a lot of discussion on the last submission.=
- Just one comment from
-> > > > > > > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as =
-I outlined in my
-> > > > > > > response, does not apply, IMHO, since the platform does n=
-ot re-enable
-> > > > > > > interrupts.
-> > > > > >=20
-> > > > > > Well, you just don't agree with it.
-> > > > > >=20
-> > > > > > The problem with your approach is that timer interrupts are=
-n't actually as
-> > > > > > special as you think and any other IRQF_NO_SUSPEND interrup=
-ts would have caused
-> > > > > > similar issues to appear under specific conditions.
-> > > > > >=20
-> > > > > > The solution I would suggest and that actually covers all I=
-RQF_NO_SUSPEND
-> > > > > > interrupts would be to use a wait_event() loop like the one=
- in freeze_enter()
-> > > > > > (on top of the current linux-next or the pm-genirq branch o=
-f linux-pm.git),
-> > > > > > but wait for pm_abort_suspend to become true, to implement =
-system suspend.
-> > > > >=20
-> > > > > sorry, it took me a while since I needed to get some dependen=
-cies ported
-> > > > > to the pm-genirq base. Once I had that, it reproduced my orig=
-inal issue.
-> > > > > So far so good. I then looked into finding a solution followi=
-ng your
-> > > > > guidance. I'm not sure I really found what you had in mind, b=
-ut below is
-> > > > > what I came up with, which seems to do it.
-> > > > > Please let me know how far off I am.
-> > > > >=20
-> > > > > 	Thanks,
-> > > > > 	S=C3=B6ren
-> > > > >=20
-> > > > > -------8<------------------8<----------------8<--------------=
---8<---------------
-> > > > > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power=
-/wakeup.c
-> > > > > index c2744b30d5d9..a4f9914571f1 100644
-> > > > > --- a/drivers/base/power/wakeup.c
-> > > > > +++ b/drivers/base/power/wakeup.c
-> > > > > @@ -25,7 +25,7 @@
-> > > > >  bool events_check_enabled __read_mostly;
-> > > > > =20
-> > > > >  /* If set and the system is suspending, terminate the suspen=
-d. */
-> > > > > -static bool pm_abort_suspend __read_mostly;
-> > > > > +bool pm_abort_suspend __read_mostly;
-> > > > > =20
-> > > > >  /*
-> > > > >   * Combined counters of registered wakeup events and wakeup =
-events in progress.
-> > > > > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > > > > index 6dadb25cb0d8..e6a6de8f76d0 100644
-> > > > > --- a/kernel/power/suspend.c
-> > > > > +++ b/kernel/power/suspend.c
-> > > > > @@ -33,6 +33,7 @@
-> > > > > =20
-> > > > >  static const char *pm_labels[] =3D { "mem", "standby", "free=
-ze", };
-> > > > >  const char *pm_states[PM_SUSPEND_MAX];
-> > > > > +extern bool pm_abort_suspend;
-> > > > > =20
-> > > > >  static const struct platform_suspend_ops *suspend_ops;
-> > > > >  static const struct platform_freeze_ops *freeze_ops;
-> > > > > @@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_=
-t state, bool *wakeup)
-> > > > >  	if (error || suspend_test(TEST_CPUS))
-> > > > >  		goto Enable_cpus;
-> > > > > =20
-> > > > > -	arch_suspend_disable_irqs();
-> > > > > -	BUG_ON(!irqs_disabled());
-> > > > > -
-> > > > > -	error =3D syscore_suspend();
-> > > > > -	if (!error) {
-> > > > > -		*wakeup =3D pm_wakeup_pending();
-> > > > > -		if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> > > > > -			trace_suspend_resume(TPS("machine_suspend"),
-> > > > > -				state, true);
-> > > > > -			error =3D suspend_ops->enter(state);
-> > > > > -			trace_suspend_resume(TPS("machine_suspend"),
-> > > > > -				state, false);
-> > > > > -			events_check_enabled =3D false;
-> > > > > +	while (!pm_abort_suspend) {
-> > > >=20
-> > > > That won't work in general, because pm_abort_suspend may not be=
- set on some
-> > > > platforms on wakeup.  It is only set if a wakeup interrupt trig=
-gers which
-> > > > may not be the case on ACPI systems if the BIOS has woken up th=
-e system.
-> > > >=20
-> > > > But that could be addressed by making those platforms simply se=
-t pm_wakeup_pending
-> > > > in their BIOS exit path.
-> > > >=20
-> > > > > +		arch_suspend_disable_irqs();
-> > > > > +		BUG_ON(!irqs_disabled());
-> > > > > +
-> > > > > +		error =3D syscore_suspend();
-> > > >=20
-> > > > Also it shouldn't be necessary to do syscore_suspend()/syscore_=
-resume() in
-> > > > every iteration of the loop.
-> > > >=20
-> > > > > +		if (!error) {
-> > > > > +			*wakeup =3D pm_wakeup_pending();
-> > > >=20
-> > > > Plus pm_wakeup_pending() returns true if pm_abort_suspend is se=
-t
-> > > >=20
-> > > > > +			if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> > > > > +				trace_suspend_resume(TPS("machine_suspend"),
-> > > > > +					state, true);
-> > > >=20
-> > > > Did you try to add the loop here instead of above?  Like:
-> > > >=20
-> > > > 			for (;;) {
-> > > > 				*wakeup =3D pm_wakeup_pending();
-> > > > 				if (*wakeup)
-> > > > 					break;
-> > >=20
-> > > I think, that doesn't work. I chose the start/end points of the l=
-oop
-> > > to include the IRQ enable/disable calls. AFAICT, pm_abort_suspend=
- is
-> > > set in an ISR. Without enabling interrupts the abort condition of
-> > > this loop never becomes true.
-> >=20
-> > Any further ideas how to resolve this?
->=20
-> Sorry about the delay, lost track of this.
->=20
-> You're right, the IRQ disabling/enabling needs to happen in the loop.
->=20
-> So the direction of the patch looks OK, but it needs to ensure that p=
-m_wakeup_pending
-> is set properly by all platforms.  Also it should be sufficient to ch=
-eck
-> pm_wakeup_pending() to detect wakeup.
->=20
-> Have you tested the patch?=20
+On Tue, Jan 20, 2015 at 7:17 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
+> domain during system suspend) modified the ACPI PM domain's system
+> suspend callbacks to allow devices attached to it to be left in the
+> runtime-suspended state during system suspend so as to optimize
+> the suspend process.
+>
+> This was based on the general mechanism introduced by commit
+> aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
+> devices unnecessarily).
+>
+> Extend that approach to PCI devices by modifying the PCI bus type's
+> ->prepare callback to return 1 for devices that are runtime-suspended
+> when it is being executed and that are in a suitable power state and
+> need not be resumed going forward.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I have to look into this, rebase my stuff and test again. May take a
-while, but I'll stay on it.
-Regarding testing: I don't have platforms to really test this on other
-than my Zynq platforms where I see this issue on. It worked for me
-there, but rebasing just broke something.
+I don't profess to understand this, and it seems like something you
+could merge via your PM tree.  So I trust you to do the right thing
+with it :)
 
-	Thanks,
-	S=C3=B6ren
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+> ---
+>
+> This version actually builds and need not be an RFC any more I suppose.
+>
+> ---
+>  drivers/pci/pci-acpi.c   |   17 +++++++++++++++++
+>  drivers/pci/pci-driver.c |   11 ++++++-----
+>  drivers/pci/pci.c        |   26 ++++++++++++++++++++++++++
+>  drivers/pci/pci.h        |    6 ++++++
+>  4 files changed, 55 insertions(+), 5 deletions(-)
+>
+> Index: linux-pm/drivers/pci/pci.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci.c
+> +++ linux-pm/drivers/pci/pci.c
+> @@ -521,6 +521,11 @@ static inline int platform_pci_run_wake(
+>                         pci_platform_pm->run_wake(dev, enable) : -ENODEV;
+>  }
+>
+> +static inline bool platform_pci_need_resume(struct pci_dev *dev)
+> +{
+> +       return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
+> +}
+> +
+>  /**
+>   * pci_raw_set_power_state - Use PCI PM registers to set the power state of
+>   *                           given PCI device
+> @@ -1999,6 +2004,27 @@ bool pci_dev_run_wake(struct pci_dev *de
+>  }
+>  EXPORT_SYMBOL_GPL(pci_dev_run_wake);
+>
+> +/**
+> + * pci_dev_keep_suspended - Check if the device can stay in the suspended state.
+> + * @pci_dev: Device to check.
+> + *
+> + * Return 'true' if the device is runtime-suspended, it doesn't have to be
+> + * reconfigured due to wakeup settings difference between system and runtime
+> + * suspend and the current power state of it is suitable for the upcoming
+> + * (system) transition.
+> + */
+> +bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
+> +{
+> +       struct device *dev = &pci_dev->dev;
+> +
+> +       if (!pm_runtime_suspended(dev)
+> +           || (device_can_wakeup(dev) && !device_may_wakeup(dev))
+> +           || platform_pci_need_resume(pci_dev))
+> +               return false;
+> +
+> +       return pci_target_state(pci_dev) == pci_dev->current_state;
+> +}
+> +
+>  void pci_config_pm_runtime_get(struct pci_dev *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+> Index: linux-pm/drivers/pci/pci.h
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci.h
+> +++ linux-pm/drivers/pci/pci.h
+> @@ -50,6 +50,10 @@ int pci_probe_reset_function(struct pci_
+>   *             for given device (the device's wake-up capability has to be
+>   *             enabled by @sleep_wake for this feature to work)
+>   *
+> + * @need_resume: returns 'true' if the given device (which is currently
+> + *             suspended) needs to be resumed to be configured for system
+> + *             wakeup.
+> + *
+>   * If given platform is generally capable of power managing PCI devices, all of
+>   * these callbacks are mandatory.
+>   */
+> @@ -59,6 +63,7 @@ struct pci_platform_pm_ops {
+>         pci_power_t (*choose_state)(struct pci_dev *dev);
+>         int (*sleep_wake)(struct pci_dev *dev, bool enable);
+>         int (*run_wake)(struct pci_dev *dev, bool enable);
+> +       bool (*need_resume)(struct pci_dev *dev);
+>  };
+>
+>  int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+> @@ -67,6 +72,7 @@ void pci_power_up(struct pci_dev *dev);
+>  void pci_disable_enabled_device(struct pci_dev *dev);
+>  int pci_finish_runtime_suspend(struct pci_dev *dev);
+>  int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
+> +bool pci_dev_keep_suspended(struct pci_dev *dev);
+>  void pci_config_pm_runtime_get(struct pci_dev *dev);
+>  void pci_config_pm_runtime_put(struct pci_dev *dev);
+>  void pci_pm_init(struct pci_dev *dev);
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -501,12 +501,29 @@ static int acpi_pci_run_wake(struct pci_
+>         return 0;
+>  }
+>
+> +static bool acpi_pci_need_resume(struct pci_dev *dev)
+> +{
+> +       struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+> +
+> +       if (!adev || !acpi_device_power_manageable(adev))
+> +               return false;
+> +
+> +       if (device_may_wakeup(&dev->dev) != !!adev->wakeup.prepare_count)
+> +               return true;
+> +
+> +       if (acpi_target_system_state() == ACPI_STATE_S0)
+> +               return false;
+> +
+> +       return !!adev->power.flags.dsw_present;
+> +}
+> +
+>  static struct pci_platform_pm_ops acpi_pci_platform_pm = {
+>         .is_manageable = acpi_pci_power_manageable,
+>         .set_state = acpi_pci_set_power_state,
+>         .choose_state = acpi_pci_choose_state,
+>         .sleep_wake = acpi_pci_sleep_wake,
+>         .run_wake = acpi_pci_run_wake,
+> +       .need_resume = acpi_pci_need_resume,
+>  };
+>
+>  void acpi_pci_add_bus(struct pci_bus *bus)
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -653,7 +653,6 @@ static bool pci_has_legacy_pm_support(st
+>  static int pci_pm_prepare(struct device *dev)
+>  {
+>         struct device_driver *drv = dev->driver;
+> -       int error = 0;
+>
+>         /*
+>          * Devices having power.ignore_children set may still be necessary for
+> @@ -662,10 +661,12 @@ static int pci_pm_prepare(struct device
+>         if (dev->power.ignore_children)
+>                 pm_runtime_resume(dev);
+>
+> -       if (drv && drv->pm && drv->pm->prepare)
+> -               error = drv->pm->prepare(dev);
+> -
+> -       return error;
+> +       if (drv && drv->pm && drv->pm->prepare) {
+> +               int error = drv->pm->prepare(dev);
+> +               if (error)
+> +                       return error;
+> +       }
+> +       return pci_dev_keep_suspended(to_pci_dev(dev));
+>  }
+>
+>
+>
