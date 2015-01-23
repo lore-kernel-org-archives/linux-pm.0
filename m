@@ -1,74 +1,79 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v3/resend 3/4] drivers: bus: Add Simple Power-Managed Bus DT Bindings
-Date: Thu, 22 Jan 2015 14:42:08 -0800
-Message-ID: <7hvbjy30an.fsf@deeprootsystems.com>
-References: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
-	<1421919253-4784-4-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: cpuidle/powernv: Read target_residency value of idle states from DT if available
+Date: Fri, 23 Jan 2015 15:59:06 +1100 (AEDT)
+Message-ID: <20150123045906.D0086140297@ozlabs.org>
+References: <54BE3B79.9070004@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34730 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbbAVWmP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jan 2015 17:42:15 -0500
-Received: by mail-pa0-f53.google.com with SMTP id kx10so1834754pab.12
-        for <linux-pm@vger.kernel.org>; Thu, 22 Jan 2015 14:42:14 -0800 (PST)
-In-Reply-To: <1421919253-4784-4-git-send-email-geert+renesas@glider.be> (Geert
-	Uytterhoeven's message of "Thu, 22 Jan 2015 10:34:12 +0100")
+Received: from ozlabs.org ([103.22.144.67]:58140 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751435AbbAWE7I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Jan 2015 23:59:08 -0500
+In-Reply-To: <54BE3B79.9070004@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, rafael.j.wysocki@intel.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Geert Uytterhoeven <geert+renesas@glider.be> writes:
+On Tue, 2015-20-01 at 11:26:49 UTC, Preeti U Murthy wrote:
+> @@ -177,34 +178,39 @@ static int powernv_add_idle_states(void)
+>  		return nr_idle_states;
+>  	}
+>  
+> -	idle_state_latency = of_get_property(power_mgt,
+> -			"ibm,cpu-idle-state-latencies-ns", NULL);
+> -	if (!idle_state_latency) {
+> +	dt_idle_states = len_flags / sizeof(u32);
+> +
+> +	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
+> +	rc = of_property_read_u32(power_mgt,
+> +			"ibm,cpu-idle-state-latencies-ns", latency_ns);
 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
-> ---
-> v3:
->   - Add Tested-by,
->   - Document required properties inherited from "simple-bus",
->   - Document required "reg" property for "renesas,bsc",
->   - Move "ranges" before "reg" in the example,
->
-> v2:
->   - New.
-> ---
->  .../devicetree/bindings/bus/simple-pm-bus.txt      | 52 ++++++++++++++++++++++
->  1 file changed, 52 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
->
-> diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
-> new file mode 100644
-> index 0000000000000000..d03abf7fd8e3997a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
-> @@ -0,0 +1,52 @@
-> +Simple Power-Managed Bus
-> +========================
-> +
-> +A Simple Power-Managed Bus is a transparent bus that doesn't need a real
-> +driver, as it's typically initialized by the boot loader.
-> +
-> +However, its bus controller is part of a PM domain, or under the control of a
-> +functional clock.  Hence, the bus controller's PM domain and/or clock must be
-> +enabled for child devices connected to the bus (either on-SoC or externally)
-> +to function.
-> +
-> +
-> +Generic compatible values and properties
-> +----------------------------------------
-> +
-> +Required properties:
-> +  - compatible: Must be at least one of the vendor-specific compatible values
-> +		from a vendor-specific section below, and "simple-bus" as a
-> +		fallback.
+That's only reading the first value.
 
-What happened to the idea of using something like "simple-pm-bus"?
+If you want to read the full property you need the _array version.
 
-There's nothing vendor-specific in the driver at all, so the
-vendor-specific binding seem like clutter to me and will result in
-continuing to add vendor-specific compatibles without any
-vendor-specific code.
+> +	if (rc) {
+>  		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
 
-Kevin
+You missed my hint that "DT-PowerMgmt" is a weird and ugly prefix. Can you use
+"cpuidle-powernv:" instead?
+
+>  
+> -	dt_idle_states = len_flags / sizeof(u32);
+> +	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
+> +	rc = of_property_read_u32(power_mgt,
+> +			"ibm,cpu-idle-state-residency-ns", residency_ns);
+> +	if (rc) {
+> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
+> +		pr_warn("Falling back to default values\n");
+
+I don't think this is worth a warning seeing as we know there are firmwares out
+there which do not have the property.
+
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  
+>  		flags = be32_to_cpu(idle_state_flags[i]);
+> -
+> -		/* Cpuidle accepts exit_latency in us and we estimate
+> -		 * target residency to be 10x exit_latency
+> +		/*
+> +		 * Cpuidle accepts exit_latency and target_residency in us.
+> +		 * Use default target_residency values if f/w does not expose it.
+>  		 */
+> -		latency_ns = be32_to_cpu(idle_state_latency[i]);
+>  		if (flags & OPAL_PM_NAP_ENABLED) {
+>  			/* Add NAP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "Nap");
+>  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+>  			powernv_states[nr_idle_states].flags = 0;
+> -			powernv_states[nr_idle_states].exit_latency =
+> -					((unsigned int)latency_ns) / 1000;
+> -			powernv_states[nr_idle_states].target_residency =
+> -					((unsigned int)latency_ns / 100);
+> +			powernv_states[nr_idle_states].target_residency = 100;
+>  			powernv_states[nr_idle_states].enter = &nap_loop;
+> -			nr_idle_states++;
+
+That looks wrong? Or do you mean to do that?
+
+cheers
