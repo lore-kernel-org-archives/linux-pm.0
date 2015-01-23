@@ -1,95 +1,85 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v6 08/18] cpufreq: exynos: Use device tree to determine if
- cpufreq cooling should be registered
-Date: Fri, 23 Jan 2015 13:14:20 +0100
-Message-ID: <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
+From: "Tobias Jakobi" <Liquid.Acid@gmx.net>
+Subject: Aw: [PATCH v6 05/18] arm: dts: odroid: Enable TMU at Exynos4412
+ based Odroid U3 device
+Date: Fri, 23 Jan 2015 13:23:21 +0100
+Message-ID: <trinity-4494e7a2-16bf-4a95-9dc2-a9bcd04f845a-1422015801467@3capp-gmx-bs08>
 References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+ <1422015010-11918-1-git-send-email-l.majewski@samsung.com>,
+ <1422015010-11918-6-git-send-email-l.majewski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+In-Reply-To: <1422015010-11918-6-git-send-email-l.majewski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-With thermal subsystem rework it is necessary to tune current cpufreq code
-to use cpu frequency change as a potential cooling device.
+Hello,
 
-Now the cpu cooling device is registered only when proper nodes and properties
-are available in device tree. Lack of them, however, will not prevent
-cpufreq for normal operation.
+just a small nit concerning the patch subject. Shouldn't it be "Enable =
+TMU on Exynos4412 based Odroid devices" (since it's not just for the U3=
+)?
+
+With best wishes,
+Tobias
+=C2=A0
+
+Gesendet:=C2=A0Freitag, 23. Januar 2015 um 13:09 Uhr
+Von:=C2=A0"Lukasz Majewski" <l.majewski@samsung.com>
+An:=C2=A0"Eduardo Valentin" <edubezval@gmail.com>, "Zhang Rui" <rui.zha=
+ng@intel.com>, "Kukjin Kim" <kgene.kim@samsung.com>, "Kukjin Kim" <kgen=
+e@kernel.org>
+Cc:=C2=A0"Linux PM list" <linux-pm@vger.kernel.org>, "linux-samsung-soc=
+@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "Bartlomiej Zoln=
+ierkiewicz" <b.zolnierkie@samsung.com>, "Lukasz Majewski" <l.majewski@m=
+ajess.pl>, "Amit Daniel Kachhap" <amit.daniel@samsung.com>, "Abhilash K=
+esavan" <kesavan.abhilash@gmail.com>, "Abhilash Kesavan" <a.kesavan@sam=
+sung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>, "Viresh Kumar" <vire=
+sh.kumar@linaro.org>, "Lukasz Majewski" <l.majewski@samsung.com>
+Betreff:=C2=A0[PATCH v6 05/18] arm: dts: odroid: Enable TMU at Exynos44=
+12 based Odroid U3 device
+This commit enables TMU IP block on the Exynos4412 Odroid U3
+device.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
+Changes for v2:
+- None
+Changes for v3:
+- None
+Changes for v4:
+- Rename patch title from "thermal: dts:" to "arm: dts: odroid"
+Changes for v5:
+- None
 Changes for v6:
-- New patch
-
+- None
 ---
- drivers/cpufreq/exynos-cpufreq.c | 33 ++++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 5 +++++
+1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f99a0b0..5e98c6b 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -18,10 +18,13 @@
- #include <linux/cpufreq.h>
- #include <linux/platform_device.h>
- #include <linux/of.h>
-+#include <linux/cpu_cooling.h>
-+#include <linux/cpu.h>
- 
- #include "exynos-cpufreq.h"
- 
- static struct exynos_dvfs_info *exynos_info;
-+static struct thermal_cooling_device *cdev;
- static struct regulator *arm_regulator;
- static unsigned int locking_frequency;
- 
-@@ -156,6 +159,7 @@ static struct cpufreq_driver exynos_driver = {
- 
- static int exynos_cpufreq_probe(struct platform_device *pdev)
- {
-+	struct device_node *cpus, *np;
- 	int ret = -EINVAL;
- 
- 	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
-@@ -198,9 +202,36 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 	/* Done here as we want to capture boot frequency */
- 	locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
- 
--	if (!cpufreq_register_driver(&exynos_driver))
-+	ret = cpufreq_register_driver(&exynos_driver);
-+	if (ret)
-+		goto err_cpufreq_reg;
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm=
+/boot/dts/exynos4412-odroid-common.dtsi
+index 0adb57c..c7517fc 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -396,6 +396,11 @@
+ehci: ehci@12580000 {
+status =3D "okay";
+};
 +
-+	cpus = of_find_node_by_path("/cpus");
-+	if (!cpus) {
-+		pr_err("failed to find cpus node\n");
-+		return 0;
-+	}
-+
-+	np = of_get_next_child(cpus, NULL);
-+	if (!np) {
-+		pr_err("failed to find cpus child node\n");
-+		of_node_put(cpus);
- 		return 0;
-+	}
-+
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		cdev = of_cpufreq_cooling_register(np,
-+						   cpu_present_mask);
-+		if (IS_ERR(cdev))
-+			pr_err("running cpufreq without cooling device: %ld\n",
-+			       PTR_ERR(cdev));
-+	}
-+	of_node_put(np);
-+	of_node_put(cpus);
-+
-+	return 0;
- 
-+err_cpufreq_reg:
- 	dev_err(&pdev->dev, "failed to register cpufreq driver\n");
- 	regulator_put(arm_regulator);
- err_vdd_arm:
--- 
++ tmu@100C0000 {
++ vtmu-supply =3D <&ldo10_reg>;
++ status =3D "okay";
++ };
+};
+
+&pinctrl_1 {
+--
 2.0.0.rc2
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-samsung=
+-soc" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at http://vger.kernel.org/majordomo-info.html
