@@ -1,177 +1,1112 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 1/2] power: reset: add driver for Hardkernel's Odroid boards
-Date: Fri, 23 Jan 2015 12:11:22 +0100
-Message-ID: <54C22C5A.9050701@samsung.com>
-References: <1414588409-8065-1-git-send-email-m.szyprowski@samsung.com>
- <20150122010631.GL13715@earth.universe> <54C05373.60308@samsung.com>
+From: Jaewon Kim <jaewon02.kim@samsung.com>
+Subject: Re: [PATCH 2/6] extcon: max77843: Add max77843 MUIC driver
+Date: Fri, 23 Jan 2015 20:17:31 +0900
+Message-ID: <54C22DCB.8050704@samsung.com>
+References: <1421989367-32721-1-git-send-email-jaewon02.kim@samsung.com>
+ <1421989367-32721-3-git-send-email-jaewon02.kim@samsung.com>
+ <54C1E853.2020105@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:50195 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbbAWLL0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 06:11:26 -0500
-In-reply-to: <54C05373.60308@samsung.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:34368 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751795AbbAWLRe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 06:17:34 -0500
+In-reply-to: <54C1E853.2020105@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joonyoung Shim <jy0922.shim@samsung.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Tobias Jakobi <Liquid.Acid@gmx.net>, Daniel Drake <drake@endlessm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
-Hello,
+Hi Chanwoo,
 
-On 2015-01-22 02:33, Joonyoung Shim wrote:
-> On 01/22/2015 10:06 AM, Sebastian Reichel wrote:
->> On Wed, Oct 29, 2014 at 02:13:28PM +0100, Marek Szyprowski wrote:
->>> This patch adds a driver implementing correct reboot and poweroff
->>> procedures for Exynos4412-based Hardkernel's Odroid X/X2/U2/U3/U3+
->>> boards.
->> Sorry it took so long. I have a couple of small requests before
->> applying this (comments inline).
->>
->>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>> ---
->>>   .../bindings/power/reset/odroid-reset.txt          |  18 ++++
->>>   drivers/power/reset/Kconfig                        |   6 ++
->>>   drivers/power/reset/Makefile                       |   1 +
->>>   drivers/power/reset/odroid-reboot.c                | 119 +++++++++++++++++++++
->>>   4 files changed, 144 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->>>   create mode 100644 drivers/power/reset/odroid-reboot.c
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/reset/odroid-reset.txt b/Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->>> new file mode 100644
->>> index 000000000000..86471a463518
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/power/reset/odroid-reset.txt
->>> @@ -0,0 +1,18 @@
->>> +* Device tree bindings for Hardkernel's Exynos4412 based Odroid boards
->>> +
->>> +This node is intended to allow proper system reboot and power off of
->>> +Odroid X/X2/U2/U3/U3+ boards with eMMC storage. Without this node, board
->>> +hangs during standard reset procedure.
->>> +
->>> +Required properties:
->>> +- compatible:			hardkernel,odroid-reboot
->>> +- samsung,pmureg-phandle:	phandle to Exynos PMU node
->>> +- reset-gpios:			phandle and gpio-specifier to the GPIO pin
->>> +				connected to the eMMC_nDET
->>> +
->>> +Example:
->>> +odroid_reboot {
->>> +	compatible = "hardkernel,odroid-reboot";
->>> +	samsung,pmureg-phandle = <&pmu_system_controller>;
->>> +	reset-gpio = <&gpk1 2 0>;
->>> +};
->>> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
->>> index f65ff49bb275..f02b13d5344f 100644
->>> --- a/drivers/power/reset/Kconfig
->>> +++ b/drivers/power/reset/Kconfig
->>> @@ -84,6 +84,12 @@ config POWER_RESET_LTC2952
->>>   	  This driver supports an external powerdown trigger and board power
->>>   	  down via the LTC2952. Bindings are made in the device tree.
->>>   
->>> +config POWER_RESET_ODROID
->>> +	bool "Hardkernel's Exynos4412 based Odroid reboot driver"
->>> +	depends on POWER_RESET && ARCH_EXYNOS
->> once the arm specific restart handler is gone you can add ||
->> COMPILE_TEST
->>
->>> +	help
->>> +	  Power off and restart support for Odroid boards.
->>> +
->>>   config POWER_RESET_QNAP
->>>   	bool "QNAP power-off driver"
->>>   	depends on OF_GPIO && PLAT_ORION
->>> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
->>> index 76ce1c59469b..178ee86eb813 100644
->>> --- a/drivers/power/reset/Makefile
->>> +++ b/drivers/power/reset/Makefile
->>> @@ -8,6 +8,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
->>>   obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
->>>   obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
->>>   obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
->>> +obj-$(CONFIG_POWER_RESET_ODROID) += odroid-reboot.o
->>>   obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
->>>   obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
->>>   obj-$(CONFIG_POWER_RESET_SUN6I) += sun6i-reboot.o
->>> diff --git a/drivers/power/reset/odroid-reboot.c b/drivers/power/reset/odroid-reboot.c
->>> new file mode 100644
->>> index 000000000000..823e93539220
->>> --- /dev/null
->>> +++ b/drivers/power/reset/odroid-reboot.c
->>> @@ -0,0 +1,119 @@
->>> +/*
->>> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
->>> + *		http://www.samsung.com
->>> + *
->>> + * This program is free software; you can redistribute it and/or modify
->>> + * it under the terms of the GNU General Public License as published by
->>> + * the Free Software Foundation; either version 2 of the License, or
->>> + * (at your option) any later version.
->>> + */
->>> +
->>> +#include <linux/delay.h>
->>> +#include <linux/gpio.h>
->>> +#include <linux/io.h>
->>> +#include <linux/mfd/syscon.h>
->>> +#include <linux/module.h>
->>> +#include <linux/of_platform.h>
->>> +#include <linux/of_gpio.h>
->>> +#include <linux/reboot.h>
->>> +#include <linux/regmap.h>
->>> +
->>> +#include <asm/system_misc.h>
->>> +
->>> +#define PS_HOLD_CONTROL	0x330C
->>> +
->>> +struct odroid_reboot_data {
->>> +	struct device *dev;
->>> +	int power_gpio;
->>> +	struct regmap *reg_pmu;
->>> +	void (*reboot_func)(enum reboot_mode mode, const char *cmd);
->>> +};
->>> +
->>> +static struct odroid_reboot_data *reboot_data;
->>> +
->>> +static void odroid_reboot(enum reboot_mode mode, const char *cmd)
->>> +{
->>> +	local_irq_disable();
->>> +
->>> +	gpio_set_value(reboot_data->power_gpio, 0);
->>> +	mdelay(150);
->>> +	gpio_set_value(reboot_data->power_gpio, 1);
->>> +
->>> +	reboot_data->reboot_func(mode, cmd);
->>> +
-> It is called do_kernel_restart() if arm_pm_restart is NULL from
-> machine_restart of arch/arm/kernel/process.c
+2015=EB=85=84 01=EC=9B=94 23=EC=9D=BC 15:21=EC=97=90 Chanwoo Choi =EC=9D=
+=B4(=EA=B0=80) =EC=93=B4 =EA=B8=80:
+> Hi Jaewon,
 >
-> How about this?
+> On 01/23/2015 02:02 PM, Jaewon Kim wrote:
+>> This patch adds MAX77843 extcon driver to support for MUIC(Micro
+> Add company name (MAX77843 -> Maxim MAX77843)
+
+Okay. I will fix it.
 >
-> if (reboot_data->reboot_func)
-> 	reboot_data->reboot_func(mode, cmd);
-> else
-> 	do_kernel_restart(cmd);
+>> USB Interface Controller) device by using EXTCON subsystem to handle
+>> various external connectors.
+>>
+>> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+>> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
+>> ---
+>>   drivers/extcon/Kconfig           |   10 +
+>>   drivers/extcon/Makefile          |    1 +
+>>   drivers/extcon/extcon-max77843.c |  871 ++++++++++++++++++++++++++=
+++++++++++++
+>>   3 files changed, 882 insertions(+)
+>>   create mode 100644 drivers/extcon/extcon-max77843.c
+>>
+>> diff --git a/drivers/extcon/Kconfig b/drivers/extcon/Kconfig
+>> index 6a1f7de..0b67538 100644
+>> --- a/drivers/extcon/Kconfig
+>> +++ b/drivers/extcon/Kconfig
+>> @@ -55,6 +55,16 @@ config EXTCON_MAX77693
+>>   	  Maxim MAX77693 PMIC. The MAX77693 MUIC is a USB port accessory
+>>   	  detector and switch.
+>>  =20
+>> +config EXTCON_MAX77843
+>> +	tristate "MAX77843 EXTCON Support"
+>> +	depends on MFD_MAX77843
+>> +	select IRQ_DOMAIN
+>> +	select REGMAP_I2C
+>> +	help
+>> +	  If you say yes here you get support for the MUIC device of
+>> +	  Maxim MAX77843. The MAX77843 MUIC is a USB port accessory
+>> +	  detector add switch.
+>> +
+>>   config EXTCON_MAX8997
+>>   	tristate "MAX8997 EXTCON Support"
+>>   	depends on MFD_MAX8997 && IRQ_DOMAIN
+>> diff --git a/drivers/extcon/Makefile b/drivers/extcon/Makefile
+>> index 0370b42..f21d5c4 100644
+>> --- a/drivers/extcon/Makefile
+>> +++ b/drivers/extcon/Makefile
+>> @@ -8,6 +8,7 @@ obj-$(CONFIG_EXTCON_ARIZONA)	+=3D extcon-arizona.o
+>>   obj-$(CONFIG_EXTCON_GPIO)	+=3D extcon-gpio.o
+>>   obj-$(CONFIG_EXTCON_MAX14577)	+=3D extcon-max14577.o
+>>   obj-$(CONFIG_EXTCON_MAX77693)	+=3D extcon-max77693.o
+>> +obj-$(CONFIG_EXTCON_MAX77843)	+=3D extcon-max77843.o
+>>   obj-$(CONFIG_EXTCON_MAX8997)	+=3D extcon-max8997.o
+>>   obj-$(CONFIG_EXTCON_PALMAS)	+=3D extcon-palmas.o
+>>   obj-$(CONFIG_EXTCON_RT8973A)	+=3D extcon-rt8973a.o
+>> diff --git a/drivers/extcon/extcon-max77843.c b/drivers/extcon/extco=
+n-max77843.c
+>> new file mode 100644
+>> index 0000000..caae9a7
+>> --- /dev/null
+>> +++ b/drivers/extcon/extcon-max77843.c
+>> @@ -0,0 +1,871 @@
+>> +/*
+>> + * extcon-max77843.c - MAX77843 extcon driver to support MUIC
+>> + *
+>> + * Copyright (C) 2014 Samsung Electrnoics
+>> + *  Author: Jaewon Kim <jaewon02.kim@samsung.com>
+> Remove un-necessary blank before 'Author'.
 
-Frankly, I analyzed this case once again and I came to conclusion that there
-is no need to make a separate reset driver for Odroid boards. There is 
-nothing
-special, specific to whole board about this gpio. It is rather a property of
-MMC host controller and eMMC card that is connected to it. When only gpio
-toggling code is moved to reset handler registered from mmc controller, the
-board properly performs reboot with a generic exynos4 code. The poweroff 
-code
-in above driver is just a generic Exynos4 code, so again there is no need to
-duplicate it.
+Okay. I will fix it.
+>
+>> + *
+>> + * This program is free software; you can redistribute it and/or mo=
+dify
+>> + * it under the terms of the GNU General Public License as publishe=
+d by
+>> + * the Free Software Foundation; either version 2 of the License, o=
+r
+>> + * (at your option) any later version.
+>> + */
+>> +
+>> +#include <linux/extcon.h>
+>> +#include <linux/i2c.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/mfd/max77843-private.h>
+>> +#include <linux/module.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/workqueue.h>
+>> +
+>> +#define DELAY_MS_DEFAULT		15000	/* unit: millisecond */
+>> +
+>> +enum max77843_muic_acc_type {
+>> +	MAX77843_MUIC_ADC_GROUND =3D 0,
+>> +	MAX77843_MUIC_ADC_SEND_END_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S1_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S2_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S3_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S4_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S5_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S6_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S7_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S8_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S9_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S10_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S11_BUTTON,
+>> +	MAX77843_MUIC_ADC_REMOTE_S12_BUTTON,
+>> +	MAX77843_MUIC_ADC_RESERVED_ACC_1,
+>> +	MAX77843_MUIC_ADC_RESERVED_ACC_2,
+>> +	MAX77843_MUIC_ADC_RESERVED_ACC_3,
+>> +	MAX77843_MUIC_ADC_RESERVED_ACC_4,
+>> +	MAX77843_MUIC_ADC_RESERVED_ACC_5,
+>> +	MAX77843_MUIC_ADC_AUDIO_DEVICE_TYPE2,
+>> +	MAX77843_MUIC_ADC_PHONE_POWERED_DEV,
+>> +	MAX77843_MUIC_ADC_TTY_CONVERTER,
+>> +	MAX77843_MUIC_ADC_UART_CABLE,
+>> +	MAX77843_MUIC_ADC_CEA936A_TYPE1_CHG,
+>> +	MAX77843_MUIC_ADC_FACTORY_MODE_USB_OFF,
+>> +	MAX77843_MUIC_ADC_FACTORY_MODE_USB_ON,
+>> +	MAX77843_MUIC_ADC_AV_CABLE_NOLOAD,
+>> +	MAX77843_MUIC_ADC_CEA936A_TYPE2_CHG,
+>> +	MAX77843_MUIC_ADC_FACTORY_MODE_UART_OFF,
+>> +	MAX77843_MUIC_ADC_FACTORY_MODE_UART_ON,
+>> +	MAX77843_MUIC_ADC_AUDIO_DEVICE_TYPE1,
+>> +	MAX77843_MUIC_ADC_OPEN,
+>> +};
+>> +
+>> +enum max77843_muic_cable_group {
+>> +	MAX77843_CABLE_GROUP_ADC =3D 0,
+>> +	MAX77843_CABLE_GROUP_CHG,
+>> +	MAX77843_CABLE_GROUP_GND,
+>> +};
+> Cable group show the category of supported cables.
+> I think you better move this enum on upper of 'enum max77843_muic_acc=
+_type'
 
-By moving the code to mmc driver, the same approach can be used for other
-Odroid boards (XU/XU3) and maybe even other boards which need manual 
-resetting
-of eMMC cards to properly perform reboot procedure.
+This is not a cable type.
+I categorized cable group. GROUP_ADC  is
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+We can know cable group by IRQ type. so I categorized cable group.
+
+It is used to parameter of 'max77843_muic_get_cable_type()' function.
+
+
+>
+>> +
+>> +enum max77843_muic_adv_debounce_time {
+>> +	MAX77843_DEBOUNCE_TIME_5MS =3D 0,
+>> +	MAX77843_DEBOUNCE_TIME_10MS,
+>> +	MAX77843_DEBOUNCE_TIME_25MS,
+>> +	MAX77843_DEBOUNCE_TIME_38_62MS,
+>> +};
+>> +
+>> +enum max77843_muic_support_list {
+> Use only 'enum' keyword without 'max77843_muic_support_list' enum nam=
+e.
+Okay, i remove enum name.
+>
+>> +	EXTCON_CABLE_USB =3D 0,
+>> +	EXTCON_CABLE_USB_HOST,
+>> +	EXTCON_CABLE_USB_HOST_TA,
+>> +	EXTCON_CABLE_TA,
+>> +	EXTCON_CABLE_FAST_CHARGER,
+>> +	EXTCON_CABLE_SLOW_CHARGER,
+>> +	EXTCON_CABLE_CHARGE_DOWNSTREAM,
+>> +	EXTCON_CABLE_MHL,
+>> +	EXTCON_CABLE_MHL_TA,
+>> +	EXTCON_CABLE_JIG_USB_ON,
+>> +	EXTCON_CABLE_JIG_USB_OFF,
+>> +	EXTCON_CABLE_JIG_UART_OFF,
+>> +	EXTCON_CABLE_JIG_UART_ON,
+>> +
+>> +	EXTCON_CABLE_NUM,
+>> +};
+>> +
+>> +enum max77843_muic_gnd_cable {
+>> +	MAX77843_MUIC_GND_USB_OTG	=3D 0x0,
+>> +	MAX77843_MUIC_GND_USB_OTG_VB	=3D 0x1,
+>> +	MAX77843_MUIC_GND_MHL		=3D 0x2,
+>> +	MAX77843_MUIC_GND_MHL_VB	=3D 0x3,
+> Why do you need 'max77843_muic_gnd_cable' enum?
+> You have to express supported all cables in 'max77843_muic_acc_type' =
+enum list.
+> If you define one more cables enumeration, It is possible to incur th=
+e confusion
+> of what this driver is supported cable.
+I will clean up 'max77843_muic_gnd_cable' and it will be move to=20
+'max77843_muic_acc_type'
+
+>
+>
+>> +
+>> +	MAX77843_MUIC_GND_NUM,
+>> +};
+>> +
+>> +enum max77843_muic_status {
+>> +	MAX77843_MUIC_STATUS1 =3D 0,
+>> +	MAX77843_MUIC_STATUS2,
+>> +	MAX77843_MUIC_STATUS3,
+>> +
+>> +	MAX77843_MUIC_STATUS_NUM,
+>> +};
+>> +
+>> +enum max77843_muic_charger_type {
+>> +	MAX77843_CHG_TYPE_NONE =3D 0,
+>> +	MAX77843_CHG_TYPE_USB,
+>> +	MAX77843_CHG_TYPE_DOWNSTREAM,
+>> +	MAX77843_CHG_TYPE_DEDICATED,
+>> +	MAX77843_CHG_TYPE_SPECIAL_500MA,
+>> +	MAX77843_CHG_TYPE_SPECIAL_1A,
+>> +	MAX77843_CHG_TYPE_SPECIAL_BIAS,
+>> +
+>> +	MAX77843_CHG_TYPE_END,
+>> +};
+>> +
+>> +enum max77843_muic_detection {
+>> +	MAX77843_MUIC_AUTO_NONE =3D 0,
+>> +	MAX77843_MUIC_AUTO_USB,
+>> +	MAX77843_MUIC_AUTO_FAC,
+>> +	MAX77843_MUIC_AUTO_USB_FAC,
+>> +};
+> It it wrong. This enum is used to write the value to MUIC register.
+> You have to define it in max77843-private.h with 'enum' keyword.
+> I think you could refer other definition in max77843-private.h.
+>
+> You have to re-order the definition by using follwoing sequence
+> to improbe readability.
+> 1. cable group
+> 2. supported cables
+> 3. other definition with enum
+>
+> Also,
+> I'm difficult to understand the meaning of enum definition.
+> MAX77843_MUIC_*
+> MAX77843_CABLE_*
+> MAX77843_DEBOUNCE_*
+> MAX77843_CHG_*
+>
+> I think you need to clarify the meaning of enum definition
+> by makingt the name pattern to improve readability.
+
+Thank to point out confusing names.
+I will cleanup overall enum lists.
+
+>
+>> +
+>> +struct max77843_muic_info {
+>> +	struct device *dev;
+>> +	struct max77843 *max77843;
+>> +	struct extcon_dev *edev;
+>> +
+>> +	struct mutex mutex;
+>> +	struct work_struct irq_work;
+>> +	struct delayed_work wq_detcable;
+>> +	struct max77843_muic_irq *muic_irqs;
+>> +
+>> +	u8 status[MAX77843_MUIC_STATUS_NUM];
+>> +	int prev_cable_type;
+>> +	int prev_chg_type;
+>> +	int prev_gnd_type;
+>> +
+>> +	bool irq_adc;
+>> +	bool irq_chg;
+>> +	bool init_done;
+> I don't want to use the 'init_done' field. I think it is legacy way
+> to solve some issue. I recommend you use other way.
+Okay, I will check it than use init_done variable.
+>
+>> +};
+>> +
+>> +struct max77843_muic_irq {
+>> +	unsigned int irq;
+>> +	const char *name;
+>> +	unsigned int virq;
+>> +};
+>> +
+>> +static const struct regmap_config max77843_muic_regmap_config =3D {
+>> +	.reg_bits       =3D 8,
+>> +	.val_bits       =3D 8,
+>> +	.max_register   =3D MAX77843_MUIC_REG_END,
+>> +};
+>> +
+>> +static const struct regmap_irq max77843_muic_irq[] =3D {
+>> +	/* MUIC:INT1 interrupts */
+> =09
+> Don' need 'MUIC:' prefix and fix string (s/interrupts/interrupt).
+>
+>> +	{ .reg_offset =3D 0, .mask =3D MAX77843_MUIC_ADC, },
+>> +	{ .reg_offset =3D 0, .mask =3D MAX77843_MUIC_ADCERROR, },
+>> +	{ .reg_offset =3D 0, .mask =3D MAX77843_MUIC_ADC1K, },
+>> +
+>> +	/* MUIC:INT2 interrupts */
+> ditto.
+>
+>> +	{ .reg_offset =3D 1, .mask =3D MAX77843_MUIC_CHGTYP, },
+>> +	{ .reg_offset =3D 1, .mask =3D MAX77843_MUIC_CHGDETRUN, },
+>> +	{ .reg_offset =3D 1, .mask =3D MAX77843_MUIC_DCDTMR, },
+>> +	{ .reg_offset =3D 1, .mask =3D MAX77843_MUIC_DXOVP, },
+>> +	{ .reg_offset =3D 1, .mask =3D MAX77843_MUIC_VBVOLT, },
+>> +
+>> +	/* MUIC:INT3 interrupts */
+> ditto.
+>
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_VBADC, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_VDNMON, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_DNRES, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_MPNACK, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_MRXBUFOW, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_MRXTRF, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_MRXPERR, },
+>> +	{ .reg_offset =3D 2, .mask =3D MAX77843_MUIC_MRXRDY, },
+>> +};
+>> +
+>> +static const struct regmap_irq_chip max77843_muic_irq_chip =3D {
+>> +	.name           =3D "max77843-muic",
+>> +	.status_base    =3D MAX77843_MUIC_REG_INT1,
+>> +	.mask_base      =3D MAX77843_MUIC_REG_INTMASK1,
+>> +	.mask_invert    =3D true,
+>> +	.num_regs       =3D 3,
+>> +	.irqs           =3D max77843_muic_irq,
+>> +	.num_irqs       =3D ARRAY_SIZE(max77843_muic_irq),
+>> +};
+>> +
+>> +static const char *max77843_extcon_cable[] =3D {
+>> +	[EXTCON_CABLE_USB]			=3D "USB",
+>> +	[EXTCON_CABLE_USB_HOST]			=3D "USB-HOST",
+>> +	[EXTCON_CABLE_USB_HOST_TA]		=3D "USB-HOST-TA",
+>> +	[EXTCON_CABLE_TA]			=3D "TA",
+>> +	[EXTCON_CABLE_FAST_CHARGER]		=3D "FAST-CHARGER",
+>> +	[EXTCON_CABLE_SLOW_CHARGER]		=3D "SLOW-CHARGER",
+>> +	[EXTCON_CABLE_CHARGE_DOWNSTREAM]	=3D "CHARGER-DOWNSTREAM",
+>> +	[EXTCON_CABLE_MHL]			=3D "MHL",
+>> +	[EXTCON_CABLE_MHL_TA]			=3D "MHL-TA",
+>> +	[EXTCON_CABLE_JIG_USB_ON]		=3D "JIG-USB-ON",
+>> +	[EXTCON_CABLE_JIG_USB_OFF]		=3D "JIG-USB-OFF",
+>> +	[EXTCON_CABLE_JIG_UART_OFF]		=3D "JIG-UART-OFF",
+>> +	[EXTCON_CABLE_JIG_UART_ON]		=3D "JIG-UART-ON",
+>> +};
+>> +
+>> +static struct max77843_muic_irq max77843_muic_irqs[] =3D {
+>> +	{ MAX77843_MUIC_IRQ_INT1_ADC,		"MUIC-ADC" },
+>> +	{ MAX77843_MUIC_IRQ_INT1_ADCERROR,	"MUIC-ADC_ERROR" },
+>> +	{ MAX77843_MUIC_IRQ_INT1_ADC1K,		"MUIC-ADC1K" },
+>> +	{ MAX77843_MUIC_IRQ_INT2_CHGTYP,	"MUIC-CHGTYP" },
+>> +	{ MAX77843_MUIC_IRQ_INT2_CHGDETRUN,	"MUIC-CHGDETRUN" },
+>> +	{ MAX77843_MUIC_IRQ_INT2_DCDTMR,	"MUIC-DCDTMR" },
+>> +	{ MAX77843_MUIC_IRQ_INT2_DXOVP,		"MUIC-DXOVP" },
+>> +	{ MAX77843_MUIC_IRQ_INT2_VBVOLT,	"MUIC-VBVOLT" },
+>> +	{ MAX77843_MUIC_IRQ_INT3_VBADC,		"MUIC-VBADC" },
+>> +	{ MAX77843_MUIC_IRQ_INT3_VDNMON,	"MUIC-VDNMON" },
+>> +	{ MAX77843_MUIC_IRQ_INT3_DNRES,		"MUIC-DNRES" },
+>> +	{ MAX77843_MUIC_IRQ_INT3_MPNACK,	"MUIC-MPNACK"},
+>> +	{ MAX77843_MUIC_IRQ_INT3_MRXBUFOW,	"MUIC-MRXBUFOW"},
+>> +	{ MAX77843_MUIC_IRQ_INT3_MRXTRF,	"MUIC-MRXTRF"},
+>> +	{ MAX77843_MUIC_IRQ_INT3_MRXPERR,	"MUIC-MRXPERR"},
+>> +	{ MAX77843_MUIC_IRQ_INT3_MRXRDY,	"MUIC-MRXRDY"},
+>> +};
+>> +
+>> +static int max77843_muic_set_path(struct max77843_muic_info *info,
+>> +		u8 val, bool attached)
+>> +{
+>> +	struct max77843 *max77843 =3D info->max77843;
+>> +	int ret =3D 0;
+>> +	unsigned int ctrl1, ctrl2;
+>> +
+>> +	if (attached)
+>> +		ctrl1 =3D val;
+>> +	else
+>> +		ctrl1 =3D MAX77843_SWITCH_OPEN;
+> 'SWITCH' keyword is right?
+> I can't the 'SWITCH' word in CONTROL1 register of MAX77843 MUIC datas=
+heet.
+> When you define the field for register, I prefer to use the word whic=
+h
+> expressed in register map of datasheet.
+>
+>> +
+>> +	ret =3D regmap_update_bits(max77843->regmap_muic,
+>> +			MAX77843_MUIC_REG_CONTROL1,
+>> +			MAX77843_SIWTH_PORT, ctrl1);
+>> +	if (ret < 0) {
+>> +		dev_err(info->dev, "Cannot switch MUIC port\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	if (attached)
+>> +		ctrl2 =3D MAX77843_MUIC_CONTROL2_CPEN_MASK;
+>> +	else
+>> +		ctrl2 =3D MAX77843_MUIC_CONTROL2_LOWPWR_MASK;
+>> +
+>> +	ret =3D regmap_update_bits(max77843->regmap_muic,
+>> +			MAX77843_MUIC_REG_CONTROL2,
+>> +			MAX77843_MUIC_CONTROL2_LOWPWR_MASK |
+>> +			MAX77843_MUIC_CONTROL2_CPEN_MASK, ctrl2);
+>> +	if (ret < 0) {
+>> +		dev_err(info->dev, "Cannot update lowpower mode\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	dev_dbg(info->dev,
+>> +		"CONTROL1 : 0x%02x, CONTROL2 : 0x%02x, state : %s\n",
+>> +		ctrl1, ctrl2, attached ? "attached" : "detached");
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int max77843_muic_get_cable_type(struct max77843_muic_info *=
+info,
+>> +		enum max77843_muic_cable_group group, bool *attached)
+>> +{
+>> +	int adc, chg_type, cable_type, gnd_type;
+>> +
+>> +	adc =3D info->status[MAX77843_MUIC_STATUS1] &
+>> +			MAX77843_MUIC_STATUS1_ADC_MASK;
+> If you use the short definition for 'MAX77843_MUIC_STATUS1',
+> you could make this code on one line.
+>
+>> +	adc >>=3D STATUS1_ADC_SHIFT;
+>> +
+>> +	switch (group) {
+>> +	case MAX77843_CABLE_GROUP_ADC:
+>> +		if (adc =3D=3D MAX77843_MUIC_ADC_OPEN) {
+>> +			*attached =3D false;
+>> +			cable_type =3D info->prev_cable_type;
+>> +			info->prev_cable_type =3D MAX77843_MUIC_ADC_OPEN;
+>> +		} else {
+>> +			*attached =3D true;
+>> +			cable_type =3D info->prev_cable_type =3D adc;
+>> +		}
+>> +
+>> +		break;
+>> +	case MAX77843_CABLE_GROUP_CHG:
+>> +		if (adc =3D=3D MAX77843_MUIC_ADC_GROUND) {
+>> +			*attached =3D true;
+>> +			cable_type =3D adc;
+>> +			break;
+>> +		}
+>> +
+>> +		chg_type =3D info->status[MAX77843_MUIC_STATUS2] &
+>> +			MAX77843_MUIC_STATUS2_CHGTYP_MASK;
+> ditto and I think you need one more indentation for readabiltiy.
+>
+>
+>> +		chg_type >>=3D STATUS2_CHGTYP_SHIFT;
+>> +
+> Remove unneeded blank line.
+>
+>> +		if (chg_type =3D=3D MAX77843_CHG_TYPE_NONE) {
+>> +			*attached =3D false;
+>> +			cable_type =3D info->prev_chg_type;
+>> +			info->prev_chg_type =3D MAX77843_CHG_TYPE_NONE;
+>> +		} else {
+>> +			*attached =3D true;
+>> +			cable_type =3D info->prev_chg_type =3D chg_type;
+>> +		}
+>> +
+>> +		break;
+>> +	case MAX77843_CABLE_GROUP_GND:
+>> +		adc =3D info->status[MAX77843_MUIC_STATUS1] &
+>> +			MAX77843_MUIC_STATUS1_ADC_MASK;
+> ditto.
+>
+>> +		adc >>=3D STATUS1_ADC_SHIFT;
+>> +
+>> +		if (adc =3D=3D MAX77843_MUIC_ADC_GROUND) {
+>> +			*attached =3D true;
+>> +			gnd_type =3D (info->status[MAX77843_MUIC_STATUS1] &
+>> +					MAX77843_MUIC_STATUS1_ADC1K_MASK) >>
+>> +					(STATUS1_ADC1K_SHIFT-1);
+>> +			gnd_type |=3D (info->status[MAX77843_MUIC_STATUS2] &
+>> +					MAX77843_MUIC_STATUS2_VBVOLT_MASK) >>
+>> +					STATUS2_VBVOLT_SHIFT;
+>> +			cable_type =3D info->prev_gnd_type =3D gnd_type;
+>> +		} else {
+>> +			*attached =3D false;
+>> +			cable_type =3D info->prev_gnd_type;
+>> +			info->prev_gnd_type =3D MAX77843_MUIC_GND_NUM;
+>> +		}
+>> +
+>> +		break;
+>> +	default:
+>> +		dev_err(info->dev, "Unknown cable group (%d)\n", group);
+>> +		cable_type =3D -EINVAL;
+>> +
+>> +		break;
+>> +	}
+>> +
+>> +	return cable_type;
+>> +}
+>> +
+>> +static int max77843_muic_adc_gnd_handler(struct max77843_muic_info =
+*info)
+>> +{
+>> +	int ret, gnd_cable_type;
+>> +	u8 path;
+>> +	bool attached;
+>> +
+>> +	gnd_cable_type =3D max77843_muic_get_cable_type(info,
+>> +			MAX77843_CABLE_GROUP_GND, &attached);
+>> +	dev_dbg(info->dev, "external connector is %s (gnd:0x%02x)\n",
+>> +			attached ? "attached" : "detached", gnd_cable_type);
+>> +
+>> +	switch (gnd_cable_type) {
+>> +	case MAX77843_MUIC_GND_USB_OTG:
+>> +		extcon_set_cable_state(info->edev, "USB-HOST", attached);
+>> +		path =3D MAX77843_SWITCH_USB;
+> Change the name insted of 'SWITCH' word.
+>
+> Also, I think you have to change the path before sending uevent about=
+ cable information.
+> If you set cable state before setting the path, user-process might ge=
+t the uevent
+> before changing the MUIC path. You have to modify it when cable state=
+ is changed.
+>
+>> +		info->irq_chg =3D false;
+>> +		break;
+>> +	case MAX77843_MUIC_GND_USB_OTG_VB:
+>> +		extcon_set_cable_state(info->edev, "USB-HOST-TA", attached);
+>> +		path =3D MAX77843_SWITCH_USB;
+> ditto.
+>
+>> +		info->irq_chg =3D false;
+>> +		break;
+>> +	case MAX77843_MUIC_GND_MHL:
+>> +		extcon_set_cable_state(info->edev, "MHL", attached);
+>> +		path =3D MAX77843_SWITCH_OPEN;
+> ditto.
+>
+>> +		info->irq_chg =3D false;
+>> +		break;
+>> +	case MAX77843_MUIC_GND_MHL_VB:
+>> +		extcon_set_cable_state(info->edev, "MHL-TA", attached);
+>> +		path =3D MAX77843_SWITCH_OPEN;
+> ditto.
+>
+>> +		info->irq_chg =3D false;
+>> +		break;
+>> +	default:
+>> +		dev_err(info->dev, "Cannot detect %s cable of gnd type\n",
+>> +			attached ? "attached" : "detached");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	ret =3D max77843_muic_set_path(info, path, attached);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int max77843_muic_jig_handler(struct max77843_muic_info *inf=
+o,
+>> +		int cable_type, bool attached)
+>> +{
+>> +	char cable_name[32];
+> Remove 'cable_name' array
+>
+>> +	u8 path =3D MAX77843_SWITCH_OPEN;
+>> +	int ret;
+>> +
+>> +	dev_dbg(info->dev, "external connector is %s (adc:0x%02x)\n",
+>> +			attached ? "attached" : "detached", cable_type);
+>> +
+>> +	switch (cable_type) {
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_USB_OFF:
+>> +		strcpy(cable_name, "JIG-USB-OFF");
+> You execute direclty extcon_set_cable_state() function instead of usi=
+ng strcpy.
+Okay, i will fix it.
+>
+>> +		path =3D MAX77843_SWITCH_USB;
+>> +		break;
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_USB_ON:
+>> +		strcpy(cable_name, "JIG-USB-ON");
+>> +		path =3D MAX77843_SWITCH_USB;
+>> +		break;
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_UART_OFF:
+>> +		strcpy(cable_name, "JIG-UART-OFF");
+>> +		path =3D MAX77843_SWITCH_UART;
+>> +		break;
+>> +	default:
+>> +		break;
+>> +	}
+>> +
+>> +	ret =3D max77843_muic_set_path(info, path, attached);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	extcon_set_cable_state(info->edev, cable_name, attached);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int max77843_muic_adc_handler(struct max77843_muic_info *inf=
+o)
+>> +{
+>> +	int ret, cable_type;
+>> +	bool attached;
+>> +
+>> +	cable_type =3D max77843_muic_get_cable_type(info,
+>> +			MAX77843_CABLE_GROUP_ADC, &attached);
+>> +
+>> +	dev_dbg(info->dev,
+>> +		"external connector is %s (adc:0x%02x, prev_adc:0x%x)\n",
+>> +		attached ? "attached" : "detached", cable_type,
+>> +		info->prev_cable_type);
+>> +
+>> +	switch (cable_type) {
+>> +	case MAX77843_MUIC_ADC_GROUND:
+>> +		ret =3D max77843_muic_adc_gnd_handler(info);
+>> +		if (ret < 0)
+>> +			return ret;
+>> +		break;
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_USB_OFF:
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_USB_ON:
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_UART_OFF:
+>> +		ret =3D max77843_muic_jig_handler(info, cable_type, attached);
+>> +		if (ret < 0)
+>> +			return ret;
+>> +		break;
+>> +	case MAX77843_MUIC_ADC_SEND_END_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S1_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S2_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S3_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S4_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S5_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S6_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S7_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S8_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S9_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S10_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S11_BUTTON:
+>> +	case MAX77843_MUIC_ADC_REMOTE_S12_BUTTON:
+>> +	case MAX77843_MUIC_ADC_RESERVED_ACC_1:
+>> +	case MAX77843_MUIC_ADC_RESERVED_ACC_2:
+>> +	case MAX77843_MUIC_ADC_RESERVED_ACC_3:
+>> +	case MAX77843_MUIC_ADC_RESERVED_ACC_4:
+>> +	case MAX77843_MUIC_ADC_RESERVED_ACC_5:
+>> +	case MAX77843_MUIC_ADC_AUDIO_DEVICE_TYPE2:
+>> +	case MAX77843_MUIC_ADC_PHONE_POWERED_DEV:
+>> +	case MAX77843_MUIC_ADC_TTY_CONVERTER:
+>> +	case MAX77843_MUIC_ADC_UART_CABLE:
+>> +	case MAX77843_MUIC_ADC_CEA936A_TYPE1_CHG:
+>> +	case MAX77843_MUIC_ADC_AV_CABLE_NOLOAD:
+>> +	case MAX77843_MUIC_ADC_CEA936A_TYPE2_CHG:
+>> +	case MAX77843_MUIC_ADC_FACTORY_MODE_UART_ON:
+>> +	case MAX77843_MUIC_ADC_AUDIO_DEVICE_TYPE1:
+>> +	case MAX77843_MUIC_ADC_OPEN:
+>> +		dev_err(info->dev,
+>> +			"accessory is %s but it isn't used (adc:0x%x)\n",
+>> +			attached ? "attached" : "detached", cable_type);
+>> +		return -EAGAIN;
+>> +	default:
+>> +		dev_err(info->dev,
+>> +			"failed to detect %s accessory (adc:0x%x)\n",
+>> +			attached ? "attached" : "detached", cable_type);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int max77843_muic_chg_handler(struct max77843_muic_info *inf=
+o)
+>> +{
+>> +	int ret, chg_type;
+>> +	bool attached;
+>> +	u8 path =3D MAX77843_SWITCH_OPEN;
+> ditto.
+>
+>> +
+>> +	chg_type =3D max77843_muic_get_cable_type(info,
+>> +			MAX77843_CABLE_GROUP_CHG, &attached);
+>> +
+>> +	dev_dbg(info->dev,
+>> +		"external connector is %s(chg_type:0x%x, prev_chg_type:0x%x)\n",
+>> +		attached ? "attached" : "detached",
+>> +		chg_type, info->prev_chg_type);
+>> +
+>> +	switch (chg_type) {
+>> +	case MAX77843_CHG_TYPE_USB:
+>> +		path =3D MAX77843_SWITCH_USB;
+>> +		extcon_set_cable_state(info->edev, "USB", attached);
+> ditto. you have to change the muic path before setting the cable stat=
+e.
+Okay, iwill fix it.
+>
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_DOWNSTREAM:
+>> +		path =3D MAX77843_SWITCH_OPEN;
+>> +		extcon_set_cable_state(info->edev,
+>> +				"CHARGER-DOWNSTREAM", attached);
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_DEDICATED:
+>> +		path =3D MAX77843_SWITCH_OPEN;
+>> +		extcon_set_cable_state(info->edev, "TA", attached);
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_SPECIAL_500MA:
+>> +		path =3D MAX77843_SWITCH_OPEN;
+>> +		extcon_set_cable_state(info->edev, "SLOW-CHAREGER", attached);
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_SPECIAL_1A:
+>> +		path =3D MAX77843_SWITCH_OPEN;
+>> +		extcon_set_cable_state(info->edev, "FAST-CHARGER", attached);
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_SPECIAL_BIAS:
+>> +		path =3D MAX77843_SWITCH_OPEN;
+>> +		break;
+>> +	case MAX77843_CHG_TYPE_NONE:
+>> +		return 0;
+>> +	default:
+>> +		dev_err(info->dev,
+>> +			"failed to detect %s accessory (chg_type:0x%x)\n",
+>> +			attached ? "attached" : "detached", chg_type);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	ret =3D max77843_muic_set_path(info, path, attached);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static void max77843_muic_irq_work(struct work_struct *work)
+>> +{
+>> +	struct max77843_muic_info *info =3D container_of(work,
+>> +			struct max77843_muic_info, irq_work);
+>> +	struct max77843 *max77843 =3D info->max77843;
+>> +	int ret =3D 0;
+>> +
+>> +	if (!info->edev)
+>> +		return;
+>> +
+>> +	mutex_lock(&info->mutex);
+>> +
+>> +	ret =3D regmap_bulk_read(max77843->regmap_muic,
+>> +			MAX77843_MUIC_REG_STATUS1, info->status,
+>> +			MAX77843_MUIC_STATUS_NUM);
+>> +	if (ret) {
+>> +		dev_err(info->dev, "Cannot read STATUS registers\n");
+>> +		mutex_unlock(&info->mutex);
+>> +		return;
+>> +	}
+>> +
+>> +	if (info->irq_adc) {
+>> +		ret =3D max77843_muic_adc_handler(info);
+>> +		if (ret)
+>> +			dev_err(info->dev, "Unknown cable type\n");
+>> +		info->irq_adc =3D false;
+>> +	}
+>> +
+>> +	if (info->irq_chg) {
+>> +		ret =3D max77843_muic_chg_handler(info);
+>> +		if (ret)
+>> +			dev_err(info->dev, "Unknown charger type\n");
+>> +		info->irq_chg =3D false;
+>> +	}
+>> +
+>> +	mutex_unlock(&info->mutex);
+>> +}
+>> +
+>> +static irqreturn_t max77843_muic_irq_handler(int irq, void *data)
+>> +{
+>> +	struct max77843_muic_info *info =3D data;
+>> +	int i, irq_type =3D -1;
+>> +
+>> +	if (!info->init_done)
+>> +		return IRQ_HANDLED;
+>> +
+>> +	for (i =3D 0; i < ARRAY_SIZE(max77843_muic_irqs); i++)
+>> +		if (irq =3D=3D info->muic_irqs[i].virq)
+>> +			irq_type =3D info->muic_irqs[i].irq;
+>> +
+>> +	switch (irq_type) {
+>> +	case MAX77843_MUIC_IRQ_INT1_ADC:
+>> +	case MAX77843_MUIC_IRQ_INT1_ADCERROR:
+>> +	case MAX77843_MUIC_IRQ_INT1_ADC1K:
+>> +		info->irq_adc =3D true;
+>> +		break;
+>> +	case MAX77843_MUIC_IRQ_INT2_CHGTYP:
+>> +	case MAX77843_MUIC_IRQ_INT2_CHGDETRUN:
+>> +	case MAX77843_MUIC_IRQ_INT2_DCDTMR:
+>> +	case MAX77843_MUIC_IRQ_INT2_DXOVP:
+>> +	case MAX77843_MUIC_IRQ_INT2_VBVOLT:
+>> +		info->irq_chg =3D true;
+>> +		break;
+>> +	case MAX77843_MUIC_IRQ_INT3_VBADC:
+>> +	case MAX77843_MUIC_IRQ_INT3_VDNMON:
+>> +	case MAX77843_MUIC_IRQ_INT3_DNRES:
+>> +	case MAX77843_MUIC_IRQ_INT3_MPNACK:
+>> +	case MAX77843_MUIC_IRQ_INT3_MRXBUFOW:
+>> +	case MAX77843_MUIC_IRQ_INT3_MRXTRF:
+>> +	case MAX77843_MUIC_IRQ_INT3_MRXPERR:
+>> +	case MAX77843_MUIC_IRQ_INT3_MRXRDY:
+>> +		break;
+>> +	default:
+>> +		dev_err(info->dev, "Cannot recognize IRQ(%d)\n", irq_type);
+>> +		break;
+>> +	}
+>> +
+>> +	schedule_work(&info->irq_work);
+>> +
+>> +	return IRQ_HANDLED;
+>> +}
+>> +
+>> +static void max77843_muic_detect_cable_wq(struct work_struct *work)
+>> +{
+>> +	struct max77843_muic_info *info =3D container_of(to_delayed_work(w=
+ork),
+>> +			struct max77843_muic_info, wq_detcable);
+>> +	struct max77843 *max77843 =3D info->max77843;
+>> +	int chg_type, adc, ret;
+>> +	bool attached;
+>> +
+>> +	mutex_lock(&info->mutex);
+>> +
+>> +	ret =3D regmap_bulk_read(max77843->regmap_muic,
+>> +			MAX77843_MUIC_REG_STATUS1, info->status,
+>> +			MAX77843_MUIC_STATUS_NUM);
+>> +	if (ret) {
+>> +		dev_err(info->dev, "Cannot read STATUS registers\n");
+>> +		goto err_cable_wq;
+>> +	}
+>> +
+>> +	adc =3D max77843_muic_get_cable_type(info,
+>> +			MAX77843_CABLE_GROUP_ADC, &attached);
+>> +	if (attached && adc !=3D MAX77843_MUIC_ADC_OPEN) {
+>> +		ret =3D max77843_muic_adc_handler(info);
+>> +		if (ret < 0) {
+>> +			dev_err(info->dev, "Cannot detect accessory\n");
+>> +			goto err_cable_wq;
+>> +		}
+>> +	}
+>> +
+>> +	chg_type =3D max77843_muic_get_cable_type(info,
+>> +			MAX77843_CABLE_GROUP_CHG, &attached);
+>> +	if (attached && chg_type !=3D MAX77843_CHG_TYPE_NONE) {
+>> +		ret =3D max77843_muic_chg_handler(info);
+>> +		if (ret < 0) {
+>> +			dev_err(info->dev, "Cannot detect charger accessory\n");
+>> +			goto err_cable_wq;
+>> +		}
+>> +	}
+>> +
+>> +err_cable_wq:
+>> +	mutex_unlock(&info->mutex);
+>> +}
+>> +
+>> +static int max77843_muic_set_debounce_time(struct max77843_muic_inf=
+o *info,
+>> +		enum max77843_muic_adv_debounce_time time)
+>> +{
+>> +	struct max77843 *max77843 =3D info->max77843;
+>> +	unsigned int ret;
+>> +
+>> +	switch (time) {
+>> +	case MAX77843_DEBOUNCE_TIME_5MS:
+>> +	case MAX77843_DEBOUNCE_TIME_10MS:
+>> +	case MAX77843_DEBOUNCE_TIME_25MS:
+>> +	case MAX77843_DEBOUNCE_TIME_38_62MS:
+>> +		ret =3D regmap_update_bits(max77843->regmap_muic,
+>> +				MAX77843_MUIC_REG_CONTROL4,
+>> +				MAX77843_MUIC_CONTROL4_ADCDBSET_MASK,
+>> +				time << CONTROL4_ADCDBSET_SHIFT);
+>> +		if (ret) {
+> I prfer to use following condition statement to check return value
+> 	if (ret) -> if (ret < 0)
+Okay, i will fix it.
+>
+>> +			dev_err(info->dev, "Cannot write MUIC regmap\n");
+>> +			return ret;
+>> +		}
+>> +
+>> +		break;
+>> +	default:
+>> +		dev_err(info->dev, "Invalid ADC debounce time\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int max77843_init_muic_regmap(struct max77843 *max77843)
+>> +{
+>> +	int ret;
+>> +
+>> +	max77843->i2c_muic =3D i2c_new_dummy(max77843->i2c->adapter,
+>> +			I2C_ADDR_MUIC);
+>> +	if (!max77843->i2c_muic) {
+>> +		dev_err(&max77843->i2c->dev,
+>> +				"Cannot allocate I2C device for MUIC\n");
+>> +		return PTR_ERR(max77843->i2c_muic);
+>> +	}
+>> +
+>> +	i2c_set_clientdata(max77843->i2c_muic, max77843);
+>> +
+>> +	max77843->regmap_muic =3D devm_regmap_init_i2c(max77843->i2c_muic,
+>> +			&max77843_muic_regmap_config);
+>> +	if (IS_ERR(max77843->regmap_muic)) {
+>> +		ret =3D PTR_ERR(max77843->regmap_muic);
+>> +		goto err_muic_i2c;
+>> +	}
+>> +
+>> +	ret =3D regmap_add_irq_chip(max77843->regmap_muic, max77843->irq,
+>> +			IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHARED,
+>> +			0, &max77843_muic_irq_chip, &max77843->irq_data_muic);
+>> +	if (ret) {
+> ditto.
+> 	if (ret < 0)
+okay, I will fix it.
+>> +		dev_err(&max77843->i2c->dev, "Cannot add MUIC IRQ chip\n");
+>> +		goto err_muic_i2c;
+>> +	}
+>> +
+>> +	return 0;
+>> +
+>> +err_muic_i2c:
+>> +	i2c_unregister_device(max77843->i2c_muic);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static int max77843_muic_probe(struct platform_device *pdev)
+>> +{
+>> +	struct max77843 *max77843 =3D dev_get_drvdata(pdev->dev.parent);
+>> +	struct max77843_muic_info *info;
+>> +	unsigned int id;
+>> +	int i, ret;
+>> +
+>> +	info =3D devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
+>> +	if (!info)
+>> +		return -ENOMEM;
+>> +
+>> +	info->dev =3D &pdev->dev;
+>> +	info->max77843 =3D max77843;
+>> +	info->muic_irqs =3D max77843_muic_irqs;
+>> +	info->init_done =3D false;
+>> +
+>> +	platform_set_drvdata(pdev, info);
+>> +	mutex_init(&info->mutex);
+>> +	INIT_WORK(&info->irq_work, max77843_muic_irq_work);
+>> +
+>> +	/* Initialize i2c and regmap */
+>> +	ret =3D max77843_init_muic_regmap(max77843);
+>> +	if (ret) {
+>> +		dev_err(&pdev->dev, "Failed to init MUIC regmap\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	/* Turn off auto detection configuration */
+>> +	ret =3D regmap_update_bits(max77843->regmap_muic,
+>> +			MAX77843_MUIC_REG_CONTROL4,
+>> +			MAX77843_MUIC_CONTROL4_USBAUTO_MASK |
+>> +			MAX77843_MUIC_CONTROL4_FCTAUTO_MASK,
+>> +			MAX77843_MUIC_AUTO_NONE << CONTROL4_USBAUTO_SHIFT);
+>> +
+>> +	/* Support virtual irq domain for max77843 MUIC device */
+>> +	for (i =3D 0; i < ARRAY_SIZE(max77843_muic_irqs); i++) {
+>> +		struct max77843_muic_irq *muic_irq =3D &info->muic_irqs[i];
+>> +		unsigned int virq =3D 0;
+>> +
+>> +		virq =3D regmap_irq_get_virq(max77843->irq_data_muic,
+>> +				muic_irq->irq);
+>> +		if (virq <=3D 0) {
+>> +			ret =3D -EINVAL;
+>> +			goto err_muic_irq;
+>> +		}
+>> +		muic_irq->virq =3D virq;
+>> +
+>> +		ret =3D devm_request_threaded_irq(&pdev->dev, virq, NULL,
+>> +				max77843_muic_irq_handler, IRQF_NO_SUSPEND,
+>> +				muic_irq->name, info);
+>> +		if (ret) {
+>> +			dev_err(&pdev->dev,
+>> +				"Failed: irq request (IRQ: %d, error: %d)\n",
+>> +				muic_irq->irq, ret);
+>> +			goto err_muic_irq;
+>> +		}
+>> +	}
+>> +
+>> +	/* Initialize extcon device */
+>> +	info->edev =3D devm_extcon_dev_allocate(&pdev->dev,
+>> +			max77843_extcon_cable);
+>> +	if (IS_ERR(info->edev)) {
+>> +		dev_err(&pdev->dev, "Failed to allocate memory for extcon\n");
+>> +		ret =3D -ENODEV;
+>> +		goto err_muic_irq;
+>> +	}
+>> +
+>> +	info->edev->name =3D dev_name(&pdev->dev);
+> Don't need it. extcon_dev_register() set the name of extcon device.
+Okay, I will fix it.
+>
+>> +
+>> +	ret =3D devm_extcon_dev_register(&pdev->dev, info->edev);
+>> +	if (ret) {
+>> +		dev_err(&pdev->dev, "Failed to register extcon device\n");
+>> +		goto err_muic_irq;
+>> +	}
+>> +
+>> +	/* Set ADC debounce time */
+>> +	max77843_muic_set_debounce_time(info, MAX77843_DEBOUNCE_TIME_25MS)=
+;
+>> +
+>> +	/* Set initial path for UART */
+>> +	max77843_muic_set_path(info, MAX77843_SWITCH_UART, true);
+>> +
+>> +	/* Detect accessory after completing the initialization of platfor=
+m */
+>> +	INIT_DELAYED_WORK(&info->wq_detcable, max77843_muic_detect_cable_w=
+q);
+>> +	queue_delayed_work(system_power_efficient_wq,
+>> +			&info->wq_detcable, msecs_to_jiffies(DELAY_MS_DEFAULT));
+>> +
+>> +	/* Check revision number of MUIC device */
+>> +	ret =3D regmap_read(max77843->regmap_muic, MAX77843_MUIC_REG_ID, &=
+id);
+>> +	if (ret < 0) {
+>> +		dev_err(&pdev->dev, "Failed to read revision number\n");
+>> +		return ret;
+>> +	}
+>> +	dev_info(info->dev, "MUIC device ID : 0x%x\n", id);
+>> +
+>> +	info->init_done =3D true;
+>> +
+>> +	return 0;
+>> +
+>> +err_muic_irq:
+>> +	regmap_del_irq_chip(max77843->irq, max77843->irq_data_muic);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static int max77843_muic_remove(struct platform_device *pdev)
+>> +{
+>> +	struct max77843_muic_info *info =3D platform_get_drvdata(pdev);
+>> +
+>> +	cancel_work_sync(&info->irq_work);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct platform_device_id max77843_muic_id[] =3D {
+>> +	{ "max77843-muic", },
+>> +	{ },
+>> +};
+>> +MODULE_DEVICE_TABLE(platform, max77843_muic_id);
+>> +
+>> +static struct platform_driver max77843_muic_driver =3D {
+>> +	.driver		=3D {
+>> +		.name		=3D "max77843-muic",
+>> +	},
+>> +	.probe		=3D max77843_muic_probe,
+>> +	.remove		=3D max77843_muic_remove,
+>> +	.id_table	=3D max77843_muic_id,
+>> +};
+>> +
+>> +static int __init max77843_muic_init(void)
+>> +{
+>> +	return platform_driver_register(&max77843_muic_driver);
+>> +}
+>> +subsys_initcall(max77843_muic_init);
+>> +
+>> +MODULE_DESCRIPTION("Maxim MAX77843 Extcon driver");
+>> +MODULE_AUTHOR("Jaewon Kim <jaewon02.kim@samsung.com>");
+>> +MODULE_LICENSE("GPL");
+>>
+> Thanks,
+> Chanwoo Choi
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+I list up your review list.
+1. cleanup enum lists
+2. set path befor send uevent.
+3. fix variable names and typos for readability.
+
+Thanks
+Jaewon Kim
 
