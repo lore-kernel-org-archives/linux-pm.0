@@ -1,171 +1,148 @@
-From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 6/6] Documentation: Add device tree bindings document for
- max77843
-Date: Fri, 23 Jan 2015 16:40:35 +0900
-Message-ID: <54C1FAF3.9090701@samsung.com>
-References: <1421989367-32721-1-git-send-email-jaewon02.kim@samsung.com>
- <1421989367-32721-7-git-send-email-jaewon02.kim@samsung.com>
- <54C1E943.2020800@samsung.com>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: RE: [PATCH v4 00/17] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Fri, 23 Jan 2015 16:42:48 +0900
+Message-ID: <0dad01d036e0$2f376c80$8da64580$@kernel.org>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <54C1E943.2020800-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: 'Lukasz Majewski' <l.majewski@samsung.com>, 'Eduardo Valentin' <edubezval@gmail.com>, 'Zhang Rui' <rui.zhang@intel.com>, 'Kukjin Kim' <kgene@kernel.org>
+Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/23/2015 03:25 PM, Chanwoo Choi wrote:
-> Hi Jaewon,
+Lukasz Majewski wrote:
 > 
-> On 01/23/2015 02:02 PM, Jaewon Kim wrote:
->> Add document describing device tree bindings for max77843 MFD.
->> Drivers: MFD core, regulator, extcon, charger and fuelgauge.
->>
->> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
->> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
->> Cc: Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>
->> Cc: Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->> Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> Signed-off-by: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> ---
->>  Documentation/devicetree/bindings/mfd/max77843.txt |   87 ++++++++++++++++++++
->>  1 file changed, 87 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
->>
->> diff --git a/Documentation/devicetree/bindings/mfd/max77843.txt b/Documentation/devicetree/bindings/mfd/max77843.txt
->> new file mode 100644
->> index 0000000..6895604
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/mfd/max77843.txt
->> @@ -0,0 +1,87 @@
->> +Maxim MAX77843 multi-function device
->> +
->> +MAX77843 is a Multi-Function Device with the following submodules:
->> +- PMIC	  : 2 SAFEOUT LDOs for USB device
->> +- CHARGER : Li+ battery charger with Fuel Gauge
->> +- MUIC	  : Micro USB Interface Circuit
->> +- HAPTIC  : motor control driver for haptics
-> 
-> HAPTIC ?
-> 
->> +- LED	  : 4 channel RGBW LED
-> 
-> LED ?
-> 
-> This patchset don't include andy haptic/led drivers.
-> I think it is un-necessary information.
-> 
-> When you implement the haptic/led driver, you will add the information
-> for haptic/led driver.
-> 
+Hi,
 
-OK. I will remove them.
+> 1. Introduction
+> 
+> Following patches aim to clean up the current implementation of the thermal
+> framework on Exynos devices.
+> 
+> The main goal was to use a generic code for reading thermal configuration
+> (of-thermal.c). Due to that redundant exynos_thermal_common.[h|c] files
+> were removed.
+> 
+> Around 400 lines of code (LOC) were removed directly by this patch, which
+> is around 20% of the Exynos thermal code base.
+> 
+> This work should NOT bring any functional changes to Exynos thermal
+> subsystem.
+> 
+Sounds great to use generic some framework in kernel.
 
->> +
->> +It is interfaced to host controller using I2C.
->> +
->> +Required properties:
->> +- compatible : Must be "maxim,max77843".
->> +- reg : I2C slave address of PMIC block.
->> +- interrupts : I2C line for main SoCs.
->> +- interrupt-parent : The parent of interrupt controller.
->> +
->> +Optional properties:
->> +- regulators : The regulators of max77843 have to be instantiated under subnode
->> +	named "regulators" using the following format.
->> +
->> +	[*]refer : Documentation/devicetree/bindings/regulator/regulator.txt
->> +
->> +	regulators {
->> +		SAFEOUT {
->> +			regulator-name = "SAFEOUT";
->> +		};
->> +	}
->> +
->> +	List of valid regulator names:
->> +	- SAFEOUT1, SAFEOUT2, CHARGER.
->> +
->> +- max77843-muic : This properties used by extcon consumers.
->> +	Required properties:
->> +		- compatible : Must be "maxim,max77842-muic".
->> +
->> +- max77843-charger : There battery charger of MAX77843 have to be instantiated
->> +	under sub-node named "max77843-charger" using the following format.
->> +	Required properties:
->> +		- compatible : Must be "maxim,max77842-charger".
->> +		- maxim,fast-charge-uamp : Fast charge current levels are
->> +			100 mA to 3150 mA programmed by I2C per 100 mA.
->> +		- maxim,top-off-uamp : Top off current threshold levels are
->> +			125 mA to 650 mA programmed by I2C per 75 mA.
->> +		- maxim,input-uamp-limit : Input current limit levels are
->> +			100 mA to 3533 mA programmed by I2C per 33 mA.
->> +- max77843-fuelgauge : There fuelgauge of MAX77843 have to be instantiated
->> +	under sub-node named "max77843-fuelgauge" using the following format.
->> +	Required properties:
->> +		- compatible : Must be "maxim,max77842-fuelgauge".
->> +
->> +Example:
->> +	max77843@66 {
->> +		compatible = "samsung,max77843";
->> +		reg = <0x66>;
->> +		interrupt-parent = <&gpa1>;
->> +		interrupts = <5 2>;
->> +
->> +		regulators {
->> +			SAFEOUT1 {
->> +				regulator-name = "SAFEOUT1";
->> +				regulator-min-microvolt = <3300000>;
->> +				regulator-max-microvolt = <4950000>;
->> +			};
->> +			SAFEOUT2 {
->> +				regulator-name = "SAFEOUT2";
->> +				regulator-min-microvolt = <3300000>;
->> +				regulator-max-microvolt = <4950000>;
->> +			};
+> 2. Patch-set structure
 > 
-> As I knew, max77843 regulator driver supprot 'CHARGER' regulator.
-> I think you have to add the 'CHARGER' dt node for regulators.
+> Then the cpu_cooling functionality has been preserved to allow cooling
+> devices by reducing operating frequency. Definition of trip points and
+> cpufreq's cooling properties were moved to device tree.
 > 
+> Then the rework of the way in which configuration data is provided to
+> the Exynos thermal subsystem was performed. Now device tree is used for
+> configuration.
 > 
+> 3. Dead code removal
+> 
+> Thermal support for some SoCs, previously available in the exynos_tmu_data.c
+> file, was removed since, as of (almost) 3.19-rc3, they didn't have TMU bindings.
+> 
+> Moreover, support for cpu_cooling devices was preserved only on those
+> SoCs which had available and working cpufreq driver.
+> 
+> 4. Testing
+> 
+> Test devices:
+> - Exynos4210 - Trats (TMU zone + cpu_cooling)
+> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
+> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
+> - Exynos5420 - Arndale-octa (only TMU zones)
+> 
+Thanks for your check on the boards...
 
-Right, I will include charger regulator.
-
->> +		};
->> +
->> +		max77843-muic {
->> +			compatible = "maxim,max77843-muic";
->> +		};
->> +
->> +		max77843-charger {
->> +			compatible = "maxim,max77843-charger";
->> +			maxim,fast-charge-uamp = <450000>;
->> +			maxim,top-off-uamp = <125000>;
->> +			maxim,input-uamp-limit = <500000>;
->> +		};
->> +
->> +		max77843-fuelgauge {
->> +			compatible = "maxim,max77843-fuelgauge";
->> +		};
->> +
->> +	};
->>
+> Unfortunately, I don't posses Exynos5440 for testing. Its functionality
+> has been preserved in the code, but not tested on the hardware. I would
+> be grateful for help in testing.
 > 
-> Thanks,
-> Chanwoo Choi
+I think, Amit can do it on exynos5440 ;)
+
+> 
+> 5. This work apply on the following tree:
+> 
+> kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
+> SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
+> 
+> 
+> Lukasz Majewski (17):
+>   thermal: exynos: cosmetic: Correct comment format
+>   thermal: exynos: Provide thermal_exynos.h file to be included in
+>     device tree files
+>   arm: dts: trats: Enable TMU on the Exynos4210 trats device
+>   arm: dts: odroid: Add LD010 regulator node necessary for TMU on Odroid
+>   arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3 device
+>   arm: dts: Adding CPU cooling binding for Exynos SoCs
+>   thermal: exynos: Modify exynos thermal code to use device tree for cpu
+>     cooling configuration
+>   thermal: exynos: dts: Add default definition of the TMU sensor
+>     parameter
+>   dts: Documentation: Extending documentation entry for exynos-thermal
+>   thermal: dts: Default trip points definition for Exynos5420 SoCs
+>   thermal: exynos: dts: Define default thermal-zones for Exynos4
+>   thermal: dts: exynos: Trip points and sensor configuration data for
+>     Exynos5440
+>   dts: Documentation: Update exynos-thermal.txt example for Exynos5440
+>   thermal: exynos: dts: Provide device tree bindings identical to the
+>     one in exynos_tmu_data.c
+>   thermal: samsung: core: Exynos TMU rework to use device tree for
+>     configuration
+>   thermal: exynos: Remove exynos_thermal_common.[c|h] files
+>   thermal: exynos: Remove exynos_tmu_data.c file
+> 
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
+>  arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
+>  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
+>  arch/arm/boot/dts/exynos4.dtsi                     |   4 +
+>  arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
+>  arch/arm/boot/dts/exynos4210.dtsi                  |  30 +-
+>  arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
+>  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
+>  arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
+>  arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
+>  arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
+>  arch/arm/boot/dts/exynos5250.dtsi                  |  29 +-
+>  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
+>  arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
+>  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
+>  arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
+>  arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
+>  drivers/cpufreq/exynos-cpufreq.c                   |  30 +-
+>  drivers/thermal/samsung/Makefile                   |   2 -
+>  drivers/thermal/samsung/exynos_thermal_common.c    | 427 ---------------------
+>  drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
+>  drivers/thermal/samsung/exynos_tmu.c               | 354 +++++++++++------
+>  drivers/thermal/samsung/exynos_tmu.h               |  68 +---
+>  drivers/thermal/samsung/exynos_tmu_data.c          | 264 -------------
+>  include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
+>  26 files changed, 638 insertions(+), 1001 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+>  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+>  create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
+> 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I hope will apply DT changes in Samsung tree. Is it OK to thermal tree?
+
+Thanks,
+Kukjin
