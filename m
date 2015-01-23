@@ -1,82 +1,131 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 23 Jan 2015 11:52:06 +0000
-Message-ID: <20150123115206.GT21293@sirena.org.uk>
-References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
- <1422013154.29475.11.camel@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="GGxZz/e2pmGePzrA"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1422013154.29475.11.camel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, Sudeep.Holla-5wv7dgnIgG8@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use device
+ tree
+Date: Fri, 23 Jan 2015 13:09:53 +0100
+Message-ID: <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
+References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+1. Introduction
 
---GGxZz/e2pmGePzrA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Following patches aim to clean up the current implementation of the thermal
+framework on Exynos devices.
 
-On Fri, Jan 23, 2015 at 12:39:14PM +0100, Lucas Stach wrote:
+The main goal was to use a generic code for reading thermal configuration
+(of-thermal.c). Due to that redundant exynos_thermal_common.[h|c] files
+were removed.
 
-> > +  Required properties:
-> > +  - opp-khz: Frequency in kHz
-> > +  - opp-microvolt: voltage in micro Volts
+Around 400 lines of code (LOC) were removed directly by this patch, which
+is around 20% of the Exynos thermal code base.
 
-> Each OPP voltage should be defined by the triplet of minimum,
-> nominal/typical, maximum. This lets you specify exact tolerances in each
-> direction and should cover most use-cases.
+This work should NOT bring any functional changes to Exynos thermal 
+subsystem.
 
-> IMHO it would make sense to just define opp-microvolt as an array of
-> those 3 values, so the DT doesn't get bloated with a lot more
-> properties.
+2. Patch-set structure
 
-> A typical value for a CPU could then look like this:
-> opp-microvolt = <800000 850000 1100000>
+Then the cpu_cooling functionality has been preserved to allow cooling
+devices by reducing operating frequency. Definition of trip points and
+cpufreq's cooling properties were moved to device tree.
 
-I tend to agree that this is clearer.  It might be nice to have variants
-for specifying directly as a percentage but I don't think it's really
-worth the complexity.
+Then the rework of the way in which configuration data is provided to
+the Exynos thermal subsystem was performed. Now device tree is used for
+configuration.
 
-> For devices without any tolerance you can just specify the same value
-> three times and be done with it:
-> opp-microvolt = <900000 900000 900000>
+3. Dead code removal
 
-If we change the binding to be typ/min/max rather than min/typ/max then
-we could also do this by allowing either one or three values to be
-specified.  That might be more worth the complexity especially given...
+Thermal support for some SoCs, previously available in the exynos_tmu_data.c 
+file, was removed since, as of (almost) 3.19-rc3, they didn't have TMU bindings.
 
-> > +  Optional properties:
-> > +  - turbo-mode: Marks the volt-freq pair as turbo pair.
-> > +  - status: Marks the node enabled/disabled.
-> > +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+Moreover, support for cpu_cooling devices was preserved only on those
+SoCs which had available and working cpufreq driver.
 
-> Please let's drop this.
+4. Testing
 
-DT bindings are supposed to be stable, this means the code should accept
-old bindings and they should be documented as deprecated.
+Test devices:
+- Exynos4210 - Trats (TMU zone + cpu_cooling)
+- Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
+- Exynos5250 - Arndale (TMU zone + cpu_cooling)
+- Exynos5420 - Arndale-octa (only TMU zones)
 
---GGxZz/e2pmGePzrA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Unfortunately, I don't posses Exynos5440 for testing. Its functionality
+has been preserved in the code, but not tested on the hardware. I would
+be grateful for help in testing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQEcBAEBCAAGBQJUwjXlAAoJECTWi3JdVIfQzVUH/39T4b5ZKuAE1Z45bJIZjXCz
-8cbvKWEmF903edzvxMGsy+5ygUKM5ACfvt7CJ6ZQ3t5qlwy3KNqUgKUgGGWaVDmw
-n4gFaS/1QBu3328Qbd3+jZTtQuIaAZJEhF6ocZ/cfAZbg9VXEPxFVF0gh4hDstN2
-cyoI6hbdjU7yZCCkM9ML5EFOohplymN0dFF3quOQ3MtVPP0B2b88qtp6SdYDC9HL
-l2eM2e/GTCOR/xK/32HTCasyhgmSlXyDJ/rk0eqRoVceNsZ0aZwSO6SK1ZxABU8Z
-Qi0XtfHkWVt17NMxVc2XlUEUTcl3PkO+wKBrNA4awBkDzERnJCTm/dqVWB6YpnU=
-=NY1Q
------END PGP SIGNATURE-----
+5. This work apply on the following tree:
 
---GGxZz/e2pmGePzrA--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
+SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
+
+
+Lukasz Majewski (18):
+  thermal: exynos: cosmetic: Correct comment format
+  thermal: exynos: Provide thermal_exynos.h file to be included in
+    device tree files
+  arm: dts: trats: Enable TMU on the Exynos4210 trats device
+  arm: dts: odroid: Add LDO10 regulator node necessary for TMU on Odroid
+  arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3 device
+  arm: dts: Adding CPU cooling binding for Exynos SoCs
+  thermal: exynos: Modify exynos thermal code to use device tree for cpu
+    cooling configuration
+  cpufreq: exynos: Use device tree to determine if cpufreq cooling
+    should be registered
+  thermal: exynos: dts: Add default definition of the TMU sensor
+    parameter
+  dts: Documentation: Extending documentation entry for exynos-thermal
+  thermal: dts: Default trip points definition for Exynos5420 SoCs
+  thermal: exynos: dts: Define default thermal-zones for Exynos4
+  thermal: dts: exynos: Trip points and sensor configuration data for
+    Exynos5440
+  dts: Documentation: Update exynos-thermal.txt example for Exynos5440
+  thermal: exynos: dts: Provide device tree bindings identical to the
+    one in exynos_tmu_data.c
+  thermal: samsung: core: Exynos TMU rework to use device tree for
+    configuration
+  thermal: exynos: Remove exynos_thermal_common.[c|h] files
+  thermal: exynos: Remove exynos_tmu_data.c file
+
+ .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
+ arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
+ arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
+ arch/arm/boot/dts/exynos4.dtsi                     |   4 +
+ arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
+ arch/arm/boot/dts/exynos4210.dtsi                  |  30 +-
+ arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
+ arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
+ arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
+ arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
+ arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
+ arch/arm/boot/dts/exynos5250.dtsi                  |  29 +-
+ arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
+ arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
+ arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
+ arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
+ arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
+ drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
+ drivers/thermal/samsung/Makefile                   |   2 -
+ drivers/thermal/samsung/exynos_thermal_common.c    | 427 ---------------------
+ drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
+ drivers/thermal/samsung/exynos_tmu.c               | 348 +++++++++++------
+ drivers/thermal/samsung/exynos_tmu.h               |  76 +---
+ drivers/thermal/samsung/exynos_tmu_data.c          | 264 -------------
+ include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
+ 26 files changed, 636 insertions(+), 1008 deletions(-)
+ create mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
+ create mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi
+ create mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
+ create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
+ delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+ delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+ create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
+
+-- 
+2.0.0.rc2
