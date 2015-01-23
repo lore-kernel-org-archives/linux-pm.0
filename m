@@ -1,85 +1,62 @@
-From: "Tobias Jakobi" <Liquid.Acid@gmx.net>
-Subject: Aw: [PATCH v6 05/18] arm: dts: odroid: Enable TMU at Exynos4412
- based Odroid U3 device
-Date: Fri, 23 Jan 2015 13:23:21 +0100
-Message-ID: <trinity-4494e7a2-16bf-4a95-9dc2-a9bcd04f845a-1422015801467@3capp-gmx-bs08>
-References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
- <1422015010-11918-1-git-send-email-l.majewski@samsung.com>,
- <1422015010-11918-6-git-send-email-l.majewski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
+Date: Fri, 23 Jan 2015 18:23:03 +0530
+Message-ID: <CAKohpokdKby1_aUDTUDkNkYj3C9F83Hn--w7TS=Y-UE1ZdnW6w@mail.gmail.com>
+References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
+	<1422013154.29475.11.camel@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1422015010-11918-6-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:42786 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbbAWMxE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 07:53:04 -0500
+Received: by mail-ob0-f179.google.com with SMTP id vb8so6914567obc.10
+        for <linux-pm@vger.kernel.org>; Fri, 23 Jan 2015 04:53:03 -0800 (PST)
+In-Reply-To: <1422013154.29475.11.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mark Brown <broonie@kernel.org>
 
-Hello,
+On 23 January 2015 at 17:09, Lucas Stach <l.stach@pengutronix.de> wrote:
+> Am Freitag, den 23.01.2015, 16:14 +0530 schrieb Viresh Kumar:
+>> I haven't incorporated the comments given by Mark Brown as I had some doubts.
+>> @broonie: Is this what you wanted to mention earlier ? : http://pastebin.com/1RZTccmm
+>>
+>
+> I think we should work this out for the new bindings, as
+> voltage-tolerance is a completely bogus value.
 
-just a small nit concerning the patch subject. Shouldn't it be "Enable =
-TMU on Exynos4412 based Odroid devices" (since it's not just for the U3=
-)?
+Yeah, that's what I was saying. I just wanted to confirm that I understood
+it clearly. And so didn't made the changes here.
 
-With best wishes,
-Tobias
-=C2=A0
+>> +  - opp-microvolt: voltage in micro Volts
+>
+> Each OPP voltage should be defined by the triplet of minimum,
+> nominal/typical, maximum. This lets you specify exact tolerances in each
+> direction and should cover most use-cases.
+>
+> IMHO it would make sense to just define opp-microvolt as an array of
+> those 3 values, so the DT doesn't get bloated with a lot more
+> properties.
+>
+> A typical value for a CPU could then look like this:
+> opp-microvolt = <800000 850000 1100000>
+>
+> For devices without any tolerance you can just specify the same value
+> three times and be done with it:
+> opp-microvolt = <900000 900000 900000>
 
-Gesendet:=C2=A0Freitag, 23. Januar 2015 um 13:09 Uhr
-Von:=C2=A0"Lukasz Majewski" <l.majewski@samsung.com>
-An:=C2=A0"Eduardo Valentin" <edubezval@gmail.com>, "Zhang Rui" <rui.zha=
-ng@intel.com>, "Kukjin Kim" <kgene.kim@samsung.com>, "Kukjin Kim" <kgen=
-e@kernel.org>
-Cc:=C2=A0"Linux PM list" <linux-pm@vger.kernel.org>, "linux-samsung-soc=
-@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "Bartlomiej Zoln=
-ierkiewicz" <b.zolnierkie@samsung.com>, "Lukasz Majewski" <l.majewski@m=
-ajess.pl>, "Amit Daniel Kachhap" <amit.daniel@samsung.com>, "Abhilash K=
-esavan" <kesavan.abhilash@gmail.com>, "Abhilash Kesavan" <a.kesavan@sam=
-sung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>, "Viresh Kumar" <vire=
-sh.kumar@linaro.org>, "Lukasz Majewski" <l.majewski@samsung.com>
-Betreff:=C2=A0[PATCH v6 05/18] arm: dts: odroid: Enable TMU at Exynos44=
-12 based Odroid U3 device
-This commit enables TMU IP block on the Exynos4412 Odroid U3
-device.
+Ok.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- None
-Changes for v3:
-- None
-Changes for v4:
-- Rename patch title from "thermal: dts:" to "arm: dts: odroid"
-Changes for v5:
-- None
-Changes for v6:
-- None
----
-arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 5 +++++
-1 file changed, 5 insertions(+)
+>> +  Optional properties:
+>> +  - turbo-mode: Marks the volt-freq pair as turbo pair.
+>> +  - status: Marks the node enabled/disabled.
+>> +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+>
+> Please let's drop this.
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm=
-/boot/dts/exynos4412-odroid-common.dtsi
-index 0adb57c..c7517fc 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -396,6 +396,11 @@
-ehci: ehci@12580000 {
-status =3D "okay";
-};
-+
-+ tmu@100C0000 {
-+ vtmu-supply =3D <&ldo10_reg>;
-+ status =3D "okay";
-+ };
-};
+Yes, I did dropped it in the pastebin link I gave above.
 
-&pinctrl_1 {
---
-2.0.0.rc2
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-samsung=
--soc" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at http://vger.kernel.org/majordomo-info.html
+Thanks again for your feedback.
