@@ -1,52 +1,49 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Subject: Re: [PATCH 1/6] mfd: max77843: Add max77843 MFD driver core driver
-Date: Fri, 23 Jan 2015 08:05:33 +0100
-Message-ID: <1421996733.27149.0.camel@AMDC1943>
+Date: Fri, 23 Jan 2015 08:16:04 +0100
+Message-ID: <1421997364.27149.5.camel@AMDC1943>
 References: <1421989367-32721-1-git-send-email-jaewon02.kim@samsung.com>
  <1421989367-32721-2-git-send-email-jaewon02.kim@samsung.com>
  <CAJKOXPfRYhJNUAE=W3zPWvyza9k_YA=hu4KjLRuLh7kie3guQA@mail.gmail.com>
- <54C1F067.90907@samsung.com>
+ <54C1ED09.1080607@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <54C1F067.90907-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <54C1ED09.1080607@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On pi=C4=85, 2015-01-23 at 15:55 +0900, Jaewon Kim wrote:
-> Hi Krzysztof,
->=20
-> 2015=EB=85=84 01=EC=9B=94 23=EC=9D=BC 15:32=EC=97=90 Krzysztof Kozlow=
-ski =EC=9D=B4(=EA=B0=80) =EC=93=B4 =EA=B8=80:
-> > 2015-01-23 6:02 GMT+01:00 Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>:
+On pi=C4=85, 2015-01-23 at 15:41 +0900, Beomho Seo wrote:
+> On 01/23/2015 03:32 PM, Krzysztof Kozlowski wrote:
+> > 2015-01-23 6:02 GMT+01:00 Jaewon Kim <jaewon02.kim@samsung.com>:
 > >> This patch adds MAX77843 core/irq driver to support PMIC,
 > >> MUIC(Micro USB Interface Controller), Charger, Fuel Gauge,
 > >> LED and Haptic device.
 > >>
-> >> Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >> Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >> Signed-off-by: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> >> Cc: Lee Jones <lee.jones@linaro.org>
+> >> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> >> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
 > >> ---
-> >>   drivers/mfd/Kconfig                  |   14 ++
-> >>   drivers/mfd/Makefile                 |    1 +
-> >>   drivers/mfd/max77843.c               |  241 ++++++++++++++++++++
-> >>   include/linux/mfd/max77843-private.h |  410 ++++++++++++++++++++=
-++++++++++++++
-> >>   4 files changed, 666 insertions(+)
-> >>   create mode 100644 drivers/mfd/max77843.c
-> >>   create mode 100644 include/linux/mfd/max77843-private.h
+> >>  drivers/mfd/Kconfig                  |   14 ++
+> >>  drivers/mfd/Makefile                 |    1 +
+> >>  drivers/mfd/max77843.c               |  241 ++++++++++++++++++++
+> >>  include/linux/mfd/max77843-private.h |  410 +++++++++++++++++++++=
++++++++++++++
+> >>  4 files changed, 666 insertions(+)
+> >>  create mode 100644 drivers/mfd/max77843.c
+> >>  create mode 100644 include/linux/mfd/max77843-private.h
 > >>
 > >> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
 > >> index 2e6b731..0c67c79 100644
 > >> --- a/drivers/mfd/Kconfig
 > >> +++ b/drivers/mfd/Kconfig
 > >> @@ -442,6 +442,20 @@ config MFD_MAX77693
-> >>            additional drivers must be enabled in order to use the =
-functionality
-> >>            of the device.
+> >>           additional drivers must be enabled in order to use the f=
+unctionality
+> >>           of the device.
 > >>
 > >> +config MFD_MAX77843
 > >> +       bool "Maxim Semiconductor MAX77843 PMIC Support"
@@ -67,21 +64,21 @@ vice;
 unctionality
 > >> +         of the device.
 > >> +
-> >>   config MFD_MAX8907
-> >>          tristate "Maxim Semiconductor MAX8907 PMIC Support"
-> >>          select MFD_CORE
+> >>  config MFD_MAX8907
+> >>         tristate "Maxim Semiconductor MAX8907 PMIC Support"
+> >>         select MFD_CORE
 > >> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
 > >> index 53467e2..fe4f75c 100644
 > >> --- a/drivers/mfd/Makefile
 > >> +++ b/drivers/mfd/Makefile
 > >> @@ -117,6 +117,7 @@ obj-$(CONFIG_MFD_DA9063)    +=3D da9063.o
-> >>   obj-$(CONFIG_MFD_MAX14577)     +=3D max14577.o
-> >>   obj-$(CONFIG_MFD_MAX77686)     +=3D max77686.o
-> >>   obj-$(CONFIG_MFD_MAX77693)     +=3D max77693.o
+> >>  obj-$(CONFIG_MFD_MAX14577)     +=3D max14577.o
+> >>  obj-$(CONFIG_MFD_MAX77686)     +=3D max77686.o
+> >>  obj-$(CONFIG_MFD_MAX77693)     +=3D max77693.o
 > >> +obj-$(CONFIG_MFD_MAX77843)     +=3D max77843.o
-> >>   obj-$(CONFIG_MFD_MAX8907)      +=3D max8907.o
-> >>   max8925-objs                   :=3D max8925-core.o max8925-i2c.o
-> >>   obj-$(CONFIG_MFD_MAX8925)      +=3D max8925.o
+> >>  obj-$(CONFIG_MFD_MAX8907)      +=3D max8907.o
+> >>  max8925-objs                   :=3D max8925-core.o max8925-i2c.o
+> >>  obj-$(CONFIG_MFD_MAX8925)      +=3D max8925.o
 > >> diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
 > >> new file mode 100644
 > >> index 0000000..d7f8b76
@@ -92,7 +89,7 @@ unctionality
 > >> + * max77843.c - MFD core driver for the Maxim MAX77843
 > >> + *
 > >> + * Copyright (C) 2014 Samsung Electrnoics
-> >> + * Author: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> >> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
 > >> + *
 > >> + * This program is free software; you can redistribute it and/or =
 modify
@@ -165,10 +162,36 @@ T, },
 > >> +
 > >> +static int max77843_chg_init(struct max77843 *max77843)
 > >> +{
+> >=20
 > > Could this function be moved to the charger driver? This way the
 > > driver will manage its own resources instead of depending on parent
 > > MFD driver.
-> >
+> >=20
+>=20
+> Charger regulator and Charger share same resources.
+> So I include this function core driver.
+
+OK, I see... Could you describe it in comments somewhere? For example i=
+n
+comment above the function. Currently this looks like only as regmap fo=
+r
+charger.
+
+Unfortunately current solution imposes problem with releasing resources=
+=2E
+Who is the owner of i2c dummy device?
+
+1. The charger driver will unregister it if max77843_charger_probe()
+fails. What will happen with regulator driver in such case?
+
+2. Who will release this i2c dummy device in normal unbind? Currently i=
+t
+leaks.
+
+Best regards,
+Krzysztof
+
+>=20
 > >> +       int ret;
 > >> +
 > >> +       max77843->i2c_chg =3D i2c_new_dummy(max77843->i2c->adapter=
@@ -229,15 +252,9 @@ q,
 RED,
 > >> +                       0, &max77843_irq_chip, &max77843->irq_data=
 );
+> >=20
 > > Why shared IRQ?
->=20
-> This IRQ shared with submodules.
-> you can see another IRQ register process in extcon-max77843 driver.
-
-Right, I found it later.
-
->=20
-> >
+> >=20
 > >> +       if (ret) {
 > >> +               dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\=
 n");
@@ -265,25 +282,14 @@ n");
 > >> +       if (ret < 0) {
 > >> +               dev_err(&i2c->dev, "Failed to unmask interrupt sou=
 rece\n");
+> >=20
 > > s/sourece/source/
->=20
-> I will fix typo in next version.
->=20
-> >
+> >=20
 > > Best regards,
 > > Krzysztof
 > > --
 > > To unsubscribe from this list: send the line "unsubscribe linux-pm"=
  in
-> > the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> > the body of a message to majordomo@vger.kernel.org
 > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
->=20
-> Thanks to review my patch.
-> Jaewon Kim
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >=20
