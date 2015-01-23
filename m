@@ -1,93 +1,121 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 08/18] cpufreq: exynos: Use device tree to determine if
- cpufreq cooling should be registered
-Date: Fri, 23 Jan 2015 14:57:44 +0100
-Message-ID: <20150123145744.3dc47a47@amdc2363>
-References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
- <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
- <CAKohpok1EacvJ3PCOZYnz81D3=P04apRp7VOxPFE1QxYF4Wydg@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3/resend 3/4] drivers: bus: Add Simple Power-Managed Bus
+ DT Bindings
+Date: Fri, 23 Jan 2015 15:18:11 +0100
+Message-ID: <CAMuHMdVC_BoKgSXytYtc9CnGdTPezc8BcJ_ZrDP=3ZN1Kf6bJA@mail.gmail.com>
+References: <1421919253-4784-1-git-send-email-geert+renesas@glider.be>
+	<7hvbjy30an.fsf@deeprootsystems.com>
+	<CAMuHMdUMcyXdgv+xdd8Zo67rYnfh6JaSWfr1H3c6NrQs=JsNLg@mail.gmail.com>
+	<2160255.41m7rrCYxI@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAKohpok1EacvJ3PCOZYnz81D3=P04apRp7VOxPFE1QxYF4Wydg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f51.google.com ([209.85.215.51]:63401 "EHLO
+	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbbAWOSO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 09:18:14 -0500
+In-Reply-To: <2160255.41m7rrCYxI@wuerfel>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+Hi Arnd,
 
-> On 23 January 2015 at 17:44, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > +       cpus = of_find_node_by_path("/cpus");
-> > +       if (!cpus) {
-> > +               pr_err("failed to find cpus node\n");
-> > +               return 0;
-> > +       }
-> > +
-> > +       np = of_get_next_child(cpus, NULL);
-> > +       if (!np) {
-> > +               pr_err("failed to find cpus child node\n");
-> > +               of_node_put(cpus);
-> >                 return 0;
-> > +       }
-> 
-> Why making it complex? Just get device node for cpu 0 and
-> do cpu_dev->np.
+On Fri, Jan 23, 2015 at 2:46 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Friday 23 January 2015 09:56:51 Geert Uytterhoeven wrote:
+>> >> diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+>> >> new file mode 100644
+>> >> index 0000000000000000..d03abf7fd8e3997a
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+>> >> @@ -0,0 +1,52 @@
+>> >> +Simple Power-Managed Bus
+>> >> +========================
+>> >> +
+>> >> +A Simple Power-Managed Bus is a transparent bus that doesn't need a real
+>> >> +driver, as it's typically initialized by the boot loader.
+>> >> +
+>> >> +However, its bus controller is part of a PM domain, or under the control of a
+>> >> +functional clock.  Hence, the bus controller's PM domain and/or clock must be
+>> >> +enabled for child devices connected to the bus (either on-SoC or externally)
+>> >> +to function.
+>> >> +
+>> >> +
+>> >> +Generic compatible values and properties
+>> >> +----------------------------------------
+>> >> +
+>> >> +Required properties:
+>> >> +  - compatible: Must be at least one of the vendor-specific compatible values
+>> >> +             from a vendor-specific section below, and "simple-bus" as a
+>> >> +             fallback.
+>> >
+>> > What happened to the idea of using something like "simple-pm-bus"?
+>>
+>> I think that's a decision to make by the (successor of the) ePAPR committee.
+>> At least it would be nice to get some feedback from the DT review team
+>> about this.
+>>
+>> If we go that road, the vendor-specific compatible value should still be
+>> documented, else checkpatch will complain when encountering it in a DTS.
+>> Then, should it become
+>>
+>>     compatible = "renesas,bsc-sh73a0", "renesas,bsc", "simple-pm-bus",
+>> "simple-bus";
+>>
+>> or should "simple-bus" just be added to of_default_bus_match_table[], so we
 
-Please pay a note about following problem:
+Sorry, FTR, I meant "simple-pm-bus" here.
 
-Previously we got: cpu0: cpu@0 for all Exynos devices.
+>> can drop "simple-bus" from the list in the DTS:
+>>
+>>     compatible = "renesas,bsc-sh73a0", "renesas,bsc", "simple-pm-bus";
+>
+> I was thinking of the reverse: drop "simple-bus" bus from the list here,
+> but not add "simple-pm-bus" to of_default_bus_match_table. This will
+> cause child devices to no longer be probed automatically, and you will
+> have to call of_platform_populate() from simple_pm_bus_probe(), after
+> pm_runtime_enable(). This seems like a cleaner model to me, for two
+> reasons:
+>
+> - In the binding, claiming compatibility with "simple-bus" feels
+>   wrong to me, because you have a bus that is not as simple as others
+>
+> - The ordering between pm_runtime_enable() and the probing of the
+>   child devices is guaranteed, which I think it is not with your
+>   current code.
 
-Now, however, cpu numbering has changed (due to GIC rework).
-For example:
+The ordering is indeed a good argument. Will update.
 
-Exynos4412:
-	cpus {
-		cpu0: cpu@A00 {
-			...
-			#cooling-cells = <2>; /* min followed by max */
-		};
+Hence:
+  - The DTS will claim a compatibility with
+    "renesas,bsc-sh73a0", "renesas,bsc", "simple-pm-bus".
+  - The driver will match against "simple-pm-bus".
 
-		cpu@A01 {
-		};
+Note that if we ever have a real driver for "renesas,bsc", we'll have to
+be careful about binding ordering. "simple-bus" is handled by core code,
+ and doesn't prevent a more specific driver to take precedence.
+"simple-pm-bus" is handled by a driver, so if it binds first, a more specific
+driver cannot take over.
 
-		cpu@A02 {
-		};
+> Does this make sense, or am I missing an important reason why there
+> has to be a "simple-bus" compatible string here?
 
-		cpu@A03 {
-		};
-	}
+Yes, it makes sense. I had the "simple-bus" compatible entry there because of
+the "most generic first", "least generic last" rule. If you don't use the
+extra features (i.e. don't touch the clocks or PM domains in the SoC), it is
+compatible with "simple-bus". That's more or less how it was in
+r8a73a4-ape6evm-reference.dts before the advent of CCF and PM domains.
 
-Exynos 4210:
-	cpus {
-		cpu0: cpu@900 {
-			#cooling-cells = <2>; /* min followed by max */
-		};
+Thanks!
 
-		cpu@901 {
-		};
-	};
+Gr{oetje,eeting}s,
 
-Exynos 5250:
-	cpus {
-		cpu0: cpu@0 {
-			#cooling-cells = <2>; /* min followed by max */
-		};
+                        Geert
 
-		cpu@1 {
-		};
-	};
-	
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-As you can see different cpu@XXY nodes we have and simply calling cpu@0
-won't work.
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
