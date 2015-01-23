@@ -1,170 +1,147 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 00/17] thermal: exynos: Thermal code rework to use
- device tree
-Date: Fri, 23 Jan 2015 10:59:44 +0100
-Message-ID: <20150123105944.457d6d07@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1421407861-25099-1-git-send-email-l.majewski@samsung.com>
- <0dad01d036e0$2f376c80$8da64580$@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <0dad01d036e0$2f376c80$8da64580$@kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>
-Cc: 'Eduardo Valentin' <edubezval@gmail.com>, 'Zhang Rui' <rui.zhang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power: test_power: Use enum as index for array of supplies
+Date: Fri, 23 Jan 2015 11:38:00 +0100
+Message-ID: <1422009480-5822-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Kukjin,
+Replace hard-coded numbers for indices of power supply array with enum.
+This improves a little the readability as one does not have to guess
+which power supply is associated with number.
 
-> Lukasz Majewski wrote:
-> > 
-> Hi,
-> 
-> > 1. Introduction
-> > 
-> > Following patches aim to clean up the current implementation of the
-> > thermal framework on Exynos devices.
-> > 
-> > The main goal was to use a generic code for reading thermal
-> > configuration (of-thermal.c). Due to that redundant
-> > exynos_thermal_common.[h|c] files were removed.
-> > 
-> > Around 400 lines of code (LOC) were removed directly by this patch,
-> > which is around 20% of the Exynos thermal code base.
-> > 
-> > This work should NOT bring any functional changes to Exynos thermal
-> > subsystem.
-> > 
-> Sounds great to use generic some framework in kernel.
-> 
-> > 2. Patch-set structure
-> > 
-> > Then the cpu_cooling functionality has been preserved to allow
-> > cooling devices by reducing operating frequency. Definition of trip
-> > points and cpufreq's cooling properties were moved to device tree.
-> > 
-> > Then the rework of the way in which configuration data is provided
-> > to the Exynos thermal subsystem was performed. Now device tree is
-> > used for configuration.
-> > 
-> > 3. Dead code removal
-> > 
-> > Thermal support for some SoCs, previously available in the
-> > exynos_tmu_data.c file, was removed since, as of (almost) 3.19-rc3,
-> > they didn't have TMU bindings.
-> > 
-> > Moreover, support for cpu_cooling devices was preserved only on
-> > those SoCs which had available and working cpufreq driver.
-> > 
-> > 4. Testing
-> > 
-> > Test devices:
-> > - Exynos4210 - Trats (TMU zone + cpu_cooling)
-> > - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
-> > - Exynos5250 - Arndale (TMU zone + cpu_cooling)
-> > - Exynos5420 - Arndale-octa (only TMU zones)
-> > 
-> Thanks for your check on the boards...
-> 
-> > Unfortunately, I don't posses Exynos5440 for testing. Its
-> > functionality has been preserved in the code, but not tested on the
-> > hardware. I would be grateful for help in testing.
-> > 
-> I think, Amit can do it on exynos5440 ;)
-> 
-> > 
-> > 5. This work apply on the following tree:
-> > 
-> > kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
-> > SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
-> > 
-> > 
-> > Lukasz Majewski (17):
-> >   thermal: exynos: cosmetic: Correct comment format
-> >   thermal: exynos: Provide thermal_exynos.h file to be included in
-> >     device tree files
-> >   arm: dts: trats: Enable TMU on the Exynos4210 trats device
-> >   arm: dts: odroid: Add LD010 regulator node necessary for TMU on
-> > Odroid arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3
-> > device arm: dts: Adding CPU cooling binding for Exynos SoCs
-> >   thermal: exynos: Modify exynos thermal code to use device tree
-> > for cpu cooling configuration
-> >   thermal: exynos: dts: Add default definition of the TMU sensor
-> >     parameter
-> >   dts: Documentation: Extending documentation entry for
-> > exynos-thermal thermal: dts: Default trip points definition for
-> > Exynos5420 SoCs thermal: exynos: dts: Define default thermal-zones
-> > for Exynos4 thermal: dts: exynos: Trip points and sensor
-> > configuration data for Exynos5440
-> >   dts: Documentation: Update exynos-thermal.txt example for
-> > Exynos5440 thermal: exynos: dts: Provide device tree bindings
-> > identical to the one in exynos_tmu_data.c
-> >   thermal: samsung: core: Exynos TMU rework to use device tree for
-> >     configuration
-> >   thermal: exynos: Remove exynos_thermal_common.[c|h] files
-> >   thermal: exynos: Remove exynos_tmu_data.c file
-> > 
-> >  .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
-> >  arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
-> >  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
-> >  arch/arm/boot/dts/exynos4.dtsi                     |   4 +
-> >  arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
-> >  arch/arm/boot/dts/exynos4210.dtsi                  |  30 +-
-> >  arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
-> >  arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
-> >  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
-> >  arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
-> >  arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
-> >  arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
-> >  arch/arm/boot/dts/exynos5250.dtsi                  |  29 +-
-> >  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
-> >  arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
-> >  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
-> >  arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
-> >  arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
-> >  drivers/cpufreq/exynos-cpufreq.c                   |  30 +-
-> >  drivers/thermal/samsung/Makefile                   |   2 -
-> >  drivers/thermal/samsung/exynos_thermal_common.c    | 427
-> > ---------------------
-> > drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
-> > drivers/thermal/samsung/exynos_tmu.c               | 354
-> > +++++++++++------
-> > drivers/thermal/samsung/exynos_tmu.h               |  68 +---
-> > drivers/thermal/samsung/exynos_tmu_data.c          | 264
-> > ------------- include/dt-bindings/thermal/thermal_exynos.h       |
-> > 28 ++ 26 files changed, 638 insertions(+), 1001 deletions(-) create
-> > mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi create mode
-> > 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi create
-> > mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi create
-> > mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
-> > create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
-> > delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
-> > delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
-> > delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c create
-> > mode 100644 include/dt-bindings/thermal/thermal_exynos.h
-> > 
-> > --
-> 
-> I hope will apply DT changes in Samsung tree. Is it OK to thermal
-> tree?
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/power/test_power.c | 33 ++++++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
 
-I think that it is up to you and Eduardo to decide :-). 
-
-I'd personally prefer to add this patch set at once to Eduardo's tree
-(of course with your ACKs).
-
-> 
-> Thanks,
-> Kukjin
-> 
-
-
-
+diff --git a/drivers/power/test_power.c b/drivers/power/test_power.c
+index 0152f35dca5c..f26b1fa00fe1 100644
+--- a/drivers/power/test_power.c
++++ b/drivers/power/test_power.c
+@@ -21,6 +21,13 @@
+ #include <linux/delay.h>
+ #include <linux/vermagic.h>
+ 
++enum test_power_id {
++	TEST_AC,
++	TEST_BATTERY,
++	TEST_USB,
++	TEST_POWER_NUM,
++};
++
+ static int ac_online			= 1;
+ static int usb_online			= 1;
+ static int battery_status		= POWER_SUPPLY_STATUS_DISCHARGING;
+@@ -147,7 +154,7 @@ static char *test_power_ac_supplied_to[] = {
+ };
+ 
+ static struct power_supply test_power_supplies[] = {
+-	{
++	[TEST_AC] = {
+ 		.name = "test_ac",
+ 		.type = POWER_SUPPLY_TYPE_MAINS,
+ 		.supplied_to = test_power_ac_supplied_to,
+@@ -155,13 +162,15 @@ static struct power_supply test_power_supplies[] = {
+ 		.properties = test_power_ac_props,
+ 		.num_properties = ARRAY_SIZE(test_power_ac_props),
+ 		.get_property = test_power_get_ac_property,
+-	}, {
++	},
++	[TEST_BATTERY] = {
+ 		.name = "test_battery",
+ 		.type = POWER_SUPPLY_TYPE_BATTERY,
+ 		.properties = test_power_battery_props,
+ 		.num_properties = ARRAY_SIZE(test_power_battery_props),
+ 		.get_property = test_power_get_battery_property,
+-	}, {
++	},
++	[TEST_USB] = {
+ 		.name = "test_usb",
+ 		.type = POWER_SUPPLY_TYPE_USB,
+ 		.supplied_to = test_power_ac_supplied_to,
+@@ -178,6 +187,8 @@ static int __init test_power_init(void)
+ 	int i;
+ 	int ret;
+ 
++	BUILD_BUG_ON(TEST_POWER_NUM != ARRAY_SIZE(test_power_supplies));
++
+ 	for (i = 0; i < ARRAY_SIZE(test_power_supplies); i++) {
+ 		ret = power_supply_register(NULL, &test_power_supplies[i]);
+ 		if (ret) {
+@@ -309,7 +320,7 @@ static inline void signal_power_supply_changed(struct power_supply *psy)
+ static int param_set_ac_online(const char *key, const struct kernel_param *kp)
+ {
+ 	ac_online = map_get_value(map_ac_online, key, ac_online);
+-	signal_power_supply_changed(&test_power_supplies[0]);
++	signal_power_supply_changed(&test_power_supplies[TEST_AC]);
+ 	return 0;
+ }
+ 
+@@ -322,7 +333,7 @@ static int param_get_ac_online(char *buffer, const struct kernel_param *kp)
+ static int param_set_usb_online(const char *key, const struct kernel_param *kp)
+ {
+ 	usb_online = map_get_value(map_ac_online, key, usb_online);
+-	signal_power_supply_changed(&test_power_supplies[2]);
++	signal_power_supply_changed(&test_power_supplies[TEST_USB]);
+ 	return 0;
+ }
+ 
+@@ -336,7 +347,7 @@ static int param_set_battery_status(const char *key,
+ 					const struct kernel_param *kp)
+ {
+ 	battery_status = map_get_value(map_status, key, battery_status);
+-	signal_power_supply_changed(&test_power_supplies[1]);
++	signal_power_supply_changed(&test_power_supplies[TEST_BATTERY]);
+ 	return 0;
+ }
+ 
+@@ -350,7 +361,7 @@ static int param_set_battery_health(const char *key,
+ 					const struct kernel_param *kp)
+ {
+ 	battery_health = map_get_value(map_health, key, battery_health);
+-	signal_power_supply_changed(&test_power_supplies[1]);
++	signal_power_supply_changed(&test_power_supplies[TEST_BATTERY]);
+ 	return 0;
+ }
+ 
+@@ -364,7 +375,7 @@ static int param_set_battery_present(const char *key,
+ 					const struct kernel_param *kp)
+ {
+ 	battery_present = map_get_value(map_present, key, battery_present);
+-	signal_power_supply_changed(&test_power_supplies[0]);
++	signal_power_supply_changed(&test_power_supplies[TEST_AC]);
+ 	return 0;
+ }
+ 
+@@ -380,7 +391,7 @@ static int param_set_battery_technology(const char *key,
+ {
+ 	battery_technology = map_get_value(map_technology, key,
+ 						battery_technology);
+-	signal_power_supply_changed(&test_power_supplies[1]);
++	signal_power_supply_changed(&test_power_supplies[TEST_BATTERY]);
+ 	return 0;
+ }
+ 
+@@ -401,7 +412,7 @@ static int param_set_battery_capacity(const char *key,
+ 		return -EINVAL;
+ 
+ 	battery_capacity = tmp;
+-	signal_power_supply_changed(&test_power_supplies[1]);
++	signal_power_supply_changed(&test_power_supplies[TEST_BATTERY]);
+ 	return 0;
+ }
+ 
+@@ -416,7 +427,7 @@ static int param_set_battery_voltage(const char *key,
+ 		return -EINVAL;
+ 
+ 	battery_voltage = tmp;
+-	signal_power_supply_changed(&test_power_supplies[1]);
++	signal_power_supply_changed(&test_power_supplies[TEST_BATTERY]);
+ 	return 0;
+ }
+ 
 -- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+1.9.1
