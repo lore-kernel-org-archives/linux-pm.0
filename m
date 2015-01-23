@@ -1,39 +1,90 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v5 0/1] thermal: rockchip: make temperature reporting much more accurate
-Date: Fri, 23 Jan 2015 23:49:13 +0800
-Message-ID: <1422028154-2349-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/2] cpuidle: exynos: add coupled cpuidle support for
+ Exynos4210
+Date: Fri, 23 Jan 2015 17:24:52 +0100
+Message-ID: <1422030294-20925-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:57952 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbbAWQZP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 11:25:15 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+
+Hi,
+
+The following patchset adds coupled cpuidle support for Exynos4210
+to an existing cpuidle-exynos driver.  As a result it enables AFTR
+mode to be used by default on Exynos4210 without the need to hot
+unplug CPU1 first.
+
+This work is heavily based on earlier cpuidle-exynos4210 driver from
+Daniel Lezcano:
+
+http://www.spinics.net/lists/linux-samsung-soc/msg28134.html
+
+Changes from Daniel's code include:
+- porting code to current kernels
+- fixing it to work on my setup (by using S5P_INFORM register
+  instead of S5P_VA_SYSRAM one on Revison 1.1 and retrying poking
+  CPU1 out of the BOOT ROM if necessary)
+- fixing rare lockup caused by waiting for CPU1 to get stuck in
+  the BOOT ROM (CPU hotplug code in arch/arm/mach-exynos/platsmp.c
+  doesn't require this and works fine)
+- moving Exynos specific code to arch/arm/mach-exynos/pm.c
+- using cpu_boot_reg_base() helper instead of BOOT_VECTOR macro
+- using exynos_cpu_*() helpers instead of accessing registers
+  directly
+- using arch_send_wakeup_ipi_mask() instead of dsb_sev()
+  (this matches CPU hotplug code in arch/arm/mach-exynos/platsmp.c)
+- integrating separate exynos4210-cpuidle driver into existing
+  exynos-cpuidle one
+
+patch #1 is a fix for Exynos platform PM code preparing it for
+coupled cpuidle support
+
+patch #2 adds coupled cpuidle AFTR mode for Exynos4210
+
+The patchset depends on:
+- for-next branch (commit: 9663ad71912b) of linux-samsung.git
+  kernel tree
+
+Changes since v2:
+- rebased on top of for-next branch (commit: 9663ad71912b) of
+  linux-samsung.git kernel tree
+
+Changes since v1:
+- rebased on top of for-next branch (commit: 760a7d4763c8) of
+  linux-samsung.git kernel tree (the patchset also applies fine
+  to next-20141126 branch of linux-next kernel tree but needs
+  CPUIDLE_FLAG_TIME_VALID flag usage removed to fix build)
+- added Signed-off-by from Daniel Lezcano to patch #2
+- added separate struct cpuidle_driver exynos_coupled_idle_driver
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
 
-This patch is merged on chromiumos/third_party/kernel.
-https://chromium-review.googlesource.com/#/c/239190/
+Bartlomiej Zolnierkiewicz (2):
+  ARM: EXYNOS: apply S5P_CENTRAL_SEQ_OPTION fix only when necessary
+  cpuidle: exynos: add coupled cpuidle support for Exynos4210
 
-Tested on veyron boards.
-
-
-Changes in v5:
-Fixed some style.
-
-Changes in v4:
-"return -EAGAIN" instead of "return rk_tsadcv2_code_to_temp(code)"
-
-Changes in v3:
-Suggested-by Daniel Kurtz,
-the check doesn't reject "code == 0xfff"
-Fixed in rk_tsadcv2_code_to_temp(u32 code)
-
-Changes in v2:
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Caesar Wang (1):
-  thermal: rockchip: make temperature reporting much more accurate
-
- drivers/thermal/rockchip_thermal.c | 38 +++++++++++++++++++++++++-------------
- 1 file changed, 25 insertions(+), 13 deletions(-)
+ arch/arm/mach-exynos/common.h                |   4 +
+ arch/arm/mach-exynos/exynos.c                |   4 +
+ arch/arm/mach-exynos/platsmp.c               |   2 +-
+ arch/arm/mach-exynos/pm.c                    | 133 ++++++++++++++++++++++++++-
+ arch/arm/mach-exynos/suspend.c               |   4 +
+ drivers/cpuidle/Kconfig.arm                  |   1 +
+ drivers/cpuidle/cpuidle-exynos.c             |  76 ++++++++++++++-
+ include/linux/platform_data/cpuidle-exynos.h |  20 ++++
+ 8 files changed, 234 insertions(+), 10 deletions(-)
+ create mode 100644 include/linux/platform_data/cpuidle-exynos.h
 
 -- 
-1.9.1
+1.8.2.3
+
