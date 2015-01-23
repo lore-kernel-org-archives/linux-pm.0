@@ -1,295 +1,271 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/6] mfd: max77843: Add max77843 MFD driver core driver
-Date: Fri, 23 Jan 2015 08:16:04 +0100
-Message-ID: <1421997364.27149.5.camel@AMDC1943>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH 5/6] regulator: max77843: Add max77843 regulator driver
+Date: Fri, 23 Jan 2015 08:18:41 +0100
+Message-ID: <CAJKOXPdWTE6CQC57oV5vsz4TNK4H8==ehpd=3OOMYnJRW+ifWw@mail.gmail.com>
 References: <1421989367-32721-1-git-send-email-jaewon02.kim@samsung.com>
- <1421989367-32721-2-git-send-email-jaewon02.kim@samsung.com>
- <CAJKOXPfRYhJNUAE=W3zPWvyza9k_YA=hu4KjLRuLh7kie3guQA@mail.gmail.com>
- <54C1ED09.1080607@samsung.com>
+	<1421989367-32721-6-git-send-email-jaewon02.kim@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <54C1ED09.1080607@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f170.google.com ([209.85.220.170]:35810 "EHLO
+	mail-vc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753264AbbAWHSm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jan 2015 02:18:42 -0500
+In-Reply-To: <1421989367-32721-6-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
-On pi=C4=85, 2015-01-23 at 15:41 +0900, Beomho Seo wrote:
-> On 01/23/2015 03:32 PM, Krzysztof Kozlowski wrote:
-> > 2015-01-23 6:02 GMT+01:00 Jaewon Kim <jaewon02.kim@samsung.com>:
-> >> This patch adds MAX77843 core/irq driver to support PMIC,
-> >> MUIC(Micro USB Interface Controller), Charger, Fuel Gauge,
-> >> LED and Haptic device.
-> >>
-> >> Cc: Lee Jones <lee.jones@linaro.org>
-> >> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> >> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-> >> ---
-> >>  drivers/mfd/Kconfig                  |   14 ++
-> >>  drivers/mfd/Makefile                 |    1 +
-> >>  drivers/mfd/max77843.c               |  241 ++++++++++++++++++++
-> >>  include/linux/mfd/max77843-private.h |  410 +++++++++++++++++++++=
-+++++++++++++
-> >>  4 files changed, 666 insertions(+)
-> >>  create mode 100644 drivers/mfd/max77843.c
-> >>  create mode 100644 include/linux/mfd/max77843-private.h
-> >>
-> >> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> >> index 2e6b731..0c67c79 100644
-> >> --- a/drivers/mfd/Kconfig
-> >> +++ b/drivers/mfd/Kconfig
-> >> @@ -442,6 +442,20 @@ config MFD_MAX77693
-> >>           additional drivers must be enabled in order to use the f=
-unctionality
-> >>           of the device.
-> >>
-> >> +config MFD_MAX77843
-> >> +       bool "Maxim Semiconductor MAX77843 PMIC Support"
-> >> +       depends on I2C=3Dy
-> >> +       select MFD_CORE
-> >> +       select REGMAP_I2C
-> >> +       select REGMAP_IRQ
-> >> +       help
-> >> +         Say yes here to add support for Maxim Semiconductor MAX7=
-7843.
-> >> +         This is companion Power Management IC with LEDs, Haptic,=
- Charger,
-> >> +         Fuel Gauge, MUIC(Micro USB Interface Controller) control=
-s on chip.
-> >> +         This driver provides common support for accessing the de=
-vice;
-> >> +         additional drivers must be enabled in order to use the f=
-unctionality
-> >> +         of the device.
-> >> +
-> >>  config MFD_MAX8907
-> >>         tristate "Maxim Semiconductor MAX8907 PMIC Support"
-> >>         select MFD_CORE
-> >> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> >> index 53467e2..fe4f75c 100644
-> >> --- a/drivers/mfd/Makefile
-> >> +++ b/drivers/mfd/Makefile
-> >> @@ -117,6 +117,7 @@ obj-$(CONFIG_MFD_DA9063)    +=3D da9063.o
-> >>  obj-$(CONFIG_MFD_MAX14577)     +=3D max14577.o
-> >>  obj-$(CONFIG_MFD_MAX77686)     +=3D max77686.o
-> >>  obj-$(CONFIG_MFD_MAX77693)     +=3D max77693.o
-> >> +obj-$(CONFIG_MFD_MAX77843)     +=3D max77843.o
-> >>  obj-$(CONFIG_MFD_MAX8907)      +=3D max8907.o
-> >>  max8925-objs                   :=3D max8925-core.o max8925-i2c.o
-> >>  obj-$(CONFIG_MFD_MAX8925)      +=3D max8925.o
-> >> diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
-> >> new file mode 100644
-> >> index 0000000..d7f8b76
-> >> --- /dev/null
-> >> +++ b/drivers/mfd/max77843.c
-> >> @@ -0,0 +1,241 @@
-> >> +/*
-> >> + * max77843.c - MFD core driver for the Maxim MAX77843
-> >> + *
-> >> + * Copyright (C) 2014 Samsung Electrnoics
-> >> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
-> >> + *
-> >> + * This program is free software; you can redistribute it and/or =
-modify
-> >> + * it under the terms of the GNU General Public License as publis=
-hed by
-> >> + * the Free Software Foundation; either version 2 of the License,=
- or
-> >> + * (at your option) any later version.
-> >> + */
-> >> +
-> >> +#include <linux/err.h>
-> >> +#include <linux/i2c.h>
-> >> +#include <linux/init.h>
-> >> +#include <linux/interrupt.h>
-> >> +#include <linux/module.h>
-> >> +#include <linux/mfd/core.h>
-> >> +#include <linux/mfd/max77843-private.h>
-> >> +#include <linux/of_device.h>
-> >> +#include <linux/platform_device.h>
-> >> +
-> >> +static const struct mfd_cell max77843_devs[] =3D {
-> >> +       {
-> >> +               .name =3D "max77843-muic",
-> >> +               .of_compatible =3D "maxim,max77843-muic",
-> >> +       }, {
-> >> +               .name =3D "max77843-regulator",
-> >> +               .of_compatible =3D "maxim,max77843-regulator",
-> >> +       }, {
-> >> +               .name =3D "max77843-charger",
-> >> +               .of_compatible =3D "maxim,max77843-charger"
-> >> +       }, {
-> >> +               .name =3D "max77843-fuelgauge",
-> >> +               .of_compatible =3D "maxim,max77843-fuelgauge",
-> >> +       },
-> >> +};
-> >> +
-> >> +static const struct regmap_config max77843_charger_regmap_config =
-=3D {
-> >> +       .reg_bits       =3D 8,
-> >> +       .val_bits       =3D 8,
-> >> +       .max_register   =3D MAX77843_CHG_REG_END,
-> >> +};
-> >> +
-> >> +static const struct regmap_config max77843_regmap_config =3D {
-> >> +       .reg_bits       =3D 8,
-> >> +       .val_bits       =3D 8,
-> >> +       .max_register   =3D MAX77843_SYS_REG_END,
-> >> +};
-> >> +
-> >> +static const struct regmap_irq max77843_irqs[] =3D {
-> >> +       /* TOPSYS interrupts */
-> >> +       { .reg_offset =3D 0, .mask =3D MAX77843_SYS_IRQ_SYSUVLO_IN=
-T, },
-> >> +       { .reg_offset =3D 0, .mask =3D MAX77843_SYS_IRQ_SYSOVLO_IN=
-T, },
-> >> +       { .reg_offset =3D 0, .mask =3D MAX77843_SYS_IRQ_TSHDN_INT,=
- },
-> >> +       { .reg_offset =3D 0, .mask =3D MAX77843_SYS_IRQ_TM_INT, },
-> >> +};
-> >> +
-> >> +static const struct regmap_irq_chip max77843_irq_chip =3D {
-> >> +       .name           =3D "max77843",
-> >> +       .status_base    =3D MAX77843_SYS_REG_SYSINTSRC,
-> >> +       .mask_base      =3D MAX77843_SYS_REG_SYSINTMASK,
-> >> +       .mask_invert    =3D false,
-> >> +       .num_regs       =3D 1,
-> >> +       .irqs           =3D max77843_irqs,
-> >> +       .num_irqs       =3D ARRAY_SIZE(max77843_irqs),
-> >> +};
-> >> +
-> >> +static int max77843_chg_init(struct max77843 *max77843)
-> >> +{
-> >=20
-> > Could this function be moved to the charger driver? This way the
-> > driver will manage its own resources instead of depending on parent
-> > MFD driver.
-> >=20
->=20
-> Charger regulator and Charger share same resources.
-> So I include this function core driver.
+2015-01-23 6:02 GMT+01:00 Jaewon Kim <jaewon02.kim@samsung.com>:
+> This patch adds new regulator driver to support max77843
+> MFD(Multi Function Device) chip`s regulators.
+> The Max77843 has two voltage regulators for USB safeout.
+>
+> Cc: Mark Brown <broonie@kernel.org>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
+> ---
+>  drivers/regulator/Kconfig    |    8 ++
+>  drivers/regulator/Makefile   |    1 +
+>  drivers/regulator/max77843.c |  259 ++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 268 insertions(+)
+>  create mode 100644 drivers/regulator/max77843.c
+>
+> diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+> index c3a60b5..c1f9c33 100644
+> --- a/drivers/regulator/Kconfig
+> +++ b/drivers/regulator/Kconfig
+> @@ -414,6 +414,14 @@ config REGULATOR_MAX77802
+>           Exynos5420/Exynos5800 SoCs to control various voltages.
+>           It includes support for control of voltage and ramp speed.
+>
+> +config REGULATOR_MAX77843
+> +       tristate "Maxim 77843 regulator"
+> +       depends on MFD_MAX77843
+> +       help
+> +         This driver controls a Maxim 77843 regulator.
+> +         The regulator include two 'SAFEOUT' for USB(Universal Serial Bus)
+> +         This is suitable for Exynos5433 SoC chips.
+> +
+>  config REGULATOR_MC13XXX_CORE
+>         tristate
+>
+> diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+> index 1f28ebf..12408d6 100644
+> --- a/drivers/regulator/Makefile
+> +++ b/drivers/regulator/Makefile
+> @@ -55,6 +55,7 @@ obj-$(CONFIG_REGULATOR_MAX8998) += max8998.o
+>  obj-$(CONFIG_REGULATOR_MAX77686) += max77686.o
+>  obj-$(CONFIG_REGULATOR_MAX77693) += max77693.o
+>  obj-$(CONFIG_REGULATOR_MAX77802) += max77802.o
+> +obj-$(CONFIG_REGULATOR_MAX77843) += max77843.o
+>  obj-$(CONFIG_REGULATOR_MC13783) += mc13783-regulator.o
+>  obj-$(CONFIG_REGULATOR_MC13892) += mc13892-regulator.o
+>  obj-$(CONFIG_REGULATOR_MC13XXX_CORE) +=  mc13xxx-regulator-core.o
+> diff --git a/drivers/regulator/max77843.c b/drivers/regulator/max77843.c
+> new file mode 100644
+> index 0000000..86afc7a
+> --- /dev/null
+> +++ b/drivers/regulator/max77843.c
+> @@ -0,0 +1,259 @@
+> +/*
+> + * max77843.c - Regulator driver for the Maxim MAX77843
+> + *
+> + * Copyright (C) 2014 Samsung Electrnoics
+> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regulator/driver.h>
+> +#include <linux/regulator/machine.h>
+> +#include <linux/mfd/max77843-private.h>
+> +#include <linux/regulator/of_regulator.h>
+> +
+> +#define MAX77843_SUPPORTED_VOLTAGE_NUM 4
+> +
+> +enum max77843_regulator_type {
+> +       MAX77843_SAFEOUT1 = 0,
+> +       MAX77843_SAFEOUT2,
+> +       MAX77843_CHARGER,
+> +
+> +       MAX77843_NUM,
+> +};
+> +
+> +static const unsigned int max77843_regulator_table[] = {
+> +       4850000,
+> +       4900000,
+> +       4950000,
+> +       3300000,
+> +};
+> +
+> +static int max77843_reg_is_enabled(struct regulator_dev *rdev)
+> +{
+> +       struct regmap *regmap = rdev->regmap;
+> +       int ret;
+> +       unsigned int reg;
+> +
+> +       ret = regmap_read(regmap, rdev->desc->enable_reg, &reg);
+> +       if (ret) {
+> +               dev_err(&rdev->dev, "Fialed to read charger register\n");
+> +               return ret;
+> +       }
+> +
+> +       return (reg & rdev->desc->enable_mask) == rdev->desc->enable_mask;
+> +}
+> +
+> +static int max77843_reg_get_current_limit(struct regulator_dev *rdev)
+> +{
+> +       struct regmap *regmap = rdev->regmap;
+> +       unsigned int chg_min_uA = rdev->constraints->min_uA;
+> +       unsigned int chg_max_uA = rdev->constraints->max_uA;
+> +       unsigned int val;
+> +       int ret;
+> +       unsigned int reg, sel;
+> +
+> +       ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_CNFG_02, &reg);
+> +       if (ret) {
+> +               dev_err(&rdev->dev, "Failed to read charger register\n");
+> +               return ret;
+> +       }
+> +
+> +       sel = reg & MAX77843_CHG_FAST_CHG_CURRENT_MASK;
+> +
+> +       if (sel < 0x03)
+> +               sel = 0;
+> +       else
+> +               sel -= 2;
+> +
+> +       val = chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel;
+> +       if (val > chg_max_uA)
+> +               return -EINVAL;
+> +
+> +       return val;
+> +}
+> +
+> +static int max77843_reg_set_current_limit(struct regulator_dev *rdev,
+> +               int min_uA, int max_uA)
+> +{
+> +       struct regmap *regmap = rdev->regmap;
+> +       unsigned int chg_min_uA = rdev->constraints->min_uA;
+> +       int sel = 0;
+> +
+> +       while (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel < min_uA)
+> +               sel++;
+> +
+> +       if (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel > max_uA)
+> +               return -EINVAL;
+> +
+> +       sel += 2;
+> +
+> +       return regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_02, sel);
+> +}
+> +
+> +static struct regulator_ops max77843_charger_ops = {
+> +       .is_enabled             = max77843_reg_is_enabled,
+> +       .enable                 = regulator_enable_regmap,
+> +       .disable                = regulator_disable_regmap,
+> +       .get_current_limit      = max77843_reg_get_current_limit,
+> +       .set_current_limit      = max77843_reg_set_current_limit,
+> +};
+> +
+> +static struct regulator_ops max77843_regulator_ops = {
+> +       .is_enabled             = regulator_is_enabled_regmap,
+> +       .enable                 = regulator_enable_regmap,
+> +       .disable                = regulator_disable_regmap,
+> +       .list_voltage           = regulator_list_voltage_table,
+> +       .get_voltage_sel        = regulator_get_voltage_sel_regmap,
+> +       .set_voltage_sel        = regulator_set_voltage_sel_regmap,
+> +};
+> +
+> +static const struct regulator_desc max77843_supported_regulators[] = {
+> +       [MAX77843_SAFEOUT1] = {
+> +               .name           = "SAFEOUT1",
+> +               .id             = MAX77843_SAFEOUT1,
+> +               .ops            = &max77843_regulator_ops,
+> +               .type           = REGULATOR_VOLTAGE,
+> +               .owner          = THIS_MODULE,
+> +               .n_voltages     = MAX77843_SUPPORTED_VOLTAGE_NUM,
+> +               .volt_table     = max77843_regulator_table,
+> +               .enable_reg     = MAX77843_SYS_REG_SAFEOUTCTRL,
+> +               .enable_mask    = MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT1,
+> +               .vsel_reg       = MAX77843_SYS_REG_SAFEOUTCTRL,
+> +               .vsel_mask      = MAX77843_REG_SAFEOUTCTRL_SAFEOUT1_MASK,
+> +       },
+> +       [MAX77843_SAFEOUT2] = {
+> +               .name           = "SAFEOUT2",
+> +               .id             = MAX77843_SAFEOUT2,
+> +               .ops            = &max77843_regulator_ops,
+> +               .type           = REGULATOR_VOLTAGE,
+> +               .owner          = THIS_MODULE,
+> +               .n_voltages     = MAX77843_SUPPORTED_VOLTAGE_NUM,
+> +               .volt_table     = max77843_regulator_table,
+> +               .enable_reg     = MAX77843_SYS_REG_SAFEOUTCTRL,
+> +               .enable_mask    = MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT2,
+> +               .vsel_reg       = MAX77843_SYS_REG_SAFEOUTCTRL,
+> +               .vsel_mask      = MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK,
+> +       },
+> +       [MAX77843_CHARGER] = {
+> +               .name           = "CHARGER",
+> +               .id             = MAX77843_CHARGER,
+> +               .ops            = &max77843_charger_ops,
+> +               .type           = REGULATOR_CURRENT,
+> +               .owner          = THIS_MODULE,
+> +               .enable_reg     = MAX77843_CHG_REG_CHG_CNFG_00,
+> +               .enable_mask    = MAX77843_CHG_MASK,
+> +       },
+> +};
+> +
+> +static struct of_regulator_match max77843_regulator_matches[] = {
+> +       { .name = "SAFEOUT1", },
+> +       { .name = "SAFEOUT2", },
+> +       { .name = "CHARGER", },
+> +};
+> +
+> +static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
+> +{
+> +       switch (reg_id) {
+> +       case MAX77843_SAFEOUT1:
+> +       case MAX77843_SAFEOUT2:
+> +               return max77843->regmap;
+> +       case MAX77843_CHARGER:
+> +               return max77843->regmap_chg;
+> +       default:
+> +               return max77843->regmap;
+> +       }
+> +}
+> +
+> +static int max77843_regulator_dt_parse(struct platform_device *pdev)
+> +{
+> +       struct device_node *np;
+> +       int ret;
+> +
+> +       np = of_get_child_by_name(pdev->dev.parent->of_node, "regulators");
+> +       if (!np) {
+> +               dev_err(&pdev->dev,
+> +                       "Cannot get child OF node for regulators\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       ret = of_regulator_match(&pdev->dev, np, max77843_regulator_matches,
+> +                       ARRAY_SIZE(max77843_regulator_matches));
+> +       if (ret < 0) {
+> +               dev_err(&pdev->dev, "Cannot parsing regulator init data\n");
+> +               return ret;
+> +       }
+> +
+> +       of_node_put(np);
+> +
+> +       return 0;
 
-OK, I see... Could you describe it in comments somewhere? For example i=
-n
-comment above the function. Currently this looks like only as regmap fo=
-r
-charger.
-
-Unfortunately current solution imposes problem with releasing resources=
-=2E
-Who is the owner of i2c dummy device?
-
-1. The charger driver will unregister it if max77843_charger_probe()
-fails. What will happen with regulator driver in such case?
-
-2. Who will release this i2c dummy device in normal unbind? Currently i=
-t
-leaks.
+Use simplified DT parsing method (of_match and regulators_node from
+regulators_desc). This function could be removed then.
 
 Best regards,
 Krzysztof
-
->=20
-> >> +       int ret;
-> >> +
-> >> +       max77843->i2c_chg =3D i2c_new_dummy(max77843->i2c->adapter=
-, I2C_ADDR_CHG);
-> >> +       if (!max77843->i2c_chg) {
-> >> +               dev_err(&max77843->i2c->dev,
-> >> +                               "Cannot allocate I2C device for Ch=
-arger\n");
-> >> +               return PTR_ERR(max77843->i2c_chg);
-> >> +       }
-> >> +       i2c_set_clientdata(max77843->i2c_chg, max77843);
-> >> +
-> >> +       max77843->regmap_chg =3D devm_regmap_init_i2c(max77843->i2=
-c_chg,
-> >> +                       &max77843_charger_regmap_config);
-> >> +       if (IS_ERR(max77843->regmap_chg)) {
-> >> +               ret =3D PTR_ERR(max77843->regmap_chg);
-> >> +               goto err_chg_i2c;
-> >> +       }
-> >> +
-> >> +       return 0;
-> >> +
-> >> +err_chg_i2c:
-> >> +       i2c_unregister_device(max77843->i2c_chg);
-> >> +
-> >> +       return ret;
-> >> +}
-> >> +
-> >> +static int max77843_probe(struct i2c_client *i2c,
-> >> +                                       const struct i2c_device_id=
- *id)
-> >> +{
-> >> +       struct max77843 *max77843;
-> >> +       int ret;
-> >> +       unsigned int reg_data;
-> >> +
-> >> +       max77843 =3D devm_kzalloc(&i2c->dev, sizeof(*max77843), GF=
-P_KERNEL);
-> >> +       if (!max77843)
-> >> +               return -ENOMEM;
-> >> +
-> >> +       i2c_set_clientdata(i2c, max77843);
-> >> +       max77843->dev =3D &i2c->dev;
-> >> +       max77843->i2c =3D i2c;
-> >> +       max77843->irq =3D i2c->irq;
-> >> +
-> >> +       max77843->regmap =3D devm_regmap_init_i2c(i2c,
-> >> +                       &max77843_regmap_config);
-> >> +       if (IS_ERR(max77843->regmap)) {
-> >> +               dev_err(&i2c->dev, "Failed to allocate topsys regi=
-ster map\n");
-> >> +               return PTR_ERR(max77843->regmap);
-> >> +       }
-> >> +
-> >> +       ret =3D regmap_add_irq_chip(max77843->regmap, max77843->ir=
-q,
-> >> +                       IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHA=
-RED,
-> >> +                       0, &max77843_irq_chip, &max77843->irq_data=
-);
-> >=20
-> > Why shared IRQ?
-> >=20
-> >> +       if (ret) {
-> >> +               dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\=
-n");
-> >> +               return ret;
-> >> +       }
-> >> +
-> >> +       ret =3D regmap_read(max77843->regmap,
-> >> +                       MAX77843_SYS_REG_PMICID, &reg_data);
-> >> +       if (ret < 0) {
-> >> +               dev_err(&i2c->dev, "Failed to read PMIC ID\n");
-> >> +               goto err_pmic_id;
-> >> +       }
-> >> +       dev_info(&i2c->dev, "device ID: 0x%x\n", reg_data);
-> >> +
-> >> +       ret =3D max77843_chg_init(max77843);
-> >> +       if (ret) {
-> >> +               dev_err(&i2c->dev, "Failed to init Charger\n");
-> >> +               goto err_pmic_id;
-> >> +       }
-> >> +
-> >> +       ret =3D regmap_update_bits(max77843->regmap,
-> >> +                       MAX77843_SYS_REG_INTSRCMASK,
-> >> +                       MAX77843_INTSRC_MASK_MASK,
-> >> +                       (unsigned int)~MAX77843_INTSRC_MASK_MASK);
-> >> +       if (ret < 0) {
-> >> +               dev_err(&i2c->dev, "Failed to unmask interrupt sou=
-rece\n");
-> >=20
-> > s/sourece/source/
-> >=20
-> > Best regards,
-> > Krzysztof
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm"=
- in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >=20
