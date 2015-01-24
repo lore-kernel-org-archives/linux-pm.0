@@ -1,124 +1,178 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Sat, 24 Jan 2015 17:15:22 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1501241254010.5526@nanos>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com> <1025ebd0a9984037bf15adf3ae4889d9@BN1BFFO11FD013.protection.gbl> <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl> <12360948.gSvRbI0dui@vostro.rjw.lan>
- <20150112154347.GA23297@red-moon> <2313f65696c04c48867a3e8ce65ceb0b@BL2FFO11FD015.protection.gbl> <20150112161453.GA25281@red-moon> <97acd41d4ec349de80a2c1f30ec18efa@BL2FFO11FD007.protection.gbl>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Sat, 24 Jan 2015 17:49:59 -0400
+Message-ID: <20150124214955.GA14443@developer.hsd1.ca.comcast.net>
+References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+ <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-704767873-1422102053=:5526"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:40696 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbbAXQPv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jan 2015 11:15:51 -0500
-In-Reply-To: <97acd41d4ec349de80a2c1f30ec18efa@BL2FFO11FD007.protection.gbl>
-Content-ID: <alpine.DEB.2.11.1501241322300.5526@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?ISO-8859-15?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-704767873-1422102053=:5526
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.DEB.2.11.1501241322301.5526@nanos>
-
-On Fri, 23 Jan 2015, Sören Brinkmann wrote:
-> On Mon, 2015-01-12 at 04:14PM +0000, Lorenzo Pieralisi wrote:
-> > I thought that a shutdown clock event device explicitly disables IRQ
-> > assertion, that's why I am inquiring, I do not understand how this
-> > can happen - how can you have a pending timer IRQ at step 3 above.
-> 
-> It does I guess, but the shutdown of the IRQ happens after disabling
-> IRQs. During that window the IRQ can become pening without anybody
-> handling it. Shutting the timer down usually just ensures that no new
-> interrupts are signaled but it apparently doesn't check whether any are
-> still pending (which isn't necessary in almost all cases since the ISR
-> would take care of it).
-
-Well, the issue is that lots of platforms are just not affected by
-this because they either power off or simply do not propagate
-interrupts which are not explicitely marked as wakeup sources.
-
-After thinking more about it, we really should try to handle it at the
-core code, especially because the freezer folks who try to shutdown
-the tick completely run into similar issues.
-
-But, I don't think that just moving the suspend() call before
-disabling interrupts is sufficient. I rather think it's outright
-dangerous.
-
-suspend_ce()
-   local_irq_disable();
-
----> Interrupt becomes pending
-
-   shutdown(ce);
-   local_irq_enable();
-
----> Interrupt fires
-
-There are implementations which actually switch of clocks and such at
-shutdown. So depending on the code in the actual interrupt handler (not the
-clockevent->handler, though that might have issues as well) we might
-touch a disfunctional device with possibly fatal consequences.
-
-Right now this cannot happen as the invocation of the interrupt
-handler is guaranteed to happen _after_ the device has been
-resumed. Just because it does not explode in your implementation does
-not mean its safe to inflict on everyone.
-
-So if we try to handle this issue at the core level, then we really
-must deal with the interrupt itself.
-
-Timer interrupts are always marked IRQF_NO_SUSPEND, because we still
-need them until syscore_suspend(). So in case we really shut down the
-clockevent device via tick_suspend() then we must disable the
-interrupt there as well and reenable it in tick_resume().
-
-But that's not really possible at the core level today. Timer
-interrupts are delivered by various mechanisms:
-
-      - plain interrupts
-      - percpu interrupts
-      - per cpu direct vectors
-      - more complex stuff
-
-and we have no idea which type we are dealing with. So the only option
-would be to have a callback and let the suspend code do:
-
-   if (cedev->disable_irq)
-      cedev->disable_irq(cddev);
-
-and the reverse operation for resume. So we can provide default
-implementations for the callbacks:
-
-   void ce_[dis|en]able_irq(...)
-   void ce_[dis|en]able_percpu_irq(...)
-
-which would rely on cedev->irq. Those two would cover most of the
-implementations. The ones with special requirements can implement
-their own.
-
-Now at the irq level, we'd need a new function for the device irqs:
-
-    disable_and_mask_irq_nosync(irq)
-
-which makes sure that the line is masked at the hardware level. That's
-necessary because the lazy interrupt disable is not sufficient. The
-percpu irqs are already masking at the hardware level.
-
-One might argue that we could handle this in set_mode() as well, but
-we are thinking about going away from that multiplex call. Aside of
-that, ensuring the symmetry of disable/enable invocations would be
-problematic with the existing set_mode() implementations and usage.
-
-Thanks,
-
-	tglx
 
 
---8323329-704767873-1422102053=:5526--
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Jan 23, 2015 at 01:09:53PM +0100, Lukasz Majewski wrote:
+> 1. Introduction
+>=20
+> Following patches aim to clean up the current implementation of the therm=
+al
+> framework on Exynos devices.
+>=20
+> The main goal was to use a generic code for reading thermal configuration
+> (of-thermal.c). Due to that redundant exynos_thermal_common.[h|c] files
+> were removed.
+>=20
+> Around 400 lines of code (LOC) were removed directly by this patch, which
+> is around 20% of the Exynos thermal code base.
+>=20
+> This work should NOT bring any functional changes to Exynos thermal=20
+> subsystem.
+>=20
+> 2. Patch-set structure
+>=20
+> Then the cpu_cooling functionality has been preserved to allow cooling
+> devices by reducing operating frequency. Definition of trip points and
+> cpufreq's cooling properties were moved to device tree.
+>=20
+> Then the rework of the way in which configuration data is provided to
+> the Exynos thermal subsystem was performed. Now device tree is used for
+> configuration.
+>=20
+> 3. Dead code removal
+>=20
+> Thermal support for some SoCs, previously available in the exynos_tmu_dat=
+a.c=20
+> file, was removed since, as of (almost) 3.19-rc3, they didn't have TMU bi=
+ndings.
+>=20
+> Moreover, support for cpu_cooling devices was preserved only on those
+> SoCs which had available and working cpufreq driver.
+>=20
+> 4. Testing
+>=20
+> Test devices:
+> - Exynos4210 - Trats (TMU zone + cpu_cooling)
+> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
+> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
+> - Exynos5420 - Arndale-octa (only TMU zones)
+>=20
+> Unfortunately, I don't posses Exynos5440 for testing. Its functionality
+> has been preserved in the code, but not tested on the hardware. I would
+> be grateful for help in testing.
+>=20
+>=20
+> 5. This work apply on the following tree:
+>=20
+> kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
+> SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
+>=20
+>=20
+> Lukasz Majewski (18):
+
+I have applied the following patches to my -fixes branch (for next rc
+cycle)
+
+>   thermal: exynos: cosmetic: Correct comment format
+>   thermal: exynos: Provide thermal_exynos.h file to be included in
+>     device tree files
+>   thermal: exynos: Modify exynos thermal code to use device tree for cpu
+>     cooling configuration
+>   cpufreq: exynos: Use device tree to determine if cpufreq cooling
+>     should be registered
+>   dts: Documentation: Extending documentation entry for exynos-thermal
+>   dts: Documentation: Update exynos-thermal.txt example for Exynos5440
+>   thermal: samsung: core: Exynos TMU rework to use device tree for
+>     configuration
+>   thermal: exynos: Remove exynos_thermal_common.[c|h] files
+>   thermal: exynos: Remove exynos_tmu_data.c file
+
+The patches below should go via platform tree:
+
+>   arm: dts: trats: Enable TMU on the Exynos4210 trats device
+>   arm: dts: odroid: Add LDO10 regulator node necessary for TMU on Odroid
+>   arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3 device
+>   arm: dts: Adding CPU cooling binding for Exynos SoCs
+>   thermal: exynos: dts: Add default definition of the TMU sensor
+>     parameter
+>   thermal: dts: Default trip points definition for Exynos5420 SoCs
+>   thermal: exynos: dts: Define default thermal-zones for Exynos4
+>   thermal: dts: exynos: Trip points and sensor configuration data for
+>     Exynos5440
+>   thermal: exynos: dts: Provide device tree bindings identical to the
+>     one in exynos_tmu_data.c
+
+
+Thanks a lot.
+
+>=20
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
+>  arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
+>  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
+>  arch/arm/boot/dts/exynos4.dtsi                     |   4 +
+>  arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
+>  arch/arm/boot/dts/exynos4210.dtsi                  |  30 +-
+>  arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
+>  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
+>  arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
+>  arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
+>  arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
+>  arch/arm/boot/dts/exynos5250.dtsi                  |  29 +-
+>  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
+>  arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
+>  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
+>  arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
+>  arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
+>  drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
+>  drivers/thermal/samsung/Makefile                   |   2 -
+>  drivers/thermal/samsung/exynos_thermal_common.c    | 427 ---------------=
+------
+>  drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
+>  drivers/thermal/samsung/exynos_tmu.c               | 348 +++++++++++----=
+--
+>  drivers/thermal/samsung/exynos_tmu.h               |  76 +---
+>  drivers/thermal/samsung/exynos_tmu_data.c          | 264 -------------
+>  include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
+>  26 files changed, 636 insertions(+), 1008 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
+>  create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+>  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+>  create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
+>=20
+> --=20
+> 2.0.0.rc2
+>=20
+
+--azLHFNyN32YCQGCU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUxBN6AAoJEMLUO4d9pOJWUqUIAJgjm3Sog1tNBwNRkFjOHmLr
+me8rT5TdE+LLsYhLAoaVL8xIIIGaIx4jRp+Ni7LvRIIMjWHpjmDKuhVGTaTai3bC
+rPjA58wAsH/X8k50X76LMSPQlzzStO826d3gKcPdBg5dVwR/3Z2tlWwRJ/P9Fx9P
+/4dY51VknhLwLXSetdE7gVrX4JqxMUkm1hwKB1i3uZX4pnDiXq1quZNvQJPu53lW
+L3jTGpUYLgURqz88Ajlr0Y5FN1kaXucXLuGPEgtyGCM0H5Z2rwco9smFHC2xhzL5
+DIM9+JVfMhaPKizo3RhHIWP+68PtMzwWXC+d02RHA8zSf/zsx7k9HbIJkk9fNzg=
+=AE1g
+-----END PGP SIGNATURE-----
+
+--azLHFNyN32YCQGCU--
