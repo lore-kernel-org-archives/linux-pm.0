@@ -1,46 +1,124 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: Re: [PATCH v4 00/17] thermal: exynos: Thermal code rework to use
- device tree
-Date: Sat, 24 Jan 2015 13:04:40 +0900
-Message-ID: <54C319D8.4050303@kernel.org>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com> <1421407861-25099-1-git-send-email-l.majewski@samsung.com> <0dad01d036e0$2f376c80$8da64580$@kernel.org> <20150123105944.457d6d07@amdc2363> <0e1401d036fb$c00a3510$401e9f30$@kernel.org> <20150123144540.GF13468@developer.hsd1.ca.comcast.net>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
+Date: Sat, 24 Jan 2015 17:15:22 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1501241254010.5526@nanos>
+References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com> <1025ebd0a9984037bf15adf3ae4889d9@BN1BFFO11FD013.protection.gbl> <99d5bcca1d6541a49ff8a9f41f9b18af@BL2FFO11FD039.protection.gbl> <12360948.gSvRbI0dui@vostro.rjw.lan>
+ <20150112154347.GA23297@red-moon> <2313f65696c04c48867a3e8ce65ceb0b@BL2FFO11FD015.protection.gbl> <20150112161453.GA25281@red-moon> <97acd41d4ec349de80a2c1f30ec18efa@BL2FFO11FD007.protection.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150123144540.GF13468@developer.hsd1.ca.comcast.net>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Kukjin Kim <kgene@kernel.org>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Zhang Rui' <rui.zhang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-704767873-1422102053=:5526"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:40696 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbbAXQPv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jan 2015 11:15:51 -0500
+In-Reply-To: <97acd41d4ec349de80a2c1f30ec18efa@BL2FFO11FD007.protection.gbl>
+Content-ID: <alpine.DEB.2.11.1501241322300.5526@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?ISO-8859-15?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 01/23/15 23:45, Eduardo Valentin wrote:
-> Hi Kukjin,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323329-704767873-1422102053=:5526
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.11.1501241322301.5526@nanos>
+
+On Fri, 23 Jan 2015, Sören Brinkmann wrote:
+> On Mon, 2015-01-12 at 04:14PM +0000, Lorenzo Pieralisi wrote:
+> > I thought that a shutdown clock event device explicitly disables IRQ
+> > assertion, that's why I am inquiring, I do not understand how this
+> > can happen - how can you have a pending timer IRQ at step 3 above.
 > 
-Hi Eduardo,
+> It does I guess, but the shutdown of the IRQ happens after disabling
+> IRQs. During that window the IRQ can become pening without anybody
+> handling it. Shutting the timer down usually just ensures that no new
+> interrupts are signaled but it apparently doesn't check whether any are
+> still pending (which isn't necessary in almost all cases since the ISR
+> would take care of it).
 
-[...]
+Well, the issue is that lots of platforms are just not affected by
+this because they either power off or simply do not propagate
+interrupts which are not explicitely marked as wakeup sources.
 
->>>> I hope will apply DT changes in Samsung tree. Is it OK to thermal
->>>> tree?
->>>
->>> I think that it is up to you and Eduardo to decide :-).
->>>
->>> I'd personally prefer to add this patch set at once to Eduardo's tree
->>> (of course with your ACKs).
->>>
->> If so, we could see too many useless merge conflicts. Because your patches
->> touch most of exynos DT stuff and that's why DT changes should be handled in
->> Samsung tree if there is no problem ;) Let's wait for thermal guys.
-> 
-> Let's target the latest version (v6) of this series. You can add my
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> 
-OK, I'll take DT changes in my tree with your ack.
+After thinking more about it, we really should try to handle it at the
+core code, especially because the freezer folks who try to shutdown
+the tick completely run into similar issues.
 
-> in the DTS changes. And add them via your tree. I believe we will avoid
-> merge conflicts this way. I will handle the patches touching drivers/.
-> 
-Sure, thanks.
+But, I don't think that just moving the suspend() call before
+disabling interrupts is sufficient. I rather think it's outright
+dangerous.
 
-- Kukjin
+suspend_ce()
+   local_irq_disable();
+
+---> Interrupt becomes pending
+
+   shutdown(ce);
+   local_irq_enable();
+
+---> Interrupt fires
+
+There are implementations which actually switch of clocks and such at
+shutdown. So depending on the code in the actual interrupt handler (not the
+clockevent->handler, though that might have issues as well) we might
+touch a disfunctional device with possibly fatal consequences.
+
+Right now this cannot happen as the invocation of the interrupt
+handler is guaranteed to happen _after_ the device has been
+resumed. Just because it does not explode in your implementation does
+not mean its safe to inflict on everyone.
+
+So if we try to handle this issue at the core level, then we really
+must deal with the interrupt itself.
+
+Timer interrupts are always marked IRQF_NO_SUSPEND, because we still
+need them until syscore_suspend(). So in case we really shut down the
+clockevent device via tick_suspend() then we must disable the
+interrupt there as well and reenable it in tick_resume().
+
+But that's not really possible at the core level today. Timer
+interrupts are delivered by various mechanisms:
+
+      - plain interrupts
+      - percpu interrupts
+      - per cpu direct vectors
+      - more complex stuff
+
+and we have no idea which type we are dealing with. So the only option
+would be to have a callback and let the suspend code do:
+
+   if (cedev->disable_irq)
+      cedev->disable_irq(cddev);
+
+and the reverse operation for resume. So we can provide default
+implementations for the callbacks:
+
+   void ce_[dis|en]able_irq(...)
+   void ce_[dis|en]able_percpu_irq(...)
+
+which would rely on cedev->irq. Those two would cover most of the
+implementations. The ones with special requirements can implement
+their own.
+
+Now at the irq level, we'd need a new function for the device irqs:
+
+    disable_and_mask_irq_nosync(irq)
+
+which makes sure that the line is masked at the hardware level. That's
+necessary because the lazy interrupt disable is not sufficient. The
+percpu irqs are already masking at the hardware level.
+
+One might argue that we could handle this in set_mode() as well, but
+we are thinking about going away from that multiplex call. Aside of
+that, ensuring the symmetry of disable/enable invocations would be
+problematic with the existing set_mode() implementations and usage.
+
+Thanks,
+
+	tglx
+
+
+--8323329-704767873-1422102053=:5526--
