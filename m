@@ -1,43 +1,26 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v3] PCI / PM: Avoid resuming PCI devices during system suspend
-Date: Sat, 24 Jan 2015 01:40:08 +0100
-Message-ID: <1608158.mpjigghEOx@vostro.rjw.lan>
-References: <1460212.bInrzeZle0@vostro.rjw.lan> <20035664.sy5Q5n4bIK@vostro.rjw.lan> <CAErSpo6CFNBWp_CDZQc3XmCFzR5nEjWSfLSVG5c549pEHn4g4Q@mail.gmail.com>
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: Re: [PATCH v3 00/16] thermal: exynos: Thermal code rework to
+ use device tree
+Date: Sat, 24 Jan 2015 02:00:09 +0100
+Message-ID: <54C2EE99.6070108@math.uni-bielefeld.de>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com> <1421242874-3425-1-git-send-email-l.majewski@samsung.com> <54B8549F.60707@gmx.net> <20150116092946.38860303@amdc2363> <54BD9377.30606@gmx.net> <20150120091729.3d01a0cf@amdc2363> <54C04D02.90405@gmx.net> <20150121090802.GC13468@developer.hsd1.ca.comcast.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo6CFNBWp_CDZQc3XmCFzR5nEjWSfLSVG5c549pEHn4g4Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150121090802.GC13468@developer.hsd1.ca.comcast.net>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, tomasz.figa@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 23, 2015 02:55:25 PM Bjorn Helgaas wrote:
-> On Tue, Jan 20, 2015 at 7:17 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Commit f25c0ae2b4c4 (ACPI / PM: Avoid resuming devices in ACPI PM
-> > domain during system suspend) modified the ACPI PM domain's system
-> > suspend callbacks to allow devices attached to it to be left in the
-> > runtime-suspended state during system suspend so as to optimize
-> > the suspend process.
-> >
-> > This was based on the general mechanism introduced by commit
-> > aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended
-> > devices unnecessarily).
-> >
-> > Extend that approach to PCI devices by modifying the PCI bus type's
-> > ->prepare callback to return 1 for devices that are runtime-suspended
-> > when it is being executed and that are in a suitable power state and
-> > need not be resumed going forward.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> I don't profess to understand this, and it seems like something you
-> could merge via your PM tree.  So I trust you to do the right thing
-> with it :)
-> 
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Eduardo Valentin wrote:
+> The reason is that hwmon sensor device drivers also register via
+> of-thermal. So, adding hwmon interface by default will create a
+> cyclic problem.
+Hmm, I see. Would it still be possible to flag some thermal zones so
+that hwmon nodes are created for them?
 
-Thanks!
+
+With best wishes,
+Tobias
