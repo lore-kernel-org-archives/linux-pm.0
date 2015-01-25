@@ -1,85 +1,57 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 4/6] power/reset: st-poweroff: Register with kernel restart handler
-Date: Sun, 25 Jan 2015 12:30:43 -0800
-Message-ID: <1422217845-18901-5-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 6/6] power/reset: restart-poweroff: Remove arm dependencies
+Date: Sun, 25 Jan 2015 12:30:45 -0800
+Message-ID: <1422217845-18901-7-git-send-email-linux@roeck-us.net>
 References: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:45886 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:45897 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbbAYUbH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 15:31:07 -0500
+	with ESMTP id S1751974AbbAYUbN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 15:31:13 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1YFTpq-000kNb-Lt
-	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 20:31:07 +0000
+	id 1YFTpx-000kXj-6i
+	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 20:31:13 +0000
 In-Reply-To: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
 
-Register with kernel restart handler instead of setting arm_pm_restart
-directly. Select high priority since the restart handler is instantiated
-through devicetree, indicating that it should be used if configured.
+This driver is now arm specific anymore, so there is no need to include
+an arm specific include file. Also drop unnecessary depencency on ARM
+from Kconfig.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/st-poweroff.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/power/reset/Kconfig            | 1 -
+ drivers/power/reset/restart-poweroff.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/drivers/power/reset/st-poweroff.c b/drivers/power/reset/st-poweroff.c
-index a0acf25..27383de 100644
---- a/drivers/power/reset/st-poweroff.c
-+++ b/drivers/power/reset/st-poweroff.c
-@@ -15,10 +15,9 @@
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index bb81e2a..27f6646 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -103,7 +103,6 @@ config POWER_RESET_QNAP
+ 
+ config POWER_RESET_RESTART
+ 	bool "Restart power-off driver"
+-	depends on ARM
+ 	help
+ 	  Some boards don't actually have the ability to power off.
+ 	  Instead they restart, and u-boot holds the SoC until the
+diff --git a/drivers/power/reset/restart-poweroff.c b/drivers/power/reset/restart-poweroff.c
+index f46f2c2..41b22c4 100644
+--- a/drivers/power/reset/restart-poweroff.c
++++ b/drivers/power/reset/restart-poweroff.c
+@@ -16,7 +16,6 @@
  #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/mfd/syscon.h>
-+#include <linux/reboot.h>
- #include <linux/regmap.h>
- 
+ #include <linux/module.h>
+ #include <linux/reboot.h>
 -#include <asm/system_misc.h>
--
- struct reset_syscfg {
- 	struct regmap *regmap;
- 	/* syscfg used for reset */
-@@ -75,7 +74,8 @@ static struct reset_syscfg stid127_reset = {
  
- static struct reset_syscfg *st_restart_syscfg;
- 
--static void st_restart(enum reboot_mode reboot_mode, const char *cmd)
-+static int st_restart(struct notifier_block *this, unsigned long mode,
-+		      void *cmd)
+ static void restart_poweroff_do_poweroff(void)
  {
- 	/* reset syscfg updated */
- 	regmap_update_bits(st_restart_syscfg->regmap,
-@@ -88,8 +88,15 @@ static void st_restart(enum reboot_mode reboot_mode, const char *cmd)
- 			   st_restart_syscfg->offset_rst_msk,
- 			   st_restart_syscfg->mask_rst_msk,
- 			   0);
-+
-+	return NOTIFY_DONE;
- }
- 
-+static struct notifier_block st_restart_nb = {
-+	.notifier_call = st_restart,
-+	.priority = 192,
-+};
-+
- static struct of_device_id st_reset_of_match[] = {
- 	{
- 		.compatible = "st,stih415-restart",
-@@ -126,9 +133,7 @@ static int st_reset_probe(struct platform_device *pdev)
- 		return PTR_ERR(st_restart_syscfg->regmap);
- 	}
- 
--	arm_pm_restart = st_restart;
--
--	return 0;
-+	return register_restart_handler(&st_restart_nb);
- }
- 
- static struct platform_driver st_reset_driver = {
 -- 
 2.1.0
 
