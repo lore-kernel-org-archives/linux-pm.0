@@ -1,126 +1,64 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 2/3] mfd/axp20x: add support for fuel gauge cell
-Date: Sun, 25 Jan 2015 13:59:05 +0100
-Message-ID: <20150125125905.GB2719@earth.universe>
-References: <cover.1421957474.git.todd.e.brandt@linux.intel.com>
- <0d1c6b3e06c3195a87d72ca5ec8456748af463ca.1421957474.git.todd.e.brandt@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 16/17] cpufreq: remove check for cpufreq_disabled() from cpufreq_cpu_{get|put}()
+Date: Sun, 25 Jan 2015 18:54:27 +0530
+Message-ID: <CAKohpomwDr2B+4ncjFyfem1o03gJ+N6bdDEDtdJTvreN6ivp9Q@mail.gmail.com>
+References: <cover.1420181916.git.viresh.kumar@linaro.org>
+	<49250a2946ff12500a5474eb9384c125b3ede23c.1420181916.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="+g7M9IMkV8truYOl"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41798 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753308AbbAYM7L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Jan 2015 07:59:11 -0500
-Content-Disposition: inline
-In-Reply-To: <0d1c6b3e06c3195a87d72ca5ec8456748af463ca.1421957474.git.todd.e.brandt@linux.intel.com>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:33752 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223AbbAYNY2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 08:24:28 -0500
+Received: by mail-ob0-f175.google.com with SMTP id wp4so4216499obc.6
+        for <linux-pm@vger.kernel.org>; Sun, 25 Jan 2015 05:24:27 -0800 (PST)
+In-Reply-To: <49250a2946ff12500a5474eb9384c125b3ede23c.1420181916.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Todd Brandt <todd.e.brandt@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-
---+g7M9IMkV8truYOl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Jan 22, 2015 at 12:52:06PM -0800, Todd Brandt wrote:
-> Register definitions and platform data structure
-> for fuel gauge cell devices.
->=20
-> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+On 2 January 2015 at 12:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> In most of the cases cpufreq wouldn't be disabled and this adds unnecessary
+> delay for its users. In the case if cpufreq is really disabled, then the per-cpu
+> variable will also return NULL and things will continue working as is. Remove
+> this unnecessary check.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  include/linux/mfd/axp20x.h | 43 ++++++++++++++++++++++++++++++++++++++++=
-+--
->  1 file changed, 41 insertions(+), 2 deletions(-)
->=20
-> v2: same as v1 and is already accepted, re-included for continuity
->=20
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 81589d1..dfabd6d 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -124,10 +124,27 @@ enum {
->  #define AXP288_PMIC_ADC_H               0x56
->  #define AXP288_PMIC_ADC_L               0x57
->  #define AXP288_ADC_TS_PIN_CTRL          0x84
+>  drivers/cpufreq/cpufreq.c | 6 ------
+>  1 file changed, 6 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 14d637a28dd8..62c6a0b8b0d1 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -202,9 +202,6 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+>         struct cpufreq_policy *policy = NULL;
+>         unsigned long flags;
+>
+> -       if (cpufreq_disabled())
+> -               return NULL;
 > -
->  #define AXP288_PMIC_ADC_EN              0x84
-> -#define AXP288_FG_TUNE5			0xed
-> =20
-> +/* Fuel Gauge */
-> +#define AXP288_FG_RDC1_REG          0xba
-> +#define AXP288_FG_RDC0_REG          0xbb
-> +#define AXP288_FG_OCVH_REG          0xbc
-> +#define AXP288_FG_OCVL_REG          0xbd
-> +#define AXP288_FG_OCV_CURVE_REG     0xc0
-> +#define AXP288_FG_DES_CAP1_REG      0xe0
-> +#define AXP288_FG_DES_CAP0_REG      0xe1
-> +#define AXP288_FG_CC_MTR1_REG       0xe2
-> +#define AXP288_FG_CC_MTR0_REG       0xe3
-> +#define AXP288_FG_OCV_CAP_REG       0xe4
-> +#define AXP288_FG_CC_CAP_REG        0xe5
-> +#define AXP288_FG_LOW_CAP_REG       0xe6
-> +#define AXP288_FG_TUNE0             0xe8
-> +#define AXP288_FG_TUNE1             0xe9
-> +#define AXP288_FG_TUNE2             0xea
-> +#define AXP288_FG_TUNE3             0xeb
-> +#define AXP288_FG_TUNE4             0xec
-> +#define AXP288_FG_TUNE5             0xed
-> =20
->  /* Regulators IDs */
->  enum {
-> @@ -236,4 +253,26 @@ struct axp20x_dev {
->  	const struct regmap_irq_chip	*regmap_irq_chip;
->  };
-> =20
-> +#define BATTID_LEN				64
-> +#define OCV_CURVE_SIZE			32
-> +#define MAX_THERM_CURVE_SIZE	25
-> +#define PD_DEF_MIN_TEMP			0
-> +#define PD_DEF_MAX_TEMP			55
-> +
-> +struct axp20x_fg_pdata {
-> +	char battid[BATTID_LEN + 1];
-> +	int design_cap;
-> +	int min_volt;
-> +	int max_volt;
-> +	int max_temp;
-> +	int min_temp;
-> +	int cap1;
-> +	int cap0;
-> +	int rdc1;
-> +	int rdc0;
-> +	int ocv_curve[OCV_CURVE_SIZE];
-> +	int tcsz;
-> +	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
-> +};
+>         if (!down_read_trylock(&cpufreq_rwsem))
+>                 return NULL;
+>
+> @@ -229,9 +226,6 @@ EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
+>
+>  void cpufreq_cpu_put(struct cpufreq_policy *policy)
+>  {
+> -       if (cpufreq_disabled())
+> -               return;
+> -
+>         kobject_put(&policy->kobj);
+>         up_read(&cpufreq_rwsem);
+>  }
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+@Rafael: Are you fine with this patch as is? I meant, you just left it for
+rebase conflict or because you want it to be part of the WARN() you
+suggested?
 
--- Sebastian
-
---+g7M9IMkV8truYOl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUxOiZAAoJENju1/PIO/qaYnIP/0elT4jd6qjLNb8aOWD1A5Gg
-OJ6svuzpu5AUpEWmkuXoIMuQcyuYRytWaTmI09wl91Tv6gtVDSDOk5CaI84WMZ4w
-s9xWu8oIr/ewDnjSISikTkQJQEJKIBs6DAoU6rH4oaEaMwKjPd/pRzkZFNRQk0GV
-kp68rgH1bZ7Lwl1zyZEjEVzxYHF/eNXr3tb0pCOzgVH7R88Luy11v9XneWtH6Gwb
-61KsSQRGSwCJh762VHU9Lhh1X+1sJ3bBvaKLGGS0mrkB653icyK7TCvIfxFDRsf+
-VzC1VRwVWEy118GvLV9aB82RV2aijd2y9fDQDMiNqX3VkDYg5oLJzWHIwe+dOdk2
-vsK8pqC22pTsjoBicCjbfdOWYPM9syNQCBXqIJebUA336s/6MegbItu9D3oXdn6P
-93mcZokU0X+lDM9+lqArvFhG1Z5JG3HwB19VauING4rF5Nd+nnZV0GgXksW/T9oI
-iREQ0rdGKJNr59JXGCLwf12e30Qi+L5iyMw4H+K0JOBI1705+YepCd8XysUXTPN4
-txTnXl4Tu1iZAUGMy82KBso70k+F/XW7o70KvR5I08s+Ge2Ax95+s0jh1NDLE4Xi
-SSvvhgayl08BeeaoRu5Rkk6ndG0ckG303wHC0nJaQ0E9mw0UBX6qpYQ7S+PsrWxK
-iyMRHOlF4u9RlnbgN6IC
-=hmYb
------END PGP SIGNATURE-----
-
---+g7M9IMkV8truYOl--
+The WARN here might not be a good idea as this can be called by
+users while cpufreq is disabled. But we don't need this check because
+of the reasons I mentioned in commit log.
