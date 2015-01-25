@@ -1,28 +1,22 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 1/6] power/reset: arm-versatile: Register with kernel
- restart handler
-Date: Sun, 25 Jan 2015 12:15:23 -0800
-Message-ID: <54C54EDB.4030406@roeck-us.net>
-References: <1422209622-31994-1-git-send-email-linux@roeck-us.net> <20150125184017.GA29704@earth.universe> <54C53EE4.4070109@roeck-us.net> <20150125200626.GA6536@earth.universe>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150125200626.GA6536@earth.universe>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/6] power/reset: restart handler patch series
+Date: Sun, 25 Jan 2015 12:30:39 -0800
+Message-ID: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:45839 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbbAYUaw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 15:30:52 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1YFTpd-000jq9-1q
+	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 20:30:53 +0000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-Hi Sebastian,
+Register with kernel restart handler instead of setting arm_pm_restart
+directly, plus some other cleanup.
 
-On 01/25/2015 12:06 PM, Sebastian Reichel wrote:
->
-> Maybe update the battery/master branch?
->
-
-I thought I did. Tip is "99a7956 power: ds2782_battery: Simplify the PM hooks"
-
-Does that look correct ?
-
-Guenter
+v2: Rebased to master branch of battery tree
