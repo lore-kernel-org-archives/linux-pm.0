@@ -1,66 +1,59 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH 3/6] power/reset: Remove sun6i reboot driver
-Date: Sun, 25 Jan 2015 19:23:12 +0100
-Message-ID: <20150125182312.GO8470@lukather>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/6] power/reset: arm-versatile: Register with kernel
+ restart handler
+Date: Sun, 25 Jan 2015 19:40:17 +0100
+Message-ID: <20150125184017.GA29704@earth.universe>
 References: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
- <1422209622-31994-3-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mvuFargmsA+C2jC8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:59184 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756079AbbAYSZO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 13:25:14 -0500
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1422209622-31994-3-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---mvuFargmsA+C2jC8
+--BOKacYhQ+x31HxR3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jan 25, 2015 at 10:13:39AM -0800, Guenter Roeck wrote:
-> sun6i restart is now handled by its watchdog driver directly,
-> so this driver is no longer needed.
->=20
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Hi,
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+On Sun, Jan 25, 2015 at 10:13:37AM -0800, Guenter Roeck wrote:
+> Register with kernel restart handler instead of setting arm_pm_restart
+> directly. Select high priority since the restart handler is instantiated
+> through devicetree, indicating that it should be used if configured.
 
-Thanks!
-Maxime
+This does not apply clean for me. Please rebase on top of=20
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+http://git.infradead.org/battery-2.6.git/
 
---mvuFargmsA+C2jC8
+-- Sebastian
+
+--BOKacYhQ+x31HxR3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUxTSQAAoJEBx+YmzsjxAgulMP/AomM9n0VJvYPsrwfrQ1g7sg
-pO7WE/lZB484IIrjrYYdLghx+GLGjRfuTjYngz2JU+T3sSJ103fWK0svWqO8ofvY
-CwBvwuYnbiGkL+eFB3c9alQ5V1segKu3TpCvflzpSRU3VUwQbnftdZZMAuTCV+mM
-T+BqPz0WjJMsIW1oDLu/IO6HbBC80oP14PZtPVv4DIvqfMFb1+gdtW/f9mOInyz4
-KBUwA6Q1RSICg7bHXNLLE3OnWAY9fSPzQbG+YXKxqwDNhaf7L2WEjuc3IFF8tTHb
-Ex9zUT4SIZHeY30RE4w7smS3lrjEs3+nzg/gosSOhqUI/pdo/vP6NMGseHC11LkB
-xIyVFWvGf6aJt5ngCfXw8VOok6yBwpeX3rs+GBM/aCWj8bjHZV27Ht+WdjAUT6ay
-9CND1UA2HB2WCu5aRGy/tn6fUUfzpfir5WU2E9HY+gk1b0560CrOJK+Ur2BkZKVa
-Pj2zzs4a3m7Kj8xKqZrzGZuXaltv3vXl5tIbzw09IvZcmptAY+zY9hSbUlqWzdSb
-P/RysN6FkG0S90tvIm5FKSHJ/ckISiRM77Ub9idJZ2IlqcYwW4l8tSA+EJcO4XMn
-LjjHt5lghrnczeWWtnhl6z2JC9u6k0MNr1end5UIZfR5BJ2LfBxsxFw0VtseRd1X
-9ZSEJQaMnddwLMNsoCSQ
-=qmpU
+iQIcBAEBCgAGBQJUxTiOAAoJENju1/PIO/qa6tkQAIt3Mxc8Li/gZxEU5h0PMWuo
+JZcrIM20gRF9Il2ud+8+/zKjp7u5VaMNsAW86kahM/OTnaNBucO+1wmfVeyyN/p9
+ncux/PHSkMR4n7e085eMKU8g0n0L7si8GRTRNMgl5au773OK//Onz2zhnWZZEIt+
+NQ5u6tCdzBaQJmu8r5vomDHjQiE9raL/u4sHZfRwZkZpSCU81hAVKLALbyb7lMKq
+0f96LwN0OSpVCpolXMrvtv1v9qma34v792QpRfPPtaZbyZN14ICPmLr9eTo9p8JT
+Ki/GjL1lLFE2Sl0tKWAt9wHRSzEZqBFaRWm6sb4vzxpOfuQifYYktsRAlQtDn7La
+iS3+uf/TwYJm0kO43DrSO8qM0ZEICNBXvTOe1GCbWXwBC7S7JSXXlt2RRdm7HYMS
+JpzDxXcUQNbe7TRV4t1JMLOufhDgR/1GfzaA9CA91XrQm9Tf+Ke24CFS3th6WglC
+dgk8TNffiru5XczhCiZGj9qhmjokwXgYaVfeQkm6jgAetZAhYQoLGQvKCsm2ceuU
+QlUI6F1kC3YKYzBAQFsaekVSzEpO6+aghF3KKFX/UScF9KtV6R0WnL4R1qzu7R/B
++hoKp9JD2kVSCtYjcdpPrm5LYuIXS+aLkP5DNDxTUj0Cd/zqOKuoWPdocp//r4KO
+FGsHqypg5rk8XsN652fR
+=Bdhy
 -----END PGP SIGNATURE-----
 
---mvuFargmsA+C2jC8--
+--BOKacYhQ+x31HxR3--
