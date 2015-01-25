@@ -1,90 +1,126 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/3] mfd/axp20x: change battery cell name to fuel gauge
-Date: Sun, 25 Jan 2015 13:57:38 +0100
-Message-ID: <20150125125738.GA2719@earth.universe>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 2/3] mfd/axp20x: add support for fuel gauge cell
+Date: Sun, 25 Jan 2015 13:59:05 +0100
+Message-ID: <20150125125905.GB2719@earth.universe>
 References: <cover.1421957474.git.todd.e.brandt@linux.intel.com>
- <b7c6d711c78eb85fc0c7d5904da4e4c930be0ca9.1421957474.git.todd.e.brandt@linux.intel.com>
+ <0d1c6b3e06c3195a87d72ca5ec8456748af463ca.1421957474.git.todd.e.brandt@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="+g7M9IMkV8truYOl"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41798 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753308AbbAYM7L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 25 Jan 2015 07:59:11 -0500
 Content-Disposition: inline
-In-Reply-To: <b7c6d711c78eb85fc0c7d5904da4e4c930be0ca9.1421957474.git.todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Todd Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, david.woodhouse-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+In-Reply-To: <0d1c6b3e06c3195a87d72ca5ec8456748af463ca.1421957474.git.todd.e.brandt@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Todd Brandt <todd.e.brandt@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com
 
 
---pf9I7BMVVzbSWLtt
+--+g7M9IMkV8truYOl
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 22, 2015 at 12:52:05PM -0800, Todd Brandt wrote:
-> Name changes to the battery cell structure to a
-> more generic cell type: fuel gauge.
+On Thu, Jan 22, 2015 at 12:52:06PM -0800, Todd Brandt wrote:
+> Register definitions and platform data structure
+> for fuel gauge cell devices.
 >=20
-> Signed-off-by: Todd Brandt <todd.e.brandt-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
 > ---
->  drivers/mfd/axp20x.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  include/linux/mfd/axp20x.h | 43 ++++++++++++++++++++++++++++++++++++++++=
++--
+>  1 file changed, 41 insertions(+), 2 deletions(-)
 >=20
-> v1: 01/07/14
-> v2: 01/22/14
-> - replaced the const in axp20x_acpi_match declaration
+> v2: same as v1 and is already accepted, re-included for continuity
 >=20
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index b1b580a..0acbe52 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -87,7 +87,7 @@ static struct resource axp20x_pek_resources[] =3D {
->  	},
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 81589d1..dfabd6d 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -124,10 +124,27 @@ enum {
+>  #define AXP288_PMIC_ADC_H               0x56
+>  #define AXP288_PMIC_ADC_L               0x57
+>  #define AXP288_ADC_TS_PIN_CTRL          0x84
+> -
+>  #define AXP288_PMIC_ADC_EN              0x84
+> -#define AXP288_FG_TUNE5			0xed
+> =20
+> +/* Fuel Gauge */
+> +#define AXP288_FG_RDC1_REG          0xba
+> +#define AXP288_FG_RDC0_REG          0xbb
+> +#define AXP288_FG_OCVH_REG          0xbc
+> +#define AXP288_FG_OCVL_REG          0xbd
+> +#define AXP288_FG_OCV_CURVE_REG     0xc0
+> +#define AXP288_FG_DES_CAP1_REG      0xe0
+> +#define AXP288_FG_DES_CAP0_REG      0xe1
+> +#define AXP288_FG_CC_MTR1_REG       0xe2
+> +#define AXP288_FG_CC_MTR0_REG       0xe3
+> +#define AXP288_FG_OCV_CAP_REG       0xe4
+> +#define AXP288_FG_CC_CAP_REG        0xe5
+> +#define AXP288_FG_LOW_CAP_REG       0xe6
+> +#define AXP288_FG_TUNE0             0xe8
+> +#define AXP288_FG_TUNE1             0xe9
+> +#define AXP288_FG_TUNE2             0xea
+> +#define AXP288_FG_TUNE3             0xeb
+> +#define AXP288_FG_TUNE4             0xec
+> +#define AXP288_FG_TUNE5             0xed
+> =20
+>  /* Regulators IDs */
+>  enum {
+> @@ -236,4 +253,26 @@ struct axp20x_dev {
+>  	const struct regmap_irq_chip	*regmap_irq_chip;
 >  };
 > =20
-> -static struct resource axp288_battery_resources[] =3D {
-> +static struct resource axp288_fuel_gauge_resources[] =3D {
->  	{
->  		.start =3D AXP288_IRQ_QWBTU,
->  		.end   =3D AXP288_IRQ_QWBTU,
-> @@ -350,9 +350,9 @@ static struct mfd_cell axp288_cells[] =3D {
->  		.resources =3D axp288_charger_resources,
->  	},
->  	{
-> -		.name =3D "axp288_battery",
-> -		.num_resources =3D ARRAY_SIZE(axp288_battery_resources),
-> -		.resources =3D axp288_battery_resources,
-> +		.name =3D "axp288_fuel_gauge",
-> +		.num_resources =3D ARRAY_SIZE(axp288_fuel_gauge_resources),
-> +		.resources =3D axp288_fuel_gauge_resources,
->  	},
->  	{
->  		.name =3D "axp288_pmic_acpi",
+> +#define BATTID_LEN				64
+> +#define OCV_CURVE_SIZE			32
+> +#define MAX_THERM_CURVE_SIZE	25
+> +#define PD_DEF_MIN_TEMP			0
+> +#define PD_DEF_MAX_TEMP			55
+> +
+> +struct axp20x_fg_pdata {
+> +	char battid[BATTID_LEN + 1];
+> +	int design_cap;
+> +	int min_volt;
+> +	int max_volt;
+> +	int max_temp;
+> +	int min_temp;
+> +	int cap1;
+> +	int cap0;
+> +	int rdc1;
+> +	int rdc0;
+> +	int ocv_curve[OCV_CURVE_SIZE];
+> +	int tcsz;
+> +	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
+> +};
 
-Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
 -- Sebastian
 
---pf9I7BMVVzbSWLtt
+--+g7M9IMkV8truYOl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUxOg/AAoJENju1/PIO/qaYigP/2LWEifF5zgADJj4OGJNQZRR
-S8X6xClxPe4sE5AJ/itgn0OBjK/QgcGP0B1Ozwr+FBuWAT1avV7C8JY8xAGlhjmH
-y/bv697Rbk9N/qrnnv2RtkNuSsYpAOVsQlNx79O4blSy5BmXCKluvBdzqVq31u8Y
-RVAgihpa0iAlrgKMEeG1RBbtdvWimPitGkXnUWHTs2ojcVe9lPSYmapH31OsFoPL
-GTQK6vXKykzpEjDIaJZPPcnii/4lf8UB3QMvAFUYQMGX+j/6Ji63UASbsowqCJg3
-iKob8p3C+oajiwrxu/uwjhYPKw/ODtAw0xhad0p9Lup5X5PigrLGyikrUD8RNGs4
-Cj9xlr9+T/F9XPvkBSuqVtZiiCF47Z5z0KVrzBaNPGk9aq1o7UCFVWnO3GJmYbDj
-EpfFFhugpTt7ZkqRKhbtEEKwcaGFcPcO6AveEGAJfwmk6L49ZracfwoN54sWq3JR
-WhsvKTY0Hcd1sXX2KBb2L5MQAu+t4Lp3t6xlEhLdC1WQNGQo0m8gNJ6Cs8oJapeV
-ZuuvJmonCcOXbrVsPjy5ZIa/paB0ZLqTD1kM/WjsVjq2VvOtc9yeHG7QPi1MmAjw
-/T5GjE5xIlhteGnfriiw6eAaEXvs95tPlyCmGfjGmmHH+iDCISuw9Z3NMLvjEB2v
-xpgz67HQ80uMOoguOQxD
-=pPsV
+iQIcBAEBCgAGBQJUxOiZAAoJENju1/PIO/qaYnIP/0elT4jd6qjLNb8aOWD1A5Gg
+OJ6svuzpu5AUpEWmkuXoIMuQcyuYRytWaTmI09wl91Tv6gtVDSDOk5CaI84WMZ4w
+s9xWu8oIr/ewDnjSISikTkQJQEJKIBs6DAoU6rH4oaEaMwKjPd/pRzkZFNRQk0GV
+kp68rgH1bZ7Lwl1zyZEjEVzxYHF/eNXr3tb0pCOzgVH7R88Luy11v9XneWtH6Gwb
+61KsSQRGSwCJh762VHU9Lhh1X+1sJ3bBvaKLGGS0mrkB653icyK7TCvIfxFDRsf+
+VzC1VRwVWEy118GvLV9aB82RV2aijd2y9fDQDMiNqX3VkDYg5oLJzWHIwe+dOdk2
+vsK8pqC22pTsjoBicCjbfdOWYPM9syNQCBXqIJebUA336s/6MegbItu9D3oXdn6P
+93mcZokU0X+lDM9+lqArvFhG1Z5JG3HwB19VauING4rF5Nd+nnZV0GgXksW/T9oI
+iREQ0rdGKJNr59JXGCLwf12e30Qi+L5iyMw4H+K0JOBI1705+YepCd8XysUXTPN4
+txTnXl4Tu1iZAUGMy82KBso70k+F/XW7o70KvR5I08s+Ge2Ax95+s0jh1NDLE4Xi
+SSvvhgayl08BeeaoRu5Rkk6ndG0ckG303wHC0nJaQ0E9mw0UBX6qpYQ7S+PsrWxK
+iyMRHOlF4u9RlnbgN6IC
+=hmYb
 -----END PGP SIGNATURE-----
 
---pf9I7BMVVzbSWLtt--
+--+g7M9IMkV8truYOl--
