@@ -1,57 +1,31 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 6/6] power/reset: restart-poweroff: Remove arm dependencies
-Date: Sun, 25 Jan 2015 12:30:45 -0800
-Message-ID: <1422217845-18901-7-git-send-email-linux@roeck-us.net>
-References: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:45897 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbbAYUbN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 15:31:13 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1YFTpx-000kXj-6i
-	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 20:31:13 +0000
-In-Reply-To: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/6] power/reset: arm-versatile: Register with kernel
+ restart handler
+Date: Sun, 25 Jan 2015 12:31:34 -0800
+Message-ID: <54C552A6.7050201@roeck-us.net>
+References: <1422209622-31994-1-git-send-email-linux@roeck-us.net> <20150125184017.GA29704@earth.universe> <54C53EE4.4070109@roeck-us.net> <20150125200626.GA6536@earth.universe> <54C54EDB.4030406@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54C54EDB.4030406@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This driver is now arm specific anymore, so there is no need to include
-an arm specific include file. Also drop unnecessary depencency on ARM
-from Kconfig.
+On 01/25/2015 12:15 PM, Guenter Roeck wrote:
+> Hi Sebastian,
+>
+> On 01/25/2015 12:06 PM, Sebastian Reichel wrote:
+>>
+>> Maybe update the battery/master branch?
+>>
+>
+> I thought I did. Tip is "99a7956 power: ds2782_battery: Simplify the PM hooks"
+>
+> Does that look correct ?
+>
+Never mind, that was -next. I just resent the series, rebased on top of battery/master.
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/power/reset/Kconfig            | 1 -
- drivers/power/reset/restart-poweroff.c | 1 -
- 2 files changed, 2 deletions(-)
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index bb81e2a..27f6646 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -103,7 +103,6 @@ config POWER_RESET_QNAP
- 
- config POWER_RESET_RESTART
- 	bool "Restart power-off driver"
--	depends on ARM
- 	help
- 	  Some boards don't actually have the ability to power off.
- 	  Instead they restart, and u-boot holds the SoC until the
-diff --git a/drivers/power/reset/restart-poweroff.c b/drivers/power/reset/restart-poweroff.c
-index f46f2c2..41b22c4 100644
---- a/drivers/power/reset/restart-poweroff.c
-+++ b/drivers/power/reset/restart-poweroff.c
-@@ -16,7 +16,6 @@
- #include <linux/of_platform.h>
- #include <linux/module.h>
- #include <linux/reboot.h>
--#include <asm/system_misc.h>
- 
- static void restart_poweroff_do_poweroff(void)
- {
--- 
-2.1.0
-
+Guenter
