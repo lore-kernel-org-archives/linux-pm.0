@@ -1,59 +1,36 @@
-From: Sebastian Reichel <sre@kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [PATCH 1/6] power/reset: arm-versatile: Register with kernel
  restart handler
-Date: Sun, 25 Jan 2015 19:40:17 +0100
-Message-ID: <20150125184017.GA29704@earth.universe>
-References: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
+Date: Sun, 25 Jan 2015 11:07:16 -0800
+Message-ID: <54C53EE4.4070109@roeck-us.net>
+References: <1422209622-31994-1-git-send-email-linux@roeck-us.net> <20150125184017.GA29704@earth.universe>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
+In-Reply-To: <20150125184017.GA29704@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
+To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 01/25/2015 10:40 AM, Sebastian Reichel wrote:
+> Hi,
+>
+> On Sun, Jan 25, 2015 at 10:13:37AM -0800, Guenter Roeck wrote:
+>> Register with kernel restart handler instead of setting arm_pm_restart
+>> directly. Select high priority since the restart handler is instantiated
+>> through devicetree, indicating that it should be used if configured.
+>
+> This does not apply clean for me. Please rebase on top of
+>
+> http://git.infradead.org/battery-2.6.git/
+>
 
---BOKacYhQ+x31HxR3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Sebastian,
 
-Hi,
+Sure, will do. I assume you mean battery/next-next since it applies cleanly
+to battery/master.
 
-On Sun, Jan 25, 2015 at 10:13:37AM -0800, Guenter Roeck wrote:
-> Register with kernel restart handler instead of setting arm_pm_restart
-> directly. Select high priority since the restart handler is instantiated
-> through devicetree, indicating that it should be used if configured.
-
-This does not apply clean for me. Please rebase on top of=20
-
-http://git.infradead.org/battery-2.6.git/
-
--- Sebastian
-
---BOKacYhQ+x31HxR3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUxTiOAAoJENju1/PIO/qa6tkQAIt3Mxc8Li/gZxEU5h0PMWuo
-JZcrIM20gRF9Il2ud+8+/zKjp7u5VaMNsAW86kahM/OTnaNBucO+1wmfVeyyN/p9
-ncux/PHSkMR4n7e085eMKU8g0n0L7si8GRTRNMgl5au773OK//Onz2zhnWZZEIt+
-NQ5u6tCdzBaQJmu8r5vomDHjQiE9raL/u4sHZfRwZkZpSCU81hAVKLALbyb7lMKq
-0f96LwN0OSpVCpolXMrvtv1v9qma34v792QpRfPPtaZbyZN14ICPmLr9eTo9p8JT
-Ki/GjL1lLFE2Sl0tKWAt9wHRSzEZqBFaRWm6sb4vzxpOfuQifYYktsRAlQtDn7La
-iS3+uf/TwYJm0kO43DrSO8qM0ZEICNBXvTOe1GCbWXwBC7S7JSXXlt2RRdm7HYMS
-JpzDxXcUQNbe7TRV4t1JMLOufhDgR/1GfzaA9CA91XrQm9Tf+Ke24CFS3th6WglC
-dgk8TNffiru5XczhCiZGj9qhmjokwXgYaVfeQkm6jgAetZAhYQoLGQvKCsm2ceuU
-QlUI6F1kC3YKYzBAQFsaekVSzEpO6+aghF3KKFX/UScF9KtV6R0WnL4R1qzu7R/B
-+hoKp9JD2kVSCtYjcdpPrm5LYuIXS+aLkP5DNDxTUj0Cd/zqOKuoWPdocp//r4KO
-FGsHqypg5rk8XsN652fR
-=Bdhy
------END PGP SIGNATURE-----
-
---BOKacYhQ+x31HxR3--
+Thanks,
+Guenter
