@@ -1,66 +1,100 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT PULL] : cpuidle-big.little fix when mcpm is not available
-Date: Sun, 25 Jan 2015 15:39:40 +0100
-Message-ID: <54C5002C.4050600@linaro.org>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
+ subsystem
+Date: Sun, 25 Jan 2015 16:04:31 +0100
+Message-ID: <20150125150431.GE2719@earth.universe>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
+ <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
+ <20150121230148.GJ13715@earth.universe>
+ <54C0AFE4.3020701@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:64681 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412AbbAYOjp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 09:39:45 -0500
-Received: by mail-wi0-f172.google.com with SMTP id h11so5391726wiw.5
-        for <linux-pm@vger.kernel.org>; Sun, 25 Jan 2015 06:39:43 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="FN+gV9K+162wdwwF"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <54C0AFE4.3020701-eS4NqCHxEME@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Rafael,
 
-This pull request has a single patch which is a fix for the=20
-cpuidle-big.little driver. If the mcpm backend is not available because=
-=20
-the CCI is not defined in the DT, the cpuidle driver will=20
-unconditionally assume it is and call the mcpm functions leading to a=20
-kernel WARNING.
+--FN+gV9K+162wdwwF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sudeep Holla fixed that by checking at the init time the mcpm is=20
-available before initializing the deeper idle states.
+Hi,
 
-Thanks
-   -- Daniel
+[add maintainers from regulator framework]
 
-The following changes since commit ec6f34e5b552fb0a52e6aae1a5afbbb1605c=
-c6cc:
+On Thu, Jan 22, 2015 at 09:08:04AM +0100, Stefan Wahren wrote:
+> Am 22.01.2015 um 00:01 schrieb Sebastian Reichel:
+> > On Thu, Nov 20, 2014 at 08:14:36PM +0000, Stefan Wahren wrote:
+> >> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
+> >> power subsystem. It's required to trigger the probing of the underlying
+> >> drivers like on-chip regulators. Additionally the drivers supports
+> >> the configuration of the DC-DC clock frequency to avoid possible
+> >> interferences.
+> > I would expect PLL to be board specific and part of DT. Why is it
+> > specified as parameter?
+>=20
+> I think the switching frequency of the DC-DC belongs to the
+> configuration and don't describe how the hardware is connected. But i
+> don't have a problem to change it into a DT property.
+>=20
+> Does a common property name exists for the switching frequency or would
+> it be vendor specific?
 
-   Linux 3.19-rc5 (2015-01-18 18:02:20 +1200)
+As far as I know most regulators have fixed switching frequencies,
+so there is no common property name so far. I added regulator
+framework people, since this property should be regulator specific.
 
-are available in the git repository at:
+Apart from introducing a custom/common switching-frequency property
+the dts could also expose the PLL like this and use the common
+clock-frequency property:
 
-   http://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.20
+power: power@80044000 {
+    compatible =3D "fsl,imx28-power";
+    #address-cells =3D <1>;
+    #size-cells =3D <1>;
+    reg =3D <0x80044000 0x2000>;
+    interrupts =3D <6>;
+    ranges;
 
-for you to fetch changes up to 194fe6f28e2819d3f50fbed24c3b72f21501dbfa=
-:
+    powerpll {
+        compatible =3D "fsl,imx28-power-pll"
+        #clock-cells =3D <0>;
+        clock-frequency =3D <12345>;
+    }
+}
 
-   drivers: cpuidle: Don't initialize big.LITTLE driver if MCPM is=20
-unavailable (2015-01-23 15:05:48 +0100)
+-- Sebastian
 
-----------------------------------------------------------------
-Sudeep Holla (1):
-       drivers: cpuidle: Don't initialize big.LITTLE driver if MCPM is=20
-unavailable
+--FN+gV9K+162wdwwF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-  drivers/cpuidle/cpuidle-big_little.c | 4 ++++
-  1 file changed, 4 insertions(+)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+iQIcBAEBCgAGBQJUxQX4AAoJENju1/PIO/qaVucP/3vSrSghX73NcAfK6PxifImL
+Wbf3yrEHLhjRkvPzB+GPJ/ylTRl53YeH3TtI26tGsfnvjCMGTexaEJdQd14S2v4p
+KE5af9xx4r7cZn6j7ql7TqE1tvvIJ1CuGKVvl8qh+3lbrArmlezId7qMNu717GXk
+XIYlfaSNGupTBgdqCJ7kBNrkxd2vkrGnQTKPJ6RPWqg/6CK0oBgmrRACFWRDedsh
+61oKkr2LPRKq2k/04/WL+JflwhNMv+dJaXWMH+KO2wOWP+Uerky6Md7fUsNL3Trn
+wWA2uCB9k3CdoKPHFGvsI/ypbe0dHNR2pOtFG05tQkx2wFpl16GJrUoAUh2e7Xuu
+C2ZopESsPvbpheO7ARn4iI6YsLDTN/t51vJREsJgerSStZ1wiMYhJlVxFFWiiLki
+h8X0RFITq1XlpB5DnCuN+HUM6ag/qHlE3Am2A1GJyoTzeXq4cvaw1pOY3Vld40m8
+pznXJdJ5pLtFuYKbWHjUaqRobVMRmka9l2D+0e3SqHd51+tCEypvEXJaK7eepb//
+V7xG91dfvr8Mh7jhiAF74RJBNK4M2EObOwp8fuuaKMurwlXfqHVkSrXpwU6+N6fo
+irvtySipFfTFCIhoiQNeO5nenE3cofbad1ZyxeEsk2u5EWEsHA8Ur+5YnpzJf29m
+7ZP0ZpdOASZ+oWnAGhoo
+=Rbpm
+-----END PGP SIGNATURE-----
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+--FN+gV9K+162wdwwF--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
