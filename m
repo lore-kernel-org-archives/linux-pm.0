@@ -1,17 +1,17 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 2/6] power/reset: at91: Register with kernel restart handler
-Date: Sun, 25 Jan 2015 10:13:38 -0800
-Message-ID: <1422209622-31994-2-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 4/6] power/reset: st-poweroff: Register with kernel restart handler
+Date: Sun, 25 Jan 2015 10:13:40 -0800
+Message-ID: <1422209622-31994-4-git-send-email-linux@roeck-us.net>
 References: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:52209 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:52231 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbbAYSNx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 13:13:53 -0500
+	with ESMTP id S1754351AbbAYSN5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 13:13:57 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1YFRh3-003qdK-KD
-	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 18:13:53 +0000
+	id 1YFRh8-003qf0-5X
+	for linux-pm@vger.kernel.org; Sun, 25 Jan 2015 18:13:58 +0000
 In-Reply-To: <1422209622-31994-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,98 +19,67 @@ To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org
 
 Register with kernel restart handler instead of setting arm_pm_restart
-directly. Register with high priority since the driver unconditionally
-overwrites other restart handlers if instantiated.
+directly. Select high priority since the restart handler is instantiated
+through devicetree, indicating that it should be used if configured.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/at91-reset.c | 28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+ drivers/power/reset/st-poweroff.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 69a75d99..13584e2 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -17,8 +17,6 @@
+diff --git a/drivers/power/reset/st-poweroff.c b/drivers/power/reset/st-poweroff.c
+index a0acf25..27383de 100644
+--- a/drivers/power/reset/st-poweroff.c
++++ b/drivers/power/reset/st-poweroff.c
+@@ -15,10 +15,9 @@
+ #include <linux/of_platform.h>
  #include <linux/platform_device.h>
- #include <linux/reboot.h>
+ #include <linux/mfd/syscon.h>
++#include <linux/reboot.h>
+ #include <linux/regmap.h>
  
 -#include <asm/system_misc.h>
 -
- #include <soc/at91/at91sam9_ddrsdr.h>
- #include <soc/at91/at91sam9_sdramc.h>
+ struct reset_syscfg {
+ 	struct regmap *regmap;
+ 	/* syscfg used for reset */
+@@ -75,7 +74,8 @@ static struct reset_syscfg stid127_reset = {
  
-@@ -54,7 +52,8 @@ static void __iomem *at91_ramc_base[2], *at91_rstc_base;
- * reset register it can be left driving the data bus and
- * killing the chance of a subsequent boot from NAND
- */
--static void at91sam9260_restart(enum reboot_mode mode, const char *cmd)
-+static int at91sam9260_restart(struct notifier_block *this, unsigned long mode,
-+			       void *cmd)
+ static struct reset_syscfg *st_restart_syscfg;
+ 
+-static void st_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int st_restart(struct notifier_block *this, unsigned long mode,
++		      void *cmd)
  {
- 	asm volatile(
- 		/* Align to cache lines */
-@@ -76,9 +75,12 @@ static void at91sam9260_restart(enum reboot_mode mode, const char *cmd)
- 		  "r" (1),
- 		  "r" (AT91_SDRAMC_LPCB_POWER_DOWN),
- 		  "r" (AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST));
+ 	/* reset syscfg updated */
+ 	regmap_update_bits(st_restart_syscfg->regmap,
+@@ -88,8 +88,15 @@ static void st_restart(enum reboot_mode reboot_mode, const char *cmd)
+ 			   st_restart_syscfg->offset_rst_msk,
+ 			   st_restart_syscfg->mask_rst_msk,
+ 			   0);
 +
 +	return NOTIFY_DONE;
  }
  
--static void at91sam9g45_restart(enum reboot_mode mode, const char *cmd)
-+static int at91sam9g45_restart(struct notifier_block *this, unsigned long mode,
-+			       void *cmd)
- {
- 	asm volatile(
- 		/*
-@@ -117,6 +119,8 @@ static void at91sam9g45_restart(enum reboot_mode mode, const char *cmd)
- 		  "r" (AT91_DDRSDRC_LPCB_POWER_DOWN),
- 		  "r" (AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST)
- 		: "r0");
-+
-+	return NOTIFY_DONE;
- }
- 
- static void __init at91_reset_status(struct platform_device *pdev)
-@@ -161,6 +165,10 @@ static struct of_device_id at91_reset_of_match[] = {
- 	{ /* sentinel */ }
- };
- 
-+static struct notifier_block at91_restart_nb = {
++static struct notifier_block st_restart_nb = {
++	.notifier_call = st_restart,
 +	.priority = 192,
 +};
 +
- static int at91_reset_of_probe(struct platform_device *pdev)
- {
- 	const struct of_device_id *match;
-@@ -183,9 +191,8 @@ static int at91_reset_of_probe(struct platform_device *pdev)
+ static struct of_device_id st_reset_of_match[] = {
+ 	{
+ 		.compatible = "st,stih415-restart",
+@@ -126,9 +133,7 @@ static int st_reset_probe(struct platform_device *pdev)
+ 		return PTR_ERR(st_restart_syscfg->regmap);
  	}
  
- 	match = of_match_node(at91_reset_of_match, pdev->dev.of_node);
--	arm_pm_restart = match->data;
+-	arm_pm_restart = st_restart;
 -
 -	return 0;
-+	at91_restart_nb.notifier_call = match->data;
-+	return register_restart_handler(&at91_restart_nb);
++	return register_restart_handler(&st_restart_nb);
  }
  
- static int at91_reset_platform_probe(struct platform_device *pdev)
-@@ -212,10 +219,11 @@ static int at91_reset_platform_probe(struct platform_device *pdev)
- 	}
- 
- 	match = platform_get_device_id(pdev);
--	arm_pm_restart = (void (*)(enum reboot_mode, const char*))
--		match->driver_data;
-+	at91_restart_nb.notifier_call =
-+		(int (*)(struct notifier_block *,
-+			 unsigned long, void *)) match->driver_data;
- 
--	return 0;
-+	return register_restart_handler(&at91_restart_nb);
- }
- 
- static int at91_reset_probe(struct platform_device *pdev)
+ static struct platform_driver st_reset_driver = {
 -- 
 2.1.0
 
