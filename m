@@ -1,70 +1,61 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] drivers: cpuidle: Don't initialize big.LITTLE driver if MCPM is unavailable
-Date: Sun, 25 Jan 2015 21:53:47 +0100
-Message-ID: <1422219227-25808-1-git-send-email-daniel.lezcano@linaro.org>
-References: <54C5002C.4050600@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 0/6] power/reset: restart handler patch series
+Date: Sun, 25 Jan 2015 22:44:57 +0100
+Message-ID: <20150125214456.GA20695@earth.universe>
+References: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:62283 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbbAYUxv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 15:53:51 -0500
-Received: by mail-wi0-f182.google.com with SMTP id n3so6264684wiv.3
-        for <linux-pm@vger.kernel.org>; Sun, 25 Jan 2015 12:53:50 -0800 (PST)
-In-Reply-To: <54C5002C.4050600@linaro.org>
+Received: from mail.kernel.org ([198.145.29.136]:34982 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbbAYVpD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 25 Jan 2015 16:45:03 -0500
+Content-Disposition: inline
+In-Reply-To: <1422217845-18901-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: Sudeep.Holla@arm.com, Lorenzo.Pieralisi@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org
 
-From: Sudeep Holla <sudeep.holla@arm.com>
 
-If big.LITTLE driver is initialized even when MCPM is unavailable,
-we get the below warning the first time cpu tries to enter deeper
-C-states.
+--x+6KMIRAuhnl3hBn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-------------[ cut here ]------------
-WARNING: CPU: 4 PID: 0 at kernel/arch/arm/common/mcpm_entry.c:130 mcpm_cpu_suspend+0x6d/0x74()
-Modules linked in:
-CPU: 4 PID: 0 Comm: swapper/4 Not tainted 3.19.0-rc3-00007-gaf5a2cb1ad5c-dirty #11
-Hardware name: ARM-Versatile Express
-[<c0013fa5>] (unwind_backtrace) from [<c001084d>] (show_stack+0x11/0x14)
-[<c001084d>] (show_stack) from [<c04fe7f1>] (dump_stack+0x6d/0x78)
-[<c04fe7f1>] (dump_stack) from [<c0020645>] (warn_slowpath_common+0x69/0x90)
-[<c0020645>] (warn_slowpath_common) from [<c00206db>] (warn_slowpath_null+0x17/0x1c)
-[<c00206db>] (warn_slowpath_null) from [<c001cbdd>] (mcpm_cpu_suspend+0x6d/0x74)
-[<c001cbdd>] (mcpm_cpu_suspend) from [<c03c6919>] (bl_powerdown_finisher+0x21/0x24)
-[<c03c6919>] (bl_powerdown_finisher) from [<c001218d>] (cpu_suspend_abort+0x1/0x14)
-[<c001218d>] (cpu_suspend_abort) from [<00000000>] (  (null))
----[ end trace d098e3fd00000008 ]---
+Hi Guenter,
 
-This patch fixes the issue by checking for the availability of MCPM
-before initializing the big.LITTLE cpuidle driver
+On Sun, Jan 25, 2015 at 12:30:39PM -0800, Guenter Roeck wrote:
+> Register with kernel restart handler instead of setting arm_pm_restart
+> directly, plus some other cleanup.
+>=20
+> v2: Rebased to master branch of battery tree
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle-big_little.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Thanks, series applied.
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index e3e225f..40c34fa 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -182,6 +182,10 @@ static int __init bl_idle_init(void)
- 	 */
- 	if (!of_match_node(compatible_machine_match, root))
- 		return -ENODEV;
-+
-+	if (!mcpm_is_available())
-+		return -EUNATCH;
-+
- 	/*
- 	 * For now the differentiation between little and big cores
- 	 * is based on the part number. A7 cores are considered little
--- 
-1.9.1
+-- Sebastian
 
+--x+6KMIRAuhnl3hBn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUxWPWAAoJENju1/PIO/qaCyUP/iRu84q6Zh41fjFYCPAiyc3M
+fgNZqeaz/B74rB+rTApP4O+k4qw/qwTBsd9IBylhjNn8P3Q1nAZLLXVZYHZfHzZW
+IWjHSU+RvPL29xjqKOO3RWR1UGCm83omI7vkvYp3Ivntc40/UPxgiu4SIJyZ46CE
+gaC2d4F1J891ef+p6m44+R5pBTTuAya7HcyNPDtpactrMrZjhvjx3e7ir1WGXXW9
+/4QGYY4HiB+j5DTuUZDxihhtepF8p0+zxmM/T71/isk053Fr9H+LWvubjbFYnxRD
+WQyFUt1VCi6MosN2Plh8Y72CddyLN+NA1AST2lXoFDK2/6uZR6J7qkwqzTouZmzN
+ny8fC1yWFD3uS8LlJxDJprKdGM5jB6Hz0ERjwXokqz9jpX6H1BHJHBjz6K8yhakL
+yFKoTBM5hOlOAhMZaIBW20hlaDTxI/WECMQbBSFkHi4GwrVlS2oClJCiz2BuNjBq
+NX4sGUyM3fFep42m3Cyas86iHx49H3Qrrgc11RGZ5GstFdAE9/f3E6sJ1Mlr+FKV
+32+HpIdqDNui4rCTspEeTR4uh7teqZykijE+gVC6IVEYe1jxg4IfHv7oJhMIwj9w
+OrYJpibaIg6RnXHEMICCbk8UBgPo9DPyfexnZNozrxldxV/NELCoHv9DphWaPEoV
+2PSRSCAcbZR1kc1mvOZR
+=Udyf
+-----END PGP SIGNATURE-----
+
+--x+6KMIRAuhnl3hBn--
