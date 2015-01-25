@@ -1,100 +1,126 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
- subsystem
-Date: Sun, 25 Jan 2015 16:04:31 +0100
-Message-ID: <20150125150431.GE2719@earth.universe>
-References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
- <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
- <20150121230148.GJ13715@earth.universe>
- <54C0AFE4.3020701@i2se.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v6 08/18] cpufreq: exynos: Use device tree to determine
+ if cpufreq cooling should be registered
+Date: Sun, 25 Jan 2015 12:46:21 -0400
+Message-ID: <20150125164559.GA29600@developer.hsd1.ca.comcast.net>
+References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+ <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
+ <CAKohpok1EacvJ3PCOZYnz81D3=P04apRp7VOxPFE1QxYF4Wydg@mail.gmail.com>
+ <20150123145744.3dc47a47@amdc2363>
+ <CAKohponvCzJrseb7UW1szYc=1M9BA=A8nVpocOQVyr1c=zO6VQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="FN+gV9K+162wdwwF"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:38835 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753026AbbAYQq2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 11:46:28 -0500
 Content-Disposition: inline
-In-Reply-To: <54C0AFE4.3020701-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+In-Reply-To: <CAKohponvCzJrseb7UW1szYc=1M9BA=A8nVpocOQVyr1c=zO6VQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>
 
 
---FN+gV9K+162wdwwF
+--PmA2V3Z32TCmWXqI
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-[add maintainers from regulator framework]
-
-On Thu, Jan 22, 2015 at 09:08:04AM +0100, Stefan Wahren wrote:
-> Am 22.01.2015 um 00:01 schrieb Sebastian Reichel:
-> > On Thu, Nov 20, 2014 at 08:14:36PM +0000, Stefan Wahren wrote:
-> >> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
-> >> power subsystem. It's required to trigger the probing of the underlying
-> >> drivers like on-chip regulators. Additionally the drivers supports
-> >> the configuration of the DC-DC clock frequency to avoid possible
-> >> interferences.
-> > I would expect PLL to be board specific and part of DT. Why is it
-> > specified as parameter?
+On Sun, Jan 25, 2015 at 07:31:14PM +0530, Viresh Kumar wrote:
+> On 23 January 2015 at 19:27, Lukasz Majewski <l.majewski@samsung.com> wro=
+te:
+> > Please pay a note about following problem:
+> >
+> > Previously we got: cpu0: cpu@0 for all Exynos devices.
+> >
+> > Now, however, cpu numbering has changed (due to GIC rework).
+> > For example:
+> >
+> > Exynos4412:
+> >         cpus {
+> >                 cpu0: cpu@A00 {
+> >                         ...
+> >                         #cooling-cells =3D <2>; /* min followed by max =
+*/
+> >                 };
+> >
+> >                 cpu@A01 {
+> >                 };
+> >
+> >                 cpu@A02 {
+> >                 };
+> >
+> >                 cpu@A03 {
+> >                 };
+> >         }
+> >
+> > Exynos 4210:
+> >         cpus {
+> >                 cpu0: cpu@900 {
+> >                         #cooling-cells =3D <2>; /* min followed by max =
+*/
+> >                 };
+> >
+> >                 cpu@901 {
+> >                 };
+> >         };
+> >
+> > Exynos 5250:
+> >         cpus {
+> >                 cpu0: cpu@0 {
+> >                         #cooling-cells =3D <2>; /* min followed by max =
+*/
+> >                 };
+> >
+> >                 cpu@1 {
+> >                 };
+> >         };
+> >
+> >
+> > As you can see different cpu@XXY nodes we have and simply calling cpu@0
+> > won't work.
 >=20
-> I think the switching frequency of the DC-DC belongs to the
-> configuration and don't describe how the hardware is connected. But i
-> don't have a problem to change it into a DT property.
+> I wasn't asked you to get the cpu0 node from dt but this:
 >=20
-> Does a common property name exists for the switching frequency or would
-> it be vendor specific?
+> cpu_dev =3D get_cpu_dev(0);
+> np =3D of_node_get(cpu_dev->of_node);
+>=20
+> Wouldn't this work? You only need to guarantee that the cooling-cells is =
+added
+> onto the boot CPUs node.
 
-As far as I know most regulators have fixed switching frequencies,
-so there is no common property name so far. I added regulator
-framework people, since this property should be regulator specific.
+Lukasz,
 
-Apart from introducing a custom/common switching-frequency property
-the dts could also expose the PLL like this and use the common
-clock-frequency property:
+I agree with Viresh here, you can simplify your code.
 
-power: power@80044000 {
-    compatible =3D "fsl,imx28-power";
-    #address-cells =3D <1>;
-    #size-cells =3D <1>;
-    reg =3D <0x80044000 0x2000>;
-    interrupts =3D <6>;
-    ranges;
+I, somehow, missed this conversation and already applied v6 of this
+patch in my -fixes branch. Can you please fix this by sending a
+differential patch on top of this one applying Viresh's commit?
 
-    powerpll {
-        compatible =3D "fsl,imx28-power-pll"
-        #clock-cells =3D <0>;
-        clock-frequency =3D <12345>;
-    }
-}
+Viresh, my bad, I missed your comments.
 
--- Sebastian
+Thanks
 
---FN+gV9K+162wdwwF
+
+Eduardo=20
+
+--PmA2V3Z32TCmWXqI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBCgAGBQJUxQX4AAoJENju1/PIO/qaVucP/3vSrSghX73NcAfK6PxifImL
-Wbf3yrEHLhjRkvPzB+GPJ/ylTRl53YeH3TtI26tGsfnvjCMGTexaEJdQd14S2v4p
-KE5af9xx4r7cZn6j7ql7TqE1tvvIJ1CuGKVvl8qh+3lbrArmlezId7qMNu717GXk
-XIYlfaSNGupTBgdqCJ7kBNrkxd2vkrGnQTKPJ6RPWqg/6CK0oBgmrRACFWRDedsh
-61oKkr2LPRKq2k/04/WL+JflwhNMv+dJaXWMH+KO2wOWP+Uerky6Md7fUsNL3Trn
-wWA2uCB9k3CdoKPHFGvsI/ypbe0dHNR2pOtFG05tQkx2wFpl16GJrUoAUh2e7Xuu
-C2ZopESsPvbpheO7ARn4iI6YsLDTN/t51vJREsJgerSStZ1wiMYhJlVxFFWiiLki
-h8X0RFITq1XlpB5DnCuN+HUM6ag/qHlE3Am2A1GJyoTzeXq4cvaw1pOY3Vld40m8
-pznXJdJ5pLtFuYKbWHjUaqRobVMRmka9l2D+0e3SqHd51+tCEypvEXJaK7eepb//
-V7xG91dfvr8Mh7jhiAF74RJBNK4M2EObOwp8fuuaKMurwlXfqHVkSrXpwU6+N6fo
-irvtySipFfTFCIhoiQNeO5nenE3cofbad1ZyxeEsk2u5EWEsHA8Ur+5YnpzJf29m
-7ZP0ZpdOASZ+oWnAGhoo
-=Rbpm
+iQEcBAEBAgAGBQJUxR3QAAoJEMLUO4d9pOJW3soIAJvyrMrHTpWHjZbm61P1f6MX
+go3z2rUcv9p+a1a0eRUsug2FO3GalTfySsJ/2XOZsFBUE32cVnqAa1umKF5FoZbg
+do99gF9k7/kh6fJFPtGC9Dd5EplpqJSqlfRQnZdva7NbBD3Obc+NvmtEig5L/aIv
+K95Q1iU42jqRckdJhSMXjHMBc/azRzV1vhKxr8pTooWav8nwyV+5c+egLy0wmaIB
+yrnNahDaW54ex8kUVIfK72bfZh9rxgmxZQNgygzlrSsxfXpw6cRyygVTs38OdUX+
+Tmv3hqRWQJniHcTVHwS8sG395HpPp2pJ4RQzzXf5esxWgpR7aM6RWQmtBfDo0sE=
+=V3ks
 -----END PGP SIGNATURE-----
 
---FN+gV9K+162wdwwF--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--PmA2V3Z32TCmWXqI--
