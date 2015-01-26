@@ -1,45 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Mon, 26 Jan 2015 16:04:05 +0100
-Message-ID: <4090311.nIPlPBbS65@vostro.rjw.lan>
-References: <54866625.8010406@linux.intel.com> <2076277.JWdUtd56Il@vostro.rjw.lan> <alpine.DEB.2.11.1501261531250.5526@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.11.1501261531250.5526@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v4 3/5] drivers: bus: Add Simple Power-Managed Bus DT Bindings
+Date: Mon, 26 Jan 2015 17:16:15 +0100
+Message-ID: <1422288977-20353-4-git-send-email-geert+renesas@glider.be>
+References: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:46238 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756183AbbAZQQd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 11:16:33 -0500
+In-Reply-To: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>
+Cc: Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Monday, January 26, 2015 03:34:22 PM Thomas Gleixner wrote:
-> On Mon, 26 Jan 2015, Rafael J. Wysocki wrote:
-> > On Monday, January 26, 2015 03:24:27 PM Thomas Gleixner wrote:
-> > > On Mon, 26 Jan 2015, Rafael J. Wysocki wrote:
-> > > > On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
-> > > > > The only remaining issue might be a NMI calling into
-> > > > > ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
-> > > > > non issue on x86/tsc, but it might be a problem on other platforms
-> > > > > which turn off devices, clocks, It's not rocket science to prevent
-> > > > > that.
-> > > > 
-> > > > I don't see any users of ktime_get_mono_fast_ns() at all, unless some non-trivial
-> > > > macros are involved.  At least grepping for it only returns the definition,
-> > > > declarations and the line in trace.c.
-> > > 
-> > > You can trace in NMI and perf is going to use ktime_get_mono_fast_ns()
-> > > eventually as well.
-> > 
-> > So I'm not sure how to intercept that to be honest.  Any hints?
-> 
-> If we suspend timekeeping we can make the fast timekeeper point at a
-> dummy readout function which returns the time at suspend, if the clock
-> source does not resume automagically.
-> 
-> As I said TSC should be a non issue, but other stuff might be. We
-> could make it conditional on CLOCK_SOURCE_SUSPEND_NONSTOP perhaps.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+---
+v4:
+  - Replace "simple-bus" by "simple-pm-bus",
+  - Remove the "renesas,bsc" bindings. They will be specified in a
+    separate document.
 
-OK, thanks!
+v3:
+  - Add Tested-by,
+  - Document required properties inherited from "simple-bus",
+  - Document required "reg" property for "renesas,bsc",
+  - Move "ranges" before "reg" in the example,
 
-Rafael
+v2:
+  - New.
+---
+ .../devicetree/bindings/bus/simple-pm-bus.txt      | 41 ++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+
+diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+new file mode 100644
+index 0000000000000000..0415e93a816c5ac0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+@@ -0,0 +1,41 @@
++Simple Power-Managed Bus
++========================
++
++A Simple Power-Managed Bus is a transparent bus that doesn't need a real
++driver, as it's typically initialized by the boot loader.
++
++However, its bus controller is part of a PM domain, or under the control of a
++functional clock.  Hence, the bus controller's PM domain and/or clock must be
++enabled for child devices connected to the bus (either on-SoC or externally)
++to function.
++
++The bindings for the Simple Power-Managed Bus extend the bindings for
++"simple-bus", as specified in ePAPR.
++
++
++Required properties:
++  - compatible: Must contain at least "simple-pm-bus".
++		It's recommended to let this be preceded by one or more
++		vendor-specific compatible values.
++  - #address-cells, #size-cells, ranges: Must describe the mapping between
++		parent address and child address spaces.
++
++Optional platform-specific properties for clock or PM domain control (at least
++one of them is required):
++  - clocks: Must contain a reference to the functional clock(s),
++  - power-domains: Must contain a reference to the PM domain.
++
++
++Example:
++
++	bsc: bus@fec10000 {
++		compatible = "renesas,bsc-sh73a0", "renesas,bsc",
++			     "simple-pm-bus";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges = <0 0 0x20000000>;
++		reg = <0xfec10000 0x400>;
++		interrupts = <0 39 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&zb_clk>;
++		power-domains = <&pd_a4s>;
++	};
+-- 
+1.9.1
+
