@@ -1,91 +1,77 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 3/3] doc: cpufreq: tests: Provide cpufreq tests README
-Date: Mon, 26 Jan 2015 11:41:24 +0100
-Message-ID: <1422268884-26173-3-git-send-email-l.majewski@samsung.com>
-References: <1422268884-26173-1-git-send-email-l.majewski@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Change behaviour when tracing ... nasty trap (was Re: [PATCH]
+ PM/Trace: get rid of synchronous resume limit during PM trace)
+Date: Mon, 26 Jan 2015 12:05:16 +0100
+Message-ID: <20150126110516.GA2028@amd>
+References: <54C5CB77.4000109@linux.intel.com>
+ <20150126102352.GA1758@amd>
+ <27240C0AC20F114CBF8149A2696CBE4A01F1AD6A@SHSMSX101.ccr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:43667 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbbAZKmX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 05:42:23 -0500
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0NIS005SS5QLL960@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 26 Jan 2015 19:42:21 +0900 (KST)
-In-reply-to: <1422268884-26173-1-git-send-email-l.majewski@samsung.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36390 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbbAZLFS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 06:05:18 -0500
+Content-Disposition: inline
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01F1AD6A@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, a.nitecki@samsung.com, Lukasz Majewski <l.majewski@samsung.com>
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-This commit adds README to ./tools/testing/cpufreq directory.
+On Mon 2015-01-26 10:39:04, Liu, Chuansheng wrote:
+> Hello Pavel,
+> 
+> > > There are some kind of dependency between devices in some
+> > > hardware platforms. So, asynchronous resuming devices may
+> > > hang system due to wrong resume order. As a result, should
+> > > not fore synchronously resuming devices during tracing
+> > > PM events.
+> > >
+> > > Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> > > ---
+> > >  drivers/base/power/main.c    |    3 +--
+> > >  include/linux/resume-trace.h |    7 -------
+> > >  2 files changed, 1 insertions(+), 9 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > index 9717d5f..5df148b 100644
+> > > --- a/drivers/base/power/main.c
+> > > +++ b/drivers/base/power/main.c
+> > > @@ -517,8 +517,7 @@ static int device_resume_noirq(struct device *dev,
+> > pm_message_t state, bool asyn
+> > >
+> > >  static bool is_async(struct device *dev)
+> > >  {
+> > > -	return dev->power.async_suspend && pm_async_enabled
+> > > -		&& !pm_trace_is_enabled();
+> > > +	return dev->power.async_suspend && pm_async_enabled;
+> > >  }
+> > >
+> > 
+> > Actually... whoever did the original patch was evil person. Changing
+> > behaviour when tracing is requested is evil, evil, evil. Git blame
+> > tells me
+> > 
+> > Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+> > 
+> > went to the dark side.
+> 
+> Although I didn't get where is something wrong, but the is_async() is not created by my commit,
+> it is from commit (PM: Start asynchronous resume threads upfront), I just moved it ahead.
+> 
+> And like other phases, I added it into resum/suspend_noirq()...
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- tools/testing/cpufreq/README | 53 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 tools/testing/cpufreq/README
+I see, blame blamed wrong person. It looks like Rafael is evil:
 
-diff --git a/tools/testing/cpufreq/README b/tools/testing/cpufreq/README
-new file mode 100644
-index 0000000..c934016
---- /dev/null
-+++ b/tools/testing/cpufreq/README
-@@ -0,0 +1,53 @@
-+This file contains list of cpufreq's available regression tests with a short
-+usage description.
-+
-+1. cpufreq_freq_test.sh
-+
-+Description:
-+------------
-+This script is supposed to test if cpufreq attributes exported by sysfs are
-+exposing correct values.
-+
-+To achieve this goal it saves the current governor and changes it to
-+"performance". Afterwards, it reads the "scaling_available_frequencies"
-+property. With the list of supported frequencies it is able to enforce each of
-+them by writing to "scaling_max_freq" attribute. To make the test more reliable
-+a superfluous load with gzip is created to be sure that we are running with
-+highest possible frequency. This high load is regulated with the 'sleep'
-+duration. After this time the "cpufreq_cur_freq" is read and compared with the
-+original value. As the last step the original governor is restored.
-+
-+This script can work with or without BOOST enabled and helps in spotting errors
-+related to cpufreq and common clock framework.
-+
-+Used attributes:
-+----------------
-+- "scaling_available_frequencies"
-+- "cpuinfo_cur_freq"
-+- "scaling_governor"
-+- "scaling_max_freq"
-+
-+Target devices:
-+---------------
-+
-+All devices which exports mentioned above sysfs attributes.
-+
-+2. governors_switch.sh
-+
-+Description:
-+------------
-+This script is supposed to test if all governors are available and possible to
-+set.
-+
-+Moreover, it allows to test if cpufreq is able to withstand multiple accesses to
-+the same sysfs attribute without crash.
-+
-+Used attributes:
-+----------------
-+- "scaling_available_governors"
-+- "scaling_governor"
-+
-+Target devices:
-+---------------
-+
-+All devices which exports mentioned above sysfs attributes.
+commit 97df8c12995c5bac73e3bfeea4c5be155c1f4401
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Sat Jan 23 22:25:31 2010 +0100
+
+    PM: Start asynchronous resume threads upfront
+
+									Pavel
 -- 
-2.0.0.rc2
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
