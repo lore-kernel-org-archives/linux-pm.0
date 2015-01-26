@@ -1,133 +1,65 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Mon, 26 Jan 2015 10:40:24 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1501260946390.5526@nanos>
-References: <54866625.8010406@linux.intel.com> <54B5B724.4020108@linux.intel.com> <5541724.ryTEJUkIdN@vostro.rjw.lan> <alpine.DEB.2.11.1501221021580.5526@nanos> <54C5FE6A.9010300@linux.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Change behaviour when tracing ... nasty trap (was Re: [PATCH]
+ PM/Trace: get rid of synchronous resume limit during PM trace)
+Date: Mon, 26 Jan 2015 11:23:52 +0100
+Message-ID: <20150126102352.GA1758@amd>
+References: <54C5CB77.4000109@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:45094 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752075AbbAZJlO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 04:41:14 -0500
-In-Reply-To: <54C5FE6A.9010300@linux.intel.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60168 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbbAZKXy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 05:23:54 -0500
+Content-Disposition: inline
+In-Reply-To: <54C5CB77.4000109@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, chuansheng.liu@intel.com
 
-On Mon, 26 Jan 2015, Li, Aubrey wrote:
-> On 2015/1/22 18:15, Thomas Gleixner wrote:
-> > Can we please stop adding more crap to that notifier thing? I rather
-> > see that go away than being expanded.
+On Mon 2015-01-26 13:07:03, Fu, Zhonghui wrote:
+> >From f9c841d1f943d81b5ab0aac7483e794a7f966296 Mon Sep 17 00:00:00 2001
+> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> Date: Mon, 26 Jan 2015 11:27:08 +0800
+> Subject: [PATCH] PM/Trace: get rid of synchronous resume limit during PM trace
 > 
-> Are you referring to FREEZE_PREPARE or remove all of FREEZE staff at all?
+> There are some kind of dependency between devices in some
+> hardware platforms. So, asynchronous resuming devices may
+> hang system due to wrong resume order. As a result, should
+> not fore synchronously resuming devices during tracing
+> PM events.
 > 
-> What's the disadvantage of adding more notifier?
-
-clockevents_notify() is not a notifier. Its a multiplex call and I
-want to get rid of it and replace it with explicit functions.
-
-> >> +		/*
-> >> +		 * cpuidle_enter will return with interrupt enabled
-> >> +		 */
-> >> +		cpuidle_enter(drv, dev, next_state);
-> > 
-> > How is that supposed to work?
-> > 
-> > If timekeeping is not yet unfrozen, then any interrupt handling code
-> > which calls anything time related is going to hit lala land.
-> > 
-> > You must guarantee that timekeeping is unfrozen before any interrupt
-> > is handled. If you cannot guarantee that, you cannot freeze
-> > timekeeping ever.
-> > 
-> > The cpu local tick device is less critical, but it happens to work by
-> > chance, not by design.
+> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> ---
+>  drivers/base/power/main.c    |    3 +--
+>  include/linux/resume-trace.h |    7 -------
+>  2 files changed, 1 insertions(+), 9 deletions(-)
 > 
-> There are two way to guarantee this: the first way is, disable interrupt
-> before timekeeping frozen and enable interrupt after timekeeping is
-> unfrozen. However, we need to handle wakeup handler before unfreeze
-> timekeeping to wake freeze task up from wait queue.
-> 
-> So we have to go the other way, the other way is, we ignore time related
-> calls during freeze, like what I added in irq_enter below.
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 9717d5f..5df148b 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -517,8 +517,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+>  
+>  static bool is_async(struct device *dev)
+>  {
+> -	return dev->power.async_suspend && pm_async_enabled
+> -		&& !pm_trace_is_enabled();
+> +	return dev->power.async_suspend && pm_async_enabled;
+>  }
+>
 
-Groan. You just do not call in irq_enter/exit(), but what prevents any
-interrupt handler or whatever to call into the time/timer code after
-interrupts got reenabled?
+Actually... whoever did the original patch was evil person. Changing
+behaviour when tracing is requested is evil, evil, evil. Git blame
+tells me
 
-Nothing. 
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 
-> Or, we need to re-implement freeze wait and wake up mechanism?
+went to the dark side.
 
-You need to make sure in the low level idle implementation that this
-cannot happen.
+									Pavel
 
-tick_freeze()
-{
-	raw_spin_lock(&tick_freeze_lock);
-	tick_frozen++;
-	if (tick_frozen == num_online_cpus())
-		timekeeping_suspend();
-	else
-		tick_suspend_local();
-	raw_spin_unlock(&tick_freeze_lock);
-}
-
-tick_unfreeze()
-{
-	raw_spin_lock(&tick_freeze_lock);
-	if (tick_frozen == num_online_cpus())
-		timekeeping_resume();
-	else
-		tick_resume_local();
-	tick_frozen--;
-	raw_spin_unlock(&tick_freeze_lock);
-}
-
-idle_freeze()
-{
-	local_irq_disable();
-
-	tick_freeze();
-
-	/* Must keep interrupts disabled! */
-       	go_deep_idle()
-
-	tick_unfreeze();
-
-	local_irq_enable();
-}
-
-That's the only way you can do it proper, everything else will just be
-a horrible mess of bandaids and duct tape.
-
-So that does not need any of the irq_enter/exit conditionals, it does
-not need the real_handler hack. It just works.
-
-The only remaining issue might be a NMI calling into
-ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
-non issue on x86/tsc, but it might be a problem on other platforms
-which turn off devices, clocks, It's not rocket science to prevent
-that.
-
-> It looks like a notifier is unpopular, I was trying to avoid a global
-> variable across different kernel modules. But yes, I can change. May I
-> know the disadvantage of notifier callback?
-
-You do not need a global variable at all. See above.
-
-> The V2 patch was using stop machine mechanism according to Peter's
-> suggestion. This V3 patch, IIRC, clockevents_lock was your suggestion.
-
-A suggestion does not mean that you should follow it blindly. If you
-see that the result is horrible and not feasible then you should
-notice yourself, think about different approaches and discuss that.
-
-I'm about to post a series which gets rid of clockevents_notify() and
-distangles the stuff so the above becomes possible.
-
-Thanks,
-
-	tglx
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
