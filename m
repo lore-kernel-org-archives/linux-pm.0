@@ -1,218 +1,81 @@
-From: Rafael David Tinoco <inaddy@ubuntu.com>
-Subject: HP Proliant Servers + intel_idle = NMI on MWAIT instructions
-Date: Mon, 26 Jan 2015 10:45:09 -0200
-Message-ID: <CAMiJ5CVVYAk68KwSD081hrROXzqOpse4xLtvYXy4iGCejjN=2A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Change behaviour when tracing ... nasty trap (was Re: [PATCH] PM/Trace: get rid of synchronous resume limit during PM trace)
+Date: Mon, 26 Jan 2015 14:41:02 +0100
+Message-ID: <2718950.eck1siDzqK@vostro.rjw.lan>
+References: <54C5CB77.4000109@linux.intel.com> <27240C0AC20F114CBF8149A2696CBE4A01F1AD6A@SHSMSX101.ccr.corp.intel.com> <20150126110516.GA2028@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58137 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751208AbbAZNST (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 08:18:19 -0500
+In-Reply-To: <20150126110516.GA2028@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Liu, Chuansheng" <chuansheng.liu@intel.com>, "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Len and others,
+On Monday, January 26, 2015 12:05:16 PM Pavel Machek wrote:
+> On Mon 2015-01-26 10:39:04, Liu, Chuansheng wrote:
+> > Hello Pavel,
+> > 
+> > > > There are some kind of dependency between devices in some
+> > > > hardware platforms. So, asynchronous resuming devices may
+> > > > hang system due to wrong resume order. As a result, should
+> > > > not fore synchronously resuming devices during tracing
+> > > > PM events.
+> > > >
+> > > > Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> > > > ---
+> > > >  drivers/base/power/main.c    |    3 +--
+> > > >  include/linux/resume-trace.h |    7 -------
+> > > >  2 files changed, 1 insertions(+), 9 deletions(-)
+> > > >
+> > > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > > index 9717d5f..5df148b 100644
+> > > > --- a/drivers/base/power/main.c
+> > > > +++ b/drivers/base/power/main.c
+> > > > @@ -517,8 +517,7 @@ static int device_resume_noirq(struct device *dev,
+> > > pm_message_t state, bool asyn
+> > > >
+> > > >  static bool is_async(struct device *dev)
+> > > >  {
+> > > > -	return dev->power.async_suspend && pm_async_enabled
+> > > > -		&& !pm_trace_is_enabled();
+> > > > +	return dev->power.async_suspend && pm_async_enabled;
+> > > >  }
+> > > >
+> > > 
+> > > Actually... whoever did the original patch was evil person. Changing
+> > > behaviour when tracing is requested is evil, evil, evil. Git blame
+> > > tells me
+> > > 
+> > > Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+> > > 
+> > > went to the dark side.
+> > 
+> > Although I didn't get where is something wrong, but the is_async() is not created by my commit,
+> > it is from commit (PM: Start asynchronous resume threads upfront), I just moved it ahead.
+> > 
+> > And like other phases, I added it into resum/suspend_noirq()...
+> 
+> I see, blame blamed wrong person. It looks like Rafael is evil:
+> 
+> commit 97df8c12995c5bac73e3bfeea4c5be155c1f4401
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Sat Jan 23 22:25:31 2010 +0100
+> 
+>     PM: Start asynchronous resume threads upfront
 
-Over the past few months I've been given several core dumps related to
-NMIs occurring in HP Proliant DL360 and DL380 servers and kernels 3.11
-and 3.13. I'd like to share what I'm seeing and to ask feedback
-regarding this. It looks like HP Proliant servers are deeply based in
-ACPI C-states table for their power management and, with intel_idle
-ignoring those tables, they can't proper handle MWAIT instructions
-generated from intel_idle (if I'm interpreting this correctly).
+This only means we won't use asyc suspend/resume at all when the RTC-based
+resume debug is enabled, because it wouldn't make sense (the RTC-based
+debug requires strict ordering of callbacks between devices or we may find
+that device A hanged the resume while actually device B that was running in
+parallel with A did that).
 
-One of the stack traces (3.11.0-19):
+And I shouldn't even need to explain this ...  Sad.
 
-crash> bt
+Rafael
 
-PID: 0 TASK: ffffffff81c14440 CPU: 0 COMMAND: "swapper/0"
-#0 [ffff880fffa07c40] machine_kexec at ffffffff8104b391
-#1 [ffff880fffa07cb0] crash_kexec at ffffffff810d5fb8
-#2 [ffff880fffa07d80] panic at ffffffff81730335
-#3 [ffff880fffa07e00] hpwdt_pretimeout at ffffffffa00988b5 [hpwdt]
-#4 [ffff880fffa07e20] nmi_handle at ffffffff8174a76a
-#5 [ffff880fffa07ea0] default_do_nmi at ffffffff8174aacd
-#6 [ffff880fffa07ed0] do_nmi at ffffffff8174abe0
-#7 [ffff880fffa07ef0] end_repeat_nmi at ffffffff81749c81
-[exception RIP: intel_idle+204]
---- <NMI exception stack> ---
-#8 [ffffffff81c01d88] intel_idle at ffffffff813f07ec
-#9 [ffffffff81c01dc0] cpuidle_enter_state at ffffffff815e76cf
-#10 [ffffffff81c01e20] cpuidle_idle_call at ffffffff815e7820
-#11 [ffffffff81c01e70] arch_cpu_idle at ffffffff8101d0ee
-#12 [ffffffff81c01e80] cpu_idle_loop at ffffffff810baae8
-#13 [ffffffff81c01ef0] cpu_startup_entry at ffffffff810bad1b
-#14 [ffffffff81c01f10] rest_init at ffffffff81725787
-#15 [ffffffff81c01f20] start_kernel at ffffffff81d26f23
-
-There was a NMI right after the following instruction:
-
-369 if (!need_resched())
-
-0xffffffff813f07e0 <+192>: test $0x8,%al
-0xffffffff813f07e2 <+194>: jne 0xffffffff813f07ec <intel_idle+204>
-0xffffffff813f07e9 <+201>: mwait %rax,%rcx
-
-370 __mwait(eax, ecx);
-
-It looks like that right after MWAIT instructions those servers are
-generating NMIs.
-
-Registers from exception stack:
-
-#7 [ffff880fffa07ef0] end_repeat_nmi at ffffffff81749c81
-   [exception RIP: intel_idle+204]
-   RIP: ffffffff813f07ec  RSP: ffffffff81c01d88  RFLAGS: 00000046
-   RAX: 0000000000000010  RBX: 0000000000000010  RCX: 0000000000000046
-   RDX: ffffffff81c01d88  RSI: 0000000000000018  RDI: 0000000000000001
-   RBP: ffffffff813f07ec   R8: ffffffff813f07ec   R9: 0000000000000018
-   R10: ffffffff81c01d88  R11: 0000000000000046  R12: ffffffffffffffff
-   R13: 0000000000000000  R14: ffffffff81c01fd8  R15: 0000000000000000
-   ORIG_RAX: 0000000000000000  CS: 0010  SS: 0018
-
---- <NMI exception stack> ---
-
-AND the following piece of code:
-
-#8 [ffffffff81c01d88] intel_idle at ffffffff813f07ec
-
-364                     if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
-
-  0xffffffff813f07b9 <+153>:   and    $0x1,%edx
-  0xffffffff813f07bc <+156>:   jne    0xffffffff813f0820 <intel_idle+256>
-
-365                             clflush((void *)&current_thread_info()->flags);
-366
-367                     __monitor((void *)&current_thread_info()->flags, 0, 0);
-
-  0xffffffff813f07cc <+172>:   lea    -0x1fc8(%rsi),%rax
-  0xffffffff813f07d3 <+179>:   monitor %rax,%rcx,%rdx
-...
-
-368                     smp_mb();
-
-  0xffffffff813f07d6 <+182>:   mfence
-
-369                     if (!need_resched())
-
-  0xffffffff813f07e0 <+192>:   test   $0x8,%al
-  0xffffffff813f07e2 <+194>:   jne    0xffffffff813f07ec <intel_idle+204>
-
-370                             __mwait(eax, ecx);
-
-  0xffffffff813f07e9 <+201>:   mwait  %rax,%rcx
-
-Suggests that MONITOR instruction was possibly called with following args:
-
-MONITOR 00000010 00000046 ffffffff81c01d88
-
-and MWAIT instruction was called with the following args:
-
-MWAIT 00000010 00000046
-
-What would be weird and would cause a #GP (and not a NMI) since ECX would have
-reserved bits set (Intel's software developer manual MWAIT instruction).
-
-Concluding that maybe the exception stack was overlapped.
-
-I found some exception stacks that looked like more real... between
-several exceptions
-(from intel_idle + 204) I found the following:
-
-  KERNEL-MODE EXCEPTION FRAME AT: ffff880fffa07ef8
-    [exception RIP: intel_idle+204]
-    RIP: ffffffff813f07ec  RSP: ffffffff81c01d88  RFLAGS: 00000046
-    RAX: 0000000000000001  RBX: 0000000000000002  RCX: 0000000000000001
-    RDX: 0000000000000000  RSI: ffffffff81c01fd8  RDI: 0000000000000000
-    RBP: ffffffff81c01db8   R8: 000000000000007d   R9: 0000000000000b64
-    R10: 0000000000000079  R11: 0000000000000000  R12: 0000000000000002
-    R13: 0000000000000001  R14: 0000000000000001  R15: 0000000000000002
-    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
-
-And this is correct according to ASM code (from intel_idle):
-
-mov    0x48(%rsi,%rax,8),%eax                          # store *(rsi +
-72 + (rax * 8)) into eax
-
- # 72 = 24 from struct cpuidle_driver.cpuidle_state + 48 from
-cpuidle_state.flags
-0xffffffff813f075a <+58>:    mov    %eax,%r13d   # store eax into r13d
-(*drv ptr)
-0xffffffff813f075d <+61>:    shr    $0x18,%r13d    # shift 24 bits
-from r13d (flg2MWAIT MACRO)
-
-And from:
-
-0xffffffff813f07e2 <+194>:   jne    0xffffffff813f07ec <intel_idle+204>
-0xffffffff813f07e4 <+196>:   mov    $0x1,%cl
-0xffffffff813f07e6 <+198>:   mov    %r13,%rax
-0xffffffff813f07e9 <+201>:   mwait  %rax,%rcx
-
-RAX == R13 == 0x01
-
-So for this case I would have state C1E-IVB :
-
-struct cpuidle_driver {
-  name = 0xffffffff81b731ad "intel_idle",
-  owner = 0x0,
-  refcnt = 0,
-  bctimer = 0,
-...
-
-{
-      name = "C1E-IVB\000\000\000\000\000\000\000\000",
-      desc = "MWAIT
-0x01\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000",
-      flags = 16777217,
-      exit_latency = 10,
-      power_usage = 0,
-      target_residency = 20,
-      disabled = false,
-      enter = 0xffffffff813f0720 <intel_idle>,
-      enter_dead = 0
-    },
-
-and for the weird NMI exception frames:
-
-KERNEL-MODE EXCEPTION FRAME AT: ffff880fffa07f58
-    [exception RIP: intel_idle+204]
-    RIP: ffffffff813f07ec  RSP: ffffffff81c01d88  RFLAGS: 00000046
-    RAX: 0000000000000010  RBX: 0000000000000010  RCX: 0000000000000046
-    RDX: ffffffff81c01d88  RSI: 0000000000000018  RDI: 0000000000000001
-    RBP: ffffffff813f07ec   R8: ffffffff813f07ec   R9: 0000000000000018
-    R10: ffffffff81c01d88  R11: 0000000000000046  R12: ffffffffffffffff
-    R13: 0000000000000000  R14: ffffffff81c01fd8  R15: 0000000000000000
-    ORIG_RAX: 0000000000000000  CS: 0010  SS: 0018
-
-RAX = 0x10 would be:
-
-{
-      name = "C3-IVB\000\000\000\000\000\000\000\000\000",
-      desc = "MWAIT
-0x10\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000",
-      flags = 268500993,
-      exit_latency = 59,
-      power_usage = 0,
-      target_residency = 156,
-      disabled = false,
-      enter = 0xffffffff813f0720 <intel_idle>,
-      enter_dead = 0
-    }
-
-with a "impossible" RCX of 0x46 (should have caused a GP by the
-manual) -> Don't think MWAIT changed
-ECX value and not sure how to interpret this 0x46 ECX here.
-
-Anyway, I got feedback saying that disabling intel_idle
-(intel_idle.max_cstate=0) made the NMIs to go away.
-With these cores (and their NMIs exception frames) it looks like NMIs
-are coming from C1E and C3 states (and
-not only from deeper c-state MWAIT instructions).
-
-What might be happening here ? Why could HP's firmware be generating
-NMIs for MWAIT instructions since
-all possible MWAIT flags (EAX, ECX) are get by intel_idle code using
-CPUID instruction ?
-
-Thanks in advance
-
-Rafael Tinoco
