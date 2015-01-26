@@ -1,93 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Change behaviour when tracing ... nasty trap (was Re: [PATCH]
- PM/Trace: get rid of synchronous resume limit during PM trace)
-Date: Mon, 26 Jan 2015 14:43:04 +0100
-Message-ID: <20150126134304.GA7889@amd>
-References: <54C5CB77.4000109@linux.intel.com>
- <27240C0AC20F114CBF8149A2696CBE4A01F1AD6A@SHSMSX101.ccr.corp.intel.com>
- <20150126110516.GA2028@amd>
- <2718950.eck1siDzqK@vostro.rjw.lan>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: pwoertop frequencies not ordered descending
+Date: Mon, 26 Jan 2015 14:55:26 +0100
+Message-ID: <54C6474E.6080805@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2718950.eck1siDzqK@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Liu, Chuansheng" <chuansheng.liu@intel.com>, "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, trivial@kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.15.15]:56836 "EHLO mout.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752292AbbAZNz3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 26 Jan 2015 08:55:29 -0500
+Received: from [192.168.178.24] ([78.54.139.165]) by mail.gmx.com (mrgmx003)
+ with ESMTPSA (Nemesis) id 0MZkNy-1XycxF265G-00LWQ3 for
+ <linux-pm@vger.kernel.org>; Mon, 26 Jan 2015 14:55:27 +0100
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm >> Linux PM list" <linux-pm@vger.kernel.org>
 
-Document pm_tracing actually affecting suspend in non-trivial way.
+With the ACPI driver (and CPU governor "ondemand") the output of powertop looked always fine.
+However with the P-State driver I do now have this output at 2 hardened 64 bit Gentoo Linux systems:
 
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+PowerTOP 2.6      Overview   Idle stats   Frequency stats   Device stats   Tunables                     
 
----
 
-On Mon 2015-01-26 14:41:02, Rafael J. Wysocki wrote:
-> On Monday, January 26, 2015 12:05:16 PM Pavel Machek wrote:
-> > On Mon 2015-01-26 10:39:04, Liu, Chuansheng wrote:
+            Package |             Core    |            CPU 0       CPU 1
+                    |                     | Actual    2.6 GHz     2.7 GHz
+Idle         0.3%   | Idle        63.2%   | Idle        73.9%       75.0%
+2.50 GHz     0.1%   | 2.50 GHz     0.1%   | 2.50 GHz     0.1%        0.0%
+2.60 GHz     9.0%   | 2.60 GHz     8.9%   | 2.60 GHz     8.9%        0.3%
+2.90 GHz    74.5%   | 2.90 GHz    13.4%   | 2.90 GHz     5.4%       11.3%
+2.71 GHz    13.5%   | 2.71 GHz    12.9%   | 2.71 GHz    11.2%       12.3%
+ 800 MHz     0.2%   |  800 MHz     0.1%   | 2.81 GHz     0.5%        0.1%
+2.81 GHz     2.3%   | 2.81 GHz     1.1%   | 1200 MHz     0.0%        0.9%
+ 900 MHz     0.0%   | 1000 MHz     0.1%   | 1100 MHz     0.0%        0.1%
+1000 MHz     0.1%   | 1200 MHz     0.0%   | 1000 MHz     0.0%        0.0%
+1200 MHz     0.0%   |  900 MHz     0.0%   |  800 MHz     0.0%        0.0%
+1100 MHz     0.0%   | 1100 MHz     0.0%   |  900 MHz     0.0%        0.0%
+1300 MHz     0.0%   | 1500 MHz     0.0%   |                          0.0%
+1500 MHz     0.0%   | 1400 MHz     0.0%   |                          0.0%
+1400 MHz     0.0%   |                     |
 
-> > > > > @@ -517,8 +517,7 @@ static int device_resume_noirq(struct device *dev,
-> > > > pm_message_t state, bool asyn
-> > > > >
-> > > > >  static bool is_async(struct device *dev)
-> > > > >  {
-> > > > > -	return dev->power.async_suspend && pm_async_enabled
-> > > > > -		&& !pm_trace_is_enabled();
-> > > > > +	return dev->power.async_suspend && pm_async_enabled;
-> > > > >  }
-> > > > >
-> > > > 
-> > > > Actually... whoever did the original patch was evil person. Changing
-> > > > behaviour when tracing is requested is evil, evil, evil. Git blame
-> > > > tells me
-> > > > 
-> > > > Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-> > > > 
-> > > > went to the dark side.
-> > > 
-> > > Although I didn't get where is something wrong, but the is_async() is not created by my commit,
-> > > it is from commit (PM: Start asynchronous resume threads upfront), I just moved it ahead.
-> > > 
-> > > And like other phases, I added it into resum/suspend_noirq()...
-> > 
-> > I see, blame blamed wrong person. It looks like Rafael is evil:
-> > 
-> > commit 97df8c12995c5bac73e3bfeea4c5be155c1f4401
-> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date:   Sat Jan 23 22:25:31 2010 +0100
-> > 
-> >     PM: Start asynchronous resume threads upfront
-> 
-> This only means we won't use asyc suspend/resume at all when the RTC-based
-> resume debug is enabled, because it wouldn't make sense (the RTC-based
-> debug requires strict ordering of callbacks between devices or we may find
-> that device A hanged the resume while actually device B that was running in
-> parallel with A did that).
-> 
-> And I shouldn't even need to explain this ...  Sad.
+                    |             Core    |            CPU 2       CPU 3
+                    |                     | Actual    2.8 GHz     2.8 GHz
+                    | Idle         6.6%   | Idle        23.1%       24.9%
+                    | 2.50 GHz     0.1%   | 2.50 GHz     0.0%        0.1%
+                    | 2.60 GHz     8.9%   | 2.60 GHz     0.1%        8.9%
+                    | 2.90 GHz    69.1%   | 2.90 GHz    62.9%       62.5%
 
-Well, I forgot that pm_trace_is_enabled() is the simple, RTC based
-one, and believe it would be worth a comment...
-
-diff --git a/Documentation/power/s2ram.txt b/Documentation/power/s2ram.txt
-index 1bdfa04..4685aee 100644
---- a/Documentation/power/s2ram.txt
-+++ b/Documentation/power/s2ram.txt
-@@ -69,6 +69,10 @@ Reason for this is that the RTC is the only reliably available piece of
- hardware during resume operations where a value can be set that will
- survive a reboot.
- 
-+pm_trace is not compatible with asynchronous suspend, so it turns
-+asynchronous suspend off (which may work around timing or
-+ordering-sensitive bugs).
-+
- Consequence is that after a resume (even if it is successful) your system
- clock will have a value corresponding to the magic number instead of the
- correct date/time! It is therefore advisable to use a program like ntp-date
-
+Is this (partly ?) related to the kernel or just an issue of powertop ?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Toralf
+pgp key: 7B1A 07F4 EC82 0F90 D4C2  8936 872A E508 0076 E94E
+
