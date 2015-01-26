@@ -1,68 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Mon, 26 Jan 2015 15:45:43 +0100
-Message-ID: <2433846.5N8KuFRAKW@vostro.rjw.lan>
-References: <54866625.8010406@linux.intel.com> <7916564.nnH80uMtkt@vostro.rjw.lan> <alpine.DEB.2.11.1501261513040.5526@nanos>
+Date: Mon, 26 Jan 2015 15:24:27 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1501261523370.5526@nanos>
+References: <54866625.8010406@linux.intel.com> <54C5FE6A.9010300@linux.intel.com> <alpine.DEB.2.11.1501260946390.5526@nanos> <2137807.aqSxQQCuJ3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61655 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752517AbbAZOXA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 09:23:00 -0500
-In-Reply-To: <alpine.DEB.2.11.1501261513040.5526@nanos>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2137807.aqSxQQCuJ3@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Monday, January 26, 2015 03:15:43 PM Thomas Gleixner wrote:
-> On Mon, 26 Jan 2015, Rafael J. Wysocki wrote:
+On Mon, 26 Jan 2015, Rafael J. Wysocki wrote:
+> On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
+> > The only remaining issue might be a NMI calling into
+> > ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
+> > non issue on x86/tsc, but it might be a problem on other platforms
+> > which turn off devices, clocks, It's not rocket science to prevent
+> > that.
 > 
-> > On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
-> > > On Mon, 26 Jan 2015, Li, Aubrey wrote:
-> > > > On 2015/1/22 18:15, Thomas Gleixner wrote:
-> > > > > Can we please stop adding more crap to that notifier thing? I rather
-> > > > > see that go away than being expanded.
-> > > > 
-> > > > Are you referring to FREEZE_PREPARE or remove all of FREEZE staff at all?
-> > > > 
-> > > > What's the disadvantage of adding more notifier?
-> > > 
-> > > clockevents_notify() is not a notifier. Its a multiplex call and I
-> > > want to get rid of it and replace it with explicit functions.
-> > 
-> > OK, so perhaps we need to move _SUSPEND/_RESUME out of there to start with?
-> > 
-> > As far as I can say, clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL) and
-> > clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL) are each only called from
-> > one place and moreover, since they are in syscore_ops, we don't need any
-> > locking around them.
-> > 
-> > So what about the patch below?
-> 
-> I'm cleaning up the whole replacement of notify. The stuff below is
-> part of it.
-> 
-> >  
-> > -	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> > +	tick_suspend();
-> > +	tick_suspend_broadcast();
-> 
-> That's exactly the stuff I don't want to see. Blind code
-> move.
+> I don't see any users of ktime_get_mono_fast_ns() at all, unless some non-trivial
+> macros are involved.  At least grepping for it only returns the definition,
+> declarations and the line in trace.c.
 
-At least it's clear what the patch does. :-)
+You can trace in NMI and perf is going to use ktime_get_mono_fast_ns()
+eventually as well.
 
-> tick_suspend_broadcast() wants to be called from tick_suspend().
+Thanks,
 
-OK
-
-> Still compiling and testing a gazillion of combinations.
-
-OK, so it looks like we need to wait with the suspend to idle changes until
-this lands.
-
-Rafael
-
+	tglx
