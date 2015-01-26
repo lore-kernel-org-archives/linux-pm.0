@@ -1,154 +1,58 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 5/5] drivers: bus: Add Simple Power-Managed Bus Driver
-Date: Mon, 26 Jan 2015 17:16:17 +0100
-Message-ID: <1422288977-20353-6-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v4 2/5] drivers: bus: Sort Makefile entries alphabetically
+Date: Mon, 26 Jan 2015 17:16:14 +0100
+Message-ID: <1422288977-20353-3-git-send-email-geert+renesas@glider.be>
 References: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:44662 "EHLO
-	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756192AbbAZQQd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 11:16:33 -0500
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>
 Cc: Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-
-Add a driver for transparent busses that don't need a real driver, but
-where the bus controller is part of a PM domain, or under the control of
-a functional clock.  Typically, the bus controller's PM domain and/or
-clock must be enabled for child devices connected to the bus (either
-on-SoC or externally) to function.
-
-Hence the sole purpose of this driver is to enable its clock and PM
-domain (if exist(s)), which are specified in the DT and managed from
-platform and PM domain code, and to probe for child devices.
-
-Due to the child-parent relationship with devices connected to the bus,
-PM domain and clock state transitions are handled in the correct order.
+List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
 ---
 v4:
-  - Bind against the generic "simple-pm-bus" instead of "renesas,bsc",
-  - Explicitly call of_platform_populate() after pm_runtime_enable() to
-    enforce ordering, instead of depending on claimed compatibility with
-    "simple-bus",
+  - No changes,
 
 v3:
   - Add Tested-by,
 
 v2:
-  - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
-    "Simple Power-Managed Bus Driver" (simple-pm-bus),
-  - Change module license to GPL v2,
-  - Change email address to geert+renesas@glider.be.
+  - New.
 ---
- drivers/bus/Kconfig         | 13 ++++++++++
- drivers/bus/Makefile        |  1 +
- drivers/bus/simple-pm-bus.c | 58 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 72 insertions(+)
- create mode 100644 drivers/bus/simple-pm-bus.c
+ drivers/bus/Makefile | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
-index 626960819e6df16c..7e9c2674af81d6e9 100644
---- a/drivers/bus/Kconfig
-+++ b/drivers/bus/Kconfig
-@@ -58,6 +58,19 @@ config OMAP_OCP2SCP
- 	  OCP2SCP and in OMAP5, both USB PHY and SATA PHY is connected via
- 	  OCP2SCP.
- 
-+config SIMPLE_PM_BUS
-+	bool "Simple Power-Managed Bus Driver"
-+	depends on OF && PM
-+	depends on ARCH_SHMOBILE || COMPILE_TEST
-+	help
-+	  Driver for transparent busses that don't need a real driver, but
-+	  where the bus controller is part of a PM domain, or under the control
-+	  of a functional clock, and thus relies on runtime PM for managing
-+	  this PM domain and/or clock.
-+	  An example of such a bus controller is the Renesas Bus State
-+	  Controller (BSC, sometimes called "LBSC within Bus Bridge", or
-+	  "External Bus Interface") as found on several Renesas ARM SoCs.
-+
- config VEXPRESS_CONFIG
- 	bool "Versatile Express configuration bus"
- 	default y if ARCH_VEXPRESS
 diff --git a/drivers/bus/Makefile b/drivers/bus/Makefile
-index 3cfaf2c7f25ac4f0..e023a2bec664d900 100644
+index 2973c18cbcc27816..3cfaf2c7f25ac4f0 100644
 --- a/drivers/bus/Makefile
 +++ b/drivers/bus/Makefile
-@@ -14,4 +14,5 @@ obj-$(CONFIG_MVEBU_MBUS) 	+= mvebu-mbus.o
+@@ -2,16 +2,16 @@
+ # Makefile for the bus drivers.
+ #
+ 
++# Interconnect bus drivers for ARM platforms
++obj-$(CONFIG_ARM_CCI)		+= arm-cci.o
++obj-$(CONFIG_ARM_CCN)		+= arm-ccn.o
++
+ obj-$(CONFIG_BRCMSTB_GISB_ARB)	+= brcmstb_gisb.o
+-obj-$(CONFIG_IMX_WEIM)	+= imx-weim.o
+-obj-$(CONFIG_MVEBU_MBUS) += mvebu-mbus.o
+-obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
++obj-$(CONFIG_IMX_WEIM)		+= imx-weim.o
++obj-$(CONFIG_MVEBU_MBUS) 	+= mvebu-mbus.o
+ 
+ # Interconnect bus driver for OMAP SoCs.
  obj-$(CONFIG_OMAP_INTERCONNECT)	+= omap_l3_smx.o omap_l3_noc.o
  
- obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
-+obj-$(CONFIG_SIMPLE_PM_BUS)	+= simple-pm-bus.o
+-# Interconnect bus drivers for ARM platforms
+-obj-$(CONFIG_ARM_CCI)		+= arm-cci.o
+-obj-$(CONFIG_ARM_CCN)		+= arm-ccn.o
+-
++obj-$(CONFIG_OMAP_OCP2SCP)	+= omap-ocp2scp.o
  obj-$(CONFIG_VEXPRESS_CONFIG)	+= vexpress-config.o
-diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
-new file mode 100644
-index 0000000000000000..c5eb46cbf388b507
---- /dev/null
-+++ b/drivers/bus/simple-pm-bus.c
-@@ -0,0 +1,58 @@
-+/*
-+ * Simple Power-Managed Bus Driver
-+ *
-+ * Copyright (C) 2014-2015 Glider bvba
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
-+
-+
-+static int simple_pm_bus_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
-+
-+	pm_runtime_enable(&pdev->dev);
-+
-+	if (np)
-+		of_platform_populate(np, NULL, NULL, &pdev->dev);
-+
-+	return 0;
-+}
-+
-+static int simple_pm_bus_remove(struct platform_device *pdev)
-+{
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
-+
-+	pm_runtime_disable(&pdev->dev);
-+	return 0;
-+}
-+
-+static const struct of_device_id simple_pm_bus_of_match[] = {
-+	{ .compatible = "simple-pm-bus", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, simple_pm_bus_of_match);
-+
-+static struct platform_driver simple_pm_bus_driver = {
-+	.probe = simple_pm_bus_probe,
-+	.remove = simple_pm_bus_remove,
-+	.driver = {
-+		.name = "simple-pm-bus",
-+		.of_match_table = simple_pm_bus_of_match,
-+	},
-+};
-+
-+module_platform_driver(simple_pm_bus_driver);
-+
-+MODULE_DESCRIPTION("Simple Power-Managed Bus Driver");
-+MODULE_AUTHOR("Geert Uytterhoeven <geert+renesas@glider.be>");
-+MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
 
