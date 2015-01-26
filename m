@@ -1,174 +1,79 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use
- device tree
-Date: Mon, 26 Jan 2015 09:49:04 +0100
-Message-ID: <20150126094904.3cacaf6d@amdc2363>
-References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
- <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
- <20150124214955.GA14443@developer.hsd1.ca.comcast.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] cpufreq: exynos: Use simple approach to asses if cpu cooling
+ can be used
+Date: Mon, 26 Jan 2015 10:25:27 +0100
+Message-ID: <1422264327-17483-1-git-send-email-l.majewski@samsung.com>
+References: <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:40701 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbbAZItU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 03:49:20 -0500
-In-reply-to: <20150124214955.GA14443@developer.hsd1.ca.comcast.net>
+Received: from mailout1.samsung.com ([203.254.224.24]:42292 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbbAZJZo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 04:25:44 -0500
+In-reply-to: <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-Hi Eduardo,
+Commit: e725d26c4857e5e41975b5e74e64ce6ab09a7121 provided possibility to
+use device tree to asses if cpu can be used as cooling device. Since the
+code was somewhat awkward, simpler approach has been proposed.
 
-> On Fri, Jan 23, 2015 at 01:09:53PM +0100, Lukasz Majewski wrote:
-> > 1. Introduction
-> > 
-> > Following patches aim to clean up the current implementation of the
-> > thermal framework on Exynos devices.
-> > 
-> > The main goal was to use a generic code for reading thermal
-> > configuration (of-thermal.c). Due to that redundant
-> > exynos_thermal_common.[h|c] files were removed.
-> > 
-> > Around 400 lines of code (LOC) were removed directly by this patch,
-> > which is around 20% of the Exynos thermal code base.
-> > 
-> > This work should NOT bring any functional changes to Exynos thermal 
-> > subsystem.
-> > 
-> > 2. Patch-set structure
-> > 
-> > Then the cpu_cooling functionality has been preserved to allow
-> > cooling devices by reducing operating frequency. Definition of trip
-> > points and cpufreq's cooling properties were moved to device tree.
-> > 
-> > Then the rework of the way in which configuration data is provided
-> > to the Exynos thermal subsystem was performed. Now device tree is
-> > used for configuration.
-> > 
-> > 3. Dead code removal
-> > 
-> > Thermal support for some SoCs, previously available in the
-> > exynos_tmu_data.c file, was removed since, as of (almost) 3.19-rc3,
-> > they didn't have TMU bindings.
-> > 
-> > Moreover, support for cpu_cooling devices was preserved only on
-> > those SoCs which had available and working cpufreq driver.
-> > 
-> > 4. Testing
-> > 
-> > Test devices:
-> > - Exynos4210 - Trats (TMU zone + cpu_cooling)
-> > - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
-> > - Exynos5250 - Arndale (TMU zone + cpu_cooling)
-> > - Exynos5420 - Arndale-octa (only TMU zones)
-> > 
-> > Unfortunately, I don't posses Exynos5440 for testing. Its
-> > functionality has been preserved in the code, but not tested on the
-> > hardware. I would be grateful for help in testing.
-> > 
-> > 
-> > 5. This work apply on the following tree:
-> > 
-> > kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
-> > SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
-> > 
-> > 
-> > Lukasz Majewski (18):
-> 
-> I have applied the following patches to my -fixes branch (for next rc
-> cycle)
-> 
-> >   thermal: exynos: cosmetic: Correct comment format
-> >   thermal: exynos: Provide thermal_exynos.h file to be included in
-> >     device tree files
-> >   thermal: exynos: Modify exynos thermal code to use device tree
-> > for cpu cooling configuration
-> >   cpufreq: exynos: Use device tree to determine if cpufreq cooling
-> >     should be registered
-> >   dts: Documentation: Extending documentation entry for
-> > exynos-thermal dts: Documentation: Update exynos-thermal.txt
-> > example for Exynos5440 thermal: samsung: core: Exynos TMU rework to
-> > use device tree for configuration
-> >   thermal: exynos: Remove exynos_thermal_common.[c|h] files
-> >   thermal: exynos: Remove exynos_tmu_data.c file
-      
-	By some mishap the last patch "thermal: exynos: Remove
-	exynos_tmu_data.c file" was not applied to neither
-	linux-soc-thermal/next nor linux-soc-thermal/fixes.
+Test HW: Exynos 4412 - Odroid U3.
 
-Eduardo, could you apply it?
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c | 21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
 
-> 
-> The patches below should go via platform tree:
-> 
-> >   arm: dts: trats: Enable TMU on the Exynos4210 trats device
-> >   arm: dts: odroid: Add LDO10 regulator node necessary for TMU on
-> > Odroid arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3
-> > device arm: dts: Adding CPU cooling binding for Exynos SoCs
-> >   thermal: exynos: dts: Add default definition of the TMU sensor
-> >     parameter
-> >   thermal: dts: Default trip points definition for Exynos5420 SoCs
-> >   thermal: exynos: dts: Define default thermal-zones for Exynos4
-> >   thermal: dts: exynos: Trip points and sensor configuration data
-> > for Exynos5440
-> >   thermal: exynos: dts: Provide device tree bindings identical to
-> > the one in exynos_tmu_data.c
-> 
-> 
-> Thanks a lot.
-> 
-> > 
-> >  .../devicetree/bindings/thermal/exynos-thermal.txt |  17 +
-> >  arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
-> >  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  52 +++
-> >  arch/arm/boot/dts/exynos4.dtsi                     |   4 +
-> >  arch/arm/boot/dts/exynos4210-trats.dts             |  19 +
-> >  arch/arm/boot/dts/exynos4210.dtsi                  |  30 +-
-> >  arch/arm/boot/dts/exynos4212.dtsi                  |   5 +-
-> >  arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  27 ++
-> >  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  24 ++
-> >  arch/arm/boot/dts/exynos4412-trats2.dts            |  15 +
-> >  arch/arm/boot/dts/exynos4412.dtsi                  |   5 +-
-> >  arch/arm/boot/dts/exynos4x12.dtsi                  |   1 +
-> >  arch/arm/boot/dts/exynos5250.dtsi                  |  29 +-
-> >  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  35 ++
-> >  arch/arm/boot/dts/exynos5420.dtsi                  |  28 ++
-> >  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  24 ++
-> >  arch/arm/boot/dts/exynos5440-trip-points.dtsi      |  25 ++
-> >  arch/arm/boot/dts/exynos5440.dtsi                  |  18 +
-> >  drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
-> >  drivers/thermal/samsung/Makefile                   |   2 -
-> >  drivers/thermal/samsung/exynos_thermal_common.c    | 427
-> > ---------------------
-> > drivers/thermal/samsung/exynos_thermal_common.h    | 106 -----
-> > drivers/thermal/samsung/exynos_tmu.c               | 348
-> > +++++++++++------
-> > drivers/thermal/samsung/exynos_tmu.h               |  76 +---
-> > drivers/thermal/samsung/exynos_tmu_data.c          | 264
-> > ------------- include/dt-bindings/thermal/thermal_exynos.h       |
-> > 28 ++ 26 files changed, 636 insertions(+), 1008 deletions(-) create
-> > mode 100644 arch/arm/boot/dts/exynos4-cpu-thermal.dtsi create mode
-> > 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi create
-> > mode 100644 arch/arm/boot/dts/exynos5420-trip-points.dtsi create
-> > mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
-> > create mode 100644 arch/arm/boot/dts/exynos5440-trip-points.dtsi
-> > delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
-> > delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
-> > delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c create
-> > mode 100644 include/dt-bindings/thermal/thermal_exynos.h
-> > 
-> > -- 
-> > 2.0.0.rc2
-> > 
-
-
-
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 5e98c6b..b640da0 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -159,7 +159,7 @@ static struct cpufreq_driver exynos_driver = {
+ 
+ static int exynos_cpufreq_probe(struct platform_device *pdev)
+ {
+-	struct device_node *cpus, *np;
++	struct device_node *cpu0, *np;
+ 	int ret = -EINVAL;
+ 
+ 	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
+@@ -206,28 +206,19 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_cpufreq_reg;
+ 
+-	cpus = of_find_node_by_path("/cpus");
+-	if (!cpus) {
+-		pr_err("failed to find cpus node\n");
++	cpu0 = of_get_cpu_node(0, NULL);
++	if (!cpu0) {
++		pr_err("failed to find cpu0 node\n");
+ 		return 0;
+ 	}
+ 
+-	np = of_get_next_child(cpus, NULL);
+-	if (!np) {
+-		pr_err("failed to find cpus child node\n");
+-		of_node_put(cpus);
+-		return 0;
+-	}
+-
+-	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		cdev = of_cpufreq_cooling_register(np,
++	if (of_find_property(cpu0, "#cooling-cells", NULL)) {
++		cdev = of_cpufreq_cooling_register(cpu0,
+ 						   cpu_present_mask);
+ 		if (IS_ERR(cdev))
+ 			pr_err("running cpufreq without cooling device: %ld\n",
+ 			       PTR_ERR(cdev));
+ 	}
+-	of_node_put(np);
+-	of_node_put(cpus);
+ 
+ 	return 0;
+ 
 -- 
-Best regards,
+2.0.0.rc2
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
