@@ -1,544 +1,189 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v10 2/7] devfreq: event: Add exynos-ppmu devfreq-event driver
-Date: Mon, 26 Jan 2015 13:16:28 +0900
-Message-ID: <1422245793-8552-3-git-send-email-cw00.choi@samsung.com>
-References: <1422245793-8552-1-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v10 0/7] devfreq: Add devfreq-event class to provide raw data
+ for devfreq device
+Date: Mon, 26 Jan 2015 13:16:26 +0900
+Message-ID: <1422245793-8552-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:40433 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbbAZEQk (ORCPT
+Received: from mailout1.samsung.com ([203.254.224.24]:35520 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751273AbbAZEQk (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jan 2015 23:16:40 -0500
-In-reply-to: <1422245793-8552-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kgene@kernel.org
 Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, sangbae90.lee@samsung.com, inki.dae@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-This patch adds exynos-ppmu devfreq-event driver to get performance data
-of each IP for Samsung Exynos SoC. These event from Exynos PPMU provide
-useful information about the behavior of the SoC that you can use when
-analyzing system performance, and made visible and can be counted using
-logic in each IP.
+This patchset add new devfreq_event class to provide raw data to determine
+current utilization of device  which is used for devfreq governor.
 
-This patch is based on existing drivers/devfreq/exynos/exynos-ppmu.c
+The following description explains the feature of two kind of devfreq class:
+- devfreq class (existing)
+ : devfreq consumer device use raw data from devfreq_event device for
+   determining proper current system state and change voltage/frequency
+   dynamically using various governors.
+- devfreq_event class (new)
+ : Provide measured raw data to devfreq device for governor
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
- drivers/devfreq/event/Kconfig       |   9 +
- drivers/devfreq/event/Makefile      |   1 +
- drivers/devfreq/event/exynos-ppmu.c | 374 ++++++++++++++++++++++++++++++++++++
- drivers/devfreq/event/exynos-ppmu.h |  93 +++++++++
- 4 files changed, 477 insertions(+)
+Changelog:
+
+Changes from v9:
+(https://lkml.org/lkml/2015/1/20/68)
+- Fix the operation of enable_count in devfreq_event_{enable|disable}_edev().
+
+Changes from v8:
+(https://lkml.org/lkml/2015/1/12/299)
+- Fix issue of devfreq-event.c driver by Myunjoo's comment
+  : Merge patch2 (resource-managed function) with patch1
+  : Fix bug in devfreq_event_{enable|disable}_edev() about enable_count operation
+  : Simplify error checking code in devfreq_event_get_event()
+  : Define devfreq_event_get_drvdata() as static inline function type
+  : Reduce the time of critical section scope in devfreq_event_remove_edev()
+  : Rename field name of devfreq_event_data structure
+    (total_event / event -> total_count / load_count)
+- Drop following patch[1] because Exynos5260 cannot be tested for exynos-ppmu.c driver
+  [1] [PATCHv8 7/9] ARM: dts: Add PPMU dt node for Exynos5260 SoC
+      - https://lkml.org/lkml/2015/1/12/301
+- Clean-up exynos-ppmu.c without update
+
+Changes from v7:
+(https://lkml.org/lkml/2015/1/7/795)
+- Use EXPORT_SYMBOL_GPL macro instead of EXPORT_SYMBOL
+- Fix the binding document of exynos-ppmu.c driver
+- Drop the devfreq-event type patch because it isnt' clear
+- Fix bug of devfreq_event_add_edev() when fail to execute device_register()
+- Modify resource free operation on following functions:
+  : devfreq_event_remove_edev()
+  : devfreq_event_release_edev()
+
+Changes from v6:
+(https://lkml.org/lkml/2014/12/28/139)
+- This patchset is based on v3.19-rc3.
+1. devfreq-event class driver
+- Fix build break if devfreq-event framework is off
+- Add resource-managed function for devfreq-event device
+: devm_devfreq_event_add_edev()
+: devm_devfreq_event_remove_edev()
+
+Changes from v5:
+(https://lkml.org/lkml/2014/12/22/527)
+- Rebase these patch-set on v3.19-rc1 and Test it.
+1. exynos-ppmu.c
+- Change the error value when of_iomap() fail to map the memory
+- Remove owner setting of platform_driver
+- Add exynos_ppmu_disable() function
+2. exynos dts file
+- Add PPMU node to Exynos3250-based Monk board
+- Remove ppmu_cpu node on Exynos4412-based TRATS2 board and add ppmu_leftbus/rightbus node
+
+Changes from v4:
+(https://lkml.org/lkml/2014/12/16/511)
+1. devfreq-event class driver
+- Add devfreq_event_get_edev_count() function
+- Modify the simple description of devfreq-event framework in devfreq-event.c
+- Minimize the usage range of global lock usage in devfreq_event_add_edev()
+- Remove '_is_enabled()' function pointer in devfreq_event_ops structure
+- Add separte CONFIG_PM_DEVFREQ_EVENT configuration
+- Add new devfreq-event.h header file including devfreq-event helper functions
+2. exynos dts file
+- Add new patch to support PPMU with DEVFREQ-event on Exynos4412-based TRATS2
+
+Changes from v3:
+(https://lkml.org/lkml/2014/12/12/219)
+1. devfreq-event class driver
+- Fix return value of devfreq_event_get_event()
+- Add new structure devfreq_event_data for devfreq_event_get_event()
+- Modify the prototype of devfreq_event_get_event() function
+- Call of_node_put after calling of_parse_phandle() to decrement refcount
+2. exynos-ppmu driver
+- Modify usage of devfreq_event_get_event() function
+  according to new prototype of this funciton
+- Add the additional description to exynos-ppmu.txt how to add PPMU node
+  in board dts file
+- Use 'PPMU_EVENT' macro to remove duplicate codes
+- Add the support of PPMU for Exynos5260
+3. exynos dts file
+- Add missing PPMU_FSYS node to exynos3250.dtsi
+- Fix 'ppmu_mfc_l' node name as 'ppmu_mfc' because exynos3250 has only one MFC IP.
+- Add missing PPMU_ACP/G3D to exynos4.dtsi
+4. etc
+- Fix wrong abbreviation of PPMU (PPMU :Platform Performance Monitoring Unit)
+- Add new patch to support the PPMU of Exynos5260 SoC
+
+Changes from v2:
+(https://lkml.org/lkml/2014/12/9/304)
+1. devfreq-event class driver
+- Rename all the helper functions of devfreq-event device
+- Add devfreq_event_remove_edev() instead of devfreq_put_event_dev()
+- Add devfreq_event_release_edev() to initialize it before put device
+- Add the detailed description of devfreq-event API
+- Add the attributes of devfreq-event class (enable_count)
+- Check the overflow about event/total_event data in devfreq_event_get_event()
+- Remove the 'exclusive flag' feature
+- Set set_event()/get_event() functions as mandary
+- Add missing of_node_put() call
+- Change variable type of 'get_event()' funciton from 'int' to 'u64'
+2. exynos-ppmu driver
+- Remove un-used field (struct devfreq)
+- Use 'of_get_child_by_name()' instead of 'of_find_node_by_name()'
+- Add missing of_node_put() call
+- Fix wrong clock control
+- Use devfreq_event_remove_edev() instead of devfreq_remove_device()
+- Add the documentation for exynos-ppmu driver
+- Remove 'enable/disable/is_enabled/reset' function of exynos-ppmu driver
+3. exynos3250-rinato.dts
+- Add ppmu_{leftbus|rightbus} dt node and remove ppmu_cpu dt node
+
+Changes from v1:
+(https://lkml.org/lkml/2014/9/5/11)
+- Code clean
+- Add the description of devfreq-event structure
+- Add 'is_enabled' function to devfreq_event_ops structure
+- Add 'enable_count' field to devfreq_event_dev structure
+- Check whether devfreq-event device is enabled or not
+  during calling devfreq_event API
+- Define the type of devfreq-event device as following
+  : DEVFREQ_EVENT_TYPE_RAW_DATA
+  : DEVFREQ_EVENT_TYPE_UTILIZATION
+  : DEVFREQ_EVENT_TYPE_BANDWIDTH
+  : DEVFREQ_EVENT_TYPE_LATENCY
+- Add the exclusive feature of devfreq-event device.
+  If devfreq-event device is used on only on devfreq driver,
+  should used 'devfreq_enable_event_dev_exclusive()' function
+- Add new patch6 for test on Exynos3250-based Rinato board
+
+Chanwoo Choi (7):
+  devfreq: event: Add new devfreq_event class to provide basic data for devfreq governor
+  devfreq: event: Add exynos-ppmu devfreq-event driver
+  devfreq: event: Add documentation for exynos-ppmu devfreq-event driver
+  ARM: dts: Add PPMU dt node for Exynos3250 SoC
+  ARM: dts: Add PPMU dt node for Exynos4 SoCs
+  ARM: dts: exynos: Add PPMU node for Exynos3250-based Rinato/Monk board
+  ARM: dts: exynos: Add PPMU node for Exynos4412-based TRATS2 board
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 +++++
+ arch/arm/boot/dts/exynos3250-monk.dts              |  40 ++
+ arch/arm/boot/dts/exynos3250-rinato.dts            |  40 ++
+ arch/arm/boot/dts/exynos3250.dtsi                  |  74 +++
+ arch/arm/boot/dts/exynos4.dtsi                     | 108 +++++
+ arch/arm/boot/dts/exynos4210.dtsi                  |   8 +
+ arch/arm/boot/dts/exynos4412-trats2.dts            |  40 ++
+ drivers/devfreq/Kconfig                            |   2 +
+ drivers/devfreq/Makefile                           |   6 +-
+ drivers/devfreq/devfreq-event.c                    | 494 +++++++++++++++++++++
+ drivers/devfreq/event/Kconfig                      |  25 ++
+ drivers/devfreq/event/Makefile                     |   2 +
+ drivers/devfreq/event/exynos-ppmu.c                | 374 ++++++++++++++++
+ drivers/devfreq/event/exynos-ppmu.h                |  93 ++++
+ include/linux/devfreq-event.h                      | 196 ++++++++
+ 15 files changed, 1611 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Kconfig
+ create mode 100644 drivers/devfreq/event/Makefile
  create mode 100644 drivers/devfreq/event/exynos-ppmu.c
  create mode 100644 drivers/devfreq/event/exynos-ppmu.h
+ create mode 100644 include/linux/devfreq-event.h
 
-diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-index 1ced42c..a11720a 100644
---- a/drivers/devfreq/event/Kconfig
-+++ b/drivers/devfreq/event/Kconfig
-@@ -13,4 +13,13 @@ menuconfig PM_DEVFREQ_EVENT
- 
- if PM_DEVFREQ_EVENT
- 
-+config DEVFREQ_EVENT_EXYNOS_PPMU
-+	bool "EXYNOS PPMU (Platform Performance Monitoring Unit) DEVFREQ event Driver"
-+	depends on ARCH_EXYNOS
-+	select PM_OPP
-+	help
-+	  This add the devfreq-event driver for Exynos SoC. It provides PPMU
-+	  (Platform Performance Monitoring Unit) counters to estimate the
-+	  utilization of each module.
-+
- endif # PM_DEVFREQ_EVENT
-diff --git a/drivers/devfreq/event/Makefile b/drivers/devfreq/event/Makefile
-index dc56005..be146ea 100644
---- a/drivers/devfreq/event/Makefile
-+++ b/drivers/devfreq/event/Makefile
-@@ -1 +1,2 @@
- # Exynos DEVFREQ Event Drivers
-+obj-$(CONFIG_DEVFREQ_EVENT_EXYNOS_PPMU) += exynos-ppmu.o
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-new file mode 100644
-index 0000000..135be0a
---- /dev/null
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -0,0 +1,374 @@
-+/*
-+ * exynos_ppmu.c - EXYNOS PPMU (Platform Performance Monitoring Unit) support
-+ *
-+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
-+ * Author : Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This driver is based on drivers/devfreq/exynos/exynos_ppmu.c
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/suspend.h>
-+#include <linux/devfreq-event.h>
-+
-+#include "exynos-ppmu.h"
-+
-+struct exynos_ppmu_data {
-+	void __iomem *base;
-+	struct clk *clk;
-+};
-+
-+struct exynos_ppmu {
-+	struct devfreq_event_dev **edev;
-+	struct devfreq_event_desc *desc;
-+	unsigned int num_events;
-+
-+	struct device *dev;
-+	struct mutex lock;
-+
-+	struct exynos_ppmu_data ppmu;
-+};
-+
-+#define PPMU_EVENT(name)			\
-+	{ "ppmu-event0-"#name, PPMU_PMNCNT0 },	\
-+	{ "ppmu-event1-"#name, PPMU_PMNCNT1 },	\
-+	{ "ppmu-event2-"#name, PPMU_PMNCNT2 },	\
-+	{ "ppmu-event3-"#name, PPMU_PMNCNT3 }
-+
-+struct __exynos_ppmu_events {
-+	char *name;
-+	int id;
-+} ppmu_events[] = {
-+	/* For Exynos3250, Exynos4 and Exynos5260 */
-+	PPMU_EVENT(g3d),
-+	PPMU_EVENT(fsys),
-+
-+	/* For Exynos4 SoCs and Exynos3250 */
-+	PPMU_EVENT(dmc0),
-+	PPMU_EVENT(dmc1),
-+	PPMU_EVENT(cpu),
-+	PPMU_EVENT(rightbus),
-+	PPMU_EVENT(leftbus),
-+	PPMU_EVENT(lcd0),
-+	PPMU_EVENT(camif),
-+
-+	/* Only for Exynos3250 and Exynos5260 */
-+	PPMU_EVENT(mfc),
-+
-+	/* Only for Exynos4 SoCs */
-+	PPMU_EVENT(mfc-left),
-+	PPMU_EVENT(mfc-right),
-+
-+	/* Only for Exynos5260 SoCs */
-+	PPMU_EVENT(drex0-s0),
-+	PPMU_EVENT(drex0-s1),
-+	PPMU_EVENT(drex1-s0),
-+	PPMU_EVENT(drex1-s1),
-+	PPMU_EVENT(eagle),
-+	PPMU_EVENT(kfc),
-+	PPMU_EVENT(isp),
-+	PPMU_EVENT(fimc),
-+	PPMU_EVENT(gscl),
-+	PPMU_EVENT(mscl),
-+	PPMU_EVENT(fimd0x),
-+	PPMU_EVENT(fimd1x),
-+	{ /* sentinel */ },
-+};
-+
-+static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(ppmu_events); i++)
-+		if (!strcmp(edev->desc->name, ppmu_events[i].name))
-+			return ppmu_events[i].id;
-+
-+	return -EINVAL;
-+}
-+
-+static int exynos_ppmu_disable(struct devfreq_event_dev *edev)
-+{
-+	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
-+	u32 pmnc;
-+
-+	/* Disable all counters */
-+	__raw_writel(PPMU_CCNT_MASK |
-+		     PPMU_PMCNT0_MASK |
-+		     PPMU_PMCNT1_MASK |
-+		     PPMU_PMCNT2_MASK |
-+		     PPMU_PMCNT3_MASK,
-+		     info->ppmu.base + PPMU_CNTENC);
-+
-+	/* Disable PPMU */
-+	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
-+	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
-+	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
-+
-+	return 0;
-+}
-+
-+static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
-+{
-+	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
-+	int id = exynos_ppmu_find_ppmu_id(edev);
-+	u32 pmnc, cntens;
-+
-+	if (id < 0)
-+		return id;
-+
-+	/* Enable specific counter */
-+	cntens = __raw_readl(info->ppmu.base + PPMU_CNTENS);
-+	cntens |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
-+	__raw_writel(cntens, info->ppmu.base + PPMU_CNTENS);
-+
-+	/* Set the event of Read/Write data count  */
-+	__raw_writel(PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT,
-+			info->ppmu.base + PPMU_BEVTxSEL(id));
-+
-+	/* Reset cycle counter/performance counter and enable PPMU */
-+	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
-+	pmnc &= ~(PPMU_PMNC_ENABLE_MASK
-+			| PPMU_PMNC_COUNTER_RESET_MASK
-+			| PPMU_PMNC_CC_RESET_MASK);
-+	pmnc |= (PPMU_ENABLE << PPMU_PMNC_ENABLE_SHIFT);
-+	pmnc |= (PPMU_ENABLE << PPMU_PMNC_COUNTER_RESET_SHIFT);
-+	pmnc |= (PPMU_ENABLE << PPMU_PMNC_CC_RESET_SHIFT);
-+	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
-+
-+	return 0;
-+}
-+
-+static int exynos_ppmu_get_event(struct devfreq_event_dev *edev,
-+				struct devfreq_event_data *edata)
-+{
-+	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
-+	int id = exynos_ppmu_find_ppmu_id(edev);
-+	u32 pmnc, cntenc;
-+
-+	if (id < 0)
-+		return -EINVAL;
-+
-+	/* Disable PPMU */
-+	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
-+	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
-+	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
-+
-+	/* Read cycle count */
-+	edata->total_count = __raw_readl(info->ppmu.base + PPMU_CCNT);
-+
-+	/* Read performance count */
-+	switch (id) {
-+	case PPMU_PMNCNT0:
-+	case PPMU_PMNCNT1:
-+	case PPMU_PMNCNT2:
-+		edata->load_count
-+			= __raw_readl(info->ppmu.base + PPMU_PMNCT(id));
-+		break;
-+	case PPMU_PMNCNT3:
-+		edata->load_count =
-+			((__raw_readl(info->ppmu.base + PPMU_PMCNT3_HIGH) << 8)
-+			| __raw_readl(info->ppmu.base + PPMU_PMCNT3_LOW));
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* Disable specific counter */
-+	cntenc = __raw_readl(info->ppmu.base + PPMU_CNTENC);
-+	cntenc |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
-+	__raw_writel(cntenc, info->ppmu.base + PPMU_CNTENC);
-+
-+	dev_dbg(&edev->dev, "%s (event: %ld/%ld)\n", edev->desc->name,
-+					edata->load_count, edata->total_count);
-+
-+	return 0;
-+}
-+
-+static struct devfreq_event_ops exynos_ppmu_ops = {
-+	.disable = exynos_ppmu_disable,
-+	.set_event = exynos_ppmu_set_event,
-+	.get_event = exynos_ppmu_get_event,
-+};
-+
-+static int of_get_devfreq_events(struct device_node *np,
-+				 struct exynos_ppmu *info)
-+{
-+	struct devfreq_event_desc *desc;
-+	struct device *dev = info->dev;
-+	struct device_node *events_np, *node;
-+	int i, j, count;
-+
-+	events_np = of_get_child_by_name(np, "events");
-+	if (!events_np) {
-+		dev_err(dev,
-+			"failed to get child node of devfreq-event devices\n");
-+		return -EINVAL;
-+	}
-+
-+	count = of_get_child_count(events_np);
-+	desc = devm_kzalloc(dev, sizeof(*desc) * count, GFP_KERNEL);
-+	if (!desc)
-+		return -ENOMEM;
-+	info->num_events = count;
-+
-+	j = 0;
-+	for_each_child_of_node(events_np, node) {
-+		for (i = 0; i < ARRAY_SIZE(ppmu_events); i++) {
-+			if (!ppmu_events[i].name)
-+				continue;
-+
-+			if (!of_node_cmp(node->name, ppmu_events[i].name))
-+				break;
-+		}
-+
-+		if (i == ARRAY_SIZE(ppmu_events)) {
-+			dev_warn(dev,
-+				"don't know how to configure events : %s\n",
-+				node->name);
-+			continue;
-+		}
-+
-+		desc[j].ops = &exynos_ppmu_ops;
-+		desc[j].driver_data = info;
-+
-+		of_property_read_string(node, "event-name", &desc[j].name);
-+
-+		j++;
-+
-+		of_node_put(node);
-+	}
-+	info->desc = desc;
-+
-+	of_node_put(events_np);
-+
-+	return 0;
-+}
-+
-+static int exynos_ppmu_parse_dt(struct exynos_ppmu *info)
-+{
-+	struct device *dev = info->dev;
-+	struct device_node *np = dev->of_node;
-+	int ret = 0;
-+
-+	if (!np) {
-+		dev_err(dev, "failed to find devicetree node\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Maps the memory mapped IO to control PPMU register */
-+	info->ppmu.base = of_iomap(np, 0);
-+	if (IS_ERR_OR_NULL(info->ppmu.base)) {
-+		dev_err(dev, "failed to map memory region\n");
-+		return -ENOMEM;
-+	}
-+
-+	info->ppmu.clk = devm_clk_get(dev, "ppmu");
-+	if (IS_ERR(info->ppmu.clk)) {
-+		info->ppmu.clk = NULL;
-+		dev_warn(dev, "cannot get PPMU clock\n");
-+	}
-+
-+	ret = of_get_devfreq_events(np, info);
-+	if (ret < 0) {
-+		dev_err(dev, "failed to parse exynos ppmu dt node\n");
-+		goto err;
-+	}
-+
-+	return 0;
-+
-+err:
-+	iounmap(info->ppmu.base);
-+
-+	return ret;
-+}
-+
-+static int exynos_ppmu_probe(struct platform_device *pdev)
-+{
-+	struct exynos_ppmu *info;
-+	struct devfreq_event_dev **edev;
-+	struct devfreq_event_desc *desc;
-+	int i, ret = 0, size;
-+
-+	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	mutex_init(&info->lock);
-+	info->dev = &pdev->dev;
-+
-+	/* Parse dt data to get resource */
-+	ret = exynos_ppmu_parse_dt(info);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev,
-+			"failed to parse devicetree for resource\n");
-+		return ret;
-+	}
-+	desc = info->desc;
-+
-+	size = sizeof(struct devfreq_event_dev *) * info->num_events;
-+	info->edev = devm_kzalloc(&pdev->dev, size, GFP_KERNEL);
-+	if (!info->edev) {
-+		dev_err(&pdev->dev,
-+			"failed to allocate memory devfreq-event devices\n");
-+		return -ENOMEM;
-+	}
-+	edev = info->edev;
-+	platform_set_drvdata(pdev, info);
-+
-+	for (i = 0; i < info->num_events; i++) {
-+		edev[i] = devm_devfreq_event_add_edev(&pdev->dev, &desc[i]);
-+		if (IS_ERR(edev)) {
-+			ret = PTR_ERR(edev);
-+			dev_err(&pdev->dev,
-+				"failed to add devfreq-event device\n");
-+			goto err;
-+		}
-+	}
-+
-+	clk_prepare_enable(info->ppmu.clk);
-+
-+	return 0;
-+err:
-+	iounmap(info->ppmu.base);
-+
-+	return ret;
-+}
-+
-+static int exynos_ppmu_remove(struct platform_device *pdev)
-+{
-+	struct exynos_ppmu *info = platform_get_drvdata(pdev);
-+
-+	clk_disable_unprepare(info->ppmu.clk);
-+	iounmap(info->ppmu.base);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id exynos_ppmu_id_match[] = {
-+	{ .compatible = "samsung,exynos-ppmu", },
-+	{ /* sentinel */ },
-+};
-+
-+static struct platform_driver exynos_ppmu_driver = {
-+	.probe	= exynos_ppmu_probe,
-+	.remove	= exynos_ppmu_remove,
-+	.driver = {
-+		.name	= "exynos-ppmu",
-+		.of_match_table = exynos_ppmu_id_match,
-+	},
-+};
-+module_platform_driver(exynos_ppmu_driver);
-+
-+MODULE_DESCRIPTION("Exynos PPMU(Platform Performance Monitoring Unit) driver");
-+MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/devfreq/event/exynos-ppmu.h b/drivers/devfreq/event/exynos-ppmu.h
-new file mode 100644
-index 0000000..4e831d4
---- /dev/null
-+++ b/drivers/devfreq/event/exynos-ppmu.h
-@@ -0,0 +1,93 @@
-+/*
-+ * exynos_ppmu.h - EXYNOS PPMU header file
-+ *
-+ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
-+ * Author : Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __EXYNOS_PPMU_H__
-+#define __EXYNOS_PPMU_H__
-+
-+enum ppmu_state {
-+	PPMU_DISABLE = 0,
-+	PPMU_ENABLE,
-+};
-+
-+enum ppmu_counter {
-+	PPMU_PMNCNT0 = 0,
-+	PPMU_PMNCNT1,
-+	PPMU_PMNCNT2,
-+	PPMU_PMNCNT3,
-+
-+	PPMU_PMNCNT_MAX,
-+};
-+
-+enum ppmu_event_type {
-+	PPMU_RO_BUSY_CYCLE_CNT	= 0x0,
-+	PPMU_WO_BUSY_CYCLE_CNT	= 0x1,
-+	PPMU_RW_BUSY_CYCLE_CNT	= 0x2,
-+	PPMU_RO_REQUEST_CNT	= 0x3,
-+	PPMU_WO_REQUEST_CNT	= 0x4,
-+	PPMU_RO_DATA_CNT	= 0x5,
-+	PPMU_WO_DATA_CNT	= 0x6,
-+	PPMU_RO_LATENCY		= 0x12,
-+	PPMU_WO_LATENCY		= 0x16,
-+};
-+
-+enum ppmu_reg {
-+	/* PPC control register */
-+	PPMU_PMNC		= 0x00,
-+	PPMU_CNTENS		= 0x10,
-+	PPMU_CNTENC		= 0x20,
-+	PPMU_INTENS		= 0x30,
-+	PPMU_INTENC		= 0x40,
-+	PPMU_FLAG		= 0x50,
-+
-+	/* Cycle Counter and Performance Event Counter Register */
-+	PPMU_CCNT		= 0x100,
-+	PPMU_PMCNT0		= 0x110,
-+	PPMU_PMCNT1		= 0x120,
-+	PPMU_PMCNT2		= 0x130,
-+	PPMU_PMCNT3_HIGH	= 0x140,
-+	PPMU_PMCNT3_LOW		= 0x150,
-+
-+	/* Bus Event Generator */
-+	PPMU_BEVT0SEL		= 0x1000,
-+	PPMU_BEVT1SEL		= 0x1100,
-+	PPMU_BEVT2SEL		= 0x1200,
-+	PPMU_BEVT3SEL		= 0x1300,
-+	PPMU_COUNTER_RESET	= 0x1810,
-+	PPMU_READ_OVERFLOW_CNT	= 0x1810,
-+	PPMU_READ_UNDERFLOW_CNT	= 0x1814,
-+	PPMU_WRITE_OVERFLOW_CNT	= 0x1850,
-+	PPMU_WRITE_UNDERFLOW_CNT = 0x1854,
-+	PPMU_READ_PENDING_CNT	= 0x1880,
-+	PPMU_WRITE_PENDING_CNT	= 0x1884
-+};
-+
-+/* PMNC register */
-+#define PPMU_PMNC_CC_RESET_SHIFT	2
-+#define PPMU_PMNC_COUNTER_RESET_SHIFT	1
-+#define PPMU_PMNC_ENABLE_SHIFT		0
-+#define PPMU_PMNC_START_MODE_MASK	BIT(16)
-+#define PPMU_PMNC_CC_DIVIDER_MASK	BIT(3)
-+#define PPMU_PMNC_CC_RESET_MASK		BIT(2)
-+#define PPMU_PMNC_COUNTER_RESET_MASK	BIT(1)
-+#define PPMU_PMNC_ENABLE_MASK		BIT(0)
-+
-+/* CNTENS/CNTENC/INTENS/INTENC/FLAG register */
-+#define PPMU_CCNT_MASK			BIT(31)
-+#define PPMU_PMCNT3_MASK		BIT(3)
-+#define PPMU_PMCNT2_MASK		BIT(2)
-+#define PPMU_PMCNT1_MASK		BIT(1)
-+#define PPMU_PMCNT0_MASK		BIT(0)
-+
-+/* PPMU_PMNCTx/PPMU_BETxSEL registers */
-+#define PPMU_PMNCT(x)			(PPMU_PMCNT0 + (0x10 * x))
-+#define PPMU_BEVTxSEL(x)		(PPMU_BEVT0SEL + (0x100 * x))
-+
-+#endif /* __EXYNOS_PPMU_H__ */
 -- 
 1.8.5.5
 
