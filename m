@@ -1,79 +1,133 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH] cpufreq: exynos: Use simple approach to asses if cpu cooling
- can be used
-Date: Mon, 26 Jan 2015 10:25:27 +0100
-Message-ID: <1422264327-17483-1-git-send-email-l.majewski@samsung.com>
-References: <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
+Date: Mon, 26 Jan 2015 10:40:24 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1501260946390.5526@nanos>
+References: <54866625.8010406@linux.intel.com> <54B5B724.4020108@linux.intel.com> <5541724.ryTEJUkIdN@vostro.rjw.lan> <alpine.DEB.2.11.1501221021580.5526@nanos> <54C5FE6A.9010300@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:42292 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbbAZJZo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 04:25:44 -0500
-In-reply-to: <1422015260-14225-1-git-send-email-l.majewski@samsung.com>
+Received: from www.linutronix.de ([62.245.132.108]:45094 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbbAZJlO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jan 2015 04:41:14 -0500
+In-Reply-To: <54C5FE6A.9010300@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Commit: e725d26c4857e5e41975b5e74e64ce6ab09a7121 provided possibility to
-use device tree to asses if cpu can be used as cooling device. Since the
-code was somewhat awkward, simpler approach has been proposed.
+On Mon, 26 Jan 2015, Li, Aubrey wrote:
+> On 2015/1/22 18:15, Thomas Gleixner wrote:
+> > Can we please stop adding more crap to that notifier thing? I rather
+> > see that go away than being expanded.
+> 
+> Are you referring to FREEZE_PREPARE or remove all of FREEZE staff at all?
+> 
+> What's the disadvantage of adding more notifier?
 
-Test HW: Exynos 4412 - Odroid U3.
+clockevents_notify() is not a notifier. Its a multiplex call and I
+want to get rid of it and replace it with explicit functions.
 
-Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/cpufreq/exynos-cpufreq.c | 21 ++++++---------------
- 1 file changed, 6 insertions(+), 15 deletions(-)
+> >> +		/*
+> >> +		 * cpuidle_enter will return with interrupt enabled
+> >> +		 */
+> >> +		cpuidle_enter(drv, dev, next_state);
+> > 
+> > How is that supposed to work?
+> > 
+> > If timekeeping is not yet unfrozen, then any interrupt handling code
+> > which calls anything time related is going to hit lala land.
+> > 
+> > You must guarantee that timekeeping is unfrozen before any interrupt
+> > is handled. If you cannot guarantee that, you cannot freeze
+> > timekeeping ever.
+> > 
+> > The cpu local tick device is less critical, but it happens to work by
+> > chance, not by design.
+> 
+> There are two way to guarantee this: the first way is, disable interrupt
+> before timekeeping frozen and enable interrupt after timekeeping is
+> unfrozen. However, we need to handle wakeup handler before unfreeze
+> timekeeping to wake freeze task up from wait queue.
+> 
+> So we have to go the other way, the other way is, we ignore time related
+> calls during freeze, like what I added in irq_enter below.
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 5e98c6b..b640da0 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -159,7 +159,7 @@ static struct cpufreq_driver exynos_driver = {
- 
- static int exynos_cpufreq_probe(struct platform_device *pdev)
- {
--	struct device_node *cpus, *np;
-+	struct device_node *cpu0, *np;
- 	int ret = -EINVAL;
- 
- 	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
-@@ -206,28 +206,19 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_cpufreq_reg;
- 
--	cpus = of_find_node_by_path("/cpus");
--	if (!cpus) {
--		pr_err("failed to find cpus node\n");
-+	cpu0 = of_get_cpu_node(0, NULL);
-+	if (!cpu0) {
-+		pr_err("failed to find cpu0 node\n");
- 		return 0;
- 	}
- 
--	np = of_get_next_child(cpus, NULL);
--	if (!np) {
--		pr_err("failed to find cpus child node\n");
--		of_node_put(cpus);
--		return 0;
--	}
--
--	if (of_find_property(np, "#cooling-cells", NULL)) {
--		cdev = of_cpufreq_cooling_register(np,
-+	if (of_find_property(cpu0, "#cooling-cells", NULL)) {
-+		cdev = of_cpufreq_cooling_register(cpu0,
- 						   cpu_present_mask);
- 		if (IS_ERR(cdev))
- 			pr_err("running cpufreq without cooling device: %ld\n",
- 			       PTR_ERR(cdev));
- 	}
--	of_node_put(np);
--	of_node_put(cpus);
- 
- 	return 0;
- 
--- 
-2.0.0.rc2
+Groan. You just do not call in irq_enter/exit(), but what prevents any
+interrupt handler or whatever to call into the time/timer code after
+interrupts got reenabled?
 
+Nothing. 
+
+> Or, we need to re-implement freeze wait and wake up mechanism?
+
+You need to make sure in the low level idle implementation that this
+cannot happen.
+
+tick_freeze()
+{
+	raw_spin_lock(&tick_freeze_lock);
+	tick_frozen++;
+	if (tick_frozen == num_online_cpus())
+		timekeeping_suspend();
+	else
+		tick_suspend_local();
+	raw_spin_unlock(&tick_freeze_lock);
+}
+
+tick_unfreeze()
+{
+	raw_spin_lock(&tick_freeze_lock);
+	if (tick_frozen == num_online_cpus())
+		timekeeping_resume();
+	else
+		tick_resume_local();
+	tick_frozen--;
+	raw_spin_unlock(&tick_freeze_lock);
+}
+
+idle_freeze()
+{
+	local_irq_disable();
+
+	tick_freeze();
+
+	/* Must keep interrupts disabled! */
+       	go_deep_idle()
+
+	tick_unfreeze();
+
+	local_irq_enable();
+}
+
+That's the only way you can do it proper, everything else will just be
+a horrible mess of bandaids and duct tape.
+
+So that does not need any of the irq_enter/exit conditionals, it does
+not need the real_handler hack. It just works.
+
+The only remaining issue might be a NMI calling into
+ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
+non issue on x86/tsc, but it might be a problem on other platforms
+which turn off devices, clocks, It's not rocket science to prevent
+that.
+
+> It looks like a notifier is unpopular, I was trying to avoid a global
+> variable across different kernel modules. But yes, I can change. May I
+> know the disadvantage of notifier callback?
+
+You do not need a global variable at all. See above.
+
+> The V2 patch was using stop machine mechanism according to Peter's
+> suggestion. This V3 patch, IIRC, clockevents_lock was your suggestion.
+
+A suggestion does not mean that you should follow it blindly. If you
+see that the result is horrible and not feasible then you should
+notice yourself, think about different approaches and discuss that.
+
+I'm about to post a series which gets rid of clockevents_notify() and
+distangles the stuff so the above becomes possible.
+
+Thanks,
+
+	tglx
