@@ -1,50 +1,172 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: thermal: exynos: Remove CONFIG_EXYNOS_THERMAL_CORE?
-Date: Tue, 27 Jan 2015 11:09:48 +0100
-Message-ID: <20150127110948.06a70f1c@amdc2363>
-References: <1422352605.14015.28.camel@x220>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: [PATCH] thermal: Fix examples in DT documentation
+Date: Tue, 27 Jan 2015 10:50:47 +0000
+Message-ID: <1422355847-23549-1-git-send-email-srinivas.kandagatla@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:12272 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbbA0KJz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 05:09:55 -0500
-In-reply-to: <1422352605.14015.28.camel@x220>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:49227 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbbA0Ku7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 05:50:59 -0500
+Received: by mail-we0-f177.google.com with SMTP id l61so14097289wev.8
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 02:50:58 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Valentin Rothberg <valentinrothberg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
 
-Hi Paul,
+There are various issues with the examples in this documentation, some
+of the DT labels are invalid and one of the macro THERMAL_NO_LIMITS
+referenced is not available as well.
 
-> Lukasz,
-> 
-> Your commit 1fd2273f966a ("thermal: exynos: Remove
-> exynos_thermal_common.[c|h] files") is included in today's linux-next
-> (ie, next-20150127). I noticed because a script I use to check
-> linux-next spotted a minor problem with it.
-> 
-> It removed the last users of CONFIG_EXYNOS_THERMAL_CORE. As a result
-> setting the Kconfig symbol EXYNOS_THERMAL_CORE has no effect anymore.
-> Is the trivial patch to remove that symbol's entry from
-> drivers/thermal/samsung/Kconfig queued somewhere?
+As Its highly likely that people would pick some samples from the
+documentation, I though fixing these would be best rather than giving
+starter a challenge to figure out whats going wrong with examples.
 
-I will prepare appropriate patch and send it ASAP.
+This patch attempts to fix such errors in the documentation.
 
-Thanks for hint.
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+---
+ .../devicetree/bindings/thermal/thermal.txt        | 44 +++++++++++-----------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
-> 
-> 
-> Paul Bolle
-> 
-
-
-
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index f5db6b7..97ed14e 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -251,24 +251,24 @@ ocp {
+ };
+ 
+ thermal-zones {
+-	cpu-thermal: cpu-thermal {
++	cpu_thermal: cpu-thermal {
+ 		polling-delay-passive = <250>; /* milliseconds */
+ 		polling-delay = <1000>; /* milliseconds */
+ 
+ 		thermal-sensors = <&bandgap0>;
+ 
+ 		trips {
+-			cpu-alert0: cpu-alert {
++			cpu_alert0: cpu-alert0 {
+ 				temperature = <90000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "active";
+ 			};
+-			cpu-alert1: cpu-alert {
++			cpu_alert1: cpu-alert1 {
+ 				temperature = <100000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "passive";
+ 			};
+-			cpu-crit: cpu-crit {
++			cpu_crit: cpu-crit {
+ 				temperature = <125000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "critical";
+@@ -277,17 +277,17 @@ thermal-zones {
+ 
+ 		cooling-maps {
+ 			map0 {
+-				trip = <&cpu-alert0>;
+-				cooling-device = <&fan0 THERMAL_NO_LIMITS 4>;
++				trip = <&cpu_alert0>;
++				cooling-device = <&fan0 THERMAL_NO_LIMIT 4>;
+ 			};
+ 			map1 {
+-				trip = <&cpu-alert1>;
+-				cooling-device = <&fan0 5 THERMAL_NO_LIMITS>;
++				trip = <&cpu_alert1>;
++				cooling-device = <&fan0 5 THERMAL_NO_LIMIT>;
+ 			};
+ 			map2 {
+-				trip = <&cpu-alert1>;
++				trip = <&cpu_alert1>;
+ 				cooling-device =
+-				    <&cpu0 THERMAL_NO_LIMITS THERMAL_NO_LIMITS>;
++				    <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+ 			};
+ 		};
+ 	};
+@@ -298,13 +298,13 @@ used to monitor the zone 'cpu-thermal' using its sole sensor. A fan
+ device (fan0) is controlled via I2C bus 1, at address 0x48, and has ten
+ different cooling states 0-9. It is used to remove the heat out of
+ the thermal zone 'cpu-thermal' using its cooling states
+-from its minimum to 4, when it reaches trip point 'cpu-alert0'
++from its minimum to 4, when it reaches trip point 'cpu_alert0'
+ at 90C, as an example of active cooling. The same cooling device is used at
+-'cpu-alert1', but from 5 to its maximum state. The cpu@0 device is also
++'cpu_alert1', but from 5 to its maximum state. The cpu@0 device is also
+ linked to the same thermal zone, 'cpu-thermal', as a passive cooling device,
+-using all its cooling states at trip point 'cpu-alert1',
++using all its cooling states at trip point 'cpu_alert1',
+ which is a trip point at 100C. On the thermal zone 'cpu-thermal', at the
+-temperature of 125C, represented by the trip point 'cpu-crit', the silicon
++temperature of 125C, represented by the trip point 'cpu_crit', the silicon
+ is not reliable anymore.
+ 
+ (b) - IC with several internal sensors
+@@ -329,7 +329,7 @@ ocp {
+ };
+ 
+ thermal-zones {
+-	cpu-thermal: cpu-thermal {
++	cpu_thermal: cpu-thermal {
+ 		polling-delay-passive = <250>; /* milliseconds */
+ 		polling-delay = <1000>; /* milliseconds */
+ 
+@@ -338,12 +338,12 @@ thermal-zones {
+ 
+ 		trips {
+ 			/* each zone within the SoC may have its own trips */
+-			cpu-alert: cpu-alert {
++			cpu_alert: cpu-alert {
+ 				temperature = <100000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "passive";
+ 			};
+-			cpu-crit: cpu-crit {
++			cpu_crit: cpu-crit {
+ 				temperature = <125000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "critical";
+@@ -365,12 +365,12 @@ thermal-zones {
+ 
+ 		trips {
+ 			/* each zone within the SoC may have its own trips */
+-			gpu-alert: gpu-alert {
++			gpu_alert: gpu-alert {
+ 				temperature = <90000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "passive";
+ 			};
+-			gpu-crit: gpu-crit {
++			gpu_crit: gpu-crit {
+ 				temperature = <105000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "critical";
+@@ -392,12 +392,12 @@ thermal-zones {
+ 
+ 		trips {
+ 			/* each zone within the SoC may have its own trips */
+-			dsp-alert: gpu-alert {
++			dsp_alert: gpu-alert {
+ 				temperature = <90000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "passive";
+ 			};
+-			dsp-crit: gpu-crit {
++			dsp_crit: gpu-crit {
+ 				temperature = <135000>; /* millicelsius */
+ 				hysteresis = <2000>; /* millicelsius */
+ 				type = "critical";
+@@ -457,7 +457,7 @@ ocp {
+ };
+ 
+ thermal-zones {
+-	cpu-thermal: cpu-thermal {
++	cpu_thermal: cpu-thermal {
+ 		polling-delay-passive = <250>; /* milliseconds */
+ 		polling-delay = <1000>; /* milliseconds */
+ 
 -- 
-Best regards,
+1.9.1
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
