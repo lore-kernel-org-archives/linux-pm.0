@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 16/18] cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
-Date: Tue, 27 Jan 2015 14:06:22 +0530
-Message-ID: <ae271775e524be0be8a2bc887deed71a7fabc78f.1422346933.git.viresh.kumar@linaro.org>
+Subject: [PATCH 18/18] cpufreq: Merge __cpufreq_add_dev() and cpufreq_add_dev()
+Date: Tue, 27 Jan 2015 14:06:24 +0530
+Message-ID: <c1eefa65bf65d9de2b9f1e2394d485d52b462992.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:54017 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757922AbbA0Ihl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:37:41 -0500
-Received: by mail-pd0-f175.google.com with SMTP id fl12so17606074pdb.6
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:37:41 -0800 (PST)
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:42354 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757922AbbA0Ihs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:37:48 -0500
+Received: by mail-pd0-f173.google.com with SMTP id fp1so17598276pdb.4
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:37:48 -0800 (PST)
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
@@ -18,65 +18,75 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Both cpufreq_policy_put_kobj() and cpufreq_policy_free() are always called
-together, cpufreq_policy_put_kobj() followed by cpufreq_policy_free().
-
-cpufreq_policy_put_kobj() is actually part of freeing policy and so can be
-called from cpufreq_policy_free().
+cpufreq_add_dev() is an unnecessary wrapper over __cpufreq_add_dev(). Merge
+them.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ drivers/cpufreq/cpufreq.c | 29 ++++++++++++-----------------
+ 1 file changed, 12 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4a97d7428d25..0e03ae1bc96a 100644
+index bcc042a6221a..7501347cf19c 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1140,8 +1140,9 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy, bool notify)
- 	pr_debug("wait complete\n");
+@@ -1148,7 +1148,16 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
+ 	kfree(policy);
  }
  
--static void cpufreq_policy_free(struct cpufreq_policy *policy)
-+static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
+-static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
++/**
++ * cpufreq_add_dev - add a CPU device
++ *
++ * Adds the cpufreq interface for a CPU device.
++ *
++ * The Oracle says: try running cpufreq registration/unregistration concurrently
++ * with with cpu hotplugging and all hell will break loose. Tried to clean this
++ * mess up, but more thorough testing is needed. - Mathieu
++ */
++static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
  {
-+	cpufreq_policy_put_kobj(policy, notify);
- 	free_cpumask_var(policy->related_cpus);
- 	free_cpumask_var(policy->cpus);
- 	kfree(policy);
-@@ -1312,9 +1313,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
--	cpufreq_policy_put_kobj(policy, recover_policy);
--	cpufreq_policy_free(policy);
--
-+	cpufreq_policy_free(policy, recover_policy);
- nomem_out:
- 	up_read(&cpufreq_rwsem);
+ 	unsigned int cpu = dev->id;
+ 	int ret = -ENOMEM;
+@@ -1320,20 +1329,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	return ret;
+ }
  
-@@ -1445,10 +1444,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+-/**
+- * cpufreq_add_dev - add a CPU device
+- *
+- * Adds the cpufreq interface for a CPU device.
+- *
+- * The Oracle says: try running cpufreq registration/unregistration concurrently
+- * with with cpu hotplugging and all hell will break loose. Tried to clean this
+- * mess up, but more thorough testing is needed. - Mathieu
+- */
+-static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+-{
+-	return __cpufreq_add_dev(dev, sif);
+-}
+-
+ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 					struct subsys_interface *sif)
+ {
+@@ -2307,7 +2302,7 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+ 	if (dev) {
+ 		switch (action & ~CPU_TASKS_FROZEN) {
+ 		case CPU_ONLINE:
+-			__cpufreq_add_dev(dev, NULL);
++			cpufreq_add_dev(dev, NULL);
+ 			break;
+ 
+ 		case CPU_DOWN_PREPARE:
+@@ -2319,7 +2314,7 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+ 			break;
+ 
+ 		case CPU_DOWN_FAILED:
+-			__cpufreq_add_dev(dev, NULL);
++			cpufreq_add_dev(dev, NULL);
+ 			break;
  		}
  	}
- 
--	/* Free the policy kobjects only if the driver is getting removed. */
--	if (sif)
--		cpufreq_policy_put_kobj(policy, true);
--
- 	/*
- 	 * Perform the ->exit() even during light-weight tear-down,
- 	 * since this is a core component, and is essential for the
-@@ -1462,8 +1457,9 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- 	list_del(&policy->policy_list);
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	/* Free the policy only if the driver is getting removed. */
- 	if (sif)
--		cpufreq_policy_free(policy);
-+		cpufreq_policy_free(policy, true);
- 	else
- 		policy->governor = NULL;
- 
 -- 
 2.3.0.rc0.44.ga94655d
 
