@@ -1,119 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Tue, 27 Jan 2015 16:10:08 +0100
-Message-ID: <11292969.Jn202SnHMu@vostro.rjw.lan>
-References: <54866625.8010406@linux.intel.com> <2137807.aqSxQQCuJ3@vostro.rjw.lan> <54C74651.3020403@linux.intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: Kconfig: Remove config for not used
+ EXYNOS_THERMAL_CORE
+Date: Tue, 27 Jan 2015 10:55:00 -0400
+Message-ID: <20150127145458.GB29600@developer.hsd1.ca.comcast.net>
+References: <1422357239-20316-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54C74651.3020403@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nmemrqcdn5VTmUEE"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1422357239-20316-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Paul Bolle <pebolle@tiscali.nl>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 27, 2015 04:03:29 PM Li, Aubrey wrote:
-> On 2015/1/26 22:41, Rafael J. Wysocki wrote:
-> > On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
-> >> On Mon, 26 Jan 2015, Li, Aubrey wrote:
-> >>> On 2015/1/22 18:15, Thomas Gleixner wrote:
-> > 
-> > [...]
-> > 
-> >>>>> +		/*
-> >>>>> +		 * cpuidle_enter will return with interrupt enabled
-> >>>>> +		 */
-> >>>>> +		cpuidle_enter(drv, dev, next_state);
-> >>>>
-> >>>> How is that supposed to work?
-> >>>>
-> >>>> If timekeeping is not yet unfrozen, then any interrupt handling code
-> >>>> which calls anything time related is going to hit lala land.
-> >>>>
-> >>>> You must guarantee that timekeeping is unfrozen before any interrupt
-> >>>> is handled. If you cannot guarantee that, you cannot freeze
-> >>>> timekeeping ever.
-> >>>>
-> >>>> The cpu local tick device is less critical, but it happens to work by
-> >>>> chance, not by design.
-> >>>
-> >>> There are two way to guarantee this: the first way is, disable interrupt
-> >>> before timekeeping frozen and enable interrupt after timekeeping is
-> >>> unfrozen. However, we need to handle wakeup handler before unfreeze
-> >>> timekeeping to wake freeze task up from wait queue.
-> >>>
-> >>> So we have to go the other way, the other way is, we ignore time related
-> >>> calls during freeze, like what I added in irq_enter below.
-> >>
-> >> Groan. You just do not call in irq_enter/exit(), but what prevents any
-> >> interrupt handler or whatever to call into the time/timer code after
-> >> interrupts got reenabled?
-> >>
-> >> Nothing. 
-> >>
-> >>> Or, we need to re-implement freeze wait and wake up mechanism?
-> >>
-> >> You need to make sure in the low level idle implementation that this
-> >> cannot happen.
-> >>
-> >> tick_freeze()
-> >> {
-> >> 	raw_spin_lock(&tick_freeze_lock);
-> >> 	tick_frozen++;
-> >> 	if (tick_frozen == num_online_cpus())
-> >> 		timekeeping_suspend();
-> >> 	else
-> >> 		tick_suspend_local();
-> >> 	raw_spin_unlock(&tick_freeze_lock);
-> >> }
-> >>
-> >> tick_unfreeze()
-> >> {
-> >> 	raw_spin_lock(&tick_freeze_lock);
-> >> 	if (tick_frozen == num_online_cpus())
-> >> 		timekeeping_resume();
-> >> 	else
-> >> 		tick_resume_local();
-> >> 	tick_frozen--;
-> >> 	raw_spin_unlock(&tick_freeze_lock);
-> >> }
-> >>
-> >> idle_freeze()
-> >> {
-> >> 	local_irq_disable();
-> >>
-> >> 	tick_freeze();
-> >>
-> >> 	/* Must keep interrupts disabled! */
-> >>        	go_deep_idle()
-> >>
-> >> 	tick_unfreeze();
-> >>
-> >> 	local_irq_enable();
-> >> }
-> >>
-> >> That's the only way you can do it proper, everything else will just be
-> >> a horrible mess of bandaids and duct tape.
-> >>
-> >> So that does not need any of the irq_enter/exit conditionals, it does
-> >> not need the real_handler hack. It just works.
-> > 
-> > As long as go_deep_idle() above does not enable interrupts.  This means we won't
-> > be able to use some C-states for suspend-to-idle (hald-induced C1 on some x86
-> > for one example), but that's not a very big deal.
-> 
-> Does the legacy ACPI system IO method to enter C2/C3 need interrupt
-> enabled as well?
-> 
-> Do we need some platform ops to cover those legacy platforms? Different
-> platform go different branch here.
 
-No, we don't.
+--nmemrqcdn5VTmUEE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think this needs to be addressed in a different way overall.  If you don't
-mind, I'd like to prepare my own version of the patch at this point.  That
-likely will be simpler than trying to explain what I'd like to do and I guess
-I'll need a few iterations to get something acceptable anyway.
+On Tue, Jan 27, 2015 at 12:13:59PM +0100, Lukasz Majewski wrote:
+> After removing exynos_thermal_common.[c|h] files the CONFIG_EXYNOS_THERMA=
+_CORE
+> is not needed anymore.
+> This patch removes this entry from Kconfig.
+>=20
+> Reported-by: Paul Bolle <pebolle@tiscali.nl>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 
-Rafael
+This patch looks fine to me and I am about to queue it in my fixes tree.
+However, you must carry along another patch to remove this entry:
+arch/arm/configs/exynos_defconfig:CONFIG_EXYNOS_THERMAL_CORE=3Dy
+
+Can you please post it and ask Kim to queue the above suggested removal
+too?
+
+> ---
+>  drivers/thermal/samsung/Kconfig | 9 ---------
+>  1 file changed, 9 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kc=
+onfig
+> index c43306e..c8e35c1 100644
+> --- a/drivers/thermal/samsung/Kconfig
+> +++ b/drivers/thermal/samsung/Kconfig
+> @@ -7,12 +7,3 @@ config EXYNOS_THERMAL
+>  	  the TMU, reports temperature and handles cooling action if defined.
+>  	  This driver uses the Exynos core thermal APIs and TMU configuration
+>  	  data from the supported SoCs.
+> -
+> -config EXYNOS_THERMAL_CORE
+> -	bool "Core thermal framework support for EXYNOS SOCs"
+> -	depends on EXYNOS_THERMAL
+> -	help
+> -	  If you say yes here you get support for EXYNOS TMU
+> -	  (Thermal Management Unit) common registration/unregistration
+> -	  functions to the core thermal layer and also to use the generic
+> -	  CPU cooling APIs.
+> --=20
+> 2.0.0.rc2
+>=20
+
+--nmemrqcdn5VTmUEE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUx6a1AAoJEMLUO4d9pOJWdswH/2YU8QEjmvFyG0JEeeVk2Jp4
+9KOmmGrv0WazbrGa2ogrQymJOViT5DDeHnm4AnATAuLQHR/9oGui1QUwKpqH28mx
+gu6CJwcEdfOI3Rqup7E4xsDwGcp8eQKTk5VRTkC0RqAbuC8gjf5jDRJmJbWPbhtF
+BG3ACCZm8FsqhUACtThYIm/e1TSKFonDjNBFaXV0NA9E3rg1ZhwTlWQ4rsk8dVK/
+1okVGJo8svehKNX+3P5f9X37GH0IprP+gcqe+bCrx0mngE97i7H4yDmBpsoHa12O
+xiB0htXwHyQxCr1dIJ8UGa1AAqghk8iocioz0EtgJ91ll5WZgnIhvkhqcawxZvs=
+=fKi3
+-----END PGP SIGNATURE-----
+
+--nmemrqcdn5VTmUEE--
