@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 6/8] PM / Domains: Free pm_subsys_data in error path in __pm_genpd_add_device()
-Date: Tue, 27 Jan 2015 21:13:43 +0100
-Message-ID: <1422389625-11730-7-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 7/8] PM / Domains: Re-order initialization of generic_pm_domain_data
+Date: Tue, 27 Jan 2015 21:13:44 +0100
+Message-ID: <1422389625-11730-8-git-send-email-ulf.hansson@linaro.org>
 References: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,84 +10,142 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pa
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The error path in __pm_genpd_add_device() didn't decrease the reference
-to the struct pm_subsys_data.
+Move the initialization of the struct generic_pm_domain_data into
+genpd_alloc_dev_data(), including the assignment of the device's
+->pm_domain() callback. Make corresponding changes to
+genpd_free_dev_data().
 
-Let's move the calls to dev_pm_get|put_subsys_data() into
-genpd_alloc|free_dev_data() to fix this issue and thus prevent a
-potential memory leakage.
+These changes will make the related code more readable. It will also
+decrease the critical regions for where genpd's mutex is being held and
+for where the device's power related spinlock is being held.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ drivers/base/power/domain.c | 67 +++++++++++++++++++++++----------------------
+ 1 file changed, 35 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 1f026c1..3bd342f 100644
+index 3bd342f..0fd5ee1 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1380,18 +1380,30 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
- static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
+@@ -1377,7 +1377,9 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
++static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
++					struct generic_pm_domain *genpd,
++					struct gpd_timing_data *td)
  {
  	struct generic_pm_domain_data *gpd_data;
-+	int ret;
-+
-+	ret = dev_pm_get_subsys_data(dev);
-+	if (ret)
-+		return ERR_PTR(ret);
+ 	int ret;
+@@ -1392,8 +1394,32 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
+ 		goto err_put;
+ 	}
  
- 	gpd_data = kzalloc(sizeof(*gpd_data), GFP_KERNEL);
--	if (!gpd_data)
--		return NULL;
-+	if (!gpd_data) {
-+		ret = -ENOMEM;
-+		goto err_put;
++	if (td)
++		gpd_data->td = *td;
++
++	gpd_data->base.dev = dev;
++	gpd_data->need_restore = -1;
++	gpd_data->td.constraint_changed = true;
++	gpd_data->td.effective_constraint_ns = -1;
++	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
++
++	spin_lock_irq(&dev->power.lock);
++
++	if (dev->power.subsys_data->domain_data) {
++		ret = -EINVAL;
++		goto err_free;
 +	}
- 
- 	return gpd_data;
 +
-+ err_put:
-+	dev_pm_put_subsys_data(dev);
-+	return ERR_PTR(ret);
- }
++	dev->power.subsys_data->domain_data = &gpd_data->base;
++	dev->pm_domain = &genpd->domain;
++
++	spin_unlock_irq(&dev->power.lock);
++
+ 	return gpd_data;
  
++ err_free:
++	spin_unlock_irq(&dev->power.lock);
++	kfree(gpd_data);
+  err_put:
+ 	dev_pm_put_subsys_data(dev);
+ 	return ERR_PTR(ret);
+@@ -1402,6 +1428,13 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
  static void genpd_free_dev_data(struct device *dev,
  				struct generic_pm_domain_data *gpd_data)
  {
++	spin_lock_irq(&dev->power.lock);
++
++	dev->pm_domain = NULL;
++	dev->power.subsys_data->domain_data = NULL;
++
++	spin_unlock_irq(&dev->power.lock);
++
  	kfree(gpd_data);
-+	dev_pm_put_subsys_data(dev);
+ 	dev_pm_put_subsys_data(dev);
  }
- 
- /**
-@@ -1412,8 +1424,8 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+@@ -1423,7 +1456,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
  		return -EINVAL;
  
- 	gpd_data = genpd_alloc_dev_data(dev);
--	if (!gpd_data)
--		return -ENOMEM;
-+	if (IS_ERR(gpd_data))
-+		return PTR_ERR(gpd_data);
+-	gpd_data = genpd_alloc_dev_data(dev);
++	gpd_data = genpd_alloc_dev_data(dev, genpd, td);
+ 	if (IS_ERR(gpd_data))
+ 		return PTR_ERR(gpd_data);
  
- 	genpd_acquire_lock(genpd);
- 
-@@ -1422,10 +1434,6 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+@@ -1434,35 +1467,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
  		goto out;
  	}
  
--	ret = dev_pm_get_subsys_data(dev);
--	if (ret)
--		goto out;
+-	spin_lock_irq(&dev->power.lock);
 -
- 	spin_lock_irq(&dev->power.lock);
+-	if (dev->power.subsys_data->domain_data) {
+-		spin_unlock_irq(&dev->power.lock);
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+-	dev->power.subsys_data->domain_data = &gpd_data->base;
+-
+-	if (td)
+-		gpd_data->td = *td;
+-
+-	dev->pm_domain = &genpd->domain;
+-
+-	spin_unlock_irq(&dev->power.lock);
+-
+ 	if (genpd->attach_dev)
+ 		genpd->attach_dev(genpd, dev);
  
- 	if (dev->power.subsys_data->domain_data) {
-@@ -1528,7 +1536,6 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd->device_count++;
+ 	genpd->max_off_time_changed = true;
+ 
+-	gpd_data->base.dev = dev;
+ 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+-	gpd_data->need_restore = -1;
+-	gpd_data->td.constraint_changed = true;
+-	gpd_data->td.effective_constraint_ns = -1;
+-	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+ 
+  out:
+ 	genpd_release_lock(genpd);
+@@ -1524,15 +1535,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 	if (genpd->detach_dev)
+ 		genpd->detach_dev(genpd, dev);
+ 
+-	spin_lock_irq(&dev->power.lock);
+-
+-	dev->pm_domain = NULL;
+ 	list_del_init(&pdd->list_node);
+-	dev->power.subsys_data->domain_data = NULL;
+-
+-	spin_unlock_irq(&dev->power.lock);
+-
+-	pdd->dev = NULL;
  
  	genpd_release_lock(genpd);
  
--	dev_pm_put_subsys_data(dev);
- 	genpd_free_dev_data(dev, gpd_data);
- 
- 	return 0;
 -- 
 1.9.1
