@@ -1,129 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 17/18] cpufreq: Restart governor as soon as possible
-Date: Tue, 27 Jan 2015 14:06:23 +0530
-Message-ID: <529898a0821ded6de14eb31c457d2f441382e9f5.1422346933.git.viresh.kumar@linaro.org>
-References: <cover.1422346933.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3] doc: cpufreq: tests: Provide cpufreq tests README
+Date: Tue, 27 Jan 2015 14:10:54 +0530
+Message-ID: <CAKohpoma1M_TdJ2kCWB82isge+so=QMTP-thxoy4eo3nR+gWgQ@mail.gmail.com>
+References: <1422268884-26173-1-git-send-email-l.majewski@samsung.com>
+	<1422268884-26173-3-git-send-email-l.majewski@samsung.com>
+	<CAKohpon6e1kX0DdB46t-60ddeZf1PG4yzSxX_nmVxsHst4cjwQ@mail.gmail.com>
+	<20150127093523.55cb3a10@amdc2363>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:45284 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757922AbbA0Iho (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:37:44 -0500
-Received: by mail-pd0-f180.google.com with SMTP id ft15so17538050pdb.11
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:37:44 -0800 (PST)
-In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
-References: <cover.1422346933.git.viresh.kumar@linaro.org>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:44819 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbbA0Ikz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:40:55 -0500
+Received: by mail-oi0-f46.google.com with SMTP id a141so11384594oig.5
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:40:54 -0800 (PST)
+In-Reply-To: <20150127093523.55cb3a10@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, a.nitecki@samsung.com
 
-On cpu hot-unplug, we don't need to wait for POST_DEAD notification to restart
-the governor if the policy has atleast one online cpu left. We can restart the
-governor right from the DOWN_PREPARE notification instead.
+On 27 January 2015 at 14:05, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Very nice pack of tests.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 59 +++++++++++++++++++----------------------------
- 1 file changed, 24 insertions(+), 35 deletions(-)
+Thanks.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0e03ae1bc96a..bcc042a6221a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1338,7 +1338,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 					struct subsys_interface *sif)
- {
- 	unsigned int cpu = dev->id, cpus;
--	int ret;
-+	int ret = 0;
- 	unsigned long flags;
- 	struct cpufreq_policy *policy;
- 
-@@ -1379,25 +1379,35 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 				CPUFREQ_NAME_LEN);
- 	}
- 
--	if (cpu != policy->cpu)
--		return 0;
--
- 	if (cpus > 1) {
--		/* Nominate new CPU */
- 		down_write(&policy->rwsem);
--		policy->cpu = cpumask_any_but(policy->cpus, cpu);
-+		cpumask_clear_cpu(cpu, policy->cpus);
-+
-+		/* Nominate new CPU */
-+		if (cpu == policy->cpu)
-+			policy->cpu = cpumask_any(policy->cpus);
- 		up_write(&policy->rwsem);
-+
-+		if (has_target()) {
-+			/* Start governor again */
-+			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-+			if (!ret)
-+				ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+
-+			if (ret)
-+				pr_err("%s: Failed to start governor\n", __func__);
-+		}
- 	} else if (cpufreq_driver->stop_cpu) {
- 		cpufreq_driver->stop_cpu(policy);
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static int __cpufreq_remove_dev_finish(struct device *dev,
- 				       struct subsys_interface *sif)
- {
--	unsigned int cpu = dev->id, cpus;
-+	unsigned int cpu = dev->id;
- 	int ret;
- 	unsigned long flags;
- 	struct cpufreq_policy *policy;
-@@ -1406,34 +1416,13 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- 	policy = cpufreq_cpu_get_raw(cpu);
- 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	if (!policy) {
--		pr_debug("%s: No cpu_data found\n", __func__);
--		return -EINVAL;
--	}
--
--	down_write(&policy->rwsem);
--	cpus = cpumask_weight(policy->cpus);
--
--	if (cpus > 1)
--		cpumask_clear_cpu(cpu, policy->cpus);
--	up_write(&policy->rwsem);
--
--	/* Not the last cpu of policy, start governor again ? */
--	if (cpus > 1) {
--		if (!has_target())
--			return 0;
--
--		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
--		if (!ret)
--			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
--
--		if (ret) {
--			pr_err("%s: Failed to start governor\n", __func__);
--			return ret;
--		}
--
-+	/*
-+	 * If this isn't the last cpu of policy, we will fail to get policy here
-+	 * as the cpumask in policy->cpus is already cleared. Hence we don't
-+	 * need to proceed here anymore
-+	 */
-+	if (!policy)
- 		return 0;
--	}
- 
- 	/* If cpu is last user of policy, free policy */
- 	if (has_target()) {
--- 
-2.3.0.rc0.44.ga94655d
+> What I can say after a glimpse look on them is that your tests already
+> implement case for "governors switching".
 
+Correct and much more than that :)
+
+> However the 'cpufreq_freq_test.sh' do a bit more - it uses performance,
+> then forces 100% CPU usage and then switch from one single frequency to
+> all available (including BOOST modes). For that reason I think that it
+> would be valuable to add this test to your suite (of course on your
+> discretion).
+
+Will you be able to send a patch for that to me (*without* the lists)?
+
+> Viresh, do you plan to add your tests to
+> kernel's ./tools/testing/cpufreq/ directory? It would enhance
+> recognition of your work and encourage others to use it before
+> submitting patches.
+
+Yeah, I do plan to. I have been doing some major reworks of cpufreq
+core and so I built them. I haven't found time yet to get them in, but
+they will surely be there in some time :)
+
+--
+viresh
