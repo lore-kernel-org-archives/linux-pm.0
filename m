@@ -1,48 +1,53 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 0/2] Fix reboot issue on Odroid boards with eMMC card
-Date: Tue, 27 Jan 2015 09:11:27 +0100
-Message-ID: <1422346289-9348-1-git-send-email-m.szyprowski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Tobias Jakobi <Liquid.Acid@gmx.net>, Daniel Drake <drake@endlessm.com>, Sebastian Reichel <sre@kernel.org>, Seungwon Jeon <tgih.jun@samsung.com>, Jaehoon Chung <jh80.chung@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Joonyoung Shim <jy0922.shim@samsung.com>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 2/2] ARM: dts: exynos*-odroid*: add eMMC reset line
+Date: Tue, 27 Jan 2015 09:11:29 +0100
+Message-ID: <1422346289-9348-3-git-send-email-m.szyprowski@samsung.com>
+References: <1422346289-9348-1-git-send-email-m.szyprowski@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1422346289-9348-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tobias Jakobi <Liquid.Acid-hi6Y0CQ0nG0@public.gmane.org>, Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Seungwon Jeon <tgih.jun-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaehoon Chung <jh80.chung-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Joonyoung Shim <jy0922.shim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+This patch add samsung,dw-mshc-reset-gpios property to the eMMC slot,
+so Exynos DW MMC driver is able to properly reset eMMC card on system
+restart and thus fixes hang on software reboot.
 
-This patchset fixes reboot hang issue on Hardkernel's Odroid boards with
-eMMC card. Those boards are designed in such a way, that the eMMC nreset
-signal is routed to SoC GPIO line instead of the board reset logic. To
-properly restard system, one need to set this line to zero before
-performing reboot.
+Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 1 +
+ arch/arm/boot/dts/exynos5422-odroidxu3.dts      | 1 +
+ 2 files changed, 2 insertions(+)
 
-The initial patches consisted of a complete reset/power off driver, but
-after further analysis, it turned out that only eMMC nreset line control
-logic is specific for those boards. Everything else can be done by
-generic Exynos code, so the code has been moved to Exynos DW MMC driver.
-
-Best regards
-Marek Szyprowski
-Samsung R&D Institute Poland
-
-
-Changelog:
-
-initial version:
-http://thread.gmane.org/gmane.linux.power-management.general/51855/
-
-
-Path summary:
-
-Marek Szyprowski (2):
-  mmc: dw_mmc-exynos: add support for controlling emmc reset pin
-  ARM: dts: exynos*-odroid*: add eMMC reset line
-
- .../devicetree/bindings/mmc/exynos-dw-mshc.txt     |  6 +++
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |  1 +
- arch/arm/boot/dts/exynos5422-odroidxu3.dts         |  1 +
- drivers/mmc/host/dw_mmc-exynos.c                   | 43 +++++++++++++++++++++-
- 4 files changed, 50 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index 74e89cbfb00c..97df0ef81d1a 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -69,6 +69,7 @@
+ 		samsung,dw-mshc-ciu-div = <3>;
+ 		samsung,dw-mshc-sdr-timing = <2 3>;
+ 		samsung,dw-mshc-ddr-timing = <1 2>;
++		samsung,dw-mshc-reset-gpios = <&gpk1 2 1>;
+ 		bus-width = <8>;
+ 		cap-mmc-highspeed;
+ 	};
+diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3.dts b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
+index d829e220eedb..20064e36a5be 100644
+--- a/arch/arm/boot/dts/exynos5422-odroidxu3.dts
++++ b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
+@@ -336,6 +336,7 @@
+ 	samsung,dw-mshc-ciu-div = <3>;
+ 	samsung,dw-mshc-sdr-timing = <0 4>;
+ 	samsung,dw-mshc-ddr-timing = <0 2>;
++	samsung,dw-mshc-reset-gpios = <&gpd1 0 0>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sd0_clk &sd0_cmd &sd0_bus4 &sd0_bus8>;
+ 	bus-width = <8>;
 -- 
 1.9.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
