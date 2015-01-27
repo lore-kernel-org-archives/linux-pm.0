@@ -1,59 +1,101 @@
-From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH v6 5/7] power: Add support for DA9150 Charger
-Date: Tue, 27 Jan 2015 16:16:31 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337AB529E6E@SW-EX-MBX01.diasemi.com>
-References: <cover.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
- <d9c5c61443e266880cab3cbe7502142439fe9886.1421854282.git.Adam.Thomson.Opensource@diasemi.com>
- <54BFD072.8000707@gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v4 0/5] drivers: bus: Add Simple Power-Managed Bus
+Date: Tue, 27 Jan 2015 09:42:03 -0800
+Message-ID: <7htwzcyvbo.fsf@deeprootsystems.com>
+References: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <54BFD072.8000707-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Content-Language: en-US
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Varka Bhadram <varkabhadram-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
+	(Geert Uytterhoeven's message of "Mon, 26 Jan 2015 17:16:12 +0100")
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gSmFudWFyeSAyMSwgMjAxNSAxNjoxNSwgVmFya2EgQmhhZHJhbSB3cm90ZToNCg0KPiBPbiBX
-ZWRuZXNkYXkgMjEgSmFudWFyeSAyMDE1IDA5OjE2IFBNLCBBZGFtIFRob21zb24gd3JvdGU6DQo+
-ID4gVGhpcyBwYXRjaCBhZGRzIHN1cHBvcnQgZm9yIERBOTE1MCBDaGFyZ2VyICYgRnVlbC1HYXVn
-ZSBJQyBDaGFyZ2VyLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQWRhbSBUaG9tc29uIDxBZGFt
-LlRob21zb24uT3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4gPiAtLS0NCj4gDQo+ICguLi4pDQo+
-IA0KPiA+ICtzdGF0aWMgaW50IGRhOTE1MF9jaGFyZ2VyX3JlZ2lzdGVyX2lycShzdHJ1Y3QgcGxh
-dGZvcm1fZGV2aWNlICpwZGV2LA0KPiA+ICsJCQkJICAgICAgIGlycV9oYW5kbGVyX3QgaGFuZGxl
-ciwNCj4gPiArCQkJCSAgICAgICBjb25zdCBjaGFyICppcnFfbmFtZSkNCj4gPiArew0KPiA+ICsJ
-c3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gPiArCXN0cnVjdCBkYTkxNTBfY2hh
-cmdlciAqY2hhcmdlciA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOw0KPiA+ICsJaW50IGly
-cSwgcmV0Ow0KPiA+ICsNCj4gPiArCWlycSA9IHBsYXRmb3JtX2dldF9pcnFfYnluYW1lKHBkZXYs
-IGlycV9uYW1lKTsNCj4gPiArCWlmIChpcnEgPCAwKSB7DQo+ID4gKwkJZGV2X2VycihkZXYsICJG
-YWlsZWQgdG8gZ2V0IElSUSBDSEdfU1RBVFVTOiAlZFxuIiwgaXJxKTsNCj4gPiArCQlyZXR1cm4g
-aXJxOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCXJldCA9IHJlcXVlc3RfdGhyZWFkZWRfaXJxKGly
-cSwgTlVMTCwgaGFuZGxlciwgSVJRRl9PTkVTSE9ULCBpcnFfbmFtZSwNCj4gPiArCQkJCSAgIGNo
-YXJnZXIpOw0KPiANCj4gV2h5IGRvbiB5b3UgdXNlIGRldm1fKiBBUEkuLj8NCg0KQXMgbWVudGlv
-bmVkIGluIHByZXZpb3VzIGRpc2N1c3Npb25zLCB0aGUgb3JkZXIgb2YgdGlkeSB1cCBpcyBpbXBv
-cnRhbnQgc28gDQpkZXZtXyogZnVuY3Rpb25zIGNhbm5vdCBiZSB1c2VkIGhlcmUuDQoNCj4gDQo+
-ID4gKwlpZiAocmV0KQ0KPiA+ICsJCWRldl9lcnIoZGV2LCAiRmFpbGVkIHRvIHJlcXVlc3QgSVJR
-ICVkOiAlZFxuIiwgaXJxLCByZXQpOw0KPiA+ICsNCj4gPiArCXJldHVybiByZXQ7DQo+ID4gK30N
-Cj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIGRhOTE1MF9jaGFyZ2VyX3VucmVnaXN0ZXJfaXJxKHN0
-cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsDQo+ID4gKwkJCQkJICBjb25zdCBjaGFyICppcnFf
-bmFtZSkNCj4gPiArew0KPiA+ICsJc3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4g
-PiArCXN0cnVjdCBkYTkxNTBfY2hhcmdlciAqY2hhcmdlciA9IHBsYXRmb3JtX2dldF9kcnZkYXRh
-KHBkZXYpOw0KPiA+ICsJaW50IGlycTsNCj4gPiArDQo+ID4gKwlpcnEgPSBwbGF0Zm9ybV9nZXRf
-aXJxX2J5bmFtZShwZGV2LCBpcnFfbmFtZSk7DQo+ID4gKwlpZiAoaXJxIDwgMCkgew0KPiA+ICsJ
-CWRldl9lcnIoZGV2LCAiRmFpbGVkIHRvIGdldCBJUlEgQ0hHX1NUQVRVUzogJWRcbiIsIGlycSk7
-DQo+ID4gKwkJcmV0dXJuOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCWZyZWVfaXJxKGlycSwgY2hh
-cmdlcik7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgZGE5MTUwX2NoYXJnZXJfcHJv
-YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gPiArew0KPiA+ICsJc3RydWN0IGRl
-dmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gPiArCXN0cnVjdCBkYTkxNTAgKmRhOTE1MCA9IGRl
-dl9nZXRfZHJ2ZGF0YShkZXYtPnBhcmVudCk7DQo+ID4gKwlzdHJ1Y3QgZGE5MTUwX2NoYXJnZXIg
-KmNoYXJnZXI7DQo+ID4gKwlzdHJ1Y3QgcG93ZXJfc3VwcGx5ICp1c2IsICpiYXR0ZXJ5Ow0KPiA+
-ICsJdTggcmVnOw0KPiA+ICsJaW50IHJldDsNCj4gPiArDQo+ID4gKwljaGFyZ2VyID0gZGV2bV9r
-emFsbG9jKGRldiwgc2l6ZW9mKHN0cnVjdCBkYTkxNTBfY2hhcmdlciksIEdGUF9LRVJORUwpOw0K
-PiA+ICsJaWYgKGNoYXJnZXIgPT0gTlVMTCkNCj4gPiArCQlyZXR1cm4gLUVOT01FTTsNCj4gDQo+
-IHNpemVvZihzdHJ1Y3QgZGE5MTUwX2NoYXJnZXIpIGNhbiBiZSByZXBsYWNlZCB3aXRoIHNpemVv
-ZigqY2hhcmdlcikuLi4NCj4gDQo+ICohKiBvcGVyYXRvciBjYW4gYmUgdXNlZCBpbiBjb21wYXJp
-c29uIHdpdGggTlVMTC4uLg0KPiANCg0KWWVzLCBidXQgZnVuY3Rpb25hbGx5IG5vIGRpZmZlcmVu
-dC4gQ2FuIG1heWJlIGNoYW5nZSB0aGlzIGFyb3VuZCBsYXRlciwgYnV0DQp3b3VsZCBsaWtlIHRv
-IGF2b2lkIGNoYW5naW5nIGN1cnJlbnQgcGF0Y2ggc2V0IHJpZ2h0IG5vdy4NCg==
+Geert Uytterhoeven <geert+renesas@glider.be> writes:
+
+>         Hi all,
+>
+> The Renesas Bus State Controller (BSC) provides an external bus for
+> connecting multiple external devices to an SoC, driving several chip
+> select lines, for e.g. NOR FLASH, Ethernet and USB.
+> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+> R-Mobile APE6 (r8a73a4) SoC.
+>
+> The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+> compatibility seems suitable.  However, the BSC is special in two
+> ways:
+>   1. It is part of a PM domain (A4S on sh73a0),
+>   2. It has a gateable functional clock (ZB).
+> Before a device connected to the BSC can be accessed, the PM domain
+> containing the BSC must be powered on, and the functional clock
+> driving the BSC must be enabled.
+>
+> Both special properties can be described in DT in a standardized way
+> ("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+> example in the DT binding documentation).  Externally connected
+> devices are described as children of the BSC node.
+>
+> Unfortunately this doesn't mean everything will work out-of-the-box.
+> There are two problems:
+>   1. Without a device driver bound to the bus device, this device is
+>      not attached to the PM domain. And although a child device is
+>      present and active, the PM domain may be powered down, as it's
+>      considered unused by the PM domain core.
+>   2. Without a device driver calling pm_runtime_enable(), its
+>      functional clock is not enabled. Once runtime PM is enabled, the
+>      R-Mobile PM domain platform driver manages the functional clock
+>      using runtime PM.
+>
+> As none of the above is really bus hardware-specific (PM domains and
+> functional clocks in clock domains are handled from genpd and platform
+> code), this series adds a Simple Power-Managed Bus driver for
+> transparent busses, which matches against "simple-pm-bus", enables
+> runtime PM for the bus device, and calls of_platform_populate() to
+> probe for child devices.
+> Due to the child-parent relationship of devices connected to the bus,
+> as long as the device drivers for the child devices are runtime PM
+> enabled, the bus's PM domain will be powered, and the bus's clock will
+> be enabled automatically when needed, for both runtime PM and s2ram.
+>
+> This was tested on sh73a0/kzm9g-multiplatform (by me), and (v3) on
+> r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+> Ethernet doesn't work, as the ZB clock is disabled by
+> clk_disable_unused().
+>
+> Felipe: It looks like drivers/usb/musb/musb_am335x.c can be removed, if
+> "ti,am33xx-usb" claims compatibility with "simple-pm-bus"?
+>
+> As drivers/bus doesn't have a maintainer, and this driver is needed to
+> move two shmobile platforms away from legacy to multiplatform, I think
+> this can go in through Simon's shmobile tree.
+>
+> Changes compared to v3:
+>   - Replace "simple-bus" by "simple-pm-bus" in the bindings,
+>   - Move the "renesas,bsc" bindings to a separate document,
+>   - Bind against the generic "simple-pm-bus" instead of "renesas,bsc",
+>   - Explicitly call of_platform_populate() after pm_runtime_enable() to
+>     enforce ordering, instead of depending on claimed compatibility with
+>     "simple-bus".
+>
+> Changes compared to v2:
+>   - Document required properties inherited from "simple-bus",
+>   - Document required "reg" property for "renesas,bsc",
+>   - Move "ranges" before "reg" in the example,
+>   - Add Tested-by,
+>   - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
+>
+> Changes compared to v1 (more detailed change logs in the individual
+> patches):
+>   - Added sorting of drivers/bus Kconfig and Makefile entries,
+>   - Added DT binding documentation,
+>   - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+>     "Simple Power-Managed Bus Driver" (simple-pm-bus),
+>   - Postponed adding power-domains properties to the dtsi,
+>   - Added updates for r8a73a4/ape6evm.
+>
+> Thanks for your comments!
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
