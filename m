@@ -1,69 +1,81 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFT PATCH 2/4] compal-laptop: Check return value of
- power_supply_register
-Date: Tue, 27 Jan 2015 12:30:19 +0100
-Message-ID: <1422358221-13199-3-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFT PATCH 4/4] power_supply: ipaq_micro_battery: Check return values
+ in probe
+Date: Tue, 27 Jan 2015 12:30:21 +0100
+Message-ID: <1422358221-13199-5-git-send-email-k.kozlowski@samsung.com>
 References: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:36012 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbbA0Lak (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 06:30:40 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Artamonow <mad_soft@inbox.ru>, Marek Belisko <marek@goldelico.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-The return value of power_supply_register() call was not checked and
-even on error probe() function returned 0. If registering failed then
-during unbind the driver tried to unregister power supply which was not
-actually registered.
+The return values of create_singlethread_workqueue() and
+power_supply_register() calls were not checked and even on error probe()
+function returned 0.
 
-This could lead to memory corruption because power_supply_unregister()
-unconditionally cleans up given power supply.
+1. If allocation of workqueue failed (returning NULL) then further
+   accesses could lead to NULL pointer dereference. The
+   queue_delayed_work() expects workqueue to be non-NULL.
 
-Fix this by checking return status of power_supply_register() call. In
-case of failure, unregister the hwmon device and fail the probe. Add a
-fixme note about missing hwmon_device_unregister() in driver removal.
+2. If registration of power supply failed then during unbind the driver
+   tried to unregister power supply which was not actually registered.
+   This could lead to memory corruption because
+   power_supply_unregister() unconditionally cleans up given power
+   supply.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Fixes: 9be0fcb5ed46 ("compal-laptop: add JHL90, battery & hwmon interface")
+Fixes: 00a588f9d27f ("power: add driver for battery reading on iPaq h3xxx")
 Cc: <stable@vger.kernel.org>
 ---
- drivers/platform/x86/compal-laptop.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/power/ipaq_micro_battery.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platform/x86/compal-laptop.c
-index 15c0fab2bfa1..cf55a9246f12 100644
---- a/drivers/platform/x86/compal-laptop.c
-+++ b/drivers/platform/x86/compal-laptop.c
-@@ -1036,12 +1036,16 @@ static int compal_probe(struct platform_device *pdev)
+diff --git a/drivers/power/ipaq_micro_battery.c b/drivers/power/ipaq_micro_battery.c
+index 698cf1636bb8..96b15e003f3f 100644
+--- a/drivers/power/ipaq_micro_battery.c
++++ b/drivers/power/ipaq_micro_battery.c
+@@ -226,6 +226,7 @@ static struct power_supply micro_ac_power = {
+ static int micro_batt_probe(struct platform_device *pdev)
+ {
+ 	struct micro_battery *mb;
++	int ret;
  
- 	/* Power supply */
- 	initialize_power_supply_data(data);
--	power_supply_register(&compal_device->dev, &data->psy);
-+	err = power_supply_register(&compal_device->dev, &data->psy);
-+	if (err < 0)
-+		goto psy_err;
+ 	mb = devm_kzalloc(&pdev->dev, sizeof(*mb), GFP_KERNEL);
+ 	if (!mb)
+@@ -233,14 +234,30 @@ static int micro_batt_probe(struct platform_device *pdev)
  
- 	platform_set_drvdata(pdev, data);
+ 	mb->micro = dev_get_drvdata(pdev->dev.parent);
+ 	mb->wq = create_singlethread_workqueue("ipaq-battery-wq");
++	if (!mb->wq)
++		return -ENOMEM;
++
+ 	INIT_DELAYED_WORK(&mb->update, micro_battery_work);
+ 	platform_set_drvdata(pdev, mb);
+ 	queue_delayed_work(mb->wq, &mb->update, 1);
+-	power_supply_register(&pdev->dev, &micro_batt_power);
+-	power_supply_register(&pdev->dev, &micro_ac_power);
++
++	ret = power_supply_register(&pdev->dev, &micro_batt_power);
++	if (ret < 0)
++		goto batt_err;
++
++	ret = power_supply_register(&pdev->dev, &micro_ac_power);
++	if (ret < 0)
++		goto ac_err;
  
+ 	dev_info(&pdev->dev, "iPAQ micro battery driver\n");
  	return 0;
++
++ac_err:
++	power_supply_unregister(&micro_ac_power);
++batt_err:
++	cancel_delayed_work_sync(&mb->update);
++	destroy_workqueue(mb->wq);
++	return ret;
+ }
  
-+psy_err:
-+	hwmon_device_unregister(hwmon_dev);
- remove:
- 	sysfs_remove_group(&pdev->dev.kobj, &compal_platform_attr_group);
- 	return err;
-@@ -1072,6 +1076,7 @@ static int compal_remove(struct platform_device *pdev)
- 
- 	data = platform_get_drvdata(pdev);
- 	power_supply_unregister(&data->psy);
-+	/* FIXME: missing hwmon_device_unregister() */
- 
- 	sysfs_remove_group(&pdev->dev.kobj, &compal_platform_attr_group);
- 
+ static int micro_batt_remove(struct platform_device *pdev)
 -- 
 1.9.1
-
