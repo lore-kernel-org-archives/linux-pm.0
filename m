@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 03/18] cpufreq: Create for_each_governor()
-Date: Tue, 27 Jan 2015 14:06:09 +0530
-Message-ID: <8abc55e0c15c5abed4944018195480374ea96b3c.1422346933.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Tue, 27 Jan 2015 14:06:10 +0530
+Message-ID: <43d728016b775d1b0fc02c981eb0520ac08297f5.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:37347 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757828AbbA0Igx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:36:53 -0500
-Received: by mail-pa0-f54.google.com with SMTP id eu11so17159751pac.13
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:36:52 -0800 (PST)
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:40427 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753886AbbA0Ig4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:36:56 -0500
+Received: by mail-pa0-f42.google.com with SMTP id bj1so17200657pad.1
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:36:56 -0800 (PST)
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
@@ -18,56 +18,159 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-To make code more readable and less error prone, lets create a helper macro for
-iterating over all available governors.
+Policies manage a group of CPUs and tracking them on per-cpu basis isn't the
+best approach for sure.
+
+The obvious loss is the amount of memory consumed for keeping a per-cpu copy of
+the same pointer. But the bigger problem is managing such a data structure as we
+need to update it for all policy->cpus.
+
+To make it simple, lets manage fallback CPUs in a list rather than a per-cpu
+variable.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq.c | 51 +++++++++++++++++++++++++++--------------------
+ include/linux/cpufreq.h   |  5 ++++-
+ 2 files changed, 33 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9dfefb8ece6d..cf8ce523074f 100644
+index cf8ce523074f..f253cf45f910 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
 @@ -37,6 +37,11 @@ static LIST_HEAD(cpufreq_policy_list);
  #define for_each_policy(__policy)				\
  	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
  
-+/* Iterate over governors */
-+static LIST_HEAD(cpufreq_governor_list);
-+#define for_each_governor(__governor)				\
-+	list_for_each_entry(__governor, &cpufreq_governor_list, governor_list)
++/* Iterate over offline CPUs policies */
++static LIST_HEAD(cpufreq_fallback_list);
++#define for_each_fallback_policy(__policy)			\
++	list_for_each_entry(__policy, &cpufreq_fallback_list, fallback_list)
 +
- /**
-  * The "cpufreq driver" - the arch- or hardware-dependent low
-  * level driver of CPUFreq support, and its spinlock. This lock
-@@ -99,7 +104,6 @@ void disable_cpufreq(void)
+ /* Iterate over governors */
+ static LIST_HEAD(cpufreq_governor_list);
+ #define for_each_governor(__governor)				\
+@@ -49,7 +54,6 @@ static LIST_HEAD(cpufreq_governor_list);
+  */
+ static struct cpufreq_driver *cpufreq_driver;
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+-static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+ DEFINE_MUTEX(cpufreq_governor_lock);
+ 
+@@ -999,13 +1003,16 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+ 
+ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
  {
- 	off = 1;
- }
--static LIST_HEAD(cpufreq_governor_list);
- static DEFINE_MUTEX(cpufreq_governor_mutex);
+-	struct cpufreq_policy *policy;
++	struct cpufreq_policy *policy = NULL, *temp;
+ 	unsigned long flags;
  
- bool have_governor_per_policy(void)
-@@ -434,7 +438,7 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
- {
- 	struct cpufreq_governor *t;
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+-	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
+-
++	for_each_fallback_policy(temp) {
++		if (cpumask_test_cpu(cpu, temp->related_cpus)) {
++			policy = temp;
++			break;
++		}
++	}
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
--	list_for_each_entry(t, &cpufreq_governor_list, governor_list)
-+	for_each_governor(t)
- 		if (!strncasecmp(str_governor, t->name, CPUFREQ_NAME_LEN))
- 			return t;
+ 	if (policy)
+@@ -1029,6 +1036,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+ 		goto err_free_cpumask;
  
-@@ -636,7 +640,7 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
- 		goto out;
+ 	INIT_LIST_HEAD(&policy->policy_list);
++	INIT_LIST_HEAD(&policy->fallback_list);
+ 	init_rwsem(&policy->rwsem);
+ 	spin_lock_init(&policy->transition_lock);
+ 	init_waitqueue_head(&policy->transition_wait);
+@@ -1142,6 +1150,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		policy = cpufreq_policy_alloc();
+ 		if (!policy)
+ 			goto nomem_out;
++	} else {
++		/* Don't need fallback list anymore */
++		write_lock_irqsave(&cpufreq_driver_lock, flags);
++		list_del(&policy->fallback_list);
++		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
  	}
  
--	list_for_each_entry(t, &cpufreq_governor_list, governor_list) {
-+	for_each_governor(t) {
- 		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
- 		    - (CPUFREQ_NAME_LEN + 2)))
- 			goto out;
+ 	/*
+@@ -1296,11 +1309,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ err_set_policy_cpu:
+-	if (recover_policy) {
+-		/* Do not leave stale fallback data behind. */
+-		per_cpu(cpufreq_cpu_data_fallback, cpu) = NULL;
++	if (recover_policy)
+ 		cpufreq_policy_put_kobj(policy);
+-	}
+ 	cpufreq_policy_free(policy);
+ 
+ nomem_out:
+@@ -1333,21 +1343,22 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+ 
+-	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+ 	policy = per_cpu(cpufreq_cpu_data, cpu);
+-
+-	/* Save the policy somewhere when doing a light-weight tear-down */
+-	if (cpufreq_suspended)
+-		per_cpu(cpufreq_cpu_data_fallback, cpu) = policy;
+-
+-	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
+ 	if (!policy) {
+ 		pr_debug("%s: No cpu_data found\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 
++	down_read(&policy->rwsem);
++	cpus = cpumask_weight(policy->cpus);
++	up_read(&policy->rwsem);
++
++	/* Save the policy when doing a light-weight tear-down of last cpu */
++	write_lock_irqsave(&cpufreq_driver_lock, flags);
++	if (cpufreq_suspended && cpus == 1)
++		list_add(&policy->fallback_list, &cpufreq_fallback_list);
++	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+@@ -1359,10 +1370,6 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 			policy->governor->name, CPUFREQ_NAME_LEN);
+ 	}
+ 
+-	down_read(&policy->rwsem);
+-	cpus = cpumask_weight(policy->cpus);
+-	up_read(&policy->rwsem);
+-
+ 	if (cpu != policy->cpu) {
+ 		sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 2ee4888c1f47..df6af4cfa26a 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -87,7 +87,10 @@ struct cpufreq_policy {
+ 	struct cpufreq_real_policy	user_policy;
+ 	struct cpufreq_frequency_table	*freq_table;
+ 
+-	struct list_head        policy_list;
++	/* Internal lists */
++	struct list_head        policy_list;	/* policies of online CPUs */
++	struct list_head	fallback_list;	/* policies of offline CPUs */
++
+ 	struct kobject		kobj;
+ 	struct completion	kobj_unregister;
+ 
 -- 
 2.3.0.rc0.44.ga94655d
 
