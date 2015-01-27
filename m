@@ -1,81 +1,61 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFT PATCH 4/4] power_supply: ipaq_micro_battery: Check return values
- in probe
-Date: Tue, 27 Jan 2015 12:30:21 +0100
-Message-ID: <1422358221-13199-5-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFT PATCH 1/4] power_supply: twl4030_madc: Check return value of
+ power_supply_register
+Date: Tue, 27 Jan 2015 12:30:18 +0100
+Message-ID: <1422358221-13199-2-git-send-email-k.kozlowski@samsung.com>
 References: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:36557 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754837AbbA0Lal (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 06:30:41 -0500
 In-reply-to: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Dmitry Artamonow <mad_soft@inbox.ru>, Marek Belisko <marek@goldelico.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-The return values of create_singlethread_workqueue() and
-power_supply_register() calls were not checked and even on error probe()
-function returned 0.
+The return value of power_supply_register() call was not checked and
+even on error probe() function returned 0. If registering failed then
+during unbind the driver tried to unregister power supply which was not
+actually registered.
 
-1. If allocation of workqueue failed (returning NULL) then further
-   accesses could lead to NULL pointer dereference. The
-   queue_delayed_work() expects workqueue to be non-NULL.
-
-2. If registration of power supply failed then during unbind the driver
-   tried to unregister power supply which was not actually registered.
-   This could lead to memory corruption because
-   power_supply_unregister() unconditionally cleans up given power
-   supply.
+This could lead to memory corruption because power_supply_unregister()
+unconditionally cleans up given power supply.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Fixes: 00a588f9d27f ("power: add driver for battery reading on iPaq h3xxx")
+Fixes: da0a00ebc239 ("power: Add twl4030_madc battery driver.")
 Cc: <stable@vger.kernel.org>
 ---
- drivers/power/ipaq_micro_battery.c | 21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
+ drivers/power/twl4030_madc_battery.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/ipaq_micro_battery.c b/drivers/power/ipaq_micro_battery.c
-index 698cf1636bb8..96b15e003f3f 100644
---- a/drivers/power/ipaq_micro_battery.c
-+++ b/drivers/power/ipaq_micro_battery.c
-@@ -226,6 +226,7 @@ static struct power_supply micro_ac_power = {
- static int micro_batt_probe(struct platform_device *pdev)
+diff --git a/drivers/power/twl4030_madc_battery.c b/drivers/power/twl4030_madc_battery.c
+index 7ef445a6cfa6..cf907609ec49 100644
+--- a/drivers/power/twl4030_madc_battery.c
++++ b/drivers/power/twl4030_madc_battery.c
+@@ -192,6 +192,7 @@ static int twl4030_madc_battery_probe(struct platform_device *pdev)
  {
- 	struct micro_battery *mb;
-+	int ret;
+ 	struct twl4030_madc_battery *twl4030_madc_bat;
+ 	struct twl4030_madc_bat_platform_data *pdata = pdev->dev.platform_data;
++	int ret = 0;
  
- 	mb = devm_kzalloc(&pdev->dev, sizeof(*mb), GFP_KERNEL);
- 	if (!mb)
-@@ -233,14 +234,30 @@ static int micro_batt_probe(struct platform_device *pdev)
+ 	twl4030_madc_bat = kzalloc(sizeof(*twl4030_madc_bat), GFP_KERNEL);
+ 	if (!twl4030_madc_bat)
+@@ -216,9 +217,11 @@ static int twl4030_madc_battery_probe(struct platform_device *pdev)
  
- 	mb->micro = dev_get_drvdata(pdev->dev.parent);
- 	mb->wq = create_singlethread_workqueue("ipaq-battery-wq");
-+	if (!mb->wq)
-+		return -ENOMEM;
-+
- 	INIT_DELAYED_WORK(&mb->update, micro_battery_work);
- 	platform_set_drvdata(pdev, mb);
- 	queue_delayed_work(mb->wq, &mb->update, 1);
--	power_supply_register(&pdev->dev, &micro_batt_power);
--	power_supply_register(&pdev->dev, &micro_ac_power);
-+
-+	ret = power_supply_register(&pdev->dev, &micro_batt_power);
+ 	twl4030_madc_bat->pdata = pdata;
+ 	platform_set_drvdata(pdev, twl4030_madc_bat);
+-	power_supply_register(&pdev->dev, &twl4030_madc_bat->psy);
++	ret = power_supply_register(&pdev->dev, &twl4030_madc_bat->psy);
 +	if (ret < 0)
-+		goto batt_err;
-+
-+	ret = power_supply_register(&pdev->dev, &micro_ac_power);
-+	if (ret < 0)
-+		goto ac_err;
++		kfree(twl4030_madc_bat);
  
- 	dev_info(&pdev->dev, "iPAQ micro battery driver\n");
- 	return 0;
-+
-+ac_err:
-+	power_supply_unregister(&micro_ac_power);
-+batt_err:
-+	cancel_delayed_work_sync(&mb->update);
-+	destroy_workqueue(mb->wq);
+-	return 0;
 +	return ret;
  }
  
- static int micro_batt_remove(struct platform_device *pdev)
+ static int twl4030_madc_battery_remove(struct platform_device *pdev)
 -- 
 1.9.1
+
