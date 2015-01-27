@@ -1,53 +1,63 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH 2/2] ARM: dts: exynos*-odroid*: add eMMC reset line
-Date: Tue, 27 Jan 2015 09:11:29 +0100
-Message-ID: <1422346289-9348-3-git-send-email-m.szyprowski@samsung.com>
-References: <1422346289-9348-1-git-send-email-m.szyprowski@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1422346289-9348-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tobias Jakobi <Liquid.Acid-hi6Y0CQ0nG0@public.gmane.org>, Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Seungwon Jeon <tgih.jun-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaehoon Chung <jh80.chung-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Joonyoung Shim <jy0922.shim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/2] power: reset: add driver for Hardkernel's Odroid boards
+Date: Tue, 27 Jan 2015 09:16:23 +0100
+Message-ID: <54C74957.2000600@samsung.com>
+References: <1414588409-8065-1-git-send-email-m.szyprowski@samsung.com>
+ <20150122010631.GL13715@earth.universe> <54C05373.60308@samsung.com>
+ <54C22C5A.9050701@samsung.com> <20150125143207.GD2719@earth.universe>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:24519 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbbA0IQ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:16:26 -0500
+In-reply-to: <20150125143207.GD2719@earth.universe>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Tobias Jakobi <Liquid.Acid@gmx.net>, Daniel Drake <drake@endlessm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 
-This patch add samsung,dw-mshc-reset-gpios property to the eMMC slot,
-so Exynos DW MMC driver is able to properly reset eMMC card on system
-restart and thus fixes hang on software reboot.
+Hello,
 
-Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 1 +
- arch/arm/boot/dts/exynos5422-odroidxu3.dts      | 1 +
- 2 files changed, 2 insertions(+)
+On 2015-01-25 15:32, Sebastian Reichel wrote:
+> On Fri, Jan 23, 2015 at 12:11:22PM +0100, Marek Szyprowski wrote:
+>> Frankly, I analyzed this case once again and I came to conclusion
+>> that there is no need to make a separate reset driver for Odroid
+>> boards. There is nothing special, specific to whole board about
+>> this gpio. It is rather a property of MMC host controller and eMMC
+>> card that is connected to it. When only gpio toggling code is
+>> moved to reset handler registered from mmc controller, the board
+>> properly performs reboot with a generic exynos4 code.
+> OK, so I guess this will be fixed independently via mmc subsystem.
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 74e89cbfb00c..97df0ef81d1a 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -69,6 +69,7 @@
- 		samsung,dw-mshc-ciu-div = <3>;
- 		samsung,dw-mshc-sdr-timing = <2 3>;
- 		samsung,dw-mshc-ddr-timing = <1 2>;
-+		samsung,dw-mshc-reset-gpios = <&gpk1 2 1>;
- 		bus-width = <8>;
- 		cap-mmc-highspeed;
- 	};
-diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3.dts b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-index d829e220eedb..20064e36a5be 100644
---- a/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-@@ -336,6 +336,7 @@
- 	samsung,dw-mshc-ciu-div = <3>;
- 	samsung,dw-mshc-sdr-timing = <0 4>;
- 	samsung,dw-mshc-ddr-timing = <0 2>;
-+	samsung,dw-mshc-reset-gpios = <&gpd1 0 0>;
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&sd0_clk &sd0_cmd &sd0_bus4 &sd0_bus8>;
- 	bus-width = <8>;
+I've posted an updated patch.
+
+>
+>> The poweroff code in above driver is just a generic Exynos4 code,
+>> so again there is no need to duplicate it.
+> OK. It seems there is a driver for that in arch/arm/mach-exynos.
+> Otherwise I would have suggest to create something like
+> syscon-reboot for shutdown.
+>
+>> By moving the code to mmc driver, the same approach can be used for other
+>> Odroid boards (XU/XU3) and maybe even other boards which need manual
+>> resetting of eMMC cards to properly perform reboot procedure.
+> I suggest to start a new thread for discussing this, which includes
+> linux-mmc. It might be interesting to provide some more details about
+> eMMC_nDET, since MMC already contain a reset signal (which seems to
+> be used according to the odroid schematics I found).
+
+My fault. The documentation for this initial driver was incorrect. The 
+reboot
+fix has noting to eMMC_nDET signal. It should be eMMC nreset, which is 
+routed
+directly to SoC GPIO line with external pull-up resistor. I really have no
+idea why I wrote eMMC_nDET instead of nreset.
+
+Best regards
 -- 
-1.9.2
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
