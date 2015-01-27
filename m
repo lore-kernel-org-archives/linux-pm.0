@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 11/18] cpufreq: Track cpu managing sysfs kobjects separately
-Date: Tue, 27 Jan 2015 14:06:17 +0530
-Message-ID: <0e27bdf1275b50c03051a289f75b9bcc68947639.1422346933.git.viresh.kumar@linaro.org>
+Subject: [PATCH 10/18] cpufreq: Don't allow updating inactive-policies from sysfs
+Date: Tue, 27 Jan 2015 14:06:16 +0530
+Message-ID: <935ec6b1fe24e17a95c71cfb01ea1bf27d03a5d5.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:55532 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbbA0IhW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:37:22 -0500
-Received: by mail-pa0-f45.google.com with SMTP id et14so17162226pad.4
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:37:22 -0800 (PST)
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:41463 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757884AbbA0IhT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:37:19 -0500
+Received: by mail-pd0-f172.google.com with SMTP id v10so17617683pde.3
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:37:18 -0800 (PST)
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
@@ -18,78 +18,69 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-In order to prepare for the next few commits, that will stop migrating sysfs
-files on cpu hotplug, this patch starts managing sysfs-cpu separately.
+Later commits would change the way policies are managed today. Policies wouldn't
+be freed on cpu hotplug (currently they aren't freed on suspend), and while the
+CPU is offline, the sysfs cpufreq files would still be present.
 
-The behavior is still the same as we are still migrating sysfs files on hotplug,
-later commits would change that.
+User may accidentally try to update the sysfs files in following directory:
+'/sys/devices/system/cpu/cpuX/cpufreq/'. And that would result in undefined
+behavior as policy wouldn't be active then.
+
+To disallow such accesses, sense if a policy is active or not while doing such
+operations. This can be done easily by getting the policy again with
+cpufreq_cpu_get_raw(), as that would traverse the list of active policies.
+
+Apart from updating the store() routine, we also update __cpufreq_get() which
+can call cpufreq_out_of_sync(). The later routine tries to update policy->cur
+and start notifying kernel about it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 11 +++++++----
- include/linux/cpufreq.h   |  4 +++-
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index fffa37136b7b..4476471c594e 100644
+index ed36c09f83cc..fffa37136b7b 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -921,7 +921,7 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
- 	for_each_cpu(j, policy->cpus) {
- 		struct device *cpu_dev;
- 
--		if (j == policy->cpu)
-+		if (j == policy->kobj_cpu)
- 			continue;
- 
- 		pr_debug("Adding link for CPU: %u\n", j);
-@@ -1126,6 +1126,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
+@@ -826,11 +826,22 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
  
  	down_write(&policy->rwsem);
- 	policy->cpu = cpu;
-+	policy->kobj_cpu = cpu;
+ 
++	/*
++	 * Policy might not be active currently, and so we shouldn't try
++	 * updating any values here. An inactive policy is moved to fallback
++	 * list and so cpufreq_cpu_get_raw() should fail.
++	 */
++	if (unlikely(!cpufreq_cpu_get_raw(policy->cpu))) {
++		ret = -EPERM;
++		goto unlock_policy_rwsem;
++	}
++
+ 	if (fattr->store)
+ 		ret = fattr->store(policy, buf, count);
+ 	else
+ 		ret = -EIO;
+ 
++unlock_policy_rwsem:
  	up_write(&policy->rwsem);
  
- 	return 0;
-@@ -1188,10 +1189,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	 * the creation of a brand new one. So we need to perform this update
- 	 * by invoking update_policy_cpu().
- 	 */
--	if (recover_policy && cpu != policy->cpu)
-+	if (recover_policy && cpu != policy->cpu) {
- 		WARN_ON(update_policy_cpu(policy, cpu, dev));
--	else
-+	} else {
- 		policy->cpu = cpu;
-+		policy->kobj_cpu = cpu;
-+	}
+ 	up_read(&cpufreq_rwsem);
+@@ -1587,6 +1598,14 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
  
- 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 	ret_freq = cpufreq_driver->get(policy->cpu);
  
-@@ -1393,7 +1396,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 				CPUFREQ_NAME_LEN);
- 	}
- 
--	if (cpu != policy->cpu) {
-+	if (cpu != policy->kobj_cpu) {
- 		sysfs_remove_link(&dev->kobj, "cpufreq");
- 	} else if (cpus > 1) {
- 		/* Nominate new CPU */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e326cddef6db..9b8937f027fb 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -65,7 +65,9 @@ struct cpufreq_policy {
- 
- 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
- 						should set cpufreq */
--	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
-+	unsigned int		cpu;    /* cpu managing this policy, must be online */
-+	unsigned int		kobj_cpu; /* cpu managing sysfs files, can be offline */
++	/*
++	 * Policy might not be active currently, and so we shouldn't try
++	 * updating any values here. An inactive policy is moved to fallback
++	 * list and so cpufreq_cpu_get_raw() should fail.
++	 */
++	if (unlikely(!cpufreq_cpu_get_raw(policy->cpu)))
++		return ret_freq;
 +
- 	struct clk		*clk;
- 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
- 
+ 	if (ret_freq && policy->cur &&
+ 		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+ 		/* verify no discrepancy between actual and
 -- 
 2.3.0.rc0.44.ga94655d
 
