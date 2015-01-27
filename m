@@ -1,153 +1,133 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: Re: [PATCH] dt-bindings: document qcom tsens thermal
-Date: Tue, 27 Jan 2015 07:15:34 +0000
-Message-ID: <54C73B16.2030506@linaro.org>
-References: <1422331687-19535-1-git-send-email-nrajan@codeaurora.org>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
+Date: Tue, 27 Jan 2015 16:03:29 +0800
+Message-ID: <54C74651.3020403@linux.intel.com>
+References: <54866625.8010406@linux.intel.com> <54C5FE6A.9010300@linux.intel.com> <alpine.DEB.2.11.1501260946390.5526@nanos> <2137807.aqSxQQCuJ3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1422331687-19535-1-git-send-email-nrajan@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Narendran Rajan <nrajan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux ARM MSM <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2137807.aqSxQQCuJ3@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Narendran,
+On 2015/1/26 22:41, Rafael J. Wysocki wrote:
+> On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
+>> On Mon, 26 Jan 2015, Li, Aubrey wrote:
+>>> On 2015/1/22 18:15, Thomas Gleixner wrote:
+> 
+> [...]
+> 
+>>>>> +		/*
+>>>>> +		 * cpuidle_enter will return with interrupt enabled
+>>>>> +		 */
+>>>>> +		cpuidle_enter(drv, dev, next_state);
+>>>>
+>>>> How is that supposed to work?
+>>>>
+>>>> If timekeeping is not yet unfrozen, then any interrupt handling code
+>>>> which calls anything time related is going to hit lala land.
+>>>>
+>>>> You must guarantee that timekeeping is unfrozen before any interrupt
+>>>> is handled. If you cannot guarantee that, you cannot freeze
+>>>> timekeeping ever.
+>>>>
+>>>> The cpu local tick device is less critical, but it happens to work by
+>>>> chance, not by design.
+>>>
+>>> There are two way to guarantee this: the first way is, disable interrupt
+>>> before timekeeping frozen and enable interrupt after timekeeping is
+>>> unfrozen. However, we need to handle wakeup handler before unfreeze
+>>> timekeeping to wake freeze task up from wait queue.
+>>>
+>>> So we have to go the other way, the other way is, we ignore time related
+>>> calls during freeze, like what I added in irq_enter below.
+>>
+>> Groan. You just do not call in irq_enter/exit(), but what prevents any
+>> interrupt handler or whatever to call into the time/timer code after
+>> interrupts got reenabled?
+>>
+>> Nothing. 
+>>
+>>> Or, we need to re-implement freeze wait and wake up mechanism?
+>>
+>> You need to make sure in the low level idle implementation that this
+>> cannot happen.
+>>
+>> tick_freeze()
+>> {
+>> 	raw_spin_lock(&tick_freeze_lock);
+>> 	tick_frozen++;
+>> 	if (tick_frozen == num_online_cpus())
+>> 		timekeeping_suspend();
+>> 	else
+>> 		tick_suspend_local();
+>> 	raw_spin_unlock(&tick_freeze_lock);
+>> }
+>>
+>> tick_unfreeze()
+>> {
+>> 	raw_spin_lock(&tick_freeze_lock);
+>> 	if (tick_frozen == num_online_cpus())
+>> 		timekeeping_resume();
+>> 	else
+>> 		tick_resume_local();
+>> 	tick_frozen--;
+>> 	raw_spin_unlock(&tick_freeze_lock);
+>> }
+>>
+>> idle_freeze()
+>> {
+>> 	local_irq_disable();
+>>
+>> 	tick_freeze();
+>>
+>> 	/* Must keep interrupts disabled! */
+>>        	go_deep_idle()
+>>
+>> 	tick_unfreeze();
+>>
+>> 	local_irq_enable();
+>> }
+>>
+>> That's the only way you can do it proper, everything else will just be
+>> a horrible mess of bandaids and duct tape.
+>>
+>> So that does not need any of the irq_enter/exit conditionals, it does
+>> not need the real_handler hack. It just works.
+> 
+> As long as go_deep_idle() above does not enable interrupts.  This means we won't
+> be able to use some C-states for suspend-to-idle (hald-induced C1 on some x86
+> for one example), but that's not a very big deal.
 
-What a coincidence.. I was just in the middle of forward porting the 
-same driver from 3.4 kernel :-) You look fast... :-)
+Does the legacy ACPI system IO method to enter C2/C3 need interrupt
+enabled as well?
 
-On 27/01/15 04:08, Narendran Rajan wrote:
-> Add binding documentation for the QCOM tsens device tree node
-> ---
->   .../devicetree/bindings/thermal/qcom-thermal.txt   | 58 ++++++++++++++++++++++
->   1 file changed, 58 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-thermal.txt
->
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-thermal.txt b/Documentation/devicetree/bindings/thermal/qcom-thermal.txt
-> new file mode 100644
-> index 0000000..d2e99d6
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-thermal.txt
-> @@ -0,0 +1,58 @@
-> +* QCOM SoC Temperature Sensor (TSENS)
-> +
-> +Required properties:
-> +- compatible : "qcom,ipq806x-tsens"
+Do we need some platform ops to cover those legacy platforms? Different
+platform go different branch here.
 
-I think this should be something like qcom,msm8960-tsens as that is the 
-first part where this tsens appeared.
+Thanks,
+-Aubrey
 
-> +- interrupts : The interrupt number to the cpu. The interrupt specifier format
-> +	       depends on the interrupt controller.
-> +- qcom,imem : Must contain phandle to imem syscon node
-Doing this way would work but not great, We should try to do this in an 
-abstracted way so that all the drivers who are in need of qfprom would 
-not add the same code all the time. I did send some WIP patches on msm 
-mailing list.
-
-> +- qcom,tsens-base : Must contain phandle to clock controller node
-This is not correct, you dont need this property.
-
-AFAIK for APQ8064 Tsens should be a child of gcc as some of the 
-registers are in already mapped by gcc. You should probably use this 
-patch + do a
-	base = dev_get_regmap(dev->parent, NULL);
-
------------------->cut<-----------------------------
- From 87b71df272048fb3aaa89b77524e4b6426e5ddc5 Mon Sep 17 00:00:00 2001
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Date: Thu, 22 Jan 2015 14:03:53 +0000
-Subject: [PATCH] clk: qcom: gcc-msm8960: add child devices support.
-
-This patch adds support to add child devices to gcc as some of the
-registers mapped by gcc are used by things like thermal sensors.
-
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
----
-  drivers/clk/qcom/gcc-msm8960.c | 4 +++-
-  1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-index 0b61e8a..8307db3 100644
---- a/drivers/clk/qcom/gcc-msm8960.c
-+++ b/drivers/clk/qcom/gcc-msm8960.c
-@@ -15,6 +15,7 @@
-  #include <linux/bitops.h>
-  #include <linux/err.h>
-  #include <linux/platform_device.h>
-+#include <linux/of_platform.h>
-  #include <linux/module.h>
-  #include <linux/of.h>
-  #include <linux/of_device.h>
-@@ -3666,7 +3667,8 @@ static int gcc_msm8960_probe(struct 
-platform_device *pdev)
-  		hfpll_l2.d = &hfpll_l2_8064_data;
-  	}
-
--	return qcom_cc_probe(pdev, match->data);
-+	qcom_cc_probe(pdev, match->data);
-+	return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
-  }
-
-  static int gcc_msm8960_remove(struct platform_device *pdev)
--- 
-2.2.1
-
------------------->cut<-----------------------------
-
-> +- qcom,calib-offsets : Must contain offsets to primary and secondary
-> +			calibration data within imem
-> +- qcom,tsens-slopes : Must contain slope value for each of the sensors controlled
-> +			by this device
-> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> +
-> +Exiample:
-> +tsens: tsens-msm8960 {
-> +		compatible = "qcom,ipq806x-tsens";
-
-> +		interrupts = <0 178 1>;
-> +		qcom,imem = <&imem>;
-> +		qcom,tsens-base = <&gcc>;
-> +		qcom,calib-offsets = <0x400 0x410>;
-> +		qcom,tsens-slopes = <1176 1176 1154 1176 1111
-> +				1132 1132 1199 1132 1199
-> +				1132>;
-> +		#thermal-sensor-cells = <1>;
-> +	};
-> +
-> +Example: referring to thermal sensors:
-> +thermal-zones {
-> +	cpu_thermal: cpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <5000>; /* milliseconds */
-> +
-> +		/* sensor	ID */
-> +		thermal-sensors = <&tsens	1>;
-> +
-> +		trips {
-> +			cpu_alert0: cpu_alert {
-> +				temperature = <80000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +			cpu_crit: cpu_crit {
-> +				temperature = <120000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "critical";
-> +			};
-> +		};
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&cpu_alert0>;
-> +				cooling-device =
-> +					<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +			};
-> +		};
-> +	};
-> +};
->
-
----srini
+> 
+>> The only remaining issue might be a NMI calling into
+>> ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
+>> non issue on x86/tsc, but it might be a problem on other platforms
+>> which turn off devices, clocks, It's not rocket science to prevent
+>> that.
+> 
+> I don't see any users of ktime_get_mono_fast_ns() at all, unless some non-trivial
+> macros are involved.  At least grepping for it only returns the definition,
+> declarations and the line in trace.c.
+> 
+> Rafael
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
