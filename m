@@ -1,40 +1,62 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH] thermal: Kconfig: Remove config for not used
- EXYNOS_THERMAL_CORE
-Date: Tue, 27 Jan 2015 12:13:59 +0100
-Message-ID: <1422357239-20316-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Paul Bolle <pebolle@tiscali.nl>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [RFT PATCH 0/4] Check return value of power_supply_register
+Date: Tue, 27 Jan 2015 12:30:17 +0100
+Message-ID: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:36557 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbbA0Laj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 06:30:39 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Artamonow <mad_soft@inbox.ru>, Marek Belisko <marek@goldelico.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-After removing exynos_thermal_common.[c|h] files the CONFIG_EXYNOS_THERMA_CORE
-is not needed anymore.
-This patch removes this entry from Kconfig.
+Hi,
 
-Reported-by: Paul Bolle <pebolle@tiscali.nl>
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/thermal/samsung/Kconfig | 9 ---------
- 1 file changed, 9 deletions(-)
 
-diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-index c43306e..c8e35c1 100644
---- a/drivers/thermal/samsung/Kconfig
-+++ b/drivers/thermal/samsung/Kconfig
-@@ -7,12 +7,3 @@ config EXYNOS_THERMAL
- 	  the TMU, reports temperature and handles cooling action if defined.
- 	  This driver uses the Exynos core thermal APIs and TMU configuration
- 	  data from the supported SoCs.
--
--config EXYNOS_THERMAL_CORE
--	bool "Core thermal framework support for EXYNOS SOCs"
--	depends on EXYNOS_THERMAL
--	help
--	  If you say yes here you get support for EXYNOS TMU
--	  (Thermal Management Unit) common registration/unregistration
--	  functions to the core thermal layer and also to use the generic
--	  CPU cooling APIs.
+During global rework of power supply register API I found possible
+issues related to not checked return value.
+
+The power_supply_register() return value was ignored and during driver
+removal the power supply was always unregistered. This theoretically
+could lead to invalid memory accesses. However I did not reproduce
+the issue (only code analysis).
+
+Affected drivers:
+1. twl4030_madc
+2. compal-laptop
+3. ipaq_micro_battery
+
+I prepared patches but DID NOT test them. Only compilation + sparse
+ + smatch + coccicheck.
+
+I am kindly asking for review and testing.
+
+
+P.S. The acpi/sbs.c driver has the same issue. Before unregistering
+power supply it checks if sbs->charger.dev is non-NULL... which will
+be non-NULL in most error-paths. However the driver is little more
+complicated so fixing this without doing tests would be very
+error-prone.
+
+
+Best regards,
+Krzysztof
+
+
+Krzysztof Kozlowski (4):
+  power_supply: twl4030_madc: Check return value of
+    power_supply_register
+  compal-laptop: Check return value of power_supply_register
+  power_supply: ipaq_micro_battery: Fix leaking workqueue
+  power_supply: ipaq_micro_battery: Check return values in probe
+
+ drivers/platform/x86/compal-laptop.c |  7 ++++++-
+ drivers/power/ipaq_micro_battery.c   | 22 ++++++++++++++++++++--
+ drivers/power/twl4030_madc_battery.c |  7 +++++--
+ 3 files changed, 31 insertions(+), 5 deletions(-)
+
 -- 
-2.0.0.rc2
+1.9.1
+
