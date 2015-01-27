@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/18] cpufreq: Create for_each_policy()
-Date: Tue, 27 Jan 2015 14:06:08 +0530
-Message-ID: <c2b93a536c452b13a09434c3dfaf9725ee8ff95a.1422346933.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/18] cpufreq: Create for_each_governor()
+Date: Tue, 27 Jan 2015 14:06:09 +0530
+Message-ID: <8abc55e0c15c5abed4944018195480374ea96b3c.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:36817 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757810AbbA0Igt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:36:49 -0500
-Received: by mail-pa0-f42.google.com with SMTP id bj1so17200061pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:36:48 -0800 (PST)
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:37347 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757828AbbA0Igx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 03:36:53 -0500
+Received: by mail-pa0-f54.google.com with SMTP id eu11so17159751pac.13
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 00:36:52 -0800 (PST)
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1422346933.git.viresh.kumar@linaro.org>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
@@ -19,74 +19,55 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 To make code more readable and less error prone, lets create a helper macro for
-iterating over all active policies.
+iterating over all available governors.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 72990ba59fad..9dfefb8ece6d 100644
+index 9dfefb8ece6d..cf8ce523074f 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -31,6 +31,12 @@
- #include <linux/tick.h>
- #include <trace/events/power.h>
+@@ -37,6 +37,11 @@ static LIST_HEAD(cpufreq_policy_list);
+ #define for_each_policy(__policy)				\
+ 	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
  
-+/* Macros to iterate over lists */
-+/* Iterate over online CPUs policies */
-+static LIST_HEAD(cpufreq_policy_list);
-+#define for_each_policy(__policy)				\
-+	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
++/* Iterate over governors */
++static LIST_HEAD(cpufreq_governor_list);
++#define for_each_governor(__governor)				\
++	list_for_each_entry(__governor, &cpufreq_governor_list, governor_list)
 +
  /**
   * The "cpufreq driver" - the arch- or hardware-dependent low
   * level driver of CPUFreq support, and its spinlock. This lock
-@@ -41,7 +47,6 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
- DEFINE_MUTEX(cpufreq_governor_lock);
--static LIST_HEAD(cpufreq_policy_list);
+@@ -99,7 +104,6 @@ void disable_cpufreq(void)
+ {
+ 	off = 1;
+ }
+-static LIST_HEAD(cpufreq_governor_list);
+ static DEFINE_MUTEX(cpufreq_governor_mutex);
  
- /* This one keeps track of the previously set governor of a removed CPU */
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
-@@ -1113,7 +1118,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ bool have_governor_per_policy(void)
+@@ -434,7 +438,7 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
+ {
+ 	struct cpufreq_governor *t;
  
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
- 	read_lock_irqsave(&cpufreq_driver_lock, flags);
--	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
-+	for_each_policy(policy) {
- 		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
- 			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
-@@ -1647,7 +1652,7 @@ void cpufreq_suspend(void)
+-	list_for_each_entry(t, &cpufreq_governor_list, governor_list)
++	for_each_governor(t)
+ 		if (!strncasecmp(str_governor, t->name, CPUFREQ_NAME_LEN))
+ 			return t;
  
- 	pr_debug("%s: Suspending Governors\n", __func__);
+@@ -636,7 +640,7 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
+ 		goto out;
+ 	}
  
--	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
-+	for_each_policy(policy) {
- 		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
- 			pr_err("%s: Failed to stop governor for policy: %p\n",
- 				__func__, policy);
-@@ -1681,7 +1686,7 @@ void cpufreq_resume(void)
- 
- 	pr_debug("%s: Resuming Governors\n", __func__);
- 
--	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
-+	for_each_policy(policy) {
- 		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
- 			pr_err("%s: Failed to resume driver: %p\n", __func__,
- 				policy);
-@@ -2324,7 +2329,7 @@ static int cpufreq_boost_set_sw(int state)
- 	struct cpufreq_policy *policy;
- 	int ret = -EINVAL;
- 
--	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
-+	for_each_policy(policy) {
- 		freq_table = cpufreq_frequency_get_table(policy->cpu);
- 		if (freq_table) {
- 			ret = cpufreq_frequency_table_cpuinfo(policy,
+-	list_for_each_entry(t, &cpufreq_governor_list, governor_list) {
++	for_each_governor(t) {
+ 		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
+ 		    - (CPUFREQ_NAME_LEN + 2)))
+ 			goto out;
 -- 
 2.3.0.rc0.44.ga94655d
 
