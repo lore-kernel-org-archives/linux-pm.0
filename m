@@ -1,57 +1,89 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 4/8] PM / Domains: Don't check for an existing device when adding a new
-Date: Tue, 27 Jan 2015 21:13:41 +0100
-Message-ID: <1422389625-11730-5-git-send-email-ulf.hansson@linaro.org>
-References: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: [PATCH v4 0/2] CPUFreq driver using CPPC methods
+Date: Tue, 27 Jan 2015 16:03:56 -0500
+Message-ID: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:52534 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759611AbbA0UOO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 15:14:14 -0500
-Received: by mail-la0-f44.google.com with SMTP id s18so15399719lam.3
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 12:14:13 -0800 (PST)
-In-Reply-To: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:44858 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755108AbbA0VEO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 16:04:14 -0500
+Received: by mail-pa0-f41.google.com with SMTP id kq14so20860339pab.0
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2015 13:04:14 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: rjw@rjwysocki.net
+Cc: rwells@codeaurora.org, linda.knippers@hp.com, linux-pm@vger.kernel.org, Catalin.Marinas@arm.com, patches@linaro.org, linaro-acpi@lists.linaro.org, ashwin.chaugule@linaro.org, viresh.kumar@linaro.org, jaswinder.singh@linaro.org, broonie@kernel.org, arnd.bergmann@linaro.org
 
-When adding a device to a genpd, we no longer need to walk genpd's list
-of existing devices to verify it hasn't already been added.
+CPPC:
+====
 
-Instead we can now rely on the verification of not allowing existing
-generic_pm_domain_data for a device, since that has the same meaning.
+CPPC (Collaborative Processor Performance Control) is a new way to control CPU
+performance using an abstract continous scale as against a discretized P-state scale
+which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
+the basic operation involves:
+- OS makes a CPU performance request. (Can provide min and max tolerable bounds)
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 7 -------
- 1 file changed, 7 deletions(-)
+- Platform (such as BMC) is free to optimize request within requested bounds depending
+on power/thermal budgets etc.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 76eb0c3..88198ba 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1415,7 +1415,6 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 			  struct gpd_timing_data *td)
- {
- 	struct generic_pm_domain_data *gpd_data_new, *gpd_data = NULL;
--	struct pm_domain_data *pdd;
- 	int ret = 0;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
-@@ -1434,12 +1433,6 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 		goto out;
- 	}
- 
--	list_for_each_entry(pdd, &genpd->dev_list, list_node)
--		if (pdd->dev == dev) {
--			ret = -EINVAL;
--			goto out;
--		}
--
- 	ret = dev_pm_get_subsys_data(dev);
- 	if (ret)
- 		goto out;
+- Platform conveys its decision back to OS
+
+The communication between OS and platform occurs through another medium called (PCC)
+Platform communication Channel. This is a generic mailbox like mechanism which includes
+doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
+
+This patchset introduces a CPPC based CPUFreq driver that works with existing governors
+such as ondemand. The CPPC table parsing and the CPPC communication semantics are
+abstracted into separate files to allow future CPPC based drivers to implement their
+own governors if required.
+
+Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
+recent experiments led to extensive modifications of the algorithm to calculate CPU
+busyness. Until it is verified that these changes are worthwhile, the existing governors
+should provide for a good enough starting point for ARM64 servers.
+
+Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+specification.[2]
+
+Changes since V3:
+- Split CPPC backend methods into separate files.
+- Add frontend driver which plugs into existing CPUfreq governors.
+- Simplify PCC driver by moving communication space mapping and read/write
+	into client drivers.
+
+Changes since V2:
+- Select driver if !X86, since intel_pstate will use HWP extensions instead.
+- Added more comments.
+- Added Freq domain awareness and PSD parsing.
+
+Changes since V1:
+- Create a new driver based on Dirks suggestion.
+- Fold in CPPC backend hooks into main driver.
+
+Changes since V0: [1]
+- Split intel_pstate.c into a generic PID governor and platform specific backend.
+- Add CPPC accessors as PID backend.
+
+[1] - http://lwn.net/Articles/608715/
+[2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
+[3] - https://patches.linaro.org/40705/
+
+
+Ashwin Chaugule (2):
+  Mailbox: Restructure and simplify PCC mailbox code
+  CPPC: Add CPUFreq driver based on CPPC methods
+
+ drivers/cpufreq/Kconfig.arm    |  15 +
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/cppc_acpi.c    | 801 +++++++++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/cppc_acpi.h    | 134 +++++++
+ drivers/cpufreq/cppc_cpufreq.c | 186 ++++++++++
+ drivers/mailbox/pcc.c          | 122 ++-----
+ 6 files changed, 1174 insertions(+), 85 deletions(-)
+ create mode 100644 drivers/cpufreq/cppc_acpi.c
+ create mode 100644 drivers/cpufreq/cppc_acpi.h
+ create mode 100644 drivers/cpufreq/cppc_cpufreq.c
+
 -- 
 1.9.1
 
