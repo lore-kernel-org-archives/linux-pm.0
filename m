@@ -1,87 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] PM: Use 64-bit timekeeping
-Date: Wed, 28 Jan 2015 08:42:54 +0100
-Message-ID: <20150128074254.GA31048@amd>
-References: <20150128043836.GA4112@tinar>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] mmc: dw_mmc-exynos: add support for controlling emmc
+ reset pin
+Date: Wed, 28 Jan 2015 15:54:23 +0100
+Message-ID: <CAPDyKFr9fQ5ny=Foi4x_-wEQA9K0wRqqEfLxmxtBn5tmPwS-Nw@mail.gmail.com>
+References: <1422346289-9348-1-git-send-email-m.szyprowski@samsung.com>
+	<1422346289-9348-2-git-send-email-m.szyprowski@samsung.com>
+	<54C74C33.5050305@samsung.com>
+	<54C8D8E3.9060609@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56980 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755703AbbA1UjI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 15:39:08 -0500
-Content-Disposition: inline
-In-Reply-To: <20150128043836.GA4112@tinar>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <54C8D8E3.9060609-hi6Y0CQ0nG0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tobias Jakobi <liquid.acid-hi6Y0CQ0nG0@public.gmane.org>
+Cc: Jaehoon Chung <jh80.chung-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Seungwon Jeon <tgih.jun-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Joonyoung Shim <jy0922.shim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tina Ruchandani <ruchandani.tina@gmail.com>
-Cc: Linux PM List <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 
-On Wed 2015-01-28 10:08:37, Tina Ruchandani wrote:
-> The freezer try_to_freeze_tasks uses 'struct timeval' for start
-> and end times, tracking time taken to freeze tasks. 'struct timeval'
-> on 32-bit systems will have its tv_sec overflow in year 2038 and
-> beyond. This patches uses 'ktime_t' (which has 64 bit values
-> for seconds) for start and end time.
-> 
-> Suggested-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
+On 28 January 2015 at 13:41, Tobias Jakobi <liquid.acid-hi6Y0CQ0nG0@public.gmane.org> wrote:
+> Hello!
+>
+> Jaehoon Chung wrote:
+>> mmc core supported to hw_reset function.
+>> So i think we can use it. It's called at only initial time to clear the previous status.
+>> But i think it can be called at reboot time. (it needs to implement codes.)
+>> how about?
+> I don't think that's going the work. The problem here is that depending
+> on the board configuration, the eMMC might carry the bootloader. If the
+> eMMC subsystem is not properly reset _during_ reboot, the board won't
+> even start since no bootloader is found. So we don't even reach the
+> point where the kernel does anything.
 
-Nicer code, and without the overflow. Thanks!
+I guess it depends on what's being done during the reboot sequence.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+The most proper thing would be to let the boot loader control the GPIO
+to trigger the HW reset, but that would mean the boot loader need to
+know about board specific configurations, such as which GPIO pin. So
+maybe SOC vendors need to state what GPIO pin to use and don't leave
+that as a configurable option.
 
+>From kernel perspective, the best we can do is to the GPIO, when doing
+a controlled reset (soft reset, or whatever we call it), but I am not
+sure where that should be done? Is there a guarantee that the mmc bus'
+->shutdown() callback gets called in this sequence?
 
-> ---
-> Changes in v2:
-> 	- Use ktime_t to be able to use ktime_ms_delta
-> 	  which is more efficient than timespec64 based methods.
-> ---
->  kernel/power/process.c | 12 +++++-------
->  1 file changed, 5 insertions(+), 7 deletions(-)
-> 
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index 5a6ec86..52414dd 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -17,6 +17,7 @@
->  #include <linux/delay.h>
->  #include <linux/workqueue.h>
->  #include <linux/kmod.h>
-> +#include <linux/ktime.h>
->  #include <trace/events/power.h>
-x>  
->  /* 
-> @@ -30,13 +31,12 @@ static int try_to_freeze_tasks(bool user_only)
->  	unsigned long end_time;
->  	unsigned int todo;
->  	bool wq_busy = false;
-> -	struct timeval start, end;
-> -	u64 elapsed_msecs64;
-> +	ktime_t start, end;
->  	unsigned int elapsed_msecs;
->  	bool wakeup = false;
->  	int sleep_usecs = USEC_PER_MSEC;
->  
-> -	do_gettimeofday(&start);
-> +	start = ktime_get();
->  
->  	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
->  
-> @@ -78,10 +78,8 @@ static int try_to_freeze_tasks(bool user_only)
->  			sleep_usecs *= 2;
->  	}
->  
-> -	do_gettimeofday(&end);
-> -	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
-> -	do_div(elapsed_msecs64, NSEC_PER_MSEC);
-> -	elapsed_msecs = elapsed_msecs64;
-> +	end = ktime_get();
-> +	elapsed_msecs = (unsigned int) ktime_ms_delta(end, start);
->  
->  	if (todo) {
->  		printk("\n");
+Moreover, adding the reset GPIO as part of the initialization
+procedure in the mmc core, gives us other benefits and it won't hurt.
+So no matter, I think it's worth to proceed and discuss Marek's
+proposal.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kind regards
+Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
