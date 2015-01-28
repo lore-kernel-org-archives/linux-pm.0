@@ -1,60 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: s3c: remove last use of resume_clocks callback
-Date: Thu, 29 Jan 2015 08:53:31 +0530
-Message-ID: <CAKohpo=v7SLii7ykqWfpf0ZAzCF6Oi9_ARVNmTu9u4j9poXafA@mail.gmail.com>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
-	<1422451015-390439-3-git-send-email-arnd@arndb.de>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: [PATCH 19/24] Documentation: DT bindings: add more chip compatible
+ strings for Tegra SOC_THERM
+Date: Wed, 28 Jan 2015 16:49:38 -0700
+Message-ID: <20150128234938.20644.79411.stgit@dusk.lan>
+References: <20150128234935.20644.89300.stgit@dusk.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1422451015-390439-3-git-send-email-arnd@arndb.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from utopia.booyaka.com ([74.50.51.50]:59455 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757469AbbA2Boj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 20:44:39 -0500
+In-Reply-To: <20150128234935.20644.89300.stgit@dusk.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Alexandre Courbot <gnurou@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-On 28 January 2015 at 18:46, Arnd Bergmann <arnd@arndb.de> wrote:
-> Commit 32726d2d550 ("ARM: SAMSUNG: Remove legacy clock code")
-> already removed the callback pointer, but there was one remaining
-> user:
->
-> drivers/cpufreq/s3c24xx-cpufreq.c: In function 's3c_cpufreq_resume_clocks':
-> drivers/cpufreq/s3c24xx-cpufreq.c:149:14: error: 'struct s3c_cpufreq_info' has no member named 'resume_clocks'
->   cpu_cur.info->resume_clocks();
->               ^
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 32726d2d550 ("ARM: SAMSUNG: Remove legacy clock code")
-> Cc: stable@vger.kernel.org # v3.17+
-> ---
->  drivers/cpufreq/s3c24xx-cpufreq.c | 8 --------
->  1 file changed, 8 deletions(-)
->
-> diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-> index bd340a1ca87d..733aa5153e74 100644
-> --- a/drivers/cpufreq/s3c24xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-> @@ -144,11 +144,6 @@ static void s3c_cpufreq_setfvco(struct s3c_cpufreq_config *cfg)
->         (cfg->info->set_fvco)(cfg);
->  }
->
-> -static inline void s3c_cpufreq_resume_clocks(void)
-> -{
-> -       cpu_cur.info->resume_clocks();
-> -}
-> -
->  static inline void s3c_cpufreq_updateclk(struct clk *clk,
->                                          unsigned int freq)
->  {
-> @@ -417,9 +412,6 @@ static int s3c_cpufreq_resume(struct cpufreq_policy *policy)
->
->         last_target = ~0;       /* invalidate last_target setting */
->
-> -       /* first, find out what speed we resumed at. */
-> -       s3c_cpufreq_resume_clocks();
-> -
->         /* whilst we will be called later on, we try and re-set the
->          * cpu frequencies as soon as possible so that we do not end
->          * up resuming devices and then immediately having to re-set
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Add compatible strings for the SOC_THERM IP block present on several Tegra
+chips.  The primary objective here is to avoid checkpatch warnings,
+per:
+
+http://marc.info/?l=linux-tegra&m=142201349727836&w=2
+
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ .../devicetree/bindings/thermal/tegra-soctherm.txt |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+index ecf3ed76cd46..9113f3bcd6df 100644
+--- a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
++++ b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+@@ -7,7 +7,9 @@ notifications. It is also used to manage emergency shutdown in an
+ overheating situation.
+ 
+ Required properties :
+-- compatible : "nvidia,tegra124-soctherm".
++- compatible : "nvidia,tegra124-soctherm",
++  "nvidia,tegra132-soctherm" (not yet matched by the driver)
++  "nvidia,tegra210-soctherm" (not yet matched by the driver)
+ - reg : Should contain 1 entry:
+   - SOCTHERM register set
+ - interrupts : Defines the interrupt used by SOCTHERM
+
+
