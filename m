@@ -1,55 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Thu, 29 Jan 2015 09:09:03 +0530
-Message-ID: <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
-	<1422451015-390439-4-git-send-email-arnd@arndb.de>
-	<20150128172209.GF29600@developer.hsd1.ca.comcast.net>
-	<1799972.nQ2Axu0CEJ@wuerfel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:44893 "EHLO
-	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715AbbA2DjE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 22:39:04 -0500
-Received: by mail-oi0-f48.google.com with SMTP id v63so22874452oia.7
-        for <linux-pm@vger.kernel.org>; Wed, 28 Jan 2015 19:39:03 -0800 (PST)
-In-Reply-To: <1799972.nQ2Axu0CEJ@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH 3/3] exynos: config: Enable support for cpufreq on Exynos SoCs
+ (exynos_defconfig)
+Date: Wed, 28 Jan 2015 16:28:40 +0100
+Message-ID: <1422458920-14555-3-git-send-email-l.majewski@samsung.com>
+References: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On 29 January 2015 at 01:31, Arnd Bergmann <arnd@arndb.de> wrote:
+This commit enables the cpufreq subsystem. Moreover, support for using
+CPU as a cooling device is provided.
 
->>  config ARM_EXYNOS_CPUFREQ
->> -     bool
->> +     tristate "SAMSUNG EXYNOS CPUfreq Driver"
->> +     depends on THERMAL
->> +     default y
->> +     help
->> +       This adds the CPUFreq driver for Samsung EXYNOS platforms
->> +
->> +       If in doubt, say N.
->
-> Now the option shows up on all systems that include Kconfig.arm,
-> in particular non-exynos machines that might not even be able
-> to build this.
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+---
+ arch/arm/configs/exynos_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-I am sure I am wrong here, but want to know what I am missing.
-What about:
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index c3c3cf52d2d9..f3ee05067a69 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -27,7 +27,7 @@ config ARM_VEXPRESS_SPC_CPUFREQ
-
- config ARM_EXYNOS_CPUFREQ
-        tristate "SAMSUNG EXYNOS CPUfreq Driver"
--       depends on THERMAL
-+       depends on THERMAL && ARCH_EXYNOS
-        default y
-        help
-          This adds the CPUFreq driver for Samsung EXYNOS platforms
+diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+index 376dbf4..d6be7e8 100644
+--- a/arch/arm/configs/exynos_defconfig
++++ b/arch/arm/configs/exynos_defconfig
+@@ -86,6 +86,8 @@ CONFIG_BATTERY_SBS=y
+ CONFIG_CHARGER_TPS65090=y
+ CONFIG_HWMON=y
+ CONFIG_SENSORS_LM90=y
++CONFIG_CPU_FREQ=y
++CONFIG_CPU_THERMAL=y
+ CONFIG_THERMAL=y
+ CONFIG_EXYNOS_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
+-- 
+2.0.0.rc2
