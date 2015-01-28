@@ -1,36 +1,78 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 3/3] exynos: config: Enable support for cpufreq on Exynos SoCs
- (exynos_defconfig)
-Date: Wed, 28 Jan 2015 16:28:40 +0100
-Message-ID: <1422458920-14555-3-git-send-email-l.majewski@samsung.com>
-References: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: 'Stephen Boyd' <sboyd@codeaurora.org>
+Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
+Date: Wed, 28 Jan 2015 15:52:40 -0800
+Message-ID: <20150128235240.GA23506@codeaurora.org>
+References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org>
+ <54C73B0B.609@linaro.org>
+ <002f01d03a81$07fabf10$17f03d30$@codeaurora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <002f01d03a81$07fabf10$17f03d30$@codeaurora.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Narendran Rajan <nrajan@codeaurora.com>
+Cc: 'Srinivas Kandagatla' <srinivas.kandagatla@linaro.org>, 'Narendran Rajan' <nrajan@codeaurora.org>, 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <edubezval@gmail.com>, 'Linux ARM MSM' <linux-arm-msm@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Siddartha Mohanadoss' <smohanad@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-This commit enables the cpufreq subsystem. Moreover, support for using
-CPU as a cooling device is provided.
+On 01/27, Narendran Rajan wrote:
+> > From: Srinivas Kandagatla [mailto:srinivas.kandagatla@linaro.org]
+> > > +struct tsens_device;
+> > > +
+> > > +struct tsens_sensor {
+> > > +	struct thermal_zone_device	*tz_dev;
+> > > +	enum thermal_device_mode	mode;
+> > > +	unsigned int			sensor_num;
+> > > +	int				offset;
+> > > +	u32				slope;
+> > > +	struct tsens_device		*tmdev;
+> > > +	u32                             status;
+> > > +};
+> > > +
+> > > +struct tsens_device {
+> > > +	bool			prev_reading_avail;
+> > > +	unsigned int		num_sensors;
+> > > +	int			pm_tsens_thr_data;
+> > > +	int			pm_tsens_cntl;
+> > > +	unsigned int            calib_offset;
+> > > +	unsigned int            backup_calib_offset;
+> > > +	struct work_struct	tsens_work;
+> > > +	struct regmap		*map;
+> > > +	struct regmap_field	*status_field;
+> > > +	struct tsens_sensor	sensor[0];
+> > > +};
+> > > +
+> > > +static struct device *tsens_dev;
+> > Hmm.. I think you should remove this global variable and find a better way
+> to
+> > get hold of this.
+> > 
+> Didn't find anything simple enough. A few other drivers seems to use global 
+> as well. Will look around. If you have some quick tips let me please know.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- arch/arm/configs/exynos_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
+Why do we even need those dev_dbg() printks? I'd rather see that
+debugging stuff get removed and this static singleton removed at
+the same time.
 
-diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
-index 376dbf4..d6be7e8 100644
---- a/arch/arm/configs/exynos_defconfig
-+++ b/arch/arm/configs/exynos_defconfig
-@@ -86,6 +86,8 @@ CONFIG_BATTERY_SBS=y
- CONFIG_CHARGER_TPS65090=y
- CONFIG_HWMON=y
- CONFIG_SENSORS_LM90=y
-+CONFIG_CPU_FREQ=y
-+CONFIG_CPU_THERMAL=y
- CONFIG_THERMAL=y
- CONFIG_EXYNOS_THERMAL=y
- CONFIG_THERMAL_EMULATION=y
+> > 
+> Correct, in polling mode (which is what exists in thermal framework today),
+> HW interrupt 
+> do not make sense as the trip points are set to default and never updated
+> based on Dt values.
+> 
+> But the code under the #ifdef THERMAL_TSENS8960_HWTRIPS supports the HW trip
+> point mode.
+> This code needs the additional patch
+> Please see https://patchwork.ozlabs.org/patch/364812/
+> 
+> May be I will remove everything under HWTRIPs until it lands in the core
+> thermal framework?
+> 
+
+That patch is half a year old. Is aynyone still working on it?
+Perhaps you can pick it up and try to get it into a workable
+state and then port this new driver to it?
+
 -- 
-2.0.0.rc2
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
