@@ -1,59 +1,277 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 4/4] Thermal/int340x/int3403: Support for thermistor and IR sensor
-Date: Wed, 28 Jan 2015 11:56:49 -0800
-Message-ID: <1422475009-20759-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1422475009-20759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:1505 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932698AbbA1U0X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Jan 2015 15:26:23 -0500
-In-Reply-To: <1422475009-20759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/4] ACPI / LPAT: Common table processing functions
+Date: Wed, 28 Jan 2015 11:56:46 -0800
+Message-ID: <1422475009-20759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, rafael.j.wysocki@intel.com
 Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Added two more sensor types: Thermistor and IR sensor. Each of these
-sensors have unique ptyp value.
+Since LPAT table processing is also required for other thermal drivers,
+moved LPAT table related functions from intel PMIC driver (intel_pmic.c)
+to a stand alonge module with exported interfaces.
+In this way there will be no code duplication.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/thermal/int340x_thermal/int3403_thermal.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/acpi/Makefile    |   1 +
+ drivers/acpi/acpi_lpat.c | 161 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_lpat.h |  65 +++++++++++++++++++
+ 3 files changed, 227 insertions(+)
+ create mode 100644 drivers/acpi/acpi_lpat.c
+ create mode 100644 include/acpi/acpi_lpat.h
 
-diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/drivers/thermal/int340x_thermal/int3403_thermal.c
-index 50a7a08..2b5b140 100644
---- a/drivers/thermal/int340x_thermal/int3403_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
-@@ -24,6 +24,9 @@
- #define INT3403_TYPE_SENSOR		0x03
- #define INT3403_TYPE_CHARGER		0x0B
- #define INT3403_TYPE_BATTERY		0x0C
-+#define INT3403_TYPE_SENSOR_THERMISTOR	0x12
-+#define INT3403_TYPE_SENSOR_IR		0x13
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index f74317c..d22253d 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -55,6 +55,7 @@ acpi-$(CONFIG_ACPI_PROCFS_POWER) += cm_sbs.o
+ ifdef CONFIG_ACPI_VIDEO
+ acpi-y				+= video_detect.o
+ endif
++acpi-y				+= acpi_lpat.o
+ 
+ # These are (potentially) separate modules
+ 
+diff --git a/drivers/acpi/acpi_lpat.c b/drivers/acpi/acpi_lpat.c
+new file mode 100644
+index 0000000..feb61c1
+--- /dev/null
++++ b/drivers/acpi/acpi_lpat.c
+@@ -0,0 +1,161 @@
++/*
++ * acpi_lpat.c - LPAT table processing functions
++ *
++ * Copyright (C) 2015 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
- #define INT3403_PERF_CHANGED_EVENT	0x80
- #define INT3403_THERMAL_EVENT		0x90
- 
-@@ -238,6 +241,8 @@ static int int3403_add(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, priv);
- 	switch (priv->type) {
- 	case INT3403_TYPE_SENSOR:
-+	case INT3403_TYPE_SENSOR_THERMISTOR:
-+	case INT3403_TYPE_SENSOR_IR:
- 		result = int3403_sensor_add(priv);
- 		break;
- 	case INT3403_TYPE_CHARGER:
-@@ -262,6 +267,8 @@ static int int3403_remove(struct platform_device *pdev)
- 
- 	switch (priv->type) {
- 	case INT3403_TYPE_SENSOR:
-+	case INT3403_TYPE_SENSOR_THERMISTOR:
-+	case INT3403_TYPE_SENSOR_IR:
- 		int3403_sensor_remove(priv);
- 		break;
- 	case INT3403_TYPE_CHARGER:
++#include <linux/module.h>
++#include <linux/acpi.h>
++#include <acpi/acpi_lpat.h>
++
++/**
++ * acpi_lpat_raw_to_temp(): Return temperature from raw value through
++ * LPAT conversion table
++ *
++ * @lpat_table: the temperature_raw mapping table structure
++ * @raw: the raw value, used as a key to get the temerature from the
++ *       above mapping table
++ *
++ * A positive converted temperarure value will be returned on success,
++ * a negative errno will be returned in error cases.
++ */
++int acpi_lpat_raw_to_temp(struct acpi_lpat_conversion_table *lpat_table,
++			  int raw)
++{
++	int i, delta_temp, delta_raw, temp;
++	struct acpi_lpat *lpat = lpat_table->lpat;
++
++	for (i = 0; i < lpat_table->lpat_count - 1; i++) {
++		if ((raw >= lpat[i].raw && raw <= lpat[i+1].raw) ||
++		    (raw <= lpat[i].raw && raw >= lpat[i+1].raw))
++			break;
++	}
++
++	if (i == lpat_table->lpat_count - 1)
++		return -ENOENT;
++
++	delta_temp = lpat[i+1].temp - lpat[i].temp;
++	delta_raw = lpat[i+1].raw - lpat[i].raw;
++	temp = lpat[i].temp + (raw - lpat[i].raw) * delta_temp / delta_raw;
++
++	return temp;
++}
++EXPORT_SYMBOL_GPL(acpi_lpat_raw_to_temp);
++
++/**
++ * acpi_lpat_temp_to_raw(): Return raw value from temperature through
++ * LPAT conversion table
++ *
++ * @lpat: the temperature_raw mapping table
++ * @temp: the temperature, used as a key to get the raw value from the
++ *        above mapping table
++ *
++ * A positive converted temperature value will be returned on success,
++ * a negative errno will be returned in error cases.
++ */
++int acpi_lpat_temp_to_raw(struct acpi_lpat_conversion_table *lpat_table,
++			  int temp)
++{
++	int i, delta_temp, delta_raw, raw;
++	struct acpi_lpat *lpat = lpat_table->lpat;
++
++	for (i = 0; i < lpat_table->lpat_count - 1; i++) {
++		if (temp >= lpat[i].temp && temp <= lpat[i+1].temp)
++			break;
++	}
++
++	if (i ==  lpat_table->lpat_count - 1)
++		return -ENOENT;
++
++	delta_temp = lpat[i+1].temp - lpat[i].temp;
++	delta_raw = lpat[i+1].raw - lpat[i].raw;
++	raw = lpat[i].raw + (temp - lpat[i].temp) * delta_raw / delta_temp;
++
++	return raw;
++}
++EXPORT_SYMBOL_GPL(acpi_lpat_temp_to_raw);
++
++/**
++ * acpi_lpat_get_conversion_table(): Parse ACPI LPAT table if present.
++ *
++ * @handle: Handle to acpi device
++ *
++ * Parse LPAT table to a struct of type acpi_lpat_table. On success
++ * it returns a pointer to newly allocated table. This table must
++ * be freed by the caller when finished processing, using a call to
++ * acpi_lpat_free_conversion_table.
++ */
++struct acpi_lpat_conversion_table *acpi_lpat_get_conversion_table(acpi_handle
++								  handle)
++{
++	struct acpi_lpat_conversion_table *lpat_table = NULL;
++	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
++	union acpi_object *obj_p, *obj_e;
++	int *lpat, i;
++	acpi_status status;
++
++	status = acpi_evaluate_object(handle, "LPAT", NULL, &buffer);
++	if (ACPI_FAILURE(status))
++		return NULL;
++
++	obj_p = (union acpi_object *)buffer.pointer;
++	if (!obj_p || (obj_p->type != ACPI_TYPE_PACKAGE) ||
++	    (obj_p->package.count % 2) || (obj_p->package.count < 4))
++		goto out;
++
++	lpat = kcalloc(obj_p->package.count, sizeof(int), GFP_KERNEL);
++	if (!lpat)
++		goto out;
++
++	for (i = 0; i < obj_p->package.count; i++) {
++		obj_e = &obj_p->package.elements[i];
++		if (obj_e->type != ACPI_TYPE_INTEGER) {
++			kfree(lpat);
++			goto out;
++		}
++		lpat[i] = (s64)obj_e->integer.value;
++	}
++
++	lpat_table = kzalloc(sizeof(*lpat_table), GFP_KERNEL);
++	if (!lpat_table) {
++		kfree(lpat);
++		goto out;
++	}
++
++	lpat_table->lpat = (struct acpi_lpat *)lpat;
++	lpat_table->lpat_count = obj_p->package.count / 2;
++
++out:
++	kfree(buffer.pointer);
++	return lpat_table;
++}
++EXPORT_SYMBOL_GPL(acpi_lpat_get_conversion_table);
++
++/**
++ * acpi_lpat_free_conversion_table(): Free LPAT table.
++ *
++ * @lpat_table: the temperature_raw mapping table structure
++ *
++ * Frees the LPAT table previously allocated by a call to
++ * acpi_lpat_get_conversion_table.
++ */
++void acpi_lpat_free_conversion_table(struct acpi_lpat_conversion_table
++				     *lpat_table)
++{
++	if (lpat_table) {
++		kfree(lpat_table->lpat);
++		kfree(lpat_table);
++	}
++}
++EXPORT_SYMBOL_GPL(acpi_lpat_free_conversion_table);
++
++MODULE_LICENSE("GPL");
+diff --git a/include/acpi/acpi_lpat.h b/include/acpi/acpi_lpat.h
+new file mode 100644
+index 0000000..da37e12
+--- /dev/null
++++ b/include/acpi/acpi_lpat.h
+@@ -0,0 +1,65 @@
++/*
++ * acpi_lpat.h - LPAT table processing functions
++ *
++ * Copyright (C) 2015 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef ACPI_LPAT_H
++#define ACPI_LPAT_H
++
++struct acpi_lpat {
++	int temp;
++	int raw;
++};
++
++struct acpi_lpat_conversion_table {
++	struct acpi_lpat *lpat;
++	int lpat_count;
++};
++
++#ifdef CONFIG_ACPI
++
++int acpi_lpat_raw_to_temp(struct acpi_lpat_conversion_table *lpat_table,
++			  int raw);
++int acpi_lpat_temp_to_raw(struct acpi_lpat_conversion_table *lpat_table,
++			  int temp);
++struct acpi_lpat_conversion_table *acpi_lpat_get_conversion_table(acpi_handle
++								  handle);
++void acpi_lpat_free_conversion_table(struct acpi_lpat_conversion_table
++				     *lpat_table);
++
++#else
++static int acpi_lpat_raw_to_temp(struct acpi_lpat_conversion_table *lpat_table,
++				 int raw)
++{
++	return 0;
++}
++
++static int acpi_lpat_temp_to_raw(struct acpi_lpat_conversion_table *lpat_table,
++				 int temp)
++{
++	return 0;
++}
++
++static struct acpi_lpat_conversion_table *acpi_lpat_get_conversion_table(
++							acpi_handle handle)
++{
++	return NULL;
++}
++
++static void acpi_lpat_free_conversion_table(struct acpi_lpat_conversion_table
++					    *lpat_table)
++{
++}
++
++#endif
++#endif
 -- 
 1.9.3
 
