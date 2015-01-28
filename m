@@ -1,13 +1,16 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Wed, 28 Jan 2015 14:16:55 +0100
-Message-ID: <1422451015-390439-4-git-send-email-arnd@arndb.de>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v4 3/5] drivers: bus: Add Simple Power-Managed Bus DT
+ Bindings
+Date: Wed, 28 Jan 2015 16:38:55 +0100
+Message-ID: <CAMuHMdXUQESzCggb6FsDQStVtCHgTCCKo7veXSdUTZcB9OAd_w@mail.gmail.com>
+References: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
+ <1422288977-20353-4-git-send-email-geert+renesas@glider.be>
+ <20150127181727.GO17721@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1422451015-390439-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <20150127181727.GO17721@leverpostej>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,142 +20,90 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Olof Johansson <olof@lixom.net>, Rob Herring <robh+dt@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Kumar Gala <galak@codeaurora.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infr>
 List-Id: linux-pm@vger.kernel.org
 
-The exynos cpufreq driver code recently gained a dependency on the
-cooling code, which may be a loadable module. This breaks an ARM
-allmodconfig build:
+Hi Mark,
 
-drivers/built-in.o: In function `exynos_cpufreq_probe':
-:(.text+0x1748e8): undefined reference to `of_cpufreq_cooling_register'
+On Tue, Jan 27, 2015 at 7:17 PM, Mark Rutland <mark.rutland@arm.com> wrote:
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+>> @@ -0,0 +1,41 @@
+>> +Simple Power-Managed Bus
+>> +========================
+>> +
+>> +A Simple Power-Managed Bus is a transparent bus that doesn't need a real
+>> +driver, as it's typically initialized by the boot loader.
+>> +
+>> +However, its bus controller is part of a PM domain, or under the control of a
+>> +functional clock.  Hence, the bus controller's PM domain and/or clock must be
+>> +enabled for child devices connected to the bus (either on-SoC or externally)
+>> +to function.
+>> +
+>> +The bindings for the Simple Power-Managed Bus extend the bindings for
+>> +"simple-bus", as specified in ePAPR.
+>
+> I would note that "simple-pm-bus" follows the "simple-bus" set of
+> properties, but is not an extension of "simple-bus".
 
-To avoid this problem, change cpufreq Kconfig to allow the drivers
-to be loadable modules as well and enforce a dependency on the
-thermal module. Also, export the symbols that are used for communicating
-between the three cpu-specific parts of the driver and the main module.
+OK.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: e725d26c4857 ("cpufreq: exynos: Use device tree to determine if cpufreq cooling should be registered")
----
- drivers/cpufreq/Kconfig.arm          | 14 +++++++++-----
- drivers/cpufreq/exynos-cpufreq.h     |  6 +++---
- drivers/cpufreq/exynos4210-cpufreq.c |  1 +
- drivers/cpufreq/exynos4x12-cpufreq.c |  1 +
- drivers/cpufreq/exynos5250-cpufreq.c |  1 +
- 5 files changed, 15 insertions(+), 8 deletions(-)
+> For the reasons I mentioned previously, I don't think that any
+> "simple-pm-bus" should be "simple-bus" compatible (and I believe we
+> should document that requirement below).
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 0f9a2c3c0e0d..99ac56746ebd 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -26,11 +26,12 @@ config ARM_VEXPRESS_SPC_CPUFREQ
- 
- 
- config ARM_EXYNOS_CPUFREQ
--	bool
-+	tristate
- 
- config ARM_EXYNOS4210_CPUFREQ
--	bool "SAMSUNG EXYNOS4210"
-+	tristate "SAMSUNG EXYNOS4210"
- 	depends on CPU_EXYNOS4210
-+	depends on THERMAL
- 	default y
- 	select ARM_EXYNOS_CPUFREQ
- 	help
-@@ -40,8 +41,9 @@ config ARM_EXYNOS4210_CPUFREQ
- 	  If in doubt, say N.
- 
- config ARM_EXYNOS4X12_CPUFREQ
--	bool "SAMSUNG EXYNOS4x12"
-+	tristate "SAMSUNG EXYNOS4x12"
- 	depends on SOC_EXYNOS4212 || SOC_EXYNOS4412
-+	depends on THERMAL
- 	default y
- 	select ARM_EXYNOS_CPUFREQ
- 	help
-@@ -51,8 +53,9 @@ config ARM_EXYNOS4X12_CPUFREQ
- 	  If in doubt, say N.
- 
- config ARM_EXYNOS5250_CPUFREQ
--	bool "SAMSUNG EXYNOS5250"
-+	tristate "SAMSUNG EXYNOS5250"
- 	depends on SOC_EXYNOS5250
-+	depends on THERMAL
- 	default y
- 	select ARM_EXYNOS_CPUFREQ
- 	help
-@@ -62,9 +65,10 @@ config ARM_EXYNOS5250_CPUFREQ
- 	  If in doubt, say N.
- 
- config ARM_EXYNOS5440_CPUFREQ
--	bool "SAMSUNG EXYNOS5440"
-+	tristate "SAMSUNG EXYNOS5440"
- 	depends on SOC_EXYNOS5440
- 	depends on HAVE_CLK && OF
-+	depends on THERMAL
- 	select PM_OPP
- 	default y
- 	help
-diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
-index 9f2062a7cc02..32a895af4961 100644
---- a/drivers/cpufreq/exynos-cpufreq.h
-+++ b/drivers/cpufreq/exynos-cpufreq.h
-@@ -53,7 +53,7 @@ struct exynos_dvfs_info {
- 	void __iomem	*cmu_regs;
- };
- 
--#ifdef CONFIG_ARM_EXYNOS4210_CPUFREQ
-+#if IS_ENABLED(CONFIG_ARM_EXYNOS4210_CPUFREQ)
- extern int exynos4210_cpufreq_init(struct exynos_dvfs_info *);
- #else
- static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
-@@ -61,7 +61,7 @@ static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
- 	return -EOPNOTSUPP;
- }
- #endif
--#ifdef CONFIG_ARM_EXYNOS4X12_CPUFREQ
-+#if IS_ENABLED(CONFIG_ARM_EXYNOS4X12_CPUFREQ)
- extern int exynos4x12_cpufreq_init(struct exynos_dvfs_info *);
- #else
- static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
-@@ -69,7 +69,7 @@ static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
- 	return -EOPNOTSUPP;
- }
- #endif
--#ifdef CONFIG_ARM_EXYNOS5250_CPUFREQ
-+#if IS_ENABLED(CONFIG_ARM_EXYNOS5250_CPUFREQ)
- extern int exynos5250_cpufreq_init(struct exynos_dvfs_info *);
- #else
- static inline int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-index 843ec824fd91..4b5de19f0ea2 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -182,3 +182,4 @@ err_moutcore:
- 	pr_debug("%s: failed initialization\n", __func__);
- 	return -EINVAL;
- }
-+EXPORT_SYMBOL_GPL(exynos4210_cpufreq_init);
-diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
-index 9e78a850e29f..d2924e1bc909 100644
---- a/drivers/cpufreq/exynos4x12-cpufreq.c
-+++ b/drivers/cpufreq/exynos4x12-cpufreq.c
-@@ -234,3 +234,4 @@ err_moutcore:
- 	pr_debug("%s: failed initialization\n", __func__);
- 	return -EINVAL;
- }
-+EXPORT_SYMBOL_GPL(exynos4x12_cpufreq_init);
-diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
-index 3eafdc7ba787..b2810b839331 100644
---- a/drivers/cpufreq/exynos5250-cpufreq.c
-+++ b/drivers/cpufreq/exynos5250-cpufreq.c
-@@ -208,3 +208,4 @@ err_moutcore:
- 	pr_err("%s: failed initialization\n", __func__);
- 	return -EINVAL;
- }
-+EXPORT_SYMBOL_GPL(exynos5250_cpufreq_init);
--- 
-2.1.0.rc2
+>> +Required properties:
+>> +  - compatible: Must contain at least "simple-pm-bus".
+
+So you think I should add 'and must not contain "simple-bus"'?
+
+>> +             It's recommended to let this be preceded by one or more
+>> +             vendor-specific compatible values.
+>> +  - #address-cells, #size-cells, ranges: Must describe the mapping between
+>> +             parent address and child address spaces.
+>> +
+>> +Optional platform-specific properties for clock or PM domain control (at least
+>> +one of them is required):
+>> +  - clocks: Must contain a reference to the functional clock(s),
+>
+> I'm a little worried about the clocks. What are the expectations on
+> their configuration?
+
+The clocks are highly platform-dependent. Hence the exact expectations
+belong in the binding documentation for the clock provider (and possibly
+the PM domain provider, too).
+
+> I don't see how we can generally rely on the clock configuration being
+> correct unless the input clocks only have on/off controls, and the OS
+> doesn't see any of the parent clock tree it could potentially change the
+> configuration of (beyond on/off).
+
+This is indeed not about generic programmable clock generators, but about
+clocks that are used solely to start/stop a hardware module by (un)gating
+a functional clock.
+
+> Otherwise we're relying on implicit behaviour elsewhere in Linux (which
+> _will_ break over time), and this ends up not being usable by anything
+> else.
+>
+> I'm coming to the opinion that while we might be able to have common
+> driver in Linux, we can't have a common "simple-pm-bus" binding because
+> it implicitly assumes too much about the OS behaviour.
+
+If the bus controller is clocked from a generic programmable clock generator,
+it would need its own driver to configure e.g. the clock frequency, which
+could need more information from DT. This is not covered by "simple-pm-bus".
+
+Thanks for your comments!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
