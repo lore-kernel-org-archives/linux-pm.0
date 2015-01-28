@@ -1,253 +1,90 @@
-From: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v2] thermal: Fix examples in DT documentation
-Date: Wed, 28 Jan 2015 17:13:35 +0000
-Message-ID: <1422465215-12716-1-git-send-email-srinivas.kandagatla@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: [PATCH v3 2/3] mfd/axp20x: add support for fuel gauge cell
+Date: Wed, 28 Jan 2015 13:23:39 -0800
+Message-ID: <78fc83e74e2d3303950b10c95faf6e161131a488.1422478693.git.todd.e.brandt@linux.intel.com>
+References: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+In-Reply-To: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+References: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: todd.e.brandt@linux.intel.com, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com, jic23@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There are various issues with the examples in this documentation, some
-of the DT labels are invalid and one of the macro THERMAL_NO_LIMITS
-referenced is not available as well.
+Register definitions and platform data structure
+for fuel gauge cell devices.
 
-This patch attempts to fix such errors in the documentation.
-
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+Acked-By: Sebastian Reichel <sre@kernel.org>
+Acked-By: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Acked-By: Lee Jones <lee.jones@linaro.org>
 ---
-Changes Since v1:
-	- Fixed few more typo's as suggested by Eduardo Valentin
+ include/linux/mfd/axp20x.h | 43 +++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
 
- .../devicetree/bindings/thermal/thermal.txt        | 66 +++++++++++-----------
- 1 file changed, 33 insertions(+), 33 deletions(-)
+v3: same as v1-2 and is already accepted, re-included for continuity
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-index f5db6b7..91c77da 100644
---- a/Documentation/devicetree/bindings/thermal/thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-@@ -251,24 +251,24 @@ ocp {
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index 81589d1..dfabd6d 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -124,10 +124,27 @@ enum {
+ #define AXP288_PMIC_ADC_H               0x56
+ #define AXP288_PMIC_ADC_L               0x57
+ #define AXP288_ADC_TS_PIN_CTRL          0x84
+-
+ #define AXP288_PMIC_ADC_EN              0x84
+-#define AXP288_FG_TUNE5			0xed
+ 
++/* Fuel Gauge */
++#define AXP288_FG_RDC1_REG          0xba
++#define AXP288_FG_RDC0_REG          0xbb
++#define AXP288_FG_OCVH_REG          0xbc
++#define AXP288_FG_OCVL_REG          0xbd
++#define AXP288_FG_OCV_CURVE_REG     0xc0
++#define AXP288_FG_DES_CAP1_REG      0xe0
++#define AXP288_FG_DES_CAP0_REG      0xe1
++#define AXP288_FG_CC_MTR1_REG       0xe2
++#define AXP288_FG_CC_MTR0_REG       0xe3
++#define AXP288_FG_OCV_CAP_REG       0xe4
++#define AXP288_FG_CC_CAP_REG        0xe5
++#define AXP288_FG_LOW_CAP_REG       0xe6
++#define AXP288_FG_TUNE0             0xe8
++#define AXP288_FG_TUNE1             0xe9
++#define AXP288_FG_TUNE2             0xea
++#define AXP288_FG_TUNE3             0xeb
++#define AXP288_FG_TUNE4             0xec
++#define AXP288_FG_TUNE5             0xed
+ 
+ /* Regulators IDs */
+ enum {
+@@ -236,4 +253,26 @@ struct axp20x_dev {
+ 	const struct regmap_irq_chip	*regmap_irq_chip;
  };
  
- thermal-zones {
--	cpu-thermal: cpu-thermal {
-+	cpu_thermal: cpu-thermal {
- 		polling-delay-passive = <250>; /* milliseconds */
- 		polling-delay = <1000>; /* milliseconds */
- 
- 		thermal-sensors = <&bandgap0>;
- 
- 		trips {
--			cpu-alert0: cpu-alert {
-+			cpu_alert0: cpu-alert0 {
- 				temperature = <90000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "active";
- 			};
--			cpu-alert1: cpu-alert {
-+			cpu_alert1: cpu-alert1 {
- 				temperature = <100000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			cpu-crit: cpu-crit {
-+			cpu_crit: cpu-crit {
- 				temperature = <125000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "critical";
-@@ -277,17 +277,17 @@ thermal-zones {
- 
- 		cooling-maps {
- 			map0 {
--				trip = <&cpu-alert0>;
--				cooling-device = <&fan0 THERMAL_NO_LIMITS 4>;
-+				trip = <&cpu_alert0>;
-+				cooling-device = <&fan0 THERMAL_NO_LIMIT 4>;
- 			};
- 			map1 {
--				trip = <&cpu-alert1>;
--				cooling-device = <&fan0 5 THERMAL_NO_LIMITS>;
-+				trip = <&cpu_alert1>;
-+				cooling-device = <&fan0 5 THERMAL_NO_LIMIT>;
- 			};
- 			map2 {
--				trip = <&cpu-alert1>;
-+				trip = <&cpu_alert1>;
- 				cooling-device =
--				    <&cpu0 THERMAL_NO_LIMITS THERMAL_NO_LIMITS>;
-+				    <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
- 			};
- 		};
- 	};
-@@ -298,13 +298,13 @@ used to monitor the zone 'cpu-thermal' using its sole sensor. A fan
- device (fan0) is controlled via I2C bus 1, at address 0x48, and has ten
- different cooling states 0-9. It is used to remove the heat out of
- the thermal zone 'cpu-thermal' using its cooling states
--from its minimum to 4, when it reaches trip point 'cpu-alert0'
-+from its minimum to 4, when it reaches trip point 'cpu_alert0'
- at 90C, as an example of active cooling. The same cooling device is used at
--'cpu-alert1', but from 5 to its maximum state. The cpu@0 device is also
-+'cpu_alert1', but from 5 to its maximum state. The cpu@0 device is also
- linked to the same thermal zone, 'cpu-thermal', as a passive cooling device,
--using all its cooling states at trip point 'cpu-alert1',
-+using all its cooling states at trip point 'cpu_alert1',
- which is a trip point at 100C. On the thermal zone 'cpu-thermal', at the
--temperature of 125C, represented by the trip point 'cpu-crit', the silicon
-+temperature of 125C, represented by the trip point 'cpu_crit', the silicon
- is not reliable anymore.
- 
- (b) - IC with several internal sensors
-@@ -329,7 +329,7 @@ ocp {
- };
- 
- thermal-zones {
--	cpu-thermal: cpu-thermal {
-+	cpu_thermal: cpu-thermal {
- 		polling-delay-passive = <250>; /* milliseconds */
- 		polling-delay = <1000>; /* milliseconds */
- 
-@@ -338,12 +338,12 @@ thermal-zones {
- 
- 		trips {
- 			/* each zone within the SoC may have its own trips */
--			cpu-alert: cpu-alert {
-+			cpu_alert: cpu-alert {
- 				temperature = <100000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			cpu-crit: cpu-crit {
-+			cpu_crit: cpu-crit {
- 				temperature = <125000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "critical";
-@@ -356,7 +356,7 @@ thermal-zones {
- 		};
- 	};
- 
--	gpu-thermal: gpu-thermal {
-+	gpu_thermal: gpu-thermal {
- 		polling-delay-passive = <120>; /* milliseconds */
- 		polling-delay = <1000>; /* milliseconds */
- 
-@@ -365,12 +365,12 @@ thermal-zones {
- 
- 		trips {
- 			/* each zone within the SoC may have its own trips */
--			gpu-alert: gpu-alert {
-+			gpu_alert: gpu-alert {
- 				temperature = <90000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			gpu-crit: gpu-crit {
-+			gpu_crit: gpu-crit {
- 				temperature = <105000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "critical";
-@@ -383,7 +383,7 @@ thermal-zones {
- 		};
- 	};
- 
--	dsp-thermal: dsp-thermal {
-+	dsp_thermal: dsp-thermal {
- 		polling-delay-passive = <50>; /* milliseconds */
- 		polling-delay = <1000>; /* milliseconds */
- 
-@@ -392,12 +392,12 @@ thermal-zones {
- 
- 		trips {
- 			/* each zone within the SoC may have its own trips */
--			dsp-alert: gpu-alert {
-+			dsp_alert: dsp-alert {
- 				temperature = <90000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			dsp-crit: gpu-crit {
-+			dsp_crit: gpu-crit {
- 				temperature = <135000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "critical";
-@@ -457,7 +457,7 @@ ocp {
- };
- 
- thermal-zones {
--	cpu-thermal: cpu-thermal {
-+	cpu_thermal: cpu-thermal {
- 		polling-delay-passive = <250>; /* milliseconds */
- 		polling-delay = <1000>; /* milliseconds */
- 
-@@ -508,7 +508,7 @@ with many sensors and many cooling devices.
- 	/*
- 	 * An IC with several temperature sensor.
- 	 */
--	adc-dummy: sensor@0x50 {
-+	adc_dummy: sensor@0x50 {
- 		...
- 		#thermal-sensor-cells = <1>; /* sensor internal ID */
- 	};
-@@ -531,7 +531,7 @@ thermal-zones {
- 		};
- 	};
- 
--	board-thermal: board-thermal {
-+	board_thermal: board-thermal {
- 		polling-delay-passive = <1000>; /* milliseconds */
- 		polling-delay = <2500>; /* milliseconds */
- 
-@@ -548,22 +548,22 @@ thermal-zones {
- 
- 		trips {
- 			/* Trips are based on resulting linear equation */
--			cpu-trip: cpu-trip {
-+			cpu_trip: cpu-trip {
- 				temperature = <60000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			gpu-trip: gpu-trip {
-+			gpu_trip: gpu-trip {
- 				temperature = <55000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			}
--			lcd-trip: lcp-trip {
-+			lcd_trip: lcp-trip {
- 				temperature = <53000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "passive";
- 			};
--			crit-trip: crit-trip {
-+			crit_trip: crit-trip {
- 				temperature = <68000>; /* millicelsius */
- 				hysteresis = <2000>; /* millicelsius */
- 				type = "critical";
-@@ -572,17 +572,17 @@ thermal-zones {
- 
- 		cooling-maps {
- 			map0 {
--				trip = <&cpu-trip>;
-+				trip = <&cpu_trip>;
- 				cooling-device = <&cpu0 0 2>;
- 				contribution = <55>;
- 			};
- 			map1 {
--				trip = <&gpu-trip>;
-+				trip = <&gpu_trip>;
- 				cooling-device = <&gpu0 0 2>;
- 				contribution = <20>;
- 			};
- 			map2 {
--				trip = <&lcd-trip>;
-+				trip = <&lcd_trip>;
- 				cooling-device = <&lcd0 5 10>;
- 				contribution = <15>;
- 			};
++#define BATTID_LEN				64
++#define OCV_CURVE_SIZE			32
++#define MAX_THERM_CURVE_SIZE	25
++#define PD_DEF_MIN_TEMP			0
++#define PD_DEF_MAX_TEMP			55
++
++struct axp20x_fg_pdata {
++	char battid[BATTID_LEN + 1];
++	int design_cap;
++	int min_volt;
++	int max_volt;
++	int max_temp;
++	int min_temp;
++	int cap1;
++	int cap0;
++	int rdc1;
++	int rdc0;
++	int ocv_curve[OCV_CURVE_SIZE];
++	int tcsz;
++	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
++};
++
+ #endif /* __LINUX_MFD_AXP20X_H */
 -- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.1.0
