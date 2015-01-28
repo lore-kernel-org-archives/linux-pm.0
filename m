@@ -1,77 +1,44 @@
-From: Tina Ruchandani <ruchandani.tina@gmail.com>
-Subject: [PATCH v2] PM: Use 64-bit timekeeping
-Date: Wed, 28 Jan 2015 10:08:37 +0530
-Message-ID: <20150128043836.GA4112@tinar>
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] cpuidle/powernv: Read target_residency value of idle
+ states from DT if available
+Date: Wed, 28 Jan 2015 20:15:28 +1100
+Message-ID: <m3wq47w9jj.fsf@oc8180480414.ibm.com>
+References: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:61637 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965308AbbA1Eim (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jan 2015 23:38:42 -0500
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM List <linux-pm@vger.kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 
-The freezer try_to_freeze_tasks uses 'struct timeval' for start
-and end times, tracking time taken to freeze tasks. 'struct timeval'
-on 32-bit systems will have its tv_sec overflow in year 2038 and
-beyond. This patches uses 'ktime_t' (which has 64 bit values
-for seconds) for start and end time.
-
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
----
-Changes in v2:
-	- Use ktime_t to be able to use ktime_ms_delta
-	  which is more efficient than timespec64 based methods.
----
- kernel/power/process.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 5a6ec86..52414dd 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -17,6 +17,7 @@
- #include <linux/delay.h>
- #include <linux/workqueue.h>
- #include <linux/kmod.h>
-+#include <linux/ktime.h>
- #include <trace/events/power.h>
- 
- /* 
-@@ -30,13 +31,12 @@ static int try_to_freeze_tasks(bool user_only)
- 	unsigned long end_time;
- 	unsigned int todo;
- 	bool wq_busy = false;
--	struct timeval start, end;
--	u64 elapsed_msecs64;
-+	ktime_t start, end;
- 	unsigned int elapsed_msecs;
- 	bool wakeup = false;
- 	int sleep_usecs = USEC_PER_MSEC;
- 
--	do_gettimeofday(&start);
-+	start = ktime_get();
- 
- 	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
- 
-@@ -78,10 +78,8 @@ static int try_to_freeze_tasks(bool user_only)
- 			sleep_usecs *= 2;
- 	}
- 
--	do_gettimeofday(&end);
--	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
--	do_div(elapsed_msecs64, NSEC_PER_MSEC);
--	elapsed_msecs = elapsed_msecs64;
-+	end = ktime_get();
-+	elapsed_msecs = (unsigned int) ktime_ms_delta(end, start);
- 
- 	if (todo) {
- 		printk("\n");
--- 
-2.2.0.rc0.207.ga3a616c
-
+UHJlZXRpIFUgTXVydGh5IDxwcmVldGlAbGludXgudm5ldC5pYm0uY29tPiB3cml0ZXM6Cj4gVGhl
+IGRldmljZSB0cmVlIG5vdyBleHBvc2VzIHRoZSByZXNpZGVuY3kgdmFsdWVzIGZvciBkaWZmZXJl
+bnQgaWRsZSBzdGF0ZXMuIFJlYWQKPiB0aGVzZSB2YWx1ZXMgaW5zdGVhZCBvZiBjYWxjdWxhdGlu
+ZyByZXNpZGVuY3kgZnJvbSB0aGUgbGF0ZW5jeSB2YWx1ZXMuIFRoZSB2YWx1ZXMKPiBleHBvc2Vk
+IGluIHRoZSBEVCBhcmUgdmFsaWRhdGVkIGZvciBvcHRpbWFsIHBvd2VyIGVmZmljaWVuY3kuIEhv
+d2V2ZXIgdG8gbWFpbnRhaW4KPiBjb21wYXRpYmlsaXR5IHdpdGggdGhlIG9sZGVyIGZpcm13YXJl
+IGNvZGUgd2hpY2ggZG9lcyBub3QgZXhwb3NlIHJlc2lkZW5jeQo+IHZhbHVlcywgdXNlIGRlZmF1
+bHQgdmFsdWVzIGFzIGEgZmFsbGJhY2sgbWVjaGFuaXNtLiBXaGlsZSBhdCBpdCwgaGFuZGxlIHNv
+bWUKPiBjbGVhbnVwcy4KCkZyb20gYSAiSSBqdXN0IG1lcmdlZCB0aGUgcGF0Y2ggdGhhdCBleHBv
+cnRzIHRoZXNlIHZhbHVlcyBmcm9tIGZpcm13YXJlIgpwb2ludCBvZiB2aWV3LCB1c2luZyB0aGVt
+IGFuZCBmYWxsaW5nIGJhY2sgbG9va3MgZ29vZC4KCihJIGZpbmQgdGhlIGhhcmRjb2Rpbmcgb2Yg
+c25vb3plIGluIHRoZSBkcml2ZXIgYSBiaXQgb2RkLCBhcyBpcyB0aGUKaGFyZGNvZGluZyBvZiBt
+YXggcG93ZXIgc3RhdGVzIHRvIDggLSB3aGljaCBjb3VsZCBiaXRlIHVzIGluIHRoZSBmdXR1cmUK
+aWYgYSBmdXR1cmUgcHJvY2Vzc29yIGhhcyBtb3JlIHN0YXRlcy4uLiBidXQgdGhlc2UgYXJlbid0
+IHByb2JsZW1zIHdpdGgKdGhpcyBwYXRjaCkKCkFja2VkLWJ5OiBTdGV3YXJ0IFNtaXRoIDxzdGV3
+YXJ0QGxpbnV4LnZuZXQuaWJtLmNvbT4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBj
+LWRldg==
