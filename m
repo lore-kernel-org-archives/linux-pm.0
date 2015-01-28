@@ -1,60 +1,104 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / cpuidle: Drop unnecessary calls from acpi_idle_do_entry()
-Date: Thu, 29 Jan 2015 03:13:01 +0100
-Message-ID: <1891290.rcp9NuuoxH@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v4 1/2] dts: Documentation: Add documentation for Exynos7
+ SoC thermal bindings
+Date: Wed, 28 Jan 2015 13:23:20 -0400
+Message-ID: <20150128172319.GG29600@developer.hsd1.ca.comcast.net>
+References: <1422337703-11289-1-git-send-email-a.kesavan@samsung.com>
+ <CAM4voan-aoVQtRCFaB2rLLOgm+CEXg+Mc2gwfokUTu5eeQDo+g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bygAmIonOAIqBxQB"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAM4voan-aoVQtRCFaB2rLLOgm+CEXg+Mc2gwfokUTu5eeQDo+g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>
+To: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since the cpuidle core calls stop_critical_timings() and
-start_critical_timings() around the execution of ->enter callbacks,
-acpi_idle_do_entry() doesn't need to do that (and really shouldn't).
+--bygAmIonOAIqBxQB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also using "inline" on it is pointless and the kerneldoc entry does
-not reflect the actual situation any more.
+On Wed, Jan 28, 2015 at 04:21:49PM +0530, Abhilash Kesavan wrote:
+> Hi Eduardo,
+>=20
+> On Tue, Jan 27, 2015 at 11:18 AM, Abhilash Kesavan
+> <a.kesavan@samsung.com> wrote:
+> > Add documentation for exynos7 thermal bindings including compatible
+> > name and special clock properties.
+> >
+> > Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> > ---
+> >  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.t=
+xt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> > index 0f44932..695150a 100644
+> > --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> > +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> > @@ -12,6 +12,7 @@
+> >                "samsung,exynos5420-tmu-ext-triminfo" for TMU channels 2=
+, 3 and 4
+> >                         Exynos5420 (Must pass triminfo base and triminf=
+o clock)
+> >                "samsung,exynos5440-tmu"
+> > +              "samsung,exynos7-tmu"
+> >  - interrupt-parent : The phandle for the interrupt controller
+> >  - reg : Address range of the thermal registers. For soc's which has mu=
+ltiple
+> >         instances of TMU and some registers are shared across all TMU's=
+ like
+> > @@ -32,10 +33,13 @@
+> >  - clocks : The main clocks for TMU device
+> >         -- 1. operational clock for TMU channel
+> >         -- 2. optional clock to access the shared registers of TMU chan=
+nel
+> > +       -- 3. optional special clock for functional operation
+> >  - clock-names : Thermal system clock name
+> >         -- "tmu_apbif" operational clock for current TMU channel
+> >         -- "tmu_triminfo_apbif" clock to access the shared triminfo reg=
+ister
+> >                 for current TMU channel
+> > +       -- "tmu_sclk" clock for functional operation of the current TMU
+> > +               channel
+> >  - vtmu-supply: This entry is optional and provides the regulator node =
+supplying
+> >                 voltage to TMU. If needed this entry can be placed insi=
+de
+> >                 board/platform specific dts file.
+>=20
+> Can you kindly consider applying these two patches to your next tree
+> if they look OK ?
 
-Fix all of the above.
+Abhilash, can you please get at least one Reviewed-by from one of the
+active developers of exynos thermal driver?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/processor_idle.c |    7 ++-----
- drivers/cpuidle/cpuidle.c     |    7 ++++---
- 2 files changed, 6 insertions(+), 8 deletions(-)
 
-Index: linux-pm/drivers/acpi/processor_idle.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_idle.c
-+++ linux-pm/drivers/acpi/processor_idle.c
-@@ -681,15 +681,13 @@ static int acpi_idle_bm_check(void)
- }
- 
- /**
-- * acpi_idle_do_entry - a helper function that does C2 and C3 type entry
-+ * acpi_idle_do_entry - enter idle state using the appropriate method
-  * @cx: cstate data
-  *
-  * Caller disables interrupt before call and enables interrupt after return.
-  */
--static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
-+static void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- {
--	/* Don't trace irqs off for idle */
--	stop_critical_timings();
- 	if (cx->entry_method == ACPI_CSTATE_FFH) {
- 		/* Call into architectural FFH based C-state */
- 		acpi_processor_ffh_cstate_enter(cx);
-@@ -703,7 +701,6 @@ static inline void acpi_idle_do_entry(st
- 		   gets asserted in time to freeze execution properly. */
- 		inl(acpi_gbl_FADT.xpm_timer_block.address);
- 	}
--	start_critical_timings();
- }
- 
- /**
+>=20
+> Regards,
+> Abhilash
+> > --
+> > 1.7.9.5
+> >
+
+--bygAmIonOAIqBxQB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUyRr/AAoJEMLUO4d9pOJW5PoIAIlr8iOKRp5/KjMKsvESv1vZ
+pWEe4oe+9GaO59nzEEL2FVIs/20+GNEj9McZZ7XhDpOxj5T+pVcAo++9tnDOlTl9
+XQtjaz6HmLQ0Am1HC6GPuCMTTRzgiQrKF98JfMvzgOkdUQDT5ChoXfd+xQMqc5jB
+FRH4lF15bgg80RMkjaxQh2kjdcqcg+f05DH7R2nQWPRr/Yeo5qtAevbi+i2RJx4r
+kbJJaQal9VKiUi2BL+gj2xlX0uaBjJKOOLBuYO/xCYG7i24007FtmnFHs2OEexX/
+tsaISNPfZZtA/HWDeYdHke9s5WLmcFQZlH4h4Pkslqt/4PIQsOxMv8G1FUSrR3Y=
+=Oafo
+-----END PGP SIGNATURE-----
+
+--bygAmIonOAIqBxQB--
