@@ -1,80 +1,59 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v1 6/7] of: thermal: Introduce sustainable power for a thermal zone
-Date: Wed, 28 Jan 2015 17:00:37 +0000
-Message-ID: <1422464438-16761-7-git-send-email-javi.merino@arm.com>
-References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 4/4] Thermal/int340x/int3403: Support for thermistor and IR sensor
+Date: Wed, 28 Jan 2015 11:56:49 -0800
+Message-ID: <1422475009-20759-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1422475009-20759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:1505 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932698AbbA1U0X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 28 Jan 2015 15:26:23 -0500
+In-Reply-To: <1422475009-20759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Punit Agrawal <punit.agrawal@arm.com>
+Added two more sensor types: Thermistor and IR sensor. Each of these
+sensors have unique ptyp value.
 
-Introduce an optional property called, sustainable-power, which
-represents the power (in mW) which the thermal zone can safely
-dissipate.
-
-If provided the property is parsed and associated with the thermal
-zone via the thermal zone parameters.
-
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- Documentation/devicetree/bindings/thermal/thermal.txt | 9 +++++++++
- drivers/thermal/of-thermal.c                          | 4 ++++
- 2 files changed, 13 insertions(+)
+ drivers/thermal/int340x_thermal/int3403_thermal.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-index f5db6b72a36f..99d6608c9d5f 100644
---- a/Documentation/devicetree/bindings/thermal/thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-@@ -167,6 +167,13 @@ Optional property:
- 			by means of sensor ID. Additional coefficients are
- 			interpreted as constant offset.
- 
-+- sustainable-power:	An estimate of the sustainable power (in mW) that the
-+  Type: unsigned	thermal zone can dissipate at the desired
-+  Size: one cell	control temperature.  For reference, the
-+			sustainable power of a 4'' phone is typically
-+			2000mW, while on a 10'' tablet is around
-+			4500mW.
+diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/drivers/thermal/int340x_thermal/int3403_thermal.c
+index 50a7a08..2b5b140 100644
+--- a/drivers/thermal/int340x_thermal/int3403_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+@@ -24,6 +24,9 @@
+ #define INT3403_TYPE_SENSOR		0x03
+ #define INT3403_TYPE_CHARGER		0x0B
+ #define INT3403_TYPE_BATTERY		0x0C
++#define INT3403_TYPE_SENSOR_THERMISTOR	0x12
++#define INT3403_TYPE_SENSOR_IR		0x13
 +
- Note: The delay properties are bound to the maximum dT/dt (temperature
- derivative over time) in two situations for a thermal zone:
- (i)  - when passive cooling is activated (polling-delay-passive); and
-@@ -546,6 +553,8 @@ thermal-zones {
- 		 */
- 		coefficients =		<1200	-345	890>;
+ #define INT3403_PERF_CHANGED_EVENT	0x80
+ #define INT3403_THERMAL_EVENT		0x90
  
-+		sustainable-power = <2500>;
-+
- 		trips {
- 			/* Trips are based on resulting linear equation */
- 			cpu-trip: cpu-trip {
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index d717f3dab6f1..b44296541938 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -862,6 +862,7 @@ int __init of_parse_thermal_zones(void)
- 	for_each_child_of_node(np, child) {
- 		struct thermal_zone_device *zone;
- 		struct thermal_zone_params *tzp;
-+		u32 prop;
+@@ -238,6 +241,8 @@ static int int3403_add(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, priv);
+ 	switch (priv->type) {
+ 	case INT3403_TYPE_SENSOR:
++	case INT3403_TYPE_SENSOR_THERMISTOR:
++	case INT3403_TYPE_SENSOR_IR:
+ 		result = int3403_sensor_add(priv);
+ 		break;
+ 	case INT3403_TYPE_CHARGER:
+@@ -262,6 +267,8 @@ static int int3403_remove(struct platform_device *pdev)
  
- 		/* Check whether child is enabled or not */
- 		if (!of_device_is_available(child))
-@@ -888,6 +889,9 @@ int __init of_parse_thermal_zones(void)
- 		/* No hwmon because there might be hwmon drivers registering */
- 		tzp->no_hwmon = true;
- 
-+		if (!of_property_read_u32(child, "sustainable-power", &prop))
-+			tzp->sustainable_power = prop;
-+
- 		zone = thermal_zone_device_register(child->name, tz->ntrips,
- 						    0, tz,
- 						    ops, tzp,
+ 	switch (priv->type) {
+ 	case INT3403_TYPE_SENSOR:
++	case INT3403_TYPE_SENSOR_THERMISTOR:
++	case INT3403_TYPE_SENSOR_IR:
+ 		int3403_sensor_remove(priv);
+ 		break;
+ 	case INT3403_TYPE_CHARGER:
 -- 
-1.9.1
+1.9.3
+
