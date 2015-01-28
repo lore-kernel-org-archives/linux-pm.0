@@ -1,15 +1,12 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Wed, 28 Jan 2015 21:01:39 +0100
-Message-ID: <1799972.nQ2Axu0CEJ@wuerfel>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
- <1422451015-390439-4-git-send-email-arnd@arndb.de>
- <20150128172209.GF29600@developer.hsd1.ca.comcast.net>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
+Date: Wed, 28 Jan 2015 20:06:00 +0000
+Message-ID: <20150128200600.GR21293@sirena.org.uk>
+References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7284111937237183172=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20150128172209.GF29600@developer.hsd1.ca.comcast.net>
+In-Reply-To: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,67 +16,77 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: nm@ti.com, rob.herring@linaro.org, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, santosh.shilimkar@oracle.com, Rafael Wysocki <rjw@rjwysocki.net>, olof@lixom.net, devicetree@vger.kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, grant.likely@linaro.org, ta.omasab@gmail.com, arnd.bergmann@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 January 2015 13:22:11 Eduardo Valentin wrote:
-> >  
-> >  config ARM_EXYNOS5440_CPUFREQ
-> > -	bool "SAMSUNG EXYNOS5440"
-> > +	tristate "SAMSUNG EXYNOS5440"
-> >  	depends on SOC_EXYNOS5440
-> >  	depends on HAVE_CLK && OF
-> > +	depends on THERMAL
-> >  	select PM_OPP
-> >  	default y
-> >  	help
-> 
-> Reading the code briefly, looks like the intention is to separate soc
-> specific code into different files, but they all compose one single
-> driver. Translating into module, I believe it makes sense to build them
-> into a single module, instead of having all of them as separate module.
-> 
-> Meaning, only ARM_EXYNOS_CPUFREQ becomes tristate, all the remaining
-> continues bool. And we add the following Makefile change to your patch
 
-That was my initial thought as well, but the devil is in the details:
+--===============7284111937237183172==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Cs0fHyJFdv98avw5"
+Content-Disposition: inline
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 0f9a2c3..c3c3cf5 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -26,13 +26,19 @@ config ARM_VEXPRESS_SPC_CPUFREQ
->  
->  
->  config ARM_EXYNOS_CPUFREQ
-> -	bool
-> +	tristate "SAMSUNG EXYNOS CPUfreq Driver"
-> +	depends on THERMAL
-> +	default y
-> +	help
-> +	  This adds the CPUFreq driver for Samsung EXYNOS platforms
+
+--Cs0fHyJFdv98avw5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Fri, Jan 23, 2015 at 04:14:50PM +0530, Viresh Kumar wrote:
+
+> +- opp-listN:
+> +  List of nodes defining performance points. Following belong to the nodes
+> +  within the opp-lists.
+
+Why is there the N here?  It doesn't correspond to the examples...
+
+> +  Required properties:
+> +  - opp-khz: Frequency in kHz
+> +  - opp-microvolt: voltage in micro Volts
+
+I thought the goal here was to specify ranges?
+
+> +- oppN:
+> +  Operating performance point node per device. Devices using it should have its
+> +  phandle in their "operating-points-v2" property.
 > +
-> +	  If in doubt, say N.
+> +  Required properties:
+> +  - compatible: allow OPPs to express their compatibility.
+> +  - opp-list: phandle to opp-list defined above.
 
-Now the option shows up on all systems that include Kconfig.arm,
-in particular non-exynos machines that might not even be able
-to build this.
+I don't understand what that compatible property is intended to mean and
+I expect other readers might be similarly confused - is it a standard
+compatbile property meaning this noe corresponds to some sort of device?
 
-It's also enabled by default, but if you change the default to 'n',
-the entire drivers will be disabled for users with an existing
-configuration file.
+There also appears to be no code matching these bindings...
 
-We could work around these issues by adding extra (silent) Kconfig
-symbols that automatically do the right thing, but that would not
-be any less ugly than my first patch.
+--Cs0fHyJFdv98avw5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Another possible might be to change the drivers to use the normal
-probe ordering and move the module_platform_driver() statement
-into the individual drivers, so that e.g. exynos4210_cpufreq_init()
-gets turned into exynos4210_cpufreq_probe() and calls the generic
-exynos_cpufreq_probe() function. This would let us express the
-dependencies more naturally and just export one symbol from the
-main module.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-	Arnd
+iQEcBAEBCAAGBQJUyUEnAAoJECTWi3JdVIfQMrIH/3wp7SZiW6k2SVgumUWp0APZ
+a+Ybjr8gplR9gD02G0ooleKjBug+CsESEs3RByv6/Q/NOG6CluJTMJBSo3xMFKAy
+2sAlZ3lgRkMv6Fv3PqBECB2guyuoRjS0MyyjN0LzO+i4jRKnz4vNyLyLp7FRzG5y
+zg8i2+/gdtuNSlC6UcrByPN8BvC1qSjFJyR7rkitvvp10eRCiz5aUVA25wQTxwGS
+dYqyCGpFTzpixzYvVWPw27Thq5YGdznPGKnLvO/1sNbJFqEEzlPd/6KSOlzz28fP
+PzDeFy2WoZxQCzVEkAbvVGRNFc+4bUS13JrBMzwSpH2xqOPBa54J09wlgCBAKgM=
+=kOGF
+-----END PGP SIGNATURE-----
+
+--Cs0fHyJFdv98avw5--
+
+
+--===============7284111937237183172==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============7284111937237183172==--
