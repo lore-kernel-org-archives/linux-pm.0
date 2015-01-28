@@ -1,90 +1,42 @@
 From: Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH v3 2/3] mfd/axp20x: add support for fuel gauge cell
-Date: Wed, 28 Jan 2015 13:23:39 -0800
-Message-ID: <78fc83e74e2d3303950b10c95faf6e161131a488.1422478693.git.todd.e.brandt@linux.intel.com>
-References: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+Subject: [PATCH v3 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
+Date: Wed, 28 Jan 2015 13:23:37 -0800
+Message-ID: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
-In-Reply-To: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
-References: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: todd.e.brandt@linux.intel.com, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com, jic23@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Register definitions and platform data structure
-for fuel gauge cell devices.
+New power_supply driver at driver/power which interfaces with the
+axp20x mfd driver as a cell. Provides battery info, monitors for
+changes, and generates alerts on temperature and capacity issues
 
-Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-Acked-By: Sebastian Reichel <sre@kernel.org>
-Acked-By: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Acked-By: Lee Jones <lee.jones@linaro.org>
----
+Todd Brandt (3):
+  mfd/axp20x: change battery cell name to fuel gauge
+  mfd/axp20x: add support for fuel gauge cell
+  X-Power AXP288 PMIC Fuel Gauge Driver
+
+v1: 01/07/14
+v2: 01/22/14
+- replaced the const in axp20x_acpi_match declaration
+- reformatted the commit text
+- added IIO as driver dependency
+- moved debug info to debugfs in file fuelgauge
+- added HEALTH_COLD value to health calculation
+- added better cleanup to remove call
+        cancelling any delayed work calls
+        unregistration of the power_supply
+v3: 01/28/14
+- moved debugs create and init config regs after error case
+- freed the virqs in the remove function
+- remove .owner field as it is populated automatically
+
+ drivers/mfd/axp20x.c       |  8 ++++----
+ drivers/power/Kconfig      |  9 +++++++++
+ drivers/power/Makefile     |  1 +
  include/linux/mfd/axp20x.h | 43 +++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 41 insertions(+), 2 deletions(-)
+ 4 files changed, 55 insertions(+), 6 deletions(-)
 
-v3: same as v1-2 and is already accepted, re-included for continuity
-
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 81589d1..dfabd6d 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -124,10 +124,27 @@ enum {
- #define AXP288_PMIC_ADC_H               0x56
- #define AXP288_PMIC_ADC_L               0x57
- #define AXP288_ADC_TS_PIN_CTRL          0x84
--
- #define AXP288_PMIC_ADC_EN              0x84
--#define AXP288_FG_TUNE5			0xed
- 
-+/* Fuel Gauge */
-+#define AXP288_FG_RDC1_REG          0xba
-+#define AXP288_FG_RDC0_REG          0xbb
-+#define AXP288_FG_OCVH_REG          0xbc
-+#define AXP288_FG_OCVL_REG          0xbd
-+#define AXP288_FG_OCV_CURVE_REG     0xc0
-+#define AXP288_FG_DES_CAP1_REG      0xe0
-+#define AXP288_FG_DES_CAP0_REG      0xe1
-+#define AXP288_FG_CC_MTR1_REG       0xe2
-+#define AXP288_FG_CC_MTR0_REG       0xe3
-+#define AXP288_FG_OCV_CAP_REG       0xe4
-+#define AXP288_FG_CC_CAP_REG        0xe5
-+#define AXP288_FG_LOW_CAP_REG       0xe6
-+#define AXP288_FG_TUNE0             0xe8
-+#define AXP288_FG_TUNE1             0xe9
-+#define AXP288_FG_TUNE2             0xea
-+#define AXP288_FG_TUNE3             0xeb
-+#define AXP288_FG_TUNE4             0xec
-+#define AXP288_FG_TUNE5             0xed
- 
- /* Regulators IDs */
- enum {
-@@ -236,4 +253,26 @@ struct axp20x_dev {
- 	const struct regmap_irq_chip	*regmap_irq_chip;
- };
- 
-+#define BATTID_LEN				64
-+#define OCV_CURVE_SIZE			32
-+#define MAX_THERM_CURVE_SIZE	25
-+#define PD_DEF_MIN_TEMP			0
-+#define PD_DEF_MAX_TEMP			55
-+
-+struct axp20x_fg_pdata {
-+	char battid[BATTID_LEN + 1];
-+	int design_cap;
-+	int min_volt;
-+	int max_volt;
-+	int max_temp;
-+	int min_temp;
-+	int cap1;
-+	int cap0;
-+	int rdc1;
-+	int rdc0;
-+	int ocv_curve[OCV_CURVE_SIZE];
-+	int tcsz;
-+	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
-+};
-+
- #endif /* __LINUX_MFD_AXP20X_H */
 -- 
 2.1.0
