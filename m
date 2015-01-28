@@ -1,326 +1,216 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v1 5/7] thermal: add trace events to the power allocator governor
-Date: Wed, 28 Jan 2015 17:00:36 +0000
-Message-ID: <1422464438-16761-6-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v1 1/7] thermal: let governors have private data for each thermal zone
+Date: Wed, 28 Jan 2015 17:00:32 +0000
+Message-ID: <1422464438-16761-2-git-send-email-javi.merino@arm.com>
 References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add trace events for the power allocator governor and the power actor
-interface of the cpu cooling device.
+A governor may need to store its current state between calls to
+throttle().  That state depends on the thermal zone, so store it as
+private data in struct thermal_zone_device.
+
+The governors may have two new ops: bind_to_tz() and unbind_from_tz().
+When provided, these functions let governors do some initialization
+and teardown when they are bound/unbound to a tz and possibly store that
+information in the governor_data field of the struct
+thermal_zone_device.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@redhat.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- drivers/thermal/cpu_cooling.c                  | 31 +++++++++-
- drivers/thermal/power_allocator.c              | 22 ++++++-
- include/trace/events/thermal.h                 | 58 +++++++++++++++++++
- include/trace/events/thermal_power_allocator.h | 80 ++++++++++++++++++++++++++
- 4 files changed, 187 insertions(+), 4 deletions(-)
- create mode 100644 include/trace/events/thermal_power_allocator.h
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index a639aaf228f5..1ca8fe580721 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -31,6 +31,8 @@
- #include <linux/cpu.h>
- #include <linux/cpu_cooling.h>
+Hi Rui,
+
+You said[0] that you had applied it but I can't see it in any of your trees, so I'm sending it again.
+
+[0] http://thread.gmane.org/gmane.linux.kernel/1845418/focus=54163
+---
+ drivers/thermal/thermal_core.c | 83 ++++++++++++++++++++++++++++++++++++++----
+ include/linux/thermal.h        |  9 +++++
+ 2 files changed, 84 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 87e0b0782023..bf230c64e016 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -75,6 +75,58 @@ static struct thermal_governor *__find_governor(const char *name)
+ 	return NULL;
+ }
  
-+#include <trace/events/thermal.h>
++/**
++ * bind_previous_governor() - bind the previous governor of the thermal zone
++ * @tz:		a valid pointer to a struct thermal_zone_device
++ * @failed_gov_name:	the name of the governor that failed to register
++ *
++ * Register the previous governor of the thermal zone after a new
++ * governor has failed to be bound.
++ */
++static void bind_previous_governor(struct thermal_zone_device *tz,
++				   const char *failed_gov_name)
++{
++	if (tz->governor && tz->governor->bind_to_tz) {
++		if (tz->governor->bind_to_tz(tz)) {
++			dev_err(&tz->device,
++				"governor %s failed to bind and the previous one (%s) failed to bind again, thermal zone %s has no governor\n",
++				failed_gov_name, tz->governor->name, tz->type);
++			tz->governor = NULL;
++		}
++	}
++}
 +
- /*
-  * Cooling state <-> CPUFreq frequency
-  *
-@@ -534,12 +536,20 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 				       u32 *power)
++/**
++ * thermal_set_governor() - Switch to another governor
++ * @tz:		a valid pointer to a struct thermal_zone_device
++ * @new_gov:	pointer to the new governor
++ *
++ * Change the governor of thermal zone @tz.
++ *
++ * Return: 0 on success, an error if the new governor's bind_to_tz() failed.
++ */
++static int thermal_set_governor(struct thermal_zone_device *tz,
++				struct thermal_governor *new_gov)
++{
++	int ret = 0;
++
++	if (tz->governor && tz->governor->unbind_from_tz)
++		tz->governor->unbind_from_tz(tz);
++
++	if (new_gov && new_gov->bind_to_tz) {
++		ret = new_gov->bind_to_tz(tz);
++		if (ret) {
++			bind_previous_governor(tz, new_gov->name);
++
++			return ret;
++		}
++	}
++
++	tz->governor = new_gov;
++
++	return ret;
++}
++
+ int thermal_register_governor(struct thermal_governor *governor)
  {
- 	unsigned long freq;
--	int cpu, ret;
-+	int i = 0, cpu, ret;
- 	u32 static_power, dynamic_power, total_load = 0;
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-+	u32 *load_cpu = NULL;
+ 	int err;
+@@ -107,8 +159,15 @@ int thermal_register_governor(struct thermal_governor *governor)
  
- 	freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
+ 		name = pos->tzp->governor_name;
  
-+	if (trace_thermal_power_cpu_get_power_enabled()) {
-+		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+-		if (!strncasecmp(name, governor->name, THERMAL_NAME_LENGTH))
+-			pos->governor = governor;
++		if (!strncasecmp(name, governor->name, THERMAL_NAME_LENGTH)) {
++			int ret;
 +
-+		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
-+					GFP_KERNEL);
-+	}
-+
- 	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
- 		u32 load;
- 
-@@ -549,14 +559,29 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 			load = 0;
- 
- 		total_load += load;
-+		if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
-+			load_cpu[i] = load;
-+
-+		i++;
++			ret = thermal_set_governor(pos, governor);
++			if (ret)
++				dev_err(&pos->device,
++					"Failed to set governor %s for thermal zone %s: %d\n",
++					governor->name, pos->type, ret);
++		}
  	}
  
- 	cpufreq_device->last_load = total_load;
- 
- 	dynamic_power = get_dynamic_power(cpufreq_device, freq);
- 	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
--	if (ret)
-+	if (ret) {
-+		if (load_cpu)
-+			devm_kfree(&cdev->device, load_cpu);
- 		return ret;
-+	}
-+
-+	if (trace_thermal_power_cpu_limit_enabled() && load_cpu) {
-+		trace_thermal_power_cpu_get_power(
-+			&cpufreq_device->allowed_cpus,
-+			freq, load_cpu, i, dynamic_power, static_power);
-+
-+		devm_kfree(&cdev->device, load_cpu);
-+	}
- 
- 	*power = static_power + dynamic_power;
- 	return 0;
-@@ -664,6 +689,8 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 		return -EINVAL;
+ 	mutex_unlock(&thermal_list_lock);
+@@ -134,7 +193,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+ 	list_for_each_entry(pos, &thermal_tz_list, node) {
+ 		if (!strncasecmp(pos->governor->name, governor->name,
+ 						THERMAL_NAME_LENGTH))
+-			pos->governor = NULL;
++			thermal_set_governor(pos, NULL);
  	}
  
-+	trace_thermal_power_cpu_limit(&cpufreq_device->allowed_cpus,
-+				      target_freq, *state, power);
- 	return 0;
- }
+ 	mutex_unlock(&thermal_list_lock);
+@@ -763,8 +822,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
+ 	if (!gov)
+ 		goto exit;
  
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index c929143aee67..34c9a9025c54 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -19,6 +19,9 @@
- #include <linux/slab.h>
- #include <linux/thermal.h>
+-	tz->governor = gov;
+-	ret = count;
++	ret = thermal_set_governor(tz, gov);
++	if (!ret)
++		ret = count;
  
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/thermal_power_allocator.h>
+ exit:
+ 	mutex_unlock(&tz->lock);
+@@ -1463,6 +1523,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	int result;
+ 	int count;
+ 	int passive = 0;
++	struct thermal_governor *governor;
+ 
+ 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+ 		return ERR_PTR(-EINVAL);
+@@ -1553,9 +1614,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	mutex_lock(&thermal_governor_lock);
+ 
+ 	if (tz->tzp)
+-		tz->governor = __find_governor(tz->tzp->governor_name);
++		governor = __find_governor(tz->tzp->governor_name);
+ 	else
+-		tz->governor = def_governor;
++		governor = def_governor;
 +
- #include "thermal_core.h"
++	result = thermal_set_governor(tz, governor);
++	if (result) {
++		mutex_unlock(&thermal_governor_lock);
++		goto unregister;
++	}
  
- #define FRAC_BITS 10
-@@ -124,7 +127,14 @@ static u32 pid_controller(struct thermal_zone_device *tz,
- 	/* feed-forward the known sustainable dissipatable power */
- 	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
+ 	mutex_unlock(&thermal_governor_lock);
  
--	return clamp(power_range, (s64)0, (s64)max_allocatable_power);
-+	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
-+
-+	trace_thermal_power_allocator_pid(frac_to_int(err),
-+					  frac_to_int(params->err_integral),
-+					  frac_to_int(p), frac_to_int(i),
-+					  frac_to_int(d), power_range);
-+
-+	return power_range;
- }
+@@ -1644,7 +1711,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
+ 	device_remove_file(&tz->device, &dev_attr_policy);
+ 	remove_trip_attrs(tz);
+-	tz->governor = NULL;
++	thermal_set_governor(tz, NULL);
  
+ 	thermal_remove_hwmon_sysfs(tz);
+ 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index fc52e307efab..03dec86abc79 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -162,6 +162,7 @@ struct thermal_attr {
+  * @ops:	operations this &thermal_zone_device supports
+  * @tzp:	thermal zone parameters
+  * @governor:	pointer to the governor for this thermal zone
++ * @governor_data:	private pointer for governor data
+  * @thermal_instances:	list of &struct thermal_instance of this thermal zone
+  * @idr:	&struct idr to generate unique id for this zone's cooling
+  *		devices
+@@ -188,6 +189,7 @@ struct thermal_zone_device {
+ 	struct thermal_zone_device_ops *ops;
+ 	const struct thermal_zone_params *tzp;
+ 	struct thermal_governor *governor;
++	void *governor_data;
+ 	struct list_head thermal_instances;
+ 	struct idr idr;
+ 	struct mutex lock;
+@@ -198,12 +200,19 @@ struct thermal_zone_device {
  /**
-@@ -201,7 +211,7 @@ static int allocate_power(struct thermal_zone_device *tz,
- 	struct thermal_instance *instance;
- 	u32 *req_power, *max_power, *granted_power;
- 	u32 total_req_power, max_allocatable_power;
--	u32 power_range;
-+	u32 total_granted_power, power_range;
- 	int i, num_actors, ret = 0;
- 
- 	mutex_lock(&tz->lock);
-@@ -266,6 +276,7 @@ static int allocate_power(struct thermal_zone_device *tz,
- 	divvy_up_power(req_power, max_power, num_actors, total_req_power,
- 		       power_range, granted_power);
- 
-+	total_granted_power = 0;
- 	i = 0;
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
- 		if (instance->trip != TRIP_MAX_DESIRED_TEMPERATURE)
-@@ -276,10 +287,17 @@ static int allocate_power(struct thermal_zone_device *tz,
- 
- 		power_actor_set_power(instance->cdev, instance,
- 				      granted_power[i]);
-+		total_granted_power += granted_power[i];
- 
- 		i++;
- 	}
- 
-+	trace_thermal_power_allocator(req_power, total_req_power, granted_power,
-+				      total_granted_power, num_actors,
-+				      power_range, max_allocatable_power,
-+				      current_temp,
-+				      (s32)control_temp - (s32)current_temp);
-+
- 	devm_kfree(&tz->device, granted_power);
- free_max_power:
- 	devm_kfree(&tz->device, max_power);
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 0f4f95d63c03..8b1f80682b80 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -77,6 +77,64 @@ TRACE_EVENT(thermal_zone_trip,
- 		__entry->trip_type)
- );
- 
-+TRACE_EVENT(thermal_power_cpu_get_power,
-+	TP_PROTO(const struct cpumask *cpus, unsigned long freq, u32 *load,
-+		size_t load_len, u32 dynamic_power, u32 static_power),
-+
-+	TP_ARGS(cpus, freq, load, load_len, dynamic_power, static_power),
-+
-+	TP_STRUCT__entry(
-+		__bitmask(cpumask, num_possible_cpus())
-+		__field(unsigned long, freq          )
-+		__dynamic_array(u32,   load, load_len)
-+		__field(size_t,        load_len      )
-+		__field(u32,           dynamic_power )
-+		__field(u32,           static_power  )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_bitmask(cpumask, cpumask_bits(cpus),
-+				num_possible_cpus());
-+		__entry->freq = freq;
-+		memcpy(__get_dynamic_array(load), load,
-+			load_len * sizeof(*load));
-+		__entry->load_len = load_len;
-+		__entry->dynamic_power = dynamic_power;
-+		__entry->static_power = static_power;
-+	),
-+
-+	TP_printk("cpus=%s freq=%lu load={%s} dynamic_power=%d static_power=%d",
-+		__get_bitmask(cpumask), __entry->freq,
-+		__print_array(__get_dynamic_array(load), __entry->load_len, 4),
-+		__entry->dynamic_power, __entry->static_power)
-+);
-+
-+TRACE_EVENT(thermal_power_cpu_limit,
-+	TP_PROTO(const struct cpumask *cpus, unsigned int freq,
-+		unsigned long cdev_state, u32 power),
-+
-+	TP_ARGS(cpus, freq, cdev_state, power),
-+
-+	TP_STRUCT__entry(
-+		__bitmask(cpumask, num_possible_cpus())
-+		__field(unsigned int,  freq      )
-+		__field(unsigned long, cdev_state)
-+		__field(u32,           power     )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_bitmask(cpumask, cpumask_bits(cpus),
-+				num_possible_cpus());
-+		__entry->freq = freq;
-+		__entry->cdev_state = cdev_state;
-+		__entry->power = power;
-+	),
-+
-+	TP_printk("cpus=%s freq=%u cdev_state=%lu power=%u",
-+		__get_bitmask(cpumask), __entry->freq, __entry->cdev_state,
-+		__entry->power)
-+);
-+
- #endif /* _TRACE_THERMAL_H */
- 
- /* This part must be outside protection */
-diff --git a/include/trace/events/thermal_power_allocator.h b/include/trace/events/thermal_power_allocator.h
-new file mode 100644
-index 000000000000..c6a6d34858ef
---- /dev/null
-+++ b/include/trace/events/thermal_power_allocator.h
-@@ -0,0 +1,80 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM thermal_power_allocator
-+
-+#if !defined(_TRACE_THERMAL_POWER_ALLOCATOR_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_THERMAL_POWER_ALLOCATOR_H
-+
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(thermal_power_allocator,
-+	TP_PROTO(u32 *req_power, u32 total_req_power, u32 *granted_power,
-+		u32 total_granted_power, size_t num_actors, u32 power_range,
-+		u32 max_allocatable_power, unsigned long current_temp,
-+		s32 delta_temp),
-+	TP_ARGS(req_power, total_req_power, granted_power, total_granted_power,
-+		num_actors, power_range, max_allocatable_power, current_temp,
-+		delta_temp),
-+	TP_STRUCT__entry(
-+		__dynamic_array(u32,   req_power, num_actors    )
-+		__field(u32,           total_req_power          )
-+		__dynamic_array(u32,   granted_power, num_actors)
-+		__field(u32,           total_granted_power      )
-+		__field(size_t,        num_actors               )
-+		__field(u32,           power_range              )
-+		__field(u32,           max_allocatable_power    )
-+		__field(unsigned long, current_temp             )
-+		__field(s32,           delta_temp               )
-+	),
-+	TP_fast_assign(
-+		memcpy(__get_dynamic_array(req_power), req_power,
-+			num_actors * sizeof(*req_power));
-+		__entry->total_req_power = total_req_power;
-+		memcpy(__get_dynamic_array(granted_power), granted_power,
-+			num_actors * sizeof(*granted_power));
-+		__entry->total_granted_power = total_granted_power;
-+		__entry->num_actors = num_actors;
-+		__entry->power_range = power_range;
-+		__entry->max_allocatable_power = max_allocatable_power;
-+		__entry->current_temp = current_temp;
-+		__entry->delta_temp = delta_temp;
-+	),
-+
-+	TP_printk("req_power={%s} total_req_power=%u granted_power={%s} total_granted_power=%u power_range=%u max_allocatable_power=%u current_temperature=%lu delta_temperature=%d",
-+		__print_array(__get_dynamic_array(req_power),
-+                              __entry->num_actors, 4),
-+		__entry->total_req_power,
-+		__print_array(__get_dynamic_array(granted_power),
-+                              __entry->num_actors, 4),
-+		__entry->total_granted_power, __entry->power_range,
-+		__entry->max_allocatable_power, __entry->current_temp,
-+		__entry->delta_temp)
-+);
-+
-+TRACE_EVENT(thermal_power_allocator_pid,
-+	TP_PROTO(s32 err, s32 err_integral, s64 p, s64 i, s64 d, s32 output),
-+	TP_ARGS(err, err_integral, p, i, d, output),
-+	TP_STRUCT__entry(
-+		__field(s32, err         )
-+		__field(s32, err_integral)
-+		__field(s64, p           )
-+		__field(s64, i           )
-+		__field(s64, d           )
-+		__field(s32, output      )
-+	),
-+	TP_fast_assign(
-+		__entry->err = err;
-+		__entry->err_integral = err_integral;
-+		__entry->p = p;
-+		__entry->i = i;
-+		__entry->d = d;
-+		__entry->output = output;
-+	),
-+
-+	TP_printk("err=%d err_integral=%d p=%lld i=%lld d=%lld output=%d",
-+		__entry->err, __entry->err_integral,
-+		__entry->p, __entry->i, __entry->d, __entry->output)
-+);
-+#endif /* _TRACE_THERMAL_POWER_ALLOCATOR_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
+  * struct thermal_governor - structure that holds thermal governor information
+  * @name:	name of the governor
++ * @bind_to_tz: callback called when binding to a thermal zone.  If it
++ *		returns 0, the governor is bound to the thermal zone,
++ *		otherwise it fails.
++ * @unbind_from_tz:	callback called when a governor is unbound from a
++ *			thermal zone.
+  * @throttle:	callback called for every trip point even if temperature is
+  *		below the trip point temperature
+  * @governor_list:	node in thermal_governor_list (in thermal_core.c)
+  */
+ struct thermal_governor {
+ 	char name[THERMAL_NAME_LENGTH];
++	int (*bind_to_tz)(struct thermal_zone_device *tz);
++	void (*unbind_from_tz)(struct thermal_zone_device *tz);
+ 	int (*throttle)(struct thermal_zone_device *tz, int trip);
+ 	struct list_head	governor_list;
+ };
 -- 
 1.9.1
