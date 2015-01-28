@@ -1,131 +1,24 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] thermal: Intel SoC DTS: Add Braswell support
-Date: Wed, 28 Jan 2015 11:48:02 -0800
-Message-ID: <1422474482-20421-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:63327 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753815AbbA1URS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Jan 2015 15:17:18 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH v2] thermal: Fix examples in DT documentation
+Date: Wed, 28 Jan 2015 17:40:53 +0000
+Message-ID: <54C91F25.9080507@linaro.org>
+References: <1422465215-12716-1-git-send-email-srinivas.kandagatla@linaro.org> <20150128172929.GA27003@developer.hsd1.ca.comcast.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150128172929.GA27003@developer.hsd1.ca.comcast.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added Intel Braswell CPU id for SOC DTS. Since this doesn't support
-APIC IRQ, the driver is modified to have capability to not register
-any modifiable trips.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/intel_soc_dts_thermal.c | 46 +++++++++++++++++++++------------
- 1 file changed, 30 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/thermal/intel_soc_dts_thermal.c b/drivers/thermal/intel_soc_dts_thermal.c
-index 5580f5b..9013505 100644
---- a/drivers/thermal/intel_soc_dts_thermal.c
-+++ b/drivers/thermal/intel_soc_dts_thermal.c
-@@ -309,10 +309,13 @@ static int soc_dts_enable(int id)
- 	return ret;
- }
- 
--static struct soc_sensor_entry *alloc_soc_dts(int id, u32 tj_max)
-+static struct soc_sensor_entry *alloc_soc_dts(int id, u32 tj_max,
-+					      bool notification_support)
- {
- 	struct soc_sensor_entry *aux_entry;
- 	char name[10];
-+	int trip_count = 0;
-+	int trip_mask = 0;
- 	int err;
- 
- 	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
-@@ -332,11 +335,16 @@ static struct soc_sensor_entry *alloc_soc_dts(int id, u32 tj_max)
- 	aux_entry->tj_max = tj_max;
- 	aux_entry->temp_mask = 0x00FF << (id * 8);
- 	aux_entry->temp_shift = id * 8;
-+	if (notification_support) {
-+		trip_count = SOC_MAX_DTS_TRIPS;
-+		trip_mask = 0x02;
-+	}
- 	snprintf(name, sizeof(name), "soc_dts%d", id);
- 	aux_entry->tzone = thermal_zone_device_register(name,
--			SOC_MAX_DTS_TRIPS,
--			0x02,
--			aux_entry, &tzone_ops, NULL, 0, 0);
-+							trip_count,
-+							trip_mask,
-+							aux_entry, &tzone_ops,
-+							NULL, 0, 0);
- 	if (IS_ERR(aux_entry->tzone)) {
- 		err = PTR_ERR(aux_entry->tzone);
- 		goto err_ret;
-@@ -402,6 +410,7 @@ static irqreturn_t soc_irq_thread_fn(int irq, void *dev_data)
- 
- static const struct x86_cpu_id soc_thermal_ids[] = {
- 	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, 0x37, 0, BYT_SOC_DTS_APIC_IRQ},
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, 0x4c, 0, 0},
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, soc_thermal_ids);
-@@ -420,8 +429,11 @@ static int __init intel_soc_thermal_init(void)
- 	if (get_tj_max(&tj_max))
- 		return -EINVAL;
- 
-+	soc_dts_thres_irq = (int)match_cpu->driver_data;
-+
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
--		soc_dts[i] = alloc_soc_dts(i, tj_max);
-+		soc_dts[i] = alloc_soc_dts(i, tj_max,
-+					   soc_dts_thres_irq ? true : false);
- 		if (IS_ERR(soc_dts[i])) {
- 			err = PTR_ERR(soc_dts[i]);
- 			goto err_free;
-@@ -430,15 +442,15 @@ static int __init intel_soc_thermal_init(void)
- 
- 	spin_lock_init(&intr_notify_lock);
- 
--	soc_dts_thres_irq = (int)match_cpu->driver_data;
--
--	err = request_threaded_irq(soc_dts_thres_irq, NULL,
--					soc_irq_thread_fn,
--					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
--					"soc_dts", soc_dts);
--	if (err) {
--		pr_err("request_threaded_irq ret %d\n", err);
--		goto err_free;
-+	if (soc_dts_thres_irq) {
-+		err = request_threaded_irq(soc_dts_thres_irq, NULL,
-+					   soc_irq_thread_fn,
-+					   IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+					   "soc_dts", soc_dts);
-+		if (err) {
-+			pr_err("request_threaded_irq ret %d\n", err);
-+			goto err_free;
-+		}
- 	}
- 
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
-@@ -451,7 +463,8 @@ static int __init intel_soc_thermal_init(void)
- 
- err_trip_temp:
- 	i = SOC_MAX_DTS_SENSORS;
--	free_irq(soc_dts_thres_irq, soc_dts);
-+	if (soc_dts_thres_irq)
-+		free_irq(soc_dts_thres_irq, soc_dts);
- err_free:
- 	while (--i >= 0)
- 		free_soc_dts(soc_dts[i]);
-@@ -466,7 +479,8 @@ static void __exit intel_soc_thermal_exit(void)
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i)
- 		update_trip_temp(soc_dts[i], 0, 0);
- 
--	free_irq(soc_dts_thres_irq, soc_dts);
-+	if (soc_dts_thres_irq)
-+		free_irq(soc_dts_thres_irq, soc_dts);
- 
- 	for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i)
- 		free_soc_dts(soc_dts[i]);
--- 
-1.9.3
+On 28/01/15 17:29, Eduardo Valentin wrote:
+> Looks like there are still occurencies of adc-dummy after your patch.
+> But I am amending myself, no need to resend.
 
+Thanks for fixing.. :-)
+
+--srini
