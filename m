@@ -1,224 +1,87 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v1 7/7] thermal: export thermal_zone_parameters to sysfs
-Date: Wed, 28 Jan 2015 17:00:38 +0000
-Message-ID: <1422464438-16761-8-git-send-email-javi.merino@arm.com>
-References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] PM: Use 64-bit timekeeping
+Date: Wed, 28 Jan 2015 08:42:54 +0100
+Message-ID: <20150128074254.GA31048@amd>
+References: <20150128043836.GA4112@tinar>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56980 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755703AbbA1UjI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 15:39:08 -0500
+Content-Disposition: inline
+In-Reply-To: <20150128043836.GA4112@tinar>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tina Ruchandani <ruchandani.tina@gmail.com>
+Cc: Linux PM List <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 
-It's useful for tuning to be able to edit thermal_zone_parameters from
-userspace.  Export them to the thermal_zone sysfs so that they can be
-easily changed.
+On Wed 2015-01-28 10:08:37, Tina Ruchandani wrote:
+> The freezer try_to_freeze_tasks uses 'struct timeval' for start
+> and end times, tracking time taken to freeze tasks. 'struct timeval'
+> on 32-bit systems will have its tv_sec overflow in year 2038 and
+> beyond. This patches uses 'ktime_t' (which has 64 bit values
+> for seconds) for start and end time.
+> 
+> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- Documentation/thermal/sysfs-api.txt |  52 +++++++++++++++++
- drivers/thermal/thermal_core.c      | 110 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 162 insertions(+)
+Nicer code, and without the overflow. Thanks!
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 87519cb379ee..a95aabfad014 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -176,6 +176,12 @@ Thermal zone device sys I/F, created once it's registered:
-     |---trip_point_[0-*]_type:	Trip point type
-     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-     |---emul_temp:		Emulated temperature set node
-+    |---sustainable_power:      Sustainable dissipatable power
-+    |---k_po:                   Proportional term during temperature overshoot
-+    |---k_pu:                   Proportional term during temperature undershoot
-+    |---k_i:                    PID's integral term in the power allocator gov
-+    |---k_d:                    PID's derivative term in the power allocator
-+    |---integral_cutoff:        Offset above which errors are accumulated
- 
- Thermal cooling device sys I/F, created once it's registered:
- /sys/class/thermal/cooling_device[0-*]:
-@@ -289,6 +295,52 @@ emul_temp
- 	  because userland can easily disable the thermal policy by simply
- 	  flooding this sysfs node with low temperature values.
- 
-+sustainable_power
-+	An estimate of the sustained power that can be dissipated by
-+	the thermal zone. Used by the power allocator governor. For
-+	more information see Documentation/thermal/power_allocator.txt
-+	Unit: milliwatts
-+	RW, Optional
-+
-+k_po
-+	The proportional term of the power allocator governor's PID
-+	controller during temperature overshoot. Temperature overshoot
-+	is when the current temperature is above the "desired
-+	temperature" trip point. For more information see
-+	Documentation/thermal/power_allocator.txt
-+	RW, Optional
-+
-+k_pu
-+	The proportional term of the power allocator governor's PID
-+	controller during temperature undershoot. Temperature undershoot
-+	is when the current temperature is below the "desired
-+	temperature" trip point. For more information see
-+	Documentation/thermal/power_allocator.txt
-+	RW, Optional
-+
-+k_i
-+	The integral term of the power allocator governor's PID
-+	controller. This term allows the PID controller to compensate
-+	for long term drift. For more information see
-+	Documentation/thermal/power_allocator.txt
-+	RW, Optional
-+
-+k_d
-+	The derivative term of the power allocator governor's PID
-+	controller. For more information see
-+	Documentation/thermal/power_allocator.txt
-+	RW, Optional
-+
-+integral_cutoff
-+	Temperature offset from the desired temperature trip point
-+	above which the integral term of the power allocator
-+	governor's PID controller starts accumulating errors. For
-+	example, if integral_cutoff is 0, then the integral term only
-+	accumulates error when temperature is above the desired
-+	temperature trip point. For more information see
-+	Documentation/thermal/power_allocator.txt
-+	RW, Optional
-+
- *****************************
- * Cooling device attributes *
- *****************************
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index b77b5416929c..bde5e0442321 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -868,6 +868,111 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
- static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- #endif/*CONFIG_THERMAL_EMULATION*/
- 
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-+
-+static ssize_t
-+sustainable_power_show(struct device *dev, struct device_attribute *devattr,
-+		       char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+
-+	if (tz->tzp)
-+		return sprintf(buf, "%u\n", tz->tzp->sustainable_power);
-+	else
-+		return -EIO;
-+}
-+
-+static ssize_t
-+sustainable_power_store(struct device *dev, struct device_attribute *devattr,
-+			const char *buf, size_t count)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	u32 sustainable_power;
-+
-+	if (!tz->tzp)
-+		return -EIO;
-+
-+	if (kstrtou32(buf, 10, &sustainable_power))
-+		return -EINVAL;
-+
-+	tz->tzp->sustainable_power = sustainable_power;
-+
-+	return count;
-+}
-+static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-+		sustainable_power_store);
-+
-+#define create_s32_tzp_attr(name)					\
-+	static ssize_t							\
-+	name##_show(struct device *dev, struct device_attribute *devattr, \
-+		char *buf)						\
-+	{								\
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
-+									\
-+	if (tz->tzp)							\
-+		return sprintf(buf, "%u\n", tz->tzp->name);		\
-+	else								\
-+		return -EIO;						\
-+	}								\
-+									\
-+	static ssize_t							\
-+	name##_store(struct device *dev, struct device_attribute *devattr, \
-+		const char *buf, size_t count)				\
-+	{								\
-+		struct thermal_zone_device *tz = to_thermal_zone(dev);	\
-+		s32 value;						\
-+									\
-+		if (!tz->tzp)						\
-+			return -EIO;					\
-+									\
-+		if (kstrtos32(buf, 10, &value))				\
-+			return -EINVAL;					\
-+									\
-+		tz->tzp->name = value;					\
-+									\
-+		return count;						\
-+	}								\
-+	static DEVICE_ATTR(name, S_IWUSR | S_IRUGO, name##_show, name##_store)
-+
-+create_s32_tzp_attr(k_po);
-+create_s32_tzp_attr(k_pu);
-+create_s32_tzp_attr(k_i);
-+create_s32_tzp_attr(k_d);
-+create_s32_tzp_attr(integral_cutoff);
-+#undef create_s32_tzp_attr
-+
-+static struct device_attribute *dev_tzp_attrs[] = {
-+	&dev_attr_sustainable_power,
-+	&dev_attr_k_po,
-+	&dev_attr_k_pu,
-+	&dev_attr_k_i,
-+	&dev_attr_k_d,
-+	&dev_attr_integral_cutoff,
-+};
-+
-+static int create_power_allocator_tzp_attrs(struct device *dev)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(dev_tzp_attrs); i++) {
-+		int ret;
-+		struct device_attribute *dev_attr = dev_tzp_attrs[i];
-+
-+		ret = device_create_file(dev, dev_attr);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+#else  /* !CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
-+static int create_power_allocator_tzp_attrs(struct device *dev)
-+{
-+	return 0;
-+}
-+#endif
-+
- /**
-  * power_actor_get_max_power() - get the maximum power that a cdev can consume
-  * @cdev:	pointer to &thermal_cooling_device
-@@ -1662,6 +1767,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (result)
- 		goto unregister;
- 
-+	/* Add power_allocator specific thermal zone params */
-+	result = create_power_allocator_tzp_attrs(&tz->device);
-+	if (result)
-+		goto unregister;
-+
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
- 
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+
+> ---
+> Changes in v2:
+> 	- Use ktime_t to be able to use ktime_ms_delta
+> 	  which is more efficient than timespec64 based methods.
+> ---
+>  kernel/power/process.c | 12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 5a6ec86..52414dd 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/kmod.h>
+> +#include <linux/ktime.h>
+>  #include <trace/events/power.h>
+x>  
+>  /* 
+> @@ -30,13 +31,12 @@ static int try_to_freeze_tasks(bool user_only)
+>  	unsigned long end_time;
+>  	unsigned int todo;
+>  	bool wq_busy = false;
+> -	struct timeval start, end;
+> -	u64 elapsed_msecs64;
+> +	ktime_t start, end;
+>  	unsigned int elapsed_msecs;
+>  	bool wakeup = false;
+>  	int sleep_usecs = USEC_PER_MSEC;
+>  
+> -	do_gettimeofday(&start);
+> +	start = ktime_get();
+>  
+>  	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
+>  
+> @@ -78,10 +78,8 @@ static int try_to_freeze_tasks(bool user_only)
+>  			sleep_usecs *= 2;
+>  	}
+>  
+> -	do_gettimeofday(&end);
+> -	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
+> -	do_div(elapsed_msecs64, NSEC_PER_MSEC);
+> -	elapsed_msecs = elapsed_msecs64;
+> +	end = ktime_get();
+> +	elapsed_msecs = (unsigned int) ktime_ms_delta(end, start);
+>  
+>  	if (todo) {
+>  		printk("\n");
+
 -- 
-1.9.1
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
