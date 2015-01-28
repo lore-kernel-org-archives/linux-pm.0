@@ -1,56 +1,146 @@
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-Date: Thu, 29 Jan 2015 09:24:33 +1100
-Message-ID: <m3oapiwnku.fsf@oc8180480414.ibm.com>
-References: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
- <m3wq47w9jj.fsf@oc8180480414.ibm.com> <54C8B0E6.5080406@linux.vnet.ibm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
+ subsystem
+Date: Wed, 28 Jan 2015 23:59:38 +0100
+Message-ID: <20150128225937.GA12749@earth.universe>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com>
+ <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com>
+ <20150121230148.GJ13715@earth.universe> <54C0AFE4.3020701@i2se.com>
+ <20150125150431.GE2719@earth.universe>
+ <1719204322.245040.1422301605670.JavaMail.open-xchange@oxbaltgw03.schlund.de>
+ <20150127001629.GP21293@sirena.org.uk>
+ <1954124242.301697.1422383709733.JavaMail.open-xchange@oxbaltgw09.schlund.de>
+ <20150127194346.GN21293@sirena.org.uk>
+ <443299280.47516.1422483725178.JavaMail.open-xchange@oxbaltgw03.schlund.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <54C8B0E6.5080406@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============1666247968187865887=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <443299280.47516.1422483725178.JavaMail.open-xchange@oxbaltgw03.schlund.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Marek Vasut <marex@denx.de>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-UHJlZXRpIFUgTXVydGh5IDxwcmVldGlAbGludXgudm5ldC5pYm0uY29tPiB3cml0ZXM6Cj4gT24g
-MDEvMjgvMjAxNSAwMjo0NSBQTSwgU3Rld2FydCBTbWl0aCB3cm90ZToKPj4gUHJlZXRpIFUgTXVy
-dGh5IDxwcmVldGlAbGludXgudm5ldC5pYm0uY29tPiB3cml0ZXM6Cj4+PiBUaGUgZGV2aWNlIHRy
-ZWUgbm93IGV4cG9zZXMgdGhlIHJlc2lkZW5jeSB2YWx1ZXMgZm9yIGRpZmZlcmVudCBpZGxlIHN0
-YXRlcy4gUmVhZAo+Pj4gdGhlc2UgdmFsdWVzIGluc3RlYWQgb2YgY2FsY3VsYXRpbmcgcmVzaWRl
-bmN5IGZyb20gdGhlIGxhdGVuY3kgdmFsdWVzLiBUaGUgdmFsdWVzCj4+PiBleHBvc2VkIGluIHRo
-ZSBEVCBhcmUgdmFsaWRhdGVkIGZvciBvcHRpbWFsIHBvd2VyIGVmZmljaWVuY3kuIEhvd2V2ZXIg
-dG8gbWFpbnRhaW4KPj4+IGNvbXBhdGliaWxpdHkgd2l0aCB0aGUgb2xkZXIgZmlybXdhcmUgY29k
-ZSB3aGljaCBkb2VzIG5vdCBleHBvc2UgcmVzaWRlbmN5Cj4+PiB2YWx1ZXMsIHVzZSBkZWZhdWx0
-IHZhbHVlcyBhcyBhIGZhbGxiYWNrIG1lY2hhbmlzbS4gV2hpbGUgYXQgaXQsIGhhbmRsZSBzb21l
-Cj4+PiBjbGVhbnVwcy4KPj4gCj4+IEZyb20gYSAiSSBqdXN0IG1lcmdlZCB0aGUgcGF0Y2ggdGhh
-dCBleHBvcnRzIHRoZXNlIHZhbHVlcyBmcm9tIGZpcm13YXJlIgo+PiBwb2ludCBvZiB2aWV3LCB1
-c2luZyB0aGVtIGFuZCBmYWxsaW5nIGJhY2sgbG9va3MgZ29vZC4KPj4gCj4+IChJIGZpbmQgdGhl
-IGhhcmRjb2Rpbmcgb2Ygc25vb3plIGluIHRoZSBkcml2ZXIgYSBiaXQgb2RkLCBhcyBpcyB0aGUK
-Pgo+IFNub296ZSBpcyB0aGUgb25seSBzb2Z0d2FyZSBkZWZpbmVkIGlkbGUgc3RhdGUsIHRoZSBy
-ZXN0IGFyZSBwbGF0Zm9ybQo+IHNwZWNpZmljLiBUaGUgZmlyc3QgaWRsZSBzdGF0ZSBpcyB1c3Vh
-bGx5IGFzc29jaWF0ZWQgd2l0aCBzb21lIHNvcnQgb2YgYQo+IHBvbGxpbmcgb3BlcmF0aW9uIGFu
-ZCBlYWNoIGFyY2hpdGVjdHVyZSBoYXMgYSB2YXJpYW50IHRvIHRoaXMuIFRoaXMgaXMKPiB3aHkg
-d2UgZW5kIHVwIGhhcmQtY29kaW5nIHRoaXMgaWRsZSBzdGF0ZSBpbiB0aGUgZHJpdmVyIGFzIGZh
-ciBhcyBteQo+IHVuZGVyc3RhbmRpbmcgZ29lcy4KCkF0IGxlYXN0IGluIHRoZSBQb3dlcklTQSAy
-LjA3IEkgY291bGQgb25seSBzZWUgdGhhdCBsb3dlcmluZyBwcmlvcml0eQp3b3VsZCBnaXZlIHBy
-aW9yaXR5IHRvIG90aGVyIHRocmVhZHMgaW4gdGhlIGNvcmUsIEkgY291bGRuJ3QgZmluZAphbnl0
-aGluZyBzYXlpbmcgdGhhdCBvciAzMSwzMSwzMSB3b3VsZCBlbmQgdXAgc2F2aW5nIGFueSBwb3dl
-ci4uLiBidXQgSQpjb3VsZCBiZSBsb29raW5nIGluIHRoZSB3cm9uZyBwbGFjZSB0b28uCgpCYXNp
-Y2FsbHksIEkgd2FzIHdhbnRpbmcgdG8gY2hlY2sgdGhhdCBpdCdzIGFjdHVhbGx5IHdyaXR0ZW4g
-ZG93biBhbmQKYXJjaGl0ZWN0ZWQgc29tZXdoZXJlIHRoYXQgdGhpcyBpcyB0aGUgY2FzZSBhbmQg
-aXQgaXNuJ3Qgc29tZXRoaW5nIHRvbwpQNy9QOCBzcGVjaWZpYy4KCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QK
-TGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xp
-c3RpbmZvL2xpbnV4cHBjLWRldg==
+
+--===============1666247968187865887==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="wac7ysb48OaltWcw"
+Content-Disposition: inline
+
+
+--wac7ysb48OaltWcw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Jan 28, 2015 at 11:22:05PM +0100, Stefan Wahren wrote:
+> > Mark Brown <broonie@kernel.org> hat am 27. Januar 2015 um 20:43 geschri=
+eben:
+> > On Tue, Jan 27, 2015 at 07:35:09PM +0100, Stefan Wahren wrote:
+> > > > Mark Brown <broonie@kernel.org> hat am 27. Januar 2015 um 01:16
+> > > > geschrieben:
+> >
+> > > > > okay i understand. But doesn't it need a extra driver to set the
+> > > > > switching
+> > > > > frequency because of the new compatible string?
+> >
+> > > > I don't understand this bit at all, sorry.
+> >
+> > > Sebastian suggested a new sub-node in the devicetree:
+> >
+> > > powerpll {
+> > > compatible =3D "fsl,imx28-power-pll"
+> > > #clock-cells =3D <0>;
+> > > clock-frequency =3D <12345>;
+> > > }
+> >
+> > > and i think that the new compatible string needs a separate driver to=
+ take
+> > > care
+> > > of the switching frequency.
+> >
+> > I can see that this has been suggested, what I can't understand is why
+> > we would wish to do this but I am missing some context here which may
+> > make it all perfectly clear.
+>=20
+> The relevant register DC-DC Miscellaneous Register (HW_POWER_MISC) is des=
+cribed
+> in chapter 11.12.10 of the reference manual [1].
+>
+> [1] - http://cache.freescale.com/files/dsp/doc/ref_manual/MCIMX28RM.pdf
+
+Having a look at the datasheet my suggestion for the sub-node
+doesn't make sense. I missunderstood how the hardware architecture
+looks like, sorry for the noise :(
+
+> changing the switching frequency is not a common feature for this IC. In =
+most
+> cases the clock for the DC-DC switching frequency runs at 24 MHz (ref_xta=
+l).
+> Unfortunatelly this could cause interferences for example in UHF band. So
+> switching to ref_pll and changing clock divider is a option to avoid such
+> interferences without changing hardware.
+>
+> I decided to implement it as a module parameter, because i see it's a
+> configuration option.
+
+I think its best to use a DT property then. That way it can be set
+appropiatly for boards known to use a band, which could have
+interference problems.
+
+So just add a simple property (without a subnode). If I understand
+Mark correctly, there's a high chance more drivers will need to
+describe the switching frequency, so I suggest to use a vendor
+independent property name:
+
+switching-frequency =3D <12345>;
+
+-- Sebastian
+
+--wac7ysb48OaltWcw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUyWnXAAoJENju1/PIO/qaQ9YP/j8+hSDHXuHvx895UVtcA3Qx
+Cv2JE3LZchHgubIt/VL9yB65Qz8HxwafsG/94N9Ry3ZTnBCMGZiBtcBY3TH4jkcC
+qunliXVgu5IRYav5diQIgZjmuh0nsWelAkefmbWclDmdtPX5qX4LtkjWQ9ZxPjF6
+2lnC0wf8WYra5QKAOxC1MhzcuuizF8vrshagjT08m7z+YlX9Pz+SXvVOOi/Bi+3l
+g2P8SBrgbUq7uRXDbMHG+WoTPC0rkjqrIrvkVW8T0pUlpjyRKIWPZ9bVqCeQ8RJT
+iwvTlTPKl6qjSLmedvdaLmMiBLhngY6nbbF0J48PGK57/0P6PnUn0szsmG5w4/bh
+T58U2mCmHWD0fUMCUbB6JrgN4tzkWRQ6x7Py7hWzZQ41htihUXWFvU8vYt0zlyQE
+/cmGD5C5ep0HUUEJYpZDntpvY6VsuYDUM6BiaI1qgqEQc0bU8UoVMzavkrKwbi3w
+l7tWdYetlZC233IynmmK6kRhQ88O9cENVidwqmKiWWKHRm6oofkHUBlbncoLnnTu
+svPAbLD3HCVnfQ17khG5PwNXhIFd2TDnQKNZvVNrSsesBpuujASKWoI1PNawqYEJ
+yAnOVVYRMRaxe/2TeRYEjUWU3OaG0ZwAosKnpDVcfeUWsZ7J+46xYA6u5tQADaup
+w6JDCBL5LNE6ZregTUcB
+=vbXr
+-----END PGP SIGNATURE-----
+
+--wac7ysb48OaltWcw--
+
+
+--===============1666247968187865887==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============1666247968187865887==--
