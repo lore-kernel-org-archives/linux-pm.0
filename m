@@ -1,82 +1,224 @@
-From: Robert Baldyga <r.baldyga@samsung.com>
-Subject: Re: [PATCH v5 0/3] mfd: max8997: add regmap support
-Date: Wed, 28 Jan 2015 15:20:11 +0100
-Message-ID: <54C8F01B.5030300@samsung.com>
-References: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v1 7/7] thermal: export thermal_zone_parameters to sysfs
+Date: Wed, 28 Jan 2015 17:00:38 +0000
+Message-ID: <1422464438-16761-8-git-send-email-javi.merino@arm.com>
+References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
+In-Reply-To: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: lee.jones@linaro.org, dmitry.torokhov@gmail.com, a.zummo@towertech.it
-Cc: sameo@linux.intel.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, cooloney@gmail.com, rpurdie@rpsys.net, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, lgirdwood@gmail.com, broonie@kernel.org, paul.gortmaker@windriver.com, sachin.kamat@linaro.org, k.kozlowski@samsung.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+It's useful for tuning to be able to edit thermal_zone_parameters from
+userspace.  Export them to the thermal_zone sysfs so that they can be
+easily changed.
 
-The first version of this patchset was send to kernel list almost 9
-months ago and still I don't have all needed Acks. The missing ones are
-for changes in INPUT and RTC subsystems.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ Documentation/thermal/sysfs-api.txt |  52 +++++++++++++++++
+ drivers/thermal/thermal_core.c      | 110 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 162 insertions(+)
 
-Dmitry, Alessandro, could you please have a look at this patches and
-give your Acks?
-
-Best regards,
-Robert Baldyga
-
-On 11/12/2014 08:23 AM, Robert Baldyga wrote:
-> This patchset modifies max8997 driver and associated function drivers to use
-> register maps instead of operating directly on i2c bus. This change allowed
-> to simplify irq handling, and to move some initializations to individual
-> function drivers. Hence now when some functions are not enabled, their i2c
-> clients, regmaps and irqs are not registered.
-> 
-> Because patches are under review for very long time and I still don't have
-> all needed Acks, I'm resending this series rebased to the latest next branch.
-> 
-> Best regards
-> Robert Baldyga
-> Samsung R&D Institute Poland
-> 
-> Changelog:
-> 
-> v5:
-> - rebase patches to last next branch
-> 
-> v4:
-> - remove patch moving regmap handling to function drivers
-> 
-> v3: https://lkml.org/lkml/2014/3/13/101
-> - fix error handling
-> - fix deinitializations order
-> - move muic irq enum values renaming to separate patch
-> 
-> v2: https://lkml.org/lkml/2014/3/12/237
-> - rebase patches on Lee Jones' MFD tree
-> - add missing selects in Kconfig
-> - add missing deinitializations
-> - add interrupt disabling when suspend
-> - few minor changes and typo fixes
-> 
-> v1: https://lkml.org/lkml/2014/3/11/291
-> 
-> Robert Baldyga (3):
->   mfd: max8997: use regmap to access registers
->   mfd: max8997: handle IRQs using regmap
->   mfd: max8997: change irq names to upper case
-> 
->  drivers/extcon/extcon-max8997.c     |  66 +++---
->  drivers/input/misc/max8997_haptic.c |  34 ++--
->  drivers/leds/leds-max8997.c         |  13 +-
->  drivers/mfd/Kconfig                 |   3 +-
->  drivers/mfd/Makefile                |   2 +-
->  drivers/mfd/max8997-irq.c           | 387 ------------------------------------
->  drivers/mfd/max8997.c               | 245 +++++++++++++++--------
->  drivers/power/max8997_charger.c     |  33 +--
->  drivers/regulator/max8997.c         |  87 ++++----
->  drivers/rtc/rtc-max8997.c           |  58 +++---
->  include/linux/mfd/max8997-private.h |  82 ++++++--
->  11 files changed, 381 insertions(+), 629 deletions(-)
->  delete mode 100644 drivers/mfd/max8997-irq.c
-> 
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 87519cb379ee..a95aabfad014 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -176,6 +176,12 @@ Thermal zone device sys I/F, created once it's registered:
+     |---trip_point_[0-*]_type:	Trip point type
+     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
+     |---emul_temp:		Emulated temperature set node
++    |---sustainable_power:      Sustainable dissipatable power
++    |---k_po:                   Proportional term during temperature overshoot
++    |---k_pu:                   Proportional term during temperature undershoot
++    |---k_i:                    PID's integral term in the power allocator gov
++    |---k_d:                    PID's derivative term in the power allocator
++    |---integral_cutoff:        Offset above which errors are accumulated
+ 
+ Thermal cooling device sys I/F, created once it's registered:
+ /sys/class/thermal/cooling_device[0-*]:
+@@ -289,6 +295,52 @@ emul_temp
+ 	  because userland can easily disable the thermal policy by simply
+ 	  flooding this sysfs node with low temperature values.
+ 
++sustainable_power
++	An estimate of the sustained power that can be dissipated by
++	the thermal zone. Used by the power allocator governor. For
++	more information see Documentation/thermal/power_allocator.txt
++	Unit: milliwatts
++	RW, Optional
++
++k_po
++	The proportional term of the power allocator governor's PID
++	controller during temperature overshoot. Temperature overshoot
++	is when the current temperature is above the "desired
++	temperature" trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_pu
++	The proportional term of the power allocator governor's PID
++	controller during temperature undershoot. Temperature undershoot
++	is when the current temperature is below the "desired
++	temperature" trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_i
++	The integral term of the power allocator governor's PID
++	controller. This term allows the PID controller to compensate
++	for long term drift. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_d
++	The derivative term of the power allocator governor's PID
++	controller. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++integral_cutoff
++	Temperature offset from the desired temperature trip point
++	above which the integral term of the power allocator
++	governor's PID controller starts accumulating errors. For
++	example, if integral_cutoff is 0, then the integral term only
++	accumulates error when temperature is above the desired
++	temperature trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
+ *****************************
+ * Cooling device attributes *
+ *****************************
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index b77b5416929c..bde5e0442321 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -868,6 +868,111 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+ #endif/*CONFIG_THERMAL_EMULATION*/
+ 
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
++
++static ssize_t
++sustainable_power_show(struct device *dev, struct device_attribute *devattr,
++		       char *buf)
++{
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++
++	if (tz->tzp)
++		return sprintf(buf, "%u\n", tz->tzp->sustainable_power);
++	else
++		return -EIO;
++}
++
++static ssize_t
++sustainable_power_store(struct device *dev, struct device_attribute *devattr,
++			const char *buf, size_t count)
++{
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	u32 sustainable_power;
++
++	if (!tz->tzp)
++		return -EIO;
++
++	if (kstrtou32(buf, 10, &sustainable_power))
++		return -EINVAL;
++
++	tz->tzp->sustainable_power = sustainable_power;
++
++	return count;
++}
++static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
++		sustainable_power_store);
++
++#define create_s32_tzp_attr(name)					\
++	static ssize_t							\
++	name##_show(struct device *dev, struct device_attribute *devattr, \
++		char *buf)						\
++	{								\
++	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
++									\
++	if (tz->tzp)							\
++		return sprintf(buf, "%u\n", tz->tzp->name);		\
++	else								\
++		return -EIO;						\
++	}								\
++									\
++	static ssize_t							\
++	name##_store(struct device *dev, struct device_attribute *devattr, \
++		const char *buf, size_t count)				\
++	{								\
++		struct thermal_zone_device *tz = to_thermal_zone(dev);	\
++		s32 value;						\
++									\
++		if (!tz->tzp)						\
++			return -EIO;					\
++									\
++		if (kstrtos32(buf, 10, &value))				\
++			return -EINVAL;					\
++									\
++		tz->tzp->name = value;					\
++									\
++		return count;						\
++	}								\
++	static DEVICE_ATTR(name, S_IWUSR | S_IRUGO, name##_show, name##_store)
++
++create_s32_tzp_attr(k_po);
++create_s32_tzp_attr(k_pu);
++create_s32_tzp_attr(k_i);
++create_s32_tzp_attr(k_d);
++create_s32_tzp_attr(integral_cutoff);
++#undef create_s32_tzp_attr
++
++static struct device_attribute *dev_tzp_attrs[] = {
++	&dev_attr_sustainable_power,
++	&dev_attr_k_po,
++	&dev_attr_k_pu,
++	&dev_attr_k_i,
++	&dev_attr_k_d,
++	&dev_attr_integral_cutoff,
++};
++
++static int create_power_allocator_tzp_attrs(struct device *dev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(dev_tzp_attrs); i++) {
++		int ret;
++		struct device_attribute *dev_attr = dev_tzp_attrs[i];
++
++		ret = device_create_file(dev, dev_attr);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++#else  /* !CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
++static int create_power_allocator_tzp_attrs(struct device *dev)
++{
++	return 0;
++}
++#endif
++
+ /**
+  * power_actor_get_max_power() - get the maximum power that a cdev can consume
+  * @cdev:	pointer to &thermal_cooling_device
+@@ -1662,6 +1767,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Add power_allocator specific thermal zone params */
++	result = create_power_allocator_tzp_attrs(&tz->device);
++	if (result)
++		goto unregister;
++
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
+ 
+-- 
+1.9.1
