@@ -1,65 +1,61 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/8] PM / Domains: Re-structure code for adding/removing
- devices to genpd
-Date: Thu, 29 Jan 2015 11:32:49 +0100
-Message-ID: <CAMuHMdWOEYX8S_j80ay4KepESHSJVFFW5UD=cKo_cMQ=Ak0U8g@mail.gmail.com>
-References: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 29 Jan 2015 11:07:44 +0000
+Message-ID: <20150129110744.GU21293@sirena.org.uk>
+References: <CAKohpokxdpF2nTeOnDpofNM1vW3aZRyDBE3WKmvZ8wJedf-TGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="EUFYPFpHgv7thsbJ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:33687 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759575AbbA2Kcv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 05:32:51 -0500
-In-Reply-To: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38797 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbbA2LIM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 06:08:12 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohpokxdpF2nTeOnDpofNM1vW3aZRyDBE3WKmvZ8wJedf-TGw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>
 
-On Tue, Jan 27, 2015 at 9:13 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> While adding error handling of genpd's ->attach_dev() callback, I realized that
-> we also had a need to re-structure some of the code which deals with
-> adding/removing devices to genpd. Especially the APIs, __pm_genpd_add_device()
-> and pm_genpd_remove_device() deserved some attention.
->
-> Patch 1 -> 4, can be considered as more simple cleanups and should not impact
-> the behavior for current clients using the APIs.
->
-> Patch 5, eliminates a mutex for generic_pm_domain_data by re-order the
-> initialization/cleanup of dev_pm_qos notifiers.
->
-> Patch 6, move some code around to fix a potenial memory leakage of a struct
-> pm_subsys_data.
->
-> Patch 7, code restructuring which impacts locking behavior while adding/removing
-> devices. Should improve code readability and decrease critical regions of
-> holding locks.
->
-> Patch 8, Adds error handling of genpd's ->attach_dev() callback
->
->
-> Ulf Hansson (8):
->   PM / Domains: Rename __pm_genpd_alloc|free_dev_data()
->   PM / Domains: Remove reference counting for the generic_pm_domain_data
->   PM / Domains: Don't allow an existing generic_pm_domain_data
->   PM / Domains: Don't check for an existing device when adding a new
->   PM / Domains: Eliminate the mutex for the generic_pm_domain_data
->   PM / Domains: Free pm_subsys_data in error path in
->     __pm_genpd_add_device()
->   PM / Domains: Re-order initialization of generic_pm_domain_data
->   PM / Domains: Handle errors from genpd's ->attach_dev() callback
 
-Looks OK, and tested on sh73a0/kzm9g-multiplatform with PM domains
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+--EUFYPFpHgv7thsbJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Gr{oetje,eeting}s,
+On Thu, Jan 29, 2015 at 07:09:23AM +0530, Viresh Kumar wrote:
+> On 29 January 2015 at 01:36, Mark Brown <broonie@kernel.org> wrote:
 
-                        Geert
+> >> +  Required properties:
+> >> +  - compatible: allow OPPs to express their compatibility.
+> >> +  - opp-list: phandle to opp-list defined above.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> > I don't understand what that compatible property is intended to mean and
+> > I expect other readers might be similarly confused - is it a standard
+> > compatbile property meaning this noe corresponds to some sort of device?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> The goal is to choose the driver which we want to probe for a platform. There
+> can be multiple DT enabled cpufreq drivers present in a build and the platform
+> needs some way to choose one of them.
+
+So you need to document this as a platform device then if that's what
+you're doing here; there's more than just specifying a compatible string
+involved.
+
+--EUFYPFpHgv7thsbJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJUyhR/AAoJECTWi3JdVIfQuHsH/2ncbje++IRo/Su+cMRTBnih
+/HKH2EcrscYaOxO0OV7SaX/cdyILurAwus3xcPjspXxMsg4TQmgFheRLJlMGPrS2
+cWop6v6sm4H/elABk42et2jzkdKhwRHnLBTwJhI2tEe8lEvQCDapCuI5ntBX9bqV
+eJWbVsvmmtkWY8WmW2vN9GeBjiM9C90SouQaw1qXSJ2nSooBk62iPyqcCc1S9klm
+Q5Ck4kVWM5l+GLZzi63oO+MY8bdpuT1gH1lucDwXYkvBaO9PwdFkLKDKvQvTNYa3
+Fctve8NraiHyqZOFJvjwGbfyD/0mTGxl1e/NtWEelDVmV5hTI/CAJfR0Hz8+B1I=
+=tyjU
+-----END PGP SIGNATURE-----
+
+--EUFYPFpHgv7thsbJ--
