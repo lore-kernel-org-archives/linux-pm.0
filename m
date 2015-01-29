@@ -1,56 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Thu, 29 Jan 2015 15:40:15 +0530
-Message-ID: <CAKohpo=An5Jm4qfhWaE96hPKyKVQfsZPdvrgxKH2ymvyvgQ_pQ@mail.gmail.com>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
- <1799972.nQ2Axu0CEJ@wuerfel>
- <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
- <2157802.ranbh8xTdL@wuerfel>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/8] PM / Domains: Re-structure code for adding/removing
+ devices to genpd
+Date: Thu, 29 Jan 2015 11:32:49 +0100
+Message-ID: <CAMuHMdWOEYX8S_j80ay4KepESHSJVFFW5UD=cKo_cMQ=Ak0U8g@mail.gmail.com>
+References: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <2157802.ranbh8xTdL@wuerfel>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:33687 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759575AbbA2Kcv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 05:32:51 -0500
+In-Reply-To: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On 29 January 2015 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
-> That might be close enough to what we want. It would by default enable
-> ARM_EXYNOS_CPUFREQ for exynos based machines that do not use this driver
-> (e.g. 5440, which has a separate driver, or exynos3/exynos7), but that
-> can probably just be dealt with by disabling it in the user's defconfig.
-> If i'm reading exynos_cpufreq_probe right, it would actually compile
-> into an almost-empty file in this case and only kzalloc a few bytes
-> of memory and then print a warning message.
+On Tue, Jan 27, 2015 at 9:13 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> While adding error handling of genpd's ->attach_dev() callback, I realized that
+> we also had a need to re-structure some of the code which deals with
+> adding/removing devices to genpd. Especially the APIs, __pm_genpd_add_device()
+> and pm_genpd_remove_device() deserved some attention.
+>
+> Patch 1 -> 4, can be considered as more simple cleanups and should not impact
+> the behavior for current clients using the APIs.
+>
+> Patch 5, eliminates a mutex for generic_pm_domain_data by re-order the
+> initialization/cleanup of dev_pm_qos notifiers.
+>
+> Patch 6, move some code around to fix a potenial memory leakage of a struct
+> pm_subsys_data.
+>
+> Patch 7, code restructuring which impacts locking behavior while adding/removing
+> devices. Should improve code readability and decrease critical regions of
+> holding locks.
+>
+> Patch 8, Adds error handling of genpd's ->attach_dev() callback
+>
+>
+> Ulf Hansson (8):
+>   PM / Domains: Rename __pm_genpd_alloc|free_dev_data()
+>   PM / Domains: Remove reference counting for the generic_pm_domain_data
+>   PM / Domains: Don't allow an existing generic_pm_domain_data
+>   PM / Domains: Don't check for an existing device when adding a new
+>   PM / Domains: Eliminate the mutex for the generic_pm_domain_data
+>   PM / Domains: Free pm_subsys_data in error path in
+>     __pm_genpd_add_device()
+>   PM / Domains: Re-order initialization of generic_pm_domain_data
+>   PM / Domains: Handle errors from genpd's ->attach_dev() callback
 
-I may be wrong this time around, but I will still try hard :
+Looks OK, and tested on sh73a0/kzm9g-multiplatform with PM domains
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b3ca7b0b2c33..91747c411d86 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -51,10 +51,9 @@ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)              +=
-arm_big_little_dt.o
+Gr{oetje,eeting}s,
 
- obj-$(CONFIG_ARCH_DAVINCI)             += davinci-cpufreq.o
- obj-$(CONFIG_UX500_SOC_DB8500)         += dbx500-cpufreq.o
--obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)       += exynos-cpufreq.o
--obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
--obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
--obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
-+obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos-cpufreq.o exynos4210-cpufreq.o
-+obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos-cpufreq.o exynos4x12-cpufreq.o
-+obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos-cpufreq.o exynos5250-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)     += highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)                += imx6q-cpufreq.o
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
