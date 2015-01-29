@@ -1,62 +1,55 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH 19/24] Documentation: DT bindings: add more chip compatible
- strings for Tegra SOC_THERM
-Date: Wed, 28 Jan 2015 16:49:38 -0700
-Message-ID: <20150128234938.20644.79411.stgit@dusk.lan>
-References: <20150128234935.20644.89300.stgit@dusk.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
+Date: Thu, 29 Jan 2015 09:09:03 +0530
+Message-ID: <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
+References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
+	<1422451015-390439-4-git-send-email-arnd@arndb.de>
+	<20150128172209.GF29600@developer.hsd1.ca.comcast.net>
+	<1799972.nQ2Axu0CEJ@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from utopia.booyaka.com ([74.50.51.50]:59455 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757469AbbA2Boj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 20:44:39 -0500
-In-Reply-To: <20150128234935.20644.89300.stgit@dusk.lan>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:44893 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbbA2DjE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 22:39:04 -0500
+Received: by mail-oi0-f48.google.com with SMTP id v63so22874452oia.7
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jan 2015 19:39:03 -0800 (PST)
+In-Reply-To: <1799972.nQ2Axu0CEJ@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Alexandre Courbot <gnurou@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
+On 29 January 2015 at 01:31, Arnd Bergmann <arnd@arndb.de> wrote:
 
-Add compatible strings for the SOC_THERM IP block present on several Tegra
-chips.  The primary objective here is to avoid checkpatch warnings,
-per:
+>>  config ARM_EXYNOS_CPUFREQ
+>> -     bool
+>> +     tristate "SAMSUNG EXYNOS CPUfreq Driver"
+>> +     depends on THERMAL
+>> +     default y
+>> +     help
+>> +       This adds the CPUFreq driver for Samsung EXYNOS platforms
+>> +
+>> +       If in doubt, say N.
+>
+> Now the option shows up on all systems that include Kconfig.arm,
+> in particular non-exynos machines that might not even be able
+> to build this.
 
-http://marc.info/?l=linux-tegra&m=142201349727836&w=2
+I am sure I am wrong here, but want to know what I am missing.
+What about:
 
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- .../devicetree/bindings/thermal/tegra-soctherm.txt |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index c3c3cf52d2d9..f3ee05067a69 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -27,7 +27,7 @@ config ARM_VEXPRESS_SPC_CPUFREQ
 
-diff --git a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
-index ecf3ed76cd46..9113f3bcd6df 100644
---- a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
-+++ b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
-@@ -7,7 +7,9 @@ notifications. It is also used to manage emergency shutdown in an
- overheating situation.
- 
- Required properties :
--- compatible : "nvidia,tegra124-soctherm".
-+- compatible : "nvidia,tegra124-soctherm",
-+  "nvidia,tegra132-soctherm" (not yet matched by the driver)
-+  "nvidia,tegra210-soctherm" (not yet matched by the driver)
- - reg : Should contain 1 entry:
-   - SOCTHERM register set
- - interrupts : Defines the interrupt used by SOCTHERM
-
-
+ config ARM_EXYNOS_CPUFREQ
+        tristate "SAMSUNG EXYNOS CPUfreq Driver"
+-       depends on THERMAL
++       depends on THERMAL && ARCH_EXYNOS
+        default y
+        help
+          This adds the CPUFreq driver for Samsung EXYNOS platforms
