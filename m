@@ -1,291 +1,75 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2] thermal: Fix examples in DT documentation
-Date: Wed, 28 Jan 2015 13:29:31 -0400
-Message-ID: <20150128172929.GA27003@developer.hsd1.ca.comcast.net>
-References: <1422465215-12716-1-git-send-email-srinivas.kandagatla@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: s3c: remove incorrect __init annotations
+Date: Thu, 29 Jan 2015 08:53:19 +0530
+Message-ID: <CAKohpok5XsZ3o-Q_Ber8n5GaThe1x7BiHqFyHPSDLUDpyCXxog@mail.gmail.com>
+References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
+	<1422451015-390439-2-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1422465215-12716-1-git-send-email-srinivas.kandagatla@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:45869 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757811AbbA2DXU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 22:23:20 -0500
+Received: by mail-oi0-f41.google.com with SMTP id z81so22817068oif.0
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jan 2015 19:23:19 -0800 (PST)
+In-Reply-To: <1422451015-390439-2-git-send-email-arnd@arndb.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jan 28, 2015 at 05:13:35PM +0000, Srinivas Kandagatla wrote:
-> There are various issues with the examples in this documentation, some
-> of the DT labels are invalid and one of the macro THERMAL_NO_LIMITS
-> referenced is not available as well.
->=20
-> This patch attempts to fix such errors in the documentation.
->=20
-> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+On 28 January 2015 at 18:46, Arnd Bergmann <arnd@arndb.de> wrote:
+> The two functions s3c2416_cpufreq_driver_init and s3c_cpufreq_register
+> are marked init but are called from a context that might be run after
+> the __init sections are discarded, as the compiler points out:
+>
+> WARNING: vmlinux.o(.data+0x1ad9dc): Section mismatch in reference from the variable s3c2416_cpufreq_driver to the function .init.text:s3c2416_cpufreq_driver_init()
+> WARNING: drivers/built-in.o(.text+0x35b5dc): Section mismatch in reference from the function s3c2410a_cpufreq_add() to the function .init.text:s3c_cpufreq_register()
+>
+> This removes the __init markings.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: stable@vger.kernel.org
 > ---
-> Changes Since v1:
-> 	- Fixed few more typo's as suggested by Eduardo Valentin
-
-Looks like there are still occurencies of adc-dummy after your patch.
-But I am amending myself, no need to resend.
-
->=20
->  .../devicetree/bindings/thermal/thermal.txt        | 66 +++++++++++-----=
-------
->  1 file changed, 33 insertions(+), 33 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Docu=
-mentation/devicetree/bindings/thermal/thermal.txt
-> index f5db6b7..91c77da 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -251,24 +251,24 @@ ocp {
+>  drivers/cpufreq/s3c2416-cpufreq.c | 4 ++--
+>  drivers/cpufreq/s3c24xx-cpufreq.c | 2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+> index 2fd53eaaec20..d6d425773fa4 100644
+> --- a/drivers/cpufreq/s3c2416-cpufreq.c
+> +++ b/drivers/cpufreq/s3c2416-cpufreq.c
+> @@ -263,7 +263,7 @@ out:
+>  }
+>
+>  #ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
+> -static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
+> +static void s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
+>  {
+>         int count, v, i, found;
+>         struct cpufreq_frequency_table *pos;
+> @@ -333,7 +333,7 @@ static struct notifier_block s3c2416_cpufreq_reboot_notifier = {
+>         .notifier_call = s3c2416_cpufreq_reboot_notifier_evt,
 >  };
-> =20
->  thermal-zones {
-> -	cpu-thermal: cpu-thermal {
-> +	cpu_thermal: cpu-thermal {
->  		polling-delay-passive =3D <250>; /* milliseconds */
->  		polling-delay =3D <1000>; /* milliseconds */
-> =20
->  		thermal-sensors =3D <&bandgap0>;
-> =20
->  		trips {
-> -			cpu-alert0: cpu-alert {
-> +			cpu_alert0: cpu-alert0 {
->  				temperature =3D <90000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "active";
->  			};
-> -			cpu-alert1: cpu-alert {
-> +			cpu_alert1: cpu-alert1 {
->  				temperature =3D <100000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			cpu-crit: cpu-crit {
-> +			cpu_crit: cpu-crit {
->  				temperature =3D <125000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "critical";
-> @@ -277,17 +277,17 @@ thermal-zones {
-> =20
->  		cooling-maps {
->  			map0 {
-> -				trip =3D <&cpu-alert0>;
-> -				cooling-device =3D <&fan0 THERMAL_NO_LIMITS 4>;
-> +				trip =3D <&cpu_alert0>;
-> +				cooling-device =3D <&fan0 THERMAL_NO_LIMIT 4>;
->  			};
->  			map1 {
-> -				trip =3D <&cpu-alert1>;
-> -				cooling-device =3D <&fan0 5 THERMAL_NO_LIMITS>;
-> +				trip =3D <&cpu_alert1>;
-> +				cooling-device =3D <&fan0 5 THERMAL_NO_LIMIT>;
->  			};
->  			map2 {
-> -				trip =3D <&cpu-alert1>;
-> +				trip =3D <&cpu_alert1>;
->  				cooling-device =3D
-> -				    <&cpu0 THERMAL_NO_LIMITS THERMAL_NO_LIMITS>;
-> +				    <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
->  			};
->  		};
->  	};
-> @@ -298,13 +298,13 @@ used to monitor the zone 'cpu-thermal' using its so=
-le sensor. A fan
->  device (fan0) is controlled via I2C bus 1, at address 0x48, and has ten
->  different cooling states 0-9. It is used to remove the heat out of
->  the thermal zone 'cpu-thermal' using its cooling states
-> -from its minimum to 4, when it reaches trip point 'cpu-alert0'
-> +from its minimum to 4, when it reaches trip point 'cpu_alert0'
->  at 90C, as an example of active cooling. The same cooling device is used=
- at
-> -'cpu-alert1', but from 5 to its maximum state. The cpu@0 device is also
-> +'cpu_alert1', but from 5 to its maximum state. The cpu@0 device is also
->  linked to the same thermal zone, 'cpu-thermal', as a passive cooling dev=
-ice,
-> -using all its cooling states at trip point 'cpu-alert1',
-> +using all its cooling states at trip point 'cpu_alert1',
->  which is a trip point at 100C. On the thermal zone 'cpu-thermal', at the
-> -temperature of 125C, represented by the trip point 'cpu-crit', the silic=
-on
-> +temperature of 125C, represented by the trip point 'cpu_crit', the silic=
-on
->  is not reliable anymore.
-> =20
->  (b) - IC with several internal sensors
-> @@ -329,7 +329,7 @@ ocp {
+>
+> -static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+> +static int s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+>  {
+>         struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
+>         struct cpufreq_frequency_table *pos;
+> diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+> index d00f1cee4509..bd340a1ca87d 100644
+> --- a/drivers/cpufreq/s3c24xx-cpufreq.c
+> +++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+> @@ -454,7 +454,7 @@ static struct cpufreq_driver s3c24xx_driver = {
 >  };
-> =20
->  thermal-zones {
-> -	cpu-thermal: cpu-thermal {
-> +	cpu_thermal: cpu-thermal {
->  		polling-delay-passive =3D <250>; /* milliseconds */
->  		polling-delay =3D <1000>; /* milliseconds */
-> =20
-> @@ -338,12 +338,12 @@ thermal-zones {
-> =20
->  		trips {
->  			/* each zone within the SoC may have its own trips */
-> -			cpu-alert: cpu-alert {
-> +			cpu_alert: cpu-alert {
->  				temperature =3D <100000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			cpu-crit: cpu-crit {
-> +			cpu_crit: cpu-crit {
->  				temperature =3D <125000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "critical";
-> @@ -356,7 +356,7 @@ thermal-zones {
->  		};
->  	};
-> =20
-> -	gpu-thermal: gpu-thermal {
-> +	gpu_thermal: gpu-thermal {
->  		polling-delay-passive =3D <120>; /* milliseconds */
->  		polling-delay =3D <1000>; /* milliseconds */
-> =20
-> @@ -365,12 +365,12 @@ thermal-zones {
-> =20
->  		trips {
->  			/* each zone within the SoC may have its own trips */
-> -			gpu-alert: gpu-alert {
-> +			gpu_alert: gpu-alert {
->  				temperature =3D <90000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			gpu-crit: gpu-crit {
-> +			gpu_crit: gpu-crit {
->  				temperature =3D <105000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "critical";
-> @@ -383,7 +383,7 @@ thermal-zones {
->  		};
->  	};
-> =20
-> -	dsp-thermal: dsp-thermal {
-> +	dsp_thermal: dsp-thermal {
->  		polling-delay-passive =3D <50>; /* milliseconds */
->  		polling-delay =3D <1000>; /* milliseconds */
-> =20
-> @@ -392,12 +392,12 @@ thermal-zones {
-> =20
->  		trips {
->  			/* each zone within the SoC may have its own trips */
-> -			dsp-alert: gpu-alert {
-> +			dsp_alert: dsp-alert {
->  				temperature =3D <90000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			dsp-crit: gpu-crit {
-> +			dsp_crit: gpu-crit {
->  				temperature =3D <135000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "critical";
-> @@ -457,7 +457,7 @@ ocp {
->  };
-> =20
->  thermal-zones {
-> -	cpu-thermal: cpu-thermal {
-> +	cpu_thermal: cpu-thermal {
->  		polling-delay-passive =3D <250>; /* milliseconds */
->  		polling-delay =3D <1000>; /* milliseconds */
-> =20
-> @@ -508,7 +508,7 @@ with many sensors and many cooling devices.
->  	/*
->  	 * An IC with several temperature sensor.
->  	 */
-> -	adc-dummy: sensor@0x50 {
-> +	adc_dummy: sensor@0x50 {
->  		...
->  		#thermal-sensor-cells =3D <1>; /* sensor internal ID */
->  	};
-> @@ -531,7 +531,7 @@ thermal-zones {
->  		};
->  	};
-> =20
-> -	board-thermal: board-thermal {
-> +	board_thermal: board-thermal {
->  		polling-delay-passive =3D <1000>; /* milliseconds */
->  		polling-delay =3D <2500>; /* milliseconds */
-> =20
-> @@ -548,22 +548,22 @@ thermal-zones {
-> =20
->  		trips {
->  			/* Trips are based on resulting linear equation */
-> -			cpu-trip: cpu-trip {
-> +			cpu_trip: cpu-trip {
->  				temperature =3D <60000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			gpu-trip: gpu-trip {
-> +			gpu_trip: gpu-trip {
->  				temperature =3D <55000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			}
-> -			lcd-trip: lcp-trip {
-> +			lcd_trip: lcp-trip {
->  				temperature =3D <53000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "passive";
->  			};
-> -			crit-trip: crit-trip {
-> +			crit_trip: crit-trip {
->  				temperature =3D <68000>; /* millicelsius */
->  				hysteresis =3D <2000>; /* millicelsius */
->  				type =3D "critical";
-> @@ -572,17 +572,17 @@ thermal-zones {
-> =20
->  		cooling-maps {
->  			map0 {
-> -				trip =3D <&cpu-trip>;
-> +				trip =3D <&cpu_trip>;
->  				cooling-device =3D <&cpu0 0 2>;
->  				contribution =3D <55>;
->  			};
->  			map1 {
-> -				trip =3D <&gpu-trip>;
-> +				trip =3D <&gpu_trip>;
->  				cooling-device =3D <&gpu0 0 2>;
->  				contribution =3D <20>;
->  			};
->  			map2 {
-> -				trip =3D <&lcd-trip>;
-> +				trip =3D <&lcd_trip>;
->  				cooling-device =3D <&lcd0 5 10>;
->  				contribution =3D <15>;
->  			};
-> --=20
-> 1.9.1
->=20
+>
+>
+> -int __init s3c_cpufreq_register(struct s3c_cpufreq_info *info)
+> +int s3c_cpufreq_register(struct s3c_cpufreq_info *info)
+>  {
+>         if (!info || !info->name) {
+>                 printk(KERN_ERR "%s: failed to pass valid information\n",
 
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUyRxwAAoJEMLUO4d9pOJW5R0H/3r+kjBarskXEbUyBtDstf20
-1cipftzdyk1ezVmIi77Jl19LO3U5xhaG3nniTLy8f6eKF3wRowaaWA0p5WvMr2sL
-wfzlsbaRLHYznLnaCo/PClCaoZZ6eTZ/zR4DrXU/XoOqRZAvynwlvhxlZE2Fv4T+
-xYticLwKR5dkD1+20PkYQGU2PcTvts4M43ANyBLHdOzaKZ9XVQ5lXOVStS1nDSkm
-PjREhOlM7zYMXwdcRVbzrZu52mogwEvUQmvo7njRQSsndF3c5zGe6S3xOUTGha92
-FA0WAUQSQpm49ET0MP0kYt+eLKFDenpNChQ6I7t36z9CCYx6GE/JDxXPMXjzSI4=
-=3yke
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
