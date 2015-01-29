@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
-Date: Thu, 29 Jan 2015 18:39:47 -0400
-Message-ID: <20150129223946.GD29837@developer.amazonguestwifi.org>
+Date: Thu, 29 Jan 2015 18:49:26 -0400
+Message-ID: <20150129224923.GE29837@developer.amazonguestwifi.org>
 References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,13 +29,6 @@ On Mon, Jan 26, 2015 at 08:09:46PM -0800, Narendran Rajan wrote:
 > Cc: Siddartha Mohanadoss <smohanad@codeaurora.org>
 > Cc: Stephen Boyd <sboyd@codeaurora.org>
 > Signed-off-by: Narendran Rajan  <nrajan@codeaurora.org>
-
-I know this might not be completely related, but since you are sending
-QCOM code, can you please check my comments on your PMIC thermal code?
-https://patchwork.kernel.org/patch/5013021/
-
-Ivan seams to have disappeared.
-
 > ---
 >  drivers/thermal/Kconfig         |  14 +
 >  drivers/thermal/Makefile        |   1 +
@@ -112,6 +105,10 @@ Ivan seams to have disappeared.
 > +#include <linux/of_platform.h>
 > +#include <linux/io.h>
 > +#include <linux/mfd/syscon.h>
+
+
+Please review your includes, remove those that are not needed.
+
 > +
 > +/* Trips: from very hot to very cold */
 > +enum tsens_trip_type {
@@ -121,6 +118,9 @@ Ivan seams to have disappeared.
 > +	TSENS_TRIP_STAGE0,
 > +	TSENS_TRIP_NUM,
 > +};
+
+Why is the above needed?
+
 > +
 > +#define TSENS_CAL_MDEGC				30000
 > +
@@ -468,6 +468,14 @@ Ivan seams to have disappeared.
 > +	return 0;
 > +}
 > +#endif
+
+This whole chunk of code seams to be unused. Should we remove it?
+
+Looks like this driver brings again the HW trip discussion again. Do you
+have any specific needs to extend of thermal?
+
+
+
 > +
 > +static void tsens_scheduler_fn(struct work_struct *work)
 > +{
