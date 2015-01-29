@@ -1,106 +1,558 @@
-From: santosh shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH] cpufreq: fix another race between PPC notification and
- vcpu_hotplug()
-Date: Thu, 29 Jan 2015 13:14:17 -0800
-Message-ID: <54CAA2A9.50008@oracle.com>
-References: <1422513761-8230-1-git-send-email-ethan.zhao@oracle.com> <CAKohpon-2rO7Rkr9juNXO+cOswoWmqiKHnnTr3aprW2y_Noh_w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
+Date: Thu, 29 Jan 2015 23:20:10 +0100
+Message-ID: <16564156.c5NBzjJuA3@vostro.rjw.lan>
+References: <54866625.8010406@linux.intel.com> <54C5FE6A.9010300@linux.intel.com> <alpine.DEB.2.11.1501260946390.5526@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:17013 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbbA2VO3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 16:14:29 -0500
-In-Reply-To: <CAKohpon-2rO7Rkr9juNXO+cOswoWmqiKHnnTr3aprW2y_Noh_w@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:52908 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753388AbbA2V5X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 16:57:23 -0500
+In-Reply-To: <alpine.DEB.2.11.1501260946390.5526@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Ethan Zhao <ethan.zhao@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ethan Zhao <ethan.kernel@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 1/29/2015 12:38 AM, Viresh Kumar wrote:
-> Looks like you just save my time here, Santosh has also reported a
-> similar race in a personal mail..
->
-> On 29 January 2015 at 12:12, Ethan Zhao <ethan.zhao@oracle.com> wrote:
->> There is race observed between PPC changed notification handler worker thread
->> and vcpu_hotplug() called within xenbus_thread() context.
->> It is shown as following WARNING:
->>
->>   ------------[ cut here ]------------
->>   WARNING: CPU: 0 PID: 4 at include/linux/kref.h:47
->>   kobject_get+0x41/0x50()
->>   Modules linked in: acpi_cpufreq(+) nfsd auth_rpcgss nfs_acl
->>   lockd grace sunrpc xfs libcrc32c sd_mod ixgbe igb mdio ahci hwmon
->>   ...
->>   [   14.003548] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted
->>   ...
->>   [   14.003553] Workqueue: kacpi_notify acpi_os_execute_deferred
->>   [   14.003554]  0000000000000000 000000008c76682c ffff88094c793af8
->>   ffffffff81661b14
->>   [   14.003556]  0000000000000000 0000000000000000 ffff88094c793b38
->>   ffffffff81072b61
->>   [   14.003558]  ffff88094c793bd8 ffff8812491f8800 0000000000000292
->>   0000000000000000
->>   [   14.003560] Call Trace:
->>   [   14.003567]  [<ffffffff81661b14>] dump_stack+0x46/0x58
->>   [   14.003571]  [<ffffffff81072b61>] warn_slowpath_common+0x81/0xa0
->>   [   14.003572]  [<ffffffff81072c7a>] warn_slowpath_null+0x1a/0x20
->>   [   14.003574]  [<ffffffff812e16d1>] kobject_get+0x41/0x50
->>   [   14.003579]  [<ffffffff815262a5>] cpufreq_cpu_get+0x75/0xc0
->>   [   14.003581]  [<ffffffff81527c3e>] cpufreq_update_policy+0x2e/0x1f0
->>   [   14.003586]  [<ffffffff810b8cb2>] ? up+0x32/0x50
->>   [   14.003589]  [<ffffffff81381aa9>] ? acpi_ns_get_node+0xcb/0xf2
->>   [   14.003591]  [<ffffffff81381efd>] ? acpi_evaluate_object+0x22c/0x252
->>   [   14.003593]  [<ffffffff813824f6>] ? acpi_get_handle+0x95/0xc0
->>   [   14.003596]  [<ffffffff81360967>] ? acpi_has_method+0x25/0x40
->>   [   14.003601]  [<ffffffff81391e08>] acpi_processor_ppc_has_changed+0x77/0x82
->>   [   14.003604]  [<ffffffff81089566>] ? move_linked_works+0x66/0x90
->>   [   14.003606]  [<ffffffff8138e8ed>] acpi_processor_notify+0x58/0xe7
->>   [   14.003609]  [<ffffffff8137410c>] acpi_ev_notify_dispatch+0x44/0x5c
->>   [   14.003611]  [<ffffffff8135f293>] acpi_os_execute_deferred+0x15/0x22
->>   [   14.003614]  [<ffffffff8108c910>] process_one_work+0x160/0x410
->>   [   14.003616]  [<ffffffff8108d05b>] worker_thread+0x11b/0x520
->>   [   14.003617]  [<ffffffff8108cf40>] ? rescuer_thread+0x380/0x380
->>   [   14.003621]  [<ffffffff81092421>] kthread+0xe1/0x100
->>   [   14.003623]  [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->>   [   14.003628]  [<ffffffff81669ebc>] ret_from_fork+0x7c/0xb0
->>   [   14.003630]  [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->>   [   14.003631] ---[ end trace 89e66eb9795efdf7 ]---
->>
->>   Thread A: Workqueue: kacpi_notify
->>
->>   acpi_processor_notify()
->>     acpi_processor_ppc_has_changed()
->>           cpufreq_update_policy()
->>             cpufreq_cpu_get()
->>               kobject_get()
->>
->>   Thread B: xenbus_thread()
->>
->>   xenbus_thread()
->>     msg->u.watch.handle->callback()
->>       handle_vcpu_hotplug_event()
->>         vcpu_hotplug()
->>           cpu_down()
->>             __cpu_notify(CPU_DOWN_PREPARE..)
->>               cpufreq_cpu_callback()
->>                 __cpufreq_remove_dev_prepare()
->>                   update_policy_cpu()
->>                     kobject_move()
->
-> Where is the race ? How do you say this is racy ?
->
-> I am not sure if the problem is with kobject_move(), to me it looked like
-> the problem is with cpufreq_policy_put_kobj() and we tried to do kobject_get()
-> after the kobject has been freed..
->
-> I don't agree to the solution you gave, but lets first make sure what the
-> problem is, and then take any action against it.
->
-> Please try this patch and let us know if it fixes it for you:
->
-Yes it does fix the issue. Thanks Viresh
+On Monday, January 26, 2015 10:40:24 AM Thomas Gleixner wrote:
+> On Mon, 26 Jan 2015, Li, Aubrey wrote:
+> > On 2015/1/22 18:15, Thomas Gleixner wrote:
+> > > Can we please stop adding more crap to that notifier thing? I rather
+> > > see that go away than being expanded.
+> > 
+> > Are you referring to FREEZE_PREPARE or remove all of FREEZE staff at all?
+> > 
+> > What's the disadvantage of adding more notifier?
+> 
+> clockevents_notify() is not a notifier. Its a multiplex call and I
+> want to get rid of it and replace it with explicit functions.
+> 
+> > >> +		/*
+> > >> +		 * cpuidle_enter will return with interrupt enabled
+> > >> +		 */
+> > >> +		cpuidle_enter(drv, dev, next_state);
+> > > 
+> > > How is that supposed to work?
+> > > 
+> > > If timekeeping is not yet unfrozen, then any interrupt handling code
+> > > which calls anything time related is going to hit lala land.
+> > > 
+> > > You must guarantee that timekeeping is unfrozen before any interrupt
+> > > is handled. If you cannot guarantee that, you cannot freeze
+> > > timekeeping ever.
+> > > 
+> > > The cpu local tick device is less critical, but it happens to work by
+> > > chance, not by design.
+> > 
+> > There are two way to guarantee this: the first way is, disable interrupt
+> > before timekeeping frozen and enable interrupt after timekeeping is
+> > unfrozen. However, we need to handle wakeup handler before unfreeze
+> > timekeeping to wake freeze task up from wait queue.
+> > 
+> > So we have to go the other way, the other way is, we ignore time related
+> > calls during freeze, like what I added in irq_enter below.
+> 
+> Groan. You just do not call in irq_enter/exit(), but what prevents any
+> interrupt handler or whatever to call into the time/timer code after
+> interrupts got reenabled?
+> 
+> Nothing. 
+> 
+> > Or, we need to re-implement freeze wait and wake up mechanism?
+> 
+> You need to make sure in the low level idle implementation that this
+> cannot happen.
+> 
+> tick_freeze()
+> {
+> 	raw_spin_lock(&tick_freeze_lock);
+> 	tick_frozen++;
+> 	if (tick_frozen == num_online_cpus())
+> 		timekeeping_suspend();
+> 	else
+> 		tick_suspend_local();
+> 	raw_spin_unlock(&tick_freeze_lock);
+> }
+> 
+> tick_unfreeze()
+> {
+> 	raw_spin_lock(&tick_freeze_lock);
+> 	if (tick_frozen == num_online_cpus())
+> 		timekeeping_resume();
+> 	else
+> 		tick_resume_local();
+> 	tick_frozen--;
+> 	raw_spin_unlock(&tick_freeze_lock);
+> }
+> 
+> idle_freeze()
+> {
+> 	local_irq_disable();
+> 
+> 	tick_freeze();
+> 
+> 	/* Must keep interrupts disabled! */
+>        	go_deep_idle()
+> 
+> 	tick_unfreeze();
+> 
+> 	local_irq_enable();
+> }
+> 
+> That's the only way you can do it proper, everything else will just be
+> a horrible mess of bandaids and duct tape.
+> 
+> So that does not need any of the irq_enter/exit conditionals, it does
+> not need the real_handler hack. It just works.
+> 
+> The only remaining issue might be a NMI calling into
+> ktime_get_mono_fast_ns() before timekeeping is resumed. Its probably a
+> non issue on x86/tsc, but it might be a problem on other platforms
+> which turn off devices, clocks, It's not rocket science to prevent
+> that.
 
-Regards,
-Santosh
+So the patch below is my version of the $subject one trying to take the
+above suggestion into account.  It doesn not address the ktime_get_mono_fast_ns()
+in NMI case at this stage, because quite frankly I'd prefer to get the core
+changes right in the first place.
+
+The new ->enter_freeze callback is there in struct cpuidle_state, because we
+generally cannot trust the existing ->enter callbacks to keep interrupts
+disabled all the time.  Some of them enable interrupts temporarily and
+some idle entry methods enable interrupts automatically on exit.  So
+->enter_freeze is required to keep interrupts disabled and it is safe to
+suspend/resume timekeeping around it.
+
+The rest is reasonably straightforward.  If suspend-to-idle is requested,
+couidle_idle_call() calls cpuidle_enter_freeze() that bypasses the governor
+and selects the deepest suitable state.  If ->enter_freeze is available,
+it will be used along with tick_freeze()/tick_unfreeze() and the normal
+idle entry code path will be used otherwise.
+
+I'm not quite sure if rcu_idle_enter/exit() needs to be done around that.
+The reason why it isn't in the current patch is because timekeeping_resume()
+was very unhappy about being part of the extended grace period and complained
+about that very loudly.
+
+Which of course means that the patch has been tested (lightly, with a hacked
+ACPI cpuidle driver) and that's why it still uses tick_suspend_broadcast()
+in tick_freeze().
+
+Please let me know what you think.
+
+Rafael
+
+
+---
+ drivers/cpuidle/cpuidle.c |   83 +++++++++++++++++++++++++++++++---------------
+ include/linux/cpuidle.h   |    8 +++-
+ include/linux/suspend.h   |    2 +
+ include/linux/tick.h      |    2 +
+ kernel/power/suspend.c    |   37 ++++++++++++++++----
+ kernel/sched/idle.c       |    9 ++++
+ kernel/time/tick-common.c |   50 +++++++++++++++++++++++++++
+ kernel/time/timekeeping.c |    4 +-
+ kernel/time/timekeeping.h |    2 +
+ 9 files changed, 160 insertions(+), 37 deletions(-)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -37,7 +37,20 @@ const char *pm_states[PM_SUSPEND_MAX];
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_freeze_ops *freeze_ops;
+ static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
+-static bool suspend_freeze_wake;
++
++/* Suspend-to-idle state machnine. */
++enum freeze_state {
++	FREEZE_STATE_NONE,      /* Not suspended/suspending. */
++	FREEZE_STATE_ENTER,     /* Enter suspend-to-idle. */
++	FREEZE_STATE_WAKE,      /* Wake up from suspend-to-idle. */
++};
++
++static enum freeze_state suspend_freeze_state;
++
++bool idle_should_freeze(void)
++{
++	return suspend_freeze_state == FREEZE_STATE_ENTER;
++}
+ 
+ void freeze_set_ops(const struct platform_freeze_ops *ops)
+ {
+@@ -48,22 +61,32 @@ void freeze_set_ops(const struct platfor
+ 
+ static void freeze_begin(void)
+ {
+-	suspend_freeze_wake = false;
++	suspend_freeze_state = FREEZE_STATE_NONE;
+ }
+ 
+ static void freeze_enter(void)
+ {
+-	cpuidle_use_deepest_state(true);
++	suspend_freeze_state = FREEZE_STATE_ENTER;
++	get_online_cpus();
+ 	cpuidle_resume();
+-	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
++	/* Push all the CPUs into the idle loop. */
++	wake_up_all_idle_cpus();
++	pr_debug("PM: suspend-to-idle\n");
++	/* Make the current CPU wait so it can enter the idle loop too. */
++	wait_event(suspend_freeze_wait_head,
++		   suspend_freeze_state == FREEZE_STATE_WAKE);
++	pr_debug("PM: resume from suspend-to-idle\n");
+ 	cpuidle_pause();
+-	cpuidle_use_deepest_state(false);
++	put_online_cpus();
++	suspend_freeze_state = FREEZE_STATE_NONE;
+ }
+ 
+ void freeze_wake(void)
+ {
+-	suspend_freeze_wake = true;
+-	wake_up(&suspend_freeze_wait_head);
++	if (suspend_freeze_state > FREEZE_STATE_NONE) {
++		suspend_freeze_state = FREEZE_STATE_WAKE;
++		wake_up(&suspend_freeze_wait_head);
++	}
+ }
+ EXPORT_SYMBOL_GPL(freeze_wake);
+ 
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -203,6 +203,7 @@ extern void suspend_set_ops(const struct
+ extern int suspend_valid_only_mem(suspend_state_t state);
+ extern void freeze_set_ops(const struct platform_freeze_ops *ops);
+ extern void freeze_wake(void);
++extern bool idle_should_freeze(void);
+ 
+ /**
+  * arch_suspend_disable_irqs - disable IRQs for suspend
+@@ -230,6 +231,7 @@ static inline void suspend_set_ops(const
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+ static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
+ static inline void freeze_wake(void) {}
++static inline bool idle_should_freeze(void) { return false; }
+ #endif /* !CONFIG_SUSPEND */
+ 
+ /* struct pbe is used for creating lists of pages that should be restored
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -7,6 +7,7 @@
+ #include <linux/tick.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
++#include <linux/suspend.h>
+ 
+ #include <asm/tlb.h>
+ 
+@@ -96,6 +97,13 @@ static void cpuidle_idle_call(void)
+ 	 */
+ 	stop_critical_timings();
+ 
++	if (idle_should_freeze()) {
++		cpuidle_enter_freeze();
++		local_irq_enable();
++		start_critical_timings();
++		return;
++	}
++
+ 	/*
+ 	 * Tell the RCU framework we are entering an idle section,
+ 	 * so no more rcu read side critical sections and one more
+@@ -220,6 +228,7 @@ static void cpu_idle_loop(void)
+ 			 * know that the IPI is going to arrive right
+ 			 * away
+ 			 */
++
+ 			if (cpu_idle_force_poll || tick_check_broadcast_expired())
+ 				cpu_idle_poll();
+ 			else
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -19,6 +19,8 @@
+ #include <linux/ktime.h>
+ #include <linux/hrtimer.h>
+ #include <linux/module.h>
++#include <linux/suspend.h>
++#include <linux/tick.h>
+ #include <trace/events/power.h>
+ 
+ #include "cpuidle.h"
+@@ -32,7 +34,6 @@ LIST_HEAD(cpuidle_detected_devices);
+ static int enabled_devices;
+ static int off __read_mostly;
+ static int initialized __read_mostly;
+-static bool use_deepest_state __read_mostly;
+ 
+ int cpuidle_disabled(void)
+ {
+@@ -66,36 +67,23 @@ int cpuidle_play_dead(void)
+ }
+ 
+ /**
+- * cpuidle_use_deepest_state - Enable/disable the "deepest idle" mode.
+- * @enable: Whether enable or disable the feature.
+- *
+- * If the "deepest idle" mode is enabled, cpuidle will ignore the governor and
+- * always use the state with the greatest exit latency (out of the states that
+- * are not disabled).
+- *
+- * This function can only be called after cpuidle_pause() to avoid races.
+- */
+-void cpuidle_use_deepest_state(bool enable)
+-{
+-	use_deepest_state = enable;
+-}
+-
+-/**
+- * cpuidle_find_deepest_state - Find the state of the greatest exit latency.
+- * @drv: cpuidle driver for a given CPU.
+- * @dev: cpuidle device for a given CPU.
++ * cpuidle_find_deepest_state - Find deepest state meeting specific conditions.
++ * @drv: cpuidle driver for the given CPU.
++ * @dev: cpuidle device for the given CPU.
++ * @freeze: Whether or not the state should be suitable for suspend-to-idle.
+  */
+ static int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+-				      struct cpuidle_device *dev)
++				      struct cpuidle_device *dev, bool freeze)
+ {
+ 	unsigned int latency_req = 0;
+-	int i, ret = CPUIDLE_DRIVER_STATE_START - 1;
++	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+ 
+ 	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
+ 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ 
+-		if (s->disabled || su->disable || s->exit_latency <= latency_req)
++		if (s->disabled || su->disable || s->exit_latency <= latency_req
++		    || (freeze && !s->enter_freeze))
+ 			continue;
+ 
+ 		latency_req = s->exit_latency;
+@@ -104,6 +92,52 @@ static int cpuidle_find_deepest_state(st
+ 	return ret;
+ }
+ 
++static void enter_freeze_proper(struct cpuidle_driver *drv,
++				struct cpuidle_device *dev, int index)
++{
++	tick_freeze();
++	drv->states[index].enter_freeze(dev, drv, index);
++	tick_unfreeze();
++}
++
++/**
++ * cpuidle_enter_freeze - Enter an idle state suitable for suspend-to-idle.
++ *
++ * If there are states with the ->enter_freeze callback, find the deepest of
++ * them and enter it with frozen tick.  Otherwise, find the deepest state
++ * available and enter it normally.
++ */
++void cpuidle_enter_freeze(void)
++{
++	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
++	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++	int index;
++
++	/*
++	 * Find the deepest state with ->enter_freeze present, which guarantees
++	 * that interrupts won't be enabled when it exits and allows the tick to
++	 * be frozen safely.
++	 */
++	index = cpuidle_find_deepest_state(drv, dev, true);
++	if (index >= 0) {
++		enter_freeze_proper(drv, dev, index);
++		return;
++	}
++
++	/*
++	 * It is not safe to freeze the tick, find the deepest state available
++	 * at all and try to enter it normally.
++	 */
++	index = cpuidle_find_deepest_state(drv, dev, false);
++	if (index >= 0)
++		cpuidle_enter(drv, dev, index);
++	else
++		arch_cpu_idle();
++
++	/* Interrupts are enabled again here. */
++	local_irq_disable();
++}
++
+ /**
+  * cpuidle_enter_state - enter the state and update stats
+  * @dev: cpuidle device for this cpu
+@@ -166,9 +200,6 @@ int cpuidle_select(struct cpuidle_driver
+ 	if (!drv || !dev || !dev->enabled)
+ 		return -EBUSY;
+ 
+-	if (unlikely(use_deepest_state))
+-		return cpuidle_find_deepest_state(drv, dev);
+-
+ 	return cpuidle_curr_governor->select(drv, dev);
+ }
+ 
+@@ -200,7 +231,7 @@ int cpuidle_enter(struct cpuidle_driver
+  */
+ void cpuidle_reflect(struct cpuidle_device *dev, int index)
+ {
+-	if (cpuidle_curr_governor->reflect && !unlikely(use_deepest_state))
++	if (cpuidle_curr_governor->reflect)
+ 		cpuidle_curr_governor->reflect(dev, index);
+ }
+ 
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -50,6 +50,10 @@ struct cpuidle_state {
+ 			int index);
+ 
+ 	int (*enter_dead) (struct cpuidle_device *dev, int index);
++
++	void (*enter_freeze) (struct cpuidle_device *dev,
++			      struct cpuidle_driver *drv,
++			      int index);
+ };
+ 
+ /* Idle State Flags */
+@@ -141,7 +145,7 @@ extern void cpuidle_resume(void);
+ extern int cpuidle_enable_device(struct cpuidle_device *dev);
+ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+ extern int cpuidle_play_dead(void);
+-extern void cpuidle_use_deepest_state(bool enable);
++extern void cpuidle_enter_freeze(void);
+ 
+ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
+ #else
+@@ -174,7 +178,7 @@ static inline int cpuidle_enable_device(
+ {return -ENODEV; }
+ static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
+ static inline int cpuidle_play_dead(void) {return -ENODEV; }
+-static inline void cpuidle_use_deepest_state(bool enable) {}
++static inline void cpuidle_enter_freeze(void) { }
+ static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
+ 	struct cpuidle_device *dev) {return NULL; }
+ #endif
+Index: linux-pm/kernel/time/tick-common.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-common.c
++++ linux-pm/kernel/time/tick-common.c
+@@ -394,6 +394,56 @@ void tick_resume(void)
+ 	}
+ }
+ 
++static DEFINE_RAW_SPINLOCK(tick_freeze_lock);
++static unsigned int tick_freeze_depth;
++
++/**
++ * tick_freeze - Suspend the local tick and (possibly) timekeeping.
++ *
++ * Check if this is the last online CPU executing the function and if so,
++ * suspend timekeeping.  Otherwise suspend the local tick.
++ *
++ * Call with interrupts disabled.  Must be balanced with %tick_unfreeze().
++ * Interrupts must not be enabled before the subsequent %tick_unfreeze().
++ */
++void tick_freeze(void)
++{
++	raw_spin_lock(&tick_freeze_lock);
++
++	tick_freeze_depth++;
++	if (tick_freeze_depth == num_online_cpus()) {
++		timekeeping_suspend();
++	} else {
++		tick_suspend();
++		tick_suspend_broadcast();
++	}
++
++	raw_spin_unlock(&tick_freeze_lock);
++}
++
++/**
++ * tick_unfreeze - Resume the local tick and (possibly) timekeeping.
++ *
++ * Check if this is the first CPU executing the function and if so, resume
++ * timekeeping.  Otherwise resume the local tick.
++ *
++ * Call with interrupts disabled.  Must be balanced with %tick_freeze().
++ * Interrupts must not be enabled after the preceding %tick_freeze().
++ */
++void tick_unfreeze(void)
++{
++	raw_spin_lock(&tick_freeze_lock);
++
++	if (tick_freeze_depth == num_online_cpus())
++		timekeeping_resume();
++	else
++		tick_resume();
++
++	tick_freeze_depth--;
++
++	raw_spin_unlock(&tick_freeze_lock);
++}
++
+ /**
+  * tick_init - initialize the tick control
+  */
+Index: linux-pm/include/linux/tick.h
+===================================================================
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -226,5 +226,7 @@ static inline void tick_nohz_task_switch
+ 		__tick_nohz_task_switch(tsk);
+ }
+ 
++extern void tick_freeze(void);
++extern void tick_unfreeze(void);
+ 
+ #endif
+Index: linux-pm/kernel/time/timekeeping.c
+===================================================================
+--- linux-pm.orig/kernel/time/timekeeping.c
++++ linux-pm/kernel/time/timekeeping.c
+@@ -1170,7 +1170,7 @@ void timekeeping_inject_sleeptime64(stru
+  * xtime/wall_to_monotonic/jiffies/etc are
+  * still managed by arch specific suspend/resume code.
+  */
+-static void timekeeping_resume(void)
++void timekeeping_resume(void)
+ {
+ 	struct timekeeper *tk = &tk_core.timekeeper;
+ 	struct clocksource *clock = tk->tkr.clock;
+@@ -1251,7 +1251,7 @@ static void timekeeping_resume(void)
+ 	hrtimers_resume();
+ }
+ 
+-static int timekeeping_suspend(void)
++int timekeeping_suspend(void)
+ {
+ 	struct timekeeper *tk = &tk_core.timekeeper;
+ 	unsigned long flags;
+Index: linux-pm/kernel/time/timekeeping.h
+===================================================================
+--- linux-pm.orig/kernel/time/timekeeping.h
++++ linux-pm/kernel/time/timekeeping.h
+@@ -16,5 +16,7 @@ extern int timekeeping_inject_offset(str
+ extern s32 timekeeping_get_tai_offset(void);
+ extern void timekeeping_set_tai_offset(s32 tai_offset);
+ extern void timekeeping_clocktai(struct timespec *ts);
++extern int timekeeping_suspend(void);
++extern void timekeeping_resume(void);
+ 
+ #endif
+
