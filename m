@@ -1,42 +1,109 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 2/2] power_supply: lp8788-charger: Fix leaked power supply on
- probe fail
-Date: Thu, 29 Jan 2015 15:39:39 +0100
-Message-ID: <1422542379-8202-2-git-send-email-k.kozlowski@samsung.com>
-References: <1422542379-8202-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1422542379-8202-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Milo Kim <milo.kim@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+Subject: [PATCH 1/2] power_supply: ab8500_fg: Simplify creation and removal of
+ sysfs entries
+Date: Thu, 29 Jan 2015 15:39:38 +0100
+Message-ID: <1422542379-8202-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:11261 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbbA2Oju (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 09:39:50 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Milo Kim <milo.kim@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Driver forgot to unregister charger power supply if registering of
-battery supply failed in probe(). In such case the memory associated
-with power supply leaked.
+Simplify a little ab8500_fg_sysfs_psy_create_attrs () and
+ab8500_fg_sysfs_psy_remove_attrs() functions because they received
+pointer to power supply device which was then converted into power
+supply instance. Then it was converted into struct ab8500_fg. The path
+looked like:
+	ab8500_fg->psy.dev -> psy -> ab8500_fg
+
+Instead just pass pointer to struct ab8500_fg directly so all
+conversions won't be necessary.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Fixes: 98a276649358 ("power_supply: Add new lp8788 charger driver")
-Cc: <stable@vger.kernel.org>
 ---
- drivers/power/lp8788-charger.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/power/ab8500_fg.c | 29 +++++++++++------------------
+ 1 file changed, 11 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/power/lp8788-charger.c b/drivers/power/lp8788-charger.c
-index 21fc233c7d61..176dab2e4c16 100644
---- a/drivers/power/lp8788-charger.c
-+++ b/drivers/power/lp8788-charger.c
-@@ -417,8 +417,10 @@ static int lp8788_psy_register(struct platform_device *pdev,
- 	pchg->battery.num_properties = ARRAY_SIZE(lp8788_battery_prop);
- 	pchg->battery.get_property = lp8788_battery_get_property;
+diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
+index c908658aa31a..94d3b10a21ff 100644
+--- a/drivers/power/ab8500_fg.c
++++ b/drivers/power/ab8500_fg.c
+@@ -2954,44 +2954,37 @@ static struct device_attribute ab8505_fg_sysfs_psy_attrs[] = {
+ 		ab8505_powercut_enable_status_read, NULL),
+ };
  
--	if (power_supply_register(&pdev->dev, &pchg->battery))
-+	if (power_supply_register(&pdev->dev, &pchg->battery)) {
-+		power_supply_unregister(&pchg->charger);
- 		return -EPERM;
-+	}
+-static int ab8500_fg_sysfs_psy_create_attrs(struct device *dev)
++static int ab8500_fg_sysfs_psy_create_attrs(struct ab8500_fg *di)
+ {
+ 	unsigned int i;
+-	struct power_supply *psy = dev_get_drvdata(dev);
+-	struct ab8500_fg *di;
+-
+-	di = to_ab8500_fg_device_info(psy);
  
+ 	if (((is_ab8505(di->parent) || is_ab9540(di->parent)) &&
+-	     abx500_get_chip_id(dev->parent) >= AB8500_CUT2P0)
++	     abx500_get_chip_id(di->dev) >= AB8500_CUT2P0)
+ 	    || is_ab8540(di->parent)) {
+ 		for (i = 0; i < ARRAY_SIZE(ab8505_fg_sysfs_psy_attrs); i++)
+-			if (device_create_file(dev,
++			if (device_create_file(di->fg_psy.dev,
+ 					       &ab8505_fg_sysfs_psy_attrs[i]))
+ 				goto sysfs_psy_create_attrs_failed_ab8505;
+ 	}
  	return 0;
+ sysfs_psy_create_attrs_failed_ab8505:
+-	dev_err(dev, "Failed creating sysfs psy attrs for ab8505.\n");
++	dev_err(di->fg_psy.dev, "Failed creating sysfs psy attrs for ab8505.\n");
+ 	while (i--)
+-		device_remove_file(dev, &ab8505_fg_sysfs_psy_attrs[i]);
++		device_remove_file(di->fg_psy.dev, &ab8505_fg_sysfs_psy_attrs[i]);
+ 
+ 	return -EIO;
  }
+ 
+-static void ab8500_fg_sysfs_psy_remove_attrs(struct device *dev)
++static void ab8500_fg_sysfs_psy_remove_attrs(struct ab8500_fg *di)
+ {
+ 	unsigned int i;
+-	struct power_supply *psy = dev_get_drvdata(dev);
+-	struct ab8500_fg *di;
+-
+-	di = to_ab8500_fg_device_info(psy);
+ 
+ 	if (((is_ab8505(di->parent) || is_ab9540(di->parent)) &&
+-	     abx500_get_chip_id(dev->parent) >= AB8500_CUT2P0)
++	     abx500_get_chip_id(di->dev) >= AB8500_CUT2P0)
+ 	    || is_ab8540(di->parent)) {
+ 		for (i = 0; i < ARRAY_SIZE(ab8505_fg_sysfs_psy_attrs); i++)
+-			(void)device_remove_file(dev, &ab8505_fg_sysfs_psy_attrs[i]);
++			(void)device_remove_file(di->fg_psy.dev,
++						 &ab8505_fg_sysfs_psy_attrs[i]);
+ 	}
+ }
+ 
+@@ -3056,7 +3049,7 @@ static int ab8500_fg_remove(struct platform_device *pdev)
+ 	ab8500_fg_sysfs_exit(di);
+ 
+ 	flush_scheduled_work();
+-	ab8500_fg_sysfs_psy_remove_attrs(di->fg_psy.dev);
++	ab8500_fg_sysfs_psy_remove_attrs(di);
+ 	power_supply_unregister(&di->fg_psy);
+ 	return ret;
+ }
+@@ -3221,7 +3214,7 @@ static int ab8500_fg_probe(struct platform_device *pdev)
+ 		goto free_irq;
+ 	}
+ 
+-	ret = ab8500_fg_sysfs_psy_create_attrs(di->fg_psy.dev);
++	ret = ab8500_fg_sysfs_psy_create_attrs(di);
+ 	if (ret) {
+ 		dev_err(di->dev, "failed to create FG psy\n");
+ 		ab8500_fg_sysfs_exit(di);
 -- 
 1.9.1
+
