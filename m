@@ -1,225 +1,146 @@
-From: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
-Date: Thu, 29 Jan 2015 10:22:32 -0600
-Message-ID: <CAL_JsqKrjvOw4hwOfS_V1g8As0N1xTbf4S1wKnxHdeoHyxH66A@mail.gmail.com>
-References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: RFC on cpufreq implementation
+Date: Thu, 29 Jan 2015 17:43:19 +0100
+Message-ID: <54CA6327.5070707@free.fr>
+References: <54B7F7CD.7030903@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbM@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, santosh shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Thomas Abraham <ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Mark
+Content-Type: multipart/mixed;
+ boundary="------------020703030303040803070404"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:63739 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755213AbbA2QnZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 29 Jan 2015 11:43:25 -0500
+In-Reply-To: <54B7F7CD.7030903@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, Jan 23, 2015 at 4:44 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Rob et al,
->
-> This is another attempt to redefine OPP bindings which we concluded to after
-> first round of reviews.
->
-> Current OPP (Operating performance point) DT bindings are proven to be
-> insufficient at multiple instances.
->
-> There had been multiple band-aid approaches to get them fixed (The latest one
-> being: http://www.mail-archive.com/devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org/msg53398.html).
-> For obvious reasons Rob rejected them and shown the right path forward.
->
-> The shortcomings we are trying to solve here:
->
-> - How to select which driver to probe for a platform, when multiple drivers are
->   available. For example: how to choose between cpufreq-dt and arm_big_little
->   drivers.
->
-> - Getting clock sharing information between CPUs. Single shared clock vs
->   independent clock per core vs shared clock per cluster.
+This is a multi-part message in MIME format.
+--------------020703030303040803070404
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'd like to see acks from Qualcomm folks to make sure this works for them.
+On 15/01/2015 18:24, Mason wrote:
 
-> - Support for turbo modes
->
-> - Support for intermediate frequencies
->
-> - Other per OPP settings: transition latencies, disabled status, etc.?
->
-> Please see the below bindings for further details.
->
-> I haven't incorporated the comments given by Mark Brown as I had some doubts.
-> @broonie: Is this what you wanted to mention earlier ? : http://pastebin.com/1RZTccmm
->
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->
->  Documentation/devicetree/bindings/power/opp.txt | 309 +++++++++++++++++++++++-
->  1 file changed, 308 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> index 74499e5033fc..9cdc0c9b09af 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -1,9 +1,316 @@
-> -* Generic OPP Interface
-> +Generic OPP (Operating Performance Points) Interface
-> +----------------------------------------------------
->
->  SoCs have a standard set of tuples consisting of frequency and
->  voltage pairs that the device will support per voltage domain. These
->  are called Operating Performance Points or OPPs.
->
-> +This documents defines OPP bindings with its required/optional properties. OPPs
-> +can be defined for any device, this file uses CPU as an example to illustrate
-> +how to define OPPs.
-> +
-> +opp nodes and opp-lists
-> +
-> +- opp-listN:
-> +  List of nodes defining performance points. Following belong to the nodes
-> +  within the opp-lists.
+> This is a follow-up to my previous thread.
+> "How many frequencies would cpufreq optimally like to manage?"
+> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
 
-I still don't think we need this extra level. More below on this.
+OK, so this is my TAKE 2 on the cpufreq driver, trying to remove
+some dependencies on machine-specific definitions by getting the
+virtual address at init via ioremap. (Is -EFAULT the right error
+to return if ioremap fails?)
 
-> +
-> +  Required properties:
-> +  - opp-khz: Frequency in kHz
-> +  - opp-microvolt: voltage in micro Volts
+I'm not sure where machine-specific information is supposed to
+be stored though? Such as register definitions, or the physical
+addresses/offsets. What if they need to be shared among several
+source files? I can't just duplicate them... (I've tentatively
+called it temp.h for the time being.)
 
-This can be optional as it is valid to have frequency scaling without
-voltage scaling. More so for bus scaling than cpu scaling.
+Regards.
 
-> +  Optional properties:
-> +  - turbo-mode: Marks the volt-freq pair as turbo pair.
-> +  - status: Marks the node enabled/disabled.
-> +  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +  - clock-latency-ns: Specify the possible maximum transition latency (in
-> +    nanoseconds) for switching to this opp from any other opp.
-> +
-> +- oppN:
-> +  Operating performance point node per device. Devices using it should have its
-> +  phandle in their "operating-points-v2" property.
-> +
-> +  Required properties:
-> +  - compatible: allow OPPs to express their compatibility.
-> +  - opp-list: phandle to opp-list defined above.
-> +
-> +  Optional properties:
-> +  - opp-intermediate: Stable opp we *must* switch to, before switching to the
-> +    target opp. Contains phandle of one of the opp-node present in opp-list.
 
-What about cases where perhaps you have a more complex sequencing
-arrangement? For example, what if you have to hit each step (to go
-from A -> D you have to go A -> B -> C -> D). Perhaps each OPP could
-have an opp-next property which lists other OPPs you can transition to
-(and no property means no restriction).
+--------------020703030303040803070404
+Content-Type: text/x-csrc;
+ name="cpufreq.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="cpufreq.c"
 
-Do you have a specific user in mind? If not, I think we can defer this
-issue. I think the binding is flexible enough to accommodate this in
-the future.
+/*
+ * Copyright 2015 Sigma Designs
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ */
+#include <linux/module.h>
+#include <linux/cpufreq.h>
+#include <linux/io.h>
+#include "temp.h"
 
-[...]
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Sigma Designs");
+MODULE_DESCRIPTION("cpufreq driver for Tangox 87xx");
 
-> +Example 2: Quad-core krait (All CPUs have independent clock lines but have same set of OPPs)
-> +
-> +/ {
-> +       cpus {
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               cpu@0 {
-> +                       compatible = "qcom,krait";
-> +                       reg = <0>;
-> +                       next-level-cache = <&L2>;
-> +                       clocks = <&clk_controller 0>;
-> +                       clock-names = "cpu";
-> +                       opp-supply = <&cpu_supply0>;
-> +                       operating-points-v2 = <&cpu0_opp>;
-> +               };
-> +
-> +               cpu@1 {
-> +                       compatible = "qcom,krait";
-> +                       reg = <1>;
-> +                       next-level-cache = <&L2>;
-> +                       clocks = <&clk_controller 1>;
-> +                       clock-names = "cpu";
-> +                       opp-supply = <&cpu_supply1>;
-> +                       operating-points-v2 = <&cpu1_opp>;
-> +               };
-> +
-> +               cpu@2 {
-> +                       compatible = "qcom,krait";
-> +                       reg = <2>;
-> +                       next-level-cache = <&L2>;
-> +                       clocks = <&clk_controller 2>;
-> +                       clock-names = "cpu";
-> +                       opp-supply = <&cpu_supply2>;
-> +                       operating-points-v2 = <&cpu2_opp>;
-> +               };
-> +
-> +               cpu@3 {
-> +                       compatible = "qcom,krait";
-> +                       reg = <3>;
-> +                       next-level-cache = <&L2>;
-> +                       clocks = <&clk_controller 3>;
-> +                       clock-names = "cpu";
-> +                       opp-supply = <&cpu_supply3>;
-> +                       operating-points-v2 = <&cpu3_opp>;
-> +               };
-> +       };
-> +
-> +       cpu0_opp: opp0 {
-> +               compatible = "linux,cpu-dvfs";
+#define TANGOX_XTAL_FREQ	27000 /* in kHz */
+#define CLKGEN_BASE		0x10000
+#define SYS_clkgen0_pll		(clkgen_base + 0x00)
+#define SYS_cpuclk_div_ctrl	(clkgen_base + 0x24)
 
-As I said before, drop the linux part. I'm not sure about cpu-dvfs
-either. Nothing is specific to cpus and you are necessarily doing
-voltage scaling. You could want to find all cpu OPPs though. Perhaps:
-"cpu-operating-point", "operating-point";
+static void __iomem *clkgen_base;
 
-It is not documented either.
+static struct cpufreq_frequency_table freq_table[] = {
+	{ .driver_data = 1 },
+	{ .driver_data = 2 },
+	{ .driver_data = 3 },
+	{ .driver_data = 5 },
+	{ .driver_data = 9 },
+	{ .frequency = CPUFREQ_TABLE_END },
+};
 
-> +               opp-list = <&cpu0_opplist>;
-> +               opp-intermediate = <&cpu0_intermediate>;
-> +
-> +               cpu0_opplist: opp-list0 {
-> +                       entry00 {
-> +                               opp-khz = <1000000>;
-> +                               opp-microvolt = <975000>;
-> +                               voltage-tolerance = <2>;
-> +                               clock-latency-ns = <300000>;
-> +                               status = "okay";
-> +                       };
-> +                       cpu0_intermediate: entry01 {
-> +                               opp-khz = <1100000>;
-> +                               opp-microvolt = <1000000>;
-> +                               voltage-tolerance = <2>;
-> +                               clock-latency-ns = <300000>;
-> +                               status = "okay";
-> +                       };
-> +                       entry02 {
-> +                               opp-khz = <1200000>;
-> +                               opp-microvolt = <1025000>;
-> +                               voltage-tolerance = <2>;
-> +                               clock-latency-ns = <300000>;
-> +                               status = "okay";
-> +                               turbo-mode;
-> +                       };
-> +               };
-> +       };
-> +
-> +       cpu1_opp: opp1 {
-> +               compatible = "linux,cpu-dvfs";
-> +               opp-list = <&cpu0_opplist>;
-> +               opp-intermediate = <&cpu0_intermediate>;
-> +       };
+static unsigned int tangox_get_freq(unsigned int cpu)
+{
+	union SYS_clkgen_pll pll;
+	union SYS_clk_div_ctrl div;
 
-This doesn't add anything other than some indirection to imply
-independent OPPs. The only way I know the clocks are not shared is you
-told me so in the example. I'd still prefer to determine from the
-clock api whether 2 clocks can be changed independently. That didn't
-seem to be agreed on, so you could simply add a "shared-opp" property
-to opp0 to mark an OPP as shared or not. Then you can remove the
-opp-list and these other cpuX_opp nodes.
+	pll.val = readl_relaxed(SYS_clkgen0_pll);
+	if (pll.f.Isel != 1 || pll.f.M != 0) return 0;
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	div.val = readl_relaxed(SYS_cpuclk_div_ctrl);
+	if (div.f.BP != 0 || div.f.F != 0) return 0;
+
+	return TANGOX_XTAL_FREQ * (pll.f.N + 1) / div.f.I >> pll.f.K;
+}
+
+static int tangox_target(struct cpufreq_policy *policy, unsigned int index)
+{
+	while (readl_relaxed(SYS_cpuclk_div_ctrl) >> 31) cpu_relax();
+	writel_relaxed(freq_table[index].driver_data, SYS_cpuclk_div_ctrl);
+	return 0;
+}
+
+static int tangox_cpu_init(struct cpufreq_policy *policy)
+{
+	struct cpufreq_frequency_table *p;
+	unsigned int freq = tangox_get_freq(0);
+	unsigned int transition_latency_ns = freq / SYS_FAST_RAMP_SPEED;
+	if ((clkgen_base = ioremap(CLKGEN_BASE, 0x40)) == NULL) return -EFAULT;
+
+	for (p = freq_table; p->frequency != CPUFREQ_TABLE_END; ++p) {
+		unsigned int I = p->driver_data;
+		union SYS_clk_div_ctrl div = SYS_CLK_DIV_CTRL(I);
+		p->driver_data = div.val;
+		p->frequency = freq / I;
+	}
+
+	return cpufreq_generic_init(policy, freq_table, transition_latency_ns);
+}
+
+static struct cpufreq_driver tangox_cpufreq_driver = {
+	.name		= "tangox-cpufreq",
+	.init		= tangox_cpu_init,
+	.verify		= cpufreq_generic_frequency_table_verify,
+	.target_index	= tangox_target,
+	.get		= tangox_get_freq,
+	.exit		= cpufreq_generic_exit,
+	.attr		= cpufreq_generic_attr,
+};
+
+static int __init tangox_cpufreq_init(void)
+{
+	return cpufreq_register_driver(&tangox_cpufreq_driver);
+}
+
+static void __exit tangox_cpufreq_exit(void)
+{
+	cpufreq_unregister_driver(&tangox_cpufreq_driver);
+}
+
+module_init(tangox_cpufreq_init);
+module_exit(tangox_cpufreq_exit);
+
+--------------020703030303040803070404--
