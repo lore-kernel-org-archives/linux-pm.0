@@ -1,62 +1,56 @@
-From: Arnd Bergmann <arnd@arndb.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Thu, 29 Jan 2015 11:01:16 +0100
-Message-ID: <2157802.ranbh8xTdL@wuerfel>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de> <1799972.nQ2Axu0CEJ@wuerfel> <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
+Date: Thu, 29 Jan 2015 15:40:15 +0530
+Message-ID: <CAKohpo=An5Jm4qfhWaE96hPKyKVQfsZPdvrgxKH2ymvyvgQ_pQ@mail.gmail.com>
+References: <1422451015-390439-1-git-send-email-arnd@arndb.de>
+ <1799972.nQ2Axu0CEJ@wuerfel>
+ <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
+ <2157802.ranbh8xTdL@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.131]:62196 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbbA2KB2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 05:01:28 -0500
-In-Reply-To: <CAKohpom9L4jiMRGn3OaWyYM7iR3Ame4-LKG144yuHmRxCJud3g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <2157802.ranbh8xTdL@wuerfel>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Thursday 29 January 2015 09:09:03 Viresh Kumar wrote:
-> On 29 January 2015 at 01:31, Arnd Bergmann <arnd@arndb.de> wrote:
-> 
-> >>  config ARM_EXYNOS_CPUFREQ
-> >> -     bool
-> >> +     tristate "SAMSUNG EXYNOS CPUfreq Driver"
-> >> +     depends on THERMAL
-> >> +     default y
-> >> +     help
-> >> +       This adds the CPUFreq driver for Samsung EXYNOS platforms
-> >> +
-> >> +       If in doubt, say N.
-> >
-> > Now the option shows up on all systems that include Kconfig.arm,
-> > in particular non-exynos machines that might not even be able
-> > to build this.
-> 
-> I am sure I am wrong here, but want to know what I am missing.
-> What about:
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index c3c3cf52d2d9..f3ee05067a69 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -27,7 +27,7 @@ config ARM_VEXPRESS_SPC_CPUFREQ
-> 
->  config ARM_EXYNOS_CPUFREQ
->         tristate "SAMSUNG EXYNOS CPUfreq Driver"
-> -       depends on THERMAL
-> +       depends on THERMAL && ARCH_EXYNOS
->         default y
->         help
->           This adds the CPUFreq driver for Samsung EXYNOS platforms
+On 29 January 2015 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
+> That might be close enough to what we want. It would by default enable
+> ARM_EXYNOS_CPUFREQ for exynos based machines that do not use this driver
+> (e.g. 5440, which has a separate driver, or exynos3/exynos7), but that
+> can probably just be dealt with by disabling it in the user's defconfig.
+> If i'm reading exynos_cpufreq_probe right, it would actually compile
+> into an almost-empty file in this case and only kzalloc a few bytes
+> of memory and then print a warning message.
 
-That might be close enough to what we want. It would by default enable
-ARM_EXYNOS_CPUFREQ for exynos based machines that do not use this driver
-(e.g. 5440, which has a separate driver, or exynos3/exynos7), but that
-can probably just be dealt with by disabling it in the user's defconfig.
-If i'm reading exynos_cpufreq_probe right, it would actually compile
-into an almost-empty file in this case and only kzalloc a few bytes
-of memory and then print a warning message.
+I may be wrong this time around, but I will still try hard :
 
-	Arnd
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index b3ca7b0b2c33..91747c411d86 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -51,10 +51,9 @@ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)              +=
+arm_big_little_dt.o
+
+ obj-$(CONFIG_ARCH_DAVINCI)             += davinci-cpufreq.o
+ obj-$(CONFIG_UX500_SOC_DB8500)         += dbx500-cpufreq.o
+-obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)       += exynos-cpufreq.o
+-obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
+-obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
+-obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
++obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos-cpufreq.o exynos4210-cpufreq.o
++obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos-cpufreq.o exynos4x12-cpufreq.o
++obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos-cpufreq.o exynos5250-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)     += highbank-cpufreq.o
+ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)                += imx6q-cpufreq.o
