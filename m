@@ -1,43 +1,66 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH] thermal: exynos: Correct sanity check at
- exynos_report_trigger() function
-Date: Wed, 28 Jan 2015 16:25:22 +0100
-Message-ID: <1422458722-23213-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:30397 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754202AbbA2Bgo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jan 2015 20:36:44 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 29 Jan 2015 07:09:23 +0530
+Message-ID: <CAKohpokxdpF2nTeOnDpofNM1vW3aZRyDBE3WKmvZ8wJedf-TGw@mail.gmail.com>
+References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
+	<20150128200600.GR21293@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150128200600.GR21293-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org" <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, santosh shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Thomas Abraham <ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-Up till now, by mistake, wrong variable was tested against being NULL.
-Since exynos_report_trigger() is always called with valid p pointer,
-it is only necessary to check if a valid thermal zone device is passed.
+On 29 January 2015 at 01:36, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Fri, Jan 23, 2015 at 04:14:50PM +0530, Viresh Kumar wrote:
+>
+>> +- opp-listN:
+>> +  List of nodes defining performance points. Following belong to the nodes
+>> +  within the opp-lists.
+>
+> Why is there the N here?  It doesn't correspond to the examples...
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I meant [0..N], probably its better to remove it ..
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 852e622..178de03 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -172,8 +172,8 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
- 	unsigned long temp;
- 	unsigned int i;
- 
--	if (!p) {
--		pr_err("Wrong temperature configuration data\n");
-+	if (!tz) {
-+		pr_err("No thermal zone device defined\n");
- 		return;
- 	}
- 
--- 
-2.0.0.rc2
+>> +  Required properties:
+>> +  - opp-khz: Frequency in kHz
+>> +  - opp-microvolt: voltage in micro Volts
+>
+> I thought the goal here was to specify ranges?
 
+Yeah, I wasn't 100% sure of what you suggested and so asked a question in
+the mail earlier. I will change it to what you suggested.
+
+>> +- oppN:
+>> +  Operating performance point node per device. Devices using it should have its
+>> +  phandle in their "operating-points-v2" property.
+>> +
+>> +  Required properties:
+>> +  - compatible: allow OPPs to express their compatibility.
+>> +  - opp-list: phandle to opp-list defined above.
+>
+> I don't understand what that compatible property is intended to mean and
+> I expect other readers might be similarly confused - is it a standard
+> compatbile property meaning this noe corresponds to some sort of device?
+
+The goal is to choose the driver which we want to probe for a platform. There
+can be multiple DT enabled cpufreq drivers present in a build and the platform
+needs some way to choose one of them.
+
+For example, if both cpufreq-dt, exynos-cpufreq and arm-big-little drivers are
+present in a kernel build, the how do we specify which one a platform wants to
+use.
+
+The generic drivers (cpufreq-dt and big LITTLE) should match with some generic
+strings, as these aren't specific to any platform. But exynos one can be matched
+with the machine or Soc-family's existing compatible names.
+
+> There also appears to be no code matching these bindings...
+
+I still have to post it, was trying to finalize the bindings first.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
