@@ -1,157 +1,98 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Thu, 29 Jan 2015 14:57:37 +0100
-Message-ID: <54CA3C51.2030802@free.fr>
-References: <54C8E125.3070905@free.fr>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Pull Request of PM / Devfreq (for next)
+Date: Thu, 29 Jan 2015 23:08:08 +0900
+Message-ID: <CAJ0PZbTSbjSKFH8Q=F1umscTMijO2W4_DioiQCUFFjEtnc08Ww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54C8E125.3070905@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f172.google.com ([209.85.220.172]:59662 "EHLO
+	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbbA2OIJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 09:08:09 -0500
+Received: by mail-vc0-f172.google.com with SMTP id le20so8861620vcb.3
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2015 06:08:08 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael.j.wysocki@intel.com, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-[ I am aware that my message is way too long, and that few people would have
-the time to answer all these questions. So maybe, if someone feels inclined
-to answer just one or two, that might kickstart some discussion, and I might
-learn something along the way. Regards. ]
+Dear Rafael,
 
-FTR, I've been reading about DeviceTree:
 
-http://lwn.net/Articles/573409/
-http://www.carbondesignsystems.com/virtual-prototype-blog/bid/195122/Running-the-Latest-Linux-Kernel-on-a-Minimal-ARM-Cortex-A15-System
-http://devicetree.org/Device_Tree_Usage
+Here goes a pull request from PM / devfreq to Linux-PM, for-next.
+(linux-3.20 rc-X)
 
-And I am resisting the urge to pile on a few more questions ;-/
 
-Regards.
 
-On 28/01/2015 14:16, Mason wrote:
-> Hello,
->
-> I am swimming in a sea of confusion, and am hoping someone would toss
-> me a life-jacket (of enlightenment). Please forgive me if some of my
-> questions are poorly asked or appear in seemingly random order.
->
-> Working on a Cortex A9 based SoC, I set out to "clean up" the platform
-> specific timer code, by using as much generic framework as possible.
-> (Right now, there's a lot of "redundant" code in the mach dir.)
->
->
-> Q1. the {n,u,m}delay function family
->
-> arch/arm/include/asm/delay.h mentions
-> "Delay routines, using a pre-computed "loops_per_second" value."
-> *BUT* if the frequency changes dynamically (thanks to cpufreq)
-> the "loops_per_second" value cannot be pre-computed, as it would
-> change dynamically too, right?
->
-> Looking at arch/arm/lib/delay.c it seems the default implementation
-> is a busy loop (in delay-loop.S) which looks up "loops_per_jiffy"
-> in the prolog to determine the number of times to loop, right?
->
-> http://lxr.free-electrons.com/source/arch/arm/lib/delay-loop.S
->
-> (Side issue, why is the loop unrolled in __loop_delay? What is the
-> point of unrolling a busy loop? This is commented code however.)
->
-> What happens if loops_per_jiffy changes while one core is in the
-> busy loop? It seems we might exit the loop too early, which could
-> break some drivers with some weird heisenbug, no?
->
-> Also, is the update of loops_per_jiffy atomic? Is it possible that
-> if one core reads it while another updates it, we get garbage?
->
-> I suppose this is one reason why the default functions are overridden
-> by register_current_timer_delay(&arch_delay_timer) right? I think the
-> property of a timer is that its frequency doesn't change, even if the
-> CPU's frequency changes? So we are still busy looping, but we are
-> checking the actual time spent in the loop, whatever the cpufreq?
->
-> Reference
-> https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
->
->
-> Q2. Cortex A9 global and private timers
->
-> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
->
-> (What are private timers used for?)
->
-> In my platform-specific code, there is a config option to choose between
->
-> 1) the ARM global timer
-> 2) a platform-specific timer (timer0)
->
-> I noticed that there is generic code to support the global timer in
-> drivers/clocksource/arm_global_timer.c
->
-> config ARM_GLOBAL_TIMER
->      bool
->      select CLKSRC_OF if OF
->      help
->        This options enables support for the ARM global timer unit
->
-> config CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
->      bool
->      depends on ARM_GLOBAL_TIMER
->      default y
->      help
->       Use ARM global timer clock source as sched_clock
->
-> I was thinking it would be better to use the "standard" option (ARM global timer)
-> as it is "officially" supported in the vanilla kernel. So less code to write and
-> to debug, and it has likely received more testing. Why would one rely on
-> platform-specific timers then?
->
-> Are high-resolution timers supported with the global timer?
->
->
-> Q3. Using the generic global timer implementation
->
-> So, how do I use that implementation?
-> (Is someone other than STMicro using it?)
->
-> I see:
->
-> static void __init global_timer_of_register(struct device_node *np)
-> CLOCKSOURCE_OF_DECLARE(arm_gt, "arm,cortex-a9-global-timer", global_timer_of_register);
->
-> OF stands for open firmware, yes?
-> So is this related to device tree?
->
-> http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/global_timer.txt
->
-> This file makes no sense to me.
->
-> - interrupts : One interrupt to each core
-> interrupts = <1 13 0xf01>;
-> what are 1 13 0xf01 ??
->
-> - clocks : Should be phandle to a clock.
-> clocks = <&arm_periph_clk>;
->
-> For my (old) 3.14 kernel, I found this:
->
->      /*
->       * ARM Peripheral clock for timers
->       */
->      arm_periph_clk: arm_periph_clk {
->        #clock-cells = <0>;
->        compatible = "fixed-clock";
->        clock-frequency = <600000000>;
->      };
->
-> But it looks like the definitions have moved around since then?
->
-> This device tree concept is too much to swallow in a single serving.
-> Please tell me if I'm going down the correct rabbit hole, and I'll
-> do some LWN readings to try to wrap my mind around the concept.
->
->
-> Anyway, if anyone can help me out on some of these topics, I'd be
-> eternally grateful.
->
-> Regards.
+Cheers,
+MyungJoo
 
+
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+The following changes since commit 26bc420b59a38e4e6685a73345a0def461136dce:
+
+  Linux 3.19-rc6 (2015-01-25 20:04:41 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
+tags/pull_req_20150129
+
+for you to fetch changes up to 846d4ee701e883f3e4647662e1f4069d0cd2694b:
+
+  PM / devfreq: event: Add documentation for exynos-ppmu devfreq-event
+driver (2015-01-29 21:52:53 +0900)
+
+- ----------------------------------------------------------------
+Pull Request of Devfreq, 2015-01-29.
+
+- ----------------------------------------------------------------
+Chanwoo Choi (3):
+      PM / devfreq: event: Add devfreq_event class
+      PM / devfreq: event: Add Exynos-ppmu devfreq-event driver
+      PM / devfreq: event: Add documentation for exynos-ppmu
+devfreq-event driver
+
+Tomeu Vizoso (1):
+      PM / devfreq: tegra: add devfreq driver for Tegra Activity Monitor
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 110 ++++
+ drivers/devfreq/Kconfig                            |  12 +
+ drivers/devfreq/Makefile                           |   4 +
+ drivers/devfreq/devfreq-event.c                    | 494 ++++++++++++++
+ drivers/devfreq/event/Kconfig                      |  25 +
+ drivers/devfreq/event/Makefile                     |   2 +
+ drivers/devfreq/event/exynos-ppmu.c                | 374 +++++++++++
+ drivers/devfreq/event/exynos-ppmu.h                |  93 +++
+ drivers/devfreq/tegra-devfreq.c                    | 718 +++++++++++++++++++++
+ include/linux/devfreq-event.h                      | 196 ++++++
+ 10 files changed, 2028 insertions(+)
+ create mode 100644
+Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Kconfig
+ create mode 100644 drivers/devfreq/event/Makefile
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.h
+ create mode 100644 drivers/devfreq/tegra-devfreq.c
+ create mode 100644 include/linux/devfreq-event.h
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUyj0BAAoJEBOhurvWBoCKHrAP/jCkj81SQEDB4PPF3w3JFfVj
+6GA2zVpunAeHAYq3klh41f9YyyyFxW1zp9nCfobcI9JO5IDsyCmNDOv5rla+yx/G
+XNlS4w+/tT5tXZjPR6b4irto6YsZN1Ro8AMH37UOqiOqB3t5nXjpZT64kWKNB9CF
+w7xPhTF6VhYlyT/wajqXDMzpMvSGt5YAIUJlpYLg7rD00rAatEbhfl5j7/bGkc/c
+X8X91j9I7Mc1mJ6hFkrtMJzYZAVPRbpVJuKNvMUru+DWCHMXOtv2fBfYEQFaQFTS
+V3/dVTvhhkW5ftgflDtWnUJIJVm8tavrtURLsOkw/6d0TuD0GMtcf0KNRnwdiR6D
+mznu3/l+3mg3XCUc5ydVYRProkj9CCpM5I5NVWsrJ1I5bj7E7kcF1jYKgNSr13j5
+9DFUheYJGY3953W1kAowRjqM+/ZMHxpsboRDTfxdl2Gfi3XLrhhjhKWNxNb2nsg4
+JdIFDbRnY4NHD8LXSlb8oJP/RfTgKc/wWYfqlETSeOZV4J7L6/DoHDM/jHzsVMU9
+j8zbE4f1LqAU0p5jP2RIt2ZTTXoNnIgObmXp/orhcoKRj9gm1qFb862U3IPrF+Jf
+W1lS/Casqc4gXYwqrYZ2Jjm87OujA3XqN4sxZAZbKbv8HI04mmzZRO6tXlnF62C+
+FVXiTktWShTIkMNyiXOu
+=BFS1
+-----END PGP SIGNATURE-----
