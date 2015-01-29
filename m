@@ -1,95 +1,51 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
-Date: Thu, 29 Jan 2015 18:53:30 -0400
-Message-ID: <20150129225329.GF29837@developer.amazonguestwifi.org>
-References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org>
- <54C73B0B.609@linaro.org>
- <002f01d03a81$07fabf10$17f03d30$@codeaurora.com>
- <20150128235240.GA23506@codeaurora.org>
+Subject: Re: [PATCH 2/3] exynos: config: Enable thermal emulation for Exynos
+ TMU (exynos_defconfig)
+Date: Thu, 29 Jan 2015 18:58:27 -0400
+Message-ID: <20150129225825.GG29837@developer.amazonguestwifi.org>
+References: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
+ <1422458920-14555-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:58036 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbbA2Wxl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 17:53:41 -0500
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:49586 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbbA2W6c convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 17:58:32 -0500
 Content-Disposition: inline
-In-Reply-To: <20150128235240.GA23506@codeaurora.org>
+In-Reply-To: <1422458920-14555-2-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Stephen Boyd' <sboyd@codeaurora.org>
-Cc: Narendran Rajan <nrajan@codeaurora.com>, 'Srinivas Kandagatla' <srinivas.kandagatla@linaro.org>, 'Narendran Rajan' <nrajan@codeaurora.org>, 'Zhang Rui' <rui.zhang@intel.com>, 'Linux ARM MSM' <linux-arm-msm@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Siddartha Mohanadoss' <smohanad@codeaurora.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
-On Wed, Jan 28, 2015 at 03:52:40PM -0800, 'Stephen Boyd' wrote:
-> On 01/27, Narendran Rajan wrote:
-> > > From: Srinivas Kandagatla [mailto:srinivas.kandagatla@linaro.org]
-> > > > +struct tsens_device;
-> > > > +
-> > > > +struct tsens_sensor {
-> > > > +	struct thermal_zone_device	*tz_dev;
-> > > > +	enum thermal_device_mode	mode;
-> > > > +	unsigned int			sensor_num;
-> > > > +	int				offset;
-> > > > +	u32				slope;
-> > > > +	struct tsens_device		*tmdev;
-> > > > +	u32                             status;
-> > > > +};
-> > > > +
-> > > > +struct tsens_device {
-> > > > +	bool			prev_reading_avail;
-> > > > +	unsigned int		num_sensors;
-> > > > +	int			pm_tsens_thr_data;
-> > > > +	int			pm_tsens_cntl;
-> > > > +	unsigned int            calib_offset;
-> > > > +	unsigned int            backup_calib_offset;
-> > > > +	struct work_struct	tsens_work;
-> > > > +	struct regmap		*map;
-> > > > +	struct regmap_field	*status_field;
-> > > > +	struct tsens_sensor	sensor[0];
-> > > > +};
-> > > > +
-> > > > +static struct device *tsens_dev;
-> > > Hmm.. I think you should remove this global variable and find a better way
-> > to
-> > > get hold of this.
-> > > 
-> > Didn't find anything simple enough. A few other drivers seems to use global 
-> > as well. Will look around. If you have some quick tips let me please know.
+On Wed, Jan 28, 2015 at 04:28:39PM +0100, Lukasz Majewski wrote:
+> Enabling thermal emulation on Exynos SoCs. New sysfs attribute - emul_temp
+> is created.
 > 
-> Why do we even need those dev_dbg() printks? I'd rather see that
-> debugging stuff get removed and this static singleton removed at
-> the same time.
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+
+I dont see problems with this patch:
+
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+
+> ---
+>  arch/arm/configs/exynos_defconfig | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> > > 
-> > Correct, in polling mode (which is what exists in thermal framework today),
-> > HW interrupt 
-> > do not make sense as the trip points are set to default and never updated
-> > based on Dt values.
-> > 
-> > But the code under the #ifdef THERMAL_TSENS8960_HWTRIPS supports the HW trip
-> > point mode.
-> > This code needs the additional patch
-> > Please see https://patchwork.ozlabs.org/patch/364812/
-> > 
-> > May be I will remove everything under HWTRIPs until it lands in the core
-> > thermal framework?
-
-
-> > 
-> 
-> That patch is half a year old. Is aynyone still working on it?
-> Perhaps you can pick it up and try to get it into a workable
-> state and then port this new driver to it?
-
-This is preferable. The original proposal was not taken further because
-it added functionality that would be only in of thermal. And my concern
-is that of thermal must be compliant with thermal core, and not a
-competing API. As long as HW trips can also be used by drivers that do
-not use of thermal, I am more than happy to help to merge a code in that front.
-
-Besides, other drivers would benefit too.
-
-> 
+> diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+> index 3691a68..376dbf4 100644
+> --- a/arch/arm/configs/exynos_defconfig
+> +++ b/arch/arm/configs/exynos_defconfig
+> @@ -88,6 +88,7 @@ CONFIG_HWMON=y
+>  CONFIG_SENSORS_LM90=y
+>  CONFIG_THERMAL=y
+>  CONFIG_EXYNOS_THERMAL=y
+> +CONFIG_THERMAL_EMULATION=y
+>  CONFIG_WATCHDOG=y
+>  CONFIG_S3C2410_WATCHDOG=y
+>  CONFIG_MFD_CROS_EC=y
 > -- 
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-> a Linux Foundation Collaborative Project
+> 2.0.0.rc2
+> 
