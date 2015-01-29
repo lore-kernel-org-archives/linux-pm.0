@@ -1,35 +1,46 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
-Date: Thu, 29 Jan 2015 13:42:32 +0100
-Message-ID: <1642077.OrkdxhO2uI@wuerfel>
-References: <1422451015-390439-1-git-send-email-arnd@arndb.de> <2157802.ranbh8xTdL@wuerfel> <CAKohpo=An5Jm4qfhWaE96hPKyKVQfsZPdvrgxKH2ymvyvgQ_pQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 1/2] Thermal/int340x_thermal: remove unused uuids.
+Date: Thu, 29 Jan 2015 21:04:37 +0800
+Message-ID: <1422536677-18591-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.130]:54945 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbbA2Mmp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 07:42:45 -0500
-In-Reply-To: <CAKohpo=An5Jm4qfhWaE96hPKyKVQfsZPdvrgxKH2ymvyvgQ_pQ@mail.gmail.com>
+Received: from mga01.intel.com ([192.55.52.88]:41056 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753653AbbA2NE6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 29 Jan 2015 08:04:58 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, rui.zhang@intel.com
 
-On Thursday 29 January 2015 15:40:15 Viresh Kumar wrote:
->  obj-$(CONFIG_ARCH_DAVINCI)             += davinci-cpufreq.o
->  obj-$(CONFIG_UX500_SOC_DB8500)         += dbx500-cpufreq.o
-> -obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)       += exynos-cpufreq.o
-> -obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
-> -obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
-> -obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
-> +obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos-cpufreq.o exynos4210-cpufreq.o
-> +obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos-cpufreq.o exynos4x12-cpufreq.o
-> +obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos-cpufreq.o exynos5250-cpufreq.o
-> 
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-I'd have to try it, but this might fail if one of the three drivers
-is built-in and another one is a module.
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 65a98a9..25d244c 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -18,19 +18,15 @@
+ 
+ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+-	INT3400_THERMAL_PASSIVE_2,
+ 	INT3400_THERMAL_ACTIVE,
+ 	INT3400_THERMAL_CRITICAL,
+-	INT3400_THERMAL_COOLING_MODE,
+ 	INT3400_THERMAL_MAXIMUM_UUID,
+ };
+ 
+ static u8 *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+ 	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
+-	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
+ 	"3A95C389-E4B8-4629-A526-C52C88626BAE",
+ 	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
+-	"16CAF1B7-DD38-40ed-B1C1-1B8A1913D531",
+ };
+ 
+ struct int3400_thermal_priv {
+-- 
+1.9.1
 
-	Arnd
