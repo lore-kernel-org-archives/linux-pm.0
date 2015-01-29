@@ -1,42 +1,60 @@
-From: Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH v3 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
-Date: Wed, 28 Jan 2015 13:23:37 -0800
-Message-ID: <cover.1422478693.git.todd.e.brandt@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / cpuidle: Drop unnecessary calls from acpi_idle_do_entry()
+Date: Thu, 29 Jan 2015 03:13:01 +0100
+Message-ID: <1891290.rcp9NuuoxH@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: todd.e.brandt@linux.intel.com, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, david.woodhouse@intel.com, jic23@kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-New power_supply driver at driver/power which interfaces with the
-axp20x mfd driver as a cell. Provides battery info, monitors for
-changes, and generates alerts on temperature and capacity issues
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Todd Brandt (3):
-  mfd/axp20x: change battery cell name to fuel gauge
-  mfd/axp20x: add support for fuel gauge cell
-  X-Power AXP288 PMIC Fuel Gauge Driver
+Since the cpuidle core calls stop_critical_timings() and
+start_critical_timings() around the execution of ->enter callbacks,
+acpi_idle_do_entry() doesn't need to do that (and really shouldn't).
 
-v1: 01/07/14
-v2: 01/22/14
-- replaced the const in axp20x_acpi_match declaration
-- reformatted the commit text
-- added IIO as driver dependency
-- moved debug info to debugfs in file fuelgauge
-- added HEALTH_COLD value to health calculation
-- added better cleanup to remove call
-        cancelling any delayed work calls
-        unregistration of the power_supply
-v3: 01/28/14
-- moved debugs create and init config regs after error case
-- freed the virqs in the remove function
-- remove .owner field as it is populated automatically
+Also using "inline" on it is pointless and the kerneldoc entry does
+not reflect the actual situation any more.
 
- drivers/mfd/axp20x.c       |  8 ++++----
- drivers/power/Kconfig      |  9 +++++++++
- drivers/power/Makefile     |  1 +
- include/linux/mfd/axp20x.h | 43 +++++++++++++++++++++++++++++++++++++++++--
- 4 files changed, 55 insertions(+), 6 deletions(-)
+Fix all of the above.
 
--- 
-2.1.0
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/processor_idle.c |    7 ++-----
+ drivers/cpuidle/cpuidle.c     |    7 ++++---
+ 2 files changed, 6 insertions(+), 8 deletions(-)
+
+Index: linux-pm/drivers/acpi/processor_idle.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/processor_idle.c
++++ linux-pm/drivers/acpi/processor_idle.c
+@@ -681,15 +681,13 @@ static int acpi_idle_bm_check(void)
+ }
+ 
+ /**
+- * acpi_idle_do_entry - a helper function that does C2 and C3 type entry
++ * acpi_idle_do_entry - enter idle state using the appropriate method
+  * @cx: cstate data
+  *
+  * Caller disables interrupt before call and enables interrupt after return.
+  */
+-static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
++static void acpi_idle_do_entry(struct acpi_processor_cx *cx)
+ {
+-	/* Don't trace irqs off for idle */
+-	stop_critical_timings();
+ 	if (cx->entry_method == ACPI_CSTATE_FFH) {
+ 		/* Call into architectural FFH based C-state */
+ 		acpi_processor_ffh_cstate_enter(cx);
+@@ -703,7 +701,6 @@ static inline void acpi_idle_do_entry(st
+ 		   gets asserted in time to freeze execution properly. */
+ 		inl(acpi_gbl_FADT.xpm_timer_block.address);
+ 	}
+-	start_critical_timings();
+ }
+ 
+ /**
