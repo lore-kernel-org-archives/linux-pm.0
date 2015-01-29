@@ -1,118 +1,157 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 2/2] Thermal/int3400 thermal: support _ART/_TRT change event
-Date: Thu, 29 Jan 2015 21:04:52 +0800
-Message-ID: <1422536692-18632-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:48305 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755582AbbA2NFH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 29 Jan 2015 08:05:07 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Thu, 29 Jan 2015 14:57:37 +0100
+Message-ID: <54CA3C51.2030802@free.fr>
+References: <54C8E125.3070905@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <54C8E125.3070905@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, rui.zhang@intel.com
 
-In some cases, the _ART/_TRT data may be changed at runtime, and
-ACPI notification 0x83/0x84 will be delivered to INT3400 ACPI device object
-when this happens.
-Add this support in int3400_thermal driver.
+[ I am aware that my message is way too long, and that few people would have
+the time to answer all these questions. So maybe, if someone feels inclined
+to answer just one or two, that might kickstart some discussion, and I might
+learn something along the way. Regards. ]
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/int340x_thermal/int3400_thermal.c | 54 ++++++++++++++++++++++-
- 1 file changed, 52 insertions(+), 2 deletions(-)
+FTR, I've been reading about DeviceTree:
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index 25d244c..3780b39 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -16,6 +16,9 @@
- #include <linux/thermal.h>
- #include "acpi_thermal_rel.h"
- 
-+#define INT3400_THERMAL_ART_CHANGED	0x83
-+#define INT3400_THERMAL_TRT_CHANGED	0x84
-+
- enum int3400_thermal_uuid {
- 	INT3400_THERMAL_PASSIVE_1,
- 	INT3400_THERMAL_ACTIVE,
-@@ -240,6 +243,42 @@ static struct thermal_zone_params int3400_thermal_params = {
- 	.no_hwmon = true,
- };
- 
-+static void int3400_notify(acpi_handle handle, u32 event, void *data)
-+{
-+	struct platform_device *pdev = data;
-+	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int count;
-+	struct art *arts;
-+	struct trt *trts;
-+	int result;
-+
-+	if (!priv)
-+		return;
-+
-+	switch (event) {
-+	case INT3400_THERMAL_ART_CHANGED:
-+		result = acpi_parse_art(priv->adev->handle, &count,
-+					&arts, false);
-+		if (result)
-+			return;
-+		priv->art_count = count;
-+		priv->arts = arts;
-+		kobject_uevent(&pdev->dev.kobj, KOBJ_CHANGE);
-+		return;
-+	case INT3400_THERMAL_TRT_CHANGED:
-+		result = acpi_parse_trt(priv->adev->handle, &count,
-+					&trts, false);
-+		if (result)
-+			return;
-+		priv->trt_count = count;
-+		priv->trts = trts;
-+		kobject_uevent(&pdev->dev.kobj, KOBJ_CHANGE);
-+		return;
-+	default:
-+		return;
-+	}
-+}
-+
- static int int3400_thermal_probe(struct platform_device *pdev)
- {
- 	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-@@ -287,13 +326,22 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	priv->rel_misc_dev_res = acpi_thermal_rel_misc_device_add(
- 							priv->adev->handle);
- 
-+        result = acpi_install_notify_handler(priv->adev->handle,
-+			ACPI_DEVICE_NOTIFY, int3400_notify, (void *)pdev);
-+	if (result)
-+		goto free_misc;
-+
- 	result = sysfs_create_group(&pdev->dev.kobj, &uuid_attribute_group);
- 	if (result)
--		goto free_zone;
-+		goto free_notify;
- 
- 	return 0;
- 
--free_zone:
-+free_notify:
-+	acpi_remove_notify_handler(priv->adev->handle, ACPI_DEVICE_NOTIFY,
-+				   int3400_notify);
-+free_misc:
-+	acpi_thermal_rel_misc_device_remove(priv->adev->handle);
- 	thermal_zone_device_unregister(priv->thermal);
- free_trt:
- 	kfree(priv->trts);
-@@ -311,6 +359,8 @@ static int int3400_thermal_remove(struct platform_device *pdev)
- 	if (!priv->rel_misc_dev_res)
- 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
- 
-+	acpi_remove_notify_handler(priv->adev->handle, ACPI_DEVICE_NOTIFY,
-+				   int3400_notify);
- 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
- 	thermal_zone_device_unregister(priv->thermal);
- 	kfree(priv->trts);
--- 
-1.9.1
+http://lwn.net/Articles/573409/
+http://www.carbondesignsystems.com/virtual-prototype-blog/bid/195122/Running-the-Latest-Linux-Kernel-on-a-Minimal-ARM-Cortex-A15-System
+http://devicetree.org/Device_Tree_Usage
+
+And I am resisting the urge to pile on a few more questions ;-/
+
+Regards.
+
+On 28/01/2015 14:16, Mason wrote:
+> Hello,
+>
+> I am swimming in a sea of confusion, and am hoping someone would toss
+> me a life-jacket (of enlightenment). Please forgive me if some of my
+> questions are poorly asked or appear in seemingly random order.
+>
+> Working on a Cortex A9 based SoC, I set out to "clean up" the platform
+> specific timer code, by using as much generic framework as possible.
+> (Right now, there's a lot of "redundant" code in the mach dir.)
+>
+>
+> Q1. the {n,u,m}delay function family
+>
+> arch/arm/include/asm/delay.h mentions
+> "Delay routines, using a pre-computed "loops_per_second" value."
+> *BUT* if the frequency changes dynamically (thanks to cpufreq)
+> the "loops_per_second" value cannot be pre-computed, as it would
+> change dynamically too, right?
+>
+> Looking at arch/arm/lib/delay.c it seems the default implementation
+> is a busy loop (in delay-loop.S) which looks up "loops_per_jiffy"
+> in the prolog to determine the number of times to loop, right?
+>
+> http://lxr.free-electrons.com/source/arch/arm/lib/delay-loop.S
+>
+> (Side issue, why is the loop unrolled in __loop_delay? What is the
+> point of unrolling a busy loop? This is commented code however.)
+>
+> What happens if loops_per_jiffy changes while one core is in the
+> busy loop? It seems we might exit the loop too early, which could
+> break some drivers with some weird heisenbug, no?
+>
+> Also, is the update of loops_per_jiffy atomic? Is it possible that
+> if one core reads it while another updates it, we get garbage?
+>
+> I suppose this is one reason why the default functions are overridden
+> by register_current_timer_delay(&arch_delay_timer) right? I think the
+> property of a timer is that its frequency doesn't change, even if the
+> CPU's frequency changes? So we are still busy looping, but we are
+> checking the actual time spent in the loop, whatever the cpufreq?
+>
+> Reference
+> https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
+>
+>
+> Q2. Cortex A9 global and private timers
+>
+> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
+>
+> (What are private timers used for?)
+>
+> In my platform-specific code, there is a config option to choose between
+>
+> 1) the ARM global timer
+> 2) a platform-specific timer (timer0)
+>
+> I noticed that there is generic code to support the global timer in
+> drivers/clocksource/arm_global_timer.c
+>
+> config ARM_GLOBAL_TIMER
+>      bool
+>      select CLKSRC_OF if OF
+>      help
+>        This options enables support for the ARM global timer unit
+>
+> config CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+>      bool
+>      depends on ARM_GLOBAL_TIMER
+>      default y
+>      help
+>       Use ARM global timer clock source as sched_clock
+>
+> I was thinking it would be better to use the "standard" option (ARM global timer)
+> as it is "officially" supported in the vanilla kernel. So less code to write and
+> to debug, and it has likely received more testing. Why would one rely on
+> platform-specific timers then?
+>
+> Are high-resolution timers supported with the global timer?
+>
+>
+> Q3. Using the generic global timer implementation
+>
+> So, how do I use that implementation?
+> (Is someone other than STMicro using it?)
+>
+> I see:
+>
+> static void __init global_timer_of_register(struct device_node *np)
+> CLOCKSOURCE_OF_DECLARE(arm_gt, "arm,cortex-a9-global-timer", global_timer_of_register);
+>
+> OF stands for open firmware, yes?
+> So is this related to device tree?
+>
+> http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/global_timer.txt
+>
+> This file makes no sense to me.
+>
+> - interrupts : One interrupt to each core
+> interrupts = <1 13 0xf01>;
+> what are 1 13 0xf01 ??
+>
+> - clocks : Should be phandle to a clock.
+> clocks = <&arm_periph_clk>;
+>
+> For my (old) 3.14 kernel, I found this:
+>
+>      /*
+>       * ARM Peripheral clock for timers
+>       */
+>      arm_periph_clk: arm_periph_clk {
+>        #clock-cells = <0>;
+>        compatible = "fixed-clock";
+>        clock-frequency = <600000000>;
+>      };
+>
+> But it looks like the definitions have moved around since then?
+>
+> This device tree concept is too much to swallow in a single serving.
+> Please tell me if I'm going down the correct rabbit hole, and I'll
+> do some LWN readings to try to wrap my mind around the concept.
+>
+>
+> Anyway, if anyone can help me out on some of these topics, I'd be
+> eternally grateful.
+>
+> Regards.
 
