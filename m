@@ -1,61 +1,146 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
-Date: Thu, 29 Jan 2015 11:07:44 +0000
-Message-ID: <20150129110744.GU21293@sirena.org.uk>
-References: <CAKohpokxdpF2nTeOnDpofNM1vW3aZRyDBE3WKmvZ8wJedf-TGw@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [RFC PATCH v6 6/9] thermal: cpu_cooling: implement the power cooling device API
+Date: Thu, 29 Jan 2015 11:19:21 +0000
+Message-ID: <9hhh9v9ltqe.fsf@e105922-lin.cambridge.arm.com>
+References: <1417806260-9264-1-git-send-email-javi.merino@arm.com>
+	<1417806260-9264-7-git-send-email-javi.merino@arm.com>
+	<20150128052330.GD29600@developer.hsd1.ca.comcast.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="EUFYPFpHgv7thsbJ"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38797 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbbA2LIM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 06:08:12 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohpokxdpF2nTeOnDpofNM1vW3aZRyDBE3WKmvZ8wJedf-TGw@mail.gmail.com>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:39379 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755471AbbA2LTB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 06:19:01 -0500
+In-Reply-To: <20150128052330.GD29600@developer.hsd1.ca.comcast.net> (Eduardo
+	Valentin's message of "Wed, 28 Jan 2015 01:23:33 -0400")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, broonie@kernel.org, Zhang Rui <rui.zhang@intel.com>
 
+Hi Eduardo,
 
---EUFYPFpHgv7thsbJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Eduardo Valentin <edubezval@gmail.com> writes:
 
-On Thu, Jan 29, 2015 at 07:09:23AM +0530, Viresh Kumar wrote:
-> On 29 January 2015 at 01:36, Mark Brown <broonie@kernel.org> wrote:
+> Hello Javi,
+>
+> On Fri, Dec 05, 2014 at 07:04:17PM +0000, Javi Merino wrote:
+>> Add a basic power model to the cpu cooling device to implement the
+>> power cooling device API.  The power model uses the current frequency,
+>> current load and OPPs for the power calculations.  The cpus must have
+>> registered their OPPs using the OPP library.
+>> 
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>> Signed-off-by: Javi Merino <javi.merino@arm.com>
+>
+> <big cut>
+>
+>> +
+>> +/**
+>> + * get_load() - get load for a cpu since last updated
+>> + * @cpufreq_device:	&struct cpufreq_cooling_device for this cpu
+>> + * @cpu:	cpu number
+>> + *
+>> + * Return: The average load of cpu @cpu in percentage since this
+>> + * function was last called.
+>> + */
+>> +static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu)
+>> +{
+>> +	u32 load;
+>> +	u64 now, now_idle, delta_time, delta_idle;
+>> +
+>> +	now_idle = get_cpu_idle_time(cpu, &now, 0);
+>> +	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu];
+>> +	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu];
+>> +
+>> +	if (delta_time <= delta_idle)
+>> +		load = 0;
+>> +	else
+>> +		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
+>> +
+>> +	cpufreq_device->time_in_idle[cpu] = now_idle;
+>> +	cpufreq_device->time_in_idle_timestamp[cpu] = now;
+>> +
+>> +	return load;
+>> +}
+>
+> <cut>
+>
+>>  
+>> +/**
+>> + * cpufreq_get_actual_power() - get the current power
+>> + * @cdev:	&thermal_cooling_device pointer
+>> + *
+>> + * Return the current power consumption of the cpus in milliwatts.
+>> + */
+>> +static u32 cpufreq_get_actual_power(struct thermal_cooling_device *cdev)
+>> +{
+>> +	unsigned long freq;
+>> +	int cpu;
+>> +	u32 static_power, dynamic_power, total_load = 0;
+>> +	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>> +
+>> +	freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
+>> +
+>> +	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+>> +		u32 load;
+>> +
+>> +		if (cpu_online(cpu))
+>> +			load = get_load(cpufreq_device, cpu);
+>> +		else
+>> +			load = 0;
+>> +
+>> +		total_load += load;
+>> +	}
+>> +
+>> +	cpufreq_device->last_load = total_load;
+>> +
+>> +	static_power = get_static_power(cpufreq_device, freq);
+>> +	dynamic_power = get_dynamic_power(cpufreq_device, freq);
+>> +
+>> +	return static_power + dynamic_power;
+>> +}
+>
+> With respect to load computation vs. frequency usage vs. power
+> estimation, while getting actual power for a given interval T. What if
+> in interval T, we have used, say, 3 different cpu frequencies, and the
+> load on the first was 50%, on the second 80%, and on the last frequency,
+> the load was 60%, what should be the right load value for computing the
+> actual power? 
+>
+> I mean, we are using the total idle time for a given interval, but 1 -
+> idle not always seams to reflect actual load on different opps, if opps
+> change over time within T time interval window.
 
-> >> +  Required properties:
-> >> +  - compatible: allow OPPs to express their compatibility.
-> >> +  - opp-list: phandle to opp-list defined above.
+The value returned by cpufreq_get_actual_power is used as a proxy for
+the estimate of the requested power of the actor for the next window
+duration. Even though the frequency might have changed in the previous
+period, the current frequency reflects the latest information about the
+required performance. As it is an estimate, and to avoid making the
+power calculations more complicated, we used utilisation (1 - idle time)
+to calculate the request. The estimate for the T+1 period becomes more
+accurate as the load stabilises.
 
-> > I don't understand what that compatible property is intended to mean and
-> > I expect other readers might be similarly confused - is it a standard
-> > compatbile property meaning this noe corresponds to some sort of device?
+In our testing on different workloads using 100ms as the polling period
+for thermal control, we didn't see any problems arising from the use of
+this definition of utilisation.
 
-> The goal is to choose the driver which we want to probe for a platform. There
-> can be multiple DT enabled cpufreq drivers present in a build and the platform
-> needs some way to choose one of them.
+Having said that, there are a number of ways to improve the accuracy of
+the power calculations. As part of investigating the effects of
+improving model accuracy and it's effect on thermal control and
+performance, we plan to look at fine-grained frequency and load tracking
+once the initial set of patches are merged.
 
-So you need to document this as a platform device then if that's what
-you're doing here; there's more than just specifying a compatible string
-involved.
+Cheers,
+Punit
 
---EUFYPFpHgv7thsbJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJUyhR/AAoJECTWi3JdVIfQuHsH/2ncbje++IRo/Su+cMRTBnih
-/HKH2EcrscYaOxO0OV7SaX/cdyILurAwus3xcPjspXxMsg4TQmgFheRLJlMGPrS2
-cWop6v6sm4H/elABk42et2jzkdKhwRHnLBTwJhI2tEe8lEvQCDapCuI5ntBX9bqV
-eJWbVsvmmtkWY8WmW2vN9GeBjiM9C90SouQaw1qXSJ2nSooBk62iPyqcCc1S9klm
-Q5Ck4kVWM5l+GLZzi63oO+MY8bdpuT1gH1lucDwXYkvBaO9PwdFkLKDKvQvTNYa3
-Fctve8NraiHyqZOFJvjwGbfyD/0mTGxl1e/NtWEelDVmV5hTI/CAJfR0Hz8+B1I=
-=tyjU
------END PGP SIGNATURE-----
-
---EUFYPFpHgv7thsbJ--
+>
+> BR,
+>
+>
+> BR,
+>
+> Eduardo Valentin
