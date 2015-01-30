@@ -1,50 +1,126 @@
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
-Date: Fri, 30 Jan 2015 10:39:08 +0200
-Message-ID: <1422607148.11083.10.camel@mm-sol.com>
-References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org>
-	 <20150129223946.GD29837@developer.amazonguestwifi.org>
+From: amit daniel kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [RFC PATCH 1/1] PM / domains: Add support for virtual power domains
+Date: Fri, 30 Jan 2015 14:13:22 +0530
+Message-ID: <CADGdYn5E9P7cT-bndL4u9g9XRO=BvE5hb1+TEF0mkwkWOmK1VA@mail.gmail.com>
+References: <1422555176-13054-1-git-send-email-k.wrona@samsung.com>
+	<1422555176-13054-2-git-send-email-k.wrona@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20150129223946.GD29837@developer.amazonguestwifi.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Narendran Rajan <nrajan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Linux ARM MSM <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Siddartha Mohanadoss <smohanad@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1422555176-13054-2-git-send-email-k.wrona-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Karol Wrona <k.wrona-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Karol Wrona <wrona.vy-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Karol,
 
-On Thu, 2015-01-29 at 18:39 -0400, Eduardo Valentin wrote:
-> On Mon, Jan 26, 2015 at 08:09:46PM -0800, Narendran Rajan wrote:
-> > TSENS supports reading temperature from multiple thermal
-> > sensors present in QCOM SOCs.
-> > TSENS HW is enabled only when the main sensor is requested.
-> > The TSENS block is disabled if the main senors is disabled
-> > irrespective of any other sensors that are being enabled.
-> > TSENS driver supports configurable threshold for temperature
-> > monitoring in which case it can generate an interrupt when specific
-> > thresholds are reached
-> >=20
-> > Based on code by Siddartha Mohanadoss and Stephen Boyd.
-> >=20
-> > Cc: Siddartha Mohanadoss <smohanad@codeaurora.org>
-> > Cc: Stephen Boyd <sboyd@codeaurora.org>
-> > Signed-off-by: Narendran Rajan=C2=A0=C2=A0<nrajan@codeaurora.org>
->=20
-> I know this might not be completely related, but since you are sendin=
-g
-> QCOM code, can you please check my comments on your PMIC thermal code=
-?
-> https://patchwork.kernel.org/patch/5013021/
->=20
-> Ivan seams to have disappeared.
-
-
-
-Mm no, sorry, just distracted by other tasks. PMIC thermal driver is in=
- the
-road map. I will try to accelerate rework.
+I guess this patch series is not complete and use case implementation
+will be more helpful for clarity. Also I can think of another way in
+which this complete implementation can be done with pd name as
+something "pd-virt". This pd can be handled differently inside the
+platform specific exynos power off/on function.
 
 Regards,
-Ivan
+Amit D
+
+On Thu, Jan 29, 2015 at 11:42 PM, Karol Wrona <k.wrona-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
+> There are the power domains which are turned off or put to retention only during
+> suspend or special processor states.  In such case there is a need to register
+> some devices which belong to such domain that PM core could know the state of
+> such devices and decide which power mode should be chosen i.e. the domain can
+> not be put to retention if some devices are active.  Virtual power domain has
+> empty power_on/off callbacks as there is no need to gate anything.
+>
+> Signed-off-by: Karol Wrona <k.wrona-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/base/power/Makefile          |    3 +-
+>  drivers/base/power/pm_domains_virt.c |   54 ++++++++++++++++++++++++++++++++++
+>  2 files changed, 56 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/base/power/pm_domains_virt.c
+>
+> diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+> index 1cb8544..360a0e2 100644
+> --- a/drivers/base/power/Makefile
+> +++ b/drivers/base/power/Makefile
+> @@ -2,7 +2,8 @@ obj-$(CONFIG_PM)        += sysfs.o generic_ops.o common.o qos.o runtime.o
+>  obj-$(CONFIG_PM_SLEEP) += main.o wakeup.o
+>  obj-$(CONFIG_PM_TRACE_RTC)     += trace.o
+>  obj-$(CONFIG_PM_OPP)   += opp.o
+> -obj-$(CONFIG_PM_GENERIC_DOMAINS)       +=  domain.o domain_governor.o
+> +obj-$(CONFIG_PM_GENERIC_DOMAINS)       += domain.o domain_governor.o \
+> +                                          pm_domains_virt.o
+>  obj-$(CONFIG_HAVE_CLK) += clock_ops.o
+>
+>  ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> diff --git a/drivers/base/power/pm_domains_virt.c b/drivers/base/power/pm_domains_virt.c
+> new file mode 100644
+> index 0000000..bd4d6b6
+> --- /dev/null
+> +++ b/drivers/base/power/pm_domains_virt.c
+> @@ -0,0 +1,54 @@
+> +/*
+> + *  Copyright (C) 2015, Samsung Electronics Co. Ltd. All Rights Reserved.
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/of.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/slab.h>
+> +
+> +static int pd_power_off(struct generic_pm_domain *domain)
+> +{
+> +       return 0;
+> +}
+> +
+> +static int pd_power_on(struct generic_pm_domain *domain)
+> +{
+> +       return 0;
+> +}
+> +
+> +int __init virt_pm_domains_init(void)
+> +{
+> +       struct device_node *np;
+> +
+> +       for_each_compatible_node(np, NULL, "linux,virtual-pm-domains") {
+> +               struct generic_pm_domain *pd;
+> +
+> +               pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+> +               if (!pd)
+> +                       return -ENOMEM;
+> +
+> +               pd->power_off = pd_power_off;
+> +               pd->power_on = pd_power_on;
+> +               pd->name = kstrdup(np->name, GFP_KERNEL);
+> +               if (!pd->name)
+> +                       return -ENOMEM;
+> +
+> +               pm_genpd_init(pd, NULL, false);
+> +               of_genpd_add_provider_simple(np, pd);
+> +       }
+> +
+> +       return 0;
+> +}
+> +arch_initcall(virt_pm_domains_init);
+> --
+> 1.7.9.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
