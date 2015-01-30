@@ -1,34 +1,39 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [V2] cpuidle/powernv: Read target_residency value of idle states from DT if available
-Date: Fri, 30 Jan 2015 14:56:52 +1100 (AEDT)
-Message-ID: <20150130035652.3C252140277@ozlabs.org>
-References: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:49617 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbbA3D4y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 29 Jan 2015 22:56:54 -0500
-In-Reply-To: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Set cpufreq_cpu_data to NULL before putting kobject
+Date: Fri, 30 Jan 2015 09:44:47 +0530
+Message-ID: <CAKohpokstCHezi0-Vp=-WJn4Zrpnj0oELjw6jzkY_0976h3V8w@mail.gmail.com>
+References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org>
+	<54CADEAE.2090305@oracle.com>
+	<CAKohpo=uFZ0BwZ1FLSBpht3Yi1B73LpHDu00Rqk2P3TbzCYsoQ@mail.gmail.com>
+	<54CAE80C.4060406@oracle.com>
+	<CAKohponF_fqoDj_g4kZuoYa=gz9G_yRn67eJoWT6mnPkejWkjw@mail.gmail.com>
+	<54CAEABB.4060508@oracle.com>
+	<CAKohpomdf1eZveqw+GCzcuPJnW4BpMYqGebhRR5=mc0ome0vFg@mail.gmail.com>
+	<54CAFE88.2080508@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <54CAFE88.2080508@oracle.com>
+Sender: stable-owner@vger.kernel.org
+To: ethan zhao <ethan.zhao@oracle.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, santosh shilimkar <santosh.shilimkar@oracle.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "# 3.13.x" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 2015-28-01 at 02:13:06 UTC, Preeti U Murthy wrote:
-> The device tree now exposes the residency values for different idle states. Read
-> these values instead of calculating residency from the latency values. The values
-> exposed in the DT are validated for optimal power efficiency. However to maintain
-> compatibility with the older firmware code which does not expose residency
-> values, use default values as a fallback mechanism. While at it, handle some
-> cleanups.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+On 30 January 2015 at 09:16, ethan zhao <ethan.zhao@oracle.com> wrote:
+>  You mean the policy is shared by all CPUs, so PPC notification about one
 
-This looks good to me.
+A policy may or maynot be shared by multiple CPUs. It all depends on your
+systems configuration. All CPUs which share clock line, share a policy.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+You can verify that from /sys/devices/system/cpu/cpu*/related_cpus. This
+gives the CPUs that share policy.
 
-I'm assuming Rafael will take it.
+>  CPU should update all CPU's policy, right ? even the requested CPU is
+> shutting  down.
 
-cheers
+CPUs sharing policy have a single policy structure. And so policy would
+be updated for all CPUs that share the poilcy. Even if some cpu goes down,
+the policy might still be up and running.
+
+--
+viresh
