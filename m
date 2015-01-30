@@ -1,100 +1,126 @@
-From: "Narendran Rajan" <nrajan@codeaurora.com>
-Subject: RE: [PATCH] thermal: Add msm tsens thermal sensor driver
-Date: Thu, 29 Jan 2015 16:55:55 -0800
-Message-ID: <001001d03c27$81243810$836ca830$@codeaurora.com>
-References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org> <54C73B0B.609@linaro.org> <002f01d03a81$07fabf10$17f03d30$@codeaurora.com> <20150128235240.GA23506@codeaurora.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v5 3/3] mfd: max8997: change irq names to upper case
+Date: Fri, 30 Jan 2015 10:00:57 +0900
+Message-ID: <54CAD7C9.3080003@samsung.com>
+References: <1415776996-11569-1-git-send-email-r.baldyga@samsung.com>
+ <1415776996-11569-4-git-send-email-r.baldyga@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20150128235240.GA23506@codeaurora.org>
-Content-Language: en-us
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: 'Stephen Boyd' <sboyd@codeaurora.org>
-Cc: 'Srinivas Kandagatla' <srinivas.kandagatla@linaro.org>, 'Narendran Rajan' <nrajan@codeaurora.org>, 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <edubezval@gmail.com>, 'Linux ARM MSM' <linux-arm-msm@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Siddartha Mohanadoss' <smohanad@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:46712 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbbA3BBT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 20:01:19 -0500
+In-reply-to: <1415776996-11569-4-git-send-email-r.baldyga@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Robert Baldyga <r.baldyga@samsung.com>
+Cc: lee.jones@linaro.org, sameo@linux.intel.com, myungjoo.ham@samsung.com, dmitry.torokhov@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, lgirdwood@gmail.com, broonie@kernel.org, a.zummo@towertech.it, paul.gortmaker@windriver.com, sachin.kamat@linaro.org, k.kozlowski@samsung.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
 
-> -----Original Message-----
-> From: 'Stephen Boyd' [mailto:sboyd@codeaurora.org]
-> Sent: Wednesday, January 28, 2015 3:53 PM
-> To: Narendran Rajan
-> Cc: 'Srinivas Kandagatla'; 'Narendran Rajan'; 'Zhang Rui'; 'Eduardo
-Valentin';
-> 'Linux ARM MSM'; 'Linux PM'; 'Siddartha Mohanadoss'
-> Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
+Hi Robert,
+
+For extcon part,
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Thanks,
+Chanwoo Choi
+
+On 11/12/2014 04:23 PM, Robert Baldyga wrote:
+> This patch changes naming convention of MUIC interrupts form CamelCase
+> to upper case. It makes names more readable and consistent with another
+> interrupt names in max8997 driver.
 > 
-> On 01/27, Narendran Rajan wrote:
-> > > From: Srinivas Kandagatla [mailto:srinivas.kandagatla@linaro.org]
-> > > > +struct tsens_device;
-> > > > +
-> > > > +struct tsens_sensor {
-> > > > +	struct thermal_zone_device	*tz_dev;
-> > > > +	enum thermal_device_mode	mode;
-> > > > +	unsigned int			sensor_num;
-> > > > +	int				offset;
-> > > > +	u32				slope;
-> > > > +	struct tsens_device		*tmdev;
-> > > > +	u32                             status;
-> > > > +};
-> > > > +
-> > > > +struct tsens_device {
-> > > > +	bool			prev_reading_avail;
-> > > > +	unsigned int		num_sensors;
-> > > > +	int			pm_tsens_thr_data;
-> > > > +	int			pm_tsens_cntl;
-> > > > +	unsigned int            calib_offset;
-> > > > +	unsigned int            backup_calib_offset;
-> > > > +	struct work_struct	tsens_work;
-> > > > +	struct regmap		*map;
-> > > > +	struct regmap_field	*status_field;
-> > > > +	struct tsens_sensor	sensor[0];
-> > > > +};
-> > > > +
-> > > > +static struct device *tsens_dev;
-> > > Hmm.. I think you should remove this global variable and find a
-> > > better way
-> > to
-> > > get hold of this.
-> > >
-> > Didn't find anything simple enough. A few other drivers seems to use
-> > global as well. Will look around. If you have some quick tips let me
-please
-> know.
+> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 > 
-> Why do we even need those dev_dbg() printks? I'd rather see that
-> debugging stuff get removed and this static singleton removed at the same
-> time.
+> [For the mfd part]
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> ---
+>  drivers/extcon/extcon-max8997.c     | 32 ++++++++++++++++----------------
+>  include/linux/mfd/max8997-private.h | 16 ++++++++--------
+>  2 files changed, 24 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/extcon/extcon-max8997.c b/drivers/extcon/extcon-max8997.c
+> index 172dbd6..834b72f 100644
+> --- a/drivers/extcon/extcon-max8997.c
+> +++ b/drivers/extcon/extcon-max8997.c
+> @@ -46,15 +46,15 @@ struct max8997_muic_irq {
+>  };
+>  
+>  static struct max8997_muic_irq muic_irqs[] = {
+> -	{ MAX8997_MUICIRQ_ADCError,	"muic-ADCERROR" },
+> -	{ MAX8997_MUICIRQ_ADCLow,	"muic-ADCLOW" },
+> -	{ MAX8997_MUICIRQ_ADC,		"muic-ADC" },
+> -	{ MAX8997_MUICIRQ_VBVolt,	"muic-VBVOLT" },
+> -	{ MAX8997_MUICIRQ_DBChg,	"muic-DBCHG" },
+> -	{ MAX8997_MUICIRQ_DCDTmr,	"muic-DCDTMR" },
+> -	{ MAX8997_MUICIRQ_ChgDetRun,	"muic-CHGDETRUN" },
+> -	{ MAX8997_MUICIRQ_ChgTyp,	"muic-CHGTYP" },
+> -	{ MAX8997_MUICIRQ_OVP,		"muic-OVP" },
+> +	{ MAX8997_MUICIRQ_ADCERROR,	"MUIC-ADCERROR" },
+> +	{ MAX8997_MUICIRQ_ADCLOW,	"MUIC-ADCLOW" },
+> +	{ MAX8997_MUICIRQ_ADC,		"MUIC-ADC" },
+> +	{ MAX8997_MUICIRQ_VBVOLT,	"MUIC-VBVOLT" },
+> +	{ MAX8997_MUICIRQ_DBCHG,	"MUIC-DBCHG" },
+> +	{ MAX8997_MUICIRQ_DCDTMR,	"MUIC-DCDTMR" },
+> +	{ MAX8997_MUICIRQ_CHGDETRUN,	"MUIC-CHGDETRUN" },
+> +	{ MAX8997_MUICIRQ_CHGTYP,	"MUIC-CHGTYP" },
+> +	{ MAX8997_MUICIRQ_OVP,		"MUIC-OVP" },
+>  };
+>  
+>  /* Define supported cable type */
+> @@ -553,17 +553,17 @@ static void max8997_muic_irq_work(struct work_struct *work)
+>  	}
+>  
+>  	switch (irq_type) {
+> -	case MAX8997_MUICIRQ_ADCError:
+> -	case MAX8997_MUICIRQ_ADCLow:
+> +	case MAX8997_MUICIRQ_ADCERROR:
+> +	case MAX8997_MUICIRQ_ADCLOW:
+>  	case MAX8997_MUICIRQ_ADC:
+>  		/* Handle all of cable except for charger cable */
+>  		ret = max8997_muic_adc_handler(info);
+>  		break;
+> -	case MAX8997_MUICIRQ_VBVolt:
+> -	case MAX8997_MUICIRQ_DBChg:
+> -	case MAX8997_MUICIRQ_DCDTmr:
+> -	case MAX8997_MUICIRQ_ChgDetRun:
+> -	case MAX8997_MUICIRQ_ChgTyp:
+> +	case MAX8997_MUICIRQ_VBVOLT:
+> +	case MAX8997_MUICIRQ_DBCHG:
+> +	case MAX8997_MUICIRQ_DCDTMR:
+> +	case MAX8997_MUICIRQ_CHGDETRUN:
+> +	case MAX8997_MUICIRQ_CHGTYP:
+>  		/* Handle charger cable */
+>  		ret = max8997_muic_chg_handler(info);
+>  		break;
+> diff --git a/include/linux/mfd/max8997-private.h b/include/linux/mfd/max8997-private.h
+> index f42ea22..2817fa6 100644
+> --- a/include/linux/mfd/max8997-private.h
+> +++ b/include/linux/mfd/max8997-private.h
+> @@ -411,14 +411,14 @@ enum max8997_irq {
+>  
+>  enum max8997_irq_muic {
+>  	MAX8997_MUICIRQ_ADC,
+> -	MAX8997_MUICIRQ_ADCLow,
+> -	MAX8997_MUICIRQ_ADCError,
+> -
+> -	MAX8997_MUICIRQ_ChgTyp,
+> -	MAX8997_MUICIRQ_ChgDetRun,
+> -	MAX8997_MUICIRQ_DCDTmr,
+> -	MAX8997_MUICIRQ_DBChg,
+> -	MAX8997_MUICIRQ_VBVolt,
+> +	MAX8997_MUICIRQ_ADCLOW,
+> +	MAX8997_MUICIRQ_ADCERROR,
+> +
+> +	MAX8997_MUICIRQ_CHGTYP,
+> +	MAX8997_MUICIRQ_CHGDETRUN,
+> +	MAX8997_MUICIRQ_DCDTMR,
+> +	MAX8997_MUICIRQ_DBCHG,
+> +	MAX8997_MUICIRQ_VBVOLT,
+>  
+>  	MAX8997_MUICIRQ_OVP,
+>  
 > 
 
-Agree, it was more convenience and unwanted singleton. Will change.
-
-> > >
-> > Correct, in polling mode (which is what exists in thermal framework
-> > today), HW interrupt do not make sense as the trip points are set to
-> > default and never updated based on Dt values.
-> >
-> > But the code under the #ifdef THERMAL_TSENS8960_HWTRIPS supports
-> the
-> > HW trip point mode.
-> > This code needs the additional patch
-> > Please see https://patchwork.ozlabs.org/patch/364812/
-> >
-> > May be I will remove everything under HWTRIPs until it lands in the
-> > core thermal framework?
-> >
-> 
-> That patch is half a year old. Is aynyone still working on it?
-> Perhaps you can pick it up and try to get it into a workable state and
-then
-> port this new driver to it?
-> 
-
-Let me remove the dependency on this patch for now, have a simple polling
-mode only 
-Patch.
-Will think through a more generic patch post this.
-
-> --
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a
-> Linux Foundation Collaborative Project
