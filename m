@@ -1,103 +1,111 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC V2] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 30 Jan 2015 11:06:55 +0530
-Message-ID: <CAKohpomkaUHyjcU5GbajWEBnBDjhFgUGnnTDzMRUw+C4gh4u4w@mail.gmail.com>
-References: <cbe949d7a69c3b16a3e9d6e5429eb81d3ae9d8b9.1422009157.git.viresh.kumar@linaro.org>
-	<CAL_JsqKrjvOw4hwOfS_V1g8As0N1xTbf4S1wKnxHdeoHyxH66A@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
+ idle states are allowed
+Date: Fri, 30 Jan 2015 11:11:17 +0530
+Message-ID: <54CB197D.2040809@linux.vnet.ibm.com>
+References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com> <1410764352.32643.2.camel@concordia> <5416A8B0.8040603@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f44.google.com ([209.85.218.44]:46635 "EHLO
-	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbbA3Fg4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jan 2015 00:36:56 -0500
-Received: by mail-oi0-f44.google.com with SMTP id a3so33130839oib.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2015 21:36:56 -0800 (PST)
-In-Reply-To: <CAL_JsqKrjvOw4hwOfS_V1g8As0N1xTbf4S1wKnxHdeoHyxH66A@mail.gmail.com>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:57882 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbbA3Fl0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jan 2015 00:41:26 -0500
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 29 Jan 2015 22:41:26 -0700
+In-Reply-To: <5416A8B0.8040603@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.ne>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>, Mark
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>
 
-On 29 January 2015 at 21:52, Rob Herring <robherring2@gmail.com> wrote:
-> On Fri, Jan 23, 2015 at 4:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 09/15/2014 02:22 PM, Preeti U Murthy wrote:
+> On 09/15/2014 12:29 PM, Michael Ellerman wrote:
+>> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
+>>> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
+>>> entry into deep idle states beyond snooze. Check for the value of this
+>>> parameter before entering fastsleep. We already do this check for nap in
+>>> power7_idle().
+>>>
+>>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
+>>>  1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>>> index a64be57..b8ba52e 100644
+>>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>>> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>>>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
+>>>  	unsigned long new_lpcr;
+>>>  
+>>> +	/*
+>>> +	 * Verify if snooze is the only valid cpuidle state
+>>> +	 */
+>>> +	if (!(powersave_nap > 0))
+>>> +		return index;
+>>> +
+>>>  	if (unlikely(system_state < SYSTEM_RUNNING))
+>>>  		return index;
+>>
+>> Doesn't the above mean we are just going to keep trying to go into fastsleep
+>> again and again? Or does the idle code work out that it didn't work based on
+>> the fact that we didn't sleep for the right period?
+> 
+> Thats right. The idle code figures that its judgment to enter fastsleep
+> was not correct and applies a correction factor to its future decisions
+> . This correction factor is intended to influence the cpuidle governor's
+> decision on choosing an idle state for the cpu based on the history of
+> wakeups. Hence a shallower idle state will be chosen here on in the
+> above circumstance.
 
->> - Getting clock sharing information between CPUs. Single shared clock vs
->>   independent clock per core vs shared clock per cluster.
->
-> I'd like to see acks from Qualcomm folks to make sure this works for them.
+On second thoughts, I feel that this is not the best way to disable deep
+idle states. Going down this path means the governor should identify
+that fastsleep is not being entered into and take corrective action from
+then on. If the governor is buggy, we pointlessly enter and exit
+fastsleep_loop() during long idle periods.
 
-@Stephen: Can I have your inputs as well here?
+So a better way to disable fastsleep during runtime is through the
+disable flag in sysfs. To disable deep idle states at bootup one could
+use powersave=off kernel cmd line parameter.
 
->> +  Required properties:
->> +  - opp-khz: Frequency in kHz
->> +  - opp-microvolt: voltage in micro Volts
->
-> This can be optional as it is valid to have frequency scaling without
-> voltage scaling. More so for bus scaling than cpu scaling.
+The functionality provided by powersave_nap and smt_snooze_delay (to
+quote another example) carried value during the days that powernv did
+not have a cpuidle driver. We retain them so as to not break userspace,
+although they do not carry value today. Any future users of these
+parameters should be avoided IMO. Hence I retract this patch.
 
-Right.
+Regards
+Preeti U Murthy
 
->> +  Optional properties:
->> +  - opp-intermediate: Stable opp we *must* switch to, before switching to the
->> +    target opp. Contains phandle of one of the opp-node present in opp-list.
->
-> What about cases where perhaps you have a more complex sequencing
-> arrangement? For example, what if you have to hit each step (to go
-> from A -> D you have to go A -> B -> C -> D). Perhaps each OPP could
-> have an opp-next property which lists other OPPs you can transition to
-> (and no property means no restriction).
+> 
+>>
+>> We were talking about getting rid of powersave_nap altogether, but I think we
+>> decided we couldn't, I forget.
+> 
+> Isn't this a helpful knob to disable cpuidle at runtime? Currently we
+> check the value of powersave_nap before entering both nap and fastsleep.
+> 
+> Regards
+> Preeti U Murthy
+>>
+>> cheers
+>>
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
 
-I haven't seen such examples yet but yeah that might be required
-at some point of time.
-
-> Do you have a specific user in mind? If not, I think we can defer this
-> issue. I think the binding is flexible enough to accommodate this in
-> the future.
-
-Yeah, Tegra and Mediatek already need it. Even cpufreq core does
-support it currently.
-
-What about keeping it as is for now and extending to opp-next in case
-it is required. Or maybe add opp-next right now. So, for the case of
-single intermediate-freq, all OPPs except the intermediate one will have
-opp-next set to intermediate opp. And intermediate opp doesn't fill this.
-
-I will think about it a bit more though.
-
->> +       cpu0_opp: opp0 {
->> +               compatible = "linux,cpu-dvfs";
->
-> As I said before, drop the linux part. I'm not sure about cpu-dvfs
-> either. Nothing is specific to cpus and you are necessarily doing
-> voltage scaling. You could want to find all cpu OPPs though. Perhaps:
-> "cpu-operating-point", "operating-point";
-
-What about "operating-point-v2", as that's the real version.
-
-> It is not documented either.
-
-Will do.
-
->> +       cpu1_opp: opp1 {
->> +               compatible = "linux,cpu-dvfs";
->> +               opp-list = <&cpu0_opplist>;
->> +               opp-intermediate = <&cpu0_intermediate>;
->> +       };
->
-> This doesn't add anything other than some indirection to imply
-> independent OPPs. The only way I know the clocks are not shared is you
-> told me so in the example. I'd still prefer to determine from the
-
-Will document that clearly.
-
-> clock api whether 2 clocks can be changed independently. That didn't
-
-Mike Turquette has objected to that earlier and so we moved
-to DT to find this out..
-
-> seem to be agreed on, so you could simply add a "shared-opp" property
-> to opp0 to mark an OPP as shared or not. Then you can remove the
-> opp-list and these other cpuX_opp nodes.
-
-Okay.
