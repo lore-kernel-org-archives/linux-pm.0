@@ -1,89 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: suspend cpufreq governors on shutdown
-Date: Fri, 30 Jan 2015 01:14:12 +0100
-Message-ID: <1548953.lJ1trAVWhn@vostro.rjw.lan>
-References: <1419401388-20171-1-git-send-email-dianders@chromium.org> <CAKohpo=iEb19QGKUXJO1PURPjUkv1ZCeVFg-i+AFihi7Gmjf0Q@mail.gmail.com>
+Subject: Re: [PATCH 0/3] PM / OPP: Cleanup a little bit of a bitrot
+Date: Fri, 30 Jan 2015 01:15:24 +0100
+Message-ID: <4187062.hmyJpUahmT@vostro.rjw.lan>
+References: <1419441777-25651-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52857 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59317 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754525AbbA2XvY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 18:51:24 -0500
-In-Reply-To: <CAKohpo=iEb19QGKUXJO1PURPjUkv1ZCeVFg-i+AFihi7Gmjf0Q@mail.gmail.com>
+	with SMTP id S1753206AbbA2Xwg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 18:52:36 -0500
+In-Reply-To: <1419441777-25651-1-git-send-email-nm@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Doug Anderson <dianders@chromium.org>, Heiko Stuebner <heiko@sntech.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chris Zhong <zyw@rock-chips.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sonny Rao <sonnyrao@chromium.org>, Dylan Reid <dgreid@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, December 29, 2014 09:45:42 AM Viresh Kumar wrote:
-> On 24 December 2014 at 11:39, Doug Anderson <dianders@chromium.org> wrote:
-> > We should stop cpufreq governors when we shut down the system.  If we
-> > don't do this, we can end up with this deadlock:
-> >
-> > 1. cpufreq governor may be running on a CPU other than CPU0.
-> > 2. In machine_restart() we call smp_send_stop() which stops CPUs.
-> >    If one of these CPUs was actively running a cpufreq governor
-> >    then it may have the mutex / spinlock needed to access the main
-> >    PMIC in the system (perhaps over I2C)
-> > 3. If a machine needs access to the main PMIC in order to shutdown
-> >    then it will never get it since the mutex was lost when the other
-> >    CPU stopped.
-> > 4. We'll hang (possibly eventually hitting the hard lockup detector).
-> >
-> > Let's avoid the problem by stopping the cpufreq governor at shutdown,
-> > which is a sensible thing to do anyway.
-> >
-> > Signed-off-by: Doug Anderson <dianders@chromium.org>
-> > ---
-> > Changes in v2:
-> > - Add a comment about why we register
-> > - Don't create cpufreq_shutdown() wrapper function
-> >
-> >  drivers/cpufreq/cpufreq.c | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index a09a29c..33f3d65 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/mutex.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/suspend.h>
-> > +#include <linux/syscore_ops.h>
-> >  #include <linux/tick.h>
-> >  #include <trace/events/power.h>
-> >
-> > @@ -2550,6 +2551,14 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
-> >  }
-> >  EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
-> >
-> > +/*
-> > + * Stop cpufreq at shutdown to make sure it isn't holding any locks
-> > + * or mutexes when secondary CPUs are halted.
-> > + */
-> > +static struct syscore_ops cpufreq_syscore_ops = {
-> > +       .shutdown = cpufreq_suspend,
-> > +};
-> > +
-> >  static int __init cpufreq_core_init(void)
-> >  {
-> >         if (cpufreq_disabled())
-> > @@ -2558,6 +2567,8 @@ static int __init cpufreq_core_init(void)
-> >         cpufreq_global_kobject = kobject_create();
-> >         BUG_ON(!cpufreq_global_kobject);
-> >
-> > +       register_syscore_ops(&cpufreq_syscore_ops);
-> > +
-> >         return 0;
-> >  }
-> >  core_initcall(cpufreq_core_init);
+On Wednesday, December 24, 2014 11:22:54 AM Nishanth Menon wrote:
+> It is a little usual to see with multiple contributors that file tends to loose
+> a consistent feel. So, try and fix it up in this trivial change series - no
+> functional changes at all.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> based on v3.19-rc1 tag
+> 
+> Nishanth Menon (3):
+>   PM / OPP: export dev_pm_opp_get_notifier
+>   PM / OPP: Ensure consistent naming of static functions
+>   PM / OPP: Update kernel documentation
+> 
+>  drivers/base/power/opp.c |  190 +++++++++++++++++++++++++++++++++++-----------
+>  1 file changed, 146 insertions(+), 44 deletions(-)
 
-Queued up for 3.20, thanks!
+Whole series queued up for 3.20, thanks!
 
 
 -- 
