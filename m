@@ -1,134 +1,117 @@
-From: santosh shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH] cpufreq: Set cpufreq_cpu_data to NULL before putting
- kobject
-Date: Fri, 30 Jan 2015 14:55:21 -0800
-Message-ID: <54CC0BD9.4070900@oracle.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org> <4152512.pDYbpiR2EP@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] IRQ: don't suspend nested_thread irqs over system suspend.
+Date: Sat, 31 Jan 2015 00:51:17 +0100
+Message-ID: <7535701.LlWsyNLDEC@vostro.rjw.lan>
+References: <20150131092545.33ed35b8@notabene.brown> <1465455.9L1ju05BhM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <4152512.pDYbpiR2EP@vostro.rjw.lan>
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ethan.zhao@oracle.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
+Content-Type: multipart/signed; boundary="nextPart7657109.bRSz8HkkgZ"; micalg="pgp-sha256"; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58337 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760342AbbA3X2f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jan 2015 18:28:35 -0500
+In-Reply-To: <1465455.9L1ju05BhM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, linux-pm@vger.kernel.org, Kalle Jokiniemi <kalle.jokiniemi@jollamobile.com>
 
-On 1/30/2015 2:57 PM, Rafael J. Wysocki wrote:
-> On Friday, January 30, 2015 06:43:12 AM Viresh Kumar wrote:
->> cpufreq_cpu_data is protected by cpufreq_driver_lock and one of the instances
->> has missed this.
->
-> No, it isn't.  cpufreq_cpu_data is a pointer and doesn't need any locks to
-> protect it.  What the lock does is to guarantee the callers of cpufreq_cpu_get()
-> that the policy object won't go away from under them (it is used for some other
-> purposes too, but they are unrelated).
->
-> What technically happens is an ordering problem.  per_cpu(cpufreq_cpu_data, cpu)
-> needs to be cleared before calling kobject_put(&policy->kobj) *and* under the
-> lock, because otherwise if someone else calls cpufreq_cpu_get() in parallel
-> with that, they can obtain a non-NULL from it *after* kobject_put(&policy->kobj)
-> was executed.
->
-> So the lock is needed not just because it protects cpufreq_cpu_data, but because
-> it is supposed to prevent writes to cpufreq_cpu_data from happening between the
-> read from it and the kobject_get(&policy->kobj) in cpufreq_cpu_get().
->
->> And as a result we get this:
->>
->>   ------------[ cut here ]------------
->>   WARNING: CPU: 0 PID: 4 at include/linux/kref.h:47
->>   kobject_get+0x41/0x50()
->>   Modules linked in: acpi_cpufreq(+) nfsd auth_rpcgss nfs_acl
->>   lockd grace sunrpc xfs libcrc32c sd_mod ixgbe igb mdio ahci hwmon
->>   ...
->>   Call Trace:
->>    [<ffffffff81661b14>] dump_stack+0x46/0x58
->>    [<ffffffff81072b61>] warn_slowpath_common+0x81/0xa0
->>    [<ffffffff81072c7a>] warn_slowpath_null+0x1a/0x20
->>    [<ffffffff812e16d1>] kobject_get+0x41/0x50
->>    [<ffffffff815262a5>] cpufreq_cpu_get+0x75/0xc0
->>    [<ffffffff81527c3e>] cpufreq_update_policy+0x2e/0x1f0
->>    [<ffffffff810b8cb2>] ? up+0x32/0x50
->>    [<ffffffff81381aa9>] ? acpi_ns_get_node+0xcb/0xf2
->>    [<ffffffff81381efd>] ? acpi_evaluate_object+0x22c/0x252
->>    [<ffffffff813824f6>] ? acpi_get_handle+0x95/0xc0
->>    [<ffffffff81360967>] ? acpi_has_method+0x25/0x40
->>    [<ffffffff81391e08>] acpi_processor_ppc_has_changed+0x77/0x82
->>    [<ffffffff81089566>] ? move_linked_works+0x66/0x90
->>    [<ffffffff8138e8ed>] acpi_processor_notify+0x58/0xe7
->>    [<ffffffff8137410c>] acpi_ev_notify_dispatch+0x44/0x5c
->>    [<ffffffff8135f293>] acpi_os_execute_deferred+0x15/0x22
->>    [<ffffffff8108c910>] process_one_work+0x160/0x410
->>    [<ffffffff8108d05b>] worker_thread+0x11b/0x520
->>    [<ffffffff8108cf40>] ? rescuer_thread+0x380/0x380
->>    [<ffffffff81092421>] kthread+0xe1/0x100
->>    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->>    [<ffffffff81669ebc>] ret_from_fork+0x7c/0xb0
->>    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->>   ---[ end trace 89e66eb9795efdf7 ]---
->>
->> And here is the race:
->>
->>   Thread A: Workqueue: kacpi_notify
->>
->>   acpi_processor_notify()
->>     acpi_processor_ppc_has_changed()
->>           cpufreq_update_policy()
->>             cpufreq_cpu_get()
->>               kobject_get()
->>
->>   Thread B: xenbus_thread()
->>
->>   xenbus_thread()
->>     msg->u.watch.handle->callback()
->>       handle_vcpu_hotplug_event()
->>         vcpu_hotplug()
->>           cpu_down()
->>             __cpu_notify(CPU_POST_DEAD..)
->>               cpufreq_cpu_callback()
->>                 __cpufreq_remove_dev_finish()
->>                   cpufreq_policy_put_kobj()
->>                     kobject_put()
->>
->> cpufreq_cpu_get() gets the policy from per-cpu variable cpufreq_cpu_data under
->> cpufreq_driver_lock, and once it gets a valid policy it expects it to not be
->> freed until cpufreq_cpu_put() is called.
->
-> Because it does the kobject_get() under the lock too.
->
->> But the race happens when another thread puts the kobject first and updates
->> cpufreq_cpu_data later
->
-> This is an ordering problem.
->
->> and that too without these locks.
->
-> And this is racy.
->
->> And so the first thread
->> gets a valid policy structure and before it does kobject_get() on it, the second
->> one does kobject_put(). And so this WARN().
->>
->> Fix this by setting cpufreq_cpu_data to NULL before putting the kobject and that
->> too under locks.
->
-> That's almost correct.  In addition to the above (albeit maybe unintentionally)
-> the patch also fixes the possible race between two instances of
-> __cpufreq_remove_dev_finish() with the same arguments running in parallel with
-> each other.  The proof is left as an exercise to the reader. :-)
->
-> Please try to improve the changelog ...
->
->> Cc: <stable@vger.kernel.org>        # 3.12+
->> Reported-by: Ethan Zhao <ethan.zhao@oracle.com>
->> Reported-and-tested-by: Santosh Shilimkar <santosh.shilimkar@oracle.com>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->> @Santosh: I have changed read locks to write locks here and so you need to test
->> again.
->>
-Right. Tested this version and confirm that it fixes the reported WARN()
 
-Regards,
-Santosh
+--nextPart7657109.bRSz8HkkgZ
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+
+On Saturday, January 31, 2015 12:06:37 AM Rafael J. Wysocki wrote:
+> On Saturday, January 31, 2015 09:25:45 AM NeilBrown wrote:
+> >=20
+> > Nested IRQs can only fire when the parent irq fires.
+> > So when the parent is suspended, there is no need to suspend
+> > the child irq.
+> >=20
+> > Suspending nested irqs can cause a problem is they are suspended or=
+
+> > resumed in the wrong order.
+> > If an interrupt fires while the parent is active but the child is
+> > suspended, then the interrupt will not be acknowledged properly
+> > and so an interrupt storm can result.
+> > This is particularly likely if the parent is resumed before
+> > the child, and the interrupt was raised during suspend.
+> >=20
+> > Ensuring correct ordering would be possible, but it is simpler
+> > to just never suspend nested interrupts.  This patch does that.
+>=20
+> Clever. :-)
+>=20
+> This is fine by me.  Thomas, what do you think?
+
+It looks like I've overlooked a potential problem, though.
+
+Can a nested interrupt be a wakeup one?  We won't set IRQD_WAKEUP_ARMED=
+ for it
+then and may not handle wakeup correctly.
+
+> > This patch allows the IRQF_EARLY_RESUME to be removed from
+> > twl4030_sih_setup().  That flag attempts to fix the same problem
+> > is a very different way, but causes
+> >=20
+> > [   56.095825] WARNING: CPU: 0 PID: 3 at ../kernel/irq/manage.c:661=
+ irq_nested_primary_handler+0x18/0x28()
+> > [   56.095825] Primary handler called for nested irq 348
+> >=20
+> > warnings on resume.
+> >=20
+> > Signed-off-by: NeilBrown <neil@brown.name>
+> >=20
+> > diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+> > index 3ca532592704..40cbcfb7fc43 100644
+> > --- a/kernel/irq/pm.c
+> > +++ b/kernel/irq/pm.c
+> > @@ -118,6 +118,8 @@ void suspend_device_irqs(void)
+> >  =09=09unsigned long flags;
+> >  =09=09bool sync;
+> > =20
+> > +=09=09if (irq_settings_is_nested_thread(desc))
+> > +=09=09=09continue;
+> >  =09=09raw_spin_lock_irqsave(&desc->lock, flags);
+> >  =09=09sync =3D suspend_device_irq(desc, irq);
+> >  =09=09raw_spin_unlock_irqrestore(&desc->lock, flags);
+> > @@ -158,6 +160,8 @@ static void resume_irqs(bool want_early)
+> > =20
+> >  =09=09if (!is_early && want_early)
+> >  =09=09=09continue;
+> > +=09=09if (irq_settings_is_nested_thread(desc))
+> > +=09=09=09continue;
+> > =20
+> >  =09=09raw_spin_lock_irqsave(&desc->lock, flags);
+> >  =09=09resume_irq(desc, irq);
+>=20
+>=20
+
+=2D-=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
+--nextPart7657109.bRSz8HkkgZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAABCAAGBQJUzBj6AAoJEILEb/54YlRxL9wP/RBN9HylTlQ+YgANBfyllvR2
+CydmW5T52ZAxIogc+Y0urTZM/4ETyJ0t1Ozs73rJkySNFmFDxiHjYK3dhWLOlKCb
+Ly4RsCn0khUZXh9rvLFBndPo0hkoL7oMGpnr5cLI21SE5OGxtpWnaRF6uaZLQUJl
+Bu7LG61wxiwag+wFcXJzn2DjbaCJ7pfgqwOKKC1dVviZi3OU2JABTSRpPZ4BbY7n
+l/YH7Yx9PlHNnIXfeB8gW0ifHAiKbi6biuYKqFicVMR2225IFK8XRKK7BHLwP9ix
+2aPXd4y6GC8yXvu2xh4m4JLQjp1hiXZIBtJDZtQuvcpbHffe8hai4NNJiJxv31do
+yFCJm8sIa6mFecogpoSV+9rtWv35TPubwbJAnsg4oI+glwGGUSTBfD0ldvaHSpC0
+uYWqtlaOPD3hqUQiMGTB6HkmSbNXrqYj1IYdGaR+1x5YKBSu3XvAsEtggGK/Gsqi
+ZXYOw8+l/lp+gyRGoLjUfPK9UuCbHt33rsmdrX95+6pzt2oCjW65dG2p7ldoKfjn
+JOyABT0K3BnhMLii2QvOpoNsbLeyQTGQ+ebIUAjwFVtnnfG+dQRtLiUfvYhR8/4c
+nB1UxKQrYfk0hGoLgwyaqfD3OND3dM6Q+qpEjWb3Lsd60HOoFjz7f9/95oQllEz8
+78nyT/AAkbGJpx6grPjs
+=c1fF
+-----END PGP SIGNATURE-----
+
+--nextPart7657109.bRSz8HkkgZ--
+
