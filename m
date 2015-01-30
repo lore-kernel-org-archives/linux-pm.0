@@ -1,162 +1,800 @@
-From: ethan zhao <ethan.zhao@oracle.com>
-Subject: Re: [PATCH] cpufreq: Set cpufreq_cpu_data to NULL before putting
- kobject
-Date: Fri, 30 Jan 2015 09:30:22 +0800
-Message-ID: <54CADEAE.2090305@oracle.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org>
+From: "Narendran Rajan" <nrajan@codeaurora.com>
+Subject: RE: [PATCH] thermal: Add msm tsens thermal sensor driver
+Date: Thu, 29 Jan 2015 17:36:35 -0800
+Message-ID: <001601d03c2d$2fd57ea0$8f807be0$@codeaurora.com>
+References: <1422331786-19620-1-git-send-email-nrajan@codeaurora.org> <20150129014621.GB23506@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:50090 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932212AbbA3Bai (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 20:30:38 -0500
-In-Reply-To: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20150129014621.GB23506@codeaurora.org>
+Content-Language: en-us
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: 'Stephen Boyd' <sboyd@codeaurora.org>, 'Narendran Rajan' <nrajan@codeaurora.org>
+Cc: 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <edubezval@gmail.com>, 'Linux ARM MSM' <linux-arm-msm@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Siddartha Mohanadoss' <smohanad@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, santosh.shilimkar@oracle.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 
-Viresh,
+Thank you Stephen for the detail comments.
 
-On 2015/1/30 9:13, Viresh Kumar wrote:
-> cpufreq_cpu_data is protected by cpufreq_driver_lock and one of the instances
-> has missed this. And as a result we get this:
+> -----Original Message-----
+> From: linux-arm-msm-owner@vger.kernel.org [mailto:linux-arm-msm-
+> owner@vger.kernel.org] On Behalf Of Stephen Boyd
+> Sent: Wednesday, January 28, 2015 5:46 PM
+> To: Narendran Rajan
+> Cc: Zhang Rui; Eduardo Valentin; Linux ARM MSM; Linux PM; Siddartha
+> Mohanadoss
+> Subject: Re: [PATCH] thermal: Add msm tsens thermal sensor driver
+> 
+> On 01/26, Narendran Rajan wrote:
+> > TSENS supports reading temperature from multiple thermal sensors
+> > present in QCOM SOCs.
+> > TSENS HW is enabled only when the main sensor is requested.
+> > The TSENS block is disabled if the main senors is disabled
+> > irrespective of any other sensors that are being enabled.
+> > TSENS driver supports configurable threshold for temperature
+> > monitoring in which case it can generate an interrupt when specific
+> > thresholds are reached
+> >
+> > Based on code by Siddartha Mohanadoss and Stephen Boyd.
+> 
+> So as far as I can tell you removed my loop TODOs, added debug prints and
+> the device singleton, put the calibration data offset into DT (another
+TODO),
+> used regmap on the qfprom, made this into a standalone device instead of a
+> child of GCC, and moved to OF thermal zones (forcing that
+> THERMAL_TSENS8960_HWTRIPS ifdef I
+> suppose?) Anything else?
 >
->   ------------[ cut here ]------------
->   WARNING: CPU: 0 PID: 4 at include/linux/kref.h:47
->   kobject_get+0x41/0x50()
->   Modules linked in: acpi_cpufreq(+) nfsd auth_rpcgss nfs_acl
->   lockd grace sunrpc xfs libcrc32c sd_mod ixgbe igb mdio ahci hwmon
->   ...
->   Call Trace:
->    [<ffffffff81661b14>] dump_stack+0x46/0x58
->    [<ffffffff81072b61>] warn_slowpath_common+0x81/0xa0
->    [<ffffffff81072c7a>] warn_slowpath_null+0x1a/0x20
->    [<ffffffff812e16d1>] kobject_get+0x41/0x50
->    [<ffffffff815262a5>] cpufreq_cpu_get+0x75/0xc0
->    [<ffffffff81527c3e>] cpufreq_update_policy+0x2e/0x1f0
->    [<ffffffff810b8cb2>] ? up+0x32/0x50
->    [<ffffffff81381aa9>] ? acpi_ns_get_node+0xcb/0xf2
->    [<ffffffff81381efd>] ? acpi_evaluate_object+0x22c/0x252
->    [<ffffffff813824f6>] ? acpi_get_handle+0x95/0xc0
->    [<ffffffff81360967>] ? acpi_has_method+0x25/0x40
->    [<ffffffff81391e08>] acpi_processor_ppc_has_changed+0x77/0x82
->    [<ffffffff81089566>] ? move_linked_works+0x66/0x90
->    [<ffffffff8138e8ed>] acpi_processor_notify+0x58/0xe7
->    [<ffffffff8137410c>] acpi_ev_notify_dispatch+0x44/0x5c
->    [<ffffffff8135f293>] acpi_os_execute_deferred+0x15/0x22
->    [<ffffffff8108c910>] process_one_work+0x160/0x410
->    [<ffffffff8108d05b>] worker_thread+0x11b/0x520
->    [<ffffffff8108cf40>] ? rescuer_thread+0x380/0x380
->    [<ffffffff81092421>] kthread+0xe1/0x100
->    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->    [<ffffffff81669ebc>] ret_from_fork+0x7c/0xb0
->    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
->   ---[ end trace 89e66eb9795efdf7 ]---
->
-> And here is the race:
->
->   Thread A: Workqueue: kacpi_notify
->
->   acpi_processor_notify()
->     acpi_processor_ppc_has_changed()
->           cpufreq_update_policy()
->             cpufreq_cpu_get()
->               kobject_get()
->
->   Thread B: xenbus_thread()
->
->   xenbus_thread()
->     msg->u.watch.handle->callback()
->       handle_vcpu_hotplug_event()
->         vcpu_hotplug()
->           cpu_down()
->             __cpu_notify(CPU_POST_DEAD..)
->               cpufreq_cpu_callback()
->                 __cpufreq_remove_dev_finish()
->                   cpufreq_policy_put_kobj()
->                     kobject_put()
->
-> cpufreq_cpu_get() gets the policy from per-cpu variable cpufreq_cpu_data under
-> cpufreq_driver_lock, and once it gets a valid policy it expects it to not be
-> freed until cpufreq_cpu_put() is called.
-  It is another bug.
 
+Let me please know if you prefer a different attribution, would be glad to
+add.
+ 
+> >
+> > Cc: Siddartha Mohanadoss <smohanad@codeaurora.org>
+> > Cc: Stephen Boyd <sboyd@codeaurora.org>
+> > Signed-off-by: Narendran Rajan  <nrajan@codeaurora.org>
+> 
+> Something is wrong with your git. There should only be one space between
+> your name and the email id.
+> 
+
+Good eyes :-)
+Thx, I did notice just after a I sent the mail. Fixed it internally, will be
+corrected in next patch.
+
+> > ---
+> > diff --git a/drivers/thermal/msm8960_tsens.c
+> > b/drivers/thermal/msm8960_tsens.c new file mode 100644 index
+> > 0000000..307bdc8
+> > --- /dev/null
+> > +++ b/drivers/thermal/msm8960_tsens.c
+> > +
+> > +static u32 tsens_hi_code(int trip, u32 reg_cntl, u32 thresh) {
+> > +	u32 hi_code;
+> > +
+> > +	switch (trip) {
+> > +	case TSENS_TRIP_STAGE0:
+> > +		if (!(reg_cntl & TSENS_LOWER_STATUS_CLR)) {
+> > +			hi_code = thresh >>
+> TSENS_THRESHOLD_LOWER_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE1:
+> > +		if (!(reg_cntl & TSENS_UPPER_STATUS_CLR)) {
+> > +			hi_code = thresh >>
+> TSENS_THRESHOLD_UPPER_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE2:
+> > +		if (!(reg_cntl & TSENS_MAX_STATUS_MASK)) {
+> > +			hi_code = thresh >>
+> TSENS_THRESHOLD_MAX_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE3:
+> > +	default:
+> > +		hi_code = TSENS_THRESHOLD_MAX_CODE;
+> > +		break;
+> > +	}
+> > +
+> > +	return hi_code & TSENS_THRESHOLD_MAX_CODE; }
+> > +
+> > +static u32 tsens_lo_code(int trip, u32 reg_cntl, u32 thresh) {
+> > +	u32 lo_code;
+> > +
+> > +	switch (trip) {
+> > +	case TSENS_TRIP_STAGE3:
+> > +		if (!(reg_cntl & TSENS_UPPER_STATUS_CLR)) {
+> > +			lo_code = thresh >>
+> TSENS_THRESHOLD_UPPER_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE2:
+> > +		if (!(reg_cntl & TSENS_LOWER_STATUS_CLR)) {
+> > +			lo_code = thresh >>
+> TSENS_THRESHOLD_LOWER_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE1:
+> > +		if (!(reg_cntl & TSENS_MIN_STATUS_MASK)) {
+> > +			lo_code = thresh >>
+> TSENS_THRESHOLD_MIN_LIMIT_SHIFT;
+> > +			break;
+> > +		}
+> > +		/* else fall through */
+> > +	case TSENS_TRIP_STAGE0:
+> > +	default:
+> > +		lo_code = TSENS_THRESHOLD_MIN_CODE;
+> > +		break;
+> > +	}
+> > +
+> > +	return lo_code & TSENS_THRESHOLD_MAX_CODE; }
+> 
+> I wonder if these can be loops, or something on top of find_next_bit()?
+> That's what my TODO was about, hoping to reduce these functions even
+> further.
+> 
+This looked pretty readable enough. Let me see find_next_bit helps. Thx
+
+> > +
+> > +static int tsens_tz_set_trip_temp(struct tsens_sensor *tm_sensor,
+> > +	int trip, unsigned long temp)
+> > +{
+> > +	struct tsens_device *tmdev = tm_sensor->tmdev;
+> > +	struct regmap_field *status = tmdev->status_field;
+> > +	u32 thresh, reg_cntl, mask = TSENS_THRESHOLD_MAX_CODE;
+> > +	u32 code, hi_code, lo_code, code_err_chk;
+> > +
+> > +	code_err_chk = code = tsens_tz_mdegC_to_code(temp,
+> tm_sensor);
+> > +
+> > +	regmap_field_read(status, &reg_cntl);
+> > +	regmap_read(tmdev->map, TSENS_THRESHOLD_ADDR, &thresh);
+> > +
+> > +	switch (trip) {
+> > +	case TSENS_TRIP_STAGE3:
+> > +		code <<= TSENS_THRESHOLD_MAX_LIMIT_SHIFT;
+> > +		mask <<= TSENS_THRESHOLD_MAX_LIMIT_SHIFT;
+> > +		break;
+> > +	case TSENS_TRIP_STAGE2:
+> > +		code <<= TSENS_THRESHOLD_UPPER_LIMIT_SHIFT;
+> > +		mask <<= TSENS_THRESHOLD_UPPER_LIMIT_SHIFT;
+> > +		break;
+> > +	case TSENS_TRIP_STAGE1:
+> > +		code <<= TSENS_THRESHOLD_LOWER_LIMIT_SHIFT;
+> > +		mask <<= TSENS_THRESHOLD_LOWER_LIMIT_SHIFT;
+> > +		break;
+> > +	case TSENS_TRIP_STAGE0:
+> > +		code <<= TSENS_THRESHOLD_MIN_LIMIT_SHIFT;
+> > +		mask <<= TSENS_THRESHOLD_MIN_LIMIT_SHIFT;
+> > +		break;
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	hi_code = tsens_hi_code(trip, reg_cntl, thresh);
+> > +	lo_code = tsens_lo_code(trip, reg_cntl, thresh);
+> > +
+> > +	if (code_err_chk < lo_code || code_err_chk > hi_code)
+> > +		return -EINVAL;
+> > +
+> > +	regmap_update_bits(tmdev->map, TSENS_THRESHOLD_ADDR,
+> mask, code);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int tsens_set_trips(void *_sensor, long low, long high)
+> 
+> Is this function even used?
+> 
+
+Yes, only when HW trip path is present.  Let me remove this as you suggested
+in previous comment 
+And have only polling mode.
+
+> > +{
+> > +	struct tsens_sensor *tm_sensor = _sensor;
+> > +
+> > +	tsens_print_trip_temp(tm_sensor);
+> > +
+> > +	if (tsens_tz_set_trip_temp(tm_sensor, TSENS_TRIP_STAGE2, high))
+> > +		return -EINVAL;
+> > +
+> > +	if (tsens_tz_set_trip_temp(tm_sensor, TSENS_TRIP_STAGE1, low))
+> > +		return -EINVAL;
+> > +
+> > +	return 0;
+> > +}
+> > +#endif
+> > +
+> > +static void tsens_scheduler_fn(struct work_struct *work) {
+> > +	struct tsens_device *tmdev;
+> > +	struct regmap_field *status;
+> > +	unsigned int threshold, threshold_low, i, code, bits, mask = 0;
+> > +	unsigned long sensor;
+> > +	bool upper_th_x, lower_th_x;
+> > +
+> > +	tmdev = container_of(work, struct tsens_device, tsens_work);
+> > +	status = tmdev->status_field;
+> > +
+> > +	regmap_field_update_bits(status,
+> > +			TSENS_LOWER_STATUS_CLR |
+> TSENS_UPPER_STATUS_CLR,
+> > +			TSENS_LOWER_STATUS_CLR |
+> TSENS_UPPER_STATUS_CLR);
+> > +
+> > +	regmap_read(tmdev->map, TSENS_THRESHOLD_ADDR, &threshold);
+> > +	threshold_low = threshold >>
+> TSENS_THRESHOLD_LOWER_LIMIT_SHIFT;
+> > +	threshold_low &= TSENS_THRESHOLD_MAX_CODE;
+> > +	threshold = threshold >> TSENS_THRESHOLD_UPPER_LIMIT_SHIFT;
+> > +	threshold &= TSENS_THRESHOLD_MAX_CODE;
+> > +
+> > +	regmap_read(tmdev->map, TSENS_CNTL_ADDR, &bits);
+> > +	sensor = bits;
+> > +	sensor >>= TSENS_SENSOR0_SHIFT;
+> > +	for_each_set_bit(i, &sensor, tmdev->num_sensors) {
+> > +		regmap_read(tmdev->map, tmdev->sensor[i].status,
+> &code);
+> > +		upper_th_x = code >= threshold;
+> > +		lower_th_x = code <= threshold_low;
+> > +
+> > +		if (upper_th_x)
+> > +			mask |= TSENS_UPPER_STATUS_CLR;
+> > +
+> > +		if (lower_th_x)
+> > +			mask |= TSENS_LOWER_STATUS_CLR;
+> > +
+> > +#ifdef THERMAL_TSENS8960_HWTRIPS
+> > +		if (upper_th_x || lower_th_x) {
+> > +			dev_info(tsens_dev,
+> > +				"Threshold reached for sensor(%d)\n", i);
+> 
+> This looks like debug noise. Please remove.
+
+Will do (in fact plan to remove interrupt mode completely)
+> 
+> > +			thermal_zone_device_update(tmdev-
+> >sensor[i].tz_dev);
+> > +		}
+> > +#endif
+> > +	}
+> > +
+> > +	regmap_field_update_bits(status,
+> > +			TSENS_UPPER_STATUS_CLR |
+> TSENS_LOWER_STATUS_CLR, mask); }
+> > +
+> > +static irqreturn_t tsens_isr(int irq, void *data) {
+> > +	schedule_work(data);
+> 
+> I was going to move this to threaded irqs, please do that.
+> 
+I guess in a polling mode, this will not be needed. Will remove this
+completely.
+
+> > +	return IRQ_HANDLED;
+> > +}
+> > +
+> > +static void tsens_disable_mode(const struct tsens_device *tmdev) {
+> > +	u32 reg_cntl;
+> > +	u32 mask;
+> > +
+> > +	mask = GENMASK(tmdev->num_sensors - 1, 0);
+> > +	mask <<= TSENS_SENSOR0_SHIFT;
+> > +	mask |= TSENS_EN;
+> > +
+> > +	regmap_read(tmdev->map, TSENS_CNTL_ADDR, &reg_cntl);
+> > +	reg_cntl &= ~mask;
+> > +	if (tmdev->num_sensors > 1)
+> > +		reg_cntl &= ~TSENS_8960_SLP_CLK_ENA;
+> > +	else
+> > +		reg_cntl &= ~TSENS_8660_SLP_CLK_ENA;
+> > +	regmap_write(tmdev->map, TSENS_CNTL_ADDR, reg_cntl); }
+> > +
+> > +static void tsens_hw_init(struct tsens_device *tmdev) {
+> > +	u32 reg_cntl, reg_thr;
+> > +
+> > +	reg_cntl = TSENS_SW_RST;
+> > +	regmap_update_bits(tmdev->map, TSENS_CNTL_ADDR,
+> TSENS_SW_RST,
+> > +reg_cntl);
+> > +
+> > +	if (tmdev->num_sensors > 1) {
+> > +		reg_cntl |= TSENS_8960_SLP_CLK_ENA |
+> > +			(TSENS_MEASURE_PERIOD << 18);
+> 
+> Unnecessary ()?
+
+Ok, Srini also wanted not to hardcode '18' (and '16' below). Will redefine
+TSENS_MEASURE_PERIOD_8960 as BIT(18)
+
+> 
+> > +		reg_cntl &= ~TSENS_SW_RST;
+> > +		regmap_update_bits(tmdev->map,
+> TSENS_8960_CONFIG_ADDR,
+> > +				   TSENS_8960_CONFIG_MASK,
+> TSENS_8960_CONFIG);
+> > +	} else {
+> > +		reg_cntl |= TSENS_8660_SLP_CLK_ENA |
+> > +			(TSENS_MEASURE_PERIOD << 16);
+> 
+> Unnecessary ()?
+
+
+Ok, Srini also wanted not to hardcode '18' (and '16' below). Will redefine
+TSENS_MEASURE_PERIOD_8960 as BIT(16)
+
+> 
+> > +		reg_cntl &= ~TSENS_8660_CONFIG_MASK;
+> > +		reg_cntl |= TSENS_8660_CONFIG <<
+> TSENS_8660_CONFIG_SHIFT;
+> > +	}
+> > +
+> > +	reg_cntl |= GENMASK(tmdev->num_sensors - 1, 0) <<
+> TSENS_SENSOR0_SHIFT;
+> > +	regmap_write(tmdev->map, TSENS_CNTL_ADDR, reg_cntl);
+> > +
+> > +	regmap_field_update_bits(tmdev->status_field,
+> > +			TSENS_LOWER_STATUS_CLR |
+> TSENS_UPPER_STATUS_CLR |
+> > +			TSENS_MIN_STATUS_MASK |
+> TSENS_MAX_STATUS_MASK,
+> > +			TSENS_LOWER_STATUS_CLR |
+> TSENS_UPPER_STATUS_CLR |
+> > +			TSENS_MIN_STATUS_MASK |
+> TSENS_MAX_STATUS_MASK);
+> > +
+> > +	reg_cntl |= TSENS_EN;
+> > +	regmap_write(tmdev->map, TSENS_CNTL_ADDR, reg_cntl);
+> > +
+> > +	reg_thr = (TSENS_LOWER_LIMIT_TH <<
+> TSENS_THRESHOLD_LOWER_LIMIT_SHIFT) |
+> > +		(TSENS_UPPER_LIMIT_TH <<
+> TSENS_THRESHOLD_UPPER_LIMIT_SHIFT) |
+> > +		(TSENS_MIN_LIMIT_TH <<
+> TSENS_THRESHOLD_MIN_LIMIT_SHIFT) |
+> > +		(TSENS_MAX_LIMIT_TH <<
+> TSENS_THRESHOLD_MAX_LIMIT_SHIFT);
+> > +	regmap_write(tmdev->map, TSENS_THRESHOLD_ADDR, reg_thr); }
+> > +
+> > +static int
+> > +tsens_calib_sensors8660(struct tsens_device *tmdev, struct regmap
+> > +*map) {
+> > +	u32 temp_data, data;
+> > +	struct tsens_sensor *s = &tmdev->sensor[0];
+> > +
+> > +	if (regmap_read(map, tmdev->calib_offset, &temp_data))
+> > +		return -EINVAL;
+> > +
+> > +	data = (temp_data >> 24) & 0xff;
+> > +
+> > +	if (!data) {
+> > +		dev_err(tsens_dev, "QFPROM TSENS calibration data not
+> present\n");
+> 
+> Ah we do use it for an error here. It isn't hard to put a struct device
+inside
+> tmdev...
+
+Agree (did look around some drivers and they seem to have used). Anyways, I
+agree
+It's a bad practice. Will correct
+
+> 
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	s->offset = TSENS_CAL_MDEGC - s->slope * data;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int
+> > +tsens_calib_sensors8960(struct tsens_device *tmdev, struct regmap
+> > +*map) {
+> > +	int i;
+> > +	u32 temp_data[TSENS_MAX_SENSORS];
+> > +	u8 *byte_data;
+> > +	u32 fuse, redun, num_read;
+> > +	struct tsens_sensor *s = tmdev->sensor;
+> > +
+> > +	fuse = tmdev->calib_offset;
+> > +	redun = tmdev->backup_calib_offset;
+> > +
+> > +	/**
+> > +	* syscon regmap is 32-bit data, but calibration data is 8-bit.
+> > +	* read 4 bytes from regmap in a loop and then extract bytes
+> seprately
+> > +	*/
+> 
+> Weird comment style. Please do it like
+> 
+
+Thx. Will correct.
+
+>  /*
+>   * This because this isn't kernel-doc.
+>   */
+> 
+> > +
+> > +	num_read = DIV_ROUND_UP(tmdev->num_sensors, 4);
+> > +
+> > +	for (i = 0; i < num_read; i++) {
+> > +		if (regmap_read(map, (redun + i*4), &temp_data[i]))
+> > +			return -EINVAL;
+> > +
+> > +		if (!temp_data[i]) {
+> > +			dev_dbg(tsens_dev, "Main calib data not valid\n");
+> > +			if (regmap_read(map, (fuse + i*4), &temp_data[i]))
+> > +				return -EINVAL;
+> > +		}
+> > +	}
+> > +
+> > +	byte_data = (u8 *)temp_data;
+> > +
+> > +	for (i = 0; i < tmdev->num_sensors; i++, s++) {
+> > +		s->offset = TSENS_CAL_MDEGC - s->slope * byte_data[i];
+> > +		dev_dbg(tsens_dev, "calib data %d is %c", i, byte_data[i]);
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> This is a lot of hoops to jump through just to use a syscon regmap (does
+this
+> even work in big-endian mode?). Given your point about consumers wanting
+> to read with different strides makes me think that using a regmap is not a
+> good idea. It would be better if we had an API that could be used to read
+an
+> arbitrary number of bytes from an eeprom.
 >
-> But the race happens when another thread puts the kobject first and updates
-> cpufreq_cpu_data later and that too without these locks. And so the first thread
-> gets a valid policy structure and before it does kobject_get() on it, the second
-> one does kobject_put(). And so this WARN().
+
+I guess Srini's solution is elegant enough. It allows to set stride values
+and then helper 
+Functions to read the number of bytes needed.
+ 
+> > +
+> > +static const struct thermal_zone_of_device_ops tsens_thermal_of_ops =
+> {
+> > +	.get_temp = tsens_tz_get_temp,
+> > +};
+> > +
+> > +
+> 
+> Nitpick: Two newlines instead of one.
+> 
+> > +static int tsens_register(struct tsens_device *tmdev, int i) {
+> > +	char name[18];
+> > +	u32 addr = TSENS_S0_STATUS_ADDR;
+> > +	struct tsens_sensor *s = &tmdev->sensor[i];
+> > +
+> > +	/*
+> > +	* The status registers for each sensor are discontiguous
+> > +	* because some SoCs have 5 sensors while others have more
+> > +	* but the control registers stay in the same place, i.e.
+> > +	* directly after the first 5 status registers.
+> > +	*/
+> > +	if (i >= 5)
+> > +		addr += 40;
+> > +
+> > +	addr += i * 4;
+> > +
+> > +	snprintf(name, sizeof(name), "tsens_tz_sensor%d", i);
+> > +	s->mode = THERMAL_DEVICE_ENABLED;
+> > +	s->sensor_num = i;
+> > +	s->status = addr;
+> > +	s->tmdev = tmdev;
+> > +	s->tz_dev = thermal_zone_of_sensor_register(tsens_dev, i, s,
+> > +						&tsens_thermal_of_ops);
+> > +
+> > +	if (IS_ERR(s->tz_dev))
+> > +		return -ENODEV;
+> 
+> So if it's an error pointer we leave it there? And then if an interrupt
+arrives
+> and this sensor has a new temperature to report we'll update the thermal
+> framework with an invalid pointer? When I wrote this code I didn't allow
+> probe to continue if any of these zones failed to register. Why change
+that
+> because we're using the sensor API?
+> 
+
+When the registration fails, the sensor is not enabled (its explicitly
+disabled in the code). 
+The interrupts by design is common across all sensors. Primary sensor
+registration fail means
+Probe fail and the code deregisters from thermal framework.
+
+The registration of other sensors can fail as there may not a dt entry for
+that sensor. 
+This is valid in mind as the system integrator may prefer (based on thermal
+profiling) to enable
+only a few sensors out of total N and monitor only them.
+
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int tsens_probe(struct platform_device *pdev) {
+> > +	struct device_node *np = pdev->dev.of_node;
+> > +	struct device_node *base_node;
+> > +	struct platform_device *base_pdev;
+> > +	int ret, i, irq, num;
+> > +	struct tsens_sensor *s;
+> > +	struct tsens_device *tmdev;
+> > +	struct regmap *map, *imem_regmap;
+> > +	struct reg_field *field;
+> > +	static struct reg_field status_0 = {
+> > +		.reg = TSENS_8064_STATUS_CNTL,
+> > +		.lsb = 0,
+> > +		.msb = 3,
+> > +	};
+> > +	static struct reg_field status_8 = {
+> > +		.reg = TSENS_CNTL_ADDR,
+> > +		.lsb = 8,
+> > +		.msb = 11,
+> > +	};
+> > +
+> > +	tsens_dev = &pdev->dev;
+> > +
+> > +	num = of_property_count_u32_elems(np, "qcom,tsens-slopes");
+> > +	if (num <= 0) {
+> > +		dev_err(tsens_dev, "invalid tsens slopes\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	tmdev = devm_kzalloc(tsens_dev, sizeof(*tmdev) +
+> > +			     num * sizeof(struct tsens_sensor), GFP_KERNEL);
+> > +	if (tmdev == NULL)
+> > +		return -ENOMEM;
+> > +
+> > +	tmdev->num_sensors = num;
+> > +	for (i = 0, s = tmdev->sensor; i < num; i++, s++)
+> > +		of_property_read_u32_index(np, "qcom,tsens-slopes", i,
+> > +					   &s->slope);
+> > +
+> > +	irq = platform_get_irq(pdev, 0);
+> > +	if (irq < 0) {
+> > +		dev_err(tsens_dev,  "no irq resource?\n");
+> > +		return  -EINVAL;
+> > +	}
+> > +
+> > +	ret = of_property_read_u32_index(np, "qcom,calib-offsets", 0,
+> > +					   &tmdev->calib_offset);
+> > +	if (ret != 0) {
+> > +		dev_err(tsens_dev,  "No calibration offset set\n");
+> > +		return  -EINVAL;
+> > +	}
+> > +
+> > +	ret = of_property_read_u32_index(np, "qcom,calib-offsets", 1,
+> > +					   &tmdev->backup_calib_offset);
+> > +	if (ret) {
+> > +		dev_info(tsens_dev, "Missing backup calibration offset\n");
+> 
+> Why make any noise at all? A backup is here.
+
+Ok, will move to dbg.
+> 
+> > +		tmdev->backup_calib_offset = tmdev->calib_offset;
+> > +	}
+> > +
+> > +	imem_regmap = syscon_regmap_lookup_by_phandle(np,
+> "qcom,imem");
+> > +	if (IS_ERR(imem_regmap)) {
+> > +		dev_err(tsens_dev, "syscon regmap look up error\n");
+> > +		return PTR_ERR(imem_regmap);
+> > +	}
+> > +
+> > +	if (num == 1)
+> > +		ret = tsens_calib_sensors8660(tmdev, imem_regmap);
+> > +	else
+> > +		ret = tsens_calib_sensors8960(tmdev, imem_regmap);
+> > +
+> > +	if (ret < 0) {
+> > +		dev_err(tsens_dev, "tsense calibration failed\n");
+> > +		return ret;
+> > +	}
+> > +
+> > +	base_node = of_parse_phandle(np, "qcom,tsens-base", 0);
+> > +	if (base_node == NULL) {
+> 
+> Kernel style is typically
+> 
+
+Thx, will correct
+
+>  if (!base_node)
+> 
+> > +		dev_err(tsens_dev, "no base node present\n");
+> > +		return  -EINVAL;
+> > +	}
+> > +
+> > +	base_pdev = of_find_device_by_node(base_node);
+> > +	if (base_pdev == NULL) {
+> > +		dev_err(tsens_dev, "no base pdev node\n");
+> > +		return  -ENODEV;
+> > +	}
+> > +
+> > +	tmdev->map = map = dev_get_regmap(&base_pdev->dev, NULL);
+> > +	if (map == NULL) {
+> > +		dev_err(tsens_dev, "base regmap get failed\n");
+> > +		return  -ENODEV;
+> > +	}
+> > +
+> > +	/* Status bits move when the sensor bits next to them overlap */
+> > +	if (num > 5)
+> > +		field = &status_0;
+> > +	else
+> > +		field = &status_8;
+> > +
+> > +	tmdev->status_field = devm_regmap_field_alloc(tsens_dev, map,
+> *field);
+> > +	if (IS_ERR(tmdev->status_field)) {
+> > +		dev_err(tsens_dev, "regmap alloc failed\n");
+> > +		return PTR_ERR(tmdev->status_field);
+> > +	}
+> > +
+> > +	tsens_hw_init(tmdev);
+> > +
+> > +	/*
+> > +	 * Register sensor 0 separately. This sensor is always
+> > +	 * expected to be present and if this fails, thermal
+> > +	 * sensor probe would fail
+> > +	 * Other sensors are optional and if registration fails
+> > +	 * disable the sensor and continue
+> > +	*/
+> > +	ret = tsens_register(tmdev, 0);
+> > +	if (ret < 0) {
+> > +		dev_err(tsens_dev, "Registering failed for primary sensor");
+> > +		ret = -ENODEV;
+> > +		goto fail;
+> > +	} else {
+> > +		tsens_tz_set_mode(&tmdev->sensor[0],
+> THERMAL_DEVICE_ENABLED);
+> > +	}
+> > +
+> > +	for (i = 1;  i < tmdev->num_sensors; i++) {
+> > +		ret = tsens_register(tmdev, i);
+> > +
+> > +		if (ret < 0) {
+> > +			dev_err(tsens_dev,
+> > +				"Registering failed. Sensor(%i), disabled",
+i);
+> 
+> Missing newline...
+
+Thx, will fix
+
+> 
+> > +			tsens_tz_set_mode(&tmdev->sensor[i],
+> > +				THERMAL_DEVICE_DISABLED);
+> 
+> Does this do anything? The mode is already THERMAL_DEVICE_DISABLED so I
+> imagine it just bails out immediately?
+
+Didn't want to rely on default.  As noted above, the registration for non
+Primary sensors are allowed to fail and the driver just mark those sensors 
+As disabled and continue.
+
+> 
+> > +		} else {
+> > +			tsens_tz_set_mode(&tmdev->sensor[i],
+> > +				THERMAL_DEVICE_ENABLED);
+> > +		}
+> > +	}
+> > +
+> > +	INIT_WORK(&tmdev->tsens_work, tsens_scheduler_fn);
+> > +
+> > +	ret = devm_request_irq(tsens_dev, irq, tsens_isr,
+> IRQF_TRIGGER_RISING,
+> > +			       "tsens", &tmdev->tsens_work);
+> > +	if (ret < 0)
+> > +		goto err_irq;
+> > +
+> > +	platform_set_drvdata(pdev, tmdev);
+> > +
+> > +	dev_info(tsens_dev, "Tsens driver initialized\n");
+> 
+> Please remove.
+> 
+
+Less boot up noise ? Ok.
+
+> > +
+> > +	return 0;
+> > +err_irq:
+> > +	for (i = 0, s = tmdev->sensor; i < tmdev->num_sensors; i++, s++)
+> 
+> I should have made this simpler like:
+> 
+>   for (s = tmdev->sensor; s < tmdev->sensor + tmdev->num_sensors; s++)
+> 
+> > +		thermal_zone_of_sensor_unregister(&pdev->dev, s-
+> >tz_dev);
+> > +fail:
+> > +	tsens_disable_mode(tmdev);
+> > +	return ret;
+> > +}
+> > +
+> > +static int tsens_remove(struct platform_device *pdev) {
+> > +	int i;
+> 
+> Because then we can save a whole variable here.
+> 
+> > +	struct tsens_sensor *s;
+> > +	struct tsens_device *tmdev = platform_get_drvdata(pdev);
+> > +
+> > +	tsens_disable_mode(tmdev);
+> > +	for (i = 0, s = tmdev->sensor; i < tmdev->num_sensors; i++, s++)
+> > +		thermal_zone_device_unregister(s->tz_dev);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static struct of_device_id tsens_match_table[] = {
+> > +	{.compatible = "qcom,ipq806x-tsens"},
+> > +	{},
+> > +};
+> > +
+> > +MODULE_DEVICE_TABLE(of, tsens_match_table);
+> 
+> I would prefer we leave it as a child of GCC like I had done in my
+original
+> patch. The one ugly part was passing the DT node to the virtual tsens
+device
+> so that it could figure out the number of sensors, etc. We should be able
+to
+> fix that by creating the device, assigning the of_node, and then
+registering
+> the device with the platform bus.
+> 
+
+Ok - personally the existing one looked cleaner, but I agree with both you
+and Srini.
+Will change to GCC child node.
+
+> > +
+> > +static struct platform_driver tsens_driver = {
+> > +	.probe = tsens_probe,
+> > +	.remove = tsens_remove,
+> > +	.driver = {
+> > +		.of_match_table = tsens_match_table,
+> > +		.name = "tsens8960-thermal",
+> 
+> A better name may be tsens-tm or qcom-tsens. The same version of the
+> hardware exists in so many different SoCs there really isn't anything SoC
+> specific about the hardware. The SoC difference is almost entirely in the
+> qfprom layout, except for when the hw engineers decide to put a different
+> number of sensors on the chip. The same comment applies to the file name.
+> Probably qcom-tsens.c or something.
 >
-> Fix this by setting cpufreq_cpu_data to NULL before putting the kobject and that
-> too under locks.
->
-> Cc: <stable@vger.kernel.org>        # 3.12+
-> Reported-by: Ethan Zhao <ethan.zhao@oracle.com>
-> Reported-and-tested-by: Santosh Shilimkar <santosh.shilimkar@oracle.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> @Santosh: I have changed read locks to write locks here and so you need to test
-> again.
->
->   drivers/cpufreq/cpufreq.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 4473eba1d6b0..e3bf702b5588 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1409,9 +1409,10 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
->   	unsigned long flags;
->   	struct cpufreq_policy *policy;
->   
-> -	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
->   	policy = per_cpu(cpufreq_cpu_data, cpu);
-> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +	per_cpu(cpufreq_cpu_data, cpu) = NULL;
-> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->   
->   	if (!policy) {
->   		pr_debug("%s: No cpu_data found\n", __func__);
-> @@ -1466,7 +1467,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
->   		}
->   	}
->   
-> -	per_cpu(cpufreq_cpu_data, cpu) = NULL;
-  Yes, here is one bug should be fix. but seems not enough to avoid the 
-issue completely,
-  how about the Thread B running here
 
-  Thread B: xenbus_thread()
+Looks like this is the consensus, so will change to qcom-tsens.
 
-  xenbus_thread()
-    msg->u.watch.handle->callback()
-      handle_vcpu_hotplug_event()
-        vcpu_hotplug()
-          cpu_down()
-            __cpu_notify(CPU_POST_DEAD..)
-              cpufreq_cpu_callback()
-                __cpufreq_remove_dev_prepare
-		 update_policy_cpu(){
-                    ...
-                    down_write(&policy->rwsem);
-                    policy->last_cpu = policy->cpu;
-                    policy->cpu = cpu;
-                    up_write(&policy->rwsem);
-                    ---->
-                 }
-
-And thread A run to the same position as above, don't ignore my work blindly, that piece of bandage
-could save your time :>
-           
-Thanks,
-Ethan
-
-
->   	return 0;
->   }
->   
-
+> > +		.owner = THIS_MODULE,
+> > +#ifdef CONFIG_PM
+> > +		.pm	= &tsens_pm_ops,
+> > +#endif
+> > +	},
+> > +};
+> > +module_platform_driver(tsens_driver);
+> > +
+> > +MODULE_LICENSE("GPL v2");
+> > +MODULE_DESCRIPTION("Temperature Sensor driver");
+> > +MODULE_ALIAS("platform:tsens8960-tm");
+> 
+> --
+> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a
+> Linux Foundation Collaborative Project
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm"
+in
+> the body of a message to majordomo@vger.kernel.org More majordomo
+> info at  http://vger.kernel.org/majordomo-info.html
