@@ -1,39 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Set cpufreq_cpu_data to NULL before putting kobject
-Date: Fri, 30 Jan 2015 09:44:47 +0530
-Message-ID: <CAKohpokstCHezi0-Vp=-WJn4Zrpnj0oELjw6jzkY_0976h3V8w@mail.gmail.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org>
-	<54CADEAE.2090305@oracle.com>
-	<CAKohpo=uFZ0BwZ1FLSBpht3Yi1B73LpHDu00Rqk2P3TbzCYsoQ@mail.gmail.com>
-	<54CAE80C.4060406@oracle.com>
-	<CAKohponF_fqoDj_g4kZuoYa=gz9G_yRn67eJoWT6mnPkejWkjw@mail.gmail.com>
-	<54CAEABB.4060508@oracle.com>
-	<CAKohpomdf1eZveqw+GCzcuPJnW4BpMYqGebhRR5=mc0ome0vFg@mail.gmail.com>
-	<54CAFE88.2080508@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <54CAFE88.2080508@oracle.com>
-Sender: stable-owner@vger.kernel.org
-To: ethan zhao <ethan.zhao@oracle.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, santosh shilimkar <santosh.shilimkar@oracle.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "# 3.13.x" <stable@vger.kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH] devfreq: Fix build break of devfreq-event class
+Date: Fri, 30 Jan 2015 13:54:08 +0900
+Message-ID: <1422593648-18151-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:24299 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563AbbA3EyT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jan 2015 23:54:19 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael.j.wysocki@intel.com, myungjoo.ham@samsung.com
+Cc: kyungmin.park@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 30 January 2015 at 09:16, ethan zhao <ethan.zhao@oracle.com> wrote:
->  You mean the policy is shared by all CPUs, so PPC notification about one
+This patch fixes the build break of the exynos-ppmu driver because Makefile
+in drivers/devfreq don't include the entry of devfreq-event.c driver.
 
-A policy may or maynot be shared by multiple CPUs. It all depends on your
-systems configuration. All CPUs which share clock line, share a policy.
+The original patch[1] includes the entry to build devfreq-event.c without
+the build break. This build break is generated in the process of merging the
+patch.
+[1] https://lkml.org/lkml/2015/1/25/579
+- [PATCH v10 1/7] devfreq: event: Add new devfreq_event class to provide basic
+                  data for devfreq governor
 
-You can verify that from /sys/devices/system/cpu/cpu*/related_cpus. This
-gives the CPUs that share policy.
+CC      init/version.o
+LD      init/built-in.o
+drivers/built-in.o: In function `exynos_ppmu_probe':
+binder.c:(.text+0x4447ec): undefined reference to `devm_devfreq_event_add_edev'
+make: *** [vmlinux] Error 1
 
->  CPU should update all CPU's policy, right ? even the requested CPU is
-> shutting  down.
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
 
-CPUs sharing policy have a single policy structure. And so policy would
-be updated for all CPUs that share the poilcy. Even if some cpu goes down,
-the policy might still be up and running.
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 9256c35..5134f9e 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_PM_DEVFREQ)	+= devfreq.o
++obj-$(CONFIG_PM_DEVFREQ_EVENT)	+= devfreq-event.o
+ obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
+ obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
+ obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
+-- 
+1.8.5.5
 
---
-viresh
