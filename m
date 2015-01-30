@@ -1,111 +1,147 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
- idle states are allowed
-Date: Fri, 30 Jan 2015 11:11:17 +0530
-Message-ID: <54CB197D.2040809@linux.vnet.ibm.com>
-References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com> <1410764352.32643.2.camel@concordia> <5416A8B0.8040603@linux.vnet.ibm.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
+Date: Fri, 30 Jan 2015 09:14:22 +0100
+Message-ID: <20150130091422.669930c8@amdc2363>
+References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
+ <1421667844-13627-2-git-send-email-l.majewski@samsung.com>
+ <CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
+ <20150122100124.65e7a19e@amdc2363>
+ <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
+ <20150129230616.GJ29837@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57882 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbbA3Fl0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jan 2015 00:41:26 -0500
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 29 Jan 2015 22:41:26 -0700
-In-Reply-To: <5416A8B0.8040603@linux.vnet.ibm.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:28602 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbbA3IOj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jan 2015 03:14:39 -0500
+In-reply-to: <20150129230616.GJ29837@developer.amazonguestwifi.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
-On 09/15/2014 02:22 PM, Preeti U Murthy wrote:
-> On 09/15/2014 12:29 PM, Michael Ellerman wrote:
->> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
->>> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
->>> entry into deep idle states beyond snooze. Check for the value of this
->>> parameter before entering fastsleep. We already do this check for nap in
->>> power7_idle().
->>>
->>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>> ---
->>>
->>>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
->>>  1 file changed, 6 insertions(+)
->>>
->>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->>> index a64be57..b8ba52e 100644
->>> --- a/drivers/cpuidle/cpuidle-powernv.c
->>> +++ b/drivers/cpuidle/cpuidle-powernv.c
->>> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
->>>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
->>>  	unsigned long new_lpcr;
->>>  
->>> +	/*
->>> +	 * Verify if snooze is the only valid cpuidle state
->>> +	 */
->>> +	if (!(powersave_nap > 0))
->>> +		return index;
->>> +
->>>  	if (unlikely(system_state < SYSTEM_RUNNING))
->>>  		return index;
->>
->> Doesn't the above mean we are just going to keep trying to go into fastsleep
->> again and again? Or does the idle code work out that it didn't work based on
->> the fact that we didn't sleep for the right period?
+Hi Eduardo, Abhilash,
+
+> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
+> > Hi Lukasz,
+> > 
+> > On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
+> > <l.majewski@samsung.com> wrote:
+> > > Hi Abhilash,
+> > >
+> > >> Hi Lukasz,
+> > >>
+> > >> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
+> > >> <l.majewski@samsung.com> wrote:
+> > >> > The exynos_map_dt_data() function must be called before
+> > >> > thermal_zone_of_sensor_register(), and hence provide tmu_read()
+> > >> > function, before it is needed.
+> > >> >
+> > >> > This change is driven by adding support for enabling
+> > >> > thermal_zoneX when it is properly initialized.
+> > >> >
+> > >> > One can read the mode of operation
+> > >> > at /sys/class/thermal/thermal_zone0/mode Such functionality was
+> > >> > missing in the of-thermal.c code.
+> > >> >
+> > >> > Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> > >> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > >> > ---
+> > >> >  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
+> > >> >  1 file changed, 4 insertions(+), 3 deletions(-)
+> > >> >
+> > >> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > >> > b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab
+> > >> > 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
+> > >> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > >> > @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
+> > >> > platform_device *pdev) platform_set_drvdata(pdev, data);
+> > >> >         mutex_init(&data->lock);
+> > >> >
+> > >> > +       ret = exynos_map_dt_data(pdev);
+> > >> > +       if (ret)
+> > >> > +               goto err_sensor;
+> > >> > +
+> > >> >         data->tzd =
+> > >> > thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> > >> > &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
+> > >> >                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
+> > >> >                 return PTR_ERR(data->tzd);
+> > >> >         }
+> > >> > -       ret = exynos_map_dt_data(pdev);
+> > >> > -       if (ret)
+> > >> > -               goto err_sensor;
+> > >> >
+> > >> >         pdata = data->pdata;
+> > >>
+> > >> I have been testing this along with your v5 patch set and am
+> > >> seeing incorrect temperature being reported at boot-up on
+> > >> exynos7.
+> > >
+> > > Does it show a maximal temperature value (0x1FF)?
+> > 
+> > I did not print the current temperature register, but I remember the
+> > message showing ~105C. Will give you the register value when I test
+> > with more debug prints tomorrow.
+> > 
+> > >
+> > >>  It looks
+> > >> like exynos_tmu_read gets called from
+> > >> thermal_zone_of_device_update during boot-up, now that we have
+> > >> it populated early. However, as the tmu initialization function
+> > >> has not been called yet it returns a wrong value. Does that
+> > >> sound correct ?
+> > >
+> > > No, this is a mistake. However, I'm wondering why on Exynos4/5
+> > > this error didn't show up...
+> > 
+> > I have been lowering the software trip point temperature in the
+> > exynos7 dts file (to 55C) for testing purposes. Hence, when the
+> > temperature is read incorrectly as ~105C the board trips at boot-up
+
+					^^^^ this is a very unusual
+					value - I had problems with
+					reading 0xFF values with
+					similar symptom (but this was
+					caused by lack of vtmu).
+
+> > itself. Maybe for exynos4/5 the incorrect value read during boot-up
+> > is in the non-tripping range and once the tmu is initialized later
+> > it continues to function properly thereafter ?
+> > 
+> > >
+> > > The reordering is needed to be able to call set_mode callback at
+> > > of-thermal.c to set the mode.
+> > >
+> > > If this change causes problems, then another solution (probably
+> > > not so neat) must be found.
+> > 
+> > Please let me know if you need any further details.
+
+Abhilash, could you provide more details (like relevant output from
+dmesg) and point me a list of patches which shall I apply to test this
+issue on Exynos4/5?
+
 > 
-> Thats right. The idle code figures that its judgment to enter fastsleep
-> was not correct and applies a correction factor to its future decisions
-> . This correction factor is intended to influence the cpuidle governor's
-> decision on choosing an idle state for the cpu based on the history of
-> wakeups. Hence a shallower idle state will be chosen here on in the
-> above circumstance.
+> What is the status of this patch? Is it still required?
 
-On second thoughts, I feel that this is not the best way to disable deep
-idle states. Going down this path means the governor should identify
-that fastsleep is not being entered into and take corrective action from
-then on. If the governor is buggy, we pointlessly enter and exit
-fastsleep_loop() during long idle periods.
-
-So a better way to disable fastsleep during runtime is through the
-disable flag in sysfs. To disable deep idle states at bootup one could
-use powersave=off kernel cmd line parameter.
-
-The functionality provided by powersave_nap and smt_snooze_delay (to
-quote another example) carried value during the days that powernv did
-not have a cpuidle driver. We retain them so as to not break userspace,
-although they do not carry value today. Any future users of these
-parameters should be avoided IMO. Hence I retract this patch.
-
-Regards
-Preeti U Murthy
+It is strange, since on Exynos4/5 this works and some problems show up
+when run on Exynos7.
 
 > 
->>
->> We were talking about getting rid of powersave_nap altogether, but I think we
->> decided we couldn't, I forget.
+> Cheers,
 > 
-> Isn't this a helpful knob to disable cpuidle at runtime? Currently we
-> check the value of powersave_nap before entering both nap and fastsleep.
-> 
-> Regards
-> Preeti U Murthy
->>
->> cheers
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> > 
+> > Thanks,
+> > Abhilash
 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
