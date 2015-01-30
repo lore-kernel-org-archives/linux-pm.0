@@ -1,96 +1,126 @@
-From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2] MAINTAINERS: Add entry for Maxim PMICs on Samsung boards
-Date: Fri, 30 Jan 2015 13:17:10 -0800
-Message-ID: <20150130211710.22722.17974@quantum>
-References: <1422612635-5711-1-git-send-email-k.kozlowski@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 3/3] cpufreq: exynos: allow modular build
+Date: Fri, 30 Jan 2015 22:24:12 +0100
+Message-ID: <5048920.rXbXJT1FvO@wuerfel>
+References: <1422451015-390439-1-git-send-email-arnd@arndb.de> <1642077.OrkdxhO2uI@wuerfel> <20150129222150.GA29837@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1422612635-5711-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150129222150.GA29837@developer.amazonguestwifi.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Krzysztof Kozlowski (2015-01-30 02:10:35)
-> Add myself and Chanwoo Choi as supporters to help in reviewing patches
-> for Maxim 77686 PMIC and Maxim 14577/77693 MUIC drivers:
->  - mfd (all of them),
->  - extcon (extcon-max14577.c, extcon-max77693.c),
->  - regulator (all of them),
->  - clock (clk-max77686.c),
->  - RTC (rtc-max77686.c).
+On Thursday 29 January 2015 18:21:51 Eduardo Valentin wrote:
+> Hello Arnd and Viresh,
 > 
-> Lately I am the author of contributors to them. These drivers are used
-> on Exynos-based boards (Trats 2, Gear 1 and Gear 2).
+> On Thu, Jan 29, 2015 at 01:42:32PM +0100, Arnd Bergmann wrote:
+> > On Thursday 29 January 2015 15:40:15 Viresh Kumar wrote:
+> > >  obj-$(CONFIG_ARCH_DAVINCI)             += davinci-cpufreq.o
+> > >  obj-$(CONFIG_UX500_SOC_DB8500)         += dbx500-cpufreq.o
+> > > -obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)       += exynos-cpufreq.o
+> > > -obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
+> > > -obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
+> > > -obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
+> > > +obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos-cpufreq.o exynos4210-cpufreq.o
+> > > +obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos-cpufreq.o exynos4x12-cpufreq.o
+> > > +obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos-cpufreq.o exynos5250-cpufreq.o
+> > > 
+> > 
+> > I'd have to try it, but this might fail if one of the three drivers
+> > is built-in and another one is a module.
+> > 
+> > 	Arnd
 > 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Let me make one step back here. The original issue is, now this exynos
+> cpufreq driver depends on of thermal; but of thermal can be built as
+> module, while this cpufreq driver cannot. Original proposal is to allow
+> module build in the exynos cpufreq driver.
+> 
+> On the original proposal, my concern is that the driver code does not
+> have separated modules, but one single module platform driver,  which uses functions from
+> other c files. On top of that, the patch originally allows four
+> (independent) modules builds. Although the children drivers still
+> selects the core part, we would still need to change the original patch
+> to add module dependency too.
+> 
+> So, my proposal was to, in order to allow module builds on this cpufreq
+> driver, we also need to properly construct the driver into a single
+> module, instead of several modules. The issue with my patch was the fact
+> that it was allowing platforms that do not use that driver, to select it
+> by default. And eventually this may cause a unusable module being loaded
+> into those systems.
+> 
+> Well, trying harder here in the same approach. The diff bellow is based
+> on Arnd's original patch and on Viresh's amendment, except that the core
+> part is now dependent on all the supported platforms, instead of
+> ARCH_EXYNOS. This way, it wont load in platforms that are not supposed
+> to be loaded. The user will be able to build the support for all
+> platforms, or select which platforms he/she wants (as originally),
+> except that now it can be a module, instead.
+> 
+> I believe now by default it will still keep the driver only on those
+> configs that expect it to be on. And it won't compile/load on platforms
+> that it is not supposed to. It brings closer a config that is dependent on this
+> driver, so it looks better in the menuconfig.
+> 
+> Let me know if I missed something (feel free to amend to your patch):
 
-Acked-by: Michael Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Yes, I think your refined approach works and is better than my
+original patch, thanks a lot for giving it more thought!
 
-> Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Cc: Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>
-> Acked-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> 
-> ---
-> 
-> Changes since v1:
-> 1. Add also Chanwoo Choi as supporter on his request [1].
-> 2. Move out chargers (power supply) to separate patch (applied already
->    by Sebastian Reichel [2]). Patch is rebased on next which includes
->    this.
-> 3. Add acks from Mark Brown and Lee Jones.
-> 
-> [1] https://lkml.org/lkml/2015/1/16/571
-> [2] http://git.infradead.org/battery-2.6.git/commit/f8f847b51a0e1cb0c96e706d5da0ac507d96c605
-> ---
->  MAINTAINERS | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5d7404add7ed..775a631118ef 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6191,6 +6191,26 @@ S:       Supported
->  F:     drivers/power/max14577_charger.c
->  F:     drivers/power/max77693_charger.c
+One tiny problem:
+
+> @@ -90,6 +84,20 @@ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
 >  
-> +MAXIM PMIC AND MUIC DRIVERS FOR EXYNOS BASED BOARDS
-> +M:     Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> +M:     Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> +L:     linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> +S:     Supported
-> +F:     drivers/*/max14577.c
-> +F:     drivers/*/max77686.c
-> +F:     drivers/*/max77693.c
-> +F:     drivers/extcon/extcon-max14577.c
-> +F:     drivers/extcon/extcon-max77693.c
-> +F:     drivers/rtc/rtc-max77686.c
-> +F:     drivers/clk/clk-max77686.c
-> +F:     Documentation/devicetree/bindings/mfd/max14577.txt
-> +F:     Documentation/devicetree/bindings/mfd/max77686.txt
-> +F:     Documentation/devicetree/bindings/mfd/max77693.txt
-> +F:     Documentation/devicetree/bindings/clock/maxim,max77686.txt
-> +F:     include/linux/mfd/max14577*.h
-> +F:     include/linux/mfd/max77686*.h
-> +F:     include/linux/mfd/max77693*.h
+>  	  If in doubt, say N.
+>  
+> +config ARM_EXYNOS5440_CPUFREQ
+> +	bool "SAMSUNG EXYNOS5440"
+> +	depends on SOC_EXYNOS5440
+> +	depends on HAVE_CLK && OF
+> +	select PM_OPP
+> +	default y
+> +	help
+> +	  This adds the CPUFreq driver for Samsung EXYNOS5440
+> +	  SoC. The nature of exynos5440 clock controller is
+> +	  different than previous exynos controllers so not using
+> +	  the common exynos framework.
 > +
->  MAXIRADIO FM RADIO RECEIVER DRIVER
->  M:     Hans Verkuil <hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org>
->  L:     linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> -- 
-> 1.9.1
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +	  If in doubt, say N.
+
+I believe this one also has to be tristate, for the same reason.
+
+>  
+> -#ifdef CONFIG_ARM_EXYNOS4210_CPUFREQ
+> +#if IS_ENABLED(CONFIG_ARM_EXYNOS4210_CPUFREQ)
+>  extern int exynos4210_cpufreq_init(struct exynos_dvfs_info *);
+>  #else
+>  static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
+> @@ -61,7 +61,7 @@ static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
+>  	return -EOPNOTSUPP;
+>  }
+>  #endif
+> -#ifdef CONFIG_ARM_EXYNOS4X12_CPUFREQ
+> +#if IS_ENABLED(CONFIG_ARM_EXYNOS4X12_CPUFREQ)
+>  extern int exynos4x12_cpufreq_init(struct exynos_dvfs_info *);
+>  #else
+>  static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
+> @@ -69,7 +69,7 @@ static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
+>  	return -EOPNOTSUPP;
+>  }
+>  #endif
+> -#ifdef CONFIG_ARM_EXYNOS5250_CPUFREQ
+> +#if IS_ENABLED(CONFIG_ARM_EXYNOS5250_CPUFREQ)
+>  extern int exynos5250_cpufreq_init(struct exynos_dvfs_info *);
+>  #else
+>  static inline int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
+
+This change is ok, but not needed, because the three extra symbols are still
+bool. I would leave that change out, but I also don't mind it.
+
+With the change to make ARM_EXYNOS5440_CPUFREQ tristate:
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
