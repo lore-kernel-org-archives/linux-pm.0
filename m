@@ -1,85 +1,54 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v4 5/5] drivers: bus: Add Simple Power-Managed Bus Driver
-Date: Sun, 1 Feb 2015 10:36:54 +0100
-Message-ID: <CAMuHMdVCHYSo-OWDqHWQ+0YHa_gn8o_7-vUSOiRKO-r-c6+Rcw@mail.gmail.com>
-References: <1422288977-20353-1-git-send-email-geert+renesas@glider.be>
-	<1422288977-20353-6-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFpf74Mxova+QsYfhSVPc26-NhC7A4vFJfywPzP9oHkVhw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: bq2415x_charger.c: battery is discharged (fast, 224mA) when it
+ should be charged
+Date: Sun, 1 Feb 2015 10:47:02 +0100
+Message-ID: <20150201094702.GA21628@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpf74Mxova+QsYfhSVPc26-NhC7A4vFJfywPzP9oHkVhw@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
+Cc: pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Hi!
 
-On Fri, Jan 30, 2015 at 10:34 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 26 January 2015 at 17:16, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->> Add a driver for transparent busses that don't need a real driver, but
->> where the bus controller is part of a PM domain, or under the control of
->> a functional clock.  Typically, the bus controller's PM domain and/or
->> clock must be enabled for child devices connected to the bus (either
->> on-SoC or externally) to function.
->>
->> Hence the sole purpose of this driver is to enable its clock and PM
->> domain (if exist(s)), which are specified in the DT and managed from
->> platform and PM domain code, and to probe for child devices.
->>
->> Due to the child-parent relationship with devices connected to the bus,
->> PM domain and clock state transitions are handled in the correct order.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+I connected N900 with full battery using USB. For some reason, charge
+limit was set to 100mA, battery was "full" and was discharging:
 
->> --- /dev/null
->> +++ b/drivers/bus/simple-pm-bus.c
+root@n900:/my/tui/ofone# ./tefone
+Ready.
+Battery  4.017 V  4.039 V  81 %  0 %  0 / 0 / 2056 mAh  Full -242.224 / 550 / 100  mA
 
->> +static int simple_pm_bus_probe(struct platform_device *pdev)
->> +{
->> +       struct device_node *np = pdev->dev.of_node;
->> +
->> +       dev_dbg(&pdev->dev, "%s\n", __func__);
->> +
->> +       pm_runtime_enable(&pdev->dev);
->> +
->> +       if (np)
->> +               of_platform_populate(np, NULL, NULL, &pdev->dev);
->> +
->
-> I am not sure my comments is valid in this initial step. Yet, you
-> state in the DT documentation, that this driver supports clocks and PM
-> domains.
->
-> How you are going add that support it quite interesting. :-) I also
+I adjusted the current limit, but got no change, battery is still
+discharging, fast:
 
-The clock can be controlled through e.g. pm_clk domain (pm_clk_notifier
-and pm_clk_{suspend,resume}()) or genpd (GENPD_FLAG_PM_CLK,
-which you have added yourself ;-)
+root@n900:/my/tui/ofone# echo 500 > /sys/class/power_supply/bq24150a-0/current_limit
+root@n900:/my/tui/ofone# ./tefone
+Ready.
+Battery  3.994 V  4.034 V  78 %  0 %  0 / 0 / 2056 mAh  Full   -251.506 / 550 / 500  mA
+Battery  4.0 V  4.037 V  79 %  0 %  0 / 0 / 2056 mAh  Full   -223.125 / 550 / 500  mA
+Battery  4.005 V  4.037 V  79 %  0 %  0 / 0 / 2056 mAh  Full   -224.91 / 550 / 500  mA
+Battery  3.994 V  4.037 V  78 %  0 %  0 / 0 / 2056 mAh  Full   -224.91 / 550 / 500  mA
+Battery  4.023 V  4.037 V  81 %  0 %  0 / 0 / 2056 mAh  Full   -224.91 / 550 / 500  mA
+Battery  4.011 V  4.037 V  80 %  0 %  0 / 0 / 2056 mAh  Full   -224.91 / 550 / 500  mA
+Battery  3.994 V  4.031 V  78 %  0 %  0 / 0 / 2056 mAh  Full   -256.504 / 550 / 500  mA
+Battery  3.994 V  4.029 V  78 %  0 %  0 / 0 / 2056 mAh  Full   -224.017 / 550 / 500  mA
+Battery  3.988 V  4.029 V  77 %  0 %  0 / 0 / 2056 mAh  Full   -224.731 / 550 / 500  mA
+Battery  4.005 V  4.023 V  79 %  0 %  0 / 0 / 2056 mAh  Full   -223.66 / 550 / 500  mA
 
-> especially interested how the interaction (child to parents) through
-> runtime PM will look like.
+I'm getting a lot of
 
-When a child is to be runtime-resumed, the core make sure the parent is
-runtime-resumed. When all children have been runtime-suspended, the parent
-is runtime-suspended. This is already working. This patch series is the
-only missing piece: without a driver that calls pm_runtime_enable(), the
-parent is not runtime-managed.
+[  208.037719] bq27x00-battery 2-0055: battery is not calibrated! ignoring capacity values
+[  238.038024] bq27x00-battery 2-0055: battery is not calibrated! ignoring capacity values
 
-> Overall, I like the idea in patchset, but I would like to understand a
-> bit more around the above.
+messages, that's why all the 0s in battery information dump.
 
-Thanks!
+Any ideas?
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
