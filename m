@@ -1,94 +1,90 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 1/5] thermal: of: fix cooling device weights in device
- tree
-Date: Sun, 1 Feb 2015 12:21:14 +0000
-Message-ID: <20150201122114.GK2874@e104805>
-References: <1421947625-19708-1-git-send-email-javi.merino@arm.com>
- <1421947625-19708-2-git-send-email-javi.merino@arm.com>
- <20150131000018.GB14374@developer.amazonguestwifi.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: bq2415x_charger.c: battery is discharged (fast, 224mA) when it
+ should be charged
+Date: Sun, 1 Feb 2015 20:17:50 +0100
+Message-ID: <20150201191750.GA27467@amd>
+References: <20150201094702.GA21628@amd>
+ <201502011108.16071@pali>
+ <20150201113813.GA6570@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40450 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752779AbbBAMVY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Feb 2015 07:21:24 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39860 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbbBATRx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Feb 2015 14:17:53 -0500
 Content-Disposition: inline
-In-Reply-To: <20150131000018.GB14374@developer.amazonguestwifi.org>
+In-Reply-To: <20150201113813.GA6570@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Kapileshwar Singh <Kapileshwar.Singh@arm.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene@kernel.org>
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, sre@debian.org, sre@ring0.de, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 
-Hi Eduardo,
+On Sun 2015-02-01 12:38:13, Pavel Machek wrote:
+> Hi!
+>=20
+> On Sun 2015-02-01 11:08:16, Pali Roh=E1r wrote:
+> > On Sunday 01 February 2015 10:47:02 Pavel Machek wrote:
+> > > Hi!
+> > >=20
+> > > I connected N900 with full battery using USB. For some reason,
+> > > charge limit was set to 100mA, battery was "full" and was
+> > > discharging:
+> > >=20
+> >=20
+> > Make sure you have loaded some usb gadget. Without it battery=20
+> > charging via dedicated wallcharger (and probably also usb host=20
+> > charger) does not working. g_nokia should be OK.
+>=20
+> I had that loaded (was running from root over USB at the moment.)
+>=20
+> > Try also compiling kernel with CONFIG_USB_GADGET_VBUS_DRAW=3D500
+> >=20
+> > Also for charger autodetection you need to have loaded=20
+> > isp1704_charer.ko module (or compiled into kernel).
+> >=20
+> > And make sure that isp1704_charger is loaded before module=20
+> > bq2415x_charger (there is some probe defer, no idea if it works=20
+> > as excepted).
+>=20
+> It seems bq2415x_charger is the problem: it all started working when =
+I
+> did echo reset > mode...=20
 
-On Sat, Jan 31, 2015 at 12:00:19AM +0000, Eduardo Valentin wrote:
-> On Thu, Jan 22, 2015 at 05:27:01PM +0000, Javi Merino wrote:
-> > From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-> > 
-> > Currently you can specify the weight of the cooling device in the device
-> > tree but that information is not populated to the
-> > thermal_bind_params where the fair share governor expects it to
-> > be.  The of thermal zone device doesn't have a thermal_bind_params
-> > structure and arguably it's better to pass the weight inside the
-> > thermal_instance as it is specific to the bind of a cooling device to a
-> > thermal zone parameter.
-> > 
-> > Core thermal code is fixed to populate the weight in the instance from
-> > the thermal_bind_params, so platform code that was passing the weight
-> > inside the thermal_bind_params continue to work seamlessly.
-> > 
-> > While we are at it, create a default value for the weight parameter for
-> > those thermal zones that currently don't define it and remove the
-> > hardcoded default in of-thermal.
-> > 
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Kukjin Kim <kgene@kernel.org>
-> > Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
-> > ---
-> > 
-> > This patch was previously suggested here[0].  During the discussion,
-> > Eduardo suggested that dropping the bind op for of-thermal and using
-> > tbps and their .match() function was preferrable.  We sent a series
-> > that did that in [1].  However, looking at the code we think that this
-> > patch is preferrable as it is simpler and enables the rest of the
-> > patches in these series, specially the simplification in patch 2.
-> > That's why we are reposting it, now properly asking for inclusion.
-> > 
-> > [0] http://thread.gmane.org/gmane.linux.power-management.general/54622
-> > [1] http://thread.gmane.org/gmane.linux.power-management.general/55339
-> 
-> Despite going one way or another, this patch breaks existing users of
-> the thermal_zone_bind_cooling_device API.
-> 
-> > 
-> >  Documentation/thermal/sysfs-api.txt                |  4 +++-
-> >  drivers/thermal/db8500_thermal.c                   |  2 +-
-> >  drivers/thermal/fair_share.c                       |  2 +-
-> >  drivers/thermal/imx_thermal.c                      |  3 ++-
-> >  drivers/thermal/of-thermal.c                       |  5 +++--
-> >  drivers/thermal/samsung/exynos_thermal_common.c    |  3 ++-
-> >  drivers/thermal/thermal_core.c                     | 22 ++++++++++++++++------
-> >  drivers/thermal/thermal_core.h                     |  1 +
-> >  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  3 ++-
-> >  include/linux/thermal.h                            |  6 +++++-
-> >  10 files changed, 36 insertions(+), 15 deletions(-)
-> 
-> $ git grep thermal_zone_bind_cooling_device
-> Documentation/thermal/sysfs-api.txt:1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
-> Documentation/thermal/sysfs-api.txt:thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device.
-> drivers/acpi/thermal.c:					thermal_zone_bind_cooling_device
-> drivers/acpi/thermal.c:				result = thermal_zone_bind_cooling_device
-> drivers/acpi/thermal.c:				result = thermal_zone_bind_cooling_device
-> 
-> We are not supposed to break ACPI code base :-)
-> 
-> drivers/platform/x86/acerhdf.c:	if (thermal_zone_bind_cooling_device(thermal, 0, cdev,
-> 
-> You may want to add acerhdf to your patch.
- 
-Yes, we'll send a v2 with ACPI and acerhdf.
+It does not switch from "Full" to "Charging", and it does not seem to
+switch from "Charging" to "Full", either...:
 
-Cheers,
-Javi
+root@n900:/my/tui/ofone# ./tefone
+Ready.
+Battery  4.152 V  4.161 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   40.8=
+76 / 650 / 500  mA
+Battery  4.152 V  4.161 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   48.1=
+95 / 650 / 500  mA
+Battery  4.152 V  4.164 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   43.5=
+54 / 650 / 500  mA
+Battery  4.14 V  4.164 V  94 %  0 %  0 / 0 / 2056 mAh  Charging   40.16=
+2 / 650 / 500  mA
+Battery  4.158 V  4.172 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   54.6=
+21 / 650 / 500  mA
+Battery  4.158 V  4.175 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   33.7=
+36 / 650 / 500  mA
+aHello, world
+Battery  4.164 V  4.175 V  96 %  0 %  0 / 0 / 2056 mAh  Charging   2.14=
+2 / 650 / 500  mA
+Battery  4.164 V  4.177 V  96 %  0 %  0 / 0 / 2056 mAh  Charging   19.9=
+92 / 650 / 500  mA
+Battery  4.158 V  4.177 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   18.2=
+07 / 650 / 500  mA
+Battery  4.158 V  4.177 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   17.4=
+93 / 650 / 500  mA
+Battery  4.164 V  4.177 V  96 %  0 %  0 / 0 / 2056 mAh  Charging   16.2=
+43 / 650 / 500  mA
+Battery  4.158 V  4.177 V  95 %  0 %  0 / 0 / 2056 mAh  Charging   16.2=
+43 / 650 / 500  mA
+
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
