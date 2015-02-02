@@ -1,66 +1,63 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-Date: Mon, 02 Feb 2015 14:25:47 +0530
-Message-ID: <54CF3B93.9090507@linux.vnet.ibm.com>
-References: <20150202050821.24581.56186.stgit@preeti.in.ibm.com> <1422859164.20278.1.camel@ellerman.id.au>
+From: Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>
+Subject: Re: [PATCH v3 00/20] power_supply: Allow safe usage of power supply
+Date: Mon, 02 Feb 2015 09:58:57 +0100
+Message-ID: <13686747.WJugMFr0nf@fb07-iapwap2>
+References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1422859164.20278.1.camel@ellerman.id.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>, rafael.j.wysocki@intel.com
-Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; boundary="nextPart11668177.gtCQM2pIVG"; micalg="pgp-sha256"; protocol="application/pgp-signature"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1422629278-12202-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, David Herrmann <dh.herrmann-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>, Cezary Jackiewicz <cezary.jackiewicz-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Milo Kim <milo.kim-l0cyMroinI0@public.gmane.org>, Julian Andres Klode <jak-4HMq4SXA452hPH1hqNUYSQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, ac100-oU9gvf+ajcQ97yFScArB1dHuzzzSOjJt@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>L
 List-Id: linux-pm@vger.kernel.org
 
-On 02/02/2015 12:09 PM, Michael Ellerman wrote:
-> On Mon, 2015-02-02 at 10:40 +0530, Preeti U Murthy wrote:
->> The device tree now exposes the residency values for different idle states. Read
->> these values instead of calculating residency from the latency values. The values
->> exposed in the DT are validated for optimal power efficiency. However to maintain
->> compatibility with the older firmware code which does not expose residency
->> values, use default values as a fallback mechanism. While at it, use better
->> APIs to parse the powermgmt device tree node so as to avoid endianness
->> transformation.
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->> Changes from V2: https://lkml.org/lkml/2015/1/27/1054
->> 1. Used APIs to eliminate endianness transformation
-> 
-> Hi Preeti,
-> 
-> I thought I was pretty clear when I said you should do that as a follow-up
-> patch.
-> 
-> This is now doing too many things, it's not a single logical change, and it's
-> touching code in arch/powerpc and the driver. Which means neither I nor Rafael
-> can easily merge it.  
-> 
-> So please go back to the v2 you had. And then do the of_property_count_u32_elems()
-> changes as separate patches.
 
-Yeah I apologize for this; going back to the conversation we had, I
-realize that I completely overlooked the part where you suggested it as
-a second patch. Sorry for the inconvenience.
+--nextPart11668177.gtCQM2pIVG
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Rafael, please ignore the versions sent so far. I shall send out two
-patches that are logically separated. V2 of this patch that you were
-requested to pick up needs some more fixes; the patch was not freeing
-the dynamically allocated data after populating the cpufreq table. Ill
-fix all of these in the next posting.
+Am Freitag, 30. Januar 2015, 15:47:38 schrieb Krzysztof Kozlowski:
+> Hi,
+> 
+> The patchset changes power supply API and drivers implementing
+> power supply class.
+> 
+> 
+> TLDR for driver and subsystem maintainers
+> =========================================
+> Two patches of patchset change power_supply_register() function so in
+> the same time they touch all drivers. I am kindly asking for acks,
+> review and help in testing.
+> 
+> Please look at:
+>  - patch 2: power_supply: Move run-time configuration to separate structure
+>  - patch 11: power_supply: Change ownership from driver to core
+> 
+> These are huge.
 
-Thanks
+Patches 2 and 11 are Reviewed-By: Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org> # for the 
+nvec part.
 
-Regards
-Preeti U Murthy
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Thanks!
+
+Marc
+
+--nextPart11668177.gtCQM2pIVG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJUzzxRAAoJEKyeR39HFBto2BUH/2Dr/MSrGuZhAUOk3vetM4Yu
+2HFNcuXw9lsKK0djNbT7XGCi/18cSN/TckPAi1XEkXkTzVuM/OXSUxaHKgPs+HHy
+ovE8bgKXc9c8SgIL309znX4RSSj5dJd9olhEw0+vuQvMNLbxYsbpvT7mz0wHE2Lh
+oEI2MxM+1hjTZvpb2qnpzj2q4oaXnIj3CeS9KNYfkizj76XCL1Cq9vFI/4SpeW3b
+IqEqaZcbMY2o6pNMWzyrKKwHLLpk/wKitqWapkYkiV9lT/ink75GrvlfPSvdWmFp
+jIACNgW6MT6oCICVmH/OhHjjSatJdTXKaEvMmlZa79ZUSljKYsNlbHOl0x53cpw=
+=eWOk
+-----END PGP SIGNATURE-----
+
+--nextPart11668177.gtCQM2pIVG--
