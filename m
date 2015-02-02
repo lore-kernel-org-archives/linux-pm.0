@@ -1,63 +1,70 @@
-From: Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>
-Subject: Re: [PATCH v3 00/20] power_supply: Allow safe usage of power supply
-Date: Mon, 02 Feb 2015 09:58:57 +0100
-Message-ID: <13686747.WJugMFr0nf@fb07-iapwap2>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] dmaengine: shdma: Runtime-resume device in .shutdown()
+Date: Mon, 2 Feb 2015 10:35:10 +0100
+Message-ID: <CAPDyKFoxfJa2Wq=mA0Khx7B3E6MbY99BYyHtCAoff_7V+9rSaw@mail.gmail.com>
+References: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11668177.gtCQM2pIVG"; micalg="pgp-sha256"; protocol="application/pgp-signature"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1422629278-12202-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, David Herrmann <dh.herrmann-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>, Cezary Jackiewicz <cezary.jackiewicz-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Milo Kim <milo.kim-l0cyMroinI0@public.gmane.org>, Julian Andres Klode <jak-4HMq4SXA452hPH1hqNUYSQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, ac100-oU9gvf+ajcQ97yFScArB1dHuzzzSOjJt@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>L
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 5 January 2015 at 11:46, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> During system reboot, the sh-dma-engine device may be runtime-suspended,
+> causing a crash:
+>
+>     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+>     Internal error: : 1406 [#1] SMP ARM
+>     ...
+>     PC is at sh_dmae_ctl_stop+0x28/0x64
+>     LR is at sh_dmae_ctl_stop+0x24/0x64
+>
+> If the sh-dma-engine is runtime-suspended, its module clock is turned
+> off, and its registers cannot be accessed.
+>
+> To fix this, change the driver's .shutdown() callback:
+>   - If the device is runtime suspended, do nothing,
+>   - Else, explicitly runtime-resume the device, to avoid the device from
+>     being suspended while sh_dmae_ctl_stop() is being executed.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v2:
+>   - Do nothing if we're runtime suspended.
+> ---
+>  drivers/dma/sh/shdmac.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+> index aec8a84784a469d7..2de30e8e7d9290b9 100644
+> --- a/drivers/dma/sh/shdmac.c
+> +++ b/drivers/dma/sh/shdmac.c
+> @@ -585,7 +585,13 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+>  static void sh_dmae_shutdown(struct platform_device *pdev)
+>  {
+>         struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
+> +
+> +       if (pm_runtime_suspended(&pdev->dev))
+> +               return;
+> +
+> +       pm_runtime_get_sync(&pdev->dev);
+>         sh_dmae_ctl_stop(shdev);
 
---nextPart11668177.gtCQM2pIVG
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+I can't find that sh_dmae_ctl_stop() is invoked from the runtime PM
+suspend callback. That means the device will be "removed" differently,
+depending on it's runtime PM status (due to the upper check for
+pm_runtime_suspended() ) . Is that really what you want?
 
-Am Freitag, 30. Januar 2015, 15:47:38 schrieb Krzysztof Kozlowski:
-> Hi,
-> 
-> The patchset changes power supply API and drivers implementing
-> power supply class.
-> 
-> 
-> TLDR for driver and subsystem maintainers
-> =========================================
-> Two patches of patchset change power_supply_register() function so in
-> the same time they touch all drivers. I am kindly asking for acks,
-> review and help in testing.
-> 
-> Please look at:
->  - patch 2: power_supply: Move run-time configuration to separate structure
->  - patch 11: power_supply: Change ownership from driver to core
-> 
-> These are huge.
+> +       pm_runtime_put(&pdev->dev);
+>  }
+>
+>  static int sh_dmae_runtime_suspend(struct device *dev)
+> --
+> 1.9.1
+>
 
-Patches 2 and 11 are Reviewed-By: Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org> # for the 
-nvec part.
-
-Thanks!
-
-Marc
-
---nextPart11668177.gtCQM2pIVG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJUzzxRAAoJEKyeR39HFBto2BUH/2Dr/MSrGuZhAUOk3vetM4Yu
-2HFNcuXw9lsKK0djNbT7XGCi/18cSN/TckPAi1XEkXkTzVuM/OXSUxaHKgPs+HHy
-ovE8bgKXc9c8SgIL309znX4RSSj5dJd9olhEw0+vuQvMNLbxYsbpvT7mz0wHE2Lh
-oEI2MxM+1hjTZvpb2qnpzj2q4oaXnIj3CeS9KNYfkizj76XCL1Cq9vFI/4SpeW3b
-IqEqaZcbMY2o6pNMWzyrKKwHLLpk/wKitqWapkYkiV9lT/ink75GrvlfPSvdWmFp
-jIACNgW6MT6oCICVmH/OhHjjSatJdTXKaEvMmlZa79ZUSljKYsNlbHOl0x53cpw=
-=eWOk
------END PGP SIGNATURE-----
-
---nextPart11668177.gtCQM2pIVG--
+Kind regards
+Uffe
