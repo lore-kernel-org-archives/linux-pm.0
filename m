@@ -1,339 +1,158 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v2 1/5] thermal: of: fix cooling device weights in device tree
-Date: Mon,  2 Feb 2015 12:51:26 +0000
-Message-ID: <1422881490-14695-2-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v2 4/5] thermal: export weight to sysfs
+Date: Mon,  2 Feb 2015 12:51:29 +0000
+Message-ID: <1422881490-14695-5-git-send-email-javi.merino@arm.com>
 References: <1422881490-14695-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40552 "EHLO
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40566 "EHLO
 	foss-mx-na.foss.arm.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S964913AbbBBMwI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 07:52:08 -0500
+	by vger.kernel.org with ESMTP id S1755425AbbBBMw0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 07:52:26 -0500
 In-Reply-To: <1422881490-14695-1-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit.Agrawal@arm.com, Kapileshwar.Singh@arm.com, Kapileshwar Singh <kapileshwar.singh@arm.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Feuerer <peter@piie.net>, Darren Hart <dvhart@infradead.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Punit.Agrawal@arm.com, Kapileshwar.Singh@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-
-Currently you can specify the weight of the cooling device in the device
-tree but that information is not populated to the
-thermal_bind_params where the fair share governor expects it to
-be.  The of thermal zone device doesn't have a thermal_bind_params
-structure and arguably it's better to pass the weight inside the
-thermal_instance as it is specific to the bind of a cooling device to a
-thermal zone parameter.
-
-Core thermal code is fixed to populate the weight in the instance from
-the thermal_bind_params, so platform code that was passing the weight
-inside the thermal_bind_params continue to work seamlessly.
-
-While we are at it, create a default value for the weight parameter for
-those thermal zones that currently don't define it and remove the
-hardcoded default in of-thermal.
+It's useful to have access to the weights for the cooling devices for
+thermal zones and change them if needed.  Export them to sysfs.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Peter Feuerer <peter@piie.net>
-Cc: Darren Hart <dvhart@infradead.org>
 Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Kukjin Kim <kgene@kernel.org>
-Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- Documentation/thermal/sysfs-api.txt                |  4 +++-
- drivers/acpi/thermal.c                             |  9 ++++++---
- drivers/platform/x86/acerhdf.c                     |  3 ++-
- drivers/thermal/db8500_thermal.c                   |  2 +-
- drivers/thermal/fair_share.c                       |  2 +-
- drivers/thermal/imx_thermal.c                      |  3 ++-
- drivers/thermal/of-thermal.c                       |  5 +++--
- drivers/thermal/samsung/exynos_thermal_common.c    |  3 ++-
- drivers/thermal/thermal_core.c                     | 22 ++++++++++++++++------
- drivers/thermal/thermal_core.h                     |  1 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  3 ++-
- include/linux/thermal.h                            |  6 +++++-
- 12 files changed, 44 insertions(+), 19 deletions(-)
+ Documentation/thermal/sysfs-api.txt | 15 +++++++++++++-
+ drivers/thermal/thermal_core.c      | 40 +++++++++++++++++++++++++++++++++++++
+ drivers/thermal/thermal_core.h      |  2 ++
+ 3 files changed, 56 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 87519cb379ee..7ec632ed9769 100644
+index 7ec632ed9769..3625453ceef6 100644
 --- a/Documentation/thermal/sysfs-api.txt
 +++ b/Documentation/thermal/sysfs-api.txt
-@@ -95,7 +95,7 @@ temperature) and throttle appropriate devices.
- 1.3 interface for binding a thermal zone device with a thermal cooling device
- 1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 	int trip, struct thermal_cooling_device *cdev,
--	unsigned long upper, unsigned long lower);
-+	unsigned long upper, unsigned long lower, unsigned int weight);
+@@ -194,6 +194,8 @@ thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device.
+ /sys/class/thermal/thermal_zone[0-*]:
+     |---cdev[0-*]:		[0-*]th cooling device in current thermal zone
+     |---cdev[0-*]_trip_point:	Trip point that cdev[0-*] is associated with
++    |---cdev[0-*]_weight:       Influence of the cooling device in
++                                this thermal zone
  
-     This interface function bind a thermal cooling device to the certain trip
-     point of a thermal zone device.
-@@ -110,6 +110,8 @@ temperature) and throttle appropriate devices.
-     lower:the Minimum cooling state can be used for this trip point.
-           THERMAL_NO_LIMIT means no lower limit,
- 	  and the cooling device can be in cooling state 0.
-+    weight: the influence of this cooling device in this thermal
-+            zone.  See 1.4.1 below for more information.
+ Besides the thermal zone device sysfs I/F and cooling device sysfs I/F,
+ the generic thermal driver also creates a hwmon sysfs I/F for each _type_
+@@ -267,6 +269,14 @@ cdev[0-*]_trip_point
+ 	point.
+ 	RO, Optional
  
- 1.3.2 int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
- 		int trip, struct thermal_cooling_device *cdev);
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index d24fa1964eb8..6d4e44ea74ac 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -800,7 +800,8 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
- 				result =
- 					thermal_zone_bind_cooling_device
- 					(thermal, trip, cdev,
--					 THERMAL_NO_LIMIT, THERMAL_NO_LIMIT);
-+					 THERMAL_NO_LIMIT, THERMAL_NO_LIMIT,
-+					 THERMAL_WEIGHT_DEFAULT);
- 			else
- 				result =
- 					thermal_zone_unbind_cooling_device
-@@ -824,7 +825,8 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
- 			if (bind)
- 				result = thermal_zone_bind_cooling_device
- 					(thermal, trip, cdev,
--					 THERMAL_NO_LIMIT, THERMAL_NO_LIMIT);
-+					 THERMAL_NO_LIMIT, THERMAL_NO_LIMIT,
-+					 THERMAL_WEIGHT_DEFAULT);
- 			else
- 				result = thermal_zone_unbind_cooling_device
- 					(thermal, trip, cdev);
-@@ -841,7 +843,8 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
- 				result = thermal_zone_bind_cooling_device
- 						(thermal, THERMAL_TRIPS_NONE,
- 						 cdev, THERMAL_NO_LIMIT,
--						 THERMAL_NO_LIMIT);
-+						 THERMAL_NO_LIMIT,
-+						 THERMAL_WEIGHT_DEFAULT);
- 			else
- 				result = thermal_zone_unbind_cooling_device
- 						(thermal, THERMAL_TRIPS_NONE,
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 594c918b553d..1ef02daddb60 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -372,7 +372,8 @@ static int acerhdf_bind(struct thermal_zone_device *thermal,
- 		return 0;
++cdev[0-*]_weight
++        The influence of cdev[0-*] in this thermal zone. This value
++        is relative to the rest of cooling devices in the thermal
++        zone. For example, if a cooling device has a weight double
++        than that of other, it's twice as effective in cooling the
++        thermal zone.
++        RW, Optional
++
+ passive
+ 	Attribute is only present for zones in which the passive cooling
+ 	policy is not supported by native thermal driver. Default is zero
+@@ -320,7 +330,8 @@ passive, active. If an ACPI thermal zone supports critical, passive,
+ active[0] and active[1] at the same time, it may register itself as a
+ thermal_zone_device (thermal_zone1) with 4 trip points in all.
+ It has one processor and one fan, which are both registered as
+-thermal_cooling_device.
++thermal_cooling_device. Both are considered to have the same
++effectiveness in cooling the thermal zone.
  
- 	if (thermal_zone_bind_cooling_device(thermal, 0, cdev,
--			THERMAL_NO_LIMIT, THERMAL_NO_LIMIT)) {
-+			THERMAL_NO_LIMIT, THERMAL_NO_LIMIT,
-+			THERMAL_WEIGHT_DEFAULT)) {
- 		pr_err("error binding cooling dev\n");
- 		return -EINVAL;
- 	}
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index 20adfbe27df1..2fb273c4baa9 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -76,7 +76,7 @@ static int db8500_cdev_bind(struct thermal_zone_device *thermal,
- 		upper = lower = i > max_state ? max_state : i;
+ If the processor is listed in _PSL method, and the fan is listed in _AL0
+ method, the sys I/F structure will be built like this:
+@@ -342,8 +353,10 @@ method, the sys I/F structure will be built like this:
+     |---trip_point_3_type:	active1
+     |---cdev0:			--->/sys/class/thermal/cooling_device0
+     |---cdev0_trip_point:	1	/* cdev0 can be used for passive */
++    |---cdev0_weight:           1024
+     |---cdev1:			--->/sys/class/thermal/cooling_device3
+     |---cdev1_trip_point:	2	/* cdev1 can be used for active[0]*/
++    |---cdev1_weight:           1024
  
- 		ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
--			upper, lower);
-+			upper, lower, THERMAL_WEIGHT_DEFAULT);
- 
- 		dev_info(&cdev->device, "%s bind to %d: %d-%s\n", cdev->type,
- 			i, ret, ret ? "fail" : "succeed");
-diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-index 6e0a3fbfae86..c3b25187b467 100644
---- a/drivers/thermal/fair_share.c
-+++ b/drivers/thermal/fair_share.c
-@@ -109,7 +109,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
- 			continue;
- 
- 		instance->target = get_target_state(tz, cdev,
--					tzp->tbp[i].weight, cur_trip_level);
-+					instance->weight, cur_trip_level);
- 
- 		instance->cdev->updated = false;
- 		thermal_cdev_update(cdev);
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 2ccbc0788353..fde4c2876d14 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -306,7 +306,8 @@ static int imx_bind(struct thermal_zone_device *tz,
- 
- 	ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
- 					       THERMAL_NO_LIMIT,
--					       THERMAL_NO_LIMIT);
-+					       THERMAL_NO_LIMIT,
-+					       THERMAL_WEIGHT_DEFAULT);
- 	if (ret) {
- 		dev_err(&tz->device,
- 			"binding zone %s with cdev %s failed:%d\n",
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index d717f3dab6f1..60e3a21461e7 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -227,7 +227,8 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
- 			ret = thermal_zone_bind_cooling_device(thermal,
- 						tbp->trip_id, cdev,
- 						tbp->max,
--						tbp->min);
-+						tbp->min,
-+						tbp->usage);
- 			if (ret)
- 				return ret;
- 		}
-@@ -578,7 +579,7 @@ static int thermal_of_populate_bind_params(struct device_node *np,
- 	u32 prop;
- 
- 	/* Default weight. Usage is optional */
--	__tbp->usage = 0;
-+	__tbp->usage = THERMAL_WEIGHT_DEFAULT;
- 	ret = of_property_read_u32(np, "contribution", &prop);
- 	if (ret == 0)
- 		__tbp->usage = prop;
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
-index 6dc3815cc73f..03f2ebb1e5c3 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.c
-+++ b/drivers/thermal/samsung/exynos_thermal_common.c
-@@ -163,7 +163,8 @@ static int exynos_bind(struct thermal_zone_device *thermal,
- 		case MONITOR_ZONE:
- 		case WARN_ZONE:
- 			if (thermal_zone_bind_cooling_device(thermal, i, cdev,
--								level, 0)) {
-+						level, 0,
-+						THERMAL_WEIGHT_DEFAULT)) {
- 				dev_err(data->dev,
- 					"error unbinding cdev inst=%d\n", i);
- 				ret = -EINVAL;
+ |cooling_device0:
+     |---type:			Processor
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 87e0b0782023..9a424a66c83a 100644
+index 9a424a66c83a..eaa704043e51 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -218,7 +218,8 @@ static void print_bind_err_msg(struct thermal_zone_device *tz,
- 
- static void __bind(struct thermal_zone_device *tz, int mask,
- 			struct thermal_cooling_device *cdev,
--			unsigned long *limits)
-+			unsigned long *limits,
-+			unsigned int weight)
- {
- 	int i, ret;
- 
-@@ -233,7 +234,8 @@ static void __bind(struct thermal_zone_device *tz, int mask,
- 				upper = limits[i * 2 + 1];
- 			}
- 			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
--							       upper, lower);
-+							       upper, lower,
-+							       weight);
- 			if (ret)
- 				print_bind_err_msg(tz, cdev, ret);
- 		}
-@@ -280,7 +282,8 @@ static void bind_cdev(struct thermal_cooling_device *cdev)
- 				continue;
- 			tzp->tbp[i].cdev = cdev;
- 			__bind(pos, tzp->tbp[i].trip_mask, cdev,
--			       tzp->tbp[i].binding_limits);
-+			       tzp->tbp[i].binding_limits,
-+			       tzp->tbp[i].weight);
- 		}
- 	}
- 
-@@ -319,7 +322,8 @@ static void bind_tz(struct thermal_zone_device *tz)
- 				continue;
- 			tzp->tbp[i].cdev = pos;
- 			__bind(tz, tzp->tbp[i].trip_mask, pos,
--			       tzp->tbp[i].binding_limits);
-+			       tzp->tbp[i].binding_limits,
-+			       tzp->tbp[i].weight);
- 		}
- 	}
- exit:
-@@ -711,7 +715,8 @@ passive_store(struct device *dev, struct device_attribute *attr,
- 				thermal_zone_bind_cooling_device(tz,
- 						THERMAL_TRIPS_NONE, cdev,
- 						THERMAL_NO_LIMIT,
--						THERMAL_NO_LIMIT);
-+						THERMAL_NO_LIMIT,
-+						THERMAL_WEIGHT_DEFAULT);
- 		}
- 		mutex_unlock(&thermal_list_lock);
- 		if (!tz->passive_delay)
-@@ -913,6 +918,9 @@ thermal_cooling_device_trip_point_show(struct device *dev,
-  * @lower:	the Minimum cooling state can be used for this trip point.
-  *		THERMAL_NO_LIMIT means no lower limit,
-  *		and the cooling device can be in cooling state 0.
-+ * @weight:	The weight of the cooling device to be bound to the
-+ *		thermal zone. Use THERMAL_WEIGHT_DEFAULT for the
-+ *		default value
-  *
-  * This interface function bind a thermal cooling device to the certain trip
-  * point of a thermal zone device.
-@@ -923,7 +931,8 @@ thermal_cooling_device_trip_point_show(struct device *dev,
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 				     int trip,
- 				     struct thermal_cooling_device *cdev,
--				     unsigned long upper, unsigned long lower)
-+				     unsigned long upper, unsigned long lower,
-+				     unsigned int weight)
- {
- 	struct thermal_instance *dev;
- 	struct thermal_instance *pos;
-@@ -968,6 +977,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 	dev->upper = upper;
- 	dev->lower = lower;
- 	dev->target = THERMAL_NO_TARGET;
-+	dev->weight = weight;
- 
- 	result = get_idr(&tz->idr, &tz->lock, &dev->id);
- 	if (result)
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 0531c752fbbb..7a465e9d456c 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -48,6 +48,7 @@ struct thermal_instance {
- 	struct device_attribute attr;
- 	struct list_head tz_node; /* node in tz->thermal_instances */
- 	struct list_head cdev_node; /* node in cdev->thermal_instances */
-+	unsigned int weight; /* The weight of the cooling device */
- };
- 
- int thermal_register_governor(struct thermal_governor *);
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 3fb054a10f6a..4638718fabf6 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -146,7 +146,8 @@ static int ti_thermal_bind(struct thermal_zone_device *thermal,
- 	return thermal_zone_bind_cooling_device(thermal, 0, cdev,
- 	/* bind with min and max states defined by cpu_cooling */
- 						THERMAL_NO_LIMIT,
--						THERMAL_NO_LIMIT);
-+						THERMAL_NO_LIMIT,
-+						THERMAL_WEIGHT_DEFAULT);
+@@ -904,6 +904,34 @@ thermal_cooling_device_trip_point_show(struct device *dev,
+ 		return sprintf(buf, "%d\n", instance->trip);
  }
  
- /* Unbind callback functions for thermal zone */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index fc52e307efab..2ed7062fac1d 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -40,6 +40,9 @@
- /* No upper/lower limit requirement */
- #define THERMAL_NO_LIMIT	((u32)~0)
- 
-+/* Default weight of a bound cooling device */
-+#define THERMAL_WEIGHT_DEFAULT 0
++static ssize_t
++thermal_cooling_device_weight_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct thermal_instance *instance;
 +
- /* Unit conversion macros */
- #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
- 				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-@@ -321,7 +324,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *);
++	instance = container_of(attr, struct thermal_instance, weight_attr);
++
++	return sprintf(buf, "%d\n", instance->weight);
++}
++
++static ssize_t
++thermal_cooling_device_weight_store(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
++{
++	struct thermal_instance *instance;
++	int ret, weight;
++
++	ret = kstrtoint(buf, 0, &weight);
++	if (ret)
++		return ret;
++
++	instance = container_of(attr, struct thermal_instance, weight_attr);
++	instance->weight = weight;
++
++	return count;
++}
+ /* Device management */
  
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
- 				     struct thermal_cooling_device *,
--				     unsigned long, unsigned long);
-+				     unsigned long, unsigned long,
-+				     unsigned int);
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
- 				       struct thermal_cooling_device *);
- void thermal_zone_device_update(struct thermal_zone_device *);
+ /**
+@@ -998,6 +1026,16 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (result)
+ 		goto remove_symbol_link;
+ 
++	sprintf(dev->weight_attr_name, "cdev%d_weight", dev->id);
++	sysfs_attr_init(&dev->weight_attr.attr);
++	dev->weight_attr.attr.name = dev->weight_attr_name;
++	dev->weight_attr.attr.mode = S_IWUSR | S_IRUGO;
++	dev->weight_attr.show = thermal_cooling_device_weight_show;
++	dev->weight_attr.store = thermal_cooling_device_weight_store;
++	result = device_create_file(&tz->device, &dev->weight_attr);
++	if (result)
++		goto remove_trip_file;
++
+ 	mutex_lock(&tz->lock);
+ 	mutex_lock(&cdev->lock);
+ 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
+@@ -1015,6 +1053,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (!result)
+ 		return 0;
+ 
++	device_remove_file(&tz->device, &dev->weight_attr);
++remove_trip_file:
+ 	device_remove_file(&tz->device, &dev->attr);
+ remove_symbol_link:
+ 	sysfs_remove_link(&tz->device.kobj, dev->name);
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 7a465e9d456c..faebe881f062 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -46,6 +46,8 @@ struct thermal_instance {
+ 	unsigned long target;	/* expected cooling state */
+ 	char attr_name[THERMAL_NAME_LENGTH];
+ 	struct device_attribute attr;
++	char weight_attr_name[THERMAL_NAME_LENGTH];
++	struct device_attribute weight_attr;
+ 	struct list_head tz_node; /* node in tz->thermal_instances */
+ 	struct list_head cdev_node; /* node in cdev->thermal_instances */
+ 	unsigned int weight; /* The weight of the cooling device */
 -- 
 1.9.1
 
