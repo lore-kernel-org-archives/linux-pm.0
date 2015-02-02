@@ -1,12 +1,12 @@
 From: Javi Merino <javi.merino@arm.com>
 Subject: [PATCH v2 0/5] Various fixes to weights in the thermal framework
-Date: Mon,  2 Feb 2015 12:43:31 +0000
-Message-ID: <1422881016-13445-1-git-send-email-javi.merino@arm.com>
+Date: Mon,  2 Feb 2015 12:51:25 +0000
+Message-ID: <1422881490-14695-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40542 "EHLO
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:40550 "EHLO
 	foss-mx-na.foss.arm.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754233AbbBBMoU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 07:44:20 -0500
+	by vger.kernel.org with ESMTP id S964913AbbBBMv6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 07:51:58 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
