@@ -1,70 +1,51 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] dmaengine: shdma: Runtime-resume device in .shutdown()
-Date: Mon, 2 Feb 2015 10:35:10 +0100
-Message-ID: <CAPDyKFoxfJa2Wq=mA0Khx7B3E6MbY99BYyHtCAoff_7V+9rSaw@mail.gmail.com>
-References: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
+From: Karol Wrona <k.wrona@samsung.com>
+Subject: Re: [RFC PATCH 1/1] PM / domains: Add support for virtual power domains
+Date: Mon, 02 Feb 2015 13:14:36 +0100
+Message-ID: <54CF6A2C.5020808@samsung.com>
+References: <1422555176-13054-1-git-send-email-k.wrona@samsung.com>
+ <1422555176-13054-2-git-send-email-k.wrona@samsung.com>
+ <CADGdYn5E9P7cT-bndL4u9g9XRO=BvE5hb1+TEF0mkwkWOmK1VA@mail.gmail.com>
+ <20150130115708.GE8787@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:50020 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754814AbbBBMOl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 07:14:41 -0500
+In-reply-to: <20150130115708.GE8787@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, amit daniel kachhap <amit.daniel@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Karol Wrona <wrona.vy@gmail.com>
 
-On 5 January 2015 at 11:46, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> During system reboot, the sh-dma-engine device may be runtime-suspended,
-> causing a crash:
->
->     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
->     Internal error: : 1406 [#1] SMP ARM
->     ...
->     PC is at sh_dmae_ctl_stop+0x28/0x64
->     LR is at sh_dmae_ctl_stop+0x24/0x64
->
-> If the sh-dma-engine is runtime-suspended, its module clock is turned
-> off, and its registers cannot be accessed.
->
-> To fix this, change the driver's .shutdown() callback:
->   - If the device is runtime suspended, do nothing,
->   - Else, explicitly runtime-resume the device, to avoid the device from
->     being suspended while sh_dmae_ctl_stop() is being executed.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> v2:
->   - Do nothing if we're runtime suspended.
-> ---
->  drivers/dma/sh/shdmac.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
-> index aec8a84784a469d7..2de30e8e7d9290b9 100644
-> --- a/drivers/dma/sh/shdmac.c
-> +++ b/drivers/dma/sh/shdmac.c
-> @@ -585,7 +585,13 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
->  static void sh_dmae_shutdown(struct platform_device *pdev)
->  {
->         struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-> +
-> +       if (pm_runtime_suspended(&pdev->dev))
-> +               return;
-> +
-> +       pm_runtime_get_sync(&pdev->dev);
->         sh_dmae_ctl_stop(shdev);
+On 01/30/2015 12:57 PM, Lorenzo Pieralisi wrote:
+> On Fri, Jan 30, 2015 at 08:43:22AM +0000, amit daniel kachhap wrote:
+>> Hi Karol,
+>>
+>> I guess this patch series is not complete and use case implementation
+>> will be more helpful for clarity. Also I can think of another way in
+>> which this complete implementation can be done with pd name as
+>> something "pd-virt". This pd can be handled differently inside the
+>> platform specific exynos power off/on function.
+> 
+> Yes, it would be nice to provide an example to understand what this
+> patchset has to achieve. Is this supposed to be a power domain
+> used as a container to check for devices runtime state ie dependencies ?
+> 
+Yes, something like that.
 
-I can't find that sh_dmae_ctl_stop() is invoked from the runtime PM
-suspend callback. That means the device will be "removed" differently,
-depending on it's runtime PM status (due to the upper check for
-pm_runtime_suspended() ) . Is that really what you want?
+In our case exynos do not enter LPD state with mmc host working and its is in
+"top" pd which is not managed in conventional way. If we know runtime status of
+the host we can decide what to do. Soon I will send full patchset.
 
-> +       pm_runtime_put(&pdev->dev);
->  }
->
->  static int sh_dmae_runtime_suspend(struct device *dev)
-> --
-> 1.9.1
->
 
-Kind regards
-Uffe
+I thought about it as exynos specific but I wonder if that would be needed not
+only in exynos.
+
+BR,
+Karol
+
+
+[...]
