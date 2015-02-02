@@ -1,78 +1,57 @@
-From: Stanimir Varbanov <svarbanov@mm-sol.com>
-Subject: Re: [PATCH v4] thermal: Add QPNP PMIC temperature alarm driver
-Date: Mon, 02 Feb 2015 17:38:17 +0200
-Message-ID: <54CF99E9.10305@mm-sol.com>
-References: <1422890370-6914-1-git-send-email-iivanov@mm-sol.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v1 5/7] thermal: add trace events to the power allocator
+ governor
+Date: Mon, 2 Feb 2015 15:44:50 +0000
+Message-ID: <20150202154450.GA8092@e104805>
+References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
+ <1422464438-16761-6-git-send-email-javi.merino@arm.com>
+ <20150128123106.05e28afc@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ns.mm-sol.com ([37.157.136.199]:54523 "EHLO extserv.mm-sol.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753092AbbBBPiX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Feb 2015 10:38:23 -0500
-In-Reply-To: <1422890370-6914-1-git-send-email-iivanov@mm-sol.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150128123106.05e28afc@gandalf.local.home>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 
-On 02/02/2015 05:19 PM, Ivan T. Ivanov wrote:
-> Add support for the temperature alarm peripheral found inside
-> Qualcomm plug-and-play (QPNP) PMIC chips. The temperature alarm
-> peripheral outputs a pulse on an interrupt line whenever the
-> thermal over temperature stage value changes.
+On Wed, Jan 28, 2015 at 05:31:06PM +0000, Steven Rostedt wrote:
+> On Wed, 28 Jan 2015 17:00:36 +0000
+> Javi Merino <javi.merino@arm.com> wrote:
 > 
-> Register a thermal sensor. The temperature reported by this thermal
-> sensor device should reflect the actual PMIC die temperature if an
-> ADC is present on the given PMIC. If no ADC is present, then the
-> reported temperature should be estimated from the over temperature
-> stage value.
+> > +	if (trace_thermal_power_cpu_limit_enabled() && load_cpu) {
+> > +		trace_thermal_power_cpu_get_power(
+> > +			&cpufreq_device->allowed_cpus,
+> > +			freq, load_cpu, i, dynamic_power, static_power);
+> > +
+> > +		devm_kfree(&cdev->device, load_cpu);
 > 
-> Cc: David Collins <collinsd@codeaurora.org>
-> Signed-off-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-> ---
+> You may want to move the devm_kfree() out of the
+> trace_thermal_power_cpu_limit_enabled() check. There could be a race
+> where that gets disabled while this function is running and you just
+> leaked memory.
 > 
+> 	if (load_cpu)
+> 		devm_kfree(&cdev->device, load_cpu);
+> 
+> should be done by itself.
 
-<snip>
+Good catch!  I've changed it to 
 
-> +
-> +	ret = qpnp_tm_init(chip);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "init failed\n");
-> +		goto fail;
-> +	}
-> +
-> +	chip->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
-> +							&qpnp_tm_sensor_ops);
-> +	if (IS_ERR(chip->tz_dev)) {
-> +		dev_err(&pdev->dev, "failed to register sensor\n");
-> +		ret = PTR_ERR(chip->tz_dev);
-> +		goto fail;
-> +	}
-> +
-> +	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
-> +					IRQF_ONESHOT, node->name, chip);
-> +	if (ret < 0)
-> +		goto unreg;
-> +
-> +	return 0;
-> +
-> +unreg:
-> +	thermal_zone_of_sensor_unregister(&pdev->dev, chip->tz_dev);
+	if (load_cpu) {
+		trace_thermal_power_cpu_get_power(
+			&cpufreq_device->allowed_cpus,
+			freq, load_cpu, i, dynamic_power, static_power);
 
-Any problem to request_irq before thermal_zone_of_sensor_register? It
-will avoid having thermal sensor unregister call.
+		devm_kfree(&cdev->device, load_cpu);
+	}
 
-> +fail:
-> +	if (!IS_ERR(chip->adc))
-> +		iio_channel_release(chip->adc);
-> +
-> +	return ret;
-> +}
+This way, if the trace is disabled while in the function,
+trace_thermal_power_cpu_get_power() doesn't get executed but you free
+load_cpu.  If the opposite happens (the trace gets enabled while in
+the function), load_cpu is NULL and you don't pass the NULL pointer to
+trace_thermal_power_cpu_get_power().
 
-<snip>
-
--- 
-regards,
-Stan
+Cheers,
+Javi
