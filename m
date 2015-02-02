@@ -1,55 +1,49 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Pull Request Revise Request (PM / Devfreq)
-Date: Mon, 02 Feb 2015 06:29:11 +0000 (GMT)
-Message-ID: <222967126.442251422858551304.JavaMail.weblogic@epmlwas08b>
-Reply-To: myungjoo.ham@samsung.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V3] cpuidle/powernv: Read target_residency value of idle
+ states from DT if available
+Date: Mon, 02 Feb 2015 17:39:24 +1100
+Message-ID: <1422859164.20278.1.camel@ellerman.id.au>
+References: <20150202050821.24581.56186.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:27819 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbbBBG3Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 01:29:24 -0500
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NJ400ARMSOP4B90@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 02 Feb 2015 15:29:13 +0900 (KST)
-MIME-version: 1.0
+Received: from ozlabs.org ([103.22.144.67]:47820 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932486AbbBBGj0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Feb 2015 01:39:26 -0500
+In-Reply-To: <20150202050821.24581.56186.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-DQotLS0tLUJFR0lOIFBHUCBTSUdORUQgTUVTU0FHRS0tLS0tDQpIYXNoOiBTSEExDQoNCg0KRGVh
-ciBSYWZhZWwsDQoNClRoZXJlIGhhZCBiZWVuIGEgbWlzdGFrZSBpbiBtZXJnaW5nIGNvbmZsaWN0
-cyBmb3IgUE0gLyBkZXZmcmVxLA0Kd2hpY2ggd2FzIGFkZHJlc3NlZCAzIGRheXMgYWdvLg0KDQpI
-b3dldmVyLCB3aGF0IHlvdSd2ZSBwdWxsZWQgaXMgdGhlIGNvbW1pdCBiZWZvcmUgdGhlIGZpeC4N
-CkNvdWxkIHlvdSBwbGVhc2UgcHVsbCBhZ2FpbjoNCg0KZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHVi
-L3NjbS9saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdCBwdWxsX3JlcV8yMDE1MDEyOQ0K
-DQpPcg0KDQpDb3VsZCB5b3UgcGxlYXNlIGFkZCB0aGUgcGF0Y2g6DQoNCmh0dHBzOi8vZ2l0Lmtl
-cm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdC9wYXRjaC8/aWQ9
-ZTZlZTMxOTI0NzA5YmQ3ZDNhYzJmNjdhNzZlNTM5MzA4MTU1NGY2Zg0KDQooTEtNTDogaHR0cDov
-L2xrbWwub3JnL2xrbWwvMjAxNS8xLzI5LzExMjEgKQ0KDQoNClNvcnJ5IGZvciB0aGUgY29uZnVz
-aW9uLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCi0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0t
-LS0tDQpWZXJzaW9uOiBHbnVQRyB2MQ0KDQppUUliQkFFQkFnQUdCUUpVenhlY0FBb0pFQk9odXJ2
-V0JvQ0taUjRQOWpYRnIxMEMxakVEQkFIWGxhWVUzY093DQpkR1FNWWFmSktwWnQ1cm1tNnZ2ZzRo
-Yk9UcHNqUC9HeVlBRFZwUHdWVHBlbWJNOXN1MUhWcTNneE5RUmZLSkFVDQpuZ3NUSkRjVDM5YXFS
-QkdEN2g2ZE1KdThtdWR3ZjVMZUFXY2hJUGRGaDZsL21xaVFFTDFaemt3NWFYM0crUllpDQoxcU9M
-ZWxTY0xvRm5vdkhPbWxJYmNvUk5CdndEYTgwNkN4dzdyWko1THZrcWZWdjdFVzQyTE1IQi9TS3Vw
-K3NsDQoxOUxHU0xFU2ZMM3RJbHlKbWpVVW9nZno5NjZiWkYrbGtDRWU1bDArQTNldDZFb01PQ0hW
-LzhCREJkQmhKNWM2DQo5OTNHWjkwRFVwY2RTYWtQbFJwSUV2eGFIcDU5L21XaitpUXg3blp3a3px
-UXlzcThjTFlkYU94RVNqYWEzREFODQpia1RCNUZMYWVlNEhTK1JGWE5PeFFjTG1XNnJqV2Zrbkhv
-TVVoWE1kTHlmK1RGeUc3S0pyVEM1NVpTZ3h3WDdmDQpocjltOFJ1VDkzUE9RSFpnOENXTGpkM0Ux
-bWlTem5uNVYxS3Q0eHErM1BMSGcrZUlpWlN1bVpHeSs1aHNaa3JkDQpKdGNLWmlWemo2dkhINlov
-b2dwU0M0dHBZRXorTE1HelRYaE85dHp3a1RESGFQM1p0MzF3RjlSUGNDT0JIRzZaDQpuVnBTWGov
-VU8xZWttMVZrZ3VaMWFmSzFINlMvMkJRcStvTnNVWE5lUGFtNWMzbElCUzZFN2lQYzFHTkdHZG5x
-DQpmL0pFamhVRUxjbHlnRFNYb3ozbHViTUZVK1BUak02UGhYV2FsN0tLK3djVi9uUkRPL1ZVc2E2
-MTd4d1BEZktPDQpveVJkbE1xbCtudWpsS1ZVSzNFPQ0KPW45dC8NCi0tLS0tRU5EIFBHUCBTSUdO
-QVRVUkUtLS0tLQ0KDQotLQ0KTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELg0KRnJvbnRp
-ZXIgQ1MgTGFiLCBTb2Z0d2FyZSBSJkQgQ2VudGVyDQpTYW1zdW5nIEVsZWN0cm9uaWNzDQpDZWxs
-OiArODItMTAtNjcxNC0yODU4
+On Mon, 2015-02-02 at 10:40 +0530, Preeti U Murthy wrote:
+> The device tree now exposes the residency values for different idle states. Read
+> these values instead of calculating residency from the latency values. The values
+> exposed in the DT are validated for optimal power efficiency. However to maintain
+> compatibility with the older firmware code which does not expose residency
+> values, use default values as a fallback mechanism. While at it, use better
+> APIs to parse the powermgmt device tree node so as to avoid endianness
+> transformation.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+> Changes from V2: https://lkml.org/lkml/2015/1/27/1054
+> 1. Used APIs to eliminate endianness transformation
+
+Hi Preeti,
+
+I thought I was pretty clear when I said you should do that as a follow-up
+patch.
+
+This is now doing too many things, it's not a single logical change, and it's
+touching code in arch/powerpc and the driver. Which means neither I nor Rafael
+can easily merge it.  
+
+So please go back to the v2 you had. And then do the of_property_count_u32_elems()
+changes as separate patches.
+
+cheers
 
 
