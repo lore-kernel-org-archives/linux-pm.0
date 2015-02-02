@@ -1,333 +1,436 @@
 From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
-Date: Mon, 2 Feb 2015 11:06:45 +0530
-Message-ID: <CAM4voakQAUZe2nWtxBfqXeXH-T=gGq22BSX+a9UQeqObwsoe2g@mail.gmail.com>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
-	<1421667844-13627-2-git-send-email-l.majewski@samsung.com>
-	<CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
-	<20150122100124.65e7a19e@amdc2363>
-	<CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
-	<20150129230616.GJ29837@developer.amazonguestwifi.org>
-	<20150130091422.669930c8@amdc2363>
-	<CAM4voa=aEZbCx5KDoZW1NgindOeM8UZshU5ioFjiux3aoqHYFA@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] thermal: exynos: Add TMU support for Exynos7 SoC
+Date: Mon, 2 Feb 2015 11:09:13 +0530
+Message-ID: <CAM4voamE86U_3jnvmToxY8ZCv9TM-Dvza1v5Zf63vm8vnFySfQ@mail.gmail.com>
+References: <1422337703-11289-1-git-send-email-a.kesavan@samsung.com>
+	<1422337703-11289-2-git-send-email-a.kesavan@samsung.com>
+	<20150131192419.GC17425@developer.hsd1.ca.comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAM4voa=aEZbCx5KDoZW1NgindOeM8UZshU5ioFjiux3aoqHYFA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f47.google.com ([209.85.192.47]:47875 "EHLO
+	mail-qg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbbBBFjO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Feb 2015 00:39:14 -0500
+In-Reply-To: <20150131192419.GC17425@developer.hsd1.ca.comcast.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 
-Hi Lukasz,
+Hi Eduardo,
 
-On Fri, Jan 30, 2015 at 8:36 PM, Abhilash Kesavan
-<kesavan.abhilash@gmail.com> wrote:
-> Hi Lukasz,
+On Sun, Feb 1, 2015 at 12:54 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> On Tue, Jan 27, 2015 at 11:18:22AM +0530, Abhilash Kesavan wrote:
+>> Add registers, bit fields and compatible strings for Exynos7 TMU
+>> (Thermal Management Unit). Following are a few of the differences
+>> in the Exynos7 TMU from earlier SoCs:
+>>         - 8 trigger levels
+>>         - Different bit offsets and more registers for the rising
+>>         and falling thresholds.
+>>         - New power down detection bit in the TMU_CONTROL register
+>>         which does not update the CURRENT_TEMP0 when tmu power down
+>>         is detected.
+>>         - Change in bit offset for the NEXT_DATA field of EMUL_CON
+>>         register. EMUL_CON register address has also changed.
+>>         - INTSTAT and INTCLEAR registers present in earlier SoCs
+>>         have been combined into one INTPEND register. The register
+>>         address for INTCLEAR and INTPEND is also different.
+>>         - Since there are 8 rising/falling interrupts as against
+>>         at most 4 in earlier SoCs the INTEN bit offsets are different.
+>>         - Multiple probe support which is handled by a TMU_CONTROL1
+>>         register (No support for this in the current patch).
+>>
+>> This patch adds special clock support required only for Exynos7. It
+>> also updates the "code_to_temp" prototype as Exynos7 has 9 bit
+>> code-temp mapping.
+>>
+>> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
 >
-> On Fri, Jan 30, 2015 at 1:44 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> Hi Eduardo, Abhilash,
->>
->>> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
->>> > Hi Lukasz,
->>> >
->>> > On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
->>> > <l.majewski@samsung.com> wrote:
->>> > > Hi Abhilash,
->>> > >
->>> > >> Hi Lukasz,
->>> > >>
->>> > >> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
->>> > >> <l.majewski@samsung.com> wrote:
->>> > >> > The exynos_map_dt_data() function must be called before
->>> > >> > thermal_zone_of_sensor_register(), and hence provide tmu_read()
->>> > >> > function, before it is needed.
->>> > >> >
->>> > >> > This change is driven by adding support for enabling
->>> > >> > thermal_zoneX when it is properly initialized.
->>> > >> >
->>> > >> > One can read the mode of operation
->>> > >> > at /sys/class/thermal/thermal_zone0/mode Such functionality was
->>> > >> > missing in the of-thermal.c code.
->>> > >> >
->>> > >> > Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
->>> > >> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>> > >> > ---
->>> > >> >  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
->>> > >> >  1 file changed, 4 insertions(+), 3 deletions(-)
->>> > >> >
->>> > >> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
->>> > >> > b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab
->>> > >> > 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
->>> > >> > +++ b/drivers/thermal/samsung/exynos_tmu.c
->>> > >> > @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
->>> > >> > platform_device *pdev) platform_set_drvdata(pdev, data);
->>> > >> >         mutex_init(&data->lock);
->>> > >> >
->>> > >> > +       ret = exynos_map_dt_data(pdev);
->>> > >> > +       if (ret)
->>> > >> > +               goto err_sensor;
->>> > >> > +
->>> > >> >         data->tzd =
->>> > >> > thermal_zone_of_sensor_register(&pdev->dev, 0, data,
->>> > >> > &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
->>> > >> >                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
->>> > >> >                 return PTR_ERR(data->tzd);
->>> > >> >         }
->>> > >> > -       ret = exynos_map_dt_data(pdev);
->>> > >> > -       if (ret)
->>> > >> > -               goto err_sensor;
->>> > >> >
->>> > >> >         pdata = data->pdata;
->>> > >>
->>> > >> I have been testing this along with your v5 patch set and am
->>> > >> seeing incorrect temperature being reported at boot-up on
->>> > >> exynos7.
->>> > >
->>> > > Does it show a maximal temperature value (0x1FF)?
->>> >
->>> > I did not print the current temperature register, but I remember the
->>> > message showing ~105C. Will give you the register value when I test
->>> > with more debug prints tomorrow.
->>> >
->>> > >
->>> > >>  It looks
->>> > >> like exynos_tmu_read gets called from
->>> > >> thermal_zone_of_device_update during boot-up, now that we have
->>> > >> it populated early. However, as the tmu initialization function
->>> > >> has not been called yet it returns a wrong value. Does that
->>> > >> sound correct ?
->>> > >
->>> > > No, this is a mistake. However, I'm wondering why on Exynos4/5
->>> > > this error didn't show up...
->>> >
->>> > I have been lowering the software trip point temperature in the
->>> > exynos7 dts file (to 55C) for testing purposes. Hence, when the
->>> > temperature is read incorrectly as ~105C the board trips at boot-up
->>
->>                                         ^^^^ this is a very unusual
->>                                         value - I had problems with
->>                                         reading 0xFF values with
->>                                         similar symptom (but this was
->>                                         caused by lack of vtmu).
->>
->>> > itself. Maybe for exynos4/5 the incorrect value read during boot-up
->>> > is in the non-tripping range and once the tmu is initialized later
->>> > it continues to function properly thereafter ?
->>> >
->>> > >
->>> > > The reordering is needed to be able to call set_mode callback at
->>> > > of-thermal.c to set the mode.
->>> > >
->>> > > If this change causes problems, then another solution (probably
->>> > > not so neat) must be found.
->>> >
->>> > Please let me know if you need any further details.
->>
->> Abhilash, could you provide more details (like relevant output from
->> dmesg) and point me a list of patches which shall I apply to test this
->> issue on Exynos4/5?
-> Sorry, I have not had the time to re-check this and provide you with
-> the current temperature register value. I will definitely do so on
-> Monday and also provide you the dmesg output. I applied the following
-> patches on linux-next:
+> Applied to my -fixes branch. However, I had to amend it myself to make
+> checkpatch.pl --strict silent. In this version, it still outputs:
+> CHECK: Alignment should match open parenthesis
+> #209: FILE: drivers/thermal/samsung/exynos_tmu.c:558:
+> +       if (!data->temp_error1 ||
+> +          (pdata->min_efuse_value > data->temp_error1) ||
 >
-> bbf872d thermal: exynos: Add TMU support for Exynos7 SoC
-> b8190ac dts: Documentation: Add documentation for Exynos7 SoC thermal bindings
-> 9330ec1 thermal: exynos: Reorder exynos_map_dt_data() function
-> 4dd41c4 thermal: exynos: dts: Provide device tree bindings identical
-> to the one in exynos_tmu_data.c
-> a7b80b9 thermal: dts: exynos: Trip points and sensor configuration
-> data for Exynos5440
-> 77d072e thermal: exynos: dts: Define default thermal-zones for Exynos4
-> 964dd36 thermal: dts: Default trip points definition for Exynos5420 SoCs
-> c1d2f97 thermal: exynos: dts: Add default definition of the TMU sensor parameter
-> 02a4496 arm: dts: Adding CPU cooling binding for Exynos SoCs
-> bfadff0 arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3 device
-> 862764c arm: dts: odroid: Add LDO10 regulator node necessary for TMU on Odroid
-> c064731 arm: dts: trats: Enable TMU on the Exynos4210 trats device
+> CHECK: multiple assignments should be avoided
+> #366: FILE: drivers/thermal/samsung/exynos_tmu.c:882:
+> +               tmu_intstat = tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
 >
-> Along with the above list I have a patch which adds the dt changes
-> required for exynos7 on similar lines as done for exynos4/exynos5. In
-> the exyno7 trip point dts file I have modified the cpu-crit-0
-> temperature to a low value of 55C for testing purposes.
+> total: 0 errors, 0 warnings, 2 checks, 314 lines checked
 >
->>
->>>
->>> What is the status of this patch? Is it still required?
->>
->> It is strange, since on Exynos4/5 this works and some problems show up
->> when run on Exynos7.
->
-> I would have expected the issue to show up on Exynos4/5 too. I will
-> test this on the 5420 based board I have on Monday.
+> next, make sure you run checkpatch.pl --strict before sending patches.
 
-I tested this on a 5420 based chromebook that I have (Peach Pit) and
-observed similar results as that on Exynos7. Following are the patches
-applied on next-20150130:
-
-5b1194d thermal: exynos: Reorder exynos_map_dt_data() function
-30c6165 thermal: exynos: dts: Provide device tree bindings identical
-to the one in exynos_tmu_data.c
-d94c248 thermal: dts: exynos: Trip points and sensor configuration
-data for Exynos5440
-aac8b3a thermal: exynos: dts: Define default thermal-zones for Exynos4
-5e8cf52 thermal: dts: Default trip points definition for Exynos5420 SoCs
-17ec9c2 thermal: exynos: dts: Add default definition of the TMU sensor parameter
-36e247b arm: dts: Adding CPU cooling binding for Exynos SoCs
-7aa1bb1 arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3 device
-8884a76 arm: dts: odroid: Add LDO10 regulator node necessary for TMU on Odroid
-aae2e51 arm: dts: trats: Enable TMU on the Exynos4210 trats device
-827e3bd Add linux-next specific files for 20150130
-
-On top of these patches, I have the following diff for
-debugging/testing pruposes:
-
-diff --git a/arch/arm/boot/dts/exynos5420-trip-points.dtsi
-b/arch/arm/boot/dts/exynos5420-trip-points.dtsi
-index 09d6c56..ac8b6a0 100644
---- a/arch/arm/boot/dts/exynos5420-trip-points.dtsi
-+++ b/arch/arm/boot/dts/exynos5420-trip-points.dtsi
-@@ -13,22 +13,22 @@ polling-delay-passive = <0>;
- polling-delay = <0>;
- trips {
-        cpu-alert-0 {
--               temperature = <85000>; /* millicelsius */
-+               temperature = <55000>; /* millicelsius */
-                hysteresis = <10000>; /* millicelsius */
-                type = "active";
-        };
-        cpu-alert-1 {
--               temperature = <103000>; /* millicelsius */
-+               temperature = <63000>; /* millicelsius */
-                hysteresis = <10000>; /* millicelsius */
-                type = "active";
-        };
-        cpu-alert-2 {
--               temperature = <110000>; /* millicelsius */
-+               temperature = <70000>; /* millicelsius */
-                hysteresis = <10000>; /* millicelsius */
-                type = "active";
-        };
-        cpu-crit-0 {
--               temperature = <1200000>; /* millicelsius */
-+               temperature = <75000>; /* millicelsius */
-                hysteresis = <0>; /* millicelsius */
-                type = "critical";
-        };
-diff --git a/drivers/thermal/samsung/exynos_tmu.c
-b/drivers/thermal/samsung/exynos_tmu.c
-index 852e622..7281581 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -237,6 +237,7 @@ static int code_to_temp(struct exynos_tmu_data
-*data, u8 temp_code)
-                break;
-        case TYPE_ONE_POINT_TRIMMING:
-                temp = temp_code - data->temp_error1 + pdata->first_point_trim;
-+               printk("temp_code is %d, err1 is %d, trim is %d, temp
-is %d\n", temp_code, data->temp_error1, pdata->first_point_trim,
-temp);
-                break;
-        default:
-                temp = temp_code - pdata->default_temp_offset;
-@@ -585,6 +586,7 @@ static int exynos_get_temp(void *p, long *temp)
-
-        *temp = code_to_temp(data, data->tmu_read(data)) * MCELSIUS;
-
-+       printk("temperature is %ld\n", *temp);
-        clk_disable(data->clk);
-        mutex_unlock(&data->lock);
-
-@@ -675,6 +677,7 @@ static int exynos4210_tmu_read(struct exynos_tmu_data *data)
-
- static int exynos4412_tmu_read(struct exynos_tmu_data *data)
- {
-+       printk("\n%s: Reading the current temperature register value:
-0x%x\n\n", __func__, readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP));
-        return readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
- }
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 48491d1..981fc99 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -469,7 +469,7 @@ static void update_temperature(struct
-thermal_zone_device *tz)
-        mutex_unlock(&tz->lock);
-
-        trace_thermal_temperature(tz);
--       dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-+       dev_err(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-                                tz->last_temperature, tz->temperature);
- }
-
-Also, I noticed  a typo (an extra zero) in cpu-crit-0 temperature above.
-
-Following is the relevant boot-up log:
-
-[    3.160126] TPS65090_RAILSLDO2: supplied by vbat-supply
-[    3.343421] thermal thermal_zone5: last_temperature=0,
-current_temperature=25900
-[    3.349365] sbs-battery 20-000b: sbs-battery: battery gas gauge
-device registered
-[    3.374280] 10060000.tmu supply vtmu not found, using dummy regulator
-[    3.379408]
-[    3.379408] exynos4412_tmu_read: Reading the current temperature
-register value: 0x36
-[    3.379408]
-[    3.390026] temp_code is 54, err1 is 0, trim is 25, temp is 79
-[    3.395827] temperature is 79000
-[    3.399053] thermal thermal_zone0: last_temperature=0,
-current_temperature=79000
-[    3.406429] thermal thermal_zone0: critical temperature reached(79
-C),shutting down
-[    3.414241] reboot: Failed to start orderly shutdown: forcing the issue
-[    3.420690] usb 5-1: new high-speed USB device number 2 using exynos-ehci
-[    3.427819] 10064000.tmu supply vtmu not found, using dummy regulator
-[    3.434011] Emergency Sync complete
-[    3.434355]
-[    3.434355] exynos4412_tmu_read: Reading the current temperature
-register value: 0x3
-[    3.434355]
-[    3.434367] temp_code is 3, err1 is 0, trim is 25, temp is 28
-[    3.434373] temperature is 28000
-[    3.434393] thermal thermal_zone1: last_temperature=0,
-current_temperature=28000
-[    3.434744] 10068000.tmu supply vtmu not found, using dummy regulator
-[    3.435069]
-[    3.435069] exynos4412_tmu_read: Reading the current temperature
-register value: 0x2
-[    3.435069]
-[    3.435080] temp_code is 2, err1 is 0, trim is 25, temp is 27
-[    3.435086] temperature is 27000
-[    3.435103] thermal thermal_zone2: last_temperature=0,
-current_temperature=27000
-[    3.435427] 1006c000.tmu supply vtmu not found, using dummy regulator
-[    3.435762]
-[    3.435762] exynos4412_tmu_read: Reading the current temperature
-register value: 0x2
-[    3.435762]
-[    3.435772] temp_code is 2, err1 is 0, trim is 25, temp is 27
-[    3.435778] temperature is 27000
-[    3.435794] thermal thermal_zone3: last_temperature=0,
-current_temperature=27000
-[    3.436112] 100a0000.tmu supply vtmu not found, using dummy regulator
-[    3.436464]
-[    3.436464] exynos4412_tmu_read: Reading the current temperature
-register value: 0x33
-[    3.436464]
-[    3.436475] temp_code is 51, err1 is 0, trim is 25, temp is 76
-[    3.436480] temperature is 76000
-[    3.436496] thermal thermal_zone4: last_temperature=0,
-current_temperature=76000
-[    3.436527] thermal thermal_zone4: critical temperature reached(76
-C),shutting down
-
->From the log, thermal_zone0 and thermal_zone4 show incorrect
-temperatures. It looks like the first point trim error1 would need to
-be intialized before we do a read ?
-Please let me know if you need any more details.
+Thanks for applying these patches. As this is adding support for a new
+SoC, should it not be part of your -next branch ?
+I generally just run checkpatch without the "strict" option. Will
+ensure that I run it with "strict" in the future.
 
 Regards,
 Abhilash
+>
+>
+>> ---
+>> This patch set has been tested on linux next-20150123 with Eduardo's
+>> thermal-next branch merged along with the arch-side exynos7 related
+>> dts changes applied.
+>>
+>> Changes since v3:
+>> Addressed comments from Lukasz Majewski:
+>>       - Added more comments in the code setting the thresholds.
+>>       - Split the documentation out into another patch.
+>> Changes since v2:
+>>       - Rebased on top of Lukasz' latest exynos tmu series (v4).
+>>       - Added new exynos7 soc_type.
+>> Changes since v1:
+>>       - Rebased on top of Lukasz' latest exynos tmu series (v2).
+>>       - Added sclk support to patch adding Exynos7 tmu support.
+>>       Previously, it was a separate patch.
+>>       - Used the SOC type to decide if sclk is present.
+>>
+>>  drivers/thermal/samsung/exynos_tmu.c |  204 ++++++++++++++++++++++++++++++++--
+>>  drivers/thermal/samsung/exynos_tmu.h |    1 +
+>>  2 files changed, 197 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index 852e622..660ff69 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -119,6 +119,26 @@
+>>  #define EXYNOS5440_TMU_TH_RISE4_SHIFT                24
+>>  #define EXYNOS5440_EFUSE_SWAP_OFFSET         8
+>>
+>> +/* Exynos7 specific registers */
+>> +#define EXYNOS7_THD_TEMP_RISE7_6             0x50
+>> +#define EXYNOS7_THD_TEMP_FALL7_6             0x60
+>> +#define EXYNOS7_TMU_REG_INTEN                        0x110
+>> +#define EXYNOS7_TMU_REG_INTPEND                      0x118
+>> +#define EXYNOS7_TMU_REG_EMUL_CON             0x160
+>> +
+>> +#define EXYNOS7_TMU_TEMP_MASK                        0x1ff
+>> +#define EXYNOS7_PD_DET_EN_SHIFT                      23
+>> +#define EXYNOS7_TMU_INTEN_RISE0_SHIFT                0
+>> +#define EXYNOS7_TMU_INTEN_RISE1_SHIFT                1
+>> +#define EXYNOS7_TMU_INTEN_RISE2_SHIFT                2
+>> +#define EXYNOS7_TMU_INTEN_RISE3_SHIFT                3
+>> +#define EXYNOS7_TMU_INTEN_RISE4_SHIFT                4
+>> +#define EXYNOS7_TMU_INTEN_RISE5_SHIFT                5
+>> +#define EXYNOS7_TMU_INTEN_RISE6_SHIFT                6
+>> +#define EXYNOS7_TMU_INTEN_RISE7_SHIFT                7
+>> +#define EXYNOS7_EMUL_DATA_SHIFT                      7
+>> +#define EXYNOS7_EMUL_DATA_MASK                       0x1ff
+>> +
+>>  #define MCELSIUS     1000
+>>  /**
+>>   * struct exynos_tmu_data : A structure to hold the private data of the TMU
+>> @@ -133,6 +153,7 @@
+>>   * @lock: lock to implement synchronization.
+>>   * @clk: pointer to the clock structure.
+>>   * @clk_sec: pointer to the clock structure for accessing the base_second.
+>> + * @sclk: pointer to the clock structure for accessing the tmu special clk.
+>>   * @temp_error1: fused value of the first point trim.
+>>   * @temp_error2: fused value of the second point trim.
+>>   * @regulator: pointer to the TMU regulator structure.
+>> @@ -152,8 +173,8 @@ struct exynos_tmu_data {
+>>       enum soc_type soc;
+>>       struct work_struct irq_work;
+>>       struct mutex lock;
+>> -     struct clk *clk, *clk_sec;
+>> -     u8 temp_error1, temp_error2;
+>> +     struct clk *clk, *clk_sec, *sclk;
+>> +     u16 temp_error1, temp_error2;
+>>       struct regulator *regulator;
+>>       struct thermal_zone_device *tzd;
+>>
+>> @@ -223,7 +244,7 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+>>   * Calculate a temperature value from a temperature code.
+>>   * The unit of the temperature is degree Celsius.
+>>   */
+>> -static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
+>> +static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
+>>  {
+>>       struct exynos_tmu_platform_data *pdata = data->pdata;
+>>       int temp;
+>> @@ -513,6 +534,84 @@ static int exynos5440_tmu_initialize(struct platform_device *pdev)
+>>       return ret;
+>>  }
+>>
+>> +static int exynos7_tmu_initialize(struct platform_device *pdev)
+>> +{
+>> +     struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+>> +     struct thermal_zone_device *tz = data->tzd;
+>> +     struct exynos_tmu_platform_data *pdata = data->pdata;
+>> +     unsigned int status, trim_info;
+>> +     unsigned int rising_threshold = 0, falling_threshold = 0;
+>> +     int ret = 0, threshold_code, i;
+>> +     unsigned long temp, temp_hist;
+>> +     unsigned int reg_off, bit_off;
+>> +
+>> +     status = readb(data->base + EXYNOS_TMU_REG_STATUS);
+>> +     if (!status) {
+>> +             ret = -EBUSY;
+>> +             goto out;
+>> +     }
+>> +
+>> +     trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
+>> +
+>> +     data->temp_error1 = trim_info & EXYNOS7_TMU_TEMP_MASK;
+>> +     if (!data->temp_error1 ||
+>> +        (pdata->min_efuse_value > data->temp_error1) ||
+>> +        (data->temp_error1 > pdata->max_efuse_value))
+>> +             data->temp_error1 = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
+>> +
+>> +     /* Write temperature code for rising and falling threshold */
+>> +     for (i = (of_thermal_get_ntrips(tz) - 1); i >= 0; i--) {
+>> +             /*
+>> +              * On exynos7 there are 4 rising and 4 falling threshold
+>> +              * registers (0x50-0x5c and 0x60-0x6c respectively). Each
+>> +              * register holds the value of two threshold levels (at bit
+>> +              * offsets 0 and 16). Based on the fact that there are atmost
+>> +              * eight possible trigger levels, calculate the register and
+>> +              * bit offsets where the threshold levels are to be written.
+>> +              *
+>> +              * e.g. EXYNOS7_THD_TEMP_RISE7_6 (0x50)
+>> +              * [24:16] - Threshold level 7
+>> +              * [8:0] - Threshold level 6
+>> +              * e.g. EXYNOS7_THD_TEMP_RISE5_4 (0x54)
+>> +              * [24:16] - Threshold level 5
+>> +              * [8:0] - Threshold level 4
+>> +              *
+>> +              * and similarly for falling thresholds.
+>> +              *
+>> +              * Based on the above, calculate the register and bit offsets
+>> +              * for rising/falling threshold levels and populate them.
+>> +              */
+>> +             reg_off = ((7 - i) / 2) * 4;
+>> +             bit_off = ((8 - i) % 2);
+>> +
+>> +             tz->ops->get_trip_temp(tz, i, &temp);
+>> +             temp /= MCELSIUS;
+>> +
+>> +             tz->ops->get_trip_hyst(tz, i, &temp_hist);
+>> +             temp_hist = temp - (temp_hist / MCELSIUS);
+>> +
+>> +             /* Set 9-bit temperature code for rising threshold levels */
+>> +             threshold_code = temp_to_code(data, temp);
+>> +             rising_threshold = readl(data->base +
+>> +                     EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
+>> +             rising_threshold &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
+>> +             rising_threshold |= threshold_code << (16 * bit_off);
+>> +             writel(rising_threshold,
+>> +                    data->base + EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
+>> +
+>> +             /* Set 9-bit temperature code for falling threshold levels */
+>> +             threshold_code = temp_to_code(data, temp_hist);
+>> +             falling_threshold &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
+>> +             falling_threshold |= threshold_code << (16 * bit_off);
+>> +             writel(falling_threshold,
+>> +                    data->base + EXYNOS7_THD_TEMP_FALL7_6 + reg_off);
+>> +     }
+>> +
+>> +     data->tmu_clear_irqs(data);
+>> +out:
+>> +     return ret;
+>> +}
+>> +
+>>  static void exynos4210_tmu_control(struct platform_device *pdev, bool on)
+>>  {
+>>       struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+>> @@ -573,6 +672,46 @@ static void exynos5440_tmu_control(struct platform_device *pdev, bool on)
+>>       writel(con, data->base + EXYNOS5440_TMU_S0_7_CTRL);
+>>  }
+>>
+>> +static void exynos7_tmu_control(struct platform_device *pdev, bool on)
+>> +{
+>> +     struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+>> +     struct thermal_zone_device *tz = data->tzd;
+>> +     unsigned int con, interrupt_en;
+>> +
+>> +     con = get_con_reg(data, readl(data->base + EXYNOS_TMU_REG_CONTROL));
+>> +
+>> +     if (on) {
+>> +             con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+>> +             interrupt_en =
+>> +                     (of_thermal_is_trip_valid(tz, 7)
+>> +                     << EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 6)
+>> +                     << EXYNOS7_TMU_INTEN_RISE6_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 5)
+>> +                     << EXYNOS7_TMU_INTEN_RISE5_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 4)
+>> +                     << EXYNOS7_TMU_INTEN_RISE4_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 3)
+>> +                     << EXYNOS7_TMU_INTEN_RISE3_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 2)
+>> +                     << EXYNOS7_TMU_INTEN_RISE2_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 1)
+>> +                     << EXYNOS7_TMU_INTEN_RISE1_SHIFT) |
+>> +                     (of_thermal_is_trip_valid(tz, 0)
+>> +                     << EXYNOS7_TMU_INTEN_RISE0_SHIFT);
+>> +
+>> +             interrupt_en |=
+>> +                     interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
+>> +     } else {
+>> +             con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+>> +             interrupt_en = 0; /* Disable all interrupts */
+>> +     }
+>> +     con |= 1 << EXYNOS7_PD_DET_EN_SHIFT;
+>> +
+>> +     writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
+>> +     writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+>> +}
+>> +
+>>  static int exynos_get_temp(void *p, long *temp)
+>>  {
+>>       struct exynos_tmu_data *data = p;
+>> @@ -602,9 +741,19 @@ static u32 get_emul_con_reg(struct exynos_tmu_data *data, unsigned int val,
+>>                       val &= ~(EXYNOS_EMUL_TIME_MASK << EXYNOS_EMUL_TIME_SHIFT);
+>>                       val |= (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT);
+>>               }
+>> -             val &= ~(EXYNOS_EMUL_DATA_MASK << EXYNOS_EMUL_DATA_SHIFT);
+>> -             val |= (temp_to_code(data, temp) << EXYNOS_EMUL_DATA_SHIFT) |
+>> -                     EXYNOS_EMUL_ENABLE;
+>> +             if (data->soc == SOC_ARCH_EXYNOS7) {
+>> +                     val &= ~(EXYNOS7_EMUL_DATA_MASK <<
+>> +                             EXYNOS7_EMUL_DATA_SHIFT);
+>> +                     val |= (temp_to_code(data, temp) <<
+>> +                             EXYNOS7_EMUL_DATA_SHIFT) |
+>> +                             EXYNOS_EMUL_ENABLE;
+>> +             } else {
+>> +                     val &= ~(EXYNOS_EMUL_DATA_MASK <<
+>> +                             EXYNOS_EMUL_DATA_SHIFT);
+>> +                     val |= (temp_to_code(data, temp) <<
+>> +                             EXYNOS_EMUL_DATA_SHIFT) |
+>> +                             EXYNOS_EMUL_ENABLE;
+>> +             }
+>>       } else {
+>>               val &= ~EXYNOS_EMUL_ENABLE;
+>>       }
+>> @@ -620,6 +769,8 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
+>>
+>>       if (data->soc == SOC_ARCH_EXYNOS5260)
+>>               emul_con = EXYNOS5260_EMUL_CON;
+>> +     else if (data->soc == SOC_ARCH_EXYNOS7)
+>> +             emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+>>       else
+>>               emul_con = EXYNOS_EMUL_CON;
+>>
+>> @@ -683,6 +834,12 @@ static int exynos5440_tmu_read(struct exynos_tmu_data *data)
+>>       return readb(data->base + EXYNOS5440_TMU_S0_7_TEMP);
+>>  }
+>>
+>> +static int exynos7_tmu_read(struct exynos_tmu_data *data)
+>> +{
+>> +     return readw(data->base + EXYNOS_TMU_REG_CURRENT_TEMP) &
+>> +             EXYNOS7_TMU_TEMP_MASK;
+>> +}
+>> +
+>>  static void exynos_tmu_work(struct work_struct *work)
+>>  {
+>>       struct exynos_tmu_data *data = container_of(work,
+>> @@ -721,6 +878,8 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
+>>       if (data->soc == SOC_ARCH_EXYNOS5260) {
+>>               tmu_intstat = EXYNOS5260_TMU_REG_INTSTAT;
+>>               tmu_intclear = EXYNOS5260_TMU_REG_INTCLEAR;
+>> +     } else if (data->soc == SOC_ARCH_EXYNOS7) {
+>> +             tmu_intstat = tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
+>>       } else {
+>>               tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
+>>               tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
+>> @@ -782,6 +941,9 @@ static const struct of_device_id exynos_tmu_match[] = {
+>>       {
+>>               .compatible = "samsung,exynos5440-tmu",
+>>       },
+>> +     {
+>> +             .compatible = "samsung,exynos7-tmu",
+>> +     },
+>>       {},
+>>  };
+>>  MODULE_DEVICE_TABLE(of, exynos_tmu_match);
+>> @@ -805,6 +967,8 @@ static int exynos_of_get_soc_type(struct device_node *np)
+>>               return SOC_ARCH_EXYNOS5420_TRIMINFO;
+>>       else if (of_device_is_compatible(np, "samsung,exynos5440-tmu"))
+>>               return SOC_ARCH_EXYNOS5440;
+>> +     else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
+>> +             return SOC_ARCH_EXYNOS7;
+>>
+>>       return -EINVAL;
+>>  }
+>> @@ -928,6 +1092,13 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+>>               data->tmu_set_emulation = exynos5440_tmu_set_emulation;
+>>               data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
+>>               break;
+>> +     case SOC_ARCH_EXYNOS7:
+>> +             data->tmu_initialize = exynos7_tmu_initialize;
+>> +             data->tmu_control = exynos7_tmu_control;
+>> +             data->tmu_read = exynos7_tmu_read;
+>> +             data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+>> +             data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+>> +             break;
+>>       default:
+>>               dev_err(&pdev->dev, "Platform not supported\n");
+>>               return -EINVAL;
+>> @@ -1018,21 +1189,37 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>               goto err_clk_sec;
+>>       }
+>>
+>> +     if (data->soc == SOC_ARCH_EXYNOS7) {
+>> +             data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
+>> +             if (IS_ERR(data->sclk)) {
+>> +                     dev_err(&pdev->dev, "Failed to get sclk\n");
+>> +                     goto err_clk;
+>> +             } else {
+>> +                     ret = clk_prepare_enable(data->sclk);
+>> +                     if (ret) {
+>> +                             dev_err(&pdev->dev, "Failed to enable sclk\n");
+>> +                             goto err_clk;
+>> +                     }
+>> +             }
+>> +     }
+>> +
+>>       ret = exynos_tmu_initialize(pdev);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "Failed to initialize TMU\n");
+>> -             goto err_clk;
+>> +             goto err_sclk;
+>>       }
+>>
+>>       ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
+>>               IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+>> -             goto err_clk;
+>> +             goto err_sclk;
+>>       }
+>>
+>>       exynos_tmu_control(pdev, true);
+>>       return 0;
+>> +err_sclk:
+>> +     clk_disable_unprepare(data->sclk);
+>>  err_clk:
+>>       clk_unprepare(data->clk);
+>>  err_clk_sec:
+>> @@ -1052,6 +1239,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>>       thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
+>>       exynos_tmu_control(pdev, false);
+>>
+>> +     clk_disable_unprepare(data->sclk);
+>>       clk_unprepare(data->clk);
+>>       if (!IS_ERR(data->clk_sec))
+>>               clk_unprepare(data->clk_sec);
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+>> index 9f9b1b8..4d71ec6 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -34,6 +34,7 @@ enum soc_type {
+>>       SOC_ARCH_EXYNOS5420,
+>>       SOC_ARCH_EXYNOS5420_TRIMINFO,
+>>       SOC_ARCH_EXYNOS5440,
+>> +     SOC_ARCH_EXYNOS7,
+>>  };
+>>
+>>  /**
+>> --
+>> 1.7.9.5
+>>
