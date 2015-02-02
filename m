@@ -1,40 +1,167 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Set cpufreq_cpu_data to NULL before putting kobject
-Date: Mon, 2 Feb 2015 08:50:14 +0530
-Message-ID: <CAKohpokG7Oyi2B6zFjE7TkLdSTO5i5fTHboKK2fKcuhB-kQ0aQ@mail.gmail.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422580135.git.viresh.kumar@linaro.org>
-	<54CADEAE.2090305@oracle.com>
-	<CAKohpo=uFZ0BwZ1FLSBpht3Yi1B73LpHDu00Rqk2P3TbzCYsoQ@mail.gmail.com>
-	<54CAE80C.4060406@oracle.com>
-	<CAKohponF_fqoDj_g4kZuoYa=gz9G_yRn67eJoWT6mnPkejWkjw@mail.gmail.com>
-	<54CAEABB.4060508@oracle.com>
-	<CAKohpomdf1eZveqw+GCzcuPJnW4BpMYqGebhRR5=mc0ome0vFg@mail.gmail.com>
-	<54CAFE88.2080508@oracle.com>
-	<CAKohpokstCHezi0-Vp=-WJn4Zrpnj0oELjw6jzkY_0976h3V8w@mail.gmail.com>
-	<54CED8CF.9060407@oracle.com>
+From: ethan zhao <ethan.zhao@oracle.com>
+Subject: Re: [PATCH Resend] cpufreq: Set cpufreq_cpu_data to NULL before putting
+ kobject
+Date: Mon, 02 Feb 2015 11:20:23 +0800
+Message-ID: <54CEECF7.7020504@oracle.com>
+References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422663249.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f44.google.com ([209.85.218.44]:37409 "EHLO
-	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbbBBDUP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Feb 2015 22:20:15 -0500
-Received: by mail-oi0-f44.google.com with SMTP id a3so42300324oib.3
-        for <linux-pm@vger.kernel.org>; Sun, 01 Feb 2015 19:20:15 -0800 (PST)
-In-Reply-To: <54CED8CF.9060407@oracle.com>
+Received: from userp1040.oracle.com ([156.151.31.81]:28036 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754644AbbBBDVU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Feb 2015 22:21:20 -0500
+In-Reply-To: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422663249.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ethan zhao <ethan.zhao@oracle.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, santosh shilimkar <santosh.shilimkar@oracle.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "# 3.13.x" <stable@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, santosh.shilimkar@oracle.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 2 February 2015 at 07:24, ethan zhao <ethan.zhao@oracle.com> wrote:
->  Policy will be freed only when that's last CPU shutting down, how does it
->  happen when system booting ?
+Viresh,
 
-I couldn't understand what you are asking here. Though policy will be allocated
-for the first CPU of every policy during boot..
+On 2015/1/31 8:32, Viresh Kumar wrote:
+> In __cpufreq_remove_dev_finish(), per-cpu 'cpufreq_cpu_data' needs to be cleared
+> before calling kobject_put(&policy->kobj) *and* under the lock. Otherwise if
+> someone else calls cpufreq_cpu_get() in parallel with it, they can obtain a
+> non-NULL policy from it *after* kobject_put(&policy->kobj) was executed.
+>
+> Consider this case:
+>
+> Thread A				Thread B
+> cpufreq_cpu_get()
+>    read_lock_irqsave()
+>    read-per-cpu cpufreq_cpu_data
+> 					per_cpu(&cpufreq_cpu_data, cpu) = NULL
+> 					kobject_put(&policy->kobj);
+>    kobject_get(&policy->kobj);
+>
+>
+> And this will result in below Warnings:
+>
+>   ------------[ cut here ]------------
+>   WARNING: CPU: 0 PID: 4 at include/linux/kref.h:47
+>   kobject_get+0x41/0x50()
+>   Modules linked in: acpi_cpufreq(+) nfsd auth_rpcgss nfs_acl
+>   lockd grace sunrpc xfs libcrc32c sd_mod ixgbe igb mdio ahci hwmon
+>   ...
+>   Call Trace:
+>    [<ffffffff81661b14>] dump_stack+0x46/0x58
+>    [<ffffffff81072b61>] warn_slowpath_common+0x81/0xa0
+>    [<ffffffff81072c7a>] warn_slowpath_null+0x1a/0x20
+>    [<ffffffff812e16d1>] kobject_get+0x41/0x50
+>    [<ffffffff815262a5>] cpufreq_cpu_get+0x75/0xc0
+>    [<ffffffff81527c3e>] cpufreq_update_policy+0x2e/0x1f0
+>    [<ffffffff810b8cb2>] ? up+0x32/0x50
+>    [<ffffffff81381aa9>] ? acpi_ns_get_node+0xcb/0xf2
+>    [<ffffffff81381efd>] ? acpi_evaluate_object+0x22c/0x252
+>    [<ffffffff813824f6>] ? acpi_get_handle+0x95/0xc0
+>    [<ffffffff81360967>] ? acpi_has_method+0x25/0x40
+>    [<ffffffff81391e08>] acpi_processor_ppc_has_changed+0x77/0x82
+>    [<ffffffff81089566>] ? move_linked_works+0x66/0x90
+>    [<ffffffff8138e8ed>] acpi_processor_notify+0x58/0xe7
+>    [<ffffffff8137410c>] acpi_ev_notify_dispatch+0x44/0x5c
+>    [<ffffffff8135f293>] acpi_os_execute_deferred+0x15/0x22
+>    [<ffffffff8108c910>] process_one_work+0x160/0x410
+>    [<ffffffff8108d05b>] worker_thread+0x11b/0x520
+>    [<ffffffff8108cf40>] ? rescuer_thread+0x380/0x380
+>    [<ffffffff81092421>] kthread+0xe1/0x100
+>    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
+>    [<ffffffff81669ebc>] ret_from_fork+0x7c/0xb0
+>    [<ffffffff81092340>] ? kthread_create_on_node+0x1b0/0x1b0
+>   ---[ end trace 89e66eb9795efdf7 ]---
+>
+> And here is the actual race (+ the race mentioned above):
+>
+>   Thread A: Workqueue: kacpi_notify
+>
+>   acpi_processor_notify()
+>     acpi_processor_ppc_has_changed()
+>           cpufreq_update_policy()
+>             cpufreq_cpu_get()
+>               kobject_get()
+>
+>   Thread B: xenbus_thread()
+>
+>   xenbus_thread()
+>     msg->u.watch.handle->callback()
+>       handle_vcpu_hotplug_event()
+>         vcpu_hotplug()
+>           cpu_down()
+>             __cpu_notify(CPU_POST_DEAD..)
+>               cpufreq_cpu_callback()
+>                 __cpufreq_remove_dev_finish()
+>                   cpufreq_policy_put_kobj()
+>                     kobject_put()
+>
+> cpufreq_cpu_get() gets the policy from per-cpu variable cpufreq_cpu_data under
+> cpufreq_driver_lock, and once it gets a valid policy it expects it to not be
+> freed until cpufreq_cpu_put() is called.
+>
+> But the race happens when another thread puts the kobject first and updates
+> cpufreq_cpu_data before or later. And so the first thread gets a valid policy
+> structure and before it does kobject_get() on it, the second one has already
+> done kobject_put().
+>
+> Fix this by setting cpufreq_cpu_data to NULL before putting the kobject and that
+> too under locks.
+>
+> Reported-by: Ethan Zhao <ethan.zhao@oracle.com>
+> Reported-by: Santosh Shilimkar <santosh.shilimkar@oracle.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>   drivers/cpufreq/cpufreq.c | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4473eba1d6b0..e3bf702b5588 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1409,9 +1409,10 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>   	unsigned long flags;
+>   	struct cpufreq_policy *policy;
+>   
+> -	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
+>   	policy = per_cpu(cpufreq_cpu_data, cpu);
+> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>   
+>   	if (!policy) {
+>   		pr_debug("%s: No cpu_data found\n", __func__);
+> @@ -1466,7 +1467,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>   		}
+>   	}
+>   
+> -	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+>   	return 0;
+>   }
+  This seems couldn't prevent all the 'bad thing' from happening, E.G.
 
->  The description of the patch would be wrong (the Xen_bus call stack) --
->  Did the xen_bus shut down every CPU till the last during booting ?
 
-I don't know about that..
+  Thread A: Workqueue: kacpi_notify
+
+  acpi_processor_notify()
+    acpi_processor_ppc_has_changed()
+          cpufreq_update_policy()
+            cpufreq_cpu_get()
+
+            beginning the deference of policy        Thread B:
+            ... ... __cpufreq_remove_dev_finish()
+cpufreq_policy_free(policy);
+
+
+Perhaps move policy->rwsem out side the policy structure is a way to 
+avoid it completely.
+and you could stopping the PPC thread stepping forward as my patch as 
+temporary workaround.
+
+Thanks,
+Ethan
+
+
+
+
+>   
+
