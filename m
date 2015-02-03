@@ -1,120 +1,188 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
- subsystem
-Date: Tue, 3 Feb 2015 21:41:27 +0100 (CET)
-Message-ID: <964800678.25817.1422996087477.JavaMail.open-xchange@oxbaltgw04.schlund.de>
-References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com> <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com> <20150121230148.GJ13715@earth.universe> <54C0AFE4.3020701@i2se.com> <20150125150431.GE2719@earth.universe> <1719204322.245040.1422301605670.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150127001629.GP21293@sirena.org.uk> <1954124242.301697.1422383709733.JavaMail.open-xchange@oxbaltgw09.schlund.de> <20150127194346.GN21293@sirena.org.uk> <443299280.47516.1422483725178.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150128225937.GA12749@earth.universe>
-Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/2] ACPI / cpuidle: Common callback routine for entering states
+Date: Tue, 03 Feb 2015 22:15:47 +0100
+Message-ID: <2697166.UnmvnKYZSU@vostro.rjw.lan>
+References: <2355370.OryAt3A2Tj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150128225937.GA12749-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50498 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932280AbbBCUxB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 15:53:01 -0500
+In-Reply-To: <2355370.OryAt3A2Tj@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>
 
-Hi Sebastian,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 28. Januar 2015 um 23:59
-> geschrieben:
->
->
-> Hi,
->
-> On Wed, Jan 28, 2015 at 11:22:05PM +0100, Stefan Wahren wrote:
-> > > Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 27. Januar 2015 um 20:43
-> > > geschrieben:
-> > > On Tue, Jan 27, 2015 at 07:35:09PM +0100, Stefan Wahren wrote:
-> > >
-> > changing the switching frequency is not a common feature for this IC. In
-> > most
-> > cases the clock for the DC-DC switching frequency runs at 24 MHz (ref_xtal).
-> > Unfortunatelly this could cause interferences for example in UHF band. So
-> > switching to ref_pll and changing clock divider is a option to avoid such
-> > interferences without changing hardware.
-> >
-> > I decided to implement it as a module parameter, because i see it's a
-> > configuration option.
->
-> I think its best to use a DT property then. That way it can be set
-> appropiatly for boards known to use a band, which could have
-> interference problems.
->
-> So just add a simple property (without a subnode). If I understand
-> Mark correctly, there's a high chance more drivers will need to
-> describe the switching frequency, so I suggest to use a vendor
-> independent property name:
->
-> switching-frequency = <12345>;
+Introduce a common ->enter callback routine for the ACPI cpuidle
+driver, acpi_idle_enter(), which helps to reduce code complexity,
+size and duplication and prevents theoretically possible failues that
+an incorrect routine may be run to enter the given idle state due to
+a firmware bug (eg. when _CST returns a different set of states for
+each processor).
 
-i'm not sure. So here is the complete current state (power and regulator binding
-from imx28.dtsi) including my suggestion for the new property:
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/processor_idle.c |  118 ++++++++++++++++--------------------------
+ 1 file changed, 45 insertions(+), 73 deletions(-)
 
-	power: power@80044000 {
-		compatible = "fsl,imx28-power"; /* handled by mxs_power.c */
-		#address-cells = <1>;
-		#size-cells = <1>;
-		reg = <0x80044000 0x2000>;
-		interrupts = <6>;
-		switching-frequency = <24000000>; /* new property */
-		ranges;
+Index: linux-pm/drivers/acpi/processor_idle.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/processor_idle.c
++++ linux-pm/drivers/acpi/processor_idle.c
+@@ -737,74 +737,17 @@ static bool acpi_idle_fallback_to_c1(str
+ 		!pr->flags.has_cst;
+ }
+ 
+-/**
+- * acpi_idle_enter_simple - enters a CPU idle state without BM handling
+- * @dev: the target CPU
+- * @drv: cpuidle driver with cpuidle state information
+- * @index: the index of suggested state
+- */
+-static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+-		struct cpuidle_driver *drv, int index)
+-{
+-	struct acpi_processor *pr;
+-	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+-
+-	pr = __this_cpu_read(processors);
+-
+-	if (unlikely(!pr))
+-		return -EINVAL;
+-
+-	if (cx->type != ACPI_STATE_C1 && acpi_idle_fallback_to_c1(pr)) {
+-		index = CPUIDLE_DRIVER_STATE_START;
+-		cx = per_cpu(acpi_cstate[index], dev->cpu);
+-	}
+-
+-	lapic_timer_state_broadcast(pr, cx, 1);
+-
+-	if (cx->type == ACPI_STATE_C3)
+-		ACPI_FLUSH_CPU_CACHE();
+-
+-	acpi_idle_do_entry(cx);
+-
+-	lapic_timer_state_broadcast(pr, cx, 0);
+-	return index;
+-}
+-
+ static int c3_cpu_count;
+ static DEFINE_RAW_SPINLOCK(c3_lock);
+ 
+ /**
+  * acpi_idle_enter_bm - enters C3 with proper BM handling
+- * @dev: the target CPU
+- * @drv: cpuidle driver containing state data
+- * @index: the index of suggested state
+- *
+- * If BM is detected, the deepest non-C3 idle state is entered instead.
++ * @pr: Target processor
++ * @cx: Target state context
+  */
+-static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+-		struct cpuidle_driver *drv, int index)
++static void acpi_idle_enter_bm(struct acpi_processor *pr,
++			       struct acpi_processor_cx *cx)
+ {
+-	struct acpi_processor *pr;
+-	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+-
+-	pr = __this_cpu_read(processors);
+-
+-	if (unlikely(!pr))
+-		return -EINVAL;
+-
+-	if (acpi_idle_fallback_to_c1(pr))
+-		return acpi_idle_enter_simple(dev, drv, CPUIDLE_DRIVER_STATE_START);
+-
+-	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
+-		if (drv->safe_state_index >= 0) {
+-			return drv->states[drv->safe_state_index].enter(dev,
+-						drv, drv->safe_state_index);
+-		} else {
+-			acpi_safe_halt();
+-			return -EBUSY;
+-		}
+-	}
+-
+ 	acpi_unlazy_tlb(smp_processor_id());
+ 
+ 	/*
+@@ -842,6 +785,45 @@ static int acpi_idle_enter_bm(struct cpu
+ 	}
+ 
+ 	lapic_timer_state_broadcast(pr, cx, 0);
++}
++
++static int acpi_idle_enter(struct cpuidle_device *dev,
++			   struct cpuidle_driver *drv, int index)
++{
++	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
++	struct acpi_processor *pr;
++
++	pr = __this_cpu_read(processors);
++	if (unlikely(!pr))
++		return -EINVAL;
++
++	if (cx->type != ACPI_STATE_C1) {
++		if (acpi_idle_fallback_to_c1(pr)) {
++			index = CPUIDLE_DRIVER_STATE_START;
++			cx = per_cpu(acpi_cstate[index], dev->cpu);
++		} else if (cx->type == ACPI_STATE_C3 && pr->flags.bm_check) {
++			if (cx->bm_sts_skip || !acpi_idle_bm_check()) {
++				acpi_idle_enter_bm(pr, cx);
++				return index;
++			} else if (drv->safe_state_index >= 0) {
++				index = drv->safe_state_index;
++				cx = per_cpu(acpi_cstate[index], dev->cpu);
++			} else {
++				acpi_safe_halt();
++				return -EBUSY;
++			}
++		}
++	}
++
++	lapic_timer_state_broadcast(pr, cx, 1);
++
++	if (cx->type == ACPI_STATE_C3)
++		ACPI_FLUSH_CPU_CACHE();
++
++	acpi_idle_do_entry(cx);
++
++	lapic_timer_state_broadcast(pr, cx, 0);
++
+ 	return index;
+ }
+ 
+@@ -936,22 +918,12 @@ static int acpi_processor_setup_cpuidle_
+ 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
+ 		state->exit_latency = cx->latency;
+ 		state->target_residency = cx->latency * latency_factor;
++		state->enter = acpi_idle_enter;
+ 
+ 		state->flags = 0;
+-		switch (cx->type) {
+-
+-		case ACPI_STATE_C1:
+-		case ACPI_STATE_C2:
+-			state->enter = acpi_idle_enter_simple;
++		if (cx->type == ACPI_STATE_C1 || cx->type == ACPI_STATE_C2) {
+ 			state->enter_dead = acpi_idle_play_dead;
+ 			drv->safe_state_index = count;
+-			break;
+-
+-		case ACPI_STATE_C3:
+-			state->enter = pr->flags.bm_check ?
+-					acpi_idle_enter_bm :
+-					acpi_idle_enter_simple;
+-			break;
+ 		}
+ 
+ 		count++;
 
-		reg_vddd: regulator@80044040 {
-			reg = <0x80044040 0x10>,
-			      <0x80044010 0x10>,
-			      <0x800440c0 0x10>;
-			reg-names = "base-address",
-				    "v5ctrl-address",
-				    "status-address";
-			compatible = "fsl,imx28-vddd"; /* handled by mxs-regulator.c */
-			regulator-name = "vddd";
-			regulator-min-microvolt = <1350000>;
-			regulator-max-microvolt = <1550000>;
-			vddd-supply = <&reg_vdda>;
-		};
-
-		reg_vdda: regulator@80044050 {
-			reg = <0x80044050 0x10>,
-			      <0x80044010 0x10>,
-			      <0x800440c0 0x10>;
-			reg-names = "base-address",
-				    "v5ctrl-address",
-				    "status-address";
-			compatible = "fsl,imx28-vdda"; /* handled by mxs-regulator.c */
-			regulator-name = "vdda";
-			regulator-min-microvolt = <1725000>;
-			regulator-max-microvolt = <1950000>;
-			vdda-supply = <&reg_vddio>;
-		};
-
-		reg_vddio: regulator@80044060 {
-			reg = <0x80044060 0x10>,
-			      <0x80044010 0x10>,
-			      <0x800440c0 0x10>;
-			reg-names = "base-address",
-				    "v5ctrl-address",
-				    "status-address";
-			compatible = "fsl,imx28-vddio"; /* handled by mxs-regulator.c */
-			regulator-name = "vddio";
-			regulator-min-microvolt = <3000000>;
-			regulator-max-microvolt = <3575000>;
-			regulator-microvolt-offset = <80000>;
-		};
-	};
-
-Please correct me if i'm wrong.
-
-Stefan
-
->
-> -- Sebastian
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
