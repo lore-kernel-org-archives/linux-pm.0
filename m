@@ -1,38 +1,50 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: selective wakeups
-Date: Tue, 03 Feb 2015 10:54:15 +0100
-Message-ID: <54D09AC7.5080503@collabora.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] ti-soc-thermal: Delete an unnecessary check before the function
+ call "cpufreq_cooling_unregister"
+Date: Tue, 03 Feb 2015 11:21:14 +0100
+Message-ID: <54D0A11A.4070906@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
+ urceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([93.93.135.160]:53771 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbbBCJyV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 04:54:21 -0500
+Received: from mout.web.de ([212.227.15.4]:54297 "EHLO mout.web.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932169AbbBCKVW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Feb 2015 05:21:22 -0500
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: Derek Basehore <dbasehore@google.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Hello,
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 3 Feb 2015 11:15:14 +0100
 
-I'm looking at how to support wakeup sources that resume a subset of the
-suspended devices. The goal is for the machine to be able to wakeup the
-CPU but not the display or sound card when the wakeup source isn't
-user-initiated, such as RTC or a network card (we can call it automatic
-resume).
+The cpufreq_cooling_unregister() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
 
-http://www.chromium.org/chromium-os/packages/power_manager/suspend-and-resume#TOC-Dark-Resume
+This issue was detected by using the Coccinelle software.
 
-My first idea is for userspace to be able to configure via sysfs which
-devices aren't going to be resumed when a given wakeup source fires.
-We'll also need a way to resume the display and sound card if there's
-user interaction when the system has resumed automatically.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Any comments?
-
-Thanks,
-
-Tomeu
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 3fb054a..a38c175 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -429,7 +429,7 @@ int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
+ 
+ 	data = ti_bandgap_get_sensor_data(bgp, id);
+ 
+-	if (data && data->cool_dev)
++	if (data)
+ 		cpufreq_cooling_unregister(data->cool_dev);
+ 
+ 	return 0;
+-- 
+2.2.2
 
