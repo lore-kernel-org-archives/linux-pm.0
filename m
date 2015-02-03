@@ -1,41 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 2/2] CPPC: Add CPUFreq driver based on CPPC methods
-Date: Tue, 03 Feb 2015 23:33:25 +0100
-Message-ID: <1805804.escc39d3ai@vostro.rjw.lan>
-References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org> <1422392638-31334-3-git-send-email-ashwin.chaugule@linaro.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 01/18] cpufreq: Drop cpufreq_disabled() check from cpufreq_cpu_{get|put}()
+Date: Tue, 03 Feb 2015 14:17:52 -0800
+Message-ID: <54D14910.1020807@codeaurora.org>
+References: <cover.1422346933.git.viresh.kumar@linaro.org> <59b0050553f89e00298b585ba89d2627a0fab164.1422346933.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63158 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752601AbbBCWKb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 17:10:31 -0500
-In-Reply-To: <1422392638-31334-3-git-send-email-ashwin.chaugule@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:42333 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbbBCWRy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 17:17:54 -0500
+In-Reply-To: <59b0050553f89e00298b585ba89d2627a0fab164.1422346933.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: rwells@codeaurora.org, linda.knippers@hp.com, linux-pm@vger.kernel.org, Catalin.Marinas@arm.com, patches@linaro.org, linaro-acpi@lists.linaro.org, viresh.kumar@linaro.org, jaswinder.singh@linaro.org, broonie@kernel.org, arnd.bergmann@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
 
-On Tuesday, January 27, 2015 04:03:58 PM Ashwin Chaugule wrote:
-> CPPC stands for Collaborative Processor Performance Controls
-> and is defined in the ACPI v5.0+ spec. It describes CPU
-> performance controls on an abstract and continuous scale
-> allowing the platform (e.g. remote power processor) to flexibly
-> optimize CPU performance with its knowledge of power budgets
-> and other architecture specific knowledge.
-> 
-> This patch introduces a CPUFreq driver which works with
-> existing CPUFreq governors. The backend CPPC methods for
-> parsing the CPPC table and reading/writing using CPPC semantics
-> are abstracted away such that they can be used by any other CPPC
-> based CPUFreq driver in the future.
+On 01/27/2015 12:36 AM, Viresh Kumar wrote:
+> Even if cpufreq is disabled then also the per-cpu variable will return NULL and
+> things will continue working as is. Remove this unnecessary check.
 
-First question: How do we ensure that this won't interact negatively with
-the existing ACPI cpufreq driver?  In particular, what is there to allow
-users to use the driver they want?
+Commit text reword suggestion:
 
+When cpufreq is disabled, the per-cpu variable would have been set to 
+NULL. Remove this unnecessary check.
+
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>   drivers/cpufreq/cpufreq.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index ca69f42b8e1e..72990ba59fad 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -203,7 +203,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+>   	struct cpufreq_policy *policy = NULL;
+>   	unsigned long flags;
+>
+> -	if (cpufreq_disabled() || (cpu >= nr_cpu_ids))
+> +	if (cpu >= nr_cpu_ids)
+>   		return NULL;
+>
+>   	if (!down_read_trylock(&cpufreq_rwsem))
+> @@ -230,9 +230,6 @@ EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
+>
+>   void cpufreq_cpu_put(struct cpufreq_policy *policy)
+>   {
+> -	if (cpufreq_disabled())
+> -		return;
+> -
+>   	kobject_put(&policy->kobj);
+>   	up_read(&cpufreq_rwsem);
+>   }
+>
+
+Acked-by: Saravana Kannan <skannan@codeaurora.org>
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
