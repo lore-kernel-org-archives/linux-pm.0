@@ -1,113 +1,120 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 00/14] cpufreq: resource management in preparation for
- module build
-Date: Tue, 3 Feb 2015 15:31:25 -0400
-Message-ID: <20150203193123.GC3486@developer.amazonguestwifi.org>
-References: <1422910697-5920-1-git-send-email-edubezval@gmail.com>
- <CAKohpokgNwdYnc30yd72eJJtpwcDAHx=PmCRWRWPRuXLOq9bnw@mail.gmail.com>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
+ subsystem
+Date: Tue, 3 Feb 2015 21:41:27 +0100 (CET)
+Message-ID: <964800678.25817.1422996087477.JavaMail.open-xchange@oxbaltgw04.schlund.de>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com> <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com> <20150121230148.GJ13715@earth.universe> <54C0AFE4.3020701@i2se.com> <20150125150431.GE2719@earth.universe> <1719204322.245040.1422301605670.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150127001629.GP21293@sirena.org.uk> <1954124242.301697.1422383709733.JavaMail.open-xchange@oxbaltgw09.schlund.de> <20150127194346.GN21293@sirena.org.uk> <443299280.47516.1422483725178.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150128225937.GA12749@earth.universe>
+Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Y5rl02BVI9TCfPar"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:60444 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966273AbbBCTba (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 14:31:30 -0500
-Received: by mail-pa0-f44.google.com with SMTP id rd3so99869938pab.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 11:31:30 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAKohpokgNwdYnc30yd72eJJtpwcDAHx=PmCRWRWPRuXLOq9bnw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150128225937.GA12749-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Linux PM <linux-pm@vger.kernel.org>
 
+Hi Sebastian,
 
---Y5rl02BVI9TCfPar
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Feb 03, 2015 at 09:35:01AM +0530, Viresh Kumar wrote:
-> On 3 February 2015 at 02:28, Eduardo Valentin <edubezval@gmail.com> wrote:
-> > Dear all,
+> Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 28. Januar 2015 um 23:59
+> geschrieben:
+>
+>
+> Hi,
+>
+> On Wed, Jan 28, 2015 at 11:22:05PM +0100, Stefan Wahren wrote:
+> > > Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 27. Januar 2015 um 20:43
+> > > geschrieben:
+> > > On Tue, Jan 27, 2015 at 07:35:09PM +0100, Stefan Wahren wrote:
+> > >
+> > changing the switching frequency is not a common feature for this IC. In
+> > most
+> > cases the clock for the DC-DC switching frequency runs at 24 MHz (ref_xtal).
+> > Unfortunatelly this could cause interferences for example in UHF band. So
+> > switching to ref_pll and changing clock divider is a option to avoid such
+> > interferences without changing hardware.
 > >
-> > The exynos cpufreq driver needs to be build as module. The need is to f=
-ix
-> > the problem risen by Arnd due to the added OF thermal dependency [1].
-> >
-> > Therefore, this series, in preparation to allow building this driver as
-> > a module, changes the way this driver handles allocated resources. Now
-> > it is expected to free the allocated resources uppon driver exit.
-> >
-> > A couple of changes in the data structure organization and callbacks we=
-re necessary.
-> > Therefore, changes were added accordingly.
-> >
-> > Please review. I do not have a way to test these patch in a board today=
- though. So, testing
-> > is more than welcome :-).
-> >
-> > [1] - https://lkml.org/lkml/2015/1/31/175
-> >
-> > Cheers,
-> >
-> > Eduardo Valentin (14):
-> >   cpufreq: exynos4210: properly put of node
-> >   cpufreq: exynos4210: iounmap in error path
-> >   cpufreq: exynos4210: use devm_clk_get
-> >   cpufreq: exynos4x12: properly put of node
-> >   cpufreq: exynos4x12: iounmap in error path
-> >   cpufreq: exynos4x12: use devm_clk_get
-> >   cpufreq: exynos5250: properly put of node
-> >   cpufreq: exynos5250: iounmap in error path
-> >   cpufreq: exynos5250: use devm_clk_get
-> >   cpufreq: exynox-cpufreq: pass exynos_dvfs_info to .set_freq callback
-> >   cpufreq: exynos4210: remove unused symbol cpufreq
-> >   cpufreq: exynos4x12: remove unused symbol cpufreq
-> >   cpufreq: exynos5250: remove unused symbol cpufreq
-> >   cpufreq: exynos-cpufreq: release resources by using managed allocation
->=20
-> Some of this might be unnecessary ..
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/30498=
-4.html
+> > I decided to implement it as a module parameter, because i see it's a
+> > configuration option.
+>
+> I think its best to use a DT property then. That way it can be set
+> appropiatly for boards known to use a band, which could have
+> interference problems.
+>
+> So just add a simple property (without a subnode). If I understand
+> Mark correctly, there's a high chance more drivers will need to
+> describe the switching frequency, so I suggest to use a vendor
+> independent property name:
+>
+> switching-frequency = <12345>;
 
-OK. Pick what makes sense.=20
+i'm not sure. So here is the complete current state (power and regulator binding
+from imx28.dtsi) including my suggestion for the new property:
 
+	power: power@80044000 {
+		compatible = "fsl,imx28-power"; /* handled by mxs_power.c */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x80044000 0x2000>;
+		interrupts = <6>;
+		switching-frequency = <24000000>; /* new property */
+		ranges;
 
->=20
-> And please cc samsung maintainers next time ..
+		reg_vddd: regulator@80044040 {
+			reg = <0x80044040 0x10>,
+			      <0x80044010 0x10>,
+			      <0x800440c0 0x10>;
+			reg-names = "base-address",
+				    "v5ctrl-address",
+				    "status-address";
+			compatible = "fsl,imx28-vddd"; /* handled by mxs-regulator.c */
+			regulator-name = "vddd";
+			regulator-min-microvolt = <1350000>;
+			regulator-max-microvolt = <1550000>;
+			vddd-supply = <&reg_vdda>;
+		};
 
-Sure. The patches were all copied to what get_maintainers.pl told me.
-I missed them in Patch 0 though.
+		reg_vdda: regulator@80044050 {
+			reg = <0x80044050 0x10>,
+			      <0x80044010 0x10>,
+			      <0x800440c0 0x10>;
+			reg-names = "base-address",
+				    "v5ctrl-address",
+				    "status-address";
+			compatible = "fsl,imx28-vdda"; /* handled by mxs-regulator.c */
+			regulator-name = "vdda";
+			regulator-min-microvolt = <1725000>;
+			regulator-max-microvolt = <1950000>;
+			vdda-supply = <&reg_vddio>;
+		};
 
-I would appreciate if we can fix this issue so that I can send out the
-thermal changes in exynos code without breaking things apart.
+		reg_vddio: regulator@80044060 {
+			reg = <0x80044060 0x10>,
+			      <0x80044010 0x10>,
+			      <0x800440c0 0x10>;
+			reg-names = "base-address",
+				    "v5ctrl-address",
+				    "status-address";
+			compatible = "fsl,imx28-vddio"; /* handled by mxs-regulator.c */
+			regulator-name = "vddio";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3575000>;
+			regulator-microvolt-offset = <80000>;
+		};
+	};
 
-What would be the best way to proceed here? Would you be picking the
-rework in exynos cpufreq code and then the cleanups to make to make
-possible to build it as a module? Or should this go together with the
-thermal changes?
+Please correct me if i'm wrong.
 
-Cheers,
+Stefan
 
-Eduardo Valentin
-
-
---Y5rl02BVI9TCfPar
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU0SICAAoJEMLUO4d9pOJWMg8H/3WU8QQ6yGPHvSqIgTtRTZEJ
-bD1QgL8MGfhz4VuPpyRmku0dtGj/H8BeOhaLMGwEGAdpXolGrSufmRdBJZWODwf2
-JczNKGQ/pBgqNzqT52K5eIlUK8gr9wmiNexqbx4dnrqOB8s799G/NAmkWEs8C2e8
-1s6naOB9E3FHlDhkiJLALcu7ul7veHeig0rcna4hplJNeEA3aV+KD7FjR0E6Of69
-t/OwiixDf2xK3S09r8ikXVzUFEkREisMOrhodrTcoVy8pgIZITMApAs7/ZtJXxDB
-k0E6AT6dkj5hadTce4jkUg10fwpgvQu6fAFiSQg5r5BJHgPJOIp2KNaYQWw+lGg=
-=Bs2k
------END PGP SIGNATURE-----
-
---Y5rl02BVI9TCfPar--
+>
+> -- Sebastian
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
