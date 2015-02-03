@@ -1,111 +1,94 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while
+Subject: [PATCH] arch/cpuidle-powernv: Avoid endianness conversions while
  parsing DT
-Date: Tue, 03 Feb 2015 12:01:15 +0530
-Message-ID: <20150203062810.13207.93694.stgit@preeti.in.ibm.com>
+Date: Tue, 03 Feb 2015 12:13:44 +0530
+Message-ID: <20150203064327.13766.88453.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60231 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751640AbbBCGcY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 01:32:24 -0500
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 2 Feb 2015 23:32:23 -0700
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: mpe@ellerman.id.au
-Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 We currently read the information about idle states from the DT
-so as to populate the cpuidle table. Use those APIs to read from
-the DT that can avoid endianness conversions of the property values
-in the cpuidle driver.
+so as to find out the cpu idle states supported by the platform.
+Use those APIs to read from the DT that can avoid endianness
+conversions of the property values.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
-This patch is based ontop of the mainline + V4 of "cpuidle/powernv:
-Read target_residency value of idle states from DT if available".
 
- drivers/cpuidle/cpuidle-powernv.c |   30 ++++++++++++++++--------------
- 1 file changed, 16 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c |   35 ++++++++++++++++++--------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 3aa27a0..4f76fc7 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -161,9 +161,7 @@ static int powernv_add_idle_states(void)
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index d2de7d5..39d1971 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -409,37 +409,39 @@ static int __init pnv_init_idle_states(void)
+ {
  	struct device_node *power_mgt;
- 	int nr_idle_states = 1; /* Snooze */
  	int dt_idle_states;
 -	const __be32 *idle_state_flags;
 -	u32 len_flags, flags;
--	u32 *latency_ns, *residency_ns;
-+	u32 *latency_ns, *residency_ns, *flags;
- 	int i, rc;
++	u32 *flags;
+ 	int i;
  
- 	/* Currently we have snooze statically defined */
-@@ -174,15 +172,19 @@ static int powernv_add_idle_states(void)
- 		goto out;
+ 	supported_cpuidle_states = 0;
+ 
+ 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+-		return 0;
++		goto out;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_OPALv3))
+-		return 0;
++		goto out;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+ 		pr_warn("opal: PowerMgmt Node not found\n");
+-		return 0;
++		goto out;
++	}
++	dt_idle_states = of_property_count_u32_elems(power_mgt,
++			"ibm,cpu-idle-state-flags");
++	if (dt_idle_states < 0) {
++		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
++		goto out;
  	}
  
 -	idle_state_flags = of_get_property(power_mgt,
--				"ibm,cpu-idle-state-flags", &len_flags);
+-			"ibm,cpu-idle-state-flags", &len_flags);
 -	if (!idle_state_flags) {
--		pr_warn("cpuidle-powernv : missing
--				ibm,cpu-idle-state-flags in DT\n");
-+	/* Read values of any property to determine the num of idle states */
-+	dt_idle_states = of_property_count_u32_elems(power_mgt, "ibm,cpu-idle-state-flags");
-+	if (dt_idle_states < 0) {
-+		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
- 		goto out;
- 	}
- 
--	dt_idle_states = len_flags / sizeof(u32);
+-		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+-		return 0;
 +	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
 +	if (of_property_read_u32_array(power_mgt,
 +			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
-+		pr_warn("cpuidle-powernv : missing ibm,cpu-idle-state-flags in DT\n");
-+		goto out_free_flags;
-+ 	}
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
++		goto out_free;
+ 	}
  
- 	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
-@@ -199,21 +201,19 @@ static int powernv_add_idle_states(void)
+-	dt_idle_states = len_flags / sizeof(u32);
++	for (i = 0; i < dt_idle_states; i++)
++		supported_cpuidle_states |= flags[i];
  
- 	for (i = 0; i < dt_idle_states; i++) {
- 
+-	for (i = 0; i < dt_idle_states; i++) {
 -		flags = be32_to_cpu(idle_state_flags[i]);
--
- 		/*
- 		 * Cpuidle accepts exit_latency and target_residency in us.
- 		 * Use default target_residency values if f/w does not expose it.
- 		 */
--		if (flags & OPAL_PM_NAP_ENABLED) {
-+		if (flags[i] & OPAL_PM_NAP_ENABLED) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
--		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
--			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
-+		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-+			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-@@ -236,6 +236,8 @@ static int powernv_add_idle_states(void)
- 	kfree(residency_ns);
- out_free_latency:
- 	kfree(latency_ns);
-+out_free_flags:
+-		supported_cpuidle_states |= flags;
+-	}
+ 	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+ 		patch_instruction(
+ 			(unsigned int *)pnv_fastsleep_workaround_at_entry,
+@@ -449,6 +451,9 @@ static int __init pnv_init_idle_states(void)
+ 			PPC_INST_NOP);
+ 	}
+ 	pnv_alloc_idle_core_states();
++out_free:
 +	kfree(flags);
- out:
- 	return nr_idle_states;
++out:
+ 	return 0;
  }
-
+ 
