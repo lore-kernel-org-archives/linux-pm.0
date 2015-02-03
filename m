@@ -1,71 +1,56 @@
-From: Wonhong Kwon <wonhongkwon@gmail.com>
-Subject: [PATCH] PM / hibernate: take freed pages into account for preallocated memory
-Date: Tue,  3 Feb 2015 17:22:00 +0900
-Message-ID: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:41793 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbbBCIWe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 03:22:34 -0500
-Received: by mail-pa0-f49.google.com with SMTP id fa1so93440478pad.8
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 00:22:33 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Subject: Re: [PATCH v4] thermal: Add QPNP PMIC temperature alarm driver
+Date: Tue, 03 Feb 2015 10:31:15 +0200
+Message-ID: <1422952275.2177.29.camel@mm-sol.com>
+References: <1422890370-6914-1-git-send-email-iivanov@mm-sol.com>
+	 <54CF99E9.10305@mm-sol.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54CF99E9.10305@mm-sol.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stanimir Varbanov <svarbanov@mm-sol.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
 
-hibernate_preallocate_memory() prints out that how many pages are
-allocated, but it doesn't take into consideration the pages freed by
-free_unnecessary_pages(). Therefore, it always shows the count more
-than actually allocated.
 
-Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
----
- kernel/power/snapshot.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+On Mon, 2015-02-02 at 17:38 +0200, Stanimir Varbanov wrote:
+> 
+> > +
+> > +       chip->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
+> > +                                                       &qpnp_tm_sensor_ops);
+> > +       if (IS_ERR(chip->tz_dev)) {
+> > +               dev_err(&pdev->dev, "failed to register sensor\n");
+> > +               ret = PTR_ERR(chip->tz_dev);
+> > +               goto fail;
+> > +       }
+> > +
+> > +       ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
+> > +                                       IRQF_ONESHOT, node->name, chip);
+> > +       if (ret < 0)
+> > +               goto unreg;
+> > +
+> > +       return 0;
+> > +
+> > +unreg:
+> > +       thermal_zone_of_sensor_unregister(&pdev->dev, chip->tz_dev);
+> 
+> Any problem to request_irq before thermal_zone_of_sensor_register? It
+> will avoid having thermal sensor unregister call.
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 0c40c16..3a47dcd 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1472,9 +1472,9 @@ static inline unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
- /**
-  * free_unnecessary_pages - Release preallocated pages not needed for the image
-  */
--static void free_unnecessary_pages(void)
-+static unsigned long free_unnecessary_pages(void)
- {
--	unsigned long save, to_free_normal, to_free_highmem;
-+	unsigned long save, to_free_normal, to_free_highmem, free;
- 
- 	save = count_data_pages();
- 	if (alloc_normal >= save) {
-@@ -1495,6 +1495,7 @@ static void free_unnecessary_pages(void)
- 		else
- 			to_free_normal = 0;
- 	}
-+	free = to_free_normal + to_free_highmem;
- 
- 	memory_bm_position_reset(&copy_bm);
- 
-@@ -1518,6 +1519,8 @@ static void free_unnecessary_pages(void)
- 		swsusp_unset_page_free(page);
- 		__free_page(page);
- 	}
-+
-+	return free;
- }
- 
- /**
-@@ -1707,7 +1710,7 @@ int hibernate_preallocate_memory(void)
- 	 * pages in memory, but we have allocated more.  Release the excessive
- 	 * ones now.
- 	 */
--	free_unnecessary_pages();
-+	pages -= free_unnecessary_pages();
- 
-  out:
- 	stop = ktime_get();
--- 
-1.7.9.5
+Right, will reorder the calls. 
 
+Ivan
+
+> 
+> > +fail:
+> > +       if (!IS_ERR(chip->adc))
+> > +               iio_channel_release(chip->adc);
+> > +
+> > +       return ret;
+> > +}
+> 
+> <snip>
+> 
+> 
