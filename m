@@ -1,294 +1,360 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: [PATCH v2 5/6] regulator: max77843: Add max77843 regulator driver
-Date: Tue, 03 Feb 2015 14:04:05 +0900
-Message-ID: <1422939846-29955-6-git-send-email-jaewon02.kim@samsung.com>
+From: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v2 4/6] power: max77843_battery: Add Max77843 fuel gauge device
+ driver
+Date: Tue, 03 Feb 2015 14:04:04 +0900
+Message-ID: <1422939846-29955-5-git-send-email-jaewon02.kim@samsung.com>
 References: <1422939846-29955-1-git-send-email-jaewon02.kim@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1422939846-29955-1-git-send-email-jaewon02.kim@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1422939846-29955-1-git-send-email-jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds new regulator driver to support max77843
-MFD(Multi Function Device) chip`s regulators.
-The Max77843 has two voltage regulators for USB safeout.
+From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+This patch adds device driver of max77843 fuel gauge.
+The driver support for battery fuel gauge in Maxim Max77843.
+It is fuel-gauge systems for lithuum-ion batteries in handled and
+portable devices.
+
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/regulator/Kconfig    |    8 ++
- drivers/regulator/Makefile   |    1 +
- drivers/regulator/max77843.c |  229 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 238 insertions(+)
- create mode 100644 drivers/regulator/max77843.c
+ drivers/power/Kconfig            |    9 ++
+ drivers/power/Makefile           |    1 +
+ drivers/power/max77843_battery.c |  286 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 296 insertions(+)
+ create mode 100644 drivers/power/max77843_battery.c
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index c3a60b5..c1f9c33 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -414,6 +414,14 @@ config REGULATOR_MAX77802
- 	  Exynos5420/Exynos5800 SoCs to control various voltages.
- 	  It includes support for control of voltage and ramp speed.
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index a054a28..cea0ea2 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -212,6 +212,15 @@ config BATTERY_MAX17042
+ 	  with MAX17042. This driver also supports max17047/50 chips which are
+ 	  improved version of max17042.
  
-+config REGULATOR_MAX77843
-+	tristate "Maxim 77843 regulator"
++config BATTERY_MAX77843
++	tristate "Maxim MAX77843 Fuel Gauge"
 +	depends on MFD_MAX77843
 +	help
-+	  This driver controls a Maxim 77843 regulator.
-+	  The regulator include two 'SAFEOUT' for USB(Universal Serial Bus)
-+	  This is suitable for Exynos5433 SoC chips.
++	  This adds support for battery fuel gauge in Maxim MAX77843. It is
++	  fuel-gauge for a lithium-ion batteries with a single cell and can be
++	  found in portable devices. The MAX17040 is configured to operate with
++	  a single lithium cell.
 +
- config REGULATOR_MC13XXX_CORE
- 	tristate
- 
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 1f28ebf..12408d6 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_REGULATOR_MAX8998) += max8998.o
- obj-$(CONFIG_REGULATOR_MAX77686) += max77686.o
- obj-$(CONFIG_REGULATOR_MAX77693) += max77693.o
- obj-$(CONFIG_REGULATOR_MAX77802) += max77802.o
-+obj-$(CONFIG_REGULATOR_MAX77843) += max77843.o
- obj-$(CONFIG_REGULATOR_MC13783) += mc13783-regulator.o
- obj-$(CONFIG_REGULATOR_MC13892) += mc13892-regulator.o
- obj-$(CONFIG_REGULATOR_MC13XXX_CORE) +=  mc13xxx-regulator-core.o
-diff --git a/drivers/regulator/max77843.c b/drivers/regulator/max77843.c
+ config BATTERY_Z2
+ 	tristate "Z2 battery driver"
+ 	depends on I2C && MACH_ZIPIT2
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index 212c6a2..ae0d795 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -33,6 +33,7 @@ obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
+ obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
+ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
++obj-$(CONFIG_BATTERY_MAX77843)	+= max77843_battery.o
+ obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
+ obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
+ obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
+diff --git a/drivers/power/max77843_battery.c b/drivers/power/max77843_battery.c
 new file mode 100644
-index 0000000..d7ae66b
+index 0000000..0c59a16
 --- /dev/null
-+++ b/drivers/regulator/max77843.c
-@@ -0,0 +1,229 @@
++++ b/drivers/power/max77843_battery.c
+@@ -0,0 +1,286 @@
 +/*
-+ * max77843.c - Regulator driver for the Maxim MAX77843
++ * Fuel gauge driver for Maxim MAX77843
 + *
-+ * Copyright (C) 2015 Samsung Electronics
-+ * Author: Jaewon Kim <jaewon02.kim@samsung.com>
-+ * Author: Beomho Seo <beomho.seo@samsung.com>
++ * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
++ * Author: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * it under the terms of the GNU General Public License version 2 as
++ * published bythe Free Software Foundation.
 + */
 +
 +#include <linux/module.h>
 +#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/machine.h>
++#include <linux/power_supply.h>
 +#include <linux/mfd/max77843-private.h>
-+#include <linux/regulator/of_regulator.h>
 +
-+#define MAX77843_SUPPORTED_VOLTAGE_NUM	4
-+
-+enum max77843_regulator_type {
-+	MAX77843_SAFEOUT1 = 0,
-+	MAX77843_SAFEOUT2,
-+	MAX77843_CHARGER,
-+
-+	MAX77843_NUM,
++struct max77843_battery {
++	struct device		*dev;
++	struct max77843		*max77843;
++	struct i2c_client	*client;
++	struct regmap		*regmap;
++	struct power_supply	psy;
 +};
 +
-+static const unsigned int max77843_regulator_table[] = {
-+	4850000,
-+	4900000,
-+	4950000,
-+	3300000,
-+};
-+
-+static int max77843_reg_is_enabled(struct regulator_dev *rdev)
++static int max77843_battery_get_capacity(struct max77843_battery *battery)
 +{
-+	struct regmap *regmap = rdev->regmap;
-+	int ret;
-+	unsigned int reg;
++	struct regmap *regmap = battery->regmap;
++	int ret, val;
++	unsigned int reg_data;
 +
-+	ret = regmap_read(regmap, rdev->desc->enable_reg, &reg);
++	ret = regmap_read(regmap, MAX77843_FG_REG_SOCREP, &reg_data);
 +	if (ret) {
-+		dev_err(&rdev->dev, "Fialed to read charger register\n");
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
 +		return ret;
 +	}
 +
-+	return (reg & rdev->desc->enable_mask) == rdev->desc->enable_mask;
-+}
-+
-+static int max77843_reg_get_current_limit(struct regulator_dev *rdev)
-+{
-+	struct regmap *regmap = rdev->regmap;
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	unsigned int chg_max_uA = rdev->constraints->max_uA;
-+	unsigned int val;
-+	int ret;
-+	unsigned int reg, sel;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_CNFG_02, &reg);
-+	if (ret) {
-+		dev_err(&rdev->dev, "Failed to read charger register\n");
-+		return ret;
-+	}
-+
-+	sel = reg & MAX77843_CHG_FAST_CHG_CURRENT_MASK;
-+
-+	if (sel < 0x03)
-+		sel = 0;
-+	else
-+		sel -= 2;
-+
-+	val = chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel;
-+	if (val > chg_max_uA)
-+		return -EINVAL;
++	val = reg_data >> 8;
 +
 +	return val;
 +}
 +
-+static int max77843_reg_set_current_limit(struct regulator_dev *rdev,
-+		int min_uA, int max_uA)
++static int max77843_battery_get_energy_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
 +{
-+	struct regmap *regmap = rdev->regmap;
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	int sel = 0;
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
 +
-+	while (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel < min_uA)
-+		sel++;
-+
-+	if (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel > max_uA)
-+		return -EINVAL;
-+
-+	sel += 2;
-+
-+	return regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_02, sel);
-+}
-+
-+static struct regulator_ops max77843_charger_ops = {
-+	.is_enabled		= max77843_reg_is_enabled,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.get_current_limit	= max77843_reg_get_current_limit,
-+	.set_current_limit	= max77843_reg_set_current_limit,
-+};
-+
-+static struct regulator_ops max77843_regulator_ops = {
-+	.is_enabled             = regulator_is_enabled_regmap,
-+	.enable                 = regulator_enable_regmap,
-+	.disable                = regulator_disable_regmap,
-+	.list_voltage		= regulator_list_voltage_table,
-+	.get_voltage_sel        = regulator_get_voltage_sel_regmap,
-+	.set_voltage_sel        = regulator_set_voltage_sel_regmap,
-+};
-+
-+static const struct regulator_desc max77843_supported_regulators[] = {
-+	[MAX77843_SAFEOUT1] = {
-+		.name		= "SAFEOUT1",
-+		.id		= MAX77843_SAFEOUT1,
-+		.ops		= &max77843_regulator_ops,
-+		.of_match	= of_match_ptr("SAFEOUT1"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type		= REGULATOR_VOLTAGE,
-+		.owner		= THIS_MODULE,
-+		.n_voltages	= MAX77843_SUPPORTED_VOLTAGE_NUM,
-+		.volt_table	= max77843_regulator_table,
-+		.enable_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.enable_mask	= MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT1,
-+		.vsel_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.vsel_mask	= MAX77843_REG_SAFEOUTCTRL_SAFEOUT1_MASK,
-+	},
-+	[MAX77843_SAFEOUT2] = {
-+		.name           = "SAFEOUT2",
-+		.id             = MAX77843_SAFEOUT2,
-+		.ops            = &max77843_regulator_ops,
-+		.of_match	= of_match_ptr("SAFEOUT2"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type           = REGULATOR_VOLTAGE,
-+		.owner          = THIS_MODULE,
-+		.n_voltages     = MAX77843_SUPPORTED_VOLTAGE_NUM,
-+		.volt_table	= max77843_regulator_table,
-+		.enable_reg     = MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.enable_mask    = MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT2,
-+		.vsel_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.vsel_mask	= MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK,
-+	},
-+	[MAX77843_CHARGER] = {
-+		.name		= "CHARGER",
-+		.id		= MAX77843_CHARGER,
-+		.ops		= &max77843_charger_ops,
-+		.of_match	= of_match_ptr("CHARGER"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type		= REGULATOR_CURRENT,
-+		.owner		= THIS_MODULE,
-+		.enable_reg	= MAX77843_CHG_REG_CHG_CNFG_00,
-+		.enable_mask	= MAX77843_CHG_MASK,
-+	},
-+};
-+
-+static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
-+{
-+	switch (reg_id) {
-+	case MAX77843_SAFEOUT1:
-+	case MAX77843_SAFEOUT2:
-+		return max77843->regmap;
-+	case MAX77843_CHARGER:
-+		return max77843->regmap_chg;
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++		reg = MAX77843_FG_REG_FULLCAP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++		reg = MAX77843_FG_REG_REMCAP_REP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		reg = MAX77843_FG_REG_REMCAP_AV;
++		break;
 +	default:
-+		return max77843->regmap;
++		return -EINVAL;
 +	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data;
++
++	return val;
 +}
 +
-+static int max77843_regulator_probe(struct platform_device *pdev)
++static int max77843_battery_get_current_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
 +{
-+	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct regulator_config config = {};
-+	int i;
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
 +
-+	config.dev = max77843->dev;
-+	config.driver_data = max77843;
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		reg = MAX77843_FG_REG_CURRENT;
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		reg = MAX77843_FG_REG_AVG_CURRENT;
++		break;
++	default:
++		return -EINVAL;
++	}
 +
-+	for (i = 0; i < ARRAY_SIZE(max77843_supported_regulators); i++) {
-+		struct regulator_dev *regulator;
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
 +
-+		config.regmap = max77843_get_regmap(max77843,
-+				max77843_supported_regulators[i].id);
++	val = reg_data;
++	if (val & 0x8000) {
++		/* Negative */
++		val = ~val & 0xffff;
++		val++;
++		val *= -1;
++	}
++	/* Unit of current is mA */
++	val =  val * 15625 / 100000;
 +
-+		regulator = devm_regulator_register(&pdev->dev,
-+				&max77843_supported_regulators[i], &config);
-+		if (IS_ERR(regulator)) {
-+			dev_err(&pdev->dev,
-+					"Failed to regiser regulator-%d\n", i);
-+			return PTR_ERR(regulator);
-+		}
++	return val;
++}
++
++static int max77843_battery_get_voltage_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		reg = MAX77843_FG_REG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		reg = MAX77843_FG_REG_AVG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		reg = MAX77843_FG_REG_OCV;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = (reg_data >> 4)  * 125;
++	val /= 100;
++
++	return val;
++}
++
++static const char *model_name = "MAX77843";
++static const char *manufacturer = "Maxim Integrated";
++
++static int max77843_battery_get_property(struct power_supply *psy,
++		enum power_supply_property psp,
++		union power_supply_propval *val)
++{
++	struct max77843_battery *battery = container_of(psy,
++				struct max77843_battery, psy);
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		val->intval = max77843_battery_get_voltage_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		val->intval = max77843_battery_get_current_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		val->intval = max77843_battery_get_energy_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = max77843_battery_get_capacity(battery);
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval =  model_name;
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = manufacturer;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
 +	return 0;
 +}
 +
-+static const struct platform_device_id max77843_regulator_id[] = {
-+	{ "max77843-regulator", },
-+	{ /* sentinel */ },
++static enum power_supply_property max77843_battery_props[] = {
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_OCV,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_ENERGY_FULL,
++	POWER_SUPPLY_PROP_ENERGY_NOW,
++	POWER_SUPPLY_PROP_ENERGY_AVG,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
 +};
 +
-+static struct platform_driver max77843_regulator_driver = {
-+	.driver	= {
-+		.name = "max77843-regulator",
++static const struct regmap_config max77843_fuel_regmap_config = {
++	.reg_bits	= 8,
++	.val_bits	= 16,
++	.val_format_endian = REGMAP_ENDIAN_NATIVE,
++	.max_register	= MAX77843_FG_END,
++};
++
++static int max77843_battery_probe(struct platform_device *pdev)
++{
++	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
++	struct max77843_battery *battery;
++	int ret;
++
++	battery = devm_kzalloc(&pdev->dev, sizeof(*battery), GFP_KERNEL);
++	if (!battery)
++		return -ENOMEM;
++
++	battery->dev = &pdev->dev;
++	battery->max77843 = max77843;
++
++	battery->client = i2c_new_dummy(max77843->i2c->adapter, I2C_ADDR_FG);
++	if (!battery->client) {
++		dev_err(&pdev->dev, "Failed to get dummy i2c client.\n");
++		return PTR_ERR(battery->client);
++	}
++	i2c_set_clientdata(battery->client, max77843);
++
++	battery->regmap = devm_regmap_init_i2c(battery->client,
++			&max77843_fuel_regmap_config);
++	if (IS_ERR(battery->regmap)) {
++		ret = PTR_ERR(battery->regmap);
++		goto err_i2c;
++	}
++
++	platform_set_drvdata(pdev, battery);
++
++	battery->psy.name	= "max77843-fuelgauge";
++	battery->psy.type	= POWER_SUPPLY_TYPE_BATTERY;
++	battery->psy.get_property	= max77843_battery_get_property;
++	battery->psy.properties		= max77843_battery_props;
++	battery->psy.num_properties	= ARRAY_SIZE(max77843_battery_props);
++
++	ret = power_supply_register(&pdev->dev, &battery->psy);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed  to register power supply\n");
++		goto err_i2c;
++	}
++
++	return 0;
++
++err_i2c:
++	i2c_unregister_device(battery->client);
++
++	return ret;
++}
++
++static int max77843_battery_remove(struct platform_device *pdev)
++{
++	struct max77843_battery *battery = platform_get_drvdata(pdev);
++
++	power_supply_unregister(&battery->psy);
++
++	i2c_unregister_device(battery->client);
++
++	return 0;
++}
++
++static const struct platform_device_id max77843_battery_id[] = {
++	{ "max77843-fuelgauge", },
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, max77843_battery_id);
++
++static struct platform_driver max77843_battery_driver = {
++	.driver = {
++		.name = "max77843-fuelgauge",
 +	},
-+	.probe		= max77843_regulator_probe,
-+	.id_table	= max77843_regulator_id,
++	.probe = max77843_battery_probe,
++	.remove = max77843_battery_remove,
++	.id_table = max77843_battery_id,
 +};
++module_platform_driver(max77843_battery_driver);
 +
-+static int __init max77843_regulator_init(void)
-+{
-+	return platform_driver_register(&max77843_regulator_driver);
-+}
-+subsys_initcall(max77843_regulator_init);
-+
-+static void __exit max77843_regulator_exit(void)
-+{
-+	platform_driver_unregister(&max77843_regulator_driver);
-+}
-+module_exit(max77843_regulator_exit);
-+
-+MODULE_AUTHOR("Jaewon Kim <jaewon02.kim@samsung.com>");
-+MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
-+MODULE_DESCRIPTION("Maxim MAX77843 regulator driver");
++MODULE_DESCRIPTION("Maxim MAX77843 fuel gauge driver");
++MODULE_AUTHOR("Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>");
 +MODULE_LICENSE("GPL");
 -- 
 1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
