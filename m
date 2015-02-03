@@ -1,94 +1,71 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH] arch/cpuidle-powernv: Avoid endianness conversions while
- parsing DT
-Date: Tue, 03 Feb 2015 12:13:44 +0530
-Message-ID: <20150203064327.13766.88453.stgit@preeti.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Wonhong Kwon <wonhongkwon@gmail.com>
+Subject: [PATCH] PM / hibernate: take freed pages into account for preallocated memory
+Date: Tue,  3 Feb 2015 17:22:00 +0900
+Message-ID: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:41793 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbbBCIWe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 03:22:34 -0500
+Received: by mail-pa0-f49.google.com with SMTP id fa1so93440478pad.8
+        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 00:22:33 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
 
-We currently read the information about idle states from the DT
-so as to find out the cpu idle states supported by the platform.
-Use those APIs to read from the DT that can avoid endianness
-conversions of the property values.
+hibernate_preallocate_memory() prints out that how many pages are
+allocated, but it doesn't take into consideration the pages freed by
+free_unnecessary_pages(). Therefore, it always shows the count more
+than actually allocated.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
 ---
+ kernel/power/snapshot.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
- arch/powerpc/platforms/powernv/setup.c |   35 ++++++++++++++++++--------------
- 1 file changed, 20 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index d2de7d5..39d1971 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -409,37 +409,39 @@ static int __init pnv_init_idle_states(void)
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 0c40c16..3a47dcd 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1472,9 +1472,9 @@ static inline unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
+ /**
+  * free_unnecessary_pages - Release preallocated pages not needed for the image
+  */
+-static void free_unnecessary_pages(void)
++static unsigned long free_unnecessary_pages(void)
  {
- 	struct device_node *power_mgt;
- 	int dt_idle_states;
--	const __be32 *idle_state_flags;
--	u32 len_flags, flags;
-+	u32 *flags;
- 	int i;
+-	unsigned long save, to_free_normal, to_free_highmem;
++	unsigned long save, to_free_normal, to_free_highmem, free;
  
- 	supported_cpuidle_states = 0;
- 
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
--		return 0;
-+		goto out;
- 
- 	if (!firmware_has_feature(FW_FEATURE_OPALv3))
--		return 0;
-+		goto out;
- 
- 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!power_mgt) {
- 		pr_warn("opal: PowerMgmt Node not found\n");
--		return 0;
-+		goto out;
-+	}
-+	dt_idle_states = of_property_count_u32_elems(power_mgt,
-+			"ibm,cpu-idle-state-flags");
-+	if (dt_idle_states < 0) {
-+		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
-+		goto out;
+ 	save = count_data_pages();
+ 	if (alloc_normal >= save) {
+@@ -1495,6 +1495,7 @@ static void free_unnecessary_pages(void)
+ 		else
+ 			to_free_normal = 0;
  	}
++	free = to_free_normal + to_free_highmem;
  
--	idle_state_flags = of_get_property(power_mgt,
--			"ibm,cpu-idle-state-flags", &len_flags);
--	if (!idle_state_flags) {
--		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
--		return 0;
-+	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
-+	if (of_property_read_u32_array(power_mgt,
-+			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
-+		goto out_free;
+ 	memory_bm_position_reset(&copy_bm);
+ 
+@@ -1518,6 +1519,8 @@ static void free_unnecessary_pages(void)
+ 		swsusp_unset_page_free(page);
+ 		__free_page(page);
  	}
- 
--	dt_idle_states = len_flags / sizeof(u32);
-+	for (i = 0; i < dt_idle_states; i++)
-+		supported_cpuidle_states |= flags[i];
- 
--	for (i = 0; i < dt_idle_states; i++) {
--		flags = be32_to_cpu(idle_state_flags[i]);
--		supported_cpuidle_states |= flags;
--	}
- 	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
- 		patch_instruction(
- 			(unsigned int *)pnv_fastsleep_workaround_at_entry,
-@@ -449,6 +451,9 @@ static int __init pnv_init_idle_states(void)
- 			PPC_INST_NOP);
- 	}
- 	pnv_alloc_idle_core_states();
-+out_free:
-+	kfree(flags);
-+out:
- 	return 0;
++
++	return free;
  }
  
+ /**
+@@ -1707,7 +1710,7 @@ int hibernate_preallocate_memory(void)
+ 	 * pages in memory, but we have allocated more.  Release the excessive
+ 	 * ones now.
+ 	 */
+-	free_unnecessary_pages();
++	pages -= free_unnecessary_pages();
+ 
+  out:
+ 	stop = ktime_get();
+-- 
+1.7.9.5
+
