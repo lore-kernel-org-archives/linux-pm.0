@@ -1,44 +1,66 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: selective wakeups
-Date: Tue, 3 Feb 2015 10:33:23 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1502031030410.1130-100000@iolanthe.rowland.org>
-References: <54D09AC7.5080503@collabora.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 5/6] regulator: max77843: Add max77843 regulator driver
+Date: Tue, 3 Feb 2015 16:25:37 +0000
+Message-ID: <20150203162536.GQ21293@sirena.org.uk>
+References: <1422939846-29955-1-git-send-email-jaewon02.kim@samsung.com>
+ <1422939846-29955-6-git-send-email-jaewon02.kim@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="PdA1PHnkxfF9WYwU"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:35630 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S966008AbbBCPdY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 10:33:24 -0500
-In-Reply-To: <54D09AC7.5080503@collabora.com>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:49323 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932332AbbBCQZp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 11:25:45 -0500
+Content-Disposition: inline
+In-Reply-To: <1422939846-29955-6-git-send-email-jaewon02.kim@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Derek Basehore <dbasehore@google.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
-On Tue, 3 Feb 2015, Tomeu Vizoso wrote:
 
-> Hello,
-> 
-> I'm looking at how to support wakeup sources that resume a subset of the
-> suspended devices. The goal is for the machine to be able to wakeup the
-> CPU but not the display or sound card when the wakeup source isn't
-> user-initiated, such as RTC or a network card (we can call it automatic
-> resume).
+--PdA1PHnkxfF9WYwU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-That's a terrible name.  Most resumes are automatic, in the sense that 
-the computer carries out the resume automatically in response to some 
-input.
+On Tue, Feb 03, 2015 at 02:04:05PM +0900, Jaewon Kim wrote:
+> This patch adds new regulator driver to support max77843
+> MFD(Multi Function Device) chip`s regulators.
+> The Max77843 has two voltage regulators for USB safeout.
 
-A better name would be "partial resume".
+This looks mostly good, a couple of very small things:
 
-> http://www.chromium.org/chromium-os/packages/power_manager/suspend-and-resume#TOC-Dark-Resume
-> 
-> My first idea is for userspace to be able to configure via sysfs which
-> devices aren't going to be resumed when a given wakeup source fires.
+> +static const struct regulator_desc max77843_supported_regulators[] = {
+> +	[MAX77843_SAFEOUT1] = {
+> +		.name		= "SAFEOUT1",
+> +		.id		= MAX77843_SAFEOUT1,
+> +		.ops		= &max77843_regulator_ops,
+> +		.of_match	= of_match_ptr("SAFEOUT1"),
+> +		.regulators_node = of_match_ptr("regulators"),
+> +		.type		= REGULATOR_VOLTAGE,
+> +		.owner		= THIS_MODULE,
+> +		.n_voltages	= MAX77843_SUPPORTED_VOLTAGE_NUM,
+> +		.volt_table	= max77843_regulator_table,
 
-In general, the computer doesn't know which wakeup source has fired.  
-ALl it knows is that it was asked to wake up.
+It's better to make n_voltages be ARRAY_SIZE() for the table, that way
+there's no need to keep the define and array lined up if someone extends
+the driver.  A name like _safeout_voltage_table might be clearer too.
 
-Alan Stern
+--PdA1PHnkxfF9WYwU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJU0PaAAAoJECTWi3JdVIfQz8kH/ijvmoKtCPg7Ju1PeSNkLlTr
+k8Oy4+rK55JMvKEWE4F++7e6q6BLKMrKx98TV+VlrXnGt9POxadtRfJaGvYQrDS7
+coAocT8y5jtrEFzIMBIBxfq8QRoBSxORmaEjV+oyIT5w5gBvkH+Efd3KEGydQXRS
+KPjjdfYklBACgwnEhElUVz66McP1rwP++7ynS5JuFdfaP0pBSapfA1NEPi7F8ulh
+j6eOGqfKIXfN09QZA/jMzlIYF0szWV3FAa7YjEqiDpK6OQepZB3OfZaRXyq9Gr7U
+6l/vWQb2EZKlwJtELqTkom8/XgFKbKeJuCR26mfDbhnH5MmVW21w4w07bPVT/PQ=
+=mIjx
+-----END PGP SIGNATURE-----
+
+--PdA1PHnkxfF9WYwU--
