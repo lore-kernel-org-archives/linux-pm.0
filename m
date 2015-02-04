@@ -1,41 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 03/20] power_supply: Add API for safe access of power
- supply function attrs
-Date: Wed, 4 Feb 2015 14:44:56 +0100
-Message-ID: <20150204134456.GA8312@amd>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
- <1422629278-12202-4-git-send-email-k.kozlowski@samsung.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 1/3] exynos: config: Remove CONFIG_EXYNOS_THERMAL_CORE
+ define (exynos_defconfig)
+Date: Wed, 04 Feb 2015 14:49:43 +0100
+Message-ID: <20150204144943.58003ac6@amdc2363>
+References: <1422458920-14555-1-git-send-email-l.majewski@samsung.com>
+ <20150129225908.GH29837@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1422629278-12202-4-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20150129225908.GH29837@developer.amazonguestwifi.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2015-01-30 15:47:41, Krzysztof Kozlowski wrote:
-> Add simple wrappers for accessing power supply's function attributes:
->  - get_property -> power_supply_get_property
->  - set_property -> power_supply_set_property
->  - property_is_writeable -> power_supply_property_is_writeable
->  - external_power_changed -> power_supply_external_power_changed
-> 
-> This API along with atomic usage counter adds a safe way of accessing a
-> power supply from another driver. If power supply is unregistered after
-> obtaining reference to it by some driver, then the API wrappers won't be
-> executed in invalid (freed) context.
-> 
-> Next patch changing the ownership of power supply class is still needed
-> to fully fix race conditions in accessing freed power supply.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Reviewed-by: Sebastian Reichel <sre@kernel.org>
+Hi Kukjin,
 
-For 1-3: Acked-by: Pavel Machek <pavel@ucw.cz>
+> On Wed, Jan 28, 2015 at 04:28:38PM +0100, Lukasz Majewski wrote:
+> > After Exynos TMU rework to use device tree for configuration this
+> > flag can be removed. It is not used anymore.
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> 
+> I dont see problems with this patch:
+> 
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> 
+> This should go, obviously, via the correct platform tree.
+
+Could you apply this patch to -samsung tree?
+
+> 
+> > ---
+> >  arch/arm/configs/exynos_defconfig | 1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > diff --git a/arch/arm/configs/exynos_defconfig
+> > b/arch/arm/configs/exynos_defconfig index 3d0c5d6..3691a68 100644
+> > --- a/arch/arm/configs/exynos_defconfig
+> > +++ b/arch/arm/configs/exynos_defconfig
+> > @@ -88,7 +88,6 @@ CONFIG_HWMON=y
+> >  CONFIG_SENSORS_LM90=y
+> >  CONFIG_THERMAL=y
+> >  CONFIG_EXYNOS_THERMAL=y
+> > -CONFIG_EXYNOS_THERMAL_CORE=y
+> >  CONFIG_WATCHDOG=y
+> >  CONFIG_S3C2410_WATCHDOG=y
+> >  CONFIG_MFD_CROS_EC=y
+> > -- 
+> > 2.0.0.rc2
+> > 
+
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
