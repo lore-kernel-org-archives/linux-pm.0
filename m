@@ -1,55 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq-dt: Delete an unnecessary check before the function call "cpufreq_cooling_unregister"
-Date: Wed, 04 Feb 2015 15:42:03 +0100
-Message-ID: <10630643.iI9BHrsotK@vostro.rjw.lan>
-References: <5307CAA2.8060406@users.sourceforge.net> <5317A59D.4@users.sourceforge.net> <54D112A3.1050507@users.sourceforge.net>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH 1/3] exynos: config: Remove CONFIG_EXYNOS_THERMAL_CORE
+ define (exynos_defconfig)
+Date: Wed, 04 Feb 2015 23:33:50 +0900
+Message-ID: <54D22DCE.5070806@kernel.org>
+References: <1422458920-14555-1-git-send-email-l.majewski@samsung.com> <20150129225908.GH29837@developer.amazonguestwifi.org> <20150204144943.58003ac6@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52096 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751271AbbBDOTJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:19:09 -0500
-In-Reply-To: <54D112A3.1050507@users.sourceforge.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150204144943.58003ac6@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Tuesday, February 03, 2015 07:25:39 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 3 Feb 2015 19:21:21 +0100
+On 02/04/15 22:49, Lukasz Majewski wrote:
+> Hi Kukjin,
 > 
-> The cpufreq_cooling_unregister() function tests whether its argument is NULL
-> and then returns immediately. Thus the test around the call is not needed.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Hi,
 
-Queued up for 3.20, thanks!
-
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>> On Wed, Jan 28, 2015 at 04:28:38PM +0100, Lukasz Majewski wrote:
+>>> After Exynos TMU rework to use device tree for configuration this
+>>> flag can be removed. It is not used anymore.
+>>>
+>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>
+>> I dont see problems with this patch:
+>>
+>> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>>
+>> This should go, obviously, via the correct platform tree.
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index fde97d6..bab67db 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -320,8 +320,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct private_data *priv = policy->driver_data;
->  
-> -	if (priv->cdev)
-> -		cpufreq_cooling_unregister(priv->cdev);
-> +	cpufreq_cooling_unregister(priv->cdev);
->  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->  	of_free_opp_table(priv->cpu_dev);
->  	clk_put(policy->clk);
+> Could you apply this patch to -samsung tree?
 > 
+Sure, I'll queue this series into samsung tree.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Kukjin
