@@ -1,50 +1,67 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH 3/3] drivers: sh: Disable PM runtime for multi-platform r8a73a4 with genpd
-Date: Wed,  4 Feb 2015 14:52:46 +0100
-Message-ID: <1423057966-23321-4-git-send-email-geert+renesas@glider.be>
-References: <1423057966-23321-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1423057966-23321-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 2/2] CPPC: Add CPUFreq driver based on CPPC methods
+Date: Wed, 04 Feb 2015 15:33:39 +0100
+Message-ID: <3237680.21UHnh0sSv@vostro.rjw.lan>
+References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org> <1805804.escc39d3ai@vostro.rjw.lan> <CAJ5Y-eY66PybCZ5CMtPeg_rKc+NX3O9_7whTubN6iF=F21WgYA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56214 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932630AbbBDOKp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:10:45 -0500
+In-Reply-To: <CAJ5Y-eY66PybCZ5CMtPeg_rKc+NX3O9_7whTubN6iF=F21WgYA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-If the default PM domain using PM_CLK is used for PM runtime, the real PM
-domain(s) cannot be registered from DT later.
+On Tuesday, February 03, 2015 10:23:31 PM Ashwin Chaugule wrote:
+> Hi Rafael,
+> 
+> On 3 February 2015 at 17:33, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, January 27, 2015 04:03:58 PM Ashwin Chaugule wrote:
+> >> CPPC stands for Collaborative Processor Performance Controls
+> >> and is defined in the ACPI v5.0+ spec. It describes CPU
+> >> performance controls on an abstract and continuous scale
+> >> allowing the platform (e.g. remote power processor) to flexibly
+> >> optimize CPU performance with its knowledge of power budgets
+> >> and other architecture specific knowledge.
+> >>
+> >> This patch introduces a CPUFreq driver which works with
+> >> existing CPUFreq governors. The backend CPPC methods for
+> >> parsing the CPPC table and reading/writing using CPPC semantics
+> >> are abstracted away such that they can be used by any other CPPC
+> >> based CPUFreq driver in the future.
+> >
+> > First question: How do we ensure that this won't interact negatively with
+> > the existing ACPI cpufreq driver?  In particular, what is there to allow
+> > users to use the driver they want?
+> 
+> The existing ACPI cpufreq driver isnt enabled on ARM. (At a minimum,
+> it needs spec updates in the PSS sections for ARM.) For ARM64 servers,
+> CPPC is the preferred choice. But you're right, if someone adds PSS
+> support on ARM then we need a way to make these two mutually exclusive
+> at runtime.
 
-Hence do not enable it when running a multi-platform kernel with genpd
-support on an r8a73a4. The R-Mobile PM domain driver will take care of
-PM runtime management of the module clocks.
+Analogously, if _CPC is present on a non-ARM platform.
 
-The default PM domain is still needed for:
-  - platforms without genpd support,
-  - the legacy (non-DT) case, where genpd may take over later, except
-    for the C5 "always on" PM domain.
+> IIUC on X86, intel_pstate is skipped if it finds PSS/PPC?
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
----
- drivers/sh/pm_runtime.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Nope.  There are quirks for systems where this happens, but generally
+intel_pstate is a preferred driver.
 
-diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
-index 6b16a67ba618b793..89b7785de1fcf5b7 100644
---- a/drivers/sh/pm_runtime.c
-+++ b/drivers/sh/pm_runtime.c
-@@ -80,8 +80,8 @@ static int __init sh_pm_runtime_init(void)
- 	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE_MULTI)) {
- 		if (!of_machine_is_compatible("renesas,emev2") &&
- 		    !of_machine_is_compatible("renesas,r7s72100") &&
--		    !of_machine_is_compatible("renesas,r8a73a4") &&
- #ifndef CONFIG_PM_GENERIC_DOMAINS_OF
-+		    !of_machine_is_compatible("renesas,r8a73a4") &&
- 		    !of_machine_is_compatible("renesas,r8a7740") &&
- 		    !of_machine_is_compatible("renesas,sh73a0") &&
- #endif
+> On ARM64 servers, we'd want it the other way. i.e. if the acpi-cpufreq
+> driver detects CPC then it skips its init.
+
+I'm not sure if we can do that in general, though.
+
+> I'm open to any suggestions on how to handle this.
+
+Let me think about that a bit more.
+
+
 -- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
