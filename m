@@ -1,74 +1,54 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v2] dmaengine: shdma: Runtime-resume device in .shutdown()
-Date: Tue, 3 Feb 2015 18:08:35 -0800
-Message-ID: <20150204020835.GI4489@intel.com>
-References: <1420454789-11547-1-git-send-email-geert+renesas@glider.be>
- <CAPDyKFoxfJa2Wq=mA0Khx7B3E6MbY99BYyHtCAoff_7V+9rSaw@mail.gmail.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v4 2/2] CPPC: Add CPUFreq driver based on CPPC methods
+Date: Tue, 3 Feb 2015 22:23:31 -0500
+Message-ID: <CAJ5Y-eY66PybCZ5CMtPeg_rKc+NX3O9_7whTubN6iF=F21WgYA@mail.gmail.com>
+References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org>
+	<1422392638-31334-3-git-send-email-ashwin.chaugule@linaro.org>
+	<1805804.escc39d3ai@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:3186 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965120AbbBDCKf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 Feb 2015 21:10:35 -0500
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFoxfJa2Wq=mA0Khx7B3E6MbY99BYyHtCAoff_7V+9rSaw@mail.gmail.com>
+Received: from mail-we0-f175.google.com ([74.125.82.175]:33289 "EHLO
+	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbbBDDXd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 22:23:33 -0500
+Received: by mail-we0-f175.google.com with SMTP id p10so48554600wes.6
+        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 19:23:31 -0800 (PST)
+In-Reply-To: <1805804.escc39d3ai@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On Mon, Feb 02, 2015 at 10:35:10AM +0100, Ulf Hansson wrote:
-> On 5 January 2015 at 11:46, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > During system reboot, the sh-dma-engine device may be runtime-suspended,
-> > causing a crash:
-> >
-> >     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
-> >     Internal error: : 1406 [#1] SMP ARM
-> >     ...
-> >     PC is at sh_dmae_ctl_stop+0x28/0x64
-> >     LR is at sh_dmae_ctl_stop+0x24/0x64
-> >
-> > If the sh-dma-engine is runtime-suspended, its module clock is turned
-> > off, and its registers cannot be accessed.
-> >
-> > To fix this, change the driver's .shutdown() callback:
-> >   - If the device is runtime suspended, do nothing,
-> >   - Else, explicitly runtime-resume the device, to avoid the device from
-> >     being suspended while sh_dmae_ctl_stop() is being executed.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > v2:
-> >   - Do nothing if we're runtime suspended.
-> > ---
-> >  drivers/dma/sh/shdmac.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> >
-> > diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
-> > index aec8a84784a469d7..2de30e8e7d9290b9 100644
-> > --- a/drivers/dma/sh/shdmac.c
-> > +++ b/drivers/dma/sh/shdmac.c
-> > @@ -585,7 +585,13 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
-> >  static void sh_dmae_shutdown(struct platform_device *pdev)
-> >  {
-> >         struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-> > +
-> > +       if (pm_runtime_suspended(&pdev->dev))
-> > +               return;
-> > +
-> > +       pm_runtime_get_sync(&pdev->dev);
-> >         sh_dmae_ctl_stop(shdev);
-> 
-> I can't find that sh_dmae_ctl_stop() is invoked from the runtime PM
-> suspend callback. That means the device will be "removed" differently,
-> depending on it's runtime PM status (due to the upper check for
-> pm_runtime_suspended() ) . Is that really what you want?
-I think the patch description is the key. "During system reboot, the
-sh-dma-engine device may be runtime-suspended, causing a crash"
+Hi Rafael,
 
-The runtime-suspended device is already idle and has removed its clock.
+On 3 February 2015 at 17:33, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, January 27, 2015 04:03:58 PM Ashwin Chaugule wrote:
+>> CPPC stands for Collaborative Processor Performance Controls
+>> and is defined in the ACPI v5.0+ spec. It describes CPU
+>> performance controls on an abstract and continuous scale
+>> allowing the platform (e.g. remote power processor) to flexibly
+>> optimize CPU performance with its knowledge of power budgets
+>> and other architecture specific knowledge.
+>>
+>> This patch introduces a CPUFreq driver which works with
+>> existing CPUFreq governors. The backend CPPC methods for
+>> parsing the CPPC table and reading/writing using CPPC semantics
+>> are abstracted away such that they can be used by any other CPPC
+>> based CPUFreq driver in the future.
+>
+> First question: How do we ensure that this won't interact negatively with
+> the existing ACPI cpufreq driver?  In particular, what is there to allow
+> users to use the driver they want?
 
--- 
-~Vinod
+The existing ACPI cpufreq driver isnt enabled on ARM. (At a minimum,
+it needs spec updates in the PSS sections for ARM.) For ARM64 servers,
+CPPC is the preferred choice. But you're right, if someone adds PSS
+support on ARM then we need a way to make these two mutually exclusive
+at runtime. IIUC on X86, intel_pstate is skipped if it finds PSS/PPC?
+On ARM64 servers, we'd want it the other way. i.e. if the acpi-cpufreq
+driver detects CPC then it skips its init. I'm open to any suggestions
+on how to handle this.
 
+Thanks,
+Ashwin
