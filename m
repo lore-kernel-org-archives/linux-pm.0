@@ -1,54 +1,65 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v4 2/2] CPPC: Add CPUFreq driver based on CPPC methods
-Date: Tue, 3 Feb 2015 22:23:31 -0500
-Message-ID: <CAJ5Y-eY66PybCZ5CMtPeg_rKc+NX3O9_7whTubN6iF=F21WgYA@mail.gmail.com>
-References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org>
-	<1422392638-31334-3-git-send-email-ashwin.chaugule@linaro.org>
-	<1805804.escc39d3ai@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: RFC on cpufreq implementation
+Date: Wed, 4 Feb 2015 09:42:48 +0530
+Message-ID: <CAKohpokPseRu9jGEKc7gL+y8O6j8WvV72RCYzm_J-J4wKwf3eQ@mail.gmail.com>
+References: <54B7F7CD.7030903@free.fr>
+	<54CA6327.5070707@free.fr>
+	<CAKohponrzDb4ZGvRtJ5jtGTPAy4RCfRsYGvdjR5fx51K2=evCg@mail.gmail.com>
+	<54CC174F.10703@free.fr>
+	<CAKohpomzCEjXUrxUJjypaA77=r4j_ZPa+x3gM=cNN0kc3ux0uQ@mail.gmail.com>
+	<54D162B6.2050602@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f175.google.com ([74.125.82.175]:33289 "EHLO
-	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbbBDDXd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 22:23:33 -0500
-Received: by mail-we0-f175.google.com with SMTP id p10so48554600wes.6
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 19:23:31 -0800 (PST)
-In-Reply-To: <1805804.escc39d3ai@vostro.rjw.lan>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:45020 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbbBDEMt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 23:12:49 -0500
+Received: by mail-ob0-f175.google.com with SMTP id va2so14293130obc.6
+        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 20:12:49 -0800 (PST)
+In-Reply-To: <54D162B6.2050602@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?= <mans@mansr.com>
 
-Hi Rafael,
-
-On 3 February 2015 at 17:33, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, January 27, 2015 04:03:58 PM Ashwin Chaugule wrote:
->> CPPC stands for Collaborative Processor Performance Controls
->> and is defined in the ACPI v5.0+ spec. It describes CPU
->> performance controls on an abstract and continuous scale
->> allowing the platform (e.g. remote power processor) to flexibly
->> optimize CPU performance with its knowledge of power budgets
->> and other architecture specific knowledge.
->>
->> This patch introduces a CPUFreq driver which works with
->> existing CPUFreq governors. The backend CPPC methods for
->> parsing the CPPC table and reading/writing using CPPC semantics
->> are abstracted away such that they can be used by any other CPPC
->> based CPUFreq driver in the future.
+On 4 February 2015 at 05:37, Mason <mpeg.blue@free.fr> wrote:
+> All of them?
 >
-> First question: How do we ensure that this won't interact negatively with
-> the existing ACPI cpufreq driver?  In particular, what is there to allow
-> users to use the driver they want?
+> ~/linux-3.19-rc7$ wc drivers/cpufreq/*
+>  31542  95730 813482 total
+>
+> Are there perhaps 1 or 2 "golden standard" drivers that are well-written
+> and up-to-date with respect to current conventions?
 
-The existing ACPI cpufreq driver isnt enabled on ARM. (At a minimum,
-it needs spec updates in the PSS sections for ARM.) For ARM64 servers,
-CPPC is the preferred choice. But you're right, if someone adds PSS
-support on ARM then we need a way to make these two mutually exclusive
-at runtime. IIUC on X86, intel_pstate is skipped if it finds PSS/PPC?
-On ARM64 servers, we'd want it the other way. i.e. if the acpi-cpufreq
-driver detects CPC then it skips its init. I'm open to any suggestions
-on how to handle this.
+cpufreq-dt.c
 
-Thanks,
-Ashwin
+> Like Samsung did with include/dt-bindings/clock/exynos*.h ?
+
+Yeah.
+
+> Are you saying that use of DeviceTree is mandatory for new ARM ports?
+
+Yes.
+
+> In other words, ports using "board files" will not be accepted into
+> mainline, nor will drivers not using DT?
+
+It wouldn't be good for you as well, that's all I can say.
+
+> If that is correct, then my proposed cpufreq driver has exactly 0%
+> chance of being mainlined as-is, right?
+
+:)
+
+> I took a look at cpufreq-dt.c but I think it doesn't quite fit my use-case.
+> In my driver, I define "clock dividers" (typically 1,2,3,5,9) and these are
+> used to divide some baseline frequency that the cpufreq code doesn't need to
+> know. The baseline frequency is set by the boot loader, and Linux is not
+> supposed to change that, only apply the dividers if necessary.
+>
+> What do you think of this use-case?
+
+You need to write a backend clock driver for this. Most of the other platforms
+are doing this. cpufreq-dt driver does clk_get(), clk_get_rate(), clk_set_rate()
+and your backend driver should handle these to change the frequencies.
