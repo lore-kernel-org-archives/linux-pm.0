@@ -1,78 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / hibernate: take freed pages into account for preallocated memory
-Date: Wed, 04 Feb 2015 15:41:23 +0100
-Message-ID: <1823602.zH0H2khnNf@vostro.rjw.lan>
-References: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
+Subject: Re: [PATCH] cpufreq-dt: Delete an unnecessary check before the function call "cpufreq_cooling_unregister"
+Date: Wed, 04 Feb 2015 15:42:03 +0100
+Message-ID: <10630643.iI9BHrsotK@vostro.rjw.lan>
+References: <5307CAA2.8060406@users.sourceforge.net> <5317A59D.4@users.sourceforge.net> <54D112A3.1050507@users.sourceforge.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64136 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52096 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932587AbbBDOS2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:18:28 -0500
-In-Reply-To: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
+	with SMTP id S1751271AbbBDOTJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:19:09 -0500
+In-Reply-To: <54D112A3.1050507@users.sourceforge.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wonhong Kwon <wonhongkwon@gmail.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Tuesday, February 03, 2015 05:22:00 PM Wonhong Kwon wrote:
-> hibernate_preallocate_memory() prints out that how many pages are
-> allocated, but it doesn't take into consideration the pages freed by
-> free_unnecessary_pages(). Therefore, it always shows the count more
-> than actually allocated.
+On Tuesday, February 03, 2015 07:25:39 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Tue, 3 Feb 2015 19:21:21 +0100
 > 
-> Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
+> The cpufreq_cooling_unregister() function tests whether its argument is NULL
+> and then returns immediately. Thus the test around the call is not needed.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
 Queued up for 3.20, thanks!
 
 > ---
->  kernel/power/snapshot.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+>  drivers/cpufreq/cpufreq-dt.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 0c40c16..3a47dcd 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1472,9 +1472,9 @@ static inline unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
->  /**
->   * free_unnecessary_pages - Release preallocated pages not needed for the image
->   */
-> -static void free_unnecessary_pages(void)
-> +static unsigned long free_unnecessary_pages(void)
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index fde97d6..bab67db 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -320,8 +320,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
 >  {
-> -	unsigned long save, to_free_normal, to_free_highmem;
-> +	unsigned long save, to_free_normal, to_free_highmem, free;
+>  	struct private_data *priv = policy->driver_data;
 >  
->  	save = count_data_pages();
->  	if (alloc_normal >= save) {
-> @@ -1495,6 +1495,7 @@ static void free_unnecessary_pages(void)
->  		else
->  			to_free_normal = 0;
->  	}
-> +	free = to_free_normal + to_free_highmem;
->  
->  	memory_bm_position_reset(&copy_bm);
->  
-> @@ -1518,6 +1519,8 @@ static void free_unnecessary_pages(void)
->  		swsusp_unset_page_free(page);
->  		__free_page(page);
->  	}
-> +
-> +	return free;
->  }
->  
->  /**
-> @@ -1707,7 +1710,7 @@ int hibernate_preallocate_memory(void)
->  	 * pages in memory, but we have allocated more.  Release the excessive
->  	 * ones now.
->  	 */
-> -	free_unnecessary_pages();
-> +	pages -= free_unnecessary_pages();
->  
->   out:
->  	stop = ktime_get();
+> -	if (priv->cdev)
+> -		cpufreq_cooling_unregister(priv->cdev);
+> +	cpufreq_cooling_unregister(priv->cdev);
+>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+>  	of_free_opp_table(priv->cpu_dev);
+>  	clk_put(policy->clk);
 > 
 
 -- 
