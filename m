@@ -1,61 +1,79 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/8] PM / Domains: Re-structure code for adding/removing devices to genpd
-Date: Wed, 04 Feb 2015 15:39:49 +0100
-Message-ID: <5703029.cMXmjeytH4@vostro.rjw.lan>
-References: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / hibernate: take freed pages into account for preallocated memory
+Date: Wed, 04 Feb 2015 15:41:23 +0100
+Message-ID: <1823602.zH0H2khnNf@vostro.rjw.lan>
+References: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53893 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64136 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932599AbbBDOQz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:16:55 -0500
-In-Reply-To: <1422389625-11730-1-git-send-email-ulf.hansson@linaro.org>
+	with SMTP id S932587AbbBDOS2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 09:18:28 -0500
+In-Reply-To: <1422951720-29020-1-git-send-email-wonhong.kwon@lge.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+To: Wonhong Kwon <wonhongkwon@gmail.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
 
-On Tuesday, January 27, 2015 09:13:37 PM Ulf Hansson wrote:
-> While adding error handling of genpd's ->attach_dev() callback, I realized that
-> we also had a need to re-structure some of the code which deals with
-> adding/removing devices to genpd. Especially the APIs, __pm_genpd_add_device()
-> and pm_genpd_remove_device() deserved some attention.
+On Tuesday, February 03, 2015 05:22:00 PM Wonhong Kwon wrote:
+> hibernate_preallocate_memory() prints out that how many pages are
+> allocated, but it doesn't take into consideration the pages freed by
+> free_unnecessary_pages(). Therefore, it always shows the count more
+> than actually allocated.
 > 
-> Patch 1 -> 4, can be considered as more simple cleanups and should not impact
-> the behavior for current clients using the APIs. 
-> 
-> Patch 5, eliminates a mutex for generic_pm_domain_data by re-order the
-> initialization/cleanup of dev_pm_qos notifiers.
-> 
-> Patch 6, move some code around to fix a potenial memory leakage of a struct
-> pm_subsys_data.
-> 
-> Patch 7, code restructuring which impacts locking behavior while adding/removing
-> devices. Should improve code readability and decrease critical regions of
-> holding locks.
-> 
-> Patch 8, Adds error handling of genpd's ->attach_dev() callback
-> 
-> 
-> Ulf Hansson (8):
->   PM / Domains: Rename __pm_genpd_alloc|free_dev_data()
->   PM / Domains: Remove reference counting for the generic_pm_domain_data
->   PM / Domains: Don't allow an existing generic_pm_domain_data
->   PM / Domains: Don't check for an existing device when adding a new
->   PM / Domains: Eliminate the mutex for the generic_pm_domain_data
->   PM / Domains: Free pm_subsys_data in error path in
->     __pm_genpd_add_device()
->   PM / Domains: Re-order initialization of generic_pm_domain_data
->   PM / Domains: Handle errors from genpd's ->attach_dev() callback
-> 
->  drivers/base/power/domain.c | 137 +++++++++++++++++++++-----------------------
->  include/linux/pm_domain.h   |   2 -
->  2 files changed, 65 insertions(+), 74 deletions(-)
+> Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
 
-Whole series queued up for 3.20, thanks!
+Queued up for 3.20, thanks!
 
+> ---
+>  kernel/power/snapshot.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 0c40c16..3a47dcd 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1472,9 +1472,9 @@ static inline unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
+>  /**
+>   * free_unnecessary_pages - Release preallocated pages not needed for the image
+>   */
+> -static void free_unnecessary_pages(void)
+> +static unsigned long free_unnecessary_pages(void)
+>  {
+> -	unsigned long save, to_free_normal, to_free_highmem;
+> +	unsigned long save, to_free_normal, to_free_highmem, free;
+>  
+>  	save = count_data_pages();
+>  	if (alloc_normal >= save) {
+> @@ -1495,6 +1495,7 @@ static void free_unnecessary_pages(void)
+>  		else
+>  			to_free_normal = 0;
+>  	}
+> +	free = to_free_normal + to_free_highmem;
+>  
+>  	memory_bm_position_reset(&copy_bm);
+>  
+> @@ -1518,6 +1519,8 @@ static void free_unnecessary_pages(void)
+>  		swsusp_unset_page_free(page);
+>  		__free_page(page);
+>  	}
+> +
+> +	return free;
+>  }
+>  
+>  /**
+> @@ -1707,7 +1710,7 @@ int hibernate_preallocate_memory(void)
+>  	 * pages in memory, but we have allocated more.  Release the excessive
+>  	 * ones now.
+>  	 */
+> -	free_unnecessary_pages();
+> +	pages -= free_unnecessary_pages();
+>  
+>   out:
+>  	stop = ktime_get();
+> 
 
 -- 
 I speak only for myself.
