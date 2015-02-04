@@ -1,36 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 02/18] cpufreq: Create for_each_policy()
-Date: Wed, 4 Feb 2015 10:23:35 +0530
-Message-ID: <CAKohpo=cFThiq+oRZt8i2LTjvnHCKgRwf_n_XTOqmNxUi=2b2Q@mail.gmail.com>
-References: <cover.1422346933.git.viresh.kumar@linaro.org>
-	<c2b93a536c452b13a09434c3dfaf9725ee8ff95a.1422346933.git.viresh.kumar@linaro.org>
-	<54D14A21.3010007@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:49310 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbbBDExf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Feb 2015 23:53:35 -0500
-Received: by mail-oi0-f49.google.com with SMTP id a3so52496318oib.8
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2015 20:53:35 -0800 (PST)
-In-Reply-To: <54D14A21.3010007@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v3 0/6] Add new MFD driver for MAX77843
+Date: Wed, 04 Feb 2015 13:56:05 +0900
+Message-ID: <1423025771-4139-1-git-send-email-jaewon02.kim@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On 4 February 2015 at 03:52, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Could you "export" this macro/list so that it's usable by other clients of
-> cpufreq too? If a driver wants to examine all the policies today, it has to
-> do "for_each_cpu" and then try to get the policy for each CPU. This seems
-> nicer.
+This patch series adds MAX77843(Multi Function Device) driver.
+The MAX77843 includes MUIC(Micro USB Interface Controller), Li+ Charger
+with Fuel Gauge and 2 safeout LDOs for USB device.
+It is interfaced to host controller using I2C.
 
-I would wait for such requests to come, it wouldn't be difficult to move these
-to cpufreq.h .. Do you have some users in mind ?
 
-Also, exposing the cpufreq-locks wouldn't be a good idea and accessing these
-macro's without them might result in crash, in case there are updates at the
-same time..
+Changes in v3:
+MFD Core
+ - fix wrong description and indentation in header.
+ - remove unnecessary variable.
+Regulator
+ - use ARRAY_SIZE() instead of define.
 
-So, its a bit tricky I would say.
+Changes in V2:
+MFD Core
+ - Fix charger regmap handle and typo.
+MUIC
+ - cleanup enum list.
+ - set path before send excon event.
+ - fix variable names and typos for readability.
+Charger
+ - Remove unnecessary header.
+ - Chnage error message more readable.
+ - Remove unnecessary lines.
+Fuelgauge
+ - Fix regmap_config and use regmap_read.
+ - Add i2c_unregister_device function on *_remove function.
+ - Fix typo in Kconfig.
+Doc
+ - Remove unnecessary lines.
+ - Add example of charger regulator.
+
+
+Beomho Seo (2):
+  power: max77843_charger: Add Max77843 charger device driver
+  power: max77843_battery: Add Max77843 fuel gauge device driver
+
+Jaewon Kim (4):
+  mfd: max77843: Add max77843 MFD driver core driver
+  extcon: max77843: Add max77843 MUIC driver
+  regulator: max77843: Add max77843 regulator driver
+  Documentation: Add device tree bindings document for max77843
+
+ Documentation/devicetree/bindings/mfd/max77843.txt |   90 ++
+ drivers/extcon/Kconfig                             |   10 +
+ drivers/extcon/Makefile                            |    1 +
+ drivers/extcon/extcon-max77843.c                   |  881 ++++++++++++++++++++
+ drivers/mfd/Kconfig                                |   14 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/max77843.c                             |  245 ++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/max77843_battery.c                   |  286 +++++++
+ drivers/power/max77843_charger.c                   |  508 +++++++++++
+ drivers/regulator/Kconfig                          |    8 +
+ drivers/regulator/Makefile                         |    1 +
+ drivers/regulator/max77843.c                       |  227 +++++
+ include/linux/mfd/max77843-private.h               |  441 ++++++++++
+ 15 files changed, 2731 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
+ create mode 100644 drivers/extcon/extcon-max77843.c
+ create mode 100644 drivers/mfd/max77843.c
+ create mode 100644 drivers/power/max77843_battery.c
+ create mode 100644 drivers/power/max77843_charger.c
+ create mode 100644 drivers/regulator/max77843.c
+ create mode 100644 include/linux/mfd/max77843-private.h
+
+-- 
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
