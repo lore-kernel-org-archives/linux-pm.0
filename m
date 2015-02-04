@@ -1,93 +1,87 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 1/2] thermal: rcar: Fix race condition between init and interrupt
-Date: Wed,  4 Feb 2015 13:22:34 +0100
-Message-ID: <1423052555-14792-2-git-send-email-geert+renesas@glider.be>
-References: <1423052555-14792-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1423052555-14792-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, linux-shvger.kernel.org@ramsan.of.borg, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: ACPI PCC probe failed.
+Date: Wed, 04 Feb 2015 14:48:02 +0100
+Message-ID: <158128306.gX9FjqECDu@vostro.rjw.lan>
+References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com> <3337572.5q6DLI5fhi@vostro.rjw.lan> <CABwnbUmOwf1VGwD0i9AW12No6nueHda+M7NnhX87uRLwKzw=aA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CABwnbUmOwf1VGwD0i9AW12No6nueHda+M7NnhX87uRLwKzw=aA@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Cristian <caravena@gmail.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-As soon as the interrupt has been enabled by devm_request_irq(), the
-interrupt routine may be called, depending on the current status of the
-hardware.
+On Tuesday, February 03, 2015 09:44:36 PM Cristian wrote:
+> 2015-02-03 12:11 GMT-03:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > On Tuesday, February 03, 2015 10:40:00 AM Cristian wrote:
+> >> Hello,
+> >>
+> >> linux 3.19-rc7
+> >> Ubuntu Vivid 14.04 alpha
+> >>
+> >> dmesg:
+> >> [    1.293820] ACPI PCC probe failed.
+> >>
+> >> https://bugzilla.kernel.org/show_bug.cgi?id=92551
+> >
+> > Is that a functional problem or just the message?
+> >
+> >
+> > --
+> > I speak only for myself.
+> > Rafael J. Wysocki, Intel Open Source Technology Center.
+> 
+> Apparently one message.
 
-However, at that point rcar_thermal_common hasn't been initialized
-complely yet. E.g. rcar_thermal_common.base is still NULL, causing a
-NULL pointer dereference:
+So it looks like you build the PCC mailbox driver which is new in 3.19-rc and
+that driver fails to load, because it doesn't find hardware to work with.
 
-    Unable to handle kernel NULL pointer dereference at virtual address 0000000c
-    pgd = c0004000
-    [0000000c] *pgd=00000000
-    Internal error: Oops: 5 [#1] SMP ARM
-    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.19.0-rc7-ape6evm-04564-gb6e46cb7cbe82389 #30
-    Hardware name: Generic R8A73A4 (Flattened Device Tree)
-    task: ee8953c0 ti: ee896000 task.ti: ee896000
-    PC is at rcar_thermal_irq+0x1c/0xf0
-    LR is at _raw_spin_lock_irqsave+0x48/0x54
+The message is harmless, but it also is not useful.  The driver in question
+seems to be overly verbose to me in general.
 
-Postpone the call to devm_request_irq() until all initialization has
-been done to fix this.
+The patch below should make the message go away unless the printing of debug
+messages is on.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Ashwin, that whole thing requires cleaning up:
+ - It prints uninteresting debug messages with KERN_ERR or warning priority in
+   *many* places.
+ - The error codes from acpi_pcc_probe() are ignored, so why bother to return
+   any error codes from there?
+ - If platform_create_bundle() fails, the debug message doesn't tell us the
+   reason, so why bother to print it?
+
+I'm not going to consider any users of this for merging before that cleanup
+happens.
+
+Rafael
+
+
 ---
-This triggers sporadically on r8a73a4/ape6evm when starting a new
-kernel after a soft power-on reset.
+ drivers/mailbox/pcc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-So far I couldn't trigger it on r8a7791/koelsch, not even by adding a
-delay just after the call to devm_request_irq().
-Probably none of the reboot methods on koelsch are sufficiently "soft"
-(da9063-watchdog power-cycles the da9063 regulator, reset button resets
-the r2a11302 regulator, even rwdt-restart on SMP=n seems fine)
----
- drivers/thermal/rcar_thermal.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 2580a4872f90febe..3c2c1720ba4a4a72 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -387,21 +387,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+Index: linux-pm/drivers/mailbox/pcc.c
+===================================================================
+--- linux-pm.orig/drivers/mailbox/pcc.c
++++ linux-pm/drivers/mailbox/pcc.c
+@@ -386,7 +386,7 @@ static int __init pcc_init(void)
+ 	ret = acpi_pcc_probe();
  
- 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
- 	if (irq) {
--		int ret;
--
- 		/*
- 		 * platform has IRQ support.
- 		 * Then, driver uses common registers
--		 */
--
--		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
--				       dev_name(dev), common);
--		if (ret) {
--			dev_err(dev, "irq request failed\n ");
--			return ret;
--		}
--
--		/*
- 		 * rcar_has_irq_support() will be enabled
- 		 */
- 		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
-@@ -456,8 +444,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	if (ret) {
+-		pr_err("ACPI PCC probe failed.\n");
++		pr_debug("ACPI PCC probe failed.\n");
+ 		return -ENODEV;
  	}
  
- 	/* enable temperature comparation */
--	if (irq)
-+	if (irq) {
-+		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
-+				       dev_name(dev), common);
-+		if (ret) {
-+			dev_err(dev, "irq request failed\n ");
-+			goto error_unregister;
-+		}
-+
- 		rcar_thermal_common_write(common, ENR, enr_bits);
-+	}
+@@ -394,7 +394,7 @@ static int __init pcc_init(void)
+ 			pcc_mbox_probe, NULL, 0, NULL, 0);
  
- 	platform_set_drvdata(pdev, common);
+ 	if (!pcc_pdev) {
+-		pr_err("Err creating PCC platform bundle\n");
++		pr_debug("Err creating PCC platform bundle\n");
+ 		return -ENODEV;
+ 	}
  
--- 
-1.9.1
+
