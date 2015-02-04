@@ -1,87 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: ACPI PCC probe failed.
-Date: Wed, 04 Feb 2015 14:48:02 +0100
-Message-ID: <158128306.gX9FjqECDu@vostro.rjw.lan>
-References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com> <3337572.5q6DLI5fhi@vostro.rjw.lan> <CABwnbUmOwf1VGwD0i9AW12No6nueHda+M7NnhX87uRLwKzw=aA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 03/20] power_supply: Add API for safe access of power
+ supply function attrs
+Date: Wed, 4 Feb 2015 14:44:56 +0100
+Message-ID: <20150204134456.GA8312@amd>
+References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
+ <1422629278-12202-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CABwnbUmOwf1VGwD0i9AW12No6nueHda+M7NnhX87uRLwKzw=aA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Cristian <caravena@gmail.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1422629278-12202-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 03, 2015 09:44:36 PM Cristian wrote:
-> 2015-02-03 12:11 GMT-03:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> > On Tuesday, February 03, 2015 10:40:00 AM Cristian wrote:
-> >> Hello,
-> >>
-> >> linux 3.19-rc7
-> >> Ubuntu Vivid 14.04 alpha
-> >>
-> >> dmesg:
-> >> [    1.293820] ACPI PCC probe failed.
-> >>
-> >> https://bugzilla.kernel.org/show_bug.cgi?id=92551
-> >
-> > Is that a functional problem or just the message?
-> >
-> >
-> > --
-> > I speak only for myself.
-> > Rafael J. Wysocki, Intel Open Source Technology Center.
+On Fri 2015-01-30 15:47:41, Krzysztof Kozlowski wrote:
+> Add simple wrappers for accessing power supply's function attributes:
+>  - get_property -> power_supply_get_property
+>  - set_property -> power_supply_set_property
+>  - property_is_writeable -> power_supply_property_is_writeable
+>  - external_power_changed -> power_supply_external_power_changed
 > 
-> Apparently one message.
+> This API along with atomic usage counter adds a safe way of accessing a
+> power supply from another driver. If power supply is unregistered after
+> obtaining reference to it by some driver, then the API wrappers won't be
+> executed in invalid (freed) context.
+> 
+> Next patch changing the ownership of power supply class is still needed
+> to fully fix race conditions in accessing freed power supply.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Sebastian Reichel <sre@kernel.org>
 
-So it looks like you build the PCC mailbox driver which is new in 3.19-rc and
-that driver fails to load, because it doesn't find hardware to work with.
+For 1-3: Acked-by: Pavel Machek <pavel@ucw.cz>
 
-The message is harmless, but it also is not useful.  The driver in question
-seems to be overly verbose to me in general.
-
-The patch below should make the message go away unless the printing of debug
-messages is on.
-
-Ashwin, that whole thing requires cleaning up:
- - It prints uninteresting debug messages with KERN_ERR or warning priority in
-   *many* places.
- - The error codes from acpi_pcc_probe() are ignored, so why bother to return
-   any error codes from there?
- - If platform_create_bundle() fails, the debug message doesn't tell us the
-   reason, so why bother to print it?
-
-I'm not going to consider any users of this for merging before that cleanup
-happens.
-
-Rafael
-
-
----
- drivers/mailbox/pcc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/mailbox/pcc.c
-===================================================================
---- linux-pm.orig/drivers/mailbox/pcc.c
-+++ linux-pm/drivers/mailbox/pcc.c
-@@ -386,7 +386,7 @@ static int __init pcc_init(void)
- 	ret = acpi_pcc_probe();
- 
- 	if (ret) {
--		pr_err("ACPI PCC probe failed.\n");
-+		pr_debug("ACPI PCC probe failed.\n");
- 		return -ENODEV;
- 	}
- 
-@@ -394,7 +394,7 @@ static int __init pcc_init(void)
- 			pcc_mbox_probe, NULL, 0, NULL, 0);
- 
- 	if (!pcc_pdev) {
--		pr_err("Err creating PCC platform bundle\n");
-+		pr_debug("Err creating PCC platform bundle\n");
- 		return -ENODEV;
- 	}
- 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
