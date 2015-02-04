@@ -1,50 +1,48 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v3 5/6] regulator: max77843: Add max77843 regulator driver
-Date: Wed, 4 Feb 2015 20:26:45 +0000
-Message-ID: <20150204202645.GG21293@sirena.org.uk>
-References: <1423025771-4139-1-git-send-email-jaewon02.kim@samsung.com>
- <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI power management fix for final 3.19
+Date: Wed, 4 Feb 2015 22:46:04 +0100
+Message-ID: <CAJZ5v0jNMWJ0HDmpqq4fZmv9_6qr1U-ebRadeWaUdZWx9YFBpA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="m5HNjMGSgJ9Rmrrn"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50873 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161055AbbBDU04 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 15:26:56 -0500
-Content-Disposition: inline
-In-Reply-To: <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jaewon Kim <jaewon02.kim@samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
+
+Hi Linus,
+
+Please pull from
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.19-fin
+
+to receive an ACPI power management fix for final v3.19 as commit
+3df2da96874402722d760e5d4eb2968737e5bb01
+
+ Revert "ACPI / LPSS: introduce a 'proxy' device to power on LPSS for DMA"
+
+on top of commit e36f014edff70fc02b3d3d79cead1d58f289332e
+
+ Linux 3.19-rc7
+
+This is a revert of an ACPI Low-power Subsystem (LPSS) driver change
+that was supposed to improve power management of the LPSS DMA controller,
+but introduced more serious problems.
+
+Since fixing them turns out to be non-trivial, it is better to revert
+the commit in question at this point and try to fix the original issue
+differently in the next cycle.
+
+Thanks!
 
 
---m5HNjMGSgJ9Rmrrn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+---------------
 
-On Wed, Feb 04, 2015 at 01:56:10PM +0900, Jaewon Kim wrote:
-> This patch adds new regulator driver to support max77843
-> MFD(Multi Function Device) chip`s regulators.
-> The Max77843 has two voltage regulators for USB safeout.
+Rafael J. Wysocki (1):
+      Revert "ACPI / LPSS: introduce a 'proxy' device to power on LPSS for DMA"
 
-Applied, thanks.
+---------------
 
---m5HNjMGSgJ9Rmrrn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJU0oCEAAoJECTWi3JdVIfQU2wIAIMnYXnqytxjfO3r46DMNmOD
-YAsnu6FTtPmYTXIEbPKJz3Aqr8RR1hH2HsqKUQVaRQ3c9OgGBFrvrUtk+ZF4FFvC
-YnhwPZqK1Dk0OcHetrRdoC1j12HDtshnWy8+E4wJFAnWKlafqLrYMvGuewlWE6cK
-exwPzYvZftI3sAUISbyCkIV4h/2LLMJQ8EFVaSxfsgJ9HQUwLiXvBSaKgR2hj7mu
-TBaZWPAnADgG+Oi8wVabRZ5q/uhPbZvdjOSSLc1aAII65+ccWyWeV2heVuH9MpM0
-U15Ea1U1KG5z7pE/qPjsgmORtJuVseYBl65auLxnc/MCWS59ENOdilvvzsfY7DU=
-=I45u
------END PGP SIGNATURE-----
-
---m5HNjMGSgJ9Rmrrn--
+ drivers/acpi/acpi_lpss.c | 35 +++++++----------------------------
+ 1 file changed, 7 insertions(+), 28 deletions(-)
