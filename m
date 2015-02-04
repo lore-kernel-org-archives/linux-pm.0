@@ -1,371 +1,782 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
-Date: Wed, 4 Feb 2015 17:20:05 +0530
-Message-ID: <CAM4voa=_1BEkTOBhXBxVWvUCAOBv7KCnVsb2TnVGMj2FLKuMgA@mail.gmail.com>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
-	<1421667844-13627-2-git-send-email-l.majewski@samsung.com>
-	<CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
-	<20150122100124.65e7a19e@amdc2363>
-	<CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
-	<20150129230616.GJ29837@developer.amazonguestwifi.org>
-	<20150130091422.669930c8@amdc2363>
-	<CAM4voa=aEZbCx5KDoZW1NgindOeM8UZshU5ioFjiux3aoqHYFA@mail.gmail.com>
-	<CAM4voakQAUZe2nWtxBfqXeXH-T=gGq22BSX+a9UQeqObwsoe2g@mail.gmail.com>
-	<20150204113647.29837cf7@amdc2363>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 1/6] mfd: max77843: Add max77843 MFD driver core driver
+Date: Wed, 04 Feb 2015 21:01:54 +0900
+Message-ID: <54D20A32.1020604@samsung.com>
+References: <1423025771-4139-1-git-send-email-jaewon02.kim@samsung.com>
+ <1423025771-4139-2-git-send-email-jaewon02.kim@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150204113647.29837cf7@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:13571 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932228AbbBDMB6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 07:01:58 -0500
+In-reply-to: <1423025771-4139-2-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
-Hi Lukasz,
+Hi Jaewon,
 
-On Wed, Feb 4, 2015 at 4:06 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Abhilash,
->
->> Hi Lukasz,
->>
->> On Fri, Jan 30, 2015 at 8:36 PM, Abhilash Kesavan
->> <kesavan.abhilash@gmail.com> wrote:
->> > Hi Lukasz,
->> >
->> > On Fri, Jan 30, 2015 at 1:44 PM, Lukasz Majewski
->> > <l.majewski@samsung.com> wrote:
->> >> Hi Eduardo, Abhilash,
->> >>
->> >>> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
->> >>> > Hi Lukasz,
->> >>> >
->> >>> > On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
->> >>> > <l.majewski@samsung.com> wrote:
->> >>> > > Hi Abhilash,
->> >>> > >
->> >>> > >> Hi Lukasz,
->> >>> > >>
->> >>> > >> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
->> >>> > >> <l.majewski@samsung.com> wrote:
->> >>> > >> > The exynos_map_dt_data() function must be called before
->> >>> > >> > thermal_zone_of_sensor_register(), and hence provide
->> >>> > >> > tmu_read() function, before it is needed.
->> >>> > >> >
->> >>> > >> > This change is driven by adding support for enabling
->> >>> > >> > thermal_zoneX when it is properly initialized.
->> >>> > >> >
->> >>> > >> > One can read the mode of operation
->> >>> > >> > at /sys/class/thermal/thermal_zone0/mode Such
->> >>> > >> > functionality was missing in the of-thermal.c code.
->> >>> > >> >
->> >>> > >> > Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
->> >>> > >> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> >>> > >> > ---
->> >>> > >> >  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
->> >>> > >> >  1 file changed, 4 insertions(+), 3 deletions(-)
->> >>> > >> >
->> >>> > >> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
->> >>> > >> > b/drivers/thermal/samsung/exynos_tmu.c index
->> >>> > >> > 9d2d685..5d946ab 100644 ---
->> >>> > >> > a/drivers/thermal/samsung/exynos_tmu.c +++
->> >>> > >> > b/drivers/thermal/samsung/exynos_tmu.c @@ -975,15 +975,16
->> >>> > >> > @@ static int exynos_tmu_probe(struct platform_device
->> >>> > >> > *pdev) platform_set_drvdata(pdev, data);
->> >>> > >> > mutex_init(&data->lock);
->> >>> > >> >
->> >>> > >> > +       ret = exynos_map_dt_data(pdev);
->> >>> > >> > +       if (ret)
->> >>> > >> > +               goto err_sensor;
->> >>> > >> > +
->> >>> > >> >         data->tzd =
->> >>> > >> > thermal_zone_of_sensor_register(&pdev->dev, 0, data,
->> >>> > >> > &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
->> >>> > >> >                 pr_err("thermal: tz: %p ERROR\n",
->> >>> > >> > data->tzd); return PTR_ERR(data->tzd);
->> >>> > >> >         }
->> >>> > >> > -       ret = exynos_map_dt_data(pdev);
->> >>> > >> > -       if (ret)
->> >>> > >> > -               goto err_sensor;
->> >>> > >> >
->> >>> > >> >         pdata = data->pdata;
->> >>> > >>
->> >>> > >> I have been testing this along with your v5 patch set and am
->> >>> > >> seeing incorrect temperature being reported at boot-up on
->> >>> > >> exynos7.
->> >>> > >
->> >>> > > Does it show a maximal temperature value (0x1FF)?
->> >>> >
->> >>> > I did not print the current temperature register, but I
->> >>> > remember the message showing ~105C. Will give you the register
->> >>> > value when I test with more debug prints tomorrow.
->> >>> >
->> >>> > >
->> >>> > >>  It looks
->> >>> > >> like exynos_tmu_read gets called from
->> >>> > >> thermal_zone_of_device_update during boot-up, now that we
->> >>> > >> have it populated early. However, as the tmu initialization
->> >>> > >> function has not been called yet it returns a wrong value.
->> >>> > >> Does that sound correct ?
->> >>> > >
->> >>> > > No, this is a mistake. However, I'm wondering why on Exynos4/5
->> >>> > > this error didn't show up...
->> >>> >
->> >>> > I have been lowering the software trip point temperature in the
->> >>> > exynos7 dts file (to 55C) for testing purposes. Hence, when the
->> >>> > temperature is read incorrectly as ~105C the board trips at
->> >>> > boot-up
->> >>
->> >>                                         ^^^^ this is a very unusual
->> >>                                         value - I had problems with
->> >>                                         reading 0xFF values with
->> >>                                         similar symptom (but this
->> >> was caused by lack of vtmu).
->> >>
->> >>> > itself. Maybe for exynos4/5 the incorrect value read during
->> >>> > boot-up is in the non-tripping range and once the tmu is
->> >>> > initialized later it continues to function properly thereafter ?
->> >>> >
->> >>> > >
->> >>> > > The reordering is needed to be able to call set_mode callback
->> >>> > > at of-thermal.c to set the mode.
->> >>> > >
->> >>> > > If this change causes problems, then another solution
->> >>> > > (probably not so neat) must be found.
->> >>> >
->> >>> > Please let me know if you need any further details.
->> >>
->> >> Abhilash, could you provide more details (like relevant output from
->> >> dmesg) and point me a list of patches which shall I apply to test
->> >> this issue on Exynos4/5?
->> > Sorry, I have not had the time to re-check this and provide you with
->> > the current temperature register value. I will definitely do so on
->> > Monday and also provide you the dmesg output. I applied the
->> > following patches on linux-next:
->> >
->> > bbf872d thermal: exynos: Add TMU support for Exynos7 SoC
->> > b8190ac dts: Documentation: Add documentation for Exynos7 SoC
->> > thermal bindings 9330ec1 thermal: exynos: Reorder
->> > exynos_map_dt_data() function 4dd41c4 thermal: exynos: dts: Provide
->> > device tree bindings identical to the one in exynos_tmu_data.c
->> > a7b80b9 thermal: dts: exynos: Trip points and sensor configuration
->> > data for Exynos5440
->> > 77d072e thermal: exynos: dts: Define default thermal-zones for
->> > Exynos4 964dd36 thermal: dts: Default trip points definition for
->> > Exynos5420 SoCs c1d2f97 thermal: exynos: dts: Add default
->> > definition of the TMU sensor parameter 02a4496 arm: dts: Adding CPU
->> > cooling binding for Exynos SoCs bfadff0 arm: dts: odroid: Enable
->> > TMU at Exynos4412 based Odroid U3 device 862764c arm: dts: odroid:
->> > Add LDO10 regulator node necessary for TMU on Odroid c064731 arm:
->> > dts: trats: Enable TMU on the Exynos4210 trats device
->> >
->> > Along with the above list I have a patch which adds the dt changes
->> > required for exynos7 on similar lines as done for exynos4/exynos5.
->> > In the exyno7 trip point dts file I have modified the cpu-crit-0
->> > temperature to a low value of 55C for testing purposes.
->> >
->> >>
->> >>>
->> >>> What is the status of this patch? Is it still required?
->> >>
->> >> It is strange, since on Exynos4/5 this works and some problems
->> >> show up when run on Exynos7.
->> >
->> > I would have expected the issue to show up on Exynos4/5 too. I will
->> > test this on the 5420 based board I have on Monday.
->>
->> I tested this on a 5420 based chromebook that I have (Peach Pit) and
->> observed similar results as that on Exynos7. Following are the patches
->> applied on next-20150130:
->>
->> 5b1194d thermal: exynos: Reorder exynos_map_dt_data() function
->> 30c6165 thermal: exynos: dts: Provide device tree bindings identical
->> to the one in exynos_tmu_data.c
->> d94c248 thermal: dts: exynos: Trip points and sensor configuration
->> data for Exynos5440
->> aac8b3a thermal: exynos: dts: Define default thermal-zones for Exynos4
->> 5e8cf52 thermal: dts: Default trip points definition for Exynos5420
->> SoCs 17ec9c2 thermal: exynos: dts: Add default definition of the TMU
->> sensor parameter 36e247b arm: dts: Adding CPU cooling binding for
->> Exynos SoCs 7aa1bb1 arm: dts: odroid: Enable TMU at Exynos4412 based
->> Odroid U3 device 8884a76 arm: dts: odroid: Add LDO10 regulator node
->> necessary for TMU on Odroid aae2e51 arm: dts: trats: Enable TMU on
->> the Exynos4210 trats device 827e3bd Add linux-next specific files for
->> 20150130
->>
->> On top of these patches, I have the following diff for
->> debugging/testing pruposes:
->>
->> diff --git a/arch/arm/boot/dts/exynos5420-trip-points.dtsi
->> b/arch/arm/boot/dts/exynos5420-trip-points.dtsi
->> index 09d6c56..ac8b6a0 100644
->> --- a/arch/arm/boot/dts/exynos5420-trip-points.dtsi
->> +++ b/arch/arm/boot/dts/exynos5420-trip-points.dtsi
->> @@ -13,22 +13,22 @@ polling-delay-passive = <0>;
->>  polling-delay = <0>;
->>  trips {
->>         cpu-alert-0 {
->> -               temperature = <85000>; /* millicelsius */
->> +               temperature = <55000>; /* millicelsius */
->>                 hysteresis = <10000>; /* millicelsius */
->>                 type = "active";
->>         };
->>         cpu-alert-1 {
->> -               temperature = <103000>; /* millicelsius */
->> +               temperature = <63000>; /* millicelsius */
->>                 hysteresis = <10000>; /* millicelsius */
->>                 type = "active";
->>         };
->>         cpu-alert-2 {
->> -               temperature = <110000>; /* millicelsius */
->> +               temperature = <70000>; /* millicelsius */
->>                 hysteresis = <10000>; /* millicelsius */
->>                 type = "active";
->>         };
->>         cpu-crit-0 {
->> -               temperature = <1200000>; /* millicelsius */
->> +               temperature = <75000>; /* millicelsius */
->>                 hysteresis = <0>; /* millicelsius */
->>                 type = "critical";
->>         };
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->> b/drivers/thermal/samsung/exynos_tmu.c
->> index 852e622..7281581 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -237,6 +237,7 @@ static int code_to_temp(struct exynos_tmu_data
->> *data, u8 temp_code)
->>                 break;
->>         case TYPE_ONE_POINT_TRIMMING:
->>                 temp = temp_code - data->temp_error1 +
->> pdata->first_point_trim;
->> +               printk("temp_code is %d, err1 is %d, trim is %d, temp
->> is %d\n", temp_code, data->temp_error1, pdata->first_point_trim,
->> temp);
->>                 break;
->>         default:
->>                 temp = temp_code - pdata->default_temp_offset;
->> @@ -585,6 +586,7 @@ static int exynos_get_temp(void *p, long *temp)
->>
->>         *temp = code_to_temp(data, data->tmu_read(data)) * MCELSIUS;
->>
->> +       printk("temperature is %ld\n", *temp);
->>         clk_disable(data->clk);
->>         mutex_unlock(&data->lock);
->>
->> @@ -675,6 +677,7 @@ static int exynos4210_tmu_read(struct
->> exynos_tmu_data *data)
->>
->>  static int exynos4412_tmu_read(struct exynos_tmu_data *data)
->>  {
->> +       printk("\n%s: Reading the current temperature register value:
->> 0x%x\n\n", __func__, readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP));
->>         return readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
->>  }
->>
->> diff --git a/drivers/thermal/thermal_core.c
->> b/drivers/thermal/thermal_core.c index 48491d1..981fc99 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -469,7 +469,7 @@ static void update_temperature(struct
->> thermal_zone_device *tz)
->>         mutex_unlock(&tz->lock);
->>
->>         trace_thermal_temperature(tz);
->> -       dev_dbg(&tz->device, "last_temperature=%d,
->> current_temperature=%d\n",
->> +       dev_err(&tz->device, "last_temperature=%d,
->> current_temperature=%d\n", tz->last_temperature, tz->temperature);
->>  }
->>
->> Also, I noticed  a typo (an extra zero) in cpu-crit-0 temperature
->> above.
->>
->> Following is the relevant boot-up log:
->>
->> [    3.160126] TPS65090_RAILSLDO2: supplied by vbat-supply
->> [    3.343421] thermal thermal_zone5: last_temperature=0,
->> current_temperature=25900
->> [    3.349365] sbs-battery 20-000b: sbs-battery: battery gas gauge
->> device registered
->> [    3.374280] 10060000.tmu supply vtmu not found, using dummy
->> regulator [    3.379408]
->> [    3.379408] exynos4412_tmu_read: Reading the current temperature
->> register value: 0x36
->> [    3.379408]
->> [    3.390026] temp_code is 54, err1 is 0, trim is 25, temp is 79
->> [    3.395827] temperature is 79000
->> [    3.399053] thermal thermal_zone0: last_temperature=0,
->> current_temperature=79000
->> [    3.406429] thermal thermal_zone0: critical temperature reached(79
->> C),shutting down
->> [    3.414241] reboot: Failed to start orderly shutdown: forcing the
->> issue [    3.420690] usb 5-1: new high-speed USB device number 2
->> using exynos-ehci [    3.427819] 10064000.tmu supply vtmu not found,
->> using dummy regulator [    3.434011] Emergency Sync complete
->> [    3.434355]
->> [    3.434355] exynos4412_tmu_read: Reading the current temperature
->> register value: 0x3
->> [    3.434355]
->> [    3.434367] temp_code is 3, err1 is 0, trim is 25, temp is 28
->> [    3.434373] temperature is 28000
->> [    3.434393] thermal thermal_zone1: last_temperature=0,
->> current_temperature=28000
->> [    3.434744] 10068000.tmu supply vtmu not found, using dummy
->> regulator [    3.435069]
->> [    3.435069] exynos4412_tmu_read: Reading the current temperature
->> register value: 0x2
->> [    3.435069]
->> [    3.435080] temp_code is 2, err1 is 0, trim is 25, temp is 27
->> [    3.435086] temperature is 27000
->> [    3.435103] thermal thermal_zone2: last_temperature=0,
->> current_temperature=27000
->> [    3.435427] 1006c000.tmu supply vtmu not found, using dummy
->> regulator [    3.435762]
->> [    3.435762] exynos4412_tmu_read: Reading the current temperature
->> register value: 0x2
->> [    3.435762]
->> [    3.435772] temp_code is 2, err1 is 0, trim is 25, temp is 27
->> [    3.435778] temperature is 27000
->> [    3.435794] thermal thermal_zone3: last_temperature=0,
->> current_temperature=27000
->> [    3.436112] 100a0000.tmu supply vtmu not found, using dummy
->> regulator [    3.436464]
->> [    3.436464] exynos4412_tmu_read: Reading the current temperature
->> register value: 0x33
->> [    3.436464]
->> [    3.436475] temp_code is 51, err1 is 0, trim is 25, temp is 76
->> [    3.436480] temperature is 76000
->> [    3.436496] thermal thermal_zone4: last_temperature=0,
->> current_temperature=76000
->> [    3.436527] thermal thermal_zone4: critical temperature reached(76
->> C),shutting down
->>
->> From the log, thermal_zone0 and thermal_zone4 show incorrect
->> temperatures. It looks like the first point trim error1 would need to
->> be intialized before we do a read ?
->
-> Could you check if this error happens when you have default temp
-> threshold values?
+On 02/04/2015 01:56 PM, Jaewon Kim wrote:
+> This patch adds MAX77843 core/irq driver to support PMIC,
+> MUIC(Micro USB Interface Controller), Charger, Fuel Gauge,
+> LED and Haptic device.
+> 
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> ---
+>  drivers/mfd/Kconfig                  |   14 ++
+>  drivers/mfd/Makefile                 |    1 +
+>  drivers/mfd/max77843.c               |  245 +++++++++++++++++++
+>  include/linux/mfd/max77843-private.h |  441 ++++++++++++++++++++++++++++++++++
+>  4 files changed, 701 insertions(+)
+>  create mode 100644 drivers/mfd/max77843.c
+>  create mode 100644 include/linux/mfd/max77843-private.h
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 2e6b731..0c67c79 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -442,6 +442,20 @@ config MFD_MAX77693
+>  	  additional drivers must be enabled in order to use the functionality
+>  	  of the device.
+>  
+> +config MFD_MAX77843
+> +	bool "Maxim Semiconductor MAX77843 PMIC Support"
+> +	depends on I2C=y
+> +	select MFD_CORE
+> +	select REGMAP_I2C
+> +	select REGMAP_IRQ
+> +	help
+> +	  Say yes here to add support for Maxim Semiconductor MAX77843.
+> +	  This is companion Power Management IC with LEDs, Haptic, Charger,
+> +	  Fuel Gauge, MUIC(Micro USB Interface Controller) controls on chip.
+> +	  This driver provides common support for accessing the device;
+> +	  additional drivers must be enabled in order to use the functionality
+> +	  of the device.
+> +
+>  config MFD_MAX8907
+>  	tristate "Maxim Semiconductor MAX8907 PMIC Support"
+>  	select MFD_CORE
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 53467e2..fe4f75c 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -117,6 +117,7 @@ obj-$(CONFIG_MFD_DA9063)	+= da9063.o
+>  obj-$(CONFIG_MFD_MAX14577)	+= max14577.o
+>  obj-$(CONFIG_MFD_MAX77686)	+= max77686.o
+>  obj-$(CONFIG_MFD_MAX77693)	+= max77693.o
+> +obj-$(CONFIG_MFD_MAX77843)	+= max77843.o
+>  obj-$(CONFIG_MFD_MAX8907)	+= max8907.o
+>  max8925-objs			:= max8925-core.o max8925-i2c.o
+>  obj-$(CONFIG_MFD_MAX8925)	+= max8925.o
+> diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
+> new file mode 100644
+> index 0000000..191a557
+> --- /dev/null
+> +++ b/drivers/mfd/max77843.c
+> @@ -0,0 +1,245 @@
+> +/*
+> + * max77843.c - MFD core driver for the Maxim MAX77843
+> + *
+> + * Copyright (C) 2015 Samsung Electronics
+> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
+> + * Author: Beomho Seo <beomho.seo@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/i2c.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/module.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/max77843-private.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +
+> +static const struct mfd_cell max77843_devs[] = {
+> +	{
+> +		.name = "max77843-muic",
+> +		.of_compatible = "maxim,max77843-muic",
+> +	}, {
+> +		.name = "max77843-regulator",
+> +		.of_compatible = "maxim,max77843-regulator",
+> +	}, {
+> +		.name = "max77843-charger",
+> +		.of_compatible = "maxim,max77843-charger"
+> +	}, {
+> +		.name = "max77843-fuelgauge",
+> +		.of_compatible = "maxim,max77843-fuelgauge",
+> +	},
+> +};
+> +
+> +static const struct regmap_config max77843_charger_regmap_config = {
+> +	.reg_bits	= 8,
+> +	.val_bits	= 8,
+> +	.max_register	= MAX77843_CHG_REG_END,
+> +};
+> +
+> +static const struct regmap_config max77843_regmap_config = {
+> +	.reg_bits	= 8,
+> +	.val_bits	= 8,
+> +	.max_register	= MAX77843_SYS_REG_END,
+> +};
+> +
+> +static const struct regmap_irq max77843_irqs[] = {
+> +	/* TOPSYS interrupts */
+> +	{ .reg_offset = 0, .mask = MAX77843_SYS_IRQ_SYSUVLO_INT, },
+> +	{ .reg_offset = 0, .mask = MAX77843_SYS_IRQ_SYSOVLO_INT, },
+> +	{ .reg_offset = 0, .mask = MAX77843_SYS_IRQ_TSHDN_INT, },
+> +	{ .reg_offset = 0, .mask = MAX77843_SYS_IRQ_TM_INT, },
+> +};
+> +
+> +static const struct regmap_irq_chip max77843_irq_chip = {
+> +	.name		= "max77843",
+> +	.status_base	= MAX77843_SYS_REG_SYSINTSRC,
+> +	.mask_base	= MAX77843_SYS_REG_SYSINTMASK,
+> +	.mask_invert	= false,
+> +	.num_regs	= 1,
+> +	.irqs		= max77843_irqs,
+> +	.num_irqs	= ARRAY_SIZE(max77843_irqs),
+> +};
+> +
+> +/* Charger and Charger regulator use same regmap. */
+> +static int max77843_chg_init(struct max77843 *max77843)
+> +{
+> +	int ret;
+> +
+> +	max77843->i2c_chg = i2c_new_dummy(max77843->i2c->adapter, I2C_ADDR_CHG);
+> +	if (!max77843->i2c_chg) {
+> +		dev_err(&max77843->i2c->dev,
+> +				"Cannot allocate I2C device for Charger\n");
+> +		return PTR_ERR(max77843->i2c_chg);
+> +	}
+> +	i2c_set_clientdata(max77843->i2c_chg, max77843);
+> +
+> +	max77843->regmap_chg = devm_regmap_init_i2c(max77843->i2c_chg,
+> +			&max77843_charger_regmap_config);
+> +	if (IS_ERR(max77843->regmap_chg)) {
+> +		ret = PTR_ERR(max77843->regmap_chg);
+> +		goto err_chg_i2c;
+> +	}
+> +
+> +	return 0;
+> +
+> +err_chg_i2c:
+> +	i2c_unregister_device(max77843->i2c_chg);
+> +
+> +	return ret;
+> +}
+> +
+> +static int max77843_probe(struct i2c_client *i2c,
+> +					const struct i2c_device_id *id)
+> +{
+> +	struct max77843 *max77843;
+> +	unsigned int reg_data;
+> +	int ret;
+> +
+> +	max77843 = devm_kzalloc(&i2c->dev, sizeof(*max77843), GFP_KERNEL);
+> +	if (!max77843)
+> +		return -ENOMEM;
+> +
+> +	i2c_set_clientdata(i2c, max77843);
+> +	max77843->dev = &i2c->dev;
+> +	max77843->i2c = i2c;
+> +	max77843->irq = i2c->irq;
+> +
+> +	max77843->regmap = devm_regmap_init_i2c(i2c,
+> +			&max77843_regmap_config);
+> +	if (IS_ERR(max77843->regmap)) {
+> +		dev_err(&i2c->dev, "Failed to allocate topsys register map\n");
+> +		return PTR_ERR(max77843->regmap);
+> +	}
+> +
+> +	ret = regmap_add_irq_chip(max77843->regmap, max77843->irq,
+> +			IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHARED,
+> +			0, &max77843_irq_chip, &max77843->irq_data);
+> +	if (ret) {
+> +		dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\n");
+> +		return ret;
+> +	}
+> +
+> +	ret = regmap_read(max77843->regmap,
+> +			MAX77843_SYS_REG_PMICID, &reg_data);
+> +	if (ret < 0) {
+> +		dev_err(&i2c->dev, "Failed to read PMIC ID\n");
+> +		goto err_pmic_id;
+> +	}
+> +	dev_info(&i2c->dev, "device ID: 0x%x\n", reg_data);
+> +
+> +	ret = max77843_chg_init(max77843);
+> +	if (ret) {
+> +		dev_err(&i2c->dev, "Failed to init Charger\n");
+> +		goto err_pmic_id;
+> +	}
+> +
+> +	ret = regmap_update_bits(max77843->regmap,
+> +			MAX77843_SYS_REG_INTSRCMASK,
+> +			MAX77843_INTSRC_MASK_MASK,
+> +			(unsigned int)~MAX77843_INTSRC_MASK_MASK);
+> +	if (ret < 0) {
+> +		dev_err(&i2c->dev, "Failed to unmask interrupt source\n");
+> +		goto err_pmic_id;
+> +	}
+> +
+> +	ret = mfd_add_devices(max77843->dev, -1, max77843_devs,
+> +			ARRAY_SIZE(max77843_devs), NULL, 0, NULL);
+> +	if (ret < 0) {
+> +		dev_err(&i2c->dev, "Failed to add mfd device\n");
+> +		goto err_pmic_id;
+> +	}
+> +
+> +	device_init_wakeup(max77843->dev, 1);
+> +
+> +	return 0;
+> +
+> +err_pmic_id:
+> +	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
+> +
+> +	return ret;
+> +}
+> +
+> +static int max77843_remove(struct i2c_client *i2c)
+> +{
+> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
+> +
+> +	mfd_remove_devices(max77843->dev);
+> +
+> +	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
+> +
+> +	i2c_unregister_device(max77843->i2c_chg);
+> +	i2c_unregister_device(max77843->i2c);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id max77843_dt_match[] = {
+> +	{ .compatible = "maxim,max77843", },
+> +	{ /* sentinel */ },
+> +};
+> +
+> +static const struct i2c_device_id max77843_id[] = {
+> +	{ "max77843", },
+> +	{ /* sentinel */ },
+> +};
+> +MODULE_DEVICE_TABLE(i2c, max77843_id);
+> +
+> +static int __maybe_unused max77843_suspend(struct device *dev)
+> +{
+> +	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
+> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
+> +
+> +	if (device_may_wakeup(dev))
+> +		enable_irq_wake(max77843->irq);
+> +	disable_irq(max77843->irq);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __maybe_unused max77843_resume(struct device *dev)
+> +{
+> +	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
+> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
+> +
+> +	if (device_may_wakeup(dev))
+> +		disable_irq_wake(max77843->irq);
+> +	enable_irq(max77843->irq);
+> +
+> +	return 0;
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(max77843_pm, max77843_suspend, max77843_resume);
+> +
+> +static struct i2c_driver max77843_i2c_driver = {
+> +	.driver		= {
+> +		.name		= "max77843",
+> +		.pm		= &max77843_pm,
+> +		.of_match_table = max77843_dt_match,
+> +	},
+> +	.probe		= max77843_probe,
+> +	.remove		= max77843_remove,
+> +	.id_table	= max77843_id,
+> +};
+> +static int __init max77843_i2c_init(void)
+> +{
+> +	return i2c_add_driver(&max77843_i2c_driver);
+> +}
+> +subsys_initcall(max77843_i2c_init);
+> +
+> +static void __exit max77843_i2c_exit(void)
+> +{
+> +	i2c_del_driver(&max77843_i2c_driver);
+> +}
+> +module_exit(max77843_i2c_exit);
+> +
+> +MODULE_AUTHOR("Jaewon Kim <jaewon02.kim@samsung.com>");
+> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
+> +MODULE_DESCRIPTION("Maxim MAX77843 multi-function core driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/mfd/max77843-private.h b/include/linux/mfd/max77843-private.h
+> new file mode 100644
+> index 0000000..23f8ca9
+> --- /dev/null
+> +++ b/include/linux/mfd/max77843-private.h
+> @@ -0,0 +1,441 @@
+> +/*
+> + * max77843-private.h - Common variables for the Maxim MAX77843 driver
+> + *
+> + * Copyright (C) 2015 Samsung Electronics
+> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
+> + * Author: Beomho Seo <beomho.seo@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#ifndef __MAX77843_PRIVATE_H_
+> +#define __MAX77843_PRIVATE_H_
+> +
+> +#include <linux/i2c.h>
+> +#include <linux/regmap.h>
+> +
+> +#define I2C_ADDR_TOPSYS	(0xCC >> 1)
+> +#define I2C_ADDR_CHG	(0xD2 >> 1)
+> +#define I2C_ADDR_FG	(0x6C >> 1)
+> +#define I2C_ADDR_MUIC	(0x4A >> 1)
+> +
+> +/* Topsys, Haptic and LED registers */
+> +enum max77843_sys_reg {
+> +	MAX77843_SYS_REG_PMICID		= 0x00,
+> +	MAX77843_SYS_REG_PMICREV	= 0x01,
+> +	MAX77843_SYS_REG_MAINCTRL1	= 0x02,
+> +	MAX77843_SYS_REG_INTSRC		= 0x22,
+> +	MAX77843_SYS_REG_INTSRCMASK	= 0x23,
+> +	MAX77843_SYS_REG_SYSINTSRC	= 0x24,
+> +	MAX77843_SYS_REG_SYSINTMASK	= 0x26,
+> +	MAX77843_SYS_REG_TOPSYS_STAT	= 0x28,
+> +	MAX77843_SYS_REG_SAFEOUTCTRL	= 0xC6,
+> +
+> +	MAX77843_SYS_REG_END,
+> +};
+> +
+> +enum max77843_haptic_reg {
+> +	MAX77843_HAP_REG_MCONFIG	= 0x10,
+> +
+> +	MAX77843_HAP_REG_END,
+> +};
+> +
+> +enum max77843_led_reg {
+> +	MAX77843_LED_REG_LEDEN		= 0x30,
+> +	MAX77843_LED_REG_LED0BRT	= 0x31,
+> +	MAX77843_LED_REG_LED1BRT	= 0x32,
+> +	MAX77843_LED_REG_LED2BRT	= 0x33,
+> +	MAX77843_LED_REG_LED3BRT	= 0x34,
+> +	MAX77843_LED_REG_LEDBLNK	= 0x38,
+> +	MAX77843_LED_REG_LEDRAMP	= 0x36,
+> +
+> +	MAX77843_LED_REG_END,
+> +};
+> +
+> +/* Charger registers */
+> +enum max77843_charger_reg {
+> +	MAX77843_CHG_REG_CHG_INT	= 0xB0,
+> +	MAX77843_CHG_REG_CHG_INT_MASK	= 0xB1,
+> +	MAX77843_CHG_REG_CHG_INT_OK	= 0xB2,
+> +	MAX77843_CHG_REG_CHG_DTLS_00	= 0xB3,
+> +	MAX77843_CHG_REG_CHG_DTLS_01	= 0xB4,
+> +	MAX77843_CHG_REG_CHG_DTLS_02	= 0xB5,
+> +	MAX77843_CHG_REG_CHG_CNFG_00	= 0xB7,
+> +	MAX77843_CHG_REG_CHG_CNFG_01	= 0xB8,
+> +	MAX77843_CHG_REG_CHG_CNFG_02	= 0xB9,
+> +	MAX77843_CHG_REG_CHG_CNFG_03	= 0xBA,
+> +	MAX77843_CHG_REG_CHG_CNFG_04	= 0xBB,
+> +	MAX77843_CHG_REG_CHG_CNFG_06	= 0xBD,
+> +	MAX77843_CHG_REG_CHG_CNFG_07	= 0xBE,
+> +	MAX77843_CHG_REG_CHG_CNFG_09	= 0xC0,
+> +	MAX77843_CHG_REG_CHG_CNFG_10	= 0xC1,
+> +	MAX77843_CHG_REG_CHG_CNFG_11	= 0xC2,
+> +	MAX77843_CHG_REG_CHG_CNFG_12	= 0xC3,
+> +
+> +	MAX77843_CHG_REG_END,
+> +};
+> +
+> +/* Fuel gauge registers */
+> +enum max77843_fuelgauge {
+> +	MAX77843_FG_REG_STATUS		= 0x00,
+> +	MAX77843_FG_REG_VALRT_TH	= 0x01,
+> +	MAX77843_FG_REG_TALRT_TH	= 0x02,
+> +	MAX77843_FG_REG_SALRT_TH	= 0x03,
+> +	MAX77843_FG_RATE_AT_RATE	= 0x04,
+> +	MAX77843_FG_REG_REMCAP_REP	= 0x05,
+> +	MAX77843_FG_REG_SOCREP		= 0x06,
+> +	MAX77843_FG_REG_AGE		= 0x07,
+> +	MAX77843_FG_REG_TEMP		= 0x08,
+> +	MAX77843_FG_REG_VCELL		= 0x09,
+> +	MAX77843_FG_REG_CURRENT		= 0x0A,
+> +	MAX77843_FG_REG_AVG_CURRENT	= 0x0B,
+> +	MAX77843_FG_REG_SOCMIX		= 0x0D,
+> +	MAX77843_FG_REG_SOCAV		= 0x0E,
+> +	MAX77843_FG_REG_REMCAP_MIX	= 0x0F,
+> +	MAX77843_FG_REG_FULLCAP		= 0x10,
+> +	MAX77843_FG_REG_AVG_TEMP	= 0x16,
+> +	MAX77843_FG_REG_CYCLES		= 0x17,
+> +	MAX77843_FG_REG_AVG_VCELL	= 0x19,
+> +	MAX77843_FG_REG_CONFIG		= 0x1D,
+> +	MAX77843_FG_REG_REMCAP_AV	= 0x1F,
+> +	MAX77843_FG_REG_FULLCAP_NOM	= 0x23,
+> +	MAX77843_FG_REG_MISCCFG		= 0x2B,
+> +	MAX77843_FG_REG_RCOMP		= 0x38,
+> +	MAX77843_FG_REG_FSTAT		= 0x3D,
+> +	MAX77843_FG_REG_DQACC		= 0x45,
+> +	MAX77843_FG_REG_DPACC		= 0x46,
+> +	MAX77843_FG_REG_OCV		= 0xEE,
+> +	MAX77843_FG_REG_VFOCV		= 0xFB,
+> +	MAX77843_FG_SOCVF		= 0xFF,
+> +
+> +	MAX77843_FG_END,
+> +};
+> +
+> +/* MUIC registers */
+> +enum max77843_muic_reg {
+> +	MAX77843_MUIC_REG_ID		= 0x00,
+> +	MAX77843_MUIC_REG_INT1		= 0x01,
+> +	MAX77843_MUIC_REG_INT2		= 0x02,
+> +	MAX77843_MUIC_REG_INT3		= 0x03,
+> +	MAX77843_MUIC_REG_STATUS1	= 0x04,
+> +	MAX77843_MUIC_REG_STATUS2	= 0x05,
+> +	MAX77843_MUIC_REG_STATUS3	= 0x06,
+> +	MAX77843_MUIC_REG_INTMASK1	= 0x07,
+> +	MAX77843_MUIC_REG_INTMASK2	= 0x08,
+> +	MAX77843_MUIC_REG_INTMASK3	= 0x09,
+> +	MAX77843_MUIC_REG_CDETCTRL1	= 0x0A,
+> +	MAX77843_MUIC_REG_CDETCTRL2	= 0x0B,
+> +	MAX77843_MUIC_REG_CONTROL1	= 0x0C,
+> +	MAX77843_MUIC_REG_CONTROL2	= 0x0D,
+> +	MAX77843_MUIC_REG_CONTROL3	= 0x0E,
+> +	MAX77843_MUIC_REG_CONTROL4	= 0x16,
+> +	MAX77843_MUIC_REG_HVCONTROL1	= 0x17,
+> +	MAX77843_MUIC_REG_HVCONTROL2	= 0x18,
+> +
+> +	MAX77843_MUIC_REG_END,
+> +};
+> +
+> +enum max77843_irq {
+> +	/* Topsys: SYSTEM */
+> +	MAX77843_SYS_IRQ_SYSINTSRC_SYSUVLO_INT,
+> +	MAX77843_SYS_IRQ_SYSINTSRC_SYSOVLO_INT,
+> +	MAX77843_SYS_IRQ_SYSINTSRC_TSHDN_INT,
+> +	MAX77843_SYS_IRQ_SYSINTSRC_TM_INT,
+> +
+> +	/* Charger: CHG_INT */
+> +	MAX77843_CHG_IRQ_CHG_INT_BYP_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_BATP_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_BAT_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_CHG_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_WCIN_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_CHGIN_I,
+> +	MAX77843_CHG_IRQ_CHG_INT_AICL_I,
+> +
+> +	MAX77843_IRQ_NUM,
+> +};
+> +
+> +enum max77843_irq_muic {
+> +	/* MUIC: INT1 */
+> +	MAX77843_MUIC_IRQ_INT1_ADC,
+> +	MAX77843_MUIC_IRQ_INT1_ADCERROR,
+> +	MAX77843_MUIC_IRQ_INT1_ADC1K,
+> +
+> +	/* MUIC: INT2 */
+> +	MAX77843_MUIC_IRQ_INT2_CHGTYP,
+> +	MAX77843_MUIC_IRQ_INT2_CHGDETRUN,
+> +	MAX77843_MUIC_IRQ_INT2_DCDTMR,
+> +	MAX77843_MUIC_IRQ_INT2_DXOVP,
+> +	MAX77843_MUIC_IRQ_INT2_VBVOLT,
+> +
+> +	/* MUIC: INT3 */
+> +	MAX77843_MUIC_IRQ_INT3_VBADC,
+> +	MAX77843_MUIC_IRQ_INT3_VDNMON,
+> +	MAX77843_MUIC_IRQ_INT3_DNRES,
+> +	MAX77843_MUIC_IRQ_INT3_MPNACK,
+> +	MAX77843_MUIC_IRQ_INT3_MRXBUFOW,
+> +	MAX77843_MUIC_IRQ_INT3_MRXTRF,
+> +	MAX77843_MUIC_IRQ_INT3_MRXPERR,
+> +	MAX77843_MUIC_IRQ_INT3_MRXRDY,
+> +
+> +	MAX77843_MUIC_IRQ_NUM,
+> +};
+> +
+> +/* MAX77843 interrupts */
+> +#define MAX77843_SYS_IRQ_SYSUVLO_INT		BIT(0)
+> +#define MAX77843_SYS_IRQ_SYSOVLO_INT		BIT(1)
+> +#define MAX77843_SYS_IRQ_TSHDN_INT		BIT(2)
+> +#define MAX77843_SYS_IRQ_TM_INT			BIT(3)
+> +
+> +/* Max77843 charger insterrupts */
+> +#define MAX77843_CHG_BYP_I			BIT(0)
+> +#define MAX77843_CHG_BATP_I			BIT(2)
+> +#define MAX77843_CHG_BAT_I			BIT(3)
+> +#define MAX77843_CHG_CHG_I			BIT(4)
+> +#define MAX77843_CHG_WCIN_I			BIT(5)
+> +#define MAX77843_CHG_CHGIN_I			BIT(6)
+> +#define MAX77843_CHG_AICL_I			BIT(7)
+> +
+> +/* MAX77843 CHG_INT_OK register */
+> +#define MAX77843_CHG_BYP_OK			BIT(0)
+> +#define MAX77843_CHG_BATP_OK			BIT(2)
+> +#define MAX77843_CHG_BAT_OK			BIT(3)
+> +#define MAX77843_CHG_CHG_OK			BIT(4)
+> +#define MAX77843_CHG_WCIN_OK			BIT(5)
+> +#define MAX77843_CHG_CHGIN_OK			BIT(6)
+> +#define MAX77843_CHG_AICL_OK			BIT(7)
+> +
+> +/* MAX77843 CHG_DETAILS_00 register */
+> +#define MAX77843_CHG_BAT_DTLS			BIT(0)
+> +
+> +/* MAX77843 CHG_DETAILS_01 register */
+> +#define MAX77843_CHG_DTLS_MASK			0x0f
+> +#define MAX77843_CHG_PQ_MODE			0x00
+> +#define MAX77843_CHG_CC_MODE			0x01
+> +#define MAX77843_CHG_CV_MODE			0x02
+> +#define MAX77843_CHG_TO_MODE			0x03
+> +#define MAX77843_CHG_DO_MODE			0x04
+> +#define MAX77843_CHG_HT_MODE			0x05
+> +#define MAX77843_CHG_TF_MODE			0x06
+> +#define MAX77843_CHG_TS_MODE			0x07
+> +#define MAX77843_CHG_OFF_MODE			0x08
+> +
+> +#define MAX77843_CHG_BAT_DTLS_MASK		0xf0
+> +#define MAX77843_CHG_NO_BAT			(0x00 << 4)
+> +#define MAX77843_CHG_LOW_VOLT_BAT		(0x01 << 4)
+> +#define MAX77843_CHG_LONG_BAT_TIME		(0x02 << 4)
+> +#define MAX77843_CHG_OK_BAT			(0x03 << 4)
+> +#define MAX77843_CHG_OK_LOW_VOLT_BAT		(0x04 << 4)
+> +#define MAX77843_CHG_OVER_VOLT_BAT		(0x05 << 4)
+> +#define MAX77843_CHG_OVER_CURRENT_BAT		(0x06 << 4)
+> +
+> +/* MAX77843 CHG_CNFG_00 register */
+> +#define MAX77843_CHG_DISABLE			0x00
+> +#define MAX77843_CHG_ENABLE			0x05
+> +#define MAX77843_CHG_MASK			0x01
+> +#define MAX77843_CHG_BUCK_MASK			0x04
+> +
+> +/* MAX77843 CHG_CNFG_01 register */
+> +#define MAX77843_CHG_RESTART_THRESHOLD_100	0x00
+> +#define MAX77843_CHG_RESTART_THRESHOLD_150	0x10
+> +#define MAX77843_CHG_RESTART_THRESHOLD_200	0x20
+> +#define MAX77843_CHG_RESTART_THRESHOLD_DISABLE	0x30
+> +
+> +/* MAX77843 CHG_CNFG_02 register */
+> +#define MAX77843_CHG_FAST_CHG_CURRENT_MIN	100000
+> +#define MAX77843_CHG_FAST_CHG_CURRENT_MAX	3150000
+> +#define MAX77843_CHG_FAST_CHG_CURRENT_STEP	50000
+> +#define MAX77843_CHG_FAST_CHG_CURRENT_MASK	0x3f
+> +#define MAX77843_CHG_OTG_ILIMIT_500		(0x00 << 6)
+> +#define MAX77843_CHG_OTG_ILIMIT_900		(0x01 << 6)
+> +#define MAX77843_CHG_OTG_ILIMIT_1200		(0x02 << 6)
+> +#define MAX77843_CHG_OTG_ILIMIT_1500		(0x03 << 6)
+> +#define MAX77843_CHG_OTG_ILIMIT_MASK		0xc0
+> +
+> +/* MAX77843 CHG_CNFG_03 register */
+> +#define MAX77843_CHG_TOP_OFF_CURRENT_MIN	125000
+> +#define MAX77843_CHG_TOP_OFF_CURRENT_MAX	650000
+> +#define MAX77843_CHG_TOP_OFF_CURRENT_STEP	75000
+> +#define MAX77843_CHG_TOP_OFF_CURRENT_MASK	0x07
+> +
+> +/* MAX77843 CHG_CNFG_06 register */
+> +#define MAX77843_CHG_WRITE_CAP_BLOCK		0x10
+> +#define MAX77843_CHG_WRITE_CAP_UNBLOCK		0x0C
+> +
+> +/* MAX77843_CHG_CNFG_09_register */
+> +#define MAX77843_CHG_INPUT_CURRENT_LIMIT_MIN	100000
+> +#define MAX77843_CHG_INPUT_CURRENT_LIMIT_MAX	4000000
+> +#define MAX77843_CHG_INPUT_CURRENT_LIMIT_REF	3367000
+> +#define MAX77843_CHG_INPUT_CURRENT_LIMIT_STEP	33000
+> +
+> +#define MAX77843_MUIC_ADC			BIT(0)
+> +#define MAX77843_MUIC_ADCERROR			BIT(2)
+> +#define MAX77843_MUIC_ADC1K			BIT(3)
+> +
+> +#define MAX77843_MUIC_CHGTYP			BIT(0)
+> +#define MAX77843_MUIC_CHGDETRUN			BIT(1)
+> +#define MAX77843_MUIC_DCDTMR			BIT(2)
+> +#define MAX77843_MUIC_DXOVP			BIT(3)
+> +#define MAX77843_MUIC_VBVOLT			BIT(4)
+> +
+> +#define MAX77843_MUIC_VBADC			BIT(0)
+> +#define MAX77843_MUIC_VDNMON			BIT(1)
+> +#define MAX77843_MUIC_DNRES			BIT(2)
+> +#define MAX77843_MUIC_MPNACK			BIT(3)
+> +#define MAX77843_MUIC_MRXBUFOW			BIT(4)
+> +#define MAX77843_MUIC_MRXTRF			BIT(5)
+> +#define MAX77843_MUIC_MRXPERR			BIT(6)
+> +#define MAX77843_MUIC_MRXRDY			BIT(7)
+> +
+> +/* MAX77843 INTSRCMASK register */
+> +#define MAX77843_INTSRCMASK_CHGR		0
+> +#define MAX77843_INTSRCMASK_SYS			1
+> +#define MAX77843_INTSRCMASK_FG			2
+> +#define MAX77843_INTSRCMASK_MUIC		3
+> +
+> +#define MAX77843_INTSRCMASK_CHGR_MASK          BIT(MAX77843_INTSRCMASK_CHGR)
+> +#define MAX77843_INTSRCMASK_SYS_MASK           BIT(MAX77843_INTSRCMASK_SYS)
+> +#define MAX77843_INTSRCMASK_FG_MASK            BIT(MAX77843_INTSRCMASK_FG)
+> +#define MAX77843_INTSRCMASK_MUIC_MASK          BIT(MAX77843_INTSRCMASK_MUIC)
+> +
+> +#define MAX77843_INTSRC_MASK_MASK \
+> +	(MAX77843_INTSRCMASK_MUIC_MASK | MAX77843_INTSRCMASK_FG_MASK | \
+> +	MAX77843_INTSRCMASK_SYS_MASK | MAX77843_INTSRCMASK_CHGR_MASK)
+> +
+> +/* MAX77843 STATUS register*/
+> +#define STATUS1_ADC_SHIFT			0
+> +#define STATUS1_ADCERROR_SHIFT			6
+> +#define STATUS1_ADC1K_SHIFT			7
+> +#define STATUS2_CHGTYP_SHIFT			0
+> +#define STATUS2_CHGDETRUN_SHIFT			3
+> +#define STATUS2_DCDTMR_SHIFT			4
+> +#define STATUS2_DXOVP_SHIFT			5
+> +#define STATUS2_VBVOLT_SHIFT			6
+> +#define STATUS3_VBADC_SHIFT			0
+> +#define STATUS3_VDNMON_SHIFT			4
+> +#define STATUS3_DNRES_SHIFT			5
+> +#define STATUS3_MPNACK_SHIFT			6
+> +
+> +#define MAX77843_MUIC_STATUS1_ADC_MASK		(0x1f << STATUS1_ADC_SHIFT)
+> +#define MAX77843_MUIC_STATUS1_ADCERROR_MASK	BIT(STATUS1_ADCERROR_SHIFT)
+> +#define MAX77843_MUIC_STATUS1_ADC1K_MASK	BIT(STATUS1_ADC1K_SHIFT)
+> +#define MAX77843_MUIC_STATUS2_CHGTYP_MASK	(0x7 << STATUS2_CHGTYP_SHIFT)
+> +#define MAX77843_MUIC_STATUS2_CHGDETRUN_MASK	BIT(STATUS2_CHGDETRUN_SHIFT)
+> +#define MAX77843_MUIC_STATUS2_DCDTMR_MASK	BIT(STATUS2_DCDTMR_SHIFT)
+> +#define MAX77843_MUIC_STATUS2_DXOVP_MASK	BIT(STATUS2_DXOVP_SHIFT)
+> +#define MAX77843_MUIC_STATUS2_VBVOLT_MASK	BIT(STATUS2_VBVOLT_SHIFT)
+> +#define MAX77843_MUIC_STATUS3_VBADC_MASK	(0xf << STATUS3_VBADC_SHIFT)
+> +#define MAX77843_MUIC_STATUS3_VDNMON_MASK	BIT(STATUS3_VDNMON_SHIFT)
+> +#define MAX77843_MUIC_STATUS3_DNRES_MASK	BIT(STATUS3_DNRES_SHIFT)
+> +#define MAX77843_MUIC_STATUS3_MPNACK_MASK	BIT(STATUS3_MPNACK_SHIFT)
+> +
+> +/* MAX77843 CONTROL register */
+> +#define CONTROL1_COMP1SW_SHIFT			0
+> +#define CONTROL1_COMP2SW_SHIFT			3
+> +#define CONTROL1_IDBEN_SHIFT			7
+> +#define CONTROL2_LOWPWR_SHIFT			0
+> +#define CONTROL2_ADCEN_SHIFT			1
+> +#define CONTROL2_CPEN_SHIFT			2
+> +#define CONTROL2_ACC_DET_SHIFT			5
+> +#define CONTROL2_USBCPINT_SHIFT			6
+> +#define CONTROL2_RCPS_SHIFT			7
+> +#define CONTROL3_JIGSET_SHIFT			0
+> +#define CONTROL4_ADCDBSET_SHIFT			0
+> +#define CONTROL4_USBAUTO_SHIFT			4
+> +#define CONTROL4_FCTAUTO_SHIFT			5
+> +#define CONTROL4_ADCMODE_SHIFT			6
+> +
+> +#define MAX77843_MUIC_CONTROL1_COMP1SW_MASK	(0x7 << CONTROL1_COMP1SW_SHIFT)
+> +#define MAX77843_MUIC_CONTROL1_COMP2SW_MASK	(0x7 << CONTROL1_COMP2SW_SHIFT)
+> +#define MAX77843_MUIC_CONTROL1_IDBEN_MASK	BIT(CONTROL1_IDBEN_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_LOWPWR_MASK	BIT(CONTROL2_LOWPWR_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_ADCEN_MASK	BIT(CONTROL2_ADCEN_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_CPEN_MASK	BIT(CONTROL2_CPEN_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_ACC_DET_MASK	BIT(CONTROL2_ACC_DET_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_USBCPINT_MASK	BIT(CONTROL2_USBCPINT_SHIFT)
+> +#define MAX77843_MUIC_CONTROL2_RCPS_MASK	BIT(CONTROL2_RCPS_SHIFT)
+> +#define MAX77843_MUIC_CONTROL3_JIGSET_MASK	(0x3 << CONTROL3_JIGSET_SHIFT)
+> +#define MAX77843_MUIC_CONTROL4_ADCDBSET_MASK	(0x3 << CONTROL4_ADCDBSET_SHIFT)
+> +#define MAX77843_MUIC_CONTROL4_USBAUTO_MASK	BIT(CONTROL4_USBAUTO_SHIFT)
+> +#define MAX77843_MUIC_CONTROL4_FCTAUTO_MASK	BIT(CONTROL4_FCTAUTO_SHIFT)
+> +#define MAX77843_MUIC_CONTROL4_ADCMODE_MASK	(0x3 << CONTROL4_ADCMODE_SHIFT)
+> +
+> +/* MAX77843 switch port */
+> +#define COM_OPEN				0
+> +#define COM_USB					1
+> +#define COM_AUDIO				2
+> +#define COM_UART				3
+> +#define COM_AUX_USB				4
+> +#define COM_AUX_UART				5
+> +
+> +#define CONTROL1_COM_SW \
+> +	(MAX77843_MUIC_CONTROL1_COMP1SW_MASK | \
+> +	 MAX77843_MUIC_CONTROL1_COMP2SW_MASK)
+> +
+> +#define CONTROL1_SW_OPEN \
+> +	(COM_OPEN << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_OPEN << CONTROL1_COMP2SW_SHIFT)
+> +#define CONTROL1_SW_USB \
+> +	(COM_USB << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_USB << CONTROL1_COMP2SW_SHIFT)
+> +#define CONTROL1_SW_AUDIO \
+> +	(COM_AUDIO << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_AUDIO << CONTROL1_COMP2SW_SHIFT)
+> +#define CONTROL1_SW_UART \
+> +	(COM_UART << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_UART << CONTROL1_COMP2SW_SHIFT)
+> +#define CONTROL1_SW_AUX_USB \
+> +	(COM_AUX_USB << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_AUX_USB << CONTROL1_COMP2SW_SHIFT)
+> +#define CONTROL1_SW_AUX_UART \
+> +	(COM_AUX_UART << CONTROL1_COMP1SW_SHIFT | \
+> +	 COM_AUX_UART << CONTROL1_COMP2SW_SHIFT)
+> +
+> +#define MAX77843_DISABLE			0
+> +#define MAX77843_ENABLE				1
+> +
+> +#define CONTROL4_AUTO_DISABLE \
+> +	(MAX77843_DISABLE << CONTROL4_USBAUTO_SHIFT) | \
+> +	(MAX77843_DISABLE << CONTROL4_FCTAUTO_SHIFT)
+> +#define CONTROL4_AUTO_ENABLE \
+> +	(MAX77843_ENABLE << CONTROL4_USBAUTO_SHIFT) | \
+> +	(MAX77843_ENABLE << CONTROL4_FCTAUTO_SHIFT)
+> +
+> +/* MAX77843 SAFEOUT LDO Control register */
+> +#define SAFEOUTCTRL_SAFEOUT1_SHIFT		0
+> +#define SAFEOUTCTRL_SAFEOUT2_SHIFT		2
+> +#define SAFEOUTCTRL_ENSAFEOUT1_SHIFT		6
+> +#define SAFEOUTCTRL_ENSAFEOUT2_SHIFT		7
+> +
+> +#define MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT1 \
+> +		BIT(SAFEOUTCTRL_ENSAFEOUT1_SHIFT)
+> +#define MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT2 \
+> +		BIT(SAFEOUTCTRL_ENSAFEOUT2_SHIFT)
+> +#define MAX77843_REG_SAFEOUTCTRL_SAFEOUT1_MASK \
+> +		(0x3 << SAFEOUTCTRL_SAFEOUT1_SHIFT)
+> +#define MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK \
+> +		(0x3 << SAFEOUTCTRL_SAFEOUT2_SHIFT)
+> +
+> +struct max77843 {
+> +	struct device *dev;
+> +
+> +	struct i2c_client *i2c;
+> +	struct i2c_client *i2c_chg;
+> +	struct i2c_client *i2c_fuel;
+> +	struct i2c_client *i2c_muic;
+> +
+> +	struct regmap *regmap;
+> +	struct regmap *regmap_chg;
+> +	struct regmap *regmap_fuel;
+> +	struct regmap *regmap_muic;
+> +
+> +	struct regmap_irq_chip_data *irq_data;
+> +	struct regmap_irq_chip_data *irq_data_chg;
+> +	struct regmap_irq_chip_data *irq_data_fuel;
+> +	struct regmap_irq_chip_data *irq_data_muic;
+> +
+> +	int irq;
+> +};
+> +#endif /* __MAX77843_H__ */
+> 
 
-No, it does not. The default thresholds on 5420 have the alerts
-starting at 85C. The incorrect temperature read is in the range of
-74-78C for 5420 and so with the default thresholds no trip occurs.
-Once the tmu is properly initialized in the probe function, the error
-will anyway not occur.
+Looks good to me.
 
->
-> It is strange, that only this exceeded temp happens for thermal zone 0
-> and 4. Other three show correct temp.
->
-> Off topic - where are placed those two misbehaving zones? Isn't thermal
-> zone 4 the one for GPU?
-
-Yes, zone4 is for the GPU.
-
-On the arndale octa, if you reduce the thresholds do you see the same
-behavior I observe ? or  can you just add the debug prints that I have
-been using and see what temperature is being reported initially on the
-arndale octa board you have.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 Thanks,
-Abhilash
+Chanwoo Choi
