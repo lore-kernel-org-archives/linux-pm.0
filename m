@@ -1,166 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
-Date: Wed, 04 Feb 2015 19:07:53 +0100
-Message-ID: <8043345.BDfdhXvZOx@amdc1032>
-References: <1423045646-20592-1-git-send-email-k.kozlowski@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v3 5/6] regulator: max77843: Add max77843 regulator driver
+Date: Wed, 4 Feb 2015 20:26:45 +0000
+Message-ID: <20150204202645.GG21293@sirena.org.uk>
+References: <1423025771-4139-1-git-send-email-jaewon02.kim@samsung.com>
+ <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1423045646-20592-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="m5HNjMGSgJ9Rmrrn"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50873 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161055AbbBDU04 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Feb 2015 15:26:56 -0500
+Content-Disposition: inline
+In-Reply-To: <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
 
-Hi,
+--m5HNjMGSgJ9Rmrrn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Wednesday, February 04, 2015 11:27:26 AM Krzysztof Kozlowski wrote:
-> The Exynos cpuidle driver has coupled cpuidle built-in so it cannot b=
-e
-> built without SMP:
->=20
-> arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter_aft=
-r=E2=80=99:
-> arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of funct=
-ion =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit-fun=
-ction-declaration]
-> arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_aftr':
-> ../arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boot_re=
-g_base'
-> arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdown':
-> ../arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_cpu_=
-power_down'
->=20
-> Make the cpuidle driver depending on SMP because this will be the
-> fastest way to fix build break without adding a bunch of ifdefs in fe=
-w
-> places.
+On Wed, Feb 04, 2015 at 01:56:10PM +0900, Jaewon Kim wrote:
+> This patch adds new regulator driver to support max77843
+> MFD(Multi Function Device) chip`s regulators.
+> The Max77843 has two voltage regulators for USB safeout.
 
-There shouldn't be a lot of new ifdefs (please see below) and I would
-very much prefer for cpuidle to stay supported also on UP kernels.
+Applied, thanks.
 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> ---
->  arch/arm/mach-exynos/pm.c   | 2 ++
->  drivers/cpuidle/Kconfig.arm | 3 ++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index e6209dadc00d..17db00ff7f3a 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
->  	cpu_pm_exit();
->  }
-> =20
-> +#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
->  static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
-> =20
->  static int exynos_cpu0_enter_aftr(void)
-> @@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupled_exynos=
-_data =3D {
->  	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
->  	.post_enter_aftr		=3D exynos_post_enter_aftr,
->  };
-> +#endif /* CONFIG_ARM_EXYNOS_CPUIDLE */
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 8e07c9419153..5eb86a4f74d9 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -55,7 +55,8 @@ config ARM_AT91_CPUIDLE
->  config ARM_EXYNOS_CPUIDLE
->  	bool "Cpu Idle Driver for the Exynos processors"
->  	depends on ARCH_EXYNOS
-> -	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> +	depends on SMP
-> +	select ARCH_NEEDS_CPU_IDLE_COUPLED
->  	help
->  	  Select this to enable cpuidle for Exynos processors
+--m5HNjMGSgJ9Rmrrn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-How's about the patch below instead?  It builds fine for UP and SMP.
-I will do more testing tomorrow (unfortunately it seems that something
-else broke Origen4210 in -next).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-=46rom: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
+iQEcBAEBCAAGBQJU0oCEAAoJECTWi3JdVIfQU2wIAIMnYXnqytxjfO3r46DMNmOD
+YAsnu6FTtPmYTXIEbPKJz3Aqr8RR1hH2HsqKUQVaRQ3c9OgGBFrvrUtk+ZF4FFvC
+YnhwPZqK1Dk0OcHetrRdoC1j12HDtshnWy8+E4wJFAnWKlafqLrYMvGuewlWE6cK
+exwPzYvZftI3sAUISbyCkIV4h/2LLMJQ8EFVaSxfsgJ9HQUwLiXvBSaKgR2hj7mu
+TBaZWPAnADgG+Oi8wVabRZ5q/uhPbZvdjOSSLc1aAII65+ccWyWeV2heVuH9MpM0
+U15Ea1U1KG5z7pE/qPjsgmORtJuVseYBl65auLxnc/MCWS59ENOdilvvzsfY7DU=
+=I45u
+-----END PGP SIGNATURE-----
 
-The Exynos cpuidle driver has coupled cpuidle built-in so it cannot be
-built without SMP:
-
-arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter_aftr=E2=
-=80=99:
-arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of functio=
-n =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit-funct=
-ion-declaration]
-arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_aftr':
-=2E./arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boot_re=
-g_base'
-arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdown':
-=2E./arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_cpu_=
-power_down'
-
-=46ix it by adding missing checks for SMP.
-
-Reported-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/mach-exynos/exynos.c    |    2 +-
- arch/arm/mach-exynos/pm.c        |    2 ++
- drivers/cpuidle/cpuidle-exynos.c |    3 ++-
- 3 files changed, 5 insertions(+), 2 deletions(-)
-
-Index: b/arch/arm/mach-exynos/exynos.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/arm/mach-exynos/exynos.c	2015-02-04 18:30:23.555819717 +0100
-+++ b/arch/arm/mach-exynos/exynos.c	2015-02-04 18:43:23.539807815 +0100
-@@ -211,7 +211,7 @@ static void __init exynos_dt_machine_ini
- 	if (!IS_ENABLED(CONFIG_SMP))
- 		exynos_sysram_init();
-=20
--#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
-+#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
- 	if (of_machine_is_compatible("samsung,exynos4210"))
- 		exynos_cpuidle.dev.platform_data =3D &cpuidle_coupled_exynos_data;
- #endif
-Index: b/arch/arm/mach-exynos/pm.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/arm/mach-exynos/pm.c	2015-02-04 18:30:23.563819719 +0100
-+++ b/arch/arm/mach-exynos/pm.c	2015-02-04 18:47:32.951804008 +0100
-@@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
- 	cpu_pm_exit();
- }
-=20
-+#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
- static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
-=20
- static int exynos_cpu0_enter_aftr(void)
-@@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupl
- 	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
- 	.post_enter_aftr		=3D exynos_post_enter_aftr,
- };
-+#endif /* CONFIG_SMP && CONFIG_ARM_EXYNOS_CPUIDLE */
-Index: b/drivers/cpuidle/cpuidle-exynos.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:30:32.935819577 +0=
-100
-+++ b/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:46:01.619805400 +0=
-100
-@@ -117,7 +117,8 @@ static int exynos_cpuidle_probe(struct p
- {
- 	int ret;
-=20
--	if (of_machine_is_compatible("samsung,exynos4210")) {
-+	if (IS_ENABLED(CONFIG_SMP) &&
-+	    of_machine_is_compatible("samsung,exynos4210")) {
- 		exynos_cpuidle_pdata =3D pdev->dev.platform_data;
-=20
- 		ret =3D cpuidle_register(&exynos_coupled_idle_driver,
+--m5HNjMGSgJ9Rmrrn--
