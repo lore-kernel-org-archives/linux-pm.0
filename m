@@ -1,85 +1,48 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: ACPI PCC probe failed.
-Date: Wed, 4 Feb 2015 17:06:26 -0500
-Message-ID: <CAJ5Y-eY=1YAeD3jCxSzuws=9qZQu2vcTgG9eBR0Nu+C6qNst2g@mail.gmail.com>
-References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com>
-	<158128306.gX9FjqECDu@vostro.rjw.lan>
-	<CAJ5Y-eaBH6q7X5ZC-UgCLnxOO9nXnJPY-kdq417qHhG0M-+obw@mail.gmail.com>
-	<2240641.KgmUOJm3t4@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2240641.KgmUOJm3t4@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Cristian <caravena@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+Subject: [PATCH v3 0/6] Convert twl4030_madc_battery to IIO consumer and add DT aupport
+Date: Wed,  4 Feb 2015 23:14:29 +0100
+Message-ID: <1423088075-10025-1-git-send-email-marek@goldelico.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org, gta04-owner-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org, Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 4 February 2015 at 17:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, February 04, 2015 09:56:20 AM Ashwin Chaugule wrote:
->> Hi Rafael,
->>
->> On 4 February 2015 at 08:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Tuesday, February 03, 2015 09:44:36 PM Cristian wrote:
->> >> 2015-02-03 12:11 GMT-03:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
->> >> > On Tuesday, February 03, 2015 10:40:00 AM Cristian wrote:
->> >
->> > So it looks like you build the PCC mailbox driver which is new in 3.19-rc and
->> > that driver fails to load, because it doesn't find hardware to work with.
->> >
->> > The message is harmless, but it also is not useful.  The driver in question
->> > seems to be overly verbose to me in general.
->>
->> Apologies. Looks like leftover from some early "printk" style debugging. :)
->
-> Well, does that mean I should apply the patch below?
+This patches adding support for twl4030_madc_battery to use twl4030_madc iio framework + DT support.
+Patches was tested on gta04 board. twl4030_madc_battery driver is converted in
+first patch to iio consumer and in next patches is added support for devicetree
++ some small fixes for module autoloading.
 
-Sure. Thanks.
+Changes from V2:
+- fix property names
+- add MODULE_DEVICE_TABLE and MODULE_ALIAS
 
->
->> > The patch below should make the message go away unless the printing of debug
->> > messages is on.
->> >
->> > Ashwin, that whole thing requires cleaning up:
->> >  - It prints uninteresting debug messages with KERN_ERR or warning priority in
->> >    *many* places.
->> >  - The error codes from acpi_pcc_probe() are ignored, so why bother to return
->> >    any error codes from there?
->> >  - If platform_create_bundle() fails, the debug message doesn't tell us the
->> >    reason, so why bother to print it?
->> >
->> > I'm not going to consider any users of this for merging before that cleanup
->> > happens.
->>
->> In V4 of the CPPC patchset I've simplified the PCC code a lot which
->> should make many of the prints go away. Can we consider that patch
->> (I'll add any more pr_debugs to it) or would you prefer having a
->> separate cleanup patch for this?
->
-> This is a patch for the mailbox subsystem maintainer to consider.  If it is
-> accepted and if there are any of these excessvely verbose messages still present,
-> I'll expect them to be fixed in a separate patch.
+Changes from V1:
+- use iio_read_channel_processed instead iio_read_channel_processed
+- convert probe to use devm_ as part of adding error handling for iio
+- free iio channels on error and on module removal
 
-Ok.
+[1] - https://lkml.org/lkml/2014/2/26/482dd
 
->
-> I have one more concern about this driver.  Namely, what benefit is there to
-> people like Cristian from it at all?
+Marek Belisko (6):
+  power: twl4030-madc-battery: Convert to iio consumer.
+  power: twl4030_madc_battery: Add device tree support
+  Documentation: DT: Document twl4030-madc-battery bindings
+  ARM: dts: omap3-gta04: Add battery support
+  power: twl4030_madc_battery: Add of_twl4030_madc_match to
+    MODULE_DEVICE_TABLE
+  power: twl4030_madc_battery: Add missing MODULE_ALIAS
 
-Its of use only if they have a PCC client (MPST, CPPC, RAS) driver.
-Looks like PCC was explicitly enabled in this kernel.
+ .../bindings/power_supply/twl4030_madc_battery.txt |  43 +++++
+ arch/arm/boot/dts/omap3-gta04.dtsi                 |  30 ++++
+ drivers/power/twl4030_madc_battery.c               | 183 +++++++++++++++++----
+ 3 files changed, 221 insertions(+), 35 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
 
-config PCC
-bool "Platform Communication Channel Driver"
-depends on ACPI
-help
- ACPI 5.0+ spec defines a generic mode of communication
- between the OS and a platform such as the BMC. This medium
- (PCC) is typically used by CPPC (ACPI CPU Performance management),
- RAS (ACPI reliability protocol) and MPST (ACPI Memory power
- states). Select this driver if your platform implements the
- PCC clients mentioned above.
+-- 
+1.9.1
 
-
-Thanks,
-Ashwin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
