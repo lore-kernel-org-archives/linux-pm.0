@@ -1,460 +1,53 @@
-From: "Ivan T. Ivanov" <iivanov-NEYub+7Iv8PQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v5] thermal: Add QPNP PMIC temperature alarm driver
-Date: Thu,  5 Feb 2015 19:12:56 +0200
-Message-ID: <1423156376-16041-1-git-send-email-iivanov@mm-sol.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Collins <collinsd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4] regulator: max77843: Add max77843 regulator driver
+Date: Thu, 5 Feb 2015 17:36:53 +0000
+Message-ID: <20150205173653.GZ21293@sirena.org.uk>
+References: <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
+ <1423118158-7266-1-git-send-email-jaewon02.kim@samsung.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="SusxIpO/K/G//hYA"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52038 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953AbbBERhE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 12:37:04 -0500
+Content-Disposition: inline
+In-Reply-To: <1423118158-7266-1-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 
-Add support for the temperature alarm peripheral found inside
-Qualcomm plug-and-play (QPNP) PMIC chips. The temperature alarm
-peripheral outputs a pulse on an interrupt line whenever the
-thermal over temperature stage value changes.
 
-Register a thermal sensor. The temperature reported by this thermal
-sensor device should reflect the actual PMIC die temperature if an
-ADC is present on the given PMIC. If no ADC is present, then the
-reported temperature should be estimated from the over temperature
-stage value.
+--SusxIpO/K/G//hYA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Cc: David Collins <collinsd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Signed-off-by: Ivan T. Ivanov <iivanov-NEYub+7Iv8PQT0dZR+AlfA@public.gmane.org>
----
+On Thu, Feb 05, 2015 at 03:35:58PM +0900, Jaewon Kim wrote:
+> This patch adds new regulator driver to support max77843
+> MFD(Multi Function Device) chip`s regulators.
+> The Max77843 has two voltage regulators for USB safeout.
 
-Changes since v4:
+I've already applied the previous version so any further updates needed
+should be sent as new patches that apply on top of what's already been
+applied.  I've applied this but please in future send incremental
+patches.
 
-- Reorder IRQ platform get and IIO channel get, this
-  fixes error exit path.
+--SusxIpO/K/G//hYA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-- Reorder IRQ request and sensor register calls, this
-  simplify error exit path.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-v4: https://lkml.org/lkml/2015/2/2/413
+iQEcBAEBCAAGBQJU06o0AAoJECTWi3JdVIfQCHUH/2LhZjv7UECRwU7t3iqFwYt1
+m9r12wejhXBcI7M14Lx4N9+W59RR1zsr3fekBETOwupjIrfZPIuaYy73UDdbas3B
+vnia+5/4o1Fjzju58nONx/yfZ76aHxLd0gDI0RA+PCum2I4S+I6QY7XfGc8hI+xN
+5ef+O/yjFzT7b1dHnrLGfukPOA7K9N/KZWwSxmBqrAEjXO7oCPM487HJmFn5Ycg3
+ynIP8P4gjq5KkUpCy9fsvqJR1DSjWZ3pzY+KxLuMAfVKtKSE+CYPthaSKnPa17hi
+eJmmo/tTBnyOTSqZUikglMM9+/L0m0mabDo2a038y9ZBrrLpPwomQdH7YijGPL8=
+=pc04
+-----END PGP SIGNATURE-----
 
- .../bindings/thermal/qcom-spmi-temp-alarm.txt      |  57 ++++
- drivers/thermal/Kconfig                            |  11 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/qcom-spmi-temp-alarm.c             | 309 +++++++++++++++++++++
- 4 files changed, 378 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
- create mode 100644 drivers/thermal/qcom-spmi-temp-alarm.c
-
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
-new file mode 100644
-index 0000000..290ec06
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
-@@ -0,0 +1,57 @@
-+Qualcomm QPNP PMIC Temperature Alarm
-+
-+QPNP temperature alarm peripherals are found inside of Qualcomm PMIC chips
-+that utilize the Qualcomm SPMI implementation. These peripherals provide an
-+interrupt signal and status register to identify high PMIC die temperature.
-+
-+Required properties:
-+- compatible:      Should contain "qcom,spmi-temp-alarm".
-+- reg:             Specifies the SPMI address and length of the controller's
-+                   registers.
-+- interrupts:      PMIC temperature alarm interrupt.
-+- #thermal-sensor-cells: Should be 0. See thermal.txt for a description.
-+
-+Optional properties:
-+- io-channels:     Should contain IIO channel specifier for the ADC channel,
-+                   which report chip die temperature.
-+- io-channel-names: Should contain "thermal".
-+
-+Example:
-+
-+	pm8941_temp: thermal-alarm@2400 {
-+		compatible = "qcom,spmi-temp-alarm";
-+		reg = <0x2400 0x100>;
-+		interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
-+		#thermal-sensor-cells = <0>;
-+
-+		io-channels = <&pm8941_vadc VADC_DIE_TEMP>;
-+		io-channel-names = "thermal";
-+	};
-+
-+	thermal-zones {
-+		pm8941 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&pm8941_temp>;
-+
-+			trips {
-+				passive {
-+					temperature = <1050000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				alert {
-+					temperature = <125000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+				crit {
-+					temperature = <145000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index af40db0..30aee81 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -299,4 +299,15 @@ depends on ARCH_STI && OF
- source "drivers/thermal/st/Kconfig"
- endmenu
- 
-+config QCOM_SPMI_TEMP_ALARM
-+	tristate "Qualcomm SPMI PMIC Temperature Alarm"
-+	depends on OF && SPMI && IIO
-+	select REGMAP_SPMI
-+	help
-+	  This enables a thermal sysfs driver for Qualcomm plug-and-play (QPNP)
-+	  PMIC devices. It shows up in sysfs as a thermal sensor with multiple
-+	  trip points. The temperature reported by the thermal sensor reflects the
-+	  real time die temperature if an ADC is present or an estimate of the
-+	  temperature based upon the over temperature stage value.
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index fa0dc48..1fe8665 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -22,6 +22,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
- thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
- 
- # platform thermal drivers
-+obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
- obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
- obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
- obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-new file mode 100644
-index 0000000..c8d27b8
---- /dev/null
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -0,0 +1,309 @@
-+/*
-+ * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/iio/consumer.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/thermal.h>
-+
-+#define QPNP_TM_REG_TYPE		0x04
-+#define QPNP_TM_REG_SUBTYPE		0x05
-+#define QPNP_TM_REG_STATUS		0x08
-+#define QPNP_TM_REG_SHUTDOWN_CTRL1	0x40
-+#define QPNP_TM_REG_ALARM_CTRL		0x46
-+
-+#define QPNP_TM_TYPE			0x09
-+#define QPNP_TM_SUBTYPE			0x08
-+
-+#define STATUS_STAGE_MASK		0x03
-+
-+#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
-+
-+#define ALARM_CTRL_FORCE_ENABLE		0x80
-+
-+/*
-+ * Trip point values based on threshold control
-+ * 0 = {105 C, 125 C, 145 C}
-+ * 1 = {110 C, 130 C, 150 C}
-+ * 2 = {115 C, 135 C, 155 C}
-+ * 3 = {120 C, 140 C, 160 C}
-+*/
-+#define TEMP_STAGE_STEP			20000	/* Stage step: 20.000 C */
-+#define TEMP_STAGE_HYSTERESIS		2000
-+
-+#define TEMP_THRESH_MIN			105000	/* Threshold Min: 105 C */
-+#define TEMP_THRESH_STEP		5000	/* Threshold step: 5 C */
-+
-+#define THRESH_MIN			0
-+
-+/* Temperature in Milli Celsius reported during stage 0 if no ADC is present */
-+#define DEFAULT_TEMP			37000
-+
-+struct qpnp_tm_chip {
-+	struct regmap			*map;
-+	struct thermal_zone_device	*tz_dev;
-+	long				temp;
-+	unsigned int			thresh;
-+	unsigned int			stage;
-+	unsigned int			prev_stage;
-+	unsigned int			base;
-+	struct iio_channel		*adc;
-+};
-+
-+static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
-+{
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(chip->map, chip->base + addr, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	*data = val;
-+	return 0;
-+}
-+
-+static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
-+{
-+	return regmap_write(chip->map, chip->base + addr, data);
-+}
-+
-+/*
-+ * This function updates the internal temp value based on the
-+ * current thermal stage and threshold as well as the previous stage
-+ */
-+static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
-+{
-+	unsigned int stage;
-+	int ret;
-+	u8 reg = 0;
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	stage = reg & STATUS_STAGE_MASK;
-+
-+	if (stage > chip->stage) {
-+		/* increasing stage, use lower bound */
-+		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-+			     chip->thresh * TEMP_THRESH_STEP +
-+			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
-+	} else if (stage < chip->stage) {
-+		/* decreasing stage, use upper bound */
-+		chip->temp = stage * TEMP_STAGE_STEP +
-+			     chip->thresh * TEMP_THRESH_STEP -
-+			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
-+	}
-+
-+	chip->stage = stage;
-+
-+	return 0;
-+}
-+
-+static int qpnp_tm_get_temp(void *data, long *temp)
-+{
-+	struct qpnp_tm_chip *chip = data;
-+	int ret, mili_celsius;
-+
-+	if (!temp)
-+		return -EINVAL;
-+
-+	if (IS_ERR(chip->adc)) {
-+		ret = qpnp_tm_update_temp_no_adc(chip);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		ret = iio_read_channel_processed(chip->adc, &mili_celsius);
-+		if (ret < 0)
-+			return ret;
-+
-+		chip->temp = mili_celsius;
-+	}
-+
-+	*temp = chip->temp < 0 ? 0 : chip->temp;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops qpnp_tm_sensor_ops = {
-+	.get_temp = qpnp_tm_get_temp,
-+};
-+
-+static irqreturn_t qpnp_tm_isr(int irq, void *data)
-+{
-+	struct qpnp_tm_chip *chip = data;
-+
-+	thermal_zone_device_update(chip->tz_dev);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * This function initializes the internal temp value based on only the
-+ * current thermal stage and threshold. Setup threshold control and
-+ * disable shutdown override.
-+ */
-+static int qpnp_tm_init(struct qpnp_tm_chip *chip)
-+{
-+	int ret;
-+	u8 reg;
-+
-+	chip->thresh = THRESH_MIN;
-+	chip->temp = DEFAULT_TEMP;
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	chip->stage = reg & STATUS_STAGE_MASK;
-+
-+	if (chip->stage)
-+		chip->temp = chip->thresh * TEMP_THRESH_STEP +
-+			     (chip->stage - 1) * TEMP_STAGE_STEP +
-+			     TEMP_THRESH_MIN;
-+
-+	/*
-+	 * Set threshold and disable software override of stage 2 and 3
-+	 * shutdowns.
-+	 */
-+	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-+	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Enable the thermal alarm PMIC module in always-on mode. */
-+	reg = ALARM_CTRL_FORCE_ENABLE;
-+	ret = qpnp_tm_write(chip, QPNP_TM_REG_ALARM_CTRL, reg);
-+
-+	return ret;
-+}
-+
-+static int qpnp_tm_probe(struct platform_device *pdev)
-+{
-+	struct qpnp_tm_chip *chip;
-+	struct device_node *node;
-+	u8 type, subtype;
-+	u32 res[2];
-+	int ret, irq;
-+
-+	node = pdev->dev.of_node;
-+
-+	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-+	if (!chip)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&pdev->dev, chip);
-+
-+	chip->map = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!chip->map)
-+		return -ENXIO;
-+
-+	ret = of_property_read_u32_array(node, "reg", res, 2);
-+	if (ret < 0)
-+		return ret;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	/* ADC based measurements are optional */
-+	chip->adc = iio_channel_get(&pdev->dev, "thermal");
-+	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
-+		return PTR_ERR(chip->adc);
-+
-+	chip->base = res[0];
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "could not read type\n");
-+		goto fail;
-+	}
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "could not read subtype\n");
-+		goto fail;
-+	}
-+
-+	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
-+		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
-+			type, subtype);
-+		ret = -ENODEV;
-+		goto fail;
-+	}
-+
-+	ret = qpnp_tm_init(chip);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "init failed\n");
-+		goto fail;
-+	}
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
-+					IRQF_ONESHOT, node->name, chip);
-+	if (ret < 0)
-+		goto fail;
-+
-+	chip->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
-+							&qpnp_tm_sensor_ops);
-+	if (IS_ERR(chip->tz_dev)) {
-+		dev_err(&pdev->dev, "failed to register sensor\n");
-+		ret = PTR_ERR(chip->tz_dev);
-+		goto fail;
-+	}
-+
-+	return 0;
-+
-+fail:
-+	if (!IS_ERR(chip->adc))
-+		iio_channel_release(chip->adc);
-+
-+	return ret;
-+}
-+
-+static int qpnp_tm_remove(struct platform_device *pdev)
-+{
-+	struct qpnp_tm_chip *chip = dev_get_drvdata(&pdev->dev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, chip->tz_dev);
-+	if (!IS_ERR(chip->adc))
-+		iio_channel_release(chip->adc);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id qpnp_tm_match_table[] = {
-+	{ .compatible = "qcom,spmi-temp-alarm" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, qpnp_tm_match_table);
-+
-+static struct platform_driver qpnp_tm_driver = {
-+	.driver = {
-+		.name = "spmi-temp-alarm",
-+		.of_match_table = qpnp_tm_match_table,
-+	},
-+	.probe  = qpnp_tm_probe,
-+	.remove = qpnp_tm_remove,
-+};
-+module_platform_driver(qpnp_tm_driver);
-+
-+MODULE_ALIAS("platform:spmi-temp-alarm");
-+MODULE_DESCRIPTION("QPNP PMIC Temperature Alarm driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--SusxIpO/K/G//hYA--
