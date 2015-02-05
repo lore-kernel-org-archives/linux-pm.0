@@ -1,79 +1,56 @@
-From: <grygorii.strashko@linaro.org>
-Subject: [PATCH v2] leds: fix hibernation on arm when gpio-led used with CPU led trigger
-Date: Thu,  5 Feb 2015 16:37:04 +0200
-Message-ID: <1423147024-4744-1-git-send-email-grygorii.strashko@linaro.org>
-Return-path: <linux-leds-owner@vger.kernel.org>
-Sender: linux-leds-owner@vger.kernel.org
-To: Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org
-Cc: sumit.semwal@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Grygorii Strashko <Grygorii.Strashko@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Thu, 05 Feb 2015 16:11:49 +0100
+Message-ID: <1746505.56yzpQ04cT@vostro.rjw.lan>
+References: <cover.1422346933.git.viresh.kumar@linaro.org> <6147604.f4mimnOd4x@vostro.rjw.lan> <54D2CD76.2030609@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62409 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757299AbbBEOsw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 09:48:52 -0500
+In-Reply-To: <54D2CD76.2030609@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On Wednesday, February 04, 2015 05:55:02 PM Saravana Kannan wrote:
+> On 02/04/2015 03:20 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, February 04, 2015 02:28:55 PM Saravana Kannan wrote:
+> >> On 02/03/2015 10:20 PM, Viresh Kumar wrote:
+> >>> On 4 February 2015 at 03:58, Saravana Kannan <skannan@codeaurora.org> wrote:
+> >>>> Can you explain why we need a fallback list in the first place? Now that we
+> >>>> are not destroying and creating policy objects, I don't see any point in the
+> >>>> fallback list.
+> >>>
+> >>> Because we wanted to mark the policy inactive. But as I have introduced another
+> >>> field for that now, probably it can be fixed. Will check again on what
+> >>> can be done.
+> >>
+> >> Thanks. That's why I was asking. Now that you have another flag. Also,
+> >> you might not even need a flag. You can just check if policy->cpus is
+> >> empty (btw, I think we should let that go to empty)
+> >
+> > So the idea would be to avoid clearig cpufreq_cpu_data during offline
+> > tear-down (because we know that the CPU is offline anyway) and then start
+> > using the same policy pointer during offline?
+> 
+> Yeah. We still don't clear the policy->cpus today when the last CPU goes 
+> down. But that can be done easily by changing a few "if" conditions and 
+> rearranging the hotplug notifier code (I think it's mostly there with 
+> this series). Once we clear policy->cpus when all CPUs are offline, we 
+> can just use that data to figure out if it's "active" or not.
 
-Setting a dev_pm_ops suspend/resume pair of callbacks but not a set of
-hibernation callbacks means those pm functions will not be
-called upon hibernation - that leads to system crash on ARM during
-freezing if gpio-led is used in combination with CPU led trigger.
-It may happen after freeze_noirq stage (GPIO is suspended)
-and before syscore_suspend stage (CPU led trigger is suspended)
-- usually when disable_nonboot_cpus() is called.
+OK
 
-Log:
-  PM: noirq freeze of devices complete after 1.425 msecs
-  Disabling non-boot CPUs ...
-    ^ system may crash or stuck here with message (TI AM572x)
+I'm still concerned about the case when the last policy CPU is physically
+going away, in which we do the offline as a preliminary step and then
+will go for full CPU device unregistration.
 
-  WARNING: CPU: 0 PID: 3100 at drivers/bus/omap_l3_noc.c:148 l3_interrupt_handler+0x22c/0x370()
-  44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in Supervisor mode during Functional access
 
-  CPU1: shutdown
-    ^ or here
-
-Fix this by using SIMPLE_DEV_PM_OPS, which appropriately
-assigns the suspend and hibernation callbacks and move
-led_suspend/led_resume under CONFIG_PM_SLEEP to avoid
-build warnings.
-
-Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
----
-This patch actually fixes commit:
- 73e1ab4 "leds: Convert led class driver from legacy pm ops to dev_pm_ops"
-
-Changes in v2:
-- fixed compile time warnings when !CONFIG_PM_SLEEP
-- updated commit message
-
-v1:
-- https://lkml.org/lkml/2015/2/2/476
-
- drivers/leds/led-class.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-index dbeebac..5033e0d 100644
---- a/drivers/leds/led-class.c
-+++ b/drivers/leds/led-class.c
-@@ -183,6 +183,7 @@ void led_classdev_resume(struct led_classdev *led_cdev)
- }
- EXPORT_SYMBOL_GPL(led_classdev_resume);
- 
-+#ifdef CONFIG_PM_SLEEP
- static int led_suspend(struct device *dev)
- {
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-@@ -202,11 +203,9 @@ static int led_resume(struct device *dev)
- 
- 	return 0;
- }
-+#endif
- 
--static const struct dev_pm_ops leds_class_dev_pm_ops = {
--	.suspend        = led_suspend,
--	.resume         = led_resume,
--};
-+static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend, led_resume);
- 
- /**
-  * led_classdev_register - register a new object of led_classdev class.
 -- 
-1.9.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
