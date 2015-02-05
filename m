@@ -1,73 +1,83 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: ACPI PCC probe failed.
-Date: Thu, 5 Feb 2015 10:44:13 -0500
-Message-ID: <CAJ5Y-eaPjOsm82PDiCBM9pcO4h6bzKHkTu5tNgQqqfRbrqbTcw@mail.gmail.com>
-References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com>
-	<3901813.ZV5Z0Wofju@vostro.rjw.lan>
-	<CAJ5Y-eY7H=3su7Ahnk47CCfDt+Gnwz0zUAC7XqizyydhhTuG-Q@mail.gmail.com>
-	<6825579.hyRLxbRUP5@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v2] cpufreq: exynos: Use simple approach to asses if cpu
+ cooling can be used
+Date: Thu, 05 Feb 2015 16:54:49 +0100
+Message-ID: <1423151689-27490-1-git-send-email-l.majewski@samsung.com>
+References: <20150204100025.565ee2b0@amdc2363>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:33798 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757600AbbBEPoO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 10:44:14 -0500
-Received: by mail-wi0-f171.google.com with SMTP id l15so39738934wiw.4
-        for <linux-pm@vger.kernel.org>; Thu, 05 Feb 2015 07:44:13 -0800 (PST)
-In-Reply-To: <6825579.hyRLxbRUP5@vostro.rjw.lan>
+Received: from mailout3.samsung.com ([203.254.224.33]:55471 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbbBEPzH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 10:55:07 -0500
+In-reply-to: <20150204100025.565ee2b0@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Cristian <caravena@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-Hi Rafael,
+Commit: e725d26c4857e5e41975b5e74e64ce6ab09a7121 provided possibility to
+use device tree to asses if cpu can be used as cooling device. Since the
+code was somewhat awkward, simpler approach has been proposed.
 
-On 4 February 2015 at 20:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, February 04, 2015 06:38:39 PM Ashwin Chaugule wrote:
->> On 4 February 2015 at 18:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, February 04, 2015 05:06:26 PM Ashwin Chaugule wrote:
->> >> > I have one more concern about this driver.  Namely, what benefit is there to
->> >> > people like Cristian from it at all?
->> >>
->> >> Its of use only if they have a PCC client (MPST, CPPC, RAS) driver.
->> >> Looks like PCC was explicitly enabled in this kernel.
->> >>
->> >> config PCC
->> >> bool "Platform Communication Channel Driver"
->> >> depends on ACPI
->> >
->> > Can we make it depend on the clients instead and be set automatically
->> > when at least one of the clients is enabled?
->> >
->> > Otherwise distros will have a problem with deciding whether or not they
->> > should enable this driver and most of them will end up enabling it.
->>
->> I see your point, but I'm not aware of any upstreamed client as of
->> yet. There might be folks using this driver internally though with
->> other clients. In such a case, is there a way to keep PCC disabled
->> until a client (e.g. CPPC) is upstreamed?
->
-> Make it depend on EXPERT or something like that until the first client is
-> added and then make it depend on that client. :-)
+Test HW: Exynos 4412 - Odroid U3.
 
-Doesn't sound too bad. Hope that doesn't end up enabling unintended
-options in the kernel which aren't exposed in kconfig.
-FWIW, I think its better to make it depend on CPPC as part of the PCC
-cleanup patch that I have going in the CPPC patchset.
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Changes for v2:
+- Remove superfluous *np pointer
+---
+ drivers/cpufreq/exynos-cpufreq.c | 21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
 
->
->> Alternately, is it that bad to keep it the way it is, given that the
->> driver wont do anything unless PCCT is detected in firmware and a PCC
->> client explicitly uses its API?
->
-> Well, is it really useful this way?
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 5e98c6b..82d2fbb 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -159,7 +159,7 @@ static struct cpufreq_driver exynos_driver = {
+ 
+ static int exynos_cpufreq_probe(struct platform_device *pdev)
+ {
+-	struct device_node *cpus, *np;
++	struct device_node *cpu0;
+ 	int ret = -EINVAL;
+ 
+ 	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
+@@ -206,28 +206,19 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_cpufreq_reg;
+ 
+-	cpus = of_find_node_by_path("/cpus");
+-	if (!cpus) {
+-		pr_err("failed to find cpus node\n");
++	cpu0 = of_get_cpu_node(0, NULL);
++	if (!cpu0) {
++		pr_err("failed to find cpu0 node\n");
+ 		return 0;
+ 	}
+ 
+-	np = of_get_next_child(cpus, NULL);
+-	if (!np) {
+-		pr_err("failed to find cpus child node\n");
+-		of_node_put(cpus);
+-		return 0;
+-	}
+-
+-	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		cdev = of_cpufreq_cooling_register(np,
++	if (of_find_property(cpu0, "#cooling-cells", NULL)) {
++		cdev = of_cpufreq_cooling_register(cpu0,
+ 						   cpu_present_mask);
+ 		if (IS_ERR(cdev))
+ 			pr_err("running cpufreq without cooling device: %ld\n",
+ 			       PTR_ERR(cdev));
+ 	}
+-	of_node_put(np);
+-	of_node_put(cpus);
+ 
+ 	return 0;
+ 
+-- 
+2.0.0.rc2
 
-Not really, but not particularly harmful either. :) Besides, it seems
-like for the sake of genericness, distros enable several options that
-are irrelevant to a platform. In this case, PCC would be harmlessly
-enabled only until CPPC makes its way upstream (which is actively
-being worked on anyway).
-
-Cheers,
-Ashwin.
