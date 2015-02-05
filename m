@@ -1,212 +1,44 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
-Date: Thu, 05 Feb 2015 13:32:14 +0100
-Message-ID: <2549250.K92n8zdPv5@amdc1032>
-References: <1423045646-20592-1-git-send-email-k.kozlowski@samsung.com>
- <8043345.BDfdhXvZOx@amdc1032> <1423120340.29408.0.camel@AMDC1943>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Lad Prabhakar <prabhakar.csengg@gmail.com>
+Subject: [PATCH] thermal: int340x: fix sparse warning
+Date: Thu,  5 Feb 2015 13:43:37 +0000
+Message-ID: <1423143817-16128-1-git-send-email-prabhakar.csengg@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:51366 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbbBEMcg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 07:32:36 -0500
-In-reply-to: <1423120340.29408.0.camel@AMDC1943>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:45073 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850AbbBENnu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 08:43:50 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-Hi,
+this patch fixes following sparse warning:
 
-On Thursday, February 05, 2015 08:12:20 AM Krzysztof Kozlowski wrote:
-> On =C5=9Bro, 2015-02-04 at 19:07 +0100, Bartlomiej Zolnierkiewicz wro=
-te:
-> > Hi,
-> >=20
-> > On Wednesday, February 04, 2015 11:27:26 AM Krzysztof Kozlowski wro=
-te:
-> > > The Exynos cpuidle driver has coupled cpuidle built-in so it cann=
-ot be
-> > > built without SMP:
-> > >=20
-> > > arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter=
-_aftr=E2=80=99:
-> > > arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of f=
-unction =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit=
--function-declaration]
-> > > arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_af=
-tr':
-> > > ../arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boo=
-t_reg_base'
-> > > arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdo=
-wn':
-> > > ../arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_=
-cpu_power_down'
-> > >=20
-> > > Make the cpuidle driver depending on SMP because this will be the
-> > > fastest way to fix build break without adding a bunch of ifdefs i=
-n few
-> > > places.
-> >=20
-> > There shouldn't be a lot of new ifdefs (please see below) and I wou=
-ld
-> > very much prefer for cpuidle to stay supported also on UP kernels.
->=20
-> Sure, I'm fine with your patch.
+processor_thermal_device.c:188:6: warning: symbol 'proc_thermal_remove' was not declared. Should it be static?
 
-Thanks!
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ Found this issue on linux-next (gcc  version 4.9.2,
+ sparse version  0.4.5-rc1)and applies on top linux-next.
 
-I tested it today with SMP & UP kernels on Origen4210 board and it work=
-s
-fine in both cases (-next is fine on Origen4210, the problem I hit yest=
-ereday
-was caused by a configuration issue on my side).
+ drivers/thermal/int340x_thermal/processor_thermal_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kukjin, please apply it.  Thank you.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> Best regards,
-> Krzysztof
->=20
-> >=20
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > ---
-> > >  arch/arm/mach-exynos/pm.c   | 2 ++
-> > >  drivers/cpuidle/Kconfig.arm | 3 ++-
-> > >  2 files changed, 4 insertions(+), 1 deletion(-)
-> > >=20
-> > > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.=
-c
-> > > index e6209dadc00d..17db00ff7f3a 100644
-> > > --- a/arch/arm/mach-exynos/pm.c
-> > > +++ b/arch/arm/mach-exynos/pm.c
-> > > @@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
-> > >  	cpu_pm_exit();
-> > >  }
-> > > =20
-> > > +#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
-> > >  static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
-> > > =20
-> > >  static int exynos_cpu0_enter_aftr(void)
-> > > @@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupled_ex=
-ynos_data =3D {
-> > >  	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
-> > >  	.post_enter_aftr		=3D exynos_post_enter_aftr,
-> > >  };
-> > > +#endif /* CONFIG_ARM_EXYNOS_CPUIDLE */
-> > > diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfi=
-g.arm
-> > > index 8e07c9419153..5eb86a4f74d9 100644
-> > > --- a/drivers/cpuidle/Kconfig.arm
-> > > +++ b/drivers/cpuidle/Kconfig.arm
-> > > @@ -55,7 +55,8 @@ config ARM_AT91_CPUIDLE
-> > >  config ARM_EXYNOS_CPUIDLE
-> > >  	bool "Cpu Idle Driver for the Exynos processors"
-> > >  	depends on ARCH_EXYNOS
-> > > -	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> > > +	depends on SMP
-> > > +	select ARCH_NEEDS_CPU_IDLE_COUPLED
-> > >  	help
-> > >  	  Select this to enable cpuidle for Exynos processors
-> >=20
-> > How's about the patch below instead?  It builds fine for UP and SMP=
-=2E
-> > I will do more testing tomorrow (unfortunately it seems that someth=
-ing
-> > else broke Origen4210 in -next).
-> >=20
-> > From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Subject: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
-> >=20
-> > The Exynos cpuidle driver has coupled cpuidle built-in so it cannot=
- be
-> > built without SMP:
-> >=20
-> > arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter_a=
-ftr=E2=80=99:
-> > arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of fun=
-ction =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit-f=
-unction-declaration]
-> > arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_aftr=
-':
-> > ../arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boot_=
-reg_base'
-> > arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdown=
-':
-> > ../arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_cp=
-u_power_down'
-> >=20
-> > Fix it by adding missing checks for SMP.
-> >=20
-> > Reported-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> >  arch/arm/mach-exynos/exynos.c    |    2 +-
-> >  arch/arm/mach-exynos/pm.c        |    2 ++
-> >  drivers/cpuidle/cpuidle-exynos.c |    3 ++-
-> >  3 files changed, 5 insertions(+), 2 deletions(-)
-> >=20
-> > Index: b/arch/arm/mach-exynos/exynos.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- a/arch/arm/mach-exynos/exynos.c	2015-02-04 18:30:23.555819717 +=
-0100
-> > +++ b/arch/arm/mach-exynos/exynos.c	2015-02-04 18:43:23.539807815 +=
-0100
-> > @@ -211,7 +211,7 @@ static void __init exynos_dt_machine_ini
-> >  	if (!IS_ENABLED(CONFIG_SMP))
-> >  		exynos_sysram_init();
-> > =20
-> > -#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
-> > +#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
-> >  	if (of_machine_is_compatible("samsung,exynos4210"))
-> >  		exynos_cpuidle.dev.platform_data =3D &cpuidle_coupled_exynos_dat=
-a;
-> >  #endif
-> > Index: b/arch/arm/mach-exynos/pm.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- a/arch/arm/mach-exynos/pm.c	2015-02-04 18:30:23.563819719 +0100
-> > +++ b/arch/arm/mach-exynos/pm.c	2015-02-04 18:47:32.951804008 +0100
-> > @@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
-> >  	cpu_pm_exit();
-> >  }
-> > =20
-> > +#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
-> >  static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
-> > =20
-> >  static int exynos_cpu0_enter_aftr(void)
-> > @@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupl
-> >  	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
-> >  	.post_enter_aftr		=3D exynos_post_enter_aftr,
-> >  };
-> > +#endif /* CONFIG_SMP && CONFIG_ARM_EXYNOS_CPUIDLE */
-> > Index: b/drivers/cpuidle/cpuidle-exynos.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- a/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:30:32.93581957=
-7 +0100
-> > +++ b/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:46:01.61980540=
-0 +0100
-> > @@ -117,7 +117,8 @@ static int exynos_cpuidle_probe(struct p
-> >  {
-> >  	int ret;
-> > =20
-> > -	if (of_machine_is_compatible("samsung,exynos4210")) {
-> > +	if (IS_ENABLED(CONFIG_SMP) &&
-> > +	    of_machine_is_compatible("samsung,exynos4210")) {
-> >  		exynos_cpuidle_pdata =3D pdev->dev.platform_data;
-> > =20
-> >  		ret =3D cpuidle_register(&exynos_coupled_idle_driver,
+diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+index 0fe5dbb..095acac 100644
+--- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+@@ -185,7 +185,7 @@ free_buffer:
+ 	return ret;
+ }
+ 
+-void proc_thermal_remove(struct proc_thermal_device *proc_priv)
++static void proc_thermal_remove(struct proc_thermal_device *proc_priv)
+ {
+ 	sysfs_remove_group(&proc_priv->dev->kobj,
+ 			   &power_limit_attribute_group);
+-- 
+1.9.1
 
