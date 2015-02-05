@@ -1,92 +1,140 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 3/5] drivers: bus: Add Simple Power-Managed Bus DT Bindings
-Date: Thu,  5 Feb 2015 11:11:26 +0100
-Message-ID: <1423131088-7835-4-git-send-email-geert+renesas@glider.be>
-References: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v5 0/5] drivers: bus: Add Simple Power-Managed Bus
+Date: Thu,  5 Feb 2015 11:11:23 +0100
+Message-ID: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>
-Cc: Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Tested-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
----
-v5:
+        Hi all,
+
+The Renesas Bus State Controller (BSC) provides an external bus for
+connecting multiple external devices to an SoC, driving several chip
+select lines, for e.g. NOR FLASH, Ethernet and USB.
+On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+R-Mobile APE6 (r8a73a4) SoC.
+
+The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+compatibility seems suitable.  However, the BSC is special in two
+ways:
+  1. It is part of a PM domain (A4S on sh73a0),
+  2. It has a gateable functional clock (ZB).
+Before a device connected to the BSC can be accessed, the PM domain
+containing the BSC must be powered on, and the functional clock
+driving the BSC must be enabled.
+
+Both special properties can be described in DT in a standardized way
+("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+example in the DT binding documentation).  Externally connected
+devices are described as children of the BSC node.
+
+Unfortunately this doesn't mean everything will work out-of-the-box.
+There are two problems:
+  1. Without a device driver bound to the bus device, this device is
+     not attached to the PM domain. And although a child device is
+     present and active, the PM domain may be powered down, as it's
+     considered unused by the PM domain core.
+  2. Without a device driver calling pm_runtime_enable(), its
+     functional clock is not enabled. Once runtime PM is enabled, the
+     R-Mobile PM domain platform driver manages the functional clock
+     using runtime PM.
+
+As none of the above is really bus hardware-specific (PM domains and
+functional clocks in clock domains are handled from genpd and platform
+code), this series adds a Simple Power-Managed Bus driver for
+transparent busses, which matches against "simple-pm-bus", enables
+runtime PM for the bus device, and calls of_platform_populate() to
+probe for child devices.
+Due to the child-parent relationship of devices connected to the bus,
+as long as the device drivers for the child devices are runtime PM
+enabled, the bus's PM domain will be powered, and the bus's clock will
+be enabled automatically when needed, for both runtime PM and s2ram.
+
+This was tested on sh73a0/kzm9g-multiplatform (by me), and (v3) on
+r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+Ethernet doesn't work, as the ZB clock is disabled by
+clk_disable_unused().
+
+Felipe: It looks like drivers/usb/musb/musb_am335x.c can be removed, if
+"ti,am33xx-usb" claims compatibility with "simple-pm-bus"?
+
+As drivers/bus doesn't have a maintainer, and this driver is needed to
+move two shmobile platforms away from legacy to multiplatform, I think
+this can go in through Simon's shmobile tree.
+
+Changes compared to v4:
   - Add Reviewed-by,
   - "simple-pm-bus" is not an extension of "simple-bus",
   - "compatible" must not contain "simple-bus",
-  - Add reference to clock/PM domain provider binding docs,
+  - Add reference to clock/PM domain provider binding docs.
 
-v4:
-  - Replace "simple-bus" by "simple-pm-bus",
-  - Remove the "renesas,bsc" bindings. They will be specified in a
-    separate document.
+Changes compared to v3:
+  - Replace "simple-bus" by "simple-pm-bus" in the bindings,
+  - Move the "renesas,bsc" bindings to a separate document,
+  - Bind against the generic "simple-pm-bus" instead of "renesas,bsc",
+  - Explicitly call of_platform_populate() after pm_runtime_enable() to
+    enforce ordering, instead of depending on claimed compatibility with
+    "simple-bus".
 
-v3:
-  - Add Tested-by,
+Changes compared to v2:
   - Document required properties inherited from "simple-bus",
   - Document required "reg" property for "renesas,bsc",
   - Move "ranges" before "reg" in the example,
+  - Add Tested-by,
+  - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
 
-v2:
-  - New.
----
- .../devicetree/bindings/bus/simple-pm-bus.txt      | 44 ++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+Changes compared to v1 (more detailed change logs in the individual
+patches):
+  - Added sorting of drivers/bus Kconfig and Makefile entries,
+  - Added DT binding documentation,
+  - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+    "Simple Power-Managed Bus Driver" (simple-pm-bus),
+  - Postponed adding power-domains properties to the dtsi,
+  - Added updates for r8a73a4/ape6evm.
+
+Thanks!
+
+Geert Uytterhoeven (5):
+  drivers: bus: Sort Kconfig entries alphabetically
+  drivers: bus: Sort Makefile entries alphabetically
+  drivers: bus: Add Simple Power-Managed Bus DT Bindings
+  drivers: bus: Add Renesas Bus State Controller (BSC) DT Bindings
+  drivers: bus: Add Simple Power-Managed Bus Driver
+
+ .../devicetree/bindings/bus/renesas,bsc.txt        | 46 +++++++++++++++++
+ .../devicetree/bindings/bus/simple-pm-bus.txt      | 44 ++++++++++++++++
+ drivers/bus/Kconfig                                | 53 ++++++++++++--------
+ drivers/bus/Makefile                               | 15 +++---
+ drivers/bus/simple-pm-bus.c                        | 58 ++++++++++++++++++++++
+ 5 files changed, 189 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/bus/renesas,bsc.txt
  create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+ create mode 100644 drivers/bus/simple-pm-bus.c
 
-diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
-new file mode 100644
-index 0000000000000000..d032237512c271f2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
-@@ -0,0 +1,44 @@
-+Simple Power-Managed Bus
-+========================
-+
-+A Simple Power-Managed Bus is a transparent bus that doesn't need a real
-+driver, as it's typically initialized by the boot loader.
-+
-+However, its bus controller is part of a PM domain, or under the control of a
-+functional clock.  Hence, the bus controller's PM domain and/or clock must be
-+enabled for child devices connected to the bus (either on-SoC or externally)
-+to function.
-+
-+While "simple-pm-bus" follows the "simple-bus" set of properties, as specified
-+in ePAPR, it is not an extension of "simple-bus".
-+
-+
-+Required properties:
-+  - compatible: Must contain at least "simple-pm-bus".
-+		Must not contain "simple-bus".
-+		It's recommended to let this be preceded by one or more
-+		vendor-specific compatible values.
-+  - #address-cells, #size-cells, ranges: Must describe the mapping between
-+		parent address and child address spaces.
-+
-+Optional platform-specific properties for clock or PM domain control (at least
-+one of them is required):
-+  - clocks: Must contain a reference to the functional clock(s),
-+  - power-domains: Must contain a reference to the PM domain.
-+Please refer to the binding documentation for the clock and/or PM domain
-+providers for more details.
-+
-+
-+Example:
-+
-+	bsc: bus@fec10000 {
-+		compatible = "renesas,bsc-sh73a0", "renesas,bsc",
-+			     "simple-pm-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges = <0 0 0x20000000>;
-+		reg = <0xfec10000 0x400>;
-+		interrupts = <0 39 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&zb_clk>;
-+		power-domains = <&pd_a4s>;
-+	};
 -- 
 1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
