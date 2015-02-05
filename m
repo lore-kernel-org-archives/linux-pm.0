@@ -1,292 +1,181 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: [PATCH v4] regulator: max77843: Add max77843 regulator driver
-Date: Thu, 05 Feb 2015 15:35:58 +0900
-Message-ID: <1423118158-7266-1-git-send-email-jaewon02.kim@samsung.com>
-References: <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
+Date: Thu, 05 Feb 2015 08:12:20 +0100
+Message-ID: <1423120340.29408.0.camel@AMDC1943>
+References: <1423045646-20592-1-git-send-email-k.kozlowski@samsung.com>
+ <8043345.BDfdhXvZOx@amdc1032>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1423025771-4139-6-git-send-email-jaewon02.kim@samsung.com>
+In-reply-to: <8043345.BDfdhXvZOx@amdc1032>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds new regulator driver to support max77843
-MFD(Multi Function Device) chip`s regulators.
-The Max77843 has two voltage regulators for USB safeout.
+On =C5=9Bro, 2015-02-04 at 19:07 +0100, Bartlomiej Zolnierkiewicz wrote=
+:
+> Hi,
+>=20
+> On Wednesday, February 04, 2015 11:27:26 AM Krzysztof Kozlowski wrote=
+:
+> > The Exynos cpuidle driver has coupled cpuidle built-in so it cannot=
+ be
+> > built without SMP:
+> >=20
+> > arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter_a=
+ftr=E2=80=99:
+> > arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of fun=
+ction =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit-f=
+unction-declaration]
+> > arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_aftr=
+':
+> > ../arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boot_=
+reg_base'
+> > arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdown=
+':
+> > ../arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_cp=
+u_power_down'
+> >=20
+> > Make the cpuidle driver depending on SMP because this will be the
+> > fastest way to fix build break without adding a bunch of ifdefs in =
+few
+> > places.
+>=20
+> There shouldn't be a lot of new ifdefs (please see below) and I would
+> very much prefer for cpuidle to stay supported also on UP kernels.
 
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
----
- drivers/regulator/Kconfig    |    8 ++
- drivers/regulator/Makefile   |    1 +
- drivers/regulator/max77843.c |  227 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 236 insertions(+)
- create mode 100644 drivers/regulator/max77843.c
+Sure, I'm fine with your patch.
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index c3a60b5..c1f9c33 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -414,6 +414,14 @@ config REGULATOR_MAX77802
- 	  Exynos5420/Exynos5800 SoCs to control various voltages.
- 	  It includes support for control of voltage and ramp speed.
- 
-+config REGULATOR_MAX77843
-+	tristate "Maxim 77843 regulator"
-+	depends on MFD_MAX77843
-+	help
-+	  This driver controls a Maxim 77843 regulator.
-+	  The regulator include two 'SAFEOUT' for USB(Universal Serial Bus)
-+	  This is suitable for Exynos5433 SoC chips.
-+
- config REGULATOR_MC13XXX_CORE
- 	tristate
- 
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 1f28ebf..12408d6 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_REGULATOR_MAX8998) += max8998.o
- obj-$(CONFIG_REGULATOR_MAX77686) += max77686.o
- obj-$(CONFIG_REGULATOR_MAX77693) += max77693.o
- obj-$(CONFIG_REGULATOR_MAX77802) += max77802.o
-+obj-$(CONFIG_REGULATOR_MAX77843) += max77843.o
- obj-$(CONFIG_REGULATOR_MC13783) += mc13783-regulator.o
- obj-$(CONFIG_REGULATOR_MC13892) += mc13892-regulator.o
- obj-$(CONFIG_REGULATOR_MC13XXX_CORE) +=  mc13xxx-regulator-core.o
-diff --git a/drivers/regulator/max77843.c b/drivers/regulator/max77843.c
-new file mode 100644
-index 0000000..c132ef5
---- /dev/null
-+++ b/drivers/regulator/max77843.c
-@@ -0,0 +1,227 @@
-+/*
-+ * max77843.c - Regulator driver for the Maxim MAX77843
-+ *
-+ * Copyright (C) 2015 Samsung Electronics
-+ * Author: Jaewon Kim <jaewon02.kim@samsung.com>
-+ * Author: Beomho Seo <beomho.seo@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/machine.h>
-+#include <linux/mfd/max77843-private.h>
-+#include <linux/regulator/of_regulator.h>
-+
-+enum max77843_regulator_type {
-+	MAX77843_SAFEOUT1 = 0,
-+	MAX77843_SAFEOUT2,
-+	MAX77843_CHARGER,
-+
-+	MAX77843_NUM,
-+};
-+
-+static const unsigned int max77843_safeout_voltage_table[] = {
-+	4850000,
-+	4900000,
-+	4950000,
-+	3300000,
-+};
-+
-+static int max77843_reg_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct regmap *regmap = rdev->regmap;
-+	int ret;
-+	unsigned int reg;
-+
-+	ret = regmap_read(regmap, rdev->desc->enable_reg, &reg);
-+	if (ret) {
-+		dev_err(&rdev->dev, "Fialed to read charger register\n");
-+		return ret;
-+	}
-+
-+	return (reg & rdev->desc->enable_mask) == rdev->desc->enable_mask;
-+}
-+
-+static int max77843_reg_get_current_limit(struct regulator_dev *rdev)
-+{
-+	struct regmap *regmap = rdev->regmap;
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	unsigned int chg_max_uA = rdev->constraints->max_uA;
-+	unsigned int val;
-+	int ret;
-+	unsigned int reg, sel;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_CNFG_02, &reg);
-+	if (ret) {
-+		dev_err(&rdev->dev, "Failed to read charger register\n");
-+		return ret;
-+	}
-+
-+	sel = reg & MAX77843_CHG_FAST_CHG_CURRENT_MASK;
-+
-+	if (sel < 0x03)
-+		sel = 0;
-+	else
-+		sel -= 2;
-+
-+	val = chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel;
-+	if (val > chg_max_uA)
-+		return -EINVAL;
-+
-+	return val;
-+}
-+
-+static int max77843_reg_set_current_limit(struct regulator_dev *rdev,
-+		int min_uA, int max_uA)
-+{
-+	struct regmap *regmap = rdev->regmap;
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	int sel = 0;
-+
-+	while (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel < min_uA)
-+		sel++;
-+
-+	if (chg_min_uA + MAX77843_CHG_FAST_CHG_CURRENT_STEP * sel > max_uA)
-+		return -EINVAL;
-+
-+	sel += 2;
-+
-+	return regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_02, sel);
-+}
-+
-+static struct regulator_ops max77843_charger_ops = {
-+	.is_enabled		= max77843_reg_is_enabled,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.get_current_limit	= max77843_reg_get_current_limit,
-+	.set_current_limit	= max77843_reg_set_current_limit,
-+};
-+
-+static struct regulator_ops max77843_regulator_ops = {
-+	.is_enabled             = regulator_is_enabled_regmap,
-+	.enable                 = regulator_enable_regmap,
-+	.disable                = regulator_disable_regmap,
-+	.list_voltage		= regulator_list_voltage_table,
-+	.get_voltage_sel        = regulator_get_voltage_sel_regmap,
-+	.set_voltage_sel        = regulator_set_voltage_sel_regmap,
-+};
-+
-+static const struct regulator_desc max77843_supported_regulators[] = {
-+	[MAX77843_SAFEOUT1] = {
-+		.name		= "SAFEOUT1",
-+		.id		= MAX77843_SAFEOUT1,
-+		.ops		= &max77843_regulator_ops,
-+		.of_match	= of_match_ptr("SAFEOUT1"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type		= REGULATOR_VOLTAGE,
-+		.owner		= THIS_MODULE,
-+		.n_voltages	= ARRAY_SIZE(max77843_safeout_voltage_table),
-+		.volt_table	= max77843_safeout_voltage_table,
-+		.enable_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.enable_mask	= MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT1,
-+		.vsel_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.vsel_mask	= MAX77843_REG_SAFEOUTCTRL_SAFEOUT1_MASK,
-+	},
-+	[MAX77843_SAFEOUT2] = {
-+		.name           = "SAFEOUT2",
-+		.id             = MAX77843_SAFEOUT2,
-+		.ops            = &max77843_regulator_ops,
-+		.of_match	= of_match_ptr("SAFEOUT2"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type           = REGULATOR_VOLTAGE,
-+		.owner          = THIS_MODULE,
-+		.n_voltages	= ARRAY_SIZE(max77843_safeout_voltage_table),
-+		.volt_table	= max77843_safeout_voltage_table,
-+		.enable_reg     = MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.enable_mask    = MAX77843_REG_SAFEOUTCTRL_ENSAFEOUT2,
-+		.vsel_reg	= MAX77843_SYS_REG_SAFEOUTCTRL,
-+		.vsel_mask	= MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK,
-+	},
-+	[MAX77843_CHARGER] = {
-+		.name		= "CHARGER",
-+		.id		= MAX77843_CHARGER,
-+		.ops		= &max77843_charger_ops,
-+		.of_match	= of_match_ptr("CHARGER"),
-+		.regulators_node = of_match_ptr("regulators"),
-+		.type		= REGULATOR_CURRENT,
-+		.owner		= THIS_MODULE,
-+		.enable_reg	= MAX77843_CHG_REG_CHG_CNFG_00,
-+		.enable_mask	= MAX77843_CHG_MASK,
-+	},
-+};
-+
-+static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
-+{
-+	switch (reg_id) {
-+	case MAX77843_SAFEOUT1:
-+	case MAX77843_SAFEOUT2:
-+		return max77843->regmap;
-+	case MAX77843_CHARGER:
-+		return max77843->regmap_chg;
-+	default:
-+		return max77843->regmap;
-+	}
-+}
-+
-+static int max77843_regulator_probe(struct platform_device *pdev)
-+{
-+	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct regulator_config config = {};
-+	int i;
-+
-+	config.dev = max77843->dev;
-+	config.driver_data = max77843;
-+
-+	for (i = 0; i < ARRAY_SIZE(max77843_supported_regulators); i++) {
-+		struct regulator_dev *regulator;
-+
-+		config.regmap = max77843_get_regmap(max77843,
-+				max77843_supported_regulators[i].id);
-+
-+		regulator = devm_regulator_register(&pdev->dev,
-+				&max77843_supported_regulators[i], &config);
-+		if (IS_ERR(regulator)) {
-+			dev_err(&pdev->dev,
-+					"Failed to regiser regulator-%d\n", i);
-+			return PTR_ERR(regulator);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id max77843_regulator_id[] = {
-+	{ "max77843-regulator", },
-+	{ /* sentinel */ },
-+};
-+
-+static struct platform_driver max77843_regulator_driver = {
-+	.driver	= {
-+		.name = "max77843-regulator",
-+	},
-+	.probe		= max77843_regulator_probe,
-+	.id_table	= max77843_regulator_id,
-+};
-+
-+static int __init max77843_regulator_init(void)
-+{
-+	return platform_driver_register(&max77843_regulator_driver);
-+}
-+subsys_initcall(max77843_regulator_init);
-+
-+static void __exit max77843_regulator_exit(void)
-+{
-+	platform_driver_unregister(&max77843_regulator_driver);
-+}
-+module_exit(max77843_regulator_exit);
-+
-+MODULE_AUTHOR("Jaewon Kim <jaewon02.kim@samsung.com>");
-+MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
-+MODULE_DESCRIPTION("Maxim MAX77843 regulator driver");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
+Best regards,
+Krzysztof
+
+>=20
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > ---
+> >  arch/arm/mach-exynos/pm.c   | 2 ++
+> >  drivers/cpuidle/Kconfig.arm | 3 ++-
+> >  2 files changed, 4 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> > index e6209dadc00d..17db00ff7f3a 100644
+> > --- a/arch/arm/mach-exynos/pm.c
+> > +++ b/arch/arm/mach-exynos/pm.c
+> > @@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
+> >  	cpu_pm_exit();
+> >  }
+> > =20
+> > +#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
+> >  static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
+> > =20
+> >  static int exynos_cpu0_enter_aftr(void)
+> > @@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupled_exyn=
+os_data =3D {
+> >  	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
+> >  	.post_enter_aftr		=3D exynos_post_enter_aftr,
+> >  };
+> > +#endif /* CONFIG_ARM_EXYNOS_CPUIDLE */
+> > diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.=
+arm
+> > index 8e07c9419153..5eb86a4f74d9 100644
+> > --- a/drivers/cpuidle/Kconfig.arm
+> > +++ b/drivers/cpuidle/Kconfig.arm
+> > @@ -55,7 +55,8 @@ config ARM_AT91_CPUIDLE
+> >  config ARM_EXYNOS_CPUIDLE
+> >  	bool "Cpu Idle Driver for the Exynos processors"
+> >  	depends on ARCH_EXYNOS
+> > -	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+> > +	depends on SMP
+> > +	select ARCH_NEEDS_CPU_IDLE_COUPLED
+> >  	help
+> >  	  Select this to enable cpuidle for Exynos processors
+>=20
+> How's about the patch below instead?  It builds fine for UP and SMP.
+> I will do more testing tomorrow (unfortunately it seems that somethin=
+g
+> else broke Origen4210 in -next).
+>=20
+> From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Subject: [PATCH] ARM: EXYNOS: cpuidle: Fix build breakage on !SMP
+>=20
+> The Exynos cpuidle driver has coupled cpuidle built-in so it cannot b=
+e
+> built without SMP:
+>=20
+> arch/arm/mach-exynos/pm.c: In function =E2=80=98exynos_cpu0_enter_aft=
+r=E2=80=99:
+> arch/arm/mach-exynos/pm.c:246:4: error: implicit declaration of funct=
+ion =E2=80=98arch_send_wakeup_ipi_mask=E2=80=99 [-Werror=3Dimplicit-fun=
+ction-declaration]
+> arch/arm/mach-exynos/built-in.o: In function `exynos_pre_enter_aftr':
+> ../arch/arm/mach-exynos/pm.c:300: undefined reference to `cpu_boot_re=
+g_base'
+> arch/arm/mach-exynos/built-in.o: In function `exynos_cpu1_powerdown':
+> ../arch/arm/mach-exynos/pm.c:282: undefined reference to `exynos_cpu_=
+power_down'
+>=20
+> Fix it by adding missing checks for SMP.
+>=20
+> Reported-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c    |    2 +-
+>  arch/arm/mach-exynos/pm.c        |    2 ++
+>  drivers/cpuidle/cpuidle-exynos.c |    3 ++-
+>  3 files changed, 5 insertions(+), 2 deletions(-)
+>=20
+> Index: b/arch/arm/mach-exynos/exynos.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/arch/arm/mach-exynos/exynos.c	2015-02-04 18:30:23.555819717 +01=
+00
+> +++ b/arch/arm/mach-exynos/exynos.c	2015-02-04 18:43:23.539807815 +01=
+00
+> @@ -211,7 +211,7 @@ static void __init exynos_dt_machine_ini
+>  	if (!IS_ENABLED(CONFIG_SMP))
+>  		exynos_sysram_init();
+> =20
+> -#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
+> +#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
+>  	if (of_machine_is_compatible("samsung,exynos4210"))
+>  		exynos_cpuidle.dev.platform_data =3D &cpuidle_coupled_exynos_data;
+>  #endif
+> Index: b/arch/arm/mach-exynos/pm.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/arch/arm/mach-exynos/pm.c	2015-02-04 18:30:23.563819719 +0100
+> +++ b/arch/arm/mach-exynos/pm.c	2015-02-04 18:47:32.951804008 +0100
+> @@ -181,6 +181,7 @@ void exynos_enter_aftr(void)
+>  	cpu_pm_exit();
+>  }
+> =20
+> +#if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
+>  static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
+> =20
+>  static int exynos_cpu0_enter_aftr(void)
+> @@ -302,3 +303,4 @@ struct cpuidle_exynos_data cpuidle_coupl
+>  	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
+>  	.post_enter_aftr		=3D exynos_post_enter_aftr,
+>  };
+> +#endif /* CONFIG_SMP && CONFIG_ARM_EXYNOS_CPUIDLE */
+> Index: b/drivers/cpuidle/cpuidle-exynos.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:30:32.935819577 =
++0100
+> +++ b/drivers/cpuidle/cpuidle-exynos.c	2015-02-04 18:46:01.619805400 =
++0100
+> @@ -117,7 +117,8 @@ static int exynos_cpuidle_probe(struct p
+>  {
+>  	int ret;
+> =20
+> -	if (of_machine_is_compatible("samsung,exynos4210")) {
+> +	if (IS_ENABLED(CONFIG_SMP) &&
+> +	    of_machine_is_compatible("samsung,exynos4210")) {
+>  		exynos_cpuidle_pdata =3D pdev->dev.platform_data;
+> =20
+>  		ret =3D cpuidle_register(&exynos_coupled_idle_driver,
