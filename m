@@ -1,35 +1,36 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH] thermal: exynos: fix: Check if data->tmu_read callback is
- present before read
-Date: Fri, 06 Feb 2015 14:07:10 +0100
-Message-ID: <1423228030-18708-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 20/20] arm: mach-pxa: Decrement the power supply's
+ device reference counter
+Date: Fri, 6 Feb 2015 14:49:53 +0100
+Message-ID: <20150206134953.GA25683@amd>
+References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
+ <1422629278-12202-21-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1422629278-12202-21-git-send-email-k.kozlowski@samsung.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel
 List-Id: linux-pm@vger.kernel.org
 
-The exynos_tmu_data() function should on entrance test not only for valid
-data pointer, but also for data->tmu_read one.
-It is important, since afterwards it is dereferenced to get temperature code.
+On Fri 2015-01-30 15:47:58, Krzysztof Kozlowski wrote:
+> Use power_supply_put() to decrement the power supply's device reference
+> counter.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Sebastian Reichel <sre@kernel.org>
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+11,13,20 nothing obviously wrong. But I'm not sure if I studied them
+closely enough to warrant an ACK.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 3a19353..a86e0495e 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -717,7 +717,7 @@ static int exynos_get_temp(void *p, long *temp)
- {
- 	struct exynos_tmu_data *data = p;
- 
--	if (!data)
-+	if (!data || !data->tmu_read)
- 		return -EINVAL;
- 
- 	mutex_lock(&data->lock);
+It would be good to get this into kernel -- I seen no bad comments,
+and it is not going to improve without merge into mainline.
+
+									Pavel
+									
 -- 
-2.0.0.rc2
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
