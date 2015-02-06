@@ -1,94 +1,98 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Fri, 06 Feb 2015 10:37:32 -0800
-Message-ID: <54D509EC.7020708@free.fr>
-References: <54C8E125.3070905@free.fr> <20150203120925.GM8656@n2100.arm.linux.org.uk>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 7/8] hwmon: pwm-fan: Read PWM FAN configuration from
+ device tree
+Date: Fri, 6 Feb 2015 10:36:57 -0800
+Message-ID: <20150206183657.GB25410@roeck-us.net>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+ <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
+ <1423241948-31981-8-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:34245 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754732AbbBFSht (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 6 Feb 2015 13:37:49 -0500
-In-Reply-To: <20150203120925.GM8656@n2100.arm.linux.org.uk>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:49493 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757986AbbBFSiC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:38:02 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1YJnmz-002msG-JE
+	for linux-pm@vger.kernel.org; Fri, 06 Feb 2015 18:38:02 +0000
+Content-Disposition: inline
+In-Reply-To: <1423241948-31981-8-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 
-Hello Russell,
+On Fri, Feb 06, 2015 at 05:59:07PM +0100, Lukasz Majewski wrote:
+> This patch provides code for reading PWM FAN configuration data via
+> device tree. The pwm-fan can work with full speed when configuration
+> is not provided. However, errors are propagated when wrong DT bindings
+> are found.
+> Additionally the struct pwm_fan_ctx has been extended.
+> 
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> ---
+> Changes for v2:
+> - Rename pwm_fan_max_states to pwm_fan_cooling_levels
+> - Moving pwm_fan_of_get_cooling_data() call after setting end enabling PWM FAN
+> - pwm_fan_of_get_cooling_data() now can fail - preserving old behaviour
+> - Remove unnecessary dev_err() call
+> Changes for v3:
+> - Patch's headline has been reedited
+> - pwm_fan_of_get_cooling_data() return code is now being checked.
+> - of_property_count_elems_of_size() is now used instead of_find_property()
+> - More verbose patch description added
+> ---
+>  drivers/hwmon/pwm-fan.c | 54 ++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 53 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+> index 870e100..f3f5843 100644
+> --- a/drivers/hwmon/pwm-fan.c
+> +++ b/drivers/hwmon/pwm-fan.c
+> @@ -30,7 +30,10 @@
+>  struct pwm_fan_ctx {
+>  	struct mutex lock;
+>  	struct pwm_device *pwm;
+> -	unsigned char pwm_value;
+> +	unsigned int pwm_value;
+> +	unsigned int pwm_fan_state;
+> +	unsigned int pwm_fan_max_state;
+> +	unsigned int *pwm_fan_cooling_levels;
+>  };
+>  
+>  static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+> @@ -100,6 +103,50 @@ static struct attribute *pwm_fan_attrs[] = {
+>  
+>  ATTRIBUTE_GROUPS(pwm_fan);
+>  
+> +int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
+> +{
+> +	struct device_node *np = dev->of_node;
+> +	int num, i, ret;
+> +
+> +	ret = of_property_count_elems_of_size(np, "cooling-levels",
+> +					      sizeof(u32));
+> +
+> +	if (ret == -EINVAL) {
+> +		dev_err(dev, "Property 'cooling-levels' not found\n");
+> +		return 0;
 
-First of all, thanks for the insight you've been providing. It helps a lot.
-(And thanks to everyone who's been answering some of my questions.)
+Returning 0 is obviously not an error, otherwise you would not return 0 here.
+So dev_err is wrong. Also, the message itself is wrong; the property may
+well be there but have a wrong size.
 
-Russell King - ARM Linux wrote:
+> +	}
+> +
+> +	if (ret <= 0) {
+> +		dev_err(dev, "Wrong data!\n");
+> +		return ret;
+> +	}
 
-> On Wed, Jan 28, 2015 at 02:16:21PM +0100, Mason wrote:
->
->> [snip udelay discussion]
->>
->> Q2. Cortex A9 global and private timers
->>
->> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
->>
->> (What are private timers used for?)
->
-> The per-cpu private timers are mostly scheduling of threads.
+This will result in the driver failing to load if devicetree is not configured
+(of_property_count_elems_of_size will return -ENOSYS). This is not acceptable.
+Also, if the call returns 0 you don't return an error but display a "Wrong data!"
+error message. Either it is an error or it is not, but not both.
 
-Hmmm, I'm confused (again).
-
-CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
-for the scheduler clock", right? In that case, are the local timers
-unused by Linux?
-
-#ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
-   sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
-#endif
-
-Is there generic code to set up local timers? (If so, where?)
-sched_clock_register only seems to appear in machine-specific code.
-
-What are the pros/cons of global timer vs local timers?
-Or is such a question irrelevant?
-(Because they are used for different purposes?)
-
->> In my platform-specific code, there is a config option to choose between
->>
->> 1) the ARM global timer
->> 2) a platform-specific timer (timer0)
->
-> Most platforms implement their own timer, because its really sexy for
-> hardware engineers to create yet another different timer implementation
-> which is soo much better than every other timer implementation that has
-> already been created.  You wouldn't believe how many different ways that
-> there are to create a timer - and we still have people coming up with
-> new novel implementations!
-
-There is trouble in paradise. I was planning to give the global timer a try,
-instead of the platform-specific timer, until I noticed: "The global timer
-is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
-CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
-by cpufreq. I imagine it's double plus ungood for precise time-keeping to
-have frequency changes of the clocksource input?
-
->> Q3. Using the generic global timer implementation
->>
->> So, how do I use that implementation?
->> (Is someone other than STMicro using it?)
-
-To answer that question:
-
-$ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
-arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
-arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
-arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
-arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
-arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
-arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
-
-There are indeed a few users; also I wonder why mach-zynq enables
-ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
-the CPU CLOCK driving PERIPHCLK?)
-
-Regards.
+Guenter
