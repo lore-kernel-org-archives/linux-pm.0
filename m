@@ -1,47 +1,61 @@
-From: <grygorii.strashko@linaro.org>
-Subject: [PATCH] thermal: ti-soc-thermal: bandgap: Fix build warning if !CONFIG_PM_SLEEP
-Date: Fri,  6 Feb 2015 16:55:46 +0200
-Message-ID: <1423234546-10458-1-git-send-email-grygorii.strashko@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f172.google.com ([209.85.217.172]:56845 "EHLO
-	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757238AbbBFOzw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 09:55:52 -0500
-Received: by mail-lb0-f172.google.com with SMTP id l4so18400976lbv.3
-        for <linux-pm@vger.kernel.org>; Fri, 06 Feb 2015 06:55:51 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 20/20] arm: mach-pxa: Decrement the power supply's
+ device reference counter
+Date: Fri, 6 Feb 2015 15:59:05 +0100
+Message-ID: <20150206145904.GA7872@amd>
+References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
+ <1422629278-12202-21-git-send-email-k.kozlowski@samsung.com>
+ <20150206134953.GA25683@amd> <1423233788.31516.5.camel@AMDC1943>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Content-Disposition: inline
+In-Reply-To: <1423233788.31516.5.camel@AMDC1943>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Milo Kim <milo.kim@ti.com>, x86@kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, platform-driver-x86@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Lee Jones <lee.jones@linaro.org>, ac100@lists.launchpad.net, devel@driverdev.osuosl.org, Russell King <linux@arm.linux.org.uk>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, patches@opensource.wolfsonmicro.com, linux-acpi@vger.kernel.org, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Darren Hart <dvhart@infradead.org>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Julian Andres Klode <jak@jak-linux.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-tegra@vger.k
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com, Grygorii Strashko <Grygorii.Strashko@linaro.org>
 
-From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
-
-Fix following build warning if CONFIG_PM_SLEEP is not set:
-
-drivers/thermal/ti-soc-thermal/ti-bandgap.c:1478:12: warning: 'ti_bandgap_suspend' defined but not used [-Wunused-function]
- static int ti_bandgap_suspend(struct device *dev)
-            ^
-drivers/thermal/ti-soc-thermal/ti-bandgap.c:1492:12: warning: 'ti_bandgap_resume' defined but not used [-Wunused-function]
- static int ti_bandgap_resume(struct device *dev)
-            ^
-Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
----
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 74c0e34..5d46660 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1402,7 +1402,7 @@ int ti_bandgap_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int ti_bandgap_save_ctxt(struct ti_bandgap *bgp)
- {
- 	int i;
--- 
-1.9.1
-
+T24gRnJpIDIwMTUtMDItMDYgMTU6NDM6MDgsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6Cj4g
+T24gcGnEhSwgMjAxNS0wMi0wNiBhdCAxNDo0OSArMDEwMCwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+
+ID4gT24gRnJpIDIwMTUtMDEtMzAgMTU6NDc6NTgsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6
+Cj4gPiA+IFVzZSBwb3dlcl9zdXBwbHlfcHV0KCkgdG8gZGVjcmVtZW50IHRoZSBwb3dlciBzdXBw
+bHkncyBkZXZpY2UgcmVmZXJlbmNlCj4gPiA+IGNvdW50ZXIuCj4gPiA+IAo+ID4gPiBTaWduZWQt
+b2ZmLWJ5OiBLcnp5c3p0b2YgS296bG93c2tpIDxrLmtvemxvd3NraUBzYW1zdW5nLmNvbT4KPiA+
+ID4gUmV2aWV3ZWQtYnk6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBz
+YW1zdW5nLmNvbT4KPiA+ID4gUmV2aWV3ZWQtYnk6IFNlYmFzdGlhbiBSZWljaGVsIDxzcmVAa2Vy
+bmVsLm9yZz4KPiA+IAo+ID4gMTEsMTMsMjAgbm90aGluZyBvYnZpb3VzbHkgd3JvbmcuIEJ1dCBJ
+J20gbm90IHN1cmUgaWYgSSBzdHVkaWVkIHRoZW0KPiA+IGNsb3NlbHkgZW5vdWdoIHRvIHdhcnJh
+bnQgYW4gQUNLLgo+ID4gCj4gPiBJdCB3b3VsZCBiZSBnb29kIHRvIGdldCB0aGlzIGludG8ga2Vy
+bmVsIC0tIEkgc2VlbiBubyBiYWQgY29tbWVudHMsCj4gPiBhbmQgaXQgaXMgbm90IGdvaW5nIHRv
+IGltcHJvdmUgd2l0aG91dCBtZXJnZSBpbnRvIG1haW5saW5lLgo+IAo+IFRoYW5rcyBmb3IgbG9v
+a2luZyBhdCBwYXRjaHNldC4gSXQgd291bGQgYmUgcmVhbGx5IG5pY2UgaWYgdGhpcyBjb3VsZCBi
+ZQo+IHRlc3RlZCBmb3Igc29tZSB0aW1lIGluIGxpbnV4LW5leHQuIFN1Y2ggdGVzdGluZyB3b3Vs
+ZCBoZWxwIGEgbG90LiBCdXQgSQo+IG5lZWQgYWNrcyBmcm9tIHZhcmlvdXMgbWFpbnRhaW5lcnMg
+Zm9yIHRoYXQuCgpBY3R1YWxseSwgeW91IGRvbid0LiBUaGUgdmFyaW91cyBtYWludGFpbmVycyBj
+bGVhcmx5IGRvbid0IGNhcmUgYXQKdGhpcyBwb2ludC4gVGhleSBoYWQgZW5vdWdoIHRpbWUuIFNv
+IHlvdSBzZWxlY3Qgb25lIG1haW50YWluZXIgeW91CndhbnQgdG8gcHVzaCB0aGlzIHRocm91Z2gs
+IGFuZCB5b3UgcHVzaCBpdC4KClNvbWVvbmUgbWF5IGNvbXBsYWluLCBzbyB5b3UnbGwgc29sdmUg
+dGhlIGZlZWRiYWNrLi4uCgpHb29kIGx1Y2ssCgkJCQkJCQkJCVBhdmVsCgo+IE9mIGNvdXJzZSB0
+aGUgcGF0Y2hzZXQgdG8gYmlnIGVub3VnaCB0byBnbyBpbnRvIDMuMjAuIElmIG5lZWRlZCB0aGlz
+Cj4gY291bGQgYmUgdGFrZW4gZ3JhZHVhbGx5IGluIGZvbGxvd2luZyBzdGVwczoKPiAxLiBQYXRj
+aGVzIDEtMiAocGF0Y2ggMiB0b3VjaGVzICphbGwgZHJpdmVycyopLAo+IDIuIFBhdGNoZXMgMy0x
+MCAodG91Y2ggb25seSBpbmRpdmlkdWFsIGRyaXZlcnMpLAo+IDMuIFBhdGNoIDExIChhZ2FpbiAq
+ZXZlcnl0aGluZyogY2hhbmdlZCksCj4gNC4gUGF0Y2hlcyAxMi0yMCAoaW5kaXZpZHVhbCBjaGFu
+Z2VzKS4KPiAKPiBJbiBzdWNoIGNhc2UgSSB3aWxsIHJlZnJlc2ggZXZlcnl0aGluZyBhZnRlciBl
+YWNoIHN0ZXAgc28gbmV3IGRyaXZlcnMKPiB3b3VsZCBiZSBhbHNvIHVwZGF0ZWQuCj4gCj4gVGhh
+bmtzIGFnYWluIFBhdmVsIGZvciBwcm9tcHQgcmVwbGllcy4KCi0tIAooZW5nbGlzaCkgaHR0cDov
+L3d3dy5saXZlam91cm5hbC5jb20vfnBhdmVsbWFjaGVrCihjZXNreSwgcGljdHVyZXMpIGh0dHA6
+Ly9hdHJleS5rYXJsaW4ubWZmLmN1bmkuY3ovfnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRt
+bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBt
+YWlsaW5nIGxpc3QKZGV2ZWxAbGludXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2
+LmxpbnV4ZHJpdmVycHJvamVjdC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
