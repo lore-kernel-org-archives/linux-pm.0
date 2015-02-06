@@ -1,148 +1,90 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: cpuidle vs suspend vs something else
-Date: Fri, 06 Feb 2015 10:49:45 -0800
-Message-ID: <20150206184945.421.74720@quantum>
-References: <54D43143.2010403@free.fr>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Fri, 6 Feb 2015 19:14:19 +0000
+Message-ID: <20150206191419.GA8656@n2100.arm.linux.org.uk>
+References: <54C8E125.3070905@free.fr>
+ <20150203120925.GM8656@n2100.arm.linux.org.uk>
+ <54D509EC.7020708@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f171.google.com ([209.85.213.171]:62485 "EHLO
-	mail-ig0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754590AbbBFStw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:49:52 -0500
-Received: by mail-ig0-f171.google.com with SMTP id h15so4724489igd.4
-        for <linux-pm@vger.kernel.org>; Fri, 06 Feb 2015 10:49:52 -0800 (PST)
-In-Reply-To: <54D43143.2010403@free.fr>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:53092 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbbBFTO2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 14:14:28 -0500
+Content-Disposition: inline
+In-Reply-To: <54D509EC.7020708@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
 
-Quoting Mason (2015-02-05 19:13:07)
-> Hello everyone,
+On Fri, Feb 06, 2015 at 10:37:32AM -0800, Mason wrote:
+> Hmmm, I'm confused (again).
 > 
-> I've been reading about related sub-systems (cpuidle and suspend)
-> and I'm not sure I understand how they relate / interact.
+> CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
+> for the scheduler clock", right? In that case, are the local timers
+> unused by Linux?
 > 
-> If I understand correctly (please do point out any misconceptions)
-> on ARM Cortex A9, the first level of power saving is WFI, which is
-> typically called from the idle loop.
+> #ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+>   sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
+> #endif
 > 
-> This places the core in low-power mode ("Standby mode" in ARM docs).
-> "RAM arrays" (don't know what they are), "processor logic", and
-> "data engine" (not sure what any of these exactly refers to, guess
-> I have more reading to do) are still powered-up, but most of the
-> clocks are disabled.
+> Is there generic code to set up local timers? (If so, where?)
+> sched_clock_register only seems to appear in machine-specific code.
 > 
-> In ARM's exact words, "WFI and WFE Standby modes disable most of the
-> clocks in a processor, while keeping its logic powered up. This reduces
-> the power drawn to the static leakage current, leaving a tiny clock
-> power overhead requirement to enable the device to wake up."
+> What are the pros/cons of global timer vs local timers?
+> Or is such a question irrelevant?
+> (Because they are used for different purposes?)
+
+Correct.
+
+The sched_clock itself is about providing the scheduler with a stable,
+monotonically increasing 64-bit nanosecond value which it can use to
+account for the passing of time (so it can accurately measure how long
+a thread is running for, and make a decision when to pre-empt it.)
+
+Local timers are used to set "alarms" to cause an interrupt at a certain
+point in time to do something (like, run the scheduler to switch from
+the current thread to another thread.)  It can also be used to update
+the current time of day as well.
+
+Global timers are used as a fallback when local timers are not available,
+and are less efficient - the CPU receiving the global timer interrupt
+has to broadcast the interrupt to other CPUs, and it also has to take
+account of the earliest event across all CPUs.
+
+There is a fourth "timer" which is used as a monotonically incrementing
+counter - this is called the "clocksource".  This is used to maintain
+the kernel's time-of-day.  This may be the same as the sched_clock.
+
+> There is trouble in paradise. I was planning to give the global timer a try,
+> instead of the platform-specific timer, until I noticed: "The global timer
+> is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
+> CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
+> by cpufreq. I imagine it's double plus ungood for precise time-keeping to
+> have frequency changes of the clocksource input?
+
+Yes and no.  You can use that for local timers and/or a global timer, but
+you really don't want to use that for the sched_clock nor clocksource as
+these are really the fundamentals of time keeping.  I'd advise against
+using a timer derived from the CPU clock in general though, but if you
+have no other possible timers, then it has to do.
+
+> $ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
+> arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
+> arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
+> arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
+> arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
+> arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
+> arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
 > 
-> Some CPUs like Intel's have several levels of sleep (deeper levels
-> mean less power, but have a higher wake-up latency). AFAIU, cpuidle
-> is used to describe and manage these levels?
+> There are indeed a few users; also I wonder why mach-zynq enables
+> ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
+> the CPU CLOCK driving PERIPHCLK?)
 
-(warning: over-simplification below. Please be kind if you decide to
-blow it up)
+I'm afraid I don't know.
 
-Hello Mason,
-
-A critical thing to understand is that you are talking about two classes
-of idle behavior or power-saving behavior.
-
-First there are the physical idle states and low-power states that the
-*hardware* (silicon) can achieve. These vary in how much power they save
-with trade-offs such increased wake-up latency, loss of context/cache,
-etc.
-
-WFI is the gateway to low-power states in ARM hardware (from the
-perspective of the Linux kernel). A plain WFI without any extra steps
-will gate the CPUs clocks. With some extra steps (programming target
-power domain state, etc) then WFI can trigger lower voltages supplied by
-the PMIC/regulators, or total power gating for power domains/island
-resulting in increased energy savings but costlier wake-up time and loss
-of context.
-
-The second behavior is what the *software* (Linux OS) tries to do to
-save power. You mentioned two such behaviors above:
-
-1) CPUidle tries to save power by programming the hardware to a low
-power idle state (see above) during moments of idleness. What is idle
-time? It is when no work is scheduled to be run Right Now and the
-scheduler enters the idle thread/loop. Note that CPUidle does not aim to
-affect the schedulability (new word!) of the Linux scheduler. E.g. it
-ideally should not impact performance, as it is only going to target a
-low power hardware idle state opportunistically based on naturally
-occurring idle time from the scheduler.
-
-2) Suspend is very different from CPUidle. It *forces* idleness upon the
-OS until a wake-up event resumes the OS from suspend. Imagine closing
-the lid on your laptop while it is running. That is suspend. Processes
-are frozen regardless of whether we have lots of work scheduled or not.
-Suspend forces the OS to be idle. Typically this software idleness
-corresponds to the deepest hardware idle state, but it doesn't have to.
-
-That last point is why it is important to understand the different
-between idling in software and idling in hardware. More on that below.
-
-> 
-> Isn't suspend somewhat like the deepest level of sleep?
-> (Or is it different in that things like RAM state are only a concern
-> for suspend, not cpuidle?)
->
-
-There is nothing stopping a platform from suspending to RAM and leaving
-everything powered up and only clock gating the CPUs with a WFI. That is
-a brain-dead thing to do but it is possible and illustrates the
-separation of software and hardware idling.
-
-Regarding CPUidle, if you predict that you will be idle for a long
-enough period of time then it is perfectly valid for you to hit your
-deepest sleep state in the CPUidle path.
-
-OMAP3 did this quite well: it had a CHIP OFF state that was utilized
-both by suspend/hibernate as well CPUidle (when CPUidle thought that
-there was sufficient idle time to go to that state without adversely
-affecting performance).
-
-However, these days it does seem more common for suspend to target a
-deeper hardware sleep state than the deepest possible CPUidle state for
-a given platform.
-
-Finally, the idle states (C-states) available to CPUidle drivers in the
-mainline Linux kernel are often a poor representation of what the
-hardware can really do to save power. Look at vendor git tree for
-whatever platform you are hacking on and usually you will see that there
-are lots more C-states in those trees than what is merged upstream.
-Maybe we'll fix that problem some day.
-
-Regards,
-Mike
-
-> Are both subsystems still actively used?
-> 
-> I saw plans to merge cpufreq into cpuidle / scheduler decisions.
-> 
-> LCA14: LCA14-306: CPUidle & CPUfreq integration with scheduler
-> http://www.slideshare.net/linaroorg/lca14-306-cpuidlecpufreqintegrationwithscheduler
-> 
-> This presentation doesn't mention suspend, I think.
-> 
-> ARM has a mode called "Dormant Mode". Is suspend typically
-> used to put the SoC in that mode?
-> 
-> I think I need to read this document carefully:
-> Power Management In The Linux Kernel -- Current Status And Future
-> http://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf
-> 
-> There's also an older document that may prove insightful:
-> CPUIdle versus Suspend
-> http://www.linuxplumbersconf.org/2010/ocw/proposals/789
-> 
-> But things move so fast in kernel-land, that I don't know how relevant
-> a 4 year-old document can be.
-> 
-> Regards.
-> 
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
