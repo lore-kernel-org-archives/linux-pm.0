@@ -1,66 +1,76 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
-Date: Thu, 05 Feb 2015 14:55:57 -0800
-Message-ID: <54D3F4FD.1080602@codeaurora.org>
-References: <cover.1422346933.git.viresh.kumar@linaro.org> <6147604.f4mimnOd4x@vostro.rjw.lan> <54D2CD76.2030609@codeaurora.org> <1746505.56yzpQ04cT@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: ACPI PCC probe failed.
+Date: Fri, 06 Feb 2015 01:49:20 +0100
+Message-ID: <2809506.4Qklo5lDla@vostro.rjw.lan>
+References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com> <6825579.hyRLxbRUP5@vostro.rjw.lan> <CAJ5Y-eaPjOsm82PDiCBM9pcO4h6bzKHkTu5tNgQqqfRbrqbTcw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:45007 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbbBEWz7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 17:55:59 -0500
-In-Reply-To: <1746505.56yzpQ04cT@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:60447 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751324AbbBFA0Y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Feb 2015 19:26:24 -0500
+In-Reply-To: <CAJ5Y-eaPjOsm82PDiCBM9pcO4h6bzKHkTu5tNgQqqfRbrqbTcw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: Cristian <caravena@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/05/2015 07:11 AM, Rafael J. Wysocki wrote:
-> On Wednesday, February 04, 2015 05:55:02 PM Saravana Kannan wrote:
->> On 02/04/2015 03:20 PM, Rafael J. Wysocki wrote:
->>> On Wednesday, February 04, 2015 02:28:55 PM Saravana Kannan wrote:
->>>> On 02/03/2015 10:20 PM, Viresh Kumar wrote:
->>>>> On 4 February 2015 at 03:58, Saravana Kannan <skannan@codeaurora.org> wrote:
->>>>>> Can you explain why we need a fallback list in the first place? Now that we
->>>>>> are not destroying and creating policy objects, I don't see any point in the
->>>>>> fallback list.
->>>>>
->>>>> Because we wanted to mark the policy inactive. But as I have introduced another
->>>>> field for that now, probably it can be fixed. Will check again on what
->>>>> can be done.
->>>>
->>>> Thanks. That's why I was asking. Now that you have another flag. Also,
->>>> you might not even need a flag. You can just check if policy->cpus is
->>>> empty (btw, I think we should let that go to empty)
->>>
->>> So the idea would be to avoid clearig cpufreq_cpu_data during offline
->>> tear-down (because we know that the CPU is offline anyway) and then start
->>> using the same policy pointer during offline?
->>
->> Yeah. We still don't clear the policy->cpus today when the last CPU goes
->> down. But that can be done easily by changing a few "if" conditions and
->> rearranging the hotplug notifier code (I think it's mostly there with
->> this series). Once we clear policy->cpus when all CPUs are offline, we
->> can just use that data to figure out if it's "active" or not.
->
-> OK
->
-> I'm still concerned about the case when the last policy CPU is physically
-> going away, in which we do the offline as a preliminary step and then
-> will go for full CPU device unregistration.
+On Thursday, February 05, 2015 10:44:13 AM Ashwin Chaugule wrote:
+> Hi Rafael,
+> 
+> On 4 February 2015 at 20:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, February 04, 2015 06:38:39 PM Ashwin Chaugule wrote:
+> >> On 4 February 2015 at 18:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Wednesday, February 04, 2015 05:06:26 PM Ashwin Chaugule wrote:
+> >> >> > I have one more concern about this driver.  Namely, what benefit is there to
+> >> >> > people like Cristian from it at all?
+> >> >>
+> >> >> Its of use only if they have a PCC client (MPST, CPPC, RAS) driver.
+> >> >> Looks like PCC was explicitly enabled in this kernel.
+> >> >>
+> >> >> config PCC
+> >> >> bool "Platform Communication Channel Driver"
+> >> >> depends on ACPI
+> >> >
+> >> > Can we make it depend on the clients instead and be set automatically
+> >> > when at least one of the clients is enabled?
+> >> >
+> >> > Otherwise distros will have a problem with deciding whether or not they
+> >> > should enable this driver and most of them will end up enabling it.
+> >>
+> >> I see your point, but I'm not aware of any upstreamed client as of
+> >> yet. There might be folks using this driver internally though with
+> >> other clients. In such a case, is there a way to keep PCC disabled
+> >> until a client (e.g. CPPC) is upstreamed?
+> >
+> > Make it depend on EXPERT or something like that until the first client is
+> > added and then make it depend on that client. :-)
+> 
+> Doesn't sound too bad. Hope that doesn't end up enabling unintended
+> options in the kernel which aren't exposed in kconfig.
+> FWIW, I think its better to make it depend on CPPC as part of the PCC
+> cleanup patch that I have going in the CPPC patchset.
 
-I made sure that would work in the patch series I sent out a while back. 
-I now need to make sure that Viresh's patch series account for it 
-correctly. I'll make sure to review this series at least once a week.
+That's fine by me.
 
-The way to handle the case you mentioned is by treating the 
-subsys_interface based add/remove ops as physical add/remove and the 
-hotplug add/remove as logical add/remove.
+> >> Alternately, is it that bad to keep it the way it is, given that the
+> >> driver wont do anything unless PCCT is detected in firmware and a PCC
+> >> client explicitly uses its API?
+> >
+> > Well, is it really useful this way?
+> 
+> Not really, but not particularly harmful either. :) Besides, it seems
+> like for the sake of genericness, distros enable several options that
+> are irrelevant to a platform. In this case, PCC would be harmlessly
+> enabled only until CPPC makes its way upstream (which is actively
+> being worked on anyway).
 
--Saravana
+For one, I don't like it being easy to enable by mistake on x86 where it is
+not useful at all (and won't be at least for some time).
+
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
