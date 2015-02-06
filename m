@@ -1,44 +1,71 @@
-From: Stefan Agner <stefan@agner.ch>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Fri, 06 Feb 2015 22:31:41 +0100
-Message-ID: <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
-References: <54C8E125.3070905@free.fr>
- <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54D52F84.9050600@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: [PATCH] intel_pstate: provide option to only use intel_pstate with HWP
+Date: Fri,  6 Feb 2015 13:41:55 -0800
+Message-ID: <1423258915-26457-1-git-send-email-kristen@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:4670 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754731AbbBFVl5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Feb 2015 16:41:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org
 
-On 2015-02-06 22:17, Mason wrote:
-> Stefan Agner wrote:
-> 
->> Just recently I added support of ARM global timer as clocksource for
->> Vybrid SoC. This SoC doesn't use cpufreq, hence it is safe to use the
->> ARM global timer. The nice thing of device tree is, the patch to add
->> support for that did not change a single line of code:
->>
->> http://thread.gmane.org/gmane.linux.kernel/1794460
-> 
-> Hello Stefan,
-> 
-> Your changes are not yet accepted in mainline, are they?
-> (I don't see them in 3.18.5)
+Allow users the option to disable the driver for any hardware
+which does not support HWP.
 
-The changes have been accepted and went upstream in the 3.19 merge
-window, see
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=81c4831907fb00efdc97093b09e333009a57d005
+Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+---
+ Documentation/kernel-parameters.txt | 3 +++
+ drivers/cpufreq/intel_pstate.c      | 6 ++++++
+ 2 files changed, 9 insertions(+)
 
-> Do you also use the ARM local timers in your port?
-> Is there generic code to handle them?
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4df73da..07e6701 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1469,6 +1469,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		       no_hwp
+ 		         Do not enable hardware P state control (HWP)
+ 			 if available.
++		hwp_only
++			Only load intel_pstate on systems which support
++			hardware P state control (HWP) if available.
+ 
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index e7e808d..872c577 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1019,6 +1019,7 @@ static struct cpufreq_driver intel_pstate_driver = {
+ 
+ static int __initdata no_load;
+ static int __initdata no_hwp;
++static int __initdata hwp_only;
+ static unsigned int force_load;
+ 
+ static int intel_pstate_msrs_not_valid(void)
+@@ -1216,6 +1217,9 @@ static int __init intel_pstate_init(void)
+ 	if (cpu_has(c,X86_FEATURE_HWP) && !no_hwp)
+ 		intel_pstate_hwp_enable();
+ 
++	if (!hwp_active && hwp_only)
++		goto out;
++
+ 	rc = cpufreq_register_driver(&intel_pstate_driver);
+ 	if (rc)
+ 		goto out;
+@@ -1250,6 +1254,8 @@ static int __init intel_pstate_setup(char *str)
+ 		no_hwp = 1;
+ 	if (!strcmp(str, "force"))
+ 		force_load = 1;
++	if (!strcmp(str, "hwp_only"))
++		hwp_only = 1;
+ 	return 0;
+ }
+ early_param("intel_pstate", intel_pstate_setup);
+-- 
+1.9.3
 
-It seems that there has been support for local timers once, but has been
-removed. But I'm not aware of the details:
-https://lkml.org/lkml/2013/2/22/49
-
---
-Stefan
