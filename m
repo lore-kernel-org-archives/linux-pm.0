@@ -1,104 +1,57 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 6/8] hwmon: pwm-fan: Extract __set_pwm() function to
- only modify PWM duty cycle
-Date: Fri, 6 Feb 2015 10:27:25 -0800
-Message-ID: <20150206182725.GA25410@roeck-us.net>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
- <1423241948-31981-7-git-send-email-l.majewski@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Update] Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
+Date: Fri, 6 Feb 2015 19:29:22 +0100
+Message-ID: <20150206182922.GN24151@twins.programming.kicks-ass.net>
+References: <54866625.8010406@linux.intel.com>
+ <alpine.DEB.2.11.1501260946390.5526@nanos>
+ <16564156.c5NBzjJuA3@vostro.rjw.lan>
+ <2439333.L8nfGI3YZp@vostro.rjw.lan>
+ <20150206161454.GQ21418@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:35452 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758564AbbBFS33 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:29:29 -0500
 Content-Disposition: inline
-In-Reply-To: <1423241948-31981-7-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+In-Reply-To: <20150206161454.GQ21418@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Feb 06, 2015 at 05:59:06PM +0100, Lukasz Majewski wrote:
-> It was necessary to decouple code handling writing to sysfs from the one
-> responsible for setting PWM of the fan.
-> Due to that, new __set_pwm() method was extracted, which is responsible for
-> only setting new PWM duty cycle.
+On Fri, Feb 06, 2015 at 05:14:54PM +0100, Peter Zijlstra wrote:
+> On Fri, Feb 06, 2015 at 02:20:13AM +0100, Rafael J. Wysocki wrote:
+> >  void freeze_wake(void)
+> >  {
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&suspend_freeze_lock, flags);
+> > +	if (suspend_freeze_state > FREEZE_STATE_NONE) {
+> > +		suspend_freeze_state = FREEZE_STATE_WAKE;
+> > +		wake_up(&suspend_freeze_wait_head);
+> > +	}
+> > +	spin_unlock_irqrestore(&suspend_freeze_lock, flags);
+> >  }
 > 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - None
-> Changes for v3:
-> - The commit headline has been reedited.
-> ---
->  drivers/hwmon/pwm-fan.c | 35 ++++++++++++++++++++++-------------
->  1 file changed, 22 insertions(+), 13 deletions(-)
 > 
-> diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-> index 1991d903..870e100 100644
-> --- a/drivers/hwmon/pwm-fan.c
-> +++ b/drivers/hwmon/pwm-fan.c
-> @@ -33,21 +33,15 @@ struct pwm_fan_ctx {
->  	unsigned char pwm_value;
->  };
->  
-> -static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
-> -		       const char *buf, size_t count)
-> +static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
->  {
-> -	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
-> -	unsigned long pwm, duty;
-> -	ssize_t ret;
-> -
-> -	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
-> -		return -EINVAL;
-> -
-> -	mutex_lock(&ctx->lock);
-> +	unsigned long duty;
-> +	int ret;
->  
->  	if (ctx->pwm_value == pwm)
-> -		goto exit_set_pwm_no_change;
-> +		return 0;
->  
-Why did you move this check outside the lock ? With this change there 
-is no guarantee that pwm_value wasn't changed while waiting for the lock.
+> > +static void enter_freeze_proper(struct cpuidle_driver *drv,
+> > +				struct cpuidle_device *dev, int index)
+> > +{
+> > +	tick_freeze();
+> > +	drv->states[index].enter_freeze(dev, drv, index);
+> > +	/*
+> > +	 * timekeeping_resume() that will be called by tick_unfreeze() for the
+> > +	 * last CPU executing it calls functions containing RCU read-side
+> > +	 * critical sections, so tell RCU about that.
+> > +	 */
+> > +	RCU_NONIDLE(tick_unfreeze());
+> > +}
+> 
+> So I'm a wee bit confused; if we use an enter_freeze() state that keeps
+> interrupts disabled; who is going to call the freeze_wake() thing?
 
-Guenter
-
-> +	mutex_lock(&ctx->lock);
->  	if (pwm == 0) {
->  		pwm_disable(ctx->pwm);
->  		goto exit_set_pwm;
-> @@ -66,13 +60,28 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
->  
->  exit_set_pwm:
->  	ctx->pwm_value = pwm;
-> -exit_set_pwm_no_change:
-> -	ret = count;
->  exit_set_pwm_err:
->  	mutex_unlock(&ctx->lock);
->  	return ret;
->  }
->  
-> +static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
-> +		       const char *buf, size_t count)
-> +{
-> +	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
-> +	unsigned long pwm;
-> +	int ret;
-> +
-> +	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
-> +		return -EINVAL;
-> +
-> +	ret = __set_pwm(ctx, pwm);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +
->  static ssize_t show_pwm(struct device *dev,
->  			struct device_attribute *attr, char *buf)
->  {
-> -- 
-> 2.0.0.rc2
-> 
+Ah, I think I see, so we wake up, keep the interrupt pending, re-enable
+the tick and time and everybody, then re-enable interrupts, take the
+interrupt and go around the idle loop to find we need a reschedule etc..
