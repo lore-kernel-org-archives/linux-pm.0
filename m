@@ -1,37 +1,34 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] drivers/base: Remove unnecessary OOM message
-Date: Fri, 6 Feb 2015 22:17:08 +0100
-Message-ID: <20150206211708.GA25967@amd>
-References: <20150206153912.GA8486@sloth>
- <20150206205852.GA14126@amd>
- <1423256670.4752.16.camel@perches.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Fri, 06 Feb 2015 13:17:56 -0800
+Message-ID: <54D52F84.9050600@free.fr>
+References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1423256670.4752.16.camel@perches.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Quentin Lambert <lambert.quentin@gmail.com>, Ming Lei <ming.lei@canonical.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <e028a4eb604a491f4438557f4a1373ef@agner.ch>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stefan Agner <stefan@agner.ch>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2015-02-06 13:04:30, Joe Perches wrote:
-> On Fri, 2015-02-06 at 21:58 +0100, Pavel Machek wrote:
-> > On Fri 2015-02-06 16:39:12, Quentin Lambert wrote:
-> > > This patch fix checkpatch warnings concerning the possible
-> > > duplication of an "out of memory" message.
-> > 
-> > So, instead of nice and readable "not enough memory for clock..." we
-> > get OOM, stackdump, and backtrace...? Not sure it is improvement.
-> 
-> All allocs without __GFP_NOWARN already gets an OOM and stackdump.
-> These are just unnecessary.
+Stefan Agner wrote:
 
-"These" being human readable messages or ugly stackdumps?
+> Just recently I added support of ARM global timer as clocksource for
+> Vybrid SoC. This SoC doesn't use cpufreq, hence it is safe to use the
+> ARM global timer. The nice thing of device tree is, the patch to add
+> support for that did not change a single line of code:
+>
+> http://thread.gmane.org/gmane.linux.kernel/1794460
 
-Read what I have said. Figuring out what allocation failed from
-unreliable backtrace is not fun.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hello Stefan,
+
+Your changes are not yet accepted in mainline, are they?
+(I don't see them in 3.18.5)
+
+Do you also use the ARM local timers in your port?
+Is there generic code to handle them?
+
+Regards.
+
