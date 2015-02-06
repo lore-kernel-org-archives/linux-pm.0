@@ -1,98 +1,148 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 7/8] hwmon: pwm-fan: Read PWM FAN configuration from
- device tree
-Date: Fri, 6 Feb 2015 10:36:57 -0800
-Message-ID: <20150206183657.GB25410@roeck-us.net>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
- <1423241948-31981-8-git-send-email-l.majewski@samsung.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: cpuidle vs suspend vs something else
+Date: Fri, 06 Feb 2015 10:49:45 -0800
+Message-ID: <20150206184945.421.74720@quantum>
+References: <54D43143.2010403@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:49493 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757986AbbBFSiC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:38:02 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1YJnmz-002msG-JE
-	for linux-pm@vger.kernel.org; Fri, 06 Feb 2015 18:38:02 +0000
-Content-Disposition: inline
-In-Reply-To: <1423241948-31981-8-git-send-email-l.majewski@samsung.com>
+Received: from mail-ig0-f171.google.com ([209.85.213.171]:62485 "EHLO
+	mail-ig0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754590AbbBFStw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:49:52 -0500
+Received: by mail-ig0-f171.google.com with SMTP id h15so4724489igd.4
+        for <linux-pm@vger.kernel.org>; Fri, 06 Feb 2015 10:49:52 -0800 (PST)
+In-Reply-To: <54D43143.2010403@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+To: Mason <mpeg.blue@free.fr>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, Feb 06, 2015 at 05:59:07PM +0100, Lukasz Majewski wrote:
-> This patch provides code for reading PWM FAN configuration data via
-> device tree. The pwm-fan can work with full speed when configuration
-> is not provided. However, errors are propagated when wrong DT bindings
-> are found.
-> Additionally the struct pwm_fan_ctx has been extended.
+Quoting Mason (2015-02-05 19:13:07)
+> Hello everyone,
 > 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - Rename pwm_fan_max_states to pwm_fan_cooling_levels
-> - Moving pwm_fan_of_get_cooling_data() call after setting end enabling PWM FAN
-> - pwm_fan_of_get_cooling_data() now can fail - preserving old behaviour
-> - Remove unnecessary dev_err() call
-> Changes for v3:
-> - Patch's headline has been reedited
-> - pwm_fan_of_get_cooling_data() return code is now being checked.
-> - of_property_count_elems_of_size() is now used instead of_find_property()
-> - More verbose patch description added
-> ---
->  drivers/hwmon/pwm-fan.c | 54 ++++++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 53 insertions(+), 1 deletion(-)
+> I've been reading about related sub-systems (cpuidle and suspend)
+> and I'm not sure I understand how they relate / interact.
 > 
-> diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-> index 870e100..f3f5843 100644
-> --- a/drivers/hwmon/pwm-fan.c
-> +++ b/drivers/hwmon/pwm-fan.c
-> @@ -30,7 +30,10 @@
->  struct pwm_fan_ctx {
->  	struct mutex lock;
->  	struct pwm_device *pwm;
-> -	unsigned char pwm_value;
-> +	unsigned int pwm_value;
-> +	unsigned int pwm_fan_state;
-> +	unsigned int pwm_fan_max_state;
-> +	unsigned int *pwm_fan_cooling_levels;
->  };
->  
->  static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
-> @@ -100,6 +103,50 @@ static struct attribute *pwm_fan_attrs[] = {
->  
->  ATTRIBUTE_GROUPS(pwm_fan);
->  
-> +int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
-> +{
-> +	struct device_node *np = dev->of_node;
-> +	int num, i, ret;
-> +
-> +	ret = of_property_count_elems_of_size(np, "cooling-levels",
-> +					      sizeof(u32));
-> +
-> +	if (ret == -EINVAL) {
-> +		dev_err(dev, "Property 'cooling-levels' not found\n");
-> +		return 0;
+> If I understand correctly (please do point out any misconceptions)
+> on ARM Cortex A9, the first level of power saving is WFI, which is
+> typically called from the idle loop.
+> 
+> This places the core in low-power mode ("Standby mode" in ARM docs).
+> "RAM arrays" (don't know what they are), "processor logic", and
+> "data engine" (not sure what any of these exactly refers to, guess
+> I have more reading to do) are still powered-up, but most of the
+> clocks are disabled.
+> 
+> In ARM's exact words, "WFI and WFE Standby modes disable most of the
+> clocks in a processor, while keeping its logic powered up. This reduces
+> the power drawn to the static leakage current, leaving a tiny clock
+> power overhead requirement to enable the device to wake up."
+> 
+> Some CPUs like Intel's have several levels of sleep (deeper levels
+> mean less power, but have a higher wake-up latency). AFAIU, cpuidle
+> is used to describe and manage these levels?
 
-Returning 0 is obviously not an error, otherwise you would not return 0 here.
-So dev_err is wrong. Also, the message itself is wrong; the property may
-well be there but have a wrong size.
+(warning: over-simplification below. Please be kind if you decide to
+blow it up)
 
-> +	}
-> +
-> +	if (ret <= 0) {
-> +		dev_err(dev, "Wrong data!\n");
-> +		return ret;
-> +	}
+Hello Mason,
 
-This will result in the driver failing to load if devicetree is not configured
-(of_property_count_elems_of_size will return -ENOSYS). This is not acceptable.
-Also, if the call returns 0 you don't return an error but display a "Wrong data!"
-error message. Either it is an error or it is not, but not both.
+A critical thing to understand is that you are talking about two classes
+of idle behavior or power-saving behavior.
 
-Guenter
+First there are the physical idle states and low-power states that the
+*hardware* (silicon) can achieve. These vary in how much power they save
+with trade-offs such increased wake-up latency, loss of context/cache,
+etc.
+
+WFI is the gateway to low-power states in ARM hardware (from the
+perspective of the Linux kernel). A plain WFI without any extra steps
+will gate the CPUs clocks. With some extra steps (programming target
+power domain state, etc) then WFI can trigger lower voltages supplied by
+the PMIC/regulators, or total power gating for power domains/island
+resulting in increased energy savings but costlier wake-up time and loss
+of context.
+
+The second behavior is what the *software* (Linux OS) tries to do to
+save power. You mentioned two such behaviors above:
+
+1) CPUidle tries to save power by programming the hardware to a low
+power idle state (see above) during moments of idleness. What is idle
+time? It is when no work is scheduled to be run Right Now and the
+scheduler enters the idle thread/loop. Note that CPUidle does not aim to
+affect the schedulability (new word!) of the Linux scheduler. E.g. it
+ideally should not impact performance, as it is only going to target a
+low power hardware idle state opportunistically based on naturally
+occurring idle time from the scheduler.
+
+2) Suspend is very different from CPUidle. It *forces* idleness upon the
+OS until a wake-up event resumes the OS from suspend. Imagine closing
+the lid on your laptop while it is running. That is suspend. Processes
+are frozen regardless of whether we have lots of work scheduled or not.
+Suspend forces the OS to be idle. Typically this software idleness
+corresponds to the deepest hardware idle state, but it doesn't have to.
+
+That last point is why it is important to understand the different
+between idling in software and idling in hardware. More on that below.
+
+> 
+> Isn't suspend somewhat like the deepest level of sleep?
+> (Or is it different in that things like RAM state are only a concern
+> for suspend, not cpuidle?)
+>
+
+There is nothing stopping a platform from suspending to RAM and leaving
+everything powered up and only clock gating the CPUs with a WFI. That is
+a brain-dead thing to do but it is possible and illustrates the
+separation of software and hardware idling.
+
+Regarding CPUidle, if you predict that you will be idle for a long
+enough period of time then it is perfectly valid for you to hit your
+deepest sleep state in the CPUidle path.
+
+OMAP3 did this quite well: it had a CHIP OFF state that was utilized
+both by suspend/hibernate as well CPUidle (when CPUidle thought that
+there was sufficient idle time to go to that state without adversely
+affecting performance).
+
+However, these days it does seem more common for suspend to target a
+deeper hardware sleep state than the deepest possible CPUidle state for
+a given platform.
+
+Finally, the idle states (C-states) available to CPUidle drivers in the
+mainline Linux kernel are often a poor representation of what the
+hardware can really do to save power. Look at vendor git tree for
+whatever platform you are hacking on and usually you will see that there
+are lots more C-states in those trees than what is merged upstream.
+Maybe we'll fix that problem some day.
+
+Regards,
+Mike
+
+> Are both subsystems still actively used?
+> 
+> I saw plans to merge cpufreq into cpuidle / scheduler decisions.
+> 
+> LCA14: LCA14-306: CPUidle & CPUfreq integration with scheduler
+> http://www.slideshare.net/linaroorg/lca14-306-cpuidlecpufreqintegrationwithscheduler
+> 
+> This presentation doesn't mention suspend, I think.
+> 
+> ARM has a mode called "Dormant Mode". Is suspend typically
+> used to put the SoC in that mode?
+> 
+> I think I need to read this document carefully:
+> Power Management In The Linux Kernel -- Current Status And Future
+> http://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf
+> 
+> There's also an older document that may prove insightful:
+> CPUIdle versus Suspend
+> http://www.linuxplumbersconf.org/2010/ocw/proposals/789
+> 
+> But things move so fast in kernel-land, that I don't know how relevant
+> a 4 year-old document can be.
+> 
+> Regards.
+> 
