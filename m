@@ -1,82 +1,107 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: ACPI PCC probe failed.
-Date: Fri, 6 Feb 2015 10:32:53 -0500
-Message-ID: <CAJ5Y-eaiGeK=yKsnuCZvQv4z=2yaqj3zzaEFhAgBzwFfg+quoA@mail.gmail.com>
-References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com>
-	<6825579.hyRLxbRUP5@vostro.rjw.lan>
-	<CAJ5Y-eaPjOsm82PDiCBM9pcO4h6bzKHkTu5tNgQqqfRbrqbTcw@mail.gmail.com>
-	<2809506.4Qklo5lDla@vostro.rjw.lan>
+From: Quentin Lambert <lambert.quentin@gmail.com>
+Subject: [PATCH 1/1] drivers/base: Remove unnecessary OOM message
+Date: Fri, 6 Feb 2015 16:39:12 +0100
+Message-ID: <20150206153912.GA8486@sloth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2809506.4Qklo5lDla@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Cristian <caravena@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:64711 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754871AbbBFPjF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 10:39:05 -0500
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ming Lei <ming.lei@canonical.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hello,
+This patch fix checkpatch warnings concerning the possible
+duplication of an "out of memory" message.
 
-On 5 February 2015 at 19:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, February 05, 2015 10:44:13 AM Ashwin Chaugule wrote:
->> Hi Rafael,
->> On 4 February 2015 at 20:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, February 04, 2015 06:38:39 PM Ashwin Chaugule wrote:
->> >> On 4 February 2015 at 18:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> > On Wednesday, February 04, 2015 05:06:26 PM Ashwin Chaugule wrote:
->> >> >> > I have one more concern about this driver.  Namely, what benefit is there to
->> >> >> > people like Cristian from it at all?
->> >> >>
->> >> >> Its of use only if they have a PCC client (MPST, CPPC, RAS) driver.
->> >> >> Looks like PCC was explicitly enabled in this kernel.
->> >> >>
->> >> >> config PCC
->> >> >> bool "Platform Communication Channel Driver"
->> >> >> depends on ACPI
->> >> >
->> >> > Can we make it depend on the clients instead and be set automatically
->> >> > when at least one of the clients is enabled?
->> >> >
->> >> > Otherwise distros will have a problem with deciding whether or not they
->> >> > should enable this driver and most of them will end up enabling it.
->> >>
->> >> I see your point, but I'm not aware of any upstreamed client as of
->> >> yet. There might be folks using this driver internally though with
->> >> other clients. In such a case, is there a way to keep PCC disabled
->> >> until a client (e.g. CPPC) is upstreamed?
->> >
->> > Make it depend on EXPERT or something like that until the first client is
->> > added and then make it depend on that client. :-)
->>
->> Doesn't sound too bad. Hope that doesn't end up enabling unintended
->> options in the kernel which aren't exposed in kconfig.
->> FWIW, I think its better to make it depend on CPPC as part of the PCC
->> cleanup patch that I have going in the CPPC patchset.
->
-> That's fine by me.
+A simplified version of the semantic patch that finds this problem is as
+follows: (http://coccinelle.lip6.fr)
 
-Thanks.
+@@
+identifier f,print,l;
+expression e;
+constant char[] c;
+@@
 
->
->> >> Alternately, is it that bad to keep it the way it is, given that the
->> >> driver wont do anything unless PCCT is detected in firmware and a PCC
->> >> client explicitly uses its API?
->> >
->> > Well, is it really useful this way?
->>
->> Not really, but not particularly harmful either. :) Besides, it seems
->> like for the sake of genericness, distros enable several options that
->> are irrelevant to a platform. In this case, PCC would be harmlessly
->> enabled only until CPPC makes its way upstream (which is actively
->> being worked on anyway).
->
-> For one, I don't like it being easy to enable by mistake on x86 where it is
-> not useful at all (and won't be at least for some time).
+e = \(kzalloc\|kmalloc\|devm_kzalloc\|devm_kmalloc\)(...);
+if (e == NULL) {
+  <+...
+-  print(...,c,...);
+  ... when any
+(
+  goto l;
+|
+  return ...;
+)
+  ...+> }
 
-I hear you. I knew about the trend for CPPC on x86, wasn't sure about
-MPST and RAS. :)
-Anyway, this shouldnt be an issue anymore with the approach mentioned
-above for CPPC on ARM64.
+Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
+---
+ drivers/base/firmware_class.c  | 1 -
+ drivers/base/power/clock_ops.c | 4 +---
+ drivers/base/power/opp.c       | 8 ++------
+ 3 files changed, 3 insertions(+), 10 deletions(-)
 
-Cheers,
-Ashwin.
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 58470c3..c3293f0 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -855,7 +855,6 @@ fw_create_instance(struct firmware *firmware, const char *fw_name,
+ 
+ 	fw_priv = kzalloc(sizeof(*fw_priv), GFP_KERNEL);
+ 	if (!fw_priv) {
+-		dev_err(device, "%s: kmalloc failed\n", __func__);
+ 		fw_priv = ERR_PTR(-ENOMEM);
+ 		goto exit;
+ 	}
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index d626576..7fdd017 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -81,10 +81,8 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
+ 		return -EINVAL;
+ 
+ 	ce = kzalloc(sizeof(*ce), GFP_KERNEL);
+-	if (!ce) {
+-		dev_err(dev, "Not enough memory for clock entry.\n");
++	if (!ce)
+ 		return -ENOMEM;
+-	}
+ 
+ 	if (con_id) {
+ 		ce->con_id = kstrdup(con_id, GFP_KERNEL);
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 15bf299..677fb28 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -474,10 +474,8 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 
+ 	/* allocate new OPP node */
+ 	new_opp = kzalloc(sizeof(*new_opp), GFP_KERNEL);
+-	if (!new_opp) {
+-		dev_warn(dev, "%s: Unable to create new OPP node\n", __func__);
++	if (!new_opp)
+ 		return -ENOMEM;
+-	}
+ 
+ 	/* Hold our list modification lock here */
+ 	mutex_lock(&dev_opp_list_lock);
+@@ -695,10 +693,8 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
+ 
+ 	/* keep the node allocated */
+ 	new_opp = kmalloc(sizeof(*new_opp), GFP_KERNEL);
+-	if (!new_opp) {
+-		dev_warn(dev, "%s: Unable to create OPP\n", __func__);
++	if (!new_opp)
+ 		return -ENOMEM;
+-	}
+ 
+ 	mutex_lock(&dev_opp_list_lock);
+ 
+-- 
+1.9.1
+
