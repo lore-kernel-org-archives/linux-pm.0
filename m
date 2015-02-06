@@ -1,175 +1,72 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3 8/8] hwmon: pwm-fan: Code for using PWM FAN as a cooling
- device
-Date: Fri, 06 Feb 2015 17:59:08 +0100
-Message-ID: <1423241948-31981-9-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v3 4/8] ARM: dts: Add pwm-fan node to the Odroid-U3 board
+Date: Fri, 06 Feb 2015 17:59:04 +0100
+Message-ID: <1423241948-31981-5-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
-Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The PWM FAN device can now be used as a thermal cooling device. Necessary
-infrastructure has been added in this commit.
+From: Kamil Debski <k.debski@samsung.com>
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
-- Update ctx->pwm_fan_state when correct data from device tree is available
-- Using therma_cdev_update() when thermal is ready for controlling the fan
-Changes for v3:
-- Rename patch heading
-- pwm_fan_of_get_cooling_data() now returns -EINVAL when no "cooling-levels"
-  property defined
-- register of cooling device only when proper cooling data is present
----
- drivers/hwmon/pwm-fan.c | 86 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 83 insertions(+), 3 deletions(-)
+Add pwm-fan node to the Odroid-U3 board file to enable PWM control of the
+cooling fan. In addition, add the "pwm" label to the pwm@139D0000 node
+in the exynos4412.dtsi.
 
-diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-index f3f5843..79fe24e 100644
---- a/drivers/hwmon/pwm-fan.c
-+++ b/drivers/hwmon/pwm-fan.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
- #include <linux/sysfs.h>
-+#include <linux/thermal.h>
+Signed-off-by: Kamil Debski <k.debski@samsung.com>
+[Rebased on the newest mainline by l.majewski@samsung.com]
+---
+Changes since v1:
+- added pwm label to the pwm@139D0000 node in exynos4.dtsi
+- use the pwm label in the exynos4412-odroidu3.dts
+- change order or properties in the pwn-fan node, to be sorted
+  in alphabetical order
+
+---
+ arch/arm/boot/dts/exynos4.dtsi            |  2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
+index f18d746..75266e3 100644
+--- a/arch/arm/boot/dts/exynos4.dtsi
++++ b/arch/arm/boot/dts/exynos4.dtsi
+@@ -582,7 +582,7 @@
+ 		status = "disabled";
+ 	};
  
- #define MAX_PWM 255
- 
-@@ -68,6 +69,17 @@ exit_set_pwm_err:
- 	return ret;
- }
- 
-+static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
-+{
-+	int i;
+-	pwm@139D0000 {
++	pwm: pwm@139D0000 {
+ 		compatible = "samsung,exynos4210-pwm";
+ 		reg = <0x139D0000 0x1000>;
+ 		interrupts = <0 37 0>, <0 38 0>, <0 39 0>, <0 40 0>, <0 41 0>;
+diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+index c8a64be..60bd1e4 100644
+--- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
++++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+@@ -31,6 +31,19 @@
+ 			linux,default-trigger = "heartbeat";
+ 		};
+ 	};
 +
-+	for (i = 0; i < ctx->pwm_fan_max_state; ++i)
-+		if (pwm < ctx->pwm_fan_cooling_levels[i + 1])
-+			break;
-+
-+	ctx->pwm_fan_state = i;
-+}
-+
- static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 		       const char *buf, size_t count)
- {
-@@ -82,6 +94,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 	if (ret)
- 		return ret;
- 
-+	pwm_fan_update_state(ctx, pwm);
- 	return count;
- }
- 
-@@ -103,6 +116,59 @@ static struct attribute *pwm_fan_attrs[] = {
- 
- ATTRIBUTE_GROUPS(pwm_fan);
- 
-+/* thermal cooling device callbacks */
-+static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	*state = ctx->pwm_fan_max_state;
-+
-+	return 0;
-+}
-+
-+static int pwm_fan_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	if (!ctx)
-+		return -EINVAL;
-+
-+	*state = ctx->pwm_fan_state;
-+
-+	return 0;
-+}
-+
-+static int
-+pwm_fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+	int ret;
-+
-+	if (!ctx || (state > ctx->pwm_fan_max_state))
-+		return -EINVAL;
-+
-+	if (state == ctx->pwm_fan_state)
-+		return 0;
-+
-+	ret = __set_pwm(ctx, ctx->pwm_fan_cooling_levels[state]);
-+	if (ret) {
-+		dev_err(&cdev->device, "Cannot set pwm!\n");
-+		return ret;
-+	}
-+
-+	ctx->pwm_fan_state = state;
-+
-+	return ret;
-+}
-+
-+static const struct thermal_cooling_device_ops pwm_fan_cooling_ops = {
-+	.get_max_state = pwm_fan_get_max_state,
-+	.get_cur_state = pwm_fan_get_cur_state,
-+	.set_cur_state = pwm_fan_set_cur_state,
++	pwm-fan {
++		compatible = "pwm-fan";
++		pwms = <&pwm 0 10000 0>;
++		status = "okay";
++	};
 +};
 +
- int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- {
- 	struct device_node *np = dev->of_node;
-@@ -113,7 +179,7 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
++&pwm {
++	pinctrl-0 = <&pwm0_out>;
++	pinctrl-names = "default";
++	samsung,pwm-outputs = <0>;
++	status = "okay";
+ };
  
- 	if (ret == -EINVAL) {
- 		dev_err(dev, "Property 'cooling-levels' not found\n");
--		return 0;
-+		return ret;
- 	}
- 
- 	if (ret <= 0) {
-@@ -149,8 +215,9 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- 
- static int pwm_fan_probe(struct platform_device *pdev)
- {
--	struct device *hwmon;
-+	struct thermal_cooling_device *cdev;
- 	struct pwm_fan_ctx *ctx;
-+	struct device *hwmon;
- 	int duty_cycle;
- 	int ret;
- 
-@@ -194,8 +261,21 @@ static int pwm_fan_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = pwm_fan_of_get_cooling_data(&pdev->dev, ctx);
--	if (ret)
-+	if (!ret) {
-+		ctx->pwm_fan_state = ctx->pwm_fan_max_state;
-+		cdev = thermal_of_cooling_device_register(pdev->dev.of_node,
-+							  "pwm-fan", ctx,
-+							  &pwm_fan_cooling_ops);
-+		if (IS_ERR(cdev)) {
-+			dev_err(&pdev->dev,
-+				"Failed to register pwm-fan as cooling device");
-+			pwm_disable(ctx->pwm);
-+			return PTR_ERR(cdev);
-+		}
-+		thermal_cdev_update(cdev);
-+	} else if (ret != -EINVAL) {
- 		return ret;
-+	}
- 
- 	return 0;
- }
+ &usb3503 {
 -- 
 2.0.0.rc2
