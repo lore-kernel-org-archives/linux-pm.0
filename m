@@ -1,8 +1,7 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3 1/8] thermal: Provide stub for
- thermal_of_cooling_device_register() function
-Date: Fri, 06 Feb 2015 17:59:01 +0100
-Message-ID: <1423241948-31981-2-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v3 2/8] thermal: Provide stub for thermal_cdev_update() function
+Date: Fri, 06 Feb 2015 17:59:02 +0100
+Message-ID: <1423241948-31981-3-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1423241948-31981-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -13,57 +12,52 @@ Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-
 List-Id: linux-pm@vger.kernel.org
 
 Odroid U3 fan can work without being registered as OF cooling device
-(with CONFIG_THERMAL_OF disabled).
+(with CONFIG_THERMAL{_OF|} disabled).
 In this situation it can be controlled via PWM entry at
 /sys/class/hwmon/hwmon0/pwm1.
 
-Therefore, the thermal_of_cooling_device_register() function needs a stub
+Therefore, the thermal_cdev_update() function needs a stub
 to allow clean compilation.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
-- None
+- New patch
 Changes for v3:
-- Provide stub declaration when CONFIG_THERMAL is not set
+- thermal_cdev_update() now depends on CONFIG_THERMAL flag
 ---
- include/linux/thermal.h | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ include/linux/thermal.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index fc52e30..eacf2de 100644
+index eacf2de..25382e6 100644
 --- a/include/linux/thermal.h
 +++ b/include/linux/thermal.h
-@@ -293,6 +293,20 @@ struct thermal_trip {
- };
- 
- /* Function declarations */
-+#ifdef CONFIG_THERMAL
-+struct thermal_cooling_device *
-+thermal_of_cooling_device_register(struct device_node *np,
-+				   char *type, void *devdata,
-+				   const struct thermal_cooling_device_ops *);
-+#else
-+static inline struct thermal_cooling_device *
-+thermal_of_cooling_device_register(struct device_node *np,
-+				   char *type, void *devdata,
-+				   const struct thermal_cooling_device_ops *ops)
+@@ -298,6 +298,7 @@ struct thermal_cooling_device *
+ thermal_of_cooling_device_register(struct device_node *np,
+ 				   char *type, void *devdata,
+ 				   const struct thermal_cooling_device_ops *);
++void thermal_cdev_update(struct thermal_cooling_device *);
+ #else
+ static inline struct thermal_cooling_device *
+ thermal_of_cooling_device_register(struct device_node *np,
+@@ -306,6 +307,9 @@ thermal_of_cooling_device_register(struct device_node *np,
+ {
+ 	return NULL;
+ }
++static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
 +{
-+	return NULL;
 +}
-+#endif
+ #endif
  #ifdef CONFIG_THERMAL_OF
  struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
-@@ -328,9 +342,6 @@ void thermal_zone_device_update(struct thermal_zone_device *);
+@@ -349,7 +353,6 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
+ int get_tz_trend(struct thermal_zone_device *, int);
+ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+ 		struct thermal_cooling_device *, int);
+-void thermal_cdev_update(struct thermal_cooling_device *);
+ void thermal_notify_framework(struct thermal_zone_device *, int);
  
- struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
- 		const struct thermal_cooling_device_ops *);
--struct thermal_cooling_device *
--thermal_of_cooling_device_register(struct device_node *np, char *, void *,
--				   const struct thermal_cooling_device_ops *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
- int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
+ #ifdef CONFIG_NET
 -- 
 2.0.0.rc2
