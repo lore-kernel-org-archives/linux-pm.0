@@ -1,66 +1,53 @@
-From: Mason <mpeg.blue@free.fr>
-Subject: cpuidle vs suspend vs something else
-Date: Thu, 05 Feb 2015 19:13:07 -0800
-Message-ID: <54D43143.2010403@free.fr>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: int340x: fix sparse warning
+Date: Fri, 06 Feb 2015 16:28:33 +0800
+Message-ID: <1423211313.1729.15.camel@rzhang1-mobl4>
+References: <1423143817-16128-1-git-send-email-prabhakar.csengg@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Mike Turquette <mturquette@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:46105 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751164AbbBFI2w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Feb 2015 03:28:52 -0500
+In-Reply-To: <1423143817-16128-1-git-send-email-prabhakar.csengg@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lad Prabhakar <prabhakar.csengg@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Thu, 2015-02-05 at 13:43 +0000, Lad Prabhakar wrote:
+> From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+> 
+> this patch fixes following sparse warning:
+> 
+> processor_thermal_device.c:188:6: warning: symbol 'proc_thermal_remove' was not declared. Should it be static?
+> 
+> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 
-I've been reading about related sub-systems (cpuidle and suspend)
-and I'm not sure I understand how they relate / interact.
+applied. thanks!
 
-If I understand correctly (please do point out any misconceptions)
-on ARM Cortex A9, the first level of power saving is WFI, which is
-typically called from the idle loop.
+-rui
+> ---
+>  Found this issue on linux-next (gcc  version 4.9.2,
+>  sparse version  0.4.5-rc1)and applies on top linux-next.
+> 
+>  drivers/thermal/int340x_thermal/processor_thermal_device.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+> index 0fe5dbb..095acac 100644
+> --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
+> +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+> @@ -185,7 +185,7 @@ free_buffer:
+>  	return ret;
+>  }
+>  
+> -void proc_thermal_remove(struct proc_thermal_device *proc_priv)
+> +static void proc_thermal_remove(struct proc_thermal_device *proc_priv)
+>  {
+>  	sysfs_remove_group(&proc_priv->dev->kobj,
+>  			   &power_limit_attribute_group);
 
-This places the core in low-power mode ("Standby mode" in ARM docs).
-"RAM arrays" (don't know what they are), "processor logic", and
-"data engine" (not sure what any of these exactly refers to, guess
-I have more reading to do) are still powered-up, but most of the
-clocks are disabled.
-
-In ARM's exact words, "WFI and WFE Standby modes disable most of the
-clocks in a processor, while keeping its logic powered up. This reduces
-the power drawn to the static leakage current, leaving a tiny clock
-power overhead requirement to enable the device to wake up."
-
-Some CPUs like Intel's have several levels of sleep (deeper levels
-mean less power, but have a higher wake-up latency). AFAIU, cpuidle
-is used to describe and manage these levels?
-
-Isn't suspend somewhat like the deepest level of sleep?
-(Or is it different in that things like RAM state are only a concern
-for suspend, not cpuidle?)
-
-Are both subsystems still actively used?
-
-I saw plans to merge cpufreq into cpuidle / scheduler decisions.
-
-LCA14: LCA14-306: CPUidle & CPUfreq integration with scheduler
-http://www.slideshare.net/linaroorg/lca14-306-cpuidlecpufreqintegrationwithscheduler
-
-This presentation doesn't mention suspend, I think.
-
-ARM has a mode called "Dormant Mode". Is suspend typically
-used to put the SoC in that mode?
-
-I think I need to read this document carefully:
-Power Management In The Linux Kernel -- Current Status And Future
-http://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf
-
-There's also an older document that may prove insightful:
-CPUIdle versus Suspend
-http://www.linuxplumbersconf.org/2010/ocw/proposals/789
-
-But things move so fast in kernel-land, that I don't know how relevant
-a 4 year-old document can be.
-
-Regards.
 
