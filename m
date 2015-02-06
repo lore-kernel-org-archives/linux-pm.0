@@ -1,61 +1,82 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 20/20] arm: mach-pxa: Decrement the power supply's
- device reference counter
-Date: Fri, 6 Feb 2015 15:59:05 +0100
-Message-ID: <20150206145904.GA7872@amd>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
- <1422629278-12202-21-git-send-email-k.kozlowski@samsung.com>
- <20150206134953.GA25683@amd> <1423233788.31516.5.camel@AMDC1943>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: ACPI PCC probe failed.
+Date: Fri, 6 Feb 2015 10:32:53 -0500
+Message-ID: <CAJ5Y-eaiGeK=yKsnuCZvQv4z=2yaqj3zzaEFhAgBzwFfg+quoA@mail.gmail.com>
+References: <CABwnbUkGNJEZkW5bL9pXvcZwqz4fZKiub_-vTRDLp=FeiQq8cw@mail.gmail.com>
+	<6825579.hyRLxbRUP5@vostro.rjw.lan>
+	<CAJ5Y-eaPjOsm82PDiCBM9pcO4h6bzKHkTu5tNgQqqfRbrqbTcw@mail.gmail.com>
+	<2809506.4Qklo5lDla@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-Content-Disposition: inline
-In-Reply-To: <1423233788.31516.5.camel@AMDC1943>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Milo Kim <milo.kim@ti.com>, x86@kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, platform-driver-x86@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Lee Jones <lee.jones@linaro.org>, ac100@lists.launchpad.net, devel@driverdev.osuosl.org, Russell King <linux@arm.linux.org.uk>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, patches@opensource.wolfsonmicro.com, linux-acpi@vger.kernel.org, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Darren Hart <dvhart@infradead.org>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Julian Andres Klode <jak@jak-linux.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-tegra@vger.k
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2809506.4Qklo5lDla@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Cristian <caravena@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpIDIwMTUtMDItMDYgMTU6NDM6MDgsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6Cj4g
-T24gcGnEhSwgMjAxNS0wMi0wNiBhdCAxNDo0OSArMDEwMCwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+
-ID4gT24gRnJpIDIwMTUtMDEtMzAgMTU6NDc6NTgsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6
-Cj4gPiA+IFVzZSBwb3dlcl9zdXBwbHlfcHV0KCkgdG8gZGVjcmVtZW50IHRoZSBwb3dlciBzdXBw
-bHkncyBkZXZpY2UgcmVmZXJlbmNlCj4gPiA+IGNvdW50ZXIuCj4gPiA+IAo+ID4gPiBTaWduZWQt
-b2ZmLWJ5OiBLcnp5c3p0b2YgS296bG93c2tpIDxrLmtvemxvd3NraUBzYW1zdW5nLmNvbT4KPiA+
-ID4gUmV2aWV3ZWQtYnk6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBz
-YW1zdW5nLmNvbT4KPiA+ID4gUmV2aWV3ZWQtYnk6IFNlYmFzdGlhbiBSZWljaGVsIDxzcmVAa2Vy
-bmVsLm9yZz4KPiA+IAo+ID4gMTEsMTMsMjAgbm90aGluZyBvYnZpb3VzbHkgd3JvbmcuIEJ1dCBJ
-J20gbm90IHN1cmUgaWYgSSBzdHVkaWVkIHRoZW0KPiA+IGNsb3NlbHkgZW5vdWdoIHRvIHdhcnJh
-bnQgYW4gQUNLLgo+ID4gCj4gPiBJdCB3b3VsZCBiZSBnb29kIHRvIGdldCB0aGlzIGludG8ga2Vy
-bmVsIC0tIEkgc2VlbiBubyBiYWQgY29tbWVudHMsCj4gPiBhbmQgaXQgaXMgbm90IGdvaW5nIHRv
-IGltcHJvdmUgd2l0aG91dCBtZXJnZSBpbnRvIG1haW5saW5lLgo+IAo+IFRoYW5rcyBmb3IgbG9v
-a2luZyBhdCBwYXRjaHNldC4gSXQgd291bGQgYmUgcmVhbGx5IG5pY2UgaWYgdGhpcyBjb3VsZCBi
-ZQo+IHRlc3RlZCBmb3Igc29tZSB0aW1lIGluIGxpbnV4LW5leHQuIFN1Y2ggdGVzdGluZyB3b3Vs
-ZCBoZWxwIGEgbG90LiBCdXQgSQo+IG5lZWQgYWNrcyBmcm9tIHZhcmlvdXMgbWFpbnRhaW5lcnMg
-Zm9yIHRoYXQuCgpBY3R1YWxseSwgeW91IGRvbid0LiBUaGUgdmFyaW91cyBtYWludGFpbmVycyBj
-bGVhcmx5IGRvbid0IGNhcmUgYXQKdGhpcyBwb2ludC4gVGhleSBoYWQgZW5vdWdoIHRpbWUuIFNv
-IHlvdSBzZWxlY3Qgb25lIG1haW50YWluZXIgeW91CndhbnQgdG8gcHVzaCB0aGlzIHRocm91Z2gs
-IGFuZCB5b3UgcHVzaCBpdC4KClNvbWVvbmUgbWF5IGNvbXBsYWluLCBzbyB5b3UnbGwgc29sdmUg
-dGhlIGZlZWRiYWNrLi4uCgpHb29kIGx1Y2ssCgkJCQkJCQkJCVBhdmVsCgo+IE9mIGNvdXJzZSB0
-aGUgcGF0Y2hzZXQgdG8gYmlnIGVub3VnaCB0byBnbyBpbnRvIDMuMjAuIElmIG5lZWRlZCB0aGlz
-Cj4gY291bGQgYmUgdGFrZW4gZ3JhZHVhbGx5IGluIGZvbGxvd2luZyBzdGVwczoKPiAxLiBQYXRj
-aGVzIDEtMiAocGF0Y2ggMiB0b3VjaGVzICphbGwgZHJpdmVycyopLAo+IDIuIFBhdGNoZXMgMy0x
-MCAodG91Y2ggb25seSBpbmRpdmlkdWFsIGRyaXZlcnMpLAo+IDMuIFBhdGNoIDExIChhZ2FpbiAq
-ZXZlcnl0aGluZyogY2hhbmdlZCksCj4gNC4gUGF0Y2hlcyAxMi0yMCAoaW5kaXZpZHVhbCBjaGFu
-Z2VzKS4KPiAKPiBJbiBzdWNoIGNhc2UgSSB3aWxsIHJlZnJlc2ggZXZlcnl0aGluZyBhZnRlciBl
-YWNoIHN0ZXAgc28gbmV3IGRyaXZlcnMKPiB3b3VsZCBiZSBhbHNvIHVwZGF0ZWQuCj4gCj4gVGhh
-bmtzIGFnYWluIFBhdmVsIGZvciBwcm9tcHQgcmVwbGllcy4KCi0tIAooZW5nbGlzaCkgaHR0cDov
-L3d3dy5saXZlam91cm5hbC5jb20vfnBhdmVsbWFjaGVrCihjZXNreSwgcGljdHVyZXMpIGh0dHA6
-Ly9hdHJleS5rYXJsaW4ubWZmLmN1bmkuY3ovfnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRt
-bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBt
-YWlsaW5nIGxpc3QKZGV2ZWxAbGludXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2
-LmxpbnV4ZHJpdmVycHJvamVjdC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
+Hello,
+
+On 5 February 2015 at 19:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, February 05, 2015 10:44:13 AM Ashwin Chaugule wrote:
+>> Hi Rafael,
+>> On 4 February 2015 at 20:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Wednesday, February 04, 2015 06:38:39 PM Ashwin Chaugule wrote:
+>> >> On 4 February 2015 at 18:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> >> > On Wednesday, February 04, 2015 05:06:26 PM Ashwin Chaugule wrote:
+>> >> >> > I have one more concern about this driver.  Namely, what benefit is there to
+>> >> >> > people like Cristian from it at all?
+>> >> >>
+>> >> >> Its of use only if they have a PCC client (MPST, CPPC, RAS) driver.
+>> >> >> Looks like PCC was explicitly enabled in this kernel.
+>> >> >>
+>> >> >> config PCC
+>> >> >> bool "Platform Communication Channel Driver"
+>> >> >> depends on ACPI
+>> >> >
+>> >> > Can we make it depend on the clients instead and be set automatically
+>> >> > when at least one of the clients is enabled?
+>> >> >
+>> >> > Otherwise distros will have a problem with deciding whether or not they
+>> >> > should enable this driver and most of them will end up enabling it.
+>> >>
+>> >> I see your point, but I'm not aware of any upstreamed client as of
+>> >> yet. There might be folks using this driver internally though with
+>> >> other clients. In such a case, is there a way to keep PCC disabled
+>> >> until a client (e.g. CPPC) is upstreamed?
+>> >
+>> > Make it depend on EXPERT or something like that until the first client is
+>> > added and then make it depend on that client. :-)
+>>
+>> Doesn't sound too bad. Hope that doesn't end up enabling unintended
+>> options in the kernel which aren't exposed in kconfig.
+>> FWIW, I think its better to make it depend on CPPC as part of the PCC
+>> cleanup patch that I have going in the CPPC patchset.
+>
+> That's fine by me.
+
+Thanks.
+
+>
+>> >> Alternately, is it that bad to keep it the way it is, given that the
+>> >> driver wont do anything unless PCCT is detected in firmware and a PCC
+>> >> client explicitly uses its API?
+>> >
+>> > Well, is it really useful this way?
+>>
+>> Not really, but not particularly harmful either. :) Besides, it seems
+>> like for the sake of genericness, distros enable several options that
+>> are irrelevant to a platform. In this case, PCC would be harmlessly
+>> enabled only until CPPC makes its way upstream (which is actively
+>> being worked on anyway).
+>
+> For one, I don't like it being easy to enable by mistake on x86 where it is
+> not useful at all (and won't be at least for some time).
+
+I hear you. I knew about the trend for CPPC on x86, wasn't sure about
+MPST and RAS. :)
+Anyway, this shouldnt be an issue anymore with the approach mentioned
+above for CPPC on ARM64.
+
+Cheers,
+Ashwin.
