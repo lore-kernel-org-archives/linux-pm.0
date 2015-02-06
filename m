@@ -1,57 +1,94 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Update] Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Fri, 6 Feb 2015 19:29:22 +0100
-Message-ID: <20150206182922.GN24151@twins.programming.kicks-ass.net>
-References: <54866625.8010406@linux.intel.com>
- <alpine.DEB.2.11.1501260946390.5526@nanos>
- <16564156.c5NBzjJuA3@vostro.rjw.lan>
- <2439333.L8nfGI3YZp@vostro.rjw.lan>
- <20150206161454.GQ21418@twins.programming.kicks-ass.net>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Fri, 06 Feb 2015 10:37:32 -0800
+Message-ID: <54D509EC.7020708@free.fr>
+References: <54C8E125.3070905@free.fr> <20150203120925.GM8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:35452 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758564AbbBFS33 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Feb 2015 13:29:29 -0500
-Content-Disposition: inline
-In-Reply-To: <20150206161454.GQ21418@twins.programming.kicks-ass.net>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:34245 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754732AbbBFSht (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Feb 2015 13:37:49 -0500
+In-Reply-To: <20150203120925.GM8656@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
 
-On Fri, Feb 06, 2015 at 05:14:54PM +0100, Peter Zijlstra wrote:
-> On Fri, Feb 06, 2015 at 02:20:13AM +0100, Rafael J. Wysocki wrote:
-> >  void freeze_wake(void)
-> >  {
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&suspend_freeze_lock, flags);
-> > +	if (suspend_freeze_state > FREEZE_STATE_NONE) {
-> > +		suspend_freeze_state = FREEZE_STATE_WAKE;
-> > +		wake_up(&suspend_freeze_wait_head);
-> > +	}
-> > +	spin_unlock_irqrestore(&suspend_freeze_lock, flags);
-> >  }
-> 
-> 
-> > +static void enter_freeze_proper(struct cpuidle_driver *drv,
-> > +				struct cpuidle_device *dev, int index)
-> > +{
-> > +	tick_freeze();
-> > +	drv->states[index].enter_freeze(dev, drv, index);
-> > +	/*
-> > +	 * timekeeping_resume() that will be called by tick_unfreeze() for the
-> > +	 * last CPU executing it calls functions containing RCU read-side
-> > +	 * critical sections, so tell RCU about that.
-> > +	 */
-> > +	RCU_NONIDLE(tick_unfreeze());
-> > +}
-> 
-> So I'm a wee bit confused; if we use an enter_freeze() state that keeps
-> interrupts disabled; who is going to call the freeze_wake() thing?
+Hello Russell,
 
-Ah, I think I see, so we wake up, keep the interrupt pending, re-enable
-the tick and time and everybody, then re-enable interrupts, take the
-interrupt and go around the idle loop to find we need a reschedule etc..
+First of all, thanks for the insight you've been providing. It helps a lot.
+(And thanks to everyone who's been answering some of my questions.)
+
+Russell King - ARM Linux wrote:
+
+> On Wed, Jan 28, 2015 at 02:16:21PM +0100, Mason wrote:
+>
+>> [snip udelay discussion]
+>>
+>> Q2. Cortex A9 global and private timers
+>>
+>> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
+>>
+>> (What are private timers used for?)
+>
+> The per-cpu private timers are mostly scheduling of threads.
+
+Hmmm, I'm confused (again).
+
+CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
+for the scheduler clock", right? In that case, are the local timers
+unused by Linux?
+
+#ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+   sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
+#endif
+
+Is there generic code to set up local timers? (If so, where?)
+sched_clock_register only seems to appear in machine-specific code.
+
+What are the pros/cons of global timer vs local timers?
+Or is such a question irrelevant?
+(Because they are used for different purposes?)
+
+>> In my platform-specific code, there is a config option to choose between
+>>
+>> 1) the ARM global timer
+>> 2) a platform-specific timer (timer0)
+>
+> Most platforms implement their own timer, because its really sexy for
+> hardware engineers to create yet another different timer implementation
+> which is soo much better than every other timer implementation that has
+> already been created.  You wouldn't believe how many different ways that
+> there are to create a timer - and we still have people coming up with
+> new novel implementations!
+
+There is trouble in paradise. I was planning to give the global timer a try,
+instead of the platform-specific timer, until I noticed: "The global timer
+is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
+CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
+by cpufreq. I imagine it's double plus ungood for precise time-keeping to
+have frequency changes of the clocksource input?
+
+>> Q3. Using the generic global timer implementation
+>>
+>> So, how do I use that implementation?
+>> (Is someone other than STMicro using it?)
+
+To answer that question:
+
+$ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
+arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
+arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
+arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
+arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
+arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
+arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
+
+There are indeed a few users; also I wonder why mach-zynq enables
+ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
+the CPU CLOCK driving PERIPHCLK?)
+
+Regards.
