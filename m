@@ -1,39 +1,76 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH v3 02/20] power_supply: Move run-time configuration to
- separate structure
-Date: Fri, 6 Feb 2015 18:19:52 -0800
-Message-ID: <20150207021952.GA30250@fury.dvhart.com>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
- <1422629278-12202-3-git-send-email-k.kozlowski@samsung.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Fri, 06 Feb 2015 18:21:37 -0800
+Message-ID: <54D576B1.4000001@free.fr>
+References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr> <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1422629278-12202-3-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stefan Agner <stefan@agner.ch>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <rob.herring@calxeda.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 30, 2015 at 03:47:40PM +0100, Krzysztof Kozlowski wrote:
-> Add new structure 'power_supply_config' for holding run-time
-> initialization data like of_node, supplies and private driver data.
-> 
-> The power_supply_register() function is changed so all power supply
-> drivers need updating.
-> 
-> When registering the power supply this new 'power_supply_config' should be
-> used instead of directly initializing 'struct power_supply'. This allows
-> changing the ownership of power_supply structure from driver to the
-> power supply core in next patches.
-> 
-> When a driver does not use of_node or supplies then it should use NULL
-> as config. If driver uses of_node or supplies then it should allocate
-> config on stack and initialize it with proper values.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Stefan Agner wrote:
 
-For drivers/platform/x86/compal-laptop.c
+> On 2015-02-06 22:17, Mason wrote:
+>
+>> Do you also use the ARM local timers in your port?
+>> Is there generic code to handle them?
+>
+> It seems that there has been support for local timers once, but has been
+> removed. But I'm not aware of the details:
+> https://lkml.org/lkml/2013/2/22/49
 
-Reviewed-by: Darren Hart <dvhart@linux.intel.com>
+The equivalent gmane link would be:
+http://thread.gmane.org/gmane.linux.kernel/1445799
+
+The description used to say:
+
+-config LOCAL_TIMERS
+-	bool "Use local timer interrupts"
+-	depends on SMP
+-	default y
+-	select HAVE_ARM_TWD if (!ARCH_MSM_SCORPIONMP && !EXYNOS4_MCT)
+-	help
+-	  Enable support for local timers on SMP platforms, rather then the
+-	  legacy IPI broadcast method.  Local timers allows the system
+-	  accounting to be spread across the timer interval, preventing a
+-	  "thundering herd" at every timer tick.
+
+which seems to have been replaced with HAVE_ARM_TWD
+
+TWD stands for "Timer Watch Dog".
+https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/twd.txt
+
+"ARM 11MP, Cortex-A5 and Cortex-A9 are often associated with a per-core
+Timer-Watchdog (aka TWD), which provides both a per-cpu local timer
+and watchdog.
+
+The TWD is usually attached to a GIC to deliver its two per-processor
+interrupts."
+
+
+config HAVE_ARM_TWD
+   bool
+   depends on SMP
+   select CLKSRC_OF if OF
+   help
+     This options enables support for the ARM timer and watchdog unit
+
+One problem I see is that HAVE_ARM_TWD depends on SMP...
+
+One of the systems I want to support is UP (single-core Cortex A9).
+Does that mean I should use an SMP kernel even for that system?
+Or is there a different subsystem for UP systems?
+
+Also, reading arch/arm/kernel/smp_twd.c, I see that frequency changes
+due to cpufreq are properly accounted for. (Although I imagine they do
+introduce a small error in time-keeping because moving from freq_A to
+freq_B is not instantaneous, so the exact time elapsed in-between is
+impossible to determine.)
+
+Regards.
+
