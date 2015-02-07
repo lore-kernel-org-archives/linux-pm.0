@@ -1,37 +1,36 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Sat, 7 Feb 2015 09:51:35 +0000
-Message-ID: <20150207095135.GB8656@n2100.arm.linux.org.uk>
-References: <54C8E125.3070905@free.fr>
- <e028a4eb604a491f4438557f4a1373ef@agner.ch>
- <54D52F84.9050600@free.fr>
- <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
- <54D576B1.4000001@free.fr>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH 1/1] drivers/base: Remove unnecessary OOM message
+Date: Sat, 7 Feb 2015 13:24:36 +0300
+Message-ID: <20150207102436.GB5206@mwanda>
+References: <20150206153912.GA8486@sloth>
+ <20150206205852.GA14126@amd>
+ <1423256670.4752.16.camel@perches.com>
+ <20150206211708.GA25967@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <54D576B1.4000001@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <mpeg.blue@free.fr>
-Cc: Stefan Agner <stefan@agner.ch>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq <cpufreq@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20150206211708.GA25967@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Joe Perches <joe@perches.com>, Quentin Lambert <lambert.quentin@gmail.com>, Ming Lei <ming.lei@canonical.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 06, 2015 at 06:21:37PM -0800, Mason wrote:
-> Also, reading arch/arm/kernel/smp_twd.c, I see that frequency changes
-> due to cpufreq are properly accounted for. (Although I imagine they do
-> introduce a small error in time-keeping because moving from freq_A to
-> freq_B is not instantaneous, so the exact time elapsed in-between is
-> impossible to determine.)
+Facts:
+1) None of these four error messages will ever be printed.
+   http://lwn.net/Articles/627419/
+2) These messages are a waste of RAM.
 
-TWD is not used for time keeping as such.  As I explained in one of my
-previous emails, local timers are used to signal events.
+Debatable:
+1) These messages are bad style and distracting.  Simple code is better.
+2) The normal OOM message is enough to find which allocation failed.
 
-The active clocksource is used to determine the passing of time-of-day,
-and sched_clock is used to account for process time by the scheduler.
+Not everbody, but a lot of people write these kinds of error messages
+with their brain on auto-pilot because they think they *should* do it.
+It's quite common to do things like printk("dev is NULL.  %s",
+dev->name);.  I'm happy for this checkpatch warning because it hopefully
+bumps people out of mindless mode and makes them think about error
+messages.
 
-An early/late/missed local timer interrupt has no impact on time keeping.
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+regards,
+dan carpenter
