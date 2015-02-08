@@ -1,136 +1,141 @@
 From: Lukasz Majewski <l.majewski@majess.pl>
-Subject: Re: [PATCH v3 6/8] hwmon: pwm-fan: Extract __set_pwm() function to
- only modify PWM duty cycle
-Date: Sun, 8 Feb 2015 21:52:43 +0100
-Message-ID: <20150208215243.22085c97@jawa>
+Subject: Re: [PATCH v3 7/8] hwmon: pwm-fan: Read PWM FAN configuration from
+ device tree
+Date: Sun, 8 Feb 2015 22:36:40 +0100
+Message-ID: <20150208223640.2bcab3f4@jawa>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 	<1423241948-31981-1-git-send-email-l.majewski@samsung.com>
-	<1423241948-31981-7-git-send-email-l.majewski@samsung.com>
-	<20150206182725.GA25410@roeck-us.net>
+	<1423241948-31981-8-git-send-email-l.majewski@samsung.com>
+	<20150206183657.GB25410@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- boundary="Sig_/BPabe_PY5yHylU13fGbDcaU"; protocol="application/pgp-signature"
+ boundary="Sig_/+hMmTFW8Us69PM6y8Y9dwAP"; protocol="application/pgp-signature"
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150206182725.GA25410@roeck-us.net>
+In-Reply-To: <20150206183657.GB25410@roeck-us.net>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
 Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
---Sig_/BPabe_PY5yHylU13fGbDcaU
+--Sig_/+hMmTFW8Us69PM6y8Y9dwAP
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 6 Feb 2015 10:27:25 -0800
+On Fri, 6 Feb 2015 10:36:57 -0800
 Guenter Roeck <linux@roeck-us.net> wrote:
 
-> On Fri, Feb 06, 2015 at 05:59:06PM +0100, Lukasz Majewski wrote:
-> > It was necessary to decouple code handling writing to sysfs from
-> > the one responsible for setting PWM of the fan.
-> > Due to that, new __set_pwm() method was extracted, which is
-> > responsible for only setting new PWM duty cycle.
+> On Fri, Feb 06, 2015 at 05:59:07PM +0100, Lukasz Majewski wrote:
+> > This patch provides code for reading PWM FAN configuration data via
+> > device tree. The pwm-fan can work with full speed when configuration
+> > is not provided. However, errors are propagated when wrong DT
+> > bindings are found.
+> > Additionally the struct pwm_fan_ctx has been extended.
 > >=20
 > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > > ---
 > > Changes for v2:
-> > - None
+> > - Rename pwm_fan_max_states to pwm_fan_cooling_levels
+> > - Moving pwm_fan_of_get_cooling_data() call after setting end
+> > enabling PWM FAN
+> > - pwm_fan_of_get_cooling_data() now can fail - preserving old
+> > behaviour
+> > - Remove unnecessary dev_err() call
 > > Changes for v3:
-> > - The commit headline has been reedited.
+> > - Patch's headline has been reedited
+> > - pwm_fan_of_get_cooling_data() return code is now being checked.
+> > - of_property_count_elems_of_size() is now used instead
+> > of_find_property()
+> > - More verbose patch description added
 > > ---
-> >  drivers/hwmon/pwm-fan.c | 35 ++++++++++++++++++++++-------------
-> >  1 file changed, 22 insertions(+), 13 deletions(-)
+> >  drivers/hwmon/pwm-fan.c | 54
+> > ++++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed,
+> > 53 insertions(+), 1 deletion(-)
 > >=20
 > > diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-> > index 1991d903..870e100 100644
+> > index 870e100..f3f5843 100644
 > > --- a/drivers/hwmon/pwm-fan.c
 > > +++ b/drivers/hwmon/pwm-fan.c
-> > @@ -33,21 +33,15 @@ struct pwm_fan_ctx {
-> >  	unsigned char pwm_value;
+> > @@ -30,7 +30,10 @@
+> >  struct pwm_fan_ctx {
+> >  	struct mutex lock;
+> >  	struct pwm_device *pwm;
+> > -	unsigned char pwm_value;
+> > +	unsigned int pwm_value;
+> > +	unsigned int pwm_fan_state;
+> > +	unsigned int pwm_fan_max_state;
+> > +	unsigned int *pwm_fan_cooling_levels;
 > >  };
 > > =20
-> > -static ssize_t set_pwm(struct device *dev, struct device_attribute
-> > *attr,
-> > -		       const char *buf, size_t count)
-> > +static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
-> >  {
-> > -	struct pwm_fan_ctx *ctx =3D dev_get_drvdata(dev);
-> > -	unsigned long pwm, duty;
-> > -	ssize_t ret;
-> > -
-> > -	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
-> > -		return -EINVAL;
-> > -
-> > -	mutex_lock(&ctx->lock);
-> > +	unsigned long duty;
-> > +	int ret;
+> >  static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+> > @@ -100,6 +103,50 @@ static struct attribute *pwm_fan_attrs[] =3D {
 > > =20
-> >  	if (ctx->pwm_value =3D=3D pwm)
-> > -		goto exit_set_pwm_no_change;
+> >  ATTRIBUTE_GROUPS(pwm_fan);
+> > =20
+> > +int pwm_fan_of_get_cooling_data(struct device *dev, struct
+> > pwm_fan_ctx *ctx) +{
+> > +	struct device_node *np =3D dev->of_node;
+> > +	int num, i, ret;
+> > +
+> > +	ret =3D of_property_count_elems_of_size(np, "cooling-levels",
+> > +					      sizeof(u32));
+> > +
+> > +	if (ret =3D=3D -EINVAL) {
+> > +		dev_err(dev, "Property 'cooling-levels' not
+> > found\n");
 > > +		return 0;
-> > =20
-> Why did you move this check outside the lock ? With this change there=20
-> is no guarantee that pwm_value wasn't changed while waiting for the
-> lock.
+>=20
+> Returning 0 is obviously not an error, otherwise you would not return
+> 0 here. So dev_err is wrong.
 
-Grrr. You are obviously right here. I will fix this. Thanks for spotting
+pr_info would be more appropriate here.
+
+> Also, the message itself is wrong; the
+> property may well be there but have a wrong size.
+
+As fair as I remember the -EINVAL is set only when the property is not
+defined. Such situation is correct and our pwm-fan driver should work
+with or without it.
+
+>=20
+> > +	}
+> > +
+> > +	if (ret <=3D 0) {
+> > +		dev_err(dev, "Wrong data!\n");
+> > +		return ret;
+> > +	}
+>=20
+> This will result in the driver failing to load if devicetree is not
+> configured (of_property_count_elems_of_size will return -ENOSYS).
+
+As you pointed out in the comment to v2:
+
+It is OK if the "cooling-levels" is not defined in DT. However, if it
+has broken definition, then we should return error. This is what we do
+here.
+
+> This is not acceptable. Also, if the call returns 0 you don't return
+> an error but display a "Wrong data!" error message. Either it is an
+> error or it is not, but not both.
+
+This is an error. "cooling-levels" with zero elements is regarded as a
+broken property.
+
+>=20
+> Guenter
 
 Best regards,
 Lukasz Majewski
 
->=20
-> Guenter
->=20
-> > +	mutex_lock(&ctx->lock);
-> >  	if (pwm =3D=3D 0) {
-> >  		pwm_disable(ctx->pwm);
-> >  		goto exit_set_pwm;
-> > @@ -66,13 +60,28 @@ static ssize_t set_pwm(struct device *dev,
-> > struct device_attribute *attr,=20
-> >  exit_set_pwm:
-> >  	ctx->pwm_value =3D pwm;
-> > -exit_set_pwm_no_change:
-> > -	ret =3D count;
-> >  exit_set_pwm_err:
-> >  	mutex_unlock(&ctx->lock);
-> >  	return ret;
-> >  }
-> > =20
-> > +static ssize_t set_pwm(struct device *dev, struct device_attribute
-> > *attr,
-> > +		       const char *buf, size_t count)
-> > +{
-> > +	struct pwm_fan_ctx *ctx =3D dev_get_drvdata(dev);
-> > +	unsigned long pwm;
-> > +	int ret;
-> > +
-> > +	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
-> > +		return -EINVAL;
-> > +
-> > +	ret =3D __set_pwm(ctx, pwm);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	return count;
-> > +}
-> > +
-> >  static ssize_t show_pwm(struct device *dev,
-> >  			struct device_attribute *attr, char *buf)
-> >  {
-> > --=20
-> > 2.0.0.rc2
-> >=20
-
-
---Sig_/BPabe_PY5yHylU13fGbDcaU
+--Sig_/+hMmTFW8Us69PM6y8Y9dwAP
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEARECAAYFAlTXzKEACgkQf9/hG2YwgjHPugCcCxRGEjB5x5p9qUUvPITaXmeO
-hZMAoKxxfV0eHZqPvPfA1EPQ3mxFT2+r
-=jamh
+iEYEARECAAYFAlTX1u0ACgkQf9/hG2YwgjHNCwCgmdzCrtrrTrc04aWadFadgw0U
+6xkAn02yLnUrvgoGRrwd1YaewWk6yRfL
+=livi
 -----END PGP SIGNATURE-----
 
---Sig_/BPabe_PY5yHylU13fGbDcaU--
+--Sig_/+hMmTFW8Us69PM6y8Y9dwAP--
