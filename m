@@ -1,106 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update 2x] Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Tue, 10 Feb 2015 00:57:43 +0100
-Message-ID: <1642165.PhpflFaKUn@vostro.rjw.lan>
-References: <54866625.8010406@linux.intel.com> <8924978.aOrU4231JI@vostro.rjw.lan> <20150209154408.GV5029@twins.programming.kicks-ass.net>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Mon, 09 Feb 2015 15:50:12 -0800
+Message-ID: <54D947B4.4080401@free.fr>
+References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr> <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch> <54D576B1.4000001@free.fr> <54D903F6.3050608@codeaurora.org> <54D93556.9050008@free.fr> <54D93FFA.3090506@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55940 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932911AbbBIXel (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 18:34:41 -0500
-In-Reply-To: <20150209154408.GV5029@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <54D93FFA.3090506@codeaurora.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, February 09, 2015 04:44:08 PM Peter Zijlstra wrote:
-> On Mon, Feb 09, 2015 at 03:54:22AM +0100, Rafael J. Wysocki wrote:
-> > Complete patch with that modification is appended.  In the next few days I'm
-> > going to split it into smaller parts and send along with cpuidle driver
-> > patches implementing ->enter_freeze.
-> > 
-> > Please let me know what you think.
-> 
-> > @@ -104,6 +105,21 @@ static void cpuidle_idle_call(void)
-> >  	rcu_idle_enter();
-> >  
-> >  	/*
-> > +	 * Suspend-to-idle ("freeze") is a system state in which all user space
-> > +	 * has been frozen, all I/O devices have been suspended and the only
-> > +	 * activity happens here and in iterrupts (if any).  In that case bypass
-> > +	 * the cpuidle governor and go stratight for the deepest idle state
-> > +	 * available.  Possibly also suspend the local tick and the entire
-> > +	 * timekeeping to prevent timer interrupts from kicking us out of idle
-> > +	 * until a proper wakeup interrupt happens.
-> > +	 */
-> > +	if (idle_should_freeze()) {
-> > +		cpuidle_enter_freeze();
-> > +		local_irq_enable();
-> > +		goto exit_idle;
-> > +	}
-> > +
-> > +	/*
-> >  	 * Ask the cpuidle framework to choose a convenient idle state.
-> >  	 * Fall back to the default arch idle method on errors.
-> >  	 */
-> 
-> I was hoping to not have to put that into the regular idle path; say
-> maybe share a single special branch with the play-dead call. People seem
-> to start complaining about the total amount of time it takes to just
-> 'run' the idle path.
+Stephen Boyd wrote:
 
-Well, this check really only replaces one in cpuidle_select() and another
-one in cpuidle_reflect() and they both are called from the idle path, so
-that's a net gain rather. :-)
+> Mason wrote:
+>
+>> My platform provides a 32-bit counter, ticking at a constant 27 MHz.
+>> Reading this counter has a latency of roughly 70 ns (it has to go
+>> over the system memory bus). I think this is good enough for both
+>> the clock source and sched_clock, is it not?
+>>
+>> So the plan would be:
+>> - clocksource and sched_clock : 27 MHz, 32-bit counter, platform
+>> - clockevents : TWD, standard
+>
+> Yep, that sounds like a good plan. If your platform has the ARM global
+> timer (drivers/clocksource/arm_global_timer.c) then you don't need
+> anything besides that timer because it provides both the clocksource,
+> sched_clock, and clockevents. Sounds like you don't have that timer
 
-> Now I don't think we can do that, because we need the
-> arch_cpu_idle_enter() nonsense for the one but not the other; also all
-> this really only makes sense in the cpuidle context, so nothing to be
-> done about that.
+I'm using Cortex A9, so I do have the global timer (AFAIU).
 
-Agreed.
+However, I don't think I can safely use it as a clock source because
+I'm also using cpufreq, and I don't think the arm_global_timer driver
+handles CPU frequency updates, while the TWD driver does (?)
 
-> In any case, you could make that:
-> 
-> static inline bool idle_should_freeze(void)
-> {
-> 	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
-> }
-> 
-> which should help a bit I suppose.
+/*
+  * Updates clockevent frequency when the cpu frequency changes.
+  * Called on the cpu that is changing frequency with interrupts disabled.
+  */
 
-Won't hurt at least.
+"The Interrupt Controller, global timer, private timers, and watchdogs
+are clocked with PERIPHCLK." And PERIPHCLK is tied to CLK, which is
+modified by cpufreq. I didn't see any code in the arm_global_timer
+driver to deal with with that.
 
-> > +static void enter_freeze_proper(struct cpuidle_driver *drv,
-> > +                               struct cpuidle_device *dev, int index)
-> > +{
-> > +       tick_freeze();
-> > +       drv->states[index].enter_freeze(dev, drv, index);
-> 
-> This is slightly different from cpuidle_enter() in that it does not
-> consider the coupled states nonsense, is that on purpose? And if so,
-> does that want a comment?
+Did I overlook something fundamental?
 
-Yes, it is on purpose and the reason why is because the coupled thing re-enables
-interrupts (unconditionally).  [And it contains a comment about that which does
-not make sense to me now that I read it.]
+> though, so you have to write a driver for your custom platform timer and
+> at least hook up clocksource and sched_clock to it. If you have
+> interrupts with your platform timer you can skip out on TWD and also
+> register a clockevent in your platform timer driver.
 
-I can add a comment about that, though.
+Registering a clock source or a sched_clock seems straight-forward.
+All I need to provide is a function to read the platform counter.
 
-> > +       /*
-> > +        * timekeeping_resume() that will be called by tick_unfreeze() for the
-> > +        * last CPU executing it calls functions containing RCU read-side
-> > +        * critical sections, so tell RCU about that.
-> > +        */
-> > +       RCU_NONIDLE(tick_unfreeze());
-> > +}
-> 
-> 
-> But over all it looks fine to me.
+However, why would I skip out on TWD?
+(I'm trying to minimize code needed for the port.)
 
-Cool, thanks!
+Regards.
 
