@@ -1,49 +1,101 @@
-From: Nicholas Mc Guire <hofrat@osadl.org>
-Subject: [PATCH 2/2] ab8500_fg: use jiffies_to_msecs for jiffies conversion
-Date: Mon,  9 Feb 2015 12:21:05 -0500
-Message-ID: <1423502465-31298-1-git-send-email-hofrat@osadl.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@osadl.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH] speedstep-smi: enable interrupts when waiting
+Date: Mon, 9 Feb 2015 13:38:17 -0500 (EST)
+Message-ID: <alpine.LRH.2.02.1502091337090.18363@file01.intranet.prod.int.rdu2.redhat.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35274 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933415AbbBISiY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Feb 2015 13:38:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-Converting jiffies to milliseconds by "val * 1000 / HZ" is technically
-OK but jiffies_to_msecs(val) is the cleaner solution and handles all
-corner cases correctly. This is a minor API consolidation only and
-should make things more readable.
+On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+speedstep-smi driver sometimes loads and sometimes doesn't load with
+"change to state X failed" message.
 
-Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+The hardware sometimes refuses to change frequency and in this case, we
+need to retry later. I found out that we need to enable interrupts while
+waiting. When we enable interrupts, the hardware blockage that prevents
+frequency transition resolves and the transition is possible. With
+disabled interrupts, the blockage doesn't resolve (no matter how long do
+we wait). The exact reasons for this hardware behavior are unknown.
+
+This patch enables interrupts in the function speedstep_set_state that can
+be called with disabled interrupts. However, this function is called with
+disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+any problem.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+Cc: stable@vger.kernel.org
+
 ---
+ drivers/cpufreq/speedstep-lib.c |    3 +++
+ drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
 
-Patch was only compile tested with u8500_defconfig + CONFIG_AB8500_BM=y
-
-Patch is against 3.19.0-rc7 (localversion-next is -next-20150209)
-
- drivers/power/ab8500_fg.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
-index eee4493..d6d4223 100644
---- a/drivers/power/ab8500_fg.c
-+++ b/drivers/power/ab8500_fg.c
-@@ -629,7 +629,7 @@ int ab8500_fg_inst_curr_finalize(struct ab8500_fg *di, int *res)
- 			&di->ab8500_fg_complete,
- 			INS_CURR_TIMEOUT);
- 		dev_dbg(di->dev, "Finalize time: %d ms\n",
--			((INS_CURR_TIMEOUT - timeout) * 1000) / HZ);
-+			jiffies_to_msecs(INS_CURR_TIMEOUT - timeout));
- 		if (!timeout) {
- 			ret = -ETIME;
- 			disable_irq(di->irq);
-@@ -731,7 +731,7 @@ int ab8500_fg_inst_curr_blocking(struct ab8500_fg *di)
- 			&di->ab8500_fg_started,
- 			INS_CURR_TIMEOUT);
- 		dev_dbg(di->dev, "Start time: %d ms\n",
--			((INS_CURR_TIMEOUT - timeout) * 1000) / HZ);
-+			jiffies_to_msecs(INS_CURR_TIMEOUT - timeout));
- 		if (!timeout) {
- 			ret = -ETIME;
- 			dev_err(di->dev, "completion timed out [%d]\n",
--- 
-1.7.10.4
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 18:56:44.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
+@@ -156,6 +156,7 @@ static void speedstep_set_state(unsigned
+ 		return;
+ 
+ 	/* Disable IRQs */
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+@@ -166,9 +167,19 @@ static void speedstep_set_state(unsigned
+ 
+ 	do {
+ 		if (retry) {
++			/*
++			 * We need to enable interrupts, otherwise the blockage
++			 * won't resolve.
++			 *
++			 * We disable preemption so that other processes don't
++			 * run. If other processes were running, they could
++			 * submit more DMA requests, making the blockage worse.
++			 */
+ 			pr_debug("retry %u, previous result %u, waiting...\n",
+ 					retry, result);
++			local_irq_enable();
+ 			mdelay(retry * 50);
++			local_irq_disable();
+ 		}
+ 		retry++;
+ 		__asm__ __volatile__(
+@@ -185,6 +196,7 @@ static void speedstep_set_state(unsigned
+ 
+ 	/* enable IRQs */
+ 	local_irq_restore(flags);
++	preempt_enable();
+ 
+ 	if (new_state == state)
+ 		pr_debug("change to %u MHz succeeded after %u tries "
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 18:54:39.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
+@@ -400,6 +400,7 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ 	pr_debug("previous speed is %u\n", prev_speed);
+ 
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	/* switch to low state */
+@@ -464,6 +465,8 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ out:
+ 	local_irq_restore(flags);
++	preempt_enable();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(speedstep_get_freqs);
