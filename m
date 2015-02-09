@@ -1,45 +1,70 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH v3 04/20] power_supply: sysfs: Use power_supply_*() API
- for accessing function attrs
-Date: Mon, 9 Feb 2015 20:02:21 +0100 (CET)
-Message-ID: <70066540.345820.1423508541546.JavaMail.open-xchange@oxbaltgw00.schlund.de>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com> <1422629278-12202-5-git-send-email-k.kozlowski@samsung.com>
-Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM-Trace: add pm-trace support for suspending phase
+Date: Tue, 10 Feb 2015 05:55:59 +0800
+Message-ID: <20150209215559.GA12087@kroah.com>
+References: <54D8318B.2060703@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1422629278-12202-5-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Support Opensource <support.opensource@diasemi.com>, Darren Hart <dvhart@infradead.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, ac100@lists.launchpad.net, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Russell King <linux@arm.linux.org.uk>, patches@opensource.wolfsonmicro.com, Milo Kim <milo.kim@ti.com>, David Herrmann <dh.herrmann@googlemail.com>, devel@driverdev.osuosl.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-tegra@vger.kernel.org, Daniel Mack <daniel@zonque.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, platf
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:55759 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755796AbbBIV4D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 16:56:03 -0500
+Content-Disposition: inline
+In-Reply-To: <54D8318B.2060703@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Cc: "rjw@rjwysocki.net >> Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Krzysztof,
+On Mon, Feb 09, 2015 at 12:03:23PM +0800, Fu, Zhonghui wrote:
+> >From ec9c0f24e800461361eaf8b280abe4272b00772d Mon Sep 17 00:00:00 2001
+> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> Date: Mon, 9 Feb 2015 11:09:22 +0800
+> Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
 
-> Krzysztof Kozlowski <k.kozlowski@samsung.com> hat am 30. Januar 2015 um 15:47
-> geschrieben:
->
->
-> Replace direct calls to power supply function attributes with wrappers.
-> Wrappers provide safe access in case of unregistering the power
-> supply (e.g. by removing the driver). Replace:
-> - get_property -> power_supply_get_property
-> - set_property -> power_supply_set_property
-> - property_is_writeable -> power_supply_property_is_writeable
->
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
+Why is this crud here?
 
-just a nit. It looks like a typo in the mail address which is also in patch 5 -
-10.
-
-I applied patch 1 - 14 to my repo with a upcoming power driver (mxs_power) and
-didn't see any problems with your patches.
-
-Stefan
-
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Reviewed-by: Sebastian Reichel <sre@kernel.org>
+> 
+> Occasinally, the system can't come back up after suspend/resume
+> due to problems of device suspending phase. This patch make
+> PM_TRACE infrastructure cover device suspending phase of
+> suspend/resume process, and the information in RTC can tell
+> develpers which device suspending function make system hang.
+> 
+> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
 > ---
+>  arch/x86/include/asm/resume-trace.h |    2 +-
+>  drivers/base/power/main.c           |   30 +++++++++++++++++++++---------
+>  include/linux/resume-trace.h        |    2 +-
+>  3 files changed, 23 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/resume-trace.h
+> index 3ff1c2c..0ca2215 100644
+> --- a/arch/x86/include/asm/resume-trace.h
+> +++ b/arch/x86/include/asm/resume-trace.h
+> @@ -3,7 +3,7 @@
+>  
+>  #include <asm/asm.h>
+>  
+> -#define TRACE_RESUME(user)					\
+> +#define TRACE_SUSPEND_RESUME(user)				\
+>  do {								\
+>  	if (pm_trace_enabled) {					\
+>  		const void *tracedata;				\
+
+Why rename this?
+
+If you want to do that, do it in 2 different functions (rename first,
+with justification, add new functionality in a second patch)
+
+> @@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
+>  {
+>  	reinit_completion(&dev->power.completion);
+>  
+> -	if (pm_async_enabled && dev->power.async_suspend) {
+> +	if (is_async(dev)) {
+
+Why change this logic?
+
+greg k-h
