@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH RFC 03/12] thermal: cpu_cooling: remove duplicate documentation entries
-Date: Mon,  9 Feb 2015 17:34:04 -0400
-Message-ID: <1423517653-11359-4-git-send-email-edubezval@gmail.com>
+Subject: [PATCH RFC 06/12] thermal: thermal_core: correct kernel doc wording on thermal_zone_get_temp
+Date: Mon,  9 Feb 2015 17:34:07 -0400
+Message-ID: <1423517653-11359-7-git-send-email-edubezval@gmail.com>
 References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
@@ -10,50 +10,25 @@ To: Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.ka
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch removes the kernel docs from cpu_cooling.h.
-The entries found in this file are already documented
-in cpu_cooling.c. The entries in cpu_cooling.c are more
-complete than those in cpu_cooling.h. Thus, removing
-from cpu_cooling.h
+Fix summary wording on thermal_zone_get_temp kernel doc.
 
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- include/linux/cpu_cooling.h | 13 -------------
- 1 file changed, 13 deletions(-)
+ drivers/thermal/thermal_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index bd95527..a8d827c 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -29,18 +29,9 @@
- #include <linux/cpumask.h>
- 
- #ifdef CONFIG_CPU_THERMAL
--/**
-- * cpufreq_cooling_register - function to create cpufreq cooling device.
-- * @clip_cpus: cpumask of cpus where the frequency constraints will happen
-- */
- struct thermal_cooling_device *
- cpufreq_cooling_register(const struct cpumask *clip_cpus);
- 
--/**
-- * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
-- * @np: a valid struct device_node to the cooling device device tree node.
-- * @clip_cpus: cpumask of cpus where the frequency constraints will happen
-- */
- #ifdef CONFIG_THERMAL_OF
- struct thermal_cooling_device *
- of_cpufreq_cooling_register(struct device_node *np,
-@@ -54,10 +45,6 @@ of_cpufreq_cooling_register(struct device_node *np,
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 87e0b07..846b68a 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -402,7 +402,7 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
  }
- #endif
  
--/**
-- * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
-- * @cdev: thermal cooling device pointer.
-- */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
- 
- unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq);
+ /**
+- * thermal_zone_get_temp() - returns its the temperature of thermal zone
++ * thermal_zone_get_temp() - returns the temperature of thermal zone
+  * @tz: a valid pointer to a struct thermal_zone_device
+  * @temp: a valid pointer to where to store the resulting temperature.
+  *
 -- 
 2.1.3
