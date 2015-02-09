@@ -1,83 +1,70 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 8/9] bus: brcmstb_gisb: Honor the "big-endian" and "native-endian"
- DT properties
-Date: Mon, 09 Feb 2015 13:59:42 -0800
-Message-ID: <54D92DCE.8090100@gmail.com>
-References: <1416962994-27095-1-git-send-email-cernekee@gmail.com> <1416962994-27095-9-git-send-email-cernekee@gmail.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Mon, 09 Feb 2015 14:31:50 -0800
+Message-ID: <54D93556.9050008@free.fr>
+References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr> <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch> <54D576B1.4000001@free.fr> <54D903F6.3050608@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:60049 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760747AbbBIV7r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 16:59:47 -0500
-In-Reply-To: <1416962994-27095-9-git-send-email-cernekee@gmail.com>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:25952 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932379AbbBIWcI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Feb 2015 17:32:08 -0500
+In-Reply-To: <54D903F6.3050608@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Cernekee <cernekee@gmail.com>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, arnd@arndb.de, linux@prisktech.co.nz, stern@rowland.harvard.edu, gregkh@linuxfoundation.org
-Cc: grant.likely@linaro.org, robh+dt@kernel.org, computersforpeace@gmail.com, marc.ceeeee@gmail.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-mips@linux-mips.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <rob.herring@calxeda.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>
 
-On 25/11/14 16:49, Kevin Cernekee wrote:
-> On chips strapped for BE, we'll need to use ioread32be/iowrite32be instead of
-> ioread32/iowrite32.
+Stephen Boyd wrote:
 
-Has of_device_is_big_endian() been merged in a tree now, I am not seeing
-it in Linus' tree, but have not look at Grant's tree yet. Thanks
+> Mason wrote:
+>
+>> config HAVE_ARM_TWD
+>>    bool
+>>    depends on SMP
+>>    select CLKSRC_OF if OF
+>>    help
+>>      This options enables support for the ARM timer and watchdog unit
+>>
+>> One problem I see is that HAVE_ARM_TWD depends on SMP...
+>>
+>> One of the systems I want to support is UP (single-core Cortex A9).
+>> Does that mean I should use an SMP kernel even for that system?
+>> Or is there a different subsystem for UP systems?
+>
+> I don't see any problem with the TWD dropping the dependency on SMP. The
+> code should work the same on a UP configuration and if that's the only
+> timer you have that can deliver interrupts to your processor then it
+> would be required. You'd still need a clocksource though, which the TWD
+> doesn't provide.
 
-> 
-> Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
-> ---
->  drivers/bus/brcmstb_gisb.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/bus/brcmstb_gisb.c b/drivers/bus/brcmstb_gisb.c
-> index 172908d..969b992 100644
-> --- a/drivers/bus/brcmstb_gisb.c
-> +++ b/drivers/bus/brcmstb_gisb.c
-> @@ -90,6 +90,7 @@ static const int gisb_offsets_bcm7445[] = {
->  struct brcmstb_gisb_arb_device {
->  	void __iomem	*base;
->  	const int	*gisb_offsets;
-> +	bool		big_endian;
->  	struct mutex	lock;
->  	struct list_head next;
->  	u32 valid_mask;
-> @@ -106,7 +107,10 @@ static u32 gisb_read(struct brcmstb_gisb_arb_device *gdev, int reg)
->  	if (offset == -1)
->  		return 1;
->  
-> -	return ioread32(gdev->base + offset);
-> +	if (gdev->big_endian)
-> +		return ioread32be(gdev->base + offset);
-> +	else
-> +		return ioread32(gdev->base + offset);
->  }
->  
->  static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
-> @@ -115,7 +119,11 @@ static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
->  
->  	if (offset == -1)
->  		return;
-> -	iowrite32(val, gdev->base + reg);
-> +
-> +	if (gdev->big_endian)
-> +		iowrite32be(val, gdev->base + reg);
-> +	else
-> +		iowrite32(val, gdev->base + reg);
->  }
->  
->  static ssize_t gisb_arb_get_timeout(struct device *dev,
-> @@ -300,6 +308,7 @@ static int brcmstb_gisb_arb_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
->  	gdev->gisb_offsets = of_id->data;
-> +	gdev->big_endian = of_device_is_big_endian(dn);
->  
->  	err = devm_request_irq(&pdev->dev, timeout_irq,
->  				brcmstb_gisb_timeout_handler, 0, pdev->name,
-> 
+I want to use as much mainlined code as possible. Thus, this means
+(if my reasoning is not flawed) that I should use standard ARM
+"services" (can't think of a better term) for which code is already
+available in the kernel.
+
+As for clock events, IIUC, I can choose either TWD or the global
+timer (with a slight advantage to TWD). Are there other options?
+
+(I probably have some platform-specific infrastructure available,
+but I'm asking about standard support.)
+
+My platform provides a 32-bit counter, ticking at a constant 27 MHz.
+Reading this counter has a latency of roughly 70 ns (it has to go
+over the system memory bus). I think this is good enough for both
+the clock source and sched_clock, is it not?
+
+So the plan would be:
+- clocksource and sched_clock : 27 MHz, 32-bit counter, platform
+- clockevents : TWD, standard
+
+Regards.
 
 
--- 
-Florian
+For my own reference
+http://elinux.org/Kernel_Timer_Systems
+http://thread.gmane.org/gmane.linux.kernel/1062438 (not merged)
+Message-ID: <20150206191419.GA8656@n2100.arm.linux.org.uk>
+
