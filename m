@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH RFC 04/12] thermal: of-thermal: remove kernel doc warn
-Date: Mon,  9 Feb 2015 17:34:05 -0400
-Message-ID: <1423517653-11359-5-git-send-email-edubezval@gmail.com>
+Subject: [PATCH RFC 03/12] thermal: cpu_cooling: remove duplicate documentation entries
+Date: Mon,  9 Feb 2015 17:34:04 -0400
+Message-ID: <1423517653-11359-4-git-send-email-edubezval@gmail.com>
 References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
@@ -10,27 +10,50 @@ To: Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.ka
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The comment about trip type map is not a kernel doc
-comment. Therefore, remove the kernel doc format,
-so kernel doc won't complain.
+This patch removes the kernel docs from cpu_cooling.h.
+The entries found in this file are already documented
+in cpu_cooling.c. The entries in cpu_cooling.c are more
+complete than those in cpu_cooling.h. Thus, removing
+from cpu_cooling.h
 
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/of-thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/cpu_cooling.h | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index d717f3d..b66e3b2 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -621,7 +621,7 @@ end:
- 	return ret;
- }
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index bd95527..a8d827c 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -29,18 +29,9 @@
+ #include <linux/cpumask.h>
+ 
+ #ifdef CONFIG_CPU_THERMAL
+-/**
+- * cpufreq_cooling_register - function to create cpufreq cooling device.
+- * @clip_cpus: cpumask of cpus where the frequency constraints will happen
+- */
+ struct thermal_cooling_device *
+ cpufreq_cooling_register(const struct cpumask *clip_cpus);
  
 -/**
-+/*
-  * It maps 'enum thermal_trip_type' found in include/linux/thermal.h
-  * into the device tree binding of 'trip', property type.
-  */
+- * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
+- * @np: a valid struct device_node to the cooling device device tree node.
+- * @clip_cpus: cpumask of cpus where the frequency constraints will happen
+- */
+ #ifdef CONFIG_THERMAL_OF
+ struct thermal_cooling_device *
+ of_cpufreq_cooling_register(struct device_node *np,
+@@ -54,10 +45,6 @@ of_cpufreq_cooling_register(struct device_node *np,
+ }
+ #endif
+ 
+-/**
+- * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+- * @cdev: thermal cooling device pointer.
+- */
+ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
+ 
+ unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq);
 -- 
 2.1.3
