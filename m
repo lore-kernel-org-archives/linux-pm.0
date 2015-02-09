@@ -1,201 +1,131 @@
-From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
-Date: Mon, 09 Feb 2015 12:03:23 +0800
-Message-ID: <54D8318B.2060703@linux.intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 7/8] hwmon: pwm-fan: Read PWM FAN configuration from
+ device tree
+Date: Sun, 08 Feb 2015 20:40:11 -0800
+Message-ID: <54D83A2B.3070601@roeck-us.net>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>	<1423241948-31981-1-git-send-email-l.majewski@samsung.com>	<1423241948-31981-8-git-send-email-l.majewski@samsung.com>	<20150206183657.GB25410@roeck-us.net> <20150208223640.2bcab3f4@jawa>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:61635 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752975AbbBIED3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 8 Feb 2015 23:03:29 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150208223640.2bcab3f4@jawa>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@majess.pl>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net >> Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
->From ec9c0f24e800461361eaf8b280abe4272b00772d Mon Sep 17 00:00:00 2001
-From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
-Date: Mon, 9 Feb 2015 11:09:22 +0800
-Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
+On 02/08/2015 01:36 PM, Lukasz Majewski wrote:
+> On Fri, 6 Feb 2015 10:36:57 -0800
+> Guenter Roeck <linux@roeck-us.net> wrote:
+>
+>> On Fri, Feb 06, 2015 at 05:59:07PM +0100, Lukasz Majewski wrote:
+>>> This patch provides code for reading PWM FAN configuration data via
+>>> device tree. The pwm-fan can work with full speed when configuration
+>>> is not provided. However, errors are propagated when wrong DT
+>>> bindings are found.
+>>> Additionally the struct pwm_fan_ctx has been extended.
+>>>
+>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>> ---
+>>> Changes for v2:
+>>> - Rename pwm_fan_max_states to pwm_fan_cooling_levels
+>>> - Moving pwm_fan_of_get_cooling_data() call after setting end
+>>> enabling PWM FAN
+>>> - pwm_fan_of_get_cooling_data() now can fail - preserving old
+>>> behaviour
+>>> - Remove unnecessary dev_err() call
+>>> Changes for v3:
+>>> - Patch's headline has been reedited
+>>> - pwm_fan_of_get_cooling_data() return code is now being checked.
+>>> - of_property_count_elems_of_size() is now used instead
+>>> of_find_property()
+>>> - More verbose patch description added
+>>> ---
+>>>   drivers/hwmon/pwm-fan.c | 54
+>>> ++++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed,
+>>> 53 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+>>> index 870e100..f3f5843 100644
+>>> --- a/drivers/hwmon/pwm-fan.c
+>>> +++ b/drivers/hwmon/pwm-fan.c
+>>> @@ -30,7 +30,10 @@
+>>>   struct pwm_fan_ctx {
+>>>   	struct mutex lock;
+>>>   	struct pwm_device *pwm;
+>>> -	unsigned char pwm_value;
+>>> +	unsigned int pwm_value;
+>>> +	unsigned int pwm_fan_state;
+>>> +	unsigned int pwm_fan_max_state;
+>>> +	unsigned int *pwm_fan_cooling_levels;
+>>>   };
+>>>
+>>>   static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+>>> @@ -100,6 +103,50 @@ static struct attribute *pwm_fan_attrs[] = {
+>>>
+>>>   ATTRIBUTE_GROUPS(pwm_fan);
+>>>
+>>> +int pwm_fan_of_get_cooling_data(struct device *dev, struct
+>>> pwm_fan_ctx *ctx) +{
+>>> +	struct device_node *np = dev->of_node;
+>>> +	int num, i, ret;
+>>> +
+>>> +	ret = of_property_count_elems_of_size(np, "cooling-levels",
+>>> +					      sizeof(u32));
+>>> +
+>>> +	if (ret == -EINVAL) {
+>>> +		dev_err(dev, "Property 'cooling-levels' not
+>>> found\n");
+>>> +		return 0;
+>>
+>> Returning 0 is obviously not an error, otherwise you would not return
+>> 0 here. So dev_err is wrong.
+>
+> pr_info would be more appropriate here.
+>
+>> Also, the message itself is wrong; the
+>> property may well be there but have a wrong size.
+>
+> As fair as I remember the -EINVAL is set only when the property is not
+> defined. Such situation is correct and our pwm-fan driver should work
+> with or without it.
+>
 
-Occasinally, the system can't come back up after suspend/resume
-due to problems of device suspending phase. This patch make
-PM_TRACE infrastructure cover device suspending phase of
-suspend/resume process, and the information in RTC can tell
-develpers which device suspending function make system hang.
+of_property_count_elems_of_size returns -EINVAL if np is NULL or if
+there is no peoperty or prop->length % elem_size != 0, and -ENODATA
+if there is no value associated with the property.
 
-Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
----
- arch/x86/include/asm/resume-trace.h |    2 +-
- drivers/base/power/main.c           |   30 +++++++++++++++++++++---------
- include/linux/resume-trace.h        |    2 +-
- 3 files changed, 23 insertions(+), 11 deletions(-)
+If -EINVAL is not an error, please no message. Noisy drivers are
+just that, noisy.
 
-diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/resume-trace.h
-index 3ff1c2c..0ca2215 100644
---- a/arch/x86/include/asm/resume-trace.h
-+++ b/arch/x86/include/asm/resume-trace.h
-@@ -3,7 +3,7 @@
- 
- #include <asm/asm.h>
- 
--#define TRACE_RESUME(user)					\
-+#define TRACE_SUSPEND_RESUME(user)				\
- do {								\
- 	if (pm_trace_enabled) {					\
- 		const void *tracedata;				\
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9717d5f..d2070b5 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -477,7 +477,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
--	TRACE_RESUME(0);
-+	TRACE_SUSPEND_RESUME(0);
- 
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Out;
-@@ -511,7 +511,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
- 
-  Out:
- 	complete_all(&dev->power.completion);
--	TRACE_RESUME(error);
-+	TRACE_SUSPEND_RESUME(error);
- 	return error;
- }
- 
-@@ -606,7 +606,7 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
--	TRACE_RESUME(0);
-+	TRACE_SUSPEND_RESUME(0);
- 
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Out;
-@@ -639,7 +639,7 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
- 	dev->power.is_late_suspended = false;
- 
-  Out:
--	TRACE_RESUME(error);
-+	TRACE_SUSPEND_RESUME(error);
- 
- 	pm_runtime_enable(dev);
- 	complete_all(&dev->power.completion);
-@@ -735,7 +735,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
- 	TRACE_DEVICE(dev);
--	TRACE_RESUME(0);
-+	TRACE_SUSPEND_RESUME(0);
- 
- 	if (dev->power.syscore)
- 		goto Complete;
-@@ -811,7 +811,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
-  Complete:
- 	complete_all(&dev->power.completion);
- 
--	TRACE_RESUME(error);
-+	TRACE_SUSPEND_RESUME(error);
- 
- 	return error;
- }
-@@ -1017,6 +1017,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	char *info = NULL;
- 	int error = 0;
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND_RESUME(0);
-+
- 	if (async_error)
- 		goto Complete;
- 
-@@ -1057,6 +1060,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 
- Complete:
- 	complete_all(&dev->power.completion);
-+	TRACE_SUSPEND_RESUME(error);
- 	return error;
- }
- 
-@@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend_noirq, dev);
- 		return 0;
-@@ -1157,6 +1161,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	char *info = NULL;
- 	int error = 0;
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND_RESUME(0);
-+
- 	__pm_runtime_disable(dev, false);
- 
- 	if (async_error)
-@@ -1198,6 +1205,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 		async_error = error;
- 
- Complete:
-+	TRACE_SUSPEND_RESUME(error);
- 	complete_all(&dev->power.completion);
- 	return error;
- }
-@@ -1219,7 +1227,7 @@ static int device_suspend_late(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend_late, dev);
- 		return 0;
-@@ -1338,6 +1346,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	int error = 0;
- 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND_RESUME(0);
-+
- 	dpm_wait_for_children(dev, async);
- 
- 	if (async_error)
-@@ -1444,6 +1455,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (error)
- 		async_error = error;
- 
-+	TRACE_SUSPEND_RESUME(error);
- 	return error;
- }
- 
-@@ -1465,7 +1477,7 @@ static int device_suspend(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
-diff --git a/include/linux/resume-trace.h b/include/linux/resume-trace.h
-index f31db23..9080f25 100644
---- a/include/linux/resume-trace.h
-+++ b/include/linux/resume-trace.h
-@@ -27,7 +27,7 @@ extern int show_trace_dev_match(char *buf, size_t size);
- static inline int pm_trace_is_enabled(void) { return 0; }
- 
- #define TRACE_DEVICE(dev) do { } while (0)
--#define TRACE_RESUME(dev) do { } while (0)
-+#define TRACE_SUSPEND_RESUME(dev) do { } while (0)
- 
- #endif
- 
--- 1.7.1
+>>
+>>> +	}
+>>> +
+>>> +	if (ret <= 0) {
+>>> +		dev_err(dev, "Wrong data!\n");
+>>> +		return ret;
+>>> +	}
+>>
+>> This will result in the driver failing to load if devicetree is not
+>> configured (of_property_count_elems_of_size will return -ENOSYS).
+>
+> As you pointed out in the comment to v2:
+>
+> It is OK if the "cooling-levels" is not defined in DT. However, if it
+> has broken definition, then we should return error. This is what we do
+> here.
+>
+You don't return an error, you return 0, at least in some circumstances.
 
+>> This is not acceptable. Also, if the call returns 0 you don't return
+>> an error but display a "Wrong data!" error message. Either it is an
+>> error or it is not, but not both.
+>
+> This is an error. "cooling-levels" with zero elements is regarded as a
+> broken property.
+>
+It returns -ENOSYS if DT is not configured, which is still unacceptable.
+And, again, if ret == 0 is an error, you should return an error code,
+not display an error message and return 0.
+
+Guenter
