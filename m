@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH RFC 09/12] thermal: user space: fix kernel doc entry
-Date: Mon,  9 Feb 2015 17:34:10 -0400
-Message-ID: <1423517653-11359-10-git-send-email-edubezval@gmail.com>
+Subject: [PATCH RFC 08/12] thermal: fair share: fix kernel doc entry
+Date: Mon,  9 Feb 2015 17:34:09 -0400
+Message-ID: <1423517653-11359-9-git-send-email-edubezval@gmail.com>
 References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
@@ -15,26 +15,31 @@ kernel doc does not complain about it.
 
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/user_space.c | 5 ++++-
+ drivers/thermal/fair_share.c | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/user_space.c b/drivers/thermal/user_space.c
-index 10adcdd..29c91cb 100644
---- a/drivers/thermal/user_space.c
-+++ b/drivers/thermal/user_space.c
-@@ -28,9 +28,12 @@
+diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+index 6e0a3fb..a15ef0b 100644
+--- a/drivers/thermal/fair_share.c
++++ b/drivers/thermal/fair_share.c
+@@ -70,7 +70,8 @@ static long get_target_state(struct thermal_zone_device *tz,
  
  /**
-  * notify_user_space - Notifies user space about thermal events
+  * fair_share_throttle - throttles devices asscciated with the given zone
 - * @tz - thermal_zone_device
 + * @tz: thermal_zone_device
 + * @trip: the trip point
   *
-  * This function notifies the user space through UEvents.
+  * Throttling Logic: This uses three parameters to calculate the new
+  * throttle state of the cooling devices associated with the given zone.
+@@ -85,6 +86,8 @@ static long get_target_state(struct thermal_zone_device *tz,
+  *	whereas the throttling is at full swing if we trip critical levels.
+  *	(Heavily assumes the trip points are in ascending order)
+  * new_state of cooling device = P3 * P2 * P1
 + *
 + * Return: 0.
   */
- static int notify_user_space(struct thermal_zone_device *tz, int trip)
+ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
  {
 -- 
 2.1.3
