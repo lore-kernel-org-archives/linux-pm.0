@@ -1,101 +1,50 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH] speedstep-smi: enable interrupts when waiting
-Date: Mon, 9 Feb 2015 13:38:17 -0500 (EST)
-Message-ID: <alpine.LRH.2.02.1502091337090.18363@file01.intranet.prod.int.rdu2.redhat.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Mon, 09 Feb 2015 11:01:10 -0800
+Message-ID: <54D903F6.3050608@codeaurora.org>
+References: <54C8E125.3070905@free.fr>
+ <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr>
+ <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch> <54D576B1.4000001@free.fr>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:35274 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933415AbbBISiY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Feb 2015 13:38:24 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <54D576B1.4000001@free.fr>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mason <mpeg.blue@free.fr>, Stefan Agner <stefan@agner.ch>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq <cpufreq@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
 
-On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
-speedstep-smi driver sometimes loads and sometimes doesn't load with
-"change to state X failed" message.
+On 02/06/15 18:21, Mason wrote:
+>
+>
+> config HAVE_ARM_TWD
+>   bool
+>   depends on SMP
+>   select CLKSRC_OF if OF
+>   help
+>     This options enables support for the ARM timer and watchdog unit
+>
+> One problem I see is that HAVE_ARM_TWD depends on SMP...
+>
+> One of the systems I want to support is UP (single-core Cortex A9).
+> Does that mean I should use an SMP kernel even for that system?
+> Or is there a different subsystem for UP systems?
 
-The hardware sometimes refuses to change frequency and in this case, we
-need to retry later. I found out that we need to enable interrupts while
-waiting. When we enable interrupts, the hardware blockage that prevents
-frequency transition resolves and the transition is possible. With
-disabled interrupts, the blockage doesn't resolve (no matter how long do
-we wait). The exact reasons for this hardware behavior are unknown.
+I don't see any problem with the TWD dropping the dependency on SMP. The
+code should work the same on a UP configuration and if that's the only
+timer you have that can deliver interrupts to your processor then it
+would be required. You'd still need a clocksource though, which the TWD
+doesn't provide.
 
-This patch enables interrupts in the function speedstep_set_state that can
-be called with disabled interrupts. However, this function is called with
-disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
-any problem.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-Cc: stable@vger.kernel.org
-
----
- drivers/cpufreq/speedstep-lib.c |    3 +++
- drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
- 2 files changed, 15 insertions(+)
-
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 18:56:44.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
-@@ -156,6 +156,7 @@ static void speedstep_set_state(unsigned
- 		return;
- 
- 	/* Disable IRQs */
-+	preempt_disable();
- 	local_irq_save(flags);
- 
- 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
-@@ -166,9 +167,19 @@ static void speedstep_set_state(unsigned
- 
- 	do {
- 		if (retry) {
-+			/*
-+			 * We need to enable interrupts, otherwise the blockage
-+			 * won't resolve.
-+			 *
-+			 * We disable preemption so that other processes don't
-+			 * run. If other processes were running, they could
-+			 * submit more DMA requests, making the blockage worse.
-+			 */
- 			pr_debug("retry %u, previous result %u, waiting...\n",
- 					retry, result);
-+			local_irq_enable();
- 			mdelay(retry * 50);
-+			local_irq_disable();
- 		}
- 		retry++;
- 		__asm__ __volatile__(
-@@ -185,6 +196,7 @@ static void speedstep_set_state(unsigned
- 
- 	/* enable IRQs */
- 	local_irq_restore(flags);
-+	preempt_enable();
- 
- 	if (new_state == state)
- 		pr_debug("change to %u MHz succeeded after %u tries "
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 18:54:39.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
-@@ -400,6 +400,7 @@ unsigned int speedstep_get_freqs(enum sp
- 
- 	pr_debug("previous speed is %u\n", prev_speed);
- 
-+	preempt_disable();
- 	local_irq_save(flags);
- 
- 	/* switch to low state */
-@@ -464,6 +465,8 @@ unsigned int speedstep_get_freqs(enum sp
- 
- out:
- 	local_irq_restore(flags);
-+	preempt_enable();
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(speedstep_get_freqs);
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
