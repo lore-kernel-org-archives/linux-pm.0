@@ -1,90 +1,87 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH RFC v4 1/3] PM / Runtime: Add an API pm_runtime_set_slave
-Date: Mon, 09 Feb 2015 16:32:04 +0530
-Message-ID: <1423479726-23140-2-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH RFC v4 2/3] PM / Domains: Save restore slave pm runtime devices
+Date: Mon, 09 Feb 2015 16:32:05 +0530
+Message-ID: <1423479726-23140-3-git-send-email-amit.daniel@samsung.com>
 References: <1423479726-23140-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:29074 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932339AbbBIK7f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 05:59:35 -0500
 In-reply-to: <1423479726-23140-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, khilman@linaro.org, rjw@rjwysocki.net, len.brown@intel.com, ulf.hansson@linaro.org, tomasz.figa@gmail.com, kgene.kim@samsung.com, s.nawrocki@samsung.com, thomas.ab@samsung.com, pankaj.dubey@samsung.com, m.szyprowski@samsung.com, geert+renesas@glider.be, Amit Daniel Kachhap <amit.daniel@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This API creates a pm runtime slave type device which does not itself
-participates in pm runtime but depends on the master devices to power
-manage them. These devices should have pm runtime callbacks.
-
-These devices (like clock) may not implement complete pm_runtime calls
-such as pm_runtime_get/pm_runtime_put due to subsystems interaction
-behaviour or any other reason.
+Based on the runtime request of the active device, the callbacks of
+the passive pm runtime devices will be invoked.
 
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/base/power/runtime.c | 18 ++++++++++++++++++
- include/linux/pm.h           |  1 +
- include/linux/pm_runtime.h   |  2 ++
- 3 files changed, 21 insertions(+)
+ drivers/base/power/domain.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 5070c4f..e247f08 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1252,6 +1252,24 @@ void pm_runtime_no_callbacks(struct device *dev)
- EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index c5280f2..160e74a 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -49,6 +49,7 @@
+ 
+ static LIST_HEAD(gpd_list);
+ static DEFINE_MUTEX(gpd_list_lock);
++static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd);
+ 
+ static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
+ {
+@@ -176,6 +177,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
+ 	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
+ 		genpd->name, "on", elapsed_ns);
+ 
++	__pm_genpd_restore_devices(genpd);
++
+ 	return ret;
+ }
+ 
+@@ -397,6 +400,9 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+ 	struct device *dev = pdd->dev;
+ 	int ret = 0;
+ 
++	if (dev->power.slave == true)
++		gpd_data->need_restore = 0;
++
+ 	if (gpd_data->need_restore > 0)
+ 		return 0;
+ 
+@@ -453,6 +459,28 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
+ }
  
  /**
-+ * pm_runtime_set_slave - Set these devices as slave.
-+ * @dev: Device to handle.
-+ *
-+ * Set the power.slave flag, which tells the PM core that this device is
-+ * power-managed by the master device through the runtime callbacks. Since it
-+ * will not manage runtime callbacks on its own, so runtime sysfs attributes is
-+ * removed.
++ * __pm_genpd_restore_devices- Restore the pre-suspend state of all device
++ *				according to the restore flag.
++ * @genpd: PM domain the device belongs to.
 + */
-+void pm_runtime_set_slave(struct device *dev)
++static void __pm_genpd_restore_devices(struct generic_pm_domain *genpd)
 +{
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.slave = true;
-+	spin_unlock_irq(&dev->power.lock);
-+	if (device_is_registered(dev))
-+		rpm_sysfs_remove(dev);
++	struct pm_domain_data *pdd;
++	struct generic_pm_domain_data *gpd_data;
++	struct device *dev;
++
++	/* Force restore the devices according to the restore flag */
++	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
++		dev = pdd->dev;
++		gpd_data = to_gpd_data(pdd);
++		if (dev->power.slave == true) {
++			gpd_data->need_restore = 1;
++			__pm_genpd_restore_device(pdd, genpd);
++		}
++	}
 +}
 +
 +/**
-  * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
-  * @dev: Device to handle
+  * genpd_abort_poweroff - Check if a PM domain power off should be aborted.
+  * @genpd: PM domain to check.
   *
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 8b59763..a4090ef 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -581,6 +581,7 @@ struct dev_pm_info {
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-+	unsigned int		slave:1;
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 30e84d4..0707a4b 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -47,6 +47,7 @@ extern void __pm_runtime_disable(struct device *dev, bool check_resume);
- extern void pm_runtime_allow(struct device *dev);
- extern void pm_runtime_forbid(struct device *dev);
- extern void pm_runtime_no_callbacks(struct device *dev);
-+extern void pm_runtime_set_slave(struct device *dev);
- extern void pm_runtime_irq_safe(struct device *dev);
- extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
- extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
-@@ -168,6 +169,7 @@ static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
-+static inline void pm_runtime_set_slave(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
- static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
- 
 -- 
 2.2.0
+
