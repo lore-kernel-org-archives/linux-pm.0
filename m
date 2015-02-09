@@ -1,128 +1,71 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v1 4/7] thermal: introduce the Power Allocator governor
-Date: Mon, 9 Feb 2015 10:14:23 +0000
-Message-ID: <20150209101423.GC6009@e104805>
-References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
- <1422464438-16761-5-git-send-email-javi.merino@arm.com>
- <20150202235120.GC4855@linaro.org>
- <20150203130336.GA2896@e104805>
- <20150203043102.GG17425@developer.hsd1.ca.comcast.net>
- <20150203173211.GD4855@linaro.org>
- <20150203191951.GA3486@developer.amazonguestwifi.org>
- <20150204234716.GC488@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH RFC v4 0/3] PM / Runtime: Feature to power manage slave devices
+Date: Mon, 09 Feb 2015 16:32:03 +0530
+Message-ID: <1423479726-23140-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:42723 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932702AbbBIKOd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 05:14:33 -0500
-Content-Disposition: inline
-In-Reply-To: <20150204234716.GC488@linaro.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:31424 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759882AbbBIK6F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 05:58:05 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, khilman@linaro.org, rjw@rjwysocki.net, len.brown@intel.com, ulf.hansson@linaro.org, tomasz.figa@gmail.com, kgene.kim@samsung.com, s.nawrocki@samsung.com, thomas.ab@samsung.com, pankaj.dubey@samsung.com, m.szyprowski@samsung.com, geert+renesas@glider.be, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Hi Lina,
+This patch is somewhat similar to V3 version but uses pm runtime framework to
+register/fetch the information about the device which may be slave or master.
+Since the power domain has the necessary information about devices so it invokes
+the save/restore runtime callbacks for the slave devices.
 
-On Wed, Feb 04, 2015 at 11:47:16PM +0000, Lina Iyer wrote:
-> On Tue, Feb 03 2015 at 12:20 -0700, Eduardo Valentin wrote:
-> >On Tue, Feb 03, 2015 at 10:32:11AM -0700, Lina Iyer wrote:
-> >
-> ><big cut>
-> >
-> >> >
-> >> >Well, I am not convinced drivers really need to be aware of these trip
-> >> >types. Which kind of drivers are we talking? Thermal zone drivers?
-> >> >cooling device drivers?
-> >>
-> >> I am sorry, I am missing the point here. The Tz driver is requested to
-> >> return the type of an enum and if the enum is not shared, then how is
-> >> the driver expected to know what to return.
-> >
-> >Yeah, however, the only requirement I see for this governor is to have
-> >two passive trip points.
-> >
-> I understand, but the thermal zone may have multiple trip points that
-> are passive. How would the thermal zone indentify which trip point is of
-> interest to this particular governor.
-> 
-> From what I see, every governor can define its number/type of trip
-> requirements and the TZ can define any number of trip points. I dont see
-> how I can write a TZ driver tha would work with a  governor in the
-> future that may expect more than 2 passive trip points.
-> 
-> >> >
-> >> >Lina, do you have an existing driver (it can be yet to be posted) that
-> >> >would required using these types? To my understanding, these are simply
-> >> >for the governor internal control, drivers do not really need to understand
-> >> >the difference from one to another.
-> >>
-> >> I am currently prototyping Javi's patches on QCOM existing solution. So its all WIP.
-> >
-> >I see.
-> >
-> >> >
-> >> >The purpose of the .bind_to_tz callback is exactly to verify if the
-> >> >driver has added the required info into the thermal zone. Including the
-> >> >trip setup.
-> >>
-> >> I may be completely off-base here and my understanding of trips is
-> >> questionable. But it seems like even with this callback, the driver
-> >> expected to know what the particular governor defines and needs from the
-> >> TZ.  The definitions may overlap and may mean different things in
-> >> different governros. To me a TZ driver should not care what the
-> >> governors are, but define some common parameters that any governor can
-> >> work with. Am I making sense here?
-> >
-> >
-> >And that's is what I want to keep across the framework. Thermal zone
-> >driver should not really be aware of governor details. Ideally, the
-> >driver should provide a thermal zone that can be usable by different
-> >governors. That is the ideal setup.
-> 
-> Right, but if the governors have no common enums, the driver would not know how
-> many trip points to implement.
+There was objection raised by Kevin and others that V3 is hacky in nature so this
+revision fixes it by keeping the slave device information in pm runtime framework.
 
-The constraint we currently have in the power allocator governor is
-that trip points 0 and 1 must be passive.  Actually, all the governor
-needs is two passive trip points, but they don't need to be pinned to
-a specific number.  The "switch on" trip point has to be the first
-passive trip point, but it need not be trip point 0.  We could relax
-this constraint to just make it exactly that: "the first passive trip
-point".  As for the control temperature, we could relax the constraint
-to make it "the last passive trip point of the thermal zone".  Would
-that work for you?
+The model works like,
+    DEV1 (Attaches itself with PD but no support of  pm_runtime_get and
+     /	pm_runtime_put. Registers itself as pm runtime slave device.
+    /	Its local runtime_suspend/resume is invoked by PD.
+   /	
+  /
+PD -- DEV2 (Implements complete PM runtime and calls pm_runtime_get and
+  \	pm_runtime_put. This in turn invokes PD On/Off)
+   \
+    DEV3 (Similar to DEV1)
 
-> >If we allow this new governor to have its own trip types, we will be
-> >segregating thermal zones. And that should be avoid if possible.
-> >
-> >
-> >>
-> >> >
-> >> >Besides, the existing exposed trip types are sufficient, given that this
-> >> >series is in a working state. Unless we have a valid use case to change
-> >> >/ add trip types and expose them to driver, I would prefer to keep this
-> >> >simple.
-> >> >
-> >> >Side note, drivers/thermal/thermal_core.h has symbols that are not
-> >> >exported. As drivers can be built as separated modules from thermal
-> >> >core, I would not recommend include things in that header. The symbols
-> >> >that are EXPORT_SYMBOL'ed are in thermal.h under include directory.
-> >> >
-> >> >>
-> >> >> Cheers,
-> >> >> Javi
-> >> >>
-> >> >> > I dont think anymore, this should be a enum thermal_trip_type, but it has to be
-> >> >> > generic across governors.
-> >> >> >
-> >> >> >
-> >> >> > Thanks,
-> >> >> > Lina
-> >>
-> >>
-> 
-> 
-> 
+This work is continuation of earlier work,
+
+In V3: Used the existing API pm_genpd_dev_need_restore to add a feature to force
+	devices to perform restore/save during every power domain on/off
+	operation. This API is now removed.
+	Link (https://lkml.org/lkml/2014/12/13/74
+
+In V2: Completely removed notfiers and add support for huge clock list to be
+	suspended and restored. There was some issue in this as some clocks are
+	not exposed and are just initialised by bootloaders. This approach
+	required all of them to be exposed which is cumbersome. Also some
+	clock API's set_parent are disabling the original parent clocks
+	which is not required.
+	Link (https://lkml.org/lkml/2014/11/24/290)
+
+In V1: Implemented PM Domain notfier such as PD_ON_PRE, PD_ON_POST
+	PD_OFF_PRE and PD_OFF_POST. This was not supported and other
+	options suggested. link (http://www.spinics.net/lists/linux-samsung-soc/msg38442.html)
+
+This work may also assist exynos iommu pm runtime posted earlier by Marek
+http://lists.linaro.org/pipermail/linaro-mm-sig/2014-August/004099.html
+
+Amit Daniel Kachhap (3):
+  PM / Runtime: Add an API pm_runtime_set_slave
+  PM / Domains: Save restore slave pm runtime devices
+  clk: samsung: Add PM runtime support for clocks.
+
+ drivers/base/power/domain.c  | 28 +++++++++++++
+ drivers/base/power/runtime.c | 18 +++++++++
+ drivers/clk/samsung/clk.c    | 93 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/samsung/clk.h    | 11 ++++++
+ include/linux/pm.h           |  1 +
+ include/linux/pm_runtime.h   |  2 +
+ 6 files changed, 153 insertions(+)
+
+-- 
+2.2.0
+
