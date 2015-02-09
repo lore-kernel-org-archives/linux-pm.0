@@ -1,57 +1,127 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update] Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Mon, 09 Feb 2015 15:50:34 +0100
-Message-ID: <2271803.APdKPzvW0D@vostro.rjw.lan>
-References: <54866625.8010406@linux.intel.com> <1684745.qMDN6HIHc8@vostro.rjw.lan> <20150209094926.GQ5029@twins.programming.kicks-ass.net>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v2 1/1] drivers/base: Remove unnecessary OOM message
+Date: Mon, 9 Feb 2015 08:56:35 -0600
+Message-ID: <CAGo_u6pSOMmvx+k+epcZDLx58UkWQrTkNiux0rESf563WOm7yA@mail.gmail.com>
+References: <20150209094532.GA3373@sloth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60359 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932375AbbBIO1d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 09:27:33 -0500
-In-Reply-To: <20150209094926.GQ5029@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150209094532.GA3373@sloth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Lambert <lambert.quentin@gmail.com>
+Cc: Ming Lei <ming.lei@canonical.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, kernel-janitors@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, February 09, 2015 10:49:26 AM Peter Zijlstra wrote:
-> On Fri, Feb 06, 2015 at 11:36:12PM +0100, Rafael J. Wysocki wrote:
-> > On Friday, February 06, 2015 07:29:22 PM Peter Zijlstra wrote:
-> 
-> > > > So I'm a wee bit confused; if we use an enter_freeze() state that keeps
-> > > > interrupts disabled; who is going to call the freeze_wake() thing?
-> > > 
-> > > Ah, I think I see, so we wake up, keep the interrupt pending, re-enable
-> > > the tick and time and everybody, then re-enable interrupts, take the
-> > > interrupt and go around the idle loop to find we need a reschedule etc..
-> > 
-> > Exactly.
-> 
-> So x86 mwait can do this;
+On Mon, Feb 9, 2015 at 3:45 AM, Quentin Lambert
+<lambert.quentin@gmail.com> wrote:
+> This patch reduces the kernel size by removing error messages that duplicate
+> the normal OOM message.
+>
+> A simplified version of the semantic patch that finds this problem is as
+> follows: (http://coccinelle.lip6.fr)
+>
+> @@
+> identifier f,print,l;
+> expression e;
+> constant char[] c;
+> @@
+>
+> e = \(kzalloc\|kmalloc\|devm_kzalloc\|devm_kmalloc\)(...);
+> if (e == NULL) {
+>   <+...
+> -  print(...,c,...);
+>   ... when any
+> (
+>   goto l;
+> |
+>   return ...;
+> )
+>   ...+> }
+>
+> Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
+> ---
+>  This post http://lwn.net/Articles/627419/ points out that the messages
+>  will not be printed anyway. That being said it also explains that introducing
+>  a low-order memory-allocation failures would result in a better kernel.
+>  Although it is unlikely to change, I wasn't sure whether or not it should be
+>  mentionned in the commit message.
+>
+>
+>  drivers/base/firmware_class.c  | 1 -
+>  drivers/base/power/clock_ops.c | 4 +---
+>  drivers/base/power/opp.c       | 8 ++------
 
-Which is a big enough target already as far as I'm concerned. :-)
+^^ for OPP:
+Acked-by: Nishanth Menon <nm@ti.com>
 
-> what other archs can 'sleep' and keep interrupts disabled?
-
-The IO port based entry method on old(ish) x86 (like my Toshiba test-bed laptop)
-keeps interrupts disabled too and that should cover ia64 (if they have ever
-cared about anything more than C1 anyway).
-
-There seem to be some entry methods that keep interrupts disabled on Power too.
-
-> It looks like the ARM WFI thing wakes on pending interrupts and doesn't
-> actually require interrupts to be enabled, so that too would work.
-
-Yes, it would.  Moreover, for ARM that can do WFI only and nothing more than
-that it would be much better than full suspend, because the whole CPU offline
-dance we do then is a pure time loss for them.
-
-The newfangled PSCI stuff should work too AFAICS.
+>  3 files changed, 3 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index 58470c3..c3293f0 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -855,7 +855,6 @@ fw_create_instance(struct firmware *firmware, const char *fw_name,
+>
+>         fw_priv = kzalloc(sizeof(*fw_priv), GFP_KERNEL);
+>         if (!fw_priv) {
+> -               dev_err(device, "%s: kmalloc failed\n", __func__);
+>                 fw_priv = ERR_PTR(-ENOMEM);
+>                 goto exit;
+>         }
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index d626576..7fdd017 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -81,10 +81,8 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
+>                 return -EINVAL;
+>
+>         ce = kzalloc(sizeof(*ce), GFP_KERNEL);
+> -       if (!ce) {
+> -               dev_err(dev, "Not enough memory for clock entry.\n");
+> +       if (!ce)
+>                 return -ENOMEM;
+> -       }
+>
+>         if (con_id) {
+>                 ce->con_id = kstrdup(con_id, GFP_KERNEL);
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 15bf299..677fb28 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -474,10 +474,8 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>
+>         /* allocate new OPP node */
+>         new_opp = kzalloc(sizeof(*new_opp), GFP_KERNEL);
+> -       if (!new_opp) {
+> -               dev_warn(dev, "%s: Unable to create new OPP node\n", __func__);
+> +       if (!new_opp)
+>                 return -ENOMEM;
+> -       }
+>
+>         /* Hold our list modification lock here */
+>         mutex_lock(&dev_opp_list_lock);
+> @@ -695,10 +693,8 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
+>
+>         /* keep the node allocated */
+>         new_opp = kmalloc(sizeof(*new_opp), GFP_KERNEL);
+> -       if (!new_opp) {
+> -               dev_warn(dev, "%s: Unable to create OPP\n", __func__);
+> +       if (!new_opp)
+>                 return -ENOMEM;
+> -       }
+>
+>         mutex_lock(&dev_opp_list_lock);
+>
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+---
+Regards,
+Nishanth Menon
