@@ -1,58 +1,101 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: selective wakeups
-Date: Mon, 9 Feb 2015 10:45:46 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1502091042160.20425-100000@netrider.rowland.org>
-References: <54D88267.9060801@collabora.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: fix compilation warnings when
+ !CONFIG_PM_SLEEP
+Date: Mon, 9 Feb 2015 15:53:21 +0000 (UTC)
+Message-ID: <alpine.DEB.2.02.1502091552560.3767@utopia.booyaka.com>
+References: <alpine.DEB.2.02.1502062259190.3767@utopia.booyaka.com> <20150209150009.GA21362@kahuna>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="843723315-436478244-1423497201=:3767"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:42823 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932684AbbBIPpr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 10:45:47 -0500
-In-Reply-To: <54D88267.9060801@collabora.com>
+Received: from utopia.booyaka.com ([74.50.51.50]:46434 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933260AbbBIPxX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 10:53:23 -0500
+In-Reply-To: <20150209150009.GA21362@kahuna>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Derek Basehore <dbasehore@google.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+To: Nishanth Menon <nm@ti.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Grygorii.Strashko@linaro.org
 
-On Mon, 9 Feb 2015, Tomeu Vizoso wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On 02/04/2015 10:05 AM, Oliver Neukum wrote:
-> > On Tue, 2015-02-03 at 10:54 +0100, Tomeu Vizoso wrote:
-> >> I'm looking at how to support wakeup sources that resume a subset
-> >> of the suspended devices. The goal is for the machine to be able to
-> >> wakeup the CPU but not the display or sound card when the wakeup
-> >> source isn't user-initiated, such as RTC or a network card (we can
-> >> call it automatic resume).
-> > 
-> > Why the limitation? To stay in example, why wake the sound card if
-> > you have no sound to play even if the user initiated the wake up?
-> 
-> The point is to not wake it up if it isn't an user-initiated wake up. If
-> it is, the existing behaviour is fine.
+--843723315-436478244-1423497201=:3767
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-That was _your_ point.  Oliver's point was different: Why not change
-the behavior also for user-initiated wakeups?
+On Mon, 9 Feb 2015, Nishanth Menon wrote:
 
-> > Though in practice the problem with such attempts in the past was 
-> > that it is very hard, in fact almost impossible, to find out what 
-> > resumed a system.
-> 
-> Yeah, I know it's not generally doable, but as Derek said, some HW
-> allows for it.
-> 
-> > Secondly, you cannot assume that there's always a single cause for
-> > resuming.
-> 
-> Are you thinking of the case in which the user opens the lid while we
-> are waking up because of a RTC alarm? Userspace would realize the lid is
-> open and would resume the screen.
+> On 00:17-20150207, Paul Walmsley wrote:
+> >=20
+> > When CONFIG_PM_SLEEP=3Dn, the following compilation warnings appear:
+> >=20
+> > drivers/thermal/ti-soc-thermal/ti-bandgap.c:1478:12: warning: =E2=80=98=
+ti_bandgap_suspend=E2=80=99 defined but not used [-Wunused-function]
+> >  static int ti_bandgap_suspend(struct device *dev)
+> >             ^
+> > drivers/thermal/ti-soc-thermal/ti-bandgap.c:1492:12: warning: =E2=80=98=
+ti_bandgap_resume=E2=80=99 defined but not used [-Wunused-function]
+> >  static int ti_bandgap_resume(struct device *dev)
+> >=20
+> > A few years ago, suspend/resume-related code was protected by CONFIG_PM=
+=2E =20
+> > But that was changed and now it's protected by CONFIG_PM_SLEEP.  Fix th=
+e=20
+> > warnings by converting the preprocessor test in the TI bandgap thermal=
+=20
+> > sensor driver from testing CONFIG_PM to testing CONFIG_PM_SLEEP.
+> >=20
+> > Signed-off-by: Paul Walmsley <paul@pwsan.com>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-omap@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > ---
+> >=20
+> > Non-critical.  Targeted for either v3.20-rc1 or v3.21-rc1.
+> >=20
+> > Basic test reports for a series that includes this patch (and a few oth=
+er=20
+> > unrelated warning cleanups) is available here:
+> >=20
+> > http://www.pwsan.com/omap/testlogs/fix-omap-warnings-v3.21/201502061546=
+19/
+> >=20
+> > Compare to:
+> >=20
+> > http://www.pwsan.com/omap/testlogs/test_v3.19-rc7/20150204213018/
+> >=20
+> >  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/ther=
+mal/ti-soc-thermal/ti-bandgap.c
+> > index 634b6ce0e63a..62a5d449c388 100644
+> > --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > @@ -1402,7 +1402,7 @@ int ti_bandgap_remove(struct platform_device *pde=
+v)
+> >  =09return 0;
+> >  }
+> > =20
+> > -#ifdef CONFIG_PM
+> > +#ifdef CONFIG_PM_SLEEP
+> >  static int ti_bandgap_save_ctxt(struct ti_bandgap *bgp)
+> >  {
+> >  =09int i;
+> > --=20
+> > 2.1.4
+>=20
+>=20
+> I am a little confused:
+> https://patchwork.kernel.org/patch/5792411/ was already posted. would
+> you suggest improvements?
 
-In that case, why should the kernel bother resuming the screen when the
-wakeup cause is the user opening the lid (since userspace will resume
-the screen anyway)?  In fact, why should the kernel bother resuming the
-screen ever?
+Oh, nothing to be confused by, I just missed the earlier patch.  I=20
+withdraw mine.
 
-Alan Stern
 
+- Paul
+--843723315-436478244-1423497201=:3767--
