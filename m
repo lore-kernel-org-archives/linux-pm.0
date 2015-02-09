@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH RFC 01/12] Documentation: Introduce Linux Kernel Thermal Framework DocBook
-Date: Mon,  9 Feb 2015 17:34:02 -0400
-Message-ID: <1423517653-11359-2-git-send-email-edubezval@gmail.com>
+Subject: [PATCH RFC 02/12] Documentation: thermal docbook: add glossary
+Date: Mon,  9 Feb 2015 17:34:03 -0400
+Message-ID: <1423517653-11359-3-git-send-email-edubezval@gmail.com>
 References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
@@ -10,124 +10,151 @@ To: Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.ka
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds a book about the Linux Kernel Thermal Framework.
-In this change, only a brief introduction is added together with
-Makefile changes.
+This change introduces a section in the Introduction Chapter to
+list concepts used by the Thermal Framework.
 
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- Documentation/DocBook/Makefile     |  3 +-
- Documentation/DocBook/thermal.tmpl | 88 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 90 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/DocBook/thermal.tmpl
+ Documentation/DocBook/thermal.tmpl | 129 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 128 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index 9c7d92d..8163508 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -15,7 +15,8 @@ DOCBOOKS := z8530book.xml device-drivers.xml \
- 	    80211.xml debugobjects.xml sh.xml regulator.xml \
- 	    alsa-driver-api.xml writing-an-alsa-driver.xml \
- 	    tracepoint.xml drm.xml media_api.xml w1.xml \
--	    writing_musb_glue_layer.xml crypto-API.xml
-+	    writing_musb_glue_layer.xml crypto-API.xml thermal.xml
-+	    writing_musb_glue_layer.xml
- 
- include Documentation/DocBook/media/Makefile
- 
 diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
-new file mode 100644
-index 0000000..f8fb8a2
---- /dev/null
+index f8fb8a2..66efed3 100644
+--- a/Documentation/DocBook/thermal.tmpl
 +++ b/Documentation/DocBook/thermal.tmpl
-@@ -0,0 +1,88 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
-+
-+<book id="thermal-api">
-+ <bookinfo>
-+  <title>Linux Kernel Thermal Framework API</title>
-+
-+  <authorgroup>
-+   <author>
-+    <firstname>Eduardo</firstname>
-+    <surname>Valentin</surname>
-+    <affiliation>
-+     <address>
-+      <email>evalenti@kernel.org</email>
-+     </address>
-+    </affiliation>
-+   </author>
-+  </authorgroup>
-+
-+  <copyright>
-+   <year>2008-2014</year>
-+   <holder>Eduardo Valentin</holder>
-+   <holder>Sujith Thomas</holder>
-+   <holder>Zhang Rui</holder>
-+  </copyright>
-+  <legalnotice>
-+   <para>
-+     This documentation is free software; you can redistribute
-+     it and/or modify it under the terms of the GNU General Public
-+     License version 2 as published by the Free Software Foundation.
-+   </para>
-+
-+   <para>
-+     This program is distributed in the hope that it will be
-+     useful, but WITHOUT ANY WARRANTY; without even the implied
-+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+     See the GNU General Public License for more details.
-+   </para>
-+
-+   <para>
-+     For more details see the file COPYING in the source
-+     distribution of Linux.
-+   </para>
-+  </legalnotice>
-+ </bookinfo>
-+
-+<toc></toc>
-+
-+	<chapter id="introduction">
-+		<title>Introduction</title>
-+		<para>Thermal management is any method or technique implied to
-+		mitigate emergencies caused by operating devices within
-+		unsupported temperatures. The challenge consists of designing a
-+		product keeping the junction temperature of the IC components.
-+		The operating temperature of IC components used on products must
-+		operate within their design limits. Besides, temperature towards
-+		device enclosure must be in a comfort level for the user.
-+		Therefore, thermal management, by the time of this writing,
-+		starts in very early device design phase. Managing thermal may
-+		involve different disciplines, at different stages, such as
-+		temperature monitoring, floorplanning, microarchitectural
-+		techniques, compiler techniques, OS techniques, liquid cooling,
-+		and thermal reliability or security. This document covers what
-+		the Linux Kernel Thermal Framework provides as abstraction to
-+		users with respect to thermal management.  
-+		</para>
-+		<para>One of the first proposals to provide a solution to cover
-+		the thermal problem appears in the Advanced Configuration and
-+		Power Interface (ACPI) specification. ACPI provides an open
-+		standard for device configuration and power management by the
-+		operating system. However, several computing devices which may
-+		have thermal issues in the market disregard the ACPI standard.
-+		Therefore, the Linux Kernel Thermal Framework has been designed
-+		to serve as abstraction for ACPI and non-ACPI systems. The core
-+		concepts applies in both types of systems. 
-+		</para>
-+		<para>The Linux Kernel Thermal Framework has a design which
-+		represents the different thermal constraints found in an
-+		end-products. The thermal constraints exist to serve different
-+		purposes. There two major types of thermal constraints. The
-+		first is related to components junction temperature. The second
-+		is related to the level of comfort while end users are handling
-+		devices.
-+		</para>
-+
-+  </chapter>
-+</book>
+@@ -84,5 +84,132 @@
+ 		devices.
+ 		</para>
+ 
+-  </chapter>
++		<sect1 id="glossary">
++			<title>Glossary</title>
++			<para>The Linux Kernel Thermal Framework  uses a
++			specific terminology to represent the entities involved
++			in thermal constrained environments. This section
++			summaries the terminology as dictionary. These terms are
++			in use within the present document and in the source
++			code of the Linux Kernel Thermal Framework.
++			</para>
++			<glossary>
++				<glossentry>
++					<glossterm>Thermal Zone</glossterm>
++					<glossdef>
++						<para>Thermal zones represent
++						what is the current status of a
++						thermal constrained zone in the
++						hardware. The zone usually is a
++						device or component. The status
++						of a thermal zone is mainly with
++						respect to temperature.
++						Currently, the Linux Kernel
++						Thermal Framework represents
++						temperature in miliCelsius. The
++						current abstraction covers for
++						non negative temperatures and
++						constraints.
++						</para>
++					</glossdef>
++				</glossentry>
++				<glossentry>
++					<glossterm>Thermal Sensors</glossterm>
++					<glossdef>
++						<para>Thermal sensors provide
++						temperature sensing capabilities
++						on thermal zones. Typical
++						devices are I2C ADC converters
++						and bandgaps. These are nodes
++						providing temperature data to
++						thermal zones. Thermal sensor
++						devices may control one or more
++						internal sensors.
++						</para>
++					</glossdef>
++				</glossentry>
++				<glossentry>
++					<glossterm>Trips Points</glossterm>
++					<glossdef>
++						<para>The trip node describes a
++						point in the temperature domain
++						in which the system takes an
++						action. This item describes just
++						the point, not the action. Trip
++						points are represented as
++						temperature in miliCelsius. The
++						current abstraction covers for
++						non negative temperatures.
++						</para>
++					</glossdef>
++				</glossentry>
++				<glossentry>
++					<glossterm>Thermal Governor</glossterm>
++					<glossdef>
++						<para>Thermal Governors
++						represent a policy to manage the
++						thermal zone device temperature.
++						The governor targets to keep
++						temperature in an acceptable
++						range which correlates to the
++						power budget, while maximizing
++						the performance. Governors can
++						be implemented in Kernel Space
++						or in User Space.
++						</para>
++					</glossdef>
++				</glossentry>
++				<glossentry>
++					<glossterm>Thermal Cooling Device</glossterm>
++					<glossdef>
++						<para>Cooling devices provide
++						control on power dissipation.
++						There are essentially two ways
++						to provide control on power
++						dissipation. First is by means
++						of regulating device
++						performance, which is known as
++						passive cooling. A typical
++						passive cooling is a CPU that
++						has dynamic voltage and
++						frequency scaling (DVFS), and
++						uses lower frequencies as
++						cooling states. Second is by
++						means of activating devices in
++						order to remove the dissipated
++						heat, which is known as active
++						cooling, e.g. regulating fan
++						speeds. In both cases, cooling
++						devices shall have a way to
++						determine the state of cooling
++						in which the device is.
++				</para>
++					</glossdef>
++				</glossentry>
++				<glossentry>
++					<glossterm>Cooling State</glossterm>
++					<glossdef>
++						<para>Any cooling device has a
++						range of cooling states (i.e.
++						different levels of heat
++						dissipation). For example a
++						fan's cooling states correspond
++						to the different fan speeds
++						possible. Cooling states are
++						referred to by single unsigned
++						integers, where larger numbers
++						mean greater heat dissipation.
++						The precise set of cooling
++						states associated with a device
++						(as referred to be the
++						cooling-min-state and
++						cooling-max-state properties)
++						should be defined in a
++						particular device's binding.
++						</para>
++					</glossdef>
++				</glossentry>
++			</glossary>
++		</sect1>
++	</chapter>
+ </book>
 -- 
 2.1.3
