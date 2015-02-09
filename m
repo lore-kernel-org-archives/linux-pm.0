@@ -1,91 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Update 2x] Re: [PATCH v3]PM/Sleep: Timer quiesce in freeze state
-Date: Mon, 9 Feb 2015 16:44:08 +0100
-Message-ID: <20150209154408.GV5029@twins.programming.kicks-ass.net>
-References: <54866625.8010406@linux.intel.com>
- <16564156.c5NBzjJuA3@vostro.rjw.lan>
- <2439333.L8nfGI3YZp@vostro.rjw.lan>
- <8924978.aOrU4231JI@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: selective wakeups
+Date: Mon, 9 Feb 2015 10:45:46 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1502091042160.20425-100000@netrider.rowland.org>
+References: <54D88267.9060801@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:39477 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932684AbbBIPoR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 10:44:17 -0500
-Content-Disposition: inline
-In-Reply-To: <8924978.aOrU4231JI@vostro.rjw.lan>
+Received: from netrider.rowland.org ([192.131.102.5]:42823 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932684AbbBIPpr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Feb 2015 10:45:47 -0500
+In-Reply-To: <54D88267.9060801@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Derek Basehore <dbasehore@google.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
 
-On Mon, Feb 09, 2015 at 03:54:22AM +0100, Rafael J. Wysocki wrote:
-> Complete patch with that modification is appended.  In the next few days I'm
-> going to split it into smaller parts and send along with cpuidle driver
-> patches implementing ->enter_freeze.
+On Mon, 9 Feb 2015, Tomeu Vizoso wrote:
+
+> On 02/04/2015 10:05 AM, Oliver Neukum wrote:
+> > On Tue, 2015-02-03 at 10:54 +0100, Tomeu Vizoso wrote:
+> >> I'm looking at how to support wakeup sources that resume a subset
+> >> of the suspended devices. The goal is for the machine to be able to
+> >> wakeup the CPU but not the display or sound card when the wakeup
+> >> source isn't user-initiated, such as RTC or a network card (we can
+> >> call it automatic resume).
+> > 
+> > Why the limitation? To stay in example, why wake the sound card if
+> > you have no sound to play even if the user initiated the wake up?
 > 
-> Please let me know what you think.
+> The point is to not wake it up if it isn't an user-initiated wake up. If
+> it is, the existing behaviour is fine.
 
-> @@ -104,6 +105,21 @@ static void cpuidle_idle_call(void)
->  	rcu_idle_enter();
->  
->  	/*
-> +	 * Suspend-to-idle ("freeze") is a system state in which all user space
-> +	 * has been frozen, all I/O devices have been suspended and the only
-> +	 * activity happens here and in iterrupts (if any).  In that case bypass
-> +	 * the cpuidle governor and go stratight for the deepest idle state
-> +	 * available.  Possibly also suspend the local tick and the entire
-> +	 * timekeeping to prevent timer interrupts from kicking us out of idle
-> +	 * until a proper wakeup interrupt happens.
-> +	 */
-> +	if (idle_should_freeze()) {
-> +		cpuidle_enter_freeze();
-> +		local_irq_enable();
-> +		goto exit_idle;
-> +	}
-> +
-> +	/*
->  	 * Ask the cpuidle framework to choose a convenient idle state.
->  	 * Fall back to the default arch idle method on errors.
->  	 */
+That was _your_ point.  Oliver's point was different: Why not change
+the behavior also for user-initiated wakeups?
 
-I was hoping to not have to put that into the regular idle path; say
-maybe share a single special branch with the play-dead call. People seem
-to start complaining about the total amount of time it takes to just
-'run' the idle path.
+> > Though in practice the problem with such attempts in the past was 
+> > that it is very hard, in fact almost impossible, to find out what 
+> > resumed a system.
+> 
+> Yeah, I know it's not generally doable, but as Derek said, some HW
+> allows for it.
+> 
+> > Secondly, you cannot assume that there's always a single cause for
+> > resuming.
+> 
+> Are you thinking of the case in which the user opens the lid while we
+> are waking up because of a RTC alarm? Userspace would realize the lid is
+> open and would resume the screen.
 
-Now I don't think we can do that, because we need the
-arch_cpu_idle_enter() nonsense for the one but not the other; also all
-this really only makes sense in the cpuidle context, so nothing to be
-done about that.
+In that case, why should the kernel bother resuming the screen when the
+wakeup cause is the user opening the lid (since userspace will resume
+the screen anyway)?  In fact, why should the kernel bother resuming the
+screen ever?
 
-In any case, you could make that:
+Alan Stern
 
-static inline bool idle_should_freeze(void)
-{
-	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
-}
-
-which should help a bit I suppose.
-
-> +static void enter_freeze_proper(struct cpuidle_driver *drv,
-> +                               struct cpuidle_device *dev, int index)
-> +{
-> +       tick_freeze();
-> +       drv->states[index].enter_freeze(dev, drv, index);
-
-This is slightly different from cpuidle_enter() in that it does not
-consider the coupled states nonsense, is that on purpose? And if so,
-does that want a comment?
-
-> +       /*
-> +        * timekeeping_resume() that will be called by tick_unfreeze() for the
-> +        * last CPU executing it calls functions containing RCU read-side
-> +        * critical sections, so tell RCU about that.
-> +        */
-> +       RCU_NONIDLE(tick_unfreeze());
-> +}
-
-
-But over all it looks fine to me.
