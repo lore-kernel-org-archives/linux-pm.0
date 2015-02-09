@@ -1,48 +1,92 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Mon, 9 Feb 2015 08:45:42 +0100
-Message-ID: <83b8298aa6384cbda3650b9ce1b5c842@BN1AFFO11OLC003.protection.gbl>
-References: <54C8E125.3070905@free.fr>
- <20150203120925.GM8656@n2100.arm.linux.org.uk> <54D509EC.7020708@free.fr>
- <20150206191419.GA8656@n2100.arm.linux.org.uk>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RFT PATCH 2/4] compal-laptop: Check return value of
+ power_supply_register
+Date: Mon, 09 Feb 2015 08:56:23 +0100
+Message-ID: <1423468583.4909.4.camel@AMDC1943>
+References: <1422358221-13199-1-git-send-email-k.kozlowski@samsung.com>
+ <1422358221-13199-3-git-send-email-k.kozlowski@samsung.com>
+ <20150207024245.GB36295@fury.dvhart.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20150206191419.GA8656@n2100.arm.linux.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Mason <mpeg.blue@free.fr>
-Cc: Mike Turquette <mturquette@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, cpufreq <cpufreq@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Soren Brinkmann <sorenb@xilinx.com>, Thomas Gleixner <tglx@linutronix.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <20150207024245.GB36295@fury.dvhart.com>
+Sender: stable-owner@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: Dmitry Artamonow <mad_soft@inbox.ru>, Marek Belisko <marek@goldelico.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-+ Soren
+On pi=C4=85, 2015-02-06 at 18:42 -0800, Darren Hart wrote:
+> On Tue, Jan 27, 2015 at 12:30:19PM +0100, Krzysztof Kozlowski wrote:
+> > The return value of power_supply_register() call was not checked an=
+d
+> > even on error probe() function returned 0. If registering failed th=
+en
+> > during unbind the driver tried to unregister power supply which was=
+ not
+> > actually registered.
+> >=20
+> > This could lead to memory corruption because power_supply_unregiste=
+r()
+> > unconditionally cleans up given power supply.
+> >=20
+> > Fix this by checking return status of power_supply_register() call.=
+ In
+> > case of failure, unregister the hwmon device and fail the probe. Ad=
+d a
+> > fixme note about missing hwmon_device_unregister() in driver remova=
+l.
+> >=20
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Fixes: 9be0fcb5ed46 ("compal-laptop: add JHL90, battery & hwmon int=
+erface")
+> > Cc: <stable@vger.kernel.org>
+> > ---
+> >  drivers/platform/x86/compal-laptop.c | 7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platfor=
+m/x86/compal-laptop.c
+> > index 15c0fab2bfa1..cf55a9246f12 100644
+> > --- a/drivers/platform/x86/compal-laptop.c
+> > +++ b/drivers/platform/x86/compal-laptop.c
+> > @@ -1036,12 +1036,16 @@ static int compal_probe(struct platform_dev=
+ice *pdev)
+> > =20
+> >  	/* Power supply */
+> >  	initialize_power_supply_data(data);
+> > -	power_supply_register(&compal_device->dev, &data->psy);
+> > +	err =3D power_supply_register(&compal_device->dev, &data->psy);
+> > +	if (err < 0)
+> > +		goto psy_err;
+> > =20
+> >  	platform_set_drvdata(pdev, data);
+> > =20
+> >  	return 0;
+> > =20
+> > +psy_err:
+> > +	hwmon_device_unregister(hwmon_dev);
+> >  remove:
+> >  	sysfs_remove_group(&pdev->dev.kobj, &compal_platform_attr_group);
+> >  	return err;
+> > @@ -1072,6 +1076,7 @@ static int compal_remove(struct platform_devi=
+ce *pdev)
+> > =20
+> >  	data =3D platform_get_drvdata(pdev);
+> >  	power_supply_unregister(&data->psy);
+> > +	/* FIXME: missing hwmon_device_unregister() */
+>=20
+> Is this FIXME a leftover? Is there a reason we can't fix this now ins=
+tead of
+> adding a FIXME?
 
->> $ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
->> arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
->> arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
->> arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
->> arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
->> arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
->> arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
->>
->> There are indeed a few users; also I wonder why mach-zynq enables
->> ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
->> the CPU CLOCK driving PERIPHCLK?)
-> 
-> I'm afraid I don't know.
+This is not a leftover. I think this should be fixed but:
+1. I cannot test this driver,
+2. I am not such familiar with hwmon API,
+so my fix could be wrong and introduce more errors than fixes.
 
-The reason is that cpu clock input and global timer clock input are not independent
-that's why changing clock for cpu also affect global timer freq which is wrong.
-It is caused by incorrect hw design.
-Soren can give you more detail information if you need.
+If you also think hwmon_device_unregister() is needed then I could send
+new version of patch. Also I would be happy if someone else fixed this.
 
-Thanks,
-Michal
+Best regards,
+Krzysztof
