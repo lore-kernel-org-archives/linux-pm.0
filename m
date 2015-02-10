@@ -1,109 +1,77 @@
-From: Tyler Hall <tylerwhall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH] thermal: armada: read stable temp on Armada XP
-Date: Tue, 10 Feb 2015 17:50:15 -0500
-Message-ID: <1423608615-6575-1-git-send-email-tylerwhall@gmail.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tyler Hall <tylerwhall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH RFC 01/12] Documentation: Introduce Linux Kernel Thermal
+ Framework DocBook
+Date: Tue, 10 Feb 2015 14:50:36 -0800
+Message-ID: <54DA8B3C.9040607@infradead.org>
+References: <1423517653-11359-1-git-send-email-edubezval@gmail.com> <1423517653-11359-2-git-send-email-edubezval@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:33867 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754730AbbBJWu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Feb 2015 17:50:57 -0500
+In-Reply-To: <1423517653-11359-2-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.kachhap@linaro.org, viresh.kumar@linaro.org, amit.daniel@samsung.com, hongbo.zhang@linaro.com, andrew@lunn.ch, durgadoss.r@intel.com, peter@piie.net, shawn.guo@linaro.org, aaron.lu@intel.com, caesar.wang@rock-chips.com, b.zolnierkie@samsung.com, l.majewski@samsung.com, vincenzo.frascino@st.com, mperttunen@nvidia.com, mikko.perttunen@kapsi.fi, srinivas.pandruvada@linux.intel.com, jacob.jun.pan@linux.intel.com, bcousson@baylibre.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-The current register being used to read the temperature returns a noisy value
-that is prone to variance and occasional outliers. The value in the thermal
-manager control and status register appears to have the same scale but much
-less variability.
+On 02/09/15 13:34, Eduardo Valentin wrote:
 
-Add a "marvell,armadaxp-filtered-thermal" config which is set up to read from
-the Thermal Manager Control and Status Register at 0x184c4 rather than the
-Thermal Sensor Status Register at 0x182b0. The only difference is the
-temperature value shift. The original "marvell,armadaxp-thermal" is retained
-for device tree compatibility.
+> +	<chapter id="introduction">
+> +		<title>Introduction</title>
+> +		<para>Thermal management is any method or technique implied to
+> +		mitigate emergencies caused by operating devices within
+> +		unsupported temperatures. The challenge consists of designing a
 
-This also fixes Armada XP clearing the disable bit in the wrong register. Bit 0
-of the sensor register was being cleared but that bit is read-only. The disable
-bit doesn't seem to have an effect on the temperature sensor value, however, so
-this doesn't make a material difference.
+I would flip the ending of that sentence:
+		                     caused by operating devices outside of
+		supported temperatures.
 
-This problem was detected when running with the watchdog(8) daemon polling the
-thermal value. In one instance I observed a single read of over 200 degrees C
-which caused a spurious watchdog-initiated reboot. I have since observed
-individual outliers of ~20 degrees C. With this change and the corresponding
-device tree update, the temperature is much more stable.
+> +		product keeping the junction temperature of the IC components.
+> +		The operating temperature of IC components used on products must
+> +		operate within their design limits. Besides, temperature towards
+> +		device enclosure must be in a comfort level for the user.
+> +		Therefore, thermal management, by the time of this writing,
+> +		starts in very early device design phase. Managing thermal may
+> +		involve different disciplines, at different stages, such as
+> +		temperature monitoring, floorplanning, microarchitectural
+> +		techniques, compiler techniques, OS techniques, liquid cooling,
+> +		and thermal reliability or security. This document covers what
+> +		the Linux Kernel Thermal Framework provides as abstraction to
+> +		users with respect to thermal management.  
+> +		</para>
+> +		<para>One of the first proposals to provide a solution to cover
+> +		the thermal problem appears in the Advanced Configuration and
+> +		Power Interface (ACPI) specification. ACPI provides an open
+> +		standard for device configuration and power management by the
+> +		operating system. However, several computing devices which may
+> +		have thermal issues in the market disregard the ACPI standard.
+> +		Therefore, the Linux Kernel Thermal Framework has been designed
+> +		to serve as abstraction for ACPI and non-ACPI systems. The core
+> +		concepts applies in both types of systems. 
+> +		</para>
+> +		<para>The Linux Kernel Thermal Framework has a design which
+> +		represents the different thermal constraints found in an
 
-Signed-off-by: Tyler Hall <tylerwhall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
----
+drop:		                                                      an^^
 
-If there's a better way to handle this than a separate binding, I'm open to
-suggestions.
+> +		end-products. The thermal constraints exist to serve different
+> +		purposes. There two major types of thermal constraints. The
 
-My conclusions about these registers are based on experimental data. The
-documentation is very sparse, but the Thermal Manager Control and Status
-Register looks like the preferred register given the way it is laid out in the
-public spec.
+		          There are two
 
-I have the small corresponding patch to the dts which I can submit separately.
+> +		first is related to components junction temperature. The second
+> +		is related to the level of comfort while end users are handling
+> +		devices.
+> +		</para>
+> +
+> +  </chapter>
+> +</book>
+> 
 
-Thanks
-Tyler
 
- .../devicetree/bindings/thermal/armada-thermal.txt          |  8 ++++++++
- drivers/thermal/armada_thermal.c                            | 13 +++++++++++++
- 2 files changed, 21 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index 4698e0e..0d6a3f1 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -7,6 +7,14 @@ Required properties:
- 		marvell,armada375-thermal
- 		marvell,armada380-thermal
- 		marvell,armadaxp-thermal
-+		marvell,armadaxp-filtered-thermal
-+
-+		Note: "marvell,armadaxp-filtered-thermal" is adjusted to read
-+		the hardware-filtered value in the thermal manager
-+		control/status register rather than the raw sensor value in the
-+		thermal sensor status register. "marvell,armadaxp-thermal"
-+		remains for backward compatibility. The sensor reg address must
-+		also point to the appropriate register.
- 
- - reg:		Device's register space.
- 		Two entries are expected, see the examples below.
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index c2556cf..d3c2ad3 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -196,6 +196,15 @@ static const struct armada_thermal_data armadaxp_data = {
- 	.coef_div = 13825,
- };
- 
-+static const struct armada_thermal_data armadaxp_filt_data = {
-+	.init_sensor = armadaxp_init_sensor,
-+	.temp_shift = 1,
-+	.temp_mask = 0x1ff,
-+	.coef_b = 3153000000UL,
-+	.coef_m = 10000000UL,
-+	.coef_div = 13825,
-+};
-+
- static const struct armada_thermal_data armada370_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada370_init_sensor,
-@@ -236,6 +245,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
- 		.data       = &armadaxp_data,
- 	},
- 	{
-+		.compatible = "marvell,armadaxp-filtered-thermal",
-+		.data       = &armadaxp_filt_data,
-+	},
-+	{
- 		.compatible = "marvell,armada370-thermal",
- 		.data       = &armada370_data,
- 	},
 -- 
-2.3.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+~Randy
