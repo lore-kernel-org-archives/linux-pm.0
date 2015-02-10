@@ -1,32 +1,34 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 2/2] power: gpio-charger: support disable the wakeup event
-Date: Tue, 10 Feb 2015 12:42:00 +0400
-Message-ID: <CALT56yO5JNB7bucSn53wcnoUWFzkLCCpWe13JhsG1ty7L5v3zw@mail.gmail.com>
-References: <1423555945-24289-1-git-send-email-zyw@rock-chips.com>
-	<1423555945-24289-3-git-send-email-zyw@rock-chips.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [patch] PM / devfreq: event: testing the wrong variable
+Date: Tue, 10 Feb 2015 13:35:47 +0300
+Message-ID: <20150210103547.GA18481@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1423555945-24289-3-git-send-email-zyw@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chris Zhong <zyw@rock-chips.com>
-Cc: heiko@sntech.de, dianders@chromium.org, dtor@chromium.org, djkurtz@chromium.org, sonnyrao@chromium.org, linux-rockchip@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+There is a typo here so we test "edev" but we intended to test
+"edev[i]".
 
-2015-02-10 11:12 GMT+03:00 Chris Zhong <zyw@rock-chips.com>:
-> Support disable the wakeup event of gpio-charger by setting device tree.
+Fixes: f262f28c1470 ('PM / devfreq: event: Add devfreq_event class')
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-I have the feelink, that this should be a userspace setting, rather than
-a kernel/device-tree policy. In the end, the device tree is a hardware
-description
-and a hardware is capable of waking up the device.
-
->
-> Signed-off-by: Chris Zhong <zyw@rock-chips.com>
-
-
--- 
-With best wishes
-Dmitry
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index 135be0a..ad83473 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -327,8 +327,8 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < info->num_events; i++) {
+ 		edev[i] = devm_devfreq_event_add_edev(&pdev->dev, &desc[i]);
+-		if (IS_ERR(edev)) {
+-			ret = PTR_ERR(edev);
++		if (IS_ERR(edev[i])) {
++			ret = PTR_ERR(edev[i]);
+ 			dev_err(&pdev->dev,
+ 				"failed to add devfreq-event device\n");
+ 			goto err;
