@@ -1,54 +1,64 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Tue, 10 Feb 2015 12:10:58 +0100
-Message-ID: <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
-	<CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: [PATCH] thermal: Default OF created trip points to writable
+Date: Tue, 10 Feb 2015 18:21:46 +0000
+Message-ID: <1423592506-20620-1-git-send-email-punit.agrawal@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:44858 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752198AbbBJSVX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Feb 2015 13:21:23 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>
 
-2015-01-08 22:17 GMT+01:00 Kevin Hilman <khilman@kernel.org>:
-> On Fri, Nov 21, 2014 at 5:31 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
->> Changes since v11:
->> - Rebased on top of git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
->>
->> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
->> drivers and enables the use of cpufreq-dt driver for these platforms. This
->> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
->> driver.
->>
->> This series is based on the following branch.
->> git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
->>
->> This series depends on the following patch which can be picked from
->> git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git samsung/dt
->> e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
->>
->> This patch series has been tested on Exynos4210/5250/5420 based boards.
->> Tomasz Figa had plans to take this in the Samsung clock tree for v3.19
->> (http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
->> Sylwester, could you consider to merge this in your tree?
->
-> CPUfreq for exynos is still not upstream.  What's the status of this
-> series?  It's been ver a month since there's been any activity here
-> (or any responses to the issues I reported.)
->
-> On a related note, this series only does frequency scaling. Is there
-> any work going on to also enable voltage scaling for the CPU rails as
-> well?
+When registering a thermal zone from device tree, default the trip
+points to writable. By default, only the root user can change these.
 
-Hi Thomas,
+This allows the trip points to be tweaked after the system has
+booted.
 
-Do you plan to continue with this work? It would be very helpful.
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+---
+Hi Eduardo,
 
-I also wonder if Exynos 4412 could be re-added (without the boost if
-these bindings are not ready)?
+We've been using this patch internally and haven't run into any
+ issues. Without these changes there is no way to change trip points
+ from a running system.
 
-Best regards,
-Krzysztof
+Comments welcome.
+
+Cheers,
+Punit
+
+ drivers/thermal/of-thermal.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 668fb1b..b7ad5c0 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -865,6 +865,7 @@ int __init of_parse_thermal_zones(void)
+ 	for_each_child_of_node(np, child) {
+ 		struct thermal_zone_device *zone;
+ 		struct thermal_zone_params *tzp;
++		int i, mask = 0;
+ 
+ 		/* Check whether child is enabled or not */
+ 		if (!of_device_is_available(child))
+@@ -891,8 +892,11 @@ int __init of_parse_thermal_zones(void)
+ 		/* No hwmon because there might be hwmon drivers registering */
+ 		tzp->no_hwmon = true;
+ 
++		for (i = 0; i < tz->ntrips; i++)
++			mask |= 1 << i;
++
+ 		zone = thermal_zone_device_register(child->name, tz->ntrips,
+-						    0, tz,
++						    mask, tz,
+ 						    ops, tzp,
+ 						    tz->passive_delay,
+ 						    tz->polling_delay);
+-- 
+2.1.4
+
