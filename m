@@ -1,58 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] ACPI and power management updates for 3.20-rc1
-Date: Wed, 11 Feb 2015 02:56:22 +0100
-Message-ID: <14997643.5bLlL9tuxf@vostro.rjw.lan>
-References: <CAJZ5v0iyosRQ2g48TxJ39jLuOTUrER2=7j2F9Pg80rrkFAo1Kw@mail.gmail.com> <2941430.C5WGLLJjlq@vostro.rjw.lan>
+From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Subject: Re: [PATCH] PM-Trace: add pm-trace support for suspending phase
+Date: Wed, 11 Feb 2015 10:50:11 +0800
+Message-ID: <54DAC363.60701@linux.intel.com>
+References: <54D8318B.2060703@linux.intel.com> <20150209215559.GA12087@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51452 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750868AbbBKBdT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Feb 2015 20:33:19 -0500
-In-Reply-To: <2941430.C5WGLLJjlq@vostro.rjw.lan>
+Received: from mga14.intel.com ([192.55.52.115]:61233 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751366AbbBKCuP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Feb 2015 21:50:15 -0500
+In-Reply-To: <20150209215559.GA12087@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "rjw@rjwysocki.net >> Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, February 11, 2015 02:51:38 AM Rafael J. Wysocki wrote:
-> On Tuesday, February 10, 2015 10:19:34 PM Rafael J. Wysocki wrote:
-> > Hi Linus,
-> > 
-> > Please pull from
-> > 
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-> >  pm+acpi-3.20-rc1
-> > 
-> > to receive ACPI and power management material for v3.20-rc1 with
-> > top-most commit b5e82233cab43c25fc0a1c28d9136a086db4aa52
-> > 
-> >  Merge branch 'pm-tools'
-> > 
-> > on top of commit bfa76d49576599a4b9f9b7a71f23d73d6dcff735
-> > 
-> >  Linux 3.19
-> 
-> I messed up one thing here, sorry about that.
-> 
-> Commit 5c493df25a0d ("Merge branch 'pci/host-generic' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci into
-> acpi-resources") was supposed to be a merge, but I did something
-> wrong (I know what even) and it ended up as a non-merge one.
-> And then I didn't notice that it went wrong which was another
-> failure.
-> 
-> So this commit will conflict with d2be00c0fb5a ("of/pci: Free resources on
-> failure in of_pci_get_host_bridge_resources()") from the PCI tree, but
-> 5c493df25a0d is how the final code should look like (the kfree(bus_range);
-> line needs to go away in particular).
-> 
-> Please let me know if you want me to fix this up (although that would involve
-> rebasing).
 
-I see you've pulled it already, so thanks for that and sorry for the noise.
+On 2015/2/10 5:55, Greg Kroah-Hartman wrote:
+> On Mon, Feb 09, 2015 at 12:03:23PM +0800, Fu, Zhonghui wrote:
+>> >From ec9c0f24e800461361eaf8b280abe4272b00772d Mon Sep 17 00:00:00 2001
+>> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+>> Date: Mon, 9 Feb 2015 11:09:22 +0800
+>> Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
+> Why is this crud here?
+I will fix this in new patch.
+>
+>> Occasinally, the system can't come back up after suspend/resume
+>> due to problems of device suspending phase. This patch make
+>> PM_TRACE infrastructure cover device suspending phase of
+>> suspend/resume process, and the information in RTC can tell
+>> develpers which device suspending function make system hang.
+>>
+>> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+>> ---
+>>  arch/x86/include/asm/resume-trace.h |    2 +-
+>>  drivers/base/power/main.c           |   30 +++++++++++++++++++++---------
+>>  include/linux/resume-trace.h        |    2 +-
+>>  3 files changed, 23 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/resume-trace.h
+>> index 3ff1c2c..0ca2215 100644
+>> --- a/arch/x86/include/asm/resume-trace.h
+>> +++ b/arch/x86/include/asm/resume-trace.h
+>> @@ -3,7 +3,7 @@
+>>  
+>>  #include <asm/asm.h>
+>>  
+>> -#define TRACE_RESUME(user)					\
+>> +#define TRACE_SUSPEND_RESUME(user)				\
+>>  do {								\
+>>  	if (pm_trace_enabled) {					\
+>>  		const void *tracedata;				\
+> Why rename this?
+>
+> If you want to do that, do it in 2 different functions (rename first,
+> with justification, add new functionality in a second patch)
+Good comments, I will sent a new patch.
+>
+>> @@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
+>>  {
+>>  	reinit_completion(&dev->power.completion);
+>>  
+>> -	if (pm_async_enabled && dev->power.async_suspend) {
+>> +	if (is_async(dev)) {
+> Why change this logic?
+Now, PM Trace does not support asynchronous suspend/resume mode. is_async() function can inhibit async mode during using PM Trace.
 
-Rafael
+Thanks,
+Zhonghui
+>
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
