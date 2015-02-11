@@ -1,33 +1,61 @@
-From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: [PATCH] ltc2941-battery-gauge: Fix typo in conversion formula  (58 instead of 85)
-Date: Wed, 11 Feb 2015 12:36:51 +0100
-Message-ID: <1423654611-10906-1-git-send-email-mike.looijmans@topic.nl>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, Mike Looijmans <mike.looijmans@topic.nl>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] speedstep-smi: enable interrupts when waiting
+Date: Wed, 11 Feb 2015 15:18:32 +0100
+Message-ID: <1752773.hF78BPjAlO@vostro.rjw.lan>
+References: <alpine.LRH.2.02.1502091337090.18363@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpomf0R9ufRFCe9bwoZLox=sqwbVwgk5Nv5V1CFv58kaK4g@mail.gmail.com> <alpine.LRH.2.02.1502110558400.4608@file01.intranet.prod.int.rdu2.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50245 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752374AbbBKNz1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 08:55:27 -0500
+In-Reply-To: <alpine.LRH.2.02.1502110558400.4608@file01.intranet.prod.int.rdu2.redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-The driver reported 30% less than actually measured. This turned out to
-be caused by a simple typo in the formula to calculate the LSB quantity.
+On Wednesday, February 11, 2015 06:01:27 AM Mikulas Patocka wrote:
+> 
+> On Wed, 11 Feb 2015, Viresh Kumar wrote:
+> 
+> > On 10 February 2015 at 02:38, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> > > On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+> > > speedstep-smi driver sometimes loads and sometimes doesn't load with
+> > > "change to state X failed" message.
+> > >
+> > > The hardware sometimes refuses to change frequency and in this case, we
+> > > need to retry later. I found out that we need to enable interrupts while
+> > > waiting. When we enable interrupts, the hardware blockage that prevents
+> > > frequency transition resolves and the transition is possible. With
+> > > disabled interrupts, the blockage doesn't resolve (no matter how long do
+> > > we wait). The exact reasons for this hardware behavior are unknown.
+> > >
+> > > This patch enables interrupts in the function speedstep_set_state that can
+> > > be called with disabled interrupts. However, this function is called with
+> > > disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+> > > any problem.
+> > >
+> > > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+> > > Cc: stable@vger.kernel.org
+> > >
+> > > ---
+> > >  drivers/cpufreq/speedstep-lib.c |    3 +++
+> > >  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+> > >  2 files changed, 15 insertions(+)
+> > 
+> > It looks it was reviewed/Acked long time back, what happened
+> > then ?
+> 
+> I don't know. You acknowledged it, but didn't put it upstream.
 
-Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
----
- drivers/power/ltc2941-battery-gauge.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+That's probably my fault then, because I didn't apply it.
 
-diff --git a/drivers/power/ltc2941-battery-gauge.c b/drivers/power/ltc2941-battery-gauge.c
-index e4a9c87..784ff0b 100644
---- a/drivers/power/ltc2941-battery-gauge.c
-+++ b/drivers/power/ltc2941-battery-gauge.c
-@@ -439,7 +439,7 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
- 	} else {
- 		if (prescaler_exp > LTC2941_MAX_PRESCALER_EXP)
- 			prescaler_exp = LTC2941_MAX_PRESCALER_EXP;
--		info->Qlsb = ((58 * 50000) / r_sense) /
-+		info->Qlsb = ((85 * 50000) / r_sense) /
- 				(128 / (1 << prescaler_exp));
- 	}
- 
+OK, I'll queue it up for the next pull request with an ACK from Viresh.
+
+
 -- 
-1.9.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
