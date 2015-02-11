@@ -1,92 +1,83 @@
-From: Mason <mpeg.blue@free.fr>
+From: Stephen Boyd <sboyd@codeaurora.org>
 Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Wed, 11 Feb 2015 09:43:12 -0800
-Message-ID: <54DB94B0.8020000@free.fr>
-References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr> <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch> <54D576B1.4000001@free.fr> <54D903F6.3050608@codeaurora.org> <54D93556.9050008@free.fr> <54D93FFA.3090506@codeaurora.org> <54D947B4.4080401@free.fr>
+Date: Wed, 11 Feb 2015 10:45:15 -0800
+Message-ID: <20150211184515.GB11190@codeaurora.org>
+References: <54C8E125.3070905@free.fr>
+ <e028a4eb604a491f4438557f4a1373ef@agner.ch>
+ <54D52F84.9050600@free.fr>
+ <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
+ <54D576B1.4000001@free.fr>
+ <54D903F6.3050608@codeaurora.org>
+ <54D93556.9050008@free.fr>
+ <54D93FFA.3090506@codeaurora.org>
+ <54D947B4.4080401@free.fr>
+ <54DB94B0.8020000@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54D947B4.4080401@free.fr>
+Content-Disposition: inline
+In-Reply-To: <54DB94B0.8020000@free.fr>
 Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
+To: Mason <mpeg.blue@free.fr>
 Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Mason wrote:
+On 02/11, Mason wrote:
+> Mason wrote:
+> 
+> 
+> Also, you wrote "I don't see any problem with the TWD dropping the
+> dependency on SMP." Would something as simple as this be acceptable?
+> (Most probably NOT; there are a lot of smp* occurrences in smp_twd.c
+> even the file name.) What is the rationale for the dependency?
+> 
+> 
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index a34698d..47b02c8 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -1565,7 +1565,6 @@ config HAVE_ARM_ARCH_TIMER
+>  config HAVE_ARM_TWD
+>         bool
+> -       depends on SMP
+>         select CLKSRC_OF if OF
+>         help
+>           This options enables support for the ARM timer and watchdog unit
+> 
 
-> Stephen Boyd wrote:
->
->> Mason wrote:
->>
->>> My platform provides a 32-bit counter, ticking at a constant 27 MHz.
->>> Reading this counter has a latency of roughly 70 ns (it has to go
->>> over the system memory bus). I think this is good enough for both
->>> the clock source and sched_clock, is it not?
->>>
->>> So the plan would be:
->>> - clocksource and sched_clock : 27 MHz, 32-bit counter, platform
->>> - clockevents : TWD, standard
->>
->> Yep, that sounds like a good plan. If your platform has the ARM global
->> timer (drivers/clocksource/arm_global_timer.c) then you don't need
->> anything besides that timer because it provides both the clocksource,
->> sched_clock, and clockevents. Sounds like you don't have that timer
->
-> I'm using Cortex A9, so I do have the global timer (AFAIU).
->
-> However, I don't think I can safely use it as a clock source because
-> I'm also using cpufreq, and I don't think the arm_global_timer driver
-> handles CPU frequency updates, while the TWD driver does (?)
->
-> /*
->   * Updates clockevent frequency when the cpu frequency changes.
->   * Called on the cpu that is changing frequency with interrupts disabled.
->   */
->
-> "The Interrupt Controller, global timer, private timers, and watchdogs
-> are clocked with PERIPHCLK." And PERIPHCLK is tied to CLK, which is
-> modified by cpufreq. I didn't see any code in the arm_global_timer
-> driver to deal with with that.
->
-> Did I overlook something fundamental?
->
->> though, so you have to write a driver for your custom platform timer and
->> at least hook up clocksource and sched_clock to it. If you have
->> interrupts with your platform timer you can skip out on TWD and also
->> register a clockevent in your platform timer driver.
->
-> Registering a clock source or a sched_clock seems straight-forward.
-> All I need to provide is a function to read the platform counter.
->
-> However, why would I skip out on TWD?
-> (I'm trying to minimize code needed for the port.)
+Hmm it looks like we would also need to add this to the patch. It
+looks like a holdover from when the local timer APIs were around.
+Back then twd_local_timer_common_register() would fail if
+is_smp() was false or setup_max_cpus was 0. Now it will just
+register a clockevent that may or may not be used depending on
+what other clockevents are in the system and the ratings of those
+other clockevents.
 
-Please forgive me for piling on extra questions:
-
-Cortex A9 provides the global timer, and the local timers/watchdog,
-both of which can be used for clockevents, AFAICT. Are there other
-choices available, or are these the only (standard) options?
-
-Also, you wrote "I don't see any problem with the TWD dropping the
-dependency on SMP." Would something as simple as this be acceptable?
-(Most probably NOT; there are a lot of smp* occurrences in smp_twd.c
-even the file name.) What is the rationale for the dependency?
+----8<----
+diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
+index 172c6a05d27f..e8f6d241881f 100644
+--- a/arch/arm/kernel/smp_twd.c
++++ b/arch/arm/kernel/smp_twd.c
+@@ -23,7 +23,6 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_address.h>
+ 
+-#include <asm/smp_plat.h>
+ #include <asm/smp_twd.h>
+ 
+ /* set up by the platform code */
+@@ -388,9 +387,6 @@ static void __init twd_local_timer_of_register(struct device_node *np)
+ {
+ 	int err;
+ 
+-	if (!is_smp() || !setup_max_cpus)
+-		return;
+-
+ 	twd_ppi = irq_of_parse_and_map(np, 0);
+ 	if (!twd_ppi) {
+ 		err = -EINVAL;
 
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index a34698d..47b02c8 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1565,7 +1565,6 @@ config HAVE_ARM_ARCH_TIMER
-  
-  config HAVE_ARM_TWD
-         bool
--       depends on SMP
-         select CLKSRC_OF if OF
-         help
-           This options enables support for the ARM timer and watchdog unit
-
-
-Regards.
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
