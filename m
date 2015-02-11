@@ -1,78 +1,49 @@
-From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH] PM-Trace: add pm-trace support for suspending phase
-Date: Wed, 11 Feb 2015 22:45:40 +0800
-Message-ID: <54DB6B13.4080807@linux.intel.com>
-References: <54D8318B.2060703@linux.intel.com> <20150209215559.GA12087@kroah.com> <54DAC363.60701@linux.intel.com>
+Date: Wed, 11 Feb 2015 16:25:47 +0100
+Message-ID: <5368734.2g4GXN33HR@vostro.rjw.lan>
+References: <54DB6A81.3040706@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54DAC363.60701@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "rjw@rjwysocki.net >> Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63623 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752185AbbBKPCl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 10:02:41 -0500
+In-Reply-To: <54DB6A81.3040706@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+On Wednesday, February 11, 2015 10:43:13 PM Fu, Zhonghui wrote:
+> From 2626594c03ca3b9884dd44073385c36f99a3651d Mon Sep 17 00:00:00 2001
+> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> Date: Wed, 11 Feb 2015 16:20:21 +0800
+> Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
+
+Can you please avoid putting the above header lines into your patches?
+
+The only one that may be necessary is the From: line, but that's only
+needed if you submit from a different address.
+
+Also please don't send To: mailing lists.  Use CC instead.  In fact, there
+should be *one* address in the To: field when you're submitting a patch:
+The address of the maintainer you want to apply the patch for you.
+
+> Occasionally, the system can't come back up after suspend/resume
+> due to problems of device suspending phase. This patch make
+> PM_TRACE infrastructure cover device suspending phase of
+> suspend/resume process, and the information in RTC can tell
+> developers which device suspending function make system hang.
+
+Do you have any examples of when this helped and no other debug methods did?
+
+It seems odd to me that no one has ever asked for this for several years and
+now you need it.
 
 
-I have sent a new patch with the same subject in another mail. Any comments are welcome.
-
-Thanks,
-Zhonghui
-
-On 2015/2/11 10:50, Fu, Zhonghui wrote:
-> On 2015/2/10 5:55, Greg Kroah-Hartman wrote:
->> On Mon, Feb 09, 2015 at 12:03:23PM +0800, Fu, Zhonghui wrote:
->>> >From ec9c0f24e800461361eaf8b280abe4272b00772d Mon Sep 17 00:00:00 2001
->>> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
->>> Date: Mon, 9 Feb 2015 11:09:22 +0800
->>> Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
->> Why is this crud here?
-> I will fix this in new patch.
->>> Occasinally, the system can't come back up after suspend/resume
->>> due to problems of device suspending phase. This patch make
->>> PM_TRACE infrastructure cover device suspending phase of
->>> suspend/resume process, and the information in RTC can tell
->>> develpers which device suspending function make system hang.
->>>
->>> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
->>> ---
->>>  arch/x86/include/asm/resume-trace.h |    2 +-
->>>  drivers/base/power/main.c           |   30 +++++++++++++++++++++---------
->>>  include/linux/resume-trace.h        |    2 +-
->>>  3 files changed, 23 insertions(+), 11 deletions(-)
->>>
->>> diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/resume-trace.h
->>> index 3ff1c2c..0ca2215 100644
->>> --- a/arch/x86/include/asm/resume-trace.h
->>> +++ b/arch/x86/include/asm/resume-trace.h
->>> @@ -3,7 +3,7 @@
->>>  
->>>  #include <asm/asm.h>
->>>  
->>> -#define TRACE_RESUME(user)					\
->>> +#define TRACE_SUSPEND_RESUME(user)				\
->>>  do {								\
->>>  	if (pm_trace_enabled) {					\
->>>  		const void *tracedata;				\
->> Why rename this?
->>
->> If you want to do that, do it in 2 different functions (rename first,
->> with justification, add new functionality in a second patch)
-> Good comments, I will sent a new patch.
->>> @@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
->>>  {
->>>  	reinit_completion(&dev->power.completion);
->>>  
->>> -	if (pm_async_enabled && dev->power.async_suspend) {
->>> +	if (is_async(dev)) {
->> Why change this logic?
-> Now, PM Trace does not support asynchronous suspend/resume mode. is_async() function can inhibit async mode during using PM Trace.
->
-> Thanks,
-> Zhonghui
->> greg k-h
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
