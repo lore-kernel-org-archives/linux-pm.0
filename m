@@ -1,183 +1,145 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH RFC 02/12] Documentation: thermal docbook: add glossary
-Date: Tue, 10 Feb 2015 14:50:47 -0800
-Message-ID: <54DA8B47.80808@infradead.org>
-References: <1423517653-11359-1-git-send-email-edubezval@gmail.com> <1423517653-11359-3-git-send-email-edubezval@gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v5 0/5] drivers: bus: Add Simple Power-Managed Bus
+Date: Wed, 11 Feb 2015 09:18:35 +0900
+Message-ID: <20150211001835.GB7826@verge.net.au>
+References: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:33866 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbbBJWu5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Feb 2015 17:50:57 -0500
-In-Reply-To: <1423517653-11359-3-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Olof Johansson <olof@lixom.net>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.kachhap@linaro.org, viresh.kumar@linaro.org, amit.daniel@samsung.com, hongbo.zhang@linaro.com, andrew@lunn.ch, durgadoss.r@intel.com, peter@piie.net, shawn.guo@linaro.org, aaron.lu@intel.com, caesar.wang@rock-chips.com, b.zolnierkie@samsung.com, l.majewski@samsung.com, vincenzo.frascino@st.com, mperttunen@nvidia.com, mikko.perttunen@kapsi.fi, srinivas.pandruvada@linux.intel.com, jacob.jun.pan@linux.intel.com, bcousson@baylibre.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On 02/09/15 13:34, Eduardo Valentin wrote:
-> This change introduces a section in the Introduction Chapter to
-> list concepts used by the Thermal Framework.
+Hi Geert,
+
+On Thu, Feb 05, 2015 at 11:11:23AM +0100, Geert Uytterhoeven wrote:
+>         Hi all,
 > 
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> ---
->  Documentation/DocBook/thermal.tmpl | 129 ++++++++++++++++++++++++++++++++++++-
->  1 file changed, 128 insertions(+), 1 deletion(-)
+> The Renesas Bus State Controller (BSC) provides an external bus for
+> connecting multiple external devices to an SoC, driving several chip
+> select lines, for e.g. NOR FLASH, Ethernet and USB.
+> On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+> controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+> R-Mobile APE6 (r8a73a4) SoC.
 > 
-> diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
-> index f8fb8a2..66efed3 100644
-> --- a/Documentation/DocBook/thermal.tmpl
-> +++ b/Documentation/DocBook/thermal.tmpl
-> @@ -84,5 +84,132 @@
->  		devices.
->  		</para>
->  
-> -  </chapter>
-> +		<sect1 id="glossary">
-> +			<title>Glossary</title>
-> +			<para>The Linux Kernel Thermal Framework  uses a
-> +			specific terminology to represent the entities involved
-> +			in thermal constrained environments. This section
-> +			summaries the terminology as dictionary. These terms are
-
-			summarizes
-
-> +			in use within the present document and in the source
-> +			code of the Linux Kernel Thermal Framework.
-> +			</para>
-> +			<glossary>
-> +				<glossentry>
-> +					<glossterm>Thermal Zone</glossterm>
-> +					<glossdef>
-> +						<para>Thermal zones represent
-> +						what is the current status of a
-> +						thermal constrained zone in the
-> +						hardware. The zone usually is a
-> +						device or component. The status
-> +						of a thermal zone is mainly with
-> +						respect to temperature.
-> +						Currently, the Linux Kernel
-> +						Thermal Framework represents
-> +						temperature in miliCelsius. The
-> +						current abstraction covers for
-> +						non negative temperatures and
-
-						non-negative
-
-> +						constraints.
-> +						</para>
-> +					</glossdef>
-> +				</glossentry>
-> +				<glossentry>
-> +					<glossterm>Thermal Sensors</glossterm>
-> +					<glossdef>
-> +						<para>Thermal sensors provide
-> +						temperature sensing capabilities
-> +						on thermal zones. Typical
-> +						devices are I2C ADC converters
-> +						and bandgaps. These are nodes
-> +						providing temperature data to
-> +						thermal zones. Thermal sensor
-> +						devices may control one or more
-> +						internal sensors.
-> +						</para>
-> +					</glossdef>
-> +				</glossentry>
-> +				<glossentry>
-> +					<glossterm>Trips Points</glossterm>
-
-					           Trip Points
-
-> +					<glossdef>
-> +						<para>The trip node describes a
-> +						point in the temperature domain
-> +						in which the system takes an
-> +						action. This item describes just
-> +						the point, not the action. Trip
-> +						points are represented as
-> +						temperature in miliCelsius. The
-> +						current abstraction covers for
-> +						non negative temperatures.
-
-						non-negative
-
-> +						</para>
-> +					</glossdef>
-> +				</glossentry>
-> +				<glossentry>
-> +					<glossterm>Thermal Governor</glossterm>
-> +					<glossdef>
-> +						<para>Thermal Governors
-> +						represent a policy to manage the
-> +						thermal zone device temperature.
-> +						The governor targets to keep
-> +						temperature in an acceptable
-> +						range which correlates to the
-> +						power budget, while maximizing
-> +						the performance. Governors can
-> +						be implemented in Kernel Space
-> +						or in User Space.
-> +						</para>
-> +					</glossdef>
-> +				</glossentry>
-> +				<glossentry>
-> +					<glossterm>Thermal Cooling Device</glossterm>
-> +					<glossdef>
-> +						<para>Cooling devices provide
-> +						control on power dissipation.
-> +						There are essentially two ways
-> +						to provide control on power
-> +						dissipation. First is by means
-> +						of regulating device
-> +						performance, which is known as
-> +						passive cooling. A typical
-> +						passive cooling is a CPU that
-> +						has dynamic voltage and
-> +						frequency scaling (DVFS), and
-> +						uses lower frequencies as
-> +						cooling states. Second is by
-> +						means of activating devices in
-> +						order to remove the dissipated
-> +						heat, which is known as active
-> +						cooling, e.g. regulating fan
-> +						speeds. In both cases, cooling
-> +						devices shall have a way to
-> +						determine the state of cooling
-> +						in which the device is.
-> +				</para>
-> +					</glossdef>
-> +				</glossentry>
-> +				<glossentry>
-> +					<glossterm>Cooling State</glossterm>
-> +					<glossdef>
-> +						<para>Any cooling device has a
-> +						range of cooling states (i.e.
-> +						different levels of heat
-> +						dissipation). For example a
-> +						fan's cooling states correspond
-> +						to the different fan speeds
-> +						possible. Cooling states are
-> +						referred to by single unsigned
-> +						integers, where larger numbers
-> +						mean greater heat dissipation.
-> +						The precise set of cooling
-> +						states associated with a device
-> +						(as referred to be the
-> +						cooling-min-state and
-> +						cooling-max-state properties)
-> +						should be defined in a
-> +						particular device's binding.
-> +						</para>
-> +					</glossdef>
-> +				</glossentry>
-> +			</glossary>
-> +		</sect1>
-> +	</chapter>
->  </book>
+> The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+> compatibility seems suitable.  However, the BSC is special in two
+> ways:
+>   1. It is part of a PM domain (A4S on sh73a0),
+>   2. It has a gateable functional clock (ZB).
+> Before a device connected to the BSC can be accessed, the PM domain
+> containing the BSC must be powered on, and the functional clock
+> driving the BSC must be enabled.
 > 
+> Both special properties can be described in DT in a standardized way
+> ("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+> example in the DT binding documentation).  Externally connected
+> devices are described as children of the BSC node.
+> 
+> Unfortunately this doesn't mean everything will work out-of-the-box.
+> There are two problems:
+>   1. Without a device driver bound to the bus device, this device is
+>      not attached to the PM domain. And although a child device is
+>      present and active, the PM domain may be powered down, as it's
+>      considered unused by the PM domain core.
+>   2. Without a device driver calling pm_runtime_enable(), its
+>      functional clock is not enabled. Once runtime PM is enabled, the
+>      R-Mobile PM domain platform driver manages the functional clock
+>      using runtime PM.
+> 
+> As none of the above is really bus hardware-specific (PM domains and
+> functional clocks in clock domains are handled from genpd and platform
+> code), this series adds a Simple Power-Managed Bus driver for
+> transparent busses, which matches against "simple-pm-bus", enables
+> runtime PM for the bus device, and calls of_platform_populate() to
+> probe for child devices.
+> Due to the child-parent relationship of devices connected to the bus,
+> as long as the device drivers for the child devices are runtime PM
+> enabled, the bus's PM domain will be powered, and the bus's clock will
+> be enabled automatically when needed, for both runtime PM and s2ram.
+> 
+> This was tested on sh73a0/kzm9g-multiplatform (by me), and (v3) on
+> r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+> Ethernet doesn't work, as the ZB clock is disabled by
+> clk_disable_unused().
+> 
+> Felipe: It looks like drivers/usb/musb/musb_am335x.c can be removed, if
+> "ti,am33xx-usb" claims compatibility with "simple-pm-bus"?
+> 
+> As drivers/bus doesn't have a maintainer, and this driver is needed to
+> move two shmobile platforms away from legacy to multiplatform, I think
+> this can go in through Simon's shmobile tree.
 
+thanks for persisting with this. From my point of view it appears
+to be reviewed and ready.
 
--- 
-~Randy
+Does anyone object to me queueing this up for v3.21 in the renesas tree?
+
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
+
+> Changes compared to v4:
+>   - Add Reviewed-by,
+>   - "simple-pm-bus" is not an extension of "simple-bus",
+>   - "compatible" must not contain "simple-bus",
+>   - Add reference to clock/PM domain provider binding docs.
+> 
+> Changes compared to v3:
+>   - Replace "simple-bus" by "simple-pm-bus" in the bindings,
+>   - Move the "renesas,bsc" bindings to a separate document,
+>   - Bind against the generic "simple-pm-bus" instead of "renesas,bsc",
+>   - Explicitly call of_platform_populate() after pm_runtime_enable() to
+>     enforce ordering, instead of depending on claimed compatibility with
+>     "simple-bus".
+> 
+> Changes compared to v2:
+>   - Document required properties inherited from "simple-bus",
+>   - Document required "reg" property for "renesas,bsc",
+>   - Move "ranges" before "reg" in the example,
+>   - Add Tested-by,
+>   - Split-off sh73a0/kzm9g and r8a73a4/ape6evm DTS updates.
+> 
+> Changes compared to v1 (more detailed change logs in the individual
+> patches):
+>   - Added sorting of drivers/bus Kconfig and Makefile entries,
+>   - Added DT binding documentation,
+>   - Rename from "Renesas Bus State Controller Driver" (renesas-bsc) to
+>     "Simple Power-Managed Bus Driver" (simple-pm-bus),
+>   - Postponed adding power-domains properties to the dtsi,
+>   - Added updates for r8a73a4/ape6evm.
+> 
+> Thanks!
+> 
+> Geert Uytterhoeven (5):
+>   drivers: bus: Sort Kconfig entries alphabetically
+>   drivers: bus: Sort Makefile entries alphabetically
+>   drivers: bus: Add Simple Power-Managed Bus DT Bindings
+>   drivers: bus: Add Renesas Bus State Controller (BSC) DT Bindings
+>   drivers: bus: Add Simple Power-Managed Bus Driver
+> 
+>  .../devicetree/bindings/bus/renesas,bsc.txt        | 46 +++++++++++++++++
+>  .../devicetree/bindings/bus/simple-pm-bus.txt      | 44 ++++++++++++++++
+>  drivers/bus/Kconfig                                | 53 ++++++++++++--------
+>  drivers/bus/Makefile                               | 15 +++---
+>  drivers/bus/simple-pm-bus.c                        | 58 ++++++++++++++++++++++
+>  5 files changed, 189 insertions(+), 27 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/bus/renesas,bsc.txt
+>  create mode 100644 Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+>  create mode 100644 drivers/bus/simple-pm-bus.c
+> 
+> -- 
+> 1.9.1
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> 
