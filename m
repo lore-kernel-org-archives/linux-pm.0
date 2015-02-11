@@ -1,61 +1,53 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: bq2415x_charger, bq27x00_battery.c: comment cleanups
-Date: Wed, 11 Feb 2015 11:47:16 +0100
-Message-ID: <20150211104715.GA2458@amd>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: Re: [PATCH] speedstep-smi: enable interrupts when waiting
+Date: Wed, 11 Feb 2015 06:01:27 -0500 (EST)
+Message-ID: <alpine.LRH.2.02.1502110558400.4608@file01.intranet.prod.int.rdu2.redhat.com>
+References: <alpine.LRH.2.02.1502091337090.18363@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpomf0R9ufRFCe9bwoZLox=sqwbVwgk5Nv5V1CFv58kaK4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:34252 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751418AbbBKLBb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Feb 2015 06:01:31 -0500
+In-Reply-To: <CAKohpomf0R9ufRFCe9bwoZLox=sqwbVwgk5Nv5V1CFv58kaK4g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
 
-Cleanup comments  for bq2415x_charger, bq27x00_battery.c.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+On Wed, 11 Feb 2015, Viresh Kumar wrote:
 
-diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
-index 1f49986..2a226ca 100644
---- a/drivers/power/bq2415x_charger.c
-+++ b/drivers/power/bq2415x_charger.c
-@@ -13,12 +13,6 @@
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--/*
-  * Datasheets:
-  * http://www.ti.com/product/bq24150
-  * http://www.ti.com/product/bq24150a
-@@ -173,7 +167,7 @@ struct bq2415x_device {
- 	struct power_supply *notify_psy;
- 	struct notifier_block nb;
- 	enum bq2415x_mode reported_mode;/* mode reported by hook function */
--	enum bq2415x_mode mode;		/* current configured mode */
-+	enum bq2415x_mode mode;		/* currently configured mode */
- 	enum bq2415x_chip chip;
- 	const char *timer_error;
- 	char *model;
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index a78ac20..6be9f3c 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -16,9 +16,6 @@
-  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-  *
-- */
--
--/*
-  * Datasheets:
-  * http://focus.ti.com/docs/prod/folders/print/bq27000.html
-  * http://focus.ti.com/docs/prod/folders/print/bq27500.html
+> On 10 February 2015 at 02:38, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> > On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+> > speedstep-smi driver sometimes loads and sometimes doesn't load with
+> > "change to state X failed" message.
+> >
+> > The hardware sometimes refuses to change frequency and in this case, we
+> > need to retry later. I found out that we need to enable interrupts while
+> > waiting. When we enable interrupts, the hardware blockage that prevents
+> > frequency transition resolves and the transition is possible. With
+> > disabled interrupts, the blockage doesn't resolve (no matter how long do
+> > we wait). The exact reasons for this hardware behavior are unknown.
+> >
+> > This patch enables interrupts in the function speedstep_set_state that can
+> > be called with disabled interrupts. However, this function is called with
+> > disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+> > any problem.
+> >
+> > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+> > Cc: stable@vger.kernel.org
+> >
+> > ---
+> >  drivers/cpufreq/speedstep-lib.c |    3 +++
+> >  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+> >  2 files changed, 15 insertions(+)
+> 
+> It looks it was reviewed/Acked long time back, what happened
+> then ?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I don't know. You acknowledged it, but didn't put it upstream.
+
+Mikulas
