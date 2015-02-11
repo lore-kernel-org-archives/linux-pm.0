@@ -1,53 +1,64 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH] speedstep-smi: enable interrupts when waiting
-Date: Wed, 11 Feb 2015 06:01:27 -0500 (EST)
-Message-ID: <alpine.LRH.2.02.1502110558400.4608@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1502091337090.18363@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpomf0R9ufRFCe9bwoZLox=sqwbVwgk5Nv5V1CFv58kaK4g@mail.gmail.com>
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: Re: [PATCH] Add LTC2941/LTC2943 Battery Gauge Driver
+Date: Wed, 11 Feb 2015 12:21:52 +0100
+Message-ID: <54DB3B50.7020902@topic.nl>
+References: <20141027163842.GB20765@earth.universe> <1414479912-3545-1-git-send-email-mike.looijmans@topic.nl> <20150122022426.GP13715@earth.universe>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:34252 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751418AbbBKLBb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Feb 2015 06:01:31 -0500
-In-Reply-To: <CAKohpomf0R9ufRFCe9bwoZLox=sqwbVwgk5Nv5V1CFv58kaK4g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150122022426.GP13715@earth.universe>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+
+=EF=BB=BFOn 22-01-15 03:24, Sebastian Reichel wrote:
+> Hi,
+>
+> On Tue, Oct 28, 2014 at 08:05:12AM +0100, Mike Looijmans wrote:
+>> Both the LTC2941 and LTC2943 measure battery capacity.
+>> The LTC2943 is compatible with the LTC2941, it adds voltage and
+>> temperature monitoring, and uses a slightly different conversion
+>> formula for the charge counter.
+>>
+>> To avoid confusion with e.g. the LTC2945, the driver is called
+>> LTC2941 instead of LTC294X.
+>
+> Applied with .owner field removed.
+>
+> -- Sebastian
+>
+
+Hello,
+
+We found a bug in the LTC2941 driver (typo, it says "58" in the formula=
+ which=20
+should be "85") just yesterday. I couldn't find it in mainline yet, I'l=
+l post=20
+a patch to fix it.
 
 
 
-On Wed, 11 Feb 2015, Viresh Kumar wrote:
 
-> On 10 February 2015 at 02:38, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
-> > speedstep-smi driver sometimes loads and sometimes doesn't load with
-> > "change to state X failed" message.
-> >
-> > The hardware sometimes refuses to change frequency and in this case, we
-> > need to retry later. I found out that we need to enable interrupts while
-> > waiting. When we enable interrupts, the hardware blockage that prevents
-> > frequency transition resolves and the transition is possible. With
-> > disabled interrupts, the blockage doesn't resolve (no matter how long do
-> > we wait). The exact reasons for this hardware behavior are unknown.
-> >
-> > This patch enables interrupts in the function speedstep_set_state that can
-> > be called with disabled interrupts. However, this function is called with
-> > disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
-> > any problem.
-> >
-> > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-> > Cc: stable@vger.kernel.org
-> >
-> > ---
-> >  drivers/cpufreq/speedstep-lib.c |    3 +++
-> >  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
-> >  2 files changed, 15 insertions(+)
-> 
-> It looks it was reviewed/Acked long time back, what happened
-> then ?
+Met vriendelijke groet / kind regards,
 
-I don't know. You acknowledged it, but didn't put it upstream.
+Mike Looijmans
+System Expert
 
-Mikulas
+
+TOPIC Embedded Systems
+Eindhovenseweg 32-C, NL-5683 KH Best
+Postbus 440, NL-5680 AK Best
+Telefoon: (+31) (0) 499 33 69 79
+Telefax:  (+31) (0) 499 33 69 70
+E-mail: mike.looijmans@topic.nl
+Website: www.topic.nl
+
+Please consider the environment before printing this e-mail
+
+Visit us at Embedded World 2015 Nuernberg, 24.02.2015 till 26.02.2015, =
+Hall 1, stand number 136.
+https://www.embedded-world.de/de/ausstellerprodukte/?focus=3Dedb3exhibi=
+tor&focus2=3D14017667&focus3=3Dembwld15&highlight=3Dtopic
