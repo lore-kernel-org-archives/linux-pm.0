@@ -1,84 +1,92 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] Add LTC2941/LTC2943 Battery Gauge Driver
-Date: Wed, 11 Feb 2015 18:01:52 +0100
-Message-ID: <20150211170151.GB26774@earth.universe>
-References: <20141027163842.GB20765@earth.universe>
- <1414479912-3545-1-git-send-email-mike.looijmans@topic.nl>
- <20150122022426.GP13715@earth.universe>
- <54DB3B50.7020902@topic.nl>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Wed, 11 Feb 2015 09:43:12 -0800
+Message-ID: <54DB94B0.8020000@free.fr>
+References: <54C8E125.3070905@free.fr> <e028a4eb604a491f4438557f4a1373ef@agner.ch> <54D52F84.9050600@free.fr> <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch> <54D576B1.4000001@free.fr> <54D903F6.3050608@codeaurora.org> <54D93556.9050008@free.fr> <54D93FFA.3090506@codeaurora.org> <54D947B4.4080401@free.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50892 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbbBKRBx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Feb 2015 12:01:53 -0500
-Content-Disposition: inline
-In-Reply-To: <54DB3B50.7020902@topic.nl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <54D947B4.4080401@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+
+Mason wrote:
+
+> Stephen Boyd wrote:
+>
+>> Mason wrote:
+>>
+>>> My platform provides a 32-bit counter, ticking at a constant 27 MHz.
+>>> Reading this counter has a latency of roughly 70 ns (it has to go
+>>> over the system memory bus). I think this is good enough for both
+>>> the clock source and sched_clock, is it not?
+>>>
+>>> So the plan would be:
+>>> - clocksource and sched_clock : 27 MHz, 32-bit counter, platform
+>>> - clockevents : TWD, standard
+>>
+>> Yep, that sounds like a good plan. If your platform has the ARM global
+>> timer (drivers/clocksource/arm_global_timer.c) then you don't need
+>> anything besides that timer because it provides both the clocksource,
+>> sched_clock, and clockevents. Sounds like you don't have that timer
+>
+> I'm using Cortex A9, so I do have the global timer (AFAIU).
+>
+> However, I don't think I can safely use it as a clock source because
+> I'm also using cpufreq, and I don't think the arm_global_timer driver
+> handles CPU frequency updates, while the TWD driver does (?)
+>
+> /*
+>   * Updates clockevent frequency when the cpu frequency changes.
+>   * Called on the cpu that is changing frequency with interrupts disabled.
+>   */
+>
+> "The Interrupt Controller, global timer, private timers, and watchdogs
+> are clocked with PERIPHCLK." And PERIPHCLK is tied to CLK, which is
+> modified by cpufreq. I didn't see any code in the arm_global_timer
+> driver to deal with with that.
+>
+> Did I overlook something fundamental?
+>
+>> though, so you have to write a driver for your custom platform timer and
+>> at least hook up clocksource and sched_clock to it. If you have
+>> interrupts with your platform timer you can skip out on TWD and also
+>> register a clockevent in your platform timer driver.
+>
+> Registering a clock source or a sched_clock seems straight-forward.
+> All I need to provide is a function to read the platform counter.
+>
+> However, why would I skip out on TWD?
+> (I'm trying to minimize code needed for the port.)
+
+Please forgive me for piling on extra questions:
+
+Cortex A9 provides the global timer, and the local timers/watchdog,
+both of which can be used for clockevents, AFAICT. Are there other
+choices available, or are these the only (standard) options?
+
+Also, you wrote "I don't see any problem with the TWD dropping the
+dependency on SMP." Would something as simple as this be acceptable?
+(Most probably NOT; there are a lot of smp* occurrences in smp_twd.c
+even the file name.) What is the rationale for the dependency?
 
 
---zx4FCpZtqtKETZ7O
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index a34698d..47b02c8 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1565,7 +1565,6 @@ config HAVE_ARM_ARCH_TIMER
+  
+  config HAVE_ARM_TWD
+         bool
+-       depends on SMP
+         select CLKSRC_OF if OF
+         help
+           This options enables support for the ARM timer and watchdog unit
 
-On Wed, Feb 11, 2015 at 12:21:52PM +0100, Mike Looijmans wrote:
-> =EF=BB=BFOn 22-01-15 03:24, Sebastian Reichel wrote:
-> >Hi,
-> >
-> >On Tue, Oct 28, 2014 at 08:05:12AM +0100, Mike Looijmans wrote:
-> >>Both the LTC2941 and LTC2943 measure battery capacity.
-> >>The LTC2943 is compatible with the LTC2941, it adds voltage and
-> >>temperature monitoring, and uses a slightly different conversion
-> >>formula for the charge counter.
-> >>
-> >>To avoid confusion with e.g. the LTC2945, the driver is called
-> >>LTC2941 instead of LTC294X.
-> >
-> >Applied with .owner field removed.
-> >
-> >-- Sebastian
-> >
->=20
-> Hello,
->=20
-> We found a bug in the LTC2941 driver (typo, it says "58" in the formula
-> which should be "85") just yesterday. I couldn't find it in mainline yet,
-> I'll post a patch to fix it.
 
-pull request has already been sent:
+Regards.
 
-https://lkml.org/lkml/2015/2/9/373
-
-I will send your patch as fix during -rc cycle.
-
--- Sebastian
-
---zx4FCpZtqtKETZ7O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJU24r8AAoJENju1/PIO/qag5YQAIEQJa6YwyRCB1UIaVbqsamD
-0OqnZ4aL+QL3wAA0H86Bm4b3KIFE5ko9OsCiUfWtXghRIW8ApfNT6UpvPDGe9Mz4
-BMnRlP+pH56IoIq/T3zEtITFH3L86Onz0cjFtkYKb8tHsS0RIO1AaGRBzFigO/ui
-Oe1yRGWlXphnn7Rd3EXK1vBuSMzK0SE+O5v1ODa1AIAcN8BbU1q5hig4PfrkBXHh
-zLRdrUYUhgAmO3LSEaE0dhf9AgkRBP24SCU28DU17T1+5kTbFG1a/8Ra0CRbO0HY
-DeeX9ybR0EJKnW+XVmiakPweGAIYdRC1Vl+4hyJhVFSJZ0hOGycol/cU88P5JYlJ
-h1rwGSXd5gjEBw/p4aQKW4+whBOq1rXBLS4wXuUoPQqsVEFZBJ0pPG60BtNLdjC9
-yIVhdIJjhUjxXZIOpjTcGSied6fSfJHzk5u+6gNiaf7qzSo4W0Kyc+3hWskcB4x9
-+LdD8Itkw9q/TkxWxXhTf6j2idtciUf5Iy0VScp1GMERnFeS2r23+9r6WMmBz2MT
-rZVF1iPXQ4vCp+/4eTiG59k3V3I1oCskzL0OKYtYK6oktM9WLeOUzf+z9YoZ9igX
-lbG2Paeq/ongf+KK8qS+a5p0MJkvd0+ByBYx6MXt7Vm+4yclKGURX8+OpWUA37ja
-7x/UwxX27n/p3XSTfQY4
-=+QgJ
------END PGP SIGNATURE-----
-
---zx4FCpZtqtKETZ7O--
