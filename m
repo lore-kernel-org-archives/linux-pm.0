@@ -1,51 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [GIT PULL] ACPI and power management updates for 3.20-rc1
-Date: Wed, 11 Feb 2015 02:51:38 +0100
-Message-ID: <2941430.C5WGLLJjlq@vostro.rjw.lan>
-References: <CAJZ5v0iyosRQ2g48TxJ39jLuOTUrER2=7j2F9Pg80rrkFAo1Kw@mail.gmail.com>
+Date: Wed, 11 Feb 2015 02:56:22 +0100
+Message-ID: <14997643.5bLlL9tuxf@vostro.rjw.lan>
+References: <CAJZ5v0iyosRQ2g48TxJ39jLuOTUrER2=7j2F9Pg80rrkFAo1Kw@mail.gmail.com> <2941430.C5WGLLJjlq@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iyosRQ2g48TxJ39jLuOTUrER2=7j2F9Pg80rrkFAo1Kw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51452 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750868AbbBKBdT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Feb 2015 20:33:19 -0500
+In-Reply-To: <2941430.C5WGLLJjlq@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
-List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 10, 2015 10:19:34 PM Rafael J. Wysocki wrote:
-> Hi Linus,
+On Wednesday, February 11, 2015 02:51:38 AM Rafael J. Wysocki wrote:
+> On Tuesday, February 10, 2015 10:19:34 PM Rafael J. Wysocki wrote:
+> > Hi Linus,
+> > 
+> > Please pull from
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+> >  pm+acpi-3.20-rc1
+> > 
+> > to receive ACPI and power management material for v3.20-rc1 with
+> > top-most commit b5e82233cab43c25fc0a1c28d9136a086db4aa52
+> > 
+> >  Merge branch 'pm-tools'
+> > 
+> > on top of commit bfa76d49576599a4b9f9b7a71f23d73d6dcff735
+> > 
+> >  Linux 3.19
 > 
-> Please pull from
+> I messed up one thing here, sorry about that.
 > 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->  pm+acpi-3.20-rc1
+> Commit 5c493df25a0d ("Merge branch 'pci/host-generic' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci into
+> acpi-resources") was supposed to be a merge, but I did something
+> wrong (I know what even) and it ended up as a non-merge one.
+> And then I didn't notice that it went wrong which was another
+> failure.
 > 
-> to receive ACPI and power management material for v3.20-rc1 with
-> top-most commit b5e82233cab43c25fc0a1c28d9136a086db4aa52
+> So this commit will conflict with d2be00c0fb5a ("of/pci: Free resources on
+> failure in of_pci_get_host_bridge_resources()") from the PCI tree, but
+> 5c493df25a0d is how the final code should look like (the kfree(bus_range);
+> line needs to go away in particular).
 > 
->  Merge branch 'pm-tools'
-> 
-> on top of commit bfa76d49576599a4b9f9b7a71f23d73d6dcff735
-> 
->  Linux 3.19
+> Please let me know if you want me to fix this up (although that would involve
+> rebasing).
 
-I messed up one thing here, sorry about that.
-
-Commit 5c493df25a0d ("Merge branch 'pci/host-generic' of
-git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci into
-acpi-resources") was supposed to be a merge, but I did something
-wrong (I know what even) and it ended up as a non-merge one.
-And then I didn't notice that it went wrong which was another
-failure.
-
-So this commit will conflict with d2be00c0fb5a ("of/pci: Free resources on
-failure in of_pci_get_host_bridge_resources()") from the PCI tree, but
-5c493df25a0d is how the final code should look like (the kfree(bus_range);
-line needs to go away in particular).
-
-Please let me know if you want me to fix this up (although that would involve
-rebasing).
+I see you've pulled it already, so thanks for that and sorry for the noise.
 
 Rafael
 
