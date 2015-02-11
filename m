@@ -1,467 +1,384 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/7] opp: Parse new (v2) bindings
-Date: Wed, 11 Feb 2015 16:16:27 +0800
-Message-ID: <c215d5e8ea893bccba48abf9c80a5e0be5b8b9da.1423642246.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 5/7] opp: convert device_opp->dev to a list of devices
+Date: Wed, 11 Feb 2015 16:16:28 +0800
+Message-ID: <ac7a6543beed80bfe4d8bbe3900fc17673168f18.1423642246.git.viresh.kumar@linaro.org>
 References: <cover.1423642246.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:37158 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbbBKIRH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 03:17:07 -0500
-Received: by mail-pa0-f50.google.com with SMTP id hz1so2464107pad.9
-        for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2015 00:17:07 -0800 (PST)
-In-Reply-To: <cover.1423642246.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1423642246.git.viresh.kumar@linaro.org>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1423642246.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1423642246.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1423642246.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, Sudeep.Holla-5wv7dgnIgG8@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, grant.likely@linaro.org, olof@lixom.net, nm@ti.com, Sudeep.Holla@arm.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, santosh.shilimkar@oracle.com, mike.turquette@linaro.org, kesavan.abhilash@gmail.com, catalin.marinas@arm.com, ta.omasab@gmail.com, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, l.stach@pengutronix.de, broonie@kernel.org, viswanath.puttagunta@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-This adds support in OPP library to parse and create list of OPPs from
-operating-points-v2 bindings. It takes care of most of the properties of new
-bindings (except shared-opp, which will be handled separately).
+An opp can be shared by multiple devices, for example its very common for CPUs
+to share the OPPs, i.e. when they share clock lines.
 
-For backward compatibility, we keep supporting earlier bindings. We try to
-search for the new bindings first, in case they aren't present we look for the
-old deprecated ones.
+Until now, the OPPs are bound to a single device and there is no way to mark
+them shared.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch adds support to manage a list of devices sharing OPPs. It also senses
+if the device (we are trying to initialize OPPs for) shares OPPs with an device
+added earlier and in that case we just update the list of devices managed by
+OPPs instead of initializing them again.
+
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/base/power/opp.c | 342 +++++++++++++++++++++++++++++++++++++++++++----
- include/linux/pm_opp.h   |   6 +
- 2 files changed, 323 insertions(+), 25 deletions(-)
+ drivers/base/power/opp.c | 189 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 157 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 904dcf386747..b7b9c33fbb65 100644
+index b7b9c33fbb65..24a014b7a68a 100644
 --- a/drivers/base/power/opp.c
 +++ b/drivers/base/power/opp.c
-@@ -49,12 +49,21 @@
-  *		are protected by the dev_opp_list_lock for integrity.
-  *		IMPORTANT: the opp nodes should be maintained in increasing
-  *		order.
-- * @dynamic:	not-created from static DT entries.
-  * @available:	true/false - marks if this OPP as available or not
-+ * @dynamic:	not-created from static DT entries.
-+ * @turbo:	true if turbo (boost) OPP
-  * @rate:	Frequency in hertz
-- * @u_volt:	Nominal voltage in microvolts corresponding to this OPP
-+ * @u_volt:	Target voltage in microvolts corresponding to this OPP
-+ * @u_volt_min:	Minimum voltage in microvolts corresponding to this OPP
-+ * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
-+ * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
-+ *		frequency from any other OPP's frequency.
-  * @dev_opp:	points back to the device_opp struct this opp belongs to
-  * @rcu_head:	RCU callback head used for deferred freeing
-+ * @np:		OPP's device node.
-+ * @next:	Array of OPPs we can switch to from this OPP.
-+ * @next_np:	Array of device nodes of OPP to which we can switch from this OPP.
-+ * @count:	count of 'next' array.
-  *
-  * This structure stores the OPP information for a given device.
-  */
-@@ -63,11 +72,20 @@ struct dev_pm_opp {
- 
- 	bool available;
- 	bool dynamic;
-+	bool turbo;
- 	unsigned long rate;
- 	unsigned long u_volt;
-+	unsigned long u_volt_min;
-+	unsigned long u_volt_max;
-+	unsigned long clock_latency_ns;
- 
- 	struct device_opp *dev_opp;
- 	struct rcu_head rcu_head;
-+
-+	struct device_node *np;
-+	struct dev_pm_opp **next;
-+	struct device_node **next_np;
-+	unsigned int next_count;
+@@ -89,16 +89,33 @@ struct dev_pm_opp {
  };
  
  /**
-@@ -444,15 +462,21 @@ static void _kfree_device_rcu(struct rcu_head *head)
- static void _opp_remove(struct device_opp *dev_opp,
- 			struct dev_pm_opp *opp, bool notify)
- {
-+	/* Free any next OPP nodes */
-+	kfree(opp->next);
-+
- 	/*
- 	 * Notify the changes in the availability of the operable
- 	 * frequency/voltage list.
- 	 */
- 	if (notify)
- 		srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
-+
-+	/* Free OPP */
- 	list_del_rcu(&opp->node);
- 	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
- 
-+	/* Free device if all OPPs are freed */
- 	if (list_empty(&dev_opp->opp_list)) {
- 		list_del_rcu(&dev_opp->node);
- 		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
-@@ -662,6 +686,170 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- }
- 
- /**
-+ * _opp_add_dynamic_v2() - Allocate a dynamic OPP according to 'v2' DT bindings.
-+ * @dev:	device for which we do this operation
-+ * @np:		device node
-+ * @dynamic:	Dynamically added OPPs.
++ * struct device_list_opp - devices managed by 'struct device_opp'
++ * @node:	list node
++ * @dev:	device to which the struct object belongs
++ * @rcu_head:	RCU callback head used for deferred freeing
 + *
-+ * This function adds an opp definition to the opp list and returns status. The
-+ * opp can be controlled using dev_pm_opp_enable/disable functions and may be
-+ * removed by dev_pm_opp_remove.
-+ *
-+ * NOTE: "dynamic" parameter impacts OPPs added by the of_init_opp_table and
-+ * freed by of_free_opp_table.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ *
-+ * Return:
-+ * 0		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM	Memory allocation failure
-+ * -EINVAL	Failed parsing the OPP node
++ * This is an internal data structure maintaining the list of devices that are
++ * managed by 'struct device_opp'.
 + */
-+static int _opp_add_dynamic_v2(struct device *dev, struct device_node *np,
-+			       bool dynamic)
++struct device_list_opp {
++	struct list_head node;
++	struct device *dev;
++	struct rcu_head rcu_head;
++};
++
++/**
+  * struct device_opp - Device opp structure
+  * @node:	list node - contains the devices with OPPs that
+  *		have been registered. Nodes once added are not modified in this
+  *		list.
+  *		RCU usage: nodes are not modified in the list of device_opp,
+  *		however addition is possible and is secured by dev_opp_list_lock
+- * @dev:	device pointer
+  * @srcu_head:	notifier head to notify the OPP availability changes.
+  * @rcu_head:	RCU callback head used for deferred freeing
++ * @dev_list:	list of devices that share these OPPs
+  * @opp_list:	list of opps
++ * @np:		struct device_node pointer for opp's DT node.
++ * @shared_opp: OPP is shared between multiple devices.
+  *
+  * This is an internal data structure maintaining the link to opps attached to
+  * a device. This structure is not meant to be shared to users as it is
+@@ -111,10 +128,12 @@ struct dev_pm_opp {
+ struct device_opp {
+ 	struct list_head node;
+ 
+-	struct device *dev;
+ 	struct srcu_notifier_head srcu_head;
+ 	struct rcu_head rcu_head;
++	struct list_head dev_list;
+ 	struct list_head opp_list;
++	struct device_node *np;
++	bool shared_opp;
+ };
+ 
+ /*
+@@ -134,6 +153,45 @@ do {									\
+ 			   "dev_opp_list_lock protection");		\
+ } while (0)
+ 
++static struct device_list_opp *_find_list_dev(struct device *dev,
++					      struct device_opp *dev_opp)
 +{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *new_opp;
-+	int ret;
++	struct device_list_opp *list_dev;
 +
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	new_opp = _allocate_opp(dev, &dev_opp);
-+	if (!new_opp) {
-+		ret = -ENOMEM;
-+		goto unlock;
-+	}
-+
-+	ret = of_property_read_u32(np, "opp-khz", (u32 *)&new_opp->rate);
-+	if (ret < 0) {
-+		dev_err(dev, "%s: opp-khz not found\n", __func__);
-+		goto free_opp;
-+	}
-+	new_opp->rate *= 1000;
-+
-+	if (of_get_property(np, "turbo-mode", NULL))
-+		new_opp->turbo = true;
-+
-+	new_opp->np = np;
-+	new_opp->dynamic = dynamic;
-+	new_opp->available = of_device_is_available(np);
-+	of_property_read_u32(np, "clock-latency-ns",
-+			     (u32 *)&new_opp->clock_latency_ns);
-+
-+	/* read opp-microvolt array */
-+	ret = of_property_count_u32_elems(np, "opp-microvolt");
-+	if (ret == 1 || ret == 3) {
-+		/* There can be one or three elements here */
-+		ret = of_property_read_u32_array(np, "opp-microvolt",
-+						 (u32 *)&new_opp->u_volt, ret);
-+		if (ret) {
-+			dev_err(dev, "%s: error parsing opp-microvolt: %d\n",
-+				__func__, ret);
-+			goto free_opp;
-+		}
-+	}
-+
-+	/* Parse OPP phandles */
-+	ret = of_property_count_u32_elems(np, "opp-next");
-+	if (ret > 0) {
-+		int i, size = sizeof(*new_opp->next) + sizeof(*new_opp->next_np);
-+		struct device_node **next_np;
-+
-+		/* Allocate memory for both 'next' and 'next_np' */
-+		new_opp->next = kmalloc(size * ret, GFP_KERNEL);
-+		if (!new_opp->next) {
-+			ret = -ENOMEM;
-+			goto free_opp;
-+		}
-+
-+		new_opp->next_count = ret;
-+		new_opp->next_np = (struct device_node **)(new_opp->next + ret);
-+		next_np = new_opp->next_np;
-+
-+		/*
-+		 * Parse OPP phandles for now, we will create the list of OPPs
-+		 * once all are available.
-+		 */
-+		for (i = 0; i < ret; i++) {
-+			next_np[i] = of_parse_phandle(np, "opp-next", i);
-+			if (!next_np[i]) {
-+				dev_err(dev, "%s: Failed to get opp phandle\n",
-+					__func__);
-+				ret = -EINVAL;
-+				goto free_opp;
-+			}
-+		}
-+	}
-+
-+	ret = _opp_add(new_opp, dev_opp);
-+	if (ret)
-+		goto free_opp;
-+
-+	pr_debug("%s: dynamic:%d turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu next-count:%u\n",
-+		 __func__, new_opp->dynamic, new_opp->turbo, new_opp->rate,
-+		 new_opp->u_volt, new_opp->u_volt_min, new_opp->u_volt_max,
-+		 new_opp->clock_latency_ns, new_opp->next_count);
-+
-+	mutex_unlock(&dev_opp_list_lock);
-+
-+	/*
-+	 * Notify the changes in the availability of the operable
-+	 * frequency/voltage list.
-+	 */
-+	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_ADD, new_opp);
-+	return 0;
-+
-+free_opp:
-+	_opp_remove(dev_opp, new_opp, false);
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
-+	return ret;
-+}
-+
-+static struct dev_pm_opp *_get_opp_from_np(struct device_opp *dev_opp,
-+					   struct device_node *np)
-+{
-+	struct dev_pm_opp *opp;
-+
-+	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node)
-+		if (opp->np == np)
-+			return opp;
++	list_for_each_entry(list_dev, &dev_opp->dev_list, node)
++		if (list_dev->dev == dev)
++			return list_dev;
 +
 +	return NULL;
 +}
 +
-+static void _opp_fill_opp_next(struct device *dev)
++static int _list_dev_count(struct device_opp *dev_opp)
 +{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *opp;
-+	int i;
++	struct device_list_opp *list_dev;
++	int count = 0;
 +
-+	dev_opp = _find_device_opp(dev);
-+	if (WARN_ON(!dev_opp))
-+		return;
-+
-+	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
-+		if (!opp->next)
-+			continue;
-+
-+		for (i = 0; i < opp->next_count; i++) {
-+			opp->next[i] = _get_opp_from_np(dev_opp, opp->next_np[i]);
-+			if (!opp->next[i])
-+				dev_err(dev, "%s: Have np but no OPP: %d\n",
-+					__func__, i);
-+		}
-+	}
-+}
-+
-+/**
-  * dev_pm_opp_add()  - Add an OPP table from a table definitions
-  * @dev:	device for which we do this operation
-  * @freq:	Frequency in Hz for this OPP
-@@ -851,29 +1039,89 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
- 
- #ifdef CONFIG_OF
--/**
-- * of_init_opp_table() - Initialize opp table from device tree
-- * @dev:	device pointer used to lookup device OPPs.
-- *
-- * Register the initial OPP table with the OPP library for given device.
-- *
-- * Locking: The internal device_opp and opp structures are RCU protected.
-- * Hence this function indirectly uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-- *
-- * Return:
-- * 0		On success OR
-- *		Duplicate OPPs (both freq and volt are same) and opp->available
-- * -EEXIST	Freq are same and volt are different OR
-- *		Duplicate OPPs (both freq and volt are same) and !opp->available
-- * -ENOMEM	Memory allocation failure
-- * -ENODEV	when 'operating-points' property is not found or is invalid data
-- *		in device node.
-- * -ENODATA	when empty 'operating-points' property is found
-- */
--int of_init_opp_table(struct device *dev)
-+void of_free_opp_table(struct device *dev);
-+
-+/* Returns opp descriptor node from its phandle. Caller must do of_node_put() */
-+static struct device_node *
-+_of_get_opp_desc_node_from_prop(struct device *dev, const struct property *prop)
-+{
-+	struct device_node *opp_np;
-+
-+	opp_np = of_find_node_by_phandle(be32_to_cpup(prop->value));
-+	if (!opp_np) {
-+		dev_err(dev, "%s: Prop: %s contains invalid opp desc phandle\n",
-+			__func__, prop->name);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	return opp_np;
-+}
-+
-+/* Returns opp descriptor node for a device. Caller must do of_node_put() */
-+struct device_node *of_get_opp_desc_node(struct device *dev)
-+{
-+	const struct property *prop;
-+
-+	prop = of_find_property(dev->of_node, "operating-points-v2", NULL);
-+	if (!prop)
-+		return ERR_PTR(-ENODEV);
-+	if (!prop->value)
-+		return ERR_PTR(-ENODATA);
-+
-+	/*
-+	 * There should be only ONE phandle present in "operating-points-v2"
-+	 * property.
-+	 */
-+	if (prop->length != sizeof(__be32)) {
-+		dev_err(dev, "%s: Invalid opp desc phandle\n", __func__);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	return _of_get_opp_desc_node_from_prop(dev, prop);
-+}
-+EXPORT_SYMBOL_GPL(of_get_opp_desc_node);
-+
-+/* Initializes OPP tables based on new bindings */
-+static int _of_init_opp_table_v2(struct device *dev,
-+				 const struct property *prop)
-+{
-+	struct device_node *opp_np, *np;
-+	int ret = 0, count = 0;
-+
-+	/* Get opp node */
-+	opp_np = _of_get_opp_desc_node_from_prop(dev, prop);
-+	if (IS_ERR(opp_np))
-+		return PTR_ERR(opp_np);
-+
-+	/* We have opp-list node now, iterate over it and add OPPs */
-+	for_each_available_child_of_node(opp_np, np) {
++	list_for_each_entry(list_dev, &dev_opp->dev_list, node)
 +		count++;
 +
-+		ret = _opp_add_dynamic_v2(dev, np, false);
-+		if (ret) {
-+			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
-+				ret);
-+			break;
-+		}
-+	}
-+
-+	/* There should be one of more OPP defined */
-+	if (WARN_ON(!count))
-+		goto put_opp_np;
-+
-+	if (ret)
-+		of_free_opp_table(dev);
-+	else
-+		_opp_fill_opp_next(dev);
-+
-+put_opp_np:
-+	of_node_put(opp_np);
-+
-+	return ret;
++	return count;
 +}
 +
-+/* Initializes OPP tables based on old-deprecated bindings */
-+static int _of_init_opp_table_v1(struct device *dev)
- {
- 	const struct property *prop;
- 	const __be32 *val;
-@@ -908,6 +1156,50 @@ int of_init_opp_table(struct device *dev)
- 
- 	return 0;
- }
-+
-+/**
-+ * of_init_opp_table() - Initialize opp table from device tree
-+ * @dev:	device pointer used to lookup device OPPs.
-+ *
-+ * Register the initial OPP table with the OPP library for given device.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function indirectly uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ *
-+ * Return:
-+ * 0		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM	Memory allocation failure
-+ * -ENODEV	when 'operating-points' property is not found or is invalid data
-+ *		in device node.
-+ * -ENODATA	when empty 'operating-points' property is found
-+ */
-+int of_init_opp_table(struct device *dev)
++static struct device_opp *_managed_opp(struct device_node *np)
 +{
-+	const struct property *prop;
++	struct device_opp *dev_opp;
 +
-+	/*
-+	 * OPPs have two version of bindings now. The older one is deprecated,
-+	 * try for the new binding first.
-+	 */
-+	prop = of_find_property(dev->of_node, "operating-points-v2", NULL);
-+	if (!prop) {
-+		/*
-+		 * Try old-deprecated bindings for backward compatibility with
-+		 * older dtbs.
-+		 */
-+		return _of_init_opp_table_v1(dev);
-+	}
++	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
++		if (dev_opp->np == np) {
++			/* Managed only if the OPPs are shared */
++			if (dev_opp->shared_opp)
++				return dev_opp;
++			else
++				return NULL;
++		}
 +
-+	if (!prop->value)
-+		return -ENODATA;
-+	return _of_init_opp_table_v2(dev, prop);
++	return NULL;
 +}
- EXPORT_SYMBOL_GPL(of_init_opp_table);
++
+ /**
+  * _find_device_opp() - find device_opp struct using device pointer
+  * @dev:	device pointer used to lookup device OPPs
+@@ -150,21 +208,18 @@ do {									\
+  */
+ static struct device_opp *_find_device_opp(struct device *dev)
+ {
+-	struct device_opp *tmp_dev_opp, *dev_opp = ERR_PTR(-ENODEV);
++	struct device_opp *dev_opp;
+ 
+ 	if (unlikely(IS_ERR_OR_NULL(dev))) {
+ 		pr_err("%s: Invalid parameters\n", __func__);
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	list_for_each_entry_rcu(tmp_dev_opp, &dev_opp_list, node) {
+-		if (tmp_dev_opp->dev == dev) {
+-			dev_opp = tmp_dev_opp;
+-			break;
+-		}
+-	}
++	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
++		if (_find_list_dev(dev, dev_opp))
++			return dev_opp;
+ 
+-	return dev_opp;
++	return ERR_PTR(-ENODEV);
+ }
  
  /**
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index cec2d4540914..9949d07a93f9 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -115,6 +115,7 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
- int of_init_opp_table(struct device *dev);
- void of_free_opp_table(struct device *dev);
-+struct device_node *of_get_opp_desc_node(struct device *dev);
- #else
- static inline int of_init_opp_table(struct device *dev)
- {
-@@ -124,6 +125,11 @@ static inline int of_init_opp_table(struct device *dev)
- static inline void of_free_opp_table(struct device *dev)
- {
+@@ -425,6 +480,38 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
  }
-+
-+static inline struct device_node *of_get_opp_desc_node(struct device *dev)
-+{
-+	return ERR_PTR(-EINVAL);
-+}
- #endif
+ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
  
- #endif		/* __LINUX_OPP_H__ */
++static struct device_list_opp *_add_list_dev(struct device *dev,
++					     struct device_opp *dev_opp)
++{
++	struct device_list_opp *list_dev;
++
++	list_dev = kzalloc(sizeof(*list_dev), GFP_KERNEL);
++	if (!list_dev)
++		return NULL;
++
++	/* Initialize list-dev */
++	list_add_rcu(&list_dev->node, &dev_opp->dev_list);
++	list_dev->dev = dev;
++
++	return list_dev;
++}
++
++static void _kfree_list_dev_rcu(struct rcu_head *head)
++{
++	struct device_list_opp *list_dev;
++
++	list_dev = container_of(head, struct device_list_opp, rcu_head);
++	kfree_rcu(list_dev, rcu_head);
++}
++
++static void _remove_list_dev(struct device_list_opp *list_dev,
++			     struct device_opp *dev_opp)
++{
++	list_del(&list_dev->node);
++	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
++		  _kfree_list_dev_rcu);
++}
++
+ /**
+  * _kfree_opp_rcu() - Free OPP RCU handler
+  * @head:	RCU head
+@@ -478,6 +565,17 @@ static void _opp_remove(struct device_opp *dev_opp,
+ 
+ 	/* Free device if all OPPs are freed */
+ 	if (list_empty(&dev_opp->opp_list)) {
++		struct device_list_opp *list_dev;
++
++		list_dev = list_first_entry(&dev_opp->dev_list,
++					    struct device_list_opp, node);
++
++		_remove_list_dev(list_dev, dev_opp);
++
++		/* dev_list must be empty now */
++		WARN_ON(!list_empty(&dev_opp->dev_list));
++
++		/* Free dev-opp */
+ 		list_del_rcu(&dev_opp->node);
+ 		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
+ 			  _kfree_device_rcu);
+@@ -541,6 +639,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+ static struct device_opp *_add_device_opp(struct device *dev)
+ {
+ 	struct device_opp *dev_opp;
++	struct device_list_opp *list_dev;
+ 
+ 	/*
+ 	 * Allocate a new device OPP table. In the infrequent case where a new
+@@ -550,7 +649,13 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ 	if (!dev_opp)
+ 		return NULL;
+ 
+-	dev_opp->dev = dev;
++	INIT_LIST_HEAD(&dev_opp->dev_list);
++	list_dev = _add_list_dev(dev, dev_opp);
++	if (!list_dev) {
++		kfree(dev_opp);
++		return NULL;
++	}
++
+ 	srcu_init_notifier_head(&dev_opp->srcu_head);
+ 	INIT_LIST_HEAD(&dev_opp->opp_list);
+ 
+@@ -584,7 +689,8 @@ static struct dev_pm_opp *_allocate_opp(struct device *dev,
+ 	return opp;
+ }
+ 
+-static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
++static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
++		    struct device_opp *dev_opp)
+ {
+ 	struct dev_pm_opp *opp = NULL;
+ 	struct list_head *head = &dev_opp->opp_list;
+@@ -602,7 +708,7 @@ static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
+ 
+ 	/* Duplicate OPPs ? */
+ 	if (opp && new_opp->rate == opp->rate) {
+-		dev_warn(dev_opp->dev,
++		dev_warn(dev,
+ 			 "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+ 			 __func__, opp->rate, opp->u_volt, opp->available,
+ 			 new_opp->rate, new_opp->u_volt, new_opp->available);
+@@ -665,7 +771,7 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 	new_opp->available = true;
+ 	new_opp->dynamic = dynamic;
+ 
+-	ret = _opp_add(new_opp, dev_opp);
++	ret = _opp_add(dev, new_opp, dev_opp);
+ 	if (ret)
+ 		goto free_opp;
+ 
+@@ -789,7 +895,7 @@ static int _opp_add_dynamic_v2(struct device *dev, struct device_node *np,
+ 		}
+ 	}
+ 
+-	ret = _opp_add(new_opp, dev_opp);
++	ret = _opp_add(dev, new_opp, dev_opp);
+ 	if (ret)
+ 		goto free_opp;
+ 
+@@ -826,16 +932,11 @@ static struct dev_pm_opp *_get_opp_from_np(struct device_opp *dev_opp,
+ 	return NULL;
+ }
+ 
+-static void _opp_fill_opp_next(struct device *dev)
++static void _opp_fill_opp_next(struct device_opp *dev_opp, struct device *dev)
+ {
+-	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp;
+ 	int i;
+ 
+-	dev_opp = _find_device_opp(dev);
+-	if (WARN_ON(!dev_opp))
+-		return;
+-
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+ 		if (!opp->next)
+ 			continue;
+@@ -1086,6 +1187,7 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 				 const struct property *prop)
+ {
+ 	struct device_node *opp_np, *np;
++	struct device_opp *dev_opp;
+ 	int ret = 0, count = 0;
+ 
+ 	/* Get opp node */
+@@ -1093,6 +1195,14 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 	if (IS_ERR(opp_np))
+ 		return PTR_ERR(opp_np);
+ 
++	dev_opp = _managed_opp(opp_np);
++	if (dev_opp) {
++		/* OPPs are already managed */
++		if (!_add_list_dev(dev, dev_opp))
++			ret = -ENOMEM;
++		goto put_opp_np;
++	}
++
+ 	/* We have opp-list node now, iterate over it and add OPPs */
+ 	for_each_available_child_of_node(opp_np, np) {
+ 		count++;
+@@ -1109,10 +1219,19 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 	if (WARN_ON(!count))
+ 		goto put_opp_np;
+ 
+-	if (ret)
++	if (ret) {
+ 		of_free_opp_table(dev);
+-	else
+-		_opp_fill_opp_next(dev);
++	} else {
++		/* Update np and shared_opp */
++		dev_opp = _find_device_opp(dev);
++		if (WARN_ON(!dev_opp))
++			goto put_opp_np;
++
++		dev_opp->np = opp_np;
++		if (of_get_property(opp_np, "shared-opp", NULL))
++			dev_opp->shared_opp = true;
++		_opp_fill_opp_next(dev_opp, dev);
++	}
+ 
+ put_opp_np:
+ 	of_node_put(opp_np);
+@@ -1219,6 +1338,9 @@ void of_free_opp_table(struct device *dev)
+ 	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp, *tmp;
+ 
++	/* Hold our list modification lock here */
++	mutex_lock(&dev_opp_list_lock);
++
+ 	/* Check for existing list for 'dev' */
+ 	dev_opp = _find_device_opp(dev);
+ 	if (IS_ERR(dev_opp)) {
+@@ -1228,18 +1350,21 @@ void of_free_opp_table(struct device *dev)
+ 			     IS_ERR_OR_NULL(dev) ?
+ 					"Invalid device" : dev_name(dev),
+ 			     error);
+-		return;
++		goto unlock;
+ 	}
+ 
+-	/* Hold our list modification lock here */
+-	mutex_lock(&dev_opp_list_lock);
+-
+-	/* Free static OPPs */
+-	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
+-		if (!opp->dynamic)
+-			_opp_remove(dev_opp, opp, true);
++	/* Find if dev_opp manages a single device */
++	if (_list_dev_count(dev_opp) == 1) {
++		/* Free static OPPs */
++		list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
++			if (!opp->dynamic)
++				_opp_remove(dev_opp, opp, true);
++		}
++	} else {
++		_remove_list_dev(_find_list_dev(dev, dev_opp), dev_opp);
+ 	}
+ 
++unlock:
+ 	mutex_unlock(&dev_opp_list_lock);
+ }
+ EXPORT_SYMBOL_GPL(of_free_opp_table);
 -- 
 2.3.0.rc0.44.ga94655d
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
