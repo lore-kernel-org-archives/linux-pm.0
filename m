@@ -1,93 +1,59 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 20/20] arm: mach-pxa: Decrement the power supply's
- device reference counter
-Date: Wed, 11 Feb 2015 23:12:33 +0100
-Message-ID: <20150211221233.GD11313@amd>
-References: <1422629278-12202-1-git-send-email-k.kozlowski@samsung.com>
- <1422629278-12202-21-git-send-email-k.kozlowski@samsung.com>
- <20150206134953.GA25683@amd>
- <1423233788.31516.5.camel@AMDC1943>
- <20150206145904.GA7872@amd>
- <1423476432.4909.15.camel@AMDC1943>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Wed, 11 Feb 2015 15:26:31 -0800
+Message-ID: <20150211232631.GE11190@codeaurora.org>
+References: <54D52F84.9050600@free.fr>
+ <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
+ <54D576B1.4000001@free.fr>
+ <54D903F6.3050608@codeaurora.org>
+ <54D93556.9050008@free.fr>
+ <54D93FFA.3090506@codeaurora.org>
+ <54D947B4.4080401@free.fr>
+ <54DB94B0.8020000@free.fr>
+ <20150211184515.GB11190@codeaurora.org>
+ <54DBD095.3040800@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:48381 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbbBKX0e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 18:26:34 -0500
 Content-Disposition: inline
-In-Reply-To: <1423476432.4909.15.camel@AMDC1943>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel
+In-Reply-To: <54DBD095.3040800@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>
 
-On Mon 2015-02-09 11:07:12, Krzysztof Kozlowski wrote:
-> On pi=C4=85, 2015-02-06 at 15:59 +0100, Pavel Machek wrote:
-> > On Fri 2015-02-06 15:43:08, Krzysztof Kozlowski wrote:
-> > > On pi=C4=85, 2015-02-06 at 14:49 +0100, Pavel Machek wrote:
-> > > > On Fri 2015-01-30 15:47:58, Krzysztof Kozlowski wrote:
-> > > > > Use power_supply_put() to decrement the power supply's device=
- reference
-> > > > > counter.
-> > > > >=20
-> > > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.=
-com>
-> > > > > Reviewed-by: Sebastian Reichel <sre@kernel.org>
-> > > >=20
-> > > > 11,13,20 nothing obviously wrong. But I'm not sure if I studied=
- them
-> > > > closely enough to warrant an ACK.
-> > > >=20
-> > > > It would be good to get this into kernel -- I seen no bad comme=
-nts,
-> > > > and it is not going to improve without merge into mainline.
-> > >=20
-> > > Thanks for looking at patchset. It would be really nice if this c=
-ould be
-> > > tested for some time in linux-next. Such testing would help a lot=
-=2E But I
-> > > need acks from various maintainers for that.
-> >=20
-> > Actually, you don't. The various maintainers clearly don't care at
-> > this point. They had enough time. So you select one maintainer you
-> > want to push this through, and you push it.
-> >=20
-> > Someone may complain, so you'll solve the feedback...
->=20
-> I am thinking also on another way of solving this huge-patch problem:
-> 1. Mark all drivers broken (CONFIG_BROKEN).
-> 2. Introduce change in power_supply_register() API. Broken drivers
->    will fail to build.
-> 3. Convert broken drivers to new API incrementally (one driver
->    per patch) marking them also non-broken.
->=20
-> This would be much easier to review but also this would break
-> build-bisectability for drivers and some platforms using them (like
-> OLPC, compal-laptop, ACPI).
+On 02/11, Mason wrote:
+> 
+> Looking at the difference between OF and !OF registration functions
+> in smp_twd.c
+> 
+> !OF
+>   if (twd_base || twd_evt) return -EBUSY;
+>   assign twd_ppi and twd_base
+>   twd_local_timer_common_register(NULL)
+> 
+> OF
+>   if (!is_smp() || !setup_max_cpus) return; // TO BE DELETED
+>   assign twd_ppi and twd_base
+>   twd_local_timer_common_register(np)
+> 
+> I suppose OF guarantees that the init code is called only once?
 
-It is easy enough to review as it is, playing with CONFIG_BROKEN will
-not improve it. Just push the patch...
+It's called as many times as there's a match with the
+corresponding CLOCKSOURCE_OF_DECLARE. In practice that's once.
 
-> I pushed the patchset here:
-> https://git.linaro.org/people/marek.szyprowski/linux-srpol.git/shortl=
-og/refs/heads/v3.19-next-power-supply-core-ownership
-> (actually this is v4: added acks/reviews and minor issue fixed; merge
-> window has opened so I'll wait with sending this to LKML).
+> (Hence the !OF guard code would be unnecessary.)
+> 
 
-Great... now you just need one of maintainers to merge it...
+The other difference is that OF based registration needs to use
+OF functions for irqs and ioremap whereas the non-OF code relies
+on the irqs being provided before hand and the ioremap done
+without OF functions.
 
-POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
-M:      Sebastian Reichel <sre@kernel.org>
-M:      Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-M:      David Woodhouse <dwmw2@infradead.org>
-									Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-input" =
-in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
