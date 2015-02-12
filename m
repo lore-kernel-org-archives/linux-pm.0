@@ -1,328 +1,128 @@
-From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
-Date: Thu, 12 Feb 2015 13:02:22 +0800
-Message-ID: <54DC33DE.9000300@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Thu, 12 Feb 2015 15:22:07 +0800
+Message-ID: <CAKohponaLt51hiHd=uTocK_fPPwRDgkse5wc_PGG5tFQNnvfAQ@mail.gmail.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
+	<20150212005220.GG11190@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:60498 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbbBLFC2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 12 Feb 2015 00:02:28 -0500
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:44063 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbbBLHWI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 02:22:08 -0500
+Received: by mail-ob0-f170.google.com with SMTP id va2so8282927obc.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2015 23:22:07 -0800 (PST)
+In-Reply-To: <20150212005220.GG11190@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, Viswanath
 
-Occasionally, the system can't come back up after suspend/resume
-due to problems of device suspending phase. This patch make
-PM_TRACE infrastructure cover device suspending phase of
-suspend/resume process, and the information in RTC can tell
-developers which device suspending function make system hang.
+On 12 February 2015 at 08:52, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> Here's some feedback on how we can't use OPPs (and OPPs in DT) on
+> qcom platforms.
+>
+> On these platforms the OPPs are not always frequency voltage
+> pairs. Sometimes they're a frequency voltage voltage triplet, or
 
-Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
----
- arch/x86/include/asm/pm-trace.h     |   36 +++++++++++++++++++++++++++++++++++
- arch/x86/include/asm/resume-trace.h |   21 --------------------
- drivers/base/power/main.c           |   20 +++++++++++++++---
- drivers/base/power/trace.c          |    6 ++--
- include/linux/pm-trace.h            |   35 ++++++++++++++++++++++++++++++++++
- include/linux/resume-trace.h        |   34 ---------------------------------
- kernel/power/main.c                 |    2 +-
- 7 files changed, 91 insertions(+), 63 deletions(-)
- create mode 100644 arch/x86/include/asm/pm-trace.h
- delete mode 100644 arch/x86/include/asm/resume-trace.h
- create mode 100644 include/linux/pm-trace.h
- delete mode 100644 include/linux/resume-trace.h
+So, making opp-microvolt an array of <target/min/max>, values should fix this?
+Do we also need a opp-microvolt-names array as well? or can we reused
+similar ones from the CPU node where regulator are defined.
 
-diff --git a/arch/x86/include/asm/pm-trace.h b/arch/x86/include/asm/pm-trace.h
-new file mode 100644
-index 0000000..09bd918
---- /dev/null
-+++ b/arch/x86/include/asm/pm-trace.h
-@@ -0,0 +1,36 @@
-+#ifndef _ASM_X86_PM_TRACE_H
-+#define _ASM_X86_PM_TRACE_H
-+
-+#include <asm/asm.h>
-+
-+#define TRACE_RESUME(user)					\
-+do {								\
-+	if (pm_trace_enabled) {					\
-+		const void *tracedata;				\
-+		asm volatile(_ASM_MOV " $1f,%0\n"		\
-+			     ".section .tracedata,\"a\"\n"	\
-+			     "1:\t.word %c1\n\t"		\
-+			     _ASM_PTR " %c2\n"			\
-+			     ".previous"			\
-+			     :"=r" (tracedata)			\
-+			     : "i" (__LINE__), "i" (__FILE__));	\
-+		generate_pm_trace(tracedata, user);		\
-+	}							\
-+} while (0)
-+
-+#define TRACE_SUSPEND(user)					\
-+do {								\
-+	if (pm_trace_enabled) {					\
-+		const void *tracedata;				\
-+		asm volatile(_ASM_MOV " $1f,%0\n"		\
-+			     ".section .tracedata,\"a\"\n"	\
-+			     "1:\t.word %c1\n\t"		\
-+			     _ASM_PTR " %c2\n"			\
-+			     ".previous"			\
-+			     :"=r" (tracedata)			\
-+			     : "i" (__LINE__), "i" (__FILE__));	\
-+		generate_pm_trace(tracedata, user);		\
-+	}							\
-+} while (0)
-+
-+#endif /* _ASM_X86_PM_TRACE_H */
-diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/resume-trace.h
-deleted file mode 100644
-index 3ff1c2c..0000000
---- a/arch/x86/include/asm/resume-trace.h
-+++ /dev/null
-@@ -1,21 +0,0 @@
--#ifndef _ASM_X86_RESUME_TRACE_H
--#define _ASM_X86_RESUME_TRACE_H
--
--#include <asm/asm.h>
--
--#define TRACE_RESUME(user)					\
--do {								\
--	if (pm_trace_enabled) {					\
--		const void *tracedata;				\
--		asm volatile(_ASM_MOV " $1f,%0\n"		\
--			     ".section .tracedata,\"a\"\n"	\
--			     "1:\t.word %c1\n\t"		\
--			     _ASM_PTR " %c2\n"			\
--			     ".previous"			\
--			     :"=r" (tracedata)			\
--			     : "i" (__LINE__), "i" (__FILE__));	\
--		generate_resume_trace(tracedata, user);		\
--	}							\
--} while (0)
--
--#endif /* _ASM_X86_RESUME_TRACE_H */
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9717d5f..3d874ec 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -23,7 +23,7 @@
- #include <linux/mutex.h>
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
--#include <linux/resume-trace.h>
-+#include <linux/pm-trace.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
- #include <linux/async.h>
-@@ -1017,6 +1017,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	char *info = NULL;
- 	int error = 0;
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND(0);
-+
- 	if (async_error)
- 		goto Complete;
- 
-@@ -1057,6 +1060,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 
- Complete:
- 	complete_all(&dev->power.completion);
-+	TRACE_SUSPEND(error);
- 	return error;
- }
- 
-@@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend_noirq, dev);
- 		return 0;
-@@ -1157,6 +1161,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	char *info = NULL;
- 	int error = 0;
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND(0);
-+
- 	__pm_runtime_disable(dev, false);
- 
- 	if (async_error)
-@@ -1198,6 +1205,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 		async_error = error;
- 
- Complete:
-+	TRACE_SUSPEND(error);
- 	complete_all(&dev->power.completion);
- 	return error;
- }
-@@ -1219,7 +1227,7 @@ static int device_suspend_late(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend_late, dev);
- 		return 0;
-@@ -1338,6 +1346,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	int error = 0;
- 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
-+	TRACE_DEVICE(dev);
-+	TRACE_SUSPEND(0);
-+
- 	dpm_wait_for_children(dev, async);
- 
- 	if (async_error)
-@@ -1444,6 +1455,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (error)
- 		async_error = error;
- 
-+	TRACE_SUSPEND(error);
- 	return error;
- }
- 
-@@ -1465,7 +1477,7 @@ static int device_suspend(struct device *dev)
- {
- 	reinit_completion(&dev->power.completion);
- 
--	if (pm_async_enabled && dev->power.async_suspend) {
-+	if (is_async(dev)) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index d94a1f5..a311cfa 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -7,7 +7,7 @@
-  * devices may be working.
-  */
- 
--#include <linux/resume-trace.h>
-+#include <linux/pm-trace.h>
- #include <linux/export.h>
- #include <linux/rtc.h>
- 
-@@ -154,7 +154,7 @@ EXPORT_SYMBOL(set_trace_device);
-  * it's not any guarantee, but it's a high _likelihood_ that
-  * the match is valid).
-  */
--void generate_resume_trace(const void *tracedata, unsigned int user)
-+void generate_pm_trace(const void *tracedata, unsigned int user)
- {
- 	unsigned short lineno = *(unsigned short *)tracedata;
- 	const char *file = *(const char **)(tracedata + 2);
-@@ -164,7 +164,7 @@ void generate_resume_trace(const void *tracedata, unsigned int user)
- 	file_hash_value = hash_string(lineno, file, FILEHASH);
- 	set_magic_time(user_hash_value, file_hash_value, dev_hash_value);
- }
--EXPORT_SYMBOL(generate_resume_trace);
-+EXPORT_SYMBOL(generate_pm_trace);
- 
- extern char __tracedata_start, __tracedata_end;
- static int show_file_hash(unsigned int value)
-diff --git a/include/linux/pm-trace.h b/include/linux/pm-trace.h
-new file mode 100644
-index 0000000..ecbde7a
---- /dev/null
-+++ b/include/linux/pm-trace.h
-@@ -0,0 +1,35 @@
-+#ifndef PM_TRACE_H
-+#define PM_TRACE_H
-+
-+#ifdef CONFIG_PM_TRACE
-+#include <asm/pm-trace.h>
-+#include <linux/types.h>
-+
-+extern int pm_trace_enabled;
-+
-+static inline int pm_trace_is_enabled(void)
-+{
-+       return pm_trace_enabled;
-+}
-+
-+struct device;
-+extern void set_trace_device(struct device *);
-+extern void generate_pm_trace(const void *tracedata, unsigned int user);
-+extern int show_trace_dev_match(char *buf, size_t size);
-+
-+#define TRACE_DEVICE(dev) do { \
-+	if (pm_trace_enabled) \
-+		set_trace_device(dev); \
-+	} while(0)
-+
-+#else
-+
-+static inline int pm_trace_is_enabled(void) { return 0; }
-+
-+#define TRACE_DEVICE(dev) do { } while (0)
-+#define TRACE_RESUME(dev) do { } while (0)
-+#define TRACE_SUSPEND(dev) do { } while (0)
-+
-+#endif
-+
-+#endif
-diff --git a/include/linux/resume-trace.h b/include/linux/resume-trace.h
-deleted file mode 100644
-index f31db23..0000000
---- a/include/linux/resume-trace.h
-+++ /dev/null
-@@ -1,34 +0,0 @@
--#ifndef RESUME_TRACE_H
--#define RESUME_TRACE_H
--
--#ifdef CONFIG_PM_TRACE
--#include <asm/resume-trace.h>
--#include <linux/types.h>
--
--extern int pm_trace_enabled;
--
--static inline int pm_trace_is_enabled(void)
--{
--       return pm_trace_enabled;
--}
--
--struct device;
--extern void set_trace_device(struct device *);
--extern void generate_resume_trace(const void *tracedata, unsigned int user);
--extern int show_trace_dev_match(char *buf, size_t size);
--
--#define TRACE_DEVICE(dev) do { \
--	if (pm_trace_enabled) \
--		set_trace_device(dev); \
--	} while(0)
--
--#else
--
--static inline int pm_trace_is_enabled(void) { return 0; }
--
--#define TRACE_DEVICE(dev) do { } while (0)
--#define TRACE_RESUME(dev) do { } while (0)
--
--#endif
--
--#endif
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 9a59d04..86e8157 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -11,7 +11,7 @@
- #include <linux/export.h>
- #include <linux/kobject.h>
- #include <linux/string.h>
--#include <linux/resume-trace.h>
-+#include <linux/pm-trace.h>
- #include <linux/workqueue.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
--- 1.7.1
+> frequency voltage current triplet. I know that the OPP framework
 
+so we do need opp-milliamp here..
+
+> in the kernel doesn't support more than frequency voltage pairs,
+> but that doesn't mean it can't in the future, and if it needs to
+> do so the DT bindings shouldn't need a v3 revision.
+
+Sure.
+
+> Furthermore, we have a large number of OPP sets that apply to
+> different speed bins and silicon characteristics of the SoC. In
+> our systems we read some efuses (an eeprom of sorts) that tell us
+> to use a certain set of OPPs because the silicon is so fast or
+> has these certain characteristics. The bootloader is *not*
+> reading these fuses and populating OPPs in DT. So right now we
+> just put all these custom OPPish tables in DT and then pick the
+> right one based on a node name match constructed from the bits we
+> read in the efuses. How can we express this in DT with these
+> bindings?
+
+What about keeping things as is in DT and disabling the OPPs which
+you don't support at boot? And only keep enabled the set of OPPs
+that you want to use based on these efuses ?
+
+> For example, on msm8974 we have a frequency voltage current
+> triplet and there are 18 different sets of these triplets, each
+> with 23 triplets per set. We could encode all of these tables as
+> a bunch of nodes with compatible = "operating-points-v2" but how
+> do we pick the right one to assign and populate for the CPU
+> devices? Do we need some sort of opp-fuse-map table that encodes
+> the information we want somewhere?
+
+Probably add all these groups in a single OPP descriptor and
+enable/disable them at runtime..
+
+>  qcom,opp-fuse-map = <speedX binY versionZ &oppN>,
+>                      ...
+>
+> but where do we put it? In the cpus node? Or maybe we can keep
+> doing the node name matching? That would required dropping the
+> oppN convention.
+
+Probably this might not be required then ?
+
+> Or take msm8916 as another example. On this device the voltage
+> for a few frequencies comes from the efuses and then we
+> interpolate the rest of the frequency voltage pairs. The speed
+> bins are picked from another set of efuses so we can do the
+> interpolation. Unfortunately we don't encode the frequency in the
+> fuses, so we rely on a handful of tables being defined somewhere
+> so that we know speed bin 0 means this set of frequencies and
+> speed bin 1 means this set of frequencies. How do we encode this
+> in DT?  Should we have the frequencies as OPPs and leave the
+> voltage part out, filling it in at runtime based on what we read
+
+Maybe yes.
+
+> out of the efuses? I assume it's desirable to have the frequency
+> tables in DT but we could also have them in the driver and if we
+> did that there wouldn't be any shared-opp property to set and
+> have the cpufreq-dt driver use to figure out clock sharing.
+
+Probably better keep them in DT. But for platforms with dynamic OPPs
+only, we will surely provide some API to make OPPs shared at runtime
+too..
+
+> Also sometimes we need to correlate OPPs between each other. For
+> example on msm8960/apq8064 if the CPU is running at a frequency
+> and voltage, the L2 needs to be running at another frequency,
+> voltage, and voltage (triplet). The L2 is in two power domains
+> but it only has one clock. Can/should this be expressed in DT? It
+
+Not sure.
+
+> certainly seems that it's at least easier to add it on as a
+> feature because OPPs are nodes instead of an array. But we need
+
+It wouldn't be a great idea to make these nodes too large just to support
+some corner cases, and we better try to find the best way out. But if
+we need it this way, we need it this way :)
+
+> to make sure we can support multiple regulators somehow, either
+> through correlated OPPs and multiple OPPs for a single device or
+> by being able to say opp-0-microvolt, opp-1-microvolt. I would
+
+an array would be better.
+
+> guess something similar could happen if there were two clocks and
+> one regulator although I've never seen such a scenario in
+> practice.
+
+Isn't this common? A single regulator voltage supporting multiple clock
+rates? Or did I misunderstood it :)
+
+We can have separate OPP nodes in this case.
