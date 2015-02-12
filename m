@@ -1,164 +1,277 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 05/18] cpufreq: Manage governor usage history with 'policy->last_governor'
-Date: Wed, 11 Feb 2015 19:03:34 -0800
-Message-ID: <54DC1806.9040001@codeaurora.org>
-References: <cover.1422346933.git.viresh.kumar@linaro.org> <bc7154266269beb8c6b9b3d56b529b64db33d2e2.1422346933.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 06/18] cpufreq: Reuse policy list instead of per-cpu variable
+ 'cpufreq_cpu_data'
+Date: Wed, 11 Feb 2015 19:13:15 -0800
+Message-ID: <54DC1A4B.7060405@codeaurora.org>
+References: <cover.1422346933.git.viresh.kumar@linaro.org> <f3c1c9e77b044ec1f39b3a80f42cde45bb258f39.1422346933.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:59741 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:60065 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbbBLDDg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 22:03:36 -0500
-In-Reply-To: <bc7154266269beb8c6b9b3d56b529b64db33d2e2.1422346933.git.viresh.kumar@linaro.org>
+	with ESMTP id S1754657AbbBLDNZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 22:13:25 -0500
+In-Reply-To: <f3c1c9e77b044ec1f39b3a80f42cde45bb258f39.1422346933.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
 
 On 01/27/2015 12:36 AM, Viresh Kumar wrote:
-> History of which governor was used last is common to all CPUs within a policy
-> and maintaining it per-cpu isn't the best approach for sure.
+> Managing a per-cpu variable (cpufreq_cpu_data) for keeping track of policy
+> structures is a bit overdone. Apart from wasting some bytes of memory to save
+> these pointers for each cpu, it also makes the code much more complex.
 >
-> Apart from wasting memory, this also increases the complexity of managing this
-> data structure as it has to be updated for all CPUs.
+> It would be much better if we have a single place which needs updates on
+> addition/removal of a policy.
 >
-> To make that somewhat simpler, lets store this information in a new field
-> 'last_governor' in struct cpufreq_policy and update it on removal of last cpu of
-> a policy.
+> We already have a list of active-policies and that can be used instead of this
+> per-cpu variable.
+>
+> Lets do it.
 >
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->   drivers/cpufreq/cpufreq.c | 24 ++++++++++++------------
->   include/linux/cpufreq.h   |  1 +
->   2 files changed, 13 insertions(+), 12 deletions(-)
+>   drivers/cpufreq/cpufreq.c | 124 ++++++++++++++++++++++------------------------
+>   1 file changed, 58 insertions(+), 66 deletions(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f253cf45f910..4ad1e46891b5 100644
+> index 4ad1e46891b5..7f947287ba46 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -57,9 +57,6 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+> @@ -49,11 +49,9 @@ static LIST_HEAD(cpufreq_governor_list);
+>
+>   /**
+>    * The "cpufreq driver" - the arch- or hardware-dependent low
+> - * level driver of CPUFreq support, and its spinlock. This lock
+> - * also protects the cpufreq_cpu_data array.
+> + * level driver of CPUFreq support, and its spinlock.
+>    */
+>   static struct cpufreq_driver *cpufreq_driver;
+> -static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
 >   static DEFINE_RWLOCK(cpufreq_driver_lock);
 >   DEFINE_MUTEX(cpufreq_governor_lock);
 >
-> -/* This one keeps track of the previously set governor of a removed CPU */
-> -static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
-> -
->   /* Flag to suspend/resume CPUFreq governors */
->   static bool cpufreq_suspended;
+> @@ -157,6 +155,54 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+>   }
+>   EXPORT_SYMBOL_GPL(get_cpu_idle_time);
 >
-> @@ -941,7 +938,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
->   	memcpy(&new_policy, policy, sizeof(*policy));
->
->   	/* Update governor of new_policy to the governor used before hotplug */
-> -	gov = find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
-> +	gov = find_governor(policy->last_governor);
+> +/* Only for cpufreq core internal use */
+> +struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+Rename this to cpufreq_cpu_get_unsafe or _nolock?
 
-Just change this to:
+Seems more descriptive. Hmm... you are just moving this function around. 
+Ok, your call.
 
-gov = policy->governor;
-
-No need to search for the governor again. It should already be valid for 
-policy that's being restored. For new policies, it would be NULL and 
-would get defaulted correctly.
-
->   	if (gov)
->   		pr_debug("Restoring governor %s for cpu %d\n",
->   				policy->governor->name, policy->cpu);
-> @@ -1366,8 +1363,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->   			return ret;
->   		}
->
-> -		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
-> -			policy->governor->name, CPUFREQ_NAME_LEN);
-> +		if (cpus == 1)
-> +			strncpy(policy->last_governor, policy->governor->name,
-> +				CPUFREQ_NAME_LEN);
->   	}
->
->   	if (cpu != policy->cpu) {
-> @@ -2096,7 +2094,8 @@ EXPORT_SYMBOL_GPL(cpufreq_register_governor);
->
->   void cpufreq_unregister_governor(struct cpufreq_governor *governor)
->   {
-> -	int cpu;
+> +{
 > +	struct cpufreq_policy *policy;
+> +
+> +	for_each_policy(policy)
+> +		if (cpumask_test_cpu(cpu, policy->cpus))
+> +			return policy;
+> +
+> +	return NULL;
+> +}
+> +
+> +struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+> +{
+> +	struct cpufreq_policy *policy = NULL;
 > +	unsigned long flags;
->
->   	if (!governor)
->   		return;
-> @@ -2104,12 +2103,13 @@ void cpufreq_unregister_governor(struct cpufreq_governor *governor)
->   	if (cpufreq_disabled())
->   		return;
->
-> -	for_each_present_cpu(cpu) {
-> -		if (cpu_online(cpu))
-> -			continue;
-> -		if (!strcmp(per_cpu(cpufreq_cpu_governor, cpu), governor->name))
-> -			strcpy(per_cpu(cpufreq_cpu_governor, cpu), "\0");
-> +	/* clear last_governor for all fallback policies */
+> +
+> +	if (cpu >= nr_cpu_ids)
+> +		return NULL;
+> +
+> +	if (!down_read_trylock(&cpufreq_rwsem))
+> +		return NULL;
+> +
+> +	/* get the cpufreq driver */
 > +	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	for_each_fallback_policy(policy) {
-> +		if (!strcmp(policy->last_governor, governor->name))
-> +			strcpy(policy->last_governor, "\0");
->   	}
+> +
+> +	if (cpufreq_driver) {
+> +		policy = cpufreq_cpu_get_raw(cpu);
+> +		if (policy)
+> +			kobject_get(&policy->kobj);
+> +	}
+> +
 > +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +	if (!policy)
+> +		up_read(&cpufreq_rwsem);
+> +
+> +	return policy;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
+> +
+> +void cpufreq_cpu_put(struct cpufreq_policy *policy)
+> +{
+> +	kobject_put(&policy->kobj);
+> +	up_read(&cpufreq_rwsem);
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+> +
+>   /*
+>    * This is a generic cpufreq init() routine which can be used by cpufreq
+>    * drivers of SMP systems. It will do following:
+> @@ -190,7 +236,7 @@ EXPORT_SYMBOL_GPL(cpufreq_generic_init);
 >
->   	mutex_lock(&cpufreq_governor_mutex);
->   	list_del(&governor->governor_list);
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index df6af4cfa26a..e326cddef6db 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -80,6 +80,7 @@ struct cpufreq_policy {
->   	struct cpufreq_governor	*governor; /* see below */
->   	void			*governor_data;
->   	bool			governor_enabled; /* governor start/stop flag */
-> +	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
+>   unsigned int cpufreq_generic_get(unsigned int cpu)
+>   {
+> -	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> +	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
 >
->   	struct work_struct	update; /* if update_policy() needs to be
->   					 * called, but you're in IRQ context */
+>   	if (!policy || IS_ERR(policy->clk)) {
+>   		pr_err("%s: No %s associated to cpu: %d\n",
+> @@ -202,49 +248,6 @@ unsigned int cpufreq_generic_get(unsigned int cpu)
+>   }
+>   EXPORT_SYMBOL_GPL(cpufreq_generic_get);
+>
+> -/* Only for cpufreq core internal use */
+> -struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+> -{
+> -	return per_cpu(cpufreq_cpu_data, cpu);
+> -}
+> -
+> -struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+> -{
+> -	struct cpufreq_policy *policy = NULL;
+> -	unsigned long flags;
+> -
+> -	if (cpu >= nr_cpu_ids)
+> -		return NULL;
+> -
+> -	if (!down_read_trylock(&cpufreq_rwsem))
+> -		return NULL;
+> -
+> -	/* get the cpufreq driver */
+> -	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+> -	if (cpufreq_driver) {
+> -		/* get the CPU */
+> -		policy = per_cpu(cpufreq_cpu_data, cpu);
+> -		if (policy)
+> -			kobject_get(&policy->kobj);
+> -	}
+> -
+> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -
+> -	if (!policy)
+> -		up_read(&cpufreq_rwsem);
+> -
+> -	return policy;
+> -}
+> -EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
+> -
+> -void cpufreq_cpu_put(struct cpufreq_policy *policy)
+> -{
+> -	kobject_put(&policy->kobj);
+> -	up_read(&cpufreq_rwsem);
+> -}
+> -EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+> -
+>   /*********************************************************************
+>    *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
+>    *********************************************************************/
+> @@ -964,7 +967,6 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>   				  unsigned int cpu, struct device *dev)
+>   {
+>   	int ret = 0;
+> -	unsigned long flags;
+>
+>   	if (has_target()) {
+>   		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> @@ -975,13 +977,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>   	}
+>
+>   	down_write(&policy->rwsem);
+> -
+> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+>   	cpumask_set_cpu(cpu, policy->cpus);
+> -	per_cpu(cpufreq_cpu_data, cpu) = policy;
+> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -
+>   	up_write(&policy->rwsem);
+>
+>   	if (has_target()) {
+> @@ -1105,7 +1101,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
+>
+>   static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   {
+> -	unsigned int j, cpu = dev->id;
+> +	unsigned int cpu = dev->id;
+>   	int ret = -ENOMEM;
+>   	struct cpufreq_policy *policy;
+>   	unsigned long flags;
+> @@ -1202,8 +1198,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   	}
+>
+>   	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	for_each_cpu(j, policy->cpus)
+> -		per_cpu(cpufreq_cpu_data, j) = policy;
+> +	list_add(&policy->policy_list, &cpufreq_policy_list);
+>   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+>   	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+> @@ -1265,10 +1260,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   				CPUFREQ_CREATE_POLICY, policy);
+>   	}
+>
+> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	list_add(&policy->policy_list, &cpufreq_policy_list);
+> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -
+>   	cpufreq_init_policy(policy);
+>
+>   	if (!recover_policy) {
+> @@ -1292,8 +1283,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   err_out_unregister:
+>   err_get_freq:
+>   	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	for_each_cpu(j, policy->cpus)
+> -		per_cpu(cpufreq_cpu_data, j) = NULL;
+> +	list_del(&policy->policy_list);
+>   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+>   	if (!recover_policy) {
+> @@ -1340,7 +1330,10 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>
+>   	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+>
+> -	policy = per_cpu(cpufreq_cpu_data, cpu);
+> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	policy = cpufreq_cpu_get_raw(cpu);
+> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+>   	if (!policy) {
+>   		pr_debug("%s: No cpu_data found\n", __func__);
+>   		return -EINVAL;
+> @@ -1404,7 +1397,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>   	struct cpufreq_policy *policy;
+>
+>   	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	policy = per_cpu(cpufreq_cpu_data, cpu);
+> +	policy = cpufreq_cpu_get_raw(cpu);
+>   	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+>   	if (!policy) {
+> @@ -1460,7 +1453,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>   		}
+>   	}
+>
+> -	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+>   	return 0;
+>   }
+>
 >
 
-Kinda Nack for a couple of reasons:
-
-1. For logical hotplugs, we don't really throw away the policy, so the 
-governor pointer should already be the last governor. We can just use 
-the pointer.
-
-2. For physical hotplug of CPUs, the policies are getting freed (I 
-assume and hope so). So, the "last_governor" field is going to be empty.
-
-3. Even if we continue storing the last_governor outside of the policy, 
-for physical hotplug of CPUs where the policy is getting recreated, I'm 
-not sure restoring the governor is the right thing to do anyway. I'll 
-explain various possible configurations below for the physical hotplug case:
-
-a. Single policy for all CPUs: The policy never gets removed since 
-there'll be at least one CPU present. So the save/restore code is never 
-used.
-
-b. Multi-cluster/policy system with per-policy tunables enabled: 
-Restoring the governor is bad/incomplete since the per-policy tunables 
-are lost when the governor gets POLICY_EXIT when the policy is 
-destroyed. IMO, in these cases, it's better to use the default governor 
-since we know that using it at cpufreq init with the default tunables 
-for it is a safe/nice configuration.
-
-c. Multi-cluster/policy system with global tunables: Restoring the 
-governor works for this case, but I think it's still better to use the 
-default governor to be consistent with (b) and IMO it makes more sense 
-since the CPU is getting physically added for the first time.
-
-So, long story short, I think this patch should be changed to:
-1. Use policy->governor instead of find_governor(last_governor)
-2. Use default governor if policy->governor is NULL
-3. Completely delete all references to last_governor.
+For the current version of the patch series, this patch looks ok. But 
+when you update it so that you don't have a separate "fallback policies 
+list", the change you made to __cpufreq_add_dev in this patch might need 
+more review.
 
 Thanks,
 Saravana
-
 
 -- 
 The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
