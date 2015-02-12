@@ -1,296 +1,154 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH 4/6 v2] PM / sleep: Make it possible to quiesce timers during suspend-to-idle
-Date: Thu, 12 Feb 2015 23:36:42 +0100
-Message-ID: <1735177.ictnQBr1LP@vostro.rjw.lan>
-References: <8292243.ibkmfVtXac@vostro.rjw.lan> <3761728.YL7DDdWRW2@vostro.rjw.lan>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v7 01/16] clk: tegra: Add binding for the Tegra124 DFLL
+ clocksource
+Date: Thu, 12 Feb 2015 23:42:44 +0100
+Message-ID: <20150212224242.GA23500@mithrandir>
+References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
+ <1420723339-30735-2-git-send-email-mikko.perttunen@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56053 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750959AbbBLWNi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 17:13:38 -0500
-In-Reply-To: <3761728.YL7DDdWRW2@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1420723339-30735-2-git-send-email-mikko.perttunen@kapsi.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: Alan Cox <alan@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, John Stultz <john.stultz@linaro.org>, Len Brown <len.brown@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The efficiency of suspend-to-idle depends on being able to keep CPUs
-in the deepest available idle states for as much time as possible.
-Ideally, they should only be brought out of idle by system wakeup
-interrupts.
+--Q68bSM7Ycu6FN28Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However, timer interrupts occurring periodically prevent that from
-happening and it is not practical to chase all of the "misbehaving"
-timers in a whack-a-mole fashion.  A much more effective approach is
-to suspend the local ticks for all CPUs and the entire timekeeping
-along the lines of what is done during full suspend, which also
-helps to keep suspend-to-idle and full suspend reasonably similar.
+On Thu, Jan 08, 2015 at 03:22:04PM +0200, Mikko Perttunen wrote:
+> From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+>=20
+> The DFLL is the main clocksource for the fast CPU cluster on Tegra124
+> and also provides automatic CPU rail voltage scaling as well. The DFLL
+> is a separate IP block from the usual Tegra124 clock-and-reset
+> controller, so it gets its own node in the device tree.
+>=20
+> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+> ---
+>  .../bindings/clock/nvidia,tegra124-dfll.txt        | 69 ++++++++++++++++=
+++++++
+>  1 file changed, 69 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra1=
+24-dfll.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll=
+=2Etxt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+> new file mode 100644
+> index 0000000..54c62ac
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+> @@ -0,0 +1,69 @@
+> +NVIDIA Tegra124 DFLL FCPU clocksource
+> +
+> +This binding uses the common clock binding:
+> +Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +
+> +The DFLL IP block on Tegra is a root clocksource designed for clocking
+> +the fast CPU cluster. It consists of a free-running voltage controlled
+> +oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
+> +control module that will automatically adjust the VDD_CPU voltage by
+> +communicating with an off-chip PMIC either via an I2C bus or via PWM sig=
+nals.
 
-The idea is to suspend the local tick on each CPU executing
-cpuidle_enter_freeze() and to make the last of them suspend the
-entire timekeeping.  That should prevent timer interrupts from
-triggering until an IO interrupt wakes up one of the CPUs.  It
-needs to be done with interrupts disabled on all of the CPUs,
-though, because otherwise the suspended clocksource might be
-accessed by an interrupt handler which might lead to fatal
-consequences.
+How would PWM communication work? The documentation below doesn't
+describe it, so perhaps either leave that part out until the binding is
+updated to support it, or maybe make an explicit note that this mode of
+operation isn't supported yet?
 
-Unfortunately, the existing ->enter callbacks provided by cpuidle
-drivers generally cannot be used for implementing that, because some
-of them re-enable interrupts temporarily and some idle entry methods
-cause interrupts to be re-enabled automatically on exit.  Also some
-of these callbacks manipulate local clock event devices of the CPUs
-which really shouldn't be done after suspending their ticks.
+> +Required properties:
+> +- compatible : should be "nvidia,tegra124-dfll-fcpu"
+> +- reg : Defines the following set of registers, in the order listed:
+> +        - registers for the DFLL control logic.
+> +        - registers for the I2C output logic.
+> +        - registers for the integrated I2C master controller.
+> +        - look-up table RAM for voltage register values.
 
-To overcome that difficulty, introduce a new cpuidle state callback,
-->enter_freeze, that will be guaranteed (1) to keep interrupts
-disabled all the time (and return with interrupts disabled) and (2)
-not to touch the CPU timer devices.  Modify cpuidle_enter_freeze() to
-look for the deepest available idle state with ->enter_freeze present
-and to make the CPU execute that callback with suspended tick (and the
-last of the online CPUs to execute it with suspended timekeeping).
+Why do these all need to be separate sets? According to the TRM this is
+a single IP block with a single register region, why the need to split
+them apart?
 
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+> +- interrupts: Should contain the DFLL block interrupt.
+> +- clocks: Must contain an entry for each entry in clock-names.
+> +  See ../clocks/clock-bindings.txt for details.
+> +- clock-names: Must include the following entries:
+> +  - soc: Clock source for the DFLL control logic.
+> +  - ref: The closed loop reference clock
+> +  - i2c: Clock source for the integrated I2C master.
+> +- #clock-cells: Must be 0.
+> +- clock-output-names: Name of the clock output.
+> +- vdd-cpu-supply: Regulator for the CPU voltage rail that the DFLL
+> +  hardware will start controlling.
 
-v1 -> v2:
- - Add WARN_ON(!irqs_disabled()) to enter_freeze_proper(),
- - add a comment about ->enter_freeze requirements to the definition
-   of struct cpuidle_state in cpuidle.h.
+How does the hardware control it? How do we go from regulator phandle to
+something that the hardware will know how to access?
 
----
- drivers/cpuidle/cpuidle.c |   49 ++++++++++++++++++++++++++++++++++++++++-----
- include/linux/cpuidle.h   |    9 ++++++++
- include/linux/tick.h      |    2 +
- kernel/time/tick-common.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/time/timekeeping.c |    4 +--
- kernel/time/timekeeping.h |    2 +
- 6 files changed, 109 insertions(+), 7 deletions(-)
+> +Required properties for the control loop parameters:
+> +- nvidia,sample-rate: Sample rate of the DFLL control loop.
+> +- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
+> +- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
+> +- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TR=
+M.
+> +- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TR=
+M.
+> +- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TR=
+M.
+> +- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in =
+the TRM.
+> +
+> +Required properties for I2C mode:
+> +- nvidia,i2c-fs-rate: I2C transfer rate, if using FS mode.
 
-Index: linux-pm/include/linux/tick.h
-===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -226,5 +226,7 @@ static inline void tick_nohz_task_switch
- 		__tick_nohz_task_switch(tsk);
- }
- 
-+extern void tick_freeze(void);
-+extern void tick_unfreeze(void);
- 
- #endif
-Index: linux-pm/kernel/time/tick-common.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-common.c
-+++ linux-pm/kernel/time/tick-common.c
-@@ -394,6 +394,56 @@ void tick_resume(void)
- 	}
- }
- 
-+static DEFINE_RAW_SPINLOCK(tick_freeze_lock);
-+static unsigned int tick_freeze_depth;
-+
-+/**
-+ * tick_freeze - Suspend the local tick and (possibly) timekeeping.
-+ *
-+ * Check if this is the last online CPU executing the function and if so,
-+ * suspend timekeeping.  Otherwise suspend the local tick.
-+ *
-+ * Call with interrupts disabled.  Must be balanced with %tick_unfreeze().
-+ * Interrupts must not be enabled before the subsequent %tick_unfreeze().
-+ */
-+void tick_freeze(void)
-+{
-+	raw_spin_lock(&tick_freeze_lock);
-+
-+	tick_freeze_depth++;
-+	if (tick_freeze_depth == num_online_cpus()) {
-+		timekeeping_suspend();
-+	} else {
-+		tick_suspend();
-+		tick_suspend_broadcast();
-+	}
-+
-+	raw_spin_unlock(&tick_freeze_lock);
-+}
-+
-+/**
-+ * tick_unfreeze - Resume the local tick and (possibly) timekeeping.
-+ *
-+ * Check if this is the first CPU executing the function and if so, resume
-+ * timekeeping.  Otherwise resume the local tick.
-+ *
-+ * Call with interrupts disabled.  Must be balanced with %tick_freeze().
-+ * Interrupts must not be enabled after the preceding %tick_freeze().
-+ */
-+void tick_unfreeze(void)
-+{
-+	raw_spin_lock(&tick_freeze_lock);
-+
-+	if (tick_freeze_depth == num_online_cpus())
-+		timekeeping_resume();
-+	else
-+		tick_resume();
-+
-+	tick_freeze_depth--;
-+
-+	raw_spin_unlock(&tick_freeze_lock);
-+}
-+
- /**
-  * tick_init - initialize the tick control
-  */
-Index: linux-pm/kernel/time/timekeeping.h
-===================================================================
---- linux-pm.orig/kernel/time/timekeeping.h
-+++ linux-pm/kernel/time/timekeeping.h
-@@ -16,5 +16,7 @@ extern int timekeeping_inject_offset(str
- extern s32 timekeeping_get_tai_offset(void);
- extern void timekeeping_set_tai_offset(s32 tai_offset);
- extern void timekeeping_clocktai(struct timespec *ts);
-+extern int timekeeping_suspend(void);
-+extern void timekeeping_resume(void);
- 
- #endif
-Index: linux-pm/kernel/time/timekeeping.c
-===================================================================
---- linux-pm.orig/kernel/time/timekeeping.c
-+++ linux-pm/kernel/time/timekeeping.c
-@@ -1168,7 +1168,7 @@ void timekeeping_inject_sleeptime64(stru
-  * xtime/wall_to_monotonic/jiffies/etc are
-  * still managed by arch specific suspend/resume code.
-  */
--static void timekeeping_resume(void)
-+void timekeeping_resume(void)
- {
- 	struct timekeeper *tk = &tk_core.timekeeper;
- 	struct clocksource *clock = tk->tkr.clock;
-@@ -1262,7 +1262,7 @@ static cycle_t dummy_clock_read(struct c
- 	return cycles_at_suspend;
- }
- 
--static int timekeeping_suspend(void)
-+int timekeeping_suspend(void)
- {
- 	struct timekeeper *tk = &tk_core.timekeeper;
- 	struct clocksource *clock = tk->tkr.clock;
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -50,6 +50,15 @@ struct cpuidle_state {
- 			int index);
- 
- 	int (*enter_dead) (struct cpuidle_device *dev, int index);
-+
-+	/*
-+	 * CPUs execute ->enter_freeze with the local tick or entire timekeeping
-+	 * suspended, so it must not re-enable interrupts at any point (even
-+	 * temporarily) or attempt to change states of clock event devices.
-+	 */
-+	void (*enter_freeze) (struct cpuidle_device *dev,
-+			      struct cpuidle_driver *drv,
-+			      int index);
- };
- 
- /* Idle State Flags */
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -20,6 +20,7 @@
- #include <linux/hrtimer.h>
- #include <linux/module.h>
- #include <linux/suspend.h>
-+#include <linux/tick.h>
- #include <trace/events/power.h>
- 
- #include "cpuidle.h"
-@@ -69,18 +70,20 @@ int cpuidle_play_dead(void)
-  * cpuidle_find_deepest_state - Find deepest state meeting specific conditions.
-  * @drv: cpuidle driver for the given CPU.
-  * @dev: cpuidle device for the given CPU.
-+ * @freeze: Whether or not the state should be suitable for suspend-to-idle.
-  */
- static int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
--				      struct cpuidle_device *dev)
-+				      struct cpuidle_device *dev, bool freeze)
- {
- 	unsigned int latency_req = 0;
--	int i, ret = CPUIDLE_DRIVER_STATE_START - 1;
-+	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
- 
- 	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
- 		struct cpuidle_state *s = &drv->states[i];
- 		struct cpuidle_state_usage *su = &dev->states_usage[i];
- 
--		if (s->disabled || su->disable || s->exit_latency <= latency_req)
-+		if (s->disabled || su->disable || s->exit_latency <= latency_req
-+		    || (freeze && !s->enter_freeze))
- 			continue;
- 
- 		latency_req = s->exit_latency;
-@@ -89,10 +92,31 @@ static int cpuidle_find_deepest_state(st
- 	return ret;
- }
- 
-+static void enter_freeze_proper(struct cpuidle_driver *drv,
-+				struct cpuidle_device *dev, int index)
-+{
-+	tick_freeze();
-+	/*
-+	 * The state used here cannot be a "coupled" one, because the "coupled"
-+	 * cpuidle mechanism enables interrupts and doing that with timekeeping
-+	 * suspended is generally unsafe.
-+	 */
-+	drv->states[index].enter_freeze(dev, drv, index);
-+	WARN_ON(!irqs_disabled());
-+	/*
-+	 * timekeeping_resume() that will be called by tick_unfreeze() for the
-+	 * last CPU executing it calls functions containing RCU read-side
-+	 * critical sections, so tell RCU about that.
-+	 */
-+	RCU_NONIDLE(tick_unfreeze());
-+}
-+
- /**
-  * cpuidle_enter_freeze - Enter an idle state suitable for suspend-to-idle.
-  *
-- * Find the deepest state available and enter it.
-+ * If there are states with the ->enter_freeze callback, find the deepest of
-+ * them and enter it with frozen tick.  Otherwise, find the deepest state
-+ * available and enter it normally.
-  */
- void cpuidle_enter_freeze(void)
- {
-@@ -100,7 +124,22 @@ void cpuidle_enter_freeze(void)
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int index;
- 
--	index = cpuidle_find_deepest_state(drv, dev);
-+	/*
-+	 * Find the deepest state with ->enter_freeze present, which guarantees
-+	 * that interrupts won't be enabled when it exits and allows the tick to
-+	 * be frozen safely.
-+	 */
-+	index = cpuidle_find_deepest_state(drv, dev, true);
-+	if (index >= 0) {
-+		enter_freeze_proper(drv, dev, index);
-+		return;
-+	}
-+
-+	/*
-+	 * It is not safe to freeze the tick, find the deepest state available
-+	 * at all and try to enter it normally.
-+	 */
-+	index = cpuidle_find_deepest_state(drv, dev, false);
- 	if (index >= 0)
- 		cpuidle_enter(drv, dev, index);
- 	else
+What's FS mode?
 
+> +
+> +Example:
+> +
+> +dfll@0,70110000 {
+
+Perhaps this should be "clock@0,70110000"?
+
+> +        compatible =3D "nvidia,tegra124-dfll";
+> +        reg =3D <0 0x70110000 0 0x100>, /* DFLL control */
+> +              <0 0x70110000 0 0x100>, /* I2C output control */
+> +              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
+> +              <0 0x70110200 0 0x100>; /* Look-up table RAM */
+> +        interrupts =3D <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+> +        clocks =3D <&tegra_car TEGRA124_CLK_DFLL_SOC>,
+> +                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
+> +                 <&tegra_car TEGRA124_CLK_I2C5>;
+
+If this controls I2C5 now, should it be documented that we can't use
+this controller in software while it is in use by DFLL?
+
+Thierry
+
+--Q68bSM7Ycu6FN28Q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJU3SxdAAoJEN0jrNd/PrOhZn8P/R+RqI5NoTtPgEW5f8ojoyjZ
+rqNppPezGsXcD+S9Z7mLOLYnUJ+ZPgMt4V6eYOyoOfwr7+a43C5M0c9dMT66gVgv
+P4NsKMb7xdcpbSuuUXzKMTlFNJYyUaOx1Us/kfXLNE27c8uJvH/glA1FwdR0+P9k
++iatDFkrUxFbXBzFAoXIcrTpWduLOuU93mayFoVtHfQSPwc6khcG8UKSYT/DWNJJ
+gUAoJEorbNPy4nblq8VcUdRuobKc/v7dueAVlnAa7mw+rqE2s0Eu0hLNqFQtVz2T
+GK5dB8Z0NAEh+lKxa7/piGyB8TjVSo1kmHhgwtQOwDUmKQBt/1dx+1dbxb1x5GAZ
+AUCYVcRu26GtnTxT1AOMHyjoReFIIfvKYkaSoG3TCcDiVZkLLI/UP/pBZTiHf/e2
+5eTrulvDHUWyM7VVQIu9oVPQvlvyLpGs/wrH0BDYGpEL91lcvmv2Kwz1lvPQ2rbD
+xYgioJCPzatvWVLlrlEFeoseMK/QHgZTEJKkZTcNA0GiFt29WIs4CebMmhSo5k0E
+bIRYTGHx2kJNLzU0GBhm4mYnzXnQr1lEJgybPPafZen4wL5nzhA8lZxkq50/7Kn3
+kI5sy2snoCrlTz+H+Dx+xidF4mEqqN7XXvkrQmbVsiqswaiYrBebFSQ7Tn2jDwgE
+wupUliJZ5jnwfUcM6npX
+=5CO2
+-----END PGP SIGNATURE-----
+
+--Q68bSM7Ycu6FN28Q--
