@@ -1,60 +1,64 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/6] PM / sleep: Make it possible to quiesce timers
- during suspend-to-idle
-Date: Thu, 12 Feb 2015 14:24:47 +0100
-Message-ID: <20150212132447.GX23123@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH 5/6] intel_idle: Add ->enter_freeze callbacks
+Date: Thu, 12 Feb 2015 14:26:43 +0100
+Message-ID: <20150212132643.GY23123@twins.programming.kicks-ass.net>
 References: <8292243.ibkmfVtXac@vostro.rjw.lan>
- <3761728.YL7DDdWRW2@vostro.rjw.lan>
+ <2407992.WHaFxrNaoa@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:44840 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755792AbbBLN0v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 08:26:51 -0500
 Content-Disposition: inline
-In-Reply-To: <3761728.YL7DDdWRW2@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <2407992.WHaFxrNaoa@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, John Stultz <john.stultz@linaro.org>, Len Brown <len.brown@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 11, 2015 at 05:03:44AM +0100, Rafael J. Wysocki wrote:
-> Index: linux-pm/include/linux/cpuidle.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/cpuidle.h
-> +++ linux-pm/include/linux/cpuidle.h
-> @@ -50,6 +50,10 @@ struct cpuidle_state {
->  			int index);
->  
->  	int (*enter_dead) (struct cpuidle_device *dev, int index);
-
-Do we want a comment here describing that enter_freeze() must not
-re-enable interrupts _ever_?
-
-To help people who want to enable this on their platform.
-
-> +
-> +	void (*enter_freeze) (struct cpuidle_device *dev,
-> +			      struct cpuidle_driver *drv,
-> +			      int index);
+On Wed, Feb 11, 2015 at 05:04:17AM +0100, Rafael J. Wysocki wrote:
+> @@ -131,28 +133,32 @@ static struct cpuidle_state nehalem_csta
+>  		.flags = MWAIT2flg(0x00),
+>  		.exit_latency = 3,
+>  		.target_residency = 6,
+> -		.enter = &intel_idle },
+> +		.enter = &intel_idle,
+> +		.enter_freeze = intel_idle_freeze, },
+>  	{
+>  		.name = "C1E-NHM",
+>  		.desc = "MWAIT 0x01",
+>  		.flags = MWAIT2flg(0x01),
+>  		.exit_latency = 10,
+>  		.target_residency = 20,
+> -		.enter = &intel_idle },
+> +		.enter = &intel_idle,
+> +		.enter_freeze = intel_idle_freeze, },
+>  	{
+>  		.name = "C3-NHM",
+>  		.desc = "MWAIT 0x10",
+>  		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency = 20,
+>  		.target_residency = 80,
+> -		.enter = &intel_idle },
+> +		.enter = &intel_idle,
+> +		.enter_freeze = intel_idle_freeze, },
+>  	{
+>  		.name = "C6-NHM",
+>  		.desc = "MWAIT 0x20",
+>  		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency = 200,
+>  		.target_residency = 800,
+> -		.enter = &intel_idle },
+> +		.enter = &intel_idle,
+> +		.enter_freeze = intel_idle_freeze, },
+>  	{
+>  		.enter = NULL }
 >  };
 
-> +static void enter_freeze_proper(struct cpuidle_driver *drv,
-> +				struct cpuidle_device *dev, int index)
-> +{
-> +	tick_freeze();
-> +	/*
-> +	 * The state used here cannot be a "coupled" one, because the "coupled"
-> +	 * cpuidle mechanism enables interrupts and doing that with timekeeping
-> +	 * suspended is generally unsafe.
-> +	 */
-> +	drv->states[index].enter_freeze(dev, drv, index);
+Why bother with enter_freeze() for any but the deepest state (C6 in this
+case)?
 
-	WARN_ON(!irqs_disabled());
-
-To go along with the comment and catch fail?
-
-> +	/*
-> +	 * timekeeping_resume() that will be called by tick_unfreeze() for the
-> +	 * last CPU executing it calls functions containing RCU read-side
-> +	 * critical sections, so tell RCU about that.
-> +	 */
-> +	RCU_NONIDLE(tick_unfreeze());
-> +}
+Also, should we ignore things like intel_idle.max_cstate for this
+selection?
