@@ -1,84 +1,54 @@
-From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Subject: Re: [PATCH v7 07/16] clk: tegra: Save/restore CCLKG_BURST_POLICY on
- suspend
-Date: Thu, 12 Feb 2015 16:24:40 +0200
-Message-ID: <20150212142440.GL20811@tbergstrom-lnx.Nvidia.com>
-References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
- <1420723339-30735-8-git-send-email-mikko.perttunen@kapsi.fi>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH RFC v4 1/3] PM / Runtime: Add an API pm_runtime_set_slave
+Date: Thu, 12 Feb 2015 10:13:36 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1502121010070.1209-100000@iolanthe.rowland.org>
+References: <CADGdYn6OwXgsGFspQva-q5WV5b_WB=G2PxZyhcETTgt8zY96ZQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:7990 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048AbbBLOZE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 09:25:04 -0500
-Content-Disposition: inline
-In-Reply-To: <1420723339-30735-8-git-send-email-mikko.perttunen@kapsi.fi>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADGdYn6OwXgsGFspQva-q5WV5b_WB=G2PxZyhcETTgt8zY96ZQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-On Thu, Jan 08, 2015 at 03:22:10PM +0200, Mikko Perttunen wrote:
-> From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-> 
-> Save and restore this register since the LP1 restore assembly routines
-> fiddle with it. Otherwise the CPU would keep running on PLLX after
-> resume from suspend even when DFLL was the original clocksource.
-> 
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Acked-By: Peter De Schrijver <pdeschrijver@nvidia.com>
+On Thu, 12 Feb 2015, amit daniel kachhap wrote:
 
-> ---
->  drivers/clk/tegra/clk-tegra124.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+> Hi Alan,
 > 
-> diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
-> index 623b77f..9354c42 100644
-> --- a/drivers/clk/tegra/clk-tegra124.c
-> +++ b/drivers/clk/tegra/clk-tegra124.c
-> @@ -89,6 +89,8 @@
->  #define PMC_PLLM_WB0_OVERRIDE 0x1dc
->  #define PMC_PLLM_WB0_OVERRIDE_2 0x2b0
->  
-> +#define CCLKG_BURST_POLICY 0x368
-> +
->  #define UTMIP_PLL_CFG2 0x488
->  #define UTMIP_PLL_CFG2_STABLE_COUNT(x) (((x) & 0xffff) << 6)
->  #define UTMIP_PLL_CFG2_ACTIVE_DLY_COUNT(x) (((x) & 0x3f) << 18)
-> @@ -121,6 +123,8 @@
->  #ifdef CONFIG_PM_SLEEP
->  static struct cpu_clk_suspend_context {
->  	u32 clk_csite_src;
-> +	u32 cclkg_burst;
-> +	u32 cclkg_divider;
->  } tegra124_cpu_clk_sctx;
->  #endif
->  
-> @@ -1331,12 +1335,22 @@ static void tegra124_cpu_clock_suspend(void)
->  	tegra124_cpu_clk_sctx.clk_csite_src =
->  				readl(clk_base + CLK_SOURCE_CSITE);
->  	writel(3 << 30, clk_base + CLK_SOURCE_CSITE);
-> +
-> +	tegra124_cpu_clk_sctx.cclkg_burst =
-> +				readl(clk_base + CCLKG_BURST_POLICY);
-> +	tegra124_cpu_clk_sctx.cclkg_divider =
-> +				readl(clk_base + CCLKG_BURST_POLICY + 4);
->  }
->  
->  static void tegra124_cpu_clock_resume(void)
->  {
->  	writel(tegra124_cpu_clk_sctx.clk_csite_src,
->  				clk_base + CLK_SOURCE_CSITE);
-> +
-> +	writel(tegra124_cpu_clk_sctx.cclkg_burst,
-> +					clk_base + CCLKG_BURST_POLICY);
-> +	writel(tegra124_cpu_clk_sctx.cclkg_divider,
-> +					clk_base + CCLKG_BURST_POLICY + 4);
->  }
->  #endif
->  
-> -- 
-> 2.2.1
-> 
+> On Mon, Feb 9, 2015 at 9:28 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Mon, 9 Feb 2015, Amit Daniel Kachhap wrote:
+> >
+> >> This API creates a pm runtime slave type device which does not itself
+> >> participates in pm runtime but depends on the master devices to power
+> >> manage them.
+> >
+> > This makes no sense.  How can a master device manage a slave device?
+> > Devices are managed by drivers, not by other devices.
+> May be my commit is not explaining the requirements completely and the
+> API name may not reflect the relevance. But If you see the 3rd patch
+> it has one clock use-case where this new feature is used and the
+> current pm runtime feature is not sufficient enough to handle it. I
+> have one more IOMMU use case also which is not part of this patch
+> series.
+
+Regardless, your description should say what is really happening.  The
+master device doesn't power-manage the clock; some driver power-manages
+it.
+
+> I am not sure if this approach is final but I looked at runtime.c file
+> and it has couple of API's like pm_runtime_forbid/allow which
+> blocks/unblocks the runtime callbacks according to driver requirement.
+> In the similar line I added this new API.
+
+forbid/allow blocks/unblocks runtime PM according to the user's 
+requirements, not the driver's requirements.
+
+> > Besides, doesn't the no_callbacks flag already do more or less what you
+> > want?
+> yes to some extent. But I thought its purpose is different so I added 1 more.
+
+The purpose doesn't matter.  If no_callbacks does what you want then 
+you should use it instead of adding another API.
+
+Alan Stern
