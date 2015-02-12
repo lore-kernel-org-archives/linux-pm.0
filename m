@@ -1,57 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 05/18] cpufreq: Manage governor usage history with 'policy->last_governor'
-Date: Thu, 12 Feb 2015 15:44:13 +0800
-Message-ID: <CAKohpomFvGXacyc-huavSyGxasrcKY19591OLMnAWY4hJHo9ow@mail.gmail.com>
+Subject: Re: [PATCH 06/18] cpufreq: Reuse policy list instead of per-cpu
+ variable 'cpufreq_cpu_data'
+Date: Thu, 12 Feb 2015 15:48:54 +0800
+Message-ID: <CAKohpokqVhT3DNaLJWEWVuUV4UiQsVUjLh8oSrZ6dezeQSde0g@mail.gmail.com>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
-	<bc7154266269beb8c6b9b3d56b529b64db33d2e2.1422346933.git.viresh.kumar@linaro.org>
-	<54DC1806.9040001@codeaurora.org>
+	<f3c1c9e77b044ec1f39b3a80f42cde45bb258f39.1422346933.git.viresh.kumar@linaro.org>
+	<54DC1A4B.7060405@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f42.google.com ([209.85.218.42]:40643 "EHLO
-	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbbBLHoO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 02:44:14 -0500
-Received: by mail-oi0-f42.google.com with SMTP id h136so1851574oig.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2015 23:44:13 -0800 (PST)
-In-Reply-To: <54DC1806.9040001@codeaurora.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:36064 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755114AbbBLHsz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 02:48:55 -0500
+Received: by mail-ob0-f169.google.com with SMTP id wp4so8439287obc.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2015 23:48:54 -0800 (PST)
+In-Reply-To: <54DC1A4B.7060405@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On 12 February 2015 at 11:03, Saravana Kannan <skannan@codeaurora.org> wrote:
->> -       gov = find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
->> +       gov = find_governor(policy->last_governor);
+On 12 February 2015 at 11:13, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> +struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
 >
-> Just change this to:
->
-> gov = policy->governor;
->
-> No need to search for the governor again. It should already be valid for
-> policy that's being restored. For new policies, it would be NULL and would
-> get defaulted correctly.
+> Rename this to cpufreq_cpu_get_unsafe or _nolock?
 
-No. Apart from the fact that one of my patches is making it NULL intentionally,
-here are the problems that I see with reusing the pointer:
-- All CPUs of a policy are down
-- The last used governor is removed (was built in as a module)
-- Now if we online the CPUs again, it wouldn't work as the pointer
-insn't usable.
-- Or if we insert the governor again, pointers would change and then
-onlining the
-CPUs wouldn't work..
+Its done in a later patch..
 
-> 2. For physical hotplug of CPUs, the policies are getting freed (I assume
-> and hope so). So, the "last_governor" field is going to be empty.
+> Seems more descriptive. Hmm... you are just moving this function around. Ok,
+> your call.
 
-Its not about it being empty. Its more about when we don't remove them
-physically..
+Yeah, as it has to be used earlier.
 
-> 3. Even if we continue storing the last_governor outside of the policy, for
-> physical hotplug of CPUs where the policy is getting recreated, I'm not sure
-> restoring the governor is the right thing to do anyway. I'll explain various
-> possible configurations below for the physical hotplug case:
+> For the current version of the patch series, this patch looks ok. But when
+> you update it so that you don't have a separate "fallback policies list",
+> the change you made to __cpufreq_add_dev in this patch might need more
+> review.
 
-We do it today as this is part of the per-cpu stuff now and my patch would fix
-it then :)
+Things will change, lets see how they look like..
