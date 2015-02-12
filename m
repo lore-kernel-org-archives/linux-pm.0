@@ -1,52 +1,36 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 10/18] cpufreq: Don't allow updating inactive-policies
- from sysfs
-Date: Wed, 11 Feb 2015 19:24:29 -0800
-Message-ID: <54DC1CED.2060906@codeaurora.org>
-References: <cover.1422346933.git.viresh.kumar@linaro.org> <935ec6b1fe24e17a95c71cfb01ea1bf27d03a5d5.1422346933.git.viresh.kumar@linaro.org>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Subject: [PATCH 0/5] Rename regulator_set_optimum_mode
+Date: Wed, 11 Feb 2015 19:35:26 -0800
+Message-ID: <1423712131-23795-1-git-send-email-bjorn.andersson@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60553 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbbBLDYf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Feb 2015 22:24:35 -0500
-In-Reply-To: <935ec6b1fe24e17a95c71cfb01ea1bf27d03a5d5.1422346933.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Sender: linux-scsi-owner@vger.kernel.org
+To: "James E.J. Bottomley" <JBottomley@parallels.com>, Felipe Balbi <balbi@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Vinayak Holikatti <vinholikatti@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
 
-On 01/27/2015 12:36 AM, Viresh Kumar wrote:
-> Later commits would change the way policies are managed today. Policies wouldn't
-> be freed on cpu hotplug (currently they aren't freed on suspend), and while the
-> CPU is offline, the sysfs cpufreq files would still be present.
->
-> User may accidentally try to update the sysfs files in following directory:
-> '/sys/devices/system/cpu/cpuX/cpufreq/'. And that would result in undefined
-> behavior as policy wouldn't be active then.
->
-> To disallow such accesses, sense if a policy is active or not while doing such
-> operations. This can be done easily by getting the policy again with
-> cpufreq_cpu_get_raw(), as that would traverse the list of active policies.
->
-> Apart from updating the store() routine, we also update __cpufreq_get() which
-> can call cpufreq_out_of_sync(). The later routine tries to update policy->cur
-> and start notifying kernel about it.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+Changing the name of the regulator_set_optimum_mode() to
+regulator_set_load() better reflects that the API is doing.
 
-I'm okay with the idea of this patch for now. I'll argue against this 
-after this series goes in as it'll need more non-trivial changes before 
-this idea of this patch can be removed.
+This series does the name change and move the current consumers
+over.
 
-But not acking it because I expect the code to change after combining 
-active/inactive list.
+Bjorn Andersson (5):
+  regulator: s/regulator_set_optimum_mode/regulator_set_load/
+  ufs: Rename of regulator_set_optimum_mode
+  usb: phy: ab8500-usb: Rename regulator_set_optimum_mode
+  usb: phy: phy-msm-usb: Rename regulator_set_optimum_mode
+  regulator: Drop temporary regulator_set_optimum_mode wrapper
 
--Saravana
+ Documentation/power/regulator/consumer.txt |  2 +-
+ drivers/regulator/core.c                   |  8 ++++----
+ drivers/scsi/ufs/ufshcd.c                  | 27 +++++++--------------------
+ drivers/usb/phy/phy-ab8500-usb.c           |  4 ++--
+ drivers/usb/phy/phy-msm-usb.c              | 15 +++++----------
+ include/linux/regulator/consumer.h         |  5 ++---
+ 6 files changed, 21 insertions(+), 40 deletions(-)
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+1.8.2.2
+
