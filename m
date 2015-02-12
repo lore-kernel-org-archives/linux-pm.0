@@ -1,54 +1,49 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH RFC v4 1/3] PM / Runtime: Add an API pm_runtime_set_slave
-Date: Thu, 12 Feb 2015 10:13:36 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1502121010070.1209-100000@iolanthe.rowland.org>
-References: <CADGdYn6OwXgsGFspQva-q5WV5b_WB=G2PxZyhcETTgt8zY96ZQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/6] PM / sleep: Re-implement suspend-to-idle handling
+Date: Thu, 12 Feb 2015 17:18 +0100
+Message-ID: <2207863.Kc1JySZNG4@vostro.rjw.lan>
+References: <8292243.ibkmfVtXac@vostro.rjw.lan> <5802443.EAllF0NTnO@vostro.rjw.lan> <20150212131420.GW23123@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn6OwXgsGFspQva-q5WV5b_WB=G2PxZyhcETTgt8zY96ZQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Pankaj Dubey <pankaj.dubey@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57950 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753412AbbBLPy4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Feb 2015 10:54:56 -0500
+In-Reply-To: <20150212131420.GW23123@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, John Stultz <john.stultz@linaro.org>, Len Brown <len.brown@intel.com>
 
-On Thu, 12 Feb 2015, amit daniel kachhap wrote:
-
-> Hi Alan,
+On Thursday, February 12, 2015 02:14:20 PM Peter Zijlstra wrote:
+> On Wed, Feb 11, 2015 at 05:01:09AM +0100, Rafael J. Wysocki wrote:
+> > +/* Suspend-to-idle state machnine. */
+> > +enum freeze_state {
+> > +	FREEZE_STATE_NONE,      /* Not suspended/suspending. */
+> > +	FREEZE_STATE_ENTER,     /* Enter suspend-to-idle. */
+> > +	FREEZE_STATE_WAKE,      /* Wake up from suspend-to-idle. */
+> > +};
+> > +
+> > +static enum freeze_state __read_mostly suspend_freeze_state;
+> > +static DEFINE_SPINLOCK(suspend_freeze_lock);
+> > +
+> > +bool idle_should_freeze(void)
+> > +{
+> > +	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
+> > +}
 > 
-> On Mon, Feb 9, 2015 at 9:28 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Mon, 9 Feb 2015, Amit Daniel Kachhap wrote:
-> >
-> >> This API creates a pm runtime slave type device which does not itself
-> >> participates in pm runtime but depends on the master devices to power
-> >> manage them.
-> >
-> > This makes no sense.  How can a master device manage a slave device?
-> > Devices are managed by drivers, not by other devices.
-> May be my commit is not explaining the requirements completely and the
-> API name may not reflect the relevance. But If you see the 3rd patch
-> it has one clock use-case where this new feature is used and the
-> current pm runtime feature is not sufficient enough to handle it. I
-> have one more IOMMU use case also which is not part of this patch
-> series.
+> I don't see how a compiler can propagate the unlikely through an actual
+> function call. AFAICT that needs to be an inline function for that to
+> work.
 
-Regardless, your description should say what is really happening.  The
-master device doesn't power-manage the clock; some driver power-manages
-it.
+Oh.
 
-> I am not sure if this approach is final but I looked at runtime.c file
-> and it has couple of API's like pm_runtime_forbid/allow which
-> blocks/unblocks the runtime callbacks according to driver requirement.
-> In the similar line I added this new API.
+That was silly, I'll send an update later today.
 
-forbid/allow blocks/unblocks runtime PM according to the user's 
-requirements, not the driver's requirements.
+> It would mean exposing suspend_freeze_state and the enum; is there a
+> reason not to want to do that?
 
-> > Besides, doesn't the no_callbacks flag already do more or less what you
-> > want?
-> yes to some extent. But I thought its purpose is different so I added 1 more.
+Not really.
 
-The purpose doesn't matter.  If no_callbacks does what you want then 
-you should use it instead of adding another API.
-
-Alan Stern
