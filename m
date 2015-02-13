@@ -1,118 +1,44 @@
-From: Travis <taskboxtester@gmail.com>
-Subject: Re: [PATCH 3/6] timekeeping: Make it safe to use the fast
- timekeeper while suspended
-Date: Thu, 12 Feb 2015 20:59:25 -0600
-Message-ID: <54dd6ab5.a7233c0a.4503.ffffdd6a@mx.google.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/6] PM / sleep: Support for quiescing timers during
+ suspend-to-idle
+Date: Fri, 13 Feb 2015 09:13:42 +0100
+Message-ID: <20150213081342.GM2896@worktop.programming.kicks-ass.net>
 References: <8292243.ibkmfVtXac@vostro.rjw.lan>
- <1521825.MkZ1sG1M8S@vostro.rjw.lan>
- <CALAqxLWEceEHf=nhrznmGK+cuGU2xs+9HNHowB=bBQpVu4jRJQ@mail.gmail.com>
- <2403461.IZYtJE89Ir@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2403461.IZYtJE89Ir@vostro.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <8292243.ibkmfVtXac@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Alan Cox <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Len Brown <len.brown@intel.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, John Stultz <john.stultz@linaro.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-U291bmRzIGdvb2QgdG8gbWUhCgpPbiBGZWIgMTIsIDIwMTUgODowMyBQTSwgIlJhZmFlbCBKLiBX
-eXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+IHdyb3RlOgo+Cj4gT24gRnJpZGF5LCBGZWJydWFy
-eSAxMywgMjAxNSAwODo1MzozOCBBTSBKb2huIFN0dWx0eiB3cm90ZTogCj4gPiBPbiBXZWQsIEZl
-YiAxMSwgMjAxNSBhdCAxMjowMyBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5c29ja2ku
-bmV0PiB3cm90ZTogCj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNv
-Y2tpQGludGVsLmNvbT4gCj4gPiA+IAo+ID4gPiBUaGVvcmV0aWNhbGx5LCBrdGltZV9nZXRfbW9u
-b19mYXN0X25zKCkgbWF5IGJlIGV4ZWN1dGVkIGFmdGVyIAo+ID4gPiB0aW1la2VlcGluZyBoYXMg
-YmVlbiBzdXNwZW5kZWQgKG9yIGJlZm9yZSBpdCBpcyByZXN1bWVkKSB3aGljaCAKPiA+ID4gaW4g
-dHVybiBtYXkgbGVhZCB0byB1bmRlZmluZWQgYmVoYXZpb3IsIGZvciBleGFtcGxlLCB3aGVuIHRo
-ZSAKPiA+ID4gY2xvY2tzb3VyY2UgcmVhZCBmcm9tIHRpbWVrZWVwaW5nX2dldF9ucygpIGNhbGxl
-ZCBieSBpdCBpcyAKPiA+ID4gbm90IGFjY2Vzc2libGUgYXQgdGhhdCB0aW1lLiAKPiA+IAo+ID4g
-QW5kIHRoZSBjYWxsZXJzIG9mIHRoZSBrdGltZV9nZXRfbW9ub19mYXN0X25zKCkgaGF2ZSB0byBn
-ZXQgYmFjayBhIAo+ID4gdmFsdWU/IAo+Cj4gWWVzLCB0aGV5IGRvLiAKPgo+ID4gT3IgY2FuIHdl
-IHJldHVybiBhbiBlcnJvciBvbiB0aW1la2VlcGluZ19zdXNwZW5kZWQgbGlrZSB3ZSBkbyAKPiA+
-IHcvIF9fZ2V0bnN0aW1lb2ZkYXk2NCgpPyAKPgo+IE5vLCB3ZSBjYW4ndC4gCj4KPiA+IEFsc28s
-IHdoYXQgZXhhY3RseSBpcyB0aGUgY2FzZSB3aGVuIHRoZSBjbG9ja3NvdXJjZSBiZWluZyByZWFk
-IGlzbid0IAo+ID4gYWNjZXNzaWJsZT8gSSBzZWUgdGhpcyBpcyBjb25kaXRpb25hbGl6ZWQgb24g
-Cj4gPiBDTE9DS19TT1VSQ0VfU1VTUEVORF9OT05TVE9QLCBzbyBpcyB0aGUgY29uY2VybiBvbiBy
-ZXN1bWUgd2UgcmVhZCB0aGUgCj4gPiBjbG9ja3NvdXJjZSBhbmQgaXRzIGJlZW4gcmVzZXQgY2F1
-c2luZyBhIGNyYXp5IHRpbWUgdmFsdWU/IAo+Cj4gVGhlIGNsb2Nrc291cmNlJ3MgLT5zdXNwZW5k
-IG1ldGhvZCBtYXkgaGF2ZSBiZWVuIGNhbGxlZCAoZHVyaW5nIHN1c3BlbmQpIAo+IGFuZCBkZXBl
-bmRpbmcgb24gd2hhdCB0aGF0IGRpZCB3ZSBtYXkgZXZlbiBjcmFzaCB0aGluZ3MgdGhlb3JldGlj
-YWxseS4gCj4KPiBEdXJpbmcgcmVzdW1lLCBiZWZvcmUgdGhlIGNsb2Nrc291cmNlJ3MgLT5yZXN1
-bWUgY2FsbGJhY2ssIGl0IG1heSBqdXN0IAo+IGJlIHVuZGVmaW5lZCBiZWhhdmlvciAocmFuZG9t
-IGRhdGEgZXRjKS4gCj4KPiBGb3Igc3lzdGVtIHN1c3BlbmQgYXMgd2UgaGF2ZSB0b2RheSB0aGUg
-d2luZG93IGlzIHF1aXRlIG5hcnJvdywgYnV0IGFmdGVyIAo+IHBhdGNoIFs0LzZdIGZyb20gdGhp
-cyBzZXJpZXMgc3VzcGVuZC10by1pZGxlIG1heSBzdXNwZW5kIHRpbWVrZWVwaW5nIGFuZCAKPiBq
-dXN0IHNpdCB0aGVyZSBpbiBpZGxlIGZvciBleHRlbmRlZCB0aW1lIChob3VycyBldmVuKSB3aGlj
-aCBicm9hZGVucyB0aGUgCj4gcG90ZW50aWFsIGV4cG9zdXJlIHF1aXRlIGEgYml0LiAKPgo+IE9m
-IGNvdXJzZSwgaXQgZG9lcyB0aGF0IHdpdGggaW50ZXJydXB0cyBkaXNhYmxlZCwgYnV0IGt0aW1l
-X2dldF9tb25vX2Zhc3RfbnMoKSAKPiBpcyBmb3IgTk1JLCBzbyB0aGVvcmV0aWNhbGx5LCBpZiBh
-biBOTUkgaGFwcGVucyB3aGlsZSB3ZSdyZSBpbiBzdXNwZW5kLXRvLWlkbGUgCj4gd2l0aCB0aW1l
-a2VlcGluZyBzdXNwZW5kZWQgYW5kIHRoZSBjbG9ja3NvdXJjZSBpcyBub3QgQ0xPQ0tfU09VUkNF
-X1NVU1BFTkRfTk9OU1RPUCAKPiBhbmQgdGhlIE5NSSBjYWxscyBrdGltZV9nZXRfbW9ub19mYXN0
-X25zKCksIHN0cmFuZ2UgYW5kIHVuZGVzaXJhYmxlIHRoaW5ncyBtYXkgCj4gaGFwcGVuLiAKPgo+
-ID4gPiBQcmV2ZW50IHRoYXQgZnJvbSBoYXBwZW5pbmcgYnkgc2V0dGluZyB1cCBhIGR1bW15IHJl
-YWRvdXQgYmFzZSBmb3IgCj4gPiA+IHRoZSBmYXN0IHRpbWVrZWVwZXIgZHVyaW5nIHRpbWVrZWVw
-aW5nX3N1c3BlbmQoKSBzdWNoIHRoYXQgaXQgd2lsbCAKPiA+ID4gYWx3YXlzIHJldHVybiB0aGUg
-c2FtZSBudW1iZXIgb2YgY3ljbGVzLiAKPiA+ID4gCj4gPiA+IEFmdGVyIHRoZSBsYXN0IHRpbWVr
-ZWVwaW5nX3VwZGF0ZSgpIGluIHRpbWVrZWVwaW5nX3N1c3BlbmQoKSB0aGUgCj4gPiA+IGNsb2Nr
-c291cmNlIGlzIHJlYWQgYW5kIHRoZSByZXN1bHQgaXMgc3RvcmVkIGFzIGN5Y2xlc19hdF9zdXNw
-ZW5kLiAKPiA+ID4gVGhlIHJlYWRvdXQgYmFzZSBmcm9tIHRoZSBjdXJyZW50IHRpbWVrZWVwZXIg
-aXMgY29waWVkIG9udG8gdGhlIAo+ID4gPiBkdW1teSBhbmQgdGhlIC0+cmVhZCBwb2ludGVyIG9m
-IHRoZSBkdW1teSBpcyBzZXQgdG8gYSByb3V0aW5lIAo+ID4gPiB1bmNvbmRpdGlvbmFsbHkgcmV0
-dXJuaW5nIGN5Y2xlc19hdF9zdXNwZW5kLsKgIE5leHQsIHRoZSBkdW1teSBpcyAKPiA+ID4gcGFz
-c2VkIHRvIHVwZGF0ZV9mYXN0X3RpbWVrZWVwZXIoKS4gCj4gPiA+IAo+ID4gPiBUaGVuLCBrdGlt
-ZV9nZXRfbW9ub19mYXN0X25zKCkgd2lsbCB3b3JrIHVudGlsIHRoZSBzdWJzZXF1ZW50IAo+ID4g
-PiB0aW1la2VlcGluZ19yZXN1bWUoKSBhbmQgdGhlIHByb3BlciByZWFkb3V0IGJhc2UgZm9yIHRo
-ZSBmYXN0IAo+ID4gPiB0aW1la2VlcGVyIHdpbGwgYmUgcmVzdG9yZWQgYnkgdGhlIHRpbWVrZWVw
-aW5nX3VwZGF0ZSgpIGNhbGxlZCAKPiA+ID4gcmlnaHQgYWZ0ZXIgY2xlYXJpbmcgdGltZWtlZXBp
-bmdfc3VzcGVuZGVkLiAKPiA+ID4gCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNv
-Y2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4gCj4gPiA+IC0tLSAKPiA+ID7CoCBrZXJu
-ZWwvdGltZS90aW1la2VlcGluZy5jIHzCoMKgIDIyICsrKysrKysrKysrKysrKysrKysrKysgCj4g
-PiA+wqAgMSBmaWxlIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKykgCj4gPiA+IAo+ID4gPiBJbmRl
-eDogbGludXgtcG0va2VybmVsL3RpbWUvdGltZWtlZXBpbmcuYyAKPiA+ID4gPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PSAK
-PiA+ID4gLS0tIGxpbnV4LXBtLm9yaWcva2VybmVsL3RpbWUvdGltZWtlZXBpbmcuYyAKPiA+ID4g
-KysrIGxpbnV4LXBtL2tlcm5lbC90aW1lL3RpbWVrZWVwaW5nLmMgCj4gPiA+IEBAIC0xMjQ5LDkg
-KzEyNDksMjMgQEAgc3RhdGljIHZvaWQgdGltZWtlZXBpbmdfcmVzdW1lKHZvaWQpIAo+ID4gPsKg
-wqDCoMKgwqDCoMKgwqAgaHJ0aW1lcnNfcmVzdW1lKCk7IAo+ID4gPsKgIH0gCj4gPiA+IAo+ID4g
-PiArLyogCj4gPiA+ICsgKiBEdW1teSByZWFkb3V0IGJhc2UgYW5kIHN1c3BlbmQtdGltZSBjeWNs
-ZXMgdmFsdWUgZm9yIHRoZSBmYXN0IHRpbWVrZWVwZXIgdG8gCj4gPiA+ICsgKiB3b3JrIGluIGEg
-Y29uc2lzdGVudCB3YXkgYWZ0ZXIgdGltZWtlZXBpbmcgaGFzIGJlZW4gc3VzcGVuZGVkIGlmIHRo
-ZSBjb3JlIAo+ID4gPiArICogdGltZWtlZXBlciBjbG9ja3NvdXJjZSBpcyBub3Qgc3VzcGVuZC1u
-b25zdG9wLiAKPiA+ID4gKyAqLyAKPiA+ID4gK3N0YXRpYyBzdHJ1Y3QgdGtfcmVhZF9iYXNlIHRr
-cl9kdW1teTsgCj4gPiA+ICtzdGF0aWMgY3ljbGVfdCBjeWNsZXNfYXRfc3VzcGVuZDsgCj4gPiA+
-ICsgCj4gPiA+ICtzdGF0aWMgY3ljbGVfdCBkdW1teV9jbG9ja19yZWFkKHN0cnVjdCBjbG9ja3Nv
-dXJjZSAqY3MpIAo+ID4gPiAreyAKPiA+ID4gK8KgwqDCoMKgwqDCoCByZXR1cm4gY3ljbGVzX2F0
-X3N1c3BlbmQ7IAo+ID4gPiArfSAKPiA+ID4gKyAKPiA+ID7CoCBzdGF0aWMgaW50IHRpbWVrZWVw
-aW5nX3N1c3BlbmQodm9pZCkgCj4gPiA+wqAgeyAKPiA+ID7CoMKgwqDCoMKgwqDCoMKgIHN0cnVj
-dCB0aW1la2VlcGVyICp0ayA9ICZ0a19jb3JlLnRpbWVrZWVwZXI7IAo+ID4gPiArwqDCoMKgwqDC
-oMKgIHN0cnVjdCBjbG9ja3NvdXJjZSAqY2xvY2sgPSB0ay0+dGtyLmNsb2NrOyAKPiA+ID7CoMKg
-wqDCoMKgwqDCoMKgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7IAo+ID4gPsKgwqDCoMKgwqDCoMKgwqAg
-c3RydWN0IHRpbWVzcGVjNjTCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGRlbHRhLCBkZWx0
-YV9kZWx0YTsgCj4gPiA+wqDCoMKgwqDCoMKgwqDCoCBzdGF0aWMgc3RydWN0IHRpbWVzcGVjNjTC
-oMKgwqDCoMKgwqDCoCBvbGRfZGVsdGE7IAo+ID4gPiBAQCAtMTI5NCw2ICsxMzA4LDE0IEBAIHN0
-YXRpYyBpbnQgdGltZWtlZXBpbmdfc3VzcGVuZCh2b2lkKSAKPiA+ID7CoMKgwqDCoMKgwqDCoMKg
-IH0gCj4gPiA+IAo+ID4gPsKgwqDCoMKgwqDCoMKgwqAgdGltZWtlZXBpbmdfdXBkYXRlKHRrLCBU
-S19NSVJST1IpOyAKPiA+ID4gKyAKPiA+ID4gK8KgwqDCoMKgwqDCoCBpZiAoIShjbG9jay0+Zmxh
-Z3MgJiBDTE9DS19TT1VSQ0VfU1VTUEVORF9OT05TVE9QKSkgeyAKPiA+ID4gK8KgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAgbWVtY3B5KCZ0a3JfZHVtbXksICZ0ay0+dGtyLCBzaXplb2YodGty
-X2R1bW15KSk7IAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBjeWNsZXNfYXRf
-c3VzcGVuZCA9IHRrLT50a3IucmVhZChjbG9jayk7IAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoCB0a3JfZHVtbXkucmVhZCA9IGR1bW15X2Nsb2NrX3JlYWQ7IAo+ID4gPiArwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB1cGRhdGVfZmFzdF90aW1la2VlcGVyKCZ0a3JfZHVt
-bXkpOyAKPiA+ID4gK8KgwqDCoMKgwqDCoCB9IAo+ID4gCj4gPiBJdHMgYSBsaXR0bGUgdWdseS4u
-LiB0aG91Z2ggSSdtIG5vdCBzdXJlIEkgaGF2ZSBhIGJldHRlciBpZGVhIHJpZ2h0IG9mZi4gCj4g
-PiAKPiA+IHRoYW5rcyAKPiA+IC1qb2huIAo+ID4gLS0gCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9t
-IHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgta2VybmVsIiBpbiAK
-PiA+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIAo+
-ID4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdMKgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jk
-b21vLWluZm8uaHRtbCAKPiA+IFBsZWFzZSByZWFkIHRoZSBGQVEgYXTCoCBodHRwOi8vd3d3LnR1
-eC5vcmcvbGttbC8gCj4KPiAtLSAKPiBJIHNwZWFrIG9ubHkgZm9yIG15c2VsZi4gCj4gUmFmYWVs
-IEouIFd5c29ja2ksIEludGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyLiAKPiAtLSAK
-PiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3Jp
-YmUgbGludXgta2VybmVsIiBpbiAKPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21v
-QHZnZXIua2VybmVsLm9yZyAKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0wqAgaHR0cDovL3ZnZXIu
-a2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sIAo+IFBsZWFzZSByZWFkIHRoZSBGQVEgYXTC
-oCBodHRwOi8vd3d3LnR1eC5vcmcvbGttbC8gCg==
+On Wed, Feb 11, 2015 at 05:00:15AM +0100, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> This series adds support for quiescing timers during the last state of
+> suspend-to-idle transitions.
+> 
+> Patches [1-4/6] together are functionally equivalent to the combo RFC patch
+> I sent last time (http://marc.info/?l=linux-kernel&m=142344909201464&w=4).
+> 
+> Patches [5-6/6] add ->enter_freeze callback implementations to intel_idle
+> and the ACPI cpuidle driver.
+> 
+> [1/6] - Rework the suspend-to-idle "mechanics" in preparation for the subsequent
+>         changes.  The existing functionality should not change after this.
+> [2/6] - Modify update_fast_timekeeper() to take struct tk_read_base pointers as
+>         arguments.
+> [3/6] - Make it safe to use the fast timekeeper while suspended.
+> [4/6] - Support for quiescing timers during suspend-to-idle (core part).
+> [5/6] - ->enter_freeze callback for intel_idle.
+> [6/6] - ->enter_freeze callback for ACPI cpuidle.
+> 
+> This works as expected on everything I have in my office and can readily test.
+> 
+> The patches should apply without any problems on top of the current Linus' tree.
+
+Thanks for the updates, looks good to me.
+
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
