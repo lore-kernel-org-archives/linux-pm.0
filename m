@@ -1,92 +1,70 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] More ACPI and power management updates for 3.20-rc1
-Date: Fri, 13 Feb 2015 22:22:23 +0100
-Message-ID: <CAJZ5v0hXWU-NX8TTMcQEEurFxpk6sQuf7br=HiWoGfs59Me9_A@mail.gmail.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v4 1/2] Mailbox: Restructure and simplify PCC mailbox code
+Date: Fri, 13 Feb 2015 18:31:51 -0500
+Message-ID: <CAJ5Y-eYVdTiHAh4QsMo-O12VnumuVGP2hgMaMOKObJEMHEv1fQ@mail.gmail.com>
+References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org>
+	<1422392638-31334-2-git-send-email-ashwin.chaugule@linaro.org>
+	<CAJ5Y-eYZ1TuX8wvJOH9Os7qQGXnefxeCTqG65QA__0aornNo2w@mail.gmail.com>
+	<5721986.NjN2XryXtL@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:51152 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752758AbbBMXbx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Feb 2015 18:31:53 -0500
+Received: by mail-wg0-f48.google.com with SMTP id l18so16473463wgh.7
+        for <linux-pm@vger.kernel.org>; Fri, 13 Feb 2015 15:31:52 -0800 (PST)
+In-Reply-To: <5721986.NjN2XryXtL@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-Hi Linus,
+Hi Rafael,
 
-Please pull from
+On 13 February 2015 at 09:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, February 13, 2015 08:07:44 AM Ashwin Chaugule wrote:
+>> Hello,
+>>
+>> On 27 January 2015 at 16:03, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
+>> > Previously the PCC driver depended on the client
+>> > side to map the communication space base address. This region
+>> > was was then used in the PCC driver and the client side.
+>> > The client side used this region to read and write its data
+>> > and the PCC driver used it to only write the PCC command.
+>> > Removing this split simplifies the PCC driver a lot. This patch
+>> > moves all communication region read/writes to the client side.
+>> > The PCC clients can now drive the PCC mailbox controller via the
+>> > mbox_client_txdone() method.
+>> >
+>> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> > ---
+>> >  drivers/mailbox/pcc.c | 122 +++++++++++++++-----------------------------------
+>> >  1 file changed, 37 insertions(+), 85 deletions(-)
+>>
+>> Gentle reminder for this patch specifically. It can be pulled in by
+>> itself separately from the CPPC patch[2/2], which understandably may
+>> need more time for review. Apart from the simplification done here,
+>> there is one more change based on a comment I got from Rafael tow
+>> convert a pr_err() in the init function to pr_debug(). The "PCC Probe
+>> failed" message seems to be raising false positives on X86 test
+>> reports. Please let me know if there are any other suggestions, before
+>> I respin another version for this.
+>
+> The patch changing the pr_err() to pr_debug() is in the Linus' tree already
+> as far as I can say.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.20-rc1-2
+Thanks for that.
 
-to receive more ACPI and power management material for v3.20-rc1 with
-top-most commit c7fb90dfbef49b03e6f3fd6a32338e59cbcf34ee
+>
+> Besides, this should be To: the maintainer of the mailbox susbsystem (not
+> me) or if you want me to pick it up, I need and ACK from that maintainer
+> anyway.
 
- Merge branches 'pm-cpufreq', 'pm-cpuidle', 'pm-devfreq', 'pm-opp' and
-'pm-tools'
+Is there a way to do that separately for each patch in a patchset?
+Anyway, I'll rebase this patch to tip and send it separately To:
+Jassi.
 
-on top of commit 872912352c5be930e9568e5f3b6d73107d9f278d
-
- Merge tag 'pm+acpi-3.20-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-These are two reverts related to system suspend breakage by one of
-a recent commits, a fix for a recently introduced bug in devfreq
-and a bunch of other things that didn't make it into my previous
-pull request, but otherwise are ready to go.
-
-Specifics:
-
- - Revert two ACPI EC driver commits, one that broke system suspend
-   on Acer Aspire S5 and one that depends on it (Rafael J Wysocki).
-
- - Fix a typo leading to an incorrect check in the exynos-ppmu devfreq
-   driver (Dan Carpenter).
-
- - Add support for one more Broadwell CPU model to intel_idle (Len Brown).
-
- - Fix an obscure problem with state transitions related to interrupts
-   in the speedstep-smi cpufreq driver (Mikulas Patocka).
-
- - Remove some unnecessary messages related to the "out of memory"
-   condition from the core PM code (Quentin Lambert).
-
- - Update turbostat parameters and documentation, add support for
-   one more Broadwell CPU model to it and modify it to skip
-   printing disabled package C-states (Len Brown).
-
-Thanks!
-
-
----------------
-
-Dan Carpenter (1):
-      PM / devfreq: event: testing the wrong variable
-
-Len Brown (4):
-      tools/power turbostat: Skip printing disabled package C-states
-      tools/power turbostat: update parameters, documentation
-      intel_idle: support additional Broadwell model
-      tools/power turbostat: support additional Broadwell model
-
-Mikulas Patocka (1):
-      cpufreq: speedstep-smi: enable interrupts when waiting
-
-Quentin Lambert (1):
-      PM / OPP / clk: Remove unnecessary OOM message
-
-Rafael J. Wysocki (2):
-      Revert "ACPI / EC: Add GPE reference counting debugging messages"
-      Revert "ACPI / EC: Add query flushing support"
-
----------------
-
- drivers/acpi/ec.c                     | 125 ++----------
- drivers/base/firmware_class.c         |   1 -
- drivers/base/power/clock_ops.c        |   4 +-
- drivers/base/power/opp.c              |   8 +-
- drivers/cpufreq/speedstep-lib.c       |   3 +
- drivers/cpufreq/speedstep-smi.c       |  12 ++
- drivers/devfreq/event/exynos-ppmu.c   |   4 +-
- drivers/idle/intel_idle.c             |   1 +
- tools/power/x86/turbostat/turbostat.8 |  68 ++++---
- tools/power/x86/turbostat/turbostat.c | 344 +++++++++++++++++++++-------------
- 10 files changed, 293 insertions(+), 277 deletions(-)
+Thanks,
+Ashwin.
