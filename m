@@ -1,152 +1,199 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/6] timekeeping: Make it safe to use the fast timekeeper while suspended
-Date: Fri, 13 Feb 2015 15:32:17 +0100
-Message-ID: <2177558.2TEykqeHuz@vostro.rjw.lan>
-References: <8292243.ibkmfVtXac@vostro.rjw.lan> <2403461.IZYtJE89Ir@vostro.rjw.lan> <CALAqxLWviqCvcgOgJOdWuTw+qHM9RW0480Ge5dNHf5Nonv75bQ@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 3/5] ARM: dove: create a proper PMU driver for power
+ domains, PMU IRQs and resets
+Date: Fri, 13 Feb 2015 14:11:52 +0000
+Message-ID: <20150213141151.GA8656@n2100.arm.linux.org.uk>
+References: <20140427132312.GC26756@n2100.arm.linux.org.uk>
+ <E1WeP8f-0000Uo-1q@rmk-PC.arm.linux.org.uk>
+ <CAPDyKFoboE4iKyom86+EwHHTQAGpgKxGq969yrjQVpqizk-SLA@mail.gmail.com>
+ <20150213132924.GA27774@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CALAqxLWviqCvcgOgJOdWuTw+qHM9RW0480Ge5dNHf5Nonv75bQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Alan Cox <alan@linux.intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:39020 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbbBMOMA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Feb 2015 09:12:00 -0500
+Content-Disposition: inline
+In-Reply-To: <20150213132924.GA27774@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Friday, February 13, 2015 05:03:51 PM John Stultz wrote:
-> On Fri, Feb 13, 2015 at 10:03 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Friday, February 13, 2015 08:53:38 AM John Stultz wrote:
-> >> On Wed, Feb 11, 2015 at 12:03 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >
-> >> > Theoretically, ktime_get_mono_fast_ns() may be executed after
-> >> > timekeeping has been suspended (or before it is resumed) which
-> >> > in turn may lead to undefined behavior, for example, when the
-> >> > clocksource read from timekeeping_get_ns() called by it is
-> >> > not accessible at that time.
-> >>
-> >> And the callers of the ktime_get_mono_fast_ns() have to get back a
-> >> value?
-> >
-> > Yes, they do.
-> >
-> >> Or can we return an error on timekeeping_suspended like we do
-> >> w/ __getnstimeofday64()?
-> >
-> > No, we can't.
-> >
-> >> Also, what exactly is the case when the clocksource being read isn't
-> >> accessible? I see this is conditionalized on
-> >> CLOCK_SOURCE_SUSPEND_NONSTOP, so is the concern on resume we read the
-> >> clocksource and its been reset causing a crazy time value?
-> >
-> > The clocksource's ->suspend method may have been called (during suspend)
-> > and depending on what that did we may even crash things theoretically.
-> >
-> > During resume, before the clocksource's ->resume callback, it may just
-> > be undefined behavior (random data etc).
-> >
-> > For system suspend as we have today the window is quite narrow, but after
-> > patch [4/6] from this series suspend-to-idle may suspend timekeeping and
-> > just sit there in idle for extended time (hours even) which broadens the
-> > potential exposure quite a bit.
-> >
-> > Of course, it does that with interrupts disabled, but ktime_get_mono_fast_ns()
-> > is for NMI, so theoretically, if an NMI happens while we're in suspend-to-idle
-> > with timekeeping suspended and the clocksource is not CLOCK_SOURCE_SUSPEND_NONSTOP
-> > and the NMI calls ktime_get_mono_fast_ns(), strange and undesirable things may
-> > happen.
-> 
-> Ok.. No objection to the approach then. But maybe could you wrap the
-> new logic in a halt_fast_timekeeper() function? Also is there much
-> value in not halting it for SUSPEND_NONSTOP clocksources? If not,
-> might as well halt it in all cases just to simplify the conditions we
-> have to keep track of in our heads. :)
+On Fri, Feb 13, 2015 at 01:29:25PM +0000, Russell King - ARM Linux wrot=
+e:
+> On Mon, Apr 28, 2014 at 01:55:40PM +0200, Ulf Hansson wrote:
+> > On 27 April 2014 15:29, Russell King <rmk+kernel@arm.linux.org.uk> =
+wrote:
+> > > The PMU device contains an interrupt controller, power control an=
+d
+> > > resets.  The interrupt controller is a little sub-standard in tha=
+t
+> > > there is no race free way to clear down pending interrupts, so we=
+ try
+> > > to avoid problems by reducing the window as much as possible, and
+> > > clearing as infrequently as possible.
+> > >
+> > > The interrupt support is implemented using an IRQ domain, and the
+> > > parent interrupt referenced in the standard DT way.
+> > >
+> > > The power domains and reset support is closely related - there is=
+ a
+> > > defined sequence for powering down a domain which is tightly coup=
+led
+> > > with asserting the reset.  Hence, it makes sense to group these t=
+wo
+> > > together.
+> > >
+> > > This patch adds the core PMU driver: power domains must be define=
+d in
+> > > the DT file in order to make use of them.  The reset controller c=
+an
+> > > be referenced in the standard way for reset controllers.
+> >=20
+> > Hi Russell,
+> >=20
+> > This patch would be simplified if this was based upon the not yet
+> > merged patchset from Tomasz Figa, "[PATCH v3 0/3] Generic Device Tr=
+ee
+> > based power domain look-up".
+> >=20
+> > For example you would likely not need to add some of the marvel
+> > specific DT bindings, and you wouldn=E2=80=99t need the bus_notifie=
+rs to add
+> > devices to the power domain. I guess I just though it could be usef=
+ul
+> > input to consider while going forward, unless you already knew.
+>=20
+> In 3.19, I notice something of an odd behaviour.
+>=20
+> My vMeta driver has runtime PM support enabled.  When I explicitly re=
+gister
+> the PM domain in the pmu driver via a bus notifier, I see:
+>=20
+> root@cubox:~# cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+>     domain                      status         slaves
+>            /device                                      runtime statu=
+s
+> ---------------------------------------------------------------------=
+-
+> gpu-domain                      on
+>     /devices/platform/vivante/etnaviv-gpu,2d            active
+> vpu-domain                      off
+>     /devices/platform/mbus/mbus:internal-regs/f1c00000.video-decoder =
+ suspended
+>=20
+> But when I disable that, and let the generic code do the registration=
+,
+> I instead get:
+>=20
+> root@cubox:~# cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+>     domain                      status         slaves
+>            /device                                      runtime statu=
+s
+> ---------------------------------------------------------------------=
+-
+> gpu-domain                      on
+>     /devices/platform/vivante/etnaviv-gpu,2d            active
+> vpu-domain                      on
+>     /devices/platform/mbus/mbus:internal-regs/f1c00000.video-decoder =
+ suspended
+>=20
+> The difference being that the vpu domain remains powered.
+>=20
+> The only difference code-wise seems to be when genpd_dev_pm_attach() =
+is
+> called.  In the working case, it's before the device is considered fo=
+r
+> probing.  In the non-working case, it's just before the device is pro=
+bed.
+>=20
+> With debugging enabled in the PM domain code, with the former case I =
+get:
+>=20
+> Added domain provider from /mbus/internal-regs/power-management@d0000=
+/vpu-domain
+> platform f1c00000.video-decoder: adding to PM domain vpu-domain
+> platform f1c00000.video-decoder: __pm_genpd_add_device()
+>=20
+> With the latter non-working case:
+>=20
+> Added domain provider from /mbus/internal-regs/power-management@d0000=
+/vpu-domain
+> ...
+> ap510-vmeta f1c00000.video-decoder: adding to PM domain vpu-domain
+> ap510-vmeta f1c00000.video-decoder: __pm_genpd_add_device()
+> vpu-domain: Power-on latency exceeded, new value 1578 ns
+>=20
+> Neither of these debug messages provide much hint as to what the
+> difference is, or the cause of the PM domain code being de-sync'd
+> with its devices.
+>=20
+> Maybe the PM code needs more debugging in it, and maybe the debugfs
+> file should always be present if debugfs support is enabled?
 
-I don't see a problem with doing that unconditionally.
+The vmeta driver does this in its probe function:
 
-What about the appended version of the patch, then?
+        pm_runtime_use_autosuspend(vi->dev);
+        pm_runtime_set_autosuspend_delay(vi->dev, 100);
+        pm_runtime_enable(vi->dev);
 
-Rafael
+since it doesn't touch the hardware, and the hardware starts off at
+boot time in "suspended" mode.
 
+I think what's going on is that there's a difference in the expectation=
+s
+from the PM domain code vs the runtime PM code.  I refer to section 5
+of the runtime PM documentation:
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: timekeeping: Make it safe to use the fast timekeeper while suspended
+| 5. Runtime PM Initialization, Device Probing and Removal
+|=20
+| Initially, the runtime PM is disabled for all devices, which means th=
+at the
+| majority of the runtime PM helper functions described in Section 4 wi=
+ll return
+| -EAGAIN until pm_runtime_enable() is called for the device.
+|=20
+| In addition to that, the initial runtime PM status of all devices is
+| 'suspended', but it need not reflect the actual physical state of the=
+ device.
+| Thus, if the device is initially active (i.e. it is able to process I=
+/O), its
+| runtime PM status must be changed to 'active', with the help of
+| pm_runtime_set_active(), before pm_runtime_enable() is called for the=
+ device.
 
-Theoretically, ktime_get_mono_fast_ns() may be executed after
-timekeeping has been suspended (or before it is resumed) which
-in turn may lead to undefined behavior, for example, when the
-clocksource read from timekeeping_get_ns() called by it is
-not accessible at that time.
+However, the PM domain code seems to always power up the PM domain when
+a device is attached to it:
 
-Prevent that from happening by setting up a dummy readout base for
-the fast timekeeper during timekeeping_suspend() such that it will
-always return the same number of cycles.
+int genpd_dev_pm_attach(struct device *dev)
+{
+=2E..
+        pm_genpd_poweron(pd);
 
-After the last timekeeping_update() in timekeeping_suspend() the
-clocksource is read and the result is stored as cycles_at_suspend.
-The readout base from the current timekeeper is copied onto the
-dummy and the ->read pointer of the dummy is set to a routine
-unconditionally returning cycles_at_suspend.  Next, the dummy is
-passed to update_fast_timekeeper().
+        return 0;
+}
+EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
 
-Then, ktime_get_mono_fast_ns() will work until the subsequent
-timekeeping_resume() and the proper readout base for the fast
-timekeeper will be restored by the timekeeping_update() called
-right after clearing timekeeping_suspended.
+So, the PM domain code ends up disagreeing with the runtime PM code abo=
+ut
+the state of the device.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/time/timekeeping.c |   30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+I think your commit (2ed127697eb1 "PM / Domains: Power on the PM domain
+right after attach completes") is fundamentally wrong.  The assertion
+you make in there is built upon the assumption that every driver will
+call pm_runtime_set_active(), which is not an assumption you can make.
 
-Index: linux-pm/kernel/time/timekeeping.c
-===================================================================
---- linux-pm.orig/kernel/time/timekeeping.c
-+++ linux-pm/kernel/time/timekeeping.c
-@@ -332,6 +332,35 @@ u64 notrace ktime_get_mono_fast_ns(void)
- }
- EXPORT_SYMBOL_GPL(ktime_get_mono_fast_ns);
- 
-+/* Suspend-time cycles value for halted fast timekeeper. */
-+static cycle_t cycles_at_suspend;
-+
-+static cycle_t dummy_clock_read(struct clocksource *cs)
-+{
-+	return cycles_at_suspend;
-+}
-+
-+/**
-+ * halt_fast_timekeeper - Prevent fast timekeeper from accessing clocksource.
-+ * @tk: Timekeeper to snapshot.
-+ *
-+ * It generally is unsafe to access the clocksource after timekeeping has been
-+ * suspended, so take a snapshot of the readout base of @tk and use it as the
-+ * fast timekeeper's readout base while suspended.  It will return the same
-+ * number of cycles every time until timekeeping is resumed at which time the
-+ * proper readout base for the fast timekeeper will be restored automatically.
-+ */
-+static void halt_fast_timekeeper(struct timekeeper *tk)
-+{
-+	static struct tk_read_base tkr_dummy;
-+	struct tk_read_base *tkr = &tk->tkr;
-+
-+	memcpy(&tkr_dummy, tkr, sizeof(tkr_dummy));
-+	cycles_at_suspend = tkr->read(tkr->clock);
-+	tkr_dummy.read = dummy_clock_read;
-+	update_fast_timekeeper(&tkr_dummy);
-+}
-+
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL_OLD
- 
- static inline void update_vsyscall(struct timekeeper *tk)
-@@ -1294,6 +1323,7 @@ static int timekeeping_suspend(void)
- 	}
- 
- 	timekeeping_update(tk, TK_MIRROR);
-+	halt_fast_timekeeper(tk);
- 	write_seqcount_end(&tk_core.seq);
- 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
- 
+Instead, you should be doing is to hook into __pm_runtime_set_status()
+and use that to trigger the PM domain power up so that the runtime PM
+and PM domain state is always in step with each other.
 
+What I'm certain of is that the current situation is just totally crazy=
+=2E
+
+--=20
+=46TTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps u=
+p
+according to speedtest.net.
