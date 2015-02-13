@@ -1,201 +1,128 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 3/5] ARM: dove: create a proper PMU driver for power
- domains, PMU IRQs and resets
-Date: Fri, 13 Feb 2015 16:12:13 +0000
-Message-ID: <20150213161212.GB8656@n2100.arm.linux.org.uk>
-References: <20140427132312.GC26756@n2100.arm.linux.org.uk>
- <E1WeP8f-0000Uo-1q@rmk-PC.arm.linux.org.uk>
- <CAPDyKFoboE4iKyom86+EwHHTQAGpgKxGq969yrjQVpqizk-SLA@mail.gmail.com>
- <20150213132924.GA27774@n2100.arm.linux.org.uk>
- <20150213141151.GA8656@n2100.arm.linux.org.uk>
+From: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v7 01/16] clk: tegra: Add binding for the Tegra124 DFLL
+ clocksource
+Date: Fri, 13 Feb 2015 11:38:27 +0200
+Message-ID: <20150213093827.GM20811@tbergstrom-lnx.Nvidia.com>
+References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
+ <1420723339-30735-2-git-send-email-mikko.perttunen@kapsi.fi>
+ <20150212224242.GA23500@mithrandir>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:39217 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbbBMQMY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Feb 2015 11:12:24 -0500
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20150213141151.GA8656@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150212224242.GA23500@mithrandir>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Fri, Feb 13, 2015 at 02:11:52PM +0000, Russell King - ARM Linux wrote:
-> I think what's going on is that there's a difference in the expectations
-> from the PM domain code vs the runtime PM code.  I refer to section 5
-> of the runtime PM documentation:
+On Thu, Feb 12, 2015 at 11:42:44PM +0100, Thierry Reding wrote:
+> * PGP Signed by an unknown key
 > 
-> | 5. Runtime PM Initialization, Device Probing and Removal
-> | 
-> | Initially, the runtime PM is disabled for all devices, which means that the
-> | majority of the runtime PM helper functions described in Section 4 will return
-> | -EAGAIN until pm_runtime_enable() is called for the device.
-> | 
-> | In addition to that, the initial runtime PM status of all devices is
-> | 'suspended', but it need not reflect the actual physical state of the device.
-> | Thus, if the device is initially active (i.e. it is able to process I/O), its
-> | runtime PM status must be changed to 'active', with the help of
-> | pm_runtime_set_active(), before pm_runtime_enable() is called for the device.
+> On Thu, Jan 08, 2015 at 03:22:04PM +0200, Mikko Perttunen wrote:
+> > From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > 
+> > The DFLL is the main clocksource for the fast CPU cluster on Tegra124
+> > and also provides automatic CPU rail voltage scaling as well. The DFLL
+> > is a separate IP block from the usual Tegra124 clock-and-reset
+> > controller, so it gets its own node in the device tree.
+> > 
+> > Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+> > ---
+> >  .../bindings/clock/nvidia,tegra124-dfll.txt        | 69 ++++++++++++++++++++++
+> >  1 file changed, 69 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+> > new file mode 100644
+> > index 0000000..54c62ac
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+> > @@ -0,0 +1,69 @@
+> > +NVIDIA Tegra124 DFLL FCPU clocksource
+> > +
+> > +This binding uses the common clock binding:
+> > +Documentation/devicetree/bindings/clock/clock-bindings.txt
+> > +
+> > +The DFLL IP block on Tegra is a root clocksource designed for clocking
+> > +the fast CPU cluster. It consists of a free-running voltage controlled
+> > +oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
+> > +control module that will automatically adjust the VDD_CPU voltage by
+> > +communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
 > 
-> However, the PM domain code seems to always power up the PM domain when
-> a device is attached to it:
+> How would PWM communication work? The documentation below doesn't
+> describe it, so perhaps either leave that part out until the binding is
+> updated to support it, or maybe make an explicit note that this mode of
+> operation isn't supported yet?
 > 
-> int genpd_dev_pm_attach(struct device *dev)
-> {
-> ...
->         pm_genpd_poweron(pd);
+> > +Required properties:
+> > +- compatible : should be "nvidia,tegra124-dfll-fcpu"
+> > +- reg : Defines the following set of registers, in the order listed:
+> > +        - registers for the DFLL control logic.
+> > +        - registers for the I2C output logic.
+> > +        - registers for the integrated I2C master controller.
+> > +        - look-up table RAM for voltage register values.
 > 
->         return 0;
-> }
-> EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+> Why do these all need to be separate sets? According to the TRM this is
+> a single IP block with a single register region, why the need to split
+> them apart?
 > 
-> So, the PM domain code ends up disagreeing with the runtime PM code about
-> the state of the device.
+> > +- interrupts: Should contain the DFLL block interrupt.
+> > +- clocks: Must contain an entry for each entry in clock-names.
+> > +  See ../clocks/clock-bindings.txt for details.
+> > +- clock-names: Must include the following entries:
+> > +  - soc: Clock source for the DFLL control logic.
+> > +  - ref: The closed loop reference clock
+> > +  - i2c: Clock source for the integrated I2C master.
+> > +- #clock-cells: Must be 0.
+> > +- clock-output-names: Name of the clock output.
+> > +- vdd-cpu-supply: Regulator for the CPU voltage rail that the DFLL
+> > +  hardware will start controlling.
 > 
-> I think your commit (2ed127697eb1 "PM / Domains: Power on the PM domain
-> right after attach completes") is fundamentally wrong.  The assertion
-> you make in there is built upon the assumption that every driver will
-> call pm_runtime_set_active(), which is not an assumption you can make.
+> How does the hardware control it? How do we go from regulator phandle to
+> something that the hardware will know how to access?
 > 
-> Instead, you should be doing is to hook into __pm_runtime_set_status()
-> and use that to trigger the PM domain power up so that the runtime PM
-> and PM domain state is always in step with each other.
+> > +Required properties for the control loop parameters:
+> > +- nvidia,sample-rate: Sample rate of the DFLL control loop.
+> > +- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
+> > +- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
+> > +- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TRM.
+> > +- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TRM.
+> > +- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TRM.
+> > +- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in the TRM.
+> > +
+> > +Required properties for I2C mode:
+> > +- nvidia,i2c-fs-rate: I2C transfer rate, if using FS mode.
 > 
-> What I'm certain of is that the current situation is just totally crazy.
+> What's FS mode?
+> 
+> > +
+> > +Example:
+> > +
+> > +dfll@0,70110000 {
+> 
+> Perhaps this should be "clock@0,70110000"?
+> 
+> > +        compatible = "nvidia,tegra124-dfll";
+> > +        reg = <0 0x70110000 0 0x100>, /* DFLL control */
+> > +              <0 0x70110000 0 0x100>, /* I2C output control */
+> > +              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
+> > +              <0 0x70110200 0 0x100>; /* Look-up table RAM */
+> > +        interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+> > +        clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
+> > +                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
+> > +                 <&tegra_car TEGRA124_CLK_I2C5>;
+> 
+> If this controls I2C5 now, should it be documented that we can't use
+> this controller in software while it is in use by DFLL?
 
-There are around 150 drivers in the kernel tree which do not call
-pm_runtime_set_active() before calling pm_runtime_enable(), so the
-assertion in the PM domains commit above is wrong.  Some of them are
-only saved because they do a pm_runtime_get() immediately after
-pm_runtime_enable(), but that's in no way guaranteed - others do
-neither.  So, for this to work properly, we need to address this
-issue _correctly_ rather than papering over the problem.
+It doesn't control I2C5. However, I2C5 and the dfll I2C controller control
+the same pins. There is some arbitration logic which prevents both controllers
+driving the pins at the same time. This logic does not have a sw interface.
+However, this logic doesn't work if I2C5 is not clocked. So once the dfll
+is enabled, I2C5 must always be clocked.
 
-Here's a patch which solves the issue for me along the lines which I
-described above.  I'm introducing a new callback - runtime_set_status()
-which the PM domain code uses to be notified of the runtime PM status
-updates while RPM is disabled.  This callback will only occur from
-__pm_runtime_set_status(), which can only be used while runtime PM is
-disabled.
+Cheers,
 
-I believe it's safe - if we think that a PM domain is powered down, and
-the runtime PM status is then set active, it's clear that the PM domain
-absolutely must transition to active mode as well.  If the runtime PM
-status is set to suspended, then the PM domain code can transition to
-off state.
-
-I've left some of my debugging in place in the patch below as that's
-exactly the code I've tested.
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 751a8859a4ab..1616faadf904 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -5,7 +5,7 @@
-  *
-  * This file is released under the GPLv2.
-  */
--
-+#define DEBUG
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-@@ -158,6 +158,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 	s64 elapsed_ns;
- 	int ret;
- 
-+	pr_debug("%s: %s()\n", genpd->name, __func__);
-+
- 	if (!genpd->power_on)
- 		return 0;
- 
-@@ -219,6 +221,10 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 	DEFINE_WAIT(wait);
- 	int ret = 0;
- 
-+	pr_debug("%s: %s() status %u prepared %d spo %u\n",
-+		genpd->name, __func__, genpd->status, genpd->prepared_count,
-+		genpd->suspend_power_off);
-+
- 	/* If the domain's master is being waited for, we have to wait too. */
- 	for (;;) {
- 		prepare_to_wait(&genpd->status_wait_queue, &wait,
-@@ -741,6 +747,20 @@ static int pm_genpd_runtime_resume(struct device *dev)
- 	return 0;
- }
- 
-+static int pm_genpd_runtime_set_status(struct device *dev)
-+{
-+	int ret;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (pm_runtime_suspended(dev))
-+		ret = pm_genpd_runtime_suspend(dev);
-+	else
-+		ret = pm_genpd_runtime_resume(dev);
-+
-+	return ret;
-+}
-+
- static bool pd_ignore_unused;
- static int __init pd_ignore_unused_setup(char *__unused)
- {
-@@ -1907,6 +1927,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->max_off_time_changed = true;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-+	genpd->domain.ops.runtime_set_status = pm_genpd_runtime_set_status;
- 	genpd->domain.ops.prepare = pm_genpd_prepare;
- 	genpd->domain.ops.suspend = pm_genpd_suspend;
- 	genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
-@@ -2223,7 +2244,6 @@ int genpd_dev_pm_attach(struct device *dev)
- 	}
- 
- 	dev->pm_domain->detach = genpd_dev_pm_detach;
--	pm_genpd_poweron(pd);
- 
- 	return 0;
- }
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 5070c4fe8542..a958cae67a37 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -981,6 +981,7 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
- 	struct device *parent = dev->parent;
- 	unsigned long flags;
- 	bool notify_parent = false;
-+	pm_callback_t callback;
- 	int error = 0;
- 
- 	if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
-@@ -1029,6 +1030,10 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
-  out_set:
- 	__update_runtime_status(dev, status);
- 	dev->power.runtime_error = 0;
-+	if (dev->power.no_callbacks)
-+		goto out;
-+	callback = RPM_GET_CALLBACK(dev, runtime_set_status);
-+	rpm_callback(callback, dev);
-  out:
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 8b5976364619..ee098585d577 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -316,6 +316,7 @@ struct dev_pm_ops {
- 	int (*runtime_suspend)(struct device *dev);
- 	int (*runtime_resume)(struct device *dev);
- 	int (*runtime_idle)(struct device *dev);
-+	int (*runtime_set_status)(struct device *dev);
- };
- 
- #ifdef CONFIG_PM_SLEEP
-
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+Peter.
