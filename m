@@ -1,48 +1,33 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 2/8] pm: domains: avoid potential oops in
- pm_genpd_remove_device()
-Date: Sat, 14 Feb 2015 15:27:35 +0000
-Message-ID: <E1YMed5-00054V-QK@rmk-PC.arm.linux.org.uk>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [FOR DISCUSSION 0/8] Dove PMU support
+Date: Sat, 14 Feb 2015 17:49:52 +0100
+Message-ID: <20150214164952.GF3213@lunn.ch>
 References: <20150214152659.GI8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:41059 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743AbbBNP1t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Feb 2015 10:27:49 -0500
-In-Reply-To: <20150214152659.GI8656@n2100.arm.linux.org.uk>
+Received: from vps0.lunn.ch ([178.209.37.122]:44383 "EHLO vps0.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753965AbbBNQww (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 14 Feb 2015 11:52:52 -0500
 Content-Disposition: inline
+In-Reply-To: <20150214152659.GI8656@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Len Brown <len.brown@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>
 
-pm_genpd_remove_device() should only be called with valid and present
-pm domain.  There are circumstances where we may end up with something
-that isn't a generic PM domain in dev->pm_domain (eg, vga_switcheroo
-stuff.)
+Hi Russell
 
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/base/power/domain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks for posting these. Lets try to get them merged.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b3fbc21da2dc..11a1023fa64a 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1509,7 +1509,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
--	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev)
-+	if (!pm_genpd_present(genpd) || IS_ERR_OR_NULL(dev)
- 	    ||  IS_ERR_OR_NULL(dev->pm_domain)
- 	    ||  pd_to_genpd(dev->pm_domain) != genpd)
- 		return -EINVAL;
--- 
-1.8.3.1
+> There are a few things which are missing from this driver, such sa the
+> DT binding documentation.  This will follow once people are happy with
+> the first four patches, in particular where to locate the PMU driver
+> in the kernel tree.  Currently, I have it in arch/arm/mach-dove, which
+> is where the legacy Dove code lives, so it's not ideal.
 
+Maybe time for a drivers/pmu? arch/arm/mach-dove is not good, we want
+to be able to use this code from arch/arm/mach-mvebu.
+
+   Andrew
