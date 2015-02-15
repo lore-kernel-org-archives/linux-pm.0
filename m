@@ -1,175 +1,90 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
-Date: Sun, 15 Feb 2015 05:24:02 +0100
-Message-ID: <CAPDyKFqMjC+PC9WTkOgcm-4VxKdANLy+kXZHjXXDD2WcXrSNqg@mail.gmail.com>
-References: <20150214152659.GI8656@n2100.arm.linux.org.uk>
-	<E1YMedA-00054Z-TK@rmk-PC.arm.linux.org.uk>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v5 0/5] drivers: bus: Add Simple Power-Managed Bus
+Date: Sun, 15 Feb 2015 10:45:57 -0500
+Message-ID: <20150215154556.GD25065@verge.net.au>
+References: <1423131088-7835-1-git-send-email-geert+renesas@glider.be>
+ <20150211001835.GB7826@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f176.google.com ([209.85.216.176]:57308 "EHLO
-	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbbBOEYD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Feb 2015 23:24:03 -0500
-Received: by mail-qc0-f176.google.com with SMTP id b13so13837334qcw.7
-        for <linux-pm@vger.kernel.org>; Sat, 14 Feb 2015 20:24:02 -0800 (PST)
-In-Reply-To: <E1YMedA-00054Z-TK@rmk-PC.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150211001835.GB7826@verge.net.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Olof Johansson <olof@lixom.net>, Magnus Damm <magnus.damm@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Russell,
+On Wed, Feb 11, 2015 at 09:18:35AM +0900, Simon Horman wrote:
+> Hi Geert,
+> 
+> On Thu, Feb 05, 2015 at 11:11:23AM +0100, Geert Uytterhoeven wrote:
+> >         Hi all,
+> > 
+> > The Renesas Bus State Controller (BSC) provides an external bus for
+> > connecting multiple external devices to an SoC, driving several chip
+> > select lines, for e.g. NOR FLASH, Ethernet and USB.
+> > On the kzm9g and ape6evm development boards, an smsc9220 Ethernet
+> > controller is connnected to the BSC of an SH-Mobile AG5 (sh73a0) resp.
+> > R-Mobile APE6 (r8a73a4) SoC.
+> > 
+> > The BSC is a fairly simple memory-mapped bus, hence a "simple-bus"
+> > compatibility seems suitable.  However, the BSC is special in two
+> > ways:
+> >   1. It is part of a PM domain (A4S on sh73a0),
+> >   2. It has a gateable functional clock (ZB).
+> > Before a device connected to the BSC can be accessed, the PM domain
+> > containing the BSC must be powered on, and the functional clock
+> > driving the BSC must be enabled.
+> > 
+> > Both special properties can be described in DT in a standardized way
+> > ("power-domains = <&pd_a4s>" and "clocks = <&zb_clk>", cfr. the
+> > example in the DT binding documentation).  Externally connected
+> > devices are described as children of the BSC node.
+> > 
+> > Unfortunately this doesn't mean everything will work out-of-the-box.
+> > There are two problems:
+> >   1. Without a device driver bound to the bus device, this device is
+> >      not attached to the PM domain. And although a child device is
+> >      present and active, the PM domain may be powered down, as it's
+> >      considered unused by the PM domain core.
+> >   2. Without a device driver calling pm_runtime_enable(), its
+> >      functional clock is not enabled. Once runtime PM is enabled, the
+> >      R-Mobile PM domain platform driver manages the functional clock
+> >      using runtime PM.
+> > 
+> > As none of the above is really bus hardware-specific (PM domains and
+> > functional clocks in clock domains are handled from genpd and platform
+> > code), this series adds a Simple Power-Managed Bus driver for
+> > transparent busses, which matches against "simple-pm-bus", enables
+> > runtime PM for the bus device, and calls of_platform_populate() to
+> > probe for child devices.
+> > Due to the child-parent relationship of devices connected to the bus,
+> > as long as the device drivers for the child devices are runtime PM
+> > enabled, the bus's PM domain will be powered, and the bus's clock will
+> > be enabled automatically when needed, for both runtime PM and s2ram.
+> > 
+> > This was tested on sh73a0/kzm9g-multiplatform (by me), and (v3) on
+> > r8a73a4/ape6evm-multiplatform (by Ulrich Hecht). Without this,
+> > Ethernet doesn't work, as the ZB clock is disabled by
+> > clk_disable_unused().
+> > 
+> > Felipe: It looks like drivers/usb/musb/musb_am335x.c can be removed, if
+> > "ti,am33xx-usb" claims compatibility with "simple-pm-bus"?
+> > 
+> > As drivers/bus doesn't have a maintainer, and this driver is needed to
+> > move two shmobile platforms away from legacy to multiplatform, I think
+> > this can go in through Simon's shmobile tree.
+> 
+> thanks for persisting with this. From my point of view it appears
+> to be reviewed and ready.
+> 
+> Does anyone object to me queueing this up for v3.21 in the renesas tree?
+> 
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-On 14 February 2015 at 16:27, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> Synchronise the PM domain status with runtime PM's status.  This
-> provides a better solution to the problem than commit 2ed127697eb1
-> ("PM / Domains: Power on the PM domain right after attach completes").
->
-> The above commit added a call to power up the PM domain when a device
-> attaches to the domain.  The assumption is that the device driver
-> will cause a runtime PM transition, which will synchronise the PM
-> domain state with the runtime PM state.
->
-> However, runtime PM will, by default, assume that the device is
-> initially suspended.  So we have two subsystems which have differing
-> initial state expectations.  This is silly.
->
-> Runtime PM requires that pm_runtime_set_active() is called before
-> pm_runtime_enable() if the device is already powered up.  However, PM
-> domains are not informed of this, and this is where the problem really
-> lies.  We need to keep PM domains properly and fully informed of their
-> associated device status.
->
-> We fix this by adding a new callback - runtime_set_status() which is
-> triggered whenever a successful call to __pm_runtime_set_status().
-> PM domain code hooks into this, and updates the PM domain appropriately.
->
-> This means a driver with the following sequence:
->
->         pm_runtime_set_active(dev);
->         pm_runtime_enable(dev);
->
-> will trigger the PM domain to be powered up at this point, which keeps
-> runtime PM and PM domains properly in sync with each other.
+As no one has objected and it seems has been thoroughly reviewed
+I have queued this up in the renesas tree.
 
-The issue you are trying to solve here was raised by me during the
-discussion around the below merged commit.
-"PM / Domains: Power on the PM domain right after attach completes"
+It is part of the renesas-devel-20150215-v3.19 tag.
 
-You may find the complete thread here:
-http://marc.info/?l=linux-pm&m=141623756506128&w=2
-
-Especially I mention a "scenario 5", which is the issue you observed
-and what we decided to keep as a limitation. Sorry about that!
-
-Moreover, the below commit is also related to the similar issues and
-this fixed a regression.
-67732cd34382 ( PM / Domains: Fix initial default state of the
-need_restore flag).
-
-I just wanted to make sure you have all the background to why we ended
-up with current solution...
-
-Regarding $subject patch, I think it's an interesting approach but I
-need some more time to think about it. Unfortunate I am OOF the next
-two weeks so will have to promise you to review this as soon as I get
-back.
-
-BTW, I would also appreciate if you could keep me on cc for any
-further changes related to genpd.
-
-Kind regards
-Uffe
-
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  drivers/base/power/domain.c  | 16 +++++++++++++++-
->  drivers/base/power/runtime.c |  5 +++++
->  include/linux/pm.h           |  1 +
->  3 files changed, 21 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 11a1023fa64a..2a700cea41fc 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -741,6 +741,20 @@ static int pm_genpd_runtime_resume(struct device *dev)
->         return 0;
->  }
->
-> +static int pm_genpd_runtime_set_status(struct device *dev)
-> +{
-> +       int ret;
-> +
-> +       dev_dbg(dev, "%s()\n", __func__);
-> +
-> +       if (pm_runtime_suspended(dev))
-> +               ret = pm_genpd_runtime_suspend(dev);
-> +       else
-> +               ret = pm_genpd_runtime_resume(dev);
-> +
-> +       return ret;
-> +}
-> +
->  static bool pd_ignore_unused;
->  static int __init pd_ignore_unused_setup(char *__unused)
->  {
-> @@ -1907,6 +1921,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->         genpd->max_off_time_changed = true;
->         genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
->         genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-> +       genpd->domain.ops.runtime_set_status = pm_genpd_runtime_set_status;
->         genpd->domain.ops.prepare = pm_genpd_prepare;
->         genpd->domain.ops.suspend = pm_genpd_suspend;
->         genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
-> @@ -2223,7 +2238,6 @@ int genpd_dev_pm_attach(struct device *dev)
->         }
->
->         dev->pm_domain->detach = genpd_dev_pm_detach;
-> -       pm_genpd_poweron(pd);
->
->         return 0;
->  }
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 5070c4fe8542..a958cae67a37 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -981,6 +981,7 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
->         struct device *parent = dev->parent;
->         unsigned long flags;
->         bool notify_parent = false;
-> +       pm_callback_t callback;
->         int error = 0;
->
->         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
-> @@ -1029,6 +1030,10 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
->   out_set:
->         __update_runtime_status(dev, status);
->         dev->power.runtime_error = 0;
-> +       if (dev->power.no_callbacks)
-> +               goto out;
-> +       callback = RPM_GET_CALLBACK(dev, runtime_set_status);
-> +       rpm_callback(callback, dev);
->   out:
->         spin_unlock_irqrestore(&dev->power.lock, flags);
->
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 8b5976364619..ee098585d577 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -316,6 +316,7 @@ struct dev_pm_ops {
->         int (*runtime_suspend)(struct device *dev);
->         int (*runtime_resume)(struct device *dev);
->         int (*runtime_idle)(struct device *dev);
-> +       int (*runtime_set_status)(struct device *dev);
->  };
->
->  #ifdef CONFIG_PM_SLEEP
-> --
-> 1.8.3.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[snip]
