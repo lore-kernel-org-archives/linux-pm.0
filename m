@@ -1,67 +1,175 @@
-From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Subject: Re: [PATCH] PM-Trace: add pm-trace support for suspending phase
-Date: Sun, 15 Feb 2015 10:36:24 +0800
-Message-ID: <54E00628.8080304@linux.intel.com>
-References: <54DB6A81.3040706@linux.intel.com> <5368734.2g4GXN33HR@vostro.rjw.lan> <54DC3086.5030603@linux.intel.com> <3110302.hjQJaaphe1@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
+Date: Sun, 15 Feb 2015 05:24:02 +0100
+Message-ID: <CAPDyKFqMjC+PC9WTkOgcm-4VxKdANLy+kXZHjXXDD2WcXrSNqg@mail.gmail.com>
+References: <20150214152659.GI8656@n2100.arm.linux.org.uk>
+	<E1YMedA-00054Z-TK@rmk-PC.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:34348 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754380AbbBOCgd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 14 Feb 2015 21:36:33 -0500
-In-Reply-To: <3110302.hjQJaaphe1@vostro.rjw.lan>
+Received: from mail-qc0-f176.google.com ([209.85.216.176]:57308 "EHLO
+	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbbBOEYD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Feb 2015 23:24:03 -0500
+Received: by mail-qc0-f176.google.com with SMTP id b13so13837334qcw.7
+        for <linux-pm@vger.kernel.org>; Sat, 14 Feb 2015 20:24:02 -0800 (PST)
+In-Reply-To: <E1YMedA-00054Z-TK@rmk-PC.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+Hi Russell,
 
-On 2015/2/13 6:24, Rafael J. Wysocki wrote:
-> On Thursday, February 12, 2015 12:48:06 PM Fu, Zhonghui wrote:
->> On 2015/2/11 23:25, Rafael J. Wysocki wrote:
->>> On Wednesday, February 11, 2015 10:43:13 PM Fu, Zhonghui wrote:
->>>> From 2626594c03ca3b9884dd44073385c36f99a3651d Mon Sep 17 00:00:00 2001
->>>> From: Zhonghui Fu <zhonghui.fu@linux.intel.com>
->>>> Date: Wed, 11 Feb 2015 16:20:21 +0800
->>>> Subject: [PATCH] PM-Trace: add pm-trace support for suspending phase
->>> Can you please avoid putting the above header lines into your patches?
->>>
->>> The only one that may be necessary is the From: line, but that's only
->>> needed if you submit from a different address.
->>>
->>> Also please don't send To: mailing lists.  Use CC instead.  In fact, there
->>> should be *one* address in the To: field when you're submitting a patch:
->>> The address of the maintainer you want to apply the patch for you.
->> Thanks for your guidance, and I will re-send this patch.
->>
->>>> Occasionally, the system can't come back up after suspend/resume
->>>> due to problems of device suspending phase. This patch make
->>>> PM_TRACE infrastructure cover device suspending phase of
->>>> suspend/resume process, and the information in RTC can tell
->>>> developers which device suspending function make system hang.
->>> Do you have any examples of when this helped and no other debug methods did?
->>>
->>> It seems odd to me that no one has ever asked for this for several years and
->>> now you need it.
->> We ever run into some system hang during suspending some devices on BayTrail-T
->> platform such as DMA, audio, etc. So, extending PM-Trace to suspend phase should
->> be helpful.
-> Well, did you actually use this particular patch for debugging that?
-Yes, I ever used this method to debug suspending process of some devices.
-
-BTW, I have re-sent this patch with -M so that the rename and changes can be reviewed much easier. The subject is "[PATCH v2] PM-Trace: add pm-trace support for suspending phase".
-
-
-Thanks,
-Zhonghui
+On 14 February 2015 at 16:27, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
+> Synchronise the PM domain status with runtime PM's status.  This
+> provides a better solution to the problem than commit 2ed127697eb1
+> ("PM / Domains: Power on the PM domain right after attach completes").
 >
-> Rafael
+> The above commit added a call to power up the PM domain when a device
+> attaches to the domain.  The assumption is that the device driver
+> will cause a runtime PM transition, which will synchronise the PM
+> domain state with the runtime PM state.
+>
+> However, runtime PM will, by default, assume that the device is
+> initially suspended.  So we have two subsystems which have differing
+> initial state expectations.  This is silly.
+>
+> Runtime PM requires that pm_runtime_set_active() is called before
+> pm_runtime_enable() if the device is already powered up.  However, PM
+> domains are not informed of this, and this is where the problem really
+> lies.  We need to keep PM domains properly and fully informed of their
+> associated device status.
+>
+> We fix this by adding a new callback - runtime_set_status() which is
+> triggered whenever a successful call to __pm_runtime_set_status().
+> PM domain code hooks into this, and updates the PM domain appropriately.
+>
+> This means a driver with the following sequence:
+>
+>         pm_runtime_set_active(dev);
+>         pm_runtime_enable(dev);
+>
+> will trigger the PM domain to be powered up at this point, which keeps
+> runtime PM and PM domains properly in sync with each other.
+
+The issue you are trying to solve here was raised by me during the
+discussion around the below merged commit.
+"PM / Domains: Power on the PM domain right after attach completes"
+
+You may find the complete thread here:
+http://marc.info/?l=linux-pm&m=141623756506128&w=2
+
+Especially I mention a "scenario 5", which is the issue you observed
+and what we decided to keep as a limitation. Sorry about that!
+
+Moreover, the below commit is also related to the similar issues and
+this fixed a regression.
+67732cd34382 ( PM / Domains: Fix initial default state of the
+need_restore flag).
+
+I just wanted to make sure you have all the background to why we ended
+up with current solution...
+
+Regarding $subject patch, I think it's an interesting approach but I
+need some more time to think about it. Unfortunate I am OOF the next
+two weeks so will have to promise you to review this as soon as I get
+back.
+
+BTW, I would also appreciate if you could keep me on cc for any
+further changes related to genpd.
+
+Kind regards
+Uffe
+
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
+>  drivers/base/power/domain.c  | 16 +++++++++++++++-
+>  drivers/base/power/runtime.c |  5 +++++
+>  include/linux/pm.h           |  1 +
+>  3 files changed, 21 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 11a1023fa64a..2a700cea41fc 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -741,6 +741,20 @@ static int pm_genpd_runtime_resume(struct device *dev)
+>         return 0;
+>  }
+>
+> +static int pm_genpd_runtime_set_status(struct device *dev)
+> +{
+> +       int ret;
+> +
+> +       dev_dbg(dev, "%s()\n", __func__);
+> +
+> +       if (pm_runtime_suspended(dev))
+> +               ret = pm_genpd_runtime_suspend(dev);
+> +       else
+> +               ret = pm_genpd_runtime_resume(dev);
+> +
+> +       return ret;
+> +}
+> +
+>  static bool pd_ignore_unused;
+>  static int __init pd_ignore_unused_setup(char *__unused)
+>  {
+> @@ -1907,6 +1921,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>         genpd->max_off_time_changed = true;
+>         genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
+>         genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
+> +       genpd->domain.ops.runtime_set_status = pm_genpd_runtime_set_status;
+>         genpd->domain.ops.prepare = pm_genpd_prepare;
+>         genpd->domain.ops.suspend = pm_genpd_suspend;
+>         genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
+> @@ -2223,7 +2238,6 @@ int genpd_dev_pm_attach(struct device *dev)
+>         }
+>
+>         dev->pm_domain->detach = genpd_dev_pm_detach;
+> -       pm_genpd_poweron(pd);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 5070c4fe8542..a958cae67a37 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -981,6 +981,7 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
+>         struct device *parent = dev->parent;
+>         unsigned long flags;
+>         bool notify_parent = false;
+> +       pm_callback_t callback;
+>         int error = 0;
+>
+>         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+> @@ -1029,6 +1030,10 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
+>   out_set:
+>         __update_runtime_status(dev, status);
+>         dev->power.runtime_error = 0;
+> +       if (dev->power.no_callbacks)
+> +               goto out;
+> +       callback = RPM_GET_CALLBACK(dev, runtime_set_status);
+> +       rpm_callback(callback, dev);
+>   out:
+>         spin_unlock_irqrestore(&dev->power.lock, flags);
+>
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 8b5976364619..ee098585d577 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -316,6 +316,7 @@ struct dev_pm_ops {
+>         int (*runtime_suspend)(struct device *dev);
+>         int (*runtime_resume)(struct device *dev);
+>         int (*runtime_idle)(struct device *dev);
+> +       int (*runtime_set_status)(struct device *dev);
+>  };
+>
+>  #ifdef CONFIG_PM_SLEEP
+> --
+> 1.8.3.1
 >
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
