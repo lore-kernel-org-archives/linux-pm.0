@@ -1,79 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Updates related to suspend-to-idle for 3.20-rc1
-Date: Mon, 16 Feb 2015 20:24:24 +0100
-Message-ID: <CAJZ5v0i0VvGDmgBHBfWLR2cd03e14qZxAGpnJa8eXeayQ1H3Yg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86, irq: Fix regression caused by commit b568b8601f05
+Date: Mon, 16 Feb 2015 20:36:37 +0100
+Message-ID: <20150216193637.GA13497@amd>
+References: <1424039150-4115-1-git-send-email-syrjala@sci.fi>
+ <1424052673-22974-1-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51699 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbbBPTgl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Feb 2015 14:36:41 -0500
+Content-Disposition: inline
+In-Reply-To: <1424052673-22974-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Sander Eikelenboom <linux@eikelenboom.it>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon 2015-02-16 10:11:13, Jiang Liu wrote:
+> Commit b568b8601f05 ("Treat SCI interrupt as normal GSI interrupt")
+> accidently removes support of legacy PIC interrupt when fixing a
 
-Please pull from
+accidentaly?
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- suspend-to-idle-3.20-rc1
+> regression for Xen, which causes a nasty regression on HP/Compaq
+> nc6000 where we fail to register the ACPI interrupt, and thus
+> lose eg. thermal notifications leading a potentially overheated
+> machine.
+>=20
+> So reintroduce support of legacy PIC based ACPI SCI interrupt.
+>=20
+> Reported-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
+> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 
-to receive changes adding support for quiescing timers during suspend-to-idle
-for v3.20-rc1 with top-most commit c7fb90dfbef49b03e6f3fd6a32338e59cbcf34ee
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
- ACPI / idle: Implement ->enter_freeze callback routine
-
-on top of commit 18320f2a6871aaf2522f793fee4a67eccf5e131a
-
- Merge tag 'pm+acpi-3.20-rc1-2' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-This has been in the works for a few months and reached the point
-when it is not useful to hold off pushing it any more.
-
-Till now suspend-to-idle has not been able to save much more energy
-than runtime PM because of timer interrupts that periodically bring
-CPUs out of idle while they are waiting for a wakeup interrupt.  Of
-course, the timer interrupts are not wakeup ones, so the handling of
-them can be deferred until a real wakeup interrupt happens, but at
-the same time we don't want to mass-expire timers at that point.
-
-The solution is to suspend the entire timekeeping when the last CPU
-is entering an idle state and resume it when the first CPU goes out
-of idle.  That has to be done with care, though, so as to avoid
-accessing suspended clocksources etc. end we need extra support
-from idle drivers for that.
-
-This series of commits adds support for quiescing timers during
-suspend-to-idle and adds the requisite callbacks to intel_idle
-and the ACPI cpuidle driver.  It contains a fix for an issue present
-today which is very very difficult to trip over (that would involve
-an NMI being traced during very late suspend or very early resume
-when we're running with suspended timekeeping).
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (6):
-      PM / sleep: Re-implement suspend-to-idle handling
-      timekeeping: Pass readout base to update_fast_timekeeper()
-      timekeeping: Make it safe to use the fast timekeeper while suspended
-      PM / sleep: Make it possible to quiesce timers during suspend-to-idle
-      intel_idle: Add ->enter_freeze callbacks
-      ACPI / idle: Implement ->enter_freeze callback routine
-
----------------
-
- drivers/acpi/processor_idle.c |  48 +++++++++--
- drivers/cpuidle/cpuidle.c     |  94 ++++++++++++++++------
- drivers/idle/intel_idle.c     | 179 +++++++++++++++++++++++++++++-------------
- include/linux/cpuidle.h       |  13 ++-
- include/linux/suspend.h       |  16 ++++
- include/linux/tick.h          |   6 +-
- kernel/power/suspend.c        |  43 ++++++++--
- kernel/sched/idle.c           |  16 ++++
- kernel/time/tick-common.c     |  50 ++++++++++++
- kernel/time/timekeeping.c     |  48 ++++++++---
- kernel/time/timekeeping.h     |   2 +
- 11 files changed, 407 insertions(+), 108 deletions(-)
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
