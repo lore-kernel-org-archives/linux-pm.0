@@ -1,72 +1,46 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos
- platforms
-Date: Mon, 16 Feb 2015 10:52:17 +0100
-Message-ID: <20150216105217.79315ffd@amdc2363>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
- <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
- <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
+Subject: Re: [PATCH] thermal: exynos: fix: Check if data->tmu_read callback is
+ present before read
+Date: Mon, 16 Feb 2015 10:53:59 +0100
+Message-ID: <20150216105359.1b39fac8@amdc2363>
+References: <1423228030-18708-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
+In-reply-to: <1423228030-18708-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof, Thomas,
+Hi Eduardo,
 
-> 2015-01-08 22:17 GMT+01:00 Kevin Hilman <khilman@kernel.org>:
-> > On Fri, Nov 21, 2014 at 5:31 AM, Thomas Abraham
-> > <thomas.ab@samsung.com> wrote:
-> >> Changes since v11:
-> >> - Rebased on top of git://linuxtv.org/snawrocki/samsung.git
-> >> for-v3.19-exynos-clk
-> >>
-> >> This patch series removes the use of Exynos4210 and Exynos5250
-> >> specific cpufreq drivers and enables the use of cpufreq-dt driver
-> >> for these platforms. This series also enables cpufreq support for
-> >> Exynos5420 using arm_big_little cpufreq driver.
-> >>
-> >> This series is based on the following branch.
-> >> git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
-> >>
-> >> This series depends on the following patch which can be picked from
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
-> >> samsung/dt e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
-> >>
-> >> This patch series has been tested on Exynos4210/5250/5420 based
-> >> boards. Tomasz Figa had plans to take this in the Samsung clock
-> >> tree for v3.19
-> >> (http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
-> >> Sylwester, could you consider to merge this in your tree?
-> >
-> > CPUfreq for exynos is still not upstream.  What's the status of this
-> > series?  It's been ver a month since there's been any activity here
-> > (or any responses to the issues I reported.)
-> >
-> > On a related note, this series only does frequency scaling. Is there
-> > any work going on to also enable voltage scaling for the CPU rails
-> > as well?
+> The exynos_tmu_data() function should on entrance test not only for
+> valid data pointer, but also for data->tmu_read one.
+> It is important, since afterwards it is dereferenced to get
+> temperature code.
 > 
-> Hi Thomas,
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Do you plan to continue with this work? It would be very helpful.
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> b/drivers/thermal/samsung/exynos_tmu.c index 3a19353..a86e0495e 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -717,7 +717,7 @@ static int exynos_get_temp(void *p, long *temp)
+>  {
+>  	struct exynos_tmu_data *data = p;
+>  
+> -	if (!data)
+> +	if (!data || !data->tmu_read)
+>  		return -EINVAL;
+>  
+>  	mutex_lock(&data->lock);
 
-+1 from me.
-
-> 
-> I also wonder if Exynos 4412 could be re-added (without the boost if
-> these bindings are not ready)?
-
-I would prefer to have all platforms converted at once, since it might
-happen that some parts of the work would get lost.
-
-> 
-> Best regards,
-> Krzysztof
+This fix shall be added to v3.20.
 
 -- 
 Best regards,
