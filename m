@@ -1,47 +1,76 @@
-From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Subject: Re: [PATCH v7 05/16] clk: tegra: Add DFLL DVCO reset control for
- Tegra124
-Date: Mon, 16 Feb 2015 11:40:01 +0200
-Message-ID: <20150216094000.GD19839@tbergstrom-lnx.Nvidia.com>
-References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi>
- <1420723339-30735-6-git-send-email-mikko.perttunen@kapsi.fi>
- <20150212141944.GK20811@tbergstrom-lnx.Nvidia.com>
- <54DDD447.8000404@kapsi.fi>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Mon, 16 Feb 2015 10:52:17 +0100
+Message-ID: <20150216105217.79315ffd@amdc2363>
+References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
+ <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
+ <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <54DDD447.8000404@kapsi.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 13, 2015 at 12:39:03PM +0200, Mikko Perttunen wrote:
-> On 02/12/2015 04:19 PM, Peter De Schrijver wrote:
-> >On Thu, Jan 08, 2015 at 03:22:08PM +0200, Mikko Perttunen wrote:
-> >>From: Paul Walmsley <pwalmsley@nvidia.com>
+Hi Krzysztof, Thomas,
+
+> 2015-01-08 22:17 GMT+01:00 Kevin Hilman <khilman@kernel.org>:
+> > On Fri, Nov 21, 2014 at 5:31 AM, Thomas Abraham
+> > <thomas.ab@samsung.com> wrote:
+> >> Changes since v11:
+> >> - Rebased on top of git://linuxtv.org/snawrocki/samsung.git
+> >> for-v3.19-exynos-clk
 > >>
-> >>The DVCO present in the DFLL IP block has a separate reset line,
-> >>exposed via the CAR IP block.  This reset line is asserted upon SoC
-> >>reset.  Unless something (such as the DFLL driver) deasserts this
-> >>line, the DVCO will not oscillate, although reads and writes to the
-> >>DFLL IP block will complete.
+> >> This patch series removes the use of Exynos4210 and Exynos5250
+> >> specific cpufreq drivers and enables the use of cpufreq-dt driver
+> >> for these platforms. This series also enables cpufreq support for
+> >> Exynos5420 using arm_big_little cpufreq driver.
 > >>
-> >>Thanks to Aleksandr Frid <afrid@nvidia.com> for identifying this and
-> >>saving hours of debugging time.
+> >> This series is based on the following branch.
+> >> git://linuxtv.org/snawrocki/samsung.git for-v3.19-exynos-clk
 > >>
+> >> This series depends on the following patch which can be picked from
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
+> >> samsung/dt e540920cf21c (ARM: dts: add CPU nodes for Exynos4 SoCs).
+> >>
+> >> This patch series has been tested on Exynos4210/5250/5420 based
+> >> boards. Tomasz Figa had plans to take this in the Samsung clock
+> >> tree for v3.19
+> >> (http://www.spinics.net/lists/linux-samsung-soc/msg37933.html).
+> >> Sylwester, could you consider to merge this in your tree?
 > >
-> >Should this be done as a reset driver?
+> > CPUfreq for exynos is still not upstream.  What's the status of this
+> > series?  It's been ver a month since there's been any activity here
+> > (or any responses to the issues I reported.)
+> >
+> > On a related note, this series only does frequency scaling. Is there
+> > any work going on to also enable voltage scaling for the CPU rails
+> > as well?
 > 
-> Probably through the already existing CAR reset driver. This reset
-> doesn't fit well with the existing numbering scheme there, though.
-> Perhaps a magic high-valued constant that represents it.
+> Hi Thomas,
 > 
+> Do you plan to continue with this work? It would be very helpful.
 
-Indeed. Just like only the lower part of the clock IDs map have a realtion
-with the hardware registers. The rest is just arbitrary numbers.
++1 from me.
 
-Cheers,
+> 
+> I also wonder if Exynos 4412 could be re-added (without the boost if
+> these bindings are not ready)?
 
-Peter.
+I would prefer to have all platforms converted at once, since it might
+happen that some parts of the work would get lost.
+
+> 
+> Best regards,
+> Krzysztof
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
