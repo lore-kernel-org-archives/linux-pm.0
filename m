@@ -1,60 +1,54 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [PATCH] x86, irq: Fix regression caused by commit b568b8601f05
-Date: Mon, 16 Feb 2015 10:11:13 +0800
-Message-ID: <1424052673-22974-1-git-send-email-jiang.liu@linux.intel.com>
-References: <1424039150-4115-1-git-send-email-syrjala@sci.fi>
+From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+Subject: Re: [PATCH v7 01/16] clk: tegra: Add binding for the Tegra124 DFLL
+ clocksource
+Date: Mon, 16 Feb 2015 09:11:00 +0200
+Message-ID: <54E19804.9080003@iki.fi>
+References: <1420723339-30735-1-git-send-email-mikko.perttunen@kapsi.fi> <1420723339-30735-2-git-send-email-mikko.perttunen@kapsi.fi> <20150212224242.GA23500@mithrandir>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1424039150-4115-1-git-send-email-syrjala@sci.fi>
-Sender: linux-acpi-owner@vger.kernel.org
-To: =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Sander Eikelenboom <linux@eikelenboom.it>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f54.google.com ([209.85.215.54]:41962 "EHLO
+	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbbBPHLF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Feb 2015 02:11:05 -0500
+In-Reply-To: <20150212224242.GA23500@mithrandir>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-Commit b568b8601f05 ("Treat SCI interrupt as normal GSI interrupt")
-accidently removes support of legacy PIC interrupt when fixing a
-regression for Xen, which causes a nasty regression on HP/Compaq
-nc6000 where we fail to register the ACPI interrupt, and thus
-lose eg. thermal notifications leading a potentially overheated
-machine.
+On 02/13/2015 12:42 AM, Thierry Reding wrote:
+> On Thu, Jan 08, 2015 at 03:22:04PM +0200, Mikko Perttunen wrote:
+>> From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+>>
+>> The DFLL is the main clocksource for the fast CPU cluster on Tegra124
+>> and also provides automatic CPU rail voltage scaling as well. The DFLL
+>> is a separate IP block from the usual Tegra124 clock-and-reset
+>> controller, so it gets its own node in the device tree.
+>>
+>> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+>> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+>> ---
+>>   .../bindings/clock/nvidia,tegra124-dfll.txt        | 69 ++++++++++++++++++++++
+>>   1 file changed, 69 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+>>
+...
+>> +Required properties:
+>> +- compatible : should be "nvidia,tegra124-dfll-fcpu"
+>> +- reg : Defines the following set of registers, in the order listed:
+>> +        - registers for the DFLL control logic.
+>> +        - registers for the I2C output logic.
+>> +        - registers for the integrated I2C master controller.
+>> +        - look-up table RAM for voltage register values.
+>
+> Why do these all need to be separate sets? According to the TRM this is
+> a single IP block with a single register region, why the need to split
+> them apart?
 
-So reintroduce support of legacy PIC based ACPI SCI interrupt.
-
-Reported-by: Ville Syrj=C3=A4l=C3=A4 <syrjala@sci.fi>
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
-Hi Ville,
-	Could you please help to try this patch instead of revert commit
-b568b8601f05?
-Thanks!
-Gerry
----
- arch/x86/kernel/acpi/boot.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index ae97ed0873c6..3d525c6124f6 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -613,6 +613,11 @@ int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
- {
- 	int rc, irq, trigger, polarity;
-=20
-+	if (acpi_irq_model =3D=3D ACPI_IRQ_MODEL_PIC) {
-+		*irqp =3D gsi;
-+		return 0;
-+	}
-+
- 	rc =3D acpi_get_override_irq(gsi, &trigger, &polarity);
- 	if (rc =3D=3D 0) {
- 		trigger =3D trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE;
---=20
-1.7.10.4
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tegra132, some of those register blocks (IIRC the first one) has 
+moved to a different place (somewhere in the CAR register area). The TRM 
+description indeed gives a single list of registers for the Tegra124 
+implementation of the DFLL. The split into 4 blocks was to make the 
+binding more future-proof and to be closer to the real hardware design.
