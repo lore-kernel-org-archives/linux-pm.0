@@ -1,116 +1,119 @@
-From: Valentin Rothberg <Valentin.Rothberg@lip6.fr>
-Subject: [PATCH] ab8500_fg.c: only request threaded IRQs when necessary
-Date: Mon, 16 Feb 2015 17:32:48 +0100
-Message-ID: <1424104368-11202-1-git-send-email-Valentin.Rothberg@lip6.fr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Valentin Rothberg <Valentin.Rothberg@lip6.fr>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH 1/3] thermal: exynos: Fix NULL pointer exception during
+ kernel booting
+Date: Tue, 17 Feb 2015 02:00:38 +0900
+Message-ID: <CAGTfZH1RrcQkakasV8BNuc64-3Q2cO6DUfUqzDPOB6K2tFmmPA@mail.gmail.com>
+References: <1424096414-4327-1-git-send-email-cw00.choi@samsung.com>
+	<1424096414-4327-2-git-send-email-cw00.choi@samsung.com>
+	<20150216160633.29eac148@amdc2363>
+	<CAGTfZH3tESLb3V7PNpiy-nwi+cCVq6DHxkU6+gJU-MZhNqDBzg@mail.gmail.com>
+	<20150216172802.414525a9@amdc2363>
+Reply-To: cw00.choi@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150216172802.414525a9@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, "inki.dae@samsung.com" <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-All 5 IRQ handlers of the driver are requested as threaded interrupt
-handlers.  However, only 1 handler can block.  The remaining 4 handlers
-defer the actual handling to a workqueue.  Hence, 4 of 5 IRQ handlers
-have a considerable overhead, since they are executed in a kernel thread
-to schedule another kernel thread (workqueue).
+Hi Lukasz,
 
-This change splits up the 5 interrupt handlers into top halves (_th) and
-bottom halves (_bh) and resolves the aforementioned overhead by only
-requesting threaded interrupts (i.e., bottom halves) when necessary.
+On Tue, Feb 17, 2015 at 1:28 AM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Chanwoo,
+>
+>> Hi Lukasz,
+>>
+>> On Tue, Feb 17, 2015 at 12:06 AM, Lukasz Majewski
+>> <l.majewski@samsung.com> wrote:
+>> > Hi Chanwoo,
+>> >
+>> >> This patch fixes the NULL pointer exception during kernel booting.
+>> >> The thermal_zone _of_sensor_register() registers a sensor to DT
+>> >> thermal zone and then read the current temperature by '.get_temp'
+>> >> callback. The callback function of exynos thermal driver is
+>> >> exynos_get_temp() which must need the 'pdata' instance of
+>> >> exynos_tmu _platform_data structure.
+>> >> - exynos_get_temp() -> code_to_temp() -> Must need the 'pdata'
+>> >> instance
+>> >>
+>> >> But, exynos thermal driver is executed before getting the 'pdata'
+>> >> instance. To avoid the kernel panic, have to get the platform data
+>> >> by executing the exynos_map_dt_data() before calling
+>> >> thermal_zone_of_sensor_register() .
+>> >
+>> > I've already prepared patch for this (unfortunately it isn't yet
+>> > applied to mainline):
+>> >
+>> > "[PATCH] thermal: exynos: fix: Check if data->tmu_read callback is
+>> > present before read"
+>> >
+>> > http://www.spinics.net/lists/linux-samsung-soc/msg42245.html
+>>
+>> There is different issue between you patch and this patch.
+>> Your patch check the whether data->tmu_read is NULL or not.
+>> But, my patch check the pdata is NULL or not.
+>
+> I've tried to do the same previously. Please compare with:
+> [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
+>
+> http://www.spinics.net/lists/linux-samsung-soc/msg41308.html
+>
+> Unfortunately, Abhilash found some issues with this code, so I've
+> looked into different solution.
 
-Signed-off-by: Valentin Rothberg <Valentin.Rothberg@lip6.fr>
----
-Due to the lack of hardware I cannot test this change.  
+OK.
 
-I discovered this issue with scripts/coccinelle/misc/irqf_oneshot.cocci since
-the threaded interrupts were not requested with IRQF_ONESHOT.  By looking closer
-I saw the issue of this change.
----
- drivers/power/ab8500_fg.c | 46 +++++++++++++++++++++++++++++++++-------------
- 1 file changed, 33 insertions(+), 13 deletions(-)
+>
+>
+> However, I didn't need to move pdata = data->pdata; Hence, I wonder why
+> it need to be reordered. Are you using Exynos3250 based device?
 
-diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
-index c908658..dcd0901 100644
---- a/drivers/power/ab8500_fg.c
-+++ b/drivers/power/ab8500_fg.c
-@@ -3062,11 +3062,14 @@ static int ab8500_fg_remove(struct platform_device *pdev)
- }
- 
- /* ab8500 fg driver interrupts and their respective isr */
--static struct ab8500_fg_interrupts ab8500_fg_irq[] = {
-+static struct ab8500_fg_interrupts ab8500_fg_irq_th[] = {
- 	{"NCONV_ACCU", ab8500_fg_cc_convend_handler},
- 	{"BATT_OVV", ab8500_fg_batt_ovv_handler},
- 	{"LOW_BAT_F", ab8500_fg_lowbatf_handler},
- 	{"CC_INT_CALIB", ab8500_fg_cc_int_calib_handler},
-+};
-+
-+static struct ab8500_fg_interrupts ab8500_fg_irq_bh[] = {
- 	{"CCEOC", ab8500_fg_cc_data_end_handler},
- };
- 
-@@ -3194,21 +3197,36 @@ static int ab8500_fg_probe(struct platform_device *pdev)
- 	init_completion(&di->ab8500_fg_started);
- 	init_completion(&di->ab8500_fg_complete);
- 
--	/* Register interrupts */
--	for (i = 0; i < ARRAY_SIZE(ab8500_fg_irq); i++) {
--		irq = platform_get_irq_byname(pdev, ab8500_fg_irq[i].name);
--		ret = request_threaded_irq(irq, NULL, ab8500_fg_irq[i].isr,
--			IRQF_SHARED | IRQF_NO_SUSPEND,
--			ab8500_fg_irq[i].name, di);
-+	/* Register primary interrupt handlers */
-+	for (i = 0; i < ARRAY_SIZE(ab8500_fg_irq_th); i++) {
-+		irq = platform_get_irq_byname(pdev, ab8500_fg_irq_th[i].name);
-+		ret = request_irq(irq, ab8500_fg_irq_th[i].isr,
-+				  IRQF_SHARED | IRQF_NO_SUSPEND,
-+				  ab8500_fg_irq_th[i].name, di);
- 
- 		if (ret != 0) {
--			dev_err(di->dev, "failed to request %s IRQ %d: %d\n"
--				, ab8500_fg_irq[i].name, irq, ret);
-+			dev_err(di->dev, "failed to request %s IRQ %d: %d\n",
-+				ab8500_fg_irq_th[i].name, irq, ret);
- 			goto free_irq;
- 		}
- 		dev_dbg(di->dev, "Requested %s IRQ %d: %d\n",
--			ab8500_fg_irq[i].name, irq, ret);
-+			ab8500_fg_irq_th[i].name, irq, ret);
- 	}
-+
-+	/* Register threaded interrupt handler */
-+	irq = platform_get_irq_byname(pdev, ab8500_fg_irq_bh[0].name);
-+	ret = request_threaded_irq(irq, NULL, ab8500_fg_irq_bh[0].isr,
-+				IRQF_SHARED | IRQF_NO_SUSPEND | IRQF_ONESHOT,
-+			ab8500_fg_irq_bh[0].name, di);
-+
-+	if (ret != 0) {
-+		dev_err(di->dev, "failed to request %s IRQ %d: %d\n",
-+			ab8500_fg_irq_bh[0].name, irq, ret);
-+		goto free_irq;
-+	}
-+	dev_dbg(di->dev, "Requested %s IRQ %d: %d\n",
-+		ab8500_fg_irq_bh[0].name, irq, ret);
-+
- 	di->irq = platform_get_irq_byname(pdev, "CCEOC");
- 	disable_irq(di->irq);
- 	di->nbr_cceoc_irq_cnt = 0;
-@@ -3245,11 +3263,13 @@ static int ab8500_fg_probe(struct platform_device *pdev)
- free_irq:
- 	power_supply_unregister(&di->fg_psy);
- 
--	/* We also have to free all successfully registered irqs */
--	for (i = i - 1; i >= 0; i--) {
--		irq = platform_get_irq_byname(pdev, ab8500_fg_irq[i].name);
-+	/* We also have to free all registered irqs */
-+	for (i = 0; i < ARRAY_SIZE(ab8500_fg_irq_th); i++) {
-+		irq = platform_get_irq_byname(pdev, ab8500_fg_irq_th[i].name);
- 		free_irq(irq, di);
- 	}
-+	irq = platform_get_irq_byname(pdev, ab8500_fg_irq_bh[0].name);
-+	free_irq(irq, di);
- free_inst_curr_wq:
- 	destroy_workqueue(di->fg_wq);
- 	return ret;
--- 
-2.1.0
+I think it is necessary to prevent kernel panic. We can check this
+issue by analyzing
+the thermal_zone_of_sensor_register() as following issue:
+
+of_thermal_get_temp() executes the exynos_get_temp() finally. And
+exynos_get_temp()
+function must need the 'pdata' instance. The 'pdata' instance is
+initialized on exynos_map_dt_data().
+If exynos_tmu driver executes the exynos_map_dt_data() after
+thermal_zone_of_sensor_register(),
+this issue happen again.
+
+[ 4211.945315] [<ffffffc0004de6d8>] of_thermal_get_temp+0x1c/0x30
+[ 4211.951132] [<ffffffc0004db86c>] thermal_zone_get_temp+0x48/0x7c
+[ 4211.957118] [<ffffffc0004dd278>] thermal_zone_device_update+0x20/0x110
+[ 4211.963627] [<ffffffc0004de9c8>] of_thermal_set_mode+0x44/0x68
+[ 4211.969443] [<ffffffc0004decb8>] thermal_zone_of_sensor_register+0x15c/0x1d8
+
+I tested it on Exynos5433 based device.
+
+>
+>
+>>
+>> >
+>> > Does applying this patch help?
+>> >
+>> > BTW: How can I reproduce this error? Could you point me the SHA1 and
+>> > repository?
+>>
+>> I used your patch-set of linux-soc-thermal.git (branch: next). So I
+>> applied you patchiest on Linux 3.19 for test.
+>> -
+>> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/log/?h=next
+>
+> Is there any special .config?
+
+There is no special configuration.
+I tested this patch with CPUFREQ for cooling device.
+
+>
+> May I ask about the target platform?
+> I will look closely on this problem tomorrow.
+
+OK.
+
+Best Regards,
+Chanwoo Choi
