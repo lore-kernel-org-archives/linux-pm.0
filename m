@@ -1,94 +1,66 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 3/3] thermal: exynos: Clean-up code to use oneline entry
- for exynos compatible table
-Date: Mon, 16 Feb 2015 16:07:54 +0100
-Message-ID: <20150216160754.18ee3ebb@amdc2363>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH 1/3] thermal: exynos: Fix NULL pointer exception during
+ kernel booting
+Date: Tue, 17 Feb 2015 01:15:20 +0900
+Message-ID: <CAGTfZH3tESLb3V7PNpiy-nwi+cCVq6DHxkU6+gJU-MZhNqDBzg@mail.gmail.com>
 References: <1424096414-4327-1-git-send-email-cw00.choi@samsung.com>
- <1424096414-4327-4-git-send-email-cw00.choi@samsung.com>
+	<1424096414-4327-2-git-send-email-cw00.choi@samsung.com>
+	<20150216160633.29eac148@amdc2363>
+Reply-To: cw00.choi@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:34885 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753356AbbBPPIE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Feb 2015 10:08:04 -0500
-In-reply-to: <1424096414-4327-4-git-send-email-cw00.choi@samsung.com>
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:43876 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbbBPQPV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Feb 2015 11:15:21 -0500
+In-Reply-To: <20150216160633.29eac148@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, kgene@kernel.org, b.zolnierkie@samsung.com, kyungmin.park@samsung.com, amit.daniel@samsung.com, a.kesavan@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, "inki.dae@samsung.com" <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-Hi Chanwoo,
+Hi Lukasz,
 
-> This patch cleanup the code to use oneline for entry of exynos
-> compatible table.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 38
-> ++++++++++-------------------------- 1 file changed, 10
-> insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> b/drivers/thermal/samsung/exynos_tmu.c index b199fff..7e6baf5 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -919,34 +919,16 @@ static irqreturn_t exynos_tmu_irq(int irq, void
-> *id) }
->  
->  static const struct of_device_id exynos_tmu_match[] = {
-> -	{
-> -		.compatible = "samsung,exynos3250-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos4210-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos4412-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos5250-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos5260-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos5420-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos5420-tmu-ext-triminfo",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos5440-tmu",
-> -	},
-> -	{
-> -		.compatible = "samsung,exynos7-tmu",
-> -	},
-> -	{},
-> +	{ .compatible = "samsung,exynos3250-tmu", },
-> +	{ .compatible = "samsung,exynos4210-tmu", },
-> +	{ .compatible = "samsung,exynos4412-tmu", },
-> +	{ .compatible = "samsung,exynos5250-tmu", },
-> +	{ .compatible = "samsung,exynos5260-tmu", },
-> +	{ .compatible = "samsung,exynos5420-tmu", },
-> +	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
-> +	{ .compatible = "samsung,exynos5440-tmu", },
-> +	{ .compatible = "samsung,exynos7-tmu", },
-> +	{ /* sentinel */ },
->  };
->  MODULE_DEVICE_TABLE(of, exynos_tmu_match);
->  
+On Tue, Feb 17, 2015 at 12:06 AM, Lukasz Majewski
+<l.majewski@samsung.com> wrote:
+> Hi Chanwoo,
+>
+>> This patch fixes the NULL pointer exception during kernel booting.
+>> The thermal_zone _of_sensor_register() registers a sensor to DT
+>> thermal zone and then read the current temperature by '.get_temp'
+>> callback. The callback function of exynos thermal driver is
+>> exynos_get_temp() which must need the 'pdata' instance of exynos_tmu
+>> _platform_data structure.
+>> - exynos_get_temp() -> code_to_temp() -> Must need the 'pdata'
+>> instance
+>>
+>> But, exynos thermal driver is executed before getting the 'pdata'
+>> instance. To avoid the kernel panic, have to get the platform data by
+>> executing the exynos_map_dt_data() before calling
+>> thermal_zone_of_sensor_register() .
+>
+> I've already prepared patch for this (unfortunately it isn't yet
+> applied to mainline):
+>
+> "[PATCH] thermal: exynos: fix: Check if data->tmu_read callback is
+> present before read"
+>
+> http://www.spinics.net/lists/linux-samsung-soc/msg42245.html
 
-Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+There is different issue between you patch and this patch.
+Your patch check the whether data->tmu_read is NULL or not.
+But, my patch check the pdata is NULL or not.
 
-Thanks for clean up!
+>
+> Does applying this patch help?
+>
+> BTW: How can I reproduce this error? Could you point me the SHA1 and
+> repository?
 
--- 
-Best regards,
+I used your patch-set of linux-soc-thermal.git (branch: next). So I
+applied you patchiest on Linux 3.19 for test.
+- https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/log/?h=next
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Best Regards,
+Chanwoo Choi
