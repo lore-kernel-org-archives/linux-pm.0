@@ -1,155 +1,224 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal SoC management updates for v3.20 #1
-Date: Mon, 16 Feb 2015 23:19:28 -0400
-Message-ID: <20150217031926.GA3952@developer.amazonguestwifi.org>
-References: <20150206033952.GE3486@developer.amazonguestwifi.org>
+Subject: Re: [PATCH RFC 02/12] Documentation: thermal docbook: add glossary
+Date: Mon, 16 Feb 2015 23:22:54 -0400
+Message-ID: <20150217032253.GA4000@developer.amazonguestwifi.org>
+References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
+ <1423517653-11359-3-git-send-email-edubezval@gmail.com>
+ <54E1EA25.3000308@kapsi.fi>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:36242 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbbBRUn7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 15:43:59 -0500
 Content-Disposition: inline
-In-Reply-To: <20150206033952.GE3486@developer.amazonguestwifi.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <54E1EA25.3000308@kapsi.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: Rui Zhang <rui.zhang@intel.com>, ezequiel.garcia@free-electrons.com, amit.kachhap@linaro.org, viresh.kumar@linaro.org, amit.daniel@samsung.com, hongbo.zhang@linaro.com, andrew@lunn.ch, durgadoss.r@intel.com, peter@piie.net, shawn.guo@linaro.org, aaron.lu@intel.com, caesar.wang@rock-chips.com, b.zolnierkie@samsung.com, l.majewski@samsung.com, vincenzo.frascino@st.com, mperttunen@nvidia.com, srinivas.pandruvada@linux.intel.com, jacob.jun.pan@linux.intel.com, bcousson@baylibre.com, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
 
---Qxx1br4bt0+wmkIi
+--ReaqsoxgOBHFXBhH
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Rui,
+Terve Mikko,
 
-On Thu, Feb 05, 2015 at 11:39:56PM -0400, Eduardo Valentin wrote:
-> Hello Rui,
+On Mon, Feb 16, 2015 at 03:01:25PM +0200, Mikko Perttunen wrote:
+> On 02/09/2015 11:34 PM, Eduardo Valentin wrote:
+> > This change introduces a section in the Introduction Chapter to
+> > list concepts used by the Thermal Framework.
+> >
+> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > ---
+> >   Documentation/DocBook/thermal.tmpl | 129 ++++++++++++++++++++++++++++=
+++++++++-
+> >   1 file changed, 128 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook=
+/thermal.tmpl
+> > index f8fb8a2..66efed3 100644
+> > --- a/Documentation/DocBook/thermal.tmpl
+> > +++ b/Documentation/DocBook/thermal.tmpl
+> > @@ -84,5 +84,132 @@
+> >   		devices.
+> >   		</para>
+> >
+> > -  </chapter>
+> > +		<sect1 id=3D"glossary">
+> > +			<title>Glossary</title>
+> > +			<para>The Linux Kernel Thermal Framework  uses a
+> > +			specific terminology to represent the entities involved
+> > +			in thermal constrained environments. This section
+> > +			summaries the terminology as dictionary. These terms are
+> > +			in use within the present document and in the source
+> > +			code of the Linux Kernel Thermal Framework.
+> > +			</para>
+> > +			<glossary>
+> > +				<glossentry>
+> > +					<glossterm>Thermal Zone</glossterm>
+> > +					<glossdef>
+> > +						<para>Thermal zones represent
+> > +						what is the current status of a
+> > +						thermal constrained zone in the
+> > +						hardware. The zone usually is a
+> > +						device or component. The status
+> > +						of a thermal zone is mainly with
+> > +						respect to temperature.
+> > +						Currently, the Linux Kernel
+> > +						Thermal Framework represents
+> > +						temperature in miliCelsius. The
 >=20
-> Please pull from
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-therma=
-l.git fixes
->=20
-> to receive Thermal SoC Management updates for v3.20 with top-most
->=20
-> 6c247393cfdd6695717f80ff31f9fd9af8c2c525:
->=20
->   thermal: exynos: Add TMU support for Exynos7 SoC (2015-01-31 15:20:45 -=
-0400)
->=20
-> on top of commit b97f880c8342fd6e49a02c9ef7507a678722b2b3:
->=20
->   Merge branch 'for-3.19-fixes' of git://git.kernel.org/pub/scm/linux/ker=
-nel/git/tj/libata (2015-01-21 07:54:16 +1200)
->=20
-> Specifics:
->=20
-> - Exynos thermal driver refactoring. Several cleanups, code optimization,=
- unused
-> symbols removal, and unused feature removal in Exynos thermal driver. Tha=
-nks
-> Lukasz for this effort.
-> - Exynos thermal driver support to OF thermal. After the code refactoring,
-> the driver earned the support to OF thermal. Chip thermal data were moved
-> from driver code to DTS, reducing the code footprint. Thanks Lukasz for t=
-his.
-> - After receiving the OF thermal support, the exynos thermal driver now m=
-ust
-> allow modular build. Thanks Arnd for detecting, reporting and fixing this.
-> - Exynos thermal driver support to Exynos 7 SoC. Thanks Abhilash for this.
-> - Accurate temperature reporting on Rockchip thermal driver, thanks to Ca=
-esar.
-> - Fix on how OF thermal enables its zones, thanks Lukasz for fixing.
-> - Fixes in OF thermal examples under Documentation/. Thanks Srinivas for =
-fixing.
->=20
+> milli-Celsius or millicelsius. Same change later too.
 
-A gentle reminder. Please pull this one.
-
->=20
-> PS: I might be sending more changes regarding Thermal Zone Binding
-> Parameters and how we represent weights. I need to finish a couple of
-> testing on that code. But it should make 3.20 too.
-
-These patches won't be sent now. They are still under review. Please
-consider only the current pull request.
+OK. I will standardize.
 
 >=20
-> BR,
+> > +						current abstraction covers for
+> > +						non negative temperatures and
+> > +						constraints.
+> > +						</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +				<glossentry>
+> > +					<glossterm>Thermal Sensors</glossterm>
+> > +					<glossdef>
+> > +						<para>Thermal sensors provide
+> > +						temperature sensing capabilities
+> > +						on thermal zones. Typical
+> > +						devices are I2C ADC converters
+> > +						and bandgaps. These are nodes
+> > +						providing temperature data to
+> > +						thermal zones. Thermal sensor
+> > +						devices may control one or more
+> > +						internal sensors.
+> > +						</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +				<glossentry>
+> > +					<glossterm>Trips Points</glossterm>
+> > +					<glossdef>
+> > +						<para>The trip node describes a
+> > +						point in the temperature domain
+> > +						in which the system takes an
+> > +						action. This item describes just
+> > +						the point, not the action. Trip
+> > +						points are represented as
+> > +						temperature in miliCelsius. The
 >=20
-> Eduardo Valentin
-> ----------------------------------------------------------------
-> Abhilash Kesavan (2):
->       dts: Documentation: Add documentation for Exynos7 SoC thermal bindi=
-ngs
->       thermal: exynos: Add TMU support for Exynos7 SoC
+> here
 >=20
-> Arnd Bergmann (1):
->       cpufreq: exynos: allow modular build
+> > +						current abstraction covers for
+> > +						non negative temperatures.
 >=20
-> Caesar Wang (1):
->       thermal: rockchip: make temperature reporting much more accurate
->=20
-> Lukasz Majewski (12):
->       thermal: of: Enable thermal_zoneX when sensor is correctly added
->       thermal: exynos: cosmetic: Correct comment format
->       thermal: exynos: Provide thermal_exynos.h file to be included in de=
-vice tree files
->       thermal: exynos: Modify exynos thermal code to use device tree for =
-cpu cooling configuration
->       cpufreq: exynos: Use device tree to determine if cpufreq cooling sh=
-ould be registered
->       dts: Documentation: Extending documentation entry for exynos-thermal
->       dts: Documentation: Update exynos-thermal.txt example for Exynos5440
->       thermal: samsung: core: Exynos TMU rework to use device tree for co=
-nfiguration
->       thermal: exynos: Remove exynos_thermal_common.[c|h] files
->       thermal: exynos: Remove exynos_tmu_data.c file
->       thermal: Kconfig: Remove config for not used EXYNOS_THERMAL_CORE
->       thermal: exynos: Correct sanity check at exynos_report_trigger() fu=
-nction
->=20
-> Srinivas Kandagatla (1):
->       thermal: Fix examples in DT documentation
->=20
->  .../devicetree/bindings/thermal/exynos-thermal.txt |  21 +
->  .../devicetree/bindings/thermal/thermal.txt        |  74 +--
->  drivers/cpufreq/Kconfig.arm                        |  44 +-
->  drivers/cpufreq/Makefile                           |   9 +-
->  drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
->  drivers/thermal/of-thermal.c                       |   3 +
->  drivers/thermal/rockchip_thermal.c                 |  36 +-
->  drivers/thermal/samsung/Kconfig                    |   9 -
->  drivers/thermal/samsung/Makefile                   |   2 -
->  drivers/thermal/samsung/exynos_thermal_common.c    | 427 ----------------
->  drivers/thermal/samsung/exynos_thermal_common.h    | 106 ----
->  drivers/thermal/samsung/exynos_tmu.c               | 553 +++++++++++++++=
-+-----
->  drivers/thermal/samsung/exynos_tmu.h               |  77 +--
->  drivers/thermal/samsung/exynos_tmu_data.c          | 264 ----------
->  include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
->  15 files changed, 596 insertions(+), 1090 deletions(-)
->  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
->  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
->  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
->  create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
+> One thing I'd also like to see documented is the roles of the different=
+=20
+> trip types (PASSIVE, ACTIVE, HOT, CRITICAL) and when each should be used.
 
+OK. That makes sense to me. I will include either a chapter about
+thermal zones and have a section about it, or include in here, in the
+glossary. I will think about it.
 
+Thanks for your thoughts!
 
---Qxx1br4bt0+wmkIi
+>=20
+> > +						</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +				<glossentry>
+> > +					<glossterm>Thermal Governor</glossterm>
+> > +					<glossdef>
+> > +						<para>Thermal Governors
+> > +						represent a policy to manage the
+> > +						thermal zone device temperature.
+> > +						The governor targets to keep
+> > +						temperature in an acceptable
+> > +						range which correlates to the
+> > +						power budget, while maximizing
+> > +						the performance. Governors can
+> > +						be implemented in Kernel Space
+> > +						or in User Space.
+> > +						</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +				<glossentry>
+> > +					<glossterm>Thermal Cooling Device</glossterm>
+> > +					<glossdef>
+> > +						<para>Cooling devices provide
+> > +						control on power dissipation.
+> > +						There are essentially two ways
+> > +						to provide control on power
+> > +						dissipation. First is by means
+> > +						of regulating device
+> > +						performance, which is known as
+> > +						passive cooling. A typical
+> > +						passive cooling is a CPU that
+> > +						has dynamic voltage and
+> > +						frequency scaling (DVFS), and
+> > +						uses lower frequencies as
+> > +						cooling states. Second is by
+> > +						means of activating devices in
+> > +						order to remove the dissipated
+> > +						heat, which is known as active
+> > +						cooling, e.g. regulating fan
+> > +						speeds. In both cases, cooling
+> > +						devices shall have a way to
+> > +						determine the state of cooling
+> > +						in which the device is.
+> > +				</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +				<glossentry>
+> > +					<glossterm>Cooling State</glossterm>
+> > +					<glossdef>
+> > +						<para>Any cooling device has a
+> > +						range of cooling states (i.e.
+> > +						different levels of heat
+> > +						dissipation). For example a
+> > +						fan's cooling states correspond
+> > +						to the different fan speeds
+> > +						possible. Cooling states are
+> > +						referred to by single unsigned
+> > +						integers, where larger numbers
+> > +						mean greater heat dissipation.
+> > +						The precise set of cooling
+> > +						states associated with a device
+> > +						(as referred to be the
+> > +						cooling-min-state and
+> > +						cooling-max-state properties)
+> > +						should be defined in a
+> > +						particular device's binding.
+> > +						</para>
+> > +					</glossdef>
+> > +				</glossentry>
+> > +			</glossary>
+> > +		</sect1>
+> > +	</chapter>
+> >   </book>
+> >
+>=20
+> Cheers,
+> Mikko.
+>=20
+
+--ReaqsoxgOBHFXBhH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU4rM1AAoJEMLUO4d9pOJWINUH/Aw/8GQytj0bh2t+7QZ4hV+I
-2vvZnmn6oaO3YU4F29GJ1KQo9H8cPiXbWGAPU2pQoHUJyq8j1lBB8pPOiBo1gvvx
-j2X8eDVFZewcxJwouHuIvi10mv3MjNzYjaV9LS/RgpFwRArOdIH2QXDZRhvtTR9W
-FxCgoHRSFHu/fp3S9O6gRdTyjs8MT4glmDplF5eFStJzGzBNAj8WbvqPdetUvY+J
-SlddfMPEQsNX5vNeVZMg+Svg/7eFfpY4RNY9R0HHrNxrlC/FWAnPR5ATdrZQMyUf
-nsTRK2nm2M7mL41maslVRbT4z69HSrIUs4/tzHRxf4hv8nQo7II5IXMP5PaG288=
-=oMMM
+iQEcBAEBAgAGBQJU4rQEAAoJEMLUO4d9pOJW4yMH/046wXCUHbfry2FZVmqmuLQb
+viinOQ4PJFqi917cWVa0okY9sOfF1mmCjef522CQOknscIMCH2cV7XIFoafSyxdy
+jHp81QFH4jOw1Tm9Rq1/6Oub8ROEaJCVkfJIwnKQ/uhlLQCiUeD0WMHcVCAmR+jC
+I0cqslSgZyhrxR7aZpbOZ5BT3CyYkF3zkkRAd+rCdP/b4ifBs/OToMe2vmIA1iBp
+bwc/d285O7ULy+Gg+/6eRArKQQyDpYb8MeFdrGIwCG8uIBhz3/cLBczxCe3k2cbT
+bykUIE2yVWzvn9jC3IHa7s+Hd7iuoR7GXv9IQmC8pNSaYq4xBV7EGh/W9ozfReI=
+=dzXK
 -----END PGP SIGNATURE-----
 
---Qxx1br4bt0+wmkIi--
+--ReaqsoxgOBHFXBhH--
