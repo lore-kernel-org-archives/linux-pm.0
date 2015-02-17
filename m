@@ -1,47 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] x86, irq: Fix regression caused by commit b568b8601f05
-Date: Tue, 17 Feb 2015 18:55:14 +0100
-Message-ID: <14690730.85W95cg85M@vostro.rjw.lan>
-References: <1424039150-4115-1-git-send-email-syrjala@sci.fi> <1424052673-22974-1-git-send-email-jiang.liu@linux.intel.com> <20150216193637.GA13497@amd>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Tue, 17 Feb 2015 19:15:19 +0100
+Message-ID: <35613222.up9lS5n2CM@vostro.rjw.lan>
+References: <cover.1422346933.git.viresh.kumar@linaro.org> <1746505.56yzpQ04cT@vostro.rjw.lan> <CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150216193637.GA13497@amd>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, Sander Eikelenboom <linux@eikelenboom.it>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49399 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754561AbbBQRwH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 12:52:07 -0500
+In-Reply-To: <CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On Monday, February 16, 2015 08:36:37 PM Pavel Machek wrote:
-> On Mon 2015-02-16 10:11:13, Jiang Liu wrote:
-> > Commit b568b8601f05 ("Treat SCI interrupt as normal GSI interrupt")
-> > accidently removes support of legacy PIC interrupt when fixing a
->=20
-> accidentaly?
->=20
-> > regression for Xen, which causes a nasty regression on HP/Compaq
-> > nc6000 where we fail to register the ACPI interrupt, and thus
-> > lose eg. thermal notifications leading a potentially overheated
-> > machine.
-> >=20
-> > So reintroduce support of legacy PIC based ACPI SCI interrupt.
-> >=20
-> > Reported-by: Ville Syrj=C3=A4l=C3=A4 <syrjala@sci.fi>
-> > Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
->=20
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+On Tuesday, February 17, 2015 01:36:47 PM Viresh Kumar wrote:
+> On 5 February 2015 at 23:11, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > I'm still concerned about the case when the last policy CPU is physically
+> > going away, in which we do the offline as a preliminary step and then
+> > will go for full CPU device unregistration.
+> 
+> I need more clarity on how this happens. So, on a physical hotplug out:
+> - We first do cpu offline, i.e. hotplug notifier gets called.
 
-Is anyone taking care of this one or should I take it?
+Yes.
 
-Ingo, Peter?
+> - And then during unregistration the sysfs remove will get called?
+
+The CPU device goes away then and that should trigger the remove of all the
+sysfs directories under it.
 
 
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
