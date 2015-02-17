@@ -1,86 +1,155 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
-Date: Wed, 18 Feb 2015 13:42:59 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1502181336090.1245-100000@iolanthe.rowland.org>
-References: <20150218172651.GV8656@n2100.arm.linux.org.uk>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] Thermal SoC management updates for v3.20 #1
+Date: Mon, 16 Feb 2015 23:19:28 -0400
+Message-ID: <20150217031926.GA3952@developer.amazonguestwifi.org>
+References: <20150206033952.GE3486@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49529 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752752AbbBRSnB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 13:43:01 -0500
-In-Reply-To: <20150218172651.GV8656@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150206033952.GE3486@developer.amazonguestwifi.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-On Wed, 18 Feb 2015, Russell King - ARM Linux wrote:
 
-> So, let's take what we're currently doing on DT, and make it the same
-> across the board.  In platform_drv_probe(), let's do this:
-> 
-> 	/* attach the domain */
->         ret = dev_pm_domain_attach(_dev, true);
-> 	if (ret == -EPROBE_DEFER)
-> 		goto defer;
-> 
-> 	/* power up the domain - and hold it powered up */
-> 	ret = dev_pm_domain_pre_probe(_dev);
-> 	if (ret != -ENOSYS)
-> 		goto error;
-> 
-> 	ret = drv->probe(dev);
-> 
-> 	/*
-> 	 * remove the "hold" on the domain by this device, and start
-> 	 * tracking its runtime PM status.
-> 	 */
-> 	dev_pm_domain_post_probe(_dev);
-> 
-> 	if (ret)
-> 		dev_pm_domain_detach(_dev, true);
-> 
-> What this means is that while the probe function is running, we guarantee
-> that the PM domain will always be powered up.  We also guarantee that
-> after the probe function has returned, we will then start tracking the
-> runtime PM state, and if the device driver leaves runtime PM in the
-> "suspended" state, PM domains will get to hear about it at that point,
-> and can transition the PM domain back to "off" mode.
-> 
-> Both these transitions only cause the PM domain to be affected; no
-> runtime PM callbacks are issued for either of these two changes.  (We
-> already have that for the initial state right now where attaching a
-> device to the PM domain causes the PM domain to be powered up.)
-> 
-> This is merely an extension of the current scheme.  Think of
-> dev_pm_domain_post_probe() as a method of synchronising the state of
-> PM domains with the state of runtime PM across all attached devices.
+--Qxx1br4bt0+wmkIi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This seems like the right sort of approach.
+Rui,
 
-The Runtime PM core has a general philosophy that it can never force
-anything to be in the suspended state.  Therefore if you need something
-to be in a well-defined power state for any length of time (or if you
-need to know the power state), you have to force it into the active
-state.
+On Thu, Feb 05, 2015 at 11:39:56PM -0400, Eduardo Valentin wrote:
+> Hello Rui,
+>=20
+> Please pull from
+>=20
+>   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-therma=
+l.git fixes
+>=20
+> to receive Thermal SoC Management updates for v3.20 with top-most
+>=20
+> 6c247393cfdd6695717f80ff31f9fd9af8c2c525:
+>=20
+>   thermal: exynos: Add TMU support for Exynos7 SoC (2015-01-31 15:20:45 -=
+0400)
+>=20
+> on top of commit b97f880c8342fd6e49a02c9ef7507a678722b2b3:
+>=20
+>   Merge branch 'for-3.19-fixes' of git://git.kernel.org/pub/scm/linux/ker=
+nel/git/tj/libata (2015-01-21 07:54:16 +1200)
+>=20
+> Specifics:
+>=20
+> - Exynos thermal driver refactoring. Several cleanups, code optimization,=
+ unused
+> symbols removal, and unused feature removal in Exynos thermal driver. Tha=
+nks
+> Lukasz for this effort.
+> - Exynos thermal driver support to OF thermal. After the code refactoring,
+> the driver earned the support to OF thermal. Chip thermal data were moved
+> from driver code to DTS, reducing the code footprint. Thanks Lukasz for t=
+his.
+> - After receiving the OF thermal support, the exynos thermal driver now m=
+ust
+> allow modular build. Thanks Arnd for detecting, reporting and fixing this.
+> - Exynos thermal driver support to Exynos 7 SoC. Thanks Abhilash for this.
+> - Accurate temperature reporting on Rockchip thermal driver, thanks to Ca=
+esar.
+> - Fix on how OF thermal enables its zones, thanks Lukasz for fixing.
+> - Fixes in OF thermal examples under Documentation/. Thanks Srinivas for =
+fixing.
+>=20
 
-> Aside:
-> I need to do some further checks; while considering this, I think I've
-> come across a worrying problem with "PM / Domains: Power on the PM domain
-> right after attach completes".  I think this will result in the driver's
-> runtime_resume callback being invoked _before_ the probe function.  I
-> can't test this right now as I'm in the middle of upgrading my dev box
-> and it doesn't have a functional install for building ARM kernels yet.
+A gentle reminder. Please pull this one.
 
-Subsystems always face this problem, because the device core sets
-dev->driver before calling the probe routine.  (There's a similar
-problem on the other side, where the device core doesn't clear
-dev->driver until after the remove routine has returned.)  To cope with
-this, the subsystem-level runtime-PM callbacks have to be careful not
-to invoke the driver-level callbacks before probing is finished or
-after removal has started.
+>=20
+> PS: I might be sending more changes regarding Thermal Zone Binding
+> Parameters and how we represent weights. I need to finish a couple of
+> testing on that code. But it should make 3.20 too.
 
-Alan Stern
+These patches won't be sent now. They are still under review. Please
+consider only the current pull request.
 
+>=20
+> BR,
+>=20
+> Eduardo Valentin
+> ----------------------------------------------------------------
+> Abhilash Kesavan (2):
+>       dts: Documentation: Add documentation for Exynos7 SoC thermal bindi=
+ngs
+>       thermal: exynos: Add TMU support for Exynos7 SoC
+>=20
+> Arnd Bergmann (1):
+>       cpufreq: exynos: allow modular build
+>=20
+> Caesar Wang (1):
+>       thermal: rockchip: make temperature reporting much more accurate
+>=20
+> Lukasz Majewski (12):
+>       thermal: of: Enable thermal_zoneX when sensor is correctly added
+>       thermal: exynos: cosmetic: Correct comment format
+>       thermal: exynos: Provide thermal_exynos.h file to be included in de=
+vice tree files
+>       thermal: exynos: Modify exynos thermal code to use device tree for =
+cpu cooling configuration
+>       cpufreq: exynos: Use device tree to determine if cpufreq cooling sh=
+ould be registered
+>       dts: Documentation: Extending documentation entry for exynos-thermal
+>       dts: Documentation: Update exynos-thermal.txt example for Exynos5440
+>       thermal: samsung: core: Exynos TMU rework to use device tree for co=
+nfiguration
+>       thermal: exynos: Remove exynos_thermal_common.[c|h] files
+>       thermal: exynos: Remove exynos_tmu_data.c file
+>       thermal: Kconfig: Remove config for not used EXYNOS_THERMAL_CORE
+>       thermal: exynos: Correct sanity check at exynos_report_trigger() fu=
+nction
+>=20
+> Srinivas Kandagatla (1):
+>       thermal: Fix examples in DT documentation
+>=20
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |  21 +
+>  .../devicetree/bindings/thermal/thermal.txt        |  74 +--
+>  drivers/cpufreq/Kconfig.arm                        |  44 +-
+>  drivers/cpufreq/Makefile                           |   9 +-
+>  drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
+>  drivers/thermal/of-thermal.c                       |   3 +
+>  drivers/thermal/rockchip_thermal.c                 |  36 +-
+>  drivers/thermal/samsung/Kconfig                    |   9 -
+>  drivers/thermal/samsung/Makefile                   |   2 -
+>  drivers/thermal/samsung/exynos_thermal_common.c    | 427 ----------------
+>  drivers/thermal/samsung/exynos_thermal_common.h    | 106 ----
+>  drivers/thermal/samsung/exynos_tmu.c               | 553 +++++++++++++++=
++-----
+>  drivers/thermal/samsung/exynos_tmu.h               |  77 +--
+>  drivers/thermal/samsung/exynos_tmu_data.c          | 264 ----------
+>  include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
+>  15 files changed, 596 insertions(+), 1090 deletions(-)
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+>  delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+>  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+>  create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
+
+
+
+--Qxx1br4bt0+wmkIi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJU4rM1AAoJEMLUO4d9pOJWINUH/Aw/8GQytj0bh2t+7QZ4hV+I
+2vvZnmn6oaO3YU4F29GJ1KQo9H8cPiXbWGAPU2pQoHUJyq8j1lBB8pPOiBo1gvvx
+j2X8eDVFZewcxJwouHuIvi10mv3MjNzYjaV9LS/RgpFwRArOdIH2QXDZRhvtTR9W
+FxCgoHRSFHu/fp3S9O6gRdTyjs8MT4glmDplF5eFStJzGzBNAj8WbvqPdetUvY+J
+SlddfMPEQsNX5vNeVZMg+Svg/7eFfpY4RNY9R0HHrNxrlC/FWAnPR5ATdrZQMyUf
+nsTRK2nm2M7mL41maslVRbT4z69HSrIUs4/tzHRxf4hv8nQo7II5IXMP5PaG288=
+=oMMM
+-----END PGP SIGNATURE-----
+
+--Qxx1br4bt0+wmkIi--
