@@ -1,184 +1,50 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-Date: Tue, 17 Feb 2015 13:29:10 +0530
-Message-ID: <54E2F4CE.2090205@linux.vnet.ibm.com>
-References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 05/18] cpufreq: Manage governor usage history with 'policy->last_governor'
+Date: Tue, 17 Feb 2015 13:32:00 +0530
+Message-ID: <CAKohpokKCxhMrVubu6rJpELkeXf9Afzv6mQqc7XOcTznbH7j+A@mail.gmail.com>
+References: <cover.1422346933.git.viresh.kumar@linaro.org>
+	<bc7154266269beb8c6b9b3d56b529b64db33d2e2.1422346933.git.viresh.kumar@linaro.org>
+	<54DC1806.9040001@codeaurora.org>
+	<CAKohpomFvGXacyc-huavSyGxasrcKY19591OLMnAWY4hJHo9ow@mail.gmail.com>
+	<a0d981c970a45d59bae727789a8b7834.squirrel@www.codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e39.co.us.ibm.com ([32.97.110.160]:54114 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbbBQIAN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 03:00:13 -0500
-Received: from /spool/local
-	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 17 Feb 2015 01:00:12 -0700
-In-Reply-To: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:62264 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754698AbbBQICB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 03:02:01 -0500
+Received: by mail-ob0-f172.google.com with SMTP id nt9so50565451obb.3
+        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2015 00:02:00 -0800 (PST)
+In-Reply-To: <a0d981c970a45d59bae727789a8b7834.squirrel@www.codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mpe@ellerman.id.au, rafael.j.wysocki@intel.com
-Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-Hi Rafael,
+On 12 February 2015 at 16:00,  <skannan@codeaurora.org> wrote:
+> I think for logical hotplug we should lock the governor from being
 
-Can you please pull this patch ?
-Another patch based on top of this is waiting to be pulled:
-[PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
+Nack.
 
-Regards
-Preeti U Murthy
+> removed. Or, if you don't want that, go set the pointer to NULL lazily
+> when/if that happens.
 
-On 02/03/2015 11:50 AM, Preeti U Murthy wrote:
-> The device tree now exposes the residency values for different idle states. Read
-> these values instead of calculating residency from the latency values. The values
-> exposed in the DT are validated for optimal power efficiency. However to maintain
-> compatibility with the older firmware code which does not expose residency
-> values, use default values as a fallback mechanism. While at it, use better
-> APIs to parse the powermgmt device tree node.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
-> Changes from the previous versions: https://lkml.org/lkml/2015/2/2/12
-> 1. Used better APIs
-> 2. Code Cleanups
-> 3. Reverted back to the V2 of this patch as suggested in the above link,
-> in addition to a few cleanups and carried forward the Acks from V2
-> 
->  drivers/cpuidle/cpuidle-powernv.c |   71 ++++++++++++++++++++++---------------
->  1 file changed, 42 insertions(+), 29 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 2726663..3aa27a0 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -13,6 +13,7 @@
->  #include <linux/notifier.h>
->  #include <linux/clockchips.h>
->  #include <linux/of.h>
-> +#include <linux/slab.h>
->  
->  #include <asm/machdep.h>
->  #include <asm/firmware.h>
-> @@ -161,69 +162,81 @@ static int powernv_add_idle_states(void)
->  	int nr_idle_states = 1; /* Snooze */
->  	int dt_idle_states;
->  	const __be32 *idle_state_flags;
-> -	const __be32 *idle_state_latency;
-> -	u32 len_flags, flags, latency_ns;
-> -	int i;
-> +	u32 len_flags, flags;
-> +	u32 *latency_ns, *residency_ns;
-> +	int i, rc;
->  
->  	/* Currently we have snooze statically defined */
->  
->  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
->  	if (!power_mgt) {
->  		pr_warn("opal: PowerMgmt Node not found\n");
-> -		return nr_idle_states;
-> +		goto out;
->  	}
->  
-> -	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
-> +	idle_state_flags = of_get_property(power_mgt,
-> +				"ibm,cpu-idle-state-flags", &len_flags);
->  	if (!idle_state_flags) {
-> -		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-> -		return nr_idle_states;
-> +		pr_warn("cpuidle-powernv : missing
-> +				ibm,cpu-idle-state-flags in DT\n");
-> +		goto out;
->  	}
->  
-> -	idle_state_latency = of_get_property(power_mgt,
-> -			"ibm,cpu-idle-state-latencies-ns", NULL);
-> -	if (!idle_state_latency) {
-> -		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-> -		return nr_idle_states;
-> +	dt_idle_states = len_flags / sizeof(u32);
-> +
-> +	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
-> +	rc = of_property_read_u32_array(power_mgt,
-> +		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
-> +	if (rc) {
-> +		pr_warn("cpuidle-powernv: missing
-> +				ibm,cpu-idle-state-latencies-ns in DT\n");
-> +		goto out_free_latency;
->  	}
->  
-> -	dt_idle_states = len_flags / sizeof(u32);
-> +	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
-> +	rc = of_property_read_u32_array(power_mgt,
-> +		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
->  
->  	for (i = 0; i < dt_idle_states; i++) {
->  
->  		flags = be32_to_cpu(idle_state_flags[i]);
->  
-> -		/* Cpuidle accepts exit_latency in us and we estimate
-> -		 * target residency to be 10x exit_latency
-> +		/*
-> +		 * Cpuidle accepts exit_latency and target_residency in us.
-> +		 * Use default target_residency values if f/w does not expose it.
->  		 */
-> -		latency_ns = be32_to_cpu(idle_state_latency[i]);
->  		if (flags & OPAL_PM_NAP_ENABLED) {
->  			/* Add NAP state */
->  			strcpy(powernv_states[nr_idle_states].name, "Nap");
->  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
->  			powernv_states[nr_idle_states].flags = 0;
-> -			powernv_states[nr_idle_states].exit_latency =
-> -					((unsigned int)latency_ns) / 1000;
-> -			powernv_states[nr_idle_states].target_residency =
-> -					((unsigned int)latency_ns / 100);
-> +			powernv_states[nr_idle_states].target_residency = 100;
->  			powernv_states[nr_idle_states].enter = &nap_loop;
-> -			nr_idle_states++;
-> -		}
-> -
-> -		if (flags & OPAL_PM_SLEEP_ENABLED ||
-> +		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
->  			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
->  			/* Add FASTSLEEP state */
->  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
->  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
->  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
-> -			powernv_states[nr_idle_states].exit_latency =
-> -					((unsigned int)latency_ns) / 1000;
-> -			powernv_states[nr_idle_states].target_residency =
-> -					((unsigned int)latency_ns / 100);
-> +			powernv_states[nr_idle_states].target_residency = 300000;
->  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-> -			nr_idle_states++;
->  		}
-> +
-> +		powernv_states[nr_idle_states].exit_latency =
-> +				((unsigned int)latency_ns[i]) / 1000;
-> +
-> +		if (!rc) {
-> +			powernv_states[nr_idle_states].target_residency =
-> +				((unsigned int)residency_ns[i]) / 1000;
-> +		}
-> +
-> +		nr_idle_states++;
->  	}
->  
-> +	kfree(residency_ns);
-> +out_free_latency:
-> +	kfree(latency_ns);
-> +out:
->  	return nr_idle_states;
->  }
->  
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+That would be another band-aid ..
 
+> I'm not sure if you read rest of my email. Unless you added some patches
+
+I did read them..
+
+> recently, restoring the last_governor is definitely functionally broken as
+> of at least 3.12. Probably 3.14 too (I need to check again). It just
+> restores the governor with the default tunables. So, it's kinda useless in
+> the real world. You might as well set it to default governor because it's
+> just as helpful as using the last governor with different tunables.
+
+I agree that the tunables aren't restored, but this is useful atleast for the
+case where the governor tunables are shared across policies. And so
+we don't have to change the tunables on policy-re-init..
+
+This patch wasn't about changing the functionality but about saving some
+memory and simple code flow..
