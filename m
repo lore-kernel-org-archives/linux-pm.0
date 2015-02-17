@@ -1,50 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 05/18] cpufreq: Manage governor usage history with 'policy->last_governor'
-Date: Tue, 17 Feb 2015 13:32:00 +0530
-Message-ID: <CAKohpokKCxhMrVubu6rJpELkeXf9Afzv6mQqc7XOcTznbH7j+A@mail.gmail.com>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Tue, 17 Feb 2015 13:36:47 +0530
+Message-ID: <CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com>
 References: <cover.1422346933.git.viresh.kumar@linaro.org>
-	<bc7154266269beb8c6b9b3d56b529b64db33d2e2.1422346933.git.viresh.kumar@linaro.org>
-	<54DC1806.9040001@codeaurora.org>
-	<CAKohpomFvGXacyc-huavSyGxasrcKY19591OLMnAWY4hJHo9ow@mail.gmail.com>
-	<a0d981c970a45d59bae727789a8b7834.squirrel@www.codeaurora.org>
+	<6147604.f4mimnOd4x@vostro.rjw.lan>
+	<54D2CD76.2030609@codeaurora.org>
+	<1746505.56yzpQ04cT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:62264 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754698AbbBQICB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 03:02:01 -0500
-Received: by mail-ob0-f172.google.com with SMTP id nt9so50565451obb.3
-        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2015 00:02:00 -0800 (PST)
-In-Reply-To: <a0d981c970a45d59bae727789a8b7834.squirrel@www.codeaurora.org>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:33683 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756139AbbBQIGr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 03:06:47 -0500
+Received: by mail-ob0-f171.google.com with SMTP id gq1so50627597obb.2
+        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2015 00:06:47 -0800 (PST)
+In-Reply-To: <1746505.56yzpQ04cT@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On 12 February 2015 at 16:00,  <skannan@codeaurora.org> wrote:
-> I think for logical hotplug we should lock the governor from being
+On 5 February 2015 at 23:11, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> I'm still concerned about the case when the last policy CPU is physically
+> going away, in which we do the offline as a preliminary step and then
+> will go for full CPU device unregistration.
 
-Nack.
+I need more clarity on how this happens. So, on a physical hotplug out:
+- We first do cpu offline, i.e. hotplug notifier gets called.
+- And then during unregistration the sysfs remove will get called?
 
-> removed. Or, if you don't want that, go set the pointer to NULL lazily
-> when/if that happens.
+I haven't taken care of this as I never understood what actually happens
+in terms of code sequencing ..
 
-That would be another band-aid ..
+Will take care of that in next revision once I get answers to above queries.
 
-> I'm not sure if you read rest of my email. Unless you added some patches
-
-I did read them..
-
-> recently, restoring the last_governor is definitely functionally broken as
-> of at least 3.12. Probably 3.14 too (I need to check again). It just
-> restores the governor with the default tunables. So, it's kinda useless in
-> the real world. You might as well set it to default governor because it's
-> just as helpful as using the last governor with different tunables.
-
-I agree that the tunables aren't restored, but this is useful atleast for the
-case where the governor tunables are shared across policies. And so
-we don't have to change the tunables on policy-re-init..
-
-This patch wasn't about changing the functionality but about saving some
-memory and simple code flow..
+--
+viresh
