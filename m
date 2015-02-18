@@ -1,133 +1,64 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH RFC 12/12] Documentation: thermal docbook: introduce
- governor chapter
-Date: Wed, 18 Feb 2015 16:21:23 +0000
-Message-ID: <20150218162123.GA16442@e104805>
-References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
- <1423517653-11359-13-git-send-email-edubezval@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
+Date: Wed, 18 Feb 2015 17:46:34 +0100
+Message-ID: <5660196.YRfrN9xVOy@vostro.rjw.lan>
+References: <20150214152659.GI8656@n2100.arm.linux.org.uk> <1685853.blxysuNkEh@vostro.rjw.lan> <20150218100322.GT8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:44027 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbbBRQVf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 11:21:35 -0500
-Content-Disposition: inline
-In-Reply-To: <1423517653-11359-13-git-send-email-edubezval@gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:57596 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751925AbbBRQXV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 11:23:21 -0500
+In-Reply-To: <20150218100322.GT8656@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, "ezequiel.garcia@free-electrons.com" <ezequiel.garcia@free-electrons.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "hongbo.zhang@linaro.com" <hongbo.zhang@linaro.com>, "andrew@lunn.ch" <andrew@lunn.ch>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "peter@piie.net" <peter@piie.net>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "aaron.lu@intel.com" <aaron.lu@intel.com>, "caesar.wang@rock-chips.com" <caesar.wang@rock-chips.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "vincenzo.frascino@st.com" <vincenzo.frascino@st.com>, "mperttunen@nvidia.com" <mperttunen@nvidia.com>, "mikko.perttunen@kapsi.fi" <mikko.perttunen@kapsi.fi>, srinivas.pandruvada@lin
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 
-Hi Eduardo,
+On Wednesday, February 18, 2015 10:03:22 AM Russell King - ARM Linux wrote:
+> On Wed, Feb 18, 2015 at 08:02:30AM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, February 17, 2015 07:42:43 PM Russell King - ARM Linux wrote:
+> > > It's worse than that.  If, in the probe, we decide at a point to query
+> > > the PM domain status, and transfer it into the RPM status, how does the
+> > > driver know whether it needs to do a "put" to cause a transition from
+> > > active to suspended?
+> > 
+> > When ->probe() runs, the cases are:
+> > (1) There are no power domains, so the device is "active" when the clock is
+> >     enabled and "suspended" when it is disabled.
+> > (2) There is a power domain which is initially off.  The RPM status of the
+> >     device has to be "suspended" or the domain needs to be powered up.
+> 
+> (quick reply)
+> 
+> That's not entirely correct.
+> 
+> As a result of 2ed127697eb13 (PM / Domains: Power on the PM domain right
+> after attach completes) the power domain will _always_ be powered on prior
+> to ->probe() being called, if the device was attached to the PM domain
+> just before ->probe() is called, inspite of the domain being powered off
+> before the device was attached to the domain.
+> 
+> If the PM domain is attached earlier, and pm_genpd_poweroff_unused() is
+> called (before they're attached, but in the kernel boot sequence) the
+> work for powering down the PM domains will be queued until a point where
+> it can be scheduled - which will be after devices are attached.  That can
+> allow the PM domain(s) to be powered down (as no driver is attached) which
+> then results in the driver's ->probe function being called with the PM
+> domain OFF.
+> 
+> So, right now, there's no way for a driver to know with certainty whether
+> the device it is about to probe is powered up or powered down.
 
-On Mon, Feb 09, 2015 at 09:34:13PM +0000, Eduardo Valentin wrote:
-> In this patch we add a chapter in the thermal docbook to
-> describe the existing governors. The chapter contains
-> one section per governor.
-> 
-> Each governor description includes the respective code documentation.
-> Each governor section contains a description of the governor
-> logic.
-> 
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> ---
->  Documentation/DocBook/thermal.tmpl | 67 ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 67 insertions(+)
-> 
-> diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
-> index d6ebbea..cf1a198 100644
-> --- a/Documentation/DocBook/thermal.tmpl
-> +++ b/Documentation/DocBook/thermal.tmpl
-> @@ -212,6 +212,73 @@
->  			</glossary>
->  		</sect1>
->  	</chapter>
-> +
-> +	<chapter id="governors">
-> +		<title>Thermal Governors</title>
-> +		<para>
-> +		</para>
-> +
-> +		<sect1 id="step_wise">
-> +			<title>step_wise Thermal Governor</title>
-> +			<para>Step Wise uses the trend of the thermal zone to
-> +			throttle. If the thermal zone is 'heating up' this
-> +			throttles all the cooling devices associated with the
-> +			zone and its particular trip point, by one step. If the
-> +			zone is 'cooling down' it brings back the performance
-> +			of the devices by one step.
-> +			</para>
-> +!Idrivers/thermal/step_wise.c
-> +!Pdrivers/thermal/step_wise.c Algorithm
-> +		</sect1>
-> +		<sect1 id="fair_share">
-> +			<title>fair_share Thermal Governor</title>
-> +			<para>Fair Share Governor uses three parameters to
-> +			calculate the new throttle state of the cooling devices
-> +			associated with the given zone.  Parameters used for
-> +			Throttling:
-> +			</para>
-> +			<itemizedlist mark='opencircle'>
-> +				<listitem>P1. max_state: Maximum throttle state
-> +				exposed by the cooling device.</listitem>
-> +				<listitem>P2. weight[i]/100:</listitem>
-> +				<listitem>How 'effective' the 'i'th device is,
-> +				in cooling the given zone.</listitem>
-> +				<listitem>P3.
-> +				cur_trip_level/max_no_of_trips:</listitem>
-> +			</itemizedlist>
-> +			<para>This describes the extent to which the devices
-> +			should be throttled. We do not want to throttle too
-> +			much when we trip a lower temperature, whereas the
-> +			throttling is at full swing if we trip critical levels.
-> +			Heavily assumes the trip points are in ascending order
-> +			new_state of cooling device = P3 * P2 * P1.
-> +			</para>
+And it looks that the driver is in a module which is only loaded after we've
+called the pm_genpd_poweroff_unused().  So clearly commit 2ed127697eb13 doesn't
+work for that driver.
 
-This seems to be heavily based on the kerneldoc in fair_share.c .
-Wouldn't it be better to do a similar trick to what you did in
-step_wise?  That is, move that kerneldoc into an "Algorithm" entry and
-include it here.  That way we avoid the duplication of the
-documentation.
+We might just revert that commit, but that wouldn't make the problem go away.
+Namely, the domain may be powered up or down by *another* driver whose device
+belongs to it in parallel with your ->probe() anyway.
 
-Cheers,
-Javi
+Rafael
 
-> +!Idrivers/thermal/fair_share.c
-> +		</sect1>
-> +		<sect1 id="bang_bang">
-> +			<title>bang_bang Thermal Governor</title>
-> +			<para>The Bang Bang Governor has a two point regulation
-> +			logic, deliver cooling state depending on the previous
-> +			state shown in this diagram: </para>
-> +			<para>If the fan is not running and temperature exceeds
-> +			trip_temp, the fan gets turned on. In case the fan is
-> +			running, temperature must fall below (trip_temp - hyst)
-> +			so that the fan gets turned off again.
-> +			</para>
-> +!Idrivers/thermal/gov_bang_bang.c
-> +		</sect1>
-> +		<sect1 id="user_space">
-> +			<title>user_space Thermal Governor</title>
-> +			<para> The User Space governor is outside the Kernel.
-> +			The Thermal Framework hands off the entire control to
-> +			userland if the User Space governor is assigned to a
-> +			thermal zone. A KOBJ_CHANGE UEvent notification is sent
-> +			to userland whenever a governor needs to take an
-> +			action.
-> +			</para>
-> +!Idrivers/thermal/user_space.c
-> +		</sect1>
-> +	</chapter>
->  	<chapter id="api">
->  	<title>Thermal Device Driver Writer API reference</title>
->  		<para> This Chapter contains an API reference for Thermal driver writers.
-> -- 
-> 2.1.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
