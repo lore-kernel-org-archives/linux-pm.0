@@ -1,199 +1,62 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-Date: Wed, 18 Feb 2015 10:13:23 +0530
-Message-ID: <54E4186B.40605@linux.vnet.ibm.com>
-References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com> <54E2F4CE.2090205@linux.vnet.ibm.com> <4031451.QMQakQrpsN@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle states from DT if available
+Date: Wed, 18 Feb 2015 06:51:12 +0100
+Message-ID: <3335960.mm4nUDCbyI@vostro.rjw.lan>
+References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com> <4031451.QMQakQrpsN@vostro.rjw.lan> <54E4186B.40605@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43415 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbbBREo0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 23:44:26 -0500
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 17 Feb 2015 21:44:25 -0700
-In-Reply-To: <4031451.QMQakQrpsN@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54E4186B.40605@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Cc: stewart@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+List-Id: linux-pm@vger.kernel.org
 
-
-
-On 02/17/2015 11:23 PM, Rafael J. Wysocki wrote:
-> On Tuesday, February 17, 2015 01:29:10 PM Preeti U Murthy wrote:
->> Hi Rafael,
+On Wednesday, February 18, 2015 10:13:23 AM Preeti U Murthy wrote:
 > 
-> Hi,
+> On 02/17/2015 11:23 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, February 17, 2015 01:29:10 PM Preeti U Murthy wrote:
+> >> Hi Rafael,
+> > 
+> > Hi,
+> > 
+> >> Can you please pull this patch ?
+> > 
+> > Sorry, I wasn't sure whether or not the patch was for me to take and then
+> > I've been traveling lately.  Applied now.
 > 
->> Can you please pull this patch ?
+> Hi Rafael,
 > 
-> Sorry, I wasn't sure whether or not the patch was for me to take and then
-> I've been traveling lately.  Applied now.
+> I saw that the kbuild bot reported build issues around pr_warn() in this patch.
+> I have fixed this and below is the corrected patch. Do let me know if I have
+> to send it out as a separate version/RESEND tag.
 
-Hi Rafael,
+I've applied it, thanks!
 
-I saw that the kbuild bot reported build issues around pr_warn() in this patch.
-I have fixed this and below is the corrected patch. Do let me know if I have
-to send it out as a separate version/RESEND tag.
+> >> Another patch based on top of this is waiting to be pulled:
+> >> [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
+> > 
+> > OK, have you posted it already?
+> Yes I have. https://lkml.org/lkml/2015/2/3/24.
 
-> 
->> Another patch based on top of this is waiting to be pulled:
->> [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
-> 
-> OK, have you posted it already?
-Yes I have. https://lkml.org/lkml/2015/2/3/24. This patch is also waiting to
-be pulled by you. There was some confusion around who should pull this, but
-since it all the code is in the driver, we thought it would be best if you pulled it.
+OK, so this one does not apply for me on top of the other.  Can you rebase it
+on top of my current linux-next branch and resend it, please?
 
-Thanks
+Also I'd appreciate it if someone could ACK DT-related stuff for me.
 
---------------------------- PATCH -------------------------------------
+> This patch is also waiting to be pulled by you. There was some confusion
+> around who should pull this, but since it all the code is in the driver, we
+> thought it would be best if you pulled it.
 
-[PATCH V4] cpuidle/powernv: Read target_residency value of idle states from DT if available
+Well, OK.  If you want me to apply a patch, send it To: me and not To: someone
+else.  If you send it To: someone else, I'll ignore it.
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Also ask people to review and ACK things you want me to pull, especially if
+that's not stuff I'm particularly familiar with (like related to DT bindings
+specific to your platform etc.).
 
-The device tree now exposes the residency values for different idle states. Read
-these values instead of calculating residency from the latency values. The values
-exposed in the DT are validated for optimal power efficiency. However to maintain
-compatibility with the older firmware code which does not expose residency
-values, use default values as a fallback mechanism. While at it, use better
-APIs to parse the powermgmt device tree node.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/cpuidle/cpuidle-powernv.c |   69 +++++++++++++++++++++----------------
- 1 file changed, 40 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index aedec09..30d4229 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -13,6 +13,7 @@
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
- #include <linux/of.h>
-+#include <linux/slab.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -159,69 +160,79 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	const __be32 *idle_state_latency;
--	u32 len_flags, flags, latency_ns;
--	int i;
-+	u32 len_flags, flags;
-+	u32 *latency_ns, *residency_ns;
-+	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
- 
- 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!power_mgt) {
- 		pr_warn("opal: PowerMgmt Node not found\n");
--		return nr_idle_states;
-+		goto out;
- 	}
- 
--	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
-+	idle_state_flags = of_get_property(power_mgt,
-+				"ibm,cpu-idle-state-flags", &len_flags);
- 	if (!idle_state_flags) {
--		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
--		return nr_idle_states;
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
-+		goto out;
- 	}
- 
--	idle_state_latency = of_get_property(power_mgt,
--			"ibm,cpu-idle-state-latencies-ns", NULL);
--	if (!idle_state_latency) {
--		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
--		return nr_idle_states;
-+	dt_idle_states = len_flags / sizeof(u32);
-+
-+	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
-+	if (rc) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
-+		goto out_free_latency;
- 	}
- 
--	dt_idle_states = len_flags / sizeof(u32);
-+	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
- 		flags = be32_to_cpu(idle_state_flags[i]);
- 
--		/* Cpuidle accepts exit_latency in us and we estimate
--		 * target residency to be 10x exit_latency
-+		/*
-+		 * Cpuidle accepts exit_latency and target_residency in us.
-+		 * Use default target_residency values if f/w does not expose it.
- 		 */
--		latency_ns = be32_to_cpu(idle_state_latency[i]);
- 		if (flags & OPAL_PM_NAP_ENABLED) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
--			nr_idle_states++;
--		}
--
--		if (flags & OPAL_PM_SLEEP_ENABLED ||
-+		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
- 			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
--			nr_idle_states++;
- 		}
-+
-+		powernv_states[nr_idle_states].exit_latency =
-+				((unsigned int)latency_ns[i]) / 1000;
-+
-+		if (!rc) {
-+			powernv_states[nr_idle_states].target_residency =
-+				((unsigned int)residency_ns[i]) / 1000;
-+		}
-+
-+		nr_idle_states++;
- 	}
- 
-+	kfree(residency_ns);
-+out_free_latency:
-+	kfree(latency_ns);
-+out:
- 	return nr_idle_states;
- }
- 
-
-Regards
-Preeti U Murthy
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
