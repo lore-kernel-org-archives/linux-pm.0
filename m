@@ -1,53 +1,34 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: [PATCH 3/8] tools/thermal: tmon: tui: don't hard-code dialog window size assumptions
-Date: Tue, 17 Feb 2015 18:18:31 -0800
-Message-ID: <1424225916-13488-4-git-send-email-computersforpeace@gmail.com>
-References: <1424225916-13488-1-git-send-email-computersforpeace@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1424225916-13488-1-git-send-email-computersforpeace@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, jacob.jun.pan@linux.intel.com
-Cc: Neil Horman <nhorman@tuxdriver.com>, Brian Norris <computersforpeace@gmail.com>, Javi Merino <javi.merino@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Wed, 18 Feb 2015 09:53:07 +0530
+Message-ID: <CAKohpomw8+CnKXx=gF+OKPjrO3hC93Tdjimpx3Ba+He5xq3C8w@mail.gmail.com>
+References: <cover.1422346933.git.viresh.kumar@linaro.org>
+	<1746505.56yzpQ04cT@vostro.rjw.lan>
+	<CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com>
+	<35613222.up9lS5n2CM@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:52940 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbbBREXI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 23:23:08 -0500
+Received: by mail-ob0-f182.google.com with SMTP id nt9so59870299obb.13
+        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2015 20:23:07 -0800 (PST)
+In-Reply-To: <35613222.up9lS5n2CM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-We can use the ncurses API to get the number of rows.
+On 17 February 2015 at 23:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> - And then during unregistration the sysfs remove will get called?
 
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
----
- tools/thermal/tmon/tui.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+I meant subsys-remove here, sorry :(
 
-diff --git a/tools/thermal/tmon/tui.c b/tools/thermal/tmon/tui.c
-index 43c5aecf71da..2779573a53cb 100644
---- a/tools/thermal/tmon/tui.c
-+++ b/tools/thermal/tmon/tui.c
-@@ -274,11 +274,14 @@ const char DIAG_TITLE[] = "[ TUNABLES ]";
- void show_dialogue(void)
- {
- 	int j, x = 0, y = 0;
-+	int rows, cols;
- 	WINDOW *w = dialogue_window;
- 
- 	if (tui_disabled || !w)
- 		return;
- 
-+	getmaxyx(w, rows, cols);
-+
- 	werase(w);
- 	box(w, 0, 0);
- 	mvwprintw(w, 0, maxx/4, DIAG_TITLE);
-@@ -297,10 +300,8 @@ void show_dialogue(void)
- 	wattron(w, A_BOLD);
- 	mvwprintw(w, DIAG_DEV_ROWS+1, 1, "Enter Choice [A-Z]?");
- 	wattroff(w, A_BOLD);
--	/* y size of dialogue win is nr cdev + 5, so print legend
--	 * at the bottom line
--	 */
--	mvwprintw(w, ptdata.nr_cooling_dev+3, 1,
-+	/* print legend at the bottom line */
-+	mvwprintw(w, rows - 2, 1,
- 		"Legend: A=Active, P=Passive, C=Critical");
- 
- 	wrefresh(dialogue_window);
--- 
-1.9.1
+> The CPU device goes away then and that should trigger the remove of all the
+> sysfs directories under it.
+
+How will the cpufreq core know about it? cpufreq_remove_dev() will get called?
+
+Is there a way to emulate it? So that I can test it in my setup..
