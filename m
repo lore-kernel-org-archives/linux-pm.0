@@ -1,43 +1,49 @@
-From: Tobias Jakobi <liquid.acid@gmx.net>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for
- exynos platforms
-Date: Tue, 17 Feb 2015 21:25:49 +0100
-Message-ID: <54E3A3CD.3020106@gmx.net>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com> <CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com> <CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com> <20150216105217.79315ffd@amdc2363>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: [PATCH 0/8] tools/thermal: tmon: UI and build system improvements
+Date: Tue, 17 Feb 2015 18:18:28 -0800
+Message-ID: <1424225916-13488-1-git-send-email-computersforpeace@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150216105217.79315ffd@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:43899 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbbBRCT2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Feb 2015 21:19:28 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, jacob.jun.pan@linux.intel.com
+Cc: Neil Horman <nhorman@tuxdriver.com>, Brian Norris <computersforpeace@gmail.com>, Javi Merino <javi.merino@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hello!
+Hi,
 
-Lukasz Majewski wrote:
-> Hi Krzysztof, Thomas,
-> 
->> 2015-01-08 22:17 GMT+01:00 Kevin Hilman <khilman@kernel.org>:
->> Hi Thomas,
->>
->> Do you plan to continue with this work? It would be very helpful.
-> 
-> +1 from me.
-> 
->>
->> I also wonder if Exynos 4412 could be re-added (without the boost if
->> these bindings are not ready)?
-> 
-> I would prefer to have all platforms converted at once, since it might
-> happen that some parts of the work would get lost.
+This patch set includes a few build system improvements and a few UI fixes.
 
-Joining in as well!
+The last patch is ugly, and personally, I don't care if it's included. But it's
+an attempt to kill a warning. Better suggestions are welcome.
 
-Reviving this patch series would be very much appreciated, especially if
-it moves again into the direction of storing most information into the
-DT (so that one can easily modify it in the board dts).
+Thanks,
+Brian
 
-With best wishes,
-Tobias
+Brian Norris (8):
+  tools/thermal: tmon: add --target-temp parameter
+  tools/thermal: tmon: add min/max macros
+  tools/thermal: tmon: tui: don't hard-code dialog window size
+    assumptions
+  tools/thermal: tmon: fixup tui windowing calculations
+  tools/thermal: tmon: add .gitignore
+  tools/thermal: tmon: support cross-compiling
+  tools/thermal: tmon: use pkg-config to determine library dependencies
+  tools/thermal: tmon: silence 'set but not used' warnings
+
+ tools/thermal/tmon/.gitignore |  1 +
+ tools/thermal/tmon/Makefile   | 15 ++++++++++++---
+ tools/thermal/tmon/tmon.8     |  2 ++
+ tools/thermal/tmon/tmon.c     | 14 ++++++++++++--
+ tools/thermal/tmon/tui.c      | 45 ++++++++++++++++++++++++++++++++++---------
+ 5 files changed, 63 insertions(+), 14 deletions(-)
+ create mode 100644 tools/thermal/tmon/.gitignore
+
+-- 
+1.9.1
+
