@@ -1,91 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
-Date: Wed, 18 Feb 2015 17:52:25 +0100
-Message-ID: <1790876.GQ4uCu6bPH@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1502181007320.1245-100000@iolanthe.rowland.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH RFC 02/12] Documentation: thermal docbook: add glossary
+Date: Wed, 18 Feb 2015 08:58:18 -0800
+Message-ID: <1424278698.23187.39.camel@spandruv-DESK3.jf.intel.com>
+References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
+	 <1423517653-11359-3-git-send-email-edubezval@gmail.com>
+	 <20150218115221.GD2990@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52275 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751712AbbBRQ3M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 11:29:12 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1502181007320.1245-100000@iolanthe.rowland.org>
+Received: from mga01.intel.com ([192.55.52.88]:62263 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbbBRQ7S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Feb 2015 11:59:18 -0500
+In-Reply-To: <20150218115221.GD2990@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, "ezequiel.garcia@free-electrons.com" <ezequiel.garcia@free-electrons.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "hongbo.zhang@linaro.com" <hongbo.zhang@linaro.com>, "andrew@lunn.ch" <andrew@lunn.ch>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "peter@piie.net" <peter@piie.net>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "aaron.lu@intel.com" <aaron.lu@intel.com>, "caesar.wang@rock-chips.com" <caesar.wang@rock-chips.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "vincenzo.frascino@st.com" <vincenzo.frascino@st.com>, "mperttunen@nvidia.com" <mperttunen@nvidia.com>, "mikko.perttunen@kapsi.fi" <mikko.pertt>
 
-On Wednesday, February 18, 2015 10:12:17 AM Alan Stern wrote:
-> On Wed, 18 Feb 2015, Russell King - ARM Linux wrote:
+On Wed, 2015-02-18 at 11:52 +0000, Javi Merino wrote: 
+> Hi Eduardo,
 > 
-> > On Wed, Feb 18, 2015 at 08:02:30AM +0100, Rafael J. Wysocki wrote:
-> > > On Tuesday, February 17, 2015 07:42:43 PM Russell King - ARM Linux wrote:
-> > > > It's worse than that.  If, in the probe, we decide at a point to query
-> > > > the PM domain status, and transfer it into the RPM status, how does the
-> > > > driver know whether it needs to do a "put" to cause a transition from
-> > > > active to suspended?
-> > > 
-> > > When ->probe() runs, the cases are:
-> > > (1) There are no power domains, so the device is "active" when the clock is
-> > >     enabled and "suspended" when it is disabled.
-> > > (2) There is a power domain which is initially off.  The RPM status of the
-> > >     device has to be "suspended" or the domain needs to be powered up.
+> On Mon, Feb 09, 2015 at 09:34:03PM +0000, Eduardo Valentin wrote:
+> > This change introduces a section in the Introduction Chapter to
+> > list concepts used by the Thermal Framework.
 > > 
-> > (quick reply)
+> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > ---
+> >  Documentation/DocBook/thermal.tmpl | 129 ++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 128 insertions(+), 1 deletion(-)
 > > 
-> > That's not entirely correct.
-> > 
-> > As a result of 2ed127697eb13 (PM / Domains: Power on the PM domain right
-> > after attach completes) the power domain will _always_ be powered on prior
-> > to ->probe() being called, if the device was attached to the PM domain
-> > just before ->probe() is called, inspite of the domain being powered off
-> > before the device was attached to the domain.
-> > 
-> > If the PM domain is attached earlier, and pm_genpd_poweroff_unused() is
-> > called (before they're attached, but in the kernel boot sequence) the
-> > work for powering down the PM domains will be queued until a point where
-> > it can be scheduled - which will be after devices are attached.  That can
-> > allow the PM domain(s) to be powered down (as no driver is attached) which
-> > then results in the driver's ->probe function being called with the PM
-> > domain OFF.
-> > 
-> > So, right now, there's no way for a driver to know with certainty whether
-> > the device it is about to probe is powered up or powered down.
+> > diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
+> > index f8fb8a2..66efed3 100644
+> > --- a/Documentation/DocBook/thermal.tmpl
+> > +++ b/Documentation/DocBook/thermal.tmpl
+> > @@ -84,5 +84,132 @@
+> >  		devices.
+> >  		</para>
+> >  
+> > -  </chapter>
+> > +		<sect1 id="glossary">
+> > +			<title>Glossary</title>
+> > +			<para>The Linux Kernel Thermal Framework  uses a
+> > +			specific terminology to represent the entities involved
+> > +			in thermal constrained environments. This section
+> > +			summaries the terminology as dictionary. These terms are
+> > +			in use within the present document and in the source
+> > +			code of the Linux Kernel Thermal Framework.
+> > +			</para>
+> > +			<glossary>
+> > +				<glossentry>
+> > +					<glossterm>Thermal Zone</glossterm>
+> > +					<glossdef>
+> > +						<para>Thermal zones represent
+> > +						what is the current status of a
+> > +						thermal constrained zone in the
+> > +						hardware. The zone usually is a
+> > +						device or component. The status
+> > +						of a thermal zone is mainly with
+> > +						respect to temperature.
+> > +						Currently, the Linux Kernel
+> > +						Thermal Framework represents
+> > +						temperature in miliCelsius. The
+> > +						current abstraction covers for
+> > +						non negative temperatures and
+> > +						constraints.
+> > +						</para>
 > 
-> Russell:
+> Shall we point out that a thermal zone doesn't necessarily imply a
+> thermal sensor?  I find it very common to assume that if you have 10
+> sensors, you should have 10 thermal zones.  From my point of view, a
+> thermal zone is an area that has similar thermal characteristics.
+> Therefore, the temperature of the thermal zone doesn't necessarily
+> have to come from on sensor, and can be defined as a combination of
+> the input from multiple thermal sensors.
+
+Currently since you can have one temperature input per zone
+(irrespective of whether the temperature is combination of many sensors
+or virtual sensor), so separating thermal sensor and zone can be more
+confusing IMO from a user space perspective.
+
+This was a feature proposed and submitted for thermal sysfs 2.0 (or next
+version), where sensors and zones are separated. I think there was some
+plan to adopt this. Rui Zhang can comment more.
+
+Thanks,
+Srinivas
+
+
 > 
-> I'm not totally familiar with how PM domains are intended to work.  The 
-> impression I get from looking through the code is that they are highly 
-> over-engineered
-
-Well, that very likely is my fault. :-)
-
-> -- but that could just be a result of my ignorance.
-
-You may be right anyway, though ...
-
-> At any rate, I don't have a clear picture of the problem you are trying
-> to solve.  What's the general outline?  Are you talking about a device
-> that _belongs_ to a PM domain or one that _depends_ on a PM domain?  
-> If the device belongs to the domain, how does it get added (i.e., by
-> its driver during probe or by some other mechanism)?
+> I don't know how to put this in proper words for the documentation,
+> but I think it's worth hinting it here.
 > 
-> Are you asking about how the driver can tell what the PM domain's 
-> runtime status is?  Or would you like to add a way for the driver to 
-> set the PM domain's runtime status?
+> Cheers,
+> Javi
 
-The problem, as I see it, is that drivers have certain expectations about the
-initial power states of devices that may or may not be met if power domains
-are in use.
-
-Those drivers might have been developed on systems without direct control of
-power domains where the conditions for the driver at the ->probe() time were
-always the same.  With power domains, though, they may change depending on
-what's going on with the other devices in the domain, for example.
-
-So the question is how we can address that in the cleanest way possible.
-
-Rafael
 
