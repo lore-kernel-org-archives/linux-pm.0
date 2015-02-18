@@ -1,182 +1,150 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v4 8/8] hwmon: pwm-fan: Code for using PWM FAN as a cooling
- device
-Date: Wed, 18 Feb 2015 11:07:36 +0100
-Message-ID: <1424254056-5904-9-git-send-email-l.majewski@samsung.com>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH RFC 01/12] Documentation: Introduce Linux Kernel Thermal
+ Framework DocBook
+Date: Wed, 18 Feb 2015 11:13:08 +0000
+Message-ID: <20150218111308.GC2990@e104805>
+References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
+ <1423517653-11359-2-git-send-email-edubezval@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:35750 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbbBRKMj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 05:12:39 -0500
-In-reply-to: <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
+Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:43926 "EHLO
+	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbbBRLNU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 06:13:20 -0500
+Content-Disposition: inline
+In-Reply-To: <1423517653-11359-2-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
-Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, "ezequiel.garcia@free-electrons.com" <ezequiel.garcia@free-electrons.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "hongbo.zhang@linaro.com" <hongbo.zhang@linaro.com>, "andrew@lunn.ch" <andrew@lunn.ch>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "peter@piie.net" <peter@piie.net>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "aaron.lu@intel.com" <aaron.lu@intel.com>, "caesar.wang@rock-chips.com" <caesar.wang@rock-chips.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "vincenzo.frascino@st.com" <vincenzo.frascino@st.com>, "mperttunen@nvidia.com" <mperttunen@nvidia.com>, "mikko.perttunen@kapsi.fi" <mikko.perttunen@kapsi.fi>, srinivas.pandruvada@lin
 
-The PWM FAN device can now be used as a thermal cooling device. Necessary
-infrastructure has been added in this commit.
+On Mon, Feb 09, 2015 at 09:34:02PM +0000, Eduardo Valentin wrote:
+> This patch adds a book about the Linux Kernel Thermal Framework.
+> In this change, only a brief introduction is added together with
+> Makefile changes.
+> 
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  Documentation/DocBook/Makefile     |  3 +-
+>  Documentation/DocBook/thermal.tmpl | 88 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 90 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/DocBook/thermal.tmpl
+> 
+> diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+> index 9c7d92d..8163508 100644
+> --- a/Documentation/DocBook/Makefile
+> +++ b/Documentation/DocBook/Makefile
+> @@ -15,7 +15,8 @@ DOCBOOKS := z8530book.xml device-drivers.xml \
+>  	    80211.xml debugobjects.xml sh.xml regulator.xml \
+>  	    alsa-driver-api.xml writing-an-alsa-driver.xml \
+>  	    tracepoint.xml drm.xml media_api.xml w1.xml \
+> -	    writing_musb_glue_layer.xml crypto-API.xml
+> +	    writing_musb_glue_layer.xml crypto-API.xml thermal.xml
+> +	    writing_musb_glue_layer.xml
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
-- Update ctx->pwm_fan_state when correct data from device tree is available
-- Using therma_cdev_update() when thermal is ready for controlling the fan
-Changes for v3:
-- Rename patch heading
-- pwm_fan_of_get_cooling_data() now returns -EINVAL when no "cooling-levels"
-  property defined
-- register of cooling device only when proper cooling data is present
-Changed for v4:
-- None
----
- drivers/hwmon/pwm-fan.c | 86 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 83 insertions(+), 3 deletions(-)
+Duplicated writing_musb_glue_layer.xml ?  Looks like the second line
+should be removed.
 
-diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-index 82cd06a..622bcd1 100644
---- a/drivers/hwmon/pwm-fan.c
-+++ b/drivers/hwmon/pwm-fan.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
- #include <linux/sysfs.h>
-+#include <linux/thermal.h>
- 
- #define MAX_PWM 255
- 
-@@ -68,6 +69,17 @@ exit_set_pwm_err:
- 	return ret;
- }
- 
-+static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
-+{
-+	int i;
-+
-+	for (i = 0; i < ctx->pwm_fan_max_state; ++i)
-+		if (pwm < ctx->pwm_fan_cooling_levels[i + 1])
-+			break;
-+
-+	ctx->pwm_fan_state = i;
-+}
-+
- static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 		       const char *buf, size_t count)
- {
-@@ -82,6 +94,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 	if (ret)
- 		return ret;
- 
-+	pwm_fan_update_state(ctx, pwm);
- 	return count;
- }
- 
-@@ -103,6 +116,59 @@ static struct attribute *pwm_fan_attrs[] = {
- 
- ATTRIBUTE_GROUPS(pwm_fan);
- 
-+/* thermal cooling device callbacks */
-+static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	*state = ctx->pwm_fan_max_state;
-+
-+	return 0;
-+}
-+
-+static int pwm_fan_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	if (!ctx)
-+		return -EINVAL;
-+
-+	*state = ctx->pwm_fan_state;
-+
-+	return 0;
-+}
-+
-+static int
-+pwm_fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+	int ret;
-+
-+	if (!ctx || (state > ctx->pwm_fan_max_state))
-+		return -EINVAL;
-+
-+	if (state == ctx->pwm_fan_state)
-+		return 0;
-+
-+	ret = __set_pwm(ctx, ctx->pwm_fan_cooling_levels[state]);
-+	if (ret) {
-+		dev_err(&cdev->device, "Cannot set pwm!\n");
-+		return ret;
-+	}
-+
-+	ctx->pwm_fan_state = state;
-+
-+	return ret;
-+}
-+
-+static const struct thermal_cooling_device_ops pwm_fan_cooling_ops = {
-+	.get_max_state = pwm_fan_get_max_state,
-+	.get_cur_state = pwm_fan_get_cur_state,
-+	.set_cur_state = pwm_fan_set_cur_state,
-+};
-+
- int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- {
- 	struct device_node *np = dev->of_node;
-@@ -112,7 +178,7 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- 					      sizeof(u32));
- 
- 	if (ret == -EINVAL)
--		return 0;
-+		return ret;
- 
- 	if (ret <= 0) {
- 		dev_err(dev, "Wrong data!\n");
-@@ -147,8 +213,9 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- 
- static int pwm_fan_probe(struct platform_device *pdev)
- {
--	struct device *hwmon;
-+	struct thermal_cooling_device *cdev;
- 	struct pwm_fan_ctx *ctx;
-+	struct device *hwmon;
- 	int duty_cycle;
- 	int ret;
- 
-@@ -192,8 +259,21 @@ static int pwm_fan_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = pwm_fan_of_get_cooling_data(&pdev->dev, ctx);
--	if (ret)
-+	if (!ret) {
-+		ctx->pwm_fan_state = ctx->pwm_fan_max_state;
-+		cdev = thermal_of_cooling_device_register(pdev->dev.of_node,
-+							  "pwm-fan", ctx,
-+							  &pwm_fan_cooling_ops);
-+		if (IS_ERR(cdev)) {
-+			dev_err(&pdev->dev,
-+				"Failed to register pwm-fan as cooling device");
-+			pwm_disable(ctx->pwm);
-+			return PTR_ERR(cdev);
-+		}
-+		thermal_cdev_update(cdev);
-+	} else if (ret != -EINVAL) {
- 		return ret;
-+	}
- 
- 	return 0;
- }
--- 
-2.0.0.rc2
+>  
+>  include Documentation/DocBook/media/Makefile
+>  
+> diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
+> new file mode 100644
+> index 0000000..f8fb8a2
+> --- /dev/null
+> +++ b/Documentation/DocBook/thermal.tmpl
+> @@ -0,0 +1,88 @@
+> +<?xml version="1.0" encoding="UTF-8"?>
+> +<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+> +	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
+> +
+> +<book id="thermal-api">
+> + <bookinfo>
+> +  <title>Linux Kernel Thermal Framework API</title>
+> +
+> +  <authorgroup>
+> +   <author>
+> +    <firstname>Eduardo</firstname>
+> +    <surname>Valentin</surname>
+> +    <affiliation>
+> +     <address>
+> +      <email>evalenti@kernel.org</email>
+> +     </address>
+> +    </affiliation>
+> +   </author>
+> +  </authorgroup>
+> +
+> +  <copyright>
+> +   <year>2008-2014</year>
+> +   <holder>Eduardo Valentin</holder>
+> +   <holder>Sujith Thomas</holder>
+> +   <holder>Zhang Rui</holder>
+> +  </copyright>
+> +  <legalnotice>
+> +   <para>
+> +     This documentation is free software; you can redistribute
+> +     it and/or modify it under the terms of the GNU General Public
+> +     License version 2 as published by the Free Software Foundation.
+> +   </para>
+> +
+> +   <para>
+> +     This program is distributed in the hope that it will be
+> +     useful, but WITHOUT ANY WARRANTY; without even the implied
+> +     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> +     See the GNU General Public License for more details.
+> +   </para>
+> +
+> +   <para>
+> +     For more details see the file COPYING in the source
+> +     distribution of Linux.
+> +   </para>
+> +  </legalnotice>
+> + </bookinfo>
+> +
+> +<toc></toc>
+> +
+> +	<chapter id="introduction">
+> +		<title>Introduction</title>
+> +		<para>Thermal management is any method or technique implied to
+> +		mitigate emergencies caused by operating devices within
+> +		unsupported temperatures. The challenge consists of designing a
+> +		product keeping the junction temperature of the IC components.
+> +		The operating temperature of IC components used on products must
+> +		operate within their design limits. Besides, temperature towards
+> +		device enclosure must be in a comfort level for the user.
+> +		Therefore, thermal management, by the time of this writing,
+> +		starts in very early device design phase. Managing thermal may
+> +		involve different disciplines, at different stages, such as
+> +		temperature monitoring, floorplanning, microarchitectural
+> +		techniques, compiler techniques, OS techniques, liquid cooling,
+> +		and thermal reliability or security. This document covers what
+> +		the Linux Kernel Thermal Framework provides as abstraction to
+> +		users with respect to thermal management.  
+> +		</para>
+> +		<para>One of the first proposals to provide a solution to cover
+> +		the thermal problem appears in the Advanced Configuration and
+> +		Power Interface (ACPI) specification. ACPI provides an open
+> +		standard for device configuration and power management by the
+> +		operating system. However, several computing devices which may
+> +		have thermal issues in the market disregard the ACPI standard.
+> +		Therefore, the Linux Kernel Thermal Framework has been designed
+> +		to serve as abstraction for ACPI and non-ACPI systems. The core
+> +		concepts applies in both types of systems. 
+> +		</para>
+> +		<para>The Linux Kernel Thermal Framework has a design which
+> +		represents the different thermal constraints found in an
+> +		end-products. The thermal constraints exist to serve different
+> +		purposes. There two major types of thermal constraints. The
+                                are
 
+> +		first is related to components junction temperature. The second
+> +		is related to the level of comfort while end users are handling
+> +		devices.
+> +		</para>
+> +
+> +  </chapter>
+> +</book>
+
+Cheers,
+Javi
