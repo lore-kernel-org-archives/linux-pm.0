@@ -1,55 +1,41 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 2/2 v2]  cpufreq: s3c: remove last use of resume_clocks callback
-Date: Wed, 18 Feb 2015 21:55:53 +0100
-Message-ID: <7832522.n5E2i6JVhJ@wuerfel>
-References: <7331404.XKGG8rohnR@wuerfel>
+From: Tobias Jakobi <liquid.acid@gmx.net>
+Subject: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus
+ frequency driver
+Date: Wed, 18 Feb 2015 21:59:44 +0100
+Message-ID: <54E4FD40.8020206@gmx.net>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com> <54DFE797.1020008@math.uni-bielefeld.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7331404.XKGG8rohnR@wuerfel>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.17.22]:58804 "EHLO mout.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751649AbbBRVAD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Feb 2015 16:00:03 -0500
+In-Reply-To: <54DFE797.1020008@math.uni-bielefeld.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-Commit 32726d2d550 ("ARM: SAMSUNG: Remove legacy clock code")
-already removed the callback pointer, but there was one remaining
-user:
+Hello again,
 
-drivers/cpufreq/s3c24xx-cpufreq.c: In function 's3c_cpufreq_resume_clocks':
-drivers/cpufreq/s3c24xx-cpufreq.c:149:14: error: 'struct s3c_cpufreq_info' has no member named 'resume_clocks'
-  cpu_cur.info->resume_clocks();
-              ^
+Tobias Jakobi wrote
+> I've tested the series on my Odroid-X2 (by adapting the TRATS2 changes),
+> and so far I haven't seen any issues. With the system being idle one can
+> see that the 'simple_ondemand' devfreq governor clocks down both memory
+> busses to the lowest state.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 32726d2d550 ("ARM: SAMSUNG: Remove legacy clock code")
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: stable@vger.kernel.org # v3.17+
+looks I was too hasty the last time. Actually this series breaks HDMI
+output for me (or at least with 'simple_ondemand' governor, haven't
+tried with performance yet).
 
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index bd340a1ca87d..733aa5153e74 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -144,11 +144,6 @@ static void s3c_cpufreq_setfvco(struct s3c_cpufreq_config *cfg)
- 	(cfg->info->set_fvco)(cfg);
- }
- 
--static inline void s3c_cpufreq_resume_clocks(void)
--{
--	cpu_cur.info->resume_clocks();
--}
--
- static inline void s3c_cpufreq_updateclk(struct clk *clk,
- 					 unsigned int freq)
- {
-@@ -417,9 +412,6 @@ static int s3c_cpufreq_resume(struct cpufreq_policy *policy)
- 
- 	last_target = ~0;	/* invalidate last_target setting */
- 
--	/* first, find out what speed we resumed at. */
--	s3c_cpufreq_resume_clocks();
--
- 	/* whilst we will be called later on, we try and re-set the
- 	 * cpu frequencies as soon as possible so that we do not end
- 	 * up resuming devices and then immediately having to re-set
+I tried to run some simple application, but it hangs in uninterruptible
+sleep immediately, probably before the first page flip. Going to check
+this more thoroughly.
+
+Maybe some parts of the hdmi subsystem don't like the lower clocks?
+
+With best wishes,
+Tobias
+
