@@ -1,62 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle states from DT if available
-Date: Wed, 18 Feb 2015 06:51:12 +0100
-Message-ID: <3335960.mm4nUDCbyI@vostro.rjw.lan>
-References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com> <4031451.QMQakQrpsN@vostro.rjw.lan> <54E4186B.40605@linux.vnet.ibm.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 0/8] tools/thermal: tmon: UI and build system
+ improvements
+Date: Tue, 17 Feb 2015 22:02:01 -0800
+Message-ID: <20150217220201.6624ccaa@ultegra>
+References: <1424225916-13488-1-git-send-email-computersforpeace@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54E4186B.40605@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: stewart@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:22742 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbbBRGCG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Feb 2015 01:02:06 -0500
+In-Reply-To: <1424225916-13488-1-git-send-email-computersforpeace@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Neil Horman <nhorman@tuxdriver.com>, Javi Merino <javi.merino@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, February 18, 2015 10:13:23 AM Preeti U Murthy wrote:
+On Tue, 17 Feb 2015 18:18:28 -0800
+Brian Norris <computersforpeace@gmail.com> wrote:
+
+> Hi,
 > 
-> On 02/17/2015 11:23 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, February 17, 2015 01:29:10 PM Preeti U Murthy wrote:
-> >> Hi Rafael,
-> > 
-> > Hi,
-> > 
-> >> Can you please pull this patch ?
-> > 
-> > Sorry, I wasn't sure whether or not the patch was for me to take and then
-> > I've been traveling lately.  Applied now.
+> This patch set includes a few build system improvements and a few UI
+> fixes.
 > 
-> Hi Rafael,
+> The last patch is ugly, and personally, I don't care if it's
+> included. But it's an attempt to kill a warning. Better suggestions
+> are welcome.
 > 
-> I saw that the kbuild bot reported build issues around pr_warn() in this patch.
-> I have fixed this and below is the corrected patch. Do let me know if I have
-> to send it out as a separate version/RESEND tag.
+Good improvements.
+Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-I've applied it, thanks!
+> Thanks,
+> Brian
+> 
+> Brian Norris (8):
+>   tools/thermal: tmon: add --target-temp parameter
+>   tools/thermal: tmon: add min/max macros
+>   tools/thermal: tmon: tui: don't hard-code dialog window size
+>     assumptions
+>   tools/thermal: tmon: fixup tui windowing calculations
+>   tools/thermal: tmon: add .gitignore
+>   tools/thermal: tmon: support cross-compiling
+>   tools/thermal: tmon: use pkg-config to determine library
+> dependencies tools/thermal: tmon: silence 'set but not used' warnings
+> 
+>  tools/thermal/tmon/.gitignore |  1 +
+>  tools/thermal/tmon/Makefile   | 15 ++++++++++++---
+>  tools/thermal/tmon/tmon.8     |  2 ++
+>  tools/thermal/tmon/tmon.c     | 14 ++++++++++++--
+>  tools/thermal/tmon/tui.c      | 45
+> ++++++++++++++++++++++++++++++++++--------- 5 files changed, 63
+> insertions(+), 14 deletions(-) create mode 100644
+> tools/thermal/tmon/.gitignore
+> 
+> -- 
+> 1.9.1
+> 
 
-> >> Another patch based on top of this is waiting to be pulled:
-> >> [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
-> > 
-> > OK, have you posted it already?
-> Yes I have. https://lkml.org/lkml/2015/2/3/24.
 
-OK, so this one does not apply for me on top of the other.  Can you rebase it
-on top of my current linux-next branch and resend it, please?
-
-Also I'd appreciate it if someone could ACK DT-related stuff for me.
-
-> This patch is also waiting to be pulled by you. There was some confusion
-> around who should pull this, but since it all the code is in the driver, we
-> thought it would be best if you pulled it.
-
-Well, OK.  If you want me to apply a patch, send it To: me and not To: someone
-else.  If you send it To: someone else, I'll ignore it.
-
-Also ask people to review and ACK things you want me to pull, especially if
-that's not stuff I'm particularly familiar with (like related to DT bindings
-specific to your platform etc.).
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Jacob Pan
