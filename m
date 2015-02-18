@@ -1,80 +1,72 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v4 5/8] ARM: dts: Add properties to use pwm-fan device as a
- cooling device in Odroid U3
-Date: Wed, 18 Feb 2015 11:07:33 +0100
-Message-ID: <1424254056-5904-6-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v4 4/8] ARM: dts: Add pwm-fan node to the Odroid-U3 board
+Date: Wed, 18 Feb 2015 11:07:32 +0100
+Message-ID: <1424254056-5904-5-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
-Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-With those bindings it is possible to use pwm-fan device available in
-Odroid U3 as a cooling device.
+From: Kamil Debski <k.debski@samsung.com>
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- Rename cooling-pwm-values property to cooling-levels
-Changes for v3:
-- Change patch's topic to "ARM dts"
-- Reduce maximal cooling-level to 230 from 255
-Changes for v4:
-- None
----
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+Add pwm-fan node to the Odroid-U3 board file to enable PWM control of the
+cooling fan. In addition, add the "pwm" label to the pwm@139D0000 node
+in the exynos4412.dtsi.
 
+Signed-off-by: Kamil Debski <k.debski@samsung.com>
+[Rebased on the newest mainline by l.majewski@samsung.com]
+---
+Changes since v1:
+- added pwm label to the pwm@139D0000 node in exynos4.dtsi
+- use the pwm label in the exynos4412-odroidu3.dts
+- change order or properties in the pwn-fan node, to be sorted
+  in alphabetical order
+
+---
+ arch/arm/boot/dts/exynos4.dtsi            |  2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
+index f18d746..75266e3 100644
+--- a/arch/arm/boot/dts/exynos4.dtsi
++++ b/arch/arm/boot/dts/exynos4.dtsi
+@@ -582,7 +582,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	pwm@139D0000 {
++	pwm: pwm@139D0000 {
+ 		compatible = "samsung,exynos4210-pwm";
+ 		reg = <0x139D0000 0x1000>;
+ 		interrupts = <0 37 0>, <0 38 0>, <0 39 0>, <0 40 0>, <0 41 0>;
 diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index 60bd1e4..3e5df3e 100644
+index c8a64be..60bd1e4 100644
 --- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
 +++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -32,11 +32,42 @@
+@@ -31,6 +31,19 @@
+ 			linux,default-trigger = "heartbeat";
  		};
  	};
- 
--	pwm-fan {
-+	fan0: pwm-fan {
- 		compatible = "pwm-fan";
- 		pwms = <&pwm 0 10000 0>;
-+		cooling-min-state = <0>;
-+		cooling-max-state = <3>;
-+		#cooling-cells = <2>;
-+		cooling-levels = <0 102 170 230>;
- 		status = "okay";
- 	};
 +
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			cooling-maps {
-+				map0 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&cpu0 7 7>;
-+				};
-+				map1 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&cpu0 13 13>;
-+				};
-+				map2 {
-+				     trip = <&cpu_alert0>;
-+				     cooling-device = <&fan0 0 1>;
-+				};
-+				map3 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&fan0 1 2>;
-+				};
-+				map4 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&fan0 2 3>;
-+				};
-+			};
-+		};
++	pwm-fan {
++		compatible = "pwm-fan";
++		pwms = <&pwm 0 10000 0>;
++		status = "okay";
 +	};
++};
++
++&pwm {
++	pinctrl-0 = <&pwm0_out>;
++	pinctrl-names = "default";
++	samsung,pwm-outputs = <0>;
++	status = "okay";
  };
  
- &pwm {
+ &usb3503 {
 -- 
 2.0.0.rc2
