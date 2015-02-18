@@ -1,41 +1,44 @@
-From: Tobias Jakobi <liquid.acid@gmx.net>
-Subject: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus
- frequency driver
-Date: Wed, 18 Feb 2015 21:59:44 +0100
-Message-ID: <54E4FD40.8020206@gmx.net>
-References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com> <54DFE797.1020008@math.uni-bielefeld.de>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Wed, 18 Feb 2015 13:15:25 -0800
+Message-ID: <54E500ED.20001@codeaurora.org>
+References: <cover.1422346933.git.viresh.kumar@linaro.org> <1746505.56yzpQ04cT@vostro.rjw.lan> <CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com> <35613222.up9lS5n2CM@vostro.rjw.lan> <CAKohpomw8+CnKXx=gF+OKPjrO3hC93Tdjimpx3Ba+He5xq3C8w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.17.22]:58804 "EHLO mout.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbbBRVAD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 18 Feb 2015 16:00:03 -0500
-In-Reply-To: <54DFE797.1020008@math.uni-bielefeld.de>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38361 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbbBRVP1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 16:15:27 -0500
+In-Reply-To: <CAKohpomw8+CnKXx=gF+OKPjrO3hC93Tdjimpx3Ba+He5xq3C8w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-Hello again,
+On 02/17/2015 08:23 PM, Viresh Kumar wrote:
+> On 17 February 2015 at 23:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> - And then during unregistration the sysfs remove will get called?
+>
+> I meant subsys-remove here, sorry :(
+>
+>> The CPU device goes away then and that should trigger the remove of all the
+>> sysfs directories under it.
+>
+> How will the cpufreq core know about it? cpufreq_remove_dev() will get called?
+>
+> Is there a way to emulate it? So that I can test it in my setup..
+>
 
-Tobias Jakobi wrote
-> I've tested the series on my Odroid-X2 (by adapting the TRATS2 changes),
-> and so far I haven't seen any issues. With the system being idle one can
-> see that the 'simple_ondemand' devfreq governor clocks down both memory
-> busses to the lowest state.
+During logical hotplug, you only get the hotplug notifiers.
+During physical hotplug, you get the subsys_remove.
 
-looks I was too hasty the last time. Actually this series breaks HDMI
-output for me (or at least with 'simple_ondemand' governor, haven't
-tried with performance yet).
+So, we have all the information needed to distinguish. Remove the sysfs 
+entries only in subsys-remove.
 
-I tried to run some simple application, but it hangs in uninterruptible
-sleep immediately, probably before the first page flip. Going to check
-this more thoroughly.
+-Saravana
 
-Maybe some parts of the hdmi subsystem don't like the lower clocks?
-
-With best wishes,
-Tobias
-
+-- 
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
