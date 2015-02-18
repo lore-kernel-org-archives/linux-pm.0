@@ -1,91 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM-Trace: add pm-trace support for suspending phase
-Date: Wed, 18 Feb 2015 08:13:49 +0100
-Message-ID: <2560707.D2ZlsDH2Ex@vostro.rjw.lan>
-References: <54E00347.1070307@linux.intel.com>
+From: Belisko Marek <marek.belisko@gmail.com>
+Subject: Re: [PATCH v3 0/6] Convert twl4030_madc_battery to IIO consumer and
+ add DT aupport
+Date: Wed, 18 Feb 2015 08:46:34 +0100
+Message-ID: <CAAfyv36i0e4h7LTeuzxJFjFG9uXqUn+Gi2kmBtmHoo=f_Gj3Fg@mail.gmail.com>
+References: <1423088075-10025-1-git-send-email-marek@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50770 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751402AbbBRGuf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 01:50:35 -0500
-In-Reply-To: <54E00347.1070307@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1423088075-10025-1-git-send-email-marek@goldelico.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>, GTA04 owners <gta04-owner@goldelico.com>, Marek Belisko <marek@goldelico.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, pavel@ucw.cz, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Sunday, February 15, 2015 10:24:07 AM Fu, Zhonghui wrote:
-> Occasionally, the system can't come back up after suspend/resume
-> due to problems of device suspending phase. This patch make
-> PM_TRACE infrastructure cover device suspending phase of
-> suspend/resume process, and the information in RTC can tell
-> developers which device suspending function make system hang.
-> 
-> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
-> ---
-> Changes in v2:
->  - Add -M option so that the rename and changes can be reviewed much easier.
-> 
->  arch/x86/include/asm/pm-trace.h              |   36 ++++++++++++++++++++++++++
->  arch/x86/include/asm/resume-trace.h          |   21 ---------------
->  drivers/base/power/main.c                    |   20 +++++++++++---
->  drivers/base/power/trace.c                   |    6 ++--
->  include/linux/{resume-trace.h => pm-trace.h} |    9 +++---
->  kernel/power/main.c                          |    2 +-
->  6 files changed, 61 insertions(+), 33 deletions(-)
->  create mode 100644 arch/x86/include/asm/pm-trace.h
->  delete mode 100644 arch/x86/include/asm/resume-trace.h
->  rename include/linux/{resume-trace.h => pm-trace.h} (75%)
-> 
-> diff --git a/arch/x86/include/asm/pm-trace.h b/arch/x86/include/asm/pm-trace.h
-> new file mode 100644
-> index 0000000..09bd918
-> --- /dev/null
-> +++ b/arch/x86/include/asm/pm-trace.h
-> @@ -0,0 +1,36 @@
-> +#ifndef _ASM_X86_PM_TRACE_H
-> +#define _ASM_X86_PM_TRACE_H
-> +
-> +#include <asm/asm.h>
-> +
-> +#define TRACE_RESUME(user)					\
-> +do {								\
-> +	if (pm_trace_enabled) {					\
-> +		const void *tracedata;				\
-> +		asm volatile(_ASM_MOV " $1f,%0\n"		\
-> +			     ".section .tracedata,\"a\"\n"	\
-> +			     "1:\t.word %c1\n\t"		\
-> +			     _ASM_PTR " %c2\n"			\
-> +			     ".previous"			\
-> +			     :"=r" (tracedata)			\
-> +			     : "i" (__LINE__), "i" (__FILE__));	\
-> +		generate_pm_trace(tracedata, user);		\
-> +	}							\
-> +} while (0)
-> +
-> +#define TRACE_SUSPEND(user)					\
-> +do {								\
-> +	if (pm_trace_enabled) {					\
-> +		const void *tracedata;				\
-> +		asm volatile(_ASM_MOV " $1f,%0\n"		\
-> +			     ".section .tracedata,\"a\"\n"	\
-> +			     "1:\t.word %c1\n\t"		\
-> +			     _ASM_PTR " %c2\n"			\
-> +			     ".previous"			\
-> +			     :"=r" (tracedata)			\
-> +			     : "i" (__LINE__), "i" (__FILE__));	\
-> +		generate_pm_trace(tracedata, user);		\
-> +	}							\
-> +} while (0)
+Ping.
 
-Are those macros identical or am I missing anything?
+On Wed, Feb 4, 2015 at 11:14 PM, Marek Belisko <marek@goldelico.com> wrote:
+> This patches adding support for twl4030_madc_battery to use twl4030_madc iio framework + DT support.
+> Patches was tested on gta04 board. twl4030_madc_battery driver is converted in
+> first patch to iio consumer and in next patches is added support for devicetree
+> + some small fixes for module autoloading.
+>
+> Changes from V2:
+> - fix property names
+> - add MODULE_DEVICE_TABLE and MODULE_ALIAS
+>
+> Changes from V1:
+> - use iio_read_channel_processed instead iio_read_channel_processed
+> - convert probe to use devm_ as part of adding error handling for iio
+> - free iio channels on error and on module removal
+>
+> [1] - https://lkml.org/lkml/2014/2/26/482dd
+>
+> Marek Belisko (6):
+>   power: twl4030-madc-battery: Convert to iio consumer.
+>   power: twl4030_madc_battery: Add device tree support
+>   Documentation: DT: Document twl4030-madc-battery bindings
+>   ARM: dts: omap3-gta04: Add battery support
+>   power: twl4030_madc_battery: Add of_twl4030_madc_match to
+>     MODULE_DEVICE_TABLE
+>   power: twl4030_madc_battery: Add missing MODULE_ALIAS
+>
+>  .../bindings/power_supply/twl4030_madc_battery.txt |  43 +++++
+>  arch/arm/boot/dts/omap3-gta04.dtsi                 |  30 ++++
+>  drivers/power/twl4030_madc_battery.c               | 183 +++++++++++++++++----
+>  3 files changed, 221 insertions(+), 35 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+>
+> --
+> 1.9.1
+>
 
-If they are identical, why do we need two identical macros?
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
+
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com
