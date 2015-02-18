@@ -1,99 +1,106 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH RFC 02/12] Documentation: thermal docbook: add glossary
-Date: Wed, 18 Feb 2015 08:58:18 -0800
-Message-ID: <1424278698.23187.39.camel@spandruv-DESK3.jf.intel.com>
-References: <1423517653-11359-1-git-send-email-edubezval@gmail.com>
-	 <1423517653-11359-3-git-send-email-edubezval@gmail.com>
-	 <20150218115221.GD2990@e104805>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
+Date: Wed, 18 Feb 2015 17:26:51 +0000
+Message-ID: <20150218172651.GV8656@n2100.arm.linux.org.uk>
+References: <Pine.LNX.4.44L0.1502181007320.1245-100000@iolanthe.rowland.org>
+ <1790876.GQ4uCu6bPH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:62263 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbbBRQ7S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 18 Feb 2015 11:59:18 -0500
-In-Reply-To: <20150218115221.GD2990@e104805>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:48879 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752496AbbBRR1G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 12:27:06 -0500
+Content-Disposition: inline
+In-Reply-To: <1790876.GQ4uCu6bPH@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, "ezequiel.garcia@free-electrons.com" <ezequiel.garcia@free-electrons.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "hongbo.zhang@linaro.com" <hongbo.zhang@linaro.com>, "andrew@lunn.ch" <andrew@lunn.ch>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "peter@piie.net" <peter@piie.net>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "aaron.lu@intel.com" <aaron.lu@intel.com>, "caesar.wang@rock-chips.com" <caesar.wang@rock-chips.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "vincenzo.frascino@st.com" <vincenzo.frascino@st.com>, "mperttunen@nvidia.com" <mperttunen@nvidia.com>, "mikko.perttunen@kapsi.fi" <mikko.pertt>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-On Wed, 2015-02-18 at 11:52 +0000, Javi Merino wrote: 
-> Hi Eduardo,
+On Wed, Feb 18, 2015 at 05:52:25PM +0100, Rafael J. Wysocki wrote:
+> Those drivers might have been developed on systems without direct control of
+> power domains where the conditions for the driver at the ->probe() time were
+> always the same.  With power domains, though, they may change depending on
+> what's going on with the other devices in the domain, for example.
 > 
-> On Mon, Feb 09, 2015 at 09:34:03PM +0000, Eduardo Valentin wrote:
-> > This change introduces a section in the Introduction Chapter to
-> > list concepts used by the Thermal Framework.
-> > 
-> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> > ---
-> >  Documentation/DocBook/thermal.tmpl | 129 ++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 128 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/Documentation/DocBook/thermal.tmpl b/Documentation/DocBook/thermal.tmpl
-> > index f8fb8a2..66efed3 100644
-> > --- a/Documentation/DocBook/thermal.tmpl
-> > +++ b/Documentation/DocBook/thermal.tmpl
-> > @@ -84,5 +84,132 @@
-> >  		devices.
-> >  		</para>
-> >  
-> > -  </chapter>
-> > +		<sect1 id="glossary">
-> > +			<title>Glossary</title>
-> > +			<para>The Linux Kernel Thermal Framework  uses a
-> > +			specific terminology to represent the entities involved
-> > +			in thermal constrained environments. This section
-> > +			summaries the terminology as dictionary. These terms are
-> > +			in use within the present document and in the source
-> > +			code of the Linux Kernel Thermal Framework.
-> > +			</para>
-> > +			<glossary>
-> > +				<glossentry>
-> > +					<glossterm>Thermal Zone</glossterm>
-> > +					<glossdef>
-> > +						<para>Thermal zones represent
-> > +						what is the current status of a
-> > +						thermal constrained zone in the
-> > +						hardware. The zone usually is a
-> > +						device or component. The status
-> > +						of a thermal zone is mainly with
-> > +						respect to temperature.
-> > +						Currently, the Linux Kernel
-> > +						Thermal Framework represents
-> > +						temperature in miliCelsius. The
-> > +						current abstraction covers for
-> > +						non negative temperatures and
-> > +						constraints.
-> > +						</para>
-> 
-> Shall we point out that a thermal zone doesn't necessarily imply a
-> thermal sensor?  I find it very common to assume that if you have 10
-> sensors, you should have 10 thermal zones.  From my point of view, a
-> thermal zone is an area that has similar thermal characteristics.
-> Therefore, the temperature of the thermal zone doesn't necessarily
-> have to come from on sensor, and can be defined as a combination of
-> the input from multiple thermal sensors.
+> So the question is how we can address that in the cleanest way possible.
 
-Currently since you can have one temperature input per zone
-(irrespective of whether the temperature is combination of many sensors
-or virtual sensor), so separating thermal sensor and zone can be more
-confusing IMO from a user space perspective.
+Okay, going back to what was said earlier, we have three possibilities
+for drivers:
 
-This was a feature proposed and submitted for thermal sysfs 2.0 (or next
-version), where sensors and zones are separated. I think there was some
-plan to adopt this. Rui Zhang can comment more.
+1) A driver which makes no use of runtime PM and no use of PM domains.
+2) A driver which makes no use of runtime PM but may have a PM domain
+   attached.
+3) A driver which uses runtime PM, and assumes that the device was
+   initially suspended.  It calls pm_enable_device() optionally with
+   a preceding call to pm_runtime_set_suspended().
+4) A driver which uses runtime PM, and calls pm_runtime_set_active()
+   followed by pm_enable_device().
 
-Thanks,
-Srinivas
+What we want to end up with in the ideal situation is that drivers which
+fall into class:
 
+1 - may see their devices in any state; it is up to them to deal with
+    whatever state the device is initially in.
+2 - should see their devices in a powered up state as they have no way
+    to inform that the device is active.
+3 - should see their devices in a suspended state.
+4 - should see their devices in a powered up state.
 
-> 
-> I don't know how to put this in proper words for the documentation,
-> but I think it's worth hinting it here.
-> 
-> Cheers,
-> Javi
+The problem here is that we have no way to know this prior to the drivers
+probe function being called.  Whatever we do at this point, it is not
+going to satisfy the requirements of everyone.
+
+So, let's take what we're currently doing on DT, and make it the same
+across the board.  In platform_drv_probe(), let's do this:
+
+	/* attach the domain */
+        ret = dev_pm_domain_attach(_dev, true);
+	if (ret == -EPROBE_DEFER)
+		goto defer;
+
+	/* power up the domain - and hold it powered up */
+	ret = dev_pm_domain_pre_probe(_dev);
+	if (ret != -ENOSYS)
+		goto error;
+
+	ret = drv->probe(dev);
+
+	/*
+	 * remove the "hold" on the domain by this device, and start
+	 * tracking its runtime PM status.
+	 */
+	dev_pm_domain_post_probe(_dev);
+
+	if (ret)
+		dev_pm_domain_detach(_dev, true);
+
+What this means is that while the probe function is running, we guarantee
+that the PM domain will always be powered up.  We also guarantee that
+after the probe function has returned, we will then start tracking the
+runtime PM state, and if the device driver leaves runtime PM in the
+"suspended" state, PM domains will get to hear about it at that point,
+and can transition the PM domain back to "off" mode.
+
+Both these transitions only cause the PM domain to be affected; no
+runtime PM callbacks are issued for either of these two changes.  (We
+already have that for the initial state right now where attaching a
+device to the PM domain causes the PM domain to be powered up.)
+
+This is merely an extension of the current scheme.  Think of
+dev_pm_domain_post_probe() as a method of synchronising the state of
+PM domains with the state of runtime PM across all attached devices.
 
 
+Aside:
+I need to do some further checks; while considering this, I think I've
+come across a worrying problem with "PM / Domains: Power on the PM domain
+right after attach completes".  I think this will result in the driver's
+runtime_resume callback being invoked _before_ the probe function.  I
+can't test this right now as I'm in the middle of upgrading my dev box
+and it doesn't have a functional install for building ARM kernels yet.
+
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
