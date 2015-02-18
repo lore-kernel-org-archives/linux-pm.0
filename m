@@ -1,71 +1,74 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v7 2/7] mfd: da9150: Add DT binding documentation for core
-Date: Wed, 18 Feb 2015 14:08:26 +0000
-Message-ID: <d3c040b8f0c74a7d731b36e24384215327b83725.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
+Date: Wed, 18 Feb 2015 10:12:17 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1502181007320.1245-100000@iolanthe.rowland.org>
+References: <20150218100322.GT8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:49509 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751596AbbBRPMS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 10:12:18 -0500
+In-Reply-To: <20150218100322.GT8656@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
----
- Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
+On Wed, 18 Feb 2015, Russell King - ARM Linux wrote:
 
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-new file mode 100644
-index 0000000..d0588ea
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -0,0 +1,43 @@
-+Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
-+
-+DA9150 consists of a group of sub-devices:
-+
-+Device			 Description
-+------			 -----------
-+da9150-gpadc		: General Purpose ADC
-+da9150-charger		: Battery Charger
-+
-+======
-+
-+Required properties:
-+- compatible : Should be "dlg,da9150"
-+- reg: Specifies the I2C slave address
-+- interrupt-parent: Specifies the phandle of the interrupt controller to which
-+  the IRQs from da9150 are delivered to.
-+- interrupts: IRQ line info for da9150 chip.
-+- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
-+  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
-+   further information relating to interrupt properties)
-+
-+Sub-devices:
-+- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
-+- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
-+
-+
-+Example:
-+
-+	charger_fg: da9150@58 {
-+		compatible = "dlg,da9150";
-+		reg = <0x58>;
-+		interrupt-parent = <&gpio6>;
-+		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-controller;
-+
-+		gpadc: da9150-gpadc {
-+			...
-+		};
-+
-+		da9150-charger {
-+			...
-+		};
-+	};
---
-1.9.3
+> On Wed, Feb 18, 2015 at 08:02:30AM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, February 17, 2015 07:42:43 PM Russell King - ARM Linux wrote:
+> > > It's worse than that.  If, in the probe, we decide at a point to query
+> > > the PM domain status, and transfer it into the RPM status, how does the
+> > > driver know whether it needs to do a "put" to cause a transition from
+> > > active to suspended?
+> > 
+> > When ->probe() runs, the cases are:
+> > (1) There are no power domains, so the device is "active" when the clock is
+> >     enabled and "suspended" when it is disabled.
+> > (2) There is a power domain which is initially off.  The RPM status of the
+> >     device has to be "suspended" or the domain needs to be powered up.
+> 
+> (quick reply)
+> 
+> That's not entirely correct.
+> 
+> As a result of 2ed127697eb13 (PM / Domains: Power on the PM domain right
+> after attach completes) the power domain will _always_ be powered on prior
+> to ->probe() being called, if the device was attached to the PM domain
+> just before ->probe() is called, inspite of the domain being powered off
+> before the device was attached to the domain.
+> 
+> If the PM domain is attached earlier, and pm_genpd_poweroff_unused() is
+> called (before they're attached, but in the kernel boot sequence) the
+> work for powering down the PM domains will be queued until a point where
+> it can be scheduled - which will be after devices are attached.  That can
+> allow the PM domain(s) to be powered down (as no driver is attached) which
+> then results in the driver's ->probe function being called with the PM
+> domain OFF.
+> 
+> So, right now, there's no way for a driver to know with certainty whether
+> the device it is about to probe is powered up or powered down.
+
+Russell:
+
+I'm not totally familiar with how PM domains are intended to work.  The 
+impression I get from looking through the code is that they are highly 
+over-engineered -- but that could just be a result of my ignorance.
+
+At any rate, I don't have a clear picture of the problem you are trying
+to solve.  What's the general outline?  Are you talking about a device
+that _belongs_ to a PM domain or one that _depends_ on a PM domain?  
+If the device belongs to the domain, how does it get added (i.e., by
+its driver during probe or by some other mechanism)?
+
+Are you asking about how the driver can tell what the PM domain's 
+runtime status is?  Or would you like to add a way for the driver to 
+set the PM domain's runtime status?
+
+What else am I missing?
+
+Alan Stern
+
