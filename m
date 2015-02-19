@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 01/20] cpufreq: Add doc style comment about cpufreq_cpu_{get|put}()
-Date: Thu, 19 Feb 2015 17:02:03 +0530
-Message-ID: <3e39c8ea46c06a2933e8bae2117396ed220d548b.1424345053.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 04/20] cpufreq: Keep a single path for adding managed CPUs
+Date: Thu, 19 Feb 2015 17:02:06 +0530
+Message-ID: <ff44aa28b7c344936cbc43cfcff7efac92ad9700.1424345053.git.viresh.kumar@linaro.org>
 References: <cover.1424345053.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:33353 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753354AbbBSLdZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 06:33:25 -0500
-Received: by pdjz10 with SMTP id z10so8319913pdj.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Feb 2015 03:33:25 -0800 (PST)
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:35825 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbbBSLdh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 06:33:37 -0500
+Received: by padfa1 with SMTP id fa1so8894828pad.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Feb 2015 03:33:37 -0800 (PST)
 In-Reply-To: <cover.1424345053.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1424345053.git.viresh.kumar@linaro.org>
 References: <cover.1424345053.git.viresh.kumar@linaro.org>
@@ -18,59 +18,56 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-This clearly states what the code inside these routines is doing and how these
-must be used.
+There are two cases when we may try to add already managed CPUs:
+- On boot, the first cpu has marked all policy->cpus managed and so we will find
+  policy for all other policy->cpus later on.
+- When a managed cpu is hotplugged out and later brought back in.
+
+Currently we manage these two with separate paths and checks. While the first
+one is detected by testing cpu against 'policy->cpus', the other one is detected
+by testing cpu against 'policy->related_cpus'.
+
+We can manage both these via a single path and there is no need to do special
+checking for the first one.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ drivers/cpufreq/cpufreq.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 28e59a48b35f..fc51b8fbb0b0 100644
+index 9da8ed5bdd21..d06d1241a900 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -207,6 +207,23 @@ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
- 	return per_cpu(cpufreq_cpu_data, cpu);
- }
+@@ -992,6 +992,10 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+ 	int ret = 0;
+ 	unsigned long flags;
  
-+/**
-+ * cpufreq_cpu_get: returns policy for a cpu and marks it busy.
-+ *
-+ * @cpu: cpu to find policy for.
-+ *
-+ * This returns policy for 'cpu', returns NULL if it doesn't exist.
-+ * It also increments the kobject reference count to mark it busy and so would
-+ * require a corresponding call to cpufreq_cpu_put() to decrement it back.
-+ * If corresponding call cpufreq_cpu_put() isn't made, the policy wouldn't be
-+ * freed as that depends on the kobj count.
-+ *
-+ * It also takes a read-lock of 'cpufreq_rwsem' and doesn't put it back if a
-+ * valid policy is found. This is done to make sure the driver doesn't get
-+ * unregistered while the policy is being used.
-+ *
-+ * Return: A valid policy on success, otherwise NULL on failure.
-+ */
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = NULL;
-@@ -237,6 +254,16 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
++	/* Is cpu already managed ? */
++	if (cpumask_test_cpu(cpu, policy->cpus))
++		return 0;
++
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+@@ -1147,16 +1151,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
  
-+/**
-+ * cpufreq_cpu_put: Decrements the usage count of a policy
-+ *
-+ * @policy: policy earlier returned by cpufreq_cpu_get().
-+ *
-+ * This decrements the kobject reference count incremented earlier by calling
-+ * cpufreq_cpu_get().
-+ *
-+ * It also drops the read-lock of 'cpufreq_rwsem' taken at cpufreq_cpu_get().
-+ */
- void cpufreq_cpu_put(struct cpufreq_policy *policy)
- {
- 	kobject_put(&policy->kobj);
+ 	pr_debug("adding CPU %u\n", cpu);
+ 
+-	/* check whether a different CPU already registered this
+-	 * CPU because it is in the same boat. */
+-	policy = cpufreq_cpu_get_raw(cpu);
+-	if (unlikely(policy))
+-		return 0;
+-
+ 	if (!down_read_trylock(&cpufreq_rwsem))
+ 		return 0;
+ 
+-	/* Check if this cpu was hot-unplugged earlier and has siblings */
++	/* Check if this cpu already has a policy to manage it */
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_policy(policy) {
+ 		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
 -- 
 2.3.0.rc0.44.ga94655d
 
