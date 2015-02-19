@@ -1,49 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 3.20-rc0: GUI dies on resume, then systemd gots sigill
-Date: Thu, 19 Feb 2015 02:09:27 +0100
-Message-ID: <2244262.p04RxBg4Pz@vostro.rjw.lan>
-References: <20150218094631.GA3352@amd> <2254794.AHR7M2FYHX@vostro.rjw.lan> <20150218190052.GA25491@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 04/18] cpufreq: Manage fallback policies in a list
+Date: Thu, 19 Feb 2015 08:54:52 +0530
+Message-ID: <CAKohpomLy3zn8JbpcAHxymzh=Mvkaij4kW0TVeXXk1VEht2BXg@mail.gmail.com>
+References: <cover.1422346933.git.viresh.kumar@linaro.org>
+	<1746505.56yzpQ04cT@vostro.rjw.lan>
+	<CAKohpokrTCSZHUHiAfGumRh9zk590KSQii9U-1u+y194KY0PDg@mail.gmail.com>
+	<35613222.up9lS5n2CM@vostro.rjw.lan>
+	<CAKohpomw8+CnKXx=gF+OKPjrO3hC93Tdjimpx3Ba+He5xq3C8w@mail.gmail.com>
+	<54E500ED.20001@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150218190052.GA25491@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:50401 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbbBSDYw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Feb 2015 22:24:52 -0500
+Received: by mail-ob0-f176.google.com with SMTP id wo20so10078113obc.7
+        for <linux-pm@vger.kernel.org>; Wed, 18 Feb 2015 19:24:52 -0800 (PST)
+In-Reply-To: <54E500ED.20001@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On Wednesday, February 18, 2015 08:00:52 PM Pavel Machek wrote:
-> Hi!
-> 
-> On Wed 2015-02-18 17:39:08, Rafael J. Wysocki wrote:
-> > On Wednesday, February 18, 2015 10:46:32 AM Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > In 3.19, suspend/resume was rock solid.
-> > > 
-> > > 3.20-rc0, after resume, I could see X windows dying. So I tried to log
-> > > in on text console, but at that point got a note about SIGILL from
-> > > systemd (and dead system). syslog ilustrates it nicely.
-> > > 
-> > > Any ideas?
-> > 
-> > The dying X may be a graphics driver problem.
-> > 
-> > Have you tried to suspend/resume without X?
-> > 
-> > The systemd failure after the failing resume indicates that something was
-> > stuck somewhere or we corrupted memory.
-> 
-> It looks like everyone and their dog gets SIGILL, so... yes, I'll try
-> without X, no, I don't think it will make difference.
-> 
-> For the record, 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f is bad.
-> 
-> Does it work for you? Do you have any Intel graphics machine nearby?
+On 19 February 2015 at 02:45, Saravana Kannan <skannan@codeaurora.org> wrote:
+> During logical hotplug, you only get the hotplug notifiers.
+> During physical hotplug, you get the subsys_remove.
 
-I'm at a conference, so not really.
+>From Rafael's mail it looked like we also get hotplug notifiers..
 
-CCing Daniel though, he may be able to help.
+So it will be hoplug notifier followed by subsys, and that would be a special
+case then..
 
-Rafael
+> So, we have all the information needed to distinguish. Remove the sysfs
+> entries only in subsys-remove.
+
+But hotplug notifiers would have already done most of the work we wanted.
+And this will be a special case then.
+
+Also, a policy might be shared by multiple CPUs and we need to take that
+into account as well here..
+
+So, not that straight forward as I can see it..
+
+Also, are you aware of any way to emulate that ?
