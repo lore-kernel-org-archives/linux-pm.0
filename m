@@ -1,23 +1,49 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
-Date: Thu, 19 Feb 2015 10:35:06 +1100 (AEDT)
-Message-ID: <20150218233506.4B5411400F1@ozlabs.org>
-References: <20150203062810.13207.93694.stgit@preeti.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: 3.20-rc0: GUI dies on resume, then systemd gots sigill
+Date: Thu, 19 Feb 2015 02:09:27 +0100
+Message-ID: <2244262.p04RxBg4Pz@vostro.rjw.lan>
+References: <20150218094631.GA3352@amd> <2254794.AHR7M2FYHX@vostro.rjw.lan> <20150218190052.GA25491@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150203062810.13207.93694.stgit@preeti.in.ibm.com>
+In-Reply-To: <20150218190052.GA25491@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2015-03-02 at 06:31:15 UTC, Preeti U Murthy wrote:
-> We currently read the information about idle states from the DT
-> so as to populate the cpuidle table. Use those APIs to read from
-> the DT that can avoid endianness conversions of the property values
-> in the cpuidle driver.
+On Wednesday, February 18, 2015 08:00:52 PM Pavel Machek wrote:
+> Hi!
 > 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> On Wed 2015-02-18 17:39:08, Rafael J. Wysocki wrote:
+> > On Wednesday, February 18, 2015 10:46:32 AM Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > In 3.19, suspend/resume was rock solid.
+> > > 
+> > > 3.20-rc0, after resume, I could see X windows dying. So I tried to log
+> > > in on text console, but at that point got a note about SIGILL from
+> > > systemd (and dead system). syslog ilustrates it nicely.
+> > > 
+> > > Any ideas?
+> > 
+> > The dying X may be a graphics driver problem.
+> > 
+> > Have you tried to suspend/resume without X?
+> > 
+> > The systemd failure after the failing resume indicates that something was
+> > stuck somewhere or we corrupted memory.
+> 
+> It looks like everyone and their dog gets SIGILL, so... yes, I'll try
+> without X, no, I don't think it will make difference.
+> 
+> For the record, 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f is bad.
+> 
+> Does it work for you? Do you have any Intel graphics machine nearby?
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+I'm at a conference, so not really.
 
-cheers
+CCing Daniel though, he may be able to help.
+
+Rafael
