@@ -1,59 +1,91 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH v3 3/5] thermal: fair_share: fix typo
-Date: Thu, 19 Feb 2015 05:40:48 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59090DD5A4@BGSMSX101.gar.corp.intel.com>
-References: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
- <1424275465-16144-4-git-send-email-javi.merino@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 00/20] cpufreq: Don't loose cpufreq history on CPU hotplug
+Date: Thu, 19 Feb 2015 17:02:02 +0530
+Message-ID: <cover.1424345053.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:33739 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbbBSFkx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 00:40:53 -0500
-In-Reply-To: <1424275465-16144-4-git-send-email-javi.merino@arm.com>
-Content-Language: en-US
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:35738 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753354AbbBSLdV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 06:33:21 -0500
+Received: by padfa1 with SMTP id fa1so8893280pad.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Feb 2015 03:33:20 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, Srivatsa Bhat <srivatsa@mit.edu>
 
->-----Original Message-----
->From: Javi Merino [mailto:javi.merino@arm.com]
->Sent: Wednesday, February 18, 2015 9:34 PM
->To: Zhang, Rui; edubezval@gmail.com
->Cc: linux-pm@vger.kernel.org; Javi Merino; R, Durgadoss
->Subject: [PATCH v3 3/5] thermal: fair_share: fix typo
->
->s/asscciated/associated/
+Hi Rafael,
 
-Good catch,
+The aim of this series is to stop managing cpufreq sysfs directories on CPU
+hotplugs.
 
-Reviewed-by: Durgadoss R <durgadoss.r@intel.com>
+Currently on removal of a 'cpu != policy->cpu', we remove its sysfs directories
+by removing the soft-link. And on removal of policy->cpu, we migrate the sysfs
+directories to the next cpu. But if policy->cpu was the last CPU, we remove the
+policy completely and allocate it again as soon as the CPUs come back. This has
+shortcomings:
 
->
->Cc: Zhang Rui <rui.zhang@intel.com>
->Cc: Eduardo Valentin <edubezval@gmail.com>
->Cc: Durgadoss R <durgadoss.r@intel.com>
->Signed-off-by: Javi Merino <javi.merino@arm.com>
->---
-> drivers/thermal/fair_share.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
->index 9e392d34ac9f..692f4053f08b 100644
->--- a/drivers/thermal/fair_share.c
->+++ b/drivers/thermal/fair_share.c
->@@ -69,7 +69,7 @@ static long get_target_state(struct thermal_zone_device *tz,
-> }
->
-> /**
->- * fair_share_throttle - throttles devices asscciated with the given zone
->+ * fair_share_throttle - throttles devices associated with the given zone
->  * @tz - thermal_zone_device
->  *
->  * Throttling Logic: This uses three parameters to calculate the new
->--
->1.9.1
+- Code Complexity
+- Slower hotplug
+- sysfs file permissions are reset after all policy->cpus are offlined
+- CPUFreq stats history lost after all policy->cpus are offlined
+- Special management of sysfs stuff during suspend/resume
+
+
+To make things simple we stop playing with sysfs files unless the driver is
+getting removed. Also the policy is kept intact to be used later.
+
+First few patches provide a clean base for others *more important* patches.
+
+Rebased-over: your bleeding edge branch as there were dependencies on my earlier
+patches.
+
+Pushed here:
+
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/core/sysfs
+
+v1->V2:
+- Dropped the idea of using policy-lists for getting policy for any cpu
+- Also dropped fallback list and its per-cpu variable
+- Stopped cleaning cpufreq_cpu_data and doing list_del(policy) on logical
+  hotplug.
+- Added support for physical hotplug of CPUs (Untested).
+
+@Srivatsa: Can you please have a look at the above change? I have cc'd you only
+on this one.
+
+Saravana Kannan (1):
+  cpufreq: Track cpu managing sysfs kobjects separately
+
+Cc: Srivatsa Bhat <srivatsa@mit.edu>
+
+Viresh Kumar (19):
+  cpufreq: Add doc style comment about cpufreq_cpu_{get|put}()
+  cpufreq: Merge __cpufreq_add_dev() and cpufreq_add_dev()
+  cpufreq: Throw warning when we try to get policy for an invalid CPU
+  cpufreq: Keep a single path for adding managed CPUs
+  cpufreq: Clear policy->cpus even for the last CPU
+  cpufreq: Create for_each_{in}active_policy()
+  cpufreq: Call schedule_work() for the last active policy
+  cpufreq: Don't clear cpufreq_cpu_data and policy list for inactive
+    policies
+  cpufreq: Get rid of cpufreq_cpu_data_fallback
+  cpufreq: Don't traverse list of all policies for adding policy for a
+    cpu
+  cpufreq: Manage governor usage history with 'policy->last_governor'
+  cpufreq: Mark policy->governor = NULL for inactive policies
+  cpufreq: Don't allow updating inactive-policies from sysfs
+  cpufreq: Stop migrating sysfs files on hotplug
+  cpufreq: Remove cpufreq_update_policy()
+  cpufreq: Initialize policy->kobj while allocating policy
+  cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
+  cpufreq: Restart governor as soon as possible
+  cpufreq: Add support for physical hoplug of CPUs
+
+ drivers/cpufreq/cpufreq.c | 593 ++++++++++++++++++++++++++--------------------
+ include/linux/cpufreq.h   |   5 +-
+ 2 files changed, 340 insertions(+), 258 deletions(-)
+
+-- 
+2.3.0.rc0.44.ga94655d
 
