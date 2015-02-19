@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 09/20] cpufreq: Get rid of cpufreq_cpu_data_fallback
-Date: Thu, 19 Feb 2015 17:02:11 +0530
-Message-ID: <931526f13b5213db72a6f6cc31730ee82ac9b780.1424345053.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 10/20] cpufreq: Don't traverse list of all policies for adding policy for a cpu
+Date: Thu, 19 Feb 2015 17:02:12 +0530
+Message-ID: <3311b25e3e3f698ad654215d7bf9a1c3613b7d78.1424345053.git.viresh.kumar@linaro.org>
 References: <cover.1424345053.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:37243 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbbBSLd5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 06:33:57 -0500
-Received: by pdbfl12 with SMTP id fl12so8300836pdb.4
-        for <linux-pm@vger.kernel.org>; Thu, 19 Feb 2015 03:33:56 -0800 (PST)
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:32773 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753417AbbBSLeB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 06:34:01 -0500
+Received: by pabkx10 with SMTP id kx10so8914208pab.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Feb 2015 03:34:00 -0800 (PST)
 In-Reply-To: <cover.1424345053.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1424345053.git.viresh.kumar@linaro.org>
 References: <cover.1424345053.git.viresh.kumar@linaro.org>
@@ -18,80 +18,52 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-We can extract the same information from cpufreq_cpu_data as it is also
-available for inactive policies now.
+We reach here while adding policy for a CPU and enter into the 'if' block only
+if a policy already exists for the CPU in question. As cpufreq_cpu_data is
+filled once and for all now, we can reuse it to find the relevant policy instead
+of traversing the list of all policies.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 25 ++++++-------------------
- 1 file changed, 6 insertions(+), 19 deletions(-)
+ drivers/cpufreq/cpufreq.c | 17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e27b2a7bd9b3..f849b2a33d3e 100644
+index f849b2a33d3e..20d5f4590c4b 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -112,7 +112,6 @@ static LIST_HEAD(cpufreq_governor_list);
-  */
- static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
--static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
- DEFINE_MUTEX(cpufreq_governor_lock);
- 
-@@ -1092,13 +1091,14 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
- 	unsigned long flags;
- 
- 	read_lock_irqsave(&cpufreq_driver_lock, flags);
--
--	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
--
-+	policy = per_cpu(cpufreq_cpu_data, cpu);
- 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	if (policy)
-+	if (likely(policy)) {
-+		/* Policy should be inactive here */
-+		WARN_ON(!policy_is_inactive(policy));
- 		policy->governor = NULL;
-+	}
- 
- 	return policy;
- }
-@@ -1394,11 +1394,8 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
--	if (recover_policy) {
--		/* Do not leave stale fallback data behind. */
--		per_cpu(cpufreq_cpu_data_fallback, cpu) = NULL;
-+	if (recover_policy)
- 		cpufreq_policy_put_kobj(policy);
--	}
- 	cpufreq_policy_free(policy);
- 
- nomem_out:
-@@ -1412,21 +1409,11 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+@@ -1211,7 +1211,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
  {
- 	unsigned int cpu = dev->id, cpus;
- 	int ret;
--	unsigned long flags;
- 	struct cpufreq_policy *policy;
+ 	unsigned int j, cpu = dev->id;
+ 	int ret = -ENOMEM;
+-	struct cpufreq_policy *policy, *tpolicy;
++	struct cpufreq_policy *policy;
+ 	unsigned long flags;
+ 	bool recover_policy = cpufreq_suspended;
  
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+@@ -1224,16 +1224,13 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		return 0;
  
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--
- 	policy = cpufreq_cpu_get_raw(cpu);
--
--	/* Save the policy somewhere when doing a light-weight tear-down */
--	if (cpufreq_suspended)
--		per_cpu(cpufreq_cpu_data_fallback, cpu) = policy;
--
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
- 	if (!policy) {
- 		pr_debug("%s: No cpu_data found\n", __func__);
- 		return -EINVAL;
+ 	/* Check if this cpu already has a policy to manage it */
+-	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_active_policy(policy, tpolicy) {
+-		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
+-			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
+-			up_read(&cpufreq_rwsem);
+-			return ret;
+-		}
++	policy = per_cpu(cpufreq_cpu_data, cpu);
++	if (policy && !policy_is_inactive(policy)) {
++		WARN_ON(!cpumask_test_cpu(cpu, policy->related_cpus));
++		ret = cpufreq_add_policy_cpu(policy, cpu, dev);
++		up_read(&cpufreq_rwsem);
++		return ret;
+ 	}
+-	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 	/*
+ 	 * Restore the saved policy when doing light-weight init and fall back
 -- 
 2.3.0.rc0.44.ga94655d
 
