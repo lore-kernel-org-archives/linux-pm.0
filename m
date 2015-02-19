@@ -1,176 +1,107 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH v3 5/5] thermal: fair_share: generalize the weight
- concept
-Date: Thu, 19 Feb 2015 13:36:12 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59090DD994@BGSMSX101.gar.corp.intel.com>
-References: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
- <1424275465-16144-6-git-send-email-javi.merino@arm.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal Management updates for 3.20-rc1 #1
+Date: Thu, 19 Feb 2015 21:48:21 +0800
+Message-ID: <1424353701.2885.17.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:30085 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbbBSNgT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Feb 2015 08:36:19 -0500
-In-Reply-To: <1424275465-16144-6-git-send-email-javi.merino@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
->-----Original Message-----
->From: Javi Merino [mailto:javi.merino@arm.com]
->Sent: Wednesday, February 18, 2015 9:34 PM
->To: Zhang, Rui; edubezval@gmail.com
->Cc: linux-pm@vger.kernel.org; Javi Merino; R, Durgadoss
->Subject: [PATCH v3 5/5] thermal: fair_share: generalize the weight concept
->
->The fair share governor has the concept of weights, which is the
->influence of each cooling device in a thermal zone.  The current
->implementation forces the weights of all cooling devices in a thermal
->zone to add up to a 100.  This complicates setups, as you need to know
->in advance how many cooling devices you are going to have.  If you bind a
->new cooling device, you have to modify all the other cooling devices
->weights, which is error prone.  Furthermore, you can't specify a
->"default" weight for platforms since that default value depends on the
->number of cooling devices in the platform.
->
->This patch generalizes the concept of weight by allowing any number to
->be a "weight".  Weights are now relative to each other.  Platforms that
->don't specify weights get the same default value for all their cooling
->devices, so all their cdevs are considered to be equally influential.
->
->It's important to note that previous users of the weights don't need to
->alter the code: percentages continue to work as they used to.  This
+Hi, Linus,
 
-Ok, I verified this in the below code.
-Looks good to me,
+please pull from
 
-Acked-by: Durgadoss R <durgadoss.r@intel.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
->patch just removes the constraint of all the weights in a thermal zone
->having to add up to a 100.  If they do, you get the same behavior as
->before.  If they don't, fair share now works for that platform.
->
->Cc: Zhang Rui <rui.zhang@intel.com>
->Cc: Eduardo Valentin <edubezval@gmail.com>
->Cc: Durgadoss R <durgadoss.r@intel.com>
->Signed-off-by: Javi Merino <javi.merino@arm.com>
->---
-> Documentation/thermal/sysfs-api.txt | 12 +++++++++---
-> drivers/thermal/fair_share.c        | 26 +++++++++++++++++++++-----
-> include/linux/thermal.h             |  9 ++++++---
-> 3 files changed, 36 insertions(+), 11 deletions(-)
->
->diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
->index 3625453ceef6..fc7dfe10778b 100644
->--- a/Documentation/thermal/sysfs-api.txt
->+++ b/Documentation/thermal/sysfs-api.txt
->@@ -129,9 +129,15 @@ temperature) and throttle appropriate devices.
->     This structure defines the following parameters that are used to bind
->     a zone with a cooling device for a particular trip point.
->     .cdev: The cooling device pointer
->-    .weight: The 'influence' of a particular cooling device on this zone.
->-             This is on a percentage scale. The sum of all these weights
->-             (for a particular zone) cannot exceed 100.
->+    .weight: The 'influence' of a particular cooling device on this
->+             zone. This is relative to the rest of the cooling
->+             devices. For example, if all cooling devices have a
->+             weight of 1, then they all contribute the same. You can
->+             use percentages if you want, but it's not mandatory. A
->+             weight of 0 means that this cooling device doesn't
->+             contribute to the cooling of this zone unless all cooling
->+             devices have a weight of 0. If all weights are 0, then
->+             they all contribute the same.
->     .trip_mask:This is a bit mask that gives the binding relation between
->                this thermal zone and cdev, for a particular trip point.
->                If nth bit is set, then the cdev and thermal zone are bound
->diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
->index 692f4053f08b..c2c10bbe24d6 100644
->--- a/drivers/thermal/fair_share.c
->+++ b/drivers/thermal/fair_share.c
->@@ -59,13 +59,13 @@ static int get_trip_level(struct thermal_zone_device *tz)
-> }
->
-> static long get_target_state(struct thermal_zone_device *tz,
->-		struct thermal_cooling_device *cdev, int weight, int level)
->+		struct thermal_cooling_device *cdev, int percentage, int level)
-> {
-> 	unsigned long max_state;
->
-> 	cdev->ops->get_max_state(cdev, &max_state);
->
->-	return (long)(weight * level * max_state) / (100 * tz->trips);
->+	return (long)(percentage * level * max_state) / (100 * tz->trips);
-> }
->
-> /**
->@@ -77,7 +77,7 @@ static long get_target_state(struct thermal_zone_device *tz,
->  *
->  * Parameters used for Throttling:
->  * P1. max_state: Maximum throttle state exposed by the cooling device.
->- * P2. weight[i]/100:
->+ * P2. percentage[i]/100:
->  *	How 'effective' the 'i'th device is, in cooling the given zone.
->  * P3. cur_trip_level/max_no_of_trips:
->  *	This describes the extent to which the devices should be throttled.
->@@ -89,16 +89,32 @@ static long get_target_state(struct thermal_zone_device *tz,
-> static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
-> {
-> 	struct thermal_instance *instance;
->+	int total_weight = 0;
->+	int total_instance = 0;
-> 	int cur_trip_level = get_trip_level(tz);
->
-> 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
->+		if (instance->trip != trip)
->+			continue;
->+
->+		total_weight += instance->weight;
->+		total_instance++;
->+	}
->+
->+	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
->+		int percentage;
-> 		struct thermal_cooling_device *cdev = instance->cdev;
->
-> 		if (instance->trip != trip)
-> 			continue;
->
->-		instance->target = get_target_state(tz, cdev,
->-					instance->weight, cur_trip_level);
->+		if (!total_weight)
->+			percentage = 100 / total_instance;
->+		else
->+			percentage = (instance->weight * 100) / total_weight;
->+
->+		instance->target = get_target_state(tz, cdev, percentage,
->+						    cur_trip_level);
->
-> 		instance->cdev->updated = false;
-> 		thermal_cdev_update(cdev);
->diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->index 2ed7062fac1d..89873f93b40d 100644
->--- a/include/linux/thermal.h
->+++ b/include/linux/thermal.h
->@@ -217,9 +217,12 @@ struct thermal_bind_params {
->
-> 	/*
-> 	 * This is a measure of 'how effectively these devices can
->-	 * cool 'this' thermal zone. The shall be determined by platform
->-	 * characterization. This is on a 'percentage' scale.
->-	 * See Documentation/thermal/sysfs-api.txt for more information.
->+	 * cool 'this' thermal zone. It shall be determined by
->+	 * platform characterization. This value is relative to the
->+	 * rest of the weights so a cooling device whose weight is
->+	 * double that of another cooling device is twice as
->+	 * effective. See Documentation/thermal/sysfs-api.txt for more
->+	 * information.
-> 	 */
-> 	int weight;
->
->--
->1.9.1
+to receive Thermal Management changes for 3.20-rc1 with top-most commit
+31908f45a583e8f21db37f402b6e8d5739945afd:
+
+  Thermal/int340x_thermal: remove unused uuids. (2015-02-06 16:36:49
++0800)
+
+on top of commit ec6f34e5b552fb0a52e6aae1a5afbbb1605cc6cc:
+
+  Linux 3.19-rc5 (2015-01-18 18:02:20 +1200)
+
+Specifics:
+
+- Abstract the code and introduce helper functions for all int340x
+thermal drivers. From: Srinivas Pandruvada.
+
+- Reorganize the ACPI LPAT table support code so that it can be shared
+for both ACPI PMIC driver and int340x thermal driver.
+
+- Add support for Braswell in intel_soc_dts thermal driver.
+
+- a couple of small fixes/cleanups for step_wise governor and int340x
+thermal driver.
+
+thanks,
+rui
+
+The following changes since commit
+ec6f34e5b552fb0a52e6aae1a5afbbb1605cc6cc:
+
+  Linux 3.19-rc5 (2015-01-18 18:02:20 +1200)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+
+for you to fetch changes up to 31908f45a583e8f21db37f402b6e8d5739945afd:
+
+  Thermal/int340x_thermal: remove unused uuids. (2015-02-06 16:36:49
++0800)
+
+----------------------------------------------------------------
+Brian Norris (1):
+      thermal: step_wise: spelling fixes
+
+Lad, Prabhakar (1):
+      thermal: int340x: fix sparse warning
+
+Srinivas Pandruvada (9):
+      Thermal/int340x: Add common thermal zone handler
+      Thermal/int340x/int3402: Use int340x thermal API
+      Thermal/int340x/int3403: Use int340x thermal API
+      Thermal/int340x/processor_thermal: Add thermal zone support
+      Thermal/int340x/int3402: Provide notification support
+      thermal: Intel SoC DTS: Add Braswell support
+      ACPI / LPAT: Common table processing functions
+      ACPI / PMIC: Use common LPAT table handling functions
+      Thermal/int340x: LPAT conversion for temperature
+
+Zhang Rui (2):
+      Merge branches 'intel-dts-soc-thermal' and 'int340x-enhancement'
+of .git into next
+      Thermal/int340x_thermal: remove unused uuids.
+
+ drivers/acpi/Makefile                              |   1 +
+ drivers/acpi/acpi_lpat.c                           | 161 ++++++++++++
+ drivers/acpi/pmic/intel_pmic.c                     | 133 ++--------
+ drivers/thermal/int340x_thermal/Makefile           |   1 +
+ drivers/thermal/int340x_thermal/int3400_thermal.c  |   4 -
+ drivers/thermal/int340x_thermal/int3402_thermal.c  | 208
++++-------------
+ drivers/thermal/int340x_thermal/int3403_thermal.c  | 208
++---------------
+ .../thermal/int340x_thermal/int340x_thermal_zone.c | 276
++++++++++++++++++++++
+ .../thermal/int340x_thermal/int340x_thermal_zone.h |  68 +++++
+ .../int340x_thermal/processor_thermal_device.c     |  92 ++++++-
+ drivers/thermal/intel_soc_dts_thermal.c            |  46 ++--
+ drivers/thermal/step_wise.c                        |   4 +-
+ include/acpi/acpi_lpat.h                           |  65 +++++
+ 13 files changed, 760 insertions(+), 507 deletions(-)
+ create mode 100644 drivers/acpi/acpi_lpat.c
+ create mode 100644
+drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+ create mode 100644
+drivers/thermal/int340x_thermal/int340x_thermal_zone.h
+ create mode 100644 include/acpi/acpi_lpat.h
+
 
