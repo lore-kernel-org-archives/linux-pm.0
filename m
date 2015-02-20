@@ -1,118 +1,127 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management updates for 3.20-rc1 #2
-Date: Fri, 20 Feb 2015 09:36:50 +0800
-Message-ID: <1424396210.2885.25.camel@rzhang1-mobl4>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH RFC 2/3] power: mxs_power: add driver for mxs power
+ subsystem
+Date: Fri, 20 Feb 2015 11:57:41 +0100 (CET)
+Message-ID: <1766258118.893447.1424429861770.JavaMail.open-xchange@oxbaltgw03.schlund.de>
+References: <1416514477-19190-1-git-send-email-stefan.wahren@i2se.com> <1416514477-19190-3-git-send-email-stefan.wahren@i2se.com> <20150121230148.GJ13715@earth.universe> <54C0AFE4.3020701@i2se.com> <20150125150431.GE2719@earth.universe> <1719204322.245040.1422301605670.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150127001629.GP21293@sirena.org.uk> <1954124242.301697.1422383709733.JavaMail.open-xchange@oxbaltgw09.schlund.de> <20150127194346.GN21293@sirena.org.uk> <443299280.47516.1422483725178.JavaMail.open-xchange@oxbaltgw03.schlund.de> <20150128225937.GA12749@earth.universe> <964800678.25817.1422996087477.JavaMail.open-xchange@oxbaltgw04.schlund.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:22292 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753017AbbBTBgy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Feb 2015 20:36:54 -0500
+Received: from mout.kundenserver.de ([212.227.126.130]:60903 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753955AbbBTK6D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Feb 2015 05:58:03 -0500
+In-Reply-To: <964800678.25817.1422996087477.JavaMail.open-xchange@oxbaltgw04.schlund.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, David Woodhouse <dwmw2@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Marek Vasut <marex@denx.de>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org
 
-Hi, Linus,
+> Stefan Wahren <stefan.wahren@i2se.com> hat am 3. Februar 2015 um 21:41
+> geschrieben:
+>
+>
+> Hi Sebastian,
+>
+> > Sebastian Reichel <sre@kernel.org> hat am 28. Januar 2015 um 23:59
+> > geschrieben:
+> >
+> >
+> > Hi,
+> >
+> > On Wed, Jan 28, 2015 at 11:22:05PM +0100, Stefan Wahren wrote:
+> > > > Mark Brown <broonie@kernel.org> hat am 27. Januar 2015 um 20:43
+> > > > geschrieben:
+> > > > On Tue, Jan 27, 2015 at 07:35:09PM +0100, Stefan Wahren wrote:
+> > > >
+> > > changing the switching frequency is not a common feature for this IC. In
+> > > most
+> > > cases the clock for the DC-DC switching frequency runs at 24 MHz
+> > > (ref_xtal).
+> > > Unfortunatelly this could cause interferences for example in UHF band. So
+> > > switching to ref_pll and changing clock divider is a option to avoid such
+> > > interferences without changing hardware.
+> > >
+> > > I decided to implement it as a module parameter, because i see it's a
+> > > configuration option.
+> >
+> > I think its best to use a DT property then. That way it can be set
+> > appropiatly for boards known to use a band, which could have
+> > interference problems.
+> >
+> > So just add a simple property (without a subnode). If I understand
+> > Mark correctly, there's a high chance more drivers will need to
+> > describe the switching frequency, so I suggest to use a vendor
+> > independent property name:
+> >
+> > switching-frequency = <12345>;
+>
+> i'm not sure. So here is the complete current state (power and regulator
+> binding
+> from imx28.dtsi) including my suggestion for the new property:
+>
+> power: power@80044000 {
+> compatible = "fsl,imx28-power"; /* handled by mxs_power.c */
+> #address-cells = <1>;
+> #size-cells = <1>;
+> reg = <0x80044000 0x2000>;
+> interrupts = <6>;
+> switching-frequency = <24000000>; /* new property */
+> ranges;
+>
+> reg_vddd: regulator@80044040 {
+> reg = <0x80044040 0x10>,
+> <0x80044010 0x10>,
+> <0x800440c0 0x10>;
+> reg-names = "base-address",
+> "v5ctrl-address",
+> "status-address";
+> compatible = "fsl,imx28-vddd"; /* handled by mxs-regulator.c */
+> regulator-name = "vddd";
+> regulator-min-microvolt = <1350000>;
+> regulator-max-microvolt = <1550000>;
+> vddd-supply = <&reg_vdda>;
+> };
+>
+> reg_vdda: regulator@80044050 {
+> reg = <0x80044050 0x10>,
+> <0x80044010 0x10>,
+> <0x800440c0 0x10>;
+> reg-names = "base-address",
+> "v5ctrl-address",
+> "status-address";
+> compatible = "fsl,imx28-vdda"; /* handled by mxs-regulator.c */
+> regulator-name = "vdda";
+> regulator-min-microvolt = <1725000>;
+> regulator-max-microvolt = <1950000>;
+> vdda-supply = <&reg_vddio>;
+> };
+>
+> reg_vddio: regulator@80044060 {
+> reg = <0x80044060 0x10>,
+> <0x80044010 0x10>,
+> <0x800440c0 0x10>;
+> reg-names = "base-address",
+> "v5ctrl-address",
+> "status-address";
+> compatible = "fsl,imx28-vddio"; /* handled by mxs-regulator.c */
+> regulator-name = "vddio";
+> regulator-min-microvolt = <3000000>;
+> regulator-max-microvolt = <3575000>;
+> regulator-microvolt-offset = <80000>;
+> };
+> };
+>
+> Please correct me if i'm wrong.
+>
+> Stefan
 
-Please pull from
+Gentle Ping.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git fixes
+Stefan
 
-to receive Thermal SoC Management updates for v3.20 with top-most
-
-6c247393cfdd6695717f80ff31f9fd9af8c2c525:
-
-  thermal: exynos: Add TMU support for Exynos7 SoC (2015-01-31 15:20:45
--0400)
-
-on top of commit b97f880c8342fd6e49a02c9ef7507a678722b2b3:
-
-  Merge branch 'for-3.19-fixes' of
-git://git.kernel.org/pub/scm/linux/kernel/git/tj/libata (2015-01-21
-07:54:16 +1200)
-
-Specifics:
-
-- Exynos thermal driver refactoring. Several cleanups, code
-optimization, unused symbols removal, and unused feature removal in
-Exynos thermal driver. Thanks Lukasz for this effort.
-- Exynos thermal driver support to OF thermal. After the code
-refactoring, the driver earned the support to OF thermal. Chip thermal
-data were moved from driver code to DTS, reducing the code footprint.
-Thanks Lukasz for this.
-- After receiving the OF thermal support, the exynos thermal driver now
-must allow modular build. Thanks Arnd for detecting, reporting and
-fixing this.
-- Exynos thermal driver support to Exynos 7 SoC. Thanks Abhilash for
-this.
-- Accurate temperature reporting on Rockchip thermal driver, thanks to
-Caesar.
-- Fix on how OF thermal enables its zones, thanks Lukasz for fixing.
-- Fixes in OF thermal examples under Documentation/. Thanks Srinivas for
-fixing.
-
-Thanks,
-rui
-
-----------------------------------------------------------------
-Abhilash Kesavan (2):
-      dts: Documentation: Add documentation for Exynos7 SoC thermal
-bindings
-      thermal: exynos: Add TMU support for Exynos7 SoC
-
-Arnd Bergmann (1):
-      cpufreq: exynos: allow modular build
-
-Caesar Wang (1):
-      thermal: rockchip: make temperature reporting much more accurate
-
-Lukasz Majewski (12):
-      thermal: of: Enable thermal_zoneX when sensor is correctly added
-      thermal: exynos: cosmetic: Correct comment format
-      thermal: exynos: Provide thermal_exynos.h file to be included in
-device tree files
-      thermal: exynos: Modify exynos thermal code to use device tree for
-cpu cooling configuration
-      cpufreq: exynos: Use device tree to determine if cpufreq cooling
-should be registered
-      dts: Documentation: Extending documentation entry for
-exynos-thermal
-      dts: Documentation: Update exynos-thermal.txt example for
-Exynos5440
-      thermal: samsung: core: Exynos TMU rework to use device tree for
-configuration
-      thermal: exynos: Remove exynos_thermal_common.[c|h] files
-      thermal: exynos: Remove exynos_tmu_data.c file
-      thermal: Kconfig: Remove config for not used EXYNOS_THERMAL_CORE
-      thermal: exynos: Correct sanity check at exynos_report_trigger()
-function
-
-Srinivas Kandagatla (1):
-      thermal: Fix examples in DT documentation
-
- .../devicetree/bindings/thermal/exynos-thermal.txt |  21 +
- .../devicetree/bindings/thermal/thermal.txt        |  74 +--
- drivers/cpufreq/Kconfig.arm                        |  44 +-
- drivers/cpufreq/Makefile                           |   9 +-
- drivers/cpufreq/exynos-cpufreq.c                   |  33 +-
- drivers/thermal/of-thermal.c                       |   3 +
- drivers/thermal/rockchip_thermal.c                 |  36 +-
- drivers/thermal/samsung/Kconfig                    |   9 -
- drivers/thermal/samsung/Makefile                   |   2 -
- drivers/thermal/samsung/exynos_thermal_common.c    | 427
-----------------
- drivers/thermal/samsung/exynos_thermal_common.h    | 106 ----
- drivers/thermal/samsung/exynos_tmu.c               | 553
-++++++++++++++++-----
- drivers/thermal/samsung/exynos_tmu.h               |  77 +--
- drivers/thermal/samsung/exynos_tmu_data.c          | 264 ----------
- include/dt-bindings/thermal/thermal_exynos.h       |  28 ++
- 15 files changed, 596 insertions(+), 1090 deletions(-)
- delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
- delete mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
- delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
- create mode 100644 include/dt-bindings/thermal/thermal_exynos.h
-
+>
+> >
+> > -- Sebastian
