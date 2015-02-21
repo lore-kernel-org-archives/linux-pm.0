@@ -1,97 +1,122 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH] thermal: Make sysfs attributes of cooling devices default attributes
-Date: Fri, 20 Feb 2015 18:10:08 -0800
-Message-ID: <1424484608-20181-1-git-send-email-mka@chromium.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f169.google.com ([209.85.213.169]:50276 "EHLO
-	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754796AbbBUCK0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Feb 2015 21:10:26 -0500
-Received: by mail-ig0-f169.google.com with SMTP id hl2so10908915igb.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Feb 2015 18:10:25 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More power management and ACPI updates for 3.20-rc1
+Date: Sat, 21 Feb 2015 05:05:41 +0100
+Message-ID: <CAJZ5v0j3cvMNxmzm8eueY_iHKPE7WvseFdsH9uaaYRCiKJ9OVA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
 
-Default attributes are created when the device is registered. Attributes
-created after device registration can lead to race conditions, where user space
-(e.g. udev) sees the device but not the attributes.
+Hi Linus,
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/thermal/thermal_core.c | 37 +++++++++++++++++--------------------
- 1 file changed, 17 insertions(+), 20 deletions(-)
+Please pull from
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 48491d1..174d3bc 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -899,6 +899,22 @@ thermal_cooling_device_trip_point_show(struct device *dev,
- 		return sprintf(buf, "%d\n", instance->trip);
- }
- 
-+static struct attribute *cooling_device_attrs[] = {
-+	&dev_attr_cdev_type.attr,
-+	&dev_attr_max_state.attr,
-+	&dev_attr_cur_state.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group cooling_device_attr_group = {
-+	.attrs = cooling_device_attrs,
-+};
-+
-+static const struct attribute_group *cooling_device_attr_groups[] = {
-+	&cooling_device_attr_group,
-+	NULL,
-+};
-+
- /* Device management */
- 
- /**
-@@ -1130,6 +1146,7 @@ __thermal_cooling_device_register(struct device_node *np,
- 	cdev->ops = ops;
- 	cdev->updated = false;
- 	cdev->device.class = &thermal_class;
-+	cdev->device.groups = cooling_device_attr_groups;
- 	cdev->devdata = devdata;
- 	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
- 	result = device_register(&cdev->device);
-@@ -1139,21 +1156,6 @@ __thermal_cooling_device_register(struct device_node *np,
- 		return ERR_PTR(result);
- 	}
- 
--	/* sys I/F */
--	if (type) {
--		result = device_create_file(&cdev->device, &dev_attr_cdev_type);
--		if (result)
--			goto unregister;
--	}
--
--	result = device_create_file(&cdev->device, &dev_attr_max_state);
--	if (result)
--		goto unregister;
--
--	result = device_create_file(&cdev->device, &dev_attr_cur_state);
--	if (result)
--		goto unregister;
--
- 	/* Add 'this' new cdev to the global cdev list */
- 	mutex_lock(&thermal_list_lock);
- 	list_add(&cdev->node, &thermal_cdev_list);
-@@ -1163,11 +1165,6 @@ __thermal_cooling_device_register(struct device_node *np,
- 	bind_cdev(cdev);
- 
- 	return cdev;
--
--unregister:
--	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
--	device_unregister(&cdev->device);
--	return ERR_PTR(result);
- }
- 
- /**
--- 
-2.2.0.rc0.207.ga3a616c
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.20-rc1-3
 
+to receive one more batch of power management and ACPI updates for
+v3.20-rc1 or v4.0-rc1 (whichever that will be) with top-most commit
+3466b547e37b988723dc93465b7cb06b4b1f731f
+
+ Merge branches 'pnp', 'pm-cpuidle' and 'pm-cpufreq'
+
+on top of commit 99fa0ad92c4fd8b529c89b3640b42323984be761
+
+ Merge tag 'suspend-to-idle-3.20-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+These are mostly fixes on top of the previously merged recent PM and
+ACPI material.
+
+First, one commit that broke the ACPI LPSS (Low-Power Subsystem) driver
+on a Dell box is reverted and there are two stable-candidate fixes for
+that driver.  Another fix cleans up two recently added ACPI EC messages
+that look odd and the printk level of a noisy debug message in the core
+ACPI resources handling code is reduced.
+
+In addition to that we have two stable-candidate fixes for the s3c
+cpufreq driver, two cpuidle powernv driver updates related to Device
+Trees and a PNP subsystem cleanup that will allow us to get rid of some
+old ugliness going forward.  Also there is a new blacklist entry for the
+ACPI backlight code.
+
+Specifics:
+
+ - Revert a recent ACPI LPSS driver commit that prevented the touchpad
+   driver from loading on Dell XPS13 (Jarkko Nikula).
+
+ - Make the ACPI LPSS driver disable the I2C controllers and deassert
+   SPI host controllers resets at startup on Intel BayTrail and Braswell
+   SoCs in case they have been left in wrong states by the platform
+   firmware which then may casuse fatal controller driver failures during
+   resume from hibernation (Mika Westerberg).
+
+ - Make two recently added ACPI EC messages look better (Scot Doyle).
+
+ - Reduce the printk level of a recently added debug message related to
+   ACPI resources that may become noisy in some cases (Rafael J Wysocki).
+
+ - Add a new ACPI backlight blacklist entry for Samsung Series 9
+   (900X3C/900X3D/900X3E/900X4C/900X4D) laptops where the native backlight
+   interface doesn't work while the ACPI based one does (Jens Reyer).
+
+ - Make the PNP sybsystem's core code use __request_region() followed by
+   __release_region() instead of __check_region() which then will allow
+   us to get rid of the latter as it has no more users (Jakub Sitnicki).
+
+ - Fix a build breakage and an issue with two __init functions that may be
+   called after initialization in the s3c cpufreq driver (Arnd Bergmann).
+
+ - Make the powernv cpuidle driver read target_residency values for idle
+   states from a Device Tree (as we have the suitable DT bindings for that
+   now) and improve the parsing of the powermgmt DT node in that driver
+   (Preeti U Murthy).
+
+Thanks!
+
+
+---------------
+
+Arnd Bergmann (2):
+      cpufreq: s3c: remove incorrect __init annotations
+      cpufreq: s3c: remove last use of resume_clocks callback
+
+Jakub Sitnicki (1):
+      PNP: Switch from __check_region() to __request_region()
+
+Jarkko Nikula (1):
+      Revert "ACPI / LPSS: Remove non-existing clock control from
+Intel Lynxpoint I2C"
+
+Jens Reyer (1):
+      ACPI / video: Disable native backlight on Samsung Series 9 laptops
+
+Mika Westerberg (2):
+      ACPI / LPSS: Always disable I2C host controllers
+      ACPI / LPSS: Deassert resets for SPI host controllers on Braswell
+
+Preeti U Murthy (2):
+      cpuidle: powernv: Read target_residency value of idle states
+from DT if available
+      cpuidle: powernv: Avoid endianness conversions while parsing DT
+
+Rafael J. Wysocki (1):
+      ACPI / resources: Change pr_info() to pr_debug() for debug information
+
+Scot Doyle (1):
+      ACPI / EC: Remove non-standard log emphasis
+
+---------------
+
+ drivers/acpi/acpi_lpss.c          | 21 ++++++++--
+ drivers/acpi/ec.c                 |  4 +-
+ drivers/acpi/resource.c           |  2 +-
+ drivers/acpi/video.c              |  9 +++++
+ drivers/cpufreq/s3c2416-cpufreq.c |  4 +-
+ drivers/cpufreq/s3c24xx-cpufreq.c | 10 +----
+ drivers/cpuidle/cpuidle-powernv.c | 84 +++++++++++++++++++++++----------------
+ drivers/pnp/resource.c            |  6 ++-
+ 8 files changed, 86 insertions(+), 54 deletions(-)
