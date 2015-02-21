@@ -1,37 +1,57 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Sat, 21 Feb 2015 21:32:56 +0100
-Message-ID: <20150221203256.GA15228@amd>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20141213025530.GO21347@ld-irv-0074>
- <20141213083123.GA26129@amd>
- <20141216235813.GI9759@ld-irv-0074>
- <20141217080947.GB2027@amd>
- <20141217091057.GH7112@brian-ubuntu>
- <20141217092255.GA4588@amd>
- <CAGVrzcZgwQqfBkupWkChYg8NmpKsFzWNa0jB18wN6YUuOzgvsw@mail.gmail.com>
+From: Nicolas JOURDEN <nicolas.jourden@laposte.net>
+Subject: [PATCH] TWL4030 charger
+Date: Sat, 21 Feb 2015 22:15:57 +0100
+Message-ID: <54E8F58D.8060506@laposte.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58775 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbbBUUc7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Feb 2015 15:32:59 -0500
-Content-Disposition: inline
-In-Reply-To: <CAGVrzcZgwQqfBkupWkChYg8NmpKsFzWNa0jB18wN6YUuOzgvsw@mail.gmail.com>
+Received: from smtpoutz303.laposte.net ([178.22.154.203]:44546 "EHLO
+	smtp.laposte.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751784AbbBUVjz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Feb 2015 16:39:55 -0500
+Received: from smtp.laposte.net (localhost [127.0.0.1])
+	by lpn-prd-vrout015 (Postfix) with ESMTP id 1EF351B917C
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2015 22:16:08 +0100 (CET)
+Received: from lpn-prd-vrin001 (unknown [10.128.63.2])
+	by lpn-prd-vrout015 (Postfix) with ESMTP id 192551B908E
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2015 22:16:08 +0100 (CET)
+Received: from lpn-prd-vrin001 (localhost [127.0.0.1])
+	by lpn-prd-vrin001 (Postfix) with ESMTP id 0B720352BA1
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2015 22:16:08 +0100 (CET)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
+To: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, notasas@gmail.com
+
+Hello,
+
+This patch fix the TWL4030 charger module for the RTC battery.
+
+Cheers,
+Nicolas
 
 
+Signed-off-by: Nicolas JOURDEN <nicolas.jourden@laposte.net>
+---
+diff --git a/drivers/power/twl4030_charger.c=20
+b/drivers/power/twl4030_charger.c
+index 2598c58..89184ae 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -719,10 +719,11 @@ static struct platform_driver twl4030_bci_driver =
+=3D {
+                 .owner  =3D THIS_MODULE,
+                 .of_match_table =3D of_match_ptr(twl_bci_of_match),
+         },
++       .probe  =3D twl4030_bci_probe,
+         .remove =3D __exit_p(twl4030_bci_remove),
+  };
+
+-module_platform_driver_probe(twl4030_bci_driver, twl4030_bci_probe);
++module_platform_driver(twl4030_bci_driver);
+
+  MODULE_AUTHOR("Gra=C5=BEvydas Ignotas");
+  MODULE_DESCRIPTION("TWL4030 Battery Charger Interface driver");
 
 
-> Considering that Brian's change are enclosed within a CONFIG_PM_DEBUG
-> ifdef, can we really use the code bloat as a technical argument here?
-
-Yes.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
