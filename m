@@ -1,122 +1,53 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] More power management and ACPI updates for 3.20-rc1
-Date: Sat, 21 Feb 2015 05:05:41 +0100
-Message-ID: <CAJZ5v0j3cvMNxmzm8eueY_iHKPE7WvseFdsH9uaaYRCiKJ9OVA@mail.gmail.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
+Date: Sat, 21 Feb 2015 12:25:08 -0800
+Message-ID: <CAGVrzcZgwQqfBkupWkChYg8NmpKsFzWNa0jB18wN6YUuOzgvsw@mail.gmail.com>
+References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
+ <20141213025530.GO21347@ld-irv-0074> <20141213083123.GA26129@amd>
+ <20141216235813.GI9759@ld-irv-0074> <20141217080947.GB2027@amd>
+ <20141217091057.GH7112@brian-ubuntu> <20141217092255.GA4588@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f169.google.com ([209.85.223.169]:44638 "EHLO
+	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbbBUUZt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Feb 2015 15:25:49 -0500
+In-Reply-To: <20141217092255.GA4588@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
 
-Hi Linus,
+2014-12-17 1:22 GMT-08:00 Pavel Machek <pavel@ucw.cz>:
+>
+>> > Make it module parameter so that the patch is two lines of code. If
+>> > that does not work for you, think of something that does.
+>>
+>> OK, so that's actually constructive. If lines of code is really the most
+>> important factor here, then I suppose I can do that. I'd argue that a
+>> module parameter is a much less sensible interface here, though, given
+>> that it is coupled with the existing /sys/power/pm_test interface.
+>
+> If module parameter works for you, we have a winner, that should be
+> two lines of code and two lines of documentation.
 
-Please pull from
+I do not think that a module parameter is good, some of the uses cases
+I can think about (from real people using that facility) involve
+setting up a Linux system in a lab with multiple measurement
+equipments, having to reboot Linux to change this delay is going to be
+a no-go for them because that will break the
+uptime/endurance/stability/automated testing they might be doing.
+Having them be able to change the PM delay at runtime is completely
+satisfactory though.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.20-rc1-3
+Both module parameters and sysfs entries need to remain stable, and
+potentially there forever, once introduced, yet the sysfs entries are
+a lot more flexible.
 
-to receive one more batch of power management and ACPI updates for
-v3.20-rc1 or v4.0-rc1 (whichever that will be) with top-most commit
-3466b547e37b988723dc93465b7cb06b4b1f731f
-
- Merge branches 'pnp', 'pm-cpuidle' and 'pm-cpufreq'
-
-on top of commit 99fa0ad92c4fd8b529c89b3640b42323984be761
-
- Merge tag 'suspend-to-idle-3.20-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-These are mostly fixes on top of the previously merged recent PM and
-ACPI material.
-
-First, one commit that broke the ACPI LPSS (Low-Power Subsystem) driver
-on a Dell box is reverted and there are two stable-candidate fixes for
-that driver.  Another fix cleans up two recently added ACPI EC messages
-that look odd and the printk level of a noisy debug message in the core
-ACPI resources handling code is reduced.
-
-In addition to that we have two stable-candidate fixes for the s3c
-cpufreq driver, two cpuidle powernv driver updates related to Device
-Trees and a PNP subsystem cleanup that will allow us to get rid of some
-old ugliness going forward.  Also there is a new blacklist entry for the
-ACPI backlight code.
-
-Specifics:
-
- - Revert a recent ACPI LPSS driver commit that prevented the touchpad
-   driver from loading on Dell XPS13 (Jarkko Nikula).
-
- - Make the ACPI LPSS driver disable the I2C controllers and deassert
-   SPI host controllers resets at startup on Intel BayTrail and Braswell
-   SoCs in case they have been left in wrong states by the platform
-   firmware which then may casuse fatal controller driver failures during
-   resume from hibernation (Mika Westerberg).
-
- - Make two recently added ACPI EC messages look better (Scot Doyle).
-
- - Reduce the printk level of a recently added debug message related to
-   ACPI resources that may become noisy in some cases (Rafael J Wysocki).
-
- - Add a new ACPI backlight blacklist entry for Samsung Series 9
-   (900X3C/900X3D/900X3E/900X4C/900X4D) laptops where the native backlight
-   interface doesn't work while the ACPI based one does (Jens Reyer).
-
- - Make the PNP sybsystem's core code use __request_region() followed by
-   __release_region() instead of __check_region() which then will allow
-   us to get rid of the latter as it has no more users (Jakub Sitnicki).
-
- - Fix a build breakage and an issue with two __init functions that may be
-   called after initialization in the s3c cpufreq driver (Arnd Bergmann).
-
- - Make the powernv cpuidle driver read target_residency values for idle
-   states from a Device Tree (as we have the suitable DT bindings for that
-   now) and improve the parsing of the powermgmt DT node in that driver
-   (Preeti U Murthy).
+Considering that Brian's change are enclosed within a CONFIG_PM_DEBUG
+ifdef, can we really use the code bloat as a technical argument here?
 
 Thanks!
-
-
----------------
-
-Arnd Bergmann (2):
-      cpufreq: s3c: remove incorrect __init annotations
-      cpufreq: s3c: remove last use of resume_clocks callback
-
-Jakub Sitnicki (1):
-      PNP: Switch from __check_region() to __request_region()
-
-Jarkko Nikula (1):
-      Revert "ACPI / LPSS: Remove non-existing clock control from
-Intel Lynxpoint I2C"
-
-Jens Reyer (1):
-      ACPI / video: Disable native backlight on Samsung Series 9 laptops
-
-Mika Westerberg (2):
-      ACPI / LPSS: Always disable I2C host controllers
-      ACPI / LPSS: Deassert resets for SPI host controllers on Braswell
-
-Preeti U Murthy (2):
-      cpuidle: powernv: Read target_residency value of idle states
-from DT if available
-      cpuidle: powernv: Avoid endianness conversions while parsing DT
-
-Rafael J. Wysocki (1):
-      ACPI / resources: Change pr_info() to pr_debug() for debug information
-
-Scot Doyle (1):
-      ACPI / EC: Remove non-standard log emphasis
-
----------------
-
- drivers/acpi/acpi_lpss.c          | 21 ++++++++--
- drivers/acpi/ec.c                 |  4 +-
- drivers/acpi/resource.c           |  2 +-
- drivers/acpi/video.c              |  9 +++++
- drivers/cpufreq/s3c2416-cpufreq.c |  4 +-
- drivers/cpufreq/s3c24xx-cpufreq.c | 10 +----
- drivers/cpuidle/cpuidle-powernv.c | 84 +++++++++++++++++++++++----------------
- drivers/pnp/resource.c            |  6 ++-
- 8 files changed, 86 insertions(+), 54 deletions(-)
+-- 
+Florian
