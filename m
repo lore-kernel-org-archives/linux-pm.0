@@ -1,67 +1,40 @@
-From: Joe Perches <joe@perches.com>
-Subject: [PATCH 06/27] power: wakeup: Remove use of seq_printf return value
-Date: Sat, 21 Feb 2015 18:53:33 -0800
-Message-ID: <1b5eb664ab9313f1c5b9868819e1960d5dc597ac.1424573328.git.joe@perches.com>
-References: <cover.1424573328.git.joe@perches.com>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
+Date: Sun, 22 Feb 2015 00:23:14 -0800
+Message-ID: <20150222082314.GA24441@norris-Latitude-E6410>
+References: <20141213025530.GO21347@ld-irv-0074>
+ <20141213083123.GA26129@amd>
+ <20141216235813.GI9759@ld-irv-0074>
+ <20141217080947.GB2027@amd>
+ <20141217091057.GH7112@brian-ubuntu>
+ <20141217092255.GA4588@amd>
+ <CAGVrzcZgwQqfBkupWkChYg8NmpKsFzWNa0jB18wN6YUuOzgvsw@mail.gmail.com>
+ <20150221203256.GA15228@amd>
+ <CAGVrzcYSHem65m6ChSF83qu5AF_fQVZj=qdV+vNNtSKZM1YLXg@mail.gmail.com>
+ <20150221232429.GA3519@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0023.hostedemail.com ([216.40.44.23]:42654 "EHLO
-	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752420AbbBVCyw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Feb 2015 21:54:52 -0500
-In-Reply-To: <cover.1424573328.git.joe@perches.com>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:44330 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751734AbbBVIXV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Feb 2015 03:23:21 -0500
+Content-Disposition: inline
+In-Reply-To: <20150221232429.GA3519@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
 
-The seq_printf return value, because it's frequently misused,
-will eventually be converted to void.
+On Sun, Feb 22, 2015 at 12:24:29AM +0100, Pavel Machek wrote:
+> And you also want to check the kernel parameters, they are modifiable
+> in runtime in at least same cases.
 
-See: commit 1f33c41c03da ("seq_file: Rename seq_overflow() to
-     seq_has_overflowed() and make public")
+I forgot about this fact. In this case, I think this satisfies all that
+we need. So we can do something like this at runtime:
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/base/power/wakeup.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+   # echo 30 > /sys/module/suspend/parameters/pm_test_delay
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index c2744b3..23fe220 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -842,7 +842,6 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 	unsigned long active_count;
- 	ktime_t active_time;
- 	ktime_t prevent_sleep_time;
--	int ret;
- 
- 	spin_lock_irqsave(&ws->lock, flags);
- 
-@@ -865,17 +864,16 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 		active_time = ktime_set(0, 0);
- 	}
- 
--	ret = seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t"
--			"%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
--			ws->name, active_count, ws->event_count,
--			ws->wakeup_count, ws->expire_count,
--			ktime_to_ms(active_time), ktime_to_ms(total_time),
--			ktime_to_ms(max_time), ktime_to_ms(ws->last_time),
--			ktime_to_ms(prevent_sleep_time));
-+	seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
-+		   ws->name, active_count, ws->event_count,
-+		   ws->wakeup_count, ws->expire_count,
-+		   ktime_to_ms(active_time), ktime_to_ms(total_time),
-+		   ktime_to_ms(max_time), ktime_to_ms(ws->last_time),
-+		   ktime_to_ms(prevent_sleep_time));
- 
- 	spin_unlock_irqrestore(&ws->lock, flags);
- 
--	return ret;
-+	return 0;
- }
- 
- /**
--- 
-2.1.2
+I'll send a patch shortly.
 
+Brian
