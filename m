@@ -1,77 +1,121 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Sun, 22 Feb 2015 00:24:29 +0100
-Message-ID: <20150221232429.GA3519@amd>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20141213025530.GO21347@ld-irv-0074>
- <20141213083123.GA26129@amd>
- <20141216235813.GI9759@ld-irv-0074>
- <20141217080947.GB2027@amd>
- <20141217091057.GH7112@brian-ubuntu>
- <20141217092255.GA4588@amd>
- <CAGVrzcZgwQqfBkupWkChYg8NmpKsFzWNa0jB18wN6YUuOzgvsw@mail.gmail.com>
- <20150221203256.GA15228@amd>
- <CAGVrzcYSHem65m6ChSF83qu5AF_fQVZj=qdV+vNNtSKZM1YLXg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGVrzcYSHem65m6ChSF83qu5AF_fQVZj=qdV+vNNtSKZM1YLXg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Chirantan Ekbote <chirantan@chromium.org>
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 00/27] Convert seq_<foo> output calls to return void
+Date: Sat, 21 Feb 2015 18:53:27 -0800
+Message-ID: <cover.1424573328.git.joe@perches.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0023.hostedemail.com ([216.40.44.23]:47386 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751656AbbBVCyc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Feb 2015 21:54:32 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org, linux-pm@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com, linux-tegra@vger.kernel.org, linux-watchdog@vger.kernel.org, cgroups@vger.kernel.org, drbd-user@lists.linbit.com
+Cc: linux-cris-kernel@axis.com, nios2-dev@lists.rocketboards.org, linux@lists.openrisc.net, devel@driverdev.osuosl.org, HPDD-discuss@lists.01.org, linux-usb@vger.kernel.org
 
-On Sat 2015-02-21 14:56:01, Florian Fainelli wrote:
-> 2015-02-21 12:32 GMT-08:00 Pavel Machek <pavel@ucw.cz>:
-> >
-> >
-> >
-> >> Considering that Brian's change are enclosed within a CONFIG_PM_DEBUG
-> >> ifdef, can we really use the code bloat as a technical argument here?
-> >
-> > Yes.
-> 
-> Help me understand a few things here:
+As Al Viro said:
 
-What you are missing is that we try to keep _sources_ small and
-readable, too.
+we are getting well-meaning folks who try to check that return value,
+again and again, getting it wrong every time.   Typical idiocies:
+        * return some kind of error out of ->show() on overflows.  Pointless
+*and* wrong - only hard errors (== fail read(2) with that) should be
+reported that way; the caller does detect overflow and retires with bigger
+buffer just fine.
+        * keep checking it after every sodding call of seq_...(), screwing
+the cleanups up more often than not.  Pointless, unless you are doing some
+seriously expensive calculations to produce something you are going to print.
+seq_...() are no-ops in case when overflow has already happened.
 
-> - if we need to turn on PM_DEBUG all the time, including mainline
-> distributions, does that mean that:
->            - portions of code existing only in PM_DEBUG should be
-> moved out of it because it is actually useful outside of debug option?
->            - CONFIG_PM itself is not self sufficient and there are
-> still problems that require PM_DEBUG to be turned on?
->            - should there be a second level debug option (e.g:
-> CONFIG_PM_DEBUG_ADV) which gates specific control knobs like PM delay?
-> 
-> The current 5 seconds delay is completely arbitrary and goes against
-> the principle of not enforcing a policy, having this configurable
-> brings this back in the mechanism principle.
+seq_has_overflowed() is only for situations when you really want to skip
+a serious amount of work generating the data that would end up being
+discarded and recalculated again when the caller grabs a bigger buffer and
+calls you again.  And more often than not it's an indication of ->show()
+trying to do the work of iterator - e.g. when you have single_open() with
+->show() printing the entire hash table of some sort all in one record.
 
-5 second delay is arbitrary, and slightly ugly debugging hack, that is
-acceptable because it is useful, small and unobtrusive. The second you
-add 40 lines of sysfs glue.. it is no longer small and unobtrusive,
-and no longer acceptable.
+Most of the time checking return value of seq_...() is better replaced with
+not doing that.  And "must check return value and Do Something(tm)" is too
+strong habit for enough people to cause recurring trouble.
 
-And yes, distros probably ship with PM_DEBUG on, and no, adding
-another config option would not make the big & ugly hack more
-acceptable.
+Joe Perches (27):
+  staging: lustre: Convert "return seq_printf(...)" uses
+  staging: lustre: Convert seq_ hash functions to return void
+  staging: lustre: Convert uses of "int rc = seq_printf(...)"
+  staging: lustre: Convert remaining uses of "= seq_printf(...)"
+  x86: mtrr: if: Remove use of seq_printf return value
+  power: wakeup: Remove use of seq_printf return value
+  ipmi: Remove use of seq_printf return value
+  rtc: Remove use of seq_printf return value
+  ipc: Remove use of seq_printf return value
+  pxa27x_udc: Remove use of seq_printf return value
+  microblaze: mb: Remove use of seq_printf return value
+  nios2: cpuinfo: Remove use of seq_printf return value
+  ARM: plat-pxa: Remove use of seq_printf return value
+  openrisc: Remove use of seq_printf return value
+  cris: Remove use of seq_printf return value
+  mfd: ab8500-debugfs: Remove use of seq_printf return value
+  staging: i2o: Remove use of seq_printf return value
+  staging: rtl8192x: Remove use of seq_printf return value
+  s390: Remove use of seq_printf return value
+  i8k: Remove use of seq_printf return value
+  watchdog: bcm281xx: Remove use of seq_printf return value
+  proc: Remove use of seq_printf return value
+  cgroup: Remove use of seq_printf return value
+  tracing: Remove use of seq_printf return value
+  lru_cache: Remove use of seq_printf return value
+  parisc: Remove use of seq_printf return value
+  regulator: dbx500: Remove use of seq_puts/seq_printf return value
 
-OTOH if you added a hook to kprobes that alowed easy binary patching
-of the value "5" while not adding 40 lines of overhead, that might be
-neccessary.
+ arch/arm/plat-pxa/dma.c                            | 111 ++++++------
+ arch/cris/arch-v10/kernel/setup.c                  |  58 +++---
+ arch/cris/arch-v32/kernel/setup.c                  |  62 +++----
+ arch/microblaze/kernel/cpu/mb.c                    | 149 ++++++++--------
+ arch/nios2/kernel/cpuinfo.c                        |  77 ++++----
+ arch/openrisc/kernel/setup.c                       |  50 +++---
+ arch/s390/pci/pci_debug.c                          |   6 +-
+ arch/x86/kernel/cpu/mtrr/if.c                      |  12 +-
+ drivers/base/power/wakeup.c                        |  16 +-
+ drivers/char/i8k.c                                 |  16 +-
+ drivers/char/ipmi/ipmi_msghandler.c                |  12 +-
+ drivers/char/ipmi/ipmi_si_intf.c                   |  26 +--
+ drivers/char/ipmi/ipmi_ssif.c                      |   4 +-
+ drivers/mfd/ab8500-debugfs.c                       | 196 +++++++++++++--------
+ drivers/parisc/ccio-dma.c                          |  54 +++---
+ drivers/parisc/sba_iommu.c                         |  86 +++++----
+ drivers/regulator/dbx500-prcmu.c                   |  32 +---
+ drivers/rtc/rtc-cmos.c                             |  36 ++--
+ drivers/rtc/rtc-ds1305.c                           |   6 +-
+ drivers/rtc/rtc-mrst.c                             |  16 +-
+ drivers/rtc/rtc-tegra.c                            |   4 +-
+ drivers/s390/cio/blacklist.c                       |  12 +-
+ drivers/staging/i2o/i2o_proc.c                     |  18 +-
+ .../lustre/include/linux/libcfs/libcfs_hash.h      |   4 +-
+ drivers/staging/lustre/lustre/fid/lproc_fid.c      |  23 ++-
+ drivers/staging/lustre/lustre/libcfs/hash.c        |  13 +-
+ drivers/staging/lustre/lustre/llite/lproc_llite.c  | 117 ++++++------
+ drivers/staging/lustre/lustre/lmv/lproc_lmv.c      |  18 +-
+ drivers/staging/lustre/lustre/lov/lproc_lov.c      |  30 ++--
+ drivers/staging/lustre/lustre/mdc/lproc_mdc.c      |   6 +-
+ .../lustre/lustre/obdclass/linux/linux-module.c    |  38 ++--
+ .../lustre/lustre/obdclass/lprocfs_status.c        | 108 ++++++------
+ drivers/staging/lustre/lustre/obdclass/lu_object.c |  25 +--
+ drivers/staging/lustre/lustre/osc/lproc_osc.c      |  67 +++----
+ .../staging/lustre/lustre/ptlrpc/lproc_ptlrpc.c    |  25 +--
+ drivers/staging/lustre/lustre/ptlrpc/sec_bulk.c    |  82 +++++----
+ drivers/staging/rtl8192e/rtllib_module.c           |   4 +-
+ .../staging/rtl8192u/ieee80211/ieee80211_module.c  |   4 +-
+ drivers/usb/gadget/udc/pxa27x_udc.c                | 132 +++++++-------
+ drivers/watchdog/bcm_kona_wdt.c                    |  27 +--
+ fs/proc/array.c                                    |   4 +-
+ fs/proc/base.c                                     |  82 +++++----
+ ipc/msg.c                                          |  34 ++--
+ ipc/sem.c                                          |  26 +--
+ ipc/shm.c                                          |  42 ++---
+ ipc/util.c                                         |   6 +-
+ kernel/cgroup.c                                    |   4 +-
+ kernel/trace/trace_stack.c                         |   4 +-
+ lib/lru_cache.c                                    |   9 +-
+ 49 files changed, 1050 insertions(+), 943 deletions(-)
 
-Actually, you can probably pull the address from System.map and then
-just write to it using /dev/mem, no? Just arrange for "5" to be in
-variable that is in System.map.
-
-And you also want to check the kernel parameters, they are modifiable
-in runtime in at least same cases.
-
-But we are not adding 40 lines of uglyness. Clear?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.1.2
+
