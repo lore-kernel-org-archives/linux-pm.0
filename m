@@ -1,151 +1,65 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use
- device tree
-Date: Mon, 23 Feb 2015 20:18:50 +0900
-Message-ID: <039101d04f5a$80147660$803d6320$@kernel.org>
-References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
- <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
- <20150124214955.GA14443@developer.hsd1.ca.comcast.net>
- <54CAC3A2.5060804@kernel.org> <20150223111338.11ca4b6c@amdc2363>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] TWL4030 charger
+Date: Mon, 23 Feb 2015 12:25:02 +0100
+Message-ID: <CAJKOXPc5mFf3yjCy1_SRyKW4f0AQ3bEy9BzedCUH81Ls2GAmzQ@mail.gmail.com>
+References: <54E8F58D.8060506@laposte.net>
+	<54E9C271.1080902@laposte.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:8313 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbbBWLSx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 06:18:53 -0500
-In-reply-to: <20150223111338.11ca4b6c@amdc2363>
-Content-language: ko
+Received: from mail-vc0-f172.google.com ([209.85.220.172]:62580 "EHLO
+	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbbBWLZE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 06:25:04 -0500
+Received: by mail-vc0-f172.google.com with SMTP id kv7so7092060vcb.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 03:25:02 -0800 (PST)
+In-Reply-To: <54E9C271.1080902@laposte.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Lukasz Majewski' <l.majewski@samsung.com>, 'Kukjin Kim' <kgene@kernel.org>, 'Eduardo Valentin' <edubezval@gmail.com>
-Cc: 'Zhang Rui' <rui.zhang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
+To: Nicolas JOURDEN <nicolas.jourden@laposte.net>
+Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, notasas@gmail.com
 
-Lukasz Majewski wrote:
-> 
-> Hi Kukjin, Eduardo
-> 
-Hi,
+2015-02-22 12:50 GMT+01:00 Nicolas JOURDEN <nicolas.jourden@laposte.net=
+>:
+> Hello,
+>
+> Looks like my mailer changed the format/indent for the patch.
+> This patch fix the TWL4030 charger module for the RTC battery.
+>
 
-> > On 01/25/15 06:49, Eduardo Valentin wrote:
-> > > On Fri, Jan 23, 2015 at 01:09:53PM +0100, Lukasz Majewski wrote:
-> > >> 1. Introduction
-> > >>
-> > >> Following patches aim to clean up the current implementation of
-> > >> the thermal framework on Exynos devices.
-> > >>
-> > >> The main goal was to use a generic code for reading thermal
-> > >> configuration (of-thermal.c). Due to that redundant
-> > >> exynos_thermal_common.[h|c] files were removed.
-> > >>
-> > >> Around 400 lines of code (LOC) were removed directly by this
-> > >> patch, which is around 20% of the Exynos thermal code base.
-> > >>
-> > >> This work should NOT bring any functional changes to Exynos
-> > >> thermal subsystem.
-> > >>
-> > >> 2. Patch-set structure
-> > >>
-> > >> Then the cpu_cooling functionality has been preserved to allow
-> > >> cooling devices by reducing operating frequency. Definition of
-> > >> trip points and cpufreq's cooling properties were moved to device
-> > >> tree.
-> > >>
-> > >> Then the rework of the way in which configuration data is provided
-> > >> to the Exynos thermal subsystem was performed. Now device tree is
-> > >> used for configuration.
-> > >>
-> > >> 3. Dead code removal
-> > >>
-> > >> Thermal support for some SoCs, previously available in the
-> > >> exynos_tmu_data.c file, was removed since, as of (almost)
-> > >> 3.19-rc3, they didn't have TMU bindings.
-> > >>
-> > >> Moreover, support for cpu_cooling devices was preserved only on
-> > >> those SoCs which had available and working cpufreq driver.
-> > >>
-> > >> 4. Testing
-> > >>
-> > >> Test devices:
-> > >> - Exynos4210 - Trats (TMU zone + cpu_cooling)
-> > >> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
-> > >> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
-> > >> - Exynos5420 - Arndale-octa (only TMU zones)
-> > >>
-> > >> Unfortunately, I don't posses Exynos5440 for testing. Its
-> > >> functionality has been preserved in the code, but not tested on
-> > >> the hardware. I would be grateful for help in testing.
-> > >>
-> > >>
-> > >> 5. This work apply on the following tree:
-> > >>
-> > >> kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
-> > >> SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
-> > >>
-> > >>
-> > >> Lukasz Majewski (18):
-> > >
-> > > I have applied the following patches to my -fixes branch (for next
-> > > rc cycle)
-> > >
-> > >>   thermal: exynos: cosmetic: Correct comment format
-> > >>   thermal: exynos: Provide thermal_exynos.h file to be included in
-> > >>     device tree files
-> > >>   thermal: exynos: Modify exynos thermal code to use device tree
-> > >> for cpu cooling configuration
-> > >>   cpufreq: exynos: Use device tree to determine if cpufreq cooling
-> > >>     should be registered
-> > >>   dts: Documentation: Extending documentation entry for
-> > >> exynos-thermal dts: Documentation: Update exynos-thermal.txt
-> > >> example for Exynos5440 thermal: samsung: core: Exynos TMU rework
-> > >> to use device tree for configuration
-> > >>   thermal: exynos: Remove exynos_thermal_common.[c|h] files
-> > >>   thermal: exynos: Remove exynos_tmu_data.c file
-> > >
-> > > The patches below should go via platform tree:
-> > >
-> > >>   arm: dts: trats: Enable TMU on the Exynos4210 trats device
-> > >>   arm: dts: odroid: Add LDO10 regulator node necessary for TMU on
-> > >> Odroid arm: dts: odroid: Enable TMU at Exynos4412 based Odroid U3
-> > >> device arm: dts: Adding CPU cooling binding for Exynos SoCs
-> > >>   thermal: exynos: dts: Add default definition of the TMU sensor
-> > >>     parameter
-> > >>   thermal: dts: Default trip points definition for Exynos5420 SoCs
-> > >>   thermal: exynos: dts: Define default thermal-zones for Exynos4
-> > >>   thermal: dts: exynos: Trip points and sensor configuration data
-> > >> for Exynos5440
-> > >>   thermal: exynos: dts: Provide device tree bindings identical to
-> > >> the one in exynos_tmu_data.c
-> > >
-> >
-> > I've applied above patches with small subject changes.
-> >
-> > BTW unfortunately, since missing the
-> > "include/dt-bindings/thermal/thermal_exynos.h" in my tree, I couldn't
-> > merge it into for-next yet.
-> 
-> As of this writing: (Kernel 4.0-rc1) the
-> "include/dt-bindings/thermal/thermal_exynos.h" file is in the kernel
-> tree.
-> 
-I know.
+Could you put a proper title for this patch describing in few words
+what is fixed? Additionally could you describe the exact fix details
+in commit message. For example these details could be useful:
+1. What is the problem,
+2. When the problem appears (or how the problem can be reproduced).
+3. What is the "fix".
 
-> Kukjin, could you add missing DTS files and send this to upstream.
-> 
-Unfortunately, I couldn't take the DT changes in Samsung tree at that time
-because of missing header file and it causes build error. Now I can pick
-them into Samsung tree but I'm not sure it can be sent to upstream during
-this -rc...
+I am asking for these details to better understand the error you found
+and the fix for it.
 
-Eduardo, Lukasz,
-Do you guys think the DT changes are really fixes for 4.0?
+Best regards,
+Krzysztof
 
-> Thanks in advance.
-> 
-> >
-> > Can you please provide a topic branch for it? If not, this cannot be
-> > handled in arm-soc tree in this time, I think.
-> >
-> > - Kukjin
-
+>
+> Signed-off-by: Nicolas JOURDEN <nicolas.jourden@laposte.net>
+> ---
+> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_=
+charger.c
+> index 2598c58..89184ae 100644
+> --- a/drivers/power/twl4030_charger.c
+> +++ b/drivers/power/twl4030_charger.c
+> @@ -719,10 +719,11 @@ static struct platform_driver twl4030_bci_drive=
+r =3D {
+>                 .owner  =3D THIS_MODULE,
+>                 .of_match_table =3D of_match_ptr(twl_bci_of_match),
+>         },
+> +       .probe  =3D twl4030_bci_probe,
+>         .remove =3D __exit_p(twl4030_bci_remove),
+>  };
+>
+> -module_platform_driver_probe(twl4030_bci_driver, twl4030_bci_probe);
+> +module_platform_driver(twl4030_bci_driver);
+>
+>  MODULE_AUTHOR("Gra=C3=85=C2=BEvydas Ignotas");
+>  MODULE_DESCRIPTION("TWL4030 Battery Charger Interface driver");
