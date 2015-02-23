@@ -1,77 +1,102 @@
-From: =?ISO-8859-1?Q?Fran=E7ois?= Boisson
-	<user.anti-spam@maison.homelinux.net>
-Subject: Re: battery drains after shutdown
-Date: Mon, 23 Feb 2015 16:22:40 +0100
-Message-ID: <20150223162240.d3b9c917752268fbcf4945c2@maison.homelinux.net>
-References: <1423899504.11560.128.camel@rzhang1-mobl4>
-	<72477.bryanh@giraffe-data.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 1/2] thermal: rcar: Fix race condition between init and interrupt
+Date: Mon, 23 Feb 2015 16:37:24 +0100
+Message-ID: <1424705845-17726-2-git-send-email-geert+renesas@glider.be>
+References: <1424705845-17726-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fbsmtp.dnsalias.org ([82.66.248.156]:47232 "EHLO
-	fbsmtp.dnsalias.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbbBWP2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 10:28:15 -0500
-In-Reply-To: <72477.bryanh@giraffe-data.com>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:50628 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbbBWPha (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 10:37:30 -0500
+In-Reply-To: <1424705845-17726-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bryan Henderson <bryanh@giraffe-data.com>
-Cc: rui.zhang@intel.com, user.anti-spam@maison.homelinux.net, linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Le 15 Feb 2015 23:36:02 +0000
-Bryan Henderson <bryanh@giraffe-data.com> a =E9crit:
+As soon as the interrupt has been enabled by devm_request_irq(), the
+interrupt routine may be called, depending on the current status of the
+hardware.
 
-> I've heard of setting the clock disabling the wakeup, but not setting=
- the
-> clock enabling wakeup.  I think you can determine whether this is hap=
-pening,
-> though, by looking at /proc/driver/rtc contents before and after a
-> hwclock --systohc.
+However, at that point rcar_thermal_common hasn't been initialized
+complely yet. E.g. rcar_thermal_common.base is still NULL, causing a
+NULL pointer dereference:
 
-root@portos:/home/francois# cat /proc/driver/rtc=20
-rtc_time	: 15:17:47
-rtc_date	: 2015-02-23
-alrm_time	: 17:00:32
-alrm_date	: 2015-02-23
-alarm_IRQ	: no
-alrm_pending	: no
-update IRQ enabled	: no
-periodic IRQ enabled	: no
-periodic IRQ frequency	: 1024
-max user IRQ frequency	: 64
-24hr		: yes
-periodic_IRQ	: no
-update_IRQ	: no
-HPET_emulated	: yes
-BCD		: yes
-DST_enable	: no
-periodic_freq	: 1024
-batt_status	: okay
-root@portos:/home/francois# hwclock --systohc
-root@portos:/home/francois# cat /proc/driver/rtc=20
-rtc_time	: 15:17:29
-rtc_date	: 2015-02-23
-alrm_time	: 17:00:32
-alrm_date	: 2015-02-23
-alarm_IRQ	: no
-alrm_pending	: no
-update IRQ enabled	: no
-periodic IRQ enabled	: no
-periodic IRQ frequency	: 1024
-max user IRQ frequency	: 64
-24hr		: yes
-periodic_IRQ	: no
-update_IRQ	: no
-HPET_emulated	: yes
-BCD		: yes
-DST_enable	: no
-periodic_freq	: 1024
-batt_status	: okay
-root@portos:/home/francois#=20
+    Unable to handle kernel NULL pointer dereference at virtual address 0000000c
+    pgd = c0004000
+    [0000000c] *pgd=00000000
+    Internal error: Oops: 5 [#1] SMP ARM
+    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.19.0-rc7-ape6evm-04564-gb6e46cb7cbe82389 #30
+    Hardware name: Generic R8A73A4 (Flattened Device Tree)
+    task: ee8953c0 ti: ee896000 task.ti: ee896000
+    PC is at rcar_thermal_irq+0x1c/0xf0
+    LR is at _raw_spin_lock_irqsave+0x48/0x54
 
-except the change in the rtc_time, nothing else.
-I check acpitool -e, but no change.=20
+Postpone the call to devm_request_irq() until all initialization has
+been done to fix this.
 
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+This triggers sporadically on r8a73a4/ape6evm when starting a new
+kernel after a soft power-on reset.
 
-=46ran=E7ois Boisson
+So far I couldn't trigger it on r8a7791/koelsch, not even by adding a
+delay just after the call to devm_request_irq().
+Probably none of the reboot methods on koelsch are sufficiently "soft"
+(da9063-watchdog power-cycles the da9063 regulator, reset button resets
+the r2a11302 regulator, even rwdt-restart on SMP=n seems fine)
+
+v2:
+  - Add Acked-by.
+---
+ drivers/thermal/rcar_thermal.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 2580a4872f90febe..3c2c1720ba4a4a72 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -387,21 +387,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 
+ 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ 	if (irq) {
+-		int ret;
+-
+ 		/*
+ 		 * platform has IRQ support.
+ 		 * Then, driver uses common registers
+-		 */
+-
+-		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
+-				       dev_name(dev), common);
+-		if (ret) {
+-			dev_err(dev, "irq request failed\n ");
+-			return ret;
+-		}
+-
+-		/*
+ 		 * rcar_has_irq_support() will be enabled
+ 		 */
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
+@@ -456,8 +444,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* enable temperature comparation */
+-	if (irq)
++	if (irq) {
++		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
++				       dev_name(dev), common);
++		if (ret) {
++			dev_err(dev, "irq request failed\n ");
++			goto error_unregister;
++		}
++
+ 		rcar_thermal_common_write(common, ENR, enr_bits);
++	}
+ 
+ 	platform_set_drvdata(pdev, common);
+ 
+-- 
+1.9.1
+
