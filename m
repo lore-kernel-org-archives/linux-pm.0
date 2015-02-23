@@ -1,273 +1,628 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: Re: [PATCH v3 1/6] mfd: max77843: Add max77843 MFD driver core driver
-Date: Mon, 23 Feb 2015 10:43:23 +0900
-Message-ID: <54EA85BB.4050600@samsung.com>
-References: <1423025771-4139-1-git-send-email-jaewon02.kim@samsung.com>
- <1423025771-4139-2-git-send-email-jaewon02.kim@samsung.com>
- <20150216135155.GI14545@x1>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Mon, 23 Feb 2015 02:03:27 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B732756CFF@PGSMSX105.gar.corp.intel.com>
+References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
+ <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
+ <54DC9073.7070701@nexus-software.ie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150216135155.GI14545@x1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:13315 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751492AbbBWCDc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Feb 2015 21:03:32 -0500
+In-Reply-To: <54DC9073.7070701@nexus-software.ie>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bryan O'Donoghue <pure.logic@nexus-software.ie>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Lee Jones,
-
-On 02/16/2015 10:51 PM, Lee Jones wrote:
-> On Wed, 04 Feb 2015, Jaewon Kim wrote:
+>-----Original Message-----
+>From: Bryan O'Donoghue [mailto:pure.logic@nexus-software.ie]
+>Sent: Thursday, February 12, 2015 7:37 PM
+>To: Ong, Boon Leong; Zhang, Rui; edubezval@gmail.com
+>Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
 >
->> This patch adds MAX77843 core/irq driver to support PMIC,
->> MUIC(Micro USB Interface Controller), Charger, Fuel Gauge,
->> LED and Haptic device.
+>On 11/02/15 16:51, Ong Boon Leong wrote:
+>> In Intel Quark SoC X1000, there is one on-die digital temperature sensor(DTS).
+>> The DTS offers both hot & critical trip points.
 >>
->> Cc: Lee Jones <lee.jones@linaro.org>
->> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
->> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>> However, in current distribution of UEFI BIOS for Quark platform, only
+>the current
+>> critical trip point is configured to be 105 degree Celsius (based on Quark
+>> SW ver1.0.1 and hot trip point is not used due to lack of IRQ.
+>>
+>> There is no active cooling device for Quark SoC, so Quark SoC thermal
+>> management simply expects Linux distro to orderly power-off when
+>temperature
+>-simply
+>+layer or +logic
+>
+Ok.  
+
+>> of DTS exceeds the configured critical trip point.
+> >
+>the DTS
+Ok. 
+
+>>
+>> Kernel param "polling_delay" in milli-second is used to control the frequency
+>parameter
+>milliseconds
+Ok.
+
+>
+>> DTS temperature is read by thermal framework. It is default to 2-second. To
+>the DTS temperature
+>It defaults to two seconds.
+Ok. 
+
+>
+>> change it, use kernal boot param "intel_quark_dts_thermal.polling_delay=X".
+>kernel
+Ok.
+
+>>
+>> User interacts with Quark SoC DTS thermal driver through sysfs at:
+>
+>small nitpick
+
+
+>
+>-through sysfs at
+>+through sysfs via:
+>
+>sounds better
+>
+>> /sys/class/thermal/thermal_zone0/
+>>
+>> For examples:
+>-For examples:
+>+For example:
+>
+>>   - to read DTS temperature
+>>     $ cat temp
+>>   - to read critical trip point
+>>     $ cat trip_point_0_temp
+>>   - to read trip point type
+>>     $ cat trip_point_0_type
+>>   - to emulate temperature raise to test orderly shutdown by Linux distro
+>>     $ echo 105 > emul_temp
+>>
+>> Signed-off-by: Ong Boon Leong <boon.leong.ong@intel.com>
 >> ---
->>   drivers/mfd/Kconfig                  |   14 ++
->>   drivers/mfd/Makefile                 |    1 +
->>   drivers/mfd/max77843.c               |  245 +++++++++++++++++++
->>   include/linux/mfd/max77843-private.h |  441 ++++++++++++++++++++++++++++++++++
->>   4 files changed, 701 insertions(+)
->>   create mode 100644 drivers/mfd/max77843.c
->>   create mode 100644 include/linux/mfd/max77843-private.h
+>>   drivers/thermal/Kconfig                   |   10 +
+>>   drivers/thermal/Makefile                  |    1 +
+>>   drivers/thermal/intel_quark_dts_thermal.c |  408
+>+++++++++++++++++++++++++++++
+>>   3 files changed, 419 insertions(+)
+>>   create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
 >>
->> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
->> index 2e6b731..0c67c79 100644
->> --- a/drivers/mfd/Kconfig
->> +++ b/drivers/mfd/Kconfig
->> @@ -442,6 +442,20 @@ config MFD_MAX77693
->>   	  additional drivers must be enabled in order to use the functionality
->>   	  of the device.
->>   
->> +config MFD_MAX77843
->> +	bool "Maxim Semiconductor MAX77843 PMIC Support"
->> +	depends on I2C=y
->> +	select MFD_CORE
->> +	select REGMAP_I2C
->> +	select REGMAP_IRQ
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index f554d25..b80f09f 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -229,6 +229,16 @@ config INTEL_SOC_DTS_THERMAL
+>>   	  notification methods.The other trip is a critical trip point, which
+>>   	  was set by the driver based on the TJ MAX temperature.
+>>
+>> +config INTEL_QUARK_DTS_THERMAL
+>> +	tristate "Intel Quark DTS thermal driver"
+>> +	depends on X86 && IOSF_MBI
 >> +	help
->> +	  Say yes here to add support for Maxim Semiconductor MAX77843.
->> +	  This is companion Power Management IC with LEDs, Haptic, Charger,
->> +	  Fuel Gauge, MUIC(Micro USB Interface Controller) controls on chip.
->> +	  This driver provides common support for accessing the device;
->> +	  additional drivers must be enabled in order to use the functionality
->> +	  of the device.
+>> +	  Enable this to register Intel Quark SoC (e.g. X1000) platform digital
+>> +	  temperature sensor (DTS). For X1000 SoC, it has one on-die DTS.
+>> +	  The DTS will be registered as a thermal zone. There are two trip
+>points:
+>> +	  hot & critical. The critical trip point default value is set by
+>> +	  underlying BIOS/Firmware.
 >> +
->>   config MFD_MAX8907
->>   	tristate "Maxim Semiconductor MAX8907 PMIC Support"
->>   	select MFD_CORE
->> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
->> index 53467e2..fe4f75c 100644
->> --- a/drivers/mfd/Makefile
->> +++ b/drivers/mfd/Makefile
->> @@ -117,6 +117,7 @@ obj-$(CONFIG_MFD_DA9063)	+= da9063.o
->>   obj-$(CONFIG_MFD_MAX14577)	+= max14577.o
->>   obj-$(CONFIG_MFD_MAX77686)	+= max77686.o
->>   obj-$(CONFIG_MFD_MAX77693)	+= max77693.o
->> +obj-$(CONFIG_MFD_MAX77843)	+= max77843.o
-> This is the 11th MAX driver.  Can't they be supported using device
-> specific data structures instead of taking a 'one file per device'
-> approach?
-Kzysztof answered already, we try to merge with other files.
-But MAX77843 can`t merge with another MAX drivers.
-Because This driver has new features (e.g AFC charger, Reverse Boost, 4 
-channel LED driver, etc)
-so new registers extended and moved.
-
->
->>   obj-$(CONFIG_MFD_MAX8907)	+= max8907.o
->>   max8925-objs			:= max8925-core.o max8925-i2c.o
->>   obj-$(CONFIG_MFD_MAX8925)	+= max8925.o
->> diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
+>>   config INT340X_THERMAL
+>>   	tristate "ACPI INT340X thermal drivers"
+>>   	depends on X86 && ACPI
+>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>> index 39c4fe8..50c5991 100644
+>> --- a/drivers/thermal/Makefile
+>> +++ b/drivers/thermal/Makefile
+>> @@ -31,6 +31,7 @@ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=
+>db8500_cpufreq_cooling.o
+>>   obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+>>   obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+>>   obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
+>> +obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+=
+>intel_quark_dts_thermal.o
+>>   obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+>>   obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+>>   obj-$(CONFIG_ST_THERMAL)	+= st/
+>> diff --git a/drivers/thermal/intel_quark_dts_thermal.c
+>b/drivers/thermal/intel_quark_dts_thermal.c
 >> new file mode 100644
->> index 0000000..191a557
+>> index 0000000..fe1e221
 >> --- /dev/null
->> +++ b/drivers/mfd/max77843.c
->> @@ -0,0 +1,245 @@
+>> +++ b/drivers/thermal/intel_quark_dts_thermal.c
+>> @@ -0,0 +1,408 @@
 >> +/*
->> + * max77843.c - MFD core driver for the Maxim MAX77843
+>> + * intel_quark_dts_thermal.c
+>> + * Copyright (c) 2015, Intel Corporation.
 >> + *
->> + * Copyright (C) 2015 Samsung Electronics
->> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
->> + * Author: Beomho Seo <beomho.seo@samsung.com>
+>> + * This program is free software; you can redistribute it and/or modify it
+>> + * under the terms and conditions of the GNU General Public License,
+>> + * version 2, as published by the Free Software Foundation.
 >> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; either version 2 of the License, or
->> + * (at your option) any later version.
+>> + * This program is distributed in the hope it will be useful, but WITHOUT
+>> + * ANY WARRANTY; without even the implied warranty of
+>MERCHANTABILITY or
+>> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+>License for
+>> + * more details.
+>> + *
+>> + * Quark DTS thermal driver is implemented by referencing
+>> + * intel_soc_dts_thermal.c.
 >> + */
 >> +
->> +#include <linux/err.h>
->> +#include <linux/i2c.h>
->> +#include <linux/init.h>
->> +#include <linux/interrupt.h>
+>> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>> +
 >> +#include <linux/module.h>
->> +#include <linux/mfd/core.h>
->> +#include <linux/mfd/max77843-private.h>
->> +#include <linux/of_device.h>
->> +#include <linux/platform_device.h>
-> [...]
+>> +#include <linux/slab.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/thermal.h>
+>> +#include <asm/cpu_device_id.h>
+>> +#include <asm/iosf_mbi.h>
+>> +
+>> +#define X86_FAMILY_QUARK	0x5
+>> +#define X86_MODEL_QUARK_X1000	0x9
+>> +
+>> +/* DTS reset is programmed via QRK_MBI_UNIT_SOC */
+>> +#define QRK_DTS_REG_OFFSET_RESET	0x34
+>> +#define QRK_DTS_RESET_BIT		BIT(0)
+>> +
+>> +/* DTS enable is programmed via QRK_MBI_UNIT_RMU */
+>> +#define QRK_DTS_REG_OFFSET_ENABLE	0xB0
+>> +#define QRK_DTS_ENABLE_BIT		BIT(15)
+>> +
+>> +/* Temperature Register is read via QRK_MBI_UNIT_RMU */
+>> +#define QRK_DTS_REG_OFFSET_TEMP		0xB1
+>> +#define QRK_DTS_MASK_TEMP		0xFF
+>> +#define QRK_DTS_OFFSET_TEMP		0
+>> +#define QRK_DTS_OFFSET_REL_TEMP		16
+>> +#define QRK_DTS_TEMP_BASE		50
+>> +
+>> +/* Programmable Trip Point Register is configured via QRK_MBI_UNIT_RMU
+>*/
+>> +#define QRK_DTS_REG_OFFSET_PTPS		0xB2
+>> +#define QRK_DTS_MASK_TP_THRES		0xFF
+>> +#define QRK_DTS_SHIFT_TP		8
+>> +#define QRK_DTS_ID_TP_CRITICAL		0
+>> +
+>> +/* Thermal Sensor Register Lock */
+>> +#define QRK_DTS_REG_OFFSET_LOCK		0x71
+>> +#define QRK_DTS_LOCK_BIT		BIT(5)
+>> +
+>> +/* Quark DTS has 2 trip points: hot & catastrophic */
+>> +#define QRK_MAX_DTS_TRIPS	2
+>> +/* If DTS not locked, all trip points are configurable */
+>is not locked
 >
->> +static int max77843_probe(struct i2c_client *i2c,
->> +					const struct i2c_device_id *id)
-> Strange tabbing here.
-
-I will fix it in next version.
+>> +#define QRK_DTS_WR_MASK_SET	0x3
+>> +/* If DTS locked, all trip points are not configurable */
+>is locked
 >
+>> +#define QRK_DTS_WR_MASK_CLR	0
+>> +
+>> +#define DEFAULT_POLL_DELAY	2000
+>> +
+>> +struct soc_sensor_entry {
+>> +	bool locked;
+>> +	u32 store_ptps;
+>> +	u32 store_dts_enable;
+>> +	enum thermal_device_mode mode;
+>> +	struct thermal_zone_device *tzone;
+>> +};
+>> +
+>> +static struct soc_sensor_entry *soc_dts;
+>> +
+>> +static int polling_delay = DEFAULT_POLL_DELAY;
+>> +module_param(polling_delay, int, 0644);
+>> +MODULE_PARM_DESC(polling_delay,
+>> +	"Polling interval for checking trip points (in milliseconds)");
+>> +
+>> +static DEFINE_MUTEX(dts_update_mutex);
+>> +
+>> +static int soc_dts_enable(struct thermal_zone_device *tzd)
 >> +{
->> +	struct max77843 *max77843;
->> +	unsigned int reg_data;
+>> +	u32 out;
 >> +	int ret;
->> +
->> +	max77843 = devm_kzalloc(&i2c->dev, sizeof(*max77843), GFP_KERNEL);
->> +	if (!max77843)
->> +		return -ENOMEM;
->> +
->> +	i2c_set_clientdata(i2c, max77843);
->> +	max77843->dev = &i2c->dev;
->> +	max77843->i2c = i2c;
->> +	max77843->irq = i2c->irq;
->> +
->> +	max77843->regmap = devm_regmap_init_i2c(i2c,
->> +			&max77843_regmap_config);
->> +	if (IS_ERR(max77843->regmap)) {
->> +		dev_err(&i2c->dev, "Failed to allocate topsys register map\n");
->> +		return PTR_ERR(max77843->regmap);
->> +	}
->> +
->> +	ret = regmap_add_irq_chip(max77843->regmap, max77843->irq,
->> +			IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHARED,
->> +			0, &max77843_irq_chip, &max77843->irq_data);
->> +	if (ret) {
->> +		dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\n");
->> +		return ret;
->> +	}
->> +
->> +	ret = regmap_read(max77843->regmap,
->> +			MAX77843_SYS_REG_PMICID, &reg_data);
->> +	if (ret < 0) {
->> +		dev_err(&i2c->dev, "Failed to read PMIC ID\n");
->> +		goto err_pmic_id;
->> +	}
->> +	dev_info(&i2c->dev, "device ID: 0x%x\n", reg_data);
->> +
->> +	ret = max77843_chg_init(max77843);
->> +	if (ret) {
->> +		dev_err(&i2c->dev, "Failed to init Charger\n");
->> +		goto err_pmic_id;
->> +	}
->> +
->> +	ret = regmap_update_bits(max77843->regmap,
->> +			MAX77843_SYS_REG_INTSRCMASK,
->> +			MAX77843_INTSRC_MASK_MASK,
->> +			(unsigned int)~MAX77843_INTSRC_MASK_MASK);
-> This stuff looks so much better/easier to read if you line up against
-> the '('.
-
-Okay, I will line up against '('.
+>> +	struct soc_sensor_entry *aux_entry = tzd->devdata;
 >
->> +	if (ret < 0) {
->> +		dev_err(&i2c->dev, "Failed to unmask interrupt source\n");
->> +		goto err_pmic_id;
+>ret declaration ought to come last in the list.
+Sure. Changed for all subsequent. 
+
+>
+>> +
+>> +	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_ENABLE, &out);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	if (out & QRK_DTS_ENABLE_BIT) {
+>> +		aux_entry->mode = THERMAL_DEVICE_ENABLED;
+>> +		return 0;
 >> +	}
 >> +
->> +	ret = mfd_add_devices(max77843->dev, -1, max77843_devs,
->> +			ARRAY_SIZE(max77843_devs), NULL, 0, NULL);
->> +	if (ret < 0) {
->> +		dev_err(&i2c->dev, "Failed to add mfd device\n");
->> +		goto err_pmic_id;
+>> +	if (!aux_entry->locked) {
+>> +		out |= QRK_DTS_ENABLE_BIT;
+>> +		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_WRITE,
+>> +					QRK_DTS_REG_OFFSET_ENABLE, out);
+>> +		if (ret)
+>> +			return ret;
+>> +
+>> +		aux_entry->mode = THERMAL_DEVICE_ENABLED;
+>> +	} else {
+>> +		aux_entry->mode = THERMAL_DEVICE_DISABLED;
+>> +		pr_info("DTS is locked. Cannot enable DTS\n");
+>> +		ret = -EPERM;
 >> +	}
->> +
->> +	device_init_wakeup(max77843->dev, 1);
->> +
->> +	return 0;
->> +
->> +err_pmic_id:
->> +	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
 >> +
 >> +	return ret;
 >> +}
 >> +
->> +static int max77843_remove(struct i2c_client *i2c)
+>> +static int soc_dts_disable(struct thermal_zone_device *tzd)
 >> +{
->> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
+>> +	u32 out;
+>> +	int ret;
+>> +	struct soc_sensor_entry *aux_entry = tzd->devdata;
 >> +
->> +	mfd_remove_devices(max77843->dev);
+>ret order
+Fixed.
+
+>
+>> +	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_ENABLE, &out);
+>> +	if (ret)
+>> +		return ret;
 >> +
->> +	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
+>> +	if (!(out & QRK_DTS_ENABLE_BIT)) {
+>> +		aux_entry->mode = THERMAL_DEVICE_DISABLED;
+>> +		return 0;
+>> +	}
 >> +
->> +	i2c_unregister_device(max77843->i2c_chg);
->> +	i2c_unregister_device(max77843->i2c);
+>> +	if (!aux_entry->locked) {
+>> +		out &= ~QRK_DTS_ENABLE_BIT;
+>> +		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_WRITE,
+>> +					QRK_DTS_REG_OFFSET_ENABLE, out);
+>> +
+>> +		if (ret)
+>> +			return ret;
+>> +
+>> +		aux_entry->mode = THERMAL_DEVICE_DISABLED;
+>> +	} else {
+>> +		aux_entry->mode = THERMAL_DEVICE_ENABLED;
+>> +		pr_info("DTS is locked. Cannot disable DTS\n");
+>> +		ret = -EPERM;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static int _get_trip_temp(int trip, unsigned long *temp)
+>> +{
+>> +	int status;
+>> +	u32 out;
+>> +
+>> +	mutex_lock(&dts_update_mutex);
+>> +	status = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +				QRK_DTS_REG_OFFSET_PTPS, &out);
+>> +	mutex_unlock(&dts_update_mutex);
+>> +
+>> +	if (status)
+>> +		return status;
+>> +
+>> +	*temp = (out >> (trip * QRK_DTS_SHIFT_TP)) &
+>QRK_DTS_MASK_TP_THRES;
+>> +	*temp -= QRK_DTS_TEMP_BASE;
+>
+>Bit-twiddling temp should describe why with a comment.
+
+Sure, add the below comment block:
+/*
+ * Thermal Sensor Programmable Trip Point Register has 8-bit
+ * fields for critical (catastrophic) and hot set trip point 
+ * threshold. The value is always offset by its temperature
+ * base (50 degree Celsius).
+ */
+
+
+>
+>> +	return 0;
+>> +}
+>> +
+>> +static inline int sys_get_trip_temp(struct thermal_zone_device *tzd,
+>> +				int trip, unsigned long *temp)
+>> +{
+>> +	return _get_trip_temp(trip, temp);
+>> +}
+>> +
+>> +static inline int sys_get_crit_temp(struct thermal_zone_device *tzd,
+>> +				unsigned long *temp)
+>> +{
+>> +	return _get_trip_temp(QRK_DTS_ID_TP_CRITICAL, temp);
+>> +}
+>> +
+>> +static int update_trip_temp(struct soc_sensor_entry *aux_entry,
+>> +				int trip, unsigned long temp)
+>> +{
+>> +	int ret;
+>> +	u32 out;
+>> +	u32 temp_out;
+>> +	u32 store_ptps;
+>> +
+>ret order
+>
+>> +	mutex_lock(&dts_update_mutex);
+>> +	if (aux_entry->locked) {
+>> +		ret = -EPERM;
+>> +		goto failed;
+>> +	}
+>> +
+>> +	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +				QRK_DTS_REG_OFFSET_PTPS, &store_ptps);
+>> +	if (ret)
+>> +		goto failed;
+>> +
+>> +	temp_out = temp + QRK_DTS_TEMP_BASE;
+>> +
+>> +	out = (store_ptps & ~(QRK_DTS_MASK_TP_THRES <<
+>> +		(trip * QRK_DTS_SHIFT_TP)));
+>> +	out |= (temp_out & QRK_DTS_MASK_TP_THRES) <<
+>> +		(trip * QRK_DTS_SHIFT_TP);
+>
+>The above block of code for bit-twiddling out - deserves a comment to
+>describe.
+
+Sure, add the below comment block:
+/*
+ * Thermal Sensor Programmable Trip Point Register has 8-bit
+ * fields for critical (catastrophic) and hot set trip point 
+ * threshold. The value is always offset by its temperature
+ * base (50 degree Celsius).
+ */
+
+
+>
+>> +	ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
+>> +				QRK_DTS_REG_OFFSET_PTPS, out);
+>> +
+>> +failed:
+>> +	mutex_unlock(&dts_update_mutex);
+>> +	return ret;
+>> +}
+>> +
+>> +static inline int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
+>> +				unsigned long temp)
+>> +{
+>> +	return update_trip_temp(tzd->devdata, trip, temp);
+>> +}
+>> +
+>> +static int sys_get_trip_type(struct thermal_zone_device *thermal,
+>> +		int trip, enum thermal_trip_type *type)
+>> +{
+>> +	if (trip)
+>> +		*type = THERMAL_TRIP_HOT;
+>> +	else
+>> +		*type = THERMAL_TRIP_CRITICAL;
 >> +
 >> +	return 0;
 >> +}
 >> +
->> +static const struct of_device_id max77843_dt_match[] = {
->> +	{ .compatible = "maxim,max77843", },
->> +	{ /* sentinel */ },
+>> +static int sys_get_curr_temp(struct thermal_zone_device *tzd,
+>> +				unsigned long *temp)
+>> +{
+>> +	int ret;
+>> +	u32 out;
+>ret order
+>
+>> +	mutex_lock(&dts_update_mutex);
+>> +	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_TEMP, &out);
+>> +	mutex_unlock(&dts_update_mutex);
+>> +
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	out = (out >> QRK_DTS_OFFSET_TEMP) & QRK_DTS_MASK_TEMP;
+>> +	*temp = out - QRK_DTS_TEMP_BASE;
+>
+>Again - I think it would be a good idea to describe the shifts and masks
+>and final calculation with a bit of text to describe what's going on and
+>why.
+
+Sure, add the below comment block:
+/*
+ * Thermal Sensor Temperature Register has 8-bit field
+ * for temperature value (offset by temperature base 50)
+ */  
+
+>
+>> +	return 0;
+>> +}
+>> +
+>> +static int sys_get_mode(struct thermal_zone_device *tzd,
+>> +				enum thermal_device_mode *mode)
+>> +{
+>> +	struct soc_sensor_entry *aux_entry = tzd->devdata;
+>> +	*mode = aux_entry->mode;
+>> +	return 0;
+>> +}
+>> +
+>> +static int sys_set_mode(struct thermal_zone_device *tzd,
+>> +				enum thermal_device_mode mode)
+>> +{
+>> +	int ret;
+>> +	struct soc_sensor_entry *aux_entry = tzd->devdata;
+>ret order
+>> +	mutex_lock(&dts_update_mutex);
+>> +	if (mode == THERMAL_DEVICE_ENABLED)
+>> +		ret = soc_dts_enable(tzd);
+>> +	else
+>> +		ret = soc_dts_disable(tzd);
+>> +	mutex_unlock(&dts_update_mutex);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static struct thermal_zone_device_ops tzone_ops = {
+>> +	.get_temp = sys_get_curr_temp,
+>> +	.get_trip_temp = sys_get_trip_temp,
+>> +	.get_trip_type = sys_get_trip_type,
+>> +	.set_trip_temp = sys_set_trip_temp,
+>> +	.get_crit_temp = sys_get_crit_temp,
+>> +	.get_mode = sys_get_mode,
+>> +	.set_mode = sys_set_mode,
 >> +};
 >> +
->> +static const struct i2c_device_id max77843_id[] = {
->> +	{ "max77843", },
->> +	{ /* sentinel */ },
+>> +static void free_soc_dts(struct soc_sensor_entry *aux_entry)
+>> +{
+>> +	if (aux_entry) {
+>> +		if (!aux_entry->locked) {
+>> +			mutex_lock(&dts_update_mutex);
+>> +			iosf_mbi_write(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_WRITE,
+>> +					QRK_DTS_REG_OFFSET_ENABLE,
+>> +					aux_entry->store_dts_enable);
+>> +
+>> +			iosf_mbi_write(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_WRITE,
+>> +					QRK_DTS_REG_OFFSET_PTPS,
+>> +					aux_entry->store_ptps);
+>> +			mutex_unlock(&dts_update_mutex);
+>> +		}
+>> +		thermal_zone_device_unregister(aux_entry->tzone);
+>> +		kfree(aux_entry);
+>> +	}
+>> +}
+>> +
+>> +static struct soc_sensor_entry *alloc_soc_dts(void)
+>> +{
+>> +	struct soc_sensor_entry *aux_entry;
+>> +	int err;
+>> +	u32 out;
+>> +	int wr_mask;
+>> +
+>> +	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
+>> +	if (!aux_entry) {
+>> +		err = -ENOMEM;
+>> +		return ERR_PTR(-ENOMEM);
+>> +	}
+>> +
+>> +	/* Check if DTS register is locked */
+>> +	err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_LOCK,
+>> +					&out);
+>> +	if (err)
+>> +		goto err_ret;
+>> +
+>> +	if (out & QRK_DTS_LOCK_BIT) {
+>> +		aux_entry->locked = true;
+>> +		wr_mask = QRK_DTS_WR_MASK_CLR;
+>> +	} else {
+>> +		aux_entry->locked = false;
+>> +		wr_mask = QRK_DTS_WR_MASK_SET;
+>> +	}
+>> +
+>> +	/* Store DTS default state if DTS registers are not locked */
+>> +	if (!aux_entry->locked) {
+>> +		/* Store DTS default enable for restore on exit */
+>> +		err = iosf_mbi_read(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_ENABLE,
+>> +					&aux_entry->store_dts_enable);
+>> +		if (err)
+>> +			goto err_ret;
+>> +
+>> +		/* Store DTS default PTPS register for restore on exit */
+>> +		err = iosf_mbi_read(QRK_MBI_UNIT_RMU,
+>QRK_MBI_RMU_READ,
+>> +					QRK_DTS_REG_OFFSET_PTPS,
+>> +					&aux_entry->store_ptps);
+>> +		if (err)
+>> +			goto err_ret;
+>> +	}
+>> +
+>> +	aux_entry->tzone = thermal_zone_device_register("quark_dts",
+>> +			QRK_MAX_DTS_TRIPS,
+>> +			wr_mask,
+>> +			aux_entry, &tzone_ops, NULL, 0, polling_delay);
+>> +	if (IS_ERR(aux_entry->tzone)) {
+>> +		err = PTR_ERR(aux_entry->tzone);
+>> +		goto err_ret;
+>> +	}
+>> +
+>> +	mutex_lock(&dts_update_mutex);
+>> +	err = soc_dts_enable(aux_entry->tzone);
+>> +	mutex_unlock(&dts_update_mutex);
+>> +	if (err)
+>> +		goto err_aux_status;
+>> +
+>> +	return aux_entry;
+>> +
+>> +err_aux_status:
+>> +	thermal_zone_device_unregister(aux_entry->tzone);
+>> +err_ret:
+>> +	kfree(aux_entry);
+>> +	return ERR_PTR(err);
+>> +}
+>> +
+>> +static const struct x86_cpu_id qrk_thermal_ids[] __initconst  = {
+>> +	{ X86_VENDOR_INTEL, X86_FAMILY_QUARK, X86_MODEL_QUARK_X1000
+>},
+>> +	{}
 >> +};
->> +MODULE_DEVICE_TABLE(i2c, max77843_id);
+>> +MODULE_DEVICE_TABLE(x86cpu, qrk_thermal_ids);
 >> +
->> +static int __maybe_unused max77843_suspend(struct device *dev)
+>> +static int __init intel_quark_thermal_init(void)
 >> +{
->> +	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
->> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
+>> +	int err = 0;
 >> +
->> +	if (device_may_wakeup(dev))
->> +		enable_irq_wake(max77843->irq);
->> +	disable_irq(max77843->irq);
+>> +	if (!x86_match_cpu(qrk_thermal_ids) || !iosf_mbi_available())
+>> +		return -ENODEV;
+>> +
+>> +	soc_dts = alloc_soc_dts();
+>> +	if (IS_ERR(soc_dts)) {
+>> +		err = PTR_ERR(soc_dts);
+>> +		goto err_free;
+>> +	}
 >> +
 >> +	return 0;
+>> +
+>> +err_free:
+>> +	free_soc_dts(soc_dts);
+>> +	return err;
 >> +}
 >> +
->> +static int __maybe_unused max77843_resume(struct device *dev)
+>> +static void __exit intel_quark_thermal_exit(void)
 >> +{
->> +	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
->> +	struct max77843 *max77843 = i2c_get_clientdata(i2c);
->> +
->> +	if (device_may_wakeup(dev))
->> +		disable_irq_wake(max77843->irq);
->> +	enable_irq(max77843->irq);
->> +
->> +	return 0;
+>> +	free_soc_dts(soc_dts);
 >> +}
 >> +
->> +static SIMPLE_DEV_PM_OPS(max77843_pm, max77843_suspend, max77843_resume);
+>> +module_init(intel_quark_thermal_init)
+>> +module_exit(intel_quark_thermal_exit)
 >> +
->> +static struct i2c_driver max77843_i2c_driver = {
->> +	.driver		= {
-> More strange whitespace stuff.
+>> +MODULE_DESCRIPTION("Intel Quark DTS Thermal Driver");
+>> +MODULE_AUTHOR("Ong Boon Leong <boon.leong.ong@intel.com>");
+>> +MODULE_LICENSE("GPL v2");
+>If you are referencing the BSP thermal driver shouldn't the
+>MODULE_LICENSE be ("Dual BSD/GPL"); ?
 >
-> I'm gussing you haven't run checkpatch.pl.
+>Assuming the nit-picks are addressed.
 >
-> Please do so and fix-up the warnings.
+>Reviewed-by: Bryan O'Donoghue <pure.logic@nexus-software.ie>
+I will wait for your reviewed-by for v2. 
 
-".drivers" is seven letters. So, it seems like a white space but it is tab
-Anyway, I will not lining up driver structure in next version.
-
->   
->> +		.name		= "max77843",
->> +		.pm		= &max77843_pm,
->> +		.of_match_table = max77843_dt_match,
->> +	},
-> Lining these up with the '=' doesn't make the code any better IMO.
->
-> [...]
 >
 
-Thanks to review my patch.
-I will send version4 soon.
-
-
-Thanks,
-Jaewon Kim
