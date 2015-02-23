@@ -1,84 +1,97 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 1/7] OPP: Redefine bindings to overcome shortcomings
-Date: Mon, 23 Feb 2015 14:36:18 -0800
-Message-ID: <7ha904b6hp.fsf@deeprootsystems.com>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
-	<cover.1423642246.git.viresh.kumar@linaro.org>
-	<be795ef7ec98669bc5aa90ec426a1ec1fbc32b6c.1423642246.git.viresh.kumar@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus frequency
+ driver
+Date: Tue, 24 Feb 2015 08:55:29 +0900
+Message-ID: <54EBBDF1.1030306@samsung.com>
+References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
+ <54DFE797.1020008@math.uni-bielefeld.de> <54E4FD40.8020206@gmx.net>
+ <54EA69D2.7010706@samsung.com> <54EB8645.4060608@math.uni-bielefeld.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:38746 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbbBWWgX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 17:36:23 -0500
-Received: by padbj1 with SMTP id bj1so30974655pad.5
-        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 14:36:22 -0800 (PST)
-In-Reply-To: <be795ef7ec98669bc5aa90ec426a1ec1fbc32b6c.1423642246.git.viresh.kumar@linaro.org>
-	(Viresh Kumar's message of "Wed, 11 Feb 2015 16:16:24 +0800")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <54EB8645.4060608@math.uni-bielefeld.de>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Cc: Tobias Jakobi <liquid.acid@gmx.net>, myungjoo.ham@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, grant.likely@linaro.org, olof@lixom.net, nm@ti.com, Sudeep.Holla@arm.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, santosh.shilimkar@oracle.com, mike.turquette@linaro.org, kesavan.abhilash@gmail.com, catalin.marinas@arm.com, ta.omasab@gmail.com, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, l.stach@pengutronix.de, broonie@kernel.org, viswanath.puttagunta@linaro.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+Hi Tobias,
 
-> Current OPP (Operating performance point) DT bindings are proven to be
-> insufficient at multiple instances.
->
-> There had been multiple band-aid approaches to get them fixed (The latest one
-> being: http://www.mail-archive.com/devicetree@vger.kernel.org/msg53398.html).
-> For obvious reasons Rob rejected them and shown the right path forward.
->
-> The shortcomings we are trying to solve here:
->
-> - Getting clock sharing information between CPUs. Single shared clock vs
->   independent clock per core vs shared clock per cluster.
->
-> - Support for turbo modes
->
-> - Support for intermediate frequencies or OPPs we can switch to.
->
-> - Other per OPP settings: transition latencies, disabled status, etc.?
->
-> - Expandability of OPPs in future.
->
-> This patch introduces new bindings "operating-points-v2" to get these problems
-> solved. Refer to the bindings for more details.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 02/24/2015 04:57 AM, Tobias Jakobi wrote:
+> Hello Chanwoo!
+> 
+> Chanwoo Choi wrote:
+>> As you thought, when maintaining lower clock of memory bus frequency,
+>> some issue related to multimedia feature will happen.
+>>
+>> Separately, We have to check the miminum lower clock for working of multimedia feature.
+>> and then multimedia or other IP have to request it to DVFS driver (memory busfreq driver).
+>> But, latest mainline kernel currently has not some way to inform minimum clock to DVFS driver.
+>>
+>> So, If you check the miminum clock for hdmi, I'll use this clock as minumu frequency of dvfs table.
+>>
+>> Thanks,
+>> Chanwoo Choi
+>>
+> 
+> First I have to apologize. I didn't check carefully. Actually it's not
+> the HDMI subsystem which seems to hang during my test, but the G2D
+> subsystem.
+> 
+> Here's a snippet of the kernel log with drm.debug=0xff:
+> [ 1157.911264] [drm:drm_framebuffer_reference] ee144e00: FB ID: 27 (2)
+> [ 1157.911271] [drm:drm_framebuffer_unreference] ee37fb80: FB ID: 25 (2)
+> [ 1157.911277] [drm:drm_framebuffer_unreference] ee144e00: FB ID: 27 (3)
+> [ 1157.911315] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> EXYNOS_G2D_GET_VER
+> [ 1158.434439] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> EXYNOS_G2D_SET_CMDLIST
+> [ 1158.434536] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1, EXYNOS_G2D_EXEC
+> [ 1158.437484] [drm:drm_vm_close_locked] 0xaf840000,0x00140000
+> [ 1158.437507] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> DRM_IOCTL_GEM_CLOSE
+> [ 1158.437524] [drm:exynos_drm_gem_destroy] handle count = 0
+> [ 1158.437532] [drm:lowlevel_buffer_deallocate] dma_addr(0x20500000),
+> size(0x140000)
+> [ 1158.437810] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> EXYNOS_GEM_CREATE
+> [ 1158.437819] [drm:exynos_drm_init_buf] desired size = 0x256000
+> [ 1158.437851] [drm:exynos_drm_gem_init] created file object = 0xe97c8d00
+> [ 1158.445506] [drm:lowlevel_buffer_allocate] dma_addr(0x21400000),
+> size(0x256000)
+> [ 1158.445535] [drm:exynos_drm_gem_handle_create] gem handle = 0x1
+> [ 1158.445556] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> DRM_IOCTL_MODE_MAP_DUMB
+> [ 1158.445570] [drm:exynos_drm_gem_dumb_map_offset] offset = 0x101c2000
+> [ 1158.445600] [drm:drm_vm_open_locked] 0xaec15000,0x00256000
+> [ 1158.445608] [drm:update_vm_cache_attr] flags = 0x0
+> [ 1158.457696] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
+> EXYNOS_G2D_SET_CMDLIST
+> [ 1158.457745] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1, EXYNOS_G2D_EXEC
+> 
+> 
+> So G2D_EXEC seems to work once, but the second time it hangs forever. I
+> even fail at attaching gdb to the application then (gdb then also hangs
+> in D state).
+> 
+> If I just use the 'vsynced page flipping' test, then everything works:
+> ./modetest -M exynos -s 16@13:1280x720 -v
+> setting mode 1280x720-60Hz@XR24 on connectors 16, crtc 13
+> freq: 61.08Hz
+> freq: 60.00Hz
+> freq: 60.00Hz
+> <etc.>
+> 
+> I'm going to do some tests with the G2D in the next time, checking how
+> much I can lower MIF/INT clocks before the engine becomes unstable.
 
-[...]
+Thanks for your test. If you have any question or help, please feel free to ask me.
 
-> +* OPP Descriptor Node
-> +
-> +This describes the OPPs belonging to a device. This node can have following
-> +properties:
-> +
-> +Required properties:
-> +- compatible: Allow OPPs to express their compatibility. It should be:
-> +  "operating-points-v2".
-> +- OPP nodes: One or more OPP nodes describing frequency-voltage pairs. Their
-> +  name isn't significant but their phandles can be used to reference an OPP.
-> +
-> +Optional properties:
-> +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
-> +  switch their DVFS state together, i.e. they share clock lines. 
+I'm working to implemnet new generic exynos memoby-bus frequency driver (exynos-busfreq.c).
+because this version of patch-set used the 'virtual operating-points'.
+So, I'm working to implment this drvier without 'virtual operation-points'.
+After finishing the implmentaion, I'll add you to mailing list ac Cc.
 
-... or shared voltage rail?
-
-> +  Missing property means devices have independent clock lines, but they share OPPs.
-
-huh?  missing 'shared-opp' property means they share OPPs?  -ECONFUSED.
-
-Maybe I missed some of the discussion of why this property is needed,
-but I'm left wondering why it's needed explicitly.  With the OPPs as
-part of the CPU nodes, shouldnt' the "shared" nature of the OPP be
-easily derived from the clock and or regulator (opp-supply) property of
-the CPU nodes?  IOW, if two CPU nodes share a clock and/or a regulator,
-the framework should know it's "shared".
-
-Or, were there other reasons besides clocks/regulators why this property
-was needed (if so, the documentation doesn't describe them.)
-
-Kevin
+Best Regards,
+Chanwoo Choi
