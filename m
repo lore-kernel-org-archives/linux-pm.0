@@ -1,85 +1,117 @@
-From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus
- frequency driver
-Date: Mon, 23 Feb 2015 20:57:57 +0100
-Message-ID: <54EB8645.4060608@math.uni-bielefeld.de>
-References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com> <54DFE797.1020008@math.uni-bielefeld.de> <54E4FD40.8020206@gmx.net> <54EA69D2.7010706@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 0/5] Various fixes to weights in the thermal framework
+Date: Mon, 23 Feb 2015 16:30:45 -0400
+Message-ID: <20150223203042.GA30100@developer.amazonguestwifi.org>
+References: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54EA69D2.7010706@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Tobias Jakobi <liquid.acid@gmx.net>
-Cc: myungjoo.ham@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:45852 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbbBWVee (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 16:34:34 -0500
+Received: by pdjz10 with SMTP id z10so28261763pdj.12
+        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 13:34:34 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hello Chanwoo!
-
-Chanwoo Choi wrote:
-> As you thought, when maintaining lower clock of memory bus frequency,
-> some issue related to multimedia feature will happen.
-> 
-> Separately, We have to check the miminum lower clock for working of multimedia feature.
-> and then multimedia or other IP have to request it to DVFS driver (memory busfreq driver).
-> But, latest mainline kernel currently has not some way to inform minimum clock to DVFS driver.
-> 
-> So, If you check the miminum clock for hdmi, I'll use this clock as minumu frequency of dvfs table.
-> 
-> Thanks,
-> Chanwoo Choi
-> 
-
-First I have to apologize. I didn't check carefully. Actually it's not
-the HDMI subsystem which seems to hang during my test, but the G2D
-subsystem.
-
-Here's a snippet of the kernel log with drm.debug=0xff:
-[ 1157.911264] [drm:drm_framebuffer_reference] ee144e00: FB ID: 27 (2)
-[ 1157.911271] [drm:drm_framebuffer_unreference] ee37fb80: FB ID: 25 (2)
-[ 1157.911277] [drm:drm_framebuffer_unreference] ee144e00: FB ID: 27 (3)
-[ 1157.911315] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-EXYNOS_G2D_GET_VER
-[ 1158.434439] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-EXYNOS_G2D_SET_CMDLIST
-[ 1158.434536] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1, EXYNOS_G2D_EXEC
-[ 1158.437484] [drm:drm_vm_close_locked] 0xaf840000,0x00140000
-[ 1158.437507] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-DRM_IOCTL_GEM_CLOSE
-[ 1158.437524] [drm:exynos_drm_gem_destroy] handle count = 0
-[ 1158.437532] [drm:lowlevel_buffer_deallocate] dma_addr(0x20500000),
-size(0x140000)
-[ 1158.437810] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-EXYNOS_GEM_CREATE
-[ 1158.437819] [drm:exynos_drm_init_buf] desired size = 0x256000
-[ 1158.437851] [drm:exynos_drm_gem_init] created file object = 0xe97c8d00
-[ 1158.445506] [drm:lowlevel_buffer_allocate] dma_addr(0x21400000),
-size(0x256000)
-[ 1158.445535] [drm:exynos_drm_gem_handle_create] gem handle = 0x1
-[ 1158.445556] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-DRM_IOCTL_MODE_MAP_DUMB
-[ 1158.445570] [drm:exynos_drm_gem_dumb_map_offset] offset = 0x101c2000
-[ 1158.445600] [drm:drm_vm_open_locked] 0xaec15000,0x00256000
-[ 1158.445608] [drm:update_vm_cache_attr] flags = 0x0
-[ 1158.457696] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1,
-EXYNOS_G2D_SET_CMDLIST
-[ 1158.457745] [drm:drm_ioctl] pid=2569, dev=0xe200, auth=1, EXYNOS_G2D_EXEC
+To: Javi Merino <javi.merino@arm.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
 
-So G2D_EXEC seems to work once, but the second time it hangs forever. I
-even fail at attaching gdb to the application then (gdb then also hangs
-in D state).
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If I just use the 'vsynced page flipping' test, then everything works:
-./modetest -M exynos -s 16@13:1280x720 -v
-setting mode 1280x720-60Hz@XR24 on connectors 16, crtc 13
-freq: 61.08Hz
-freq: 60.00Hz
-freq: 60.00Hz
-<etc.>
 
-I'm going to do some tests with the G2D in the next time, checking how
-much I can lower MIF/INT clocks before the engine becomes unstable.
+Rui,
 
-With best wishes,
-Tobias
+On Wed, Feb 18, 2015 at 04:04:20PM +0000, Javi Merino wrote:
+> Weights can be specified in the device tree, but the code currently
+> ignores the value.  Patch 1 fixes that by putting the weight in the
+> thermal_instance.  Patches 2-3 simplify the code in the fair share
+> governor by using the weight in the now populated thermal_instance.
+> Patch 4 exports the weight to sysfs.  Patch 5 drops the requirement of
+> all weights needing to add up to a hundred.
+>=20
+> Existing thermal zones using this governor should still work, as these
+> series shouldn't make any functional change for them.  However,
+> thermal zones that previously weren't able to use the fair share
+> governor (because they were being register through device tree or
+> because they weren't populating thermal_bind_params) now populate the
+> weight properly and are able to use the governor.
+>=20
+> Changes since v2[0]:
+>    - Change the default weight to 0.  For the fair share governor, if
+>      all weights are 0, cooling devices get the same percentage.
+>=20
+> Changes since v1[1]:
+>    - Fix the call to thermal_zone_bind_cooling_device() in
+>      drivers/platform/x86/acerhdf.c and drivers/acpi/thermal.c
+>=20
+> [0] http://thread.gmane.org/gmane.linux.power-management.general/56269
+> [1] http://thread.gmane.org/gmane.linux.power-management.general/55730
+>=20
+> Javi Merino (4):
+>   thermal: fair_share: use the weight from the thermal instance
+>   thermal: fair_share: fix typo
+>   thermal: export weight to sysfs
+>   thermal: fair_share: generalize the weight concept
+>=20
+> Kapileshwar Singh (1):
+>   thermal: of: fix cooling device weights in device tree
+
+Since I have been reviewing these patches and they are dependency of IPA
+governor, I will be taking this series in my -linus branch.
+
+Let me know if you have concerns.
+
+
+BR,
+
+Eduardo Valentin
+
+>=20
+>  Documentation/thermal/sysfs-api.txt                | 31 +++++++++--
+>  drivers/acpi/thermal.c                             |  9 ++--
+>  drivers/platform/x86/acerhdf.c                     |  3 +-
+>  drivers/thermal/db8500_thermal.c                   |  2 +-
+>  drivers/thermal/fair_share.c                       | 41 +++++++-------
+>  drivers/thermal/imx_thermal.c                      |  3 +-
+>  drivers/thermal/of-thermal.c                       |  5 +-
+>  drivers/thermal/samsung/exynos_thermal_common.c    |  3 +-
+
+Javi, I manually updated your patch 01, because exynos_thermal_common
+does not exist as of v4.0-rc1
+
+>  drivers/thermal/thermal_core.c                     | 62 ++++++++++++++++=
++++---
+>  drivers/thermal/thermal_core.h                     |  3 ++
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  3 +-
+>  include/linux/thermal.h                            | 15 ++++--
+>  12 files changed, 137 insertions(+), 43 deletions(-)
+>=20
+> --=20
+> 1.9.1
+>=20
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJU643qAAoJEMLUO4d9pOJWcRAH/A7lMrBJ8v30WGhcTLYqvP8c
+uMmbCoISTOCtCIpSS8Gyx8aS1ROBknWEbunJnEDazMIPh38lqljMlGekqx7n4moS
+uDbT06CfkXxYejpRLgVDpCS7nntiVMCoR0qRxz4tRf9yk4Wm1AF9/hwzFasykyuC
+CnsWzgEc+r+MTlrxw9m2W4dvd9Tgi+/JSOeD23wToS54cpGNSGK4va93G4fMcfYc
+oUzFWrbgRaGXVocRl22KFmTfk5bpinqNKSgOeSqNGsxgde/TQ0a1X0c8q1ykNwzr
+wr/PrWB8EtpnYYZDISczxuLftzNUOPz4FF5ISBvJ8iUCDxiLNqRRHCglijEnXXQ=
+=el/A
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
