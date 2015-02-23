@@ -1,79 +1,24 @@
-From: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v4 4/5] Input: add haptic drvier on max77843
-Date: Mon, 23 Feb 2015 09:26:58 -0800
-Message-ID: <20150223172658.GA604@dtor-glaptop>
-References: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
- <1424678991-13978-5-git-send-email-jaewon02.kim@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1424678991-13978-5-git-send-email-jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Bryan Henderson <bryanh@giraffe-data.com>
+Subject: Re: battery drains after shutdown
+Date: 23 Feb 2015 18:47:43 +0000
+Message-ID: <7857.bryanh@giraffe-data.com>
+References: <1423899504.11560.128.camel@rzhang1-mobl4>
+	<72477.bryanh@giraffe-data.com> <20150223162240.d3b9c917752268fbcf4945c2@maison.homelinux.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from rhino.giraffe-data.com ([174.143.232.82]:41277 "EHLO
+	rhino.giraffe-data.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbbBWSy1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 13:54:27 -0500
+In-reply-to: <20150223162240.d3b9c917752268fbcf4945c2@maison.homelinux.net>
+	(user.anti-spam@maison.homelinux.net)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, user.anti-spam@maison.homelinux.net, linux-pm@vger.kernel.org
 
-Hi Jaew9on,
+So it appears the invoking 'hwclock' does not enable the RTC wakeup function,
+at least in this experiment.
 
-On Mon, Feb 23, 2015 at 05:09:50PM +0900, Jaewon Kim wrote:
-> This patch adds support for haptic driver on max77843
-> MFD(Multi Function Device) with PMIC, MUIC, LED, CHARGER.
-> 
-> This driver supports external pwm and LRA(Linear Resonant Actuator) motor.
-> And it supports ff-memless interface from inpu framework.
-> 
-> Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-
-...
-
-> +static void max77843_haptic_play_work(struct work_struct *work)
-> +{
-> +	struct max77843_haptic *haptic =
-> +			container_of(work, struct max77843_haptic, work);
-> +	int error;
-> +
-> +	mutex_lock(&haptic->mutex);
-> +
-> +	if (haptic->suspended)
-> +		mutex_unlock(&haptic->mutex);
-
-Huh?
-
-> +
-> +	error = max77843_haptic_set_duty_cycle(haptic);
-> +	if (error) {
-> +		dev_err(haptic->dev, "failed to set duty cycle: %d\n", error);
-> +		return;
-
-Here you are leaving with the mutex held.
-
-> +	}
-> +
-> +	if (haptic->magnitude) {
-> +		error = max77843_haptic_enable(haptic);
-> +		if (error)
-> +			dev_err(haptic->dev,
-> +					"cannot enable haptic: %d\n", error);
-> +	} else {
-> +		max77843_haptic_disable(haptic);
-> +		if (error)
-> +			dev_err(haptic->dev,
-> +					"cannot disable haptic: %d\n", error);
-> +	}
-> +
-> +	mutex_unlock(&haptic->mutex);
-> +}
-> +
-
-The rest seems quite reasonable.
-
-Thanks.
+I have no idea what could be causing the battery drain.
 
 -- 
-Dmitry
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Bryan Henderson                                   San Jose, California
