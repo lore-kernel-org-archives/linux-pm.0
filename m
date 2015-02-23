@@ -1,580 +1,259 @@
-From: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v5 2/5] power: max77843_charger: Add Max77843 charger device
- driver
-Date: Mon, 23 Feb 2015 20:34:10 +0900
-Message-ID: <1424691253-11429-3-git-send-email-jaewon02.kim@samsung.com>
-References: <1424691253-11429-1-git-send-email-jaewon02.kim@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1424691253-11429-1-git-send-email-jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v4 00/20] power_supply: Allow safe usage of power supply
+Date: Mon, 23 Feb 2015 12:47:21 +0100
+Message-ID: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, David Herrmann <dh.herrmann-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>, Cezary Jackiewicz <cezary.jackiewicz-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Milo Kim <milo.kim-l0cyMroinI0@public.gmane.org>, Julian Andres Klode <jak-4HMq4SXA452hPH1hqNUYSQ@public.gmane.org>, Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, ac100-oU9gvf+ajcQ97yFScArB1dHuzzzSOjJt@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel
+Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Hi,
 
-This patch adds device driver of max77843 charger. This driver provide
-initialize each charging mode(e.g. fast charge, top-off mode and constant
-charging mode so on.). Additionally, control charging parameters to use
-i2c interface.
 
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
- drivers/power/Kconfig            |    7 +
- drivers/power/Makefile           |    1 +
- drivers/power/max77843_charger.c |  508 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 516 insertions(+)
- create mode 100644 drivers/power/max77843_charger.c
+The patchset fixes invalid memory accesses in certain race scenarios by
+moving ownership of struct power_supply to the core. All drivers are
+modified.
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 27b751b..994793d 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -337,6 +337,13 @@ config CHARGER_MAX77693
- 	help
- 	  Say Y to enable support for the Maxim MAX77693 battery charger.
- 
-+config CHARGER_MAX77843
-+	tristate "Maxim MAX77843 battery charger driver"
-+	depends on MFD_MAX77843
-+	help
-+	  Say Y to enable support for the battery charger control sysfs and
-+	  platform data of MAX77843
-+
- config CHARGER_MAX8997
- 	tristate "Maxim MAX8997/MAX8966 PMIC battery charger driver"
- 	depends on MFD_MAX8997 && REGULATOR_MAX8997
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 36f9e0d..ed69cea 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -53,6 +53,7 @@ obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
- obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
- obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
- obj-$(CONFIG_CHARGER_MAX77693)	+= max77693_charger.o
-+obj-$(CONFIG_CHARGER_MAX77843)	+= max77843_charger.o
- obj-$(CONFIG_CHARGER_MAX8997)	+= max8997_charger.o
- obj-$(CONFIG_CHARGER_MAX8998)	+= max8998_charger.o
- obj-$(CONFIG_CHARGER_BQ2415X)	+= bq2415x_charger.o
-diff --git a/drivers/power/max77843_charger.c b/drivers/power/max77843_charger.c
-new file mode 100644
-index 0000000..392eebc1a
---- /dev/null
-+++ b/drivers/power/max77843_charger.c
-@@ -0,0 +1,508 @@
-+/*
-+ * Charger driver for Maxim MAX77843
-+ *
-+ * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
-+ * Author: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published bythe Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/mfd/max77843-private.h>
-+
-+struct max77843_charger_info {
-+	u32 fast_charge_uamp;
-+	u32 top_off_uamp;
-+	u32 input_uamp_limit;
-+};
-+
-+struct max77843_charger {
-+	struct device		*dev;
-+	struct max77843		*max77843;
-+	struct i2c_client	*client;
-+	struct regmap		*regmap;
-+	struct power_supply	psy;
-+
-+	struct max77843_charger_info	*info;
-+};
-+
-+static int max77843_charger_get_max_current(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = 0;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_CNFG_09, &reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"Failed to read max current register: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (reg_data <= 0x03) {
-+		val = MAX77843_CHG_INPUT_CURRENT_LIMIT_MIN;
-+	} else if (reg_data >= 0x78) {
-+		val = MAX77843_CHG_INPUT_CURRENT_LIMIT_MAX;
-+	} else {
-+		val = reg_data / 3;
-+		if (reg_data % 3 == 0)
-+			val *= 100000;
-+		else if (reg_data % 3 == 1)
-+			val = val * 100000 + 33000;
-+		else
-+			val = val * 100000 + 67000;
-+	}
-+
-+	return val;
-+}
-+
-+static int max77843_charger_get_now_current(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = 0;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_CNFG_02, &reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"Failed to read charge current register: %d\n", ret);
-+		return ret;
-+	}
-+
-+	reg_data &= MAX77843_CHG_FAST_CHG_CURRENT_MASK;
-+
-+	if (reg_data <= 0x02)
-+		val = MAX77843_CHG_FAST_CHG_CURRENT_MIN;
-+	else if (reg_data >= 0x3f)
-+		val = MAX77843_CHG_FAST_CHG_CURRENT_MAX;
-+	else
-+		val = reg_data * MAX77843_CHG_FAST_CHG_CURRENT_STEP;
-+
-+	return val;
-+}
-+
-+static int max77843_charger_get_online(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = 0;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_INT_OK, &reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+				"Failed to read charger status: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (reg_data & MAX77843_CHG_CHGIN_OK)
-+		val = true;
-+	else
-+		val = false;
-+
-+	return val;
-+}
-+
-+static int max77843_charger_get_present(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = 0;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_DTLS_00,	&reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+				"Failed to read battery present: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (reg_data & MAX77843_CHG_BAT_DTLS)
-+		val = false;
-+	else
-+		val = true;
-+
-+	return val;
-+}
-+
-+static int max77843_charger_get_health(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = POWER_SUPPLY_HEALTH_UNKNOWN;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_DTLS_01,	&reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+				"Failed to read battery health: %d\n", ret);
-+		return ret;
-+	}
-+
-+	reg_data &= MAX77843_CHG_BAT_DTLS_MASK;
-+
-+	switch (reg_data) {
-+	case MAX77843_CHG_NO_BAT:
-+		val = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+		break;
-+	case MAX77843_CHG_LOW_VOLT_BAT:
-+	case MAX77843_CHG_OK_BAT:
-+	case MAX77843_CHG_OK_LOW_VOLT_BAT:
-+		val = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
-+	case MAX77843_CHG_LONG_BAT_TIME:
-+		val = POWER_SUPPLY_HEALTH_DEAD;
-+		break;
-+	case MAX77843_CHG_OVER_VOLT_BAT:
-+	case MAX77843_CHG_OVER_CURRENT_BAT:
-+		val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		break;
-+	default:
-+		val = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		break;
-+	}
-+
-+	return val;
-+}
-+
-+static int max77843_charger_get_status(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret, val = 0;
-+	unsigned int reg_data;
-+
-+	ret = regmap_read(regmap, MAX77843_CHG_REG_CHG_DTLS_01,	&reg_data);
-+	if (ret) {
-+		dev_err(charger->dev,
-+				"Failed to read charger status: %d\n", ret);
-+		return ret;
-+	}
-+
-+	reg_data &= MAX77843_CHG_DTLS_MASK;
-+
-+	switch (reg_data) {
-+	case MAX77843_CHG_PQ_MODE:
-+	case MAX77843_CHG_CC_MODE:
-+	case MAX77843_CHG_CV_MODE:
-+		val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case MAX77843_CHG_TO_MODE:
-+	case MAX77843_CHG_DO_MODE:
-+		val = POWER_SUPPLY_STATUS_FULL;
-+		break;
-+	case MAX77843_CHG_HT_MODE:
-+	case MAX77843_CHG_TF_MODE:
-+	case MAX77843_CHG_TS_MODE:
-+		val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+	case MAX77843_CHG_OFF_MODE:
-+		val = POWER_SUPPLY_STATUS_DISCHARGING;
-+		break;
-+	default:
-+		val = POWER_SUPPLY_STATUS_UNKNOWN;
-+		break;
-+	}
-+
-+	return val;
-+}
-+
-+static const char *model_name = "MAX77843";
-+static const char *manufacturer = "Maxim Integrated";
-+
-+static int max77843_charger_get_property(struct power_supply *psy,
-+		enum power_supply_property psp,
-+		union power_supply_propval *val)
-+{
-+	struct max77843_charger *charger = container_of(psy,
-+				struct max77843_charger, psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = max77843_charger_get_status(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		val->intval = max77843_charger_get_health(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = max77843_charger_get_present(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = max77843_charger_get_online(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		val->intval = max77843_charger_get_now_current(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		val->intval = max77843_charger_get_max_current(charger);
-+		break;
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval =  model_name;
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = manufacturer;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static enum power_supply_property max77843_charger_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+static int max77843_charger_init_current_limit(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	struct max77843_charger_info *info = charger->info;
-+	unsigned int input_uamp_limit = info->input_uamp_limit;
-+	int ret;
-+	unsigned int reg_data, val;
-+
-+	ret = regmap_update_bits(regmap, MAX77843_CHG_REG_CHG_CNFG_02,
-+			MAX77843_CHG_OTG_ILIMIT_MASK,
-+			MAX77843_CHG_OTG_ILIMIT_900);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"Failed to write OTG current limit: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (input_uamp_limit == MAX77843_CHG_INPUT_CURRENT_LIMIT_MIN) {
-+		reg_data = 0x03;
-+	} else if (input_uamp_limit == MAX77843_CHG_INPUT_CURRENT_LIMIT_MAX) {
-+		reg_data = 0x78;
-+	} else {
-+		if (input_uamp_limit < MAX77843_CHG_INPUT_CURRENT_LIMIT_REF)
-+			val = 0x03;
-+		else
-+			val = 0x02;
-+
-+		input_uamp_limit -= MAX77843_CHG_INPUT_CURRENT_LIMIT_MIN;
-+		input_uamp_limit /= MAX77843_CHG_INPUT_CURRENT_LIMIT_STEP;
-+		reg_data = val + input_uamp_limit;
-+	}
-+
-+	ret = regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_09, reg_data);
-+	if (ret)
-+		dev_err(charger->dev,
-+			"Failed to write charge current limit: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int max77843_charger_init_top_off(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	struct max77843_charger_info *info = charger->info;
-+	unsigned int top_off_uamp = info->top_off_uamp;
-+	int ret;
-+	unsigned int reg_data;
-+
-+	if (top_off_uamp == MAX77843_CHG_TOP_OFF_CURRENT_MIN) {
-+		reg_data = 0x00;
-+	} else if (top_off_uamp == MAX77843_CHG_TOP_OFF_CURRENT_MAX) {
-+		reg_data = 0x07;
-+	} else {
-+		top_off_uamp -= MAX77843_CHG_TOP_OFF_CURRENT_MIN;
-+		top_off_uamp /= MAX77843_CHG_TOP_OFF_CURRENT_STEP;
-+		reg_data = top_off_uamp;
-+	}
-+
-+	ret = regmap_update_bits(regmap, MAX77843_CHG_REG_CHG_CNFG_03,
-+			MAX77843_CHG_TOP_OFF_CURRENT_MASK, reg_data);
-+	if (ret)
-+		dev_err(charger->dev,
-+				"Failed to write top off current: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int max77843_charger_init_fast_charge(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	struct max77843_charger_info *info = charger->info;
-+	unsigned int fast_charge_uamp = info->fast_charge_uamp;
-+	int ret;
-+	unsigned int reg_data;
-+
-+	if (fast_charge_uamp < info->input_uamp_limit) {
-+		reg_data = 0x09;
-+	} else if (fast_charge_uamp == MAX77843_CHG_FAST_CHG_CURRENT_MIN) {
-+		reg_data = 0x02;
-+	} else if (fast_charge_uamp == MAX77843_CHG_FAST_CHG_CURRENT_MAX) {
-+		reg_data = 0x3f;
-+	} else {
-+		fast_charge_uamp -= MAX77843_CHG_FAST_CHG_CURRENT_MIN;
-+		fast_charge_uamp /= MAX77843_CHG_FAST_CHG_CURRENT_STEP;
-+		reg_data = 0x02 + fast_charge_uamp;
-+	}
-+
-+	ret = regmap_update_bits(regmap, MAX77843_CHG_REG_CHG_CNFG_02,
-+			MAX77843_CHG_FAST_CHG_CURRENT_MASK, reg_data);
-+	if (ret)
-+		dev_err(charger->dev,
-+			"Failed to write fast charge current: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int max77843_charger_init(struct max77843_charger *charger)
-+{
-+	struct regmap *regmap = charger->regmap;
-+	int ret;
-+
-+	ret = regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_06,
-+			MAX77843_CHG_WRITE_CAP_UNBLOCK);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"Failed to unblock write capability: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_write(regmap, MAX77843_CHG_REG_CHG_CNFG_01,
-+			MAX77843_CHG_RESTART_THRESHOLD_DISABLE);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"Failed to write charger restart threshold: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = max77843_charger_init_fast_charge(charger);
-+	if (ret) {
-+		dev_err(charger->dev,
-+				"Failed to set fast charge mode: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = max77843_charger_init_top_off(charger);
-+	if (ret) {
-+		dev_err(charger->dev, "Failed to set top off charge mode.\n");
-+		return ret;
-+	}
-+
-+	ret = max77843_charger_init_current_limit(charger);
-+	if (ret)
-+		dev_err(charger->dev, "Faied to set current limit.\n");
-+
-+	return 0;
-+}
-+
-+static struct max77843_charger_info *max77843_charger_dt_init(
-+		struct platform_device *pdev)
-+{
-+	struct max77843_charger_info *info;
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	if (!np) {
-+		dev_err(&pdev->dev, "No charger OF node\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = of_property_read_u32(np, "maxim,fast-charge-uamp",
-+			&info->fast_charge_uamp);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Cannot parse fast charge current.\n");
-+		return ERR_PTR(ret);
-+	}
-+
-+	ret = of_property_read_u32(np, "maxim,top-off-uamp",
-+			&info->top_off_uamp);
-+	if (ret) {
-+		dev_err(&pdev->dev,
-+			"Cannot parse primary charger termination voltage.\n");
-+		return ERR_PTR(ret);
-+	}
-+
-+	ret = of_property_read_u32(np, "maxim,input-uamp-limit",
-+			&info->input_uamp_limit);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Cannot parse input current limit value\n");
-+		return ERR_PTR(ret);
-+	}
-+
-+	return info;
-+}
-+
-+static int max77843_charger_probe(struct platform_device *pdev)
-+{
-+	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77843_charger *charger;
-+	int ret;
-+
-+	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
-+	if (!charger)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, charger);
-+	charger->dev = &pdev->dev;
-+	charger->max77843 = max77843;
-+	charger->client = max77843->i2c_chg;
-+	charger->regmap = max77843->regmap_chg;
-+
-+	charger->info = max77843_charger_dt_init(pdev);
-+	if (IS_ERR_OR_NULL(charger->info))
-+		return PTR_ERR(charger->info);
-+
-+	charger->psy.name	= "max77843-charger";
-+	charger->psy.type	= POWER_SUPPLY_TYPE_MAINS;
-+	charger->psy.get_property	= max77843_charger_get_property;
-+	charger->psy.properties		= max77843_charger_props;
-+	charger->psy.num_properties	= ARRAY_SIZE(max77843_charger_props);
-+
-+	ret = max77843_charger_init(charger);
-+	if (ret)
-+		return ret;
-+
-+	ret = power_supply_register(&pdev->dev, &charger->psy);
-+	if (ret) {
-+		dev_err(&pdev->dev,
-+			"Failed to register power supply %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int max77843_charger_remove(struct platform_device *pdev)
-+{
-+	struct max77843_charger *charger = platform_get_drvdata(pdev);
-+
-+	power_supply_unregister(&charger->psy);
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id max77843_charger_id[] = {
-+	{ "max77843-charger", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, max77843_charger_id);
-+
-+static struct platform_driver max77843_charger_driver = {
-+	.driver = {
-+		.name = "max77843-charger",
-+	},
-+	.probe = max77843_charger_probe,
-+	.remove = max77843_charger_remove,
-+	.id_table = max77843_charger_id,
-+};
-+module_platform_driver(max77843_charger_driver);
-+
-+MODULE_DESCRIPTION("Maxim MAX77843 charger driver");
-+MODULE_AUTHOR("Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>");
-+MODULE_LICENSE("GPL");
+
+TLDR for driver and subsystem maintainers
+=========================================
+Two patches of patchset change power_supply_register() function so in
+the same time they touch all drivers. I am kindly asking for acks,
+review and help in testing.
+
+Especially please take a look at:
+ - patch 2: power_supply: Move run-time configuration to separate structure
+ - patch 11: power_supply: Change ownership from driver to core
+
+These are huge.
+
+
+Problem to fix
+==============
+Patchset tries to fix invalid memory accesses occurring in following
+race scenario:
+
+Thread 1: charger manager, CONSUMER
+Thread 2: power supply driver, PROVIDER
+
+THREAD 1 (consumer)                THREAD 2 (provider)
+===================                ===================
+psy = power_supply_get_by_name()
+                                   Driver unbind, .remove
+                                     power_supply_unregister()
+                                     Device fully removed
+psy->get_property()
+
+The consumer of power supply will reference invalid memory because
+the provider already freed it.
+
+
+The fix
+=======
+To properly fix the race the patchset:
+1. Moves ownership of power_supply structure from driver (provider) to
+   power supply core.
+2. Adds power_supply_get_property()-like API for safe access by consumer.
+3. Adds power_supply_put() which will reclaim memory.
+
+
+I modifed all drivers I found. However I only compile tested them
+(plus Smatch, Sparse and coccicheck). I did not test them on real
+hardware (except max14577, max77693, max17040, max17042
+and charger-manager).
+
+
+What the patchset does in steps
+===============================
+1. Some preparation steps are necessary - patch 1 and 2. The driver
+   implementing power supply won't be able to fill structure before
+   calling power_supply_register(). So 'power_supply_config'
+   is introduced in patch 2 ("power_supply: Move run-time configuration
+   to separate structure"). Unfortunately this touches all drivers.
+   *All drivers are touched.*
+
+2. Safe API wrappers (and usage counter) are added (power_supply_*()).
+
+3. Patch 11: ownership of 'struct power_supply' is moved from driver
+   to the core.
+   *All drivers are touched.*
+
+4. power_supply_put() is added which reclaims resources.
+
+
+Dependencies
+============
+The patchset is rebased on v4.0-rc1 and my latest power supply changes:
+1. power_supply: ab8500_fg: Simplify creation and removal of sysfs
+   entries [4]
+2. compal-laptop: two fixes [5].
+3. twl4030_madc_battery, ipaq_micro_battery, lp8788-charger: fixes [6].
+
+Bisect-ability is preserved. All later patches depend on previous ones
+so it could be pulled in steps, but cherry-picking won't work.
+
+Patchset is available also here:
+https://git.linaro.org/people/marek.szyprowski/linux-srpol.git
+branch: v4.0-rc1-power-supply-core-ownership
+
+
+Changes since v3
+================
+1. Fix Jonghwa's email in his ack (spotted by Stefan Wahren)
+2. Update power_supply_register() documentation.
+3. Fix putting the reference to power supply in bq2415x_charger.c (put
+   it when it is non-NULL).
+4. Add acks: Robert Jarzmik (patch 20), Darren Hart (p. 2), Pavel
+   Machek (p. 1-3), Marc Dietrich (p. 2 and 11).
+
+
+Changes since v2
+================
+1. Rewrite all drivers to new power_supply_register().
+2. Add reviewed-by Bartlomiej Zolnierkiewicz (internal review)
+3. Add reviewed-by Sebastian Reichel [3] (to patches which I did not
+   change in major way between v2 and v3).
+4. Use atomic usage counter of power supply on each of:
+   a. register/unregister,
+   b. get/put.
+
+Changes since v1
+================
+1. Add new patches (1, 2, 11, 19).
+2. Preserved ack-s where there weren't any changes.
+3. Patch 3: Add use counter.
+4. Patch 3: Don't add wrapper for set_charged() because already exists
+   one.
+
+
+[1] https://lkml.org/lkml/2014/11/4/527
+[2] https://lkml.org/lkml/2014/10/16/89
+[3] https://lkml.org/lkml/2015/1/21/471
+[4] https://lkml.org/lkml/2015/1/29/612
+[5] https://lkml.org/lkml/2015/2/20/150
+[6] https://lkml.org/lkml/2015/2/20/170	
+
+Best regards,
+Krzysztof
+
+
+Krzysztof Kozlowski (20):
+  power_supply: Add driver private data
+  power_supply: Move run-time configuration to separate structure
+  power_supply: Add API for safe access of power supply function attrs
+  power_supply: sysfs: Use power_supply_*() API for accessing function
+    attrs
+  power_supply: 88pm860x_charger: Use power_supply_*() API for accessing
+    function attrs
+  power_supply: ab8500: Use power_supply_*() API for accessing function
+    attrs
+  mfd: ab8500: Use power_supply_*() API for accessing function attrs
+  power_supply: apm_power: Use power_supply_*() API for accessing
+    function attrs
+  power_supply: bq2415x_charger: Use power_supply_*() API for accessing
+    function attrs
+  power_supply: charger-manager: Use power_supply_*() API for accessing
+    function attrs
+  power_supply: Change ownership from driver to core
+  power_supply: Add power_supply_put for decrementing device reference
+    counter
+  power_supply: Increment power supply use counter when obtaining
+    references
+  power_supply: charger-manager: Decrement the power supply's device
+    reference counter
+  x86/olpc/xo1/sci: Use newly added power_supply_put API
+  x86/olpc/xo15/sci: Use newly added power_supply_put API
+  power_supply: 88pm860x_charger: Decrement the power supply's device
+    reference counter
+  power_supply: bq2415x_charger: Decrement the power supply's device
+    reference counter
+  mfd: ab8500: Decrement the power supply's device reference counter
+  arm: mach-pxa: Decrement the power supply's device reference counter
+
+ arch/arm/mach-pxa/raumfeld.c              |   4 +-
+ arch/x86/platform/olpc/olpc-xo1-sci.c     |   4 +-
+ arch/x86/platform/olpc/olpc-xo15-sci.c    |   4 +-
+ drivers/acpi/ac.c                         |  32 ++--
+ drivers/acpi/battery.c                    |  54 +++---
+ drivers/acpi/sbs.c                        |  68 +++++---
+ drivers/hid/hid-input.c                   |  51 +++---
+ drivers/hid/hid-sony.c                    |  43 +++--
+ drivers/hid/hid-wiimote-modules.c         |  41 +++--
+ drivers/hid/hid-wiimote.h                 |   3 +-
+ drivers/hid/wacom.h                       |   8 +-
+ drivers/hid/wacom_sys.c                   |  70 ++++----
+ drivers/mfd/ab8500-sysctrl.c              |   9 +-
+ drivers/platform/x86/compal-laptop.c      |  29 ++--
+ drivers/power/88pm860x_battery.c          |  40 +++--
+ drivers/power/88pm860x_charger.c          |  61 ++++---
+ drivers/power/ab8500_btemp.c              |  75 ++++----
+ drivers/power/ab8500_charger.c            | 139 ++++++++-------
+ drivers/power/ab8500_fg.c                 | 130 ++++++--------
+ drivers/power/abx500_chargalg.c           |  98 +++++------
+ drivers/power/apm_power.c                 |   6 +-
+ drivers/power/bq2415x_charger.c           | 107 ++++++------
+ drivers/power/bq24190_charger.c           | 103 ++++++-----
+ drivers/power/bq24735-charger.c           |  53 +++---
+ drivers/power/bq27x00_battery.c           |  70 ++++----
+ drivers/power/charger-manager.c           | 159 ++++++++++-------
+ drivers/power/collie_battery.c            |  75 ++++----
+ drivers/power/da9030_battery.c            |  33 ++--
+ drivers/power/da9052-battery.c            |  25 +--
+ drivers/power/ds2760_battery.c            |  56 +++---
+ drivers/power/ds2780_battery.c            |  45 +++--
+ drivers/power/ds2781_battery.c            |  47 +++--
+ drivers/power/ds2782_battery.c            |  30 ++--
+ drivers/power/generic-adc-battery.c       |  54 +++---
+ drivers/power/goldfish_battery.c          |  63 +++----
+ drivers/power/gpio-charger.c              |  42 +++--
+ drivers/power/intel_mid_battery.c         |  57 +++---
+ drivers/power/ipaq_micro_battery.c        |  34 ++--
+ drivers/power/isp1704_charger.c           |  49 +++---
+ drivers/power/jz4740-battery.c            |  37 ++--
+ drivers/power/lp8727_charger.c            |  94 +++++-----
+ drivers/power/lp8788-charger.c            |  62 ++++---
+ drivers/power/ltc2941-battery-gauge.c     |  51 +++---
+ drivers/power/max14577_charger.c          |  34 ++--
+ drivers/power/max17040_battery.c          |  31 ++--
+ drivers/power/max17042_battery.c          |  45 +++--
+ drivers/power/max77693_charger.c          |  32 ++--
+ drivers/power/max8903_charger.c           |  52 +++---
+ drivers/power/max8925_power.c             |  98 ++++++-----
+ drivers/power/max8997_charger.c           |  31 ++--
+ drivers/power/max8998_charger.c           |  32 ++--
+ drivers/power/olpc_battery.c              |  54 +++---
+ drivers/power/pcf50633-charger.c          | 105 +++++++-----
+ drivers/power/pda_power.c                 |  66 +++----
+ drivers/power/pm2301_charger.c            |  48 +++---
+ drivers/power/pm2301_charger.h            |   1 +
+ drivers/power/pmu_battery.c               |  42 +++--
+ drivers/power/power_supply_core.c         | 276 +++++++++++++++++++++++-------
+ drivers/power/power_supply_leds.c         |  25 +--
+ drivers/power/power_supply_sysfs.c        |  24 +--
+ drivers/power/rt5033_battery.c            |  27 +--
+ drivers/power/rx51_battery.c              |  27 +--
+ drivers/power/s3c_adc_battery.c           |  77 +++++----
+ drivers/power/sbs-battery.c               |  71 ++++----
+ drivers/power/smb347-charger.c            | 108 ++++++------
+ drivers/power/test_power.c                |  53 ++++--
+ drivers/power/tosa_battery.c              | 112 +++++++-----
+ drivers/power/tps65090-charger.c          |  43 +++--
+ drivers/power/twl4030_charger.c           |  65 ++++---
+ drivers/power/twl4030_madc_battery.c      |  41 +++--
+ drivers/power/wm831x_backup.c             |  26 ++-
+ drivers/power/wm831x_power.c              |  95 +++++-----
+ drivers/power/wm8350_power.c              |  89 +++++-----
+ drivers/power/wm97xx_battery.c            |  37 ++--
+ drivers/power/z2_battery.c                |  60 ++++---
+ drivers/staging/nvec/nvec_power.c         |  34 ++--
+ include/linux/hid.h                       |   6 +-
+ include/linux/mfd/abx500/ux500_chargalg.h |  11 +-
+ include/linux/mfd/rt5033.h                |   2 +-
+ include/linux/mfd/wm8350/supply.h         |   6 +-
+ include/linux/power/charger-manager.h     |   3 +-
+ include/linux/power_supply.h              |  70 ++++++--
+ 82 files changed, 2507 insertions(+), 1867 deletions(-)
+
 -- 
-1.7.9.5
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+1.9.1
