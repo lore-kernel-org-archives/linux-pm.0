@@ -1,65 +1,86 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] TWL4030 charger
-Date: Mon, 23 Feb 2015 12:25:02 +0100
-Message-ID: <CAJKOXPc5mFf3yjCy1_SRyKW4f0AQ3bEy9BzedCUH81Ls2GAmzQ@mail.gmail.com>
-References: <54E8F58D.8060506@laposte.net>
-	<54E9C271.1080902@laposte.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f172.google.com ([209.85.220.172]:62580 "EHLO
-	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbbBWLZE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 06:25:04 -0500
-Received: by mail-vc0-f172.google.com with SMTP id kv7so7092060vcb.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 03:25:02 -0800 (PST)
-In-Reply-To: <54E9C271.1080902@laposte.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jaewon Kim <jaewon02.kim@samsung.com>
+Subject: [PATCH v5 0/5] Add new MFD drvier for MAX77843
+Date: Mon, 23 Feb 2015 20:34:08 +0900
+Message-ID: <1424691253-11429-1-git-send-email-jaewon02.kim@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org
+Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas JOURDEN <nicolas.jourden@laposte.net>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, notasas@gmail.com
 
-2015-02-22 12:50 GMT+01:00 Nicolas JOURDEN <nicolas.jourden@laposte.net=
->:
-> Hello,
->
-> Looks like my mailer changed the format/indent for the patch.
-> This patch fix the TWL4030 charger module for the RTC battery.
->
+This patch series adds MAX77843(Multi Function Device) driver.
+The MAX77843 includes MUIC(Micro USB Interface Controller), Li+ Charger
+with Fuel Gauge, 2 safeout LDOs for USB device and haptic controller using PWM.
+It is interfaced to host controller using I2C. 
 
-Could you put a proper title for this patch describing in few words
-what is fixed? Additionally could you describe the exact fix details
-in commit message. For example these details could be useful:
-1. What is the problem,
-2. When the problem appears (or how the problem can be reproduced).
-3. What is the "fix".
+Changes in v5:
+MFD Core
+ - Use bracket in complex define.
+ - Delete unnecessary letter '++'
+Charger
+ - fix Kconfig merge conflict with Kernel version4.0
 
-I am asking for these details to better understand the error you found
-and the fix for it.
+Changes in v4:
+MFD Core
+ - Fix indentation
+ - Add haptic register define in header
+HAPTIC
+ - Add haptic driver
 
-Best regards,
-Krzysztof
+Changes in v3:
+MFD Core
+ - Fix wrong description and indentation in header.
+ - Remove unnecessary variable.
+Regulator
+ - Use ARRAY_SIZE() instead of define.
 
->
-> Signed-off-by: Nicolas JOURDEN <nicolas.jourden@laposte.net>
-> ---
-> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_=
-charger.c
-> index 2598c58..89184ae 100644
-> --- a/drivers/power/twl4030_charger.c
-> +++ b/drivers/power/twl4030_charger.c
-> @@ -719,10 +719,11 @@ static struct platform_driver twl4030_bci_drive=
-r =3D {
->                 .owner  =3D THIS_MODULE,
->                 .of_match_table =3D of_match_ptr(twl_bci_of_match),
->         },
-> +       .probe  =3D twl4030_bci_probe,
->         .remove =3D __exit_p(twl4030_bci_remove),
->  };
->
-> -module_platform_driver_probe(twl4030_bci_driver, twl4030_bci_probe);
-> +module_platform_driver(twl4030_bci_driver);
->
->  MODULE_AUTHOR("Gra=C3=85=C2=BEvydas Ignotas");
->  MODULE_DESCRIPTION("TWL4030 Battery Charger Interface driver");
+Changes in v2:
+MFD Core
+ - Fix charger regmap handle and typo.
+MUIC
+ - Cleanup enum list.
+ - Set path before send excon event.
+ - Fix variable names and typos for readability.
+Charger
+ - Remove unnecessary header.
+ - Chnage error message more readable.
+ - Remove unnecessary lines.
+Fuelgauge
+ - Fix regmap_config and use regmap_read.
+ - Add i2c_unregister_device function on *_remove function.
+ - Fix typo in Kconfig.
+Doc
+ - Remove unnecessary lines.
+ - Add example of charger regulator.
+
+Beomho Seo (2):
+  power: max77843_charger: Add Max77843 charger device driver
+  power: max77843_battery: Add Max77843 fuel gauge device driver
+
+Jaewon Kim (3):
+  mfd: max77843: Add max77843 MFD driver core driver
+  Input: add haptic drvier on max77843
+  Documentation: Add device tree bindings document for max77843
+
+ Documentation/devicetree/bindings/mfd/max77843.txt |  110 +++++
+ drivers/input/misc/Kconfig                         |   12 +
+ drivers/input/misc/Makefile                        |    1 +
+ drivers/input/misc/max77843-haptic.c               |  356 ++++++++++++++
+ drivers/mfd/Kconfig                                |   14 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/max77843.c                             |  248 ++++++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/max77843_battery.c                   |  286 +++++++++++
+ drivers/power/max77843_charger.c                   |  508 ++++++++++++++++++++
+ include/linux/mfd/max77843-private.h               |  454 +++++++++++++++++
+ 12 files changed, 2008 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
+ create mode 100644 drivers/input/misc/max77843-haptic.c
+ create mode 100644 drivers/mfd/max77843.c
+ create mode 100644 drivers/power/max77843_battery.c
+ create mode 100644 drivers/power/max77843_charger.c
+ create mode 100644 include/linux/mfd/max77843-private.h
+
+-- 
+1.7.9.5
