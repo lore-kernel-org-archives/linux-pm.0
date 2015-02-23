@@ -1,55 +1,62 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus frequency
- driver
-Date: Mon, 23 Feb 2015 08:44:18 +0900
-Message-ID: <54EA69D2.7010706@samsung.com>
-References: <1420681257-3078-1-git-send-email-cw00.choi@samsung.com>
- <54DFE797.1020008@math.uni-bielefeld.de> <54E4FD40.8020206@gmx.net>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Mon, 23 Feb 2015 01:38:45 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
+References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
+ <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B73274624E@PGSMSX105.gar.corp.intel.com>
+ <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:64128 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752109AbbBVXoW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Feb 2015 18:44:22 -0500
-In-reply-to: <54E4FD40.8020206@gmx.net>
+Received: from mga01.intel.com ([192.55.52.88]:2886 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751290AbbBWBit convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Feb 2015 20:38:49 -0500
+In-Reply-To: <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tobias Jakobi <liquid.acid@gmx.net>
-Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, myungjoo.ham@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, mark.rutland@arm.com, a.kesavan@samsung.com, tomasz.figa@gmail.com, k.kozlowski@samsung.com, b.zolnierkie@samsung.com, robh+dt@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+To: "Kweh, Hock Leong" <hock.leong.kweh@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bryan O'Donoghue <pure.logic@nexus-software.ie>
 
-Hi Tobias,
+>Just to bring out for discussion, do you think we should put a "safety range"
+>for reporting out the critical trip temperature value (mean the value from
+>register minus 1 or 2 degree)?
+>
+>Just wondering if this is needed for the software to have the sufficient
+>shutdown time before the HW make a hard power cut off when the
+>critical trip point is reached.
 
-First of all, thanks for your test.
+I assume that the suggestion is meant for the case where thermal register is
+not locked by BIOS. It is not a bad idea to have some protection against
+wrong configuration on critical trip point by user.
+Looking through the data-sheet in Quark, I could not find an recommended
+temperature. So, I propose that we use the same value set by BIOS today
+- 105C as the maximum. 
 
-On 02/19/2015 05:59 AM, Tobias Jakobi wrote:
-> Hello again,
-> 
-> Tobias Jakobi wrote
->> I've tested the series on my Odroid-X2 (by adapting the TRATS2 changes),
->> and so far I haven't seen any issues. With the system being idle one can
->> see that the 'simple_ondemand' devfreq governor clocks down both memory
->> busses to the lowest state.
-> 
-> looks I was too hasty the last time. Actually this series breaks HDMI
-> output for me (or at least with 'simple_ondemand' governor, haven't
-> tried with performance yet).
-> 
-> I tried to run some simple application, but it hangs in uninterruptible
-> sleep immediately, probably before the first page flip. Going to check
-> this more thoroughly.
-> 
-> Maybe some parts of the hdmi subsystem don't like the lower clocks?
-
-As you thought, when maintaining lower clock of memory bus frequency,
-some issue related to multimedia feature will happen.
-
-Separately, We have to check the miminum lower clock for working of multimedia feature.
-and then multimedia or other IP have to request it to DVFS driver (memory busfreq driver).
-But, latest mainline kernel currently has not some way to inform minimum clock to DVFS driver.
-
-So, If you check the miminum clock for hdmi, I'll use this clock as minumu frequency of dvfs table.
-
-Thanks,
-Chanwoo Choi
+>> +static struct soc_sensor_entry *alloc_soc_dts(void)
+>> +{
+>> +	struct soc_sensor_entry *aux_entry;
+>> +	int err;
+>> +	u32 out;
+>> +	int wr_mask;
+>> +
+>> +	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
+>
+>Wondering is it possible to use the resource-managed functions (for e.g.
+>devm_kzalloc())? This could help the driver looks more neat and clean
+>where the resource-managed framework will help you take care all the
+>kfree().
+>
+>Understand that the flow here is to call the thermal_zone_device_register()
+>function after this aux_entry allocation.
+>
+>But thinking would it also working if change the flow to call
+>thermal_zone_device_register() function 1st to obtain the
+>thermal_zone_device
+>then later on perform devm_kzalloc() and assign it back to devdata.
+>
+Ok, it is worth exploring on this devm_kzalloc() for neatness. 
+Thanks!
