@@ -1,90 +1,356 @@
-From: "Kweh, Hock Leong" <hock.leong.kweh@intel.com>
-Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
-Date: Mon, 23 Feb 2015 07:38:53 +0000
-Message-ID: <F54AEECA5E2B9541821D670476DAE19C2B8AC650@PGSMSX102.gar.corp.intel.com>
-References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
- <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
- <AF233D1473C1364ABD51D28909A1B1B73274624E@PGSMSX105.gar.corp.intel.com>
- <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
- <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:41203 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbbBWHi6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 02:38:58 -0500
-In-Reply-To: <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Jaewon Kim <jaewon02.kim@samsung.com>
+Subject: [PATCH v4 3/5] power: max77843_battery: Add Max77843 fuel gauge device
+ driver
+Date: Mon, 23 Feb 2015 17:09:49 +0900
+Message-ID: <1424678991-13978-4-git-send-email-jaewon02.kim@samsung.com>
+References: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org
+Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Ong, Boon Leong" <boon.leong.ong@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bryan O'Donoghue <pure.logic@nexus-software.ie>
 
-> -----Original Message-----
-> From: Ong, Boon Leong
-> Sent: Monday, February 23, 2015 9:39 AM
-> Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal drive=
-r
->=20
-> >Just to bring out for discussion, do you think we should put a "safe=
-ty range"
-> >for reporting out the critical trip temperature value (mean the valu=
-e from
-> >register minus 1 or 2 degree)?
-> >
-> >Just wondering if this is needed for the software to have the suffic=
-ient
-> >shutdown time before the HW make a hard power cut off when the
-> >critical trip point is reached.
->=20
-> I assume that the suggestion is meant for the case where thermal regi=
-ster is
-> not locked by BIOS. It is not a bad idea to have some protection agai=
-nst
-> wrong configuration on critical trip point by user.
-> Looking through the data-sheet in Quark, I could not find an recommen=
-ded
-> temperature. So, I propose that we use the same value set by BIOS tod=
-ay
-> - 105C as the maximum.
+From: Beomho Seo <beomho.seo@samsung.com>
 
-What I mean here is that even the BIOS locks it and used the maximum va=
-lue
-105 =B0C for the critical trip point, should we -1 or -2 (104/103 =B0C)=
- in this driver
-to let the system shut down before the actual trip point hit, in case t=
-he HW
-performs a HW power cut off before the Linux kernel has enough time to
-shut down properly?
+This patch adds device driver of max77843 fuel gauge.
+The driver support for battery fuel gauge in Maxim Max77843.
+It is fuel-gauge systems for lithuum-ion batteries in handled and
+portable devices.
 
->=20
-> > > +static struct soc_sensor_entry *alloc_soc_dts(void)
-> > > +{
-> > > +	struct soc_sensor_entry *aux_entry;
-> > > +	int err;
-> > > +	u32 out;
-> > > +	int wr_mask;
-> > > +
-> > > +	aux_entry =3D kzalloc(sizeof(*aux_entry), GFP_KERNEL);
-> >
-> >Wondering is it possible to use the resource-managed functions (for =
-e.g.
-> >devm_kzalloc())? This could help the driver looks more neat and clea=
-n
-> >where the resource-managed framework will help you take care all the
-> >kfree().
-> >
-> >Understand that the flow here is to call the thermal_zone_device_reg=
-ister()
-> >function after this aux_entry allocation.
-> >
-> >But thinking would it also working if change the flow to call
-> >thermal_zone_device_register() function 1st to obtain the
-> >thermal_zone_device
-> >then later on perform devm_kzalloc() and assign it back to devdata.
-> >
-> Ok, it is worth exploring on this devm_kzalloc() for neatness.
-> Thanks!
+Cc: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+---
+ drivers/power/Kconfig            |    9 ++
+ drivers/power/Makefile           |    1 +
+ drivers/power/max77843_battery.c |  286 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 296 insertions(+)
+ create mode 100644 drivers/power/max77843_battery.c
+
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index a054a28..cea0ea2 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -212,6 +212,15 @@ config BATTERY_MAX17042
+ 	  with MAX17042. This driver also supports max17047/50 chips which are
+ 	  improved version of max17042.
+ 
++config BATTERY_MAX77843
++	tristate "Maxim MAX77843 Fuel Gauge"
++	depends on MFD_MAX77843
++	help
++	  This adds support for battery fuel gauge in Maxim MAX77843. It is
++	  fuel-gauge for a lithium-ion batteries with a single cell and can be
++	  found in portable devices. The MAX17040 is configured to operate with
++	  a single lithium cell.
++
+ config BATTERY_Z2
+ 	tristate "Z2 battery driver"
+ 	depends on I2C && MACH_ZIPIT2
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index 212c6a2..ae0d795 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -33,6 +33,7 @@ obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
+ obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
+ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
++obj-$(CONFIG_BATTERY_MAX77843)	+= max77843_battery.o
+ obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
+ obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
+ obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
+diff --git a/drivers/power/max77843_battery.c b/drivers/power/max77843_battery.c
+new file mode 100644
+index 0000000..0c59a16
+--- /dev/null
++++ b/drivers/power/max77843_battery.c
+@@ -0,0 +1,286 @@
++/*
++ * Fuel gauge driver for Maxim MAX77843
++ *
++ * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
++ * Author: Beomho Seo <beomho.seo@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published bythe Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/mfd/max77843-private.h>
++
++struct max77843_battery {
++	struct device		*dev;
++	struct max77843		*max77843;
++	struct i2c_client	*client;
++	struct regmap		*regmap;
++	struct power_supply	psy;
++};
++
++static int max77843_battery_get_capacity(struct max77843_battery *battery)
++{
++	struct regmap *regmap = battery->regmap;
++	int ret, val;
++	unsigned int reg_data;
++
++	ret = regmap_read(regmap, MAX77843_FG_REG_SOCREP, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data >> 8;
++
++	return val;
++}
++
++static int max77843_battery_get_energy_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++		reg = MAX77843_FG_REG_FULLCAP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++		reg = MAX77843_FG_REG_REMCAP_REP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		reg = MAX77843_FG_REG_REMCAP_AV;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data;
++
++	return val;
++}
++
++static int max77843_battery_get_current_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		reg = MAX77843_FG_REG_CURRENT;
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		reg = MAX77843_FG_REG_AVG_CURRENT;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data;
++	if (val & 0x8000) {
++		/* Negative */
++		val = ~val & 0xffff;
++		val++;
++		val *= -1;
++	}
++	/* Unit of current is mA */
++	val =  val * 15625 / 100000;
++
++	return val;
++}
++
++static int max77843_battery_get_voltage_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		reg = MAX77843_FG_REG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		reg = MAX77843_FG_REG_AVG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		reg = MAX77843_FG_REG_OCV;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = (reg_data >> 4)  * 125;
++	val /= 100;
++
++	return val;
++}
++
++static const char *model_name = "MAX77843";
++static const char *manufacturer = "Maxim Integrated";
++
++static int max77843_battery_get_property(struct power_supply *psy,
++		enum power_supply_property psp,
++		union power_supply_propval *val)
++{
++	struct max77843_battery *battery = container_of(psy,
++				struct max77843_battery, psy);
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		val->intval = max77843_battery_get_voltage_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		val->intval = max77843_battery_get_current_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		val->intval = max77843_battery_get_energy_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = max77843_battery_get_capacity(battery);
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval =  model_name;
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = manufacturer;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property max77843_battery_props[] = {
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_OCV,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_ENERGY_FULL,
++	POWER_SUPPLY_PROP_ENERGY_NOW,
++	POWER_SUPPLY_PROP_ENERGY_AVG,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++};
++
++static const struct regmap_config max77843_fuel_regmap_config = {
++	.reg_bits	= 8,
++	.val_bits	= 16,
++	.val_format_endian = REGMAP_ENDIAN_NATIVE,
++	.max_register	= MAX77843_FG_END,
++};
++
++static int max77843_battery_probe(struct platform_device *pdev)
++{
++	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
++	struct max77843_battery *battery;
++	int ret;
++
++	battery = devm_kzalloc(&pdev->dev, sizeof(*battery), GFP_KERNEL);
++	if (!battery)
++		return -ENOMEM;
++
++	battery->dev = &pdev->dev;
++	battery->max77843 = max77843;
++
++	battery->client = i2c_new_dummy(max77843->i2c->adapter, I2C_ADDR_FG);
++	if (!battery->client) {
++		dev_err(&pdev->dev, "Failed to get dummy i2c client.\n");
++		return PTR_ERR(battery->client);
++	}
++	i2c_set_clientdata(battery->client, max77843);
++
++	battery->regmap = devm_regmap_init_i2c(battery->client,
++			&max77843_fuel_regmap_config);
++	if (IS_ERR(battery->regmap)) {
++		ret = PTR_ERR(battery->regmap);
++		goto err_i2c;
++	}
++
++	platform_set_drvdata(pdev, battery);
++
++	battery->psy.name	= "max77843-fuelgauge";
++	battery->psy.type	= POWER_SUPPLY_TYPE_BATTERY;
++	battery->psy.get_property	= max77843_battery_get_property;
++	battery->psy.properties		= max77843_battery_props;
++	battery->psy.num_properties	= ARRAY_SIZE(max77843_battery_props);
++
++	ret = power_supply_register(&pdev->dev, &battery->psy);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed  to register power supply\n");
++		goto err_i2c;
++	}
++
++	return 0;
++
++err_i2c:
++	i2c_unregister_device(battery->client);
++
++	return ret;
++}
++
++static int max77843_battery_remove(struct platform_device *pdev)
++{
++	struct max77843_battery *battery = platform_get_drvdata(pdev);
++
++	power_supply_unregister(&battery->psy);
++
++	i2c_unregister_device(battery->client);
++
++	return 0;
++}
++
++static const struct platform_device_id max77843_battery_id[] = {
++	{ "max77843-fuelgauge", },
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, max77843_battery_id);
++
++static struct platform_driver max77843_battery_driver = {
++	.driver = {
++		.name = "max77843-fuelgauge",
++	},
++	.probe = max77843_battery_probe,
++	.remove = max77843_battery_remove,
++	.id_table = max77843_battery_id,
++};
++module_platform_driver(max77843_battery_driver);
++
++MODULE_DESCRIPTION("Maxim MAX77843 fuel gauge driver");
++MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
 
