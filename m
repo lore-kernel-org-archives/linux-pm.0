@@ -1,150 +1,89 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: [PATCH v4 5/5] Documentation: Add device tree bindings document for
- max77843
-Date: Mon, 23 Feb 2015 17:09:51 +0900
-Message-ID: <1424678991-13978-6-git-send-email-jaewon02.kim@samsung.com>
-References: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org
-Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Mon, 23 Feb 2015 08:19:39 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B732757065@PGSMSX105.gar.corp.intel.com>
+References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
+ <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B73274624E@PGSMSX105.gar.corp.intel.com>
+ <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
+ <F54AEECA5E2B9541821D670476DAE19C2B8AC650@PGSMSX102.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:42473 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751296AbbBWITo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 03:19:44 -0500
+In-Reply-To: <F54AEECA5E2B9541821D670476DAE19C2B8AC650@PGSMSX102.gar.corp.intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Kweh, Hock Leong" <hock.leong.kweh@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bryan O'Donoghue <pure.logic@nexus-software.ie>
 
-Add document describing device tree bindings for max77843 MFD.
-Drivers: MFD core, regulator, extcon, charger and fuelgauge.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
----
- Documentation/devicetree/bindings/mfd/max77843.txt |  110 ++++++++++++++++++++
- 1 file changed, 110 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
+>-----Original Message-----
+>From: Kweh, Hock Leong
+>Sent: Monday, February 23, 2015 3:39 PM
+>To: Ong, Boon Leong; Zhang, Rui; edubezval@gmail.com
+>Cc: linux-pm@vger.kernel.org; LKML; Bryan O'Donoghue
+>Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+>
+>> -----Original Message-----
+>> From: Ong, Boon Leong
+>> Sent: Monday, February 23, 2015 9:39 AM
+>> Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driv=
+er
+>>
+>> >Just to bring out for discussion, do you think we should put a "saf=
+ety range"
+>> >for reporting out the critical trip temperature value (mean the val=
+ue from
+>> >register minus 1 or 2 degree)?
+>> >
+>> >Just wondering if this is needed for the software to have the suffi=
+cient
+>> >shutdown time before the HW make a hard power cut off when the
+>> >critical trip point is reached.
+>>
+>> I assume that the suggestion is meant for the case where thermal reg=
+ister is
+>> not locked by BIOS. It is not a bad idea to have some protection aga=
+inst
+>> wrong configuration on critical trip point by user.
+>> Looking through the data-sheet in Quark, I could not find an recomme=
+nded
+>> temperature. So, I propose that we use the same value set by BIOS to=
+day
+>> - 105C as the maximum.
+>
+>What I mean here is that even the BIOS locks it and used the maximum v=
+alue
+>105 =B0C for the critical trip point, should we -1 or -2 (104/103 =B0C=
+) in this driver
+>to let the system shut down before the actual trip point hit, in case =
+the HW
+>performs a HW power cut off before the Linux kernel has enough time to
+>shut down properly?
+>
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77843.txt b/Documentation/devicetree/bindings/mfd/max77843.txt
-new file mode 100644
-index 0000000..76426ca
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77843.txt
-@@ -0,0 +1,110 @@
-+Maxim MAX77843 multi-function device
-+
-+MAX77843 is a Multi-Function Device with the following submodules:
-+- PMIC	  : 2 SAFEOUT LDOs for USB device
-+- CHARGER : Li+ battery charger with Fuel Gauge
-+- MUIC	  : Micro USB Interface Controller
-+- HAPTIC  : Motor Controller for tactile feedback
-+
-+It is interfaced to host controller using I2C.
-+
-+Required properties:
-+- compatible : Must be "maxim,max77843".
-+- reg : I2C slave address of PMIC block.
-+- interrupts : I2C line for main SoCs.
-+- interrupt-parent : The parent of interrupt controller.
-+
-+Optional properties:
-+- regulators : The regulators of max77843 have to be instantiated under subnode
-+	named "regulators" using the following format.
-+
-+	[*]refer : Documentation/devicetree/bindings/regulator/regulator.txt
-+
-+	regulators {
-+		SAFEOUT {
-+			regulator-name = "SAFEOUT";
-+		};
-+	}
-+
-+	List of valid regulator names:
-+	- SAFEOUT1, SAFEOUT2, CHARGER.
-+
-+- max77843-muic : This properties used by extcon consumers.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-muic".
-+
-+- max77843-charger : There battery charger of MAX77843 have to be instantiated
-+	under sub-node named "max77843-charger" using the following format.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-charger".
-+		- maxim,fast-charge-uamp : Fast charge current levels are
-+			100 mA to 3150 mA programmed by I2C per 100 mA.
-+		- maxim,top-off-uamp : Top off current threshold levels are
-+			125 mA to 650 mA programmed by I2C per 75 mA.
-+		- maxim,input-uamp-limit : Input current limit levels are
-+			100 mA to 3533 mA programmed by I2C per 33 mA.
-+
-+- max77843-fuelgauge : There fuelgauge of MAX77843 have to be instantiated
-+	under sub-node named "max77843-fuelgauge" using the following format.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-fuelgauge".
-+
-+- max77843-haptic : The MAX77843 haptic device provides the tactile feedback
-+	to the user by using PWM(Pulse Width Modulation) signal.
-+	Required properties:
-+		- compatible : Must be "maxim,max77843-hpatic".
-+		- haptic-supply : Power supply for the haptic motor.
-+			[*] refer Documentation/devicetree/
-+					bindings/regulator/regulator.txt
-+		- pwms : phandle for the PWM(Pulse Width Modulation) device.
-+			PWM properties should be named "pwms".
-+			[*] refer Documentation/devicetree/bindings/pwm/pwm.txt
-+
-+Example:
-+	max77843@66 {
-+		compatible = "samsung,max77843";
-+		reg = <0x66>;
-+		interrupt-parent = <&gpa1>;
-+		interrupts = <5 2>;
-+
-+		regulators {
-+			SAFEOUT1 {
-+				regulator-name = "SAFEOUT1";
-+				regulator-min-microvolt = <3300000>;
-+				regulator-max-microvolt = <4950000>;
-+			};
-+			SAFEOUT2 {
-+				regulator-name = "SAFEOUT2";
-+				regulator-min-microvolt = <3300000>;
-+				regulator-max-microvolt = <4950000>;
-+			};
-+			CHARGER {
-+				regulator-name = "CHARGER";
-+				regulator-min-microamp = <100000>;
-+				regulator-max-microamp = <3150000>;
-+			};
-+		};
-+
-+		haptic {
-+			compatible = "maxim,max77843-haptic";
-+			haptic-supply = <&haptic_supply>;
-+			pwms = <&pwm 0 40000 0>;
-+			pwm-names = "haptic";
-+		};
-+
-+		max77843-muic {
-+			compatible = "maxim,max77843-muic";
-+		};
-+
-+		max77843-charger {
-+			compatible = "maxim,max77843-charger";
-+			maxim,fast-charge-uamp = <450000>;
-+			maxim,top-off-uamp = <125000>;
-+			maxim,input-uamp-limit = <500000>;
-+		};
-+
-+		max77843-fuelgauge {
-+			compatible = "maxim,max77843-fuelgauge";
-+		};
-+
-+	};
--- 
-1.7.9.5
+The shut-down is triggered by thermal management framework by comparing
+current DTS temperature against the value set on trip point. I don't th=
+ink the=20
+framework allows thermal driver to trigger system shutdown proactively =
+several
+degree Celsius before the set critical trip point.
+
+So, IMO, we just need an upper-bound for critical trip point to prevent=
+ user
+for setting unreasonably trip point value that is too high and cause th=
+e chip
+to be fried before thermal management framework can start shutdown.=20
+As current BIOS selects 105C as the max, I think that this is a reasona=
+ble to use
+here.
+
+
