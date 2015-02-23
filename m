@@ -1,144 +1,90 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: [PATCH v3] PM / sleep: add configurable delay for pm_test
-Date: Sun, 22 Feb 2015 21:16:49 -0800
-Message-ID: <20150223051649.GC24441@norris-Latitude-E6410>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20150222082654.GB24441@norris-Latitude-E6410>
+From: "Kweh, Hock Leong" <hock.leong.kweh@intel.com>
+Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Mon, 23 Feb 2015 07:38:53 +0000
+Message-ID: <F54AEECA5E2B9541821D670476DAE19C2B8AC650@PGSMSX102.gar.corp.intel.com>
+References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
+ <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B73274624E@PGSMSX105.gar.corp.intel.com>
+ <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:38749 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbbBWFQz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 00:16:55 -0500
-Content-Disposition: inline
-In-Reply-To: <20150222082654.GB24441@norris-Latitude-E6410>
+Received: from mga09.intel.com ([134.134.136.24]:41203 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbbBWHi6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 02:38:58 -0500
+In-Reply-To: <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Florian Fainelli <f.fainelli@gmail.com>, Kevin Cernekee <cernekee@chromium.org>, Chirantan Ekbote <chirantan@chromium.org>
+To: "Ong, Boon Leong" <boon.leong.ong@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bryan O'Donoghue <pure.logic@nexus-software.ie>
 
-When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
-selecting one of a few suspend test modes, where rather than entering a
-full suspend state, the kernel will perform some subset of suspend
-steps, wait 5 seconds, and then resume back to normal operation.
+> -----Original Message-----
+> From: Ong, Boon Leong
+> Sent: Monday, February 23, 2015 9:39 AM
+> Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal drive=
+r
+>=20
+> >Just to bring out for discussion, do you think we should put a "safe=
+ty range"
+> >for reporting out the critical trip temperature value (mean the valu=
+e from
+> >register minus 1 or 2 degree)?
+> >
+> >Just wondering if this is needed for the software to have the suffic=
+ient
+> >shutdown time before the HW make a hard power cut off when the
+> >critical trip point is reached.
+>=20
+> I assume that the suggestion is meant for the case where thermal regi=
+ster is
+> not locked by BIOS. It is not a bad idea to have some protection agai=
+nst
+> wrong configuration on critical trip point by user.
+> Looking through the data-sheet in Quark, I could not find an recommen=
+ded
+> temperature. So, I propose that we use the same value set by BIOS tod=
+ay
+> - 105C as the maximum.
 
-This mode is useful for (among other things) observing the state of the
-system just before entering a sleep mode, for debugging or analysis
-purposes. However, a constant 5 second wait is not sufficient for some
-sorts of analysis; for example, on an SoC, one might want to use
-external tools to probe the power states of various on-chip controllers
-or clocks.
+What I mean here is that even the BIOS locks it and used the maximum va=
+lue
+105 =B0C for the critical trip point, should we -1 or -2 (104/103 =B0C)=
+ in this driver
+to let the system shut down before the actual trip point hit, in case t=
+he HW
+performs a HW power cut off before the Linux kernel has enough time to
+shut down properly?
 
-This patch turns this 5 second delay into a configurable module
-parameter, so users can determine how long to wait in this
-pseudo-suspend state before resuming the system.
-
-Example (wait 30 seconds);
-
-  # echo 30 > /sys/module/suspend/parameters/pm_test_delay
-  # echo core > /sys/power/pm_test
-  # time echo mem  > /sys/power/state
-  ...
-  [   17.583625] suspend debug: Waiting for 30 second(s).
-  ...
-  real	0m30.381s
-  user	0m0.017s
-  sys	0m0.080s
-
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Kevin Cernekee <cernekee@chromium.org>
-Acked-by: Florian Fainelli <f.fainelli@gmail.com>
----
-v3: - document in a few more places
-
-v2: - make this a module param instead of an explicit sysfs file
-    - drop the for loop; mdelay() does the same loop internally
-    - decrease +36 lines of code and +2 lines of doc, to +6 lines of code and
-      +2 lines of doc
-
- Documentation/kernel-parameters.txt        |  7 +++++++
- Documentation/power/basic-pm-debugging.txt | 10 ++++++----
- kernel/power/suspend.c                     | 13 +++++++++++--
- 3 files changed, 24 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 176d4fe4f076..0b8a1fd0d08d 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -3433,6 +3433,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			improve throughput, but will also increase the
- 			amount of memory reserved for use by the client.
- 
-+	suspend.pm_test_delay=
-+			[SUSPEND]
-+			Sets the number of seconds to remain in a suspend test
-+			mode before resuming the system (see
-+			/sys/power/pm_test). Only available when CONFIG_PM_DEBUG
-+			is set. Default value is 5.
-+
- 	swapaccount=[0|1]
- 			[KNL] Enable accounting of swap in memory resource
- 			controller if no parameter or 1 is given or disable
-diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
-index edeecd447d23..b96098ccfe69 100644
---- a/Documentation/power/basic-pm-debugging.txt
-+++ b/Documentation/power/basic-pm-debugging.txt
-@@ -75,12 +75,14 @@ you should do the following:
- # echo platform > /sys/power/disk
- # echo disk > /sys/power/state
- 
--Then, the kernel will try to freeze processes, suspend devices, wait 5 seconds,
--resume devices and thaw processes.  If "platform" is written to
-+Then, the kernel will try to freeze processes, suspend devices, wait a few
-+seconds (5 by default, but configurable by the suspend.pm_test_delay module
-+parameter), resume devices and thaw processes.  If "platform" is written to
- /sys/power/pm_test , then after suspending devices the kernel will additionally
- invoke the global control methods (eg. ACPI global control methods) used to
--prepare the platform firmware for hibernation.  Next, it will wait 5 seconds and
--invoke the platform (eg. ACPI) global methods used to cancel hibernation etc.
-+prepare the platform firmware for hibernation.  Next, it will wait a
-+configurable number of seconds and invoke the platform (eg. ACPI) global
-+methods used to cancel hibernation etc.
- 
- Writing "none" to /sys/power/pm_test causes the kernel to switch to the normal
- hibernation/suspend operations.  Also, when open for reading, /sys/power/pm_test
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index c347e3ce3a55..aee23dab0a55 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -28,6 +28,7 @@
- #include <linux/ftrace.h>
- #include <trace/events/power.h>
- #include <linux/compiler.h>
-+#include <linux/moduleparam.h>
- 
- #include "power.h"
- 
-@@ -204,12 +205,20 @@ static bool platform_suspend_again(suspend_state_t state)
- 		suspend_ops->suspend_again() : false;
- }
- 
-+#ifdef CONFIG_PM_DEBUG
-+static unsigned int pm_test_delay = 5;
-+module_param(pm_test_delay, uint, 0644);
-+MODULE_PARM_DESC(pm_test_delay,
-+		 "Number of seconds to wait before resuming from suspend test");
-+#endif
-+
- static int suspend_test(int level)
- {
- #ifdef CONFIG_PM_DEBUG
- 	if (pm_test_level == level) {
--		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
--		mdelay(5000);
-+		printk(KERN_INFO "suspend debug: Waiting for %d second(s).\n",
-+				pm_test_delay);
-+		mdelay(pm_test_delay * 1000);
- 		return 1;
- 	}
- #endif /* !CONFIG_PM_DEBUG */
--- 
-2.3.0
+>=20
+> > > +static struct soc_sensor_entry *alloc_soc_dts(void)
+> > > +{
+> > > +	struct soc_sensor_entry *aux_entry;
+> > > +	int err;
+> > > +	u32 out;
+> > > +	int wr_mask;
+> > > +
+> > > +	aux_entry =3D kzalloc(sizeof(*aux_entry), GFP_KERNEL);
+> >
+> >Wondering is it possible to use the resource-managed functions (for =
+e.g.
+> >devm_kzalloc())? This could help the driver looks more neat and clea=
+n
+> >where the resource-managed framework will help you take care all the
+> >kfree().
+> >
+> >Understand that the flow here is to call the thermal_zone_device_reg=
+ister()
+> >function after this aux_entry allocation.
+> >
+> >But thinking would it also working if change the flow to call
+> >thermal_zone_device_register() function 1st to obtain the
+> >thermal_zone_device
+> >then later on perform devm_kzalloc() and assign it back to devdata.
+> >
+> Ok, it is worth exploring on this devm_kzalloc() for neatness.
+> Thanks!
 
