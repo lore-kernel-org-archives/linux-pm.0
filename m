@@ -1,117 +1,503 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/5] Various fixes to weights in the thermal framework
-Date: Mon, 23 Feb 2015 16:30:45 -0400
-Message-ID: <20150223203042.GA30100@developer.amazonguestwifi.org>
-References: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
+Subject: Re: [PATCH v5] thermal: Add QPNP PMIC temperature alarm driver
+Date: Mon, 23 Feb 2015 16:51:24 -0400
+Message-ID: <20150223205121.GA30865@developer.amazonguestwifi.org>
+References: <1423156376-16041-1-git-send-email-iivanov@mm-sol.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:45852 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbbBWVee (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 16:34:34 -0500
-Received: by pdjz10 with SMTP id z10so28261763pdj.12
-        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 13:34:34 -0800 (PST)
+	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424275465-16144-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1423156376-16041-1-git-send-email-iivanov@mm-sol.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
 
---PEIAKu/WMn1b1Hv9
+--a8Wt8u1KmwUX3Y2C
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-
-Rui,
-
-On Wed, Feb 18, 2015 at 04:04:20PM +0000, Javi Merino wrote:
-> Weights can be specified in the device tree, but the code currently
-> ignores the value.  Patch 1 fixes that by putting the weight in the
-> thermal_instance.  Patches 2-3 simplify the code in the fair share
-> governor by using the weight in the now populated thermal_instance.
-> Patch 4 exports the weight to sysfs.  Patch 5 drops the requirement of
-> all weights needing to add up to a hundred.
+On Thu, Feb 05, 2015 at 07:12:56PM +0200, Ivan T. Ivanov wrote:
+> Add support for the temperature alarm peripheral found inside
+> Qualcomm plug-and-play (QPNP) PMIC chips. The temperature alarm
+> peripheral outputs a pulse on an interrupt line whenever the
+> thermal over temperature stage value changes.
 >=20
-> Existing thermal zones using this governor should still work, as these
-> series shouldn't make any functional change for them.  However,
-> thermal zones that previously weren't able to use the fair share
-> governor (because they were being register through device tree or
-> because they weren't populating thermal_bind_params) now populate the
-> weight properly and are able to use the governor.
+> Register a thermal sensor. The temperature reported by this thermal
+> sensor device should reflect the actual PMIC die temperature if an
+> ADC is present on the given PMIC. If no ADC is present, then the
+> reported temperature should be estimated from the over temperature
+> stage value.
 >=20
-> Changes since v2[0]:
->    - Change the default weight to 0.  For the fair share governor, if
->      all weights are 0, cooling devices get the same percentage.
+> Cc: David Collins <collinsd@codeaurora.org>
+> Signed-off-by: Ivan T. Ivanov <iivanov@mm-sol.com>
+
+Applying to my -linus branch.
+
+Thanks.
+
+> ---
 >=20
-> Changes since v1[1]:
->    - Fix the call to thermal_zone_bind_cooling_device() in
->      drivers/platform/x86/acerhdf.c and drivers/acpi/thermal.c
+> Changes since v4:
 >=20
-> [0] http://thread.gmane.org/gmane.linux.power-management.general/56269
-> [1] http://thread.gmane.org/gmane.linux.power-management.general/55730
+> - Reorder IRQ platform get and IIO channel get, this
+>   fixes error exit path.
 >=20
-> Javi Merino (4):
->   thermal: fair_share: use the weight from the thermal instance
->   thermal: fair_share: fix typo
->   thermal: export weight to sysfs
->   thermal: fair_share: generalize the weight concept
+> - Reorder IRQ request and sensor register calls, this
+>   simplify error exit path.
 >=20
-> Kapileshwar Singh (1):
->   thermal: of: fix cooling device weights in device tree
-
-Since I have been reviewing these patches and they are dependency of IPA
-governor, I will be taking this series in my -linus branch.
-
-Let me know if you have concerns.
-
-
-BR,
-
-Eduardo Valentin
-
+> v4: https://lkml.org/lkml/2015/2/2/413
 >=20
->  Documentation/thermal/sysfs-api.txt                | 31 +++++++++--
->  drivers/acpi/thermal.c                             |  9 ++--
->  drivers/platform/x86/acerhdf.c                     |  3 +-
->  drivers/thermal/db8500_thermal.c                   |  2 +-
->  drivers/thermal/fair_share.c                       | 41 +++++++-------
->  drivers/thermal/imx_thermal.c                      |  3 +-
->  drivers/thermal/of-thermal.c                       |  5 +-
->  drivers/thermal/samsung/exynos_thermal_common.c    |  3 +-
-
-Javi, I manually updated your patch 01, because exynos_thermal_common
-does not exist as of v4.0-rc1
-
->  drivers/thermal/thermal_core.c                     | 62 ++++++++++++++++=
-+++---
->  drivers/thermal/thermal_core.h                     |  3 ++
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  3 +-
->  include/linux/thermal.h                            | 15 ++++--
->  12 files changed, 137 insertions(+), 43 deletions(-)
+>  .../bindings/thermal/qcom-spmi-temp-alarm.txt      |  57 ++++
+>  drivers/thermal/Kconfig                            |  11 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/qcom-spmi-temp-alarm.c             | 309 +++++++++++++++=
+++++++
+>  4 files changed, 378 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-t=
+emp-alarm.txt
+>  create mode 100644 drivers/thermal/qcom-spmi-temp-alarm.c
 >=20
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-ala=
+rm.txt b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+> new file mode 100644
+> index 0000000..290ec06
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+> @@ -0,0 +1,57 @@
+> +Qualcomm QPNP PMIC Temperature Alarm
+> +
+> +QPNP temperature alarm peripherals are found inside of Qualcomm PMIC chi=
+ps
+> +that utilize the Qualcomm SPMI implementation. These peripherals provide=
+ an
+> +interrupt signal and status register to identify high PMIC die temperatu=
+re.
+> +
+> +Required properties:
+> +- compatible:      Should contain "qcom,spmi-temp-alarm".
+> +- reg:             Specifies the SPMI address and length of the controll=
+er's
+> +                   registers.
+> +- interrupts:      PMIC temperature alarm interrupt.
+> +- #thermal-sensor-cells: Should be 0. See thermal.txt for a description.
+> +
+> +Optional properties:
+> +- io-channels:     Should contain IIO channel specifier for the ADC chan=
+nel,
+> +                   which report chip die temperature.
+> +- io-channel-names: Should contain "thermal".
+> +
+> +Example:
+> +
+> +	pm8941_temp: thermal-alarm@2400 {
+> +		compatible =3D "qcom,spmi-temp-alarm";
+> +		reg =3D <0x2400 0x100>;
+> +		interrupts =3D <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
+> +		#thermal-sensor-cells =3D <0>;
+> +
+> +		io-channels =3D <&pm8941_vadc VADC_DIE_TEMP>;
+> +		io-channel-names =3D "thermal";
+> +	};
+> +
+> +	thermal-zones {
+> +		pm8941 {
+> +			polling-delay-passive =3D <250>;
+> +			polling-delay =3D <1000>;
+> +
+> +			thermal-sensors =3D <&pm8941_temp>;
+> +
+> +			trips {
+> +				passive {
+> +					temperature =3D <1050000>;
+> +					hysteresis =3D <2000>;
+> +					type =3D "passive";
+> +				};
+> +				alert {
+> +					temperature =3D <125000>;
+> +					hysteresis =3D <2000>;
+> +					type =3D "hot";
+> +				};
+> +				crit {
+> +					temperature =3D <145000>;
+> +					hysteresis =3D <2000>;
+> +					type =3D "critical";
+> +				};
+> +			};
+> +		};
+> +	};
+> +
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index af40db0..30aee81 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -299,4 +299,15 @@ depends on ARCH_STI && OF
+>  source "drivers/thermal/st/Kconfig"
+>  endmenu
+> =20
+> +config QCOM_SPMI_TEMP_ALARM
+> +	tristate "Qualcomm SPMI PMIC Temperature Alarm"
+> +	depends on OF && SPMI && IIO
+> +	select REGMAP_SPMI
+> +	help
+> +	  This enables a thermal sysfs driver for Qualcomm plug-and-play (QPNP)
+> +	  PMIC devices. It shows up in sysfs as a thermal sensor with multiple
+> +	  trip points. The temperature reported by the thermal sensor reflects =
+the
+> +	  real time die temperature if an ADC is present or an estimate of the
+> +	  temperature based upon the over temperature stage value.
+> +
+>  endif
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index fa0dc48..1fe8665 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -22,6 +22,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+=3D cpu_cooling.o
+>  thermal_sys-$(CONFIG_CLOCK_THERMAL)	+=3D clock_cooling.o
+> =20
+>  # platform thermal drivers
+> +obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+=3D qcom-spmi-temp-alarm.o
+>  obj-$(CONFIG_SPEAR_THERMAL)	+=3D spear_thermal.o
+>  obj-$(CONFIG_ROCKCHIP_THERMAL)	+=3D rockchip_thermal.o
+>  obj-$(CONFIG_RCAR_THERMAL)	+=3D rcar_thermal.o
+> diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qco=
+m-spmi-temp-alarm.c
+> new file mode 100644
+> index 0000000..c8d27b8
+> --- /dev/null
+> +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+> @@ -0,0 +1,309 @@
+> +/*
+> + * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/err.h>
+> +#include <linux/iio/consumer.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/thermal.h>
+> +
+> +#define QPNP_TM_REG_TYPE		0x04
+> +#define QPNP_TM_REG_SUBTYPE		0x05
+> +#define QPNP_TM_REG_STATUS		0x08
+> +#define QPNP_TM_REG_SHUTDOWN_CTRL1	0x40
+> +#define QPNP_TM_REG_ALARM_CTRL		0x46
+> +
+> +#define QPNP_TM_TYPE			0x09
+> +#define QPNP_TM_SUBTYPE			0x08
+> +
+> +#define STATUS_STAGE_MASK		0x03
+> +
+> +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
+> +
+> +#define ALARM_CTRL_FORCE_ENABLE		0x80
+> +
+> +/*
+> + * Trip point values based on threshold control
+> + * 0 =3D {105 C, 125 C, 145 C}
+> + * 1 =3D {110 C, 130 C, 150 C}
+> + * 2 =3D {115 C, 135 C, 155 C}
+> + * 3 =3D {120 C, 140 C, 160 C}
+> +*/
+> +#define TEMP_STAGE_STEP			20000	/* Stage step: 20.000 C */
+> +#define TEMP_STAGE_HYSTERESIS		2000
+> +
+> +#define TEMP_THRESH_MIN			105000	/* Threshold Min: 105 C */
+> +#define TEMP_THRESH_STEP		5000	/* Threshold step: 5 C */
+> +
+> +#define THRESH_MIN			0
+> +
+> +/* Temperature in Milli Celsius reported during stage 0 if no ADC is pre=
+sent */
+> +#define DEFAULT_TEMP			37000
+> +
+> +struct qpnp_tm_chip {
+> +	struct regmap			*map;
+> +	struct thermal_zone_device	*tz_dev;
+> +	long				temp;
+> +	unsigned int			thresh;
+> +	unsigned int			stage;
+> +	unsigned int			prev_stage;
+> +	unsigned int			base;
+> +	struct iio_channel		*adc;
+> +};
+> +
+> +static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
+> +{
+> +	unsigned int val;
+> +	int ret;
+> +
+> +	ret =3D regmap_read(chip->map, chip->base + addr, &val);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	*data =3D val;
+> +	return 0;
+> +}
+> +
+> +static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
+> +{
+> +	return regmap_write(chip->map, chip->base + addr, data);
+> +}
+> +
+> +/*
+> + * This function updates the internal temp value based on the
+> + * current thermal stage and threshold as well as the previous stage
+> + */
+> +static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+> +{
+> +	unsigned int stage;
+> +	int ret;
+> +	u8 reg =3D 0;
+> +
+> +	ret =3D qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	stage =3D reg & STATUS_STAGE_MASK;
+> +
+> +	if (stage > chip->stage) {
+> +		/* increasing stage, use lower bound */
+> +		chip->temp =3D (stage - 1) * TEMP_STAGE_STEP +
+> +			     chip->thresh * TEMP_THRESH_STEP +
+> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+> +	} else if (stage < chip->stage) {
+> +		/* decreasing stage, use upper bound */
+> +		chip->temp =3D stage * TEMP_STAGE_STEP +
+> +			     chip->thresh * TEMP_THRESH_STEP -
+> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+> +	}
+> +
+> +	chip->stage =3D stage;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qpnp_tm_get_temp(void *data, long *temp)
+> +{
+> +	struct qpnp_tm_chip *chip =3D data;
+> +	int ret, mili_celsius;
+> +
+> +	if (!temp)
+> +		return -EINVAL;
+> +
+> +	if (IS_ERR(chip->adc)) {
+> +		ret =3D qpnp_tm_update_temp_no_adc(chip);
+> +		if (ret < 0)
+> +			return ret;
+> +	} else {
+> +		ret =3D iio_read_channel_processed(chip->adc, &mili_celsius);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		chip->temp =3D mili_celsius;
+> +	}
+> +
+> +	*temp =3D chip->temp < 0 ? 0 : chip->temp;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct thermal_zone_of_device_ops qpnp_tm_sensor_ops =3D {
+> +	.get_temp =3D qpnp_tm_get_temp,
+> +};
+> +
+> +static irqreturn_t qpnp_tm_isr(int irq, void *data)
+> +{
+> +	struct qpnp_tm_chip *chip =3D data;
+> +
+> +	thermal_zone_device_update(chip->tz_dev);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +/*
+> + * This function initializes the internal temp value based on only the
+> + * current thermal stage and threshold. Setup threshold control and
+> + * disable shutdown override.
+> + */
+> +static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+> +{
+> +	int ret;
+> +	u8 reg;
+> +
+> +	chip->thresh =3D THRESH_MIN;
+> +	chip->temp =3D DEFAULT_TEMP;
+> +
+> +	ret =3D qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	chip->stage =3D reg & STATUS_STAGE_MASK;
+> +
+> +	if (chip->stage)
+> +		chip->temp =3D chip->thresh * TEMP_THRESH_STEP +
+> +			     (chip->stage - 1) * TEMP_STAGE_STEP +
+> +			     TEMP_THRESH_MIN;
+> +
+> +	/*
+> +	 * Set threshold and disable software override of stage 2 and 3
+> +	 * shutdowns.
+> +	 */
+> +	reg =3D chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+> +	ret =3D qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* Enable the thermal alarm PMIC module in always-on mode. */
+> +	reg =3D ALARM_CTRL_FORCE_ENABLE;
+> +	ret =3D qpnp_tm_write(chip, QPNP_TM_REG_ALARM_CTRL, reg);
+> +
+> +	return ret;
+> +}
+> +
+> +static int qpnp_tm_probe(struct platform_device *pdev)
+> +{
+> +	struct qpnp_tm_chip *chip;
+> +	struct device_node *node;
+> +	u8 type, subtype;
+> +	u32 res[2];
+> +	int ret, irq;
+> +
+> +	node =3D pdev->dev.of_node;
+> +
+> +	chip =3D devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
+> +	if (!chip)
+> +		return -ENOMEM;
+> +
+> +	dev_set_drvdata(&pdev->dev, chip);
+> +
+> +	chip->map =3D dev_get_regmap(pdev->dev.parent, NULL);
+> +	if (!chip->map)
+> +		return -ENXIO;
+> +
+> +	ret =3D of_property_read_u32_array(node, "reg", res, 2);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	irq =3D platform_get_irq(pdev, 0);
+> +	if (irq < 0)
+> +		return irq;
+> +
+> +	/* ADC based measurements are optional */
+> +	chip->adc =3D iio_channel_get(&pdev->dev, "thermal");
+> +	if (PTR_ERR(chip->adc) =3D=3D -EPROBE_DEFER)
+> +		return PTR_ERR(chip->adc);
+> +
+> +	chip->base =3D res[0];
+> +
+> +	ret =3D qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "could not read type\n");
+> +		goto fail;
+> +	}
+> +
+> +	ret =3D qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "could not read subtype\n");
+> +		goto fail;
+> +	}
+> +
+> +	if (type !=3D QPNP_TM_TYPE || subtype !=3D QPNP_TM_SUBTYPE) {
+> +		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
+> +			type, subtype);
+> +		ret =3D -ENODEV;
+> +		goto fail;
+> +	}
+> +
+> +	ret =3D qpnp_tm_init(chip);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "init failed\n");
+> +		goto fail;
+> +	}
+> +
+> +	ret =3D devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
+> +					IRQF_ONESHOT, node->name, chip);
+> +	if (ret < 0)
+> +		goto fail;
+> +
+> +	chip->tz_dev =3D thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
+> +							&qpnp_tm_sensor_ops);
+> +	if (IS_ERR(chip->tz_dev)) {
+> +		dev_err(&pdev->dev, "failed to register sensor\n");
+> +		ret =3D PTR_ERR(chip->tz_dev);
+> +		goto fail;
+> +	}
+> +
+> +	return 0;
+> +
+> +fail:
+> +	if (!IS_ERR(chip->adc))
+> +		iio_channel_release(chip->adc);
+> +
+> +	return ret;
+> +}
+> +
+> +static int qpnp_tm_remove(struct platform_device *pdev)
+> +{
+> +	struct qpnp_tm_chip *chip =3D dev_get_drvdata(&pdev->dev);
+> +
+> +	thermal_zone_of_sensor_unregister(&pdev->dev, chip->tz_dev);
+> +	if (!IS_ERR(chip->adc))
+> +		iio_channel_release(chip->adc);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id qpnp_tm_match_table[] =3D {
+> +	{ .compatible =3D "qcom,spmi-temp-alarm" },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(of, qpnp_tm_match_table);
+> +
+> +static struct platform_driver qpnp_tm_driver =3D {
+> +	.driver =3D {
+> +		.name =3D "spmi-temp-alarm",
+> +		.of_match_table =3D qpnp_tm_match_table,
+> +	},
+> +	.probe  =3D qpnp_tm_probe,
+> +	.remove =3D qpnp_tm_remove,
+> +};
+> +module_platform_driver(qpnp_tm_driver);
+> +
+> +MODULE_ALIAS("platform:spmi-temp-alarm");
+> +MODULE_DESCRIPTION("QPNP PMIC Temperature Alarm driver");
+> +MODULE_LICENSE("GPL v2");
 > --=20
 > 1.9.1
 >=20
 
---PEIAKu/WMn1b1Hv9
+--a8Wt8u1KmwUX3Y2C
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU643qAAoJEMLUO4d9pOJWcRAH/A7lMrBJ8v30WGhcTLYqvP8c
-uMmbCoISTOCtCIpSS8Gyx8aS1ROBknWEbunJnEDazMIPh38lqljMlGekqx7n4moS
-uDbT06CfkXxYejpRLgVDpCS7nntiVMCoR0qRxz4tRf9yk4Wm1AF9/hwzFasykyuC
-CnsWzgEc+r+MTlrxw9m2W4dvd9Tgi+/JSOeD23wToS54cpGNSGK4va93G4fMcfYc
-oUzFWrbgRaGXVocRl22KFmTfk5bpinqNKSgOeSqNGsxgde/TQ0a1X0c8q1ykNwzr
-wr/PrWB8EtpnYYZDISczxuLftzNUOPz4FF5ISBvJ8iUCDxiLNqRRHCglijEnXXQ=
-=el/A
+iQEcBAEBAgAGBQJU65B0AAoJEMLUO4d9pOJWR/gH/AumwkA6eTCeuDkOe1TGjybx
+WuWZHvqqrDfYPjoivx/5gleTLHQ1vHUUzmTwBKqgQw795UxafrNTGKaMSmFqXlnt
+nxypR6d81CAIp2dCXyr7ap5v72dHYbfkA+HX0NPL6p7wXuQbjYCm+Lul5kDLJjFw
+MHovGuGcH3UjCotMXT+sDhTd3sl9aITaaIIe0a0U6nkAbD2ktl3cojisRA0p/R5Q
+ysRNUNBaRtk7dcQTH80rfgCjwJ7n4M5675Er3Sssx6ABCM0KziGpo/fU/l3pPREf
+7JNWDAXnwKH2ASkvyjabqKkoTZ4aUlNk6L+yTK+SpSoBS0miIyercFPqFfBZXbY=
+=glnP
 -----END PGP SIGNATURE-----
 
---PEIAKu/WMn1b1Hv9--
+--a8Wt8u1KmwUX3Y2C--
