@@ -1,178 +1,161 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: armada: read stable temp on Armada XP
-Date: Tue, 24 Feb 2015 14:36:18 -0400
-Message-ID: <20150224183616.GD3448@developer.amazonguestwifi.org>
-References: <1423608615-6575-1-git-send-email-tylerwhall@gmail.com>
+Subject: Re: [PATCH] thermal: Introduce dummy functions when thermal is not
+ defined
+Date: Tue, 24 Feb 2015 14:38:36 -0400
+Message-ID: <20150224183830.GE3448@developer.amazonguestwifi.org>
+References: <1423877282-4589-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8nsIa27JVQLqB7/C"
+	protocol="application/pgp-signature"; boundary="LSp5EJdfMPwZcMS1"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:46414 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbbBXSgY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 13:36:24 -0500
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:37267 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbbBXSik (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 13:38:40 -0500
 Content-Disposition: inline
-In-Reply-To: <1423608615-6575-1-git-send-email-tylerwhall@gmail.com>
+In-Reply-To: <1423877282-4589-1-git-send-email-nm@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tyler Hall <tylerwhall@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>
+To: Nishanth Menon <nm@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
 
---8nsIa27JVQLqB7/C
+--LSp5EJdfMPwZcMS1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
+Rui,
 
-Tyler,
 
-On Tue, Feb 10, 2015 at 05:50:15PM -0500, Tyler Hall wrote:
-> The current register being used to read the temperature returns a noisy v=
-alue
-> that is prone to variance and occasional outliers. The value in the therm=
-al
-> manager control and status register appears to have the same scale but mu=
-ch
-> less variability.
+
+On Fri, Feb 13, 2015 at 07:28:02PM -0600, Nishanth Menon wrote:
+> When CONFIG_THERMAL is not enabled, it is better to introduce
+> equivalent dummy functions in the exported header than to
+> introduce #ifdeffery in drivers using the function.
 >=20
-> Add a "marvell,armadaxp-filtered-thermal" config which is set up to read =
-=66rom
-> the Thermal Manager Control and Status Register at 0x184c4 rather than the
-> Thermal Sensor Status Register at 0x182b0. The only difference is the
-> temperature value shift. The original "marvell,armadaxp-thermal" is retai=
-ned
-> for device tree compatibility.
+> This will prevent issues such as that reported in:
+> http://www.spinics.net/lists/linux-next/msg31573.html
 >=20
-> This also fixes Armada XP clearing the disable bit in the wrong register.=
- Bit 0
-> of the sensor register was being cleared but that bit is read-only. The d=
-isable
-> bit doesn't seem to have an effect on the temperature sensor value, howev=
-er, so
-> this doesn't make a material difference.
+> While at it switch over to IS_ENABLED for thermal macros
+> to allow for thermal framework to be built as framework
+> and relevant APIs be usable by relevant drivers as a result.
 >=20
-> This problem was detected when running with the watchdog(8) daemon pollin=
-g the
-> thermal value. In one instance I observed a single read of over 200 degre=
-es C
-> which caused a spurious watchdog-initiated reboot. I have since observed
-> individual outliers of ~20 degrees C. With this change and the correspond=
-ing
-> device tree update, the temperature is much more stable.
->=20
-> Signed-off-by: Tyler Hall <tylerwhall@gmail.com>
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+
+I am collecting this one and queuing in my -fixes branch.
+
 > ---
 >=20
-> If there's a better way to handle this than a separate binding, I'm open =
-to
-> suggestions.
-
-
-The fix seams reasonable. Although, it remains the question what is
-applicability to other Armada chips? Besides, shouldn't we simply use it
-by default? Also, do you plan to send updates in the DTS files?
-
-
-I would appreciate if you get a Review-by, from Ezequiel for instance,
-before we apply this.
-
-
-Ezequiel, any objections before I move forward with this one?
-
-BR,
-
-Eduardo Valentin
+> based on next-20150213 tag.
 >=20
-> My conclusions about these registers are based on experimental data. The
-> documentation is very sparse, but the Thermal Manager Control and Status
-> Register looks like the preferred register given the way it is laid out i=
-n the
-> public spec.
+> Note: there are a few "CHECK: Alignment should match open parenthesis"
+> checkpatch warnings which I ignored since these are pure dummy
+> functions anyways.
 >=20
-> I have the small corresponding patch to the dts which I can submit separa=
-tely.
+>  include/linux/thermal.h |   56 +++++++++++++++++++++++++++++++++++++++++=
+++++--
+>  1 file changed, 54 insertions(+), 2 deletions(-)
 >=20
-> Thanks
-> Tyler
->=20
->  .../devicetree/bindings/thermal/armada-thermal.txt          |  8 ++++++++
->  drivers/thermal/armada_thermal.c                            | 13 +++++++=
-++++++
->  2 files changed, 21 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt=
- b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-> index 4698e0e..0d6a3f1 100644
-> --- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-> @@ -7,6 +7,14 @@ Required properties:
->  		marvell,armada375-thermal
->  		marvell,armada380-thermal
->  		marvell,armadaxp-thermal
-> +		marvell,armadaxp-filtered-thermal
-> +
-> +		Note: "marvell,armadaxp-filtered-thermal" is adjusted to read
-> +		the hardware-filtered value in the thermal manager
-> +		control/status register rather than the raw sensor value in the
-> +		thermal sensor status register. "marvell,armadaxp-thermal"
-> +		remains for backward compatibility. The sensor reg address must
-> +		also point to the appropriate register.
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index fc52e307efab..5eac316490ea 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -314,6 +314,8 @@ void thermal_zone_of_sensor_unregister(struct device =
+*dev,
+>  }
 > =20
->  - reg:		Device's register space.
->  		Two entries are expected, see the examples below.
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_th=
-ermal.c
-> index c2556cf..d3c2ad3 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -196,6 +196,15 @@ static const struct armada_thermal_data armadaxp_dat=
-a =3D {
->  	.coef_div =3D 13825,
->  };
-> =20
-> +static const struct armada_thermal_data armadaxp_filt_data =3D {
-> +	.init_sensor =3D armadaxp_init_sensor,
-> +	.temp_shift =3D 1,
-> +	.temp_mask =3D 0x1ff,
-> +	.coef_b =3D 3153000000UL,
-> +	.coef_m =3D 10000000UL,
-> +	.coef_div =3D 13825,
-> +};
+>  #endif
 > +
->  static const struct armada_thermal_data armada370_data =3D {
->  	.is_valid =3D armada_is_valid,
->  	.init_sensor =3D armada370_init_sensor,
-> @@ -236,6 +245,10 @@ static const struct of_device_id armada_thermal_id_t=
-able[] =3D {
->  		.data       =3D &armadaxp_data,
->  	},
->  	{
-> +		.compatible =3D "marvell,armadaxp-filtered-thermal",
-> +		.data       =3D &armadaxp_filt_data,
-> +	},
-> +	{
->  		.compatible =3D "marvell,armada370-thermal",
->  		.data       =3D &armada370_data,
->  	},
+> +#if IS_ENABLED(CONFIG_THERMAL)
+>  struct thermal_zone_device *thermal_zone_device_register(const char *, i=
+nt, int,
+>  		void *, struct thermal_zone_device_ops *,
+>  		const struct thermal_zone_params *, int, int);
+> @@ -340,8 +342,58 @@ struct thermal_instance *get_thermal_instance(struct=
+ thermal_zone_device *,
+>  		struct thermal_cooling_device *, int);
+>  void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+> -
+> -#ifdef CONFIG_NET
+> +#else
+> +static inline struct thermal_zone_device *thermal_zone_device_register(
+> +	const char *type, int trips, int mask, void *devdata,
+> +	struct thermal_zone_device_ops *ops,
+> +	const struct thermal_zone_params *tzp,
+> +	int passive_delay, int polling_delay)
+> +{ return ERR_PTR(-ENODEV); }
+> +static inline void thermal_zone_device_unregister(
+> +	struct thermal_zone_device *tz)
+> +{ }
+> +static inline int thermal_zone_bind_cooling_device(
+> +	struct thermal_zone_device *tz, int trip,
+> +	struct thermal_cooling_device *cdev,
+> +	unsigned long upper, unsigned long lower)
+> +{ return -ENODEV; }
+> +static inline int thermal_zone_unbind_cooling_device(
+> +	struct thermal_zone_device *tz, int trip,
+> +	struct thermal_cooling_device *cdev)
+> +{ return -ENODEV; }
+> +static inline void thermal_zone_device_update(struct thermal_zone_device=
+ *tz)
+> +{ }
+> +static inline struct thermal_cooling_device *
+> +thermal_cooling_device_register(char *type, void *devdata,
+> +	const struct thermal_cooling_device_ops *ops)
+> +{ return ERR_PTR(-ENODEV); }
+> +static inline struct thermal_cooling_device *
+> +thermal_of_cooling_device_register(struct device_node *np,
+> +	char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
+> +{ return ERR_PTR(-ENODEV); }
+> +static inline void thermal_cooling_device_unregister(
+> +	struct thermal_cooling_device *cdev)
+> +{ }
+> +static inline struct thermal_zone_device *thermal_zone_get_zone_by_name(
+> +		const char *name)
+> +{ return ERR_PTR(-ENODEV); }
+> +static inline int thermal_zone_get_temp(
+> +		struct thermal_zone_device *tz, unsigned long *temp)
+> +{ return -ENODEV; }
+> +static inline int get_tz_trend(struct thermal_zone_device *tz, int trip)
+> +{ return -ENODEV; }
+> +static inline struct thermal_instance *
+> +get_thermal_instance(struct thermal_zone_device *tz,
+> +	struct thermal_cooling_device *cdev, int trip)
+> +{ return ERR_PTR(-ENODEV); }
+> +static inline void thermal_cdev_update(struct thermal_cooling_device *cd=
+ev)
+> +{ }
+> +static inline void thermal_notify_framework(struct thermal_zone_device *=
+tz,
+> +	int trip)
+> +{ }
+> +#endif /* CONFIG_THERMAL */
+> +
+> +#if defined(CONFIG_NET) && IS_ENABLED(CONFIG_THERMAL)
+>  extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+>  						enum events event);
+>  #else
 > --=20
-> 2.3.0
+> 1.7.9.5
 >=20
 
---8nsIa27JVQLqB7/C
+--LSp5EJdfMPwZcMS1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7MSVAAoJEMLUO4d9pOJWoRkH/1gAy2yBVeYxJzuHoOoBb4wA
-ndR3OwIYpb7iSSCQ7eSvbyCcLhc5n2RMaGMH+84M+FJTwvLyTGxWc6lsc5kFhbta
-AZf3jYo5KHe9Lldx6eKb/lzaFKeigM4fhdCFr2bIQ8dLucQirpebwWsWovsBUw9Q
-b/MlA7VfZUCShMlNK09FFdj53dfX6YsUIz8U6rKNhdv4UGMYHNYgptfaFmyYetQk
-NmVDEcZAPPcCva2LEWlWUa+cn5bSC0ZYEXm/Av1cQE0uYcOkFXeRqYodNdLLyCm/
-4SNY+ycZVAR772pcJ/6UGZeOG7ESRLFjHe1J5FCQnmzZfQNUf87A+vkLKwbKfmc=
-=Uj5K
+iQEcBAEBAgAGBQJU7MUeAAoJEMLUO4d9pOJWqDcH/j7Q14XIXlfPfH5WHh4scprH
+87k5koO5007JKslWNQmFKaZcTAewa1oZ4LNxIJr9nGGACK2540zE7dMBl5tANmhE
+YfbXbpvbpjz2wkimDDBTJiyK0uioRaSs2FccAgh/f4hxgNWMigbmlHcihPwTANXq
+FXvPz5lKMFxtmiangRPjNTJsxdh7xPNwX5SR/t2M+xJDPbdYpTS1RQGpAiYUuLvO
+5f1bUsOse6yYqv/VYs/T+Q1NiUWozMuw6nLVPRJ3Tj7yK2v6bzDJKgwcjeRVl6kd
+aoKOd1H2BiKluGuz4BBUbzkjjbRnQpsoC/y2QJrYLbC8SyBoGDTi9Aa3qLCJB4Y=
+=uyst
 -----END PGP SIGNATURE-----
 
---8nsIa27JVQLqB7/C--
+--LSp5EJdfMPwZcMS1--
