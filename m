@@ -1,81 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/7] OPP: Redefine bindings to overcome shortcomings
-Date: Tue, 24 Feb 2015 09:54:59 +0530
-Message-ID: <CAKohpo=CRkJTkp2FXgYNwd2eEtMVRFuwJ=GPtX7+9WnQD6CK2Q@mail.gmail.com>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
-	<be795ef7ec98669bc5aa90ec426a1ec1fbc32b6c.1423642246.git.viresh.kumar@linaro.org>
-	<7ha904b6hp.fsf@deeprootsystems.com>
+From: NeilBrown <neilb@suse.de>
+Subject: [PATCH 00/15]  Enhance twl4030_charger functionality.
+Date: Tue, 24 Feb 2015 15:33:50 +1100
+Message-ID: <20150224043341.4243.23291.stgit@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f50.google.com ([209.85.218.50]:52374 "EHLO
-	mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbbBXEZA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 23:25:00 -0500
-Received: by mail-oi0-f50.google.com with SMTP id v1so17418321oia.9
-        for <linux-pm@vger.kernel.org>; Mon, 23 Feb 2015 20:24:59 -0800 (PST)
-In-Reply-To: <7ha904b6hp.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 
-On 24 February 2015 at 04:06, Kevin Hilman <khilman@kernel.org> wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
+These patches make a number of improvements to twl4030_charger.
 
->> +Optional properties:
->> +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
->> +  switch their DVFS state together, i.e. they share clock lines.
->
-> ... or shared voltage rail?
+So are just internal cleanups (e.g. use of devres).  Others allow
+better control of charging through both manual and automatic means.
 
-The point is that they switch their frequencies together. Which means,
-sharing voltage
-rail + PLLs .. How do we write it properly ?
+- the maximum current can be configured via sysfs.
+- the charger will only draw that current if it can do so without
+  the voltage dropping too much
+- a 'continuous' mode is available which ignores voltage and just
+  takes what it can (to be used with caution, but very useful in
+  some circumstances).
+- 'ac' and 'usb' power sources can be configured separately.
 
->> +  Missing property means devices have independent clock lines, but they share OPPs.
->
-> huh?  missing 'shared-opp' property means they share OPPs?  -ECONFUSED.
+Some of this functionality requires patch to phy-twl4030-usb.c which
+have been sent separately.
 
-Right. s/OPPs/OPP tables ..
+Thanks,
+NeilBrown
 
-Makes sense now ?
 
-> Maybe I missed some of the discussion of why this property is needed,
-> but I'm left wondering why it's needed explicitly.  With the OPPs as
+---
 
-So that same OPP tables can be shared across CPUs which don't share
-voltage rails..
-For example, Krait. We only need to define single set of tables and
-all CPUs will point
-to it. But this property would be missing in that case as CPUs don't
-change their DVFS
-state together.
+NeilBrown (15):
+      power_supply core: support use of devres to register/unregister a power supply.
+      twl4030_charger: use devm_request_threaded_irq
+      twl4030_charger: use devres for power_supply_register and kzalloc.
+      twl4030_charger: use runtime_pm to keep usb phy active while charging.
+      twl4030_charger: trust phy to determine when USB power is available.
+      twl4030_charger: split uA calculation into a function.
+      twl4030_charger: allow fine control of charger current.
+      twl4030_charger: distinguish between USB current and 'AC' current
+      twl4030_charger: allow max_current to be managed via sysfs.
+      twl4030_charger: only draw USB current as negotiated with host.
+      twl4030_charger: enable manual enable/disable of usb charging.
+      twl4030_charger: add software controlled linear charging mode.
+      twl4030_charger: add ac/mode to match usb/mode
+      twl4030_charger: Increase current carefully while watching voltage.
+      twl4030_charger: assume a 'charger' can supply maximum current.
 
-> part of the CPU nodes, shouldnt' the "shared" nature of the OPP be
-> easily derived from the clock and or regulator (opp-supply) property of
-> the CPU nodes?  IOW, if two CPU nodes share a clock and/or a regulator,
-> the framework should know it's "shared".
 
-So you missed all earlier discussions :), there were lots of concerns
-around that.
-And the best solution we found out is to do it this way..
+ drivers/mfd/twl-core.c            |    9 -
+ drivers/power/power_supply_core.c |   45 +++
+ drivers/power/twl4030_charger.c   |  572 +++++++++++++++++++++++++++++++------
+ include/linux/power_supply.h      |    4 
+ 4 files changed, 539 insertions(+), 91 deletions(-)
 
-- There can be multiple clocks/regulators present in CPU's DT node and
-that makes
-it complex.
-- There are cases where immediate clock parents of CPUs are different
-but somewhere
-higher in the hierarchy they have a common ancestor, which is
-responsible for rate
-change. And so it would be difficult to find out if they share
-clock/regulator or not..
-- People wanted it to be some static data instead of trying to find
-with help of some
-algorithms..
+--
+Signature
 
-> Or, were there other reasons besides clocks/regulators why this property
-> was needed (if so, the documentation doesn't describe them.)
-
-I am not sure if we need to mention anything else.. But yes, please let me know
-if it can be improved a bit.
