@@ -1,52 +1,144 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
-Date: Tue, 24 Feb 2015 14:06:17 -0600
-Message-ID: <CAGo_u6rwTARKbvQGcrFkhoUFsV4K7tadFXsG_vFpqXN-dO_6jA@mail.gmail.com>
-References: <1420740303-12529-1-git-send-email-nm@ti.com>
-	<54AF5DA8.6080408@roeck-us.net>
-	<20150224192933.GJ3448@developer.amazonguestwifi.org>
-	<20150224195457.GA16245@roeck-us.net>
+From: NeilBrown <neilb@suse.de>
+Subject: [PATCH 09/15] twl4030_charger: allow max_current to be managed via
+ sysfs.
+Date: Tue, 24 Feb 2015 15:33:52 +1100
+Message-ID: <20150224043351.4243.46323.stgit@notabene.brown>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150224195457.GA16245@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org, lkml <linux-kernel@vger.kernel.org>, dt list <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20150224043341.4243.23291.stgit@notabene.brown>
+Sender: linux-omap-owner@vger.kernel.org
+To: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 24, 2015 at 1:55 PM, Guenter Roeck <linux@roeck-us.net> wrote:
-> On Tue, Feb 24, 2015 at 03:29:35PM -0400, Eduardo Valentin wrote:
->> Guenter,
->>
->> On Thu, Jan 08, 2015 at 08:48:40PM -0800, Guenter Roeck wrote:
->> > On 01/08/2015 10:05 AM, Nishanth Menon wrote:
->> > > Allow gpio-fan to be used as thermal cooling device for platforms that
->> > > use GPIO maps to control fans.
->> > >
->> > > As part of this change, we make the shutdown and remove logic the same
->> > > as well.
->> > >
->> > > Signed-off-by: Nishanth Menon <nm@ti.com>
->> > > ---
->> >
->> > Applied to -next.
->>
->> What is the target kernel version for this change? It didn't make
->> 4.0-rc1
->>
-> If I recall correctly, I had to pull it because the thermal framework
-> does not provide hooks if disabled. Weird, I am sure I sent an e-mail
-> about this, but I don't find it right now.
->
-> It can't make it in before the hooks are in place, or we'll need
-> another version with ifdefs around the thermal registration code.
+'max_current' sysfs attributes are created which allow the
+max to be set.
+Whenever a current source changes, the default is restored.
+This will be followed by a uevent, so user-space can decide to
+update again.
 
-I had posted the required hooks.
-https://patchwork.kernel.org/patch/5828261/ -> I think Eduardo picked
-this one up.. So once it hits mainline, we should ideally be clear.
-
--- 
+Signed-off-by: NeilBrown <neilb@suse.de>
 ---
-Regards,
-Nishanth Menon
+ drivers/power/twl4030_charger.c |   76 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
+
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+index bfc9b808301e..b0242786d047 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -473,6 +473,8 @@ static irqreturn_t twl4030_charger_interrupt(int irq, void *arg)
+ 	struct twl4030_bci *bci = arg;
+ 
+ 	dev_dbg(bci->dev, "CHG_PRES irq\n");
++	/* reset current on each 'plug' event */
++	bci->ac_cur = 500000;
+ 	twl4030_charger_update_current(bci);
+ 	power_supply_changed(&bci->ac);
+ 	power_supply_changed(&bci->usb);
+@@ -527,6 +529,67 @@ static irqreturn_t twl4030_bci_interrupt(int irq, void *arg)
+ 	return IRQ_HANDLED;
+ }
+ 
++/*
++ * sysfs max_current store
++ */
++static ssize_t
++twl4030_bci_max_current_store(struct device *dev, struct device_attribute *attr,
++	const char *buf, size_t n)
++{
++	struct twl4030_bci *bci = dev_get_drvdata(dev->parent);
++	int cur = 0;
++	int status = 0;
++	status = kstrtoint(buf, 10, &cur);
++	if (status)
++		return status;
++	if (cur < 0)
++		return -EINVAL;
++	if (dev == bci->ac.dev) {
++		if (bci->ac_cur == cur)
++			return n;
++		bci->ac_cur = cur;
++	} else {
++		if (bci->usb_cur == cur)
++			return n;
++		bci->usb_cur = cur;
++	}
++	twl4030_charger_update_current(bci);
++	return (status == 0) ? n : status;
++}
++
++/*
++ * sysfs max_current show
++ */
++static ssize_t twl4030_bci_max_current_show(struct device *dev,
++	struct device_attribute *attr, char *buf)
++{
++	int status = 0;
++	int cur = -1;
++	u8 bcictl1;
++	struct twl4030_bci *bci = dev_get_drvdata(dev->parent);
++
++	if (dev == bci->ac.dev) {
++		if (!bci->ac_is_active)
++			cur = bci->ac_cur;
++	} else {
++		if (bci->ac_is_active)
++			cur = bci->usb_cur;
++	}
++	if (cur < 0) {
++		cur = twl4030bci_read_adc_val(TWL4030_BCIIREF1);
++		if (cur < 0)
++			return cur;
++		status = twl4030_bci_read(TWL4030_BCICTL1, &bcictl1);
++		if (status < 0)
++			return status;
++		cur = regval2ua(cur, bcictl1 & TWL4030_CGAIN);
++	}
++	return scnprintf(buf, PAGE_SIZE, "%u\n", cur);
++}
++
++static DEVICE_ATTR(max_current, 0644, twl4030_bci_max_current_show,
++			twl4030_bci_max_current_store);
++
+ static void twl4030_bci_usb_work(struct work_struct *data)
+ {
+ 	struct twl4030_bci *bci = container_of(data, struct twl4030_bci, work);
+@@ -549,6 +612,12 @@ static int twl4030_bci_usb_ncb(struct notifier_block *nb, unsigned long val,
+ 
+ 	dev_dbg(bci->dev, "OTG notify %lu\n", val);
+ 
++	/* reset current on each 'plug' event */
++	if (allow_usb)
++		bci->usb_cur = 500000;
++	else
++		bci->usb_cur = 100000;
++
+ 	bci->event = val;
+ 	schedule_work(&bci->work);
+ 
+@@ -809,6 +878,11 @@ static int __init twl4030_bci_probe(struct platform_device *pdev)
+ 		dev_warn(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
+ 
+ 	twl4030_charger_update_current(bci);
++	if (device_create_file(bci->usb.dev, &dev_attr_max_current))
++		dev_warn(&pdev->dev, "could not create sysfs file\n");
++	if (device_create_file(bci->ac.dev, &dev_attr_max_current))
++		dev_warn(&pdev->dev, "could not create sysfs file\n");
++
+ 	twl4030_charger_enable_ac(true);
+ 	if (!IS_ERR_OR_NULL(bci->transceiver))
+ 		twl4030_bci_usb_ncb(&bci->usb_nb,
+@@ -836,6 +910,8 @@ static int __exit twl4030_bci_remove(struct platform_device *pdev)
+ 	twl4030_charger_enable_usb(bci, false);
+ 	twl4030_charger_enable_backup(0, 0);
+ 
++	device_remove_file(bci->usb.dev, &dev_attr_max_current);
++	device_remove_file(bci->ac.dev, &dev_attr_max_current);
+ 	/* mask interrupts */
+ 	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
+ 			 TWL4030_INTERRUPTS_BCIIMR1A);
+
+
