@@ -1,75 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 2/2] thermal: exynos: Clean-up code to use oneline entry for
- exynos compatible table
-Date: Tue, 24 Feb 2015 13:56:55 +0900
-Message-ID: <1424753815-15113-3-git-send-email-cw00.choi@samsung.com>
-References: <1424753815-15113-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1424753815-15113-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: kgene@kernel.org, b.zolnierkie@samsung.com, amit.daniel@samsung.com, l.majewski@samsung.com, a.kesavan@samsung.com, inki.dae@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+From: Narendran Rajan <nrajan@codeaurora.org>
+Subject: [v3 0/2] thermal: Add qcom tsens thermal sensor driver
+Date: Mon, 23 Feb 2015 22:47:20 -0800
+Message-ID: <1424760442-12564-1-git-send-email-nrajan@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41293 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbbBXGrn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 01:47:43 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux ARM MSM <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Narendran Rajan <nrajan@codeaurora.org>
 
-This patch cleanup the code to use oneline for entry of exynos compatible
-table.
+This version of patch incorporates review comments from community (mainly Lina Iyer)
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 38 ++++++++++--------------------------
- 1 file changed, 10 insertions(+), 28 deletions(-)
+Main changes compared to v1 are the following:
+- Added thermal dtsi patch to the series
+- Minor code cleanup
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index a60f527..1d30b09 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -919,34 +919,16 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
- }
- 
- static const struct of_device_id exynos_tmu_match[] = {
--	{
--		.compatible = "samsung,exynos3250-tmu",
--	},
--	{
--		.compatible = "samsung,exynos4210-tmu",
--	},
--	{
--		.compatible = "samsung,exynos4412-tmu",
--	},
--	{
--		.compatible = "samsung,exynos5250-tmu",
--	},
--	{
--		.compatible = "samsung,exynos5260-tmu",
--	},
--	{
--		.compatible = "samsung,exynos5420-tmu",
--	},
--	{
--		.compatible = "samsung,exynos5420-tmu-ext-triminfo",
--	},
--	{
--		.compatible = "samsung,exynos5440-tmu",
--	},
--	{
--		.compatible = "samsung,exynos7-tmu",
--	},
--	{},
-+	{ .compatible = "samsung,exynos3250-tmu", },
-+	{ .compatible = "samsung,exynos4210-tmu", },
-+	{ .compatible = "samsung,exynos4412-tmu", },
-+	{ .compatible = "samsung,exynos5250-tmu", },
-+	{ .compatible = "samsung,exynos5260-tmu", },
-+	{ .compatible = "samsung,exynos5420-tmu", },
-+	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
-+	{ .compatible = "samsung,exynos5440-tmu", },
-+	{ .compatible = "samsung,exynos7-tmu", },
-+	{ /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(of, exynos_tmu_match);
- 
--- 
-1.8.5.5
+The scope of this driver is limited to QCOM A family chipsets. The register layout of
+tsens hardware is different on B family chipsets compared to A family, hence limiting
+the scope to A family
+
+Suggestions/followup patches for B family support are welcome.
+
+This patch has dependency on following patches published in the mailing list
+https://patchwork.kernel.org/patch/5748661/
+https://patchwork.kernel.org/patch/5748681/
+https://patchwork.kernel.org/patch/5707771/
+https://patchwork.kernel.org/patch/5707781/
+
+Narendran Rajan (2):
+  thermal: Add qcom tsens thermal sensor driver
+  ARM: qcom: dts: Add tsens thermal data
+
+ .../devicetree/bindings/thermal/qcom-thermal.txt   |  59 +++
+ arch/arm/boot/dts/qcom-ipq8064.dtsi                |  27 +-
+ arch/arm/boot/dts/qcom-msm8660.dtsi                |  27 +-
+ arch/arm/boot/dts/qcom-msm8960.dtsi                |  28 +-
+ arch/arm/boot/dts/qcom-thermal.dtsi                |  47 ++
+ drivers/thermal/Kconfig                            |  14 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qcom-tsens.c                       | 493 +++++++++++++++++++++
+ 8 files changed, 690 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-thermal.txt
+ create mode 100644 arch/arm/boot/dts/qcom-thermal.dtsi
+ create mode 100644 drivers/thermal/qcom-tsens.c
+
+--
+Qualcomm Innovation Center, Inc. The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project
