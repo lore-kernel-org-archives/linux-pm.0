@@ -1,70 +1,103 @@
 From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: bandgap: Fix build warning if
- !CONFIG_PM_SLEEP
-Date: Tue, 24 Feb 2015 18:01:23 +0200
-Message-ID: <54ECA053.8000809@linaro.org>
-References: <1423234546-10458-1-git-send-email-grygorii.strashko@linaro.org> <20150209150106.GB21362@kahuna>
+Subject: Re: [PATCH v2] leds: fix hibernation on arm when gpio-led used with
+ CPU led trigger
+Date: Tue, 24 Feb 2015 18:12:19 +0200
+Message-ID: <54ECA2E3.8060401@linaro.org>
+References: <1423147024-4744-1-git-send-email-grygorii.strashko@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20150209150106.GB21362@kahuna>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Paul Walmsley <paul@pwsan.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f181.google.com ([209.85.217.181]:40532 "EHLO
+	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbbBXQMW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 11:12:22 -0500
+Received: by lbdu10 with SMTP id u10so25906154lbd.7
+        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2015 08:12:21 -0800 (PST)
+In-Reply-To: <1423147024-4744-1-git-send-email-grygorii.strashko@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org
+Cc: sumit.semwal@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Menon, Nishanth" <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi Rui,
+Hi Bryan, all,
 
-On 02/09/2015 05:01 PM, Nishanth Menon wrote:
-> On 16:55-20150206, grygorii.strashko@linaro.org wrote:
->> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->>
->> Fix following build warning if CONFIG_PM_SLEEP is not set:
->>
->> drivers/thermal/ti-soc-thermal/ti-bandgap.c:1478:12: warning: 'ti_bandgap_suspend' defined but not used [-Wunused-function]
->>   static int ti_bandgap_suspend(struct device *dev)
->>              ^
->> drivers/thermal/ti-soc-thermal/ti-bandgap.c:1492:12: warning: 'ti_bandgap_resume' defined but not used [-Wunused-function]
->>   static int ti_bandgap_resume(struct device *dev)
->>              ^
->> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->> ---
->>   drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
->> index 74c0e34..5d46660 100644
->> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
->> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
->> @@ -1402,7 +1402,7 @@ int ti_bandgap_remove(struct platform_device *pdev)
->>   	return 0;
->>   }
->>   
->> -#ifdef CONFIG_PM
->> +#ifdef CONFIG_PM_SLEEP
->>   static int ti_bandgap_save_ctxt(struct ti_bandgap *bgp)
->>   {
->>   	int i;
->> -- 
->> 1.9.1
->>
+On 02/05/2015 04:37 PM, grygorii.strashko@linaro.org wrote:
+> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
 > 
-> Suggest aligning with Paul as well:
-> https://patchwork.kernel.org/patch/5795391/
-
-^Paul Walmsley wrote: Oh, nothing to be confused by, I just missed the
- earlier patch. I withdraw mine.
-
+> Setting a dev_pm_ops suspend/resume pair of callbacks but not a set of
+> hibernation callbacks means those pm functions will not be
+> called upon hibernation - that leads to system crash on ARM during
+> freezing if gpio-led is used in combination with CPU led trigger.
+> It may happen after freeze_noirq stage (GPIO is suspended)
+> and before syscore_suspend stage (CPU led trigger is suspended)
+> - usually when disable_nonboot_cpus() is called.
 > 
-> Otherwise:
-> Acked-by: Nishanth Menon <nm@ti.com>
+> Log:
+>    PM: noirq freeze of devices complete after 1.425 msecs
+>    Disabling non-boot CPUs ...
+>      ^ system may crash or stuck here with message (TI AM572x)
+> 
+>    WARNING: CPU: 0 PID: 3100 at drivers/bus/omap_l3_noc.c:148 l3_interrupt_handler+0x22c/0x370()
+>    44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in Supervisor mode during Functional access
+> 
+>    CPU1: shutdown
+>      ^ or here
+> 
+> Fix this by using SIMPLE_DEV_PM_OPS, which appropriately
+> assigns the suspend and hibernation callbacks and move
+> led_suspend/led_resume under CONFIG_PM_SLEEP to avoid
+> build warnings.
+> 
+> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+> ---
+> This patch actually fixes commit:
+>   73e1ab4 "leds: Convert led class driver from legacy pm ops to dev_pm_ops"
+> 
+> Changes in v2:
+> - fixed compile time warnings when !CONFIG_PM_SLEEP
+> - updated commit message
+> 
+> v1:
+> - https://lkml.org/lkml/2015/2/2/476
+> 
+>   drivers/leds/led-class.c | 7 +++----
+>   1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+> index dbeebac..5033e0d 100644
+> --- a/drivers/leds/led-class.c
+> +++ b/drivers/leds/led-class.c
+> @@ -183,6 +183,7 @@ void led_classdev_resume(struct led_classdev *led_cdev)
+>   }
+>   EXPORT_SYMBOL_GPL(led_classdev_resume);
+>   
+> +#ifdef CONFIG_PM_SLEEP
+>   static int led_suspend(struct device *dev)
+>   {
+>   	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+> @@ -202,11 +203,9 @@ static int led_resume(struct device *dev)
+>   
+>   	return 0;
+>   }
+> +#endif
+>   
+> -static const struct dev_pm_ops leds_class_dev_pm_ops = {
+> -	.suspend        = led_suspend,
+> -	.resume         = led_resume,
+> -};
+> +static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend, led_resume);
+>   
+>   /**
+>    * led_classdev_register - register a new object of led_classdev class.
 > 
 
-It looks like this patch is missed in 4.0-rc1, so could it be merged
-during rc cycle or you'd like me to resend it?
-(I've rechecked - it can be applied on top of Linux 4.0-rc1 without any issues)
+Could you pay attention on this patch, pls? It fixes a real issue for me.
 
+Actually, I'd like to note that it fixes regression introduced by commit
+73e1ab41a80d36207e8ea7cc2c9897afdeeef387 
+"leds: Convert led class driver from legacy pm ops to dev_pm_ops" from 
+Shuah Khan <shuah.kh@samsung.com> (Jun 20 2013).
 
 -- 
 regards,
