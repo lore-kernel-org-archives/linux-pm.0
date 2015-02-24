@@ -1,107 +1,67 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v4 3/8] Documentation: dts: Documentation entry to
- explain how to use PWM FAN as a cooling device
-Date: Tue, 24 Feb 2015 15:25:21 -0400
-Message-ID: <20150224192520.GI3448@developer.amazonguestwifi.org>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
- <1424254056-5904-4-git-send-email-l.majewski@samsung.com>
+Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
+Date: Tue, 24 Feb 2015 15:29:35 -0400
+Message-ID: <20150224192933.GJ3448@developer.amazonguestwifi.org>
+References: <1420740303-12529-1-git-send-email-nm@ti.com>
+ <54AF5DA8.6080408@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7IgncvKP0CVPV/ZZ"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="2fjX3cMESU3XgGmZ"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424254056-5904-4-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+In-Reply-To: <54AF5DA8.6080408@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Nishanth Menon <nm@ti.com>, Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---7IgncvKP0CVPV/ZZ
+--2fjX3cMESU3XgGmZ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 18, 2015 at 11:07:31AM +0100, Lukasz Majewski wrote:
-> Explanation of several properties, which allow PWM fan working as a cooli=
-ng
-> device, have been embraced in this commit.
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - Rename cooling-pwm-values to cooling-levels
-> - Remove default-pulse-width property and stick to default hwmon policy
-> Changes for v3:
-> - Changing commit title from "hwmon: dts: Doc:" to "Documentation: dts"
-> - Remove unnecessary properties
-> - Set maximal cooling level to 230 instead of 255
-> Changes for v4:
-> - None
-> ---
->  Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 20 +++++++++++++++=
-+++++
->  1 file changed, 20 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Docume=
-ntation/devicetree/bindings/hwmon/pwm-fan.txt
-> index 610757c..d53fe0c 100644
-> --- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> +++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> @@ -3,10 +3,30 @@ Bindings for a fan connected to the PWM lines
->  Required properties:
->  - compatible	: "pwm-fan"
->  - pwms		: the PWM that is used to control the PWM fan
-> +- cooling-levels      : PWM duty cycle values in a range from 0 to 255
-> +			which correspond to thermal cooling states
-> +
-> +Thorough description of the following bindings:
-> +		cooling-min-state =3D <0>;
-> +		cooling-max-state =3D <3>;
-> +		#cooling-cells =3D <2>;
-> +		thermal-zone {
-> +			cpu_thermal: cpu-thermal {
-> +			cooling-maps {
-> +				map0 {
-> +				     trip =3D <&cpu_alert1>;
-> +				     cooling-device =3D <&fan0 0 1>;
-> +				};
-> +			};
-> +		};
+Guenter,
 
-I am fine if you leave the reference to thermal.txt biding description,
-but I would prefer if you move the above lines to a proper example section.
+On Thu, Jan 08, 2015 at 08:48:40PM -0800, Guenter Roeck wrote:
+> On 01/08/2015 10:05 AM, Nishanth Menon wrote:
+> > Allow gpio-fan to be used as thermal cooling device for platforms that
+> > use GPIO maps to control fans.
+> >
+> > As part of this change, we make the shutdown and remove logic the same
+> > as well.
+> >
+> > Signed-off-by: Nishanth Menon <nm@ti.com>
+> > ---
+>=20
+> Applied to -next.
 
-> +
-> +for PWM FAN used as cooling device can be found at:
-> +./Documentation/devicetree/bindings/thermal/thermal.txt
-> =20
->  Example:
->  	pwm-fan {
->  		compatible =3D "pwm-fan";
->  		status =3D "okay";
->  		pwms =3D <&pwm 0 10000 0>;
-> +		cooling-levels =3D <0 102 170 230>;
->  	};
-> --=20
-> 2.0.0.rc2
+What is the target kernel version for this change? It didn't make
+4.0-rc1
+
+BR,
+
+Eduardo Valentin
+
+>=20
+> Thanks,
+> Guenter
 >=20
 
---7IgncvKP0CVPV/ZZ
+--2fjX3cMESU3XgGmZ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7NAWAAoJEMLUO4d9pOJWCAIH/0f3Y2wm25mlIgWvVB1zPEyD
-357D2o77MaVTOrsHBB4qZ39/xZczRM2+MJkj4J2jS1Jc5vvdeRdJ9eRHsoxwTvma
-0Prhw8dBHi7yzBLYefeBtsVuraHc3P6V8QXQhhnBgF0W4PIXT749KWoXPXc55f+q
-E1sk3Hp4TBm5SinUescBz+vktBglHYTmn/4RAW/ieZJmc5U4CwJ1bh692GNesONK
-E3jYbiuLjm9VbI5erVoZeF3MACMiulLpalZegBRmgl8izSq/OZpchXI7UnLa5Uxu
-ZccUBJLDXxMQRYOOvufaaA4WoEAMQvt0vN415+ragHYsuvqGHlqF6/BEIagylVM=
-=2ODY
+iQEcBAEBAgAGBQJU7NEVAAoJEMLUO4d9pOJWEsAH/R7uky9Zi0WMoKPPD7yAawN6
+CueEfNwfE81LaRqa0d9+zWgeZE1y0zEE3zglwApV0bdy5z6MOSLJCVc1Xw/ZdSVZ
+Ju/QUPrqTnGdoRFDC9fMn88P/OkczEXfAX2w5ptYNgS8hoPEc+2gdOz6ku2Uo8ID
+dYLjI2jDHDEN3oT9IiACHvR2TBUaorQfSAPROM/ghgJny8SzwRceGgWCLgQjMgCm
+lLblGFcJCuoOcf8/1Kh9yfIKYE9pp7G5vn5cgjp0NwR1qkC+8vOKEoQfwieN+2oW
+Tw96xpoBU2FBST3Kqqi+kpU3Y/HAdFUFU0PnBbYMILiFqUZHo3p0emZSRaPrWgI=
+=odHT
 -----END PGP SIGNATURE-----
 
---7IgncvKP0CVPV/ZZ--
+--2fjX3cMESU3XgGmZ--
