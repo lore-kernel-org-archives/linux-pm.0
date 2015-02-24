@@ -1,39 +1,38 @@
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: Re: [PATCH v5] thermal: Add QPNP PMIC temperature alarm driver
-Date: Tue, 24 Feb 2015 09:51:02 +0200
-Message-ID: <1424764262.2340.10.camel@mm-sol.com>
-References: <1423156376-16041-1-git-send-email-iivanov@mm-sol.com>
-	 <20150223205121.GA30865@developer.amazonguestwifi.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20150223205121.GA30865@developer.amazonguestwifi.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power_supply: rt5033: Constify struct regmap_config
+Date: Tue, 24 Feb 2015 10:52:13 +0100
+Message-ID: <1424771533-7833-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:34984 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbbBXJwW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 04:52:22 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
+The regmap_config struct may be const because it is not modified by the
+driver and regmap_init() accepts pointer to const.
 
-On Mon, 2015-02-23 at 16:51 -0400, Eduardo Valentin wrote:
-> On Thu, Feb 05, 2015 at 07:12:56PM +0200, Ivan T. Ivanov wrote:
-> > Add support for the temperature alarm peripheral found inside
-> > Qualcomm plug-and-play (QPNP) PMIC chips. The temperature alarm
-> > peripheral outputs a pulse on an interrupt line whenever the
-> > thermal over temperature stage value changes.
-> > 
-> > Register a thermal sensor. The temperature reported by this thermal
-> > sensor device should reflect the actual PMIC die temperature if an
-> > ADC is present on the given PMIC. If no ADC is present, then the
-> > reported temperature should be estimated from the over temperature
-> > stage value.
-> > 
-> > Cc: David Collins <collinsd@codeaurora.org>
-> > Signed-off-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-> 
-> Applying to my -linus branch.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/power/rt5033_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/power/rt5033_battery.c b/drivers/power/rt5033_battery.c
+index 7b898f41c595..995247af14fc 100644
+--- a/drivers/power/rt5033_battery.c
++++ b/drivers/power/rt5033_battery.c
+@@ -102,7 +102,7 @@ static enum power_supply_property rt5033_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ };
+ 
+-static struct regmap_config rt5033_battery_regmap_config = {
++static const struct regmap_config rt5033_battery_regmap_config = {
+ 	.reg_bits	= 8,
+ 	.val_bits	= 8,
+ 	.max_register	= RT5033_FUEL_REG_END,
+-- 
+1.9.1
 
-
-Thank you.
-Ivan
