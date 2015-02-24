@@ -1,83 +1,96 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: Re: [PATCH v4 4/5] Input: add haptic drvier on max77843
-Date: Tue, 24 Feb 2015 09:59:15 +0900
-Message-ID: <54EBCCE3.8070404@samsung.com>
-References: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
- <1424678991-13978-5-git-send-email-jaewon02.kim@samsung.com>
- <20150223172658.GA604@dtor-glaptop>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCHv3 0/8] devfreq: Add generic exynos memory-bus frequency
+ driver
+Date: Tue, 24 Feb 2015 01:23:01 +0000 (GMT)
+Message-ID: <473523680.35451424740978095.JavaMail.weblogic@epmlwas05a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-reply-to: <20150223172658.GA604@dtor-glaptop>
-Sender: linux-input-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:13448 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbbBXBXE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 20:23:04 -0500
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NK9009BH56DNI20@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 24 Feb 2015 10:23:01 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, Tobias Jakobi <liquid.acid@gmx.net>
+Cc: "kgene@kernel.org" <kgene@kernel.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, ABHILASH KESAVAN <a.kesavan@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-Hi Dmitry Torokhov,
+PiBIZWxsbyBDaGFud29vIQ0KPiANCj4gQ2hhbndvbyBDaG9pIHdyb3RlOg0KPiA+IEFzIHlvdSB0
+aG91Z2h0LCB3aGVuIG1haW50YWluaW5nIGxvd2VyIGNsb2NrIG9mIG1lbW9yeSBidXMgZnJlcXVl
+bmN5LA0KPiA+IHNvbWUgaXNzdWUgcmVsYXRlZCB0byBtdWx0aW1lZGlhIGZlYXR1cmUgd2lsbCBo
+YXBwZW4uDQo+ID4gDQo+ID4gU2VwYXJhdGVseSwgV2UgaGF2ZSB0byBjaGVjayB0aGUgbWltaW51
+bSBsb3dlciBjbG9jayBmb3Igd29ya2luZyBvZiBtdWx0aW1lZGlhIGZlYXR1cmUuDQo+ID4gYW5k
+IHRoZW4gbXVsdGltZWRpYSBvciBvdGhlciBJUCBoYXZlIHRvIHJlcXVlc3QgaXQgdG8gRFZGUyBk
+cml2ZXIgKG1lbW9yeSBidXNmcmVxIGRyaXZlcikuDQo+ID4gQnV0LCBsYXRlc3QgbWFpbmxpbmUg
+a2VybmVsIGN1cnJlbnRseSBoYXMgbm90IHNvbWUgd2F5IHRvIGluZm9ybSBtaW5pbXVtIGNsb2Nr
+IHRvIERWRlMgZHJpdmVyLg0KPiA+IA0KPiA+IFNvLCBJZiB5b3UgY2hlY2sgdGhlIG1pbWludW0g
+Y2xvY2sgZm9yIGhkbWksIEknbGwgdXNlIHRoaXMgY2xvY2sgYXMgbWludW11IGZyZXF1ZW5jeSBv
+ZiBkdmZzIHRhYmxlLg0KPiA+IA0KPiA+IFRoYW5rcywNCj4gPiBDaGFud29vIENob2kNCj4gPiAN
+Cj4gDQo+IEZpcnN0IEkgaGF2ZSB0byBhcG9sb2dpemUuIEkgZGlkbid0IGNoZWNrIGNhcmVmdWxs
+eS4gQWN0dWFsbHkgaXQncyBub3QNCj4gdGhlIEhETUkgc3Vic3lzdGVtIHdoaWNoIHNlZW1zIHRv
+IGhhbmcgZHVyaW5nIG15IHRlc3QsIGJ1dCB0aGUgRzJEDQo+IHN1YnN5c3RlbS4NCj4gDQo+IEhl
+cmUncyBhIHNuaXBwZXQgb2YgdGhlIGtlcm5lbCBsb2cgd2l0aCBkcm0uZGVidWc9MHhmZjoNCj4g
+WyAxMTU3LjkxMTI2NF0gW2RybTpkcm1fZnJhbWVidWZmZXJfcmVmZXJlbmNlXSBlZTE0NGUwMDog
+RkIgSUQ6IDI3ICgyKQ0KPiBbIDExNTcuOTExMjcxXSBbZHJtOmRybV9mcmFtZWJ1ZmZlcl91bnJl
+ZmVyZW5jZV0gZWUzN2ZiODA6IEZCIElEOiAyNSAoMikNCj4gWyAxMTU3LjkxMTI3N10gW2RybTpk
+cm1fZnJhbWVidWZmZXJfdW5yZWZlcmVuY2VdIGVlMTQ0ZTAwOiBGQiBJRDogMjcgKDMpDQo+IFsg
+MTE1Ny45MTEzMTVdIFtkcm06ZHJtX2lvY3RsXSBwaWQ9MjU2OSwgZGV2PTB4ZTIwMCwgYXV0aD0x
+LA0KPiBFWFlOT1NfRzJEX0dFVF9WRVINCj4gWyAxMTU4LjQzNDQzOV0gW2RybTpkcm1faW9jdGxd
+IHBpZD0yNTY5LCBkZXY9MHhlMjAwLCBhdXRoPTEsDQo+IEVYWU5PU19HMkRfU0VUX0NNRExJU1QN
+Cj4gWyAxMTU4LjQzNDUzNl0gW2RybTpkcm1faW9jdGxdIHBpZD0yNTY5LCBkZXY9MHhlMjAwLCBh
+dXRoPTEsIEVYWU5PU19HMkRfRVhFQw0KPiBbIDExNTguNDM3NDg0XSBbZHJtOmRybV92bV9jbG9z
+ZV9sb2NrZWRdIDB4YWY4NDAwMDAsMHgwMDE0MDAwMA0KPiBbIDExNTguNDM3NTA3XSBbZHJtOmRy
+bV9pb2N0bF0gcGlkPTI1NjksIGRldj0weGUyMDAsIGF1dGg9MSwNCj4gRFJNX0lPQ1RMX0dFTV9D
+TE9TRQ0KPiBbIDExNTguNDM3NTI0XSBbZHJtOmV4eW5vc19kcm1fZ2VtX2Rlc3Ryb3ldIGhhbmRs
+ZSBjb3VudCA9IDANCj4gWyAxMTU4LjQzNzUzMl0gW2RybTpsb3dsZXZlbF9idWZmZXJfZGVhbGxv
+Y2F0ZV0gZG1hX2FkZHIoMHgyMDUwMDAwMCksDQo+IHNpemUoMHgxNDAwMDApDQo+IFsgMTE1OC40
+Mzc4MTBdIFtkcm06ZHJtX2lvY3RsXSBwaWQ9MjU2OSwgZGV2PTB4ZTIwMCwgYXV0aD0xLA0KPiBF
+WFlOT1NfR0VNX0NSRUFURQ0KPiBbIDExNTguNDM3ODE5XSBbZHJtOmV4eW5vc19kcm1faW5pdF9i
+dWZdIGRlc2lyZWQgc2l6ZSA9IDB4MjU2MDAwDQo+IFsgMTE1OC40Mzc4NTFdIFtkcm06ZXh5bm9z
+X2RybV9nZW1faW5pdF0gY3JlYXRlZCBmaWxlIG9iamVjdCA9IDB4ZTk3YzhkMDANCj4gWyAxMTU4
+LjQ0NTUwNl0gW2RybTpsb3dsZXZlbF9idWZmZXJfYWxsb2NhdGVdIGRtYV9hZGRyKDB4MjE0MDAw
+MDApLA0KPiBzaXplKDB4MjU2MDAwKQ0KPiBbIDExNTguNDQ1NTM1XSBbZHJtOmV4eW5vc19kcm1f
+Z2VtX2hhbmRsZV9jcmVhdGVdIGdlbSBoYW5kbGUgPSAweDENCj4gWyAxMTU4LjQ0NTU1Nl0gW2Ry
+bTpkcm1faW9jdGxdIHBpZD0yNTY5LCBkZXY9MHhlMjAwLCBhdXRoPTEsDQo+IERSTV9JT0NUTF9N
+T0RFX01BUF9EVU1CDQo+IFsgMTE1OC40NDU1NzBdIFtkcm06ZXh5bm9zX2RybV9nZW1fZHVtYl9t
+YXBfb2Zmc2V0XSBvZmZzZXQgPSAweDEwMWMyMDAwDQo+IFsgMTE1OC40NDU2MDBdIFtkcm06ZHJt
+X3ZtX29wZW5fbG9ja2VkXSAweGFlYzE1MDAwLDB4MDAyNTYwMDANCj4gWyAxMTU4LjQ0NTYwOF0g
+W2RybTp1cGRhdGVfdm1fY2FjaGVfYXR0cl0gZmxhZ3MgPSAweDANCj4gWyAxMTU4LjQ1NzY5Nl0g
+W2RybTpkcm1faW9jdGxdIHBpZD0yNTY5LCBkZXY9MHhlMjAwLCBhdXRoPTEsDQo+IEVYWU5PU19H
+MkRfU0VUX0NNRExJU1QNCj4gWyAxMTU4LjQ1Nzc0NV0gW2RybTpkcm1faW9jdGxdIHBpZD0yNTY5
+LCBkZXY9MHhlMjAwLCBhdXRoPTEsIEVYWU5PU19HMkRfRVhFQw0KPiANCj4gDQo+IFNvIEcyRF9F
+WEVDIHNlZW1zIHRvIHdvcmsgb25jZSwgYnV0IHRoZSBzZWNvbmQgdGltZSBpdCBoYW5ncyBmb3Jl
+dmVyLiBJDQo+IGV2ZW4gZmFpbCBhdCBhdHRhY2hpbmcgZ2RiIHRvIHRoZSBhcHBsaWNhdGlvbiB0
+aGVuIChnZGIgdGhlbiBhbHNvIGhhbmdzDQo+IGluIEQgc3RhdGUpLg0KPiANCj4gSWYgSSBqdXN0
+IHVzZSB0aGUgJ3ZzeW5jZWQgcGFnZSBmbGlwcGluZycgdGVzdCwgdGhlbiBldmVyeXRoaW5nIHdv
+cmtzOg0KPiAuL21vZGV0ZXN0IC1NIGV4eW5vcyAtcyAxNkAxMzoxMjgweDcyMCAtdg0KPiBzZXR0
+aW5nIG1vZGUgMTI4MHg3MjAtNjBIekBYUjI0IG9uIGNvbm5lY3RvcnMgMTYsIGNydGMgMTMNCj4g
+ZnJlcTogNjEuMDhIeg0KPiBmcmVxOiA2MC4wMEh6DQo+IGZyZXE6IDYwLjAwSHoNCj4gPGV0Yy4+
+DQo+IA0KPiBJJ20gZ29pbmcgdG8gZG8gc29tZSB0ZXN0cyB3aXRoIHRoZSBHMkQgaW4gdGhlIG5l
+eHQgdGltZSwgY2hlY2tpbmcgaG93DQo+IG11Y2ggSSBjYW4gbG93ZXIgTUlGL0lOVCBjbG9ja3Mg
+YmVmb3JlIHRoZSBlbmdpbmUgYmVjb21lcyB1bnN0YWJsZS4NCj4gDQo+IFdpdGggYmVzdCB3aXNo
+ZXMsDQo+IFRvYmlhcw0KPiANCj4gDQoNClVubGVzcyB5b3UgYXJlIHdpbGxpbmcgdG8gd2FpdCBm
+b3IgMiBtaW51dGVzIGFmdGVyIHRoZSBrZXJuYWwgaGFuZ3MsDQp5b3UgbWF5IHdhbnQgdG8gYWRq
+dXN0ICJERUZBVUxUX0hVTkdfVEFTS19USU1FT1VUIiB0byBzaG9ydGVyIHZhbHVlDQooMTIwIC0t
+PiA1IGZvciA1IHNlY29uZHMpLiBJdCBzZWVtcyB0aGF0IHlvdSd2ZSBjdXQgaXQgb2ZmIGluIHRo
+ZSBtaWRkbGUNCm9mIHRoYXQgIjEyMCBzZWMiIHdhaXQuDQoNCklmIGl0J3MgaW4gRCBzdGF0ZSAo
+aW4ga2VybmVsKSwgZ2RiIHdvbid0IHdvcmsgYXMgeW91IGFyZSBleHBlcmllbmNpbmcuDQpTb3Jy
+eSBmb3Igbm90IHRlc3Rpbmcgd2l0aCBIRE1JOyBteSBFeHlub3MgZGV2aWNlcyBkbyBub3QgaGF2
+ZSBIRE1JLiA6KQ0KDQpUbyBDaGFud29vLCB3b3VsZG4ndCBpdCBiZSBvayB0byBoYXZlIHRoZSBj
+b3JyZXNwb25kaW5nIGRldmZyZXEgZHJpdmVyDQp0byBzZXQgbWluaW11bSBoaWdoZXIgSUZGIEhE
+TUkgaXMgZW5hYmxlZD8gKGVpdGhlciBieSBidWlsZCB0aW1lIG9yDQpydW4gdGltZSkgSSBndWVz
+cyBFeHlub3MgSERNSSBkcml2ZXIgc2hvdWxkIGV4cHJlc3MgUE0tUW9TIHJlcXVlc3RzIGxhdGVy
+Lg0KKE9yIGxldCBFeHlub3MgSERNSSBkcml2ZXIgbm90IGh1bmcgZXZlbiBpZiBpdHMgbWVtb3J5
+IHRyYW5zYWN0aW9ucyBhcmUNCm5vdCBmYXN0IGVub3VnaCkNCg0KQ2hlZXJzLA0KTXl1bmdKb28N
+Cg==
 
-On 02/24/2015 02:26 AM, Dmitry Torokhov wrote:
-> Hi Jaew9on,
->
-> On Mon, Feb 23, 2015 at 05:09:50PM +0900, Jaewon Kim wrote:
->> This patch adds support for haptic driver on max77843
->> MFD(Multi Function Device) with PMIC, MUIC, LED, CHARGER.
->>
->> This driver supports external pwm and LRA(Linear Resonant Actuator) motor.
->> And it supports ff-memless interface from inpu framework.
->>
->> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-> ...
->
->> +static void max77843_haptic_play_work(struct work_struct *work)
->> +{
->> +	struct max77843_haptic *haptic =
->> +			container_of(work, struct max77843_haptic, work);
->> +	int error;
->> +
->> +	mutex_lock(&haptic->mutex);
->> +
->> +	if (haptic->suspended)
->> +		mutex_unlock(&haptic->mutex);
-> Huh?
-This code prevent to play haptic when entering suspend state.
-But I forgot return.
-I will add return 0 in version 6.
 
->
->> +
->> +	error = max77843_haptic_set_duty_cycle(haptic);
->> +	if (error) {
->> +		dev_err(haptic->dev, "failed to set duty cycle: %d\n", error);
->> +		return;
-> Here you are leaving with the mutex held.
-Okay, I will add mutex_unlock().
->
->> +	}
->> +
->> +	if (haptic->magnitude) {
->> +		error = max77843_haptic_enable(haptic);
->> +		if (error)
->> +			dev_err(haptic->dev,
->> +					"cannot enable haptic: %d\n", error);
->> +	} else {
->> +		max77843_haptic_disable(haptic);
->> +		if (error)
->> +			dev_err(haptic->dev,
->> +					"cannot disable haptic: %d\n", error);
->> +	}
->> +
->> +	mutex_unlock(&haptic->mutex);
->> +}
->> +
-> The rest seems quite reasonable.
->
-> Thanks.
->
-Thanks to review my patch.
-
-
-Thanks,
-Jaewon Kim
