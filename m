@@ -1,8 +1,10 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 1/5] power_supply: max77693: Properly handle error conditions
-Date: Tue, 24 Feb 2015 10:54:43 +0100
-Message-ID: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH 3/5] power_supply: max14577: Properly handle error conditions
+Date: Tue, 24 Feb 2015 10:54:45 +0100
+Message-ID: <1424771687-7976-3-git-send-email-k.kozlowski@samsung.com>
+References: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
@@ -11,246 +13,231 @@ List-Id: linux-pm@vger.kernel.org
 Re-work and fix handling of errors when retrieving power supply
 properties:
 
-1. Return errno values directly from get_property() instead of storing
-   'unknown' as intval for given property.
+1. Return errno values directly from get_property() instead of
+   storing 'unknown' as intval for given property.
 
-2. Handle regmap_read() errors when getting 'online' and 'present'
-   proprties and return errno code. Previously the regmap_read() return
-   code was ignored so an uninitialized value from the stack could be
-   used for calculating the property.
+2. Handle regmap_read() errors and return errno code. Previously the
+   regmap_read() return code was ignored so an uninitialized value from
+   the stack could be used for calculating the property.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/power/max77693_charger.c | 99 ++++++++++++++++++++++------------------
- 1 file changed, 55 insertions(+), 44 deletions(-)
+ drivers/power/max14577_charger.c | 109 ++++++++++++++++++++++++++-------------
+ 1 file changed, 73 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/power/max77693_charger.c b/drivers/power/max77693_charger.c
-index b042970fdeaf..ca52e7d15b95 100644
---- a/drivers/power/max77693_charger.c
-+++ b/drivers/power/max77693_charger.c
-@@ -38,13 +38,14 @@ struct max77693_charger {
- 	u32 charge_input_threshold_volt;
- };
+diff --git a/drivers/power/max14577_charger.c b/drivers/power/max14577_charger.c
+index c72238aa011b..4736dc478578 100644
+--- a/drivers/power/max14577_charger.c
++++ b/drivers/power/max14577_charger.c
+@@ -54,10 +54,10 @@ static enum max14577_muic_charger_type maxim_get_charger_type(
+ 	}
+ }
  
--static int max77693_get_charger_state(struct regmap *regmap)
-+static int max77693_get_charger_state(struct regmap *regmap, int *val)
+-static int max14577_get_charger_state(struct max14577_charger *chg)
++static int max14577_get_charger_state(struct max14577_charger *chg, int *val)
  {
--	int state;
+ 	struct regmap *rmap = chg->max14577->regmap;
+-	int state = POWER_SUPPLY_STATUS_DISCHARGING;
 +	int ret;
- 	unsigned int data;
+ 	u8 reg_data;
  
--	if (regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data) < 0)
--		return POWER_SUPPLY_STATUS_UNKNOWN;
-+	ret = regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data);
+ 	/*
+@@ -71,22 +71,32 @@ static int max14577_get_charger_state(struct max14577_charger *chg)
+ 	 *  - handle properly dead-battery charging (respect timer)
+ 	 *  - handle timers (fast-charge and prequal) /MBCCHGERR/
+ 	 */
+-	max14577_read_reg(rmap, MAX14577_CHG_REG_CHG_CTRL2, &reg_data);
+-	if ((reg_data & CHGCTRL2_MBCHOSTEN_MASK) == 0)
+-		goto state_set;
++	ret = max14577_read_reg(rmap, MAX14577_CHG_REG_CHG_CTRL2, &reg_data);
 +	if (ret < 0)
-+		return ret;
- 
- 	data &= CHG_DETAILS_01_CHG_MASK;
- 	data >>= CHG_DETAILS_01_CHG_SHIFT;
-@@ -56,35 +57,36 @@ static int max77693_get_charger_state(struct regmap *regmap)
- 	case MAX77693_CHARGING_TOP_OFF:
- 	/* In high temp the charging current is reduced, but still charging */
- 	case MAX77693_CHARGING_HIGH_TEMP:
--		state = POWER_SUPPLY_STATUS_CHARGING;
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
- 		break;
- 	case MAX77693_CHARGING_DONE:
--		state = POWER_SUPPLY_STATUS_FULL;
-+		*val = POWER_SUPPLY_STATUS_FULL;
- 		break;
- 	case MAX77693_CHARGING_TIMER_EXPIRED:
- 	case MAX77693_CHARGING_THERMISTOR_SUSPEND:
--		state = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		break;
- 	case MAX77693_CHARGING_OFF:
- 	case MAX77693_CHARGING_OVER_TEMP:
- 	case MAX77693_CHARGING_WATCHDOG_EXPIRED:
--		state = POWER_SUPPLY_STATUS_DISCHARGING;
++		goto out;
++
++	if ((reg_data & CHGCTRL2_MBCHOSTEN_MASK) == 0) {
 +		*val = POWER_SUPPLY_STATUS_DISCHARGING;
- 		break;
- 	case MAX77693_CHARGING_RESERVED:
- 	default:
--		state = POWER_SUPPLY_STATUS_UNKNOWN;
-+		*val = POWER_SUPPLY_STATUS_UNKNOWN;
++		goto out;
++	}
++
++	ret = max14577_read_reg(rmap, MAX14577_CHG_REG_STATUS3, &reg_data);
++	if (ret < 0)
++		goto out;
+ 
+-	max14577_read_reg(rmap, MAX14577_CHG_REG_STATUS3, &reg_data);
+ 	if (reg_data & STATUS3_CGMBC_MASK) {
+ 		/* Charger or USB-cable is connected */
+ 		if (reg_data & STATUS3_EOC_MASK)
+-			state = POWER_SUPPLY_STATUS_FULL;
++			*val = POWER_SUPPLY_STATUS_FULL;
+ 		else
+-			state = POWER_SUPPLY_STATUS_CHARGING;
+-		goto state_set;
++			*val = POWER_SUPPLY_STATUS_CHARGING;
++		goto out;
  	}
  
+-state_set:
 -	return state;
++	*val = POWER_SUPPLY_STATUS_DISCHARGING;
++
++out:
++	return ret;
+ }
+ 
+ /*
+@@ -94,8 +104,10 @@ state_set:
+  *  - POWER_SUPPLY_CHARGE_TYPE_NONE
+  *  - POWER_SUPPLY_CHARGE_TYPE_FAST
+  */
+-static int max14577_get_charge_type(struct max14577_charger *chg)
++static int max14577_get_charge_type(struct max14577_charger *chg, int *val)
+ {
++	int ret, charging;
++
+ 	/*
+ 	 * TODO: CHARGE_TYPE_TRICKLE (VCHGR_RC or EOC)?
+ 	 * As spec says:
+@@ -104,18 +116,29 @@ static int max14577_get_charge_type(struct max14577_charger *chg)
+ 	 *  top-off timer starts. The device continues to trickle
+ 	 *  charge the battery until the top-off timer runs out."
+ 	 */
+-	if (max14577_get_charger_state(chg) == POWER_SUPPLY_STATUS_CHARGING)
+-		return POWER_SUPPLY_CHARGE_TYPE_FAST;
+-	return POWER_SUPPLY_CHARGE_TYPE_NONE;
++	ret = max14577_get_charger_state(chg, &charging);
++	if (ret < 0)
++		return ret;
++
++	if (charging == POWER_SUPPLY_STATUS_CHARGING)
++		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
++	else
++		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
++
 +	return 0;
  }
  
--static int max77693_get_charge_type(struct regmap *regmap)
-+static int max77693_get_charge_type(struct regmap *regmap, int *val)
+-static int max14577_get_online(struct max14577_charger *chg)
++static int max14577_get_online(struct max14577_charger *chg, int *val)
  {
--	int state;
+ 	struct regmap *rmap = chg->max14577->regmap;
+ 	u8 reg_data;
 +	int ret;
- 	unsigned int data;
+ 	enum max14577_muic_charger_type chg_type;
  
--	if (regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data) < 0)
--		return POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+	ret = regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data);
+-	max14577_read_reg(rmap, MAX14577_MUIC_REG_STATUS2, &reg_data);
++	ret = max14577_read_reg(rmap, MAX14577_MUIC_REG_STATUS2, &reg_data);
 +	if (ret < 0)
 +		return ret;
- 
- 	data &= CHG_DETAILS_01_CHG_MASK;
- 	data >>= CHG_DETAILS_01_CHG_SHIFT;
-@@ -96,13 +98,13 @@ static int max77693_get_charge_type(struct regmap *regmap)
- 	 * 100 and 250 mA. It is higher than prequalification current.
- 	 */
- 	case MAX77693_CHARGING_TOP_OFF:
--		state = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+		*val = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
- 		break;
- 	case MAX77693_CHARGING_FAST_CONST_CURRENT:
- 	case MAX77693_CHARGING_FAST_CONST_VOLTAGE:
- 	/* In high temp the charging current is reduced, but still charging */
- 	case MAX77693_CHARGING_HIGH_TEMP:
--		state = POWER_SUPPLY_CHARGE_TYPE_FAST;
-+		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
- 		break;
- 	case MAX77693_CHARGING_DONE:
- 	case MAX77693_CHARGING_TIMER_EXPIRED:
-@@ -110,14 +112,14 @@ static int max77693_get_charge_type(struct regmap *regmap)
- 	case MAX77693_CHARGING_OFF:
- 	case MAX77693_CHARGING_OVER_TEMP:
- 	case MAX77693_CHARGING_WATCHDOG_EXPIRED:
--		state = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
- 		break;
- 	case MAX77693_CHARGING_RESERVED:
++
+ 	reg_data = ((reg_data & STATUS2_CHGTYP_MASK) >> STATUS2_CHGTYP_SHIFT);
+ 	chg_type = maxim_get_charger_type(chg->max14577->dev_type, reg_data);
+ 	switch (chg_type) {
+@@ -125,14 +148,17 @@ static int max14577_get_online(struct max14577_charger *chg)
+ 	case MAX14577_CHARGER_TYPE_SPECIAL_1A:
+ 	case MAX14577_CHARGER_TYPE_DEAD_BATTERY:
+ 	case MAX77836_CHARGER_TYPE_SPECIAL_BIAS:
+-		return 1;
++		*val = 1;
++		break;
+ 	case MAX14577_CHARGER_TYPE_NONE:
+ 	case MAX14577_CHARGER_TYPE_DOWNSTREAM_PORT:
+ 	case MAX14577_CHARGER_TYPE_RESERVED:
+ 	case MAX77836_CHARGER_TYPE_RESERVED:
  	default:
--		state = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+		*val = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
+-		return 0;
++		*val = 0;
  	}
- 
--	return state;
++
 +	return 0;
  }
  
  /*
-@@ -129,69 +131,78 @@ static int max77693_get_charge_type(struct regmap *regmap)
-  *  - POWER_SUPPLY_HEALTH_UNKNOWN
-  *  - POWER_SUPPLY_HEALTH_UNSPEC_FAILURE
+@@ -141,29 +167,38 @@ static int max14577_get_online(struct max14577_charger *chg)
+  *  - POWER_SUPPLY_HEALTH_OVERVOLTAGE
+  *  - POWER_SUPPLY_HEALTH_GOOD
   */
--static int max77693_get_battery_health(struct regmap *regmap)
-+static int max77693_get_battery_health(struct regmap *regmap, int *val)
+-static int max14577_get_battery_health(struct max14577_charger *chg)
++static int max14577_get_battery_health(struct max14577_charger *chg, int *val)
  {
--	int state;
+ 	struct regmap *rmap = chg->max14577->regmap;
+-	int state = POWER_SUPPLY_HEALTH_GOOD;
 +	int ret;
- 	unsigned int data;
+ 	u8 reg_data;
+ 	enum max14577_muic_charger_type chg_type;
  
--	if (regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data) < 0)
--		return POWER_SUPPLY_HEALTH_UNKNOWN;
-+	ret = regmap_read(regmap, MAX77693_CHG_REG_CHG_DETAILS_01, &data);
+-	max14577_read_reg(rmap, MAX14577_MUIC_REG_STATUS2, &reg_data);
++	ret = max14577_read_reg(rmap, MAX14577_MUIC_REG_STATUS2, &reg_data);
 +	if (ret < 0)
-+		return ret;
- 
- 	data &= CHG_DETAILS_01_BAT_MASK;
- 	data >>= CHG_DETAILS_01_BAT_SHIFT;
- 
- 	switch (data) {
- 	case MAX77693_BATTERY_NOBAT:
++		goto out;
++
+ 	reg_data = ((reg_data & STATUS2_CHGTYP_MASK) >> STATUS2_CHGTYP_SHIFT);
+ 	chg_type = maxim_get_charger_type(chg->max14577->dev_type, reg_data);
+ 	if (chg_type == MAX14577_CHARGER_TYPE_DEAD_BATTERY) {
 -		state = POWER_SUPPLY_HEALTH_DEAD;
+-		goto state_set;
 +		*val = POWER_SUPPLY_HEALTH_DEAD;
- 		break;
- 	case MAX77693_BATTERY_PREQUALIFICATION:
- 	case MAX77693_BATTERY_GOOD:
- 	case MAX77693_BATTERY_LOWVOLTAGE:
--		state = POWER_SUPPLY_HEALTH_GOOD;
-+		*val = POWER_SUPPLY_HEALTH_GOOD;
- 		break;
- 	case MAX77693_BATTERY_TIMER_EXPIRED:
- 		/*
- 		 * Took longer to charge than expected, charging suspended.
- 		 * Damaged battery?
- 		 */
--		state = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
-+		*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
- 		break;
- 	case MAX77693_BATTERY_OVERVOLTAGE:
--		state = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
- 		break;
- 	case MAX77693_BATTERY_OVERCURRENT:
--		state = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+		*val = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
- 		break;
- 	case MAX77693_BATTERY_RESERVED:
- 	default:
--		state = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		*val = POWER_SUPPLY_HEALTH_UNKNOWN;
- 		break;
++		goto out;
  	}
  
+-	max14577_read_reg(rmap, MAX14577_CHG_REG_STATUS3, &reg_data);
++	ret = max14577_read_reg(rmap, MAX14577_CHG_REG_STATUS3, &reg_data);
++	if (ret < 0)
++		goto out;
++
+ 	if (reg_data & STATUS3_OVP_MASK) {
+-		state = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-		goto state_set;
++		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++		goto out;
+ 	}
+ 
+-state_set:
 -	return state;
-+	return 0;
++	/* Not dead, not overvoltage */
++	*val = POWER_SUPPLY_HEALTH_GOOD;
++
++out:
++	return ret;
  }
  
--static int max77693_get_present(struct regmap *regmap)
-+static int max77693_get_present(struct regmap *regmap, int *val)
+ /*
+@@ -171,9 +206,11 @@ state_set:
+  * The max14577 chip doesn't report any status of battery presence.
+  * Lets assume that it will always be used with some battery.
+  */
+-static int max14577_get_present(struct max14577_charger *chg)
++static int max14577_get_present(struct max14577_charger *chg, int *val)
  {
- 	unsigned int data;
-+	int ret;
- 
- 	/*
- 	 * Read CHG_INT_OK register. High DETBAT bit here should be
- 	 * equal to value 0x0 in CHG_DETAILS_01/BAT field.
- 	 */
--	regmap_read(regmap, MAX77693_CHG_REG_CHG_INT_OK, &data);
--	if (data & CHG_INT_OK_DETBAT_MASK)
--		return 0;
 -	return 1;
-+	ret = regmap_read(regmap, MAX77693_CHG_REG_CHG_INT_OK, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = (data & CHG_INT_OK_DETBAT_MASK) ? 0 : 1;
++	*val = 1;
 +
 +	return 0;
  }
  
--static int max77693_get_online(struct regmap *regmap)
-+static int max77693_get_online(struct regmap *regmap, int *val)
- {
- 	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, MAX77693_CHG_REG_CHG_INT_OK, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = (data & CHG_INT_OK_CHGIN_MASK) ? 1 : 0;
- 
--	regmap_read(regmap, MAX77693_CHG_REG_CHG_INT_OK, &data);
--	if (data & CHG_INT_OK_CHGIN_MASK)
--		return 1;
- 	return 0;
- }
- 
-@@ -217,19 +228,19 @@ static int max77693_charger_get_property(struct power_supply *psy,
+ static int max14577_set_fast_charge_timer(struct max14577_charger *chg,
+@@ -391,19 +428,19 @@ static int max14577_charger_get_property(struct power_supply *psy,
  
  	switch (psp) {
  	case POWER_SUPPLY_PROP_STATUS:
--		val->intval = max77693_get_charger_state(regmap);
-+		ret = max77693_get_charger_state(regmap, &val->intval);
+-		val->intval = max14577_get_charger_state(chg);
++		ret = max14577_get_charger_state(chg, &val->intval);
  		break;
  	case POWER_SUPPLY_PROP_CHARGE_TYPE:
--		val->intval = max77693_get_charge_type(regmap);
-+		ret = max77693_get_charge_type(regmap, &val->intval);
+-		val->intval = max14577_get_charge_type(chg);
++		ret = max14577_get_charge_type(chg, &val->intval);
  		break;
  	case POWER_SUPPLY_PROP_HEALTH:
--		val->intval = max77693_get_battery_health(regmap);
-+		ret = max77693_get_battery_health(regmap, &val->intval);
+-		val->intval = max14577_get_battery_health(chg);
++		ret = max14577_get_battery_health(chg, &val->intval);
  		break;
  	case POWER_SUPPLY_PROP_PRESENT:
--		val->intval = max77693_get_present(regmap);
-+		ret = max77693_get_present(regmap, &val->intval);
+-		val->intval = max14577_get_present(chg);
++		ret = max14577_get_present(chg, &val->intval);
  		break;
  	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = max77693_get_online(regmap);
-+		ret = max77693_get_online(regmap, &val->intval);
+-		val->intval = max14577_get_online(chg);
++		ret = max14577_get_online(chg, &val->intval);
  		break;
  	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = max77693_charger_model;
+ 		BUILD_BUG_ON(ARRAY_SIZE(model_names) != MAXIM_DEVICE_TYPE_NUM);
 -- 
 1.9.1
