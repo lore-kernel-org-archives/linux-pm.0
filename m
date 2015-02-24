@@ -1,38 +1,58 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] power_supply: rt5033: Constify struct regmap_config
-Date: Tue, 24 Feb 2015 10:52:13 +0100
-Message-ID: <1424771533-7833-1-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH 2/5] power_supply: max14577: Don't store charging and battery
+ states for later
+Date: Tue, 24 Feb 2015 10:54:44 +0100
+Message-ID: <1424771687-7976-2-git-send-email-k.kozlowski@samsung.com>
+References: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:34984 "EHLO
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:35166 "EHLO
 	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbbBXJwW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 04:52:22 -0500
+	with ESMTP id S1751444AbbBXJy4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 04:54:56 -0500
+In-reply-to: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-The regmap_config struct may be const because it is not modified by the
-driver and regmap_init() accepts pointer to const.
+Remove caching of charging and battery states in driver's state
+container because the cached value was not used later.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/power/rt5033_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/max14577_charger.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/power/rt5033_battery.c b/drivers/power/rt5033_battery.c
-index 7b898f41c595..995247af14fc 100644
---- a/drivers/power/rt5033_battery.c
-+++ b/drivers/power/rt5033_battery.c
-@@ -102,7 +102,7 @@ static enum power_supply_property rt5033_battery_props[] = {
- 	POWER_SUPPLY_PROP_CAPACITY,
+diff --git a/drivers/power/max14577_charger.c b/drivers/power/max14577_charger.c
+index ef4103ee6021..c72238aa011b 100644
+--- a/drivers/power/max14577_charger.c
++++ b/drivers/power/max14577_charger.c
+@@ -26,9 +26,6 @@ struct max14577_charger {
+ 	struct max14577	*max14577;
+ 	struct power_supply	charger;
+ 
+-	unsigned int		charging_state;
+-	unsigned int		battery_state;
+-
+ 	struct max14577_charger_platform_data	*pdata;
  };
  
--static struct regmap_config rt5033_battery_regmap_config = {
-+static const struct regmap_config rt5033_battery_regmap_config = {
- 	.reg_bits	= 8,
- 	.val_bits	= 8,
- 	.max_register	= RT5033_FUEL_REG_END,
+@@ -89,7 +86,6 @@ static int max14577_get_charger_state(struct max14577_charger *chg)
+ 	}
+ 
+ state_set:
+-	chg->charging_state = state;
+ 	return state;
+ }
+ 
+@@ -167,7 +163,6 @@ static int max14577_get_battery_health(struct max14577_charger *chg)
+ 	}
+ 
+ state_set:
+-	chg->battery_state = state;
+ 	return state;
+ }
+ 
 -- 
 1.9.1
 
