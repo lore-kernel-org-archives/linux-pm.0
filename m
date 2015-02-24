@@ -1,86 +1,112 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 1/7] OPP: Redefine bindings to overcome shortcomings
-Date: Tue, 24 Feb 2015 09:12:37 -0800
-Message-ID: <7h8ufn8c8q.fsf@deeprootsystems.com>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
-	<be795ef7ec98669bc5aa90ec426a1ec1fbc32b6c.1423642246.git.viresh.kumar@linaro.org>
-	<7ha904b6hp.fsf@deeprootsystems.com>
-	<CAKohpo=CRkJTkp2FXgYNwd2eEtMVRFuwJ=GPtX7+9WnQD6CK2Q@mail.gmail.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH] cpuidle: mvebu: update cpuidle thresholds for Armada
+ XP SOCs
+Date: Tue, 24 Feb 2015 18:36:03 +0100
+Message-ID: <54ECB683.6060705@free-electrons.com>
+References: <alpine.LNX.2.02.1502131534360.8729@sbrk.sbrk.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:38939 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbbBXRMk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 12:12:40 -0500
-Received: by pdjy10 with SMTP id y10so34703150pdj.6
-        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2015 09:12:40 -0800 (PST)
-In-Reply-To: <CAKohpo=CRkJTkp2FXgYNwd2eEtMVRFuwJ=GPtX7+9WnQD6CK2Q@mail.gmail.com>
-	(Viresh Kumar's message of "Tue, 24 Feb 2015 09:54:59 +0530")
+Received: from down.free-electrons.com ([37.187.137.238]:40833 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751605AbbBXRgJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 12:36:09 -0500
+In-Reply-To: <alpine.LNX.2.02.1502131534360.8729@sbrk.sbrk.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+To: "s. rannou" <mxs@sbrk.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+Hi Sebastien,
 
-> On 24 February 2015 at 04:06, Kevin Hilman <khilman@kernel.org> wrote:
->> Viresh Kumar <viresh.kumar@linaro.org> writes:
->
->>> +Optional properties:
->>> +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
->>> +  switch their DVFS state together, i.e. they share clock lines.
->>
->> ... or shared voltage rail?
->
-> The point is that they switch their frequencies together. Which means,
-> sharing voltage rail + PLLs .. How do we write it properly ?
+On 13/02/2015 15:55, s. rannou wrote:
+> Originally, the thresholds used in the cpuidle driver for Armada SOCs
+> were temporarily chosen, leaving room for improvements.
+> 
+> This commit updates the thresholds for the Armada XP SOCs with values
+> that positively impact performances:
+> 
+>                                 without patch  with patch   vendor kernel
+>  - iperf localhost (gbit/sec)   ~3.7           ~6.4         ~5.4
+>  - ioping tmpfs (iops)          ~163k          ~206k        ~179k
+>  - ioping tmpfs (mib/s)         ~636           ~805         ~699
+> 
+> The idle power consumption is negatively impacted (proportionally less
+> than the performance gain), and we are still performing better than
+> the vendor kernel here:
+> 
+>                                 without patch   with patch  vendor kernel
+>  - power consumption idle (W)   ~2.4            ~3.2        ~4.4
+>  - power consumption busy (W)   ~8.6            ~8.3        ~8.6
+> 
+> There is still room for improvement regarding the value of these
+> thresholds, they were chosen to mimic the vendor kernel.
+> 
+> This patch only impacts Armada XP SOCs and was tested on Online Labs
+> C1 boards. A similar approach can be taken to improve the performances
+> of the Armada 370 and Armada 38x SOCs.
+> 
+> Thanks a lot to Thomas Petazzoni, Gregory Clement and Willy Tarreau
+> for the discussions and tips around this topic.
 
-s/they share clock lines/they share clock and/or voltage lines/
+Thanks for your work and all the test you have done. As you mentioned
+there should be still room for improvement, but this patch is already
+a step in the good direction. So you can add my:
 
->>> +  Missing property means devices have independent clock lines, but they share OPPs.
->>
->> huh?  missing 'shared-opp' property means they share OPPs?  -ECONFUSED.
->
-> Right. s/OPPs/OPP tables ..
->
-> Makes sense now ?
+Acked-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-Yes.
+While this driver is related to mvebu SoCs, it is not part of the mvebu subsystem
+but of the PM subsystem and should be taken by its maintainers. I added them
+in copy as well as the pm list.
 
->> Maybe I missed some of the discussion of why this property is needed,
->> but I'm left wondering why it's needed explicitly.  With the OPPs as
->
-> So that same OPP tables can be shared across CPUs which don't share
-> voltage rails..  For example, Krait. We only need to define single set
-> of tables and all CPUs will point to it. But this property would be
-> missing in that case as CPUs don't change their DVFS state together.
+Daniel and Rafael,
+if you didn't get the original email I can bounced if needed. I also wonder
+it it would worth applying it on the stable branch. What do you think about it?
+
+Thanks,
+
+Gregory
 
 
->> part of the CPU nodes, shouldnt' the "shared" nature of the OPP be
->> easily derived from the clock and or regulator (opp-supply) property of
->> the CPU nodes?  IOW, if two CPU nodes share a clock and/or a regulator,
->> the framework should know it's "shared".
->
-> So you missed all earlier discussions :), there were lots of concerns
-> around that.  And the best solution we found out is to do it this
-> way..
->
-> - There can be multiple clocks/regulators present in CPU's DT node and
-> that makes it complex.
->
-> - There are cases where immediate clock parents of CPUs are different
-> but somewhere higher in the hierarchy they have a common ancestor,
-> which is responsible for rate change. And so it would be difficult to
-> find out if they share clock/regulator or not..
->
-> - People wanted it to be some static data instead of trying to find
-> with help of some algorithms..
 
-OK, fair enough.  Looks like it's been thought through.  
+> 
+> Signed-off-by: Sebastien Rannou <mxs@sbrk.org>
+> ---
+>  drivers/cpuidle/cpuidle-mvebu-v7.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
+> index 38e6861..3716a1f 100644
+> --- a/drivers/cpuidle/cpuidle-mvebu-v7.c
+> +++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+> @@ -50,17 +50,17 @@ static struct cpuidle_driver armadaxp_idle_driver = {
+>  	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+>  	.states[1]		= {
+>  		.enter			= mvebu_v7_enter_idle,
+> -		.exit_latency		= 10,
+> +		.exit_latency		= 100,
+>  		.power_usage		= 50,
+> -		.target_residency	= 100,
+> +		.target_residency	= 1000,
+>  		.name			= "MV CPU IDLE",
+>  		.desc			= "CPU power down",
+>  	},
+>  	.states[2]		= {
+>  		.enter			= mvebu_v7_enter_idle,
+> -		.exit_latency		= 100,
+> +		.exit_latency		= 1000,
+>  		.power_usage		= 5,
+> -		.target_residency	= 1000,
+> +		.target_residency	= 10000,
+>  		.flags			= MVEBU_V7_FLAG_DEEP_IDLE,
+>  		.name			= "MV CPU DEEP IDLE",
+>  		.desc			= "CPU and L2 Fabric power down",
+> 
 
-However, in the end, I don't think it's going to avoid the "help of some
-algorithms."  The flag will tell you it's shared, but not how, and that
-will likely still need to be determined.
 
-Kevin
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
