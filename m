@@ -1,50 +1,71 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH] MAINTAINERS: Add entry for SAMSUNG THERMAL DRIVER
-Date: Tue, 24 Feb 2015 16:31:28 +0100
-Message-ID: <1424791888-27796-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:45386 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbbBXPbn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 10:31:43 -0500
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0NKA00FR08GTZ270@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 25 Feb 2015 00:31:42 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: bandgap: Fix build warning if
+ !CONFIG_PM_SLEEP
+Date: Tue, 24 Feb 2015 18:01:23 +0200
+Message-ID: <54ECA053.8000809@linaro.org>
+References: <1423234546-10458-1-git-send-email-grygorii.strashko@linaro.org> <20150209150106.GB21362@kahuna>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20150209150106.GB21362@kahuna>
+Sender: linux-omap-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Paul Walmsley <paul@pwsan.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-This patch adds entry for SAMSUNG THERMAL DRIVER in the MAINTAINERS file.
-It has been agreed, that pull request are going to be sent to Eduardo
-Valentin.
+Hi Rui,
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+On 02/09/2015 05:01 PM, Nishanth Menon wrote:
+> On 16:55-20150206, grygorii.strashko@linaro.org wrote:
+>> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>>
+>> Fix following build warning if CONFIG_PM_SLEEP is not set:
+>>
+>> drivers/thermal/ti-soc-thermal/ti-bandgap.c:1478:12: warning: 'ti_bandgap_suspend' defined but not used [-Wunused-function]
+>>   static int ti_bandgap_suspend(struct device *dev)
+>>              ^
+>> drivers/thermal/ti-soc-thermal/ti-bandgap.c:1492:12: warning: 'ti_bandgap_resume' defined but not used [-Wunused-function]
+>>   static int ti_bandgap_resume(struct device *dev)
+>>              ^
+>> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>> ---
+>>   drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>> index 74c0e34..5d46660 100644
+>> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>> @@ -1402,7 +1402,7 @@ int ti_bandgap_remove(struct platform_device *pdev)
+>>   	return 0;
+>>   }
+>>   
+>> -#ifdef CONFIG_PM
+>> +#ifdef CONFIG_PM_SLEEP
+>>   static int ti_bandgap_save_ctxt(struct ti_bandgap *bgp)
+>>   {
+>>   	int i;
+>> -- 
+>> 1.9.1
+>>
+> 
+> Suggest aligning with Paul as well:
+> https://patchwork.kernel.org/patch/5795391/
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ddc5a8c..be837a0d22 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8481,6 +8481,14 @@ S:	Supported
- L:	netdev@vger.kernel.org
- F:	drivers/net/ethernet/samsung/sxgbe/
- 
-+SAMSUNG THERMAL DRIVER
-+M:	Lukasz Majewski <l.majewski@samsung.com>
-+L:	linux-pm@vger.kernel.org
-+L:	linux-samsung-soc@vger.kernel.org
-+S:	Supported
-+T:	https://github.com/lmajewski/linux-samsung-thermal.git
-+F:	drivers/thermal/samsung/
-+
- SAMSUNG USB2 PHY DRIVER
- M:	Kamil Debski <k.debski@samsung.com>
- L:	linux-kernel@vger.kernel.org
+^Paul Walmsley wrote: Oh, nothing to be confused by, I just missed the
+ earlier patch. I withdraw mine.
+
+> 
+> Otherwise:
+> Acked-by: Nishanth Menon <nm@ti.com>
+> 
+
+It looks like this patch is missed in 4.0-rc1, so could it be merged
+during rc cycle or you'd like me to resend it?
+(I've rechecked - it can be applied on top of Linux 4.0-rc1 without any issues)
+
+
 -- 
-2.0.0.rc2
-
+regards,
+-grygorii
