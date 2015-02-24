@@ -1,117 +1,107 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v4 1/8] thermal: Provide stub for
- thermal_of_cooling_device_register() function
-Date: Tue, 24 Feb 2015 15:21:55 -0400
-Message-ID: <20150224192153.GH3448@developer.amazonguestwifi.org>
+Subject: Re: [PATCH v4 3/8] Documentation: dts: Documentation entry to
+ explain how to use PWM FAN as a cooling device
+Date: Tue, 24 Feb 2015 15:25:21 -0400
+Message-ID: <20150224192520.GI3448@developer.amazonguestwifi.org>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
- <1424254056-5904-2-git-send-email-l.majewski@samsung.com>
+ <1424254056-5904-4-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xQmOcGOVkeO43v2v"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="7IgncvKP0CVPV/ZZ"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424254056-5904-2-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1424254056-5904-4-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---xQmOcGOVkeO43v2v
+--7IgncvKP0CVPV/ZZ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 18, 2015 at 11:07:29AM +0100, Lukasz Majewski wrote:
-> Odroid U3 fan can work without being registered as OF cooling device
-> (with CONFIG_THERMAL_OF disabled).
-> In this situation it can be controlled via PWM entry at
-> /sys/class/hwmon/hwmon0/pwm1.
->=20
-> Therefore, the thermal_of_cooling_device_register() function needs a stub
-> to allow clean compilation.
-
-
-I've just applied a patch on this same matter from Nishanth Menon [1].
-Can you please check if his patch is enough for you?
-
-[1] -
-https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git=
-/commit/?h=3Dfixes&id=3D12ca7188468ee29c4e717f73db4bf43c90954fc7
-
-
+On Wed, Feb 18, 2015 at 11:07:31AM +0100, Lukasz Majewski wrote:
+> Explanation of several properties, which allow PWM fan working as a cooli=
+ng
+> device, have been embraced in this commit.
 >=20
 > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > ---
 > Changes for v2:
-> - None
+> - Rename cooling-pwm-values to cooling-levels
+> - Remove default-pulse-width property and stick to default hwmon policy
 > Changes for v3:
-> - Provide stub declaration when CONFIG_THERMAL is not set
+> - Changing commit title from "hwmon: dts: Doc:" to "Documentation: dts"
+> - Remove unnecessary properties
+> - Set maximal cooling level to 230 instead of 255
 > Changes for v4:
 > - None
 > ---
->  include/linux/thermal.h | 17 ++++++++++++++---
->  1 file changed, 14 insertions(+), 3 deletions(-)
+>  Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 20 +++++++++++++++=
++++++
+>  1 file changed, 20 insertions(+)
 >=20
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index fc52e30..eacf2de 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -293,6 +293,20 @@ struct thermal_trip {
->  };
+> diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Docume=
+ntation/devicetree/bindings/hwmon/pwm-fan.txt
+> index 610757c..d53fe0c 100644
+> --- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> +++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> @@ -3,10 +3,30 @@ Bindings for a fan connected to the PWM lines
+>  Required properties:
+>  - compatible	: "pwm-fan"
+>  - pwms		: the PWM that is used to control the PWM fan
+> +- cooling-levels      : PWM duty cycle values in a range from 0 to 255
+> +			which correspond to thermal cooling states
+> +
+> +Thorough description of the following bindings:
+> +		cooling-min-state =3D <0>;
+> +		cooling-max-state =3D <3>;
+> +		#cooling-cells =3D <2>;
+> +		thermal-zone {
+> +			cpu_thermal: cpu-thermal {
+> +			cooling-maps {
+> +				map0 {
+> +				     trip =3D <&cpu_alert1>;
+> +				     cooling-device =3D <&fan0 0 1>;
+> +				};
+> +			};
+> +		};
+
+I am fine if you leave the reference to thermal.txt biding description,
+but I would prefer if you move the above lines to a proper example section.
+
+> +
+> +for PWM FAN used as cooling device can be found at:
+> +./Documentation/devicetree/bindings/thermal/thermal.txt
 > =20
->  /* Function declarations */
-> +#ifdef CONFIG_THERMAL
-> +struct thermal_cooling_device *
-> +thermal_of_cooling_device_register(struct device_node *np,
-> +				   char *type, void *devdata,
-> +				   const struct thermal_cooling_device_ops *);
-> +#else
-> +static inline struct thermal_cooling_device *
-> +thermal_of_cooling_device_register(struct device_node *np,
-> +				   char *type, void *devdata,
-> +				   const struct thermal_cooling_device_ops *ops)
-> +{
-> +	return NULL;
-> +}
-> +#endif
->  #ifdef CONFIG_THERMAL_OF
->  struct thermal_zone_device *
->  thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
-> @@ -328,9 +342,6 @@ void thermal_zone_device_update(struct thermal_zone_d=
-evice *);
-> =20
->  struct thermal_cooling_device *thermal_cooling_device_register(char *, v=
-oid *,
->  		const struct thermal_cooling_device_ops *);
-> -struct thermal_cooling_device *
-> -thermal_of_cooling_device_register(struct device_node *np, char *, void =
-*,
-> -				   const struct thermal_cooling_device_ops *);
->  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->  struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *na=
-me);
->  int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long =
-*temp);
+>  Example:
+>  	pwm-fan {
+>  		compatible =3D "pwm-fan";
+>  		status =3D "okay";
+>  		pwms =3D <&pwm 0 10000 0>;
+> +		cooling-levels =3D <0 102 170 230>;
+>  	};
 > --=20
 > 2.0.0.rc2
 >=20
 
---xQmOcGOVkeO43v2v
+--7IgncvKP0CVPV/ZZ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7M9JAAoJEMLUO4d9pOJWFSMH/R+mWWsAlavMW/k1jl96Zfhg
-Q/1L/t7qI3S4wINkeFSi9O/DmW0FpYvpERNIWcNrLy7OQfr37EfvPU3VTfj1ZOud
-dnA0Xl5ow26yQLig6MEHKmhHV+/pJsUseQZ0a/5/NgfkDwni4UPLhShUKnpf5jpy
-W+/tV82qKK7WJt46ibWtRHM/sv8dAMmhnvIKkAyGvLUYv6osBa2tpCPZdJZct0+b
-ZfkM7+m9fSX63IPD3muZ6yZx8SjrBJyb+mTbJAWKAusDnZzBYTxNlnm/tuJdArSC
-7nR8DtPbXpBtgB1ubLn1sZcegtE+ElhltnZxe8xdoOBuWCe+IkWPXB0/tJgb+sk=
-=jx5d
+iQEcBAEBAgAGBQJU7NAWAAoJEMLUO4d9pOJWCAIH/0f3Y2wm25mlIgWvVB1zPEyD
+357D2o77MaVTOrsHBB4qZ39/xZczRM2+MJkj4J2jS1Jc5vvdeRdJ9eRHsoxwTvma
+0Prhw8dBHi7yzBLYefeBtsVuraHc3P6V8QXQhhnBgF0W4PIXT749KWoXPXc55f+q
+E1sk3Hp4TBm5SinUescBz+vktBglHYTmn/4RAW/ieZJmc5U4CwJ1bh692GNesONK
+E3jYbiuLjm9VbI5erVoZeF3MACMiulLpalZegBRmgl8izSq/OZpchXI7UnLa5Uxu
+ZccUBJLDXxMQRYOOvufaaA4WoEAMQvt0vN415+ragHYsuvqGHlqF6/BEIagylVM=
+=2ODY
 -----END PGP SIGNATURE-----
 
---xQmOcGOVkeO43v2v--
+--7IgncvKP0CVPV/ZZ--
