@@ -1,54 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] genirq: better describe IRQF_NO_SUSPEND semantics
-Date: Tue, 24 Feb 2015 01:26:05 +0100
-Message-ID: <3607139.EdDhxoz0si@vostro.rjw.lan>
-References: <1424444026-31231-1-git-send-email-mark.rutland@arm.com>
+From: Jaewon Kim <jaewon02.kim@samsung.com>
+Subject: Re: [PATCH v4 4/5] Input: add haptic drvier on max77843
+Date: Tue, 24 Feb 2015 09:59:15 +0900
+Message-ID: <54EBCCE3.8070404@samsung.com>
+References: <1424678991-13978-1-git-send-email-jaewon02.kim@samsung.com>
+ <1424678991-13978-5-git-send-email-jaewon02.kim@samsung.com>
+ <20150223172658.GA604@dtor-glaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64378 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751861AbbBXACp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Feb 2015 19:02:45 -0500
-In-Reply-To: <1424444026-31231-1-git-send-email-mark.rutland@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <20150223172658.GA604@dtor-glaptop>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Ian Campbell <ian.campbell@citrix.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, February 20, 2015 02:53:46 PM Mark Rutland wrote:
-> The IRQF_NO_SUSPEND flag is intended to be used for interrupts required
-> to be enabled during the suspend-resume cycle. This mostly consists of
-> IPIs and timer interrupts, potentially including chained irqchip
-> interrupts if these are necessary to handle timers or IPIs. If an
-> interrupt does not fall into one of the aforementioned categories,
-> requesting it with IRQF_NO_SUSPEND is likely incorrect.
-> 
-> Using IRQF_NO_SUSPEND does not guarantee that the interrupt can wake the
-> system from a suspended state. For an interrupt to be able to trigger a
-> wakeup, it may be necessary to program various components of the system.
-> In these cases it is necessary to use {enable,disabled}_irq_wake.
-> 
-> Unfortunately, several drivers assume that IRQF_NO_SUSPEND ensures that
-> an IRQ can wake up the system, and the documentation can be read
-> ambiguously w.r.t. this property.
-> 
-> This patch updates the documentation regarding IRQF_NO_SUSPEND to make
-> this caveat explicit, hopefully making future misuse rarer. Cleanup of
-> existing misuse will occur as part of later patch series.
-> 
-> Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
-> Cc: Ian Campbell <ian.campbell@citrix.com>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+Hi Dmitry Torokhov,
 
-Applied to linux-pm.git/linux-next, thanks!
+On 02/24/2015 02:26 AM, Dmitry Torokhov wrote:
+> Hi Jaew9on,
+>
+> On Mon, Feb 23, 2015 at 05:09:50PM +0900, Jaewon Kim wrote:
+>> This patch adds support for haptic driver on max77843
+>> MFD(Multi Function Device) with PMIC, MUIC, LED, CHARGER.
+>>
+>> This driver supports external pwm and LRA(Linear Resonant Actuator) motor.
+>> And it supports ff-memless interface from inpu framework.
+>>
+>> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
+> ...
+>
+>> +static void max77843_haptic_play_work(struct work_struct *work)
+>> +{
+>> +	struct max77843_haptic *haptic =
+>> +			container_of(work, struct max77843_haptic, work);
+>> +	int error;
+>> +
+>> +	mutex_lock(&haptic->mutex);
+>> +
+>> +	if (haptic->suspended)
+>> +		mutex_unlock(&haptic->mutex);
+> Huh?
+This code prevent to play haptic when entering suspend state.
+But I forgot return.
+I will add return 0 in version 6.
 
-Peter, please let me know if you don't want this to go it.
+>
+>> +
+>> +	error = max77843_haptic_set_duty_cycle(haptic);
+>> +	if (error) {
+>> +		dev_err(haptic->dev, "failed to set duty cycle: %d\n", error);
+>> +		return;
+> Here you are leaving with the mutex held.
+Okay, I will add mutex_unlock().
+>
+>> +	}
+>> +
+>> +	if (haptic->magnitude) {
+>> +		error = max77843_haptic_enable(haptic);
+>> +		if (error)
+>> +			dev_err(haptic->dev,
+>> +					"cannot enable haptic: %d\n", error);
+>> +	} else {
+>> +		max77843_haptic_disable(haptic);
+>> +		if (error)
+>> +			dev_err(haptic->dev,
+>> +					"cannot disable haptic: %d\n", error);
+>> +	}
+>> +
+>> +	mutex_unlock(&haptic->mutex);
+>> +}
+>> +
+> The rest seems quite reasonable.
+>
+> Thanks.
+>
+Thanks to review my patch.
 
-Rafael
 
+Thanks,
+Jaewon Kim
