@@ -1,151 +1,96 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: [PATCH v6 5/5] Documentation: Add device tree bindings document for
- max77843
-Date: Tue, 24 Feb 2015 10:29:08 +0900
-Message-ID: <1424741348-8728-6-git-send-email-jaewon02.kim@samsung.com>
-References: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
-Return-path: <linux-input-owner@vger.kernel.org>
-In-reply-to: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org
-Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: NeilBrown <neilb@suse.de>
+Subject: [PATCH - RESEND] IRQ: don't suspend nested_thread irqs over system
+ suspend.
+Date: Tue, 24 Feb 2015 13:28:05 +1100
+Message-ID: <20150224132805.385a56a5@notabene.brown>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ boundary="Sig_/GFnrHDc1Bs/XVRdbvRQTN5O"; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:57942 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751712AbbBXC2P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Feb 2015 21:28:15 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, linux-pm@vger.kernel.org, Kalle Jokiniemi <kalle.jokiniemi@jollamobile.com>
 
-Add document describing device tree bindings for max77843 MFD.
-Drivers: MFD core, regulator, extcon, charger and fuelgauge.
+--Sig_/GFnrHDc1Bs/XVRdbvRQTN5O
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+
+Nested IRQs can only fire when the parent irq fires.
+So when the parent is suspended, there is no need to suspend
+the child irq.
+
+Suspending nested irqs can cause a problem is they are suspended or
+resumed in the wrong order.
+If an interrupt fires while the parent is active but the child is
+suspended, then the interrupt will not be acknowledged properly
+and so an interrupt storm can result.
+This is particularly likely if the parent is resumed before
+the child, and the interrupt was raised during suspend.
+
+Ensuring correct ordering would be possible, but it is simpler
+to just never suspend nested interrupts.
+
+Signed-off-by: NeilBrown <neil@brown.name>
+
 ---
- Documentation/devicetree/bindings/mfd/max77843.txt |  110 ++++++++++++++++++++
- 1 file changed, 110 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
+This is a resend of a patch sent at the end of January 2015.
+Rafael seemed happy with it, but I receive no other response so I'm resendi=
+ng.
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77843.txt b/Documentation/devicetree/bindings/mfd/max77843.txt
-new file mode 100644
-index 0000000..76426ca
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77843.txt
-@@ -0,0 +1,110 @@
-+Maxim MAX77843 multi-function device
-+
-+MAX77843 is a Multi-Function Device with the following submodules:
-+- PMIC	  : 2 SAFEOUT LDOs for USB device
-+- CHARGER : Li+ battery charger with Fuel Gauge
-+- MUIC	  : Micro USB Interface Controller
-+- HAPTIC  : Motor Controller for tactile feedback
-+
-+It is interfaced to host controller using I2C.
-+
-+Required properties:
-+- compatible : Must be "maxim,max77843".
-+- reg : I2C slave address of PMIC block.
-+- interrupts : I2C line for main SoCs.
-+- interrupt-parent : The parent of interrupt controller.
-+
-+Optional properties:
-+- regulators : The regulators of max77843 have to be instantiated under subnode
-+	named "regulators" using the following format.
-+
-+	[*]refer : Documentation/devicetree/bindings/regulator/regulator.txt
-+
-+	regulators {
-+		SAFEOUT {
-+			regulator-name = "SAFEOUT";
-+		};
-+	}
-+
-+	List of valid regulator names:
-+	- SAFEOUT1, SAFEOUT2, CHARGER.
-+
-+- max77843-muic : This properties used by extcon consumers.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-muic".
-+
-+- max77843-charger : There battery charger of MAX77843 have to be instantiated
-+	under sub-node named "max77843-charger" using the following format.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-charger".
-+		- maxim,fast-charge-uamp : Fast charge current levels are
-+			100 mA to 3150 mA programmed by I2C per 100 mA.
-+		- maxim,top-off-uamp : Top off current threshold levels are
-+			125 mA to 650 mA programmed by I2C per 75 mA.
-+		- maxim,input-uamp-limit : Input current limit levels are
-+			100 mA to 3533 mA programmed by I2C per 33 mA.
-+
-+- max77843-fuelgauge : There fuelgauge of MAX77843 have to be instantiated
-+	under sub-node named "max77843-fuelgauge" using the following format.
-+	Required properties:
-+		- compatible : Must be "maxim,max77842-fuelgauge".
-+
-+- max77843-haptic : The MAX77843 haptic device provides the tactile feedback
-+	to the user by using PWM(Pulse Width Modulation) signal.
-+	Required properties:
-+		- compatible : Must be "maxim,max77843-hpatic".
-+		- haptic-supply : Power supply for the haptic motor.
-+			[*] refer Documentation/devicetree/
-+					bindings/regulator/regulator.txt
-+		- pwms : phandle for the PWM(Pulse Width Modulation) device.
-+			PWM properties should be named "pwms".
-+			[*] refer Documentation/devicetree/bindings/pwm/pwm.txt
-+
-+Example:
-+	max77843@66 {
-+		compatible = "samsung,max77843";
-+		reg = <0x66>;
-+		interrupt-parent = <&gpa1>;
-+		interrupts = <5 2>;
-+
-+		regulators {
-+			SAFEOUT1 {
-+				regulator-name = "SAFEOUT1";
-+				regulator-min-microvolt = <3300000>;
-+				regulator-max-microvolt = <4950000>;
-+			};
-+			SAFEOUT2 {
-+				regulator-name = "SAFEOUT2";
-+				regulator-min-microvolt = <3300000>;
-+				regulator-max-microvolt = <4950000>;
-+			};
-+			CHARGER {
-+				regulator-name = "CHARGER";
-+				regulator-min-microamp = <100000>;
-+				regulator-max-microamp = <3150000>;
-+			};
-+		};
-+
-+		haptic {
-+			compatible = "maxim,max77843-haptic";
-+			haptic-supply = <&haptic_supply>;
-+			pwms = <&pwm 0 40000 0>;
-+			pwm-names = "haptic";
-+		};
-+
-+		max77843-muic {
-+			compatible = "maxim,max77843-muic";
-+		};
-+
-+		max77843-charger {
-+			compatible = "maxim,max77843-charger";
-+			maxim,fast-charge-uamp = <450000>;
-+			maxim,top-off-uamp = <125000>;
-+			maxim,input-uamp-limit = <500000>;
-+		};
-+
-+		max77843-fuelgauge {
-+			compatible = "maxim,max77843-fuelgauge";
-+		};
-+
-+	};
--- 
-1.7.9.5
+Thanks,
+NeilBrown
 
+
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index 3ca532592704..40cbcfb7fc43 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -118,6 +118,8 @@ void suspend_device_irqs(void)
+ 		unsigned long flags;
+ 		bool sync;
+=20
++		if (irq_settings_is_nested_thread(desc))
++			continue;
+ 		raw_spin_lock_irqsave(&desc->lock, flags);
+ 		sync =3D suspend_device_irq(desc, irq);
+ 		raw_spin_unlock_irqrestore(&desc->lock, flags);
+@@ -158,6 +160,8 @@ static void resume_irqs(bool want_early)
+=20
+ 		if (!is_early && want_early)
+ 			continue;
++		if (irq_settings_is_nested_thread(desc))
++			continue;
+=20
+ 		raw_spin_lock_irqsave(&desc->lock, flags);
+ 		resume_irq(desc, irq);
+
+--Sig_/GFnrHDc1Bs/XVRdbvRQTN5O
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIVAwUBVOvhtTnsnt1WYoG5AQKnXxAAjQnaCA2UPMaoXcwoP/Qx1MJpMSjW6Q6v
+b7NiJTm7ltcKoPBN4y2//p0Wk6BEKT+nCbfqFacj4+MxfjrC4qtjIpsL6lVxi2Iz
+sBdbhdkKdUsX6ueRKWv5ifK9qbDzBje7QUcGDrJ/9n80rvbVB5AnSH8bM0TADs2W
+bfg5xWAMLfBZq4yhMTgOkPx7D9LMk6/HmlR55ZEC7JvZo6yKwifyQi18k1wfDlLZ
+FobxyB6/MexRpjG9RXLpp4MJLV7BV0b6wQhZWWYSFhxVcuYxb9u7BHWumtO9fCMy
+fgIzSVsZHuPxTH+ct7fbj+Pat+Y38c5RYpq4ojWJP2FnrGjEnrPt+dpw6AnbkPme
+JudzHus6HhgUu5vLdT/Hu5i1qhVcQVe7OaweqhGs1BReGYX7AVPAsVzJAJ09Fwyb
+vNIbfuPoTWVI1cz9VV7VgbFHwZgq9/yhk9KhvRaypaMTeuWKbcf2SgiX315w2e21
+D3Gxa6FDKc+CmnDycrx0eALtfCDp86gR2yeOeiCPAGUp8ICJ5vvAJcnxYVPYzt64
+JBBILBwzRV/7LNzbkYWEFlq4CCm9HhmkN4/HDC7tMcxCqQoVFTK0eGn5nz9kFZ6x
+MaUyhhakwK+cAx1bVmTZ+gdBxnaa31p26c2OFdv2VRFnJlFC2X+vc9GFuz8KUZCD
+d43mKkWNdWQ=
+=vmFh
+-----END PGP SIGNATURE-----
+
+--Sig_/GFnrHDc1Bs/XVRdbvRQTN5O--
