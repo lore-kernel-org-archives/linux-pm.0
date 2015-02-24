@@ -1,104 +1,86 @@
-From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Subject: Re: [PATCH v2] leds: fix hibernation on arm when gpio-led used with
- CPU led trigger
-Date: Tue, 24 Feb 2015 18:12:19 +0200
-Message-ID: <54ECA2E3.8060401@linaro.org>
-References: <1423147024-4744-1-git-send-email-grygorii.strashko@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 1/7] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 24 Feb 2015 09:12:37 -0800
+Message-ID: <7h8ufn8c8q.fsf@deeprootsystems.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
+	<be795ef7ec98669bc5aa90ec426a1ec1fbc32b6c.1423642246.git.viresh.kumar@linaro.org>
+	<7ha904b6hp.fsf@deeprootsystems.com>
+	<CAKohpo=CRkJTkp2FXgYNwd2eEtMVRFuwJ=GPtX7+9WnQD6CK2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f181.google.com ([209.85.217.181]:40532 "EHLO
-	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbbBXQMW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 11:12:22 -0500
-Received: by lbdu10 with SMTP id u10so25906154lbd.7
-        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2015 08:12:21 -0800 (PST)
-In-Reply-To: <1423147024-4744-1-git-send-email-grygorii.strashko@linaro.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:38939 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbbBXRMk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Feb 2015 12:12:40 -0500
+Received: by pdjy10 with SMTP id y10so34703150pdj.6
+        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2015 09:12:40 -0800 (PST)
+In-Reply-To: <CAKohpo=CRkJTkp2FXgYNwd2eEtMVRFuwJ=GPtX7+9WnQD6CK2Q@mail.gmail.com>
+	(Viresh Kumar's message of "Tue, 24 Feb 2015 09:54:59 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org
-Cc: sumit.semwal@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Menon, Nishanth" <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 
-Hi Bryan, all,
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-On 02/05/2015 04:37 PM, grygorii.strashko@linaro.org wrote:
-> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
-> 
-> Setting a dev_pm_ops suspend/resume pair of callbacks but not a set of
-> hibernation callbacks means those pm functions will not be
-> called upon hibernation - that leads to system crash on ARM during
-> freezing if gpio-led is used in combination with CPU led trigger.
-> It may happen after freeze_noirq stage (GPIO is suspended)
-> and before syscore_suspend stage (CPU led trigger is suspended)
-> - usually when disable_nonboot_cpus() is called.
-> 
-> Log:
->    PM: noirq freeze of devices complete after 1.425 msecs
->    Disabling non-boot CPUs ...
->      ^ system may crash or stuck here with message (TI AM572x)
-> 
->    WARNING: CPU: 0 PID: 3100 at drivers/bus/omap_l3_noc.c:148 l3_interrupt_handler+0x22c/0x370()
->    44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in Supervisor mode during Functional access
-> 
->    CPU1: shutdown
->      ^ or here
-> 
-> Fix this by using SIMPLE_DEV_PM_OPS, which appropriately
-> assigns the suspend and hibernation callbacks and move
-> led_suspend/led_resume under CONFIG_PM_SLEEP to avoid
-> build warnings.
-> 
-> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
-> ---
-> This patch actually fixes commit:
->   73e1ab4 "leds: Convert led class driver from legacy pm ops to dev_pm_ops"
-> 
-> Changes in v2:
-> - fixed compile time warnings when !CONFIG_PM_SLEEP
-> - updated commit message
-> 
-> v1:
-> - https://lkml.org/lkml/2015/2/2/476
-> 
->   drivers/leds/led-class.c | 7 +++----
->   1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-> index dbeebac..5033e0d 100644
-> --- a/drivers/leds/led-class.c
-> +++ b/drivers/leds/led-class.c
-> @@ -183,6 +183,7 @@ void led_classdev_resume(struct led_classdev *led_cdev)
->   }
->   EXPORT_SYMBOL_GPL(led_classdev_resume);
->   
-> +#ifdef CONFIG_PM_SLEEP
->   static int led_suspend(struct device *dev)
->   {
->   	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-> @@ -202,11 +203,9 @@ static int led_resume(struct device *dev)
->   
->   	return 0;
->   }
-> +#endif
->   
-> -static const struct dev_pm_ops leds_class_dev_pm_ops = {
-> -	.suspend        = led_suspend,
-> -	.resume         = led_resume,
-> -};
-> +static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend, led_resume);
->   
->   /**
->    * led_classdev_register - register a new object of led_classdev class.
-> 
+> On 24 February 2015 at 04:06, Kevin Hilman <khilman@kernel.org> wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>
+>>> +Optional properties:
+>>> +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
+>>> +  switch their DVFS state together, i.e. they share clock lines.
+>>
+>> ... or shared voltage rail?
+>
+> The point is that they switch their frequencies together. Which means,
+> sharing voltage rail + PLLs .. How do we write it properly ?
 
-Could you pay attention on this patch, pls? It fixes a real issue for me.
+s/they share clock lines/they share clock and/or voltage lines/
 
-Actually, I'd like to note that it fixes regression introduced by commit
-73e1ab41a80d36207e8ea7cc2c9897afdeeef387 
-"leds: Convert led class driver from legacy pm ops to dev_pm_ops" from 
-Shuah Khan <shuah.kh@samsung.com> (Jun 20 2013).
+>>> +  Missing property means devices have independent clock lines, but they share OPPs.
+>>
+>> huh?  missing 'shared-opp' property means they share OPPs?  -ECONFUSED.
+>
+> Right. s/OPPs/OPP tables ..
+>
+> Makes sense now ?
 
--- 
-regards,
--grygorii
+Yes.
+
+>> Maybe I missed some of the discussion of why this property is needed,
+>> but I'm left wondering why it's needed explicitly.  With the OPPs as
+>
+> So that same OPP tables can be shared across CPUs which don't share
+> voltage rails..  For example, Krait. We only need to define single set
+> of tables and all CPUs will point to it. But this property would be
+> missing in that case as CPUs don't change their DVFS state together.
+
+
+>> part of the CPU nodes, shouldnt' the "shared" nature of the OPP be
+>> easily derived from the clock and or regulator (opp-supply) property of
+>> the CPU nodes?  IOW, if two CPU nodes share a clock and/or a regulator,
+>> the framework should know it's "shared".
+>
+> So you missed all earlier discussions :), there were lots of concerns
+> around that.  And the best solution we found out is to do it this
+> way..
+>
+> - There can be multiple clocks/regulators present in CPU's DT node and
+> that makes it complex.
+>
+> - There are cases where immediate clock parents of CPUs are different
+> but somewhere higher in the hierarchy they have a common ancestor,
+> which is responsible for rate change. And so it would be difficult to
+> find out if they share clock/regulator or not..
+>
+> - People wanted it to be some static data instead of trying to find
+> with help of some algorithms..
+
+OK, fair enough.  Looks like it's been thought through.  
+
+However, in the end, I don't think it's going to avoid the "help of some
+algorithms."  The flag will tell you it's shared, but not how, and that
+will likely still need to be determined.
+
+Kevin
