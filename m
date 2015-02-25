@@ -1,128 +1,170 @@
-From: Ethan Zhao <ethan.kernel@gmail.com>
-Subject: Re: [PATCH Resend] cpufreq: Set cpufreq_cpu_data to NULL before
- putting kobject
-Date: Wed, 25 Feb 2015 13:47:42 +0800
-Message-ID: <CABawtvPQNY91jS7gUWVVUZ87SG9zjtXDmTYsi0Q7hLbH_dPYng@mail.gmail.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422663249.git.viresh.kumar@linaro.org>
-	<54CEECF7.7020504@oracle.com>
-	<CAKohpon10=xemOZkvqMTV2JbdTMXPDiW+-v52Qzm8SsNymN-Kg@mail.gmail.com>
-	<54CEF123.5050106@oracle.com>
-	<CAKohponOvEnG2Tt5sFPLAHA_bHckHboR7t35-7ey5b_cCKfvKg@mail.gmail.com>
-	<54CEF574.6040404@oracle.com>
-	<CAKohpom589bFL4-eyR1=qrc6uoRtjck_z_SBHS3XU8dJSc4yFg@mail.gmail.com>
-	<54CEF7AA.80401@oracle.com>
-	<CAKohponfkJVYFTsj6ijy0iY3t-R=zN=M0ZkoDmYa-WYTzPuvmw@mail.gmail.com>
-	<54CEFA23.7040705@oracle.com>
-	<CAKohpomBcBVXLW-RW1VXAtkTw-BKd7tHmeFJgmf9CM3vi1Ki-Q@mail.gmail.com>
-	<54CF0106.5050601@oracle.com>
-	<CAKohpomYpEAeQeaB7HVT0cBT5H_P8QQ-e+FQ5OqUoOvfz2ZnOQ@mail.gmail.com>
-	<54CF9209.1050403@oracle.com>
-	<CABawtvPtd2Ln6ghYRHhPy5SbUZqe2yncyeOta2CLt7fV1=504A@mail.gmail.com>
-	<54ED50F5.5080603@linaro.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 04/15] twl4030_charger: use runtime_pm to keep usb phy
+ active while charging.
+Date: Wed, 25 Feb 2015 07:24:43 +0000
+Message-ID: <20150225072443.GG21323@x1>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043350.4243.51289.stgit@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f173.google.com ([209.85.213.173]:50629 "EHLO
-	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbbBYFrn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 00:47:43 -0500
-In-Reply-To: <54ED50F5.5080603@linaro.org>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:41889 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbbBYHYy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 02:24:54 -0500
+Received: by wghl18 with SMTP id l18so1748399wgh.8
+        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2015 23:24:52 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20150224043350.4243.51289.stgit@notabene.brown>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>
-Cc: ethan zhao <ethan.zhao@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, santosh shilimkar <santosh.shilimkar@oracle.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, guangyu.sun@oracle.com, "sriharsha.devdas@oracle.com" <sriharsha.devdas@oracle.com>
+To: NeilBrown <neilb@suse.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Viresh,
+On Tue, 24 Feb 2015, NeilBrown wrote:
 
-    Will do that when I get the test box.
+> The twl4030 usb phy needs to be active while we are using
+> the USB VBUS as a current source for charging.
+> In particular, the usb3v1 regulator must be enabled and the
+> PHY_PWR_PHYPWD bit must be set to keep the phy powered.
+>=20
+> commit ab37813f4093a5f59cb8e083cde277289dc72ed3
+>     twl4030_charger: Allow charger to control the regulator that feed=
+s it
+>=20
+> Gave the charger control over the regulator, but didn't resolve
+> the PHY_PWR_PHYPWD issue.
+>=20
+> Now that both of these are controlled by runtime_pm in
+> phy-twl4030-usb, we can simply take a runtime_pm reference to the USB
+> phy whenever the charger wants to use it as a current source.
+>=20
+> So this patch reverts the above commit, and adds the necessary
+> runtime_pm calls.
+>=20
+> Signed-off-by: NeilBrown <neilb@suse.de>
+> ---
+>  drivers/mfd/twl-core.c          |    9 ++++-----
 
-Thanks,
-Ethan
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-On Wed, Feb 25, 2015 at 12:35 PM, viresh kumar <viresh.kumar@linaro.org> wrote:
-> On Wednesday 25 February 2015 08:54 AM, Ethan Zhao wrote:
->> Viresh,
->>   With this patch applied, still got the following warning and panic,
->> seems it needs more care.
->>
->>      54.474618] ------------[ cut here ]------------
->> [   54.545816] WARNING: CPU: 0 PID: 213 at include/linux/kref.h:47
->> kobject_get+0x41/0x50()
->> [   54.642595] Modules linked in: i2c_i801(+) mfd_core shpchp(+)
->> acpi_cpufreq(+) edac_core ioatdma(+) xfs libcrc32c ast syscopyarea ixgbe
->> sysfillrect sysimgblt sr_mod sd_mod drm_kms_helper igb mdio cdrom e1000e ahci
->> dca ttm libahci uas drm i2c_algo_bit ptp megaraid_sas libata usb_storage
->> i2c_core pps_core dm_mirror dm_region_hash dm_log dm_mod
->> [   55.007264] CPU: 0 PID: 213 Comm: kworker/0:2 Not tainted
->> 3.18.5
->> [   55.099970] Hardware name: Oracle Corporation SUN FIRE X4170 M2 SERVER
->>    /ASSY,MOTHERBOARD,X4170, BIOS 08120104 05/08/2012
->> [   55.239736] Workqueue: kacpi_notify acpi_os_execute_deferred
->> [   55.308598]  0000000000000000 00000000bd730b61 ffff88046742baf8
->> ffffffff816b7edb
->> [   55.398305]  0000000000000000 0000000000000000 ffff88046742bb38
->> ffffffff81078ae1
->> [   55.488040]  ffff88046742bbd8 ffff8806706b3000 0000000000000292
->> 0000000000000000
->> [   55.577776] Call Trace:
->> [   55.608228]  [<ffffffff816b7edb>] dump_stack+0x46/0x58
->> [   55.670895]  [<ffffffff81078ae1>] warn_slowpath_common+0x81/0xa0
->> [   55.743952]  [<ffffffff81078bfa>] warn_slowpath_null+0x1a/0x20
->> [   55.814929]  [<ffffffff8130d0d1>] kobject_get+0x41/0x50
->> [   55.878654]  [<ffffffff8153e955>] cpufreq_cpu_get+0x75/0xc0
->> [   55.946528]  [<ffffffff8153f37e>] cpufreq_update_policy+0x2e/0x1f0
->> [   56.021682]  [<ffffffff810bf9d2>] ? up+0x32/0x50
->> [   56.078126]  [<ffffffff813ab975>] ? acpi_ns_get_node+0xcb/0xf2
->> [   56.148974]  [<ffffffff813abdc9>] ? acpi_evaluate_object+0x22c/0x252
->> [   56.226066]  [<ffffffff813ac3c2>] ? acpi_get_handle+0x95/0xc0
->> [   56.295871]  [<ffffffff8138a7fb>] ? acpi_has_method+0x25/0x40
->> [   56.365661]  [<ffffffff813bbcd4>] acpi_processor_ppc_has_changed+0x77/0x82
->> [   56.448956]  [<ffffffff8108f726>] ? move_linked_works+0x66/0x90
->> [   56.520842]  [<ffffffff813b87b9>] acpi_processor_notify+0x58/0xe7
->> [   56.594807]  [<ffffffff8139dfd8>] acpi_ev_notify_dispatch+0x44/0x5c
->> [   56.670859]  [<ffffffff81388fe3>] acpi_os_execute_deferred+0x15/0x22
->> [   56.747936]  [<ffffffff8109268e>] process_one_work+0x14e/0x3f0
->> [   56.818766]  [<ffffffff81092d9b>] worker_thread+0x11b/0x4d0
->> [   56.886486]  [<ffffffff81092c80>] ? rescuer_thread+0x350/0x350
->> [   56.957316]  [<ffffffff810984f1>] kthread+0xe1/0x100
->> [   57.017742]  [<ffffffff81098410>] ? kthread_create_on_node+0x1b0/0x1b0
->> [   57.096903]  [<ffffffff816bfe7c>] ret_from_fork+0x7c/0xb0
->> [   57.162534]  [<ffffffff81098410>] ? kthread_create_on_node+0x1b0/0x1b0
->> [   57.241680] ---[ end trace dce06bb76f547de5 ]---
->>
->>
->> Any idea ?
->
-> No. Santosh reported this to me few days back, I asked him to perform some
-> testing but don't know what happened after that..
->
-> Can you give me full kernel logs along with the crash after this patch.
-> You will be required to do some testing this time as I don't have any clue
-> about the problem..
->
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index b4375021238f..230a59d2e0d7 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -214,8 +214,10 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
->         if (cpufreq_driver) {
->                 /* get the CPU */
->                 policy = per_cpu(cpufreq_cpu_data, cpu);
-> -               if (policy)
-> +               if (policy) {
->                         kobject_get(&policy->kobj);
-> +                       pr_info("%s: %d", __func__, atomic_read(&policy->kobj.kref.refcount));
-> +               }
->         }
->
->         read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> @@ -233,6 +235,7 @@ void cpufreq_cpu_put(struct cpufreq_policy *policy)
->                 return;
->
->         kobject_put(&policy->kobj);
-> +       pr_info("%s: %d", __func__, atomic_read(&policy->kobj.kref.refcount));
->         up_read(&cpufreq_rwsem);
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
->
+>  drivers/power/twl4030_charger.c |   18 +++++-------------
+>  2 files changed, 9 insertions(+), 18 deletions(-)
+>=20
+> diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+> index 489674a2497e..831696ee2472 100644
+> --- a/drivers/mfd/twl-core.c
+> +++ b/drivers/mfd/twl-core.c
+> @@ -788,9 +788,8 @@ add_children(struct twl4030_platform_data *pdata,=
+ unsigned irq_base,
+>  		static struct regulator_consumer_supply usb1v8 =3D {
+>  			.supply =3D	"usb1v8",
+>  		};
+> -		static struct regulator_consumer_supply usb3v1[] =3D {
+> -			{ .supply =3D	"usb3v1" },
+> -			{ .supply =3D	"bci3v1" },
+> +		static struct regulator_consumer_supply usb3v1 =3D {
+> +			.supply =3D	"usb3v1",
+>  		};
+> =20
+>  	/* First add the regulators so that they can be used by transceiver=
+ */
+> @@ -818,7 +817,7 @@ add_children(struct twl4030_platform_data *pdata,=
+ unsigned irq_base,
+>  				return PTR_ERR(child);
+> =20
+>  			child =3D add_regulator_linked(TWL4030_REG_VUSB3V1,
+> -						      &usb_fixed, usb3v1, 2,
+> +						      &usb_fixed, &usb3v1, 1,
+>  						      features);
+>  			if (IS_ERR(child))
+>  				return PTR_ERR(child);
+> @@ -838,7 +837,7 @@ add_children(struct twl4030_platform_data *pdata,=
+ unsigned irq_base,
+>  		if (IS_ENABLED(CONFIG_REGULATOR_TWL4030) && child) {
+>  			usb1v5.dev_name =3D dev_name(child);
+>  			usb1v8.dev_name =3D dev_name(child);
+> -			usb3v1[0].dev_name =3D dev_name(child);
+> +			usb3v1.dev_name =3D dev_name(child);
+>  		}
+>  	}
+> =20
+> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_=
+charger.c
+> index 51321f0c5548..11f352a5ef55 100644
+> --- a/drivers/power/twl4030_charger.c
+> +++ b/drivers/power/twl4030_charger.c
+> @@ -22,7 +22,6 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/notifier.h>
+>  #include <linux/usb/otg.h>
+> -#include <linux/regulator/machine.h>
+> =20
+>  #define TWL4030_BCIMSTATEC	0x02
+>  #define TWL4030_BCIICHG		0x08
+> @@ -94,7 +93,6 @@ struct twl4030_bci {
+>  	struct work_struct	work;
+>  	int			irq_chg;
+>  	int			irq_bci;
+> -	struct regulator	*usb_reg;
+>  	int			usb_enabled;
+> =20
+>  	unsigned long		event;
+> @@ -208,7 +206,7 @@ static int twl4030_charger_enable_usb(struct twl4=
+030_bci *bci, bool enable)
+>  {
+>  	int ret;
+> =20
+> -	if (enable) {
+> +	if (enable && !IS_ERR_OR_NULL(bci->transceiver)) {
+>  		/* Check for USB charger connected */
+>  		if (!twl4030_bci_have_vbus(bci))
+>  			return -ENODEV;
+> @@ -222,14 +220,9 @@ static int twl4030_charger_enable_usb(struct twl=
+4030_bci *bci, bool enable)
+>  			return -EACCES;
+>  		}
+> =20
+> -		/* Need to keep regulator on */
+> +		/* Need to keep phy powered */
+>  		if (!bci->usb_enabled) {
+> -			ret =3D regulator_enable(bci->usb_reg);
+> -			if (ret) {
+> -				dev_err(bci->dev,
+> -					"Failed to enable regulator\n");
+> -				return ret;
+> -			}
+> +			pm_runtime_get_sync(bci->transceiver->dev);
+>  			bci->usb_enabled =3D 1;
+>  		}
+> =20
+> @@ -244,7 +237,8 @@ static int twl4030_charger_enable_usb(struct twl4=
+030_bci *bci, bool enable)
+>  	} else {
+>  		ret =3D twl4030_clear_set_boot_bci(TWL4030_BCIAUTOUSB, 0);
+>  		if (bci->usb_enabled) {
+> -			regulator_disable(bci->usb_reg);
+> +			pm_runtime_mark_last_busy(bci->transceiver->dev);
+> +			pm_runtime_put_autosuspend(bci->transceiver->dev);
+>  			bci->usb_enabled =3D 0;
+>  		}
+>  	}
+> @@ -602,8 +596,6 @@ static int __init twl4030_bci_probe(struct platfo=
+rm_device *pdev)
+>  	bci->usb.num_properties =3D ARRAY_SIZE(twl4030_charger_props);
+>  	bci->usb.get_property =3D twl4030_bci_get_property;
+> =20
+> -	bci->usb_reg =3D regulator_get(bci->dev, "bci3v1");
+> -
+>  	ret =3D devm_power_supply_register(&pdev->dev, &bci->usb);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "failed to register usb: %d\n", ret);
+>=20
+>=20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
