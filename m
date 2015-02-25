@@ -1,96 +1,115 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 1/8] thermal: Provide stub for
- thermal_of_cooling_device_register() function
-Date: Wed, 25 Feb 2015 13:26:23 +0100
-Message-ID: <20150225132623.753adaca@amdc2363>
+Subject: Re: [PATCH v4 5/8] ARM: dts: Add properties to use pwm-fan device as a
+ cooling device in Odroid U3
+Date: Wed, 25 Feb 2015 14:28:15 +0100
+Message-ID: <20150225142815.562fe22b@amdc2363>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424254056-5904-1-git-send-email-l.majewski@samsung.com>
- <1424254056-5904-2-git-send-email-l.majewski@samsung.com>
- <20150224192153.GH3448@developer.amazonguestwifi.org>
+ <1424254056-5904-6-git-send-email-l.majewski@samsung.com>
+ <20150224193711.GA353@developer.amazonguestwifi.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150224192153.GH3448@developer.amazonguestwifi.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:10164 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbbBYN2h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 08:28:37 -0500
+In-reply-to: <20150224193711.GA353@developer.amazonguestwifi.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
 Hi Eduardo,
 
-> On Wed, Feb 18, 2015 at 11:07:29AM +0100, Lukasz Majewski wrote:
-> > Odroid U3 fan can work without being registered as OF cooling device
-> > (with CONFIG_THERMAL_OF disabled).
-> > In this situation it can be controlled via PWM entry at
-> > /sys/class/hwmon/hwmon0/pwm1.
-> > 
-> > Therefore, the thermal_of_cooling_device_register() function needs
-> > a stub to allow clean compilation.
-> 
-> 
-> I've just applied a patch on this same matter from Nishanth Menon [1].
-> Can you please check if his patch is enough for you?
-> 
-> [1] -
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=fixes&id=12ca7188468ee29c4e717f73db4bf43c90954fc7
-> 
-
-I will prepare new PWM-FAN patch set with above changes in mind.
-
-
-> 
+> On Wed, Feb 18, 2015 at 11:07:33AM +0100, Lukasz Majewski wrote:
+> > With those bindings it is possible to use pwm-fan device available
+> > in Odroid U3 as a cooling device.
 > > 
 > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > > ---
 > > Changes for v2:
-> > - None
+> > - Rename cooling-pwm-values property to cooling-levels
 > > Changes for v3:
-> > - Provide stub declaration when CONFIG_THERMAL is not set
+> > - Change patch's topic to "ARM dts"
+> > - Reduce maximal cooling-level to 230 from 255
 > > Changes for v4:
 > > - None
 > > ---
-> >  include/linux/thermal.h | 17 ++++++++++++++---
-> >  1 file changed, 14 insertions(+), 3 deletions(-)
+> >  arch/arm/boot/dts/exynos4412-odroidu3.dts | 33
+> > ++++++++++++++++++++++++++++++- 1 file changed, 32 insertions(+), 1
+> > deletion(-)
 > > 
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index fc52e30..eacf2de 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -293,6 +293,20 @@ struct thermal_trip {
+> > diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts
+> > b/arch/arm/boot/dts/exynos4412-odroidu3.dts index 60bd1e4..3e5df3e
+> > 100644 --- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
+> > +++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+> > @@ -32,11 +32,42 @@
+> >  		};
+> >  	};
+> >  
+> > -	pwm-fan {
+> > +	fan0: pwm-fan {
+> >  		compatible = "pwm-fan";
+> >  		pwms = <&pwm 0 10000 0>;
+> > +		cooling-min-state = <0>;
+> > +		cooling-max-state = <3>;
+> > +		#cooling-cells = <2>;
+> > +		cooling-levels = <0 102 170 230>;
+> >  		status = "okay";
+> >  	};
+> > +
+> > +	thermal-zones {
+> > +		cpu_thermal: cpu-thermal {
+> 
+> 
+> This thermal zone misses the mandatory properties as per 
+>  Documentation/devicetree/bindings/thermal/thermal.txt
+
+Following mandatory properties:
+		thermal-sensors = <&tmu 0>;
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		trips {
+
+		}
+
+are defined in exynos4-cpu-thermal.dtsi included by this file.
+
+In this patch only device dependent changes are stated.
+
+> 
+> > +			cooling-maps {
+> > +				map0 {
+> > +				     trip = <&cpu_alert1>;
+> > +				     cooling-device = <&cpu0 7 7>;
+> > +				};
+> > +				map1 {
+> > +				     trip = <&cpu_alert2>;
+> > +				     cooling-device = <&cpu0 13
+> > 13>;
+> > +				};
+> > +				map2 {
+> > +				     trip = <&cpu_alert0>;
+> > +				     cooling-device = <&fan0 0 1>;
+> > +				};
+> > +				map3 {
+> > +				     trip = <&cpu_alert1>;
+> > +				     cooling-device = <&fan0 1 2>;
+> > +				};
+> > +				map4 {
+> > +				     trip = <&cpu_alert2>;
+> > +				     cooling-device = <&fan0 2 3>;
+> > +				};
+> > +			};
+> > +		};
+> > +	};
 > >  };
 > >  
-> >  /* Function declarations */
-> > +#ifdef CONFIG_THERMAL
-> > +struct thermal_cooling_device *
-> > +thermal_of_cooling_device_register(struct device_node *np,
-> > +				   char *type, void *devdata,
-> > +				   const struct
-> > thermal_cooling_device_ops *); +#else
-> > +static inline struct thermal_cooling_device *
-> > +thermal_of_cooling_device_register(struct device_node *np,
-> > +				   char *type, void *devdata,
-> > +				   const struct
-> > thermal_cooling_device_ops *ops) +{
-> > +	return NULL;
-> > +}
-> > +#endif
-> >  #ifdef CONFIG_THERMAL_OF
-> >  struct thermal_zone_device *
-> >  thermal_zone_of_sensor_register(struct device *dev, int id, void
-> > *data, @@ -328,9 +342,6 @@ void thermal_zone_device_update(struct
-> > thermal_zone_device *); 
-> >  struct thermal_cooling_device
-> > *thermal_cooling_device_register(char *, void *, const struct
-> > thermal_cooling_device_ops *); -struct thermal_cooling_device *
-> > -thermal_of_cooling_device_register(struct device_node *np, char *,
-> > void *,
-> > -				   const struct
-> > thermal_cooling_device_ops *); void
-> > thermal_cooling_device_unregister(struct thermal_cooling_device *);
-> > struct thermal_zone_device *thermal_zone_get_zone_by_name(const
-> > char *name); int thermal_zone_get_temp(struct thermal_zone_device
-> > *tz, unsigned long *temp); -- 2.0.0.rc2
+> >  &pwm {
+> > -- 
+> > 2.0.0.rc2
 > > 
 
 
