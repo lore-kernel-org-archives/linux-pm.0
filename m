@@ -1,64 +1,70 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/5] power_supply: max77693: Properly handle error
- conditions
-Date: Wed, 25 Feb 2015 21:46:23 +0100
-Message-ID: <20150225204622.GG13695@earth>
-References: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH 2/2] twl4030_charger: find associated phy by more
+ reliable means.
+Date: Wed, 25 Feb 2015 22:13:51 +0100
+Message-ID: <20150225211351.GH13695@earth>
+References: <20150224035809.32252.4180.stgit@notabene.brown>
+ <20150224040129.32252.59874.stgit@notabene.brown>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Qf1oXS95uex85X0R"
+	protocol="application/pgp-signature"; boundary="y9PDtDHaFrXNoMPU"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <20150224040129.32252.59874.stgit@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Woodhouse <dwmw2@infradead.org>, Felipe Balbi <balbi@ti.com>, GTA04 owners <gta04-owner@goldelico.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---Qf1oXS95uex85X0R
+--y9PDtDHaFrXNoMPU
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Neil,
 
-On Tue, Feb 24, 2015 at 10:54:43AM +0100, Krzysztof Kozlowski wrote:
-> Re-work and fix handling of errors when retrieving power supply
-> properties:
+On Tue, Feb 24, 2015 at 03:01:29PM +1100, NeilBrown wrote:
+> twl4030_charger currently finds the associated phy
+> using usb_get_phy() which will return the first USB2 phy.
+> If your platform has multiple such phys (as mine does),
+> this is not reliable (and reliably fails on the GTA04).
 >=20
-> 1. Return errno values directly from get_property() instead of storing
->    'unknown' as intval for given property.
+> Change to use devm_usb_get_phy_by_node(), having found the
+> node by looking for an appropriately named sibling in
+> device-tree.
 >=20
-> 2. Handle regmap_read() errors when getting 'online' and 'present'
->    proprties and return errno code. Previously the regmap_read() return
->    code was ignored so an uninitialized value from the stack could be
->    used for calculating the property.
+> This makes usb-charging dependent on correct device-tree
+> configuration.
 
-Thanks, whole patchset pulled into battery-2.6.git.
+The patch looks ok to me, but you should update the DT documentation
+in Documentation/devicetree/bindings/power/twl-charger.txt regarding
+the sibling dependency.
+
+Apart from that DT binding maintainers should be CC'd.
 
 -- Sebastian
 
---Qf1oXS95uex85X0R
+--y9PDtDHaFrXNoMPU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU7jSeAAoJENju1/PIO/qaki0QAKB6weKoBF3N/FxEo4/P/MAI
-0G+aitCqcF/SoNjmbWH8KZOh1Xr0YeQNH0vzeIJ4wqxnHyNVITt3eQWzGFILGIz2
-aaK3+9Pc+PGwijejWqGs5zMXWA68gCBMgidI63t6xTBccb12AhKYmDnkkAxPNFa/
-uDzwiAjI/jC+0TOTJw/uexBcs6b2yWOkPglMKsJlW7CqDB+ZJi3J3Xd9aPAcE2Us
-bC+BvljewhMaif/6UDxABMxNcQkyIwZAcvv8CtQgnr7+6a7jvXHfVGW1FFTWP0lW
-jitliBCKycsVEGSZ8io4+sqVpbNXBSR5WQugXgaa40k5EuomI1P6mUKvNxqU8daI
-pTBSizAyPp9FyEnP1ntA79DUCdNsvZaKoWYaTZfM72TKcjnjeEZek2YOz8Ol6Hm6
-vyIKkk1oFvSQ93znsi6lRNXhcnMWIDPie6fOZm3oxh24UWGskr7wv2l+DiD916WM
-2ndPHdxCVDBq1kgU5dzvghPaU7I41/FIvhCBKj36v9a0FEoCviCacO6X6/YBjQ53
-plEu87Oqtfc2MC7DgjpaXsI8ctpjuk+7iWgbobhsVmESehF64f4720JPDGk+pcUR
-wfVIBTOzCA5pgpF78cmyytSvbjnQ5ZFz8Jg5nRtcpozQbeaAVmx9vISYncB02ah4
-FJ7SPLvLJsyOWKY16/+h
-=FPL+
+iQIcBAEBCgAGBQJU7jsMAAoJENju1/PIO/qawYEP/1w6Pt3PJ+5mY5q7styNl0T2
+FxUPBy8zCn2llSs4tz4914V6reloTFg1E1N+ELUlTTorfkAAP3uNLMuyDVJi/YDx
+eRy1VbXteUe3/jymvZ9YsB96YKltNPDn6gJ3dZWWrP2ibKCiYBgX+hcmpyTR+tvn
+bTkv9b82hxmi1MLLwE5mAGPVZcnNdnORqSgPs+/ds66bYHth7cavQjdIZ22WxpfM
+/SazRQS0mCMVhUB1wcdBFj74UU5eKJwgKg7lx+OBWKvWFyKtmZETyIiET+KsCI7c
++Xl6Ai82FtCvMnj9S5pAxWN3pFWoEW3bDo68Y8WXInaxhvR7wghMrPJYljBx8kJ/
+PaT317R/1UC1rNLDs+rc5MXS8sx0MO6Iiox0zZJ3f7qPlQe/G1DlynFqZU+KzL+S
+DVMJvwqiXtivcj0O0vHSyOosrzp/AGTm0oor5rW/Ly4rtlC+cgO8BSKc7L4Z0jdW
+FCzsuH4rtTRfW/Fl1nBtK6ba4cZsZFgQ0WpD0OshIpP7wwn1KTNLOgi5J8wTbaph
+Yc5obgVPa1Lv5sFS+P3sCFIwCgLrdiqgJD+yjAC8LpNhUGVSGHJWhduooq5uSOXR
+j237q74BR9q1CEKdoe1XRRm0tlatOSLO9z9hQtqqBOQCz8oS0T5HrU0RdGcMgmSl
+w7LWxJQAklsiDkdo44Qp
+=cpSK
 -----END PGP SIGNATURE-----
 
---Qf1oXS95uex85X0R--
+--y9PDtDHaFrXNoMPU--
