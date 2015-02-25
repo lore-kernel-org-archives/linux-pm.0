@@ -1,74 +1,189 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Fix wrong control of power down
- detection mode for Exynos7
-Date: Wed, 25 Feb 2015 17:39:06 +0530
-Message-ID: <CAM4voakf6oeSEdtGtHRzQ-tC6XMbsU+VNtBnqeed8J4btKA3Yg@mail.gmail.com>
-References: <1424753815-15113-1-git-send-email-cw00.choi@samsung.com>
-	<1424753815-15113-2-git-send-email-cw00.choi@samsung.com>
-	<20150225100330.0ef63a95@amdc2363>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] thermal: Default OF created trip points to writable
+Date: Wed, 25 Feb 2015 12:25:14 +0000
+Message-ID: <9hhbnki6uvp.fsf@e105922-lin.cambridge.arm.com>
+References: <1423592506-20620-1-git-send-email-punit.agrawal@arm.com>
+	<20150216151432.GB8648@developer.hsd1.ca.comcast.net>
+	<9hh1tloaj1l.fsf@e105922-lin.cambridge.arm.com>
+	<20150224195201.GB353@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150225100330.0ef63a95@amdc2363>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, inki.dae@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:39935 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752646AbbBYMYo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 07:24:44 -0500
+In-Reply-To: <20150224195201.GB353@developer.amazonguestwifi.org> (Eduardo
+	Valentin's message of "Tue, 24 Feb 2015 15:52:02 -0400")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-Hi Lukasz,
+Eduardo Valentin <edubezval@gmail.com> writes:
 
-On Wed, Feb 25, 2015 at 2:33 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Abhilash,
+> On Tue, Feb 17, 2015 at 11:12:22AM +0000, Punit Agrawal wrote:
+>> Eduardo Valentin <edubezval@gmail.com> writes:
+>> 
+>> > Hey Punit,
+>> >
+>> > On Tue, Feb 10, 2015 at 06:21:46PM +0000, Punit Agrawal wrote:
+>> >> When registering a thermal zone from device tree, default the trip
+>> >> points to writable. By default, only the root user can change these.
+>> >> 
+>> >> This allows the trip points to be tweaked after the system has
+>> >> booted.
+>> >
+>> > Can you please elaborate more on why having default writable makes sense
+>> > against having default read only? The purpose of this patch seams to be
+>> > targeted to development/debugging systems, not productions systems. The
+>> > default has to make sense for production systems.
+>> 
+>> Agreed about the default making sense for production systems.
+>> 
+>> We've seen deployments in the field where the default value of the trip
+>> temperatures are modulated by a userspace component that has contextual
+>> knowledge about workloads and device margins. Using OF for thermal
+>> setup, it is not possible to get this functionality.
+>> 
+>> I guess you are worried about safety - as you still need root privileges
+>> to be able to change the trip temperatures so it's not by-passing the
+>> security setup of the system.
+>> 
+>> >
+>> >> 
+>> >> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>> >> ---
+>> >> Hi Eduardo,
+>> >> 
+>> >> We've been using this patch internally and haven't run into any
+>> >>  issues. Without these changes there is no way to change trip points
+>> >>  from a running system.
+>> >
+>> > Ok. I see.
+>> >
+>> > So, the problem statement here is to be able to change the trip points
+>> > from a running system. What is the purpose? Do you have something in
+>> > userland that is benefiting of having these trips writable? Or is it
+>> > just for development fun?
+>> 
+>> Sure it helps with development too. In a workflow where the development
+>> of the drivers and the tuning are separate activities, and not
+>> necessarily done by the same people, it is very helpful to be able to
+>> evaluate different parameters for power-performance-thermal tuning
+>> without having to rebuild the dtb and reboot the system.
+>> 
+>> I think it makes it easier for folks to get up and running with OF and
+>> thermals. But I'll defer to your judgement here.
 >
->> This patch fixes the wrong control of PD_DET_EN (power down detection
->> mode) for Exynos7 because exynos7_tmu_control() always enables the
->> power down detection mode regardless 'on' parameter.
->>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->> b/drivers/thermal/samsung/exynos_tmu.c index 933cd80..a60f527 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -682,6 +682,7 @@ static void exynos7_tmu_control(struct
->> platform_device *pdev, bool on)
->>       if (on) {
->>               con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
->> +             con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
->>               interrupt_en =
->>                       (of_thermal_is_trip_valid(tz, 7)
->>                       << EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
->> @@ -704,9 +705,9 @@ static void exynos7_tmu_control(struct
->> platform_device *pdev, bool on) interrupt_en <<
->> EXYNOS_TMU_INTEN_FALL0_SHIFT; } else {
->>               con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
->> +             con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
->>               interrupt_en = 0; /* Disable all interrupts */
->>       }
->> -     con |= 1 << EXYNOS7_PD_DET_EN_SHIFT;
->>
->>       writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
->>       writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
 >
-> Could you test this patch if it isn't introducing any regression on your
-> HW?
-
-The patch does not cause any regression on exynos7 and seems logically correct.
-
-Tested-by: Abhilash Kesavan <a.kesavan@samsung.com>
-
-
-Regards,
-Abhilash
+> Punit,
 >
-> --
-> Best regards,
+> I understand your concerns and thoughts. Let me make a counterproposal.
+> Instead of making the trip points populated by of-thermal writable by default,
+> how about if we do the following?
 >
-> Lukasz Majewski
+> (1) - Change thermal core to have a Kconfig option to allow system
+> integrator to choose if trip points are writable or not. So, on top of
+> the mask index flags for each trip, the Kconfig must be enabled at
+> compilation time. If the Kconfig option is disable, no trip points will
+> get write access, regardless the mask provided by the thermal drivers.
+> Here, I would prefer to have the default behavior as readonly.
 >
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> (2) - Change of-thermal to provide writable trip points by default
+> (essentially, this present patch).
+>
+> Although no changes in this patch are required, I would prefer to merge
+> first number (1) above.
+>
+> In this way, we allow an option to system engineers that do not want user
+> space to mess with their kernel thermal policy. And we also allow people
+> who has userspace thermal policy to work properly. And, by grant, we
+> have an option to make development easier.
+>
+> What is your optionion?
+
+Although I understand your motivation for suggesting (1), I am not sure
+this will work in practice. As soon as one platform enables the option
+in the defconfig (arm64) or multi_v7_defconfig (arm), all platforms will
+have it enabled.
+
+But if you think it's worth merging, something like below should do it.
+
+>
+> I am copying Srinivas here too. Srinivas, do you think that option (1)
+> above will break things in userspace on your side?
+>
+>> 
+>> Cheers,
+>> Punit
+>> 
+>> >
+>> >
+>> > BR,
+>> >
+>> > Eduardo Valentin
+>> >
+>> >> 
+>> >> Comments welcome.
+>> >> 
+>> >> Cheers,
+>> >> Punit
+>> >> 
+
+-- >8 --
+
+Subject: [PATCH] thermal: core: Add Kconfig option to enable writable trips
+
+Add a Kconfig option to allow system integrators to control whether
+userspace tools can change trip temperatures. This option overrides
+the thermal zone setup in the driver code and must be enabled for
+platform specified writable trips to come into effect.
+
+The original behaviour of requiring root privileges to change trip
+temperatures remains unchanged.
+
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+---
+ drivers/thermal/Kconfig        | 11 +++++++++++
+ drivers/thermal/thermal_core.c |  3 ++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index af40db0..5d2d39b 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -42,6 +42,17 @@ config THERMAL_OF
+ 	  Say 'Y' here if you need to build thermal infrastructure
+ 	  based on device tree.
+ 
++config THERMAL_WRITABLE_TRIPS
++	bool "Enable writable trip points"
++	help
++	  This option allows the system integrator to choose whether
++	  trip temperatures can be changed from userspace. The
++	  writable trips need to be specified when setting up the
++	  thermal zone but the choice here takes precedence.
++
++	  Say 'Y' here if you would like to allow userspace tools to
++	  change trip temperatures.
++
+ choice
+ 	prompt "Default Thermal governor"
+ 	default THERMAL_DEFAULT_GOV_STEP_WISE
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 48491d1..15111c1 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1378,7 +1378,8 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+ 						tz->trip_temp_attrs[indx].name;
+ 		tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
+ 		tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
+-		if (mask & (1 << indx)) {
++		if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
++		    mask & (1 << indx)) {
+ 			tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
+ 			tz->trip_temp_attrs[indx].attr.store =
+ 							trip_point_temp_store;
+-- 
+2.1.4
