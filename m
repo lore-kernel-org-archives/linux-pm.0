@@ -1,64 +1,56 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v1 4/7] thermal: introduce the Power Allocator governor
-Date: Wed, 25 Feb 2015 14:48:49 +0000
-Message-ID: <20150225144849.GA2904@e104805>
-References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
- <1422464438-16761-5-git-send-email-javi.merino@arm.com>
- <20150224182124.GB3448@developer.amazonguestwifi.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 2/2] drivers: cpuidle: add driver/device checks in
+ cpuidle_enter_freeze()
+Date: Wed, 25 Feb 2015 14:56:46 +0000
+Message-ID: <20150225145646.GE20214@red-moon>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1424800730-32059-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <54EDDC99.40208@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:37795 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752516AbbBYO4U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Feb 2015 09:56:20 -0500
 Content-Disposition: inline
-In-Reply-To: <20150224182124.GB3448@developer.amazonguestwifi.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+In-Reply-To: <54EDDC99.40208@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi Eduardo,
+On Wed, Feb 25, 2015 at 02:30:49PM +0000, Daniel Lezcano wrote:
 
-On Tue, Feb 24, 2015 at 06:21:26PM +0000, Eduardo Valentin wrote:
-> On Wed, Jan 28, 2015 at 05:00:35PM +0000, Javi Merino wrote:
-> > +
-> > +k_d
-> > +---
-> > +
-> > +`k_d` configures the PID loop's derivative term constant.  It's
-> > +recommended to leave it as the default: 0.
-> > +
-> 
-> I know we are considering K_d = 0. However, ...
-> 
-> <yet another big cut>
-> 
-> > +	/*
-> > +	 * Calculate the derivative term
-> > +	 *
-> > +	 * We do err - prev_err, so with a positive k_d, a decreasing
-> > +	 * error (i.e. driving closer to the line) results in less
-> > +	 * power being applied, slowing down the controller)
-> > +	 */
-> > +	d = mul_frac(tz->tzp->k_d, err - params->prev_err);
-> 
-> 
-> ... Shouldn't the above d component consider the rate of changes over time of the error?
-> 
-> I would expect you should do:
-> d = k_d * (dE / dt)
-> 
-> or
-> 
-> d = K_d * ((err - params->prev_err) / sampling_period)
-> 
-> in plain C:
-> 
-> +	d = mul_frac(tz->tzp->k_d, err - params->prev_err);
-> +	d /= tz->passive_polling; /* might require fixed point division */
+[...]
 
-Could do.  To be honest, both k_d and passive_polling are constants so
-I don't think you get anything by doing this other than the added
-complexity of the fixed point division.  As you said, the default k_d
-is 0, so I'm not strongly against it.
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index f47edc6c..344fe6c 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -44,6 +44,12 @@ void disable_cpuidle(void)
+> >   	off = 1;
+> >   }
+> >
+> > +static bool cpuidle_device_disabled(struct cpuidle_driver *drv,
+> > +				    struct cpuidle_device *dev)
+> > +{
+> > +	return (off || !initialized || !drv || !dev || !dev->enabled);
+> > +}
+> 
+> This is getting a bit fuzzy IMO. What means disabled ? :)
+> 
+> >   /**
+> >    * cpuidle_play_dead - cpu off-lining
+> >    *
+> > @@ -124,6 +130,11 @@ void cpuidle_enter_freeze(void)
+> >   	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> >   	int index;
+> 
+> I think this is exploding before because of dev == NULL in the line above.
 
-Cheers,
-Javi
+Actually not, cpuidle_get_cpu_driver() checks the dev pointer, so
+we might end up with drv == NULL and dev == NULL, and the check I added
+still applies and it is effective I think.
+
+Lorenzo
