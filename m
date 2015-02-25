@@ -1,80 +1,62 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 3/6] ARM: dts: Add properties to use pwm-fan device as a
- cooling device in Odroid U3
-Date: Wed, 25 Feb 2015 16:34:19 +0100
-Message-ID: <1424878462-15511-4-git-send-email-l.majewski@samsung.com>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
-Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Wed, 25 Feb 2015 15:47:16 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B73275A46D@PGSMSX105.gar.corp.intel.com>
+References: <1423673509-11195-1-git-send-email-boon.leong.ong@intel.com>
+ <1423673509-11195-2-git-send-email-boon.leong.ong@intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B73274624E@PGSMSX105.gar.corp.intel.com>
+ <F54AEECA5E2B9541821D670476DAE19C2B8AB1FC@PGSMSX102.gar.corp.intel.com>
+ <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:3962 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752358AbbBYPrd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 10:47:33 -0500
+In-Reply-To: <AF233D1473C1364ABD51D28909A1B1B732756CCF@PGSMSX105.gar.corp.intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Kweh, Hock Leong" <hock.leong.kweh@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bryan O'Donoghue <pure.logic@nexus-software.ie>, "Ong, Boon Leong" <boon.leong.ong@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 
-With those bindings it is possible to use pwm-fan device available in
-Odroid U3 as a cooling device.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+>owner@vger.kernel.org] On Behalf Of Ong, Boon Leong
+>Sent: Monday, February 23, 2015 9:39 AM
+>To: Kweh, Hock Leong; Zhang, Rui; edubezval@gmail.com
+>Cc: linux-pm@vger.kernel.org; LKML; Bryan O'Donoghue
+>Subject: RE: [PATCH] thermal: intel Quark SoC X1000 DTS thermal driver
+>
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
-Changes for v2:
-- Rename cooling-pwm-values property to cooling-levels
-Changes for v3:
-- Change patch's topic to "ARM dts"
-- Reduce maximal cooling-level to 230 from 255
-Changes for v4:
-- None
-Changes for v5:
-- None
----
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+>>> +static struct soc_sensor_entry *alloc_soc_dts(void)
+>>> +{
+>>> +	struct soc_sensor_entry *aux_entry;
+>>> +	int err;
+>>> +	u32 out;
+>>> +	int wr_mask;
+>>> +
+>>> +	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
+>>
+>>Wondering is it possible to use the resource-managed functions (for e.g.
+>>devm_kzalloc())? This could help the driver looks more neat and clean
+>>where the resource-managed framework will help you take care all the
+>>kfree().
+>>
+>>Understand that the flow here is to call the thermal_zone_device_register()
+>>function after this aux_entry allocation.
+>>
+>>But thinking would it also working if change the flow to call
+>>thermal_zone_device_register() function 1st to obtain the
+>>thermal_zone_device
+>>then later on perform devm_kzalloc() and assign it back to devdata.
+>>
+>Ok, it is worth exploring on this devm_kzalloc() for neatness.
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index 4c04837..abcfa3c 100644
---- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
-+++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -32,9 +32,40 @@
- 		};
- 	};
- 
--	pwm-fan {
-+	fan0: pwm-fan {
- 		compatible = "pwm-fan";
- 		pwms = <&pwm 0 10000 0>;
-+		cooling-min-state = <0>;
-+		cooling-max-state = <3>;
-+		#cooling-cells = <2>;
-+		cooling-levels = <0 102 170 230>;
-+	};
-+
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			cooling-maps {
-+				map0 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&cpu0 7 7>;
-+				};
-+				map1 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&cpu0 13 13>;
-+				};
-+				map2 {
-+				     trip = <&cpu_alert0>;
-+				     cooling-device = <&fan0 0 1>;
-+				};
-+				map3 {
-+				     trip = <&cpu_alert1>;
-+				     cooling-device = <&fan0 1 2>;
-+				};
-+				map4 {
-+				     trip = <&cpu_alert2>;
-+				     cooling-device = <&fan0 2 3>;
-+				};
-+			};
-+		};
- 	};
- };
- 
--- 
-2.0.0.rc2
+I give it a thought again and I think that devm_kzalloc() is only useful
+if the thermal driver is platform driver. So, for Quark thermal driver, 
+this will not be useful. So, the existing kzalloc() method is sufficient.
+
+
