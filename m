@@ -1,116 +1,123 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v5 3/6] ARM: dts: Add properties to use pwm-fan device as
- a cooling device in Odroid U3
-Date: Wed, 25 Feb 2015 14:49:17 -0400
-Message-ID: <20150225184914.GF2306@developer.amazonguestwifi.org>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-4-git-send-email-l.majewski@samsung.com>
+Subject: Re: [PATCH] thermal: Default OF created trip points to writable
+Date: Wed, 25 Feb 2015 14:52:24 -0400
+Message-ID: <20150225185223.GG2306@developer.amazonguestwifi.org>
+References: <1423592506-20620-1-git-send-email-punit.agrawal@arm.com>
+ <20150216151432.GB8648@developer.hsd1.ca.comcast.net>
+ <9hh1tloaj1l.fsf@e105922-lin.cambridge.arm.com>
+ <20150224195201.GB353@developer.amazonguestwifi.org>
+ <1424881442.7759.22.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ni93GHxFvA+th69W"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="HKEL+t8MFpg/ASTE"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:44793 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbbBYSw2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 13:52:28 -0500
+Received: by pdbnh10 with SMTP id nh10so6774304pdb.11
+        for <linux-pm@vger.kernel.org>; Wed, 25 Feb 2015 10:52:28 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1424878462-15511-4-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+In-Reply-To: <1424881442.7759.22.camel@spandruv-DESK3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
 
---ni93GHxFvA+th69W
+--HKEL+t8MFpg/ASTE
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 25, 2015 at 04:34:19PM +0100, Lukasz Majewski wrote:
-> With those bindings it is possible to use pwm-fan device available in
-> Odroid U3 as a cooling device.
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Srinivas,
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> >=20
+> > I am copying Srinivas here too. Srinivas, do you think that option (1)
+> > above will break things in userspace on your side?
+> I am not sure distros like ubuntu starts Linux Thermal Daemon on ARM
+> systems. This has option to take over thermal control from kernel by
+> changing governor to user space. I take writable trips as a way to get
+> threshold temp notification for users space governor by setting offset
+> from a read only passive/active/critical trips. This way we get notified
+> before, to monitor an do proactive control. For example if there is a
+> critical trip at X, take action at X-a to avoid shutdown.
 
-> ---
-> Changes for v2:
-> - Rename cooling-pwm-values property to cooling-levels
-> Changes for v3:
-> - Change patch's topic to "ARM dts"
-> - Reduce maximal cooling-level to 230 from 255
-> Changes for v4:
-> - None
-> Changes for v5:
-> - None
-> ---
->  arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 +++++++++++++++++++++++++=
-+++++-
->  1 file changed, 32 insertions(+), 1 deletion(-)
+Let me ask differently. If the trip points are read only, would the
+daemon still work?
+
+If not, the change needs to make writable in x86 builds, right?
+
+BR,
+
+> Thanks,
+> Srinivas=20
+> >=20
+> > >=20
+> > > Cheers,
+> > > Punit
+> > >=20
+> > > >
+> > > >
+> > > > BR,
+> > > >
+> > > > Eduardo Valentin
+> > > >
+> > > >>=20
+> > > >> Comments welcome.
+> > > >>=20
+> > > >> Cheers,
+> > > >> Punit
+> > > >>=20
+> > > >>  drivers/thermal/of-thermal.c | 6 +++++-
+> > > >>  1 file changed, 5 insertions(+), 1 deletion(-)
+> > > >>=20
+> > > >> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-the=
+rmal.c
+> > > >> index 668fb1b..b7ad5c0 100644
+> > > >> --- a/drivers/thermal/of-thermal.c
+> > > >> +++ b/drivers/thermal/of-thermal.c
+> > > >> @@ -865,6 +865,7 @@ int __init of_parse_thermal_zones(void)
+> > > >>  	for_each_child_of_node(np, child) {
+> > > >>  		struct thermal_zone_device *zone;
+> > > >>  		struct thermal_zone_params *tzp;
+> > > >> +		int i, mask =3D 0;
+> > > >> =20
+> > > >>  		/* Check whether child is enabled or not */
+> > > >>  		if (!of_device_is_available(child))
+> > > >> @@ -891,8 +892,11 @@ int __init of_parse_thermal_zones(void)
+> > > >>  		/* No hwmon because there might be hwmon drivers registering */
+> > > >>  		tzp->no_hwmon =3D true;
+> > > >> =20
+> > > >> +		for (i =3D 0; i < tz->ntrips; i++)
+> > > >> +			mask |=3D 1 << i;
+> > > >> +
+> > > >>  		zone =3D thermal_zone_device_register(child->name, tz->ntrips,
+> > > >> -						    0, tz,
+> > > >> +						    mask, tz,
+> > > >>  						    ops, tzp,
+> > > >>  						    tz->passive_delay,
+> > > >>  						    tz->polling_delay);
+> > > >> --=20
+> > > >> 2.1.4
+> > > >>=20
 >=20
-> diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dt=
-s/exynos4412-odroidu3.dts
-> index 4c04837..abcfa3c 100644
-> --- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
-> +++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-> @@ -32,9 +32,40 @@
->  		};
->  	};
-> =20
-> -	pwm-fan {
-> +	fan0: pwm-fan {
->  		compatible =3D "pwm-fan";
->  		pwms =3D <&pwm 0 10000 0>;
-> +		cooling-min-state =3D <0>;
-> +		cooling-max-state =3D <3>;
-> +		#cooling-cells =3D <2>;
-> +		cooling-levels =3D <0 102 170 230>;
-> +	};
-> +
-> +	thermal-zones {
-> +		cpu_thermal: cpu-thermal {
-> +			cooling-maps {
-> +				map0 {
-> +				     trip =3D <&cpu_alert1>;
-> +				     cooling-device =3D <&cpu0 7 7>;
-> +				};
-> +				map1 {
-> +				     trip =3D <&cpu_alert2>;
-> +				     cooling-device =3D <&cpu0 13 13>;
-> +				};
-> +				map2 {
-> +				     trip =3D <&cpu_alert0>;
-> +				     cooling-device =3D <&fan0 0 1>;
-> +				};
-> +				map3 {
-> +				     trip =3D <&cpu_alert1>;
-> +				     cooling-device =3D <&fan0 1 2>;
-> +				};
-> +				map4 {
-> +				     trip =3D <&cpu_alert2>;
-> +				     cooling-device =3D <&fan0 2 3>;
-> +				};
-> +			};
-> +		};
->  	};
->  };
-> =20
-> --=20
-> 2.0.0.rc2
 >=20
 
---ni93GHxFvA+th69W
+--HKEL+t8MFpg/ASTE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7hkjAAoJEMLUO4d9pOJWiKMIAJjWBv/CyV5+Zi5W8+cbna4P
-kqlNOKLVit8KArv7/oIsd1A546GmHjlr9e+Si+VrIoaTy6VR2bmb7xnbne2iBjxM
-npc/iy93Fm4kFgtrhE2AkArR62pVVBRln8OcxVRtJSgUWdzNWORmIgTiu20iF96U
-F1i+9Evy7z9+qsUwS8+e5WvAI/+82upbwwb7yKjQg6KbHOfEk4idDQHzm/nNJJR/
-BXARxmzpUlPW68tyn1M6sMt6l6P8qW7O+T5HwAaSXLhYs3F6aXB1/vRmGVSkTWJP
-ufMNpraa+MtLkM/Z2aQt1lKHSqIborsiZ96nPDdbfSqsdLWO+SNNVNyqxUA0bKs=
-=JciM
+iQEcBAEBAgAGBQJU7hnbAAoJEMLUO4d9pOJWjeYIAI72xfcAKKCbnlBWM1EgpaeF
+gqPMi36VF3SL6OTOs5Qgz1xU8LxrzdxVTV9TLhKqPTn0h83NlZYgyG8zo8bFrAIl
+ZU5EB4zUI+KXoj/l9THqsjoGt8t8hUiNf017DC1zZ4k+p4Ue3AUwDw+Rd0gF1BtL
+T+OrojTA/KFOp8jE4e8k9sVLRUogQ48i2GHHAkqlFXGdVbHnR/XynpuyWLj9iEda
+Ke7xJGhbXcmezDDbXYndWquSGX2fDAk0LemHeVIK6mp9/p2z8eh7NkD1eHzcywLU
+7nPO3K4nx6OBp+qNUN/JrGRNmSw1vTsxwkHFP/NLDP8peKifZPL2bJPQz/rUKR4=
+=QNhG
 -----END PGP SIGNATURE-----
 
---ni93GHxFvA+th69W--
+--HKEL+t8MFpg/ASTE--
