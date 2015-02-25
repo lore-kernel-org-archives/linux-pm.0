@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 5/6] hwmon: pwm-fan: Read PWM FAN configuration from device
- tree
-Date: Wed, 25 Feb 2015 16:34:21 +0100
-Message-ID: <1424878462-15511-6-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 6/6] hwmon: pwm-fan: Code for using PWM FAN as a cooling
+ device
+Date: Wed, 25 Feb 2015 16:34:22 +0100
+Message-ID: <1424878462-15511-7-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -12,109 +12,155 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch provides code for reading PWM FAN configuration data via
-device tree. The pwm-fan can work with full speed when configuration
-is not provided. However, errors are propagated when wrong DT bindings
-are found.
-Additionally the struct pwm_fan_ctx has been extended.
+The PWM FAN device can now be used as a thermal cooling device. Necessary
+infrastructure has been added in this commit.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
-- Rename pwm_fan_max_states to pwm_fan_cooling_levels
-- Moving pwm_fan_of_get_cooling_data() call after setting end enabling PWM FAN
-- pwm_fan_of_get_cooling_data() now can fail - preserving old behaviour
-- Remove unnecessary dev_err() call
+- Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
+- Update ctx->pwm_fan_state when correct data from device tree is available
+- Using therma_cdev_update() when thermal is ready for controlling the fan
 Changes for v3:
-- Patch's headline has been reedited
-- pwm_fan_of_get_cooling_data() return code is now being checked.
-- of_property_count_elems_of_size() is now used instead of_find_property()
-- More verbose patch description added
+- Rename patch heading
+- pwm_fan_of_get_cooling_data() now returns -EINVAL when no "cooling-levels"
+  property defined
+- register of cooling device only when proper cooling data is present
 Changes for v4:
-- dev_err() has been removed from pwm_fan_of_get_cooling_data()
-- Returning -EINVAL when "cooling-levels" are defined in DT, but doesn't
-  have the value
+- None
 Changes for v5:
-- Use of of_find_property() to assess if "cooling-levels" was defined in
-  device tree
-- Replace of_property_count_elems_of_size() with of_property_count_u32_elems()
-- Remove ambiguity with returning error code from of_property_count_u32_elems()
-- Return -EINVAL when "cooling-levels" has zero elements
+- Check for IS_ENABLED(CONFIG_THERMAL) has been added to prevent from
+  executing thermal_* specific functions
 ---
- drivers/hwmon/pwm-fan.c | 50 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 49 insertions(+), 1 deletion(-)
+ drivers/hwmon/pwm-fan.c | 83 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-index bd42d39..e6ed353 100644
+index e6ed353..2c1a8f0 100644
 --- a/drivers/hwmon/pwm-fan.c
 +++ b/drivers/hwmon/pwm-fan.c
-@@ -30,7 +30,10 @@
- struct pwm_fan_ctx {
- 	struct mutex lock;
- 	struct pwm_device *pwm;
--	unsigned char pwm_value;
-+	unsigned int pwm_value;
-+	unsigned int pwm_fan_state;
-+	unsigned int pwm_fan_max_state;
-+	unsigned int *pwm_fan_cooling_levels;
- };
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pwm.h>
+ #include <linux/sysfs.h>
++#include <linux/thermal.h>
  
- static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
-@@ -100,6 +103,46 @@ static struct attribute *pwm_fan_attrs[] = {
+ #define MAX_PWM 255
+ 
+@@ -68,6 +69,17 @@ exit_set_pwm_err:
+ 	return ret;
+ }
+ 
++static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
++{
++	int i;
++
++	for (i = 0; i < ctx->pwm_fan_max_state; ++i)
++		if (pwm < ctx->pwm_fan_cooling_levels[i + 1])
++			break;
++
++	ctx->pwm_fan_state = i;
++}
++
+ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+ 		       const char *buf, size_t count)
+ {
+@@ -82,6 +94,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+ 	if (ret)
+ 		return ret;
+ 
++	pwm_fan_update_state(ctx, pwm);
+ 	return count;
+ }
+ 
+@@ -103,6 +116,59 @@ static struct attribute *pwm_fan_attrs[] = {
  
  ATTRIBUTE_GROUPS(pwm_fan);
  
-+int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
++/* thermal cooling device callbacks */
++static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
 +{
-+	struct device_node *np = dev->of_node;
-+	int num, i, ret;
++	struct pwm_fan_ctx *ctx = cdev->devdata;
 +
-+	if (!of_find_property(np, "cooling-levels", NULL))
-+		return 0;
-+
-+	ret = of_property_count_u32_elems(np, "cooling-levels");
-+	if (ret <= 0) {
-+		dev_err(dev, "Wrong data!\n");
-+		return ret ? : -EINVAL;
-+	}
-+
-+	num = ret;
-+	ctx->pwm_fan_cooling_levels = devm_kzalloc(dev, num * sizeof(u32),
-+						   GFP_KERNEL);
-+	if (!ctx->pwm_fan_cooling_levels)
-+		return -ENOMEM;
-+
-+	ret = of_property_read_u32_array(np, "cooling-levels",
-+					 ctx->pwm_fan_cooling_levels, num);
-+	if (ret) {
-+		dev_err(dev, "Property 'cooling-levels' cannot be read!\n");
-+		return ret;
-+	}
-+
-+	for (i = 0; i < num; i++) {
-+		if (ctx->pwm_fan_cooling_levels[i] > MAX_PWM) {
-+			dev_err(dev, "PWM fan state[%d]:%d > %d\n", i,
-+				ctx->pwm_fan_cooling_levels[i], MAX_PWM);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	ctx->pwm_fan_max_state = num - 1;
++	*state = ctx->pwm_fan_max_state;
 +
 +	return 0;
 +}
 +
++static int pwm_fan_get_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct pwm_fan_ctx *ctx = cdev->devdata;
++
++	if (!ctx)
++		return -EINVAL;
++
++	*state = ctx->pwm_fan_state;
++
++	return 0;
++}
++
++static int
++pwm_fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
++{
++	struct pwm_fan_ctx *ctx = cdev->devdata;
++	int ret;
++
++	if (!ctx || (state > ctx->pwm_fan_max_state))
++		return -EINVAL;
++
++	if (state == ctx->pwm_fan_state)
++		return 0;
++
++	ret = __set_pwm(ctx, ctx->pwm_fan_cooling_levels[state]);
++	if (ret) {
++		dev_err(&cdev->device, "Cannot set pwm!\n");
++		return ret;
++	}
++
++	ctx->pwm_fan_state = state;
++
++	return ret;
++}
++
++static const struct thermal_cooling_device_ops pwm_fan_cooling_ops = {
++	.get_max_state = pwm_fan_get_max_state,
++	.get_cur_state = pwm_fan_get_cur_state,
++	.set_cur_state = pwm_fan_set_cur_state,
++};
++
+ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
+ {
+ 	struct device_node *np = dev->of_node;
+@@ -145,8 +211,9 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
+ 
  static int pwm_fan_probe(struct platform_device *pdev)
  {
- 	struct device *hwmon;
-@@ -145,6 +188,11 @@ static int pwm_fan_probe(struct platform_device *pdev)
- 		pwm_disable(ctx->pwm);
- 		return PTR_ERR(hwmon);
- 	}
-+
-+	ret = pwm_fan_of_get_cooling_data(&pdev->dev, ctx);
-+	if (ret)
-+		return ret;
+-	struct device *hwmon;
++	struct thermal_cooling_device *cdev;
+ 	struct pwm_fan_ctx *ctx;
++	struct device *hwmon;
+ 	int duty_cycle;
+ 	int ret;
+ 
+@@ -193,6 +260,20 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	ctx->pwm_fan_state = ctx->pwm_fan_max_state;
++	if (IS_ENABLED(CONFIG_THERMAL)) {
++		cdev = thermal_of_cooling_device_register(pdev->dev.of_node,
++							  "pwm-fan", ctx,
++							  &pwm_fan_cooling_ops);
++		if (IS_ERR(cdev)) {
++			dev_err(&pdev->dev,
++				"Failed to register pwm-fan as cooling device");
++			pwm_disable(ctx->pwm);
++			return PTR_ERR(cdev);
++		}
++		thermal_cdev_update(cdev);
++	}
 +
  	return 0;
  }
