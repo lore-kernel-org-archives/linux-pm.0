@@ -1,57 +1,56 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] genirq: better describe IRQF_NO_SUSPEND semantics
-Date: Wed, 25 Feb 2015 16:19:38 +0100
-Message-ID: <20150225151938.GM5029@twins.programming.kicks-ass.net>
-References: <1424444026-31231-1-git-send-email-mark.rutland@arm.com>
- <3607139.EdDhxoz0si@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v5 0/6] hwmon: thermal: Odroid U3: Provide support for Odroid
+ U3 fan
+Date: Wed, 25 Feb 2015 16:34:16 +0100
+Message-ID: <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:51891 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbbBYPTu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 10:19:50 -0500
-Content-Disposition: inline
-In-Reply-To: <3607139.EdDhxoz0si@vostro.rjw.lan>
+Received: from mailout1.samsung.com ([203.254.224.24]:64530 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbbBYPeh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 10:34:37 -0500
+In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Ian Campbell <ian.campbell@citrix.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-On Tue, Feb 24, 2015 at 01:26:05AM +0100, Rafael J. Wysocki wrote:
-> On Friday, February 20, 2015 02:53:46 PM Mark Rutland wrote:
-> > The IRQF_NO_SUSPEND flag is intended to be used for interrupts required
-> > to be enabled during the suspend-resume cycle. This mostly consists of
-> > IPIs and timer interrupts, potentially including chained irqchip
-> > interrupts if these are necessary to handle timers or IPIs. If an
-> > interrupt does not fall into one of the aforementioned categories,
-> > requesting it with IRQF_NO_SUSPEND is likely incorrect.
-> > 
-> > Using IRQF_NO_SUSPEND does not guarantee that the interrupt can wake the
-> > system from a suspended state. For an interrupt to be able to trigger a
-> > wakeup, it may be necessary to program various components of the system.
-> > In these cases it is necessary to use {enable,disabled}_irq_wake.
-> > 
-> > Unfortunately, several drivers assume that IRQF_NO_SUSPEND ensures that
-> > an IRQ can wake up the system, and the documentation can be read
-> > ambiguously w.r.t. this property.
-> > 
-> > This patch updates the documentation regarding IRQF_NO_SUSPEND to make
-> > this caveat explicit, hopefully making future misuse rarer. Cleanup of
-> > existing misuse will occur as part of later patch series.
-> > 
-> > Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > Cc: Ian Campbell <ian.campbell@citrix.com>
-> > Cc: Jonathan Corbet <corbet@lwn.net>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Signed-off-by: Mark Rutland <mark.rutland@arm.com>
-> 
-> Applied to linux-pm.git/linux-next, thanks!
-> 
-> Peter, please let me know if you don't want this to go it.
+Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
+subsystem for low level control.
 
-No seems fine, Thanks!
+After successful probe it registers itself as a cooling device for thermal
+subsystem.
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+This driver also supports devices without DTS specified.
+
+To provide correct functionality, new properties to device tree description for
+Exynos4412 and in particular Odroid U3 have been added.
+
+Those patches were tested at Exynos4412 - Odroid U3 board.
+
+Patches were applied on:
+linux-soc-thermal/fixes branch (Linux v4.0-rc1)
+SHA1: b71d399c7f2fe06b60b96155ec0b9ae167334e4a
+
+Kamil Debski (1):
+  ARM: dts: Add pwm-fan node to the Odroid-U3 board
+
+Lukasz Majewski (5):
+  Documentation: dts: Documentation entry to explain how to use PWM FAN
+    as a cooling device
+  ARM: dts: Add properties to use pwm-fan device as a cooling device in
+    Odroid U3
+  hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
+    cycle
+  hwmon: pwm-fan: Read PWM FAN configuration from device tree
+  hwmon: pwm-fan: Code for using PWM FAN as a cooling device
+
+ .../devicetree/bindings/hwmon/pwm-fan.txt          |  25 +++-
+ arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
+ drivers/hwmon/pwm-fan.c                            | 166 +++++++++++++++++++--
+ 4 files changed, 220 insertions(+), 16 deletions(-)
+
+-- 
+2.0.0.rc2
+
