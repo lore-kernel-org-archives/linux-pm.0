@@ -1,101 +1,125 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v1 4/7] thermal: introduce the Power Allocator governor
-Date: Wed, 25 Feb 2015 15:00:38 -0400
-Message-ID: <20150225190037.GH2306@developer.amazonguestwifi.org>
-References: <1422464438-16761-1-git-send-email-javi.merino@arm.com>
- <1422464438-16761-5-git-send-email-javi.merino@arm.com>
- <20150224182124.GB3448@developer.amazonguestwifi.org>
- <20150225144849.GA2904@e104805>
+Subject: Re: [PATCH 1/2] thermal: exynos: Fix wrong control of power down
+ detection mode for Exynos7
+Date: Wed, 25 Feb 2015 15:01:38 -0400
+Message-ID: <20150225190137.GI2306@developer.amazonguestwifi.org>
+References: <1424753815-15113-1-git-send-email-cw00.choi@samsung.com>
+ <1424753815-15113-2-git-send-email-cw00.choi@samsung.com>
+ <20150225100330.0ef63a95@amdc2363>
+ <CAM4voakf6oeSEdtGtHRzQ-tC6XMbsU+VNtBnqeed8J4btKA3Yg@mail.gmail.com>
+ <20150225132508.5143c9cf@amdc2363>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="poemUeGtc2GQvHuH"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="zgY/UHCnsaNnNXRx"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150225144849.GA2904@e104805>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+In-Reply-To: <20150225132508.5143c9cf@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: l.majewski@majess.pl, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---poemUeGtc2GQvHuH
+--zgY/UHCnsaNnNXRx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 25, 2015 at 02:48:49PM +0000, Javi Merino wrote:
+On Wed, Feb 25, 2015 at 01:25:08PM +0100, Lukasz Majewski wrote:
 > Hi Eduardo,
 >=20
-> On Tue, Feb 24, 2015 at 06:21:26PM +0000, Eduardo Valentin wrote:
-> > On Wed, Jan 28, 2015 at 05:00:35PM +0000, Javi Merino wrote:
-> > > +
-> > > +k_d
-> > > +---
-> > > +
-> > > +`k_d` configures the PID loop's derivative term constant.  It's
-> > > +recommended to leave it as the default: 0.
-> > > +
+> > Hi Lukasz,
 > >=20
-> > I know we are considering K_d =3D 0. However, ...
+> > On Wed, Feb 25, 2015 at 2:33 PM, Lukasz Majewski
+> > <l.majewski@samsung.com> wrote:
+> > > Hi Abhilash,
+> > >
+> > >> This patch fixes the wrong control of PD_DET_EN (power down
+> > >> detection mode) for Exynos7 because exynos7_tmu_control() always
+> > >> enables the power down detection mode regardless 'on' parameter.
+> > >>
+> > >> Cc: Zhang Rui <rui.zhang@intel.com>
+> > >> Cc: Eduardo Valentin <edubezval@gmail.com>
+> > >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> > >> ---
+> > >>  drivers/thermal/samsung/exynos_tmu.c | 3 ++-
+> > >>  1 file changed, 2 insertions(+), 1 deletion(-)
+> > >>
+> > >> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > >> b/drivers/thermal/samsung/exynos_tmu.c index 933cd80..a60f527
+> > >> 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
+> > >> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > >> @@ -682,6 +682,7 @@ static void exynos7_tmu_control(struct
+> > >> platform_device *pdev, bool on)
+> > >>       if (on) {
+> > >>               con |=3D (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> > >> +             con |=3D (1 << EXYNOS7_PD_DET_EN_SHIFT);
+> > >>               interrupt_en =3D
+> > >>                       (of_thermal_is_trip_valid(tz, 7)
+> > >>                       << EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
+> > >> @@ -704,9 +705,9 @@ static void exynos7_tmu_control(struct
+> > >> platform_device *pdev, bool on) interrupt_en <<
+> > >> EXYNOS_TMU_INTEN_FALL0_SHIFT; } else {
+> > >>               con &=3D ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> > >> +             con &=3D ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
+> > >>               interrupt_en =3D 0; /* Disable all interrupts */
+> > >>       }
+> > >> -     con |=3D 1 << EXYNOS7_PD_DET_EN_SHIFT;
+> > >>
+> > >>       writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
+> > >>       writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+> > >
+> > > Could you test this patch if it isn't introducing any regression on
+> > > your HW?
 > >=20
-> > <yet another big cut>
+> > The patch does not cause any regression on exynos7 and seems
+> > logically correct.
 > >=20
-> > > +	/*
-> > > +	 * Calculate the derivative term
-> > > +	 *
-> > > +	 * We do err - prev_err, so with a positive k_d, a decreasing
-> > > +	 * error (i.e. driving closer to the line) results in less
-> > > +	 * power being applied, slowing down the controller)
-> > > +	 */
-> > > +	d =3D mul_frac(tz->tzp->k_d, err - params->prev_err);
+> > Tested-by: Abhilash Kesavan <a.kesavan@samsung.com>
 > >=20
-> >=20
-> > ... Shouldn't the above d component consider the rate of changes over t=
-ime of the error?
-> >=20
-> > I would expect you should do:
-> > d =3D k_d * (dE / dt)
-> >=20
-> > or
-> >=20
-> > d =3D K_d * ((err - params->prev_err) / sampling_period)
-> >=20
-> > in plain C:
-> >=20
-> > +	d =3D mul_frac(tz->tzp->k_d, err - params->prev_err);
-> > +	d /=3D tz->passive_polling; /* might require fixed point division */
 >=20
-> Could do.  To be honest, both k_d and passive_polling are constants so
+> Eduardo, it is up to you if you prefer to take this fix directly or via
+> the new thermal-samsung tree ?
+>=20
+> From when shall I regard myself as a maintainer? :-)
+>=20
 
-Yes, I agree that they are constants. But if you deploy the thermal zone
-with different sampling period on different devices, then the behavior
-will change.
-
-> I don't think you get anything by doing this other than the added
-> complexity of the fixed point division.  As you said, the default k_d
-> is 0, so I'm not strongly against it.
-
-OK. Then I would prefer to add the division, as it makes the code aligned
-to the concept.
+Yeah. Go ahead and collect it.
 
 >=20
-> Cheers,
-> Javi
+> >=20
+> > Regards,
+> > Abhilash
+> > >
+> > > --
+> > > Best regards,
+> > >
+> > > Lukasz Majewski
+> > >
+> > > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+>=20
+>=20
+> --=20
+> Best regards,
+>=20
+> Lukasz Majewski
+>=20
+> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
 
---poemUeGtc2GQvHuH
+--zgY/UHCnsaNnNXRx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7hvMAAoJEMLUO4d9pOJWSbMH/jRTr2K7MlHAADtC45YwZz52
-PXbB5cbcNrGG/nBab82wOhF8Z9xbNh4VlAbrTTQRmNSnVNEfjv2m5VpBBAkX/OVk
-elxlZgF/1WCiEwFDWyWAetv9numxR8QV5JaoMOgQPqiWeBVbD32Cfv0tZXTT0DMi
-fZPk7TFu4q5BS20kgyRW0yHZdrshBMKPqKXNztvbl2PBHiOognt9YzEPwbsDD9yN
-6KwJareYzpptZx7iU8xKpeqhNBAUukQ10i11Qi8mOK1FJ3Wtd+pad96jHp7YPzD6
-PMetq2hSE9gVN7X3G8tWtezRZM4D2yoZB/oywRwU9wsK/Es6KuqgijsK3/uglPI=
-=z5ss
+iQEcBAEBAgAGBQJU7hwGAAoJEMLUO4d9pOJW+RsH/2VBj6wQ7pv8BXCIZ6B4NjlE
+h3YaNLHDxf26ASDVi8A1A+m5ZmtYXuRIJ4wK2le00D3h6x+SP8CYevE9uRsX2H3W
+xO4r2iIMoXMUUrk+eiR2abiILOrov70aoSD0QkTCmuZ5hRJQJeQhdX6/e5uEKAU7
+2JEvPytH+SpFVidyjQ7XFAQ5x8JM+3bswQuyi+svg/xelg8Va6Bib1p3lYOTTnv5
+laLCugBViqAlqvvAQgHwSfP3GIQauQ2RqaKEWPCbjTCKRX1C/SH2UdznddZ/oFCK
+1HZqw1uPRtqF3dQd0dTOr1HT+sqXD5wtV/O5ui0m3xQCtxZSbNAtL3bZ8nhlGxU=
+=x+vi
 -----END PGP SIGNATURE-----
 
---poemUeGtc2GQvHuH--
+--zgY/UHCnsaNnNXRx--
