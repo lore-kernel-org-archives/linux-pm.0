@@ -1,64 +1,64 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 6/7] power: da9150: Add DT binding documentation for
- charger
-Date: Wed, 25 Feb 2015 12:11:28 +0000
-Message-ID: <54EDBBF0.7070307@kernel.org>
-References: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com> <f6c1bb16817176c5f253aec7cb5a912219bd814a.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/5] power_supply: max77693: Properly handle error
+ conditions
+Date: Wed, 25 Feb 2015 21:46:23 +0100
+Message-ID: <20150225204622.GG13695@earth>
+References: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <f6c1bb16817176c5f253aec7cb5a912219bd814a.1424267009.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Qf1oXS95uex85X0R"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1424771687-7976-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18/02/15 14:08, Adam Thomson wrote:
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/da9150-charger.txt   | 26 ++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/da9150-charger.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/da9150-charger.txt b/Documentation/devicetree/bindings/power/da9150-charger.txt
-> new file mode 100644
-> index 0000000..f390666
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/da9150-charger.txt
-> @@ -0,0 +1,26 @@
-> +Dialog Semiconductor DA9150 Charger Power Supply bindings
-> +
-> +Required properties:
-> +- compatible: "dlg,da9150-charger" for DA9150 Charger Power Supply
-> +
-> +Optional properties:
-> +- io-channels: List of phandle and IIO specifier pairs
-> +- io-channel-names: List of channel names used by charger
-> +      ["CHAN_IBUS", "CHAN_VBUS", "CHAN_TJUNC", "CHAN_VBAT"]
-> +  (See Documentation/devicetree/bindings/iio/iio-bindings.txt for further info)
-> +
-> +
-> +Example:
-> +
-> +	da9150-charger {
-> +		compatible = "dlg,da9150-charger";
-> +
-> +		io-channels = <&gpadc 0>,
-> +			      <&gpadc 2>,
-> +			      <&gpadc 8>,
-> +			      <&gpadc 5>;
-> +		io-channel-names = "CHAN_IBUS",
-> +				   "CHAN_VBUS",
-> +				   "CHAN_TJUNC",
-> +				   "CHAN_VBAT";
-> +	};
-> --
-> 1.9.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+--Qf1oXS95uex85X0R
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Feb 24, 2015 at 10:54:43AM +0100, Krzysztof Kozlowski wrote:
+> Re-work and fix handling of errors when retrieving power supply
+> properties:
+>=20
+> 1. Return errno values directly from get_property() instead of storing
+>    'unknown' as intval for given property.
+>=20
+> 2. Handle regmap_read() errors when getting 'online' and 'present'
+>    proprties and return errno code. Previously the regmap_read() return
+>    code was ignored so an uninitialized value from the stack could be
+>    used for calculating the property.
+
+Thanks, whole patchset pulled into battery-2.6.git.
+
+-- Sebastian
+
+--Qf1oXS95uex85X0R
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU7jSeAAoJENju1/PIO/qaki0QAKB6weKoBF3N/FxEo4/P/MAI
+0G+aitCqcF/SoNjmbWH8KZOh1Xr0YeQNH0vzeIJ4wqxnHyNVITt3eQWzGFILGIz2
+aaK3+9Pc+PGwijejWqGs5zMXWA68gCBMgidI63t6xTBccb12AhKYmDnkkAxPNFa/
+uDzwiAjI/jC+0TOTJw/uexBcs6b2yWOkPglMKsJlW7CqDB+ZJi3J3Xd9aPAcE2Us
+bC+BvljewhMaif/6UDxABMxNcQkyIwZAcvv8CtQgnr7+6a7jvXHfVGW1FFTWP0lW
+jitliBCKycsVEGSZ8io4+sqVpbNXBSR5WQugXgaa40k5EuomI1P6mUKvNxqU8daI
+pTBSizAyPp9FyEnP1ntA79DUCdNsvZaKoWYaTZfM72TKcjnjeEZek2YOz8Ol6Hm6
+vyIKkk1oFvSQ93znsi6lRNXhcnMWIDPie6fOZm3oxh24UWGskr7wv2l+DiD916WM
+2ndPHdxCVDBq1kgU5dzvghPaU7I41/FIvhCBKj36v9a0FEoCviCacO6X6/YBjQ53
+plEu87Oqtfc2MC7DgjpaXsI8ctpjuk+7iWgbobhsVmESehF64f4720JPDGk+pcUR
+wfVIBTOzCA5pgpF78cmyytSvbjnQ5ZFz8Jg5nRtcpozQbeaAVmx9vISYncB02ah4
+FJ7SPLvLJsyOWKY16/+h
+=FPL+
+-----END PGP SIGNATURE-----
+
+--Qf1oXS95uex85X0R--
