@@ -1,125 +1,123 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Fix wrong control of power down
- detection mode for Exynos7
-Date: Wed, 25 Feb 2015 15:01:38 -0400
-Message-ID: <20150225190137.GI2306@developer.amazonguestwifi.org>
-References: <1424753815-15113-1-git-send-email-cw00.choi@samsung.com>
- <1424753815-15113-2-git-send-email-cw00.choi@samsung.com>
- <20150225100330.0ef63a95@amdc2363>
- <CAM4voakf6oeSEdtGtHRzQ-tC6XMbsU+VNtBnqeed8J4btKA3Yg@mail.gmail.com>
- <20150225132508.5143c9cf@amdc2363>
+Subject: Re: [PATCH v5 1/6] Documentation: dts: Documentation entry to
+ explain how to use PWM FAN as a cooling device
+Date: Wed, 25 Feb 2015 15:11:24 -0400
+Message-ID: <20150225191123.GA2950@developer.amazonguestwifi.org>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+ <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
+ <1424878462-15511-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zgY/UHCnsaNnNXRx"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:40353 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752825AbbBYTLa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 14:11:30 -0500
 Content-Disposition: inline
-In-Reply-To: <20150225132508.5143c9cf@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: l.majewski@majess.pl, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1424878462-15511-2-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 
 
---zgY/UHCnsaNnNXRx
+--huq684BweRXVnRxX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 25, 2015 at 01:25:08PM +0100, Lukasz Majewski wrote:
-> Hi Eduardo,
+On Wed, Feb 25, 2015 at 04:34:17PM +0100, Lukasz Majewski wrote:
+> Explanation of several properties, which allow PWM fan working as a cooli=
+ng
+> device, have been embraced in this commit.
 >=20
-> > Hi Lukasz,
-> >=20
-> > On Wed, Feb 25, 2015 at 2:33 PM, Lukasz Majewski
-> > <l.majewski@samsung.com> wrote:
-> > > Hi Abhilash,
-> > >
-> > >> This patch fixes the wrong control of PD_DET_EN (power down
-> > >> detection mode) for Exynos7 because exynos7_tmu_control() always
-> > >> enables the power down detection mode regardless 'on' parameter.
-> > >>
-> > >> Cc: Zhang Rui <rui.zhang@intel.com>
-> > >> Cc: Eduardo Valentin <edubezval@gmail.com>
-> > >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > >> ---
-> > >>  drivers/thermal/samsung/exynos_tmu.c | 3 ++-
-> > >>  1 file changed, 2 insertions(+), 1 deletion(-)
-> > >>
-> > >> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> > >> b/drivers/thermal/samsung/exynos_tmu.c index 933cd80..a60f527
-> > >> 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
-> > >> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > >> @@ -682,6 +682,7 @@ static void exynos7_tmu_control(struct
-> > >> platform_device *pdev, bool on)
-> > >>       if (on) {
-> > >>               con |=3D (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> > >> +             con |=3D (1 << EXYNOS7_PD_DET_EN_SHIFT);
-> > >>               interrupt_en =3D
-> > >>                       (of_thermal_is_trip_valid(tz, 7)
-> > >>                       << EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
-> > >> @@ -704,9 +705,9 @@ static void exynos7_tmu_control(struct
-> > >> platform_device *pdev, bool on) interrupt_en <<
-> > >> EXYNOS_TMU_INTEN_FALL0_SHIFT; } else {
-> > >>               con &=3D ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> > >> +             con &=3D ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
-> > >>               interrupt_en =3D 0; /* Disable all interrupts */
-> > >>       }
-> > >> -     con |=3D 1 << EXYNOS7_PD_DET_EN_SHIFT;
-> > >>
-> > >>       writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
-> > >>       writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
-> > >
-> > > Could you test this patch if it isn't introducing any regression on
-> > > your HW?
-> >=20
-> > The patch does not cause any regression on exynos7 and seems
-> > logically correct.
-> >=20
-> > Tested-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> >=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> ---
+> Changes for v2:
+> - Rename cooling-pwm-values to cooling-levels
+> - Remove default-pulse-width property and stick to default hwmon policy
+> Changes for v3:
+> - Changing commit title from "hwmon: dts: Doc:" to "Documentation: dts"
+> - Remove unnecessary properties
+> - Set maximal cooling level to 230 instead of 255
+> Changes for v4:
+> - None
+> Changes for v5:
+> - Move thermal-zones description to example section
+> - Extending example section
 >=20
-> Eduardo, it is up to you if you prefer to take this fix directly or via
-> the new thermal-samsung tree ?
+> ---
+>  .../devicetree/bindings/hwmon/pwm-fan.txt          | 25 ++++++++++++++++=
++++++-
+>  1 file changed, 24 insertions(+), 1 deletion(-)
 >=20
-> From when shall I regard myself as a maintainer? :-)
->=20
+> diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Docume=
+ntation/devicetree/bindings/hwmon/pwm-fan.txt
+> index 610757c..645251b 100644
+> --- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> +++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+> @@ -3,10 +3,33 @@ Bindings for a fan connected to the PWM lines
+>  Required properties:
+>  - compatible	: "pwm-fan"
+>  - pwms		: the PWM that is used to control the PWM fan
+> +- cooling-levels      : PWM duty cycle values in a range from 0 to 255
+> +			which correspond to thermal cooling states
+> =20
+>  Example:
+> -	pwm-fan {
+> +	fan0: pwm-fan {
+>  		compatible =3D "pwm-fan";
+>  		status =3D "okay";
+>  		pwms =3D <&pwm 0 10000 0>;
+> +		cooling-levels =3D <0 102 170 230>;
+> +	};
+> +
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +		cooling-min-state =3D <0>;
+> +		cooling-max-state =3D <3>;
+> +		#cooling-cells =3D <2>;
+> +		trips {
+> +			cpu_alert1: cpu-alert1 {
+> +				temperature =3D <100000>; /* millicelsius */
+> +				hysteresis =3D <2000>; /* millicelsius */
+> +				type =3D "passive";
+> +			};
+> +		};
+> +		cooling-maps {
+> +			map0 {
+> +			     trip =3D <&cpu_alert1>;
+> +			     cooling-device =3D <&fan0 0 1>;
+> +			};
+> +		};
 
-Yeah. Go ahead and collect it.
+The above example has two issues:
+(1) it is wrong, as the cooling device properties are in the thermal
+zone node.
+(2) has a misalignment / tabulation
 
->=20
-> >=20
-> > Regards,
-> > Abhilash
-> > >
-> > > --
-> > > Best regards,
-> > >
-> > > Lukasz Majewski
-> > >
-> > > Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
->=20
->=20
+Can you please fix that in your next version too?
+
+>  	};
 > --=20
-> Best regards,
+> 2.0.0.rc2
 >=20
-> Lukasz Majewski
->=20
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
 
---zgY/UHCnsaNnNXRx
+--huq684BweRXVnRxX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7hwGAAoJEMLUO4d9pOJW+RsH/2VBj6wQ7pv8BXCIZ6B4NjlE
-h3YaNLHDxf26ASDVi8A1A+m5ZmtYXuRIJ4wK2le00D3h6x+SP8CYevE9uRsX2H3W
-xO4r2iIMoXMUUrk+eiR2abiILOrov70aoSD0QkTCmuZ5hRJQJeQhdX6/e5uEKAU7
-2JEvPytH+SpFVidyjQ7XFAQ5x8JM+3bswQuyi+svg/xelg8Va6Bib1p3lYOTTnv5
-laLCugBViqAlqvvAQgHwSfP3GIQauQ2RqaKEWPCbjTCKRX1C/SH2UdznddZ/oFCK
-1HZqw1uPRtqF3dQd0dTOr1HT+sqXD5wtV/O5ui0m3xQCtxZSbNAtL3bZ8nhlGxU=
-=x+vi
+iQEcBAEBAgAGBQJU7h5RAAoJEMLUO4d9pOJW3M8IAIfcZq2UgPAy317hFkquG8KQ
++ge+5pVttPu1PSMU6CVy/I2lX0Hm2b5rWedLlLvR6+KTuGWkjjsCWj6Qiz5j/2Cy
+sX4tUkZNYKsapaD14TXIHA/e1/tbwgHkqC/grggvsGtN3iiQYYJ+51EmLq0qkYFt
+s1u+VjhPlzDdJn93uH5GNLY0W3tPngt3EkYxWmz/4pHofzwlWatOyHGzenv4Cx/f
+Qnrb2vEWiBi1/eKurmTwcpe6dfBJLzeMpWkS6m+2JXbokdV0a+Qo4NkYvNg7Sfbl
+5HjTdFv9th3tEO7mwhSqZQ1SwnToPhcOC+SCCQikd4sDHfl19Zl5y9G+IWCXL+s=
+=m5Ze
 -----END PGP SIGNATURE-----
 
---zgY/UHCnsaNnNXRx--
+--huq684BweRXVnRxX--
