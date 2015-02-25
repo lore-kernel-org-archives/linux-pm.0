@@ -1,233 +1,108 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v5 6/6] hwmon: pwm-fan: Code for using PWM FAN as a
- cooling device
-Date: Wed, 25 Feb 2015 14:24:51 -0400
-Message-ID: <20150225182449.GA2306@developer.amazonguestwifi.org>
+Subject: Re: [PATCH v5 0/6] hwmon: thermal: Odroid U3: Provide support for
+ Odroid U3 fan
+Date: Wed, 25 Feb 2015 14:29:18 -0400
+Message-ID: <20150225182917.GB2306@developer.amazonguestwifi.org>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-7-git-send-email-l.majewski@samsung.com>
+ <20150225171820.GA2400@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="dc+cDN39EJAMEtIO"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424878462-15511-7-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+In-Reply-To: <20150225171820.GA2400@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---n8g4imXOkfNTN/H1
+--dc+cDN39EJAMEtIO
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Lukasz,
+Guenter,
 
-On Wed, Feb 25, 2015 at 04:34:22PM +0100, Lukasz Majewski wrote:
-> The PWM FAN device can now be used as a thermal cooling device. Necessary
-> infrastructure has been added in this commit.
+On Wed, Feb 25, 2015 at 09:18:20AM -0800, Guenter Roeck wrote:
+> On Wed, Feb 25, 2015 at 04:34:16PM +0100, Lukasz Majewski wrote:
+> > Presented patches add support for Odroid's U3 optional CPU FAN, which u=
+ses PWM
+> > subsystem for low level control.
+> >=20
+> > After successful probe it registers itself as a cooling device for ther=
+mal
+> > subsystem.
+> >=20
+> > This driver also supports devices without DTS specified.
+> >=20
+> > To provide correct functionality, new properties to device tree descrip=
+tion for
+> > Exynos4412 and in particular Odroid U3 have been added.
+> >=20
+> > Those patches were tested at Exynos4412 - Odroid U3 board.
+> >=20
+> > Patches were applied on:
+> > linux-soc-thermal/fixes branch (Linux v4.0-rc1)
+> > SHA1: b71d399c7f2fe06b60b96155ec0b9ae167334e4a
+> >=20
+> > Kamil Debski (1):
+> >   ARM: dts: Add pwm-fan node to the Odroid-U3 board
+> >=20
+> > Lukasz Majewski (5):
+> >   Documentation: dts: Documentation entry to explain how to use PWM FAN
+> >     as a cooling device
+> >   ARM: dts: Add properties to use pwm-fan device as a cooling device in
+> >     Odroid U3
+> >   hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
+> >     cycle
+> >   hwmon: pwm-fan: Read PWM FAN configuration from device tree
+> >   hwmon: pwm-fan: Code for using PWM FAN as a cooling device
+> >=20
+> >  .../devicetree/bindings/hwmon/pwm-fan.txt          |  25 +++-
+> >  arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
+> >  arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
+> >  drivers/hwmon/pwm-fan.c                            | 166 +++++++++++++=
+++++++--
+> >  4 files changed, 220 insertions(+), 16 deletions(-)
+> >=20
+> For the series:
 >=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
-> Changes for v2:
-> - Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
-> - Update ctx->pwm_fan_state when correct data from device tree is availab=
-le
-> - Using therma_cdev_update() when thermal is ready for controlling the fan
-> Changes for v3:
-> - Rename patch heading
-> - pwm_fan_of_get_cooling_data() now returns -EINVAL when no "cooling-leve=
-ls"
->   property defined
-> - register of cooling device only when proper cooling data is present
-> Changes for v4:
-> - None
-> Changes for v5:
-> - Check for IS_ENABLED(CONFIG_THERMAL) has been added to prevent from
->   executing thermal_* specific functions
-> ---
->  drivers/hwmon/pwm-fan.c | 83 +++++++++++++++++++++++++++++++++++++++++++=
-+++++-
->  1 file changed, 82 insertions(+), 1 deletion(-)
+> Acked-by: Guenter Roeck <linux@roeck-us.net>
 >=20
-> diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-> index e6ed353..2c1a8f0 100644
-> --- a/drivers/hwmon/pwm-fan.c
-> +++ b/drivers/hwmon/pwm-fan.c
-> @@ -24,6 +24,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/pwm.h>
->  #include <linux/sysfs.h>
-> +#include <linux/thermal.h>
-> =20
->  #define MAX_PWM 255
-> =20
-> @@ -68,6 +69,17 @@ exit_set_pwm_err:
->  	return ret;
->  }
-> =20
-> +static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long =
-pwm)
-> +{
-> +	int i;
-> +
-> +	for (i =3D 0; i < ctx->pwm_fan_max_state; ++i)
-> +		if (pwm < ctx->pwm_fan_cooling_levels[i + 1])
-> +			break;
-> +
-> +	ctx->pwm_fan_state =3D i;
-> +}
-> +
->  static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
->  		       const char *buf, size_t count)
->  {
-> @@ -82,6 +94,7 @@ static ssize_t set_pwm(struct device *dev, struct devic=
-e_attribute *attr,
->  	if (ret)
->  		return ret;
-> =20
-> +	pwm_fan_update_state(ctx, pwm);
->  	return count;
->  }
-> =20
-> @@ -103,6 +116,59 @@ static struct attribute *pwm_fan_attrs[] =3D {
-> =20
->  ATTRIBUTE_GROUPS(pwm_fan);
-> =20
-> +/* thermal cooling device callbacks */
-> +static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
-> +				 unsigned long *state)
-> +{
-> +	struct pwm_fan_ctx *ctx =3D cdev->devdata;
-> +
+> Should I take it through hwmon ? Might make sense given the majority
+> of the changes is in hwmon code.
 
-Why this call back is the only one you didn't add a check for ctx =3D=3D
-NULL?
+I believe the series should go via your tree, yes. I had only minor
+comments in the code added for the cooling device code, as it lacks the
+unregistration call in the .remove callback.=20
 
-> +	*state =3D ctx->pwm_fan_max_state;
-> +
-> +	return 0;
-> +}
-> +
-> +static int pwm_fan_get_cur_state(struct thermal_cooling_device *cdev,
-> +				 unsigned long *state)
-> +{
-> +	struct pwm_fan_ctx *ctx =3D cdev->devdata;
-> +
-> +	if (!ctx)
-> +		return -EINVAL;
-> +
-> +	*state =3D ctx->pwm_fan_state;
-> +
-> +	return 0;
-> +}
-> +
-> +static int
-> +pwm_fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long=
- state)
-> +{
-> +	struct pwm_fan_ctx *ctx =3D cdev->devdata;
-> +	int ret;
-> +
-> +	if (!ctx || (state > ctx->pwm_fan_max_state))
-> +		return -EINVAL;
-> +
-> +	if (state =3D=3D ctx->pwm_fan_state)
-> +		return 0;
-> +
-> +	ret =3D __set_pwm(ctx, ctx->pwm_fan_cooling_levels[state]);
-> +	if (ret) {
-> +		dev_err(&cdev->device, "Cannot set pwm!\n");
-> +		return ret;
-> +	}
-> +
-> +	ctx->pwm_fan_state =3D state;
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct thermal_cooling_device_ops pwm_fan_cooling_ops =3D {
-> +	.get_max_state =3D pwm_fan_get_max_state,
-> +	.get_cur_state =3D pwm_fan_get_cur_state,
-> +	.set_cur_state =3D pwm_fan_set_cur_state,
-> +};
-> +
->  int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *=
-ctx)
->  {
->  	struct device_node *np =3D dev->of_node;
-> @@ -145,8 +211,9 @@ int pwm_fan_of_get_cooling_data(struct device *dev, s=
-truct pwm_fan_ctx *ctx)
-> =20
->  static int pwm_fan_probe(struct platform_device *pdev)
->  {
-> -	struct device *hwmon;
-> +	struct thermal_cooling_device *cdev;
->  	struct pwm_fan_ctx *ctx;
-> +	struct device *hwmon;
->  	int duty_cycle;
->  	int ret;
-> =20
-> @@ -193,6 +260,20 @@ static int pwm_fan_probe(struct platform_device *pde=
-v)
->  	if (ret)
->  		return ret;
-> =20
-> +	ctx->pwm_fan_state =3D ctx->pwm_fan_max_state;
-> +	if (IS_ENABLED(CONFIG_THERMAL)) {
-> +		cdev =3D thermal_of_cooling_device_register(pdev->dev.of_node,
-> +							  "pwm-fan", ctx,
-> +							  &pwm_fan_cooling_ops);
+Also, the DTS changes may generate conflicts with platform code. Lukasz
+may probably ask  Kukjin Kim to add them via the samsung tree.
 
+BR,
 
-I know this is a PITA, but thermal subsystem still does not use devm
-based helpers. That means, you need to be old school and unregister the
-device yourself.
+Eduardo Valentin
 
-Please add the cdev to ctx structure:
-+		ctx->cdev =3D cdev;
-
-and add a call for:
-	thermal_cooling_device_unregister(ctx->cdev);
-
-in static int pwm_fan_remove(struct platform_device *pdev)
-
-
-despite the above two minor issues, you may add my
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
-
-> +		if (IS_ERR(cdev)) {
-> +			dev_err(&pdev->dev,
-> +				"Failed to register pwm-fan as cooling device");
-> +			pwm_disable(ctx->pwm);
-> +			return PTR_ERR(cdev);
-> +		}
-> +		thermal_cdev_update(cdev);
-> +	}
-> +
->  	return 0;
->  }
-> =20
-> --=20
-> 2.0.0.rc2
 >=20
+> Thanks,
+> Guenter
 
---n8g4imXOkfNTN/H1
+--dc+cDN39EJAMEtIO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7hNoAAoJEMLUO4d9pOJW6GkH/3S/Tygk7teSdp3qo+TpLAXj
-QRlcKAxPCJ6eBivA1ZgujhGtx4/Pg9kZpKCbYLgO6zLsvwHzRmSEQATrq5ojjm9G
-8Jz97P0bMiF9WTXB5NPCMz5eJfPge9zxzltnJV91rxQx0WzBZYyBaZo4OSwUt54l
-K8OkFxz/qWhGMRznmeHiqMHFnr5Fml5K0Zk1JACofFNxuwv6Q7SJNbHYdqZXwFcW
-2/8nu/eM3U23+sBZKIbIfOe0sfgZ9hM39PYWF5lUThX9ott+86oBRCkIEHli6lkw
-zyVrGM4SBrA+jR2y5uQa6y2TQ54lGJXItzfSPKGoUXpVwVO3kCByALBkBnGlWcA=
-=X2x7
+iQEcBAEBAgAGBQJU7hR1AAoJEMLUO4d9pOJWX7YH/0AzszI7w0H1frCpqPJsXquO
+KpIe4Y1HMvlWtagEzrHvF2SZxchatenIWoEksAvWvny/gqD8LkgS9JyRt5b5SBSt
+spm4Ossrt5DE3IyxIVZyShloL/m4XTSF68ufhkIFzveTRQaftoY4P+ar/D4v5OUM
+jyQwJZzP5/CXir9SWhAeVkfcvuUTya/OyG8fXjgvdxKMyOjF4MHR5BvQ4aDfz/gv
+QGNj3angjL9RvLsGkVg5w+QwUcS5c8R0lE28gsfdUKcnqnw4M8KI1O0H1nUiEC3u
+zXe2XMOFr3o7NXmxZgQ6Or1ArCtBvG5uWImMmM8klzslaM/vL8y6Z8vL4TmwAcw=
+=6xG6
 -----END PGP SIGNATURE-----
 
---n8g4imXOkfNTN/H1--
+--dc+cDN39EJAMEtIO--
