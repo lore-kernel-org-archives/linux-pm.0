@@ -1,63 +1,61 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] bq27x00_battery: register as non-wakeup power supply.
-Date: Wed, 25 Feb 2015 21:37:35 +0100
-Message-ID: <20150225203734.GE13695@earth>
-References: <20150224141732.5c937402@notabene.brown>
+Subject: Re: [PATCH resend] power: Use subdir-ccflags-* to inherit debug flag
+Date: Wed, 25 Feb 2015 21:40:02 +0100
+Message-ID: <20150225204001.GF13695@earth>
+References: <1424707728-27716-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="M/SuVGWktc5uNpra"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="w3uUfsyyY1Pqa/ej"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41372 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752625AbbBYUkP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Feb 2015 15:40:15 -0500
 Content-Disposition: inline
-In-Reply-To: <20150224141732.5c937402@notabene.brown>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, GTA04 owners <gta04-owner@goldelico.com>
+In-Reply-To: <1424707728-27716-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
 
---M/SuVGWktc5uNpra
+--w3uUfsyyY1Pqa/ej
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Geert,
 
-On Tue, Feb 24, 2015 at 02:17:32PM +1100, NeilBrown wrote:
-> power_supply status changes for the bq27x00 are only noticed via
-> polling, not via interrupts.  So they are never the source of
-> events which should reliably wake the system from suspend.  So it
-> is appropriate to register as a no_ws power source, just like the
-> ACPI battery.
+On Mon, Feb 23, 2015 at 05:08:48PM +0100, Geert Uytterhoeven wrote:
+> Use subdir-ccflags-* instead of ccflags-* to inherit the debug
+> settings from Kconfig when traversing subdirectories.
 >=20
-> This removes some debugging messages which occasionally
-> confusingly identify bq27x00 as a wakeup source.
->=20
-> Signed-off-by: NeilBrown <neilb@suse.de>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-pulled into battery-2.6.git.
+Thanks, pulled into battery-2.6.git.
 
 -- Sebastian
 
---M/SuVGWktc5uNpra
+--w3uUfsyyY1Pqa/ej
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU7jKOAAoJENju1/PIO/qa/48P/jxu5sZz84zA72sjxiVz4ASC
-97J9vF0iBmVj5Pdel9egPS2Mg3n2mn+pdov2exUzWTrHr4pFhyyDEwqMZ6H/kgAZ
-uhky5Vbs7LUtVxjX1N/llzU0KzFgRFbyzeqA6Kp7yLHhcqFWivd/yv/FBbqW/dsp
-ZXIxqR8Qvzmo9STO6r+Df0hkGZlIU2GScEDJtPI/QYeXNQvttywTapN/ktqI8tsR
-EMsX6agAUiB9KoP7ImuC5jqnU3ndIdCgV4Y6FfWVDKc08zfUxKlmhhUpnih5MHBm
-QDKIZs2sN+0jyjPEXPR/i7q2c9zPhg73IvxsFaMn6OY9GJlv5VqyUTSK8qptj/ud
-QZDTcS3s0Tv61r2zCLJznWcXBUNYNktlCa9bAXLY+RIuvGVQSmJmgZrpgNO3Rzan
-iTdkB+Gui/D1MegNHKM7/eJur69J6Ar9Qx5qr3F7uBJYgh2RIlPxFWOh1vn94i0s
-bqCNq0KzDUHZA3DMQtO8SON8o/+N9MDN8OdwRUM3duvx/GSl+R/hxqXPz9wMg0+m
-40xqi/Cchi95JZ9ZzA7n4UMJRCwtPgIDT4h+zeCZVgjVv7qW8FWzo9O2vRJktYZ/
-l+boYe12FNv+DBb6dfLdVow17RGWeJmwcOWECM37C0Xuf+f82P7OnOvV5WAKSoYC
-81bn7QW/uAJ/M0RFW5Im
-=l3Rc
+iQIcBAEBCgAGBQJU7jMhAAoJENju1/PIO/qaoyUP/0aVP8iY0rbjgpRDIoEusUv3
+OyPpq+I2et4McSO4k8wFzL45dz9H8xhvdCiz9C2D6Dmd3bcmxkdzyMJxdDp5makJ
+FUFVMu/GJu9mKJWEGVjp1rUr9hn0T5sx4W10Au2FPVuZl6MAj2DHSa9QWlagcXVw
+RhXuy4e8Ou3HfCFoYYgyZyCqwOIZp6RcD0l5ZV7ExAJqvT1sq/5CCsFoq/CtW2IK
+ylMB3jOaON8IxNo0wBJRUgrbiFS6NxHG4KYcLzn13doGJp81QEYslHK3lcsAak8L
+tn6ScaIxdqwL1M8SJTuyQPSIKG6ZHp/uQyXYQOfOdcvjqj6ytgtYq0NeZusmiQhA
+Q2Xt0G6bC/kqFvwOSMOwey7Jc9K1JpD46c/Q+rXbWDF0MIU8R8kKRVlgofZVj3Cz
+FUQJa0zXmW4IwWVgafbxBLfcRWh4INWnvoZBLAZepGMyFsZ7CyS80PnJlNwmFfPu
+uQ0cXWq0ofBnPwBk2o3j/7TpdyMECdjinet+ymL8xt02O8HoxCJTxKkGETg4C5GT
+xnvnizsZM7rdsMLADQxiu95g/teaYyt2kh3E9vgbMCDnTgsFWsttdEe82qXEjT/g
+OTNOU2wAMVNHJlMnWzIaBatnGYkrsqHZ+TLw4Mb6EoZlubnX4WYgZzAuCDuwIYbM
+Ag7X1kt2AYgsyIkBcHmA
+=Iyjf
 -----END PGP SIGNATURE-----
 
---M/SuVGWktc5uNpra--
+--w3uUfsyyY1Pqa/ej--
