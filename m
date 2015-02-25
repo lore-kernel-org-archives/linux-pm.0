@@ -1,128 +1,86 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v5 1/6] Documentation: dts: Documentation entry to
- explain how to use PWM FAN as a cooling device
-Date: Wed, 25 Feb 2015 15:13:03 -0400
-Message-ID: <20150225191301.GA2983@developer.amazonguestwifi.org>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-2-git-send-email-l.majewski@samsung.com>
- <20150225191123.GA2950@developer.amazonguestwifi.org>
+Subject: [GIT PULL] Thermal SoC management updates for v4.0-rc2
+Date: Wed, 25 Feb 2015 15:32:13 -0400
+Message-ID: <20150225193210.GB2983@developer.amazonguestwifi.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="mxv5cy4qt+RJ9ypb"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150225191123.GA2950@developer.amazonguestwifi.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---wRRV7LY7NUeQGEoC
+--mxv5cy4qt+RJ9ypb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 25, 2015 at 03:11:24PM -0400, Eduardo Valentin wrote:
-> On Wed, Feb 25, 2015 at 04:34:17PM +0100, Lukasz Majewski wrote:
-> > Explanation of several properties, which allow PWM fan working as a coo=
-ling
-> > device, have been embraced in this commit.
-> >=20
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> > Changes for v2:
-> > - Rename cooling-pwm-values to cooling-levels
-> > - Remove default-pulse-width property and stick to default hwmon policy
-> > Changes for v3:
-> > - Changing commit title from "hwmon: dts: Doc:" to "Documentation: dts"
-> > - Remove unnecessary properties
-> > - Set maximal cooling level to 230 instead of 255
-> > Changes for v4:
-> > - None
-> > Changes for v5:
-> > - Move thermal-zones description to example section
-> > - Extending example section
-> >=20
-> > ---
-> >  .../devicetree/bindings/hwmon/pwm-fan.txt          | 25 ++++++++++++++=
-+++++++-
-> >  1 file changed, 24 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Docu=
-mentation/devicetree/bindings/hwmon/pwm-fan.txt
-> > index 610757c..645251b 100644
-> > --- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> > +++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
-> > @@ -3,10 +3,33 @@ Bindings for a fan connected to the PWM lines
-> >  Required properties:
-> >  - compatible	: "pwm-fan"
-> >  - pwms		: the PWM that is used to control the PWM fan
-> > +- cooling-levels      : PWM duty cycle values in a range from 0 to 255
-> > +			which correspond to thermal cooling states
-> > =20
-> >  Example:
-> > -	pwm-fan {
-> > +	fan0: pwm-fan {
-> >  		compatible =3D "pwm-fan";
-> >  		status =3D "okay";
-> >  		pwms =3D <&pwm 0 10000 0>;
-> > +		cooling-levels =3D <0 102 170 230>;
-> > +	};
-> > +
-> > +	thermal-zones {
-> > +		cpu_thermal: cpu-thermal {
-> > +		cooling-min-state =3D <0>;
-> > +		cooling-max-state =3D <3>;
-> > +		#cooling-cells =3D <2>;
-> > +		trips {
-> > +			cpu_alert1: cpu-alert1 {
-> > +				temperature =3D <100000>; /* millicelsius */
-> > +				hysteresis =3D <2000>; /* millicelsius */
-> > +				type =3D "passive";
-> > +			};
-> > +		};
-> > +		cooling-maps {
-> > +			map0 {
-> > +			     trip =3D <&cpu_alert1>;
-> > +			     cooling-device =3D <&fan0 0 1>;
-> > +			};
-> > +		};
->=20
-> The above example has two issues:
-> (1) it is wrong, as the cooling device properties are in the thermal
-> zone node.
-> (2) has a misalignment / tabulation
->=20
-> Can you please fix that in your next version too?
+Hello Rui,
 
+Please pull from
 
-Apart from the above two issues you may add my=20
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git fixes
 
->=20
-> >  	};
-> > --=20
-> > 2.0.0.rc2
-> >=20
+to receive Thermal SoC Management updates for v4.0-rc2 with top-most
 
+b71d399c7f2fe06b60b96155ec0b9ae167334e4a:
 
+  thermal: exynos: Clean-up code to use oneline entry for exynos compatible table (2015-02-24 15:00:00 -0400)
 
---wRRV7LY7NUeQGEoC
+on top of commit c517d838eb7d07bbe9507871fab3931deccff539:
+
+  Linux 4.0-rc1 (2015-02-22 18:21:14 -0800)
+
+Specifics:
+- Fixes in RCAR thermal driver to remove race conditions and fix fail path
+- Fixes in TI thermal driver: removal of unnecessary code and build fix if !CONFIG_PM_SLEEP
+- Cleanups in exynos thermal driver
+- Add stubs for include/linux/thermal.h. Now drivers using thermal calls but that also work
+without CONFIG_THERMAL will be able to compile for systems that don't care about thermal.
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Chanwoo Choi (1):
+      thermal: exynos: Clean-up code to use oneline entry for exynos compatible table
+
+Geert Uytterhoeven (2):
+      thermal: rcar: Fix race condition between init and interrupt
+      thermal: rcar: Make error and remove paths symmetrical with init
+
+Grygorii Strashko (1):
+      thermal: ti-soc-thermal: bandgap: Fix build warning if !CONFIG_PM_SLEEP
+
+Markus Elfring (1):
+      ti-soc-thermal: Delete an unnecessary check before the function call "cpufreq_cooling_unregister"
+
+Nishanth Menon (1):
+      thermal: Introduce dummy functions when thermal is not defined
+
+ drivers/thermal/rcar_thermal.c                     | 26 +++++-----
+ drivers/thermal/samsung/exynos_tmu.c               | 38 ++++-----------
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  2 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  2 +-
+ include/linux/thermal.h                            | 56 +++++++++++++++++++++-
+ 5 files changed, 77 insertions(+), 47 deletions(-)
+
+--mxv5cy4qt+RJ9ypb
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU7h60AAoJEMLUO4d9pOJWXwwH/ic5KhV2vXDFG0IMmnOlSIma
-ZtJas8ij2hCaO90lPWoNvBgOmsxdA/EMLjaKFxkiB54HGO5Pcnc3r7RylN9u3uRy
-X4SMc0RAzOB0pX85P/tM0k1XnejJylZe7Z/LF0lTYAab3FVLgqZ6JU2S0jSAVlkv
-pidXPyCmEFJ3SYX/OcJZk92WGJYRyEbEDEmiKfuZ6ExmmvaERr+rmzRGbc8VLW+L
-s4t9G62IhhgrXKS2zzsze4ZScFDPe81gEqXaXkar0UPJFb4Cxgkx0atFH5xdVDPI
-eirEFtUxmzvyOCP92IoFvPBV4eq0W1+4An1V8h5U+Yj5R+N3qtMN/I1YLLPXVDs=
-=pmq/
+iQEcBAEBAgAGBQJU7iMwAAoJEMLUO4d9pOJWaAIH/RgEPnvdTLC7G4UAB6zMJZlx
+67HONdWFuegCesi5MWI9q936VxjP6nbxT2nZkyEYAWRzRgqwEik/cb+lP06ofZpE
+UwCLrvB79QY0AjFJcxq9eGN7zXoBOaj6QL1rGoVpWTchQpO7msIgbMsN+nfSHJhS
+VCWV2waQ1bd2Jrd/9LCIqyxiJyfUg4G7mUZY4gHc9SFXeF5IOpX6eCzfhps9T43e
+GyReMKKFB98DSqB4BAHTiP3YbZLBLP8qMd16nDAnbL+fxtaN/+hLGYdmsMqdwVIB
+e26XvexccO3cTv5tBrMo5iOKc1DbFdlFjrCLo70YklnkUbJESZOkpCQhD7qdAzo=
+=Ovud
 -----END PGP SIGNATURE-----
 
---wRRV7LY7NUeQGEoC--
+--mxv5cy4qt+RJ9ypb--
