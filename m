@@ -1,56 +1,57 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 2/2] drivers: cpuidle: add driver/device checks in
- cpuidle_enter_freeze()
-Date: Wed, 25 Feb 2015 14:56:46 +0000
-Message-ID: <20150225145646.GE20214@red-moon>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1424800730-32059-3-git-send-email-lorenzo.pieralisi@arm.com>
- <54EDDC99.40208@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] genirq: better describe IRQF_NO_SUSPEND semantics
+Date: Wed, 25 Feb 2015 16:19:38 +0100
+Message-ID: <20150225151938.GM5029@twins.programming.kicks-ass.net>
+References: <1424444026-31231-1-git-send-email-mark.rutland@arm.com>
+ <3607139.EdDhxoz0si@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37795 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbbBYO4U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Feb 2015 09:56:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51891 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbbBYPTu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 10:19:50 -0500
 Content-Disposition: inline
-In-Reply-To: <54EDDC99.40208@linaro.org>
+In-Reply-To: <3607139.EdDhxoz0si@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Ian Campbell <ian.campbell@citrix.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, Feb 25, 2015 at 02:30:49PM +0000, Daniel Lezcano wrote:
-
-[...]
-
-> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > index f47edc6c..344fe6c 100644
-> > --- a/drivers/cpuidle/cpuidle.c
-> > +++ b/drivers/cpuidle/cpuidle.c
-> > @@ -44,6 +44,12 @@ void disable_cpuidle(void)
-> >   	off = 1;
-> >   }
-> >
-> > +static bool cpuidle_device_disabled(struct cpuidle_driver *drv,
-> > +				    struct cpuidle_device *dev)
-> > +{
-> > +	return (off || !initialized || !drv || !dev || !dev->enabled);
-> > +}
+On Tue, Feb 24, 2015 at 01:26:05AM +0100, Rafael J. Wysocki wrote:
+> On Friday, February 20, 2015 02:53:46 PM Mark Rutland wrote:
+> > The IRQF_NO_SUSPEND flag is intended to be used for interrupts required
+> > to be enabled during the suspend-resume cycle. This mostly consists of
+> > IPIs and timer interrupts, potentially including chained irqchip
+> > interrupts if these are necessary to handle timers or IPIs. If an
+> > interrupt does not fall into one of the aforementioned categories,
+> > requesting it with IRQF_NO_SUSPEND is likely incorrect.
+> > 
+> > Using IRQF_NO_SUSPEND does not guarantee that the interrupt can wake the
+> > system from a suspended state. For an interrupt to be able to trigger a
+> > wakeup, it may be necessary to program various components of the system.
+> > In these cases it is necessary to use {enable,disabled}_irq_wake.
+> > 
+> > Unfortunately, several drivers assume that IRQF_NO_SUSPEND ensures that
+> > an IRQ can wake up the system, and the documentation can be read
+> > ambiguously w.r.t. this property.
+> > 
+> > This patch updates the documentation regarding IRQF_NO_SUSPEND to make
+> > this caveat explicit, hopefully making future misuse rarer. Cleanup of
+> > existing misuse will occur as part of later patch series.
+> > 
+> > Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > Cc: Ian Campbell <ian.campbell@citrix.com>
+> > Cc: Jonathan Corbet <corbet@lwn.net>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Signed-off-by: Mark Rutland <mark.rutland@arm.com>
 > 
-> This is getting a bit fuzzy IMO. What means disabled ? :)
+> Applied to linux-pm.git/linux-next, thanks!
 > 
-> >   /**
-> >    * cpuidle_play_dead - cpu off-lining
-> >    *
-> > @@ -124,6 +130,11 @@ void cpuidle_enter_freeze(void)
-> >   	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> >   	int index;
-> 
-> I think this is exploding before because of dev == NULL in the line above.
+> Peter, please let me know if you don't want this to go it.
 
-Actually not, cpuidle_get_cpu_driver() checks the dev pointer, so
-we might end up with drv == NULL and dev == NULL, and the check I added
-still applies and it is effective I think.
+No seems fine, Thanks!
 
-Lorenzo
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
