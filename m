@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 6/6] hwmon: pwm-fan: Code for using PWM FAN as a cooling
- device
-Date: Wed, 25 Feb 2015 16:34:22 +0100
-Message-ID: <1424878462-15511-7-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 3/6] ARM: dts: Add properties to use pwm-fan device as a
+ cooling device in Odroid U3
+Date: Wed, 25 Feb 2015 16:34:19 +0100
+Message-ID: <1424878462-15511-4-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -12,158 +12,69 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The PWM FAN device can now be used as a thermal cooling device. Necessary
-infrastructure has been added in this commit.
+With those bindings it is possible to use pwm-fan device available in
+Odroid U3 as a cooling device.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
-- Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
-- Update ctx->pwm_fan_state when correct data from device tree is available
-- Using therma_cdev_update() when thermal is ready for controlling the fan
+- Rename cooling-pwm-values property to cooling-levels
 Changes for v3:
-- Rename patch heading
-- pwm_fan_of_get_cooling_data() now returns -EINVAL when no "cooling-levels"
-  property defined
-- register of cooling device only when proper cooling data is present
+- Change patch's topic to "ARM dts"
+- Reduce maximal cooling-level to 230 from 255
 Changes for v4:
 - None
 Changes for v5:
-- Check for IS_ENABLED(CONFIG_THERMAL) has been added to prevent from
-  executing thermal_* specific functions
+- None
 ---
- drivers/hwmon/pwm-fan.c | 83 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 82 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-index e6ed353..2c1a8f0 100644
---- a/drivers/hwmon/pwm-fan.c
-+++ b/drivers/hwmon/pwm-fan.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
- #include <linux/sysfs.h>
-+#include <linux/thermal.h>
+diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+index 4c04837..abcfa3c 100644
+--- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
++++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+@@ -32,9 +32,40 @@
+ 		};
+ 	};
  
- #define MAX_PWM 255
- 
-@@ -68,6 +69,17 @@ exit_set_pwm_err:
- 	return ret;
- }
- 
-+static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
-+{
-+	int i;
+-	pwm-fan {
++	fan0: pwm-fan {
+ 		compatible = "pwm-fan";
+ 		pwms = <&pwm 0 10000 0>;
++		cooling-min-state = <0>;
++		cooling-max-state = <3>;
++		#cooling-cells = <2>;
++		cooling-levels = <0 102 170 230>;
++	};
 +
-+	for (i = 0; i < ctx->pwm_fan_max_state; ++i)
-+		if (pwm < ctx->pwm_fan_cooling_levels[i + 1])
-+			break;
-+
-+	ctx->pwm_fan_state = i;
-+}
-+
- static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 		       const char *buf, size_t count)
- {
-@@ -82,6 +94,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 	if (ret)
- 		return ret;
- 
-+	pwm_fan_update_state(ctx, pwm);
- 	return count;
- }
- 
-@@ -103,6 +116,59 @@ static struct attribute *pwm_fan_attrs[] = {
- 
- ATTRIBUTE_GROUPS(pwm_fan);
- 
-+/* thermal cooling device callbacks */
-+static int pwm_fan_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	*state = ctx->pwm_fan_max_state;
-+
-+	return 0;
-+}
-+
-+static int pwm_fan_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+
-+	if (!ctx)
-+		return -EINVAL;
-+
-+	*state = ctx->pwm_fan_state;
-+
-+	return 0;
-+}
-+
-+static int
-+pwm_fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
-+{
-+	struct pwm_fan_ctx *ctx = cdev->devdata;
-+	int ret;
-+
-+	if (!ctx || (state > ctx->pwm_fan_max_state))
-+		return -EINVAL;
-+
-+	if (state == ctx->pwm_fan_state)
-+		return 0;
-+
-+	ret = __set_pwm(ctx, ctx->pwm_fan_cooling_levels[state]);
-+	if (ret) {
-+		dev_err(&cdev->device, "Cannot set pwm!\n");
-+		return ret;
-+	}
-+
-+	ctx->pwm_fan_state = state;
-+
-+	return ret;
-+}
-+
-+static const struct thermal_cooling_device_ops pwm_fan_cooling_ops = {
-+	.get_max_state = pwm_fan_get_max_state,
-+	.get_cur_state = pwm_fan_get_cur_state,
-+	.set_cur_state = pwm_fan_set_cur_state,
-+};
-+
- int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- {
- 	struct device_node *np = dev->of_node;
-@@ -145,8 +211,9 @@ int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
- 
- static int pwm_fan_probe(struct platform_device *pdev)
- {
--	struct device *hwmon;
-+	struct thermal_cooling_device *cdev;
- 	struct pwm_fan_ctx *ctx;
-+	struct device *hwmon;
- 	int duty_cycle;
- 	int ret;
- 
-@@ -193,6 +260,20 @@ static int pwm_fan_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	ctx->pwm_fan_state = ctx->pwm_fan_max_state;
-+	if (IS_ENABLED(CONFIG_THERMAL)) {
-+		cdev = thermal_of_cooling_device_register(pdev->dev.of_node,
-+							  "pwm-fan", ctx,
-+							  &pwm_fan_cooling_ops);
-+		if (IS_ERR(cdev)) {
-+			dev_err(&pdev->dev,
-+				"Failed to register pwm-fan as cooling device");
-+			pwm_disable(ctx->pwm);
-+			return PTR_ERR(cdev);
-+		}
-+		thermal_cdev_update(cdev);
-+	}
-+
- 	return 0;
- }
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			cooling-maps {
++				map0 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&cpu0 7 7>;
++				};
++				map1 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&cpu0 13 13>;
++				};
++				map2 {
++				     trip = <&cpu_alert0>;
++				     cooling-device = <&fan0 0 1>;
++				};
++				map3 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&fan0 1 2>;
++				};
++				map4 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&fan0 2 3>;
++				};
++			};
++		};
+ 	};
+ };
  
 -- 
 2.0.0.rc2
