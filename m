@@ -1,295 +1,88 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [v3 2/2] ARM: qcom: dts: Add tsens thermal data
-Date: Wed, 25 Feb 2015 15:45:05 -0400
-Message-ID: <20150225194501.GD2983@developer.amazonguestwifi.org>
-References: <1424760442-12564-1-git-send-email-nrajan@codeaurora.org>
- <1424760442-12564-3-git-send-email-nrajan@codeaurora.org>
+From: Tyler Hall <tylerwhall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] thermal: armada: read stable temp on Armada XP
+Date: Wed, 25 Feb 2015 14:47:11 -0500
+Message-ID: <CAOjnSCZa+H+KRDJ+rug4OoinYEVN_fRrh4-fd4u_zzMEVNzjbQ@mail.gmail.com>
+References: <1423608615-6575-1-git-send-email-tylerwhall@gmail.com>
+ <20150224183616.GD3448@developer.amazonguestwifi.org> <CAOjnSCaH5NtcYGdfQ+=XY9ZJtjYEEgLWKCGUeFXBsM1f+va-LA@mail.gmail.com>
+ <54EDF3E6.6040409@free-electrons.com> <20150225183901.GD2306@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9UV9rz0O2dU/yYYn"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1424760442-12564-3-git-send-email-nrajan@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Narendran Rajan <nrajan@codeaurora.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux ARM MSM <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150225183901.GD2306-ld4jwAGwUXRveXEdyy5Li2QTnQI6vUnv7KzsFvvc4iU@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Gregory, Eduardo,
 
---9UV9rz0O2dU/yYYn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Feb 25, 2015 at 05:10:14PM +0100, Gregory CLEMENT wrote:
+> By using it by default do you mean removing marvell,armadaxp-thermal
+> and adding armadaxp-filtered-thermal instead ?
 
-On Mon, Feb 23, 2015 at 10:47:22PM -0800, Narendran Rajan wrote:
-> This patch adds dtsi file to contain thermal data for
-> tsens sensors present in qcom A family chipsets (msm8660,
-> ipq8064 etc). The data enables cooling with CPUfreq cooling
-> device at 60C and thermal shutdown at 100C
->=20
-> This thermal data can be resued across qcom A family chipsets
->=20
-> Signed-off-by: Narendran Rajan <nrajan@codeaurora.org>
-> ---
->  arch/arm/boot/dts/qcom-ipq8064.dtsi | 27 +++++++++++++++++++--
->  arch/arm/boot/dts/qcom-msm8660.dtsi | 27 +++++++++++++++++++--
->  arch/arm/boot/dts/qcom-msm8960.dtsi | 28 ++++++++++++++++++++--
->  arch/arm/boot/dts/qcom-thermal.dtsi | 47 +++++++++++++++++++++++++++++++=
-++++++
->  4 files changed, 123 insertions(+), 6 deletions(-)
->  create mode 100644 arch/arm/boot/dts/qcom-thermal.dtsi
->=20
-> diff --git a/arch/arm/boot/dts/qcom-ipq8064.dtsi b/arch/arm/boot/dts/qcom=
--ipq8064.dtsi
-> index cb225da..661ed46 100644
-> --- a/arch/arm/boot/dts/qcom-ipq8064.dtsi
-> +++ b/arch/arm/boot/dts/qcom-ipq8064.dtsi
-> @@ -13,7 +13,7 @@
->  		#address-cells =3D <1>;
->  		#size-cells =3D <0>;
-> =20
-> -		cpu@0 {
-> +		cpu0: cpu@0 {
->  			compatible =3D "qcom,krait";
->  			enable-method =3D "qcom,kpss-acc-v1";
->  			device_type =3D "cpu";
-> @@ -23,7 +23,7 @@
->  			qcom,saw =3D <&saw0>;
->  		};
-> =20
-> -		cpu@1 {
-> +		cpu1: cpu@1 {
->  			compatible =3D "qcom,krait";
->  			enable-method =3D "qcom,kpss-acc-v1";
->  			device_type =3D "cpu";
-> @@ -273,11 +273,34 @@
->  			qcom,controller-type =3D "pmic-arbiter";
->  		};
-> =20
-> +		imem: memory@700000 {
-> +			compatible =3D "qcom,qfprom", "syscon";
-> +			reg =3D <0x00700000 0x1000>;
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <1>;
-> +			stride =3D <1>;
-> +			ranges =3D <0x0 0x00700000 0x1000>;
-> +		};
-> +
-> +		thermal-zones {
-> +			#include "qcom-thermal.dtsi"
-> +		};
-> +
->  		gcc: clock-controller@900000 {
->  			compatible =3D "qcom,gcc-ipq8064";
->  			reg =3D <0x00900000 0x4000>;
->  			#clock-cells =3D <1>;
->  			#reset-cells =3D <1>;
-> +			tsens: tsens-ipq8064 {
-> +				compatible =3D "qcom,qcom-tsens";
-> +				qcom,calib-offsets =3D <0x400 0x410>;
-> +				qcom,tsens-slopes =3D <1176 1176 1154 1176 1111
-> +						     1132 1132 1199 1132 1199
-> +						     1132>;
-> +				qcom,qfprom =3D <&imem 0x400 11>, <&imem 0x410 11>;
-> +				qcom,qfprom-names =3D "calib", "backup_calib";
-> +				#thermal-sensor-cells =3D <1>;
-> +			};
->  		};
->  	};
->  };
-> diff --git a/arch/arm/boot/dts/qcom-msm8660.dtsi b/arch/arm/boot/dts/qcom=
--msm8660.dtsi
-> index 0affd61..4eb002c 100644
-> --- a/arch/arm/boot/dts/qcom-msm8660.dtsi
-> +++ b/arch/arm/boot/dts/qcom-msm8660.dtsi
-> @@ -15,7 +15,7 @@
->  		#address-cells =3D <1>;
->  		#size-cells =3D <0>;
-> =20
-> -		cpu@0 {
-> +		cpu0: cpu@0 {
->  			compatible =3D "qcom,scorpion";
->  			enable-method =3D "qcom,gcc-msm8660";
->  			device_type =3D "cpu";
-> @@ -23,7 +23,7 @@
->  			next-level-cache =3D <&L2>;
->  		};
-> =20
-> -		cpu@1 {
-> +		cpu1: cpu@1 {
->  			compatible =3D "qcom,scorpion";
->  			enable-method =3D "qcom,gcc-msm8660";
->  			device_type =3D "cpu";
-> @@ -73,11 +73,34 @@
->  			#interrupt-cells =3D <2>;
->  		};
-> =20
-> +		imem: memory@700000 {
-> +			compatible =3D "qcom,qfprom", "syscon";
-> +			reg =3D <0x00700000 0x1000>;
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <1>;
-> +			stride =3D <1>;
-> +			ranges =3D <0x0 0x00700000 0x1000>;
-> +		};
-> +
-> +		thermal-zones {
-> +			#include "qcom-thermal.dtsi"
-> +		};
-> +
->  		gcc: clock-controller@900000 {
->  			compatible =3D "qcom,gcc-msm8660";
->  			#clock-cells =3D <1>;
->  			#reset-cells =3D <1>;
->  			reg =3D <0x900000 0x4000>;
-> +			tsens: tsens-msm8660 {
-> +				compatible =3D "qcom,qcom-tsens";
-> +				qcom,calib-offsets =3D <0x400 0x410>;
-> +				qcom,tsens-slopes =3D <1176 1176 1154 1176 1111
-> +						     1132 1132 1199 1132 1199
-> +						     1132>;
+Yes, replacing it in device tree. For me,
+/sys/class/thermal/thermal_zone0/temp returns the same temperature but
+with less variability between samples. My intent was to switch the
+source of the data and not affect user space other than providing a
+more stable reading.
 
-This may be moved to coefficients thermal zone properties.
+> Tyler,
+> In the meantime could you double check your values? The temperature on my board
+> seemed broken on my board. If needed I can check on an other board. By the way
+> on which board/product did you try it?
 
-> +				qcom,qfprom =3D <&imem 0x400 11>, <&imem 0x410 11>;
-> +				qcom,qfprom-names =3D "calib", "backup_calib";
-> +				#thermal-sensor-cells =3D <1>;
-> +			};
->  		};
-> =20
->  		gsbi12: gsbi@19c00000 {
-> diff --git a/arch/arm/boot/dts/qcom-msm8960.dtsi b/arch/arm/boot/dts/qcom=
--msm8960.dtsi
-> index e1b0d5c..3722816 100644
-> --- a/arch/arm/boot/dts/qcom-msm8960.dtsi
-> +++ b/arch/arm/boot/dts/qcom-msm8960.dtsi
-> @@ -16,7 +16,7 @@
->  		#size-cells =3D <0>;
->  		interrupts =3D <1 14 0x304>;
-> =20
-> -		cpu@0 {
-> +		cpu0: cpu@0 {
->  			compatible =3D "qcom,krait";
->  			enable-method =3D "qcom,kpss-acc-v1";
->  			device_type =3D "cpu";
-> @@ -26,7 +26,7 @@
->  			qcom,saw =3D <&saw0>;
->  		};
-> =20
-> -		cpu@1 {
-> +		cpu1: cpu@1 {
->  			compatible =3D "qcom,krait";
->  			enable-method =3D "qcom,kpss-acc-v1";
->  			device_type =3D "cpu";
-> @@ -84,11 +84,35 @@
->  			reg =3D <0x800000 0x4000>;
->  		};
-> =20
-> +		imem: memory@700000 {
-> +			compatible =3D "qcom,qfprom", "syscon";
-> +			reg =3D <0x00700000 0x1000>;
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <1>;
-> +			stride =3D <1>;
-> +			ranges =3D <0x0 0x00700000 0x1000>;
-> +		};
-> +
-> +		thermal-zones {
-> +			#include "qcom-thermal.dtsi"
-> +		};
-> +
->  		gcc: clock-controller@900000 {
->  			compatible =3D "qcom,gcc-msm8960";
->  			#clock-cells =3D <1>;
->  			#reset-cells =3D <1>;
->  			reg =3D <0x900000 0x4000>;
-> +
-> +			tsens: tsens-msm8960 {
-> +				compatible =3D "qcom,qcom-tsens";
-> +				qcom,calib-offsets =3D <0x400 0x410>;
-> +				qcom,tsens-slopes =3D <1176 1176 1154 1176 1111
-> +						     1132 1132 1199 1132 1199
-> +						     1132>;
-> +				qcom,qfprom =3D <&imem 0x400 11>, <&imem 0x410 11>;
-> +				qcom,qfprom-names =3D "calib", "backup_calib";
-> +				#thermal-sensor-cells =3D <1>;
-> +			};
->  		};
-> =20
->  		clock-controller@4000000 {
-> diff --git a/arch/arm/boot/dts/qcom-thermal.dtsi b/arch/arm/boot/dts/qcom=
--thermal.dtsi
-> new file mode 100644
-> index 0000000..963a597
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/qcom-thermal.dtsi
-> @@ -0,0 +1,47 @@
-> +/*
-> + * Device Tree Source for ipq8064 SoC thermal
-> + *
-> + * Copyright (c) 2015 The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +cpu_thermal0: cpu_thermal0 {
-> +	polling-delay-passive =3D <2000>; /* milliseconds */
-> +	polling-delay =3D <5000>; /* milliseconds */
-> +
-> +			/* sensor	ID */
-> +	thermal-sensors =3D <&tsens	0>;
-> +	linux,hwmon;
-> +
-> +	trips {
-> +		thermal0_cpu_alert: thermal0_cpu_alert {
-> +			temperature =3D <60000>; /* millicelsius */
-> +			hysteresis =3D <2000>; /* millicelsius */
-> +			type =3D "passive";
-> +		};
-> +		thermal0_cpu_crit: thermal0_cpu_crit {
-> +			temperature =3D <100000>; /* millicelsius */
-> +			hysteresis =3D <2000>; /* millicelsius */
-> +			type =3D "critical";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +			map0 {
-> +				trip =3D <&thermal0_cpu_alert>;
-> +				cooling-device =3D
-> +					<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +			};
-> +	};
-> +};
-> --=20
-> Qualcomm Innovation Center, Inc. The Qualcomm Innovation Center, Inc. is =
-a member of the Code Aurora Forum, a Linux Foundation Collaborative Project
->=20
+I'm on a custom board with the 4-core MV78460. In addition to my
+patch, this is new device tree entry.
 
---9UV9rz0O2dU/yYYn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+                        thermal@184c4 {
+                               compatible = "marvell,armadaxp-filtered-thermal";
+                               reg = <0x184c4 0x4
+                                        0x184d0 0x4>;
+                                status = "okay";
+                        };
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I dumped some raw samples of the temperature fields in each of these
+registers. This CSV contains the raw values converted to decimal.
+http://pastebin.com/Umc3cy5L
+The first column is the current register at 0x182b0 27:19 and the
+second is the register at 0x184c4 9:1.
 
-iQEcBAEBAgAGBQJU7iY1AAoJEMLUO4d9pOJWf6UH/1ehuCKde2DY5r3oq3kLhX8R
-OOiu8H4v1sODjoFrVDpIqWrmq2AnOnzRH8+dR6PaSLfgoW5hqQGOWOmWruhuhzAF
-QUr2mN2UH5TOoGWT+4/Lrc4aYFR+x3pzq2SKUdvbZE23zvsDRIVY2GE75EE3qr9k
-gyK7cJ7+FFuO1x3SlpuYNS8YndaxmMUYKi9095I9NWSNZohKrLBzYHzX5ne01qC6
-eWSatdNrXj69BQtFASsYHQSZyq9kHZymoaA/JGbV7HcZmLEIH1cO8Ouk9aFNSbiO
-wG0wrDZqdgn/tu9/1oF2Ls09ae8r2oqTtsreu25ZgSsjG/M/Mjkb1U2BdvNd8C0=
-=67MT
------END PGP SIGNATURE-----
+Here's a quick plot of a larger sample size while the temperature was rising.
+https://imgur.com/E9HlSBx
+The blue value is the current 0x182b0 register which seems to bounce
+around the green value from 0x184c4.
 
---9UV9rz0O2dU/yYYn--
+I'll try a test of instantiating both at the same time and comparing
+the final output of the driver.
+
+On Wed, Feb 25, 2015 at 1:39 PM, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>> Does that new thermal sensors only improve the stability or does it
+>> also modify the value?
+>>
+>> In the second case it will more or less break the user space expectation.
+>
+> Yeah, I agree here. We need to understand if this is:
+> (1) a fix of which register to use. In that case, the old dtbs are
+> essentially wrong, and the driver would need to adapt, I would say.
+> (2) a way to report better temperature extrapolations. then, this is
+> essentially a new temp sensor, and we should have two separated
+> compatible. in other words, just keep the patch the way it is.
+
+This *might* be a different physical sensor, or it could be from the
+same source with some averaging/filtering applied in hardware. The
+conversion formula is the same, however, and I get similar raw values
+from both.
+
+> Yes. Typically I ask to see the complete series, even if I am not taking
+> the DTS changes. That is, you send a complete series, with changes in
+> the kernel code and in the DTS, copying the required audience (from
+> kernel side and from DT side). Once the changes are accepted, the
+> patches will be picked by the correct tree maintainer. It is common that
+> DTS changes go via the platform tree, to avoid conflicts though.
+
+Thanks for the clarification. I'll send both in the next version as I
+suspect there will be a v2 of this change.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
