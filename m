@@ -1,60 +1,53 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/2] ab8500_fg: use jiffies_to_msecs for jiffies
- conversion
-Date: Wed, 25 Feb 2015 22:51:55 +0100
-Message-ID: <20150225215154.GM13695@earth>
-References: <1423502465-31298-1-git-send-email-hofrat@osadl.org>
+Subject: Re: bq2415x_charger, bq27x00_battery.c: comment cleanups
+Date: Wed, 25 Feb 2015 22:53:19 +0100
+Message-ID: <20150225215318.GN13695@earth>
+References: <20150211104715.GA2458@amd>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="iUV/lbBrmPtUT9dM"
+	protocol="application/pgp-signature"; boundary="aSnC4ZPPfhCvD8sN"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1423502465-31298-1-git-send-email-hofrat@osadl.org>
+In-Reply-To: <20150211104715.GA2458@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicholas Mc Guire <hofrat@osadl.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---iUV/lbBrmPtUT9dM
+--aSnC4ZPPfhCvD8sN
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Pavel,
 
-On Mon, Feb 09, 2015 at 12:21:05PM -0500, Nicholas Mc Guire wrote:
-> Converting jiffies to milliseconds by "val * 1000 / HZ" is technically
-> OK but jiffies_to_msecs(val) is the cleaner solution and handles all
-> corner cases correctly. This is a minor API consolidation only and
-> should make things more readable.
->=20
-> Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+On Wed, Feb 11, 2015 at 11:47:16AM +0100, Pavel Machek wrote:
+> Cleanup comments  for bq2415x_charger, bq27x00_battery.c.
 
-Thanks, applied to battery-2.6.git.
+Thanks, added to battery-2.6.git.
 
 -- Sebastian
 
---iUV/lbBrmPtUT9dM
+--aSnC4ZPPfhCvD8sN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU7kP6AAoJENju1/PIO/qaT+0P/2e2UCGc+teWVPW2whW3MiXR
-hRtv9cNYAYwUK01jRSlnaEvuA1/Vr+R2p/BEQxZBJAspk2QMzCcEgCd06UWfzHyw
-BdyiENKXdhSeYCEQy1ylOWZpGvET18E/CoH3VKXAveoh5D0eqAxb6ENAdFWZ2rhn
-4eWP7Yvw56oCyh8gljsywX9ScNki1jyEMs2QFQBNqSzHTYWzZl049Agebocx33F9
-qHKZgPQXj5bDgsYxhaS1RbH8BTYNWw1drazxpyWQ43TnGT6ett0Oh/wjRUgS39j3
-sABSDELF2lbL3Tg01lrGpRtmh2wtmZW7ITrnYJN/yIubk9SC/FzADFtTqBV6m6iC
-ZGxhOqNtk4fP7PWIo2ukQ7TDecih5TlWt+FhvAlhFGUGYTMAfNGG+xEsNWH4SUDi
-0a5UmEL+/R9vyj9NaYmBfxSy0M4bqnldpExjqj2icLFA0FJTeLoImTDbM6hPkzCS
-e91ItHeZA1j3z4oTBVx/HZZCkfII6Eg0ps4k2GSn4hIMaLXQG29truuEQx/pdEi9
-EeR4tW6AXoCyjbsMDeF2ki7skee/s9D0UosEqlCnJrygsS1W7MishDd4iRMBmmmq
-BT8H5AMGRy2IVUUAiRb4hhLnGu+041NOtgigfAxBbPavrYLvrAxOepoOfxTAK/EN
-cfvmQQ0LHKlBM7MKi2UJ
-=j8xq
+iQIcBAEBCgAGBQJU7kROAAoJENju1/PIO/qa1VsP/R2dfX7hkoQVHuCV5SkuOkZT
+oM5mZV+lt6Ot3b4pGBUMfprxSF4RDWmbwFTpJ7fgQh9nWiUON3YYVMr8ItTWGcDN
+upafTG2V/WSoFq8XsUhM9/iQFP9+jK6PFArmofZi3awQlf05JOFj7oDc4qBlRpbN
+BfHTpRY6rIch8rtDk9hB1mvuGclnBpvb46favWBT1AlrTaFpoMTjJgWooUxjFOZX
+Cnyn+IGi6+gvuCFy8Yyb+C6BT9OBVNfDgcZFbLbnuTFCiRkidbyvYhQ6QhL/+03m
+SKQb0s/Ab8PCwJrweBOMZyy2dJSkamgux4qphOO0E7zy2jMPZFRg0RFuTUyq798b
+dpOx95RNZMbJOqoAa43E0tgc0Pzd90ZAb2t2Q+uY8yBeH1aFmOYI+SCy3A70WESr
+LpwS27zMZ9W/iaIgvmCS3i92l4XQaCK8qOhAm+THrK9Y2vz3wS9WQ3sxOKx0hPiC
+5y8c95pOXh+UYdT51jUjhA5k8Utx1WS1XcvGvg7Vs4uEvA0nQT1idji8rl15NQw4
++34yAYY1J5hl+MPR47/GiBvQqnwWcMMWGf85H71ebEgN3FI6jnjzOQFI54hF4Iwf
+ndmRfyNil+rIfECvqTZrhnsYvXTI1r4hnjqd7YwzrHzWOr6k+vgWGDQiDOTnRNUt
+8Wi8Bqkjpp9gnOJh9WKe
+=+RWt
 -----END PGP SIGNATURE-----
 
---iUV/lbBrmPtUT9dM--
+--aSnC4ZPPfhCvD8sN--
