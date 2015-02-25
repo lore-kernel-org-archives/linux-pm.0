@@ -1,79 +1,96 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 2/6] ARM: dts: Add pwm-fan node to the Odroid-U3 board
-Date: Wed, 25 Feb 2015 16:34:18 +0100
-Message-ID: <1424878462-15511-3-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 4/6] hwmon: pwm-fan: Extract __set_pwm() function to only
+ modify PWM duty cycle
+Date: Wed, 25 Feb 2015 16:34:20 +0100
+Message-ID: <1424878462-15511-5-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:63913 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbbBYPes (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 10:34:48 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Kamil Debski <k.debski@samsung.com>
+It was necessary to decouple code handling writing to sysfs from the one
+responsible for setting PWM of the fan.
+Due to that, new __set_pwm() method was extracted, which is responsible for
+only setting new PWM duty cycle.
 
-Add pwm-fan node to the Odroid-U3 board file to enable PWM control of the
-cooling fan. In addition, add the "pwm" label to the pwm@139D0000 node
-in the exynos4412.dtsi.
-
-Signed-off-by: Kamil Debski <k.debski@samsung.com>
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
-Changes since v1:
-- added pwm label to the pwm@139D0000 node in exynos4.dtsi
-- use the pwm label in the exynos4412-odroidu3.dts
-- change order or properties in the pwn-fan node, to be sorted
-  in alphabetical order
+Changes for v2:
+- None
+Changes for v3:
+- The commit headline has been reedited.
+Changes for v4:
+- Protect "if (ctx->pwm_value == pwm)" with ctx lock
+- Initialize ret with zero
 Changes for v5:
-- Adding Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-- status = "okay"; dropped from the patch
-
+- None
 ---
- arch/arm/boot/dts/exynos4.dtsi            |  2 +-
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 12 ++++++++++++
- 2 files changed, 13 insertions(+), 1 deletion(-)
+ drivers/hwmon/pwm-fan.c | 33 +++++++++++++++++++++------------
+ 1 file changed, 21 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
-index 690f56c..a93f5ca5 100644
---- a/arch/arm/boot/dts/exynos4.dtsi
-+++ b/arch/arm/boot/dts/exynos4.dtsi
-@@ -599,7 +599,7 @@
- 		status = "disabled";
- 	};
- 
--	pwm@139D0000 {
-+	pwm: pwm@139D0000 {
- 		compatible = "samsung,exynos4210-pwm";
- 		reg = <0x139D0000 0x1000>;
- 		interrupts = <0 37 0>, <0 38 0>, <0 39 0>, <0 40 0>, <0 41 0>;
-diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index 44684e5..4c04837 100644
---- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
-+++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -31,6 +31,18 @@
- 			linux,default-trigger = "heartbeat";
- 		};
- 	};
-+
-+	pwm-fan {
-+		compatible = "pwm-fan";
-+		pwms = <&pwm 0 10000 0>;
-+	};
-+};
-+
-+&pwm {
-+	pinctrl-0 = <&pwm0_out>;
-+	pinctrl-names = "default";
-+	samsung,pwm-outputs = <0>;
-+	status = "okay";
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 1991d903..bd42d39 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -33,20 +33,14 @@ struct pwm_fan_ctx {
+ 	unsigned char pwm_value;
  };
  
- &usb3503 {
+-static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+-		       const char *buf, size_t count)
++static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ {
+-	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
+-	unsigned long pwm, duty;
+-	ssize_t ret;
+-
+-	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
+-		return -EINVAL;
++	unsigned long duty;
++	int ret = 0;
+ 
+ 	mutex_lock(&ctx->lock);
+-
+ 	if (ctx->pwm_value == pwm)
+-		goto exit_set_pwm_no_change;
++		goto exit_set_pwm_err;
+ 
+ 	if (pwm == 0) {
+ 		pwm_disable(ctx->pwm);
+@@ -66,13 +60,28 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
+ 
+ exit_set_pwm:
+ 	ctx->pwm_value = pwm;
+-exit_set_pwm_no_change:
+-	ret = count;
+ exit_set_pwm_err:
+ 	mutex_unlock(&ctx->lock);
+ 	return ret;
+ }
+ 
++static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
++		       const char *buf, size_t count)
++{
++	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
++	unsigned long pwm;
++	int ret;
++
++	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
++		return -EINVAL;
++
++	ret = __set_pwm(ctx, pwm);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
+ static ssize_t show_pwm(struct device *dev,
+ 			struct device_attribute *attr, char *buf)
+ {
 -- 
 2.0.0.rc2
-
