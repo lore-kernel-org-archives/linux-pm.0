@@ -1,63 +1,42 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 0/6] hwmon: thermal: Odroid U3: Provide support for
- Odroid U3 fan
-Date: Wed, 25 Feb 2015 09:18:20 -0800
-Message-ID: <20150225171820.GA2400@roeck-us.net>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH] thermal: armada: read stable temp on Armada XP
+Date: Wed, 25 Feb 2015 15:17:41 -0300
+Message-ID: <54EE11C5.8000307@free-electrons.com>
+References: <1423608615-6575-1-git-send-email-tylerwhall@gmail.com> <54EE009E.8070206@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1424878462-15511-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54EE009E.8070206@free-electrons.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>, Tyler Hall <tylerwhall@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 25, 2015 at 04:34:16PM +0100, Lukasz Majewski wrote:
-> Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
-> subsystem for low level control.
-> 
-> After successful probe it registers itself as a cooling device for thermal
-> subsystem.
-> 
-> This driver also supports devices without DTS specified.
-> 
-> To provide correct functionality, new properties to device tree description for
-> Exynos4412 and in particular Odroid U3 have been added.
-> 
-> Those patches were tested at Exynos4412 - Odroid U3 board.
-> 
-> Patches were applied on:
-> linux-soc-thermal/fixes branch (Linux v4.0-rc1)
-> SHA1: b71d399c7f2fe06b60b96155ec0b9ae167334e4a
-> 
-> Kamil Debski (1):
->   ARM: dts: Add pwm-fan node to the Odroid-U3 board
-> 
-> Lukasz Majewski (5):
->   Documentation: dts: Documentation entry to explain how to use PWM FAN
->     as a cooling device
->   ARM: dts: Add properties to use pwm-fan device as a cooling device in
->     Odroid U3
->   hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
->     cycle
->   hwmon: pwm-fan: Read PWM FAN configuration from device tree
->   hwmon: pwm-fan: Code for using PWM FAN as a cooling device
-> 
->  .../devicetree/bindings/hwmon/pwm-fan.txt          |  25 +++-
->  arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
->  arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
->  drivers/hwmon/pwm-fan.c                            | 166 +++++++++++++++++++--
->  4 files changed, 220 insertions(+), 16 deletions(-)
-> 
-For the series:
+On 02/25/2015 02:04 PM, Gregory CLEMENT wrote:
+>>
+>> My conclusions about these registers are based on experimental data.=
+ The
+>> documentation is very sparse, but the Thermal Manager Control and St=
+atus
+>> Register looks like the preferred register given the way it is laid =
+out in the
+>> public spec.
+>=20
+> Ezequiel,
+>=20
+> as you worked on this do you know why we used the Thermal Sensor Stat=
+us Register
+> instead of the Thermal Manager Control and Status Register ?
+> My first guess is that the giving the name of the registers the 1st o=
+ne made
+> more sens to use for a thermal sensor.
+>=20
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-
-Should I take it through hwmon ? Might make sense given the majority
-of the changes is in hwmon code.
-
-Thanks,
-Guenter
+Actually, we based this driver in the vendor bootloader. The specs were=
+n't
+of much use back then.
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
