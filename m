@@ -1,77 +1,58 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 0/7] Add initial support for DA9150 Charger &
- Fuel-Gauge IC
-Date: Wed, 25 Feb 2015 21:33:08 +0100
-Message-ID: <20150225203307.GC13695@earth>
-References: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power_supply: rt5033: Constify struct regmap_config
+Date: Wed, 25 Feb 2015 21:34:43 +0100
+Message-ID: <20150225203442.GD13695@earth>
+References: <1424771533-7833-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="+xNpyl7Qekk2NvDX"
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="9UV9rz0O2dU/yYYn"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41180 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbbBYUe4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Feb 2015 15:34:56 -0500
 Content-Disposition: inline
-In-Reply-To: <cover.1424267009.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+In-Reply-To: <1424771533-7833-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---+xNpyl7Qekk2NvDX
+--9UV9rz0O2dU/yYYn
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Feb 18, 2015 at 02:08:19PM +0000, Adam Thomson wrote:
-> This patch set adds initial support for the Dialog DA9150 Integrated Char=
-ger &
-> Fuel-Gauge IC. The device also provides GPIO and GPADC functionality.
->=20
-> In this patch set the following is provided:
->  - MFD Core support and DT bindings documentation.
->  - IIO GPADC support and DT bindings documentation.
->  - Power Supply Charger support and DT bindings documentation.
->  - Update to MAINTAINERS file to add DA9150 files to Dialog support list.
->=20
-> To keep patch submission from being too large, support for GPIO and Fuel-=
-Gauge
-> will come after initial support patches are accepted.
->=20
-> This patch set is baselined against the v3.19 kernel version.
+On Tue, Feb 24, 2015 at 10:52:13AM +0100, Krzysztof Kozlowski wrote:
+> The regmap_config struct may be const because it is not modified by the
+> driver and regmap_init() accepts pointer to const.
 
-I pulled in patches 3-7 into battery-2.6.git (patch 1 was already
-applied by Lee in 4.0-rc1 and patch 2 can simply be pulled in by
-Lee).
+pulled into battery-2.6.git.
 
-Jonathan: I have prepared an immutable branch "da9150-charger-fuelgauge"
-based on 4.0-rc1, which contains the IIO bits, so that you can pull them
-in, too:
+-- Sebastian
 
-git://git.infradead.org/battery-2.6.git da9150-charger-fuelgauge
-
---Sebastian
-
---+xNpyl7Qekk2NvDX
+--9UV9rz0O2dU/yYYn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU7jF+AAoJENju1/PIO/qaTUkQAJJW69C+VlZ7+o98gR3Sb6rA
-q45Nk3n7BSiPU3lqLql9JL+IKGOAd+cjRJ0QpIyPUAaqiLrdBpUQZS0TQnHRMERp
-7nFJpX/oC+eHSe6l9PeeBzS9tSWK2eYQk8+rnI6XgwvfPj59kMclh3XIWIowI/ZK
-Ve8vJ3Ebk6cRImCGfyvihzxwe+YS15D/8+GCifiipy3wQoWLiSuvYe9xn23SyDGw
-QpJr9i6LKcwe8hGiRRLLb4PzXWSBDr0H3pf8FRYAQEHJbjMjqu24SzgFfDSCWBAz
-YzQ0qNyM/ERZcqGAj7y9FA+hGeROLxKxWj95bLEMjwWcCZylWJJvAreUpQt7rUWL
-zb33xO6NnH96X4NXSl2K65+ZFgfvfyP6ydBR6nuhS9zbUhe6+61vjB6uI+T49oER
-PlozkGk9t74y0Uyu7Kgl1JLxGptzkWw3sO6x2jXMOm7Uw4bl3AUQRMOVv6sPqUbw
-c45kk73pawQioD9oAhLRCDtFDRujkncwn3ZxgN4kCToiN6WHZrSR4RkNgWbLZDah
-e3uaXv3xJxE9FiGsHcFCePPsiYEE2bMzEe434/aMR5scgFOPj30V0hqL89O4nWoF
-3vlW8ADFrBt8uHlZpP0lRjzJi1okZGW2e3buXh/HoLvpJM85gvWcsNurxSNvcmd7
-q72QB6MUKYDZLjyUyx7O
-=NHbg
+iQIcBAEBCgAGBQJU7jHiAAoJENju1/PIO/qaFYYP/jclxpBDZoVpo5zBt7OJBF2z
+ywGI7HKnJq6r9iwlX5rmmkhg5+NjklCduu26Gk/Bv/EkspV53Rd/VC/JwPJpRyGY
+CXNp1Ts1rcr+Kxt7ccCvCU/cViiPLVk+xJoL61+bYwpShk6F7t2JLaHQQ6V+o7DM
+ER57fGKq47roI1MwUcFcrWWZdRfC4BHp8Q4PaEJPBrcxfoebkwXKDgUoo3SqMjQU
+SkPt0s/oBMa+PkT09rJfo+Ibnz2bjMf/QHBbH2fGcfKE8J3WVciJtskZd+BvgtwQ
+y6vOmuT4y+aDMoFWPviXcHL8UhKhL7gYVTGG+eAltlTsnSoY3awunFi0YzVPmQtq
+58bYojsXveSkc7TPg8oNnm3/UURo7pYSCCqtkRNw9z44hUDtH0mcIwfRG6YgHpro
+8N59bHUE5Nr0KEtOOr8sELs71vLhfO9afyfFDkH3l+m7IDeQrQm3w6pP9DdgRjry
+Mb0GSJuHAMY/hyiRjZw32PXvkrJfaGn+9cr7Tew+c//rmb/ht+MP9I3yFNvYRTKB
+KdwwLlf3N9BaYKUfNJnN5D2xJgmPI3H4SHFWdzqwlg9FFa5k3O9o0QaL8NBkf3oY
+R9x6GmeV4Ka23Ns1LlvltjIz0GxyKnoJ3ApeZhVXTzIIQqOHSsv9Bs7TvdU/7rqM
+8y/oCZiDRsomcxhPJ3jo
+=Wy61
 -----END PGP SIGNATURE-----
 
---+xNpyl7Qekk2NvDX--
+--9UV9rz0O2dU/yYYn--
