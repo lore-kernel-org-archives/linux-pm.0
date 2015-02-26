@@ -1,138 +1,128 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 2/2] qcom: scm: Add scm_set_warm_boot_addr function
-Date: Thu, 26 Feb 2015 10:47:44 -0800
-Message-ID: <7h7fv4bjcf.fsf@deeprootsystems.com>
-References: <1424904852-12719-1-git-send-email-lina.iyer@linaro.org>
-	<1424904852-12719-3-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1424904852-12719-3-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Wed, 25 Feb 2015 15:54:12 -0700")
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: galak@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v2 0/7] The power allocator thermal governor
+Date: Thu, 26 Feb 2015 19:00:26 +0000
+Message-ID: <1424977233-15965-1-git-send-email-javi.merino@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:41699 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754586AbbBZTAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Feb 2015 14:00:47 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, broonie@kernel.org, tixy@linaro.org, Javi Merino <javi.merino@arm.com>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+Hi linux-pm,
 
-> A core can be powered down for cpuidle or when it is hotplugged of. 
+The power allocator governor allocates device power to control
+temperature.  This requires transforming performance requests into
+requested power, which we do with an extended cooling device API
+introduced in patch 2 (thermal: extend the cooling device API to
+include power information).  Patch 3 (thermal: cpu_cooling: implement
+the power cooling device API) extends the cpu cooling device using a
+simple power model.
 
-s/of/off/ ?
+This series are based on branch "linus" of Eduardo's linux-soc-thermal
+tree:
 
-> In
-> either case, the warmboot return address would be different. Allow
-> setting the warmboot address for a specific cpu, optimize and write to
-> the firmware if the address is different than the previously set
-> address.
->
-> Also we do not need to export the warmboot flags. Move them into the
-> implementation file.
->
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  arch/arm/mach-qcom/scm-boot.c | 38 ++++++++++++++++++++++++++++++++++++++
->  arch/arm/mach-qcom/scm-boot.h |  7 +++----
->  2 files changed, 41 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/arm/mach-qcom/scm-boot.c b/arch/arm/mach-qcom/scm-boot.c
-> index 45cee3e..cb73134 100644
-> --- a/arch/arm/mach-qcom/scm-boot.c
-> +++ b/arch/arm/mach-qcom/scm-boot.c
-> @@ -1,4 +1,5 @@
->  /* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
-> + * Copyright (c) 2014, Linaro Ltd.
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License version 2 and
-> @@ -21,6 +22,23 @@
->  #include "scm.h"
->  #include "scm-boot.h"
->  
-> +#define SCM_FLAG_WARMBOOT_CPU0		0x04
-> +#define SCM_FLAG_WARMBOOT_CPU1		0x02
-> +#define SCM_FLAG_WARMBOOT_CPU2		0x10
-> +#define SCM_FLAG_WARMBOOT_CPU3		0x40
-> +
-> +struct scm_warmboot {
-> +	int flag;
-> +	void *entry;
-> +};
-> +
-> +static struct scm_warmboot scm_flags[] = {
-> +	{ .flag = SCM_FLAG_WARMBOOT_CPU0 },
-> +	{ .flag = SCM_FLAG_WARMBOOT_CPU1 },
-> +	{ .flag = SCM_FLAG_WARMBOOT_CPU2 },
-> +	{ .flag = SCM_FLAG_WARMBOOT_CPU3 },
-> +};
-> +
->  /*
->   * Set the cold/warm boot address for one of the CPU cores.
->   */
-> @@ -31,9 +49,29 @@ int scm_set_boot_addr(phys_addr_t addr, int flags)
->  		phys_addr_t  addr;
->  	} cmd;
->  
-> +	might_sleep();
-> +
+git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
 
-Unrelated change?
+Changes since v1:
+  - Removed a memory leak pointed out by Steve Rostedt
+  - Relax the constraint of the trip points to be the first and last
+    passive trip point as Lina Iyer suggested.
+  - Update how the governor treats weights to mimic the behavior of
+    fair share in v3 of the weight fixes series.
+  - Don't cache the cpufreq_cooling_device and scan for it whenever
+    we need it.
+  - Consider the rate of changes in the derivative term of the PID
+    controller
 
-Looking closer at scm_call(), looks like the might_sleep() should go
-inside scm_call() where it uses the mutex.
+Changes since RFC v6:
+  - Addressed Eduardo's review
+    + Pass the interval to the static power function as suggested by
+      Eduardo
+    + Make the cooling device ops return 0 or -E* and put the
+      calculation in a parameter, like the rest of the cooling device
+      ops
+    + Documentation improvements
+  - Use thermal_cdev_update() to change cooling device states
+  - Add a patch to export the power allocator governor's tzp
+    parameters to sysfs
 
->  	cmd.addr = addr;
->  	cmd.flags = flags;
->  	return scm_call(SCM_SVC_BOOT, SCM_BOOT_ADDR,
->  			&cmd, sizeof(cmd), NULL, 0);
->  }
->  EXPORT_SYMBOL(scm_set_boot_addr);
-> +
-> +int scm_set_warm_boot_addr(void *entry, int cpu)
-> +{
-> +	int ret;
-> +
-> +	/*
-> +	 * Reassign only if we are switching from hotplug entry point
-> +	 * to cpuidle entry point or vice versa.
-> +	 */
-> +	if (entry == scm_flags[cpu].entry)
-> +		return 0;
-> +
-> +	ret = scm_set_boot_addr(virt_to_phys(entry), scm_flags[cpu].flag);
-> +	if (!ret)
-> +		scm_flags[cpu].entry  = entry;
-> +
-> +	return ret;
-> +}
-> diff --git a/arch/arm/mach-qcom/scm-boot.h b/arch/arm/mach-qcom/scm-boot.h
-> index 02b445c..97dbf58 100644
-> --- a/arch/arm/mach-qcom/scm-boot.h
-> +++ b/arch/arm/mach-qcom/scm-boot.h
-> @@ -1,4 +1,5 @@
->  /* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
-> + * Copyright (c) 2014, Linaro Ltd.
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License version 2 and
-> @@ -9,6 +10,7 @@
->   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->   * GNU General Public License for more details.
->   */
-> +
->  #ifndef __MACH_SCM_BOOT_H
->  #define __MACH_SCM_BOOT_H
->  
-> @@ -16,11 +18,8 @@
->  #define SCM_FLAG_COLDBOOT_CPU1		0x01
->  #define SCM_FLAG_COLDBOOT_CPU2		0x08
->  #define SCM_FLAG_COLDBOOT_CPU3		0x20
-> -#define SCM_FLAG_WARMBOOT_CPU0		0x04
-> -#define SCM_FLAG_WARMBOOT_CPU1		0x02
-> -#define SCM_FLAG_WARMBOOT_CPU2		0x10
-> -#define SCM_FLAG_WARMBOOT_CPU3		0x40
+Changes since RFC v5:
+  - Addressed Stephen's review of the trace patches.
+  - Removed power actors and extended the cooling device interface
+    instead.
+  - Let platforms override the power allocator governor parameters in
+    their thermal zone parameters
 
-You just added these in patch 1, and now moved them.  I would just
-squash the 2 patches together.
+Changes since RFC v4:
+  - Add more tracing
+  - Document some of the limitations of the power allocator governor
+  - Export the power_actor API and move power_actor.h to include/linux
 
-Kevin
+Changes since RFC v3:
+  - Use tz->passive to poll faster when the first trip point is hit.
+  - Don't make a special directory for power_actors
+  - Add a DT property for sustainable-power
+  - Simplify the static power interface and pass the current thermal
+    zone in every power_actor_ops to remove the controversial
+    enum power_actor_types
+  - Use locks with the actor_list list
+  - Use cpufreq_get() to get the frequency of the cpu instead of
+    using the notifiers.
+  - Remove the prompt for THERMAL_POWER_ACTOR_CPU when configuring
+    the kernel
+
+Changes since RFC v2:
+  - Changed the PI controller into a PID controller
+  - Added static power to the cpu power model
+  - tz parameter max_dissipatable_power renamed to sustainable_power
+  - Register the cpufreq cooling device as part of the
+    power_cpu_actor registration.
+
+Changes since RFC v1:
+  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
+  - Replaced the cooling device interface with a separate power actor
+    API
+  - Addressed most of Eduardo's comments
+  - Incorporated ftrace support for bitmask to trace cpumasks
+
+Cheers,
+Javi & Punit
+
+Javi Merino (6):
+  thermal: let governors have private data for each thermal zone
+  thermal: extend the cooling device API to include power information
+  thermal: cpu_cooling: implement the power cooling device API
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+  thermal: export thermal_zone_parameters to sysfs
+
+Punit Agrawal (1):
+  of: thermal: Introduce sustainable power for a thermal zone
+
+ .../devicetree/bindings/thermal/thermal.txt        |   9 +
+ Documentation/thermal/cpu-cooling-api.txt          | 156 +++++-
+ Documentation/thermal/power_allocator.txt          | 247 +++++++++
+ Documentation/thermal/sysfs-api.txt                |  52 ++
+ drivers/thermal/Kconfig                            |  15 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/cpu_cooling.c                      | 610 ++++++++++++++++++++-
+ drivers/thermal/of-thermal.c                       |   4 +
+ drivers/thermal/power_allocator.c                  | 533 ++++++++++++++++++
+ drivers/thermal/thermal_core.c                     | 254 ++++++++-
+ drivers/thermal/thermal_core.h                     |   8 +
+ include/linux/cpu_cooling.h                        |  39 ++
+ include/linux/thermal.h                            |  64 ++-
+ include/trace/events/thermal.h                     |  58 ++
+ include/trace/events/thermal_power_allocator.h     |  87 +++
+ 15 files changed, 2104 insertions(+), 33 deletions(-)
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/trace/events/thermal_power_allocator.h
+
+-- 
+1.9.1
+
