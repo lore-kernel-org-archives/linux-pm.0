@@ -1,40 +1,52 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] dmaengine: shdma: Move DMA stop to (runtime) suspend callbacks
-Date: Thu, 26 Feb 2015 14:30:36 +0100
-Message-ID: <CAMuHMdXfrVYicT6mW9igFZ9xt_Pv3BtNve0nSQHDRrkTkt5m=A@mail.gmail.com>
-References: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
-	<54EF1DC2.30703@cogentembedded.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:59490 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753190AbbBZNah (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 08:30:37 -0500
-In-Reply-To: <54EF1DC2.30703@cogentembedded.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v6 0/6] hwmon: thermal: Odroid U3: Provide support for Odroid
+ U3 fan
+Date: Thu, 26 Feb 2015 14:59:31 +0100
+Message-ID: <1424959177-28739-1-git-send-email-l.majewski@samsung.com>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, dmaengine@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-On Thu, Feb 26, 2015 at 2:21 PM, Sergei Shtylyov
-<sergei.shtylyov@cogentembedded.com> wrote:
->>   static struct platform_driver sh_dmae_driver = {
->> -       .driver         = {
->> +       .driver         = {
->
->
->    Hm, don't understand what was changed on this line...
+Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
+subsystem for low level control.
 
-One silly space that should have been a TAB.
+After successful probe it registers itself as a cooling device for thermal
+subsystem.
 
-Gr{oetje,eeting}s,
+This driver also supports devices without DTS specified.
 
-                        Geert
+To provide correct functionality, new properties to device tree description for
+Exynos4412 and in particular Odroid U3 have been added.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Those patches were tested at Exynos4412 - Odroid U3 board.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Patches were applied on:
+linux-soc-thermal/fixes branch (Linux v4.0-rc1)
+SHA1: b71d399c7f2fe06b60b96155ec0b9ae167334e4a
+
+
+Kamil Debski (1):
+  ARM: dts: Add pwm-fan node to the Odroid-U3 board
+
+Lukasz Majewski (5):
+  Documentation: dts: Documentation entry to explain how to use PWM FAN
+    as a cooling device
+  ARM: dts: Add properties to use pwm-fan device as a cooling device in
+    Odroid U3
+  hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
+    cycle
+  hwmon: pwm-fan: Read PWM FAN configuration from device tree
+  hwmon: pwm-fan: Code for using PWM FAN as a cooling device
+
+ .../devicetree/bindings/hwmon/pwm-fan.txt          |  29 +++-
+ arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
+ drivers/hwmon/pwm-fan.c                            | 172 +++++++++++++++++++--
+ 4 files changed, 229 insertions(+), 17 deletions(-)
+
+-- 
+2.0.0.rc2
