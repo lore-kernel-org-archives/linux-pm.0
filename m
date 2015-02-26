@@ -1,75 +1,88 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 11/20] power_supply: Change ownership from driver to
- core
-Date: Thu, 26 Feb 2015 08:24:37 +0000
-Message-ID: <20150226082437.GH6688@x1>
-References: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
- <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 2/7] mfd: da9150: Add DT binding documentation for core
+Date: Thu, 26 Feb 2015 08:43:15 +0000
+Message-ID: <20150226084315.GJ6688@x1>
+References: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+ <d3c040b8f0c74a7d731b36e24384215327b83725.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel
+In-Reply-To: <d3c040b8f0c74a7d731b36e24384215327b83725.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Feb 2015, Krzysztof Kozlowski wrote:
+On Wed, 18 Feb 2015, Adam Thomson wrote:
 
-> Change the ownership of power_supply structure from each driver
-> implementing the class to the power supply core.
->=20
-> The patch changes power_supply_register() function thus all drivers
-> implementing power supply class are adjusted.
->=20
-> Each driver provides the implementation of power supply. However it
-> should not be the owner of power supply class instance because it is
-> exposed by core to other subsystems with power_supply_get_by_name().
-> These other subsystems have no knowledge when the driver will unregis=
-ter
-> the power supply. This leads to several issues when driver is unbound=
- -
-> mostly because user of power supply accesses freed memory.
->=20
-> Instead let the core own the instance of struct 'power_supply'.  Othe=
-r
-> users of this power supply will still access valid memory because it
-> will be freed when device reference count reaches 0. Currently this
-> means "it will leak" but power_supply_put() call in next patches will
-> solve it.
->=20
-> This solves invalid memory references in following race condition
-> scenario:
->=20
-> Thread 1: charger manager
-> Thread 2: power supply driver, used by charger manager
->=20
-> THREAD 1 (charger manager)         THREAD 2 (power supply driver)
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D         =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> psy =3D power_supply_get_by_name()
->                                    Driver unbind, .remove
->                                      power_supply_unregister()
->                                      Device fully removed
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++=
+++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
 
-[...]
+Applied, thanks.
 
->  include/linux/mfd/abx500/ux500_chargalg.h |  11 +-
->  include/linux/mfd/rt5033.h                |   2 +-
->  include/linux/mfd/wm8350/supply.h         |   6 +-
-
-Acked-by: Lee Jones <lee.jones@linaro.org>
+> diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Docum=
+entation/devicetree/bindings/mfd/da9150.txt
+> new file mode 100644
+> index 0000000..d0588ea
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+> @@ -0,0 +1,43 @@
+> +Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
+> +
+> +DA9150 consists of a group of sub-devices:
+> +
+> +Device			 Description
+> +------			 -----------
+> +da9150-gpadc		: General Purpose ADC
+> +da9150-charger		: Battery Charger
+> +
+> +=3D=3D=3D=3D=3D=3D
+> +
+> +Required properties:
+> +- compatible : Should be "dlg,da9150"
+> +- reg: Specifies the I2C slave address
+> +- interrupt-parent: Specifies the phandle of the interrupt controlle=
+r to which
+> +  the IRQs from da9150 are delivered to.
+> +- interrupts: IRQ line info for da9150 chip.
+> +- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
+> +  (See Documentation/devicetree/bindings/interrupt-controller/interr=
+upts.txt for
+> +   further information relating to interrupt properties)
+> +
+> +Sub-devices:
+> +- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150=
+-gpadc.txt
+> +- da9150-charger: See Documentation/devicetree/bindings/power/da9150=
+-charger.txt
+> +
+> +
+> +Example:
+> +
+> +	charger_fg: da9150@58 {
+> +		compatible =3D "dlg,da9150";
+> +		reg =3D <0x58>;
+> +		interrupt-parent =3D <&gpio6>;
+> +		interrupts =3D <11 IRQ_TYPE_LEVEL_LOW>;
+> +		interrupt-controller;
+> +
+> +		gpadc: da9150-gpadc {
+> +			...
+> +		};
+> +
+> +		da9150-charger {
+> +			...
+> +		};
+> +	};
 
 --=20
 Lee Jones
 Linaro STMicroelectronics Landing Team Lead
 Linaro.org =E2=94=82 Open source software for ARM SoCs
 =46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
