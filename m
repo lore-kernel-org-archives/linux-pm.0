@@ -1,141 +1,125 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 1/2] drivers: cpuidle: remove stale irq disabling call in
- cpuidle_enter_freeze()
-Date: Thu, 26 Feb 2015 09:48:16 +0000
-Message-ID: <20150226094816.GA25057@red-moon>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
- <54EDD883.30608@linaro.org>
- <20150225143917.GC20214@red-moon>
- <1789709.hzh3CkisvM@vostro.rjw.lan>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] thermal: Default OF created trip points to writable
+Date: Thu, 26 Feb 2015 10:16:19 +0000
+Message-ID: <9hh4mq96kr0.fsf@e105922-lin.cambridge.arm.com>
+References: <1423592506-20620-1-git-send-email-punit.agrawal@arm.com>
+	<20150216151432.GB8648@developer.hsd1.ca.comcast.net>
+	<9hh1tloaj1l.fsf@e105922-lin.cambridge.arm.com>
+	<20150224195201.GB353@developer.amazonguestwifi.org>
+	<9hhbnki6uvp.fsf@e105922-lin.cambridge.arm.com>
+	<20150225184742.GE2306@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40461 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbbBZJry (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 26 Feb 2015 04:47:54 -0500
-Content-Disposition: inline
-In-Reply-To: <1789709.hzh3CkisvM@vostro.rjw.lan>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:36324 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752193AbbBZKPt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:15:49 -0500
+In-Reply-To: <20150225184742.GE2306@developer.amazonguestwifi.org> (Eduardo
+	Valentin's message of "Wed, 25 Feb 2015 14:47:47 -0400")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-On Wed, Feb 25, 2015 at 11:36:10PM +0000, Rafael J. Wysocki wrote:
-> On Wednesday, February 25, 2015 02:39:17 PM Lorenzo Pieralisi wrote:
-> > On Wed, Feb 25, 2015 at 02:13:23PM +0000, Daniel Lezcano wrote:
-> > > On 02/24/2015 06:58 PM, Lorenzo Pieralisi wrote:
-> > > > On return from cpuidle_enter_freeze() irqs are re-enabled by the function
-> > > > caller (ie cpuidle_idle_call) in the idle loop. This patch removes a stale
-> > > > local_irq_disable() call and its stale comment in cpuidle_enter_freeze(),
-> > > > since they disagree and do not serve a useful purpose.
-> > > >
-> > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > > > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > > > ---
-> > > >   drivers/cpuidle/cpuidle.c | 3 ---
-> > > >   1 file changed, 3 deletions(-)
-> > > >
-> > > > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > > > index 4d53458..f47edc6c 100644
-> > > > --- a/drivers/cpuidle/cpuidle.c
-> > > > +++ b/drivers/cpuidle/cpuidle.c
-> > > > @@ -144,9 +144,6 @@ void cpuidle_enter_freeze(void)
-> > > >   		cpuidle_enter(drv, dev, index);
-> > > >   	else
-> > > >   		arch_cpu_idle();
-> > > > -
-> > > > -	/* Interrupts are enabled again here. */
-> > > > -	local_irq_disable();
-> > > >   }
-> > > 
-> > > Hmm, I think Rafael added this prevent lockdep to raise a warning.
-> > 
-> > Ok, so the comment is there to say "at this point of execution IRQs
-> > are enabled", it does not refer to local_irq_disable() call effects,
-> > that's misleading and not necessarily nice, at least it should
-> > be explained.
-> > 
-> > > Otherwise, cpuidle_enter or arch_cpu_idle enables the irq again and then 
-> > > when exiting the cpu_idle_call, we enable them again, so leading to a 
-> > > lockdep WARN in trace_hardirqs_on_caller.
-> > 
-> > Would not it be better to enable irqs in cpuidle_enter_freeze() on
-> > returning from enter_freeze_proper() and remove the local_irq_enable()
-> > call in the cpuidle_idle_call() before jumping to exit_idle ?
-> > 
-> > > That said, if we have to do this, it may reveal something is wrong in 
-> > > the code.
-> > 
-> > I just spotted code through inspection, I have to say at the moment it
-> > is not very clear what it is meant to achieve, so I put together this
-> > patch.
-> 
-> So there are two code paths in cpuidle_idle_call(), the enter_freeze_proper()
-> one which does *not* re-enable interrupts and the one you modified which does
-> that.  The local_irq_disable() is to keep things consistent.
-> 
-> I'm not entirely against of re-arranging things here, but a patch like the
-> (untested) one below might be more appropriate.
-> 
-> Rafael (who would appreciate it if people asked questions instead of sending
-> patches on a hunch).
+Eduardo Valentin <edubezval@gmail.com> writes:
 
-I understand that, I wanted to just send [patch 2], this patch was more
-a way to get a clarification than anything else, asking would have been more
-appropriate, sorry.
+> Punit,
+>
+> On Wed, Feb 25, 2015 at 12:25:14PM +0000, Punit Agrawal wrote:
+>> Eduardo Valentin <edubezval@gmail.com> writes:
+>> 
+>
+> <cut>
+>
+>> > What is your optionion?
+>> 
+>> Although I understand your motivation for suggesting (1), I am not sure
+>> this will work in practice. As soon as one platform enables the option
+>> in the defconfig (arm64) or multi_v7_defconfig (arm), all platforms will
+>> have it enabled.
+>
+> Well, just because it is enabled by default, it does not mean that
+> everybody has to follow what is in defconfig. In practice, when building
+> production kernels, defconfigs are changed.
+>
+> My concern now is more about allowing people to have the possibility to
+> change the expected behavior. Only with the original patch, it will
+> always be writable.
 
-Anyway, I did not like disabling IRQs to just re-enable them on function
-return, in particular the comment below seemed to apply to the following
-line, which is a bit misleading.
+Makes sense. With the patch below, where required the Kconfig can be
+turned off.
 
-/* Interrupts are enabled again here. */
-local_irq_disable();
 
-> 
-> 
-> ---
->  drivers/cpuidle/cpuidle.c |    2 +-
->  kernel/sched/idle.c       |    1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/cpuidle/cpuidle.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
-> +++ linux-pm/drivers/cpuidle/cpuidle.c
-> @@ -132,6 +132,7 @@ void cpuidle_enter_freeze(void)
->  	index = cpuidle_find_deepest_state(drv, dev, true);
->  	if (index >= 0) {
->  		enter_freeze_proper(drv, dev, index);
-> +		local_irq_enable();
->  		return;
->  	}
->  
-> @@ -146,7 +147,6 @@ void cpuidle_enter_freeze(void)
->  		arch_cpu_idle();
->  
->  	/* Interrupts are enabled again here. */
-> -	local_irq_disable();
->  }
->  
->  /**
-> Index: linux-pm/kernel/sched/idle.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/idle.c
-> +++ linux-pm/kernel/sched/idle.c
-> @@ -116,7 +116,6 @@ static void cpuidle_idle_call(void)
->  	 */
->  	if (idle_should_freeze()) {
->  		cpuidle_enter_freeze();
-> -		local_irq_enable();
->  		goto exit_idle;
->  	}
->  
+[...]
 
-It looks fine, I will test it. I would add a comment to
-cpuidle_enter_freeze() to document it must return with IRQs
-enabled.
+>> 
+>> -- >8 --
+>> 
+>> Subject: [PATCH] thermal: core: Add Kconfig option to enable writable trips
+>> 
+>> Add a Kconfig option to allow system integrators to control whether
+>> userspace tools can change trip temperatures. This option overrides
+>> the thermal zone setup in the driver code and must be enabled for
+>> platform specified writable trips to come into effect.
+>> 
+>> The original behaviour of requiring root privileges to change trip
+>> temperatures remains unchanged.
+>> 
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>
+> Yes, something like this is what I was suggesting.
 
-Thanks,
-Lorenzo
+Can you pick it up from here, or do you prefer for me to re-send the two
+patches?
+
+Cheers,
+Punit
+
+>
+>
+> Thanks.
+>
+>> ---
+>>  drivers/thermal/Kconfig        | 11 +++++++++++
+>>  drivers/thermal/thermal_core.c |  3 ++-
+>>  2 files changed, 13 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index af40db0..5d2d39b 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -42,6 +42,17 @@ config THERMAL_OF
+>>  	  Say 'Y' here if you need to build thermal infrastructure
+>>  	  based on device tree.
+>>  
+>> +config THERMAL_WRITABLE_TRIPS
+>> +	bool "Enable writable trip points"
+>> +	help
+>> +	  This option allows the system integrator to choose whether
+>> +	  trip temperatures can be changed from userspace. The
+>> +	  writable trips need to be specified when setting up the
+>> +	  thermal zone but the choice here takes precedence.
+>> +
+>> +	  Say 'Y' here if you would like to allow userspace tools to
+>> +	  change trip temperatures.
+>> +
+>>  choice
+>>  	prompt "Default Thermal governor"
+>>  	default THERMAL_DEFAULT_GOV_STEP_WISE
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 48491d1..15111c1 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -1378,7 +1378,8 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+>>  						tz->trip_temp_attrs[indx].name;
+>>  		tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
+>>  		tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
+>> -		if (mask & (1 << indx)) {
+>> +		if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
+>> +		    mask & (1 << indx)) {
+>>  			tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
+>>  			tz->trip_temp_attrs[indx].attr.store =
+>>  							trip_point_temp_store;
+>> -- 
+>> 2.1.4
