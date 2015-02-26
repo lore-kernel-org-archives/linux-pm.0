@@ -1,66 +1,59 @@
-From: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v6 4/5] Input: add haptic drvier on max77843
-Date: Wed, 25 Feb 2015 17:23:53 -0800
-Message-ID: <20150226012353.GC25965@dtor-ws>
-References: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
- <1424741348-8728-5-git-send-email-jaewon02.kim@samsung.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 01/15] power_supply core: support use of devres to
+ register/unregister a power supply.
+Date: Thu, 26 Feb 2015 03:25:32 +0100
+Message-ID: <20150226022532.GA19242@earth>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043350.4243.92949.stgit@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1424741348-8728-5-git-send-email-jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <20150224043350.4243.92949.stgit@notabene.brown>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jaewon,
 
-On Tue, Feb 24, 2015 at 10:29:07AM +0900, Jaewon Kim wrote:
-> +static void max77843_haptic_play_work(struct work_struct *work)
-> +{
-> +	struct max77843_haptic *haptic =
-> +			container_of(work, struct max77843_haptic, work);
-> +	int error;
-> +
-> +	mutex_lock(&haptic->mutex);
-> +
-> +	if (haptic->suspended) {
-> +		goto err_play;
-> +	}
-> +
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You do not need braces around single statement. Also, this is not error
-that you are handling, I'd prefer if we called this label out_unlock.
+Hi Heil,
 
-> +	error = max77843_haptic_set_duty_cycle(haptic);
-> +	if (error) {
-> +		dev_err(haptic->dev, "failed to set duty cycle: %d\n", error);
-> +		goto err_play;
-> +	}
+On Tue, Feb 24, 2015 at 03:33:50PM +1100, NeilBrown wrote:
+> Using devm_power_supply_register allows the unregister to happen
+> automatically on error or final put.
+>=20
+> Signed-off-by: NeilBrown <neilb@suse.de>
 
-Do you need to configure duty cycle if you stopping the playback? Or
-maybe disabling pwm is enough?
+Thanks, applied to battery-2.6.git.
 
-> +
-> +	if (haptic->magnitude) {
-> +		error = max77843_haptic_enable(haptic);
-> +		if (error)
-> +			dev_err(haptic->dev,
-> +					"cannot enable haptic: %d\n", error);
-> +	} else {
-> +		max77843_haptic_disable(haptic);
-> +		if (error)
-> +			dev_err(haptic->dev,
-> +					"cannot disable haptic: %d\n", error);
+-- Sebastian
 
-What error? You did not assign it...
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Thanks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
--- 
-Dmitry
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+iQIcBAEBCgAGBQJU7oQZAAoJENju1/PIO/qafSMP/2Gp2+/8IGIJHP3N8vuZmueZ
+ekR2DfD+ganv+vh0G5y8RzUDkGmxW8CNUxqMl1mV/1c95A18GU/1yyzTsmvHop6l
+SmRYEfEXgDjRaUb8OhHs8Mcls+p5s9hF3AMPbucUHcj5PYk0b8MsP8nvz6bkyJJa
+qhiNlNTq+oSTmT/k4vd+MzZEl/OrVenHd9b2ftGWQWBqXtjXLbU+MWOSwfBktFOw
+jGu58sQUNJ/Tyl7RPP5BTI0Btp45sKdBDjqzKRbcLV+9vfkUCczhbKh7lA1B7B5U
+bnNXFC37QkeB4nopYeQHybTptlcHCN4b7JOLqUz1w5bXbji1BONyezpKRYl0f4/v
+AgcJir0Vrr0yS2JR1HGrX4gSpAzMOfXi3r4wfx6poSuXhPKh2t6vg5bgjzUqZEIB
+hcfMDlhLZLcngbp1a3SkSn2NSLdyj4K6GuVCJcT2fvZQVNgwSKLIL3zjy0yZADYP
+02tVTAQJJ9PJ4RTizzuaYyMNriGjxrt33emFNEv40irvazMKx1b7GzJfJ1hBqIwz
+dA6pAy5iQLbc+WIE685utJevOJDNGp3vtdbwIXe+n97syALA/cKfjnr+g68g7qaJ
+hh7SrSgFfN7DhRnK3bq7Z+c9Mgv/oKMc2sMu+fVdAsIlfSspPuUN17Z68tBgRQV8
+F0LNjWamxueIL/h5kxYN
+=cdNj
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
