@@ -1,78 +1,172 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 6/6] hwmon: pwm-fan: Code for using PWM FAN as a cooling
- device
-Date: Thu, 26 Feb 2015 15:40:33 +0100
-Message-ID: <20150226154033.301a699d@amdc2363>
-References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
- <1424959177-28739-1-git-send-email-l.majewski@samsung.com>
- <1424959177-28739-7-git-send-email-l.majewski@samsung.com>
- <54EF29D4.7040508@roeck-us.net>
+Subject: Re: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Thu, 26 Feb 2015 16:56:59 +0100
+Message-ID: <20150226165659.1a37de79@amdc2363>
+References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com>
+ <1422015010-11918-1-git-send-email-l.majewski@samsung.com>
+ <20150124214955.GA14443@developer.hsd1.ca.comcast.net>
+ <54CAC3A2.5060804@kernel.org> <20150223111338.11ca4b6c@amdc2363>
+ <039101d04f5a$80147660$803d6320$@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <54EF29D4.7040508@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Kukjin Kim <kgene@kernel.org>, lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:36331 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753740AbbBZP6N (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 10:58:13 -0500
+In-reply-to: <039101d04f5a$80147660$803d6320$@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>
+Cc: 'Eduardo Valentin' <edubezval@gmail.com>, 'Zhang Rui' <rui.zhang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>
 
-Hi Guenter,
+Hi Kukjin,
 
-> On 02/26/2015 05:59 AM, Lukasz Majewski wrote:
-> > The PWM FAN device can now be used as a thermal cooling device.
-> > Necessary infrastructure has been added in this commit.
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> > ---
-> > Changes for v2:
-> > - Replace pwm_fan_cooling_states with pwm_fan_cooling_levels
-> > - Update ctx->pwm_fan_state when correct data from device tree is
-> > available
-> > - Using therma_cdev_update() when thermal is ready for controlling
-> > the fan Changes for v3:
-> > - Rename patch heading
-> > - pwm_fan_of_get_cooling_data() now returns -EINVAL when no
-> > "cooling-levels" property defined
-> > - register of cooling device only when proper cooling data is
-> > present Changes for v4:
-> > - None
-> > Changes for v5:
-> > - Check for IS_ENABLED(CONFIG_THERMAL) has been added to prevent
-> > from executing thermal_* specific functions
-> > Changes for v6:
-> > - Adding missing ctx == NULL check in pwm_fan_get_max_state()
-> > - Call to thermal_cooling_device_unregister(ctx->cdev); at
-> > pwm_fan_remove()
-> > - struct thermal_cooling_device *cdev; added to struct pwm_fan_ctx
-> > ---
-> >   drivers/hwmon/pwm-fan.c | 89
-> > ++++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed,
-> > 88 insertions(+), 1 deletion(-)
-> [ ... ]
-> >
-> > @@ -200,6 +286,7 @@ static int pwm_fan_remove(struct
-> > platform_device *pdev) {
-> >   	struct pwm_fan_ctx *ctx = platform_get_drvdata(pdev);
-> >
-> > +	thermal_cooling_device_unregister(ctx->cdev);
+> Lukasz Majewski wrote:
+> > 
+> > Hi Kukjin, Eduardo
+> > 
+> Hi,
 > 
-> Unfortunately there is still no prototype for this if CONFIG_THERMAL
-> is not configured.
+> > > On 01/25/15 06:49, Eduardo Valentin wrote:
+> > > > On Fri, Jan 23, 2015 at 01:09:53PM +0100, Lukasz Majewski wrote:
+> > > >> 1. Introduction
+> > > >>
+> > > >> Following patches aim to clean up the current implementation of
+> > > >> the thermal framework on Exynos devices.
+> > > >>
+> > > >> The main goal was to use a generic code for reading thermal
+> > > >> configuration (of-thermal.c). Due to that redundant
+> > > >> exynos_thermal_common.[h|c] files were removed.
+> > > >>
+> > > >> Around 400 lines of code (LOC) were removed directly by this
+> > > >> patch, which is around 20% of the Exynos thermal code base.
+> > > >>
+> > > >> This work should NOT bring any functional changes to Exynos
+> > > >> thermal subsystem.
+> > > >>
+> > > >> 2. Patch-set structure
+> > > >>
+> > > >> Then the cpu_cooling functionality has been preserved to allow
+> > > >> cooling devices by reducing operating frequency. Definition of
+> > > >> trip points and cpufreq's cooling properties were moved to
+> > > >> device tree.
+> > > >>
+> > > >> Then the rework of the way in which configuration data is
+> > > >> provided to the Exynos thermal subsystem was performed. Now
+> > > >> device tree is used for configuration.
+> > > >>
+> > > >> 3. Dead code removal
+> > > >>
+> > > >> Thermal support for some SoCs, previously available in the
+> > > >> exynos_tmu_data.c file, was removed since, as of (almost)
+> > > >> 3.19-rc3, they didn't have TMU bindings.
+> > > >>
+> > > >> Moreover, support for cpu_cooling devices was preserved only on
+> > > >> those SoCs which had available and working cpufreq driver.
+> > > >>
+> > > >> 4. Testing
+> > > >>
+> > > >> Test devices:
+> > > >> - Exynos4210 - Trats (TMU zone + cpu_cooling)
+> > > >> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
+> > > >> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
+> > > >> - Exynos5420 - Arndale-octa (only TMU zones)
+> > > >>
+> > > >> Unfortunately, I don't posses Exynos5440 for testing. Its
+> > > >> functionality has been preserved in the code, but not tested on
+> > > >> the hardware. I would be grateful for help in testing.
+> > > >>
+> > > >>
+> > > >> 5. This work apply on the following tree:
+> > > >>
+> > > >> kernel.org: 'linux-soc-thermal/next' - Eduardo Velentin's tree
+> > > >> SHA1: 1813d80874699145f04af6b05ebab0a6419001fb
+> > > >>
+> > > >>
+> > > >> Lukasz Majewski (18):
+> > > >
+> > > > I have applied the following patches to my -fixes branch (for
+> > > > next rc cycle)
+> > > >
+> > > >>   thermal: exynos: cosmetic: Correct comment format
+> > > >>   thermal: exynos: Provide thermal_exynos.h file to be
+> > > >> included in device tree files
+> > > >>   thermal: exynos: Modify exynos thermal code to use device
+> > > >> tree for cpu cooling configuration
+> > > >>   cpufreq: exynos: Use device tree to determine if cpufreq
+> > > >> cooling should be registered
+> > > >>   dts: Documentation: Extending documentation entry for
+> > > >> exynos-thermal dts: Documentation: Update exynos-thermal.txt
+> > > >> example for Exynos5440 thermal: samsung: core: Exynos TMU
+> > > >> rework to use device tree for configuration
+> > > >>   thermal: exynos: Remove exynos_thermal_common.[c|h] files
+> > > >>   thermal: exynos: Remove exynos_tmu_data.c file
+> > > >
+> > > > The patches below should go via platform tree:
+> > > >
+> > > >>   arm: dts: trats: Enable TMU on the Exynos4210 trats device
+> > > >>   arm: dts: odroid: Add LDO10 regulator node necessary for TMU
+> > > >> on Odroid arm: dts: odroid: Enable TMU at Exynos4412 based
+> > > >> Odroid U3 device arm: dts: Adding CPU cooling binding for
+> > > >> Exynos SoCs thermal: exynos: dts: Add default definition of
+> > > >> the TMU sensor parameter
+> > > >>   thermal: dts: Default trip points definition for Exynos5420
+> > > >> SoCs thermal: exynos: dts: Define default thermal-zones for
+> > > >> Exynos4 thermal: dts: exynos: Trip points and sensor
+> > > >> configuration data for Exynos5440
+> > > >>   thermal: exynos: dts: Provide device tree bindings identical
+> > > >> to the one in exynos_tmu_data.c
+> > > >
+> > >
+> > > I've applied above patches with small subject changes.
+> > >
+> > > BTW unfortunately, since missing the
+> > > "include/dt-bindings/thermal/thermal_exynos.h" in my tree, I
+> > > couldn't merge it into for-next yet.
+> > 
+> > As of this writing: (Kernel 4.0-rc1) the
+> > "include/dt-bindings/thermal/thermal_exynos.h" file is in the kernel
+> > tree.
+> > 
+> I know.
+> 
+> > Kukjin, could you add missing DTS files and send this to upstream.
+> > 
+> Unfortunately, I couldn't take the DT changes in Samsung tree at that
+> time because of missing header file and it causes build error. Now I
+> can pick them into Samsung tree but I'm not sure it can be sent to
+> upstream during this -rc...
+> 
+> Eduardo, Lukasz,
+> Do you guys think the DT changes are really fixes for 4.0?
 
-Yes... since Nishanth Menon's changes are now only in
-linux-soc-thermal/fixes
+I've created following repository with DTS files:
+
+https://github.com/lmajewski/linux-samsung-thermal.git
+
+Branch: devel.
+
+On top of the v4.0-rc1 tag you will find all necessary patches for
+fixing thermal regression at Samsung Exynos boards.
+
+I hope, that organizing all patches in a separate repository will
+facilitate and speed up the inclusion process.
+
 
 > 
-> Two options: Yet another revision, or wait a week until the prototypes
-> are (hopefully) available and submit a patch without the conditionals.
-
-No problem, I will wait a bit and resend this patch set.
-
+> > Thanks in advance.
+> > 
+> > >
+> > > Can you please provide a topic branch for it? If not, this cannot
+> > > be handled in arm-soc tree in this time, I think.
+> > >
+> > > - Kukjin
 > 
-> Guenter
-> 
+
+
 
 -- 
 Best regards,
