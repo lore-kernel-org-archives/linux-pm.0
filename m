@@ -1,88 +1,44 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v7 2/7] mfd: da9150: Add DT binding documentation for core
-Date: Thu, 26 Feb 2015 08:43:15 +0000
-Message-ID: <20150226084315.GJ6688@x1>
-References: <cover.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
- <d3c040b8f0c74a7d731b36e24384215327b83725.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 11/20] power_supply: Change ownership from driver to core
+Date: Thu, 26 Feb 2015 10:30:00 +0100
+Message-ID: <1424943000.27971.7.camel@AMDC1943>
+References: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
+ <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
+ <20150226004522.GB885@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d3c040b8f0c74a7d731b36e24384215327b83725.1424267009.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-reply-to: <20150226004522.GB885@earth>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 18 Feb 2015, Adam Thomson wrote:
+On czw, 2015-02-26 at 01:45 +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Mon, Feb 23, 2015 at 12:47:32PM +0100, Krzysztof Kozlowski wrote:
+> > Change the ownership of power_supply structure from each driver
+> > implementing the class to the power supply core.
+> > 
 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> ---
->  Documentation/devicetree/bindings/mfd/da9150.txt | 43 ++++++++++++++=
-++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/da9150.txt
+(...)
 
-Applied, thanks.
+> 
+> I would like to merge this via the power supply subsystem. Some of
+> the files being patched are not under my maintainence, though. It
+> would be nice if I get an Acked-By from their maintainers.
+> 
+> As far as I can see this patch is currently missing feedback from:
+> 
+> arch/x86/platform/olpc: x86 Maintainers
+> drivers/acpi: Rafael J. Wysocki, Len Brown
+> drivers/hid: Jiri Kosina
+> drivers/platform/x86: Darren Hart
 
-> diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Docum=
-entation/devicetree/bindings/mfd/da9150.txt
-> new file mode 100644
-> index 0000000..d0588ea
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-> @@ -0,0 +1,43 @@
-> +Dialog Semiconductor DA9150 Combined Charger/Fuel-Gauge MFD bindings
-> +
-> +DA9150 consists of a group of sub-devices:
-> +
-> +Device			 Description
-> +------			 -----------
-> +da9150-gpadc		: General Purpose ADC
-> +da9150-charger		: Battery Charger
-> +
-> +=3D=3D=3D=3D=3D=3D
-> +
-> +Required properties:
-> +- compatible : Should be "dlg,da9150"
-> +- reg: Specifies the I2C slave address
-> +- interrupt-parent: Specifies the phandle of the interrupt controlle=
-r to which
-> +  the IRQs from da9150 are delivered to.
-> +- interrupts: IRQ line info for da9150 chip.
-> +- interrupt-controller: da9150 has internal IRQs (own IRQ domain).
-> +  (See Documentation/devicetree/bindings/interrupt-controller/interr=
-upts.txt for
-> +   further information relating to interrupt properties)
-> +
-> +Sub-devices:
-> +- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150=
--gpadc.txt
-> +- da9150-charger: See Documentation/devicetree/bindings/power/da9150=
--charger.txt
-> +
-> +
-> +Example:
-> +
-> +	charger_fg: da9150@58 {
-> +		compatible =3D "dlg,da9150";
-> +		reg =3D <0x58>;
-> +		interrupt-parent =3D <&gpio6>;
-> +		interrupts =3D <11 IRQ_TYPE_LEVEL_LOW>;
-> +		interrupt-controller;
-> +
-> +		gpadc: da9150-gpadc {
-> +			...
-> +		};
-> +
-> +		da9150-charger {
-> +			...
-> +		};
-> +	};
+I'll respin with v5 because new power supply driver appeared in your
+tree (DA9150 Charger). However this does not affect other subsystems.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Best regards,
+Krzysztof
