@@ -1,125 +1,103 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH] thermal: Default OF created trip points to writable
-Date: Thu, 26 Feb 2015 10:16:19 +0000
-Message-ID: <9hh4mq96kr0.fsf@e105922-lin.cambridge.arm.com>
-References: <1423592506-20620-1-git-send-email-punit.agrawal@arm.com>
-	<20150216151432.GB8648@developer.hsd1.ca.comcast.net>
-	<9hh1tloaj1l.fsf@e105922-lin.cambridge.arm.com>
-	<20150224195201.GB353@developer.amazonguestwifi.org>
-	<9hhbnki6uvp.fsf@e105922-lin.cambridge.arm.com>
-	<20150225184742.GE2306@developer.amazonguestwifi.org>
+Subject: Re: [PATCH] thermal: fix the casting issue for long type
+Date: Thu, 26 Feb 2015 10:24:30 +0000
+Message-ID: <9hhzj8155sx.fsf@e105922-lin.cambridge.arm.com>
+References: <1424930492-22658-1-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:36324 "EHLO
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:40715 "EHLO
 	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752193AbbBZKPt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:15:49 -0500
-In-Reply-To: <20150225184742.GE2306@developer.amazonguestwifi.org> (Eduardo
-	Valentin's message of "Wed, 25 Feb 2015 14:47:47 -0400")
+	by vger.kernel.org with ESMTP id S1751216AbbBZKX6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:23:58 -0500
+In-Reply-To: <1424930492-22658-1-git-send-email-leo.yan@linaro.org> (Leo Yan's
+	message of "Thu, 26 Feb 2015 14:01:32 +0800")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Eduardo Valentin <edubezval@gmail.com> writes:
+Hi Leo,
 
-> Punit,
+Leo Yan <leo.yan@linaro.org> writes:
+
+> When enable the thermal on arm64 platform, it will report failure when
+> call function *thermal_zone_bind_cooling_device()*.
 >
-> On Wed, Feb 25, 2015 at 12:25:14PM +0000, Punit Agrawal wrote:
->> Eduardo Valentin <edubezval@gmail.com> writes:
->> 
+> The failure is caused by casting. If dtb specify the minimum cooling
+> state and maximum cooling state as THERMAL_NO_LIMIT, then variables
+> "lower" and "upper" equal to 0x0000_0000_ffff_fffff after casting the
+> value from "unsigned int" to "unsigned long".
 >
-> <cut>
+> Finally in kernel if check the variables "lower" and "upper", it will
+> never equal to (-1UL), or 0xffff_ffff_ffff_fffff.
 >
->> > What is your optionion?
->> 
->> Although I understand your motivation for suggesting (1), I am not sure
->> this will work in practice. As soon as one platform enables the option
->> in the defconfig (arm64) or multi_v7_defconfig (arm), all platforms will
->> have it enabled.
+> So change to use "unsigned int" type, this can be compatible for 32 bits
+> and 64 bits system.
 >
-> Well, just because it is enabled by default, it does not mean that
-> everybody has to follow what is in defconfig. In practice, when building
-> production kernels, defconfigs are changed.
->
-> My concern now is more about allowing people to have the possibility to
-> change the expected behavior. Only with the original patch, it will
-> always be writable.
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
 
-Makes sense. With the patch below, where required the Kconfig can be
-turned off.
-
-
-[...]
-
->> 
->> -- >8 --
->> 
->> Subject: [PATCH] thermal: core: Add Kconfig option to enable writable trips
->> 
->> Add a Kconfig option to allow system integrators to control whether
->> userspace tools can change trip temperatures. This option overrides
->> the thermal zone setup in the driver code and must be enabled for
->> platform specified writable trips to come into effect.
->> 
->> The original behaviour of requiring root privileges to change trip
->> temperatures remains unchanged.
->> 
->> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
->
-> Yes, something like this is what I was suggesting.
-
-Can you pick it up from here, or do you prefer for me to re-send the two
-patches?
+There's already a fix for this issue that made it to v3.19 (Commit
+id a940cb34fed7). Does that not work for you?
 
 Cheers,
 Punit
 
+> ---
+>  drivers/thermal/of-thermal.c   | 4 ++--
+>  drivers/thermal/thermal_core.c | 6 +++---
+>  include/linux/thermal.h        | 2 +-
+>  3 files changed, 6 insertions(+), 6 deletions(-)
 >
->
-> Thanks.
->
->> ---
->>  drivers/thermal/Kconfig        | 11 +++++++++++
->>  drivers/thermal/thermal_core.c |  3 ++-
->>  2 files changed, 13 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index af40db0..5d2d39b 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -42,6 +42,17 @@ config THERMAL_OF
->>  	  Say 'Y' here if you need to build thermal infrastructure
->>  	  based on device tree.
->>  
->> +config THERMAL_WRITABLE_TRIPS
->> +	bool "Enable writable trip points"
->> +	help
->> +	  This option allows the system integrator to choose whether
->> +	  trip temperatures can be changed from userspace. The
->> +	  writable trips need to be specified when setting up the
->> +	  thermal zone but the choice here takes precedence.
->> +
->> +	  Say 'Y' here if you would like to allow userspace tools to
->> +	  change trip temperatures.
->> +
->>  choice
->>  	prompt "Default Thermal governor"
->>  	default THERMAL_DEFAULT_GOV_STEP_WISE
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index 48491d1..15111c1 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -1378,7 +1378,8 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
->>  						tz->trip_temp_attrs[indx].name;
->>  		tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
->>  		tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
->> -		if (mask & (1 << indx)) {
->> +		if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
->> +		    mask & (1 << indx)) {
->>  			tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
->>  			tz->trip_temp_attrs[indx].attr.store =
->>  							trip_point_temp_store;
->> -- 
->> 2.1.4
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 668fb1b..b50c4e1 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -49,8 +49,8 @@ struct __thermal_bind_params {
+>  	struct device_node *cooling_device;
+>  	unsigned int trip_id;
+>  	unsigned int usage;
+> -	unsigned long min;
+> -	unsigned long max;
+> +	unsigned int min;
+> +	unsigned int max;
+>  };
+>  
+>  /**
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 48491d1..04de575 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -923,7 +923,7 @@ thermal_cooling_device_trip_point_show(struct device *dev,
+>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+>  				     int trip,
+>  				     struct thermal_cooling_device *cdev,
+> -				     unsigned long upper, unsigned long lower)
+> +				     unsigned int upper, unsigned int lower)
+>  {
+>  	struct thermal_instance *dev;
+>  	struct thermal_instance *pos;
+> @@ -952,8 +952,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+>  		return ret;
+>  
+>  	/* lower default 0, upper default max_state */
+> -	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
+> -	upper = upper == THERMAL_NO_LIMIT ? max_state : upper;
+> +	lower = lower == (unsigned int)THERMAL_NO_LIMIT ? 0 : lower;
+> +	upper = upper == (unsigned int)THERMAL_NO_LIMIT ? max_state : upper;
+>  
+>  	if (lower > upper || upper > max_state)
+>  		return -EINVAL;
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index fc52e30..a2afe04 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -321,7 +321,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *);
+>  
+>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+>  				     struct thermal_cooling_device *,
+> -				     unsigned long, unsigned long);
+> +				     unsigned int, unsigned int);
+>  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+>  				       struct thermal_cooling_device *);
+>  void thermal_zone_device_update(struct thermal_zone_device *);
