@@ -1,52 +1,84 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v6 0/6] hwmon: thermal: Odroid U3: Provide support for Odroid
- U3 fan
-Date: Thu, 26 Feb 2015 14:59:31 +0100
-Message-ID: <1424959177-28739-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v6 1/6] Documentation: dts: Documentation entry to explain how
+ to use PWM FAN as a cooling device
+Date: Thu, 26 Feb 2015 14:59:32 +0100
+Message-ID: <1424959177-28739-2-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+ <1424959177-28739-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1424959177-28739-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
-subsystem for low level control.
+Explanation of several properties, which allow PWM fan working as a cooling
+device, have been embraced in this commit.
 
-After successful probe it registers itself as a cooling device for thermal
-subsystem.
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+---
+Changes for v2:
+- Rename cooling-pwm-values to cooling-levels
+- Remove default-pulse-width property and stick to default hwmon policy
+Changes for v3:
+- Changing commit title from "hwmon: dts: Doc:" to "Documentation: dts"
+- Remove unnecessary properties
+- Set maximal cooling level to 230 instead of 255
+Changes for v4:
+- None
+Changes for v5:
+- Move thermal-zones description to example section
+- Extending example section
+Changes for v6:
+- cooling-{min|max}-state properties added to pwm-fan binding
+- Mandatory properties for thermal-zones added
+- Indentation fixed
+---
+ .../devicetree/bindings/hwmon/pwm-fan.txt          | 29 ++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
-This driver also supports devices without DTS specified.
-
-To provide correct functionality, new properties to device tree description for
-Exynos4412 and in particular Odroid U3 have been added.
-
-Those patches were tested at Exynos4412 - Odroid U3 board.
-
-Patches were applied on:
-linux-soc-thermal/fixes branch (Linux v4.0-rc1)
-SHA1: b71d399c7f2fe06b60b96155ec0b9ae167334e4a
-
-
-Kamil Debski (1):
-  ARM: dts: Add pwm-fan node to the Odroid-U3 board
-
-Lukasz Majewski (5):
-  Documentation: dts: Documentation entry to explain how to use PWM FAN
-    as a cooling device
-  ARM: dts: Add properties to use pwm-fan device as a cooling device in
-    Odroid U3
-  hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
-    cycle
-  hwmon: pwm-fan: Read PWM FAN configuration from device tree
-  hwmon: pwm-fan: Code for using PWM FAN as a cooling device
-
- .../devicetree/bindings/hwmon/pwm-fan.txt          |  29 +++-
- arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
- arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
- drivers/hwmon/pwm-fan.c                            | 172 +++++++++++++++++++--
- 4 files changed, 229 insertions(+), 17 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+index 610757c..c6d5332 100644
+--- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
++++ b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+@@ -3,10 +3,35 @@ Bindings for a fan connected to the PWM lines
+ Required properties:
+ - compatible	: "pwm-fan"
+ - pwms		: the PWM that is used to control the PWM fan
++- cooling-levels      : PWM duty cycle values in a range from 0 to 255
++			which correspond to thermal cooling states
+ 
+ Example:
+-	pwm-fan {
++	fan0: pwm-fan {
+ 		compatible = "pwm-fan";
+-		status = "okay";
++		cooling-min-state = <0>;
++		cooling-max-state = <3>;
++		#cooling-cells = <2>;
+ 		pwms = <&pwm 0 10000 0>;
++		cooling-levels = <0 102 170 230>;
+ 	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			     thermal-sensors = <&tmu 0>;
++			     polling-delay-passive = <0>;
++			     polling-delay = <0>;
++			     trips {
++					cpu_alert1: cpu-alert1 {
++						    temperature = <100000>; /* millicelsius */
++						    hysteresis = <2000>; /* millicelsius */
++						    type = "passive";
++					};
++			     };
++			     cooling-maps {
++					map0 {
++						    trip = <&cpu_alert1>;
++						    cooling-device = <&fan0 0 1>;
++					};
++			     };
++		};
 -- 
 2.0.0.rc2
