@@ -1,296 +1,112 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/3] thermal: exynos: Add the support for Exynos5433 TMU
-Date: Thu, 26 Feb 2015 20:35:19 +0900
-Message-ID: <1424950521-6236-2-git-send-email-cw00.choi@samsung.com>
-References: <1424950521-6236-1-git-send-email-cw00.choi@samsung.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH] thermal: fix the casting issue for long type
+Date: Thu, 26 Feb 2015 20:23:51 +0800
+Message-ID: <20150226122351.GA9519@leoy-linaro>
+References: <1424930492-22658-1-git-send-email-leo.yan@linaro.org>
+ <9hhzj8155sx.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1424950521-6236-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rui.zhang@intel.com, edubezval@gmail.com, l.majewski@samsung.com
-Cc: linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, inki.dae@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>, amit.daniel@samsung.com, kgene@kernel.org, a.kesavan@samsung.com, chanho61.park@samsung.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:41917 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbbBZMX6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 07:23:58 -0500
+Received: by padfb1 with SMTP id fb1so13605134pad.8
+        for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2015 04:23:58 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <9hhzj8155sx.fsf@e105922-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch adds the support for Exynos5433's TMU (Thermal Management Unit).
-Exynos5433 has a little different register bit fields as following description:
-- Support the eight trip points for rising/falling interrupt by using two registers
-- Read the calibration type (1-point or 2-point) and sensor id from TRIMINFO register
-- Use a little different register address
+hi Punit,
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 161 +++++++++++++++++++++++++++++++++--
- drivers/thermal/samsung/exynos_tmu.h |   1 +
- 2 files changed, 157 insertions(+), 5 deletions(-)
+On Thu, Feb 26, 2015 at 10:24:30AM +0000, Punit Agrawal wrote:
+> Hi Leo,
+> 
+> Leo Yan <leo.yan@linaro.org> writes:
+> 
+> > When enable the thermal on arm64 platform, it will report failure when
+> > call function *thermal_zone_bind_cooling_device()*.
+> >
+> > The failure is caused by casting. If dtb specify the minimum cooling
+> > state and maximum cooling state as THERMAL_NO_LIMIT, then variables
+> > "lower" and "upper" equal to 0x0000_0000_ffff_fffff after casting the
+> > value from "unsigned int" to "unsigned long".
+> >
+> > Finally in kernel if check the variables "lower" and "upper", it will
+> > never equal to (-1UL), or 0xffff_ffff_ffff_fffff.
+> >
+> > So change to use "unsigned int" type, this can be compatible for 32 bits
+> > and 64 bits system.
+> >
+> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> 
+> There's already a fix for this issue that made it to v3.19 (Commit
+> id a940cb34fed7). Does that not work for you?
+> 
+I worked on 3.18, so this patch has been missed. Thanks for pointing
+out, i will back port this patch.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 1d30b09..1bb2fb7 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -97,6 +97,32 @@
- #define EXYNOS4412_MUX_ADDR_VALUE          6
- #define EXYNOS4412_MUX_ADDR_SHIFT          20
- 
-+/* Exynos5433 specific registers */
-+#define EXYNOS5433_TMU_REG_CONTROL1		0x024
-+#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
-+#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
-+#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
-+#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
-+#define EXYNOS5433_THD_TEMP_RISE3_0		0x050
-+#define EXYNOS5433_THD_TEMP_RISE7_4		0x054
-+#define EXYNOS5433_THD_TEMP_FALL3_0		0x060
-+#define EXYNOS5433_THD_TEMP_FALL7_4		0x064
-+#define EXYNOS5433_TMU_REG_INTEN		0x0c0
-+#define EXYNOS5433_TMU_REG_INTPEND		0x0c8
-+#define EXYNOS5433_TMU_EMUL_CON			0x110
-+#define EXYNOS5433_TMU_PD_DET_EN		0x130
-+
-+#define EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT	16
-+#define EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT	23
-+#define EXYNOS5433_TRIMINFO_SENSOR_ID_MASK	\
-+			(0xf << EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT)
-+#define EXYNOS5433_TRIMINFO_CALIB_SEL_MASK	BIT(23)
-+
-+#define EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING	0
-+#define EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING	1
-+
-+#define EXYNOS5433_PD_DET_EN			1
-+
- /*exynos5440 specific registers*/
- #define EXYNOS5440_TMU_S0_7_TRIM		0x000
- #define EXYNOS5440_TMU_S0_7_CTRL		0x020
-@@ -484,6 +510,101 @@ out:
- 	return ret;
- }
- 
-+static int exynos5433_tmu_initialize(struct platform_device *pdev)
-+{
-+	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	struct exynos_tmu_platform_data *pdata = data->pdata;
-+	struct thermal_zone_device *tz = data->tzd;
-+	unsigned int status, trim_info;
-+	unsigned int rising_threshold = 0, falling_threshold = 0;
-+	unsigned long temp, temp_hist;
-+	int ret = 0, threshold_code, i, sensor_id, cal_type;
-+
-+	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
-+	if (!status) {
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
-+	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
-+	sanitize_temp_error(data, trim_info);
-+
-+	/* Read the temperature sensor id */
-+	sensor_id = (trim_info & EXYNOS5433_TRIMINFO_SENSOR_ID_MASK)
-+				>> EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT;
-+	dev_info(&pdev->dev, "Temperature sensor ID: 0x%x\n", sensor_id);
-+
-+	/* Read the calibration mode */
-+	writel(trim_info, data->base + EXYNOS_TMU_REG_TRIMINFO);
-+	cal_type = (trim_info & EXYNOS5433_TRIMINFO_CALIB_SEL_MASK)
-+				>> EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT;
-+
-+	switch (cal_type) {
-+	case EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING:
-+		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-+		break;
-+	case EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING:
-+		pdata->cal_type = TYPE_TWO_POINT_TRIMMING;
-+		break;
-+	default:
-+		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-+		break;
-+	};
-+
-+	dev_info(&pdev->dev, "Calibration type is %d-point calibration\n",
-+			cal_type ?  2 : 1);
-+
-+	/* Write temperature code for rising and falling threshold */
-+	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
-+		int rising_reg_offset, falling_reg_offset;
-+		int j = 0;
-+
-+		switch (i) {
-+		case 0:
-+		case 1:
-+		case 2:
-+		case 3:
-+			rising_reg_offset = EXYNOS5433_THD_TEMP_RISE3_0;
-+			falling_reg_offset = EXYNOS5433_THD_TEMP_FALL3_0;
-+			j = i;
-+			break;
-+		case 4:
-+		case 5:
-+		case 6:
-+		case 7:
-+			rising_reg_offset = EXYNOS5433_THD_TEMP_RISE7_4;
-+			falling_reg_offset = EXYNOS5433_THD_TEMP_FALL7_4;
-+			j = i - 4;
-+			break;
-+		default:
-+			continue;
-+		}
-+
-+		/* Write temperature code for rising threshold */
-+		tz->ops->get_trip_temp(tz, i, &temp);
-+		temp /= MCELSIUS;
-+		threshold_code = temp_to_code(data, temp);
-+
-+		rising_threshold = readl(data->base + rising_reg_offset);
-+		rising_threshold |= (threshold_code << j * 8);
-+		writel(rising_threshold, data->base + rising_reg_offset);
-+
-+		/* Write temperature code for falling threshold */
-+		tz->ops->get_trip_hyst(tz, i, &temp_hist);
-+		temp_hist = temp - (temp_hist / MCELSIUS);
-+		threshold_code = temp_to_code(data, temp_hist);
-+
-+		falling_threshold = readl(data->base + falling_reg_offset);
-+		falling_threshold &= ~(0xff << j * 8);
-+		falling_threshold |= (threshold_code << j * 8);
-+		writel(falling_threshold, data->base + falling_reg_offset);
-+	}
-+
-+	data->tmu_clear_irqs(data);
-+out:
-+	return ret;
-+}
-+
- static int exynos5440_tmu_initialize(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-@@ -682,7 +803,8 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
- 
- 	if (on) {
- 		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
--		con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
-+		if (data->soc == SOC_ARCH_EXYNOS7)
-+			con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
- 		interrupt_en =
- 			(of_thermal_is_trip_valid(tz, 7)
- 			<< EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
-@@ -705,11 +827,20 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
- 			interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
- 	} else {
- 		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
--		con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
-+		if (data->soc == SOC_ARCH_EXYNOS7)
-+			con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
- 		interrupt_en = 0; /* Disable all interrupts */
- 	}
- 
--	writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
-+	if (data->soc == SOC_ARCH_EXYNOS5433) {
-+		int pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
-+
-+		writel(pd_det_en, data->base + EXYNOS5433_TMU_PD_DET_EN);
-+		writel(interrupt_en, data->base + EXYNOS5433_TMU_REG_INTEN);
-+	} else {
-+		writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
-+	}
-+
- 	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
- }
- 
-@@ -770,6 +901,8 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
- 
- 	if (data->soc == SOC_ARCH_EXYNOS5260)
- 		emul_con = EXYNOS5260_EMUL_CON;
-+	if (data->soc == SOC_ARCH_EXYNOS5433)
-+		emul_con = EXYNOS5433_TMU_EMUL_CON;
- 	else if (data->soc == SOC_ARCH_EXYNOS7)
- 		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
- 	else
-@@ -882,6 +1015,9 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
- 	} else if (data->soc == SOC_ARCH_EXYNOS7) {
- 		tmu_intstat = EXYNOS7_TMU_REG_INTPEND;
- 		tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
-+	} else if (data->soc == SOC_ARCH_EXYNOS5433) {
-+		tmu_intstat = EXYNOS5433_TMU_REG_INTPEND;
-+		tmu_intclear = EXYNOS5433_TMU_REG_INTPEND;
- 	} else {
- 		tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
- 		tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
-@@ -926,6 +1062,7 @@ static const struct of_device_id exynos_tmu_match[] = {
- 	{ .compatible = "samsung,exynos5260-tmu", },
- 	{ .compatible = "samsung,exynos5420-tmu", },
- 	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
-+	{ .compatible = "samsung,exynos5433-tmu", },
- 	{ .compatible = "samsung,exynos5440-tmu", },
- 	{ .compatible = "samsung,exynos7-tmu", },
- 	{ /* sentinel */ },
-@@ -949,6 +1086,8 @@ static int exynos_of_get_soc_type(struct device_node *np)
- 	else if (of_device_is_compatible(np,
- 					 "samsung,exynos5420-tmu-ext-triminfo"))
- 		return SOC_ARCH_EXYNOS5420_TRIMINFO;
-+	else if (of_device_is_compatible(np, "samsung,exynos5433-tmu"))
-+		return SOC_ARCH_EXYNOS5433;
- 	else if (of_device_is_compatible(np, "samsung,exynos5440-tmu"))
- 		return SOC_ARCH_EXYNOS5440;
- 	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
-@@ -1069,6 +1208,13 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
- 		break;
-+	case SOC_ARCH_EXYNOS5433:
-+		data->tmu_initialize = exynos5433_tmu_initialize;
-+		data->tmu_control = exynos7_tmu_control;
-+		data->tmu_read = exynos4412_tmu_read;
-+		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
-+		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-+		break;
- 	case SOC_ARCH_EXYNOS5440:
- 		data->tmu_initialize = exynos5440_tmu_initialize;
- 		data->tmu_control = exynos5440_tmu_control;
-@@ -1172,7 +1318,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 		goto err_clk_sec;
- 	}
- 
--	if (data->soc == SOC_ARCH_EXYNOS7) {
-+	switch (data->soc) {
-+	case SOC_ARCH_EXYNOS5433:
-+	case SOC_ARCH_EXYNOS7:
- 		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
- 		if (IS_ERR(data->sclk)) {
- 			dev_err(&pdev->dev, "Failed to get sclk\n");
-@@ -1184,7 +1332,10 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 				goto err_clk;
- 			}
- 		}
--	}
-+		break;
-+	default:
-+		break;
-+	};
- 
- 	ret = exynos_tmu_initialize(pdev);
- 	if (ret) {
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 4d71ec6..440c714 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -33,6 +33,7 @@ enum soc_type {
- 	SOC_ARCH_EXYNOS5260,
- 	SOC_ARCH_EXYNOS5420,
- 	SOC_ARCH_EXYNOS5420_TRIMINFO,
-+	SOC_ARCH_EXYNOS5433,
- 	SOC_ARCH_EXYNOS5440,
- 	SOC_ARCH_EXYNOS7,
- };
--- 
-1.8.5.5
+> Cheers,
+> Punit
+> 
+> > ---
+> >  drivers/thermal/of-thermal.c   | 4 ++--
+> >  drivers/thermal/thermal_core.c | 6 +++---
+> >  include/linux/thermal.h        | 2 +-
+> >  3 files changed, 6 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> > index 668fb1b..b50c4e1 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -49,8 +49,8 @@ struct __thermal_bind_params {
+> >  	struct device_node *cooling_device;
+> >  	unsigned int trip_id;
+> >  	unsigned int usage;
+> > -	unsigned long min;
+> > -	unsigned long max;
+> > +	unsigned int min;
+> > +	unsigned int max;
+> >  };
+> >  
+> >  /**
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index 48491d1..04de575 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -923,7 +923,7 @@ thermal_cooling_device_trip_point_show(struct device *dev,
+> >  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+> >  				     int trip,
+> >  				     struct thermal_cooling_device *cdev,
+> > -				     unsigned long upper, unsigned long lower)
+> > +				     unsigned int upper, unsigned int lower)
+> >  {
+> >  	struct thermal_instance *dev;
+> >  	struct thermal_instance *pos;
+> > @@ -952,8 +952,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+> >  		return ret;
+> >  
+> >  	/* lower default 0, upper default max_state */
+> > -	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
+> > -	upper = upper == THERMAL_NO_LIMIT ? max_state : upper;
+> > +	lower = lower == (unsigned int)THERMAL_NO_LIMIT ? 0 : lower;
+> > +	upper = upper == (unsigned int)THERMAL_NO_LIMIT ? max_state : upper;
+> >  
+> >  	if (lower > upper || upper > max_state)
+> >  		return -EINVAL;
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index fc52e30..a2afe04 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -321,7 +321,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *);
+> >  
+> >  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+> >  				     struct thermal_cooling_device *,
+> > -				     unsigned long, unsigned long);
+> > +				     unsigned int, unsigned int);
+> >  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+> >  				       struct thermal_cooling_device *);
+> >  void thermal_zone_device_update(struct thermal_zone_device *);
