@@ -1,103 +1,100 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH] thermal: fix the casting issue for long type
-Date: Thu, 26 Feb 2015 10:24:30 +0000
-Message-ID: <9hhzj8155sx.fsf@e105922-lin.cambridge.arm.com>
-References: <1424930492-22658-1-git-send-email-leo.yan@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] dmaengine: shdma: Move DMA stop to (runtime) suspend callbacks
+Date: Thu, 26 Feb 2015 11:26:34 +0100
+Message-ID: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:40715 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751216AbbBZKX6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:23:58 -0500
-In-Reply-To: <1424930492-22658-1-git-send-email-leo.yan@linaro.org> (Leo Yan's
-	message of "Thu, 26 Feb 2015 14:01:32 +0800")
+Received: from albert.telenet-ops.be ([195.130.137.90]:52925 "EHLO
+	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbbBZK05 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:26:57 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hi Leo,
+During system reboot, the sh-dma-engine device may be runtime-suspended,
+causing a crash:
 
-Leo Yan <leo.yan@linaro.org> writes:
+    Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+    Internal error: : 1406 [#1] SMP ARM
+    ...
+    PC is at sh_dmae_ctl_stop+0x28/0x64
+    LR is at sh_dmae_ctl_stop+0x24/0x64
 
-> When enable the thermal on arm64 platform, it will report failure when
-> call function *thermal_zone_bind_cooling_device()*.
->
-> The failure is caused by casting. If dtb specify the minimum cooling
-> state and maximum cooling state as THERMAL_NO_LIMIT, then variables
-> "lower" and "upper" equal to 0x0000_0000_ffff_fffff after casting the
-> value from "unsigned int" to "unsigned long".
->
-> Finally in kernel if check the variables "lower" and "upper", it will
-> never equal to (-1UL), or 0xffff_ffff_ffff_fffff.
->
-> So change to use "unsigned int" type, this can be compatible for 32 bits
-> and 64 bits system.
->
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+If the sh-dma-engine is runtime-suspended, its module clock is turned
+off, and its registers cannot be accessed.
 
-There's already a fix for this issue that made it to v3.19 (Commit
-id a940cb34fed7). Does that not work for you?
+To fix this, move the call to sh_dmae_ctl_stop(), which touches the
+DMAOR register, to the sh_dmae_suspend() and sh_dmae_runtime_suspend()
+callbacks.  This makes PM operations more symmetric, as both
+sh_dmae_resume() and sh_dmae_runtime_resume() already call sh_dmae_rst()
+to re-initialize the DMAOR register.
 
-Cheers,
-Punit
+Remove sh_dmae_shutdown(), as it became empty.
 
-> ---
->  drivers/thermal/of-thermal.c   | 4 ++--
->  drivers/thermal/thermal_core.c | 6 +++---
->  include/linux/thermal.h        | 2 +-
->  3 files changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 668fb1b..b50c4e1 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -49,8 +49,8 @@ struct __thermal_bind_params {
->  	struct device_node *cooling_device;
->  	unsigned int trip_id;
->  	unsigned int usage;
-> -	unsigned long min;
-> -	unsigned long max;
-> +	unsigned int min;
-> +	unsigned int max;
->  };
->  
->  /**
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 48491d1..04de575 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -923,7 +923,7 @@ thermal_cooling_device_trip_point_show(struct device *dev,
->  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->  				     int trip,
->  				     struct thermal_cooling_device *cdev,
-> -				     unsigned long upper, unsigned long lower)
-> +				     unsigned int upper, unsigned int lower)
->  {
->  	struct thermal_instance *dev;
->  	struct thermal_instance *pos;
-> @@ -952,8 +952,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->  		return ret;
->  
->  	/* lower default 0, upper default max_state */
-> -	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
-> -	upper = upper == THERMAL_NO_LIMIT ? max_state : upper;
-> +	lower = lower == (unsigned int)THERMAL_NO_LIMIT ? 0 : lower;
-> +	upper = upper == (unsigned int)THERMAL_NO_LIMIT ? max_state : upper;
->  
->  	if (lower > upper || upper > max_state)
->  		return -EINVAL;
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index fc52e30..a2afe04 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -321,7 +321,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *);
->  
->  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
->  				     struct thermal_cooling_device *,
-> -				     unsigned long, unsigned long);
-> +				     unsigned int, unsigned int);
->  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
->  				       struct thermal_cooling_device *);
->  void thermal_zone_device_update(struct thermal_zone_device *);
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This is v3 of "dmaengine: shdma: Runtime-resume device in .shutdown()"
+
+v3:
+  - Move the call to sh_dmae_ctl_stop() to sh_dmae_suspend() and
+    sh_dmae_runtime_suspend() instead of runtime-resuming the device in
+    .shutdown(),
+
+v2:
+  - Do nothing if we're runtime suspended.
+---
+ drivers/dma/sh/shdmac.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+index b2431aa300331270..9f1d4c7dbab83890 100644
+--- a/drivers/dma/sh/shdmac.c
++++ b/drivers/dma/sh/shdmac.c
+@@ -582,15 +582,12 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+ 	}
+ }
+ 
+-static void sh_dmae_shutdown(struct platform_device *pdev)
+-{
+-	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
+-	sh_dmae_ctl_stop(shdev);
+-}
+-
+ #ifdef CONFIG_PM
+ static int sh_dmae_runtime_suspend(struct device *dev)
+ {
++	struct sh_dmae_device *shdev = dev_get_drvdata(dev);
++
++	sh_dmae_ctl_stop(shdev);
+ 	return 0;
+ }
+ 
+@@ -605,6 +602,9 @@ static int sh_dmae_runtime_resume(struct device *dev)
+ #ifdef CONFIG_PM_SLEEP
+ static int sh_dmae_suspend(struct device *dev)
+ {
++	struct sh_dmae_device *shdev = dev_get_drvdata(dev);
++
++	sh_dmae_ctl_stop(shdev);
+ 	return 0;
+ }
+ 
+@@ -929,13 +929,12 @@ static int sh_dmae_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver sh_dmae_driver = {
+-	.driver 	= {
++	.driver		= {
+ 		.pm	= &sh_dmae_pm,
+ 		.name	= SH_DMAE_DRV_NAME,
+ 		.of_match_table = sh_dmae_of_match,
+ 	},
+ 	.remove		= sh_dmae_remove,
+-	.shutdown	= sh_dmae_shutdown,
+ };
+ 
+ static int __init sh_dmae_init(void)
+-- 
+1.9.1
+
