@@ -1,35 +1,23 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v2 5/7] thermal: add trace events to the power allocator
- governor
-Date: Thu, 26 Feb 2015 17:52:59 -0500
-Message-ID: <20150226175259.57d65960@gandalf.local.home>
-References: <1424977233-15965-1-git-send-email-javi.merino@arm.com>
-	<1424977233-15965-6-git-send-email-javi.merino@arm.com>
-	<20150226143845.67e00224@gandalf.local.home>
-	<20150226194633.GC4941@developer.amazonguestwifi.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
+Date: Fri, 27 Feb 2015 00:37:54 +0100
+Message-ID: <4425438.YlYNQyf1hp@vostro.rjw.lan>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0137.hostedemail.com ([216.40.44.137]:57318 "EHLO
-	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753475AbbBZWxD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 17:53:03 -0500
-In-Reply-To: <20150226194633.GC4941@developer.amazonguestwifi.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Javi Merino <javi.merino@arm.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, broonie@kernel.org, tixy@linaro.org, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
-On Thu, 26 Feb 2015 15:46:34 -0400
-Eduardo Valentin <edubezval@gmail.com> wrote:
+Me versions of the two $subject patches follow.
 
- 
-> I am planing to apply this series to my thermal soc tree. Do you have
-> any concerns if I send this patch, which touches the tracing files, via
-> my tree?
-> 
+Thanks!
 
-Which tracing files?
 
--- Steve
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
