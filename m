@@ -1,145 +1,40 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH 2/2] dt-bindings: cpufreq: document for hisilicon acpu driver
-Date: Thu, 26 Feb 2015 21:21:39 +0800
-Message-ID: <1424956899-8891-3-git-send-email-leo.yan@linaro.org>
-References: <1424956899-8891-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1424956899-8891-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Dan Zhao <dan.zhao@hisilicon.com>, zhenwei.wang@hisilicon.com, mohaoju@hisilicon.com
-Cc: Leo Yan <leo.yan@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] dmaengine: shdma: Move DMA stop to (runtime) suspend callbacks
+Date: Thu, 26 Feb 2015 14:30:36 +0100
+Message-ID: <CAMuHMdXfrVYicT6mW9igFZ9xt_Pv3BtNve0nSQHDRrkTkt5m=A@mail.gmail.com>
+References: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
+	<54EF1DC2.30703@cogentembedded.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:59490 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbbBZNah (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 08:30:37 -0500
+In-Reply-To: <54EF1DC2.30703@cogentembedded.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, dmaengine@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-This adds documentation for hisilicon acpu's cpufreq driver.
+On Thu, Feb 26, 2015 at 2:21 PM, Sergei Shtylyov
+<sergei.shtylyov@cogentembedded.com> wrote:
+>>   static struct platform_driver sh_dmae_driver = {
+>> -       .driver         = {
+>> +       .driver         = {
+>
+>
+>    Hm, don't understand what was changed on this line...
 
-OPP library is used for device tree parsing to get frequency list;
-Furthermore, this driver can bind all CPUs to change frequency together,
-or the two clusters can trigger the frequency change independently. This
-is controlled by the dtb flag "hisilicon,coupled-clusters".
+One silly space that should have been a TAB.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- .../bindings/cpufreq/cpufreq-hisi-acpu.txt         | 112 +++++++++++++++++++++
- 1 file changed, 112 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-hisi-acpu.txt
+Gr{oetje,eeting}s,
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-hisi-acpu.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-hisi-acpu.txt
-new file mode 100644
-index 0000000..547e7339
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-hisi-acpu.txt
-@@ -0,0 +1,112 @@
-+Hisilicon acpu cpufreq driver
-+-----------------------------
-+
-+Hisilicon ACPU cpufreq driver for CPU frequency scaling.
-+
-+Required properties:
-+- operating-points: Table of frequencies and voltage CPU could be transitioned
-+	into. Frequency should be in KHz units and voltage should be in
-+	microvolts; This must be defined under node /cpus/cpu@x. Where x is
-+	the first cpu inside a cluster.
-+
-+Optional properties:
-+- hisilicon,coupled-clusters: Specify whether all clusters share one clock
-+	source. This must be defined under node cpufreq.
-+
-+Example 1: all clusters share one clock source
-+----------------------------------------------
-+
-+cpus {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	cpu@0 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x0>;
-+		operating-points = <
-+			/* kHz  uV */
-+			1200000  0
-+			960000   0
-+			729000   0
-+			432000   0
-+			208000   0
-+		>;
-+	};
-+
-+	cpu@1 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x1>;
-+	};
-+
-+	cpu@100 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x100>;
-+	};
-+
-+	cpu@101 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x101>;
-+	};
-+};
-+
-+cpufreq {
-+	compatible = "hisilicon,hisi-acpu-cpufreq";
-+	hisilicon,coupled-clusters = <1>;
-+};
-+
-+
-+Example 2: every cluster has dedicated clock source
-+---------------------------------------------------
-+
-+cpus {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	cpu@0 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x0>;
-+		operating-points = <
-+			/* kHz  uV */
-+			1200000  0
-+			960000   0
-+			729000   0
-+			432000   0
-+			208000   0
-+		>;
-+	};
-+
-+	cpu@1 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x1>;
-+	};
-+
-+	cpu@100 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x100>;
-+		operating-points = <
-+			/* kHz  uV */
-+			1200000  0
-+			960000   0
-+			729000   0
-+			432000   0
-+			208000   0
-+		>;
-+	};
-+
-+	cpu@101 {
-+		compatible = "arm,cortex-a53", "arm,armv8";
-+		device_type = "cpu";
-+		reg = <0x0 0x101>;
-+	};
-+};
-+
-+cpufreq {
-+	compatible = "hisilicon,hisi-acpu-cpufreq";
-+};
--- 
-1.9.1
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
