@@ -1,59 +1,66 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 01/15] power_supply core: support use of devres to
- register/unregister a power supply.
-Date: Thu, 26 Feb 2015 03:25:32 +0100
-Message-ID: <20150226022532.GA19242@earth>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
- <20150224043350.4243.92949.stgit@notabene.brown>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150224043350.4243.92949.stgit@notabene.brown>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: int340x_thermal: Ignore missing _ART, _TRT tables
+Date: Wed, 25 Feb 2015 18:31:50 -0800
+Message-ID: <1424917910-18441-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:19842 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbbBZCdZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Feb 2015 21:33:25 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+It is possible that _ART/_TRT tables are missing or have errors.
+Ignore those failures, as INT3400 thermal zone is still required
+for _OSC or mode switch.
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-Hi Heil,
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 25d244c..031018e 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -262,13 +262,12 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	result = acpi_parse_art(priv->adev->handle, &priv->art_count,
+ 				&priv->arts, true);
+ 	if (result)
+-		goto free_priv;
+-
++		dev_dbg(&pdev->dev, "_ART table parsing error\n");
+ 
+ 	result = acpi_parse_trt(priv->adev->handle, &priv->trt_count,
+ 				&priv->trts, true);
+ 	if (result)
+-		goto free_art;
++		dev_dbg(&pdev->dev, "_TRT table parsing error\n");
+ 
+ 	platform_set_drvdata(pdev, priv);
+ 
+@@ -281,7 +280,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 						&int3400_thermal_params, 0, 0);
+ 	if (IS_ERR(priv->thermal)) {
+ 		result = PTR_ERR(priv->thermal);
+-		goto free_trt;
++		goto free_art_trt;
+ 	}
+ 
+ 	priv->rel_misc_dev_res = acpi_thermal_rel_misc_device_add(
+@@ -295,9 +294,8 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 
+ free_zone:
+ 	thermal_zone_device_unregister(priv->thermal);
+-free_trt:
++free_art_trt:
+ 	kfree(priv->trts);
+-free_art:
+ 	kfree(priv->arts);
+ free_priv:
+ 	kfree(priv);
+-- 
+1.9.1
 
-On Tue, Feb 24, 2015 at 03:33:50PM +1100, NeilBrown wrote:
-> Using devm_power_supply_register allows the unregister to happen
-> automatically on error or final put.
->=20
-> Signed-off-by: NeilBrown <neilb@suse.de>
-
-Thanks, applied to battery-2.6.git.
-
--- Sebastian
-
---PEIAKu/WMn1b1Hv9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJU7oQZAAoJENju1/PIO/qafSMP/2Gp2+/8IGIJHP3N8vuZmueZ
-ekR2DfD+ganv+vh0G5y8RzUDkGmxW8CNUxqMl1mV/1c95A18GU/1yyzTsmvHop6l
-SmRYEfEXgDjRaUb8OhHs8Mcls+p5s9hF3AMPbucUHcj5PYk0b8MsP8nvz6bkyJJa
-qhiNlNTq+oSTmT/k4vd+MzZEl/OrVenHd9b2ftGWQWBqXtjXLbU+MWOSwfBktFOw
-jGu58sQUNJ/Tyl7RPP5BTI0Btp45sKdBDjqzKRbcLV+9vfkUCczhbKh7lA1B7B5U
-bnNXFC37QkeB4nopYeQHybTptlcHCN4b7JOLqUz1w5bXbji1BONyezpKRYl0f4/v
-AgcJir0Vrr0yS2JR1HGrX4gSpAzMOfXi3r4wfx6poSuXhPKh2t6vg5bgjzUqZEIB
-hcfMDlhLZLcngbp1a3SkSn2NSLdyj4K6GuVCJcT2fvZQVNgwSKLIL3zjy0yZADYP
-02tVTAQJJ9PJ4RTizzuaYyMNriGjxrt33emFNEv40irvazMKx1b7GzJfJ1hBqIwz
-dA6pAy5iQLbc+WIE685utJevOJDNGp3vtdbwIXe+n97syALA/cKfjnr+g68g7qaJ
-hh7SrSgFfN7DhRnK3bq7Z+c9Mgv/oKMc2sMu+fVdAsIlfSspPuUN17Z68tBgRQV8
-F0LNjWamxueIL/h5kxYN
-=cdNj
------END PGP SIGNATURE-----
-
---PEIAKu/WMn1b1Hv9--
