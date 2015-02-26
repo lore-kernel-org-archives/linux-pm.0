@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/2] cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze() too
-Date: Fri, 27 Feb 2015 00:39:56 +0100
-Message-ID: <6897721.eAEtlVivc4@vostro.rjw.lan>
+Subject: [PATCH 1/2] idle / sleep: Avoid excessive interrupts disabling and enabling
+Date: Fri, 27 Feb 2015 00:39:21 +0100
+Message-ID: <1903605.mzgLz6Rq43@vostro.rjw.lan>
 References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <4425438.YlYNQyf1hp@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,71 +15,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify cpuidle_enter_freeze() to do the sanity checks done by
-cpuidle_select() to avoid crashing the suspend-to-idle code
-path in case something is missing.
+Disabling interrupts at the end of cpuidle_enter_freeze() is not
+useful, because its caller, cpuidle_idle_call(), re-enables them
+right away after invoking it.
 
-Original-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To avoid that unnecessary back and forth dance with interrupts,
+make cpuidle_enter_freeze() enable interrupts after calling
+enter_freeze_proper() and drop the local_irq_disable() at its
+end, so that all of the code paths in it end up with interrupts
+enabled.  Then, cpuidle_idle_call() will not need to re-enable
+interrupts after calling cpuidle_enter_freeze() any more, because
+the latter will return with interrupts enabled, in analogy with
+cpuidle_enter().
+
+Reported-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/cpuidle.c |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ drivers/cpuidle/cpuidle.c |    6 +++---
+ kernel/sched/idle.c       |    1 -
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
 Index: linux-pm/drivers/cpuidle/cpuidle.c
 ===================================================================
 --- linux-pm.orig/drivers/cpuidle/cpuidle.c
 +++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -44,6 +44,12 @@ void disable_cpuidle(void)
- 	off = 1;
- }
- 
-+static bool cpuidle_not_available(struct cpuidle_driver *drv,
-+				  struct cpuidle_device *dev)
-+{
-+	return off || !initialized || !drv || !dev || !dev->enabled;
-+}
-+
- /**
-  * cpuidle_play_dead - cpu off-lining
-  *
-@@ -126,6 +132,9 @@ void cpuidle_enter_freeze(void)
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int index;
- 
-+	if (cpuidle_not_available(drv, dev))
-+		goto fallback;
-+
- 	/*
- 	 * Find the deepest state with ->enter_freeze present, which guarantees
- 	 * that interrupts won't be enabled when it exits and allows the tick to
-@@ -143,10 +152,13 @@ void cpuidle_enter_freeze(void)
- 	 * at all and try to enter it normally.
- 	 */
- 	index = cpuidle_find_deepest_state(drv, dev, false);
--	if (index >= 0)
-+	if (index >= 0) {
- 		cpuidle_enter(drv, dev, index);
--	else
--		arch_cpu_idle();
-+		return;
-+	}
-+
-+ fallback:
-+	arch_cpu_idle();
- }
- 
- /**
-@@ -205,12 +217,9 @@ int cpuidle_enter_state(struct cpuidle_d
+@@ -117,6 +117,8 @@ static void enter_freeze_proper(struct c
+  * If there are states with the ->enter_freeze callback, find the deepest of
+  * them and enter it with frozen tick.  Otherwise, find the deepest state
+  * available and enter it normally.
++ *
++ * Returns with enabled interrupts.
   */
- int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ void cpuidle_enter_freeze(void)
  {
--	if (off || !initialized)
-+	if (cpuidle_not_available(drv, dev))
- 		return -ENODEV;
+@@ -132,6 +134,7 @@ void cpuidle_enter_freeze(void)
+ 	index = cpuidle_find_deepest_state(drv, dev, true);
+ 	if (index >= 0) {
+ 		enter_freeze_proper(drv, dev, index);
++		local_irq_enable();
+ 		return;
+ 	}
  
--	if (!drv || !dev || !dev->enabled)
--		return -EBUSY;
+@@ -144,9 +147,6 @@ void cpuidle_enter_freeze(void)
+ 		cpuidle_enter(drv, dev, index);
+ 	else
+ 		arch_cpu_idle();
 -
- 	return cpuidle_curr_governor->select(drv, dev);
+-	/* Interrupts are enabled again here. */
+-	local_irq_disable();
  }
+ 
+ /**
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -116,7 +116,6 @@ static void cpuidle_idle_call(void)
+ 	 */
+ 	if (idle_should_freeze()) {
+ 		cpuidle_enter_freeze();
+-		local_irq_enable();
+ 		goto exit_idle;
+ 	}
  
