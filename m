@@ -1,142 +1,203 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] drivers: cpuidle: add driver/device checks in cpuidle_enter_freeze()
-Date: Thu, 26 Feb 2015 01:35:50 +0100
-Message-ID: <15834207.00hEZkbSPy@vostro.rjw.lan>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <20150225144737.GD20214@red-moon> <2987982.3bDckoN2hb@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v4 11/20] power_supply: Change ownership from driver to
+ core
+Date: Thu, 26 Feb 2015 01:45:22 +0100
+Message-ID: <20150226004522.GB885@earth>
+References: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
+ <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62124 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752714AbbBZAMZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Feb 2015 19:12:25 -0500
-In-Reply-To: <2987982.3bDckoN2hb@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="3uo+9/B/ebqu+fSQ"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-acpi@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, patches@opensource.wolfsonmicro.com, ac100@lists.launchpad.net, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-
-On Thursday, February 26, 2015 12:50:58 AM Rafael J. Wysocki wrote:
-> On Wednesday, February 25, 2015 02:47:37 PM Lorenzo Pieralisi wrote:
-> > On Wed, Feb 25, 2015 at 02:30:49PM +0000, Daniel Lezcano wrote:
-> > > On 02/24/2015 06:58 PM, Lorenzo Pieralisi wrote:
-> > > > The changes in commit:
-> > > >
-> > > > 381063133246 ("PM / sleep: Re-implement suspend-to-idle handling")
-> > > >
-> > > > let suspend-to-idle code bypass the cpuidle_select() function to
-> > > > enter the deepest idle state. The sanity checks carried out in
-> > > > cpuidle_select() are bypassed too and this can cause breakage
-> > > > on systems that try to suspend-to-idle with no registered cpuidle
-> > > > driver.
-> > > >
-> > > > This patch factors out a function cpuidle_device_disabled() that
-> > > > is used to carry out sanity checks (ie CPUidle is disabled on the
-> > > > cpu executing the code) in both cpuidle_select() and cpuidle_enter_freeze()
-> > > > so that the checks are unified and carried out in both control paths.
-> > > >
-> > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > > > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > > > ---
-> > > >   drivers/cpuidle/cpuidle.c | 18 +++++++++++++-----
-> > > >   1 file changed, 13 insertions(+), 5 deletions(-)
-> > > >
-> > > > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > > > index f47edc6c..344fe6c 100644
-> > > > --- a/drivers/cpuidle/cpuidle.c
-> > > > +++ b/drivers/cpuidle/cpuidle.c
-> > > > @@ -44,6 +44,12 @@ void disable_cpuidle(void)
-> > > >   	off = 1;
-> > > >   }
-> > > >
-> > > > +static bool cpuidle_device_disabled(struct cpuidle_driver *drv,
-> > > > +				    struct cpuidle_device *dev)
-> > > > +{
-> > > > +	return (off || !initialized || !drv || !dev || !dev->enabled);
-> > > > +}
-> > > 
-> > > This is getting a bit fuzzy IMO. What means disabled ? :)
-> > 
-> > Well, that's just the current checks in cpuidle_select() (that by
-> > the way is supposed to return an index) merged together with a function
-> > name, to reuse the same checks in cpuidle_enter_freeze().
-> > I have no problem leaving the checks as they are at the moment and
-> > replicate them in cpuidle_enter_freeze() but given your remark below,
-> > we should do something different in there.
-> 
-> Maybe something like the patch below (untested)?
-
-That's slightly inefficient for things that don't support ->enter_freeze
-and, moreover, all negative return values of cpuidle_select() are equivalent,
-so I ended up with something similar to the original Lorenzo's patch (on
-top of https://patchwork.kernel.org/patch/5885171/ (still untested).
-
-Rafael
 
 
----
- drivers/cpuidle/cpuidle.c |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+--3uo+9/B/ebqu+fSQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -44,6 +44,12 @@ void disable_cpuidle(void)
- 	off = 1;
- }
- 
-+static bool cpuidle_not_available(struct cpuidle_driver *drv,
-+				  struct cpuidle_device *dev)
-+{
-+	return off || !initialized || !drv || !dev || !dev->enabled;
-+}
-+
- /**
-  * cpuidle_play_dead - cpu off-lining
-  *
-@@ -124,6 +130,9 @@ void cpuidle_enter_freeze(void)
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int index;
- 
-+	if (cpuidle_not_available(drv, dev))
-+		goto fallback;
-+
- 	/*
- 	 * Find the deepest state with ->enter_freeze present, which guarantees
- 	 * that interrupts won't be enabled when it exits and allows the tick to
-@@ -141,11 +150,14 @@ void cpuidle_enter_freeze(void)
- 	 * at all and try to enter it normally.
- 	 */
- 	index = cpuidle_find_deepest_state(drv, dev, false);
--	if (index >= 0)
-+	if (index >= 0) {
- 		cpuidle_enter(drv, dev, index);
--	else
--		arch_cpu_idle();
-+		/* Interrupts are enabled again here. */
-+		return;
-+	}
- 
-+ fallback:
-+	arch_cpu_idle();
- 	/* Interrupts are enabled again here. */
- }
- 
-@@ -205,12 +217,9 @@ int cpuidle_enter_state(struct cpuidle_d
-  */
- int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	if (off || !initialized)
-+	if (cpuidle_not_available(drv, dev))
- 		return -ENODEV;
- 
--	if (!drv || !dev || !dev->enabled)
--		return -EBUSY;
--
- 	return cpuidle_curr_governor->select(drv, dev);
- }
- 
+Hi,
 
+On Mon, Feb 23, 2015 at 12:47:32PM +0100, Krzysztof Kozlowski wrote:
+> Change the ownership of power_supply structure from each driver
+> implementing the class to the power supply core.
+>=20
+> The patch changes power_supply_register() function thus all drivers
+> implementing power supply class are adjusted.
+>=20
+> Each driver provides the implementation of power supply. However it
+> should not be the owner of power supply class instance because it is
+> exposed by core to other subsystems with power_supply_get_by_name().
+> These other subsystems have no knowledge when the driver will unregister
+> the power supply. This leads to several issues when driver is unbound -
+> mostly because user of power supply accesses freed memory.
+>=20
+> Instead let the core own the instance of struct 'power_supply'.  Other
+> users of this power supply will still access valid memory because it
+> will be freed when device reference count reaches 0. Currently this
+> means "it will leak" but power_supply_put() call in next patches will
+> solve it.
+>=20
+> This solves invalid memory references in following race condition
+> scenario:
+>=20
+> Thread 1: charger manager
+> Thread 2: power supply driver, used by charger manager
+>=20
+> THREAD 1 (charger manager)         THREAD 2 (power supply driver)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D         =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> psy =3D power_supply_get_by_name()
+>                                    Driver unbind, .remove
+>                                      power_supply_unregister()
+>                                      Device fully removed
+> psy->get_property()
+>=20
+> The 'get_property' call is executed in invalid context because the driver=
+ was
+> unbound and struct 'power_supply' memory was freed.
+>=20
+> This could be observed easily with charger manager driver (here compiled
+> with max17040 fuel gauge):
+>=20
+> $ cat /sys/devices/virtual/power_supply/cm-battery/capacity &
+> $ echo "1-0036" > /sys/bus/i2c/drivers/max17040/unbind
+> [   55.725123] Unable to handle kernel NULL pointer dereference at virtua=
+l address 00000000
+> [   55.732584] pgd =3D d98d4000
+> [   55.734060] [00000000] *pgd=3D5afa2831, *pte=3D00000000, *ppte=3D00000=
+000
+> [   55.740318] Internal error: Oops: 80000007 [#1] PREEMPT SMP ARM
+> [   55.746210] Modules linked in:
+> [   55.749259] CPU: 1 PID: 2936 Comm: cat Tainted: G        W       3.19.=
+0-rc1-next-20141226-00048-gf79f475f3c44-dirty #1496
+> [   55.760190] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+> [   55.766270] task: d9b76f00 ti: daf54000 task.ti: daf54000
+> [   55.771647] PC is at 0x0
+> [   55.774182] LR is at charger_get_property+0x2f4/0x36c
+> [   55.779201] pc : [<00000000>]    lr : [<c034b0b4>]    psr: 60000013
+> [   55.779201] sp : daf55e90  ip : 00000003  fp : 00000000
+> [   55.790657] r10: 00000000  r9 : c06e2878  r8 : d9b26c68
+> [   55.795865] r7 : dad81610  r6 : daec7410  r5 : daf55ebc  r4 : 00000000
+> [   55.802367] r3 : 00000000  r2 : daf55ebc  r1 : 0000002a  r0 : d9b26c68
+> [   55.808879] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segme=
+nt user
+> [   55.815994] Control: 10c5387d  Table: 598d406a  DAC: 00000015
+> [   55.821723] Process cat (pid: 2936, stack limit =3D 0xdaf54210)
+> [   55.827451] Stack: (0xdaf55e90 to 0xdaf56000)
+> [   55.831795] 5e80:                                     60000013 c01459c=
+4 0000002a c06f8ef8
+> [   55.839956] 5ea0: db651000 c06f8ef8 daebac00 c04cb668 daebac08 c034686=
+4 00000000 c01459c4
+> [   55.848115] 5ec0: d99eaa80 c06f8ef8 00000fff 00001000 db651000 c027f25=
+c c027f240 d99eaa80
+> [   55.856274] 5ee0: d9a06c00 c0146218 daf55f18 00001000 d99eaa80 db4c18c=
+0 00000001 00000001
+> [   55.864468] 5f00: daf55f80 c0144c78 c0144c54 c0107f90 00015000 d99eaab=
+0 00000000 00000000
+> [   55.872603] 5f20: 000051c7 00000000 db4c18c0 c04a9370 00015000 0000100=
+0 daf55f80 00001000
+> [   55.880763] 5f40: daf54000 00015000 00000000 c00e53dc db4c18c0 c00e548=
+c 0000000d 00008124
+> [   55.888937] 5f60: 00000001 00000000 00000000 db4c18c0 db4c18c0 0000100=
+0 00015000 c00e5550
+> [   55.897099] 5f80: 00000000 00000000 00001000 00001000 00015000 0000000=
+3 00000003 c000f364
+> [   55.905239] 5fa0: 00000000 c000f1a0 00001000 00015000 00000003 0001500=
+0 00001000 0001333c
+> [   55.913399] 5fc0: 00001000 00015000 00000003 00000003 00000002 0000000=
+0 00000000 00000000
+> [   55.921560] 5fe0: 7fffe000 be999850 0000a225 b6f3c19c 60000010 0000000=
+3 00000000 00000000
+> [   55.929744] [<c034b0b4>] (charger_get_property) from [<c0346864>] (pow=
+er_supply_show_property+0x48/0x20c)
+> [   55.939286] [<c0346864>] (power_supply_show_property) from [<c027f25c>=
+] (dev_attr_show+0x1c/0x48)
+> [   55.948130] [<c027f25c>] (dev_attr_show) from [<c0146218>] (sysfs_kf_s=
+eq_show+0x84/0x104)
+> [   55.956298] [<c0146218>] (sysfs_kf_seq_show) from [<c0144c78>] (kernfs=
+_seq_show+0x24/0x28)
+> [   55.964536] [<c0144c78>] (kernfs_seq_show) from [<c0107f90>] (seq_read=
++0x1b0/0x484)
+> [   55.972172] [<c0107f90>] (seq_read) from [<c00e53dc>] (__vfs_read+0x18=
+/0x4c)
+> [   55.979188] [<c00e53dc>] (__vfs_read) from [<c00e548c>] (vfs_read+0x7c=
+/0x100)
+> [   55.986304] [<c00e548c>] (vfs_read) from [<c00e5550>] (SyS_read+0x40/0=
+x8c)
+> [   55.993164] [<c00e5550>] (SyS_read) from [<c000f1a0>] (ret_fast_syscal=
+l+0x0/0x48)
+> [   56.000626] Code: bad PC value
+> [   56.011652] ---[ end trace 7b64343fbdae8ef1 ]---
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>=20
+> [for the nvec part]
+> Reviewed-by: Marc Dietrich <marvin24@gmx.de>
+> ---
+>  arch/x86/platform/olpc/olpc-xo1-sci.c     |   4 +-
+>  arch/x86/platform/olpc/olpc-xo15-sci.c    |   4 +-
+>  drivers/acpi/ac.c                         |  32 +++---
+>  drivers/acpi/battery.c                    |  55 +++++-----
+>  drivers/acpi/sbs.c                        |  68 +++++++-----
+>  drivers/hid/hid-input.c                   |  51 +++++----
+>  drivers/hid/hid-sony.c                    |  43 ++++----
+>  drivers/hid/hid-wiimote-modules.c         |  41 +++----
+>  drivers/hid/hid-wiimote.h                 |   3 +-
+>  drivers/hid/wacom.h                       |   8 +-
+>  drivers/hid/wacom_sys.c                   |  71 ++++++------
+>  drivers/platform/x86/compal-laptop.c      |  29 +++--
+>  drivers/power/[...]                       |  lots of changes
+>  drivers/staging/nvec/nvec_power.c         |  29 +++--
+>  include/linux/hid.h                       |   6 +-
+>  include/linux/mfd/abx500/ux500_chargalg.h |  11 +-
+>  include/linux/mfd/rt5033.h                |   2 +-
+>  include/linux/mfd/wm8350/supply.h         |   6 +-
+>  include/linux/power/charger-manager.h     |   3 +-
+>  include/linux/power_supply.h              |  39 ++++---
+>  80 files changed, 2172 insertions(+), 1756 deletions(-)
+
+I would like to merge this via the power supply subsystem. Some of
+the files being patched are not under my maintainence, though. It
+would be nice if I get an Acked-By from their maintainers.
+
+As far as I can see this patch is currently missing feedback from:
+
+arch/x86/platform/olpc: x86 Maintainers
+drivers/acpi: Rafael J. Wysocki, Len Brown
+drivers/hid: Jiri Kosina
+drivers/platform/x86: Darren Hart
+
+-- Sebastian
+
+--3uo+9/B/ebqu+fSQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU7myfAAoJENju1/PIO/qaFmkQAIFRUAvn/d9O/g5qiUAegRFo
+txL+BJeAfIaHOZM011AzdIxFUdYP+Xpwz52BgttkFL892o6fHUiC5OsdFHeCOP96
+8xNKLhIdQvH676Zu0yxGPC12cdFPUC89WqqtWpI4GmLl7bMR+j2LLpc0p1FWwn1n
+BTo+gxP2rCYpHSXjP9xbj1CMr+oESzgTVhW4zPzgSi5pBfQyVvB1s/U8jFXkKqoO
+yBv3SHYbLfpQlC7zJ/EIy7gDOBRIxGwq+D93JpNd5VmJduUygOzmeSDGpT+Vhf08
+tnxzzzRfnoThd2g5XkixMIZ+UnQFH2sVR83WbZvKNc3r7ruo0CrmAdMVsrYNobfa
+gJ6HQ+wuAYyXsfdj7Knu+t6g5wxteflYmGyrVhrS9SFwSdd7i3k5uyzHiIRSO3dW
+WCSQA0nxF08s+FZ/YQqFShwsFbsBwQVYcNwKDi0znUi4Kf4N8T7zV4ZK5+xfNZIX
+VF/K0EWsO6kMXpnmli1n8Bt96U8L1E/zd/PZVHhwjsGqK4dglpRrjXKycGPN9RO9
+Im8jfR/pNQi0SdB0vD/Ol5fo5bOr32PYhBKycQ23NtxVPBILa5JD1ICRxlUD5ysS
+ESoMvDp1O53xYgjMGMwgWlgW23vH5af9SgosfmGSrCNMewTrgLBbv5qcpIeQbcSW
+rOFYeCvolMKkfuM6jhXZ
+=vQht
+-----END PGP SIGNATURE-----
+
+--3uo+9/B/ebqu+fSQ--
