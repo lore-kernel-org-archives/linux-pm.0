@@ -1,100 +1,97 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] dmaengine: shdma: Move DMA stop to (runtime) suspend callbacks
-Date: Thu, 26 Feb 2015 11:26:34 +0100
-Message-ID: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:52925 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbbBZK05 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 05:26:57 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2] cpufreq: exynos: Use simple approach to asses if cpu
+ cooling can be used
+Date: Thu, 26 Feb 2015 11:36:24 +0100
+Message-ID: <20150226113624.2caa3b4c@amdc2363>
+References: <20150204100025.565ee2b0@amdc2363>
+ <1423151689-27490-1-git-send-email-l.majewski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1423151689-27490-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, dmaengine@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-During system reboot, the sh-dma-engine device may be runtime-suspended,
-causing a crash:
+Hi Eduardo,
 
-    Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
-    Internal error: : 1406 [#1] SMP ARM
-    ...
-    PC is at sh_dmae_ctl_stop+0x28/0x64
-    LR is at sh_dmae_ctl_stop+0x24/0x64
+> Commit: e725d26c4857e5e41975b5e74e64ce6ab09a7121 provided possibility
+> to use device tree to asses if cpu can be used as cooling device.
+> Since the code was somewhat awkward, simpler approach has been
+> proposed.
+> 
+> Test HW: Exynos 4412 - Odroid U3.
+> 
+> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-If the sh-dma-engine is runtime-suspended, its module clock is turned
-off, and its registers cannot be accessed.
+This patch is also missing from linux-thermal-soc tree.
 
-To fix this, move the call to sh_dmae_ctl_stop(), which touches the
-DMAOR register, to the sh_dmae_suspend() and sh_dmae_runtime_suspend()
-callbacks.  This makes PM operations more symmetric, as both
-sh_dmae_resume() and sh_dmae_runtime_resume() already call sh_dmae_rst()
-to re-initialize the DMAOR register.
+I will add it to samsung thermal tree, since Viresh has ACK'ed it.
 
-Remove sh_dmae_shutdown(), as it became empty.
+> ---
+> Changes for v2:
+> - Remove superfluous *np pointer
+> ---
+>  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++---------------
+>  1 file changed, 6 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c
+> b/drivers/cpufreq/exynos-cpufreq.c index 5e98c6b..82d2fbb 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -159,7 +159,7 @@ static struct cpufreq_driver exynos_driver = {
+>  
+>  static int exynos_cpufreq_probe(struct platform_device *pdev)
+>  {
+> -	struct device_node *cpus, *np;
+> +	struct device_node *cpu0;
+>  	int ret = -EINVAL;
+>  
+>  	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
+> @@ -206,28 +206,19 @@ static int exynos_cpufreq_probe(struct
+> platform_device *pdev) if (ret)
+>  		goto err_cpufreq_reg;
+>  
+> -	cpus = of_find_node_by_path("/cpus");
+> -	if (!cpus) {
+> -		pr_err("failed to find cpus node\n");
+> +	cpu0 = of_get_cpu_node(0, NULL);
+> +	if (!cpu0) {
+> +		pr_err("failed to find cpu0 node\n");
+>  		return 0;
+>  	}
+>  
+> -	np = of_get_next_child(cpus, NULL);
+> -	if (!np) {
+> -		pr_err("failed to find cpus child node\n");
+> -		of_node_put(cpus);
+> -		return 0;
+> -	}
+> -
+> -	if (of_find_property(np, "#cooling-cells", NULL)) {
+> -		cdev = of_cpufreq_cooling_register(np,
+> +	if (of_find_property(cpu0, "#cooling-cells", NULL)) {
+> +		cdev = of_cpufreq_cooling_register(cpu0,
+>  						   cpu_present_mask);
+>  		if (IS_ERR(cdev))
+>  			pr_err("running cpufreq without cooling
+> device: %ld\n", PTR_ERR(cdev));
+>  	}
+> -	of_node_put(np);
+> -	of_node_put(cpus);
+>  
+>  	return 0;
+>  
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-This is v3 of "dmaengine: shdma: Runtime-resume device in .shutdown()"
 
-v3:
-  - Move the call to sh_dmae_ctl_stop() to sh_dmae_suspend() and
-    sh_dmae_runtime_suspend() instead of runtime-resuming the device in
-    .shutdown(),
 
-v2:
-  - Do nothing if we're runtime suspended.
----
- drivers/dma/sh/shdmac.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
-index b2431aa300331270..9f1d4c7dbab83890 100644
---- a/drivers/dma/sh/shdmac.c
-+++ b/drivers/dma/sh/shdmac.c
-@@ -582,15 +582,12 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
- 	}
- }
- 
--static void sh_dmae_shutdown(struct platform_device *pdev)
--{
--	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
--	sh_dmae_ctl_stop(shdev);
--}
--
- #ifdef CONFIG_PM
- static int sh_dmae_runtime_suspend(struct device *dev)
- {
-+	struct sh_dmae_device *shdev = dev_get_drvdata(dev);
-+
-+	sh_dmae_ctl_stop(shdev);
- 	return 0;
- }
- 
-@@ -605,6 +602,9 @@ static int sh_dmae_runtime_resume(struct device *dev)
- #ifdef CONFIG_PM_SLEEP
- static int sh_dmae_suspend(struct device *dev)
- {
-+	struct sh_dmae_device *shdev = dev_get_drvdata(dev);
-+
-+	sh_dmae_ctl_stop(shdev);
- 	return 0;
- }
- 
-@@ -929,13 +929,12 @@ static int sh_dmae_remove(struct platform_device *pdev)
- }
- 
- static struct platform_driver sh_dmae_driver = {
--	.driver 	= {
-+	.driver		= {
- 		.pm	= &sh_dmae_pm,
- 		.name	= SH_DMAE_DRV_NAME,
- 		.of_match_table = sh_dmae_of_match,
- 	},
- 	.remove		= sh_dmae_remove,
--	.shutdown	= sh_dmae_shutdown,
- };
- 
- static int __init sh_dmae_init(void)
 -- 
-1.9.1
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
