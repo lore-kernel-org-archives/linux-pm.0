@@ -1,97 +1,45 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2] cpufreq: exynos: Use simple approach to asses if cpu
- cooling can be used
-Date: Thu, 26 Feb 2015 11:36:24 +0100
-Message-ID: <20150226113624.2caa3b4c@amdc2363>
-References: <20150204100025.565ee2b0@amdc2363>
- <1423151689-27490-1-git-send-email-l.majewski@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 11/20] power_supply: Change ownership from driver to core
+Date: Thu, 26 Feb 2015 12:28:17 +0100
+Message-ID: <1424950097.19456.4.camel@AMDC1943>
+References: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
+ <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
+ <20150226004522.GB885@earth> <20150226061438.GB7331@fury.dvhart.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1423151689-27490-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:12830 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbbBZL2V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Feb 2015 06:28:21 -0500
+In-reply-to: <20150226061438.GB7331@fury.dvhart.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, platform-driver-x86@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hi Eduardo,
+On =C5=9Bro, 2015-02-25 at 22:14 -0800, Darren Hart wrote:
+> On Thu, Feb 26, 2015 at 01:45:22AM +0100, Sebastian Reichel wrote:
 
-> Commit: e725d26c4857e5e41975b5e74e64ce6ab09a7121 provided possibility
-> to use device tree to asses if cpu can be used as cooling device.
-> Since the code was somewhat awkward, simpler approach has been
-> proposed.
-> 
-> Test HW: Exynos 4412 - Odroid U3.
-> 
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+(...)
 
-This patch is also missing from linux-thermal-soc tree.
+> > I would like to merge this via the power supply subsystem. Some of
+> > the files being patched are not under my maintainence, though. It
+> > would be nice if I get an Acked-By from their maintainers.
+> >=20
+> > As far as I can see this patch is currently missing feedback from:
+> >=20
+> > arch/x86/platform/olpc: x86 Maintainers
+> > drivers/acpi: Rafael J. Wysocki, Len Brown
+> > drivers/hid: Jiri Kosina
+> > drivers/platform/x86: Darren Hart
+>=20
+> For compal-laptop.c:
+>=20
+> Acked-by: Darren Hart <dvhart@linux.intel.com>
 
-I will add it to samsung thermal tree, since Viresh has ACK'ed it.
+Hi Darren,
 
-> ---
-> Changes for v2:
-> - Remove superfluous *np pointer
-> ---
->  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++---------------
->  1 file changed, 6 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/exynos-cpufreq.c
-> b/drivers/cpufreq/exynos-cpufreq.c index 5e98c6b..82d2fbb 100644
-> --- a/drivers/cpufreq/exynos-cpufreq.c
-> +++ b/drivers/cpufreq/exynos-cpufreq.c
-> @@ -159,7 +159,7 @@ static struct cpufreq_driver exynos_driver = {
->  
->  static int exynos_cpufreq_probe(struct platform_device *pdev)
->  {
-> -	struct device_node *cpus, *np;
-> +	struct device_node *cpu0;
->  	int ret = -EINVAL;
->  
->  	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
-> @@ -206,28 +206,19 @@ static int exynos_cpufreq_probe(struct
-> platform_device *pdev) if (ret)
->  		goto err_cpufreq_reg;
->  
-> -	cpus = of_find_node_by_path("/cpus");
-> -	if (!cpus) {
-> -		pr_err("failed to find cpus node\n");
-> +	cpu0 = of_get_cpu_node(0, NULL);
-> +	if (!cpu0) {
-> +		pr_err("failed to find cpu0 node\n");
->  		return 0;
->  	}
->  
-> -	np = of_get_next_child(cpus, NULL);
-> -	if (!np) {
-> -		pr_err("failed to find cpus child node\n");
-> -		of_node_put(cpus);
-> -		return 0;
-> -	}
-> -
-> -	if (of_find_property(np, "#cooling-cells", NULL)) {
-> -		cdev = of_cpufreq_cooling_register(np,
-> +	if (of_find_property(cpu0, "#cooling-cells", NULL)) {
-> +		cdev = of_cpufreq_cooling_register(cpu0,
->  						   cpu_present_mask);
->  		if (IS_ERR(cdev))
->  			pr_err("running cpufreq without cooling
-> device: %ld\n", PTR_ERR(cdev));
->  	}
-> -	of_node_put(np);
-> -	of_node_put(cpus);
->  
->  	return 0;
->  
+Could you also look at my other fixes sent few days ago:
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
