@@ -1,76 +1,54 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 5/7] thermal: add trace events to the power allocator
- governor
-Date: Thu, 26 Feb 2015 15:46:34 -0400
-Message-ID: <20150226194633.GC4941@developer.amazonguestwifi.org>
-References: <1424977233-15965-1-git-send-email-javi.merino@arm.com>
- <1424977233-15965-6-git-send-email-javi.merino@arm.com>
- <20150226143845.67e00224@gandalf.local.home>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH v6 00/18] thermal: exynos: Thermal code rework to use
+ device tree
+Date: Fri, 27 Feb 2015 06:21:25 +0900
+Message-ID: <54EF8E55.5050803@kernel.org>
+References: <1421666462-7606-1-git-send-email-l.majewski@samsung.com> <1422015010-11918-1-git-send-email-l.majewski@samsung.com> <20150124214955.GA14443@developer.hsd1.ca.comcast.net> <54CAC3A2.5060804@kernel.org> <20150223111338.11ca4b6c@amdc2363> <039101d04f5a$80147660$803d6320$@kernel.org> <20150226165659.1a37de79@amdc2363>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UPT3ojh+0CqEDtpF"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150226143845.67e00224@gandalf.local.home>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Javi Merino <javi.merino@arm.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, broonie@kernel.org, tixy@linaro.org, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150226165659.1a37de79@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, 'Eduardo Valentin' <edubezval@gmail.com>, 'Zhang Rui' <rui.zhang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, 'Abhilash Kesavan' <a.kesavan@samsung.com>, 'Chanwoo Choi' <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 02/27/15 00:56, Lukasz Majewski wrote:
+> Hi Kukjin,
+> 
+>> Lukasz Majewski wrote:
+>>>
+>>> Hi Kukjin, Eduardo
+>>>
+>> Hi,
 
---UPT3ojh+0CqEDtpF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[...]
 
-On Thu, Feb 26, 2015 at 02:38:45PM -0500, Steven Rostedt wrote:
-> On Thu, 26 Feb 2015 19:00:31 +0000
-> Javi Merino <javi.merino@arm.com> wrote:
->=20
-> > Add trace events for the power allocator governor and the power actor
-> > interface of the cpu cooling device.
->=20
-> For the tracing parts...
->=20
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
+>>> Kukjin, could you add missing DTS files and send this to upstream.
+>>>
+>> Unfortunately, I couldn't take the DT changes in Samsung tree at that
+>> time because of missing header file and it causes build error. Now I
+>> can pick them into Samsung tree but I'm not sure it can be sent to
+>> upstream during this -rc...
+>>
+>> Eduardo, Lukasz,
+>> Do you guys think the DT changes are really fixes for 4.0?
+> 
+> I've created following repository with DTS files:
+> 
+> https://github.com/lmajewski/linux-samsung-thermal.git
+> 
+> Branch: devel.
+> 
+> On top of the v4.0-rc1 tag you will find all necessary patches for
+> fixing thermal regression at Samsung Exynos boards.
+> 
+> I hope, that organizing all patches in a separate repository will
+> facilitate and speed up the inclusion process.
 
-Thanks Steve.
+I already did :-) If any problems on the branch
+(v4.0-samsung-dt-tmu-hdmi) in my tree, please kindly let me know.
 
-I am planing to apply this series to my thermal soc tree. Do you have
-any concerns if I send this patch, which touches the tracing files, via
-my tree?
-
-BR,
-
-
-Eduardo Valentin
-
->=20
-> -- Steve
->=20
-> >=20
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-
---UPT3ojh+0CqEDtpF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU73gRAAoJEMLUO4d9pOJW84AH/jjOF5RbuWpv4yI5PFhaF9gC
-4/ZFPdjFB+daUnVoDbZO4py892QN9qR6znGvEzEiLHdbhvuG1Kp1e2MrMyAqSgj1
-sWdeXMgR16mtQBeibDTworQZ4iCN7hTzMq3p+N3nWMSq0uCPctO/OlldoG0Y+86f
-Fm48EohaSfMWTppKzV1h0JfksyfRMUpFDo2Apa0aTdvLhXWEpNoqP+qv7KBg5DFy
-6vw+l3iQBuDyl1un2SKAipLH+MMpy62xXrjkjSQAGm50kO0qaQePQJShLaevuAtu
-3NZ77O5Vqmg0O5X3UgJ6gQdzuXrKNSl5coFAq/YtEiaFiCPngJ0WXpaC/4LvxSs=
-=Jgpg
------END PGP SIGNATURE-----
-
---UPT3ojh+0CqEDtpF--
+Thanks,
+Kukjin
