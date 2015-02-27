@@ -1,130 +1,162 @@
-From: Kumar Gala <galak@codeaurora.org>
-Subject: Re: [PATCH v2] qcom: scm: Add qcom_scm_set_warm_boot_addr function
-Date: Fri, 27 Feb 2015 15:33:45 -0600
-Message-ID: <EB14AE95-372C-4908-AD4B-D354A01197B7@codeaurora.org>
-References: <1425070047-53449-1-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1425070047-53449-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, khilman@linaro.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
+Date: Fri, 27 Feb 2015 23:11:54 +0100
+Message-ID: <3517340.oYgK5BBDND@vostro.rjw.lan>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <4425438.YlYNQyf1hp@vostro.rjw.lan> <20150227100000.GA5975@red-moon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150227100000.GA5975@red-moon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, preeti@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, February 27, 2015 10:00:00 AM Lorenzo Pieralisi wrote:
+> [CC'ed Preeti]
+> 
+> On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
+> > Me versions of the two $subject patches follow.
+> 
+> Thank you. I am testing them and I have run into the following issue.
+> 
+> Starting with:
+> 
+> 3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
+> 
+> the suspend-to-idle code path in the cpuidle_idle_call() bypasses
+> the CPUIDLE_FLAG_TIMER_STOP code path entirely.
 
-On Feb 27, 2015, at 2:47 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+Hmm, this looks like a mistake.  Sorry about that.
 
-> A core can be powered down for cpuidle or when it is hotplugged off. =
-In
-> either case, the warmboot return address would be different. Allow
-> setting the warmboot address for a specific cpu, optimize and write t=
-o
-> the firmware, if the address is different than the previously set
-> address.
->=20
-> Export qcom_scm_set_warm_boot_addr function move the warm boot flags =
-to
-> implementation.
->=20
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
-> drivers/firmware/qcom_scm.c | 36 ++++++++++++++++++++++++++++++++++++
-> include/linux/qcom_scm.h    |  5 +----
-> 2 files changed, 37 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.=
-c
-> index 6e7a72b..19133ca 100644
-> --- a/drivers/firmware/qcom_scm.c
-> +++ b/drivers/firmware/qcom_scm.c
-> @@ -34,6 +34,23 @@
-> #define QCOM_SCM_ERROR		-1
-> #define QCOM_SCM_INTERRUPTED	1
->=20
-> +#define QCOM_SCM_FLAG_WARMBOOT_CPU0	0x04
-> +#define QCOM_SCM_FLAG_WARMBOOT_CPU1	0x02
-> +#define QCOM_SCM_FLAG_WARMBOOT_CPU2	0x10
-> +#define QCOM_SCM_FLAG_WARMBOOT_CPU3	0x40
-> +
-> +struct scm_warmboot {
-> +	int flag;
-> +	void *entry;
-> +};
-> +
-> +static struct scm_warmboot scm_flags[] =3D {
-> +	{ .flag =3D QCOM_SCM_FLAG_WARMBOOT_CPU0 },
-> +	{ .flag =3D QCOM_SCM_FLAG_WARMBOOT_CPU1 },
-> +	{ .flag =3D QCOM_SCM_FLAG_WARMBOOT_CPU2 },
-> +	{ .flag =3D QCOM_SCM_FLAG_WARMBOOT_CPU3 },
-> +};
-> +
-> static DEFINE_MUTEX(qcom_scm_lock);
->=20
-> /**
-> @@ -342,3 +359,22 @@ int qcom_scm_set_boot_addr(u32 addr, int flags)
-> 			&cmd, sizeof(cmd), NULL, 0);
-> }
-> EXPORT_SYMBOL(qcom_scm_set_boot_addr);
-> +
+> Now, on most of
+> the current ARM platforms, the deepest idle state loses the tick device
+> context, therefore this means that going to idle through
+> suspend-to-idle becomes a brute force way of nuking the tick,
+> unless I am missing something here.
+> 
+> I am experiencing hangs on resume from suspend-to-idle when the broadcast
+> timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
+> platform) and the deepest idle states lose the tick device context (ie
+> they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
+> Power, still chasing the issue.
+> 
+> I could not reproduce the issue with a HW broadcast timer device.
+> 
+> Platform has deepest idle states that allow CPUs shutdown where the
+> local tick device is gone on entry, I am trying to provide you with a
+> backtrace, I need time to debug.
+> 
+> The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
+> and related broadcast mode entry/exit in the suspend-to-idle path ?
+> 
+> I do not think it is, but I am asking.
 
-Since you are adding a new interface, can you add Kdoc style comment he=
-ader.  I need to do this for the other interfaces as well.
+It isn't in general, but it would be OK in the enter_freeze_proper() path
+where the tick is suspended anyway.
 
-> +int qcom_scm_set_warm_boot_addr(void *entry, int cpu)
+> I can "force" tick freeze by initializing the enter_freeze pointer
+> in the idle states (that's the next thing I will test), but still, for
+> platforms where that's not possible my question above is still valid.
 
-I=92d really like to see if we could make the set_boot_addr and set_war=
-m_boot_addr have the same interfaces.
+Right.
 
-> +{
-> +	int ret;
-> +
-> +	/*
-> +	 * Reassign only if we are switching from hotplug entry point
-> +	 * to cpuidle entry point or vice versa.
-> +	 */
-> +	if (entry =3D=3D scm_flags[cpu].entry)
-> +		return 0;
-> +
-> +	ret =3D qcom_scm_set_boot_addr(virt_to_phys(entry), scm_flags[cpu].=
-flag);
-> +	if (!ret)
-> +		scm_flags[cpu].entry  =3D entry;
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(qcom_scm_set_warm_boot_addr);
-> diff --git a/include/linux/qcom_scm.h b/include/linux/qcom_scm.h
-> index 6bb84cf..fc5aae4 100644
-> --- a/include/linux/qcom_scm.h
-> +++ b/include/linux/qcom_scm.h
-> @@ -15,12 +15,9 @@
-> #define QCOM_SCM_FLAG_COLDBOOT_CPU1		0x01
-> #define QCOM_SCM_FLAG_COLDBOOT_CPU2		0x08
-> #define QCOM_SCM_FLAG_COLDBOOT_CPU3		0x20
-> -#define QCOM_SCM_FLAG_WARMBOOT_CPU0		0x04
-> -#define QCOM_SCM_FLAG_WARMBOOT_CPU1		0x02
-> -#define QCOM_SCM_FLAG_WARMBOOT_CPU2		0x10
-> -#define QCOM_SCM_FLAG_WARMBOOT_CPU3		0x40
->=20
-> extern int qcom_scm_set_boot_addr(u32 addr, int flags);
-> +extern int qcom_scm_set_warm_boot_addr(void *entry, int cpu);
->=20
-> #define QCOM_SCM_VERSION(major, minor) (((major) << 16) | ((minor) & =
-0xFF))
->=20
-> --=20
-> 2.1.0
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-m=
-sm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Does the patch below help (on top of the previous ones)?
 
---=20
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
-um,
-a Linux Foundation Collaborative Project
+Rafael
+
+
+---
+ drivers/cpuidle/cpuidle.c |   31 ++++++++++++++++++++++++++-----
+ kernel/sched/idle.c       |   17 ++---------------
+ 2 files changed, 28 insertions(+), 20 deletions(-)
+
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -230,15 +230,36 @@ int cpuidle_select(struct cpuidle_driver
+  * @dev:   the cpuidle device
+  * @index: the index in the idle state table
+  *
+- * Returns the index in the idle state, < 0 in case of error.
+- * The error code depends on the backend driver
++ * Returns the index in the idle state, < 0 in case of error.  -EBUSY is
++ * returned to indicate that the target state was temporarily unavailable.
++ * The other error codes depend on the backend driver.
+  */
+ int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 		  int index)
+ {
+-	if (cpuidle_state_is_coupled(dev, drv, index))
+-		return cpuidle_enter_state_coupled(dev, drv, index);
+-	return cpuidle_enter_state(dev, drv, index);
++	unsigned int broadcast;
++	int ret;
++
++	broadcast = drv->states[index].flags & CPUIDLE_FLAG_TIMER_STOP;
++
++	/*
++	 * Tell the time framework to switch to a broadcast timer
++	 * because our local timer will be shutdown. If a local timer
++	 * is used from another cpu as a broadcast timer, this call may
++	 * fail if it is not available
++	 */
++	if (broadcast &&
++	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
++		return -EBUSY;
++
++	ret = cpuidle_state_is_coupled(dev, drv, index) ?
++		cpuidle_enter_state_coupled(dev, drv, index) :
++		cpuidle_enter_state(dev, drv, index);
++
++	if (broadcast)
++		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++
++	return ret;
+ }
+ 
+ /**
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int next_state, entered_state;
+-	unsigned int broadcast;
+ 
+ 	/*
+ 	 * Check if the idle task must be rescheduled. If it is the
+@@ -151,18 +150,6 @@ use_default:
+ 		goto exit_idle;
+ 	}
+ 
+-	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
+-
+-	/*
+-	 * Tell the time framework to switch to a broadcast timer
+-	 * because our local timer will be shutdown. If a local timer
+-	 * is used from another cpu as a broadcast timer, this call may
+-	 * fail if it is not available
+-	 */
+-	if (broadcast &&
+-	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
+-		goto use_default;
+-
+ 	/* Take note of the planned idle state. */
+ 	idle_set_state(this_rq(), &drv->states[next_state]);
+ 
+@@ -176,8 +163,8 @@ use_default:
+ 	/* The cpu is no longer idle or about to enter idle. */
+ 	idle_set_state(this_rq(), NULL);
+ 
+-	if (broadcast)
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	if (entered_state == -EBUSY)
++		goto use_default;
+ 
+ 	/*
+ 	 * Give the governor an opportunity to reflect on the outcome
