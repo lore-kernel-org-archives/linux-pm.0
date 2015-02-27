@@ -1,103 +1,91 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2] qcom: scm: Add qcom_scm_set_warm_boot_addr function
-Date: Fri, 27 Feb 2015 13:47:27 -0700
-Message-ID: <1425070047-53449-1-git-send-email-lina.iyer@linaro.org>
+From: Kumar Gala <galak@codeaurora.org>
+Subject: Re: [PATCH 0/2] Add SCM warmboot support for QCOM SoCs
+Date: Fri, 27 Feb 2015 15:23:57 -0600
+Message-ID: <0A05D548-BD53-4A33-A5C7-F396E1915FFA@codeaurora.org>
+References: <1424904852-12719-1-git-send-email-lina.iyer@linaro.org> <24986C4E-2DED-456F-A1D3-E52037540E01@codeaurora.org> <20150226222035.GB1250@linaro.org> <20150227200719.GE1678@linaro.org>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:45469 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753340AbbB0Uri (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Feb 2015 15:47:38 -0500
-Received: by pdjz10 with SMTP id z10so23530078pdj.12
-        for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2015 12:47:38 -0800 (PST)
+Received: from smtp.codeaurora.org ([198.145.29.96]:58147 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755488AbbB0VYA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Feb 2015 16:24:00 -0500
+In-Reply-To: <20150227200719.GE1678@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: galak@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, khilman@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-A core can be powered down for cpuidle or when it is hotplugged off. In
-either case, the warmboot return address would be different. Allow
-setting the warmboot address for a specific cpu, optimize and write to
-the firmware, if the address is different than the previously set
-address.
 
-Export qcom_scm_set_warm_boot_addr function move the warm boot flags to
-implementation.
+On Feb 27, 2015, at 2:07 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- drivers/firmware/qcom_scm.c | 36 ++++++++++++++++++++++++++++++++++++
- include/linux/qcom_scm.h    |  5 +----
- 2 files changed, 37 insertions(+), 4 deletions(-)
+> On Thu, Feb 26 2015 at 15:20 -0700, Lina Iyer wrote:
+>> On Thu, Feb 26 2015 at 15:10 -0700, Kumar Gala wrote:
+>>>=20
+>>> On Feb 25, 2015, at 4:54 PM, Lina Iyer <lina.iyer@linaro.org> wrote=
+:
+>>>=20
+>>>> Hi,
+>>>>=20
+>>>> These patches used to be part of my cpuidle patchset, think these =
+can go in
+>>>> independently.
+>>>>=20
+>>>> The patches do the following -
+>>>>=20
+>>>> 1. Add QCOM Secure Monitor specific enumeration for warm boot on q=
+com targets
+>>>> 2. Add an API to set up the warmboot address. Consolidate the warm=
+ boot flags
+>>>> into the implementation file
+>>>>=20
+>>>> Thanks,
+>>>> Lina
+>>>>=20
+>>>> Lina Iyer (2):
+>>>> ARM: qcom: Add SCM warmboot flags for quad core targets.
+>>>> qcom: scm: Add scm_set_warm_boot_addr function
+>>>>=20
+>>>> arch/arm/mach-qcom/scm-boot.c | 38 +++++++++++++++++++++++++++++++=
++++++++
+>>>> arch/arm/mach-qcom/scm-boot.h |  5 +++--
+>>>> 2 files changed, 41 insertions(+), 2 deletions(-)
+>>>=20
+>>> Lina,
+>>>=20
+>>> Do you mind rebasing these patches on my recent SCM cleanup set.  Y=
+ou find it at:
+>>>=20
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/galak/linux-qcom.git =
+qcom/scm-cleanup
+>>>=20
+>>=20
+>> Sure. As suggested by Kevin H, I will merge the two patches and reba=
+se
+>> on top yours and resubmit.
+>>=20
+> I have rebased on top of yours. I will send it shortly. But please no=
+te
+> that source "driver/firmware/Kconfig" is missing in arch/arm/Kconfig =
+for
+> the driver/firmware to build.
 
-diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
-index 6e7a72b..19133ca 100644
---- a/drivers/firmware/qcom_scm.c
-+++ b/drivers/firmware/qcom_scm.c
-@@ -34,6 +34,23 @@
- #define QCOM_SCM_ERROR		-1
- #define QCOM_SCM_INTERRUPTED	1
- 
-+#define QCOM_SCM_FLAG_WARMBOOT_CPU0	0x04
-+#define QCOM_SCM_FLAG_WARMBOOT_CPU1	0x02
-+#define QCOM_SCM_FLAG_WARMBOOT_CPU2	0x10
-+#define QCOM_SCM_FLAG_WARMBOOT_CPU3	0x40
-+
-+struct scm_warmboot {
-+	int flag;
-+	void *entry;
-+};
-+
-+static struct scm_warmboot scm_flags[] = {
-+	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU0 },
-+	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU1 },
-+	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU2 },
-+	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU3 },
-+};
-+
- static DEFINE_MUTEX(qcom_scm_lock);
- 
- /**
-@@ -342,3 +359,22 @@ int qcom_scm_set_boot_addr(u32 addr, int flags)
- 			&cmd, sizeof(cmd), NULL, 0);
- }
- EXPORT_SYMBOL(qcom_scm_set_boot_addr);
-+
-+int qcom_scm_set_warm_boot_addr(void *entry, int cpu)
-+{
-+	int ret;
-+
-+	/*
-+	 * Reassign only if we are switching from hotplug entry point
-+	 * to cpuidle entry point or vice versa.
-+	 */
-+	if (entry == scm_flags[cpu].entry)
-+		return 0;
-+
-+	ret = qcom_scm_set_boot_addr(virt_to_phys(entry), scm_flags[cpu].flag);
-+	if (!ret)
-+		scm_flags[cpu].entry  = entry;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(qcom_scm_set_warm_boot_addr);
-diff --git a/include/linux/qcom_scm.h b/include/linux/qcom_scm.h
-index 6bb84cf..fc5aae4 100644
---- a/include/linux/qcom_scm.h
-+++ b/include/linux/qcom_scm.h
-@@ -15,12 +15,9 @@
- #define QCOM_SCM_FLAG_COLDBOOT_CPU1		0x01
- #define QCOM_SCM_FLAG_COLDBOOT_CPU2		0x08
- #define QCOM_SCM_FLAG_COLDBOOT_CPU3		0x20
--#define QCOM_SCM_FLAG_WARMBOOT_CPU0		0x04
--#define QCOM_SCM_FLAG_WARMBOOT_CPU1		0x02
--#define QCOM_SCM_FLAG_WARMBOOT_CPU2		0x10
--#define QCOM_SCM_FLAG_WARMBOOT_CPU3		0x40
- 
- extern int qcom_scm_set_boot_addr(u32 addr, int flags);
-+extern int qcom_scm_set_warm_boot_addr(void *entry, int cpu);
- 
- #define QCOM_SCM_VERSION(major, minor) (((major) << 16) | ((minor) & 0xFF))
- 
--- 
-2.1.0
+I=92ll fix this.
+
+>=20
+> Also, I have a dependency on the scm_call_atomic() api introduced by
+> Stephen [1] for cpuidle. When can I expect to see that?
+>=20
+> [1]. https://lkml.org/lkml/2014/8/4/765
+
+Please add the patch to your patchset.
+
+- k
+
+--=20
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
+um,
+a Linux Foundation Collaborative Project
 
