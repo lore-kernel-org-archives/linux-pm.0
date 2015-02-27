@@ -1,77 +1,57 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
-Date: Fri, 27 Feb 2015 10:39:29 +0100
-Message-ID: <54F03B51.1010708@free-electrons.com>
-References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
+Date: Fri, 27 Feb 2015 10:00:00 +0000
+Message-ID: <20150227100000.GA5975@red-moon>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <4425438.YlYNQyf1hp@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:49512 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750716AbbB0Jjk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Feb 2015 04:39:40 -0500
-In-Reply-To: <4892716.Bf612zPN6E@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4425438.YlYNQyf1hp@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, preeti@linux.vnet.ibm.com
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+[CC'ed Preeti]
 
-On 26/02/2015 22:55, Rafael J. Wysocki wrote:
-> On Thursday, February 26, 2015 06:20:48 PM Gregory CLEMENT wrote:
->> As stated in kernel/cpu_pm.c, "Platform is responsible for ensuring
->> that cpu_pm_enter is not called twice on the same CPU before
->> cpu_pm_exit is called.". In the current code in case of failure when
->> calling mvebu_v7_cpu_suspend, the function cpu_pm_exit() is never
->> called whereas cpu_pm_enter() was called just before.
->>
->> This patch moves the cpu_pm_exit() in order to balance the
->> cpu_pm_enter() calls.
->>
->> Reported-by: Fulvio Benini <fbf@libero.it>
->> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> 
-> Should that go to "stable" too?  Which "stable" series it should go to if so?
+On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
+> Me versions of the two $subject patches follow.
 
-Yes as it fixes a potential issue, you're right it should go
-to "stable". The bug was here since the introduction of the driver
-in 3.16.
+Thank you. I am testing them and I have run into the following issue.
+
+Starting with:
+
+3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
+
+the suspend-to-idle code path in the cpuidle_idle_call() bypasses
+the CPUIDLE_FLAG_TIMER_STOP code path entirely. Now, on most of
+the current ARM platforms, the deepest idle state loses the tick device
+context, therefore this means that going to idle through
+suspend-to-idle becomes a brute force way of nuking the tick,
+unless I am missing something here.
+
+I am experiencing hangs on resume from suspend-to-idle when the broadcast
+timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
+platform) and the deepest idle states lose the tick device context (ie
+they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
+Power, still chasing the issue.
+
+I could not reproduce the issue with a HW broadcast timer device.
+
+Platform has deepest idle states that allow CPUs shutdown where the
+local tick device is gone on entry, I am trying to provide you with a
+backtrace, I need time to debug.
+
+The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
+and related broadcast mode entry/exit in the suspend-to-idle path ?
+
+I do not think it is, but I am asking.
+
+I can "force" tick freeze by initializing the enter_freeze pointer
+in the idle states (that's the next thing I will test), but still, for
+platforms where that's not possible my question above is still valid.
 
 Thanks,
-
-Gregory
-
-> 
->> ---
->>  drivers/cpuidle/cpuidle-mvebu-v7.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
->> index 38e68618513a..cefa07438ae1 100644
->> --- a/drivers/cpuidle/cpuidle-mvebu-v7.c
->> +++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
->> @@ -37,11 +37,11 @@ static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
->>  		deepidle = true;
->>  
->>  	ret = mvebu_v7_cpu_suspend(deepidle);
->> +	cpu_pm_exit();
->> +
->>  	if (ret)
->>  		return ret;
->>  
->> -	cpu_pm_exit();
->> -
->>  	return index;
->>  }
->>  
->>
-> 
-
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Lorenzo
