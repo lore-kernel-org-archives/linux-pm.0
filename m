@@ -1,162 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
-Date: Fri, 27 Feb 2015 23:11:54 +0100
-Message-ID: <3517340.oYgK5BBDND@vostro.rjw.lan>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <4425438.YlYNQyf1hp@vostro.rjw.lan> <20150227100000.GA5975@red-moon>
+Subject: Re: [PATCH] genirq / PM: Add flag for shared NO_SUSPEND interrupt lines
+Date: Fri, 27 Feb 2015 23:13:57 +0100
+Message-ID: <1968084.K4YyaeZfBq@vostro.rjw.lan>
+References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com> <6864616.1aRDSmSsvx@vostro.rjw.lan> <20150227083859.GD21418@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150227100000.GA5975@red-moon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, preeti@linux.vnet.ibm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58285 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755366AbbB0Vu3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Feb 2015 16:50:29 -0500
+In-Reply-To: <20150227083859.GD21418@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, February 27, 2015 10:00:00 AM Lorenzo Pieralisi wrote:
-> [CC'ed Preeti]
+On Friday, February 27, 2015 09:38:59 AM Peter Zijlstra wrote:
+> On Fri, Feb 27, 2015 at 12:07:55AM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > It currently is required that all users of NO_SUSPEND interrupt
+> > lines pass the IRQF_NO_SUSPEND flag when requesting the IRQ or the
+> > WARN_ON_ONCE() in irq_pm_install_action() will trigger.  That is
+> > done to warn about situations in which unprepared interrupt handlers
+> > may be run unnecessarily for suspended devices and may attempt to
+> > access those devices by mistake.  However, it may cause drivers
+> > that have no technical reasons for using IRQF_NO_SUSPEND to set
+> > that flag just because they happen to share the interrupt line
+> > with something like a timer.
+> > 
+> > Moreover, the generic handling of wakeup interrupts introduced by
+> > commit 9ce7a25849e8 (genirq: Simplify wakeup mechanism) only works
+> > for IRQs without any NO_SUSPEND users, so the drivers of wakeup
+> > devices needing to use shared NO_SUSPEND interrupt lines for
+> > signaling system wakeup generally have to detect wakeup in their
+> > interrupt handlers.  Thus if they happen to share an interrupt line
+> > with a NO_SUSPEND user, they also need to request that their
+> > interrupt handlers be run after suspend_device_irqs().
+> > 
+> > In both cases the reason for using IRQF_NO_SUSPEND is not because
+> > the driver in question has a genuine need to run its interrupt
+> > handler after suspend_device_irqs(), but because it happens to
+> > share the line with some other NO_SUSPEND user.  Otherwise, the
+> > driver would do without IRQF_NO_SUSPEND just fine.
+> > 
+> > To make it possible to specify that condition explicitly, introduce
+> > a new IRQ action handler flag for shared IRQs, IRQF_COND_SUSPEND,
+> > that, when set, will indicate to the IRQ core that the interrupt
+> > user is generally fine with suspending the IRQ, but it also can
+> > tolerate handler invocations after suspend_device_irqs() and, in
+> > particular, it is capable of detecting system wakeup and triggering
+> > it as appropriate from its interrupt handler.
+> > 
+> > That will allow us to work around a problem with a shared timer
+> > interrupt line on at91 platforms.
+> > 
+> > Link: http://marc.info/?l=linux-kernel&m=142252777602084&w=2
+> > Link: http://marc.info/?t=142252775300011&r=1&w=2
+> > Linx: https://lkml.org/lkml/2014/12/15/552
+> > Reported-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
-> > Me versions of the two $subject patches follow.
-> 
-> Thank you. I am testing them and I have run into the following issue.
-> 
-> Starting with:
-> 
-> 3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
-> 
-> the suspend-to-idle code path in the cpuidle_idle_call() bypasses
-> the CPUIDLE_FLAG_TIMER_STOP code path entirely.
+> Seems good to me. Should I take this through tip/irq ?
 
-Hmm, this looks like a mistake.  Sorry about that.
+I can apply it along with the previous IRQF_NO_SUSPEND documentation patch
+from Mark Rutland if you ACK it for me. :-)
 
-> Now, on most of
-> the current ARM platforms, the deepest idle state loses the tick device
-> context, therefore this means that going to idle through
-> suspend-to-idle becomes a brute force way of nuking the tick,
-> unless I am missing something here.
-> 
-> I am experiencing hangs on resume from suspend-to-idle when the broadcast
-> timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
-> platform) and the deepest idle states lose the tick device context (ie
-> they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
-> Power, still chasing the issue.
-> 
-> I could not reproduce the issue with a HW broadcast timer device.
-> 
-> Platform has deepest idle states that allow CPUs shutdown where the
-> local tick device is gone on entry, I am trying to provide you with a
-> backtrace, I need time to debug.
-> 
-> The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
-> and related broadcast mode entry/exit in the suspend-to-idle path ?
-> 
-> I do not think it is, but I am asking.
+> Also, should we warn if people use enable_irq_wake() where there is only
+> a single descriptor with NO_SUSPEND?
 
-It isn't in general, but it would be OK in the enter_freeze_proper() path
-where the tick is suspended anyway.
+We probably should do that, but that would be a separate patch IMO?
 
-> I can "force" tick freeze by initializing the enter_freeze pointer
-> in the idle states (that's the next thing I will test), but still, for
-> platforms where that's not possible my question above is still valid.
-
-Right.
-
-Does the patch below help (on top of the previous ones)?
-
-Rafael
-
-
----
- drivers/cpuidle/cpuidle.c |   31 ++++++++++++++++++++++++++-----
- kernel/sched/idle.c       |   17 ++---------------
- 2 files changed, 28 insertions(+), 20 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -230,15 +230,36 @@ int cpuidle_select(struct cpuidle_driver
-  * @dev:   the cpuidle device
-  * @index: the index in the idle state table
-  *
-- * Returns the index in the idle state, < 0 in case of error.
-- * The error code depends on the backend driver
-+ * Returns the index in the idle state, < 0 in case of error.  -EBUSY is
-+ * returned to indicate that the target state was temporarily unavailable.
-+ * The other error codes depend on the backend driver.
-  */
- int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		  int index)
- {
--	if (cpuidle_state_is_coupled(dev, drv, index))
--		return cpuidle_enter_state_coupled(dev, drv, index);
--	return cpuidle_enter_state(dev, drv, index);
-+	unsigned int broadcast;
-+	int ret;
-+
-+	broadcast = drv->states[index].flags & CPUIDLE_FLAG_TIMER_STOP;
-+
-+	/*
-+	 * Tell the time framework to switch to a broadcast timer
-+	 * because our local timer will be shutdown. If a local timer
-+	 * is used from another cpu as a broadcast timer, this call may
-+	 * fail if it is not available
-+	 */
-+	if (broadcast &&
-+	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
-+		return -EBUSY;
-+
-+	ret = cpuidle_state_is_coupled(dev, drv, index) ?
-+		cpuidle_enter_state_coupled(dev, drv, index) :
-+		cpuidle_enter_state(dev, drv, index);
-+
-+	if (broadcast)
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+
-+	return ret;
- }
- 
- /**
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int next_state, entered_state;
--	unsigned int broadcast;
- 
- 	/*
- 	 * Check if the idle task must be rescheduled. If it is the
-@@ -151,18 +150,6 @@ use_default:
- 		goto exit_idle;
- 	}
- 
--	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
--
--	/*
--	 * Tell the time framework to switch to a broadcast timer
--	 * because our local timer will be shutdown. If a local timer
--	 * is used from another cpu as a broadcast timer, this call may
--	 * fail if it is not available
--	 */
--	if (broadcast &&
--	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
--		goto use_default;
--
- 	/* Take note of the planned idle state. */
- 	idle_set_state(this_rq(), &drv->states[next_state]);
- 
-@@ -176,8 +163,8 @@ use_default:
- 	/* The cpu is no longer idle or about to enter idle. */
- 	idle_set_state(this_rq(), NULL);
- 
--	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+	if (entered_state == -EBUSY)
-+		goto use_default;
- 
- 	/*
- 	 * Give the governor an opportunity to reflect on the outcome
