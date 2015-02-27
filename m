@@ -1,68 +1,54 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v2 4/7] thermal: introduce the Power Allocator governor
-Date: Fri, 27 Feb 2015 16:12:24 +0000
-Message-ID: <20150227161224.GE2877@e104805>
-References: <1424977233-15965-1-git-send-email-javi.merino@arm.com>
- <1424977233-15965-5-git-send-email-javi.merino@arm.com>
- <20150226203615.GB25495@developer.amazonguestwifi.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
+Date: Fri, 27 Feb 2015 17:50:23 +0100
+Message-ID: <54F0A04F.20706@linaro.org>
+References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150226203615.GB25495@developer.amazonguestwifi.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, "tixy@linaro.org" <tixy@linaro.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:46366 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbbB0Qu2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Feb 2015 11:50:28 -0500
+Received: by wggy19 with SMTP id y19so21490496wgg.13
+        for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2015 08:50:27 -0800 (PST)
+In-Reply-To: <4892716.Bf612zPN6E@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On Thu, Feb 26, 2015 at 08:36:16PM +0000, Eduardo Valentin wrote:
-> Javi,
-> 
-> Replying in v2.
-> 
-> On Thu, Feb 26, 2015 at 07:00:30PM +0000, Javi Merino wrote:
-> 
-> <big cut>
-> 
-> > +
-> > +/**
-> > + * divvy_up_power() - divvy the allocated power between the actors
-> > + * @req_power:	each actor's requested power
-> > + * @max_power:	each actor's maximum available power
-> > + * @num_actors:	size of the @req_power, @max_power and @granted_power's array
-> > + * @total_req_power: sum of @req_power
-> > + * @power_range:	total allocated power
-> > + * @granted_power:	output array: each actor's granted power
-> > + *
-> > + * This function divides the total allocated power (@power_range)
-> > + * fairly between the actors.  It first tries to give each actor a
-> > + * share of the @power_range according to how much power it requested
-> > + * compared to the rest of the actors.  For example, if only one actor
-> > + * requests power, then it receives all the @power_range.  If
-> > + * three actors each requests 1mW, each receives a third of the
-> > + * @power_range.
-> > + *
-> > + * If any actor received more than their maximum power, then that
-> > + * surplus is re-divvied among the actors based on how far they are
-> > + * from their respective maximums.
-> > + *
-> > + * Granted power for each actor is written to @granted_power, which
-> > + * should've been allocated by the calling function.
-> > + */
-> > +static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
-> > +			   u32 total_req_power, u32 power_range,
-> > +			   u32 *granted_power)
-> > +{
-> > +	u32 extra_power, capped_extra_power, extra_actor_power[num_actors];
-> 
-> Just now I noticed this variable-size array. I know the number of actors
-> are constant, and in average it should be less than 10 in magnitude, but
-> I don't believe variable-sized arrays are a good practice in kernel.
-> 
-> Even though I don't see this one as a treat, can we avoid it?
+On 02/26/2015 10:55 PM, Rafael J. Wysocki wrote:
+> On Thursday, February 26, 2015 06:20:48 PM Gregory CLEMENT wrote:
+>> As stated in kernel/cpu_pm.c, "Platform is responsible for ensuring
+>> that cpu_pm_enter is not called twice on the same CPU before
+>> cpu_pm_exit is called.". In the current code in case of failure when
+>> calling mvebu_v7_cpu_suspend, the function cpu_pm_exit() is never
+>> called whereas cpu_pm_enter() was called just before.
+>>
+>> This patch moves the cpu_pm_exit() in order to balance the
+>> cpu_pm_enter() calls.
+>>
+>> Reported-by: Fulvio Benini <fbf@libero.it>
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>
+> Should that go to "stable" too?  Which "stable" series it should go t=
+o if so?
 
-I can turn it into a devm_kcalloc() and merge it with the other
-three allocations that happen earlier.  I'll do that for v3.
+Hi Rafael,
 
-Cheers,
-Javi
+do you mind if I take this fix in my tree ? There is the same issue for=
+=20
+cpuidle-arm64.c I fixed.
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
