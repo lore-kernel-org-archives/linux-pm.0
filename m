@@ -1,52 +1,213 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH v6 2/5] power: max77843_charger: Add Max77843 charger
- device driver
-Date: Sat, 28 Feb 2015 21:03:41 +0100
-Message-ID: <1425153821.24292.65.camel@x220>
-References: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
-	 <1424741348-8728-3-git-send-email-jaewon02.kim@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
+Date: Sun, 01 Mar 2015 00:58:21 +0100
+Message-ID: <1504255.fW6WeRrizi@vostro.rjw.lan>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <3517340.oYgK5BBDND@vostro.rjw.lan> <20150228115422.GA27046@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews08.kpnxchange.com ([213.75.39.13]:57150 "EHLO
-	cpsmtpb-ews08.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752383AbbB1UDo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Feb 2015 15:03:44 -0500
-In-Reply-To: <1424741348-8728-3-git-send-email-jaewon02.kim@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:55161 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751822AbbB1Xew (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Feb 2015 18:34:52 -0500
+In-Reply-To: <20150228115422.GA27046@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jaewon Kim <jaewon02.kim@samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
 
-On Tue, 2015-02-24 at 10:29 +0900, Jaewon Kim wrote:
-> diff --git a/drivers/power/max77843_charger.c b/drivers/power/max77843_charger.c
-> new file mode 100644
-> index 0000000..392eebc1a
-> --- /dev/null
-> +++ b/drivers/power/max77843_charger.c
-> @@ -0,0 +1,508 @@
-> +/*
-> + * Charger driver for Maxim MAX77843
-> + *
-> + * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
-> + * Author: Beomho Seo <beomho.seo@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published bythe Free Software Foundation.
+On Saturday, February 28, 2015 11:54:23 AM Lorenzo Pieralisi wrote:
+> On Fri, Feb 27, 2015 at 10:11:54PM +0000, Rafael J. Wysocki wrote:
+> > On Friday, February 27, 2015 10:00:00 AM Lorenzo Pieralisi wrote:
+> > > [CC'ed Preeti]
+> > > 
+> > > On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
+> > > > Me versions of the two $subject patches follow.
+> > > 
+> > > Thank you. I am testing them and I have run into the following issue.
+> > > 
+> > > Starting with:
+> > > 
+> > > 3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
+> > > 
+> > > the suspend-to-idle code path in the cpuidle_idle_call() bypasses
+> > > the CPUIDLE_FLAG_TIMER_STOP code path entirely.
+> > 
+> > Hmm, this looks like a mistake.  Sorry about that.
+> 
+> Thank you for looking into this !
+> 
+> > > Now, on most of
+> > > the current ARM platforms, the deepest idle state loses the tick device
+> > > context, therefore this means that going to idle through
+> > > suspend-to-idle becomes a brute force way of nuking the tick,
+> > > unless I am missing something here.
+> > > 
+> > > I am experiencing hangs on resume from suspend-to-idle when the broadcast
+> > > timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
+> > > platform) and the deepest idle states lose the tick device context (ie
+> > > they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
+> > > Power, still chasing the issue.
+> > > 
+> > > I could not reproduce the issue with a HW broadcast timer device.
+> > > 
+> > > Platform has deepest idle states that allow CPUs shutdown where the
+> > > local tick device is gone on entry, I am trying to provide you with a
+> > > backtrace, I need time to debug.
+> > > 
+> > > The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
+> > > and related broadcast mode entry/exit in the suspend-to-idle path ?
+> > > 
+> > > I do not think it is, but I am asking.
+> > 
+> > It isn't in general, but it would be OK in the enter_freeze_proper() path
+> > where the tick is suspended anyway.
+> 
+> Entering state through enter_freeze() (ie adding the function pointer
+> in the idle states, on platforms where it is appropriate), therefore
+> freezing the tick solves the issue, so I think we should patch all ARM
+> drivers that can benefit from this interesting new feature.
+> 
+> > > I can "force" tick freeze by initializing the enter_freeze pointer
+> > > in the idle states (that's the next thing I will test), but still, for
+> > > platforms where that's not possible my question above is still valid.
+> > 
+> > Right.
+> > 
+> > Does the patch below help (on top of the previous ones)?
+> 
+> I need HW to test, I will do that first thing on Monday, and send
+> you the appropriate tags. I already put together a similar patch
+> and tested it yesterday, so I can say already that it solves the
+> problem, I will test your patch on Monday and get back to you
+> (patch 1 and 2 in this series already tested on a platform with no
+> CPUidle driver registered, and they work and fix the NULL drv
+> dereference issue).
 
-There's "bythe" again.
+Cool, thanks!
 
-> + */
+Below is a slightly cleaner version of the patch with a changelog.  Can you
+please test this one?
 
-[...]
-
-> +MODULE_LICENSE("GPL");
-
-And that should probably be
-    MODULE_LICENSE("GPL v2");
+Rafael
 
 
-Paul Bolle
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: cpuidle / sleep: Use broadcast timer for states that stop local timer
+
+Commit 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
+overlooked the fact that entering some sufficiently deep idle states
+by CPUs may cause their local timers to stop and in those cases it
+is necessary to switch over to a broadcase timer prior to entering
+the idle state.  If the cpuidle driver in use does not provide
+the new ->enter_freeze callback for any of the idle states, that
+problem affects suspend-to-idle too, but it is not taken into account
+after the changes made by commit 381063133246.
+
+Fix that by moving the CPUIDLE_FLAG_TIMER_STOP flag check and the
+broadcast timer manipulations following it from cpuidle_idle_call()
+to cpuidle_enter() which will cause them to be done, if necessary,
+in the suspend-to-idle case as well as for runtime idle.
+
+Fixes: 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
+Reported-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/cpuidle.c |   34 +++++++++++++++++++++++++++++-----
+ kernel/sched/idle.c       |   17 ++---------------
+ 2 files changed, 31 insertions(+), 20 deletions(-)
+
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -230,15 +230,39 @@ int cpuidle_select(struct cpuidle_driver
+  * @dev:   the cpuidle device
+  * @index: the index in the idle state table
+  *
+- * Returns the index in the idle state, < 0 in case of error.
+- * The error code depends on the backend driver
++ * Returns the index in the idle state, < 0 in case of error.  -EBUSY is
++ * returned to indicate that the target state was temporarily inaccessible.
++ * The other error codes depend on the backend driver.
+  */
+ int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 		  int index)
+ {
+-	if (cpuidle_state_is_coupled(dev, drv, index))
+-		return cpuidle_enter_state_coupled(dev, drv, index);
+-	return cpuidle_enter_state(dev, drv, index);
++	unsigned int broadcast;
++	int ret;
++
++	broadcast = drv->states[index].flags & CPUIDLE_FLAG_TIMER_STOP;
++
++	/*
++	 * Tell the time framework to switch to a broadcast timer
++	 * because our local timer will be shutdown. If a local timer
++	 * is used from another cpu as a broadcast timer, this call may
++	 * fail if it is not available
++	 */
++	if (broadcast) {
++		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
++					 &dev->cpu);
++		if (ret)
++			return ret;
++	}
++
++	ret = cpuidle_state_is_coupled(dev, drv, index) ?
++		cpuidle_enter_state_coupled(dev, drv, index) :
++		cpuidle_enter_state(dev, drv, index);
++
++	if (broadcast)
++		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++
++	return ret;
+ }
+ 
+ /**
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int next_state, entered_state;
+-	unsigned int broadcast;
+ 
+ 	/*
+ 	 * Check if the idle task must be rescheduled. If it is the
+@@ -151,18 +150,6 @@ use_default:
+ 		goto exit_idle;
+ 	}
+ 
+-	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
+-
+-	/*
+-	 * Tell the time framework to switch to a broadcast timer
+-	 * because our local timer will be shutdown. If a local timer
+-	 * is used from another cpu as a broadcast timer, this call may
+-	 * fail if it is not available
+-	 */
+-	if (broadcast &&
+-	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
+-		goto use_default;
+-
+ 	/* Take note of the planned idle state. */
+ 	idle_set_state(this_rq(), &drv->states[next_state]);
+ 
+@@ -176,8 +163,8 @@ use_default:
+ 	/* The cpu is no longer idle or about to enter idle. */
+ 	idle_set_state(this_rq(), NULL);
+ 
+-	if (broadcast)
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	if (entered_state == -EBUSY)
++		goto use_default;
+ 
+ 	/*
+ 	 * Give the governor an opportunity to reflect on the outcome
 
