@@ -1,82 +1,63 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH v6 3/5] power: max77843_battery: Add Max77843 fuel gauge
- device driver
-Date: Sat, 28 Feb 2015 21:00:26 +0100
-Message-ID: <1425153626.24292.62.camel@x220>
-References: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
-	 <1424741348-8728-4-git-send-email-jaewon02.kim@samsung.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3] power: bq27x00_battery: add bq27510 support
+Date: Sat, 28 Feb 2015 21:01:24 +0100
+Message-ID: <20150228200123.GA26651@earth>
+References: <1425146368-17167-1-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="4Ckj6UjgE2iN1+kY"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews09.kpnxchange.com ([213.75.39.14]:55347 "EHLO
-	cpsmtpb-ews09.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750829AbbB1UAa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Feb 2015 15:00:30 -0500
-In-Reply-To: <1424741348-8728-4-git-send-email-jaewon02.kim@samsung.com>
+Received: from mail.kernel.org ([198.145.29.136]:38001 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752796AbbB1UBf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 28 Feb 2015 15:01:35 -0500
+Content-Disposition: inline
+In-Reply-To: <1425146368-17167-1-git-send-email-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jaewon Kim <jaewon02.kim@samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-On Tue, 2015-02-24 at 10:29 +0900, Jaewon Kim wrote:
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 994793d..555e436 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -212,6 +212,15 @@ config BATTERY_MAX17042
->  	  with MAX17042. This driver also supports max17047/50 chips which are
->  	  improved version of max17042.
->  
-> +config BATTERY_MAX77843
-> +	tristate "Maxim MAX77843 Fuel Gauge"
-> +	depends on MFD_MAX77843
-> +	help
-> +	  This adds support for battery fuel gauge in Maxim MAX77843. It is
-> +	  fuel-gauge for a lithium-ion batteries with a single cell and can be
-> +	  found in portable devices. The MAX17040 is configured to operate with
-
-Could MAX17040 be a copy/paste error?
-
-> +	  a single lithium cell.
-> +
->  config BATTERY_Z2
->  	tristate "Z2 battery driver"
->  	depends on I2C && MACH_ZIPIT2
-
-[...]
-
-> diff --git a/drivers/power/max77843_battery.c b/drivers/power/max77843_battery.c
-> new file mode 100644
-> index 0000000..0c59a16
-> --- /dev/null
-> +++ b/drivers/power/max77843_battery.c
-> @@ -0,0 +1,286 @@
-> +/*
-> + * Fuel gauge driver for Maxim MAX77843
-> + *
-> + * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
-> + * Author: Beomho Seo <beomho.seo@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published bythe Free Software Foundation.
-> + */
-
-I did
-    git grep "bythe Free" next-20150227
-
-and it returned five hits. This would be the sixth.
-
-Anyhow, this states that this file is licensed GPL v2.
-
-[...]
-
-> +MODULE_LICENSE("GPL");
-
-So this should probably be
-    MODULE_LICENSE("GPL v2");
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
-Paul Bolle
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Alexandre,
+
+On Sat, Feb 28, 2015 at 06:59:28PM +0100, Alexandre Belloni wrote:
+> Add support for bq27510 to the bq27x00 driver.
+>=20
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+
+Thanks, queued:
+
+http://git.infradead.org/battery-2.6.git/commit/f46bf82e23846fc419861bb7b2c=
+4b041e69b831f
+
+-- Sebastian
+
+--4Ckj6UjgE2iN1+kY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU8h6QAAoJENju1/PIO/qa/m4P/0yoSY/RtDDSZaHrvhVhcm2p
+IFGFocrgJH8X44fdSvLMdyo+K5gUcgExULHIKVwDjF28K2qG80J3f6OyByAIUqCl
+PKJCy7vOXU1Z3E6QRNk/aydanEgm/vcFrzWZFNokm6t4Dp2Ov2w9i04V0W6WfJ2j
+5bj7oM2gYM+uyBSPm2s8n8an4yAHE+SJONgjNMBC0WLScVKJb+LQ4OcXhRhi5MVd
+29vx6cBNuH47aVa5sbIrv1Ksa71gpdvxAZgQQQzmtWWXXHK5oKRQZnWUBrAEeDlq
+0rMk7+j64KxAxl+6wt9S7VNURB9PGUZejwL0uWu57tqEbXFm3k6fLRPz2kPvV6XI
+KHr7DE+YCK1gSy6Plu08NVqw3J4+UV4DonzwXbTvYOsXNSimahsvdPHyvfz/W7TP
+CiUHJ3Ghlwsv9HGrq1TuZ6VHyqgxCrYEPiD6CxQ32npUZL2XUVR4Jgc/uDl25Vnf
+V63Z4cFDBB1Km7fo/Q4IUGzc1eAuRX1oT0vrAVOXyky1J0QtR0OQtbwqJAxrHMvy
+9iAcbr2bgs9pTmSxo8wToDSq8hAYMQrmDnuNdylpGdUx7POf7krO41iEr4iKGx28
+SvkvDy8J+gmuHz9HFTv4k75PusxWRxcY8p7bxECPQJ6purj3v69s3lXt2Q9VDC5d
+UcMM3H62p4vL8guYrBbw
+=jrE2
+-----END PGP SIGNATURE-----
+
+--4Ckj6UjgE2iN1+kY--
