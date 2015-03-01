@@ -1,127 +1,129 @@
 From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Subject: [PATCH v8 01/18] clk: tegra: Add binding for the Tegra124 DFLL clocksource
-Date: Sun,  1 Mar 2015 14:44:24 +0200
-Message-ID: <1425213881-5262-2-git-send-email-mikko.perttunen@kapsi.fi>
+Subject: [PATCH v8 05/18] clk: tegra: Introduce ability for SoC-specific reset control callbacks
+Date: Sun,  1 Mar 2015 14:44:28 +0200
+Message-ID: <1425213881-5262-6-git-send-email-mikko.perttunen@kapsi.fi>
 References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1425213881-5262-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+This patch allows SoC-specific CAR initialization routines to register
+their own reset_assert and reset_deassert callbacks with the common Tegra
+CAR code. If defined, the common code will call these callbacks when a
+reset control with number >= 0x40000000 is attempted to be asserted or
+deasserted respectively. The callback should return -EINVAL if the number
+of the reset control is invalid. Numbers greater than or equal to 0x40000000
+are used to avoid clashes with low numbers that are automatically mapped to
+standard CAR reset lines. Furthermore, numbers with the most significant bit
+set should not be used, as some functions interpret these as negative error
+codes.
 
-The DFLL is the main clocksource for the fast CPU cluster on Tegra124
-and also provides automatic CPU rail voltage scaling as well. The DFLL
-is a separate IP block from the usual Tegra124 clock-and-reset
-controller, so it gets its own node in the device tree.
+Each SoC with these special resets should specify the defined reset control
+numbers in a device tree header file.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 ---
 v8:
-- Changed dfll@ -> clock@
-- Changed compatibility string to "nvidia,tegra124-dfll"
-- Clarified how the vdd-cpu-supply property is used
-- Marked nvidia,cg-scale as optional since it is a boolean property
-- Expanded the 'FS mode' term to 'full speed mode'
-- Added dvco reset control
+- Added
 
- .../bindings/clock/nvidia,tegra124-dfll.txt        | 79 ++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ drivers/clk/tegra/clk.c | 36 ++++++++++++++++++++++++++++--------
+ drivers/clk/tegra/clk.h |  3 +++
+ 2 files changed, 31 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-new file mode 100644
-index 0000000..ee7e5fd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-@@ -0,0 +1,79 @@
-+NVIDIA Tegra124 DFLL FCPU clocksource
+diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
+index 9ddb754..a247ce8 100644
+--- a/drivers/clk/tegra/clk.c
++++ b/drivers/clk/tegra/clk.c
+@@ -46,7 +46,6 @@
+ #define RST_DEVICES_L			0x004
+ #define RST_DEVICES_H			0x008
+ #define RST_DEVICES_U			0x00C
+-#define RST_DFLL_DVCO			0x2F4
+ #define RST_DEVICES_V			0x358
+ #define RST_DEVICES_W			0x35C
+ #define RST_DEVICES_X			0x28C
+@@ -73,6 +72,10 @@ static struct clk **clks;
+ static int clk_num;
+ static struct clk_onecell_data clk_data;
+ 
++/* Handlers for SoC-specific reset lines */
++static int (*reset_assert)(unsigned long);
++static int (*reset_deassert)(unsigned long);
 +
-+This binding uses the common clock binding:
-+Documentation/devicetree/bindings/clock/clock-bindings.txt
+ static struct tegra_clk_periph_regs periph_regs[] = {
+ 	[0] = {
+ 		.enb_reg = CLK_OUT_ENB_L,
+@@ -138,19 +141,29 @@ static int tegra_clk_rst_assert(struct reset_controller_dev *rcdev,
+ 	 */
+ 	tegra_read_chipid();
+ 
+-	writel_relaxed(BIT(id % 32),
+-			clk_base + periph_regs[id / 32].rst_set_reg);
++	if (id >= 0x40000000 && reset_assert) {
++		return reset_assert(id);
++	} else if (id < clk_num * 32) {
++		writel_relaxed(BIT(id % 32),
++			       clk_base + periph_regs[id / 32].rst_set_reg);
++		return 0;
++	}
+ 
+-	return 0;
++	return -EINVAL;
+ }
+ 
+ static int tegra_clk_rst_deassert(struct reset_controller_dev *rcdev,
+ 		unsigned long id)
+ {
+-	writel_relaxed(BIT(id % 32),
+-			clk_base + periph_regs[id / 32].rst_clr_reg);
++	if (id >= 0x40000000 && reset_deassert) {
++		return reset_deassert(id);
++	} else if (id < clk_num * 32) {
++		writel_relaxed(BIT(id % 32),
++			       clk_base + periph_regs[id / 32].rst_clr_reg);
++		return 0;
++	}
+ 
+-	return 0;
++	return -EINVAL;
+ }
+ 
+ struct tegra_clk_periph_regs *get_reg_bank(int clkid)
+@@ -272,10 +285,17 @@ void __init tegra_add_of_provider(struct device_node *np)
+ 	of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
+ 
+ 	rst_ctlr.of_node = np;
+-	rst_ctlr.nr_resets = clk_num * 32;
++	rst_ctlr.nr_resets = 0x80000000;
+ 	reset_controller_register(&rst_ctlr);
+ }
+ 
++void __init tegra_init_special_resets(int (*assert)(unsigned long),
++				      int (*deassert)(unsigned long))
++{
++	reset_assert = assert;
++	reset_deassert = deassert;
++}
 +
-+The DFLL IP block on Tegra is a root clocksource designed for clocking
-+the fast CPU cluster. It consists of a free-running voltage controlled
-+oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
-+control module that will automatically adjust the VDD_CPU voltage by
-+communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
-+Currently only the I2C mode is supported by these bindings.
+ void __init tegra_register_devclks(struct tegra_devclk *dev_clks, int num)
+ {
+ 	int i;
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index 4e458aa..5a1ce03 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -591,6 +591,9 @@ struct tegra_devclk {
+ 	char		*con_id;
+ };
+ 
++void tegra_init_special_resets(int (*assert)(unsigned long),
++			       int (*deassert)(unsigned long));
 +
-+Required properties:
-+- compatible : should be "nvidia,tegra124-dfll"
-+- reg : Defines the following set of registers, in the order listed:
-+        - registers for the DFLL control logic.
-+        - registers for the I2C output logic.
-+        - registers for the integrated I2C master controller.
-+        - look-up table RAM for voltage register values.
-+- interrupts: Should contain the DFLL block interrupt.
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - soc: Clock source for the DFLL control logic.
-+  - ref: The closed loop reference clock
-+  - i2c: Clock source for the integrated I2C master.
-+- resets: Must contain an entry for each entry in reset-names.
-+  See ../reset/reset.txt for details.
-+- reset-names: Must include the following entries:
-+  - dvco: Reset control for the DFLL DVCO.
-+- #clock-cells: Must be 0.
-+- clock-output-names: Name of the clock output.
-+- vdd-cpu-supply: Regulator for the CPU voltage rail that the DFLL
-+  hardware will start controlling. The regulator will be queried for
-+  the I2C register, control values and supported voltages.
-+
-+Required properties for the control loop parameters:
-+- nvidia,sample-rate: Sample rate of the DFLL control loop.
-+- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
-+- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
-+- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TRM.
-+- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TRM.
-+- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TRM.
-+
-+Optional properties for the control loop parameters:
-+- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in the TRM.
-+
-+Required properties for I2C mode:
-+- nvidia,i2c-fs-rate: I2C transfer rate, if using full speed mode.
-+
-+Example:
-+
-+clock@0,70110000 {
-+        compatible = "nvidia,tegra124-dfll";
-+        reg = <0 0x70110000 0 0x100>, /* DFLL control */
-+              <0 0x70110000 0 0x100>, /* I2C output control */
-+              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
-+              <0 0x70110200 0 0x100>; /* Look-up table RAM */
-+        interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
-+                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
-+                 <&tegra_car TEGRA124_CLK_I2C5>;
-+        clock-names = "soc", "ref", "i2c";
-+        resets = <&tegra_car TEGRA124_RST_DFLL_DVCO>;
-+        reset-names = "dvco";
-+        #clock-cells = <0>;
-+        clock-output-names = "dfllCPU_out";
-+        vdd-cpu-supply = <&vdd_cpu>;
-+        status = "okay";
-+
-+        nvidia,sample-rate = <12500>;
-+        nvidia,droop-ctrl = <0x00000f00>;
-+        nvidia,force-mode = <1>;
-+        nvidia,cf = <10>;
-+        nvidia,ci = <0>;
-+        nvidia,cg = <2>;
-+
-+        nvidia,i2c-fs-rate = <400000>;
-+};
+ void tegra_init_from_table(struct tegra_clk_init_table *tbl,
+ 		struct clk *clks[], int clk_max);
+ 
 -- 
 2.3.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
