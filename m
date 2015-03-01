@@ -1,213 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
-Date: Sun, 01 Mar 2015 00:58:21 +0100
-Message-ID: <1504255.fW6WeRrizi@vostro.rjw.lan>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <3517340.oYgK5BBDND@vostro.rjw.lan> <20150228115422.GA27046@e102568-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: [PATCH v8 18/18] ARM: tegra: enable Tegra124 cpufreq driver by default
+Date: Sun,  1 Mar 2015 14:44:41 +0200
+Message-ID: <1425213881-5262-19-git-send-email-mikko.perttunen@kapsi.fi>
+References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55161 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751822AbbB1Xew (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Feb 2015 18:34:52 -0500
-In-Reply-To: <20150228115422.GA27046@e102568-lin.cambridge.arm.com>
+Received: from mail.kapsi.fi ([217.30.184.167]:54790 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751234AbbCAMsW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 1 Mar 2015 07:48:22 -0500
+In-Reply-To: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 
-On Saturday, February 28, 2015 11:54:23 AM Lorenzo Pieralisi wrote:
-> On Fri, Feb 27, 2015 at 10:11:54PM +0000, Rafael J. Wysocki wrote:
-> > On Friday, February 27, 2015 10:00:00 AM Lorenzo Pieralisi wrote:
-> > > [CC'ed Preeti]
-> > > 
-> > > On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
-> > > > Me versions of the two $subject patches follow.
-> > > 
-> > > Thank you. I am testing them and I have run into the following issue.
-> > > 
-> > > Starting with:
-> > > 
-> > > 3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
-> > > 
-> > > the suspend-to-idle code path in the cpuidle_idle_call() bypasses
-> > > the CPUIDLE_FLAG_TIMER_STOP code path entirely.
-> > 
-> > Hmm, this looks like a mistake.  Sorry about that.
-> 
-> Thank you for looking into this !
-> 
-> > > Now, on most of
-> > > the current ARM platforms, the deepest idle state loses the tick device
-> > > context, therefore this means that going to idle through
-> > > suspend-to-idle becomes a brute force way of nuking the tick,
-> > > unless I am missing something here.
-> > > 
-> > > I am experiencing hangs on resume from suspend-to-idle when the broadcast
-> > > timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
-> > > platform) and the deepest idle states lose the tick device context (ie
-> > > they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
-> > > Power, still chasing the issue.
-> > > 
-> > > I could not reproduce the issue with a HW broadcast timer device.
-> > > 
-> > > Platform has deepest idle states that allow CPUs shutdown where the
-> > > local tick device is gone on entry, I am trying to provide you with a
-> > > backtrace, I need time to debug.
-> > > 
-> > > The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
-> > > and related broadcast mode entry/exit in the suspend-to-idle path ?
-> > > 
-> > > I do not think it is, but I am asking.
-> > 
-> > It isn't in general, but it would be OK in the enter_freeze_proper() path
-> > where the tick is suspended anyway.
-> 
-> Entering state through enter_freeze() (ie adding the function pointer
-> in the idle states, on platforms where it is appropriate), therefore
-> freezing the tick solves the issue, so I think we should patch all ARM
-> drivers that can benefit from this interesting new feature.
-> 
-> > > I can "force" tick freeze by initializing the enter_freeze pointer
-> > > in the idle states (that's the next thing I will test), but still, for
-> > > platforms where that's not possible my question above is still valid.
-> > 
-> > Right.
-> > 
-> > Does the patch below help (on top of the previous ones)?
-> 
-> I need HW to test, I will do that first thing on Monday, and send
-> you the appropriate tags. I already put together a similar patch
-> and tested it yesterday, so I can say already that it solves the
-> problem, I will test your patch on Monday and get back to you
-> (patch 1 and 2 in this series already tested on a platform with no
-> CPUidle driver registered, and they work and fix the NULL drv
-> dereference issue).
+From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-Cool, thanks!
+The Tegra124 cpufreq driver depends on CONFIG_CPUFREQ_DT, so
+enable it to get the Tegra driver to build by default.
 
-Below is a slightly cleaner version of the patch with a changelog.  Can you
-please test this one?
-
-Rafael
-
-
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
 ---
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpuidle / sleep: Use broadcast timer for states that stop local timer
+ arch/arm/configs/tegra_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Commit 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
-overlooked the fact that entering some sufficiently deep idle states
-by CPUs may cause their local timers to stop and in those cases it
-is necessary to switch over to a broadcase timer prior to entering
-the idle state.  If the cpuidle driver in use does not provide
-the new ->enter_freeze callback for any of the idle states, that
-problem affects suspend-to-idle too, but it is not taken into account
-after the changes made by commit 381063133246.
-
-Fix that by moving the CPUIDLE_FLAG_TIMER_STOP flag check and the
-broadcast timer manipulations following it from cpuidle_idle_call()
-to cpuidle_enter() which will cause them to be done, if necessary,
-in the suspend-to-idle case as well as for runtime idle.
-
-Fixes: 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
-Reported-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/cpuidle.c |   34 +++++++++++++++++++++++++++++-----
- kernel/sched/idle.c       |   17 ++---------------
- 2 files changed, 31 insertions(+), 20 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -230,15 +230,39 @@ int cpuidle_select(struct cpuidle_driver
-  * @dev:   the cpuidle device
-  * @index: the index in the idle state table
-  *
-- * Returns the index in the idle state, < 0 in case of error.
-- * The error code depends on the backend driver
-+ * Returns the index in the idle state, < 0 in case of error.  -EBUSY is
-+ * returned to indicate that the target state was temporarily inaccessible.
-+ * The other error codes depend on the backend driver.
-  */
- int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		  int index)
- {
--	if (cpuidle_state_is_coupled(dev, drv, index))
--		return cpuidle_enter_state_coupled(dev, drv, index);
--	return cpuidle_enter_state(dev, drv, index);
-+	unsigned int broadcast;
-+	int ret;
-+
-+	broadcast = drv->states[index].flags & CPUIDLE_FLAG_TIMER_STOP;
-+
-+	/*
-+	 * Tell the time framework to switch to a broadcast timer
-+	 * because our local timer will be shutdown. If a local timer
-+	 * is used from another cpu as a broadcast timer, this call may
-+	 * fail if it is not available
-+	 */
-+	if (broadcast) {
-+		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-+					 &dev->cpu);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = cpuidle_state_is_coupled(dev, drv, index) ?
-+		cpuidle_enter_state_coupled(dev, drv, index) :
-+		cpuidle_enter_state(dev, drv, index);
-+
-+	if (broadcast)
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+
-+	return ret;
- }
- 
- /**
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int next_state, entered_state;
--	unsigned int broadcast;
- 
- 	/*
- 	 * Check if the idle task must be rescheduled. If it is the
-@@ -151,18 +150,6 @@ use_default:
- 		goto exit_idle;
- 	}
- 
--	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
--
--	/*
--	 * Tell the time framework to switch to a broadcast timer
--	 * because our local timer will be shutdown. If a local timer
--	 * is used from another cpu as a broadcast timer, this call may
--	 * fail if it is not available
--	 */
--	if (broadcast &&
--	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
--		goto use_default;
--
- 	/* Take note of the planned idle state. */
- 	idle_set_state(this_rq(), &drv->states[next_state]);
- 
-@@ -176,8 +163,8 @@ use_default:
- 	/* The cpu is no longer idle or about to enter idle. */
- 	idle_set_state(this_rq(), NULL);
- 
--	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+	if (entered_state == -EBUSY)
-+		goto use_default;
- 
- 	/*
- 	 * Give the governor an opportunity to reflect on the outcome
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index d199eb2..5eb4bad 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -42,6 +42,7 @@ CONFIG_KEXEC=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT_DETAILS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPUFREQ_DT=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+--
+2.3.0
 
