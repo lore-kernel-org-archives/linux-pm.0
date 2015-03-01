@@ -1,8 +1,7 @@
 From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: [PATCH v8 17/18] ARM: tegra: Add CPU regulator to the Jetson TK1
- device tree
-Date: Sun,  1 Mar 2015 14:44:40 +0200
-Message-ID: <1425213881-5262-18-git-send-email-mikko.perttunen@kapsi.fi>
+Subject: [PATCH v8 12/18] ARM: tegra: Enable the DFLL on the Jetson TK1
+Date: Sun,  1 Mar 2015 14:44:35 +0200
+Message-ID: <1425213881-5262-13-git-send-email-mikko.perttunen@kapsi.fi>
 References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,30 +21,47 @@ To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrij
 Cc: pgaikwad@nvidia.com, mturquette@linaro.org, vinceh@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tuomas.tynkkynen@iki.fi, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, pwalmsley@nvidia.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Specify the CPU voltage regulator for the cpufreq driver.
+From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+
+Add the board-specific properties of the DFLL for the Jetson TK1 board.
+On this board, the DFLL will take control of the sd0 regulator on the
+on-board AS3722 PMIC.
 
 Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
 ---
- arch/arm/boot/dts/tegra124-jetson-tk1.dts | 6 ++++++
- 1 file changed, 6 insertions(+)
+v8:
+- Changed dfll@ -> clock@
+
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-index f0888dd..e723759 100644
+index dbfaba0..f0888dd 100644
 --- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
 +++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-@@ -1782,6 +1782,12 @@
- 		};
+@@ -1509,7 +1509,7 @@
+ 				vin-ldo9-10-supply = <&vdd_5v0_sys>;
+ 				vin-ldo11-supply = <&vdd_3v3_run>;
+ 
+-				sd0 {
++				vdd_cpu: sd0 {
+ 					regulator-name = "+VDD_CPU_AP";
+ 					regulator-min-microvolt = <700000>;
+ 					regulator-max-microvolt = <1400000>;
+@@ -1737,6 +1737,13 @@
+ 		non-removable;
  	};
  
-+	cpus {
-+		cpu@0 {
-+			vdd-cpu-supply = <&vdd_cpu>;
-+		};
++	/* CPU DFLL clock */
++	clock@0,70110000 {
++		status = "okay";
++		vdd-cpu-supply = <&vdd_cpu>;
++		nvidia,i2c-fs-rate = <400000>;
 +	};
 +
- 	gpio-keys {
- 		compatible = "gpio-keys";
- 
+ 	ahub@0,70300000 {
+ 		i2s@0,70301100 {
+ 			status = "okay";
 -- 
 2.3.0
