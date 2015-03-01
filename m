@@ -1,129 +1,134 @@
-From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Subject: [PATCH v8 05/18] clk: tegra: Introduce ability for SoC-specific reset control callbacks
-Date: Sun,  1 Mar 2015 14:44:28 +0200
-Message-ID: <1425213881-5262-6-git-send-email-mikko.perttunen@kapsi.fi>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1425213881-5262-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: [PATCH v8 00/18] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
+Date: Sun,  1 Mar 2015 14:44:23 +0200
+Message-ID: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 List-Id: linux-pm@vger.kernel.org
 
-This patch allows SoC-specific CAR initialization routines to register
-their own reset_assert and reset_deassert callbacks with the common Tegra
-CAR code. If defined, the common code will call these callbacks when a
-reset control with number >= 0x40000000 is attempted to be asserted or
-deasserted respectively. The callback should return -EINVAL if the number
-of the reset control is invalid. Numbers greater than or equal to 0x40000000
-are used to avoid clashes with low numbers that are automatically mapped to
-standard CAR reset lines. Furthermore, numbers with the most significant bit
-set should not be used, as some functions interpret these as negative error
-codes.
+Hi, this is v8 of the Tegra124 cpufreq series. Aside rebasing on latest -next,
+the following changes have been done:
 
-Each SoC with these special resets should specify the defined reset control
-numbers in a device tree header file.
+clk: tegra: Add binding for the Tegra124 DFLL clocksource
+- Changed dfll@ -> clock@
+- Changed compatibility string to "nvidia,tegra124-dfll"
+- Clarified how the vdd-cpu-supply property is used
+- Marked nvidia,cg-scale as optional since it is a boolean property
+- Expanded the 'FS mode' term to 'full speed mode'
+- Added dvco reset control
 
-Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
----
-v8:
+ARM: tegra: Add the DFLL to Tegra124 device tree
+- Changed dfll@ -> clock@
+- Added dvco reset control
+
+ARM: tegra: Enable the DFLL on the Jetson TK1
+- Changed dfll@ -> clock@
+
+clk: tegra: Initialize PLL_X before CCLK_G to ensure it has a parent
 - Added
 
- drivers/clk/tegra/clk.c | 36 ++++++++++++++++++++++++++++--------
- drivers/clk/tegra/clk.h |  3 +++
- 2 files changed, 31 insertions(+), 8 deletions(-)
+clk: tegra: Introduce ability for SoC-specific reset control callbacks
+- Added
 
-diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
-index 9ddb754..a247ce8 100644
---- a/drivers/clk/tegra/clk.c
-+++ b/drivers/clk/tegra/clk.c
-@@ -46,7 +46,6 @@
- #define RST_DEVICES_L			0x004
- #define RST_DEVICES_H			0x008
- #define RST_DEVICES_U			0x00C
--#define RST_DFLL_DVCO			0x2F4
- #define RST_DEVICES_V			0x358
- #define RST_DEVICES_W			0x35C
- #define RST_DEVICES_X			0x28C
-@@ -73,6 +72,10 @@ static struct clk **clks;
- static int clk_num;
- static struct clk_onecell_data clk_data;
- 
-+/* Handlers for SoC-specific reset lines */
-+static int (*reset_assert)(unsigned long);
-+static int (*reset_deassert)(unsigned long);
-+
- static struct tegra_clk_periph_regs periph_regs[] = {
- 	[0] = {
- 		.enb_reg = CLK_OUT_ENB_L,
-@@ -138,19 +141,29 @@ static int tegra_clk_rst_assert(struct reset_controller_dev *rcdev,
- 	 */
- 	tegra_read_chipid();
- 
--	writel_relaxed(BIT(id % 32),
--			clk_base + periph_regs[id / 32].rst_set_reg);
-+	if (id >= 0x40000000 && reset_assert) {
-+		return reset_assert(id);
-+	} else if (id < clk_num * 32) {
-+		writel_relaxed(BIT(id % 32),
-+			       clk_base + periph_regs[id / 32].rst_set_reg);
-+		return 0;
-+	}
- 
--	return 0;
-+	return -EINVAL;
- }
- 
- static int tegra_clk_rst_deassert(struct reset_controller_dev *rcdev,
- 		unsigned long id)
- {
--	writel_relaxed(BIT(id % 32),
--			clk_base + periph_regs[id / 32].rst_clr_reg);
-+	if (id >= 0x40000000 && reset_deassert) {
-+		return reset_deassert(id);
-+	} else if (id < clk_num * 32) {
-+		writel_relaxed(BIT(id % 32),
-+			       clk_base + periph_regs[id / 32].rst_clr_reg);
-+		return 0;
-+	}
- 
--	return 0;
-+	return -EINVAL;
- }
- 
- struct tegra_clk_periph_regs *get_reg_bank(int clkid)
-@@ -272,10 +285,17 @@ void __init tegra_add_of_provider(struct device_node *np)
- 	of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
- 
- 	rst_ctlr.of_node = np;
--	rst_ctlr.nr_resets = clk_num * 32;
-+	rst_ctlr.nr_resets = 0x80000000;
- 	reset_controller_register(&rst_ctlr);
- }
- 
-+void __init tegra_init_special_resets(int (*assert)(unsigned long),
-+				      int (*deassert)(unsigned long))
-+{
-+	reset_assert = assert;
-+	reset_deassert = deassert;
-+}
-+
- void __init tegra_register_devclks(struct tegra_devclk *dev_clks, int num)
- {
- 	int i;
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index 4e458aa..5a1ce03 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -591,6 +591,9 @@ struct tegra_devclk {
- 	char		*con_id;
- };
- 
-+void tegra_init_special_resets(int (*assert)(unsigned long),
-+			       int (*deassert)(unsigned long));
-+
- void tegra_init_from_table(struct tegra_clk_init_table *tbl,
- 		struct clk *clks[], int clk_max);
- 
--- 
+clk: tegra: Add DFLL DVCO reset control for Tegra124
+- Changed to use SoC-specific reset control callback
+
+clk: tegra: Add Tegra124 DFLL clocksource platform driver
+- Don't set DVCO reset handlers
+
+clk: tegra: Add library for the DFLL clock source (open-loop mode)
+- Use reset control instead of function pointers
+
+also added acks from v7.
+
+The series is available in a git repository at
+  git://github.com/cyndis/linux.git cldvfs-v8
+
+Tested by me on Jetson-TK1 (rev. D).
+
+Original cover letter:
+
+This series implements the DFLL/CL-DVFS clock source for the fast CPU
+cluster on Tegra124, and a cpufreq driver that uses the DFLL for
+clocking the CPU. Most of this is based on Paul Walmsley's public patch
+set from December 2013, which is available at
+http://comments.gmane.org/gmane.linux.ports.tegra/15273
+
+The DFLL clock hardware is a voltage-controlled oscillator plus
+control logic that compares the generated output clock with a
+51 MHz reference clock, and can make decisions to either lower
+or raise the DFLL voltage to keep the output rate close to the
+software-requested rate. The voltage changes are done by
+communicating with an off-chip PMIC via either I2C or PWM.
+As the DFLL oscillator is powered via the CPU rail, using
+the DFLL as the CPU clocksource also gives us dynamic CPU
+voltage scaling.
+
+This series has been tested on the Jetson TK1 (Rev C). Porting this to
+the Venice2 should be simple, though do note that it does not have
+active cooling.
+
+Thanks,
+Tuomas
+
+Mikko Perttunen (3):
+  clk: tegra: Introduce ability for SoC-specific reset control callbacks
+  clk: tegra: Initialize PLL_X before CCLK_G to ensure it has a parent
+  ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
+
+Paul Walmsley (1):
+  clk: tegra: Add DFLL DVCO reset control for Tegra124
+
+Tuomas Tynkkynen (14):
+  clk: tegra: Add binding for the Tegra124 DFLL clocksource
+  clk: tegra: Add library for the DFLL clock source (open-loop mode)
+  clk: tegra: Add closed loop support for the DFLL
+  clk: tegra: Add functions for parsing CVB tables
+  clk: tegra: Add Tegra124 DFLL clocksource platform driver
+  clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+  clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
+  ARM: tegra: Add the DFLL to Tegra124 device tree
+  ARM: tegra: Enable the DFLL on the Jetson TK1
+  cpufreq: tegra124: Add device tree bindings
+  cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+  cpufreq: Add cpufreq driver for Tegra124
+  ARM: tegra: Add entries for cpufreq on Tegra124
+  ARM: tegra: enable Tegra124 cpufreq driver by default
+
+ .../bindings/clock/nvidia,tegra124-dfll.txt        |   79 +
+ .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   15 +-
+ arch/arm/boot/dts/tegra124.dtsi                    |   34 +
+ arch/arm/configs/tegra_defconfig                   |    1 +
+ arch/arm/mach-tegra/Kconfig                        |    1 +
+ drivers/clk/tegra/Makefile                         |    3 +
+ drivers/clk/tegra/clk-dfll.c                       | 1755 ++++++++++++++++++++
+ drivers/clk/tegra/clk-dfll.h                       |   54 +
+ drivers/clk/tegra/clk-tegra-super-gen4.c           |   50 +-
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  163 ++
+ drivers/clk/tegra/clk-tegra124.c                   |   82 +
+ drivers/clk/tegra/clk.c                            |   36 +-
+ drivers/clk/tegra/clk.h                            |    3 +
+ drivers/clk/tegra/cvb.c                            |  133 ++
+ drivers/clk/tegra/cvb.h                            |   67 +
+ drivers/cpufreq/Kconfig.arm                        |   13 +-
+ drivers/cpufreq/Makefile                           |    3 +-
+ drivers/cpufreq/tegra124-cpufreq.c                 |  217 +++
+ .../cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} |    0
+ include/dt-bindings/reset/tegra124-car.h           |   11 +
+ 21 files changed, 2730 insertions(+), 34 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+ create mode 100644 drivers/clk/tegra/clk-dfll.c
+ create mode 100644 drivers/clk/tegra/clk-dfll.h
+ create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+ create mode 100644 drivers/clk/tegra/cvb.c
+ create mode 100644 drivers/clk/tegra/cvb.h
+ create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
+ rename drivers/cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} (100%)
+ create mode 100644 include/dt-bindings/reset/tegra124-car.h
+
+--
 2.3.0
