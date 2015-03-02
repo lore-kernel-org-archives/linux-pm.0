@@ -1,99 +1,136 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: [PATCH] PM / Domains: cleanup: rename gpd -> genpd in debugfs interface
-Date: Mon,  2 Mar 2015 11:24:28 -0800
-Message-ID: <1425324268-16090-1-git-send-email-khilman@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Maciej Matraszek <m.matraszek@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v3 2/3] firmware: qcom: scm: Add qcom_scm_set_warm_boot_addr function
+Date: Mon,  2 Mar 2015 13:30:06 -0700
+Message-ID: <1425328207-58415-3-git-send-email-lina.iyer@linaro.org>
+References: <1425328207-58415-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:41506 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbbCBUaU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 15:30:20 -0500
+Received: by pdno5 with SMTP id o5so42249000pdn.8
+        for <linux-pm@vger.kernel.org>; Mon, 02 Mar 2015 12:30:20 -0800 (PST)
+In-Reply-To: <1425328207-58415-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, khilman@linaro.org, Lina Iyer <lina.iyer@linaro.org>
 
-From: Kevin Hilman <khilman@linaro.org>
+A core can be powered down for cpuidle or when it is hotplugged off. In
+either case, the warmboot return address would be different. Allow
+setting the warmboot address for a specific cpu, optimize and write to
+the firmware, if the address is different than the previously set
+address.
 
-To keep consisitency with the rest of the file, use 'genpd' as the
-name of the 'struct generic_pm_domain' pointer instead of 'gpd'.
+Export qcom_scm_set_warm_boot_addr function move the warm boot flags to
+implementation.
 
-This is just a rename, no functional changes.
-
-Signed-off-by: Kevin Hilman <khilman@linaro.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/domain.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/firmware/qcom_scm.c | 56 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/qcom_scm.h    |  7 ++----
+ 2 files changed, 58 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index ba4abbe4693c..45937f88e77c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2242,7 +2242,7 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index c953cc3..4d8ede4 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -1,4 +1,5 @@
+ /* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
++ * Copyright (C) 2015 Linaro Ltd.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 and
+@@ -39,6 +40,23 @@
+ #define QCOM_SCM_FLAG_COLDBOOT_CPU2	0x08
+ #define QCOM_SCM_FLAG_COLDBOOT_CPU3	0x20
+ 
++#define QCOM_SCM_FLAG_WARMBOOT_CPU0	0x04
++#define QCOM_SCM_FLAG_WARMBOOT_CPU1	0x02
++#define QCOM_SCM_FLAG_WARMBOOT_CPU2	0x10
++#define QCOM_SCM_FLAG_WARMBOOT_CPU3	0x40
++
++struct qcom_scm_entry {
++	int flag;
++	void *entry;
++};
++
++static struct qcom_scm_entry qcom_scm_wb[] = {
++	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU0 },
++	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU1 },
++	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU2 },
++	{ .flag = QCOM_SCM_FLAG_WARMBOOT_CPU3 },
++};
++
+ static DEFINE_MUTEX(qcom_scm_lock);
+ 
+ /**
+@@ -379,3 +397,41 @@ int qcom_scm_set_cold_boot_addr(void *entry, const cpumask_t *cpus)
+ 	return qcom_scm_set_boot_addr(virt_to_phys(entry), flags);
  }
+ EXPORT_SYMBOL(qcom_scm_set_cold_boot_addr);
++
++/**
++ * qcom_scm_set_warm_boot_addr() - Set the warm boot address for cpus
++ * @entry: Entry point function for the cpus
++ * @cpus: The cpumask of cpus that will use the entry point
++ *
++ * Set the Linux entry point for the SCM to transfer control to when coming
++ * out of a power down. CPU power down may be executed on cpuidle or hotplug.
++ */
++int qcom_scm_set_warm_boot_addr(void *entry, const cpumask_t *cpus)
++{
++	int ret;
++	int flags = 0;
++	int cpu;
++
++	/*
++	 * Reassign only if we are switching from hotplug entry point
++	 * to cpuidle entry point or vice versa.
++	 */
++	for_each_cpu(cpu, cpus) {
++		if (entry == qcom_scm_wb[cpu].entry)
++			continue;
++		flags |= qcom_scm_wb[cpu].flag;
++	}
++
++	/* No change in entry function */
++	if (!flags)
++		return 0;
++
++	ret = qcom_scm_set_boot_addr(virt_to_phys(entry), flags);
++	if (!ret) {
++		for_each_cpu(cpu, cpus)
++			qcom_scm_wb[cpu].entry = entry;
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(qcom_scm_set_warm_boot_addr);
+diff --git a/include/linux/qcom_scm.h b/include/linux/qcom_scm.h
+index 68a1d88..95ef72a 100644
+--- a/include/linux/qcom_scm.h
++++ b/include/linux/qcom_scm.h
+@@ -1,4 +1,5 @@
+ /* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
++ * Copyright (C) 2015 Linaro Ltd.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 and
+@@ -12,12 +13,8 @@
+ #ifndef __QCOM_SCM_H
+ #define __QCOM_SCM_H
  
- static int pm_genpd_summary_one(struct seq_file *s,
--		struct generic_pm_domain *gpd)
-+				struct generic_pm_domain *genpd)
- {
- 	static const char * const status_lookup[] = {
- 		[GPD_STATE_ACTIVE] = "on",
-@@ -2256,26 +2256,26 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 	struct gpd_link *link;
- 	int ret;
+-#define QCOM_SCM_FLAG_WARMBOOT_CPU0		0x04
+-#define QCOM_SCM_FLAG_WARMBOOT_CPU1		0x02
+-#define QCOM_SCM_FLAG_WARMBOOT_CPU2		0x10
+-#define QCOM_SCM_FLAG_WARMBOOT_CPU3		0x40
+-
+ extern int qcom_scm_set_cold_boot_addr(void *entry, const cpumask_t *cpus);
++extern int qcom_scm_set_warm_boot_addr(void *entry, const cpumask_t *cpus);
  
--	ret = mutex_lock_interruptible(&gpd->lock);
-+	ret = mutex_lock_interruptible(&genpd->lock);
- 	if (ret)
- 		return -ERESTARTSYS;
+ #define QCOM_SCM_VERSION(major, minor) (((major) << 16) | ((minor) & 0xFF))
  
--	if (WARN_ON(gpd->status >= ARRAY_SIZE(status_lookup)))
-+	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
- 		goto exit;
--	seq_printf(s, "%-30s  %-15s  ", gpd->name, status_lookup[gpd->status]);
-+	seq_printf(s, "%-30s  %-15s  ", genpd->name, status_lookup[genpd->status]);
- 
- 	/*
- 	 * Modifications on the list require holding locks on both
- 	 * master and slave, so we are safe.
--	 * Also gpd->name is immutable.
-+	 * Also genpd->name is immutable.
- 	 */
--	list_for_each_entry(link, &gpd->master_links, master_node) {
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
- 		seq_printf(s, "%s", link->slave->name);
--		if (!list_is_last(&link->master_node, &gpd->master_links))
-+		if (!list_is_last(&link->master_node, &genpd->master_links))
- 			seq_puts(s, ", ");
- 	}
- 
--	list_for_each_entry(pm_data, &gpd->dev_list, list_node) {
-+	list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
- 		kobj_path = kobject_get_path(&pm_data->dev->kobj, GFP_KERNEL);
- 		if (kobj_path == NULL)
- 			continue;
-@@ -2287,14 +2287,14 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 
- 	seq_puts(s, "\n");
- exit:
--	mutex_unlock(&gpd->lock);
-+	mutex_unlock(&genpd->lock);
- 
- 	return 0;
- }
- 
- static int pm_genpd_summary_show(struct seq_file *s, void *data)
- {
--	struct generic_pm_domain *gpd;
-+	struct generic_pm_domain *genpd;
- 	int ret = 0;
- 
- 	seq_puts(s, "    domain                      status         slaves\n");
-@@ -2305,8 +2305,8 @@ static int pm_genpd_summary_show(struct seq_file *s, void *data)
- 	if (ret)
- 		return -ERESTARTSYS;
- 
--	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
--		ret = pm_genpd_summary_one(s, gpd);
-+	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-+		ret = pm_genpd_summary_one(s, genpd);
- 		if (ret)
- 			break;
- 	}
 -- 
-2.1.3
+2.1.0
+
