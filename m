@@ -1,56 +1,39 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 07/15] twl4030_charger: allow fine control of charger
- current.
-Date: Mon, 2 Mar 2015 22:05:01 +0100
-Message-ID: <20150302210501.GJ13270@amd>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
- <20150224043351.4243.88962.stgit@notabene.brown>
+Subject: Re: [PATCH 0/2] Allow twl4030_charger to find phy reliably.
+Date: Mon, 2 Mar 2015 22:05:14 +0100
+Message-ID: <20150302210514.GL13270@amd>
+References: <20150224035809.32252.4180.stgit@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150224043351.4243.88962.stgit@notabene.brown>
+In-Reply-To: <20150224035809.32252.4180.stgit@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 To: NeilBrown <neilb@suse.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Woodhouse <dwmw2@infradead.org>, Sebastian Reichel <sre@kernel.org>, Felipe Balbi <balbi@ti.com>, GTA04 owners <gta04-owner@goldelico.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue 2015-02-24 15:01:29, NeilBrown wrote:
+> The twl4030_charger is physically paired with the twl4030 USB phy,
+> so the drivers need to be able to reliably find each other.
+> 
+> twl4030_charger currently uses usb_get_phy(), which works if there is
+> only one phy to choose from, but is not reliable in more complex
+> configurations.
+> 
+> These patches add a new interface to allow a phy to be found given a
+> device node, and then use that interface in twl4030_charger so that
+> it finds its sibling in the devicetree, and gets the phy associated
+> with that.
 
-> +	/* ichg values in uA. If any are 'large', we set CGAIN to
-> +	 * '1' which doubles the range for half the precision.
-> +	 */
-> +	int			ichg_eoc, ichg_lo, ichg_hi, cur;
-
-We should really get uA_t.
-
-[Plus, this is not kernel comment style, but...]
-
-> +	/* For ichg_eoc, reg value must be 100XXXX000, we only
-> +	 * set the XXXX in high nibble.
-> +	 */
-
-Confused. High nibble is 0xf0, right?
-
-> +	/* And finally, set the current.  This is stored in
-> +	 * two registers. */
-> +	reg = ua2regval(bci->cur, cgain);
-> +	/* we have only 10 bit */
-
-bits
-
-> @@ -562,6 +698,14 @@ static int __init twl4030_bci_probe(struct platform_device *pdev)
->  	if (!pdata)
->  		pdata = twl4030_bci_parse_dt(&pdev->dev);
->  
-> +	bci->ichg_eoc = 80100; /* Stop charging when current drops to here */
-> +	bci->ichg_lo = 241000; /* low threshold */
-
-Low
-
-> +	bci->ichg_hi = 500000; /* High threshold */
+Apart for dt documentation...
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> --
+> Signature
+
+Smiley
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
