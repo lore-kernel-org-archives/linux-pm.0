@@ -1,109 +1,67 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 14/15] twl4030_charger: Increase current carefully while
- watching voltage.
-Date: Mon, 2 Mar 2015 22:29:45 +0100
-Message-ID: <20150302212945.GT13270@amd>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
- <20150224043353.4243.32335.stgit@notabene.brown>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] cpuidle / sleep: Use broadcast timer for states that stop local timer
+Date: Mon, 02 Mar 2015 23:28:50 +0100
+Message-ID: <6302236.aVZ7nQWQdn@vostro.rjw.lan>
+References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com> <89103967.z1sWWFaE6y@vostro.rjw.lan> <20150302162706.GB5515@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150224043353.4243.32335.stgit@notabene.brown>
+In-Reply-To: <20150302162706.GB5515@red-moon>
 Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2015-02-24 15:33:53, NeilBrown wrote:
-> The USB Battery Charging spec (BC1.2) suggests a dedicated
-> charging port can deliver from 0.5 to 5.0A at between 4.75 and 5.25
-> volts.
+On Monday, March 02, 2015 04:27:06 PM Lorenzo Pieralisi wrote:
+> On Mon, Mar 02, 2015 at 02:53:28PM +0000, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Commit 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
+> > overlooked the fact that entering some sufficiently deep idle states
+> > by CPUs may cause their local timers to stop and in those cases it
+> > is necessary to switch over to a broadcase timer prior to entering
 > 
-> To choose the "correct" current voltage setting requires a trial
-> and error approach: try to draw current and see if the voltage drops
-> too low.
+> s/broadcase/broadcast
+
+Yup, thanks!
+
+> > the idle state.  If the cpuidle driver in use does not provide
+> > the new ->enter_freeze callback for any of the idle states, that
+> > problem affects suspend-to-idle too, but it is not taken into account
+> > after the changes made by commit 381063133246.
+> > 
+> > Fix that by changing the definition of cpuidle_enter_freeze() and
+> > re-arranging of the code in cpuidle_idle_call(), so the former does
+> > not call cpuidle_enter() any more and the fallback case is handled
+> > by cpuidle_idle_call() directly.
+> > 
+> > Fixes: 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
+> > Reported-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Even with a configure Standard Downstream Port, it may not be possible
-> to reliably pull 500mA - depending on cable quality and source
-
-"configured"?
-
-> quality I have reports of charging failure due to the voltage dropping
-> too low.
+> Minor comment below, otherwise on the 4-patch series:
 > 
-> To address both these concern, this patch introduce incremental
-
-concerns.
-
-> current setting.
-> The current pull from VBUS is increased in steps of 20mA every 100ms
-> until the target is reached or until the measure voltage drops below
-> 4.75V.  If the voltage does go too long, the target current is reduced
-
-"too low"?
-
-> by 20mA and kept there.
+> Tested-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > 
-> This applies to currents selected automatically, or to values
-> set via sysfs.  So setting a large value will cause the maximum
-> available to be used - up to the limit of 1.7mA imposed by the
-> hardware.
+> [...]
+> 
+> >  /**
+> >   * cpuidle_enter_freeze - Enter an idle state suitable for suspend-to-idle.
+> > + * @drv: cpuidle driver for the given CPU.
+> > + * @dev: cpuidle device for the given CPU.
+> >   *
+> >   * If there are states with the ->enter_freeze callback, find the deepest of
+> >   * them and enter it with frozen tick.  Otherwise, find the deepest state
+> >   * available and enter it normally.
+> 
+> Comment above becomes stale so you should update it, other than that it
+> seems fine.
 
-1.7A?
+Sure, I forgot to update it, thanks for pointing this out.
 
+I'll queue up the two (with the above fixed) in my tree then.
 
-> @@ -249,8 +261,14 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
->  		cur = bci->ac_cur;
->  		bci->ac_is_active = 1;
->  	} else {
-> -		cur = bci->usb_cur;
-> +		cur = bci->usb_cur_actual;
+Peter, any objections to this one and the [1/2]?
 
-usb_cur_actual is not a really great variable name...
-
->  		bci->ac_is_active = 0;
-> +		if (cur > bci->usb_cur) {
-> +			cur = bci->usb_cur;
-> +			bci->usb_cur_actual = cur;
-> +		}
-> +		if (cur < bci->usb_cur)
-> +			schedule_delayed_work(&bci->current_worker, USB_CUR_DELAY);
->  	}
->  
->  	/* First, check thresholds and see if cgain is needed */
-> @@ -379,6 +397,38 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
->  	return 0;
->  }
->  
-> +static void twl4030_current_worker(struct work_struct *data)
-> +{
-> +	int v;
-> +	int res;
-> +	struct twl4030_bci *bci = container_of(data, struct twl4030_bci,
-> +					       current_worker.work);
-> +
-> +	res = twl4030bci_read_adc_val(TWL4030_BCIVBUS);
-> +	if (res < 0)
-> +		v = 0;
-> +	else
-> +		/* BCIVBUS uses ADCIN8, 7/1023 V/step */
-> +		v = res * 6843;
-> +
-> +	printk("v=%d cur=%d target=%d\n", v, bci->usb_cur_actual,
-> +	       bci->usb_cur);
-> +
-> +	if (v < USB_MIN_VOLT) {
-> +		/* Back up and stop adjusting. */
-> +		bci->usb_cur_actual -= USB_CUR_STEP;
-> +		bci->usb_cur = bci->usb_cur_actual;
-> +	} else if (bci->usb_cur_actual >= bci->usb_cur ||
-> +		   bci->usb_cur_actual + USB_CUR_STEP > USB_MAX_CURRENT) {
-> +		/* Reach target and volts are OK - stop */
-
-Reached ... and the voltage is OK - stop.
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
