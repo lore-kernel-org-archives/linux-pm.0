@@ -1,105 +1,57 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 11/15] twl4030_charger: enable manual enable/disable of
- usb charging.
-Date: Mon, 2 Mar 2015 22:03:42 +0100
-Message-ID: <20150302210342.GD13270@amd>
+Subject: Re: [PATCH 07/15] twl4030_charger: allow fine control of charger
+ current.
+Date: Mon, 2 Mar 2015 22:05:01 +0100
+Message-ID: <20150302210501.GJ13270@amd>
 References: <20150224043341.4243.23291.stgit@notabene.brown>
- <20150224043352.4243.543.stgit@notabene.brown>
+ <20150224043351.4243.88962.stgit@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150224043352.4243.543.stgit@notabene.brown>
+In-Reply-To: <20150224043351.4243.88962.stgit@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 To: NeilBrown <neilb@suse.de>
 Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2015-02-24 15:33:52, NeilBrown wrote:
-> 'off' or 'auto' to
-> 
->  /sys/class/power/twl4030_usb/mode
-> 
-> will now enable or disable charging from USB port.  Normally this is
-> enabled on 'plug' and disabled on 'unplug'.
-> Unplug will still disable charging.  'plug' will only enable it if
-> 'auto' if selected.
+Hi!
 
-This should go to Documentation/
+> +	/* ichg values in uA. If any are 'large', we set CGAIN to
+> +	 * '1' which doubles the range for half the precision.
+> +	 */
+> +	int			ichg_eoc, ichg_lo, ichg_hi, cur;
 
-> Signed-off-by: NeilBrown <neilb@suse.de>
-> 
-> Conflicts:
-> 	drivers/power/twl4030_charger.c
+We should really get uA_t.
 
-Is it supposed to be here?
+[Plus, this is not kernel comment style, but...]
 
-> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-> index 01090a440583..19e8dbb1303e 100644
-> --- a/drivers/power/twl4030_charger.c
-> +++ b/drivers/power/twl4030_charger.c
-> @@ -107,6 +107,9 @@ struct twl4030_bci {
->  	int			ichg_eoc, ichg_lo, ichg_hi;
->  	int			usb_cur, ac_cur;
->  	bool			ac_is_active;
-> +	int			usb_mode; /* charging mode requested */
-> +#define	CHARGE_OFF	0
-> +#define	CHARGE_AUTO	1
+> +	/* For ichg_eoc, reg value must be 100XXXX000, we only
+> +	 * set the XXXX in high nibble.
+> +	 */
+
+Confused. High nibble is 0xf0, right?
+
+> +	/* And finally, set the current.  This is stored in
+> +	 * two registers. */
+> +	reg = ua2regval(bci->cur, cgain);
+> +	/* we have only 10 bit */
+
+bits
+
+> @@ -562,6 +698,14 @@ static int __init twl4030_bci_probe(struct platform_device *pdev)
+>  	if (!pdata)
+>  		pdata = twl4030_bci_parse_dt(&pdev->dev);
 >  
->  	unsigned long		event;
->  };
-> @@ -377,6 +380,8 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
->  {
->  	int ret;
->  
-n> +	if (bci->usb_mode == CHARGE_OFF)
-> +		enable = false;
+> +	bci->ichg_eoc = 80100; /* Stop charging when current drops to here */
+> +	bci->ichg_lo = 241000; /* low threshold */
 
-Sometimes, you use = false and sometimes = 0 when assigning to bools...
+Low
 
-> @@ -629,6 +634,54 @@ static int twl4030_bci_usb_ncb(struct notifier_block *nb, unsigned long val,
->  	return NOTIFY_OK;
->  }
->  
-> +/*
-> + * sysfs charger enabled store
-> + */
-> +static char *modes[] = { "off", "auto" };
-
-I'd move this before the comment. Or better near struct twl4030_bci.
-
-> +static DEVICE_ATTR(mode, 0644, twl4030_bci_mode_show,
-> +		   twl4030_bci_mode_store);
-> +
->  static int twl4030_charger_get_current(void)
->  {
->  	int curr;
-> @@ -799,6 +852,7 @@ static int __init twl4030_bci_probe(struct platform_device *pdev)
->  		bci->usb_cur = 500000;  /* 500mA */
->  	else
->  		bci->usb_cur = 100000;  /* 100mA */
-> +	bci->usb_mode = CHARGE_AUTO;
->  
->  	bci->dev = &pdev->dev;
->  	bci->irq_chg = platform_get_irq(pdev, 0);
-> @@ -885,6 +939,8 @@ static int __init twl4030_bci_probe(struct platform_device *pdev)
->  	twl4030_charger_update_current(bci);
->  	if (device_create_file(bci->usb.dev, &dev_attr_max_current))
->  		dev_warn(&pdev->dev, "could not create sysfs file\n");
-> +	if (device_create_file(bci->usb.dev, &dev_attr_mode))
-> +		dev_warn(&pdev->dev, "could not create sysfs file\n");
->  	if (device_create_file(bci->ac.dev, &dev_attr_max_current))
->  		dev_warn(&pdev->dev, "could not create sysfs file\n");
->  
-> @@ -917,6 +973,7 @@ static int __exit twl4030_bci_remove(struct platform_device *pdev)
->  
->  	device_remove_file(bci->usb.dev, &dev_attr_max_current);
->  	device_remove_file(bci->ac.dev, &dev_attr_max_current);
-> +	device_remove_file(bci->usb.dev, &dev_attr_mode);
-
-move the line above for consistency with create?
+> +	bci->ichg_hi = 500000; /* High threshold */
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
