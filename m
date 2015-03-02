@@ -1,81 +1,30 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: Re: [PATCH v6 4/5] Input: add haptic drvier on max77843
-Date: Mon, 02 Mar 2015 15:08:14 +0900
-Message-ID: <54F3FE4E.5030805@samsung.com>
-References: <1424741348-8728-1-git-send-email-jaewon02.kim@samsung.com>
- <1424741348-8728-5-git-send-email-jaewon02.kim@samsung.com>
- <20150226012353.GC25965@dtor-ws> <54EE89C0.7010507@samsung.com>
- <20150227174941.GD6679@dtor-ws>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: hisilicon: add acpu driver
+Date: Mon, 2 Mar 2015 11:44:28 +0530
+Message-ID: <CAKohpokN3Ljuufv5i+TsoJRanGBVZoqEqF1wmUmCzfGbcPbUZQ@mail.gmail.com>
+References: <1424956899-8891-1-git-send-email-leo.yan@linaro.org>
+	<1424956899-8891-2-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-reply-to: <20150227174941.GD6679@dtor-ws>
-Sender: linux-input-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1424956899-8891-2-git-send-email-leo.yan@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dan Zhao <dan.zhao@hisilicon.com>, zhenwei.wang@hisilicon.com, mohaoju@hisilicon.com
 List-Id: linux-pm@vger.kernel.org
 
-HI Dmitry,
-
-On 28/02/2015 02:49, Dmitry Torokhov wrote:
-> On Thu, Feb 26, 2015 at 11:49:36AM +0900, Jaewon Kim wrote:
->> Hi Dmitry,
->>
->> On 26/02/2015 10:23, Dmitry Torokhov wrote:
->>> Hi Jaewon,
->>>
->>> On Tue, Feb 24, 2015 at 10:29:07AM +0900, Jaewon Kim wrote:
->>>> +static void max77843_haptic_play_work(struct work_struct *work)
->>>> +{
->>>> +	struct max77843_haptic *haptic =
->>>> +			container_of(work, struct max77843_haptic, work);
->>>> +	int error;
->>>> +
->>>> +	mutex_lock(&haptic->mutex);
->>>> +
->>>> +	if (haptic->suspended) {
->>>> +		goto err_play;
->>>> +	}
->>>> +
->>> You do not need braces around single statement. Also, this is not error
->>> that you are handling, I'd prefer if we called this label out_unlock.
->> You are right.
->> I will change label name and remove braces.
->>>> +	error = max77843_haptic_set_duty_cycle(haptic);
->>>> +	if (error) {
->>>> +		dev_err(haptic->dev, "failed to set duty cycle: %d\n", error);
->>>> +		goto err_play;
->>>> +	}
->>> Do you need to configure duty cycle if you stopping the playback? Or
->>> maybe disabling pwm is enough?
->> It do not need to set duty cycle requisitely when disabling haptic.
->>
->> I will move this function to front of max77843_haptic_enable().
->>
->>>> +
->>>> +	if (haptic->magnitude) {
->>>> +		error = max77843_haptic_enable(haptic);
->>>> +		if (error)
->>>> +			dev_err(haptic->dev,
->>>> +					"cannot enable haptic: %d\n", error);
->>>> +	} else {
->>>> +		max77843_haptic_disable(haptic);
->>>> +		if (error)
->>>> +			dev_err(haptic->dev,
->>>> +					"cannot disable haptic: %d\n", error);
->>> What error? You did not assign it...
->> Detailed error message printed in enable/disable() function.
-> What I was trying to say is that you do not assign new value to 'error'
-> variable in this path; it still carries the value from
-> max77843_haptic_set_duty_cycle() above and so this "if" statement will
-> never work and the message will never show up.
-I never image at all that i am not assign 'error' variable.
-I will assign it.
-
+On 26 February 2015 at 18:51, Leo Yan <leo.yan@linaro.org> wrote:
+> Add acpu driver for hisilicon SoC, acpu is application processor
+> subsystem. Dependent on the H/W design, the silicon may has the coupled
+> clock domain for all clusters, or every cluster can have the dedicated
+> clock domain. So this driver will support both implementations.
 >
-> Thanks.
->
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm         |   9 +
+>  drivers/cpufreq/Makefile            |   1 +
+>  drivers/cpufreq/hisi-acpu-cpufreq.c | 324 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 334 insertions(+)
+>  create mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
 
-Thanks,
-Jaewon Kim
+What is stopping from reusing cpufreq-dt driver ?
