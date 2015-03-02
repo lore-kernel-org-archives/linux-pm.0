@@ -1,78 +1,67 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 12/15] twl4030_charger: add software controlled linear
- charging mode.
-Date: Mon, 2 Mar 2015 22:09:26 +0100
-Message-ID: <20150302210926.GP13270@amd>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
- <20150224043352.4243.11227.stgit@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1] Thermal/int340x: Fix memleak for aux trip
+Date: Mon,  2 Mar 2015 13:12:07 -0800
+Message-ID: <1425330727-18854-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1425330727-18854-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58565 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbbCBVJa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 16:09:30 -0500
-Content-Disposition: inline
-In-Reply-To: <20150224043352.4243.11227.stgit@notabene.brown>
+Received: from mga03.intel.com ([134.134.136.65]:38510 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756056AbbCBVNQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Mar 2015 16:13:16 -0500
+In-Reply-To: <1425330727-18854-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue 2015-02-24 15:33:52, NeilBrown wrote:
-> Add a 'continuous' option for usb charging which enabled
-> the "linear" charging mode of the twl4030.
+When thermal zone device register fails or on module exit, the memory
+for aux_trip is not freed. This change fixes this issue.
 
-Documentation/ :-).
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/int340x_thermal/int340x_thermal_zone.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-> Linear charging does a good job with not so reliable power sources, since
-> several voltage controlling is then often too intelligent.
-
-Parse error.
-
-> It was used with a bike hub dynamo since a year or so. In that case there
-> are automatically charging stops when the cyclist needs a break.
-> 
-> Orignal-by: Andreas Kemnade <andreas@kemnade.info>
-> Signed-off-by: NeilBrown <neilb@suse.de>
-
-
-> +			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x33,
-> +					       TWL4030_BCIWDKEY);
-> +			/* 0x24 + EKEY6:  off mode */
-
-"  " -> " "
-
-> +			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x2a,
-> +					       TWL4030_BCIMDKEY);
-> +			/* EKEY2: Linear charge: usb path */
-
-USB
-
-> +			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x26,
-> +					       TWL4030_BCIMDKEY);
-> +			/* WDKEY5: stop watchdog count */
-> +			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0xf3,
-> +					       TWL4030_BCIWDKEY);
-> +			/* enable MFEN3 access */
-> +			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x9c,
-> +					       TWL4030_BCIMFKEY);
-> +			 /* ICHGEOCEN - end-of-charge monitor (current < 80mA)
-> +			  *                      (charging continues)
-> +			  * ICHGLOWEN - current level monitor (charge continues)
-> +			  * don't monitor over-current or heat save
-
-Heat save? Is ignoring over-current good idea?
-
-> @@ -650,6 +684,8 @@ twl4030_bci_mode_store(struct device *dev, struct device_attribute *attr,
->  		mode = 0;
->  	else if (sysfs_streq(buf, modes[1]))
->  		mode = 1;
-> +	else if (sysfs_streq(buf, modes[2]))
-> +		mode = 2;
-
-Time for loop?
-									Pavel
+diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+index f88b088..1e25133 100644
+--- a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
++++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+@@ -208,7 +208,7 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+ 				trip_cnt, GFP_KERNEL);
+ 		if (!int34x_thermal_zone->aux_trips) {
+ 			ret = -ENOMEM;
+-			goto free_mem;
++			goto err_trip_alloc;
+ 		}
+ 		trip_mask = BIT(trip_cnt) - 1;
+ 		int34x_thermal_zone->aux_trip_nr = trip_cnt;
+@@ -248,14 +248,15 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+ 						0, 0);
+ 	if (IS_ERR(int34x_thermal_zone->zone)) {
+ 		ret = PTR_ERR(int34x_thermal_zone->zone);
+-		goto free_lpat;
++		goto err_thermal_zone;
+ 	}
+ 
+ 	return int34x_thermal_zone;
+ 
+-free_lpat:
++err_thermal_zone:
+ 	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
+-free_mem:
++	kfree(int34x_thermal_zone->aux_trips);
++err_trip_alloc:
+ 	kfree(int34x_thermal_zone);
+ 	return ERR_PTR(ret);
+ }
+@@ -266,6 +267,7 @@ void int340x_thermal_zone_remove(struct int34x_thermal_zone
+ {
+ 	thermal_zone_device_unregister(int34x_thermal_zone->zone);
+ 	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
++	kfree(int34x_thermal_zone->aux_trips);
+ 	kfree(int34x_thermal_zone);
+ }
+ EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.9.3
+
