@@ -1,239 +1,356 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 0/2] drivers: cpuidle: minor suspend-to-idle fixes
-Date: Mon, 2 Mar 2015 10:08:23 +0000
-Message-ID: <20150302100823.GA23990@red-moon>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
- <3517340.oYgK5BBDND@vostro.rjw.lan>
- <20150228115422.GA27046@e102568-lin.cambridge.arm.com>
- <1504255.fW6WeRrizi@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46540 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbbCBKI2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Mar 2015 05:08:28 -0500
-Content-Disposition: inline
-In-Reply-To: <1504255.fW6WeRrizi@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jaewon Kim <jaewon02.kim@samsung.com>
+Subject: [PATCH v7 3/5] power: max77843_battery: Add Max77843 fuel gauge device
+ driver
+Date: Mon, 02 Mar 2015 19:10:36 +0900
+Message-ID: <1425291038-18269-4-git-send-email-jaewon02.kim@samsung.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org
+Cc: Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
 
-On Sat, Feb 28, 2015 at 11:58:21PM +0000, Rafael J. Wysocki wrote:
-> On Saturday, February 28, 2015 11:54:23 AM Lorenzo Pieralisi wrote:
-> > On Fri, Feb 27, 2015 at 10:11:54PM +0000, Rafael J. Wysocki wrote:
-> > > On Friday, February 27, 2015 10:00:00 AM Lorenzo Pieralisi wrote:
-> > > > [CC'ed Preeti]
-> > > > 
-> > > > On Thu, Feb 26, 2015 at 11:37:54PM +0000, Rafael J. Wysocki wrote:
-> > > > > Me versions of the two $subject patches follow.
-> > > > 
-> > > > Thank you. I am testing them and I have run into the following issue.
-> > > > 
-> > > > Starting with:
-> > > > 
-> > > > 3810631 ("PM / sleep: Re-implement suspend-to-idle handling")
-> > > > 
-> > > > the suspend-to-idle code path in the cpuidle_idle_call() bypasses
-> > > > the CPUIDLE_FLAG_TIMER_STOP code path entirely.
-> > > 
-> > > Hmm, this looks like a mistake.  Sorry about that.
-> > 
-> > Thank you for looking into this !
-> > 
-> > > > Now, on most of
-> > > > the current ARM platforms, the deepest idle state loses the tick device
-> > > > context, therefore this means that going to idle through
-> > > > suspend-to-idle becomes a brute force way of nuking the tick,
-> > > > unless I am missing something here.
-> > > > 
-> > > > I am experiencing hangs on resume from suspend-to-idle when the broadcast
-> > > > timer is the broadast-hrtimer (ie there is no HW broadcast timer in the
-> > > > platform) and the deepest idle states lose the tick device context (ie
-> > > > they are CPUIDLE_FLAG_TIMER_STOP), I hope Preeti can help me test this on
-> > > > Power, still chasing the issue.
-> > > > 
-> > > > I could not reproduce the issue with a HW broadcast timer device.
-> > > > 
-> > > > Platform has deepest idle states that allow CPUs shutdown where the
-> > > > local tick device is gone on entry, I am trying to provide you with a
-> > > > backtrace, I need time to debug.
-> > > > 
-> > > > The question I have: is it safe to bypass the CPUIDLE_FLAG_TIMER_STOP
-> > > > and related broadcast mode entry/exit in the suspend-to-idle path ?
-> > > > 
-> > > > I do not think it is, but I am asking.
-> > > 
-> > > It isn't in general, but it would be OK in the enter_freeze_proper() path
-> > > where the tick is suspended anyway.
-> > 
-> > Entering state through enter_freeze() (ie adding the function pointer
-> > in the idle states, on platforms where it is appropriate), therefore
-> > freezing the tick solves the issue, so I think we should patch all ARM
-> > drivers that can benefit from this interesting new feature.
-> > 
-> > > > I can "force" tick freeze by initializing the enter_freeze pointer
-> > > > in the idle states (that's the next thing I will test), but still, for
-> > > > platforms where that's not possible my question above is still valid.
-> > > 
-> > > Right.
-> > > 
-> > > Does the patch below help (on top of the previous ones)?
-> > 
-> > I need HW to test, I will do that first thing on Monday, and send
-> > you the appropriate tags. I already put together a similar patch
-> > and tested it yesterday, so I can say already that it solves the
-> > problem, I will test your patch on Monday and get back to you
-> > (patch 1 and 2 in this series already tested on a platform with no
-> > CPUidle driver registered, and they work and fix the NULL drv
-> > dereference issue).
-> 
-> Cool, thanks!
-> 
-> Below is a slightly cleaner version of the patch with a changelog.  Can you
-> please test this one?
-> 
-> Rafael
-> 
-> 
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpuidle / sleep: Use broadcast timer for states that stop local timer
-> 
-> Commit 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
-> overlooked the fact that entering some sufficiently deep idle states
-> by CPUs may cause their local timers to stop and in those cases it
-> is necessary to switch over to a broadcase timer prior to entering
-> the idle state.  If the cpuidle driver in use does not provide
-> the new ->enter_freeze callback for any of the idle states, that
-> problem affects suspend-to-idle too, but it is not taken into account
-> after the changes made by commit 381063133246.
-> 
-> Fix that by moving the CPUIDLE_FLAG_TIMER_STOP flag check and the
-> broadcast timer manipulations following it from cpuidle_idle_call()
-> to cpuidle_enter() which will cause them to be done, if necessary,
-> in the suspend-to-idle case as well as for runtime idle.
-> 
-> Fixes: 381063133246 (PM / sleep: Re-implement suspend-to-idle handling)
-> Reported-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpuidle/cpuidle.c |   34 +++++++++++++++++++++++++++++-----
->  kernel/sched/idle.c       |   17 ++---------------
->  2 files changed, 31 insertions(+), 20 deletions(-)
-> 
-> Index: linux-pm/drivers/cpuidle/cpuidle.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
-> +++ linux-pm/drivers/cpuidle/cpuidle.c
-> @@ -230,15 +230,39 @@ int cpuidle_select(struct cpuidle_driver
->   * @dev:   the cpuidle device
->   * @index: the index in the idle state table
->   *
-> - * Returns the index in the idle state, < 0 in case of error.
-> - * The error code depends on the backend driver
-> + * Returns the index in the idle state, < 0 in case of error.  -EBUSY is
-> + * returned to indicate that the target state was temporarily inaccessible.
-> + * The other error codes depend on the backend driver.
->   */
->  int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  		  int index)
->  {
-> -	if (cpuidle_state_is_coupled(dev, drv, index))
-> -		return cpuidle_enter_state_coupled(dev, drv, index);
-> -	return cpuidle_enter_state(dev, drv, index);
-> +	unsigned int broadcast;
-> +	int ret;
-> +
-> +	broadcast = drv->states[index].flags & CPUIDLE_FLAG_TIMER_STOP;
-> +
-> +	/*
-> +	 * Tell the time framework to switch to a broadcast timer
-> +	 * because our local timer will be shutdown. If a local timer
-> +	 * is used from another cpu as a broadcast timer, this call may
-> +	 * fail if it is not available
-> +	 */
-> +	if (broadcast) {
-> +		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> +					 &dev->cpu);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	ret = cpuidle_state_is_coupled(dev, drv, index) ?
-> +		cpuidle_enter_state_coupled(dev, drv, index) :
-> +		cpuidle_enter_state(dev, drv, index);
-> +
-> +	if (broadcast)
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> +
-> +	return ret;
+From: Beomho Seo <beomho.seo@samsung.com>
 
-You have to check this return value in cpuidle_enter_freeze() too
-otherwise we return to the idle thread on -EBUSY without
-even executing arch_cpu_idle() and with IRQ disabled, code hits
-the WARN_ON_ONCE line 180.
+This patch adds device driver of max77843 fuel gauge.
+The driver support for battery fuel gauge in Maxim Max77843.
+It is fuel-gauge systems for lithuum-ion batteries in handled and
+portable devices.
 
-There are multiple ways of fixing the issue, either you check the
-cpuidle_enter_freeze() return value (you add one) to cpuidle_idle_call()
-to make code consistent with the cpuidle_idle_call "normal" idle
-behaviour or you add the return value check in cpuidle_enter_freeze(),
-I am fine both ways.
+Cc: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+---
+ drivers/power/Kconfig            |    9 ++
+ drivers/power/Makefile           |    1 +
+ drivers/power/max77843_battery.c |  286 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 296 insertions(+)
+ create mode 100644 drivers/power/max77843_battery.c
 
-Thanks,
-Lorenzo
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 994793d..42538e6 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -212,6 +212,15 @@ config BATTERY_MAX17042
+ 	  with MAX17042. This driver also supports max17047/50 chips which are
+ 	  improved version of max17042.
+ 
++config BATTERY_MAX77843
++	tristate "Maxim MAX77843 Fuel Gauge"
++	depends on MFD_MAX77843
++	help
++	  This adds support for battery fuel gauge in Maxim MAX77843. It is
++	  fuel-gauge for a lithium-ion batteries with a single cell and can be
++	  found in portable devices. The MAX77843 is configured to operate with
++	  a single lithium cell.
++
+ config BATTERY_Z2
+ 	tristate "Z2 battery driver"
+ 	depends on I2C && MACH_ZIPIT2
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index ed69cea..59e3945 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
+ obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
+ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
++obj-$(CONFIG_BATTERY_MAX77843)	+= max77843_battery.o
+ obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
+ obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
+ obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
+diff --git a/drivers/power/max77843_battery.c b/drivers/power/max77843_battery.c
+new file mode 100644
+index 0000000..a4266de
+--- /dev/null
++++ b/drivers/power/max77843_battery.c
+@@ -0,0 +1,286 @@
++/*
++ * Fuel gauge driver for Maxim MAX77843
++ *
++ * Copyright (C) 2015 Samsung Electronics, Co., Ltd.
++ * Author: Beomho Seo <beomho.seo@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/mfd/max77843-private.h>
++
++struct max77843_battery {
++	struct device		*dev;
++	struct max77843		*max77843;
++	struct i2c_client	*client;
++	struct regmap		*regmap;
++	struct power_supply	psy;
++};
++
++static int max77843_battery_get_capacity(struct max77843_battery *battery)
++{
++	struct regmap *regmap = battery->regmap;
++	int ret, val;
++	unsigned int reg_data;
++
++	ret = regmap_read(regmap, MAX77843_FG_REG_SOCREP, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data >> 8;
++
++	return val;
++}
++
++static int max77843_battery_get_energy_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++		reg = MAX77843_FG_REG_FULLCAP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++		reg = MAX77843_FG_REG_REMCAP_REP;
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		reg = MAX77843_FG_REG_REMCAP_AV;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data;
++
++	return val;
++}
++
++static int max77843_battery_get_current_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		reg = MAX77843_FG_REG_CURRENT;
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		reg = MAX77843_FG_REG_AVG_CURRENT;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = reg_data;
++	if (val & 0x8000) {
++		/* Negative */
++		val = ~val & 0xffff;
++		val++;
++		val *= -1;
++	}
++	/* Unit of current is mA */
++	val =  val * 15625 / 100000;
++
++	return val;
++}
++
++static int max77843_battery_get_voltage_prop(struct max77843_battery *battery,
++		enum power_supply_property psp)
++{
++	struct regmap *regmap = battery->regmap;
++	unsigned int reg;
++	int ret, val;
++	unsigned int reg_data;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		reg = MAX77843_FG_REG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		reg = MAX77843_FG_REG_AVG_VCELL;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		reg = MAX77843_FG_REG_OCV;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = regmap_read(regmap, reg, &reg_data);
++	if (ret) {
++		dev_err(battery->dev, "Failed to read fuelgauge register\n");
++		return ret;
++	}
++
++	val = (reg_data >> 4)  * 125;
++	val /= 100;
++
++	return val;
++}
++
++static const char *model_name = "MAX77843";
++static const char *manufacturer = "Maxim Integrated";
++
++static int max77843_battery_get_property(struct power_supply *psy,
++		enum power_supply_property psp,
++		union power_supply_propval *val)
++{
++	struct max77843_battery *battery = container_of(psy,
++				struct max77843_battery, psy);
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		val->intval = max77843_battery_get_voltage_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		val->intval = max77843_battery_get_current_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		val->intval = max77843_battery_get_energy_prop(battery, psp);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = max77843_battery_get_capacity(battery);
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval =  model_name;
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = manufacturer;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property max77843_battery_props[] = {
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_OCV,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_ENERGY_FULL,
++	POWER_SUPPLY_PROP_ENERGY_NOW,
++	POWER_SUPPLY_PROP_ENERGY_AVG,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++};
++
++static const struct regmap_config max77843_fuel_regmap_config = {
++	.reg_bits	= 8,
++	.val_bits	= 16,
++	.val_format_endian = REGMAP_ENDIAN_NATIVE,
++	.max_register	= MAX77843_FG_END,
++};
++
++static int max77843_battery_probe(struct platform_device *pdev)
++{
++	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
++	struct max77843_battery *battery;
++	int ret;
++
++	battery = devm_kzalloc(&pdev->dev, sizeof(*battery), GFP_KERNEL);
++	if (!battery)
++		return -ENOMEM;
++
++	battery->dev = &pdev->dev;
++	battery->max77843 = max77843;
++
++	battery->client = i2c_new_dummy(max77843->i2c->adapter, I2C_ADDR_FG);
++	if (!battery->client) {
++		dev_err(&pdev->dev, "Failed to get dummy i2c client.\n");
++		return PTR_ERR(battery->client);
++	}
++	i2c_set_clientdata(battery->client, max77843);
++
++	battery->regmap = devm_regmap_init_i2c(battery->client,
++			&max77843_fuel_regmap_config);
++	if (IS_ERR(battery->regmap)) {
++		ret = PTR_ERR(battery->regmap);
++		goto err_i2c;
++	}
++
++	platform_set_drvdata(pdev, battery);
++
++	battery->psy.name	= "max77843-fuelgauge";
++	battery->psy.type	= POWER_SUPPLY_TYPE_BATTERY;
++	battery->psy.get_property	= max77843_battery_get_property;
++	battery->psy.properties		= max77843_battery_props;
++	battery->psy.num_properties	= ARRAY_SIZE(max77843_battery_props);
++
++	ret = power_supply_register(&pdev->dev, &battery->psy);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed  to register power supply\n");
++		goto err_i2c;
++	}
++
++	return 0;
++
++err_i2c:
++	i2c_unregister_device(battery->client);
++
++	return ret;
++}
++
++static int max77843_battery_remove(struct platform_device *pdev)
++{
++	struct max77843_battery *battery = platform_get_drvdata(pdev);
++
++	power_supply_unregister(&battery->psy);
++
++	i2c_unregister_device(battery->client);
++
++	return 0;
++}
++
++static const struct platform_device_id max77843_battery_id[] = {
++	{ "max77843-fuelgauge", },
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, max77843_battery_id);
++
++static struct platform_driver max77843_battery_driver = {
++	.driver = {
++		.name = "max77843-fuelgauge",
++	},
++	.probe = max77843_battery_probe,
++	.remove = max77843_battery_remove,
++	.id_table = max77843_battery_id,
++};
++module_platform_driver(max77843_battery_driver);
++
++MODULE_DESCRIPTION("Maxim MAX77843 fuel gauge driver");
++MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
++MODULE_LICENSE("GPL v2");
+-- 
+1.7.9.5
 
->  }
->  
->  /**
-> Index: linux-pm/kernel/sched/idle.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/idle.c
-> +++ linux-pm/kernel/sched/idle.c
-> @@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
->  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
->  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
->  	int next_state, entered_state;
-> -	unsigned int broadcast;
->  
->  	/*
->  	 * Check if the idle task must be rescheduled. If it is the
-> @@ -151,18 +150,6 @@ use_default:
->  		goto exit_idle;
->  	}
->  
-> -	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
-> -
-> -	/*
-> -	 * Tell the time framework to switch to a broadcast timer
-> -	 * because our local timer will be shutdown. If a local timer
-> -	 * is used from another cpu as a broadcast timer, this call may
-> -	 * fail if it is not available
-> -	 */
-> -	if (broadcast &&
-> -	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
-> -		goto use_default;
-> -
->  	/* Take note of the planned idle state. */
->  	idle_set_state(this_rq(), &drv->states[next_state]);
->  
-> @@ -176,8 +163,8 @@ use_default:
->  	/* The cpu is no longer idle or about to enter idle. */
->  	idle_set_state(this_rq(), NULL);
->  
-> -	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> +	if (entered_state == -EBUSY)
-> +		goto use_default;
->  
->  	/*
->  	 * Give the governor an opportunity to reflect on the outcome
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
