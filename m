@@ -1,82 +1,35 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 1/2] cpuidle: Clean up fallback handling in
- cpuidle_idle_call()
-Date: Mon, 2 Mar 2015 16:05:36 +0000
-Message-ID: <20150302160536.GA5515@red-moon>
-References: <1424800730-32059-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1809382.kscziWfTPN@vostro.rjw.lan>
- <1882932.aLeaejbmMz@vostro.rjw.lan>
- <49170765.GVk6ROgF6X@vostro.rjw.lan>
+From: "Mr. Juan Sebastian Morato" <noreply@popfax.com>
+Subject: Confidential Letter
+Date: Mon, 02 Mar 2015 01:34:43 +0100
+Message-ID: <20150302003450.E9C083EE0FF__38854.5526577674$1425312610$gmane$org@mail.quartzbg.ro>
+Reply-To: juan_morato@yahoo.es
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <49170765.GVk6ROgF6X@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.quartzbg.ro ([82.79.64.94]:43864 "EHLO mail.quartzbg.ro"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752896AbbCBQJ7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 11:09:59 -0500
+Content-Description: Mail message body
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Recipients <noreply@popfax.com>
 
-On Mon, Mar 02, 2015 at 02:51:35PM +0000, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Move the fallback code path in cpuidle_idle_call() to the end of the
-> function to avoid jumping to a label in a an if () branch.
+Dear Friend, 
 
-Nit: "in an if () branch"
+I am Mr. Juan Sebastian Morato, the Auditor General of Unicaja Bank Madrid. In the course of my auditing, I discovered a floating fund in an account, which was opened in 1990 at Cam Bank before it was bought over by Unicaja Group which I am the auditor belonging to a dead foreigner Mr. Kenny who died in 2004. Every effort made to track any member of his family or next of kin has since failed; hence I got in contact with you to stand as his next of kin since you bear the same last name. He died leaving no heir or a will.
 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  kernel/sched/idle.c |   29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
-> 
-> Index: linux-pm/kernel/sched/idle.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/idle.c
-> +++ linux-pm/kernel/sched/idle.c
-> @@ -124,20 +124,8 @@ static void cpuidle_idle_call(void)
->  	 * Fall back to the default arch idle method on errors.
->  	 */
->  	next_state = cpuidle_select(drv, dev);
-> -	if (next_state < 0) {
-> -use_default:
-> -		/*
-> -		 * We can't use the cpuidle framework, let's use the default
-> -		 * idle routine.
-> -		 */
-> -		if (current_clr_polling_and_test())
-> -			local_irq_enable();
-> -		else
-> -			arch_cpu_idle();
-> -
-> -		goto exit_idle;
-> -	}
-> -
-> +	if (next_state < 0)
-> +		goto use_default;
->  
->  	/*
->  	 * The idle task must be scheduled, it is pointless to
-> @@ -195,6 +183,19 @@ exit_idle:
->  
->  	rcu_idle_exit();
->  	start_critical_timings();
-> +	return;
-> +
-> +use_default:
-> +	/*
-> +	 * We can't use the cpuidle framework, let's use the default
-> +	 * idle routine.
-> +	 */
-> +	if (current_clr_polling_and_test())
-> +		local_irq_enable();
-> +	else
-> +		arch_cpu_idle();
-> +
-> +	goto exit_idle;
+My intention is to transfer this sum of 5.5M in the aforementioned account to a safe account. I am therefore proposing that you quietly partner with me and provide an account or set up a new one that will serve the purpose of receiving this fund. For your assistance in this venture, I am ready to part with a good percentage of the entire funds. After going through the deceased person's records and files, I discovered that:
 
-I wonder whether making the code at label use_default a function saves us
-some jumping around, not sure it is worth the churn, your call, I am ok as
-it is.
+(1) No one has operated this account since 2004
+(2) He died without an heir; hence the money has been floating.
+(3) No other person knows about this account and there was no known beneficiary.
 
-Lorenzo
+If I do not remit this money urgently, it would be forfeited and subsequently converted to company's funds, which will benefit only the directors of my firm. This money can be approved to you legally as with all the necessary documentary approvals in your name. However, you would be required to show some proof of claim, which I will provide you with and also guide you on how to make your applications.
+
+Please do give me a reply on my private e-mail juan.morato1@1email.eu or fax 00 34 917 692 656 so that I can send you detailed information on the modalities of my proposition. I completely trust you to keep this proposition absolutely confidential. Kindly forward your telephone number where I can reach you easily. I look forward to your prompt response.
+
+Best Regards,
+Mr. Juan Sebastian Morato
+Fax: 00 34 917 692 656
