@@ -1,50 +1,108 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: hisilicon: add acpu driver
-Date: Mon, 2 Mar 2015 19:14:07 +0800
-Message-ID: <20150302111406.GA18498@leoy-linaro>
-References: <1424956899-8891-1-git-send-email-leo.yan@linaro.org>
- <1424956899-8891-2-git-send-email-leo.yan@linaro.org>
- <CAKohpokN3Ljuufv5i+TsoJRanGBVZoqEqF1wmUmCzfGbcPbUZQ@mail.gmail.com>
- <20150302105025.GA8702@leoy-linaro>
- <CAKohpok62tCenCwSRxACeWZGwotsm5sm4nTX74Bq6sAXJfZX0g@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] dmaengine: shdma: Move DMA stop to (runtime) suspend callbacks
+Date: Mon, 2 Mar 2015 12:56:47 +0100
+Message-ID: <CAPDyKFrNNOYgif0k=EGK0hCNe0sd3RFeZJxytrR9qS8uH+1XBA@mail.gmail.com>
+References: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:33486 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbbCBLON (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 06:14:13 -0500
-Received: by pdjz10 with SMTP id z10so38943412pdj.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 Mar 2015 03:14:13 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAKohpok62tCenCwSRxACeWZGwotsm5sm4nTX74Bq6sAXJfZX0g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1424946394-6784-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dan Zhao <dan.zhao@hisilicon.com>, zhenwei.wang@hisilicon.com, mohaoju@hisilicon.com
 
-On Mon, Mar 02, 2015 at 04:34:34PM +0530, Viresh Kumar wrote:
-> On 2 March 2015 at 16:20, Leo Yan <leo.yan@linaro.org> wrote:
-> > i'm glad to use more general method, let me give more input so that we
-> > can see if can figure out a better way. ;)
-> 
-> And I am glad to hear that :)
-> 
-> > 1. From hardware design, during the initialization phase, it will
-> > bind every opps with its corresponding voltage, and pass these related
-> > info to power controller. So later, in kernel the cpufreq driver don't
-> > need manually change the voltage, it will only change the cpu clock
-> > frequency and power controller will automatically handle voltage
-> > related operations. This is similar with TC's SPC implementation.
-> >
-> > So looks likely the cpufreq-dt driver's voltage related ops are
-> > redundant for this case.
-> 
-> Its okay, they wouldn't harm. You don't have to specify any regulator
-> in CPUs DT node and the code will not try any fancy stuff :)
+On 26 February 2015 at 11:26, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> During system reboot, the sh-dma-engine device may be runtime-suspended,
+> causing a crash:
+>
+>     Unhandled fault: imprecise external abort (0x1406) at 0x0002c02c
+>     Internal error: : 1406 [#1] SMP ARM
+>     ...
+>     PC is at sh_dmae_ctl_stop+0x28/0x64
+>     LR is at sh_dmae_ctl_stop+0x24/0x64
+>
+> If the sh-dma-engine is runtime-suspended, its module clock is turned
+> off, and its registers cannot be accessed.
+>
+> To fix this, move the call to sh_dmae_ctl_stop(), which touches the
+> DMAOR register, to the sh_dmae_suspend() and sh_dmae_runtime_suspend()
+> callbacks.  This makes PM operations more symmetric, as both
+> sh_dmae_resume() and sh_dmae_runtime_resume() already call sh_dmae_rst()
+> to re-initialize the DMAOR register.
+>
+> Remove sh_dmae_shutdown(), as it became empty.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-If so, it's make sense to directly use cpufreq-dt driver; i will try
-it firstly. Appreciate for suggestion :)
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Thanks,
-Leo Yan
+Kind regards
+Uffe
+
+> ---
+> This is v3 of "dmaengine: shdma: Runtime-resume device in .shutdown()"
+>
+> v3:
+>   - Move the call to sh_dmae_ctl_stop() to sh_dmae_suspend() and
+>     sh_dmae_runtime_suspend() instead of runtime-resuming the device in
+>     .shutdown(),
+>
+> v2:
+>   - Do nothing if we're runtime suspended.
+> ---
+>  drivers/dma/sh/shdmac.c | 15 +++++++--------
+>  1 file changed, 7 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/dma/sh/shdmac.c b/drivers/dma/sh/shdmac.c
+> index b2431aa300331270..9f1d4c7dbab83890 100644
+> --- a/drivers/dma/sh/shdmac.c
+> +++ b/drivers/dma/sh/shdmac.c
+> @@ -582,15 +582,12 @@ static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
+>         }
+>  }
+>
+> -static void sh_dmae_shutdown(struct platform_device *pdev)
+> -{
+> -       struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
+> -       sh_dmae_ctl_stop(shdev);
+> -}
+> -
+>  #ifdef CONFIG_PM
+>  static int sh_dmae_runtime_suspend(struct device *dev)
+>  {
+> +       struct sh_dmae_device *shdev = dev_get_drvdata(dev);
+> +
+> +       sh_dmae_ctl_stop(shdev);
+>         return 0;
+>  }
+>
+> @@ -605,6 +602,9 @@ static int sh_dmae_runtime_resume(struct device *dev)
+>  #ifdef CONFIG_PM_SLEEP
+>  static int sh_dmae_suspend(struct device *dev)
+>  {
+> +       struct sh_dmae_device *shdev = dev_get_drvdata(dev);
+> +
+> +       sh_dmae_ctl_stop(shdev);
+>         return 0;
+>  }
+>
+> @@ -929,13 +929,12 @@ static int sh_dmae_remove(struct platform_device *pdev)
+>  }
+>
+>  static struct platform_driver sh_dmae_driver = {
+> -       .driver         = {
+> +       .driver         = {
+>                 .pm     = &sh_dmae_pm,
+>                 .name   = SH_DMAE_DRV_NAME,
+>                 .of_match_table = sh_dmae_of_match,
+>         },
+>         .remove         = sh_dmae_remove,
+> -       .shutdown       = sh_dmae_shutdown,
+>  };
+>
+>  static int __init sh_dmae_init(void)
+> --
+> 1.9.1
+>
