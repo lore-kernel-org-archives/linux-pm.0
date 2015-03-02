@@ -1,39 +1,54 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/2] Allow twl4030_charger to find phy reliably.
-Date: Mon, 2 Mar 2015 22:05:14 +0100
-Message-ID: <20150302210514.GL13270@amd>
-References: <20150224035809.32252.4180.stgit@notabene.brown>
+Subject: Re: [PATCH 08/15] twl4030_charger: distinguish between USB current
+ and 'AC' current
+Date: Mon, 2 Mar 2015 22:05:10 +0100
+Message-ID: <20150302210509.GK13270@amd>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043351.4243.50342.stgit@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150224035809.32252.4180.stgit@notabene.brown>
+In-Reply-To: <20150224043351.4243.50342.stgit@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 To: NeilBrown <neilb@suse.de>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Woodhouse <dwmw2@infradead.org>, Sebastian Reichel <sre@kernel.org>, Felipe Balbi <balbi@ti.com>, GTA04 owners <gta04-owner@goldelico.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2015-02-24 15:01:29, NeilBrown wrote:
-> The twl4030_charger is physically paired with the twl4030 USB phy,
-> so the drivers need to be able to reliably find each other.
-> 
-> twl4030_charger currently uses usb_get_phy(), which works if there is
-> only one phy to choose from, but is not reliable in more complex
-> configurations.
-> 
-> These patches add a new interface to allow a phy to be found given a
-> device node, and then use that interface in twl4030_charger so that
-> it finds its sibling in the devicetree, and gets the phy associated
-> with that.
+Hi!
 
-Apart for dt documentation...
+> The twl4030 charger has two current sources, 'USB' and 'AC' (which is
+> really DC of course...).
+> 
+> If 'AC' is providing current, we should set the current limit
+> differently to when it isn't (and so USB is used).
+> So split 'cur' into 'usb_cur' and 'ac_cur' and use accordingly.
+> 
+> Now we must review the current setting on any interrupt or USB
+> event which might indicate that the charger-source has changed.
+> 
+> Signed-off-by: NeilBrown <neilb@suse.de>
+
+> @@ -103,7 +104,9 @@ struct twl4030_bci {
+>  	/* ichg values in uA. If any are 'large', we set CGAIN to
+
+ichg/_cur values
+
+>  	 * '1' which doubles the range for half the precision.
+>  	 */
+> -	int			ichg_eoc, ichg_lo, ichg_hi, cur;
+> +	int			ichg_eoc, ichg_lo, ichg_hi;
+> +	int			usb_cur, ac_cur;
+
+> +	/* If VAC exceeds 4.5V (MADC 11) and ac is enabled, set current
+> +	 * for 'ac'
+
+	/*
+	 * If AC voltage exceeds 4.5V (MADC 11) and AC is enabled, set current
+	 * for 'ac'.
+
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
-
-> --
-> Signature
-
-Smiley
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
