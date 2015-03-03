@@ -1,132 +1,57 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 3/3] firmware: qcom: scm: Support cpu power down through SCM
-Date: Mon,  2 Mar 2015 16:30:30 -0700
-Message-ID: <1425339030-45828-4-git-send-email-lina.iyer@linaro.org>
-References: <1425339030-45828-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1425339030-45828-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, khilman@linaro.org, Lina Iyer <lina.iyer@linaro.org>, Stephen Boyd <sboyd@codeauraro.org>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCH v2 1/1] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Tue, 3 Mar 2015 01:13:09 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B73276139A@PGSMSX105.gar.corp.intel.com>
+References: <1424880737-12119-1-git-send-email-boon.leong.ong@intel.com>
+ <1424880737-12119-2-git-send-email-boon.leong.ong@intel.com>
+ <54F48BCB.7070505@nexus-software.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:15557 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753786AbbCCBNR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 20:13:17 -0500
+In-Reply-To: <54F48BCB.7070505@nexus-software.ie>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bryan O'Donoghue <pure.logic@nexus-software.ie>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "Kweh, Hock Leong" <hock.leong.kweh@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Support powering down the calling cpu, by trapping into SCM. This
-termination function triggers the ARM cpu to execute WFI instruction,
-causing the power controller to safely power the cpu down.
+>-----Original Message-----
+>From: Bryan O'Donoghue [mailto:pure.logic@nexus-software.ie]
+>Sent: Tuesday, March 3, 2015 12:12 AM
+>To: Ong, Boon Leong; Zhang, Rui; edubezval@gmail.com; Kweh, Hock Leong
+>Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH v2 1/1] thermal: intel Quark SoC X1000 DTS thermal driver
+>
+>On 25/02/15 16:12, Ong Boon Leong wrote:
+>
+>> +config INTEL_QUARK_DTS_THERMAL
+>> +	tristate "Intel Quark DTS thermal driver"
+>> +	depends on X86 && IOSF_MBI
+>
+>Since the change is in RC-1 suggest
+>depends on X86_INTEL_QUARK
+>you can skip this though it's not important.
+Ya. That is true now since the below commit has been merged:
+8bbc2a135b63bee6b41fa90f415521a97995a49f to mainline in 4.0-rc1
 
-Caches may be flushed before powering down the cpu. If cache controller
-is set to turn off when the cpu is powered down, then the flags argument
-indicates to the secure mode to flush its cache lines before executing
-WFI.The warm boot reset address for the cpu should be set before the
-calling into this function for the cpu to resume.
+On another thought, how about adding INTEL_QUARK_DTS_THERMAL to
+be selected by X86_INTEL_QUARK  in arch/x86/Kconfig ... and we can
+drop the above dependencies from here.
 
-The original code for the qcom_scm_call_atomic1() comes from a patch by
-Stephen Boyd [1]. The function scm_call_atomic1() has been cherry picked
-and renamed to match the convention used in this file. Since there are
-no users of scm_call_atomic2(), the function is not included.
+I can send version-3 which above change if that is agreeable by community & maintainer.
 
-[1]. https://lkml.org/lkml/2014/8/4/765
+>
+>Tested works for me:
+>
+>root@clanton:~# cat /sys/class/thermal/thermal_zone0/temp
+>62
+>
+>Apply finger to die directly - doesn't burn but it's a bit uncomfortable
+Yup... this is how I check also =-) 
 
-Signed-off-by: Stephen Boyd <sboyd@codeauraro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- drivers/firmware/qcom_scm.c | 57 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/qcom_scm.h    |  7 +++++-
- 2 files changed, 63 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
-index 4d8ede4..994b50f 100644
---- a/drivers/firmware/qcom_scm.c
-+++ b/drivers/firmware/qcom_scm.c
-@@ -311,6 +311,45 @@ out:
- 	return ret;
- }
- 
-+#define SCM_CLASS_REGISTER	(0x2 << 8)
-+#define SCM_MASK_IRQS		BIT(5)
-+#define SCM_ATOMIC(svc, cmd, n) (((((svc) << 10)|((cmd) & 0x3ff)) << 12) | \
-+				SCM_CLASS_REGISTER | \
-+				SCM_MASK_IRQS | \
-+				(n & 0xf))
-+
-+/**
-+ * qcom_scm_call_atomic1() - Send an atomic SCM command with one argument
-+ * @svc_id: service identifier
-+ * @cmd_id: command identifier
-+ * @arg1: first argument
-+ *
-+ * This shall only be used with commands that are guaranteed to be
-+ * uninterruptable, atomic and SMP safe.
-+ */
-+static s32 qcom_scm_call_atomic1(u32 svc, u32 cmd, u32 arg1)
-+{
-+	int context_id;
-+
-+	register u32 r0 asm("r0") = SCM_ATOMIC(svc, cmd, 1);
-+	register u32 r1 asm("r1") = (u32)&context_id;
-+	register u32 r2 asm("r2") = arg1;
-+
-+	asm volatile(
-+			__asmeq("%0", "r0")
-+			__asmeq("%1", "r0")
-+			__asmeq("%2", "r1")
-+			__asmeq("%3", "r2")
-+#ifdef REQUIRES_SEC
-+			".arch_extension sec\n"
-+#endif
-+			"smc    #0      @ switch to secure world\n"
-+			: "=r" (r0)
-+			: "r" (r0), "r" (r1), "r" (r2)
-+			: "r3");
-+	return r0;
-+}
-+
- u32 qcom_scm_get_version(void)
- {
- 	int context_id;
-@@ -435,3 +474,21 @@ int qcom_scm_set_warm_boot_addr(void *entry, const cpumask_t *cpus)
- 	return ret;
- }
- EXPORT_SYMBOL(qcom_scm_set_warm_boot_addr);
-+
-+#define QCOM_SCM_CMD_TERMINATE_PC	0x2
-+#define QCOM_SCM_FLUSH_FLAG_MASK	0x3
-+
-+/**
-+ * qcom_scm_cpu_power_down() - Power down the cpu
-+ * @flags - Flags to flush cache
-+ *
-+ * This is an end point to power down cpu. If there was a pending interrupt,
-+ * the control would return from this function, otherwise, the cpu jumps to the
-+ * warm boot entry point set for this cpu upon reset.
-+ */
-+void qcom_scm_cpu_power_down(u32 flags)
-+{
-+	qcom_scm_call_atomic1(QCOM_SCM_SVC_BOOT, QCOM_SCM_CMD_TERMINATE_PC,
-+			flags & QCOM_SCM_FLUSH_FLAG_MASK);
-+}
-+EXPORT_SYMBOL(qcom_scm_cpu_power_down);
-diff --git a/include/linux/qcom_scm.h b/include/linux/qcom_scm.h
-index 95ef72a..d7a974d 100644
---- a/include/linux/qcom_scm.h
-+++ b/include/linux/qcom_scm.h
-@@ -1,4 +1,4 @@
--/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
-+/* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
-  * Copyright (C) 2015 Linaro Ltd.
-  *
-  * This program is free software; you can redistribute it and/or modify
-@@ -16,6 +16,11 @@
- extern int qcom_scm_set_cold_boot_addr(void *entry, const cpumask_t *cpus);
- extern int qcom_scm_set_warm_boot_addr(void *entry, const cpumask_t *cpus);
- 
-+#define QCOM_SCM_CPU_PWR_DOWN_L2_ON	0x0
-+#define QCOM_SCM_CPU_PWR_DOWN_L2_OFF	0x1
-+
-+extern void qcom_scm_cpu_power_down(u32 flags);
-+
- #define QCOM_SCM_VERSION(major, minor) (((major) << 16) | ((minor) & 0xFF))
- 
- extern u32 qcom_scm_get_version(void);
--- 
-2.1.0
+Thanks Bryan. 
