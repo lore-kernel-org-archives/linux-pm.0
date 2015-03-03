@@ -1,64 +1,90 @@
-From: Fulvio <fbf@libero.it>
-Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
-Date: Tue, 03 Mar 2015 15:58:21 +0100
-Message-ID: <54F5CC0D.6060509@libero.it>
-References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan> <54F03B51.1010708@free-electrons.com> <54F58D2F.2010907@linaro.org> <54F58E3B.9040302@free-electrons.com> <54F59285.5060306@libero.it> <54F5AE5C.6060006@free-electrons.com>
+From: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Subject: Re: [PATCH v3 5/5] thermal: cpu_cooling: update the cpu device when
+ cpufreq updates the policy cpu
+Date: Tue, 03 Mar 2015 15:09:48 +0000
+Message-ID: <54F5CEBC.1070303@arm.com>
+References: <1425316643-31991-1-git-send-email-javi.merino@arm.com>	<1425316643-31991-6-git-send-email-javi.merino@arm.com>	<CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>	<54F5941F.6030402@arm.com>	<CAKohpon3sn_4aX7g+=LFdY-AgYrWdFCWtyethJtVMEK=Dw9Xbw@mail.gmail.com>	<54F59DEF.3020700@arm.com> <CAKohponB3cNXT8p=SqrfpGEPjLpeE=tnzUVOiabV8hEfBMb8rQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-18.italiaonline.it ([212.48.25.146]:34159 "EHLO
-	smtp-18.italiaonline.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753829AbbCCO63 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 09:58:29 -0500
-In-Reply-To: <54F5AE5C.6060006@free-electrons.com>
+Received: from service87.mimecast.com ([91.220.42.44]:43974 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755159AbbCCPJw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 10:09:52 -0500
+In-Reply-To: <CAKohponB3cNXT8p=SqrfpGEPjLpeE=tnzUVOiabV8hEfBMb8rQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Javi Merino <Javi.Merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>
 
+On 03/03/15 13:07, Viresh Kumar wrote:
+> On 3 March 2015 at 17:11, Kapileshwar Singh <kapileshwar.singh@arm.com> wrote:
+>> Yes I indeed tested the case where we cache the device pointer of the CPU for which the OPP's are populated.
+>> When this CPU is hotplugged out, it invalidates the device pointer itself. Here are the error we get in dmesg:
+> 
+> What do you mean by 'invalidates the device pointer' ? that cpu_dev is NULL ?
 
-> I didn't know you experimented random kernel panics and that you thought
-> it was related to the CPU Idle driver.
->
->   
->> All i can say is that the system use the "armadaxp_idle" driver and 
->> works fine when running "stress --cpu 8" in background.
->> I asked Netgear to provide a firmware without the idle driver to confirm 
->> if it's the cause of the problem, but they did not answered.
->>     
->
-> I think that if you disable all the state using by doing an
->
-> echo 1 > /sys/devices/system/cpu/cpu0/cpuidle/stateNUM/disable
->
-> where NUM is the nuymbert of the state. Then it should disable the
-> cpuidle on the fly.
->   
-Thanks, i'll try that as soon as possible (i gave back the unit to my 
-client) and report back.
+The cpu_dev is not NULL but we get an erroneous OPP back. We found the problem lies in the way we calculate the frequency for the cluster.
 
-However, the description of the cpu_pm_enter function state:
-"Must be called on the affected CPU with interrupts disabled.  Platform 
-is responsible for ensuring that cpu_pm_enter is not called twice on the 
-same CPU before cpu_pm_exit is called. Notified drivers can include VFP  
-co-processor, interrupt controller and its PM extensions, local CPU  
-timers context save/restore which shouldn't be interrupted. Hence it  
-must be called with interrupts disabled."
+>> <3>[67203.216774] opp_get_voltage: Invalid parameters
+>> <3>[67203.326774] opp_get_voltage: Invalid parameters
+>> <3>[67203.326774] opp_get_voltage: Invalid parameters
+> 
+> Have you handwritten them ? Why don't they precede with dev_pm_* ??
 
-and the point is: it that an invariant? Do current code and future code 
-safely assume that cpu_pm_enter is not called twice?
-For example if cpu_pm_enter do "context save" and cpu_pm_exit do 
-"context restore", calling twice cpu_pm_enter will overwrite the 
-previous saved context: is that safe in all circumstances?
+I have not handwritten them, It was from a Linaro 3.10 based kernel when I first noticed this issue but the same problem exists in mainline. 
 
-I assume the rule " It must fix a real bug that bothers people (not a, 
-"This could be a problem..." type thing)." is to avoid committing 
-useless changes that may introduce new bugs, but i do not think that 
-apply to this case: a bug report from an unknown user (me) should change 
-nothing.
+Apologies for this I sent you an older trace which I had saved when I found the bug. Here is the trace I get from mainline
 
-Bye,
-Fulvio
+[ 5680.135339] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.245528] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.355432] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.465521] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.575599] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.685817] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.795556] dev_pm_opp_get_voltage: Invalid parameters
+[ 5680.905598] dev_pm_opp_get_voltage: Invalid parameters
 
+> 
+>>
+>> Which happens because:
+>>
+>> unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+>> {
+>> ..
+>>         tmp_opp = rcu_dereference(opp);
+>>         if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->available)
+>>                 pr_err("%s: Invalid parameters\n", __func__);
+> 
+> This %s should print routine name ..
+> 
+>>         else
+>> ..
+>>
+>> Which happens when
+>>
+>>         opp = dev_pm_opp_find_freq_exact(cpufreq_device->cpu_dev, freq_hz,
+>>                                          true);
+>>
+>> returns a an erroneous or NULL OPP or the opp is unavailable (in the above condition)
+> 
+
+Update: This returns an erroneous  OPP
+
+> Please goto the depth of this thing, as I don't think it should happen.
+> 
+> Over that I was asking you if you have tested the solution Javi gave,
+> because OPPs
+> wouldn't have been initialized for other CPUs once policy->cpu goes down.
+I did test this but we were working with the assumption that OPPs should be populated for all the CPUs and also that OPPs are lost for a hotplugged CPU which I see is not the case. 
+
+We have looked at this more closely and found that problem lies in:
+
+	freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
+
+which returns a NULL frequency as we are not checking for online CPUs here. We shall come up with a fix for this. Many thanks for helping us with the investigation.
+
+Regards, 
+KP
 
