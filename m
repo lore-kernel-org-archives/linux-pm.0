@@ -1,453 +1,213 @@
-From: Jaewon Kim <jaewon02.kim@samsung.com>
-Subject: Re: [PATCH v7 4/5] Input: add haptic drvier on max77843
-Date: Tue, 03 Mar 2015 10:35:33 +0900
-Message-ID: <54F50FE5.3060605@samsung.com>
-References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
- <1425291038-18269-5-git-send-email-jaewon02.kim@samsung.com>
- <20150302173223.GA17094@dtor-ws>
+From: <Yuantian.Tang@freescale.com>
+Subject: [PATCH 1/2 v4] cpufreq: qoriq: Make the driver usable on all QorIQ
+ platforms
+Date: Tue, 3 Mar 2015 11:38:51 +0800
+Message-ID: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150302173223.GA17094@dtor-ws>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Beomho Seo <beomho.seo@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: rjw@rjwysocki.net
+Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org, Tang Yuantian <Yuantian.Tang@freescale.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dmitry,
-
-On 03/03/2015 02:32, Dmitry Torokhov wrote:
-> On Mon, Mar 02, 2015 at 07:10:37PM +0900, Jaewon Kim wrote:
->> This patch adds support for haptic driver on max77843
->> MFD(Multi Function Device) with PMIC, MUIC, LED, CHARGER.
->>
->> This driver supports external pwm and LRA(Linear Resonant Actuator) motor.
->> And it supports ff-memless interface from inpu framework.
->>
->> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->> Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> Do you want it to go through my or MFD tree?
-Other drivers merged in each maintainers git.
-If you don`t hava a problem, please merge your input git tree.
-
-
->
->> ---
->>   drivers/input/misc/Kconfig           |   12 ++
->>   drivers/input/misc/Makefile          |    1 +
->>   drivers/input/misc/max77843-haptic.c |  358 ++++++++++++++++++++++++++++++++++
->>   3 files changed, 371 insertions(+)
->>   create mode 100644 drivers/input/misc/max77843-haptic.c
->>
->> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
->> index 6deb8da..aa8c072 100644
->> --- a/drivers/input/misc/Kconfig
->> +++ b/drivers/input/misc/Kconfig
->> @@ -165,6 +165,18 @@ config INPUT_MAX77693_HAPTIC
->>   	  To compile this driver as module, choose M here: the
->>   	  module will be called max77693-haptic.
->>   
->> +config INPUT_MAX77843_HAPTIC
->> +    tristate "MAXIM MAX77843 haptic controller support"
->> +    depends on MFD_MAX77843 && PWM
->> +    select INPUT_FF_MEMLESS
->> +    help
->> +      This option enables support for the haptic controller on
->> +      MAXIM MAX77843 chip. The driver supports ff-memless interface
->> +      from input framework.
->> +
->> +      To compile this driver as module, choose M here: the
->> +      module will be called max77843-haptic.
->> +
->>   config INPUT_MAX8925_ONKEY
->>   	tristate "MAX8925 ONKEY support"
->>   	depends on MFD_MAX8925
->> diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
->> index 403a1a5..75b5884 100644
->> --- a/drivers/input/misc/Makefile
->> +++ b/drivers/input/misc/Makefile
->> @@ -39,6 +39,7 @@ obj-$(CONFIG_INPUT_KEYSPAN_REMOTE)	+= keyspan_remote.o
->>   obj-$(CONFIG_INPUT_KXTJ9)		+= kxtj9.o
->>   obj-$(CONFIG_INPUT_M68K_BEEP)		+= m68kspkr.o
->>   obj-$(CONFIG_INPUT_MAX77693_HAPTIC)	+= max77693-haptic.o
->> +obj-$(CONFIG_INPUT_MAX77843_HAPTIC)	+= max77843-haptic.o
->>   obj-$(CONFIG_INPUT_MAX8925_ONKEY)	+= max8925_onkey.o
->>   obj-$(CONFIG_INPUT_MAX8997_HAPTIC)	+= max8997_haptic.o
->>   obj-$(CONFIG_INPUT_MC13783_PWRBUTTON)	+= mc13783-pwrbutton.o
->> diff --git a/drivers/input/misc/max77843-haptic.c b/drivers/input/misc/max77843-haptic.c
->> new file mode 100644
->> index 0000000..eef9862
->> --- /dev/null
->> +++ b/drivers/input/misc/max77843-haptic.c
->> @@ -0,0 +1,358 @@
->> +/*
->> + * MAXIM MAX77693 Haptic device driver
->> + *
->> + * Copyright (C) 2015 Samsung Electronics
->> + * Author: Jaewon Kim <jaewon02.kim@samsung.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; either version 2 of the License, or
->> + * (at your option) any later version.
->> + */
->> +
->> +#include <linux/err.h>
->> +#include <linux/i2c.h>
->> +#include <linux/init.h>
->> +#include <linux/input.h>
->> +#include <linux/mfd/max77843-private.h>
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/pwm.h>
->> +#include <linux/regmap.h>
->> +#include <linux/regulator/consumer.h>
->> +#include <linux/slab.h>
->> +#include <linux/workqueue.h>
->> +
->> +#define MAX_MAGNITUDE_SHIFT        16
->> +
->> +enum max77843_haptic_motor_type {
->> +	MAX77843_HAPTIC_ERM = 0,
->> +	MAX77843_HAPTIC_LRA,
->> +};
->> +
->> +enum max77843_haptic_pwm_divisor {
->> +	MAX77843_HAPTIC_PWM_DIVISOR_32 = 0,
->> +	MAX77843_HAPTIC_PWM_DIVISOR_64,
->> +	MAX77843_HAPTIC_PWM_DIVISOR_128,
->> +	MAX77843_HAPTIC_PWM_DIVISOR_256,
->> +};
->> +
->> +struct max77843_haptic {
->> +	struct regmap *regmap_haptic;
->> +	struct device *dev;
->> +	struct input_dev *input_dev;
->> +	struct pwm_device *pwm_dev;
->> +	struct regulator *motor_reg;
->> +	struct work_struct work;
->> +	struct mutex mutex;
->> +
->> +	unsigned int magnitude;
->> +	unsigned int pwm_duty;
->> +
->> +	bool active;
->> +	bool suspended;
->> +
->> +	enum max77843_haptic_motor_type type;
->> +	enum max77843_haptic_pwm_divisor pwm_divisor;
->> +};
->> +
->> +static int max77843_haptic_set_duty_cycle(struct max77843_haptic *haptic)
->> +{
->> +	int delta = (haptic->pwm_dev->period + haptic->pwm_duty) / 2;
->> +	int error;
->> +
->> +	error = pwm_config(haptic->pwm_dev, delta, haptic->pwm_dev->period);
->> +	if (error) {
->> +		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
->> +		return error;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static int max77843_haptic_bias(struct max77843_haptic *haptic, bool on)
->> +{
->> +	int error;
->> +
->> +	error = regmap_update_bits(haptic->regmap_haptic,
->> +			MAX77843_SYS_REG_MAINCTRL1,
->> +			MAX77843_MAINCTRL1_BIASEN_MASK,
->> +			on << MAINCTRL1_BIASEN_SHIFT);
->> +	if (error) {
->> +		dev_err(haptic->dev, "failed to %s bias: %d\n",
->> +			on ? "enable" : "disable", error);
->> +		return error;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static int max77843_haptic_config(struct max77843_haptic *haptic, bool enable)
->> +{
->> +	unsigned int value;
->> +	int error;
->> +
->> +	value = ((haptic->type << MCONFIG_MODE_SHIFT) |
->> +		(enable << MCONFIG_MEN_SHIFT) |
->> +		(haptic->pwm_divisor << MCONFIG_PDIV_SHIFT));
->> +
->> +	error = regmap_write(haptic->regmap_haptic,
->> +			MAX77843_HAP_REG_MCONFIG, value);
->> +	if (error) {
->> +		dev_err(haptic->dev,
->> +			"failed to update haptic config: %d\n", error);
->> +		return error;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static int max77843_haptic_enable(struct max77843_haptic *haptic)
->> +{
->> +	int error;
->> +
->> +	if (haptic->active)
->> +		return 0;
->> +
->> +	error = pwm_enable(haptic->pwm_dev);
->> +	if (error) {
->> +		dev_err(haptic->dev,
->> +			"failed to enable pwm device: %d\n", error);
->> +		return error;
->> +	}
->> +
->> +	error = max77843_haptic_config(haptic, true);
->> +	if (error)
->> +		goto err_config;
->> +
->> +	haptic->active = true;
->> +
->> +	return 0;
->> +
->> +err_config:
->> +	pwm_disable(haptic->pwm_dev);
->> +
->> +	return error;
->> +}
->> +
->> +static int max77843_haptic_disable(struct max77843_haptic *haptic)
->> +{
->> +	int error;
->> +
->> +	if (!haptic->active)
->> +		return 0;
->> +
->> +	error = max77843_haptic_config(haptic, false);
->> +	if (error)
->> +		return error;
->> +
->> +	pwm_disable(haptic->pwm_dev);
->> +
->> +	haptic->active = false;
->> +
->> +	return 0;
->> +}
->> +
->> +static void max77843_haptic_play_work(struct work_struct *work)
->> +{
->> +	struct max77843_haptic *haptic =
->> +			container_of(work, struct max77843_haptic, work);
->> +	int error;
->> +
->> +	mutex_lock(&haptic->mutex);
->> +
->> +	if (haptic->suspended)
->> +		goto out_unlock;
->> +
->> +	if (haptic->magnitude) {
->> +		error = max77843_haptic_set_duty_cycle(haptic);
->> +		if (error) {
->> +			dev_err(haptic->dev,
->> +				"failed to set duty cycle: %d\n", error);
->> +			goto out_unlock;
->> +		}
->> +
->> +		error = max77843_haptic_enable(haptic);
->> +		if (error)
->> +			dev_err(haptic->dev,
->> +				"cannot enable haptic: %d\n", error);
->> +	} else {
->> +		error = max77843_haptic_disable(haptic);
->> +		if (error)
->> +			dev_err(haptic->dev,
->> +				"cannot disable haptic: %d\n", error);
->> +	}
->> +
->> +out_unlock:
->> +	mutex_unlock(&haptic->mutex);
->> +}
->> +
->> +static int max77843_haptic_play_effect(struct input_dev *dev, void *data,
->> +		struct ff_effect *effect)
->> +{
->> +	struct max77843_haptic *haptic = input_get_drvdata(dev);
->> +	u64 period_mag_multi;
->> +
->> +	haptic->magnitude = effect->u.rumble.strong_magnitude;
->> +	if (!haptic->magnitude)
->> +		haptic->magnitude = effect->u.rumble.weak_magnitude;
->> +
->> +	period_mag_multi = (u64)haptic->pwm_dev->period * haptic->magnitude;
->> +	haptic->pwm_duty = (unsigned int)(period_mag_multi >>
->> +				MAX_MAGNITUDE_SHIFT);
->> +
->> +	schedule_work(&haptic->work);
->> +
->> +	return 0;
->> +}
->> +
->> +static int max77843_haptic_open(struct input_dev *dev)
->> +{
->> +	struct max77843_haptic *haptic = input_get_drvdata(dev);
->> +	int error;
->> +
->> +	error = max77843_haptic_bias(haptic, true);
->> +	if (error)
->> +		return error;
->> +
->> +	error = regulator_enable(haptic->motor_reg);
->> +	if (error) {
->> +		dev_err(haptic->dev,
->> +			"failed to enable regulator: %d\n", error);
->> +		return error;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static void max77843_haptic_close(struct input_dev *dev)
->> +{
->> +	struct max77843_haptic *haptic = input_get_drvdata(dev);
->> +	int error;
->> +
->> +	cancel_work_sync(&haptic->work);
->> +	max77843_haptic_disable(haptic);
->> +
->> +	error = regulator_disable(haptic->motor_reg);
->> +	if (error)
->> +		dev_err(haptic->dev,
->> +			"failed to disable regulator: %d\n", error);
->> +
->> +	max77843_haptic_bias(haptic, false);
->> +}
->> +
->> +static int max77843_haptic_probe(struct platform_device *pdev)
->> +{
->> +	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
->> +	struct max77843_haptic *haptic;
->> +	int error;
->> +
->> +	haptic = devm_kzalloc(&pdev->dev, sizeof(*haptic), GFP_KERNEL);
->> +	if (!haptic)
->> +		return -ENOMEM;
->> +
->> +	haptic->regmap_haptic = max77843->regmap;
->> +	haptic->dev = &pdev->dev;
->> +	haptic->type = MAX77843_HAPTIC_LRA;
->> +	haptic->pwm_divisor = MAX77843_HAPTIC_PWM_DIVISOR_128;
->> +
->> +	INIT_WORK(&haptic->work, max77843_haptic_play_work);
->> +	mutex_init(&haptic->mutex);
->> +
->> +	haptic->pwm_dev = devm_pwm_get(&pdev->dev, NULL);
->> +	if (IS_ERR(haptic->pwm_dev)) {
->> +		dev_err(&pdev->dev, "failed to get pwm device\n");
->> +		return PTR_ERR(haptic->pwm_dev);
->> +	}
->> +
->> +	haptic->motor_reg = devm_regulator_get_exclusive(&pdev->dev, "haptic");
->> +	if (IS_ERR(haptic->motor_reg)) {
->> +		dev_err(&pdev->dev, "failed to get regulator\n");
->> +		return PTR_ERR(haptic->motor_reg);
->> +	}
->> +
->> +	haptic->input_dev = devm_input_allocate_device(&pdev->dev);
->> +	if (!haptic->input_dev) {
->> +		dev_err(&pdev->dev, "failed to allocate input device\n");
->> +		return -ENOMEM;
->> +	}
->> +
->> +	haptic->input_dev->name = "max77843-haptic";
->> +	haptic->input_dev->id.version = 1;
->> +	haptic->input_dev->dev.parent = &pdev->dev;
->> +	haptic->input_dev->open = max77843_haptic_open;
->> +	haptic->input_dev->close = max77843_haptic_close;
->> +	input_set_drvdata(haptic->input_dev, haptic);
->> +	input_set_capability(haptic->input_dev, EV_FF, FF_RUMBLE);
->> +
->> +	error = input_ff_create_memless(haptic->input_dev, NULL,
->> +			max77843_haptic_play_effect);
->> +	if (error) {
->> +		dev_err(&pdev->dev, "failed to create force-feedback\n");
->> +		return error;
->> +	}
->> +
->> +	error = input_register_device(haptic->input_dev);
->> +	if (error) {
->> +		dev_err(&pdev->dev, "failed to register input device\n");
->> +		return error;
->> +	}
->> +
->> +	platform_set_drvdata(pdev, haptic);
->> +
->> +	return 0;
->> +}
->> +
->> +static int __maybe_unused max77843_haptic_suspend(struct device *dev)
->> +{
->> +	struct platform_device *pdev = to_platform_device(dev);
->> +	struct max77843_haptic *haptic = platform_get_drvdata(pdev);
->> +	int error;
->> +
->> +	error = mutex_lock_interruptible(&haptic->mutex);
->> +	if (error)
->> +		return error;
->> +
->> +	max77843_haptic_disable(haptic);
->> +
->> +	haptic->suspended = true;
->> +
->> +	mutex_unlock(&haptic->mutex);
->> +
->> +	return 0;
->> +}
->> +
->> +static int __maybe_unused max77843_haptic_resume(struct device *dev)
->> +{
->> +	struct platform_device *pdev = to_platform_device(dev);
->> +	struct max77843_haptic *haptic = platform_get_drvdata(pdev);
->> +	unsigned int magnitude;
->> +
->> +	mutex_lock(&haptic->mutex);
->> +
->> +	haptic->suspended = false;
->> +
->> +	magnitude = ACCESS_ONCE(haptic->magnitude);
->> +	if (magnitude)
->> +		max77843_haptic_enable(haptic);
->> +
->> +	mutex_unlock(&haptic->mutex);
->> +
->> +	return 0;
->> +}
->> +
->> +static SIMPLE_DEV_PM_OPS(max77843_haptic_pm_ops,
->> +		max77843_haptic_suspend, max77843_haptic_resume);
->> +
->> +static struct platform_driver max77843_haptic_driver = {
->> +	.driver		= {
->> +		.name	= "max77843-haptic",
->> +		.pm	= &max77843_haptic_pm_ops,
->> +	},
->> +	.probe		= max77843_haptic_probe,
->> +};
->> +module_platform_driver(max77843_haptic_driver);
->> +
->> +MODULE_AUTHOR("Jaewon Kim <jaewon02.kim@samsung.com>");
->> +MODULE_DESCRIPTION("MAXIM MAX77843 Haptic driver");
->> +MODULE_LICENSE("GPL");
->> -- 
->> 1.7.9.5
->>
-> Thanks.
->
-Thanks to review my patch.
-
-
-Thanks,
-Jaewon Kim
+RnJvbTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tPgoKRnJlZXNj
+YWxlIGludHJvZHVjZWQgbmV3IEFSTSBjb3JlLWJhc2VkIFNvQ3Mgd2hpY2ggc3VwcG9ydCBkeW5h
+bWljCmZyZXF1ZW5jeSBzd2l0Y2ggZmVhdHVyZS4gREZTIG9uIG5ldyBTb0NzIGFyZSBjb21wYXRp
+YmxlIHdpdGggY3VycmVudApQb3dlclBDIENvcmVOZXQgcGxhdGZvcm1zLiBJbiBvcmRlciB0byBz
+dXBwb3J0IHRob3NlIG5ldyBwbGF0Zm9ybXMsCnRoaXMgZHJpdmVyIG5lZWRzIHRvIGJlIHVwZGF0
+ZWQuIFRoZSBtYWluIGNoYW5nZXMgaW5jbHVkZToKCjEuIENoYW5nZWQgdGhlIG5hbWVzIG9mIGZ1
+bmN0aW9ucyBpbiBkcml2ZXIuCjIuIEFkZGVkIHR3byBuZXcgZnVuY3Rpb25zIGdldF9jcHVfcGh5
+c2ljYWxfaWQoKSBhbmQgZ2V0X2J1c19mcmVxKCkuCjMuIFVzZWQgYSBuZXcgd2F5IHRvIGdldCB0
+aGUgQ1BVIG1hc2sgd2hpY2ggc2hhcmUgY2xvY2sgd2lyZS4KClNpZ25lZC1vZmYtYnk6IFRhbmcg
+WXVhbnRpYW4gPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4KQWNrZWQtYnk6IFZpcmVzaCBL
+dW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+Ci0tLQp2NDoKCS0gcmVzb2x2ZSAidW5tZXQg
+ZGlyZWN0IGRlcGVuZGVuY2llcyIgd2FybmluZwp2MzoKCS0gcHV0IHRoZSBtZW51IGVudHJpZXMg
+aW50byBLY29uZmlnCnYyOgoJLSBzcGxpdCB0aGUgbmFtZSBjaGFuZ2UgaW50byBhIHNlcGFyZXRl
+IHBhdGNoCgktIHVzZSBwb2xpY3ktPmRyaXZlcl9kYXRhIGluc3RlYWQgb2YgcGVyX2NwdSB2YXJp
+YWJsZQoKIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnICAgICAgICAgICAgICAgfCAgIDggKysKIGRy
+aXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMgICAgICAgfCAgIDkgLS0KIGRyaXZlcnMvY3B1
+ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAxNjAgKysrKysrKysrKysrKysrKysrKysrLS0t
+LS0tLS0tLS0tLQogMyBmaWxlcyBjaGFuZ2VkLCAxMDcgaW5zZXJ0aW9ucygrKSwgNzAgZGVsZXRp
+b25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL0tjb25maWcgYi9kcml2ZXJzL2Nw
+dWZyZXEvS2NvbmZpZwppbmRleCBhMTcxZmVmLi42NTk4NzlhIDEwMDY0NAotLS0gYS9kcml2ZXJz
+L2NwdWZyZXEvS2NvbmZpZworKysgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZwpAQCAtMjkzLDUg
+KzI5MywxMyBAQCBjb25maWcgU0hfQ1BVX0ZSRVEKIAkgIElmIHVuc3VyZSwgc2F5IE4uCiBlbmRp
+ZgogCitjb25maWcgUU9SSVFfQ1BVRlJFUQorCXRyaXN0YXRlICJDUFUgZnJlcXVlbmN5IHNjYWxp
+bmcgZHJpdmVyIGZvciBGcmVlc2NhbGUgUW9ySVEgU29DcyIKKwlkZXBlbmRzIG9uIE9GICYmIENP
+TU1PTl9DTEsgJiYgKFBQQ19FNTAwTUMgfHwgQVJNKQorCXNlbGVjdCBDTEtfUU9SSVEKKwloZWxw
+CisJICBUaGlzIGFkZHMgdGhlIENQVUZyZXEgZHJpdmVyIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBR
+b3JJUSBTb0NzCisJICB3aGljaCBhcmUgY2FwYWJsZSBvZiBjaGFuZ2luZyB0aGUgQ1BVJ3MgZnJl
+cXVlbmN5IGR5bmFtaWNhbGx5LgorCiBlbmRpZgogZW5kbWVudQpkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy9jcHVmcmVxL0tjb25maWcucG93ZXJwYyBiL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2Vy
+cGMKaW5kZXggN2VhMjQ0MS4uM2EwNTk1YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL0tj
+b25maWcucG93ZXJwYworKysgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5wb3dlcnBjCkBAIC0y
+MywxNSArMjMsNiBAQCBjb25maWcgQ1BVX0ZSRVFfTUFQTEUKIAkgIFRoaXMgYWRkcyBzdXBwb3J0
+IGZvciBmcmVxdWVuY3kgc3dpdGNoaW5nIG9uIE1hcGxlIDk3MEZYCiAJICBFdmFsdWF0aW9uIEJv
+YXJkIGFuZCBjb21wYXRpYmxlIGJvYXJkcyAoSUJNIEpTMnggYmxhZGVzKS4KIAotY29uZmlnIFBQ
+Q19DT1JFTkVUX0NQVUZSRVEKLQl0cmlzdGF0ZSAiQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nIGRyaXZl
+ciBmb3IgRnJlZXNjYWxlIEU1MDBNQyBTb0NzIgotCWRlcGVuZHMgb24gUFBDX0U1MDBNQyAmJiBP
+RiAmJiBDT01NT05fQ0xLCi0Jc2VsZWN0IENMS19RT1JJUQotCWhlbHAKLQkgIFRoaXMgYWRkcyB0
+aGUgQ1BVRnJlcSBkcml2ZXIgc3VwcG9ydCBmb3IgRnJlZXNjYWxlIGU1MDBtYywKLQkgIGU1NTAw
+IGFuZCBlNjUwMCBzZXJpZXMgU29DcyB3aGljaCBhcmUgY2FwYWJsZSBvZiBjaGFuZ2luZwotCSAg
+dGhlIENQVSdzIGZyZXF1ZW5jeSBkeW5hbWljYWxseS4KLQogY29uZmlnIENQVV9GUkVRX1BNQUMK
+IAlib29sICJTdXBwb3J0IGZvciBBcHBsZSBQb3dlckJvb2tzIgogCWRlcGVuZHMgb24gQURCX1BN
+VSAmJiBQUEMzMgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
+ZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMKaW5kZXggYmVlNWRm
+Ny4uOTQ5ZDk5MiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
+ZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1ZnJlcS5jCkBAIC0xLDcg
+KzEsNyBAQAogLyoKICAqIENvcHlyaWdodCAyMDEzIEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yLCBJ
+bmMuCiAgKgotICogQ1BVIEZyZXF1ZW5jeSBTY2FsaW5nIGRyaXZlciBmb3IgRnJlZXNjYWxlIFBv
+d2VyUEMgY29yZW5ldCBTb0NzLgorICogQ1BVIEZyZXF1ZW5jeSBTY2FsaW5nIGRyaXZlciBmb3Ig
+RnJlZXNjYWxlIFFvcklRIFNvQ3MuCiAgKgogICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdh
+cmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkKICAqIGl0IHVuZGVyIHRo
+ZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzCkBA
+IC0yMCwxMCArMjAsOSBAQAogI2luY2x1ZGUgPGxpbnV4L29mLmg+CiAjaW5jbHVkZSA8bGludXgv
+c2xhYi5oPgogI2luY2x1ZGUgPGxpbnV4L3NtcC5oPgotI2luY2x1ZGUgPHN5c2Rldi9mc2xfc29j
+Lmg+CiAKIC8qKgotICogc3RydWN0IGNwdV9kYXRhIC0gcGVyIENQVSBkYXRhIHN0cnVjdAorICog
+c3RydWN0IGNwdV9kYXRhCiAgKiBAcGFyZW50OiB0aGUgcGFyZW50IG5vZGUgb2YgY3B1IGNsb2Nr
+CiAgKiBAdGFibGU6IGZyZXF1ZW5jeSB0YWJsZQogICovCkBAIC02NywxNyArNjYsNzggQEAgc3Rh
+dGljIGNvbnN0IHN0cnVjdCBzb2NfZGF0YSBzZGF0YVtdID0gewogc3RhdGljIHUzMiBtaW5fY3B1
+ZnJlcTsKIHN0YXRpYyBjb25zdCB1MzIgKmZtYXNrOwogCi1zdGF0aWMgREVGSU5FX1BFUl9DUFUo
+c3RydWN0IGNwdV9kYXRhICosIGNwdV9kYXRhKTsKKyNpZiBkZWZpbmVkKENPTkZJR19BUk0pCitz
+dGF0aWMgaW50IGdldF9jcHVfcGh5c2ljYWxfaWQoaW50IGNwdSkKK3sKKwlyZXR1cm4gdG9wb2xv
+Z3lfY29yZV9pZChjcHUpOworfQorI2Vsc2UKK3N0YXRpYyBpbnQgZ2V0X2NwdV9waHlzaWNhbF9p
+ZChpbnQgY3B1KQoreworCXJldHVybiBnZXRfaGFyZF9zbXBfcHJvY2Vzc29yX2lkKGNwdSk7Cit9
+CisjZW5kaWYKIAotLyogY3B1bWFzayBpbiBhIGNsdXN0ZXIgKi8KLXN0YXRpYyBERUZJTkVfUEVS
+X0NQVShjcHVtYXNrX3Zhcl90LCBjcHVfbWFzayk7CitzdGF0aWMgdTMyIGdldF9idXNfZnJlcSh2
+b2lkKQoreworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqc29jOworCXUzMiBzeXNmcmVxOworCisJc29j
+ID0gb2ZfZmluZF9ub2RlX2J5X3R5cGUoTlVMTCwgInNvYyIpOworCWlmICghc29jKQorCQlyZXR1
+cm4gMDsKKworCWlmIChvZl9wcm9wZXJ0eV9yZWFkX3UzMihzb2MsICJidXMtZnJlcXVlbmN5Iiwg
+JnN5c2ZyZXEpKQorCQlzeXNmcmVxID0gMDsKKworCW9mX25vZGVfcHV0KHNvYyk7CisKKwlyZXR1
+cm4gc3lzZnJlcTsKK30KIAotI2lmbmRlZiBDT05GSUdfU01QCi1zdGF0aWMgaW5saW5lIGNvbnN0
+IHN0cnVjdCBjcHVtYXNrICpjcHVfY29yZV9tYXNrKGludCBjcHUpCitzdGF0aWMgc3RydWN0IGRl
+dmljZV9ub2RlICpjcHVfdG9fY2xrX25vZGUoaW50IGNwdSkKIHsKLQlyZXR1cm4gY3B1bWFza19v
+ZigwKTsKKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLCAqY2xrX25wOworCisJaWYgKCFjcHVfcHJl
+c2VudChjcHUpKQorCQlyZXR1cm4gTlVMTDsKKworCW5wID0gb2ZfZ2V0X2NwdV9ub2RlKGNwdSwg
+TlVMTCk7CisJaWYgKCFucCkKKwkJcmV0dXJuIE5VTEw7CisKKwljbGtfbnAgPSBvZl9wYXJzZV9w
+aGFuZGxlKG5wLCAiY2xvY2tzIiwgMCk7CisJaWYgKCFjbGtfbnApCisJCXJldHVybiBOVUxMOwor
+CisJb2Zfbm9kZV9wdXQobnApOworCisJcmV0dXJuIGNsa19ucDsKK30KKworLyogdHJhdmVyc2Ug
+Y3B1IG5vZGVzIHRvIGdldCBjcHUgbWFzayBvZiBzaGFyaW5nIGNsb2NrIHdpcmUgKi8KK3N0YXRp
+YyB2b2lkIHNldF9hZmZlY3RlZF9jcHVzKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQor
+eworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsICpjbGtfbnA7CisJc3RydWN0IGNwdW1hc2sgKmRz
+dHAgPSBwb2xpY3ktPmNwdXM7CisJaW50IGk7CisKKwlucCA9IGNwdV90b19jbGtfbm9kZShwb2xp
+Y3ktPmNwdSk7CisJaWYgKCFucCkKKwkJcmV0dXJuOworCisJZm9yX2VhY2hfcHJlc2VudF9jcHUo
+aSkgeworCQljbGtfbnAgPSBjcHVfdG9fY2xrX25vZGUoaSk7CisJCWlmICghY2xrX25wKQorCQkJ
+Y29udGludWU7CisKKwkJaWYgKGNsa19ucCA9PSBucCkKKwkJCWNwdW1hc2tfc2V0X2NwdShpLCBk
+c3RwKTsKKworCQlvZl9ub2RlX3B1dChjbGtfbnApOworCX0KKwlvZl9ub2RlX3B1dChucCk7CiB9
+Ci0jZW5kaWYKIAogLyogcmVkdWNlIHRoZSBkdXBsaWNhdGVkIGZyZXF1ZW5jaWVzIGluIGZyZXF1
+ZW5jeSB0YWJsZSAqLwogc3RhdGljIHZvaWQgZnJlcV90YWJsZV9yZWR1cChzdHJ1Y3QgY3B1ZnJl
+cV9mcmVxdWVuY3lfdGFibGUgKmZyZXFfdGFibGUsCkBAIC0xMDUsNiArMTY1LDcgQEAgc3RhdGlj
+IHZvaWQgZnJlcV90YWJsZV9zb3J0KHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSAqZnJl
+cV90YWJsZSwKIAlpbnQgaSwgaiwgaW5kOwogCXVuc2lnbmVkIGludCBmcmVxLCBtYXhfZnJlcTsK
+IAlzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgdGFibGU7CisKIAlmb3IgKGkgPSAwOyBp
+IDwgY291bnQgLSAxOyBpKyspIHsKIAkJbWF4X2ZyZXEgPSBmcmVxX3RhYmxlW2ldLmZyZXF1ZW5j
+eTsKIAkJaW5kID0gaTsKQEAgLTEyOSw3ICsxOTAsNyBAQCBzdGF0aWMgdm9pZCBmcmVxX3RhYmxl
+X3NvcnQoc3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlICpmcmVxX3RhYmxlLAogCX0KIH0K
+IAotc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9s
+aWN5ICpwb2xpY3kpCitzdGF0aWMgaW50IHFvcmlxX2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNw
+dWZyZXFfcG9saWN5ICpwb2xpY3kpCiB7CiAJc3RydWN0IGRldmljZV9ub2RlICpucDsKIAlpbnQg
+aSwgY291bnQsIHJldDsKQEAgLTE0NSwxMCArMjA2LDggQEAgc3RhdGljIGludCBjb3JlbmV0X2Nw
+dWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpCiAJCXJldHVybiAt
+RU5PREVWOwogCiAJZGF0YSA9IGt6YWxsb2Moc2l6ZW9mKCpkYXRhKSwgR0ZQX0tFUk5FTCk7Ci0J
+aWYgKCFkYXRhKSB7Ci0JCXByX2VycigiJXM6IG5vIG1lbW9yeVxuIiwgX19mdW5jX18pOworCWlm
+ICghZGF0YSkKIAkJZ290byBlcnJfbnA7Ci0JfQogCiAJcG9saWN5LT5jbGsgPSBvZl9jbGtfZ2V0
+KG5wLCAwKTsKIAlpZiAoSVNfRVJSKHBvbGljeS0+Y2xrKSkgewpAQCAtMTcwLDcgKzIyOSw3IEBA
+IHN0YXRpYyBpbnQgY29yZW5ldF9jcHVmcmVxX2NwdV9pbml0KHN0cnVjdCBjcHVmcmVxX3BvbGlj
+eSAqcG9saWN5KQogCX0KIAogCWlmIChmbWFzaykKLQkJbWFzayA9IGZtYXNrW2dldF9oYXJkX3Nt
+cF9wcm9jZXNzb3JfaWQoY3B1KV07CisJCW1hc2sgPSBmbWFza1tnZXRfY3B1X3BoeXNpY2FsX2lk
+KGNwdSldOwogCWVsc2UKIAkJbWFzayA9IDB4MDsKIApAQCAtMjAxLDEzICsyNjAsMTIgQEAgc3Rh
+dGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpw
+b2xpY3kpCiAJZGF0YS0+dGFibGUgPSB0YWJsZTsKIAogCS8qIHVwZGF0ZSAtPmNwdXMgaWYgd2Ug
+aGF2ZSBjbHVzdGVyLCBubyBoYXJtIGlmIG5vdCAqLwotCWNwdW1hc2tfY29weShwb2xpY3ktPmNw
+dXMsIHBlcl9jcHUoY3B1X21hc2ssIGNwdSkpOwotCWZvcl9lYWNoX2NwdShpLCBwZXJfY3B1KGNw
+dV9tYXNrLCBjcHUpKQotCQlwZXJfY3B1KGNwdV9kYXRhLCBpKSA9IGRhdGE7CisJc2V0X2FmZmVj
+dGVkX2NwdXMocG9saWN5KTsKKwlwb2xpY3ktPmRyaXZlcl9kYXRhID0gZGF0YTsKIAogCS8qIE1p
+bmltdW0gdHJhbnNpdGlvbiBsYXRlbmN5IGlzIDEyIHBsYXRmb3JtIGNsb2NrcyAqLwogCXU2NHRl
+bXAgPSAxMlVMTCAqIE5TRUNfUEVSX1NFQzsKLQlkb19kaXYodTY0dGVtcCwgZnNsX2dldF9zeXNf
+ZnJlcSgpKTsKKwlkb19kaXYodTY0dGVtcCwgZ2V0X2J1c19mcmVxKCkpOwogCXBvbGljeS0+Y3B1
+aW5mby50cmFuc2l0aW9uX2xhdGVuY3kgPSB1NjR0ZW1wICsgMTsKIAogCW9mX25vZGVfcHV0KG5w
+KTsKQEAgLTIxOSw3ICsyNzcsNyBAQCBlcnJfbm9tZW0xOgogZXJyX25vZGU6CiAJb2Zfbm9kZV9w
+dXQoZGF0YS0+cGFyZW50KTsKIGVycl9ub21lbTI6Ci0JcGVyX2NwdShjcHVfZGF0YSwgY3B1KSA9
+IE5VTEw7CisJcG9saWN5LT5kcml2ZXJfZGF0YSA9IE5VTEw7CiAJa2ZyZWUoZGF0YSk7CiBlcnJf
+bnA6CiAJb2Zfbm9kZV9wdXQobnApOwpAQCAtMjI3LDQzICsyODUsNDEgQEAgZXJyX25wOgogCXJl
+dHVybiAtRU5PREVWOwogfQogCi1zdGF0aWMgaW50IF9fZXhpdCBjb3JlbmV0X2NwdWZyZXFfY3B1
+X2V4aXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpCitzdGF0aWMgaW50IF9fZXhpdCBx
+b3JpcV9jcHVmcmVxX2NwdV9leGl0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogewot
+CXN0cnVjdCBjcHVfZGF0YSAqZGF0YSA9IHBlcl9jcHUoY3B1X2RhdGEsIHBvbGljeS0+Y3B1KTsK
+KwlzdHJ1Y3QgY3B1X2RhdGEgKmRhdGEgPSBwb2xpY3ktPmRyaXZlcl9kYXRhOwogCXVuc2lnbmVk
+IGludCBjcHU7CiAKIAlvZl9ub2RlX3B1dChkYXRhLT5wYXJlbnQpOwogCWtmcmVlKGRhdGEtPnRh
+YmxlKTsKIAlrZnJlZShkYXRhKTsKLQotCWZvcl9lYWNoX2NwdShjcHUsIHBlcl9jcHUoY3B1X21h
+c2ssIHBvbGljeS0+Y3B1KSkKLQkJcGVyX2NwdShjcHVfZGF0YSwgY3B1KSA9IE5VTEw7CisJcG9s
+aWN5LT5kcml2ZXJfZGF0YSA9IE5VTEw7CiAKIAlyZXR1cm4gMDsKIH0KIAotc3RhdGljIGludCBj
+b3JlbmV0X2NwdWZyZXFfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAorc3Rh
+dGljIGludCBxb3JpcV9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGlj
+eSwKIAkJdW5zaWduZWQgaW50IGluZGV4KQogewogCXN0cnVjdCBjbGsgKnBhcmVudDsKLQlzdHJ1
+Y3QgY3B1X2RhdGEgKmRhdGEgPSBwZXJfY3B1KGNwdV9kYXRhLCBwb2xpY3ktPmNwdSk7CisJc3Ry
+dWN0IGNwdV9kYXRhICpkYXRhID0gcG9saWN5LT5kcml2ZXJfZGF0YTsKIAogCXBhcmVudCA9IG9m
+X2Nsa19nZXQoZGF0YS0+cGFyZW50LCBkYXRhLT50YWJsZVtpbmRleF0uZHJpdmVyX2RhdGEpOwog
+CXJldHVybiBjbGtfc2V0X3BhcmVudChwb2xpY3ktPmNsaywgcGFyZW50KTsKIH0KIAotc3RhdGlj
+IHN0cnVjdCBjcHVmcmVxX2RyaXZlciBwcGNfY29yZW5ldF9jcHVmcmVxX2RyaXZlciA9IHsKLQku
+bmFtZQkJPSAicHBjX2NwdWZyZXEiLAorc3RhdGljIHN0cnVjdCBjcHVmcmVxX2RyaXZlciBxb3Jp
+cV9jcHVmcmVxX2RyaXZlciA9IHsKKwkubmFtZQkJPSAicW9yaXFfY3B1ZnJlcSIsCiAJLmZsYWdz
+CQk9IENQVUZSRVFfQ09OU1RfTE9PUFMsCi0JLmluaXQJCT0gY29yZW5ldF9jcHVmcmVxX2NwdV9p
+bml0LAotCS5leGl0CQk9IF9fZXhpdF9wKGNvcmVuZXRfY3B1ZnJlcV9jcHVfZXhpdCksCisJLmlu
+aXQJCT0gcW9yaXFfY3B1ZnJlcV9jcHVfaW5pdCwKKwkuZXhpdAkJPSBfX2V4aXRfcChxb3JpcV9j
+cHVmcmVxX2NwdV9leGl0KSwKIAkudmVyaWZ5CQk9IGNwdWZyZXFfZ2VuZXJpY19mcmVxdWVuY3lf
+dGFibGVfdmVyaWZ5LAotCS50YXJnZXRfaW5kZXgJPSBjb3JlbmV0X2NwdWZyZXFfdGFyZ2V0LAor
+CS50YXJnZXRfaW5kZXgJPSBxb3JpcV9jcHVmcmVxX3RhcmdldCwKIAkuZ2V0CQk9IGNwdWZyZXFf
+Z2VuZXJpY19nZXQsCiAJLmF0dHIJCT0gY3B1ZnJlcV9nZW5lcmljX2F0dHIsCiB9OwogCi1zdGF0
+aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRkYXRhID0g
+eworc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgbm9kZV9tYXRjaGVzW10gX19pbml0
+Y29uc3QgPSB7CiAJeyAuY29tcGF0aWJsZSA9ICJmc2wscDIwNDEtY2xvY2tnZW4iLCAuZGF0YSA9
+ICZzZGF0YVswXSwgfSwKIAl7IC5jb21wYXRpYmxlID0gImZzbCxwMzA0MS1jbG9ja2dlbiIsIC5k
+YXRhID0gJnNkYXRhWzBdLCB9LAogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHA1MDIwLWNsb2NrZ2Vu
+IiwgLmRhdGEgPSAmc2RhdGFbMV0sIH0sCkBAIC0yNzMsNjEgKzMyOSw0MyBAQCBzdGF0aWMgY29u
+c3Qgc3RydWN0IG9mX2RldmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRkYXRhID0gewogCXt9
+CiB9OwogCi1zdGF0aWMgaW50IF9faW5pdCBwcGNfY29yZW5ldF9jcHVmcmVxX2luaXQodm9pZCkK
+K3N0YXRpYyBpbnQgX19pbml0IHFvcmlxX2NwdWZyZXFfaW5pdCh2b2lkKQogewogCWludCByZXQ7
+CiAJc3RydWN0IGRldmljZV9ub2RlICAqbnA7CiAJY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCAq
+bWF0Y2g7CiAJY29uc3Qgc3RydWN0IHNvY19kYXRhICpkYXRhOwotCXVuc2lnbmVkIGludCBjcHU7
+CiAKIAlucCA9IG9mX2ZpbmRfbWF0Y2hpbmdfbm9kZShOVUxMLCBub2RlX21hdGNoZXMpOwogCWlm
+ICghbnApCiAJCXJldHVybiAtRU5PREVWOwogCi0JZm9yX2VhY2hfcG9zc2libGVfY3B1KGNwdSkg
+ewotCQlpZiAoIWFsbG9jX2NwdW1hc2tfdmFyKCZwZXJfY3B1KGNwdV9tYXNrLCBjcHUpLCBHRlBf
+S0VSTkVMKSkKLQkJCWdvdG8gZXJyX21hc2s7Ci0JCWNwdW1hc2tfY29weShwZXJfY3B1KGNwdV9t
+YXNrLCBjcHUpLCBjcHVfY29yZV9tYXNrKGNwdSkpOwotCX0KLQogCW1hdGNoID0gb2ZfbWF0Y2hf
+bm9kZShub2RlX21hdGNoZXMsIG5wKTsKIAlkYXRhID0gbWF0Y2gtPmRhdGE7CiAJaWYgKGRhdGEp
+IHsKIAkJaWYgKGRhdGEtPmZsYWcpCiAJCQlmbWFzayA9IGRhdGEtPmZyZXFfbWFzazsKLQkJbWlu
+X2NwdWZyZXEgPSBmc2xfZ2V0X3N5c19mcmVxKCk7CisJCW1pbl9jcHVmcmVxID0gZ2V0X2J1c19m
+cmVxKCk7CiAJfSBlbHNlIHsKLQkJbWluX2NwdWZyZXEgPSBmc2xfZ2V0X3N5c19mcmVxKCkgLyAy
+OworCQltaW5fY3B1ZnJlcSA9IGdldF9idXNfZnJlcSgpIC8gMjsKIAl9CiAKIAlvZl9ub2RlX3B1
+dChucCk7CiAKLQlyZXQgPSBjcHVmcmVxX3JlZ2lzdGVyX2RyaXZlcigmcHBjX2NvcmVuZXRfY3B1
+ZnJlcV9kcml2ZXIpOworCXJldCA9IGNwdWZyZXFfcmVnaXN0ZXJfZHJpdmVyKCZxb3JpcV9jcHVm
+cmVxX2RyaXZlcik7CiAJaWYgKCFyZXQpCi0JCXByX2luZm8oIkZyZWVzY2FsZSBQb3dlclBDIGNv
+cmVuZXQgQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nIGRyaXZlclxuIik7CisJCXByX2luZm8oIkZyZWVz
+Y2FsZSBRb3JJUSBDUFUgZnJlcXVlbmN5IHNjYWxpbmcgZHJpdmVyXG4iKTsKIAogCXJldHVybiBy
+ZXQ7Ci0KLWVycl9tYXNrOgotCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpCi0JCWZyZWVfY3B1
+bWFza192YXIocGVyX2NwdShjcHVfbWFzaywgY3B1KSk7Ci0KLQlyZXR1cm4gLUVOT01FTTsKIH0K
+LW1vZHVsZV9pbml0KHBwY19jb3JlbmV0X2NwdWZyZXFfaW5pdCk7Cittb2R1bGVfaW5pdChxb3Jp
+cV9jcHVmcmVxX2luaXQpOwogCi1zdGF0aWMgdm9pZCBfX2V4aXQgcHBjX2NvcmVuZXRfY3B1ZnJl
+cV9leGl0KHZvaWQpCitzdGF0aWMgdm9pZCBfX2V4aXQgcW9yaXFfY3B1ZnJlcV9leGl0KHZvaWQp
+CiB7Ci0JdW5zaWduZWQgaW50IGNwdTsKLQotCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpCi0J
+CWZyZWVfY3B1bWFza192YXIocGVyX2NwdShjcHVfbWFzaywgY3B1KSk7Ci0KLQljcHVmcmVxX3Vu
+cmVnaXN0ZXJfZHJpdmVyKCZwcGNfY29yZW5ldF9jcHVmcmVxX2RyaXZlcik7CisJY3B1ZnJlcV91
+bnJlZ2lzdGVyX2RyaXZlcigmcW9yaXFfY3B1ZnJlcV9kcml2ZXIpOwogfQotbW9kdWxlX2V4aXQo
+cHBjX2NvcmVuZXRfY3B1ZnJlcV9leGl0KTsKK21vZHVsZV9leGl0KHFvcmlxX2NwdWZyZXFfZXhp
+dCk7CiAKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIE1PRFVMRV9BVVRIT1IoIlRhbmcgWXVhbnRp
+YW4gPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4iKTsKLU1PRFVMRV9ERVNDUklQVElPTigi
+Y3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBlNTAwbWMgc2VyaWVzIFNvQ3MiKTsKK01PRFVM
+RV9ERVNDUklQVElPTigiY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBRb3JJUSBzZXJpZXMg
+U29DcyIpOwotLSAKMi4xLjAuMjcuZzk2ZGIzMjQKCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xp
+bnV4cHBjLWRldg==
