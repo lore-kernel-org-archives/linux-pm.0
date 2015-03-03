@@ -1,58 +1,95 @@
-From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v2 0/6] ARM: at91: fix irq_pm_install_action WARNING
-Date: Tue, 3 Mar 2015 09:56:46 +0100
-Message-ID: <20150303085646.GA3892@piout.net>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
+Date: Tue, 03 Mar 2015 11:30:07 +0100
+Message-ID: <54F58D2F.2010907@linaro.org>
+References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan> <54F03B51.1010708@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1425287898-15093-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:44902 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755108AbbCCKaN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 05:30:13 -0500
+Received: by wiwl15 with SMTP id l15so21518129wiw.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2015 02:30:11 -0800 (PST)
+In-Reply-To: <54F03B51.1010708@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, fbf@libero.it
 
-On 02/03/2015 at 10:18:12 +0100, Boris Brezillon wrote :
-> My apologies to those of you who already received this series, but I
-> didn't increment the patch version and forgot some subsystem maintainers
-> and MLs.
-> 
-> Commit cab303be91dc47942bc25de33dc1140123540800 [1] introduced a WARN_ON
-> test which triggers a WARNING backtrace on at91 platforms.
-> While this WARN_ON is absolutely necessary to warn users that they should
-> not mix request with and without IRQF_NO_SUSPEND flags on shared IRQs,
-> there is no easy way to solve this issue on at91 platforms.
-> 
-> The main reason is that the init timer is often using a shared irq line
-> and thus request this irq with IRQF_NO_SUSPEND flag set, while other
-> peripherals request the same irq line without this flag.
-> 
-> This problem has recently been addressed by this patch [2] which adds
-> a new IRQF_COND_SUSPEND flag, that authorize mixing IRQF_NO_SUSPEND and
-> !IRQF_NO_SUSPEND as long as irq handlers setting IRQF_COND_SUSPEND
-> can safely be called in suspended state.
-> 
-> Doing this also implies taking care of system wakeup in devices handlers
-> if they tag the IRQ line as a wakeup source.
-> The first patch of this series exports the pm_system_wakeup symbol so
-> that drivers can call pm_system_wakeup from their interrupt handler.
-> 
-> This series then patches all at91 drivers that can have devices sharing
-> their IRQ line with a timer.
-> 
-> This series depends on [2].
-> 
+On 02/27/2015 10:39 AM, Gregory CLEMENT wrote:
+> Hi Rafael,
+>
+> On 26/02/2015 22:55, Rafael J. Wysocki wrote:
+>> On Thursday, February 26, 2015 06:20:48 PM Gregory CLEMENT wrote:
+>>> As stated in kernel/cpu_pm.c, "Platform is responsible for ensuring
+>>> that cpu_pm_enter is not called twice on the same CPU before
+>>> cpu_pm_exit is called.". In the current code in case of failure whe=
+n
+>>> calling mvebu_v7_cpu_suspend, the function cpu_pm_exit() is never
+>>> called whereas cpu_pm_enter() was called just before.
+>>>
+>>> This patch moves the cpu_pm_exit() in order to balance the
+>>> cpu_pm_enter() calls.
+>>>
+>>> Reported-by: Fulvio Benini <fbf@libero.it>
+>>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>>
+>> Should that go to "stable" too?  Which "stable" series it should go =
+to if so?
+>
+> Yes as it fixes a potential issue, you're right it should go
+> to "stable". The bug was here since the introduction of the driver
+> in 3.16.
 
-For the whole series:
-Reviewed-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Hi Gregory,
+
+actually the 'stable' rules state clearly:
+
+"- It must fix a real bug that bothers people (not a, "This could be a=20
+problem..." type thing)."
+
+You say "it fixes a potential issue", so no bug has been raise yet, rig=
+ht ?
+
+>>> ---
+>>>   drivers/cpuidle/cpuidle-mvebu-v7.c | 4 ++--
+>>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/c=
+puidle-mvebu-v7.c
+>>> index 38e68618513a..cefa07438ae1 100644
+>>> --- a/drivers/cpuidle/cpuidle-mvebu-v7.c
+>>> +++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+>>> @@ -37,11 +37,11 @@ static int mvebu_v7_enter_idle(struct cpuidle_d=
+evice *dev,
+>>>   		deepidle =3D true;
+>>>
+>>>   	ret =3D mvebu_v7_cpu_suspend(deepidle);
+>>> +	cpu_pm_exit();
+>>> +
+>>>   	if (ret)
+>>>   		return ret;
+>>>
+>>> -	cpu_pm_exit();
+>>> -
+>>>   	return index;
+>>>   }
+>>>
+>>>
+>>
+>
+>
 
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
