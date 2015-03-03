@@ -1,123 +1,102 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v8 15/18] cpufreq: Add cpufreq driver for Tegra124
-Date: Tue, 03 Mar 2015 13:33:42 +0200
-Message-ID: <54F59C16.2010401@kapsi.fi>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>	 <1425213881-5262-16-git-send-email-mikko.perttunen@kapsi.fi> <1425286186.24292.76.camel@x220>
+From: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Subject: Re: [PATCH v3 5/5] thermal: cpu_cooling: update the cpu device when
+ cpufreq updates the policy cpu
+Date: Tue, 03 Mar 2015 11:41:35 +0000
+Message-ID: <54F59DEF.3020700@arm.com>
+References: <1425316643-31991-1-git-send-email-javi.merino@arm.com>	<1425316643-31991-6-git-send-email-javi.merino@arm.com>	<CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>	<54F5941F.6030402@arm.com> <CAKohpon3sn_4aX7g+=LFdY-AgYrWdFCWtyethJtVMEK=Dw9Xbw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425286186.24292.76.camel@x220>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:33962 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756298AbbCCLlk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 06:41:40 -0500
+In-Reply-To: <CAKohpon3sn_4aX7g+=LFdY-AgYrWdFCWtyethJtVMEK=Dw9Xbw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Javi Merino <Javi.Merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>
 
-On 03/02/2015 10:49 AM, Paul Bolle wrote:
-> On Sun, 2015-03-01 at 14:44 +0200, Mikko Perttunen wrote:
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -256,6 +256,13 @@ config ARM_TEGRA20_CPUFREQ
->>   	help
->>   	  This adds the CPUFreq driver support for Tegra20 SOCs.
+
+
+On 03/03/15 11:19, Viresh Kumar wrote:
+> On 3 March 2015 at 16:29, Kapileshwar Singh <kapileshwar.singh@arm.com> wrote:
+>> We store the device pointer of the lead CPU (policy CPU) in a cpufreq domain as a part of the
+>> cpufreq_cooling_device data structure. There is one cpufreq_cooling_device per
+>> cpufreq domain.
 >>
->> +config ARM_TEGRA124_CPUFREQ
->> +	bool "Tegra124 CPUFreq support"
->
-> This adds a bool Kconfig symbol...
->
->> +	depends on ARCH_TEGRA && CPUFREQ_DT
->> +	default y
->> +	help
->> +	  This adds the CPUFreq driver support for Tegra124 SOCs.
->> +
->>   config ARM_PXA2xx_CPUFREQ
->>   	tristate "Intel PXA2xx CPUfreq driver"
->>   	depends on PXA27x || PXA25x
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index 312d9c3..d478b83 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
->>   obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
->>   obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->>   obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
->> +obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
->
-> ... so this object will either not be built or be built-in.
->
->>   obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+>> We need the device to find out the current OPP for the cpufreq_cooling_device for our static power calculation.
 >>
->>   ##################################################################################
->> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
->> new file mode 100644
->> index 0000000..45778ce
->> --- /dev/null
->> +++ b/drivers/cpufreq/tegra124-cpufreq.c
->> @@ -0,0 +1,217 @@
->> +/*
->> + * Tegra 124 cpufreq driver
->> + *
->> + * This software is licensed under the terms of the GNU General Public
->> + * License version 2, as published by the Free Software Foundation, and
->> + * may be copied, distributed, and modified under those terms.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + */
->> +
->> +#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
->> +
->> +#include <linux/clk.h>
->> +#include <linux/cpufreq-dt.h>
->> +#include <linux/err.h>
->> +#include <linux/init.h>
->> +#include <linux/kernel.h>
->> +#include <linux/module.h>
->
-> Is linux/module.h needed?
->
->> +#include <linux/of_device.h>
->> +#include <linux/of.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/pm_opp.h>
->> +#include <linux/regulator/consumer.h>
->> +#include <linux/types.h>
->
-> [...]
->
->> +static struct platform_driver tegra124_cpufreq_platdrv = {
->> +	.driver = {
->> +		.name	= "cpufreq-tegra124",
->> +		.owner	= THIS_MODULE,
->
-> .owner will always be, in short, NULL.
->
->> +	},
->> +	.probe		= tegra124_cpufreq_probe,
->> +	.remove		= tegra124_cpufreq_remove,
->> +};
->
-> [...]
->
->> +module_init(tegra_cpufreq_init);
->
-> This might as well be, I think, device_initcall().
->
->> +MODULE_AUTHOR("Tuomas Tynkkynen <ttynkkynen@nvidia.com>");
->> +MODULE_DESCRIPTION("cpufreq driver for NVIDIA Tegra124");
->> +MODULE_LICENSE("GPL v2");
->
-> The strings in these macros will always be preprocessed away, because
-> this driver cannot become a module.
->
->
-> Paul Bolle
->
+>>         opp = opp_find_freq_exact(cpu_dev, freq_hz, true);
+>>         voltage = dev_pm_opp_get_voltage(opp);
+>>
+>>
+>> The problem we are trying to solve here is:
+>>
+>> When this lead CPU gets hotplugged out, the device pointer becomes stale and the policy
+>> cpu for the cpufreq domain changes. We then store the new policy CPU's device pointer for the
+>> in cpufreq_cooling_device on the reception of a notification from cpufreq. Being open to your
+>> suggestions for any other possible ways to solve the problem..
+> 
+> I would have loved that if life was that simple :)
+> 
+> So, the OPP library today isn't that perfect and so is this doing rounds [1].
+> The problem is the OPPs are initialized per device today and even if they
+> are shared by multiple CPUs, OPP library doesn't know about it.
+> 
+> So, if the policy->cpu goes away, OPP APIs on the new CPU will not work
+> as OPPs are only initialized for one CPU and not for others within the same
+> policy :)
+> 
+> The way cpufreq-dt is taking care of this is by saving cpu_dev of the first
+> CPU for which OPPs are initialized and always using that even if the CPU
+> goes away. And you need to do exactly that.
+> 
+> And please, do test such scenario before sending the patches again. As
+> it would have simply failed in this case, have you given it a try ..
 
-Well noticed! I changed the config symbol to be tristate.
+Yes I indeed tested the case where we cache the device pointer of the CPU for which the OPP's are populated.
+When this CPU is hotplugged out, it invalidates the device pointer itself. Here are the error we get in dmesg:
 
-Thanks,
-Mikko Perttunen
+..
+<3>[67203.216774] opp_get_voltage: Invalid parameters
+<3>[67203.326774] opp_get_voltage: Invalid parameters
+<3>[67203.326774] opp_get_voltage: Invalid parameters
+..
+
+Which happens because:
+
+unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+{
+..
+        tmp_opp = rcu_dereference(opp);
+        if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->available)
+                pr_err("%s: Invalid parameters\n", __func__);
+        else
+..
+
+Which happens when 
+
+        opp = dev_pm_opp_find_freq_exact(cpufreq_device->cpu_dev, freq_hz,
+                                         true);
+
+returns a an erroneous or NULL OPP or the opp is unavailable (in the above condition) 
+
+Regards, 
+KP
+
+
+
+
+
+> 
+> Once my patchset [1] is applied, life would be very simple and we can
+> call OPP library for any CPU, but that is going to take some time.
+> 
+> --
+> viresh
+> 
+> [1] https://www.marc.info/?l=linaro-kernel&m=142364262800650&w=3
+> 
+
