@@ -1,207 +1,109 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/6] ARM: cpuidle: Add a cpuidle ops structure to be used for DT
-Date: Tue,  3 Mar 2015 13:29:33 +0100
-Message-ID: <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org>
-References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
+Date: Tue, 03 Mar 2015 13:51:40 +0100
+Message-ID: <54F5AE5C.6060006@free-electrons.com>
+References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan> <54F03B51.1010708@free-electrons.com> <54F58D2F.2010907@linaro.org> <54F58E3B.9040302@free-electrons.com> <54F59285.5060306@libero.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:38183 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932214AbbCCMvp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 07:51:45 -0500
+In-Reply-To: <54F59285.5060306@libero.it>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fulvio <fbf@libero.it>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-The current state of the different cpuidle drivers is the different PM
-operations are passed via the platform_data using the platform driver
-paradigm.
+Hi Fulvio,
 
-This approach allowed to split the low level PM code from the arch specific
-and the generic cpuidle code.
+On 03/03/2015 11:52, Fulvio wrote:
+> Gregory CLEMENT wrote:
+>> Hi Rafael,
+>>
+>>
+>>
+>> On 03/03/2015 11:30, Daniel Lezcano wrote:
+>>   
+>>> On 02/27/2015 10:39 AM, Gregory CLEMENT wrote:
+>>>     
+>>>> Hi Rafael,
+>>>>
+>>>> On 26/02/2015 22:55, Rafael J. Wysocki wrote:
+>>>>       
+>>>>> On Thursday, February 26, 2015 06:20:48 PM Gregory CLEMENT wrote:
+>>>>>         
+>>>>>> As stated in kernel/cpu_pm.c, "Platform is responsible for ensuring
+>>>>>> that cpu_pm_enter is not called twice on the same CPU before
+>>>>>> cpu_pm_exit is called.". In the current code in case of failure when
+>>>>>> calling mvebu_v7_cpu_suspend, the function cpu_pm_exit() is never
+>>>>>> called whereas cpu_pm_enter() was called just before.
+>>>>>>
+>>>>>> This patch moves the cpu_pm_exit() in order to balance the
+>>>>>> cpu_pm_enter() calls.
+>>>>>>
+>>>>>> Reported-by: Fulvio Benini <fbf@libero.it>
+>>>>>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>>>>>>           
+>>>>> Should that go to "stable" too?  Which "stable" series it should go to if so?
+>>>>>         
+>>>> Yes as it fixes a potential issue, you're right it should go
+>>>> to "stable". The bug was here since the introduction of the driver
+>>>> in 3.16.
+>>>>       
+>>> Hi Gregory,
+>>>
+>>> actually the 'stable' rules state clearly:
+>>>
+>>> "- It must fix a real bug that bothers people (not a, "This could be a 
+>>> problem..." type thing)."
+>>>
+>>> You say "it fixes a potential issue", so no bug has been raise yet, right ?
+>>>     
+>>
+>> Indeed nobody claimed yet having a bug related to this issue.
+>>
+>> Gregory
+>>
+>>   
+> I reported the issue, but i cannot say if it's a real bug.
+> I had random kernel panics with a Netgear ReadyNAS RN102 (armada 370 cpu):
+> http://www.readynas.com/forum/viewtopic.php?f=20&t=78697&sid=14747617286d55ac27296cdee7a3f420&start=210#p452214
 
-Unfortunately there are complains about this approach as, in the context of the
-single kernel image, we have multiple drivers loaded in memory for nothing and
-the platform driver is not adequate for cpuidle.
+I didn't know you experimented random kernel panics and that you thought
+it was related to the CPU Idle driver.
 
-This patch provides a common interface via cpuidle ops for all new cpuidle
-driver and a definition for the device tree.
+> 
+> All i can say is that the system use the "armadaxp_idle" driver and 
+> works fine when running "stress --cpu 8" in background.
+> I asked Netgear to provide a firmware without the idle driver to confirm 
+> if it's the cause of the problem, but they did not answered.
 
-It will allow with the next patches to a have a common definition with ARM64
-and share the same cpuidle driver.
+I think that if you disable all the state using by doing an
 
-The code is optimized to use the __init section intensively in order to reduce
-the memory footprint after the driver is initialized and unify the function
-names with ARM64.
+echo 1 > /sys/devices/system/cpu/cpu0/cpuidle/stateNUM/disable
 
-In order to prevent multiple declarations and the specific cpuidle ops to be
-spread across the different headers, a mechanism, similar to the cgroup subsys,
-has been introduced.
+where NUM is the nuymbert of the state. Then it should disable the
+cpuidle on the fly.
 
-A new platform willing to add its cpuidle ops must add an entry in the file
-cpuidle_ops.h in the current form:
+Daniel, is it correct?
 
- #if IS_ENABLED(CONFIG_ARM_FOO_CPUIDLE)
- CPUIDLE_OPS(foo)
- #endif
+Or if you can modify your bootargs, then just add cpuidle.off=1 to the kernel
+command line.
 
-... and use the variable name in the specific low level code:
+Thanks,
 
-struct cpuidle_ops foo_cpuidle_ops;
+Gregory
 
-The CPUIDLE_OPS macro will be processed in different way in the cpuidle.c file,
-thus allowing to keep untouched the arm cpuidle core code in the future when
-a new platform is added.
+> Bye,
+> Fulvio
+> 
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/include/asm/cpuidle.h     | 10 +++++
- arch/arm/include/asm/cpuidle_ops.h |  3 ++
- arch/arm/kernel/cpuidle.c          | 85 ++++++++++++++++++++++++++++++++++++++
- arch/arm64/include/asm/cpuidle.h   |  5 ++-
- 4 files changed, 102 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/include/asm/cpuidle_ops.h
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index 348dc81..3d31459 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -27,4 +27,14 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
-  */
- #define ARM_CPUIDLE_WFI_STATE ARM_CPUIDLE_WFI_STATE_PWR(UINT_MAX)
- 
-+struct cpuidle_ops {
-+	const char *name;
-+	int (*suspend)(int cpu, unsigned long arg);
-+	int (*init)(struct device_node *, int cpu);
-+};
-+
-+extern int arm_cpuidle_suspend(int index);
-+
-+extern int arm_cpuidle_init(int cpu);
-+
- #endif
-diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/asm/cpuidle_ops.h
-new file mode 100644
-index 0000000..be0a612
---- /dev/null
-+++ b/arch/arm/include/asm/cpuidle_ops.h
-@@ -0,0 +1,3 @@
-+/*
-+ * List of cpuidle operations
-+ */
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 45969f8..25e9789c 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -10,8 +10,29 @@
-  */
- 
- #include <linux/cpuidle.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
- #include <asm/cpuidle.h>
- 
-+#define CPUIDLE_OPS(__x) extern struct cpuidle_ops __x ## _cpuidle_ops;
-+#include <asm/cpuidle_ops.h>
-+#undef CPUIDLE_OPS
-+
-+#define CPUIDLE_OPS(__x) __x ## _cpuidle_ops_id,
-+enum cpuidle_ops_id {
-+#include <asm/cpuidle_ops.h>
-+        CPUIDLE_OPS_COUNT,
-+};
-+#undef CPUIDLE_OPS
-+
-+#define CPUIDLE_OPS(__x) [__x ## _cpuidle_ops_id ] = &__x ## _cpuidle_ops,
-+static struct cpuidle_ops *supported_cpuidle_ops[] __initconst = {
-+#include <asm/cpuidle_ops.h>
-+};
-+#undef CPUIDLE_OPS
-+
-+static struct cpuidle_ops cpuidle_ops[NR_CPUS];
-+
- int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int index)
- {
-@@ -19,3 +40,67 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 
- 	return index;
- }
-+
-+int arm_cpuidle_suspend(int index)
-+{
-+	int ret = -EOPNOTSUPP;
-+	int cpu = smp_processor_id();
-+
-+	if (cpuidle_ops[cpu].suspend)
-+		ret = cpuidle_ops[cpu].suspend(cpu, index);
-+
-+	return ret;
-+}
-+
-+static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *name)
-+{
-+	int i;
-+
-+	for (i = 0; i < CPUIDLE_OPS_COUNT; i++) {
-+		if (!strcmp(name, supported_cpuidle_ops[i]->name))
-+			return supported_cpuidle_ops[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
-+{
-+	const char *enable_method;
-+	struct cpuidle_ops *ops;
-+
-+	enable_method = of_get_property(dn, "enable-method", NULL);
-+	if (!enable_method)
-+		return -ENOENT;
-+
-+	ops = arm_cpuidle_get_ops(enable_method);
-+	if (!ops) {
-+		pr_warn("%s: unsupported enable-method property: %s\n",
-+			dn->full_name, enable_method);
-+		return -EOPNOTSUPP;
-+	}
-+
-+	cpuidle_ops[cpu] = *ops; /* structure copy */
-+
-+	pr_notice("cpuidle: enable-method property '%s'"
-+		  " found operations\n", ops->name);
-+
-+	return 0;
-+}
-+
-+int __init arm_cpuidle_init(int cpu)
-+{
-+	int ret = -EOPNOTSUPP;
-+	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
-+
-+	if (!cpu_node)
-+		return -ENODEV;
-+
-+	ret = arm_cpuidle_read_ops(cpu_node, cpu);
-+	if (!ret && cpuidle_ops[cpu].init)
-+		ret = cpuidle_ops[cpu].init(cpu_node, cpu);
-+
-+	of_node_put(cpu_node);
-+
-+	return ret;
-+}
-diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
-index 0710654..1bee287 100644
---- a/arch/arm64/include/asm/cpuidle.h
-+++ b/arch/arm64/include/asm/cpuidle.h
-@@ -15,5 +15,8 @@ static inline int cpu_suspend(unsigned long arg)
- 	return -EOPNOTSUPP;
- }
- #endif
--
-+static inline int arm_cpuidle_suspend(int index)
-+{
-+	return cpu_suspend(index);
-+}
- #endif
 -- 
-1.9.1
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
