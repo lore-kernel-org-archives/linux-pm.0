@@ -1,41 +1,57 @@
-From: <Yuantian.Tang@freescale.com>
-Subject: [PATCH 2/2 v4] cpufreq: qoriq: rename the driver
-Date: Tue, 3 Mar 2015 11:38:52 +0800
-Message-ID: <1425353932-713-2-git-send-email-Yuantian.Tang@freescale.com>
-References: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 5/5] thermal: cpu_cooling: update the cpu device when
+ cpufreq updates the policy cpu
+Date: Tue, 3 Mar 2015 09:33:34 +0530
+Message-ID: <CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>
+References: <1425316643-31991-1-git-send-email-javi.merino@arm.com>
+	<1425316643-31991-6-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net
-Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org, Tang Yuantian <Yuantian.Tang@freescale.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f175.google.com ([209.85.220.175]:47495 "EHLO
+	mail-vc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753759AbbCCEDf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2015 23:03:35 -0500
+In-Reply-To: <1425316643-31991-6-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, punit.agrawal@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>, Kapileshwar Singh <kapileshwar.singh@arm.com>
 
-RnJvbTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tPgoKVGhpcyBk
-cml2ZXIgd29ya3Mgb24gYWxsIFFvcklRIHBsYXRmb3JtcyB3aGljaCBpbmNsdWRlCkFSTS1iYXNl
-ZCBjb3JlcyBhbmQgUFBDLWJhc2VkIGNvcmVzLgpSZW5hbWUgaXQgaW4gb3JkZXIgdG8gcmVwcmVz
-ZW50IGJldHRlci4KClNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFuLlRhbmdA
-ZnJlZXNjYWxlLmNvbT4KQWNrZWQtYnk6IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFy
-by5vcmc+Ci0tLQp2MywgdjQKCS0gbm9uZQp2MjoKCS0gdXNlIC1DIC1NIG9wdGlvbnMgd2hlbiBm
-b3JtYXQtcGF0Y2gKCiBkcml2ZXJzL2NwdWZyZXEve3BwYy1jb3JlbmV0LWNwdWZyZXEuYyA9PiBx
-b3JpcS1jcHVmcmVxLmN9IHwgMAogMSBmaWxlIGNoYW5nZWQsIDAgaW5zZXJ0aW9ucygrKSwgMCBk
-ZWxldGlvbnMoLSkKIHJlbmFtZSBkcml2ZXJzL2NwdWZyZXEve3BwYy1jb3JlbmV0LWNwdWZyZXEu
-YyA9PiBxb3JpcS1jcHVmcmVxLmN9ICgxMDAlKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJl
-cS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5j
-CnNpbWlsYXJpdHkgaW5kZXggMTAwJQpyZW5hbWUgZnJvbSBkcml2ZXJzL2NwdWZyZXEvcHBjLWNv
-cmVuZXQtY3B1ZnJlcS5jCnJlbmFtZSB0byBkcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5j
-Ci0tIAoyLjEuMC4yNy5nOTZkYjMyNAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMt
-ZGV2
+On Mon, Mar 2, 2015 at 10:47 PM, Javi Merino <javi.merino@arm.com> wrote:
+> From: Kapileshwar Singh <kapileshwar.singh@arm.com>
+>
+> When cpufreq changes the policy cpu, we need to update our cached cpu
+> device accordingly.
+>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
+> ---
+>  drivers/thermal/cpu_cooling.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index c4974144c787..e306d6bc3cf1 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -269,6 +269,9 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+>                 mutex_unlock(&cooling_cpufreq_lock);
+>                 break;
+>
+> +       case CPUFREQ_UPDATE_POLICY_CPU:
+> +               update_cpu_device(policy->cpu);
+> +               break;
+>         case CPUFREQ_CREATE_POLICY:
+>                 update_cpu_device(policy->cpu);
+>                 break;
+
+First of all, I wasn't able to find 3/5 on LKML and I looked at 3/7
+from an earlier
+version to look at how update_cpu_device() looks like.
+
+What I couldn't understand is why do you need to update things if policy->cpu
+is changing ?
+
+I am expecting a detailed answer here according to your design, and we may
+be able to work out without such updates. Lets see..
