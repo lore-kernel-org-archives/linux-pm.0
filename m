@@ -1,85 +1,72 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 0/6] ARM: cpuidle: Unify the ARM64/ARM DT approach
-Date: Tue,  3 Mar 2015 13:29:31 +0100
-Message-ID: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net
-Cc: devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, Catalin.Marinas@arm.com, linux-kernel@vger.kernel.org, lina.iyer@linaro.org, linux-arm-kernel@lists.infradead.org
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 4/6] ARM64: cpuidle: Rename cpu_init_idle to a common function name
+Date: Tue,  3 Mar 2015 13:29:35 +0100
+Message-ID: <1425385777-14766-5-git-send-email-daniel.lezcano@linaro.org>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1425385777-14766-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin.Marinas-5wv7dgnIgG8@public.gmane.org, robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-There is a big number of cpuidle drivers for the ARM architecture.
+With this change the cpuidle-arm64.c file calls the same function name
+for both ARM and ARM64.
 
-These drivers have been cleaned up and grouped into the drivers/cpuidle
-directory to keep track of the changes more easily and ensure the code
-is following the same scheme across the drivers.
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ arch/arm64/include/asm/cpuidle.h | 4 ++--
+ arch/arm64/kernel/cpuidle.c      | 2 +-
+ drivers/cpuidle/cpuidle-arm64.c  | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-That had the benefit of simplifying the code and factor out a lot of common
-parts. Beside that, as the drivers belong to the 'drivers' directory, we had
-to split the arch specific bits and the generic code in order to keep
-everything self contained. The platform driver paradigm was used for this
-purpose.
-
-Unfortunately, this approach is now no longer accepted and a different solution
-must be provided to reach the same goal: one example is the Qualcomm cpuidle
-driver upstreaming attempt [1].
-
-In the meantime, ARM64 developed a generic cpuidle driver based on DT definition.
-
-The DT definition provides an 'enable-method' to specify one of the cpu
-operations (PSCI, ...).
-
-This patchset unify this driver with ARM32, using the same DT definition.
-
-Thanks with this patchset we can use the 'enable-method' to specify a cpu
-operations, hence get rid of the platform driver approach and go further in the
-cpuidle driver flexibility via the DT.
-
-Daniel Lezcano (6):
-  ARM: cpuidle: Remove duplicate header inclusion
-  ARM: cpuidle: Add a cpuidle ops structure to be used for DT
-  ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function
-  ARM64: cpuidle: Rename cpu_init_idle to a common function name
-  ARM64: cpuidle: Remove arm64 reference
-  ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
-
- arch/arm/include/asm/cpuidle.h                     | 12 +++
- arch/arm/include/asm/cpuidle_ops.h                 |  3 +
- arch/arm/kernel/cpuidle.c                          | 87 +++++++++++++++++++++-
- arch/arm/mach-davinci/cpuidle.c                    |  1 -
- arch/arm/mach-imx/cpuidle-imx6q.c                  |  1 -
- arch/arm/mach-imx/cpuidle-imx6sl.c                 |  1 -
- arch/arm/mach-imx/cpuidle-imx6sx.c                 |  1 -
- arch/arm/mach-omap2/cpuidle44xx.c                  |  1 -
- arch/arm/mach-tegra/cpuidle-tegra20.c              |  1 -
- arch/arm/mach-tegra/cpuidle-tegra30.c              |  1 -
- arch/arm64/include/asm/cpuidle.h                   |  9 ++-
- arch/arm64/kernel/cpuidle.c                        |  2 +-
- drivers/cpuidle/Kconfig                            |  7 +-
- drivers/cpuidle/Kconfig.arm                        | 10 +++
- drivers/cpuidle/Kconfig.arm64                      | 13 ----
- drivers/cpuidle/Makefile                           |  5 +-
- drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} | 38 +++++-----
- drivers/cpuidle/cpuidle-at91.c                     |  1 -
- drivers/cpuidle/cpuidle-exynos.c                   |  1 -
- drivers/cpuidle/cpuidle-kirkwood.c                 |  1 -
- drivers/cpuidle/cpuidle-ux500.c                    |  1 -
- drivers/cpuidle/cpuidle-zynq.c                     |  1 -
- 22 files changed, 139 insertions(+), 59 deletions(-)
- create mode 100644 arch/arm/include/asm/cpuidle_ops.h
- delete mode 100644 drivers/cpuidle/Kconfig.arm64
- rename drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} (72%)
-
+diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
+index 1bee287..2bc2732 100644
+--- a/arch/arm64/include/asm/cpuidle.h
++++ b/arch/arm64/include/asm/cpuidle.h
+@@ -2,10 +2,10 @@
+ #define __ASM_CPUIDLE_H
+ 
+ #ifdef CONFIG_CPU_IDLE
+-extern int cpu_init_idle(unsigned int cpu);
++extern int arm_cpuidle_init(unsigned int cpu);
+ extern int cpu_suspend(unsigned long arg);
+ #else
+-static inline int cpu_init_idle(unsigned int cpu)
++static inline int arm_cpuidle_init(unsigned int cpu)
+ {
+ 	return -EOPNOTSUPP;
+ }
+diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+index 5c08966..a78143a 100644
+--- a/arch/arm64/kernel/cpuidle.c
++++ b/arch/arm64/kernel/cpuidle.c
+@@ -15,7 +15,7 @@
+ #include <asm/cpuidle.h>
+ #include <asm/cpu_ops.h>
+ 
+-int cpu_init_idle(unsigned int cpu)
++int arm_cpuidle_init(unsigned int cpu)
+ {
+ 	int ret = -EOPNOTSUPP;
+ 	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
+diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
+index 0cea244..6ef291c7 100644
+--- a/drivers/cpuidle/cpuidle-arm64.c
++++ b/drivers/cpuidle/cpuidle-arm64.c
+@@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
+ 	 * idle states suspend back-end specific data
+ 	 */
+ 	for_each_possible_cpu(cpu) {
+-		ret = cpu_init_idle(cpu);
++		ret = arm_cpuidle_init(cpu);
+ 		if (ret) {
+ 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+ 			return ret;
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
