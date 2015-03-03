@@ -1,78 +1,108 @@
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Subject: Re: [PATCH v3 5/5] thermal: cpu_cooling: update the cpu device when
- cpufreq updates the policy cpu
-Date: Tue, 03 Mar 2015 10:59:43 +0000
-Message-ID: <54F5941F.6030402@arm.com>
-References: <1425316643-31991-1-git-send-email-javi.merino@arm.com>	<1425316643-31991-6-git-send-email-javi.merino@arm.com> <CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
+Date: Tue, 03 Mar 2015 12:12:51 +0100
+Message-ID: <54F59733.8020409@linaro.org>
+References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan> <54F03B51.1010708@free-electrons.com> <54F58D2F.2010907@linaro.org> <54F58E3B.9040302@free-electrons.com> <54F59285.5060306@libero.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <Javi.Merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:34928 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbbCCLM4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 06:12:56 -0500
+Received: by wivz2 with SMTP id z2so2453965wiv.0
+        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2015 03:12:55 -0800 (PST)
+In-Reply-To: <54F59285.5060306@libero.it>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fulvio <fbf@libero.it>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-Hi Viresh!
-
-On 03/03/15 04:03, Viresh Kumar wrote:
-> On Mon, Mar 2, 2015 at 10:47 PM, Javi Merino <javi.merino@arm.com> wrote:
->> From: Kapileshwar Singh <kapileshwar.singh@arm.com>
+On 03/03/2015 11:52 AM, Fulvio wrote:
+> Gregory CLEMENT wrote:
+>> Hi Rafael,
 >>
->> When cpufreq changes the policy cpu, we need to update our cached cpu
->> device accordingly.
 >>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
->> ---
->>  drivers/thermal/cpu_cooling.c | 3 +++
->>  1 file changed, 3 insertions(+)
 >>
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> index c4974144c787..e306d6bc3cf1 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -269,6 +269,9 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
->>                 mutex_unlock(&cooling_cpufreq_lock);
->>                 break;
+>> On 03/03/2015 11:30, Daniel Lezcano wrote:
+>>> On 02/27/2015 10:39 AM, Gregory CLEMENT wrote:
+>>>> Hi Rafael,
+>>>>
+>>>> On 26/02/2015 22:55, Rafael J. Wysocki wrote:
+>>>>> On Thursday, February 26, 2015 06:20:48 PM Gregory CLEMENT wrote:
+>>>>>> As stated in kernel/cpu_pm.c, "Platform is responsible for ensur=
+ing
+>>>>>> that cpu_pm_enter is not called twice on the same CPU before
+>>>>>> cpu_pm_exit is called.". In the current code in case of failure =
+when
+>>>>>> calling mvebu_v7_cpu_suspend, the function cpu_pm_exit() is neve=
+r
+>>>>>> called whereas cpu_pm_enter() was called just before.
+>>>>>>
+>>>>>> This patch moves the cpu_pm_exit() in order to balance the
+>>>>>> cpu_pm_enter() calls.
+>>>>>>
+>>>>>> Reported-by: Fulvio Benini <fbf@libero.it>
+>>>>>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.c=
+om>
+>>>>> Should that go to "stable" too?  Which "stable" series it should =
+go
+>>>>> to if so?
+>>>> Yes as it fixes a potential issue, you're right it should go
+>>>> to "stable". The bug was here since the introduction of the driver
+>>>> in 3.16.
+>>> Hi Gregory,
+>>>
+>>> actually the 'stable' rules state clearly:
+>>>
+>>> "- It must fix a real bug that bothers people (not a, "This could b=
+e
+>>> a problem..." type thing)."
+>>>
+>>> You say "it fixes a potential issue", so no bug has been raise yet,
+>>> right ?
 >>
->> +       case CPUFREQ_UPDATE_POLICY_CPU:
->> +               update_cpu_device(policy->cpu);
->> +               break;
->>         case CPUFREQ_CREATE_POLICY:
->>                 update_cpu_device(policy->cpu);
->>                 break;
-> 
-> First of all, I wasn't able to find 3/5 on LKML and I looked at 3/7
-> from an earlier
-> version to look at how update_cpu_device() looks like.
-> 
-> What I couldn't understand is why do you need to update things if policy->cpu
-> is changing ?
-> 
-We store the device pointer of the lead CPU (policy CPU) in a cpufreq domain as a part of the 
-cpufreq_cooling_device data structure. There is one cpufreq_cooling_device per 
-cpufreq domain. 
+>> Indeed nobody claimed yet having a bug related to this issue.
+>>
+>> Gregory
+>>
+> I reported the issue, but i cannot say if it's a real bug.
+> I had random kernel panics with a Netgear ReadyNAS RN102 (armada 370 =
+cpu):
+> http://www.readynas.com/forum/viewtopic.php?f=3D20&t=3D78697&sid=3D14=
+747617286d55ac27296cdee7a3f420&start=3D210#p452214
+>
+>
+> All i can say is that the system use the "armadaxp_idle" driver and
+> works fine when running "stress --cpu 8" in background.
 
-We need the device to find out the current OPP for the cpufreq_cooling_device for our static power calculation.
+Hi Fulvio,
 
-        opp = opp_find_freq_exact(cpu_dev, freq_hz, true);
-        voltage = dev_pm_opp_get_voltage(opp);
+so IIUC, you suggest the stress test prevent the system to use cpuidle=20
+because of the busy cycles, right ?
+
+Is it possible to have the kernel panic stack ?
+
+Are you able to reproduce the kernel panic ? and test a new kernel ?
+
+Thanks
+
+   -- Daniel
+
+> I asked Netgear to provide a firmware without the idle driver to conf=
+irm
+> if it's the cause of the problem, but they did not answered.
+> Bye,
+> Fulvio
 
 
-The problem we are trying to solve here is:
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-When this lead CPU gets hotplugged out, the device pointer becomes stale and the policy 
-cpu for the cpufreq domain changes. We then store the new policy CPU's device pointer for the 
-in cpufreq_cooling_device on the reception of a notification from cpufreq. Being open to your 
-suggestions for any other possible ways to solve the problem..
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Regards, 
-KP
-
-
-> I am expecting a detailed answer here according to your design, and we may
-> be able to work out without such updates. Lets see..
-> 
