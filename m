@@ -1,108 +1,52 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: cleanup: rename gpd -> genpd in debugfs interface
-Date: Tue, 3 Mar 2015 14:24:11 +0100
-Message-ID: <CAPDyKFq1x2oSctwOQNw4_RyS5b_vWRJcFaa8b277ptKjpKQm3Q@mail.gmail.com>
-References: <1425324268-16090-1-git-send-email-khilman@kernel.org>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq-dt: support cluster level clock
+Date: Tue, 3 Mar 2015 22:03:31 +0800
+Message-ID: <20150303140331.GA11325@leoy-linaro>
+References: <1425387817-11382-1-git-send-email-leo.yan@linaro.org>
+ <1425387817-11382-2-git-send-email-leo.yan@linaro.org>
+ <CAKohpoksXwMRWYzSBmbV1nN5_LvUiB1Y2wfgOcCJPx+oipaXZw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425324268-16090-1-git-send-email-khilman@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Maciej Matraszek <m.matraszek@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:35909 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754262AbbCCODj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 09:03:39 -0500
+Received: by pdbnh10 with SMTP id nh10so25045654pdb.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2015 06:03:38 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAKohpoksXwMRWYzSBmbV1nN5_LvUiB1Y2wfgOcCJPx+oipaXZw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 2 March 2015 at 20:24, Kevin Hilman <khilman@kernel.org> wrote:
-> From: Kevin Hilman <khilman@linaro.org>
->
-> To keep consisitency with the rest of the file, use 'genpd' as the
-> name of the 'struct generic_pm_domain' pointer instead of 'gpd'.
->
-> This is just a rename, no functional changes.
->
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+On Tue, Mar 03, 2015 at 06:40:23PM +0530, Viresh Kumar wrote:
+> On 3 March 2015 at 18:33, Leo Yan <leo.yan@linaro.org> wrote:
+> > In the previous code, cpufreq-dt driver support single clock shared by
+> > all CPUs or every CPU has dedicated clock; but it cannot support cluster
+> > level clock domain, which is very common implementation for ARM SoCs.
+> >
+> > So this patch add the support for cluster level clock; which use the
+> > platform parameter "clk_domain_boundary" to indicate whether the clock
+> > domain is bound to system level, cluster level or CPU level.
+> >
+> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> 
+> No. We aren't going to do it this way. You just test your current SoC where
+> all CPUs share clock line. The other SoC that might come later, where
+> clocks are per cluster, can be handled later.
+> 
+> So, for now you don't need any changes in the driver I believe.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Correct, current SoC shares one clock line.
 
-> ---
->  drivers/base/power/domain.c | 24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index ba4abbe4693c..45937f88e77c 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2242,7 +2242,7 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
->  }
->
->  static int pm_genpd_summary_one(struct seq_file *s,
-> -               struct generic_pm_domain *gpd)
-> +                               struct generic_pm_domain *genpd)
->  {
->         static const char * const status_lookup[] = {
->                 [GPD_STATE_ACTIVE] = "on",
-> @@ -2256,26 +2256,26 @@ static int pm_genpd_summary_one(struct seq_file *s,
->         struct gpd_link *link;
->         int ret;
->
-> -       ret = mutex_lock_interruptible(&gpd->lock);
-> +       ret = mutex_lock_interruptible(&genpd->lock);
->         if (ret)
->                 return -ERESTARTSYS;
->
-> -       if (WARN_ON(gpd->status >= ARRAY_SIZE(status_lookup)))
-> +       if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
->                 goto exit;
-> -       seq_printf(s, "%-30s  %-15s  ", gpd->name, status_lookup[gpd->status]);
-> +       seq_printf(s, "%-30s  %-15s  ", genpd->name, status_lookup[genpd->status]);
->
->         /*
->          * Modifications on the list require holding locks on both
->          * master and slave, so we are safe.
-> -        * Also gpd->name is immutable.
-> +        * Also genpd->name is immutable.
->          */
-> -       list_for_each_entry(link, &gpd->master_links, master_node) {
-> +       list_for_each_entry(link, &genpd->master_links, master_node) {
->                 seq_printf(s, "%s", link->slave->name);
-> -               if (!list_is_last(&link->master_node, &gpd->master_links))
-> +               if (!list_is_last(&link->master_node, &genpd->master_links))
->                         seq_puts(s, ", ");
->         }
->
-> -       list_for_each_entry(pm_data, &gpd->dev_list, list_node) {
-> +       list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
->                 kobj_path = kobject_get_path(&pm_data->dev->kobj, GFP_KERNEL);
->                 if (kobj_path == NULL)
->                         continue;
-> @@ -2287,14 +2287,14 @@ static int pm_genpd_summary_one(struct seq_file *s,
->
->         seq_puts(s, "\n");
->  exit:
-> -       mutex_unlock(&gpd->lock);
-> +       mutex_unlock(&genpd->lock);
->
->         return 0;
->  }
->
->  static int pm_genpd_summary_show(struct seq_file *s, void *data)
->  {
-> -       struct generic_pm_domain *gpd;
-> +       struct generic_pm_domain *genpd;
->         int ret = 0;
->
->         seq_puts(s, "    domain                      status         slaves\n");
-> @@ -2305,8 +2305,8 @@ static int pm_genpd_summary_show(struct seq_file *s, void *data)
->         if (ret)
->                 return -ERESTARTSYS;
->
-> -       list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> -               ret = pm_genpd_summary_one(s, gpd);
-> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-> +               ret = pm_genpd_summary_one(s, genpd);
->                 if (ret)
->                         break;
->         }
-> --
-> 2.1.3
->
+I'm just thinking to finish things in one time. From my previous
+experience, clocks per cluster are common cases for ARM's
+multi-clusters, so i think it's reasonable to add related support.
+
+Regarding of testing this patch, i created two virtual clocks for
+every cluster and passed the test. Do u think this is acceptable?
+
+Thanks,
+Leo Yan
