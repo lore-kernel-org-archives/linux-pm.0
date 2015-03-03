@@ -1,67 +1,57 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH v4 11/20] power_supply: Change ownership from driver to
- core
-Date: Tue, 3 Mar 2015 08:44:01 -0800
-Message-ID: <20150303164401.GC83894@vmdeb7>
-References: <1424692061-30624-1-git-send-email-k.kozlowski@samsung.com>
- <1424692061-30624-12-git-send-email-k.kozlowski@samsung.com>
- <20150226004522.GB885@earth>
- <20150226061438.GB7331@fury.dvhart.com>
- <1424950097.19456.4.camel@AMDC1943>
- <1424950273.19456.7.camel@AMDC1943>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V2] (gpio-fan): Add thermal control hooks
+Date: Tue, 3 Mar 2015 11:09:28 -0600
+Message-ID: <54F5EAC8.6040909@ti.com>
+References: <1420740303-12529-1-git-send-email-nm@ti.com>	<54AF5DA8.6080408@roeck-us.net>	<20150224192933.GJ3448@developer.amazonguestwifi.org>	<20150224195457.GA16245@roeck-us.net> <CAGo_u6rwTARKbvQGcrFkhoUFsV4K7tadFXsG_vFpqXN-dO_6jA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1424950273.19456.7.camel@AMDC1943>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, platform-driver-x86@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:58442 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756509AbbCCRKm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Mar 2015 12:10:42 -0500
+In-Reply-To: <CAGo_u6rwTARKbvQGcrFkhoUFsV4K7tadFXsG_vFpqXN-dO_6jA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org, lkml <linux-kernel@vger.kernel.org>, dt list <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Feb 26, 2015 at 12:31:13PM +0100, Krzysztof Kozlowski wrote:
-> On czw, 2015-02-26 at 12:28 +0100, Krzysztof Kozlowski wrote:
-> > On =C5=9Bro, 2015-02-25 at 22:14 -0800, Darren Hart wrote:
-> > > On Thu, Feb 26, 2015 at 01:45:22AM +0100, Sebastian Reichel wrote=
-:
-> >=20
-> > (...)
-> >=20
-> > > > I would like to merge this via the power supply subsystem. Some=
- of
-> > > > the files being patched are not under my maintainence, though. =
-It
-> > > > would be nice if I get an Acked-By from their maintainers.
-> > > >=20
-> > > > As far as I can see this patch is currently missing feedback fr=
-om:
-> > > >=20
-> > > > arch/x86/platform/olpc: x86 Maintainers
-> > > > drivers/acpi: Rafael J. Wysocki, Len Brown
-> > > > drivers/hid: Jiri Kosina
-> > > > drivers/platform/x86: Darren Hart
-> > >=20
-> > > For compal-laptop.c:
-> > >=20
-> > > Acked-by: Darren Hart <dvhart@linux.intel.com>
->=20
-> (previous mail sent by mistake)
->=20
-> Hi Darren,
->=20
-> Could you also look at my other fixes sent few days ago:
-> https://lkml.org/lkml/2015/2/20/158
-> compal-laptop: Check return value of power_supply_register
->=20
-> It touches the same line so the patchset power-supply-rework depends =
-on
-> it to avoid conflicts. If the fix looks OK, maybe it could go through
-> Sebastian's tree with your ack?
+On 02/24/2015 02:06 PM, Nishanth Menon wrote:
+> On Tue, Feb 24, 2015 at 1:55 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+>> On Tue, Feb 24, 2015 at 03:29:35PM -0400, Eduardo Valentin wrote:
+>>> Guenter,
+>>>
+>>> On Thu, Jan 08, 2015 at 08:48:40PM -0800, Guenter Roeck wrote:
+>>>> On 01/08/2015 10:05 AM, Nishanth Menon wrote:
+>>>>> Allow gpio-fan to be used as thermal cooling device for platforms that
+>>>>> use GPIO maps to control fans.
+>>>>>
+>>>>> As part of this change, we make the shutdown and remove logic the same
+>>>>> as well.
+>>>>>
+>>>>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>>>>> ---
+>>>>
+>>>> Applied to -next.
+>>>
+>>> What is the target kernel version for this change? It didn't make
+>>> 4.0-rc1
+>>>
+>> If I recall correctly, I had to pull it because the thermal framework
+>> does not provide hooks if disabled. Weird, I am sure I sent an e-mail
+>> about this, but I don't find it right now.
+>>
+>> It can't make it in before the hooks are in place, or we'll need
+>> another version with ifdefs around the thermal registration code.
+> 
+> I had posted the required hooks.
+> https://patchwork.kernel.org/patch/5828261/ -> I think Eduardo picked
+> this one up.. So once it hits mainline, we should ideally be clear.
+> 
+merged as 12ca7188468ee29c4e717f73db4bf43c90954fc7 upstream. Can we
+pick up this patch now?
 
-Done, and apologies for the delay. Going through Sebastien is preferred=
-, thanks.
-
---=20
-Darren Hart
-Intel Open Source Technology Center
+-- 
+Regards,
+Nishanth Menon
