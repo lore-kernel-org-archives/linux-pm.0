@@ -1,52 +1,64 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq-dt: support cluster level clock
-Date: Tue, 3 Mar 2015 22:03:31 +0800
-Message-ID: <20150303140331.GA11325@leoy-linaro>
-References: <1425387817-11382-1-git-send-email-leo.yan@linaro.org>
- <1425387817-11382-2-git-send-email-leo.yan@linaro.org>
- <CAKohpoksXwMRWYzSBmbV1nN5_LvUiB1Y2wfgOcCJPx+oipaXZw@mail.gmail.com>
+From: Fulvio <fbf@libero.it>
+Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
+Date: Tue, 03 Mar 2015 15:58:21 +0100
+Message-ID: <54F5CC0D.6060509@libero.it>
+References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <4892716.Bf612zPN6E@vostro.rjw.lan> <54F03B51.1010708@free-electrons.com> <54F58D2F.2010907@linaro.org> <54F58E3B.9040302@free-electrons.com> <54F59285.5060306@libero.it> <54F5AE5C.6060006@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:35909 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754262AbbCCODj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 09:03:39 -0500
-Received: by pdbnh10 with SMTP id nh10so25045654pdb.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2015 06:03:38 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAKohpoksXwMRWYzSBmbV1nN5_LvUiB1Y2wfgOcCJPx+oipaXZw@mail.gmail.com>
+Received: from smtp-18.italiaonline.it ([212.48.25.146]:34159 "EHLO
+	smtp-18.italiaonline.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753829AbbCCO63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 09:58:29 -0500
+In-Reply-To: <54F5AE5C.6060006@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On Tue, Mar 03, 2015 at 06:40:23PM +0530, Viresh Kumar wrote:
-> On 3 March 2015 at 18:33, Leo Yan <leo.yan@linaro.org> wrote:
-> > In the previous code, cpufreq-dt driver support single clock shared by
-> > all CPUs or every CPU has dedicated clock; but it cannot support cluster
-> > level clock domain, which is very common implementation for ARM SoCs.
-> >
-> > So this patch add the support for cluster level clock; which use the
-> > platform parameter "clk_domain_boundary" to indicate whether the clock
-> > domain is bound to system level, cluster level or CPU level.
-> >
-> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> 
-> No. We aren't going to do it this way. You just test your current SoC where
-> all CPUs share clock line. The other SoC that might come later, where
-> clocks are per cluster, can be handled later.
-> 
-> So, for now you don't need any changes in the driver I believe.
 
-Correct, current SoC shares one clock line.
+> I didn't know you experimented random kernel panics and that you thought
+> it was related to the CPU Idle driver.
+>
+>   
+>> All i can say is that the system use the "armadaxp_idle" driver and 
+>> works fine when running "stress --cpu 8" in background.
+>> I asked Netgear to provide a firmware without the idle driver to confirm 
+>> if it's the cause of the problem, but they did not answered.
+>>     
+>
+> I think that if you disable all the state using by doing an
+>
+> echo 1 > /sys/devices/system/cpu/cpu0/cpuidle/stateNUM/disable
+>
+> where NUM is the nuymbert of the state. Then it should disable the
+> cpuidle on the fly.
+>   
+Thanks, i'll try that as soon as possible (i gave back the unit to my 
+client) and report back.
 
-I'm just thinking to finish things in one time. From my previous
-experience, clocks per cluster are common cases for ARM's
-multi-clusters, so i think it's reasonable to add related support.
+However, the description of the cpu_pm_enter function state:
+"Must be called on the affected CPU with interrupts disabled.  Platform 
+is responsible for ensuring that cpu_pm_enter is not called twice on the 
+same CPU before cpu_pm_exit is called. Notified drivers can include VFP  
+co-processor, interrupt controller and its PM extensions, local CPU  
+timers context save/restore which shouldn't be interrupted. Hence it  
+must be called with interrupts disabled."
 
-Regarding of testing this patch, i created two virtual clocks for
-every cluster and passed the test. Do u think this is acceptable?
+and the point is: it that an invariant? Do current code and future code 
+safely assume that cpu_pm_enter is not called twice?
+For example if cpu_pm_enter do "context save" and cpu_pm_exit do 
+"context restore", calling twice cpu_pm_enter will overwrite the 
+previous saved context: is that safe in all circumstances?
 
-Thanks,
-Leo Yan
+I assume the rule " It must fix a real bug that bothers people (not a, 
+"This could be a problem..." type thing)." is to avoid committing 
+useless changes that may introduce new bugs, but i do not think that 
+apply to this case: a bug report from an unknown user (me) should change 
+nothing.
+
+Bye,
+Fulvio
+
+
