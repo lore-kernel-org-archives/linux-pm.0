@@ -1,65 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 5/5] thermal: cpu_cooling: update the cpu device when
- cpufreq updates the policy cpu
-Date: Tue, 3 Mar 2015 18:37:21 +0530
-Message-ID: <CAKohponB3cNXT8p=SqrfpGEPjLpeE=tnzUVOiabV8hEfBMb8rQ@mail.gmail.com>
-References: <1425316643-31991-1-git-send-email-javi.merino@arm.com>
-	<1425316643-31991-6-git-send-email-javi.merino@arm.com>
-	<CAOh2x=m9c-gOYcesgh+4oc9NucFdD1y0Mcit5gPwLxGFt__Lng@mail.gmail.com>
-	<54F5941F.6030402@arm.com>
-	<CAKohpon3sn_4aX7g+=LFdY-AgYrWdFCWtyethJtVMEK=Dw9Xbw@mail.gmail.com>
-	<54F59DEF.3020700@arm.com>
+Subject: Re: [PATCH 1/2] cpufreq-dt: support cluster level clock
+Date: Tue, 3 Mar 2015 18:40:23 +0530
+Message-ID: <CAKohpoksXwMRWYzSBmbV1nN5_LvUiB1Y2wfgOcCJPx+oipaXZw@mail.gmail.com>
+References: <1425387817-11382-1-git-send-email-leo.yan@linaro.org>
+	<1425387817-11382-2-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f173.google.com ([209.85.223.173]:34980 "EHLO
-	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbbCCNHW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2015 08:07:22 -0500
-Received: by iecrl12 with SMTP id rl12so57550708iec.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2015 05:07:21 -0800 (PST)
-In-Reply-To: <54F59DEF.3020700@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1425387817-11382-2-git-send-email-leo.yan@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Cc: Javi Merino <Javi.Merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>
 
-On 3 March 2015 at 17:11, Kapileshwar Singh <kapileshwar.singh@arm.com> wrote:
-> Yes I indeed tested the case where we cache the device pointer of the CPU for which the OPP's are populated.
-> When this CPU is hotplugged out, it invalidates the device pointer itself. Here are the error we get in dmesg:
-
-What do you mean by 'invalidates the device pointer' ? that cpu_dev is NULL ?
-
-> <3>[67203.216774] opp_get_voltage: Invalid parameters
-> <3>[67203.326774] opp_get_voltage: Invalid parameters
-> <3>[67203.326774] opp_get_voltage: Invalid parameters
-
-Have you handwritten them ? Why don't they precede with dev_pm_* ??
-
+On 3 March 2015 at 18:33, Leo Yan <leo.yan@linaro.org> wrote:
+> In the previous code, cpufreq-dt driver support single clock shared by
+> all CPUs or every CPU has dedicated clock; but it cannot support cluster
+> level clock domain, which is very common implementation for ARM SoCs.
 >
-> Which happens because:
+> So this patch add the support for cluster level clock; which use the
+> platform parameter "clk_domain_boundary" to indicate whether the clock
+> domain is bound to system level, cluster level or CPU level.
 >
-> unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
-> {
-> ..
->         tmp_opp = rcu_dereference(opp);
->         if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->available)
->                 pr_err("%s: Invalid parameters\n", __func__);
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
 
-This %s should print routine name ..
+No. We aren't going to do it this way. You just test your current SoC where
+all CPUs share clock line. The other SoC that might come later, where
+clocks are per cluster, can be handled later.
 
->         else
-> ..
->
-> Which happens when
->
->         opp = dev_pm_opp_find_freq_exact(cpufreq_device->cpu_dev, freq_hz,
->                                          true);
->
-> returns a an erroneous or NULL OPP or the opp is unavailable (in the above condition)
+So, for now you don't need any changes in the driver I believe.
 
-Please goto the depth of this thing, as I don't think it should happen.
+Please let me know if my understanding is wrong somewhere.
 
-Over that I was asking you if you have tested the solution Javi gave,
-because OPPs
-wouldn't have been initialized for other CPUs once policy->cpu goes down.
+--
+viresh
