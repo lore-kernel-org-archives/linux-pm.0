@@ -1,8 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v6 4/6] hwmon: pwm-fan: Extract __set_pwm() function to
- only modify PWM duty cycle
-Date: Wed, 04 Mar 2015 13:03:42 +0100
-Message-ID: <1425470624-25793-5-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH RESEND v6 5/6] hwmon: pwm-fan: Read PWM FAN configuration from
+ device tree
+Date: Wed, 04 Mar 2015 13:03:43 +0100
+Message-ID: <1425470624-25793-6-git-send-email-l.majewski@samsung.com>
 References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
  <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -12,87 +12,114 @@ To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>,
 Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-It was necessary to decouple code handling writing to sysfs from the one
-responsible for setting PWM of the fan.
-Due to that, new __set_pwm() method was extracted, which is responsible for
-only setting new PWM duty cycle.
+This patch provides code for reading PWM FAN configuration data via
+device tree. The pwm-fan can work with full speed when configuration
+is not provided. However, errors are propagated when wrong DT bindings
+are found.
+Additionally the struct pwm_fan_ctx has been extended.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
 Changes for v2:
-- None
+- Rename pwm_fan_max_states to pwm_fan_cooling_levels
+- Moving pwm_fan_of_get_cooling_data() call after setting end enabling PWM FAN
+- pwm_fan_of_get_cooling_data() now can fail - preserving old behaviour
+- Remove unnecessary dev_err() call
 Changes for v3:
-- The commit headline has been reedited.
+- Patch's headline has been reedited
+- pwm_fan_of_get_cooling_data() return code is now being checked.
+- of_property_count_elems_of_size() is now used instead of_find_property()
+- More verbose patch description added
 Changes for v4:
-- Protect "if (ctx->pwm_value == pwm)" with ctx lock
-- Initialize ret with zero
+- dev_err() has been removed from pwm_fan_of_get_cooling_data()
+- Returning -EINVAL when "cooling-levels" are defined in DT, but doesn't
+  have the value
 Changes for v5:
-- None
+- Use of of_find_property() to assess if "cooling-levels" was defined in
+  device tree
+- Replace of_property_count_elems_of_size() with of_property_count_u32_elems()
+- Remove ambiguity with returning error code from of_property_count_u32_elems()
+- Return -EINVAL when "cooling-levels" has zero elements
 Changes for v6:
 - None
 ---
- drivers/hwmon/pwm-fan.c | 33 +++++++++++++++++++++------------
- 1 file changed, 21 insertions(+), 12 deletions(-)
+ drivers/hwmon/pwm-fan.c | 50 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 49 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-index 1991d903..bd42d39 100644
+index bd42d39..e6ed353 100644
 --- a/drivers/hwmon/pwm-fan.c
 +++ b/drivers/hwmon/pwm-fan.c
-@@ -33,20 +33,14 @@ struct pwm_fan_ctx {
- 	unsigned char pwm_value;
+@@ -30,7 +30,10 @@
+ struct pwm_fan_ctx {
+ 	struct mutex lock;
+ 	struct pwm_device *pwm;
+-	unsigned char pwm_value;
++	unsigned int pwm_value;
++	unsigned int pwm_fan_state;
++	unsigned int pwm_fan_max_state;
++	unsigned int *pwm_fan_cooling_levels;
  };
  
--static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
--		       const char *buf, size_t count)
-+static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
- {
--	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
--	unsigned long pwm, duty;
--	ssize_t ret;
--
--	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
--		return -EINVAL;
-+	unsigned long duty;
-+	int ret = 0;
+ static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+@@ -100,6 +103,46 @@ static struct attribute *pwm_fan_attrs[] = {
  
- 	mutex_lock(&ctx->lock);
--
- 	if (ctx->pwm_value == pwm)
--		goto exit_set_pwm_no_change;
-+		goto exit_set_pwm_err;
+ ATTRIBUTE_GROUPS(pwm_fan);
  
- 	if (pwm == 0) {
- 		pwm_disable(ctx->pwm);
-@@ -66,13 +60,28 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
- 
- exit_set_pwm:
- 	ctx->pwm_value = pwm;
--exit_set_pwm_no_change:
--	ret = count;
- exit_set_pwm_err:
- 	mutex_unlock(&ctx->lock);
- 	return ret;
- }
- 
-+static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
-+		       const char *buf, size_t count)
++int pwm_fan_of_get_cooling_data(struct device *dev, struct pwm_fan_ctx *ctx)
 +{
-+	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
-+	unsigned long pwm;
-+	int ret;
++	struct device_node *np = dev->of_node;
++	int num, i, ret;
 +
-+	if (kstrtoul(buf, 10, &pwm) || pwm > MAX_PWM)
-+		return -EINVAL;
++	if (!of_find_property(np, "cooling-levels", NULL))
++		return 0;
 +
-+	ret = __set_pwm(ctx, pwm);
++	ret = of_property_count_u32_elems(np, "cooling-levels");
++	if (ret <= 0) {
++		dev_err(dev, "Wrong data!\n");
++		return ret ? : -EINVAL;
++	}
++
++	num = ret;
++	ctx->pwm_fan_cooling_levels = devm_kzalloc(dev, num * sizeof(u32),
++						   GFP_KERNEL);
++	if (!ctx->pwm_fan_cooling_levels)
++		return -ENOMEM;
++
++	ret = of_property_read_u32_array(np, "cooling-levels",
++					 ctx->pwm_fan_cooling_levels, num);
++	if (ret) {
++		dev_err(dev, "Property 'cooling-levels' cannot be read!\n");
++		return ret;
++	}
++
++	for (i = 0; i < num; i++) {
++		if (ctx->pwm_fan_cooling_levels[i] > MAX_PWM) {
++			dev_err(dev, "PWM fan state[%d]:%d > %d\n", i,
++				ctx->pwm_fan_cooling_levels[i], MAX_PWM);
++			return -EINVAL;
++		}
++	}
++
++	ctx->pwm_fan_max_state = num - 1;
++
++	return 0;
++}
++
+ static int pwm_fan_probe(struct platform_device *pdev)
+ {
+ 	struct device *hwmon;
+@@ -145,6 +188,11 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 		pwm_disable(ctx->pwm);
+ 		return PTR_ERR(hwmon);
+ 	}
++
++	ret = pwm_fan_of_get_cooling_data(&pdev->dev, ctx);
 +	if (ret)
 +		return ret;
 +
-+	return count;
-+}
-+
- static ssize_t show_pwm(struct device *dev,
- 			struct device_attribute *attr, char *buf)
- {
+ 	return 0;
+ }
+ 
 -- 
 2.0.0.rc2
