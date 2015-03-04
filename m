@@ -1,130 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/8] pm: domains: sync runtime PM status with PM domains
-Date: Wed, 4 Mar 2015 20:57:40 +0100
-Message-ID: <CAPDyKFo4oJz4QrR5LrPHq9b+d1BsZDqR=uPTtxLLS3HCawqBbA@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1502181007320.1245-100000@iolanthe.rowland.org>
-	<1790876.GQ4uCu6bPH@vostro.rjw.lan>
-	<20150218172651.GV8656@n2100.arm.linux.org.uk>
-	<20650078.BNFxZSQ3vj@vostro.rjw.lan>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: [PATCH] genirq: describe IRQF_COND_SUSPEND
+Date: Wed, 4 Mar 2015 20:00:40 +0000
+Message-ID: <20150304200040.GA12126@leverpostej>
+References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com>
+ <8151717.nkhnGBri9h@vostro.rjw.lan>
+ <20150226191724.0ae4ca4e@bbrezillon>
+ <6864616.1aRDSmSsvx@vostro.rjw.lan>
+ <20150304194246.GF22156@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f178.google.com ([209.85.216.178]:39596 "EHLO
-	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932605AbbCDT5l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 14:57:41 -0500
-Received: by qcvs11 with SMTP id s11so5253114qcv.6
-        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2015 11:57:40 -0800 (PST)
-In-Reply-To: <20650078.BNFxZSQ3vj@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150304194246.GF22156@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-On 18 February 2015 at 19:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, February 18, 2015 05:26:51 PM Russell King - ARM Linux wrote:
->> On Wed, Feb 18, 2015 at 05:52:25PM +0100, Rafael J. Wysocki wrote:
->> > Those drivers might have been developed on systems without direct control of
->> > power domains where the conditions for the driver at the ->probe() time were
->> > always the same.  With power domains, though, they may change depending on
->> > what's going on with the other devices in the domain, for example.
->> >
->> > So the question is how we can address that in the cleanest way possible.
->>
->> Okay, going back to what was said earlier, we have three possibilities
->> for drivers:
->>
->> 1) A driver which makes no use of runtime PM and no use of PM domains.
->> 2) A driver which makes no use of runtime PM but may have a PM domain
->>    attached.
->> 3) A driver which uses runtime PM, and assumes that the device was
->>    initially suspended.  It calls pm_enable_device() optionally with
->>    a preceding call to pm_runtime_set_suspended().
->> 4) A driver which uses runtime PM, and calls pm_runtime_set_active()
->>    followed by pm_enable_device().
->>
->> What we want to end up with in the ideal situation is that drivers which
->> fall into class:
->>
->> 1 - may see their devices in any state; it is up to them to deal with
->>     whatever state the device is initially in.
->> 2 - should see their devices in a powered up state as they have no way
->>     to inform that the device is active.
->> 3 - should see their devices in a suspended state.
->> 4 - should see their devices in a powered up state.
->>
->> The problem here is that we have no way to know this prior to the drivers
->> probe function being called.  Whatever we do at this point, it is not
->> going to satisfy the requirements of everyone.
->>
->> So, let's take what we're currently doing on DT, and make it the same
->> across the board.  In platform_drv_probe(), let's do this:
->>
->>       /* attach the domain */
->>         ret = dev_pm_domain_attach(_dev, true);
->>       if (ret == -EPROBE_DEFER)
->>               goto defer;
->>
->>       /* power up the domain - and hold it powered up */
->>       ret = dev_pm_domain_pre_probe(_dev);
->>       if (ret != -ENOSYS)
->>               goto error;
->>
->>       ret = drv->probe(dev);
->>
->>       /*
->>        * remove the "hold" on the domain by this device, and start
->>        * tracking its runtime PM status.
->>        */
->>       dev_pm_domain_post_probe(_dev);
->>
->>       if (ret)
->>               dev_pm_domain_detach(_dev, true);
->>
->> What this means is that while the probe function is running, we guarantee
->> that the PM domain will always be powered up.  We also guarantee that
->> after the probe function has returned, we will then start tracking the
->> runtime PM state, and if the device driver leaves runtime PM in the
->> "suspended" state, PM domains will get to hear about it at that point,
->> and can transition the PM domain back to "off" mode.
->>
->> Both these transitions only cause the PM domain to be affected; no
->> runtime PM callbacks are issued for either of these two changes.  (We
->> already have that for the initial state right now where attaching a
->> device to the PM domain causes the PM domain to be powered up.)
->>
->> This is merely an extension of the current scheme.  Think of
->> dev_pm_domain_post_probe() as a method of synchronising the state of
->> PM domains with the state of runtime PM across all attached devices.
->
-> I like this.
+With certain restrictions it is possible for a wakeup device to share
+and IRQ with an IRQF_NO_SUSPEND user, and the warnings introduced by
+commit cab303be91dc47942bc25de33dc1140123540800 are spurious. The new
+IRQF_COND_SUSPEND flag allows drivers to tell the core when these
+restrictions are met, allowing spurious warnings to be silenced.
 
-Me too!
+This patch documents how IRQF_COND_SUSPEND is expected to be used,
+updating some of the text now made invalid by its addition.
 
->
-> And I would add two new "pre_probe" and "post_probe" (what about "init"
-> and "remove"?) to struct dev_pm_domain for that.
+Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/power/suspend-and-interrupts.txt | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Actually what Russell propose, is almost exactly what I proposed in
-the following below patchset way back. At that point we decided to
-reject that approach.
-The only difference is the naming of dev_pm_domain_pre|post_probe(). I
-decided to name them dev_pm_domain_get|put(). :-)
+As promised previously, take IRQF_COND_SUSPEND into account in the
+documentation.
 
-http://marc.info/?l=linux-pm&m=141320895122707&w=2
+Rafael, does this look OK to you?
 
->
-> The "pre_probe" ("init") thing would be useful for solving one more problem
-> related to PM domains I have elsewhere.  In that case I need to defer probing
-> one of the device in the domain until one of the other devices is registered.
->
-> Rafael
->
+Thanks,
+Mark.
 
-So I wonder if I should maybe refresh that patchset? Or maybe Russell
-would like to pick them up?
-
-No matter what, I happy to help!
-
-Kind regards
-Uffe
+diff --git a/Documentation/power/suspend-and-interrupts.txt b/Documentation/power/suspend-and-interrupts.txt
+index 50493c9..8afb29a 100644
+--- a/Documentation/power/suspend-and-interrupts.txt
++++ b/Documentation/power/suspend-and-interrupts.txt
+@@ -112,8 +112,9 @@ any special interrupt handling logic for it to work.
+ IRQF_NO_SUSPEND and enable_irq_wake()
+ -------------------------------------
+ 
+-There are no valid reasons to use both enable_irq_wake() and the IRQF_NO_SUSPEND
+-flag on the same IRQ.
++There are very few valid reasons to use both enable_irq_wake() and the
++IRQF_NO_SUSPEND flag on the same IRQ, and it is never valid to use both for the
++same device.
+ 
+ First of all, if the IRQ is not shared, the rules for handling IRQF_NO_SUSPEND
+ interrupts (interrupt handlers are invoked after suspend_device_irqs()) are
+@@ -122,4 +123,13 @@ handlers are not invoked after suspend_device_irqs()).
+ 
+ Second, both enable_irq_wake() and IRQF_NO_SUSPEND apply to entire IRQs and not
+ to individual interrupt handlers, so sharing an IRQ between a system wakeup
+-interrupt source and an IRQF_NO_SUSPEND interrupt source does not make sense.
++interrupt source and an IRQF_NO_SUSPEND interrupt source does not generally
++make sense.
++
++In rare cases an IRQ can be shared between a wakeup device driver and an
++IRQF_NO_SUSPEND user. In order for this to be safe, the wakeup device driver
++must be able to discern spurious IRQs from genuine wakeup events (signalling
++the latter to the core with pm_system_wakeup()), must use enable_irq_wake() to
++ensure that the IRQ will function as a wakeup source, and must request the IRQ
++with IRQF_COND_SUSPEND to tell the core that it meets these requirements. If
++these requirements are not met, it is not valid to use IRQF_COND_SUSPEND.
+-- 
+1.9.1
