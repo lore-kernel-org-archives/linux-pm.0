@@ -1,34 +1,67 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: intel_soc_dts_thermal binding issues
-Date: Wed, 4 Mar 2015 09:04:42 -0500
-Message-ID: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH v3 0/9] Atmel System Timer cleanups
+Date: Wed,  4 Mar 2015 15:21:28 +0100
+Message-ID: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:47152 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758330AbbCDOVp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 09:21:45 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-Hi All,
+This patch set cleans up the system timer driver.
 
-We've seen a number of reports where people see:
+The main goal is to get rid of the mach/ headers dependency. At the same time,
+it introduces proper probing and locking (using a regmap) for the watchdog
+driver.
 
-[   20.499427] intel_soc_dts_thermal: request_threaded_irq ret -22
-[   20.519160] intel_soc_dts_thermal: request_threaded_irq ret -22
-[   20.532660] intel_soc_dts_thermal: request_threaded_irq ret -22
+This is based on 4.0-rc1 and will have two merge conflicts with my cleanup #1 in
+mach-at91/at91rm9200.c
 
-in their boot logs.  They view this as a kernel bug and report is as
-such.  The above log came from an ASUS x200ma machine, which has a
-quad core Baytrail-M Pentium CPU (N3530).
+Changes in v3:
+ - stop using an mfd and get the syscon directly from the watchdog driver
+ - introduce a proper reset driver to handle reset
 
-I can't tell if the issue is because the driver is trying to bind to
-all 4 cores and only CPU0 works, or what other issue would cause this.
-I personally have a Celeron based NUC with a N2820 that gets the error
-above for both cores and the driver doesn't load at all.
+Changes in v2:
+ - cleaned up more includes in the watchdog driver
+ - stop using if OF when selecting CLKSRC_OF
+ - stop initializing .owner
 
-Is there something else the driver should be doing to bind to the
-various CPUs?  If there's nothing else it can key off of, can we drop
-the pr_err so it stops showing up in dmesg?
+Alexandre Belloni (9):
+  ARM: at91/dt: declare atmel,at91rm9200-st as a syscon
+  mfd: syscon: Add atmel system timer registers definition
+  watchdog: at91rm9200: use the system timer syscon
+  power: reset: Add AT91RM9200 reset driver
+  ARM: at91: at91rm9200: remove deprecated arm_pm_restart
+  ARM: at91: time: move the system timer driver to drivers/clocksource
+  clocksource: atmel-st: properly initialize driver
+  clocksource: atmel-st: use syscon/regmap
+  ARM: at91: remove useless include
 
-josh
+ .../devicetree/bindings/arm/atmel-at91.txt         |   2 +-
+ arch/arm/boot/dts/at91rm9200.dtsi                  |   2 +-
+ arch/arm/mach-at91/Makefile                        |   2 +-
+ arch/arm/mach-at91/at91rm9200.c                    |  19 ----
+ arch/arm/mach-at91/generic.h                       |   3 -
+ arch/arm/mach-at91/include/mach/at91_st.h          |  61 ------------
+ drivers/clocksource/Kconfig                        |   4 +
+ drivers/clocksource/Makefile                       |   1 +
+ .../clocksource/timer-atmel-st.c                   | 103 ++++++++-------------
+ drivers/power/reset/Kconfig                        |   7 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/at91rm9200-reset.c             |  70 ++++++++++++++
+ drivers/watchdog/Kconfig                           |   2 +-
+ drivers/watchdog/at91rm9200_wdt.c                  |  21 +++--
+ include/linux/mfd/syscon/atmel-st.h                |  47 ++++++++++
+ 15 files changed, 189 insertions(+), 156 deletions(-)
+ delete mode 100644 arch/arm/mach-at91/include/mach/at91_st.h
+ rename arch/arm/mach-at91/at91rm9200_time.c => drivers/clocksource/timer-atmel-st.c (77%)
+ create mode 100644 drivers/power/reset/at91rm9200-reset.c
+ create mode 100644 include/linux/mfd/syscon/atmel-st.h
+
+-- 
+2.1.0
+
