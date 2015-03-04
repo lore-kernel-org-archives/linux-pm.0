@@ -1,89 +1,35 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v3 2/9] mfd: syscon: Add atmel system timer registers
- definition
-Date: Wed,  4 Mar 2015 15:21:30 +0100
-Message-ID: <1425478897-27322-3-git-send-email-alexandre.belloni@free-electrons.com>
-References: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Domains: cleanup: rename gpd -> genpd in debugfs interface
+Date: Wed, 04 Mar 2015 15:49:51 +0100
+Message-ID: <2591586.pYKtbEshPf@vostro.rjw.lan>
+References: <1425324268-16090-1-git-send-email-khilman@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64517 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757064AbbCDO0Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 09:26:16 -0500
+In-Reply-To: <1425324268-16090-1-git-send-email-khilman@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: linux-pm@vger.kernel.org, Maciej Matraszek <m.matraszek@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
 
-AT91RM920 has a memory range reserved for timer and watchdog configuration.
-Expose those registers so that drivers can make use of the system timer syscon
-declared in at91 DTs.
+On Monday, March 02, 2015 11:24:28 AM Kevin Hilman wrote:
+> From: Kevin Hilman <khilman@linaro.org>
+> 
+> To keep consisitency with the rest of the file, use 'genpd' as the
+> name of the 'struct generic_pm_domain' pointer instead of 'gpd'.
+> 
+> This is just a rename, no functional changes.
+> 
+> Signed-off-by: Kevin Hilman <khilman@linaro.org>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- include/linux/mfd/syscon/atmel-st.h | 47 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
- create mode 100644 include/linux/mfd/syscon/atmel-st.h
+Applied, thanks!
 
-diff --git a/include/linux/mfd/syscon/atmel-st.h b/include/linux/mfd/syscon/atmel-st.h
-new file mode 100644
-index 000000000000..8e29a1028807
---- /dev/null
-+++ b/include/linux/mfd/syscon/atmel-st.h
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright (C) 2005 Ivan Kokshaysky
-+ * Copyright (C) SAN People
-+ *
-+ * System Timer (ST) - System peripherals registers.
-+ * Based on AT91RM9200 datasheet revision E.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef _LINUX_MFD_SYSCON_ATMEL_ST_H
-+#define _LINUX_MFD_SYSCON_ATMEL_ST_H
-+
-+#define	AT91_ST_CR	0x00	/* Control Register */
-+#define		AT91_ST_WDRST	(1 << 0)	/* Watchdog Timer Restart */
-+
-+#define	AT91_ST_PIMR	0x04	/* Period Interval Mode Register */
-+#define		AT91_ST_PIV	(0xffff <<  0)	/* Period Interval Value */
-+
-+#define	AT91_ST_WDMR	0x08	/* Watchdog Mode Register */
-+#define		AT91_ST_WDV	(0xffff <<  0)	/* Watchdog Counter Value */
-+#define		AT91_ST_RSTEN	(1 << 16)	/* Reset Enable */
-+#define		AT91_ST_EXTEN	(1 << 17)	/* External Signal Assertion Enable */
-+
-+#define	AT91_ST_RTMR	0x0c	/* Real-time Mode Register */
-+#define		AT91_ST_RTPRES	(0xffff <<  0)	/* Real-time Prescalar Value */
-+
-+#define	AT91_ST_SR	0x10	/* Status Register */
-+#define		AT91_ST_PITS	(1 << 0)	/* Period Interval Timer Status */
-+#define		AT91_ST_WDOVF	(1 << 1)	/* Watchdog Overflow */
-+#define		AT91_ST_RTTINC	(1 << 2)	/* Real-time Timer Increment */
-+#define		AT91_ST_ALMS	(1 << 3)	/* Alarm Status */
-+
-+#define	AT91_ST_IER	0x14	/* Interrupt Enable Register */
-+#define	AT91_ST_IDR	0x18	/* Interrupt Disable Register */
-+#define	AT91_ST_IMR	0x1c	/* Interrupt Mask Register */
-+
-+#define	AT91_ST_RTAR	0x20	/* Real-time Alarm Register */
-+#define		AT91_ST_ALMV	(0xfffff << 0)	/* Alarm Value */
-+
-+#define	AT91_ST_CRTR	0x24	/* Current Real-time Register */
-+#define		AT91_ST_CRTV	(0xfffff << 0)	/* Current Real-Time Value */
-+
-+#endif /* _LINUX_MFD_SYSCON_ATMEL_ST_H */
+
 -- 
-2.1.0
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
