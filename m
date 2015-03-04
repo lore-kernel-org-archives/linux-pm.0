@@ -1,117 +1,80 @@
 From: NeilBrown <neilb@suse.de>
-Subject: Re: [PATCH 2/2] twl4030_charger: find associated phy by more
- reliable means.
-Date: Wed, 4 Mar 2015 20:14:31 +1100
-Message-ID: <20150304201431.0fc6c108@notabene.brown>
-References: <20150224035809.32252.4180.stgit@notabene.brown>
-	<20150224040129.32252.59874.stgit@notabene.brown>
-	<20150225211351.GH13695@earth>
+Subject: Re: [PATCH 06/15] twl4030_charger: split uA calculation into a
+ function.
+Date: Wed, 4 Mar 2015 20:20:33 +1100
+Message-ID: <20150304202033.653292df@notabene.brown>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+	<20150224043351.4243.86053.stgit@notabene.brown>
+	<20150302210518.GM13270@amd>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- boundary="Sig_/gEm57q3prhNdkBCiy9+wi4e"; protocol="application/pgp-signature"
+ boundary="Sig_/.X.8r_4kaduJJ_QggtAFZ0I"; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150225211351.GH13695@earth>
+In-Reply-To: <20150302210518.GM13270@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Woodhouse <dwmw2@infradead.org>, Felipe Balbi <balbi@ti.com>, GTA04 owners <gta04-owner@goldelico.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---Sig_/gEm57q3prhNdkBCiy9+wi4e
+--Sig_/.X.8r_4kaduJJ_QggtAFZ0I
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 25 Feb 2015 22:13:51 +0100 Sebastian Reichel <sre@kernel.org> wrote:
+On Mon, 2 Mar 2015 22:05:18 +0100 Pavel Machek <pavel@ucw.cz> wrote:
 
-> Hi Neil,
->=20
-> On Tue, Feb 24, 2015 at 03:01:29PM +1100, NeilBrown wrote:
-> > twl4030_charger currently finds the associated phy
-> > using usb_get_phy() which will return the first USB2 phy.
-> > If your platform has multiple such phys (as mine does),
-> > this is not reliable (and reliably fails on the GTA04).
+> On Tue 2015-02-24 15:33:51, NeilBrown wrote:
+> > We will need this calculation in other places, so
+> > create functions to map between register value and uA value.
 > >=20
-> > Change to use devm_usb_get_phy_by_node(), having found the
-> > node by looking for an appropriately named sibling in
-> > device-tree.
-> >=20
-> > This makes usb-charging dependent on correct device-tree
-> > configuration.
+> > Signed-off-by: NeilBrown <neilb@suse.de>
 >=20
-> The patch looks ok to me, but you should update the DT documentation
-> in Documentation/devicetree/bindings/power/twl-charger.txt regarding
-> the sibling dependency.
->=20
-> Apart from that DT binding maintainers should be CC'd.
->=20
-> -- Sebastian
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
 Thanks.
-I've added the following.  I've also changed the code to use
-of_find_compatible_node() and find the USB phy based on 'compatible' rather
-than on the node name.
 
-I'll Cc DT maintainers when I resubmit.
+
+>=20
+> > +static int regval2ua(int regval, bool cgain)
+> > +{
+> > +	if (cgain)
+> > +		return (regval * 16618 - 8500 * 1000) / 5;
+> > +	else
+> > +		return (regval * 16618 - 8500 * 1000) / 10;
+> > +}
+>=20
+>    int res =3D (regval * 16618 - 8500 * 1000);
+>    if (cgain)
+>       return res / 5;
+>    return res / 10;
+>=20
+> ?
+> 									Pavel
+
+Maybe ... not sure it is really more readable.  I think I'll leave it as is.
 
 Thanks,
 NeilBrown
 
-diff --git a/Documentation/devicetree/bindings/power/twl-charger.txt b/Docu=
-mentation/devicetree/bindings/power/twl-charger.txt
-index d5c706216df5..3b4ea1b73b38 100644
---- a/Documentation/devicetree/bindings/power/twl-charger.txt
-+++ b/Documentation/devicetree/bindings/power/twl-charger.txt
-@@ -1,5 +1,15 @@
- TWL BCI (Battery Charger Interface)
-=20
-+The battery charger needs to interact with the USB phy in order
-+to know when charging is permissible, and when there is a connection
-+or disconnection.
-+
-+The choice of phy cannot be configured at a hardware level, so there
-+is no value in explicit configuration in device-tree.  Rather
-+if there is a sibling of the BCI node which is compatible with
-+"ti,twl4030-usb", then that is used to determine when and how
-+use USB power for charging.
-+
- Required properties:
- - compatible:
-   - "ti,twl4030-bci"
-diff --git a/Documentation/devicetree/bindings/usb/twlxxxx-usb.txt b/Docume=
-ntation/devicetree/bindings/usb/twlxxxx-usb.txt
-index 0aee0ad3f035..17327a296110 100644
---- a/Documentation/devicetree/bindings/usb/twlxxxx-usb.txt
-+++ b/Documentation/devicetree/bindings/usb/twlxxxx-usb.txt
-@@ -30,6 +30,9 @@ TWL4030 USB PHY AND COMPARATOR
-  - usb_mode : The mode used by the phy to connect to the controller. "1"
-    specifies "ULPI" mode and "2" specifies "CEA2011_3PIN" mode.
-=20
-+If a sibling node is compatible "ti,twl4030-bci", then it will find
-+this device and query it for USB power status.
-+
- twl4030-usb {
- 	compatible =3D "ti,twl4030-usb";
- 	interrupts =3D < 10 4 >;
-
---Sig_/gEm57q3prhNdkBCiy9+wi4e
+--Sig_/.X.8r_4kaduJJ_QggtAFZ0I
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIVAwUBVPbM9znsnt1WYoG5AQIx6BAAutL1z9YG+YulciZsil0zdHOEesu9PAsm
-/uQIsYTxLGKcJc5AjjJeAbkdVyJwO8cxOILJSQbAMYjmv2N3t6xM3UuRwAK8Xfsq
-x+qWa6Uy/Y2UBH5eeJppt+CH66BoyktG1CyLXsHJYMZUlHlLY0O9Y3WJuNtUkbt4
-t1z0IXgC+zyU8w+IWuCMLx7kpqdxZRcked/0LIgHSVLOBo9wqoKl4jUGoOcKQ4em
-gzfVlDxmwCpxr9TT6kep93DZQhiFGBlusFZzOCogAdFYiMU87ZyDOfgebAJvJMx1
-agl3R05SLMsAFFMaHDs+s7hnWXwpvOWQUmdogU+U9DNE+5CR74bn/F9G1/ZeUsjb
-k5mooTJbkQ78VL7jjPurj7GeoDfNuxYUj8QLyiy7iTCiei07HSbHP4FQFHYpq34b
-3IbyX/D6u/NkmjORQ9KojX7gPQjzuCSJPtvsXoLuib+JQomKatUtTPtz+FAsuvcj
-zVfwKdKzlA9qrmdz82n4/CjMo7qmOapX/zpZFKL4lKwDGgMFcpaQf+8HtQeWzozn
-nPpHairaIPAxggRBlRHLMO0r2jiMns2xZKzYUG/xZaYS4m/rSn4HPNxyvlMZoyIh
-dyXkyRphJbjtQpdH3w6qVgehLC7k/OOHqOMp1+sKJJ7ZkcKqfY0DHcXZEj1oO/q2
-G2+730xy0Ag=
-=N+fp
+iQIVAwUBVPbOYTnsnt1WYoG5AQKqZw/9HVdxzOzOovcpsmM5jxO51ge9Yi37Lric
+IYOGJYjG/2nV8gHtc/rl9KxAWizvBrhIiTDNPEmMuYSZX82Y1sDZVKLKkZJX5xbM
+FdpSw/GkPBYcy/unasMuMcLz/S2yTyxWktbDUYgdbpX/Dn+R/XJ6SUKKYlB32GV0
+sGf/trYN+SB/S1gjWhQyZGg9liLKyl1b9/rjuLrIYUSdCslbE4jimR2t0Nab+nhq
+rfUu0kq1RfVHR4tmmfPTehM5m/SV71xQYirs0L7KpUr7VzuAnlbocBQwwb6wvv47
+bGlXA87v+TbdgQiug0SvpTM9Z1jX5WVZslj9zT9iPIP0y24EoVZ2q3xWiRMwUnbt
+kqvkR8oynggNkRf3wjihbE6LZzI+QYN3trJhCokNNE+a04xpAjC+RNW8ZWTPJtT7
++knHIkJsSkKQAreIZ8seILMRKOO4Lf/Hn7yh8Ze/0IGuxjWbIs9cPkQFObmDFAlw
+fIzpXJxcxC/JqP9Yzp2W80dJ1qnca8dcVqZMBovb6JQe/uMTKqeM3jtu9eaWLHnw
+fpq7DsPKinImNlaALVNOzVeYpY3MfIaxp6tCiLEZw+NA0Y1siiuJe5HqgjiU/Kxv
+D1K9e/ebbDJ6hfMHpLJPP1p6xp9nvRyCyfOVtB/yFsoDvVKxNBkYycYtlQSK/jy4
+HpAxfcg6aZM=
+=2ueh
 -----END PGP SIGNATURE-----
 
---Sig_/gEm57q3prhNdkBCiy9+wi4e--
+--Sig_/.X.8r_4kaduJJ_QggtAFZ0I--
