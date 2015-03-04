@@ -1,48 +1,42 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 3/9] watchdog: at91rm9200: use the system timer syscon
-Date: Wed, 4 Mar 2015 09:48:33 -0800
-Message-ID: <20150304174826.GA5568@roeck-us.net>
-References: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1425478897-27322-4-git-send-email-alexandre.belloni@free-electrons.com>
- <54F71C07.6070204@roeck-us.net>
- <20150304150815.GG3989@piout.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: remove stale THERMAL_POWER_ACTOR select
+Date: Wed,  4 Mar 2015 17:57:29 +0000
+Message-ID: <1425491849-31721-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150304150815.GG3989@piout.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, valentinrothberg@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 04, 2015 at 04:08:15PM +0100, Alexandre Belloni wrote:
-> On 04/03/2015 at 06:51:51 -0800, Guenter Roeck wrote :
-> > >@@ -267,7 +276,7 @@ static struct platform_driver at91wdt_driver = {
-> > >  	.suspend	= at91wdt_suspend,
-> > >  	.resume		= at91wdt_resume,
-> > >  	.driver		= {
-> > >-		.name	= "at91_wdt",
-> > >+		.name	= "atmel_st_watchdog",
-> > 
-> > If you change the driver name you also need to change the MODULE_ALIAS
-> > a few lines down.
-> > 
-> > But why change it in the first place ? Maybe that was discussed somewhere,
-> > but not here where it belongs, and not in patch 0/9 either.
-> > 
-> 
-> That's because it conflicts with drivers/watchdog/at91sam9_wdt.c
-> 
-You still have to update MODULE_ALIAS (or drop it if it is not needed anymore).
+A previous version of this patch had a config for THERMAL_POWER_ACTOR
+but it was dropped.  Remove the select as it is not doing anything.
 
-Guenter
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Reported-by: Valentin Rothberg <valentinrothberg@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
 
-> I'm not sure that is relevant anymore as they will only be probed using
-> DT now.
-> 
-> 
-> -- 
-> Alexandre Belloni, Free Electrons
-> Embedded Linux, Kernel and Android engineering
-> http://free-electrons.com
+This issue was detected by Valentin Rothberg, running
+undertaker-checkpatch on linux-next.  This patch is based on the
+"linus" branch of Eduardo's tree.
+
+Eduardo, can you queue it please?
+
+ drivers/thermal/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 46bdecf260e5..3379beeed109 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -120,7 +120,6 @@ config THERMAL_GOV_USER_SPACE
+ 
+ config THERMAL_GOV_POWER_ALLOCATOR
+ 	bool "Power allocator thermal governor"
+-	select THERMAL_POWER_ACTOR
+ 	help
+ 	  Enable this to manage platform thermals by dynamically
+ 	  allocating and limiting power to devices.
+-- 
+1.9.1
