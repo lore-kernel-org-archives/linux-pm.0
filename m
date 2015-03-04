@@ -1,334 +1,74 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 1/3] thermal: exynos: Add the support for Exynos5433 TMU
-Date: Wed, 04 Mar 2015 11:38:31 +0100
-Message-ID: <20150304113831.6da39aa8@amdc2363>
-References: <1424950521-6236-1-git-send-email-cw00.choi@samsung.com>
- <1424950521-6236-2-git-send-email-cw00.choi@samsung.com>
+From: Martin Steigerwald <martin@lichtvoll.de>
+Subject: [REGRESSION][BUG 94241] 4.0-rc2: Blanks screen on hibernation but does not switch off the machine
+Date: Wed, 04 Mar 2015 11:47:28 +0100
+Message-ID: <2102769.qaa7254DPQ@merkaba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1424950521-6236-2-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, kgene@kernel.org, b.zolnierkie@samsung.com, amit.daniel@samsung.com, a.kesavan@samsung.com, inki.dae@samsung.com, chanho61.park@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:37838 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933123AbbCDKrb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 05:47:31 -0500
+Received: from merkaba.localnet (unknown [194.150.191.253])
+	by mail.lichtvoll.de (Postfix) with ESMTPSA id CE75C28E
+	for <linux-pm@vger.kernel.org>; Wed,  4 Mar 2015 11:47:29 +0100 (CET)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
-
-> This patch adds the support for Exynos5433's TMU (Thermal Management
-> Unit). Exynos5433 has a little different register bit fields as
-> following description:
-> - Support the eight trip points for rising/falling interrupt by using
-> two registers
-> - Read the calibration type (1-point or 2-point) and sensor id from
-> TRIMINFO register
-> - Use a little different register address
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 161
-> +++++++++++++++++++++++++++++++++--
-> drivers/thermal/samsung/exynos_tmu.h |   1 + 2 files changed, 157
-> insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> b/drivers/thermal/samsung/exynos_tmu.c index 1d30b09..1bb2fb7 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -97,6 +97,32 @@
->  #define EXYNOS4412_MUX_ADDR_VALUE          6
->  #define EXYNOS4412_MUX_ADDR_SHIFT          20
->  
-> +/* Exynos5433 specific registers */
-> +#define EXYNOS5433_TMU_REG_CONTROL1		0x024
-> +#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
-> +#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
-> +#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
-> +#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
-> +#define EXYNOS5433_THD_TEMP_RISE3_0		0x050
-> +#define EXYNOS5433_THD_TEMP_RISE7_4		0x054
-> +#define EXYNOS5433_THD_TEMP_FALL3_0		0x060
-> +#define EXYNOS5433_THD_TEMP_FALL7_4		0x064
-> +#define EXYNOS5433_TMU_REG_INTEN		0x0c0
-> +#define EXYNOS5433_TMU_REG_INTPEND		0x0c8
-> +#define EXYNOS5433_TMU_EMUL_CON			0x110
-> +#define EXYNOS5433_TMU_PD_DET_EN		0x130
-> +
-> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT	16
-> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT	23
-> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_MASK	\
-> +			(0xf << EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT)
-> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_MASK	BIT(23)
-> +
-> +#define EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING	0
-> +#define EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING	1
-> +
-> +#define EXYNOS5433_PD_DET_EN			1
-> +
->  /*exynos5440 specific registers*/
->  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
->  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
-> @@ -484,6 +510,101 @@ out:
->  	return ret;
->  }
->  
-> +static int exynos5433_tmu_initialize(struct platform_device *pdev)
-> +{
-> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> +	struct exynos_tmu_platform_data *pdata = data->pdata;
-> +	struct thermal_zone_device *tz = data->tzd;
-> +	unsigned int status, trim_info;
-> +	unsigned int rising_threshold = 0, falling_threshold = 0;
-> +	unsigned long temp, temp_hist;
-> +	int ret = 0, threshold_code, i, sensor_id, cal_type;
-> +
-> +	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
-> +	if (!status) {
-> +		ret = -EBUSY;
-> +		goto out;
-> +	}
-> +
-> +	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
-> +	sanitize_temp_error(data, trim_info);
-> +
-> +	/* Read the temperature sensor id */
-> +	sensor_id = (trim_info & EXYNOS5433_TRIMINFO_SENSOR_ID_MASK)
-> +				>>
-> EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT;
-> +	dev_info(&pdev->dev, "Temperature sensor ID: 0x%x\n",
-> sensor_id); +
-
-	Isn't dev_info a bit too noisy? IMHO, dev_dbg would be enough
-	here.
-
-	Please consider this globally.
-
-> +	/* Read the calibration mode */
-> +	writel(trim_info, data->base + EXYNOS_TMU_REG_TRIMINFO);
-> +	cal_type = (trim_info & EXYNOS5433_TRIMINFO_CALIB_SEL_MASK)
-> +				>>
-> EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT; +
-> +	switch (cal_type) {
-> +	case EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING:
-> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-> +		break;
-> +	case EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING:
-> +		pdata->cal_type = TYPE_TWO_POINT_TRIMMING;
-> +		break;
-> +	default:
-> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-> +		break;
-> +	};
-> +
-> +	dev_info(&pdev->dev, "Calibration type is %d-point
-> calibration\n",
-> +			cal_type ?  2 : 1);
-> +
-> +	/* Write temperature code for rising and falling threshold */
-> +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
-> +		int rising_reg_offset, falling_reg_offset;
-> +		int j = 0;
-> +
-> +		switch (i) {
-> +		case 0:
-> +		case 1:
-> +		case 2:
-> +		case 3:
-> +			rising_reg_offset =
-> EXYNOS5433_THD_TEMP_RISE3_0;
-> +			falling_reg_offset =
-> EXYNOS5433_THD_TEMP_FALL3_0;
-> +			j = i;
-> +			break;
-> +		case 4:
-> +		case 5:
-> +		case 6:
-> +		case 7:
-> +			rising_reg_offset =
-> EXYNOS5433_THD_TEMP_RISE7_4;
-> +			falling_reg_offset =
-> EXYNOS5433_THD_TEMP_FALL7_4;
-> +			j = i - 4;
-> +			break;
-> +		default:
-> +			continue;
-> +		}
-> +
-> +		/* Write temperature code for rising threshold */
-> +		tz->ops->get_trip_temp(tz, i, &temp);
-> +		temp /= MCELSIUS;
-> +		threshold_code = temp_to_code(data, temp);
-> +
-> +		rising_threshold = readl(data->base +
-> rising_reg_offset);
-> +		rising_threshold |= (threshold_code << j * 8);
-> +		writel(rising_threshold, data->base +
-> rising_reg_offset); +
-> +		/* Write temperature code for falling threshold */
-> +		tz->ops->get_trip_hyst(tz, i, &temp_hist);
-> +		temp_hist = temp - (temp_hist / MCELSIUS);
-> +		threshold_code = temp_to_code(data, temp_hist);
-> +
-> +		falling_threshold = readl(data->base +
-> falling_reg_offset);
-> +		falling_threshold &= ~(0xff << j * 8);
-> +		falling_threshold |= (threshold_code << j * 8);
-> +		writel(falling_threshold, data->base +
-> falling_reg_offset);
-> +	}
-> +
-> +	data->tmu_clear_irqs(data);
-> +out:
-> +	return ret;
-> +}
-> +
->  static int exynos5440_tmu_initialize(struct platform_device *pdev)
->  {
->  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> @@ -682,7 +803,8 @@ static void exynos7_tmu_control(struct
-> platform_device *pdev, bool on) 
->  	if (on) {
->  		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> -		con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
-> +		if (data->soc == SOC_ARCH_EXYNOS7)
-> +			con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
-
-	Isn't exynos7 implying that we already have SOC_ARCH_EXYNOS7?
-	Why do we need this extra check?
-
->  		interrupt_en =
->  			(of_thermal_is_trip_valid(tz, 7)
->  			<< EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
-> @@ -705,11 +827,20 @@ static void exynos7_tmu_control(struct
-> platform_device *pdev, bool on) interrupt_en <<
-> EXYNOS_TMU_INTEN_FALL0_SHIFT; } else {
->  		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> -		con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
-> +		if (data->soc == SOC_ARCH_EXYNOS7)
-> +			con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
->  		interrupt_en = 0; /* Disable all interrupts */
->  	}
->  
-> -	writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
-> +	if (data->soc == SOC_ARCH_EXYNOS5433) {
-> +		int pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
-> +
-> +		writel(pd_det_en, data->base +
-> EXYNOS5433_TMU_PD_DET_EN);
-> +		writel(interrupt_en, data->base +
-> EXYNOS5433_TMU_REG_INTEN);
-> +	} else {
-> +		writel(interrupt_en, data->base +
-> EXYNOS7_TMU_REG_INTEN);
-> +	}
-> +
->  	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
->  }
->  
-> @@ -770,6 +901,8 @@ static void exynos4412_tmu_set_emulation(struct
-> exynos_tmu_data *data, 
->  	if (data->soc == SOC_ARCH_EXYNOS5260)
->  		emul_con = EXYNOS5260_EMUL_CON;
-> +	if (data->soc == SOC_ARCH_EXYNOS5433)
-> +		emul_con = EXYNOS5433_TMU_EMUL_CON;
->  	else if (data->soc == SOC_ARCH_EXYNOS7)
->  		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
->  	else
-> @@ -882,6 +1015,9 @@ static void exynos4210_tmu_clear_irqs(struct
-> exynos_tmu_data *data) } else if (data->soc == SOC_ARCH_EXYNOS7) {
->  		tmu_intstat = EXYNOS7_TMU_REG_INTPEND;
->  		tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
-> +	} else if (data->soc == SOC_ARCH_EXYNOS5433) {
-> +		tmu_intstat = EXYNOS5433_TMU_REG_INTPEND;
-> +		tmu_intclear = EXYNOS5433_TMU_REG_INTPEND;
->  	} else {
->  		tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
->  		tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
-> @@ -926,6 +1062,7 @@ static const struct of_device_id
-> exynos_tmu_match[] = { { .compatible = "samsung,exynos5260-tmu", },
->  	{ .compatible = "samsung,exynos5420-tmu", },
->  	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
-> +	{ .compatible = "samsung,exynos5433-tmu", },
->  	{ .compatible = "samsung,exynos5440-tmu", },
->  	{ .compatible = "samsung,exynos7-tmu", },
->  	{ /* sentinel */ },
-> @@ -949,6 +1086,8 @@ static int exynos_of_get_soc_type(struct
-> device_node *np) else if (of_device_is_compatible(np,
->  					 "samsung,exynos5420-tmu-ext-triminfo"))
->  		return SOC_ARCH_EXYNOS5420_TRIMINFO;
-> +	else if (of_device_is_compatible(np,
-> "samsung,exynos5433-tmu"))
-> +		return SOC_ARCH_EXYNOS5433;
->  	else if (of_device_is_compatible(np,
-> "samsung,exynos5440-tmu")) return SOC_ARCH_EXYNOS5440;
->  	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
-> @@ -1069,6 +1208,13 @@ static int exynos_map_dt_data(struct
-> platform_device *pdev) data->tmu_set_emulation =
-> exynos4412_tmu_set_emulation; data->tmu_clear_irqs =
-> exynos4210_tmu_clear_irqs; break;
-> +	case SOC_ARCH_EXYNOS5433:
-> +		data->tmu_initialize = exynos5433_tmu_initialize;
-> +		data->tmu_control = exynos7_tmu_control;
-
-I must frankly admit that I'm a bit confused.
-
-I'm curious why we didn't either define totally separate set of
-exynos5433_tmu_* functions or reusing existing exynos7_tmu_* ?
-
-Are exynos7 and exynos5433 so much different?
-
-> +		data->tmu_read = exynos4412_tmu_read;
-> +		data->tmu_set_emulation =
-> exynos4412_tmu_set_emulation;
-> +		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-> +		break;
->  	case SOC_ARCH_EXYNOS5440:
->  		data->tmu_initialize = exynos5440_tmu_initialize;
->  		data->tmu_control = exynos5440_tmu_control;
-> @@ -1172,7 +1318,9 @@ static int exynos_tmu_probe(struct
-> platform_device *pdev) goto err_clk_sec;
->  	}
->  
-> -	if (data->soc == SOC_ARCH_EXYNOS7) {
-> +	switch (data->soc) {
-> +	case SOC_ARCH_EXYNOS5433:
-> +	case SOC_ARCH_EXYNOS7:
->  		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
->  		if (IS_ERR(data->sclk)) {
->  			dev_err(&pdev->dev, "Failed to get sclk\n");
-> @@ -1184,7 +1332,10 @@ static int exynos_tmu_probe(struct
-> platform_device *pdev) goto err_clk;
->  			}
->  		}
-> -	}
-> +		break;
-> +	default:
-> +		break;
-> +	};
->  
->  	ret = exynos_tmu_initialize(pdev);
->  	if (ret) {
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h
-> b/drivers/thermal/samsung/exynos_tmu.h index 4d71ec6..440c714 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -33,6 +33,7 @@ enum soc_type {
->  	SOC_ARCH_EXYNOS5260,
->  	SOC_ARCH_EXYNOS5420,
->  	SOC_ARCH_EXYNOS5420_TRIMINFO,
-> +	SOC_ARCH_EXYNOS5433,
->  	SOC_ARCH_EXYNOS5440,
->  	SOC_ARCH_EXYNOS7,
->  };
+Also reported as:
+https://bugzilla.kernel.org/show_bug.cgi?id=94241
 
 
+After I had [1] with 3.18 and 3.19 upto rc7, with 4.0-rc2 I get a different 
+issue:
 
+The ThinkPad T520 does not hibernate at all anymore. It blanks the screen, 
+has some disk accesses, but then stays there. It stays on. It even seems 
+to continue to have some disk accesses. But its not possible to switch on 
+the display anymore. I tried the usual Ctrl-Alt-F1 to switch to TTY1 
+thing.
+
+Expected results:
+
+It goes to console as I have "no_console_suspend", tells me it will 
+hibernate, gives out the 10% step progress report on saving the image, 
+completes saving the image and switches off.
+
+
+I am back on 3.19-rc7 as I need the machine for work. I do not foresee 
+having time to bisect this at the moment. I may try with kernel 4.0-rc2 
+again and try to SSH into the machine from a different box. Maybe I can 
+still log in to it in that black screen state.
+
+This is on Debian Sid with systemd and the following hardware and software 
+configuration:
+
+martin@merkaba:~> phoronix-test-suite system-info
+
+Phoronix Test Suite v5.2.1
+System Information
+
+Hardware:
+Processor: Intel Core i5-2520M @ 3.20GHz (4 Cores), Motherboard: LENOVO 
+42433WG, Chipset: Intel 2nd Generation Core Family DRAM, Memory: 16384MB, 
+Disk: 300GB INTEL SSDSA2CW30 + 480GB Crucial_CT480M50, Graphics: Intel HD 
+3000 (1300MHz), Audio: Intel 6 /C200, Network: Intel 82579LM Gigabit 
+Connection + Intel Centrino Advanced-N 6205
+
+Software:
+OS: Debian 8.0, Kernel: 3.19.0-rc7-tp520+ (x86_64), Desktop: KDE 4.14.2, 
+Display Server: X Server 1.16.4, Display Driver: intel 2.21.15, OpenGL: 
+3.3 Mesa 10.4.2, Compiler: GCC 4.9.2, File-System: btrfs, Screen 
+Resolution: 1920x1080
+
+
+[1] [Bug 86565] New: black screen after resume from hibernation since 
+linux kernel 3.18
+https://bugs.freedesktop.org/show_bug.cgi?id=86565
+
+Thanks,
 -- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
