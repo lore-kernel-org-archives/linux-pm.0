@@ -1,62 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
-Date: Wed, 04 Mar 2015 22:41:24 +0100
-Message-ID: <14143668.0aRkeVrc3Q@vostro.rjw.lan>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com> <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com> <20150304183809.GD22156@leverpostej>
+Subject: Re: [PATCH] genirq: describe IRQF_COND_SUSPEND
+Date: Wed, 04 Mar 2015 22:55:58 +0100
+Message-ID: <1456688.7sJdoQH1ZM@vostro.rjw.lan>
+References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com> <20150304194246.GF22156@leverpostej> <20150304200040.GA12126@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150304183809.GD22156@leverpostej>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electron>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64947 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751207AbbCDVcX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 16:32:23 -0500
+In-Reply-To: <20150304200040.GA12126@leverpostej>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wednesday, March 04, 2015 06:38:09 PM Mark Rutland wrote:
-> Hi Boris,
+On Wednesday, March 04, 2015 08:00:40 PM Mark Rutland wrote:
+> With certain restrictions it is possible for a wakeup device to share
+> and IRQ with an IRQF_NO_SUSPEND user, and the warnings introduced by
+> commit cab303be91dc47942bc25de33dc1140123540800 are spurious. The new
+> IRQF_COND_SUSPEND flag allows drivers to tell the core when these
+> restrictions are met, allowing spurious warnings to be silenced.
 > 
-> On Mon, Mar 02, 2015 at 09:18:17AM +0000, Boris Brezillon wrote:
-> > The watchdog interrupt (only used when activating software watchdog)
-> > shouldn't be suspended when entering suspend mode, because it is shared
-> > with a timer device (which request the line with IRQF_NO_SUSPEND) and once
-> > the watchdog "Mode Register" has been written, it cannot be changed (which
-> > means we cannot disable the watchdog interrupt when entering suspend).
-> > 
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> >  drivers/watchdog/at91sam9_wdt.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/watchdog/at91sam9_wdt.c b/drivers/watchdog/at91sam9_wdt.c
-> > index 6df9405..1443b3c 100644
-> > --- a/drivers/watchdog/at91sam9_wdt.c
-> > +++ b/drivers/watchdog/at91sam9_wdt.c
-> > @@ -208,7 +208,8 @@ static int at91_wdt_init(struct platform_device *pdev, struct at91wdt *wdt)
-> >  
-> >  	if ((tmp & AT91_WDT_WDFIEN) && wdt->irq) {
-> >  		err = request_irq(wdt->irq, wdt_interrupt,
-> > -				  IRQF_SHARED | IRQF_IRQPOLL,
-> > +				  IRQF_SHARED | IRQF_IRQPOLL |
-> > +				  IRQF_NO_SUSPEND,
+> This patch documents how IRQF_COND_SUSPEND is expected to be used,
+> updating some of the text now made invalid by its addition.
 > 
-> I'm a little confused by this. What happens if the watchdog fires when
-> we're actually in the suspended state (when IRQF_NO_SUSPEND interrupts
-> aren't guaranteed to be delivered).
+> Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+> Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  Documentation/power/suspend-and-interrupts.txt | 16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
+> 
+> As promised previously, take IRQF_COND_SUSPEND into account in the
+> documentation.
+> 
+> Rafael, does this look OK to you?
 
-Why wouldn't they be delivered?
+Yes, it does, thanks!
 
-If that's suspend-to-idle, we'll handle them normally.  If that's full suspend,
-they may not be handled at the last stage (when we run on one CPU with interrupts
-off), but that was the case before the wakeup interrupts rework already and I'd
-expect it to be taken into account somehow in the existing code (or if it isn't
-taken into account, we have a bug, but it is not related to this series).
+I'll queue it up along with the rest of the IRQF_COND_SUSPEND patches.
 
-> Does this rely on the watchdog IRQ being taken while in the actual
-> suspended state (but not waking up the system while handling it)?
 
-It is going to work this way at least AFAICT.
-
+> diff --git a/Documentation/power/suspend-and-interrupts.txt b/Documentation/power/suspend-and-interrupts.txt
+> index 50493c9..8afb29a 100644
+> --- a/Documentation/power/suspend-and-interrupts.txt
+> +++ b/Documentation/power/suspend-and-interrupts.txt
+> @@ -112,8 +112,9 @@ any special interrupt handling logic for it to work.
+>  IRQF_NO_SUSPEND and enable_irq_wake()
+>  -------------------------------------
+>  
+> -There are no valid reasons to use both enable_irq_wake() and the IRQF_NO_SUSPEND
+> -flag on the same IRQ.
+> +There are very few valid reasons to use both enable_irq_wake() and the
+> +IRQF_NO_SUSPEND flag on the same IRQ, and it is never valid to use both for the
+> +same device.
+>  
+>  First of all, if the IRQ is not shared, the rules for handling IRQF_NO_SUSPEND
+>  interrupts (interrupt handlers are invoked after suspend_device_irqs()) are
+> @@ -122,4 +123,13 @@ handlers are not invoked after suspend_device_irqs()).
+>  
+>  Second, both enable_irq_wake() and IRQF_NO_SUSPEND apply to entire IRQs and not
+>  to individual interrupt handlers, so sharing an IRQ between a system wakeup
+> -interrupt source and an IRQF_NO_SUSPEND interrupt source does not make sense.
+> +interrupt source and an IRQF_NO_SUSPEND interrupt source does not generally
+> +make sense.
+> +
+> +In rare cases an IRQ can be shared between a wakeup device driver and an
+> +IRQF_NO_SUSPEND user. In order for this to be safe, the wakeup device driver
+> +must be able to discern spurious IRQs from genuine wakeup events (signalling
+> +the latter to the core with pm_system_wakeup()), must use enable_irq_wake() to
+> +ensure that the IRQ will function as a wakeup source, and must request the IRQ
+> +with IRQF_COND_SUSPEND to tell the core that it meets these requirements. If
+> +these requirements are not met, it is not valid to use IRQF_COND_SUSPEND.
+> 
 
 -- 
 I speak only for myself.
