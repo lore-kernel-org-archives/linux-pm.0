@@ -1,41 +1,52 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2] cpufreq: ppc: Add missing #include <asm/smp.h>
-Date: Wed,  4 Mar 2015 12:56:20 +0100
-Message-ID: <1425470180-4650-1-git-send-email-geert+renesas@glider.be>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH RESEND RESEND v6 0/6] hwmon: thermal: Odroid U3: Provide
+ support for Odroid U3 fan
+Date: Wed, 04 Mar 2015 13:03:38 +0100
+Message-ID: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
+References: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1418897591-18332-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Eduardo Valentin <edubezval@gmail.com>, Kamil Debski <k.debski@samsung.com>, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Kukjin Kim <kgene@kernel.org>
+Cc: lm-sensors@lm-sensors.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-If CONFIG_SMP=n, <linux/smp.h> does not include <asm/smp.h>, causing:
+Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
+subsystem for low level control.
 
-drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
-drivers/cpufreq/ppc-corenet-cpufreq.c:173:3: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+After successful probe it registers itself as a cooling device for thermal
+subsystem.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Seen with e.g. corenet64_smp_defconfig + CONFIG_CPU_FREQ=y,
-CONFIG_PPC_CORENET_CPUFREQ=y, CONFIG_SMP=n
+This driver also supports devices without DTS specified.
 
-v2:
-  - Add comment for #include directive, as requested by Viresh
----
- drivers/cpufreq/ppc-corenet-cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+To provide correct functionality, new properties to device tree description for
+Exynos4412 and in particular Odroid U3 have been added.
 
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index bee5df7794d33d10..7cb4b766cf948d3f 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -22,6 +22,8 @@
- #include <linux/smp.h>
- #include <sysdev/fsl_soc.h>
- 
-+#include <asm/smp.h>	/* for get_hard_smp_processor_id() in UP configs */
-+
- /**
-  * struct cpu_data - per CPU data struct
-  * @parent: the parent node of cpu clock
+Those patches were tested at Exynos4412 - Odroid U3 board.
+
+Patches were applied on:
+linux-soc-thermal/fixes branch (Linux v4.0-rc2)
+SHA1: ad83a2d87bff355750a17dd00aec563eb9f9d388
+
+
+Kamil Debski (1):
+  ARM: dts: Add pwm-fan node to the Odroid-U3 board
+
+Lukasz Majewski (5):
+  Documentation: dts: Documentation entry to explain how to use PWM FAN
+    as a cooling device
+  ARM: dts: Add properties to use pwm-fan device as a cooling device in
+    Odroid U3
+  hwmon: pwm-fan: Extract __set_pwm() function to only modify PWM duty
+    cycle
+  hwmon: pwm-fan: Read PWM FAN configuration from device tree
+  hwmon: pwm-fan: Code for using PWM FAN as a cooling device
+
+ .../devicetree/bindings/hwmon/pwm-fan.txt          |  29 +++-
+ arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
+ arch/arm/boot/dts/exynos4412-odroidu3.dts          |  43 ++++++
+ drivers/hwmon/pwm-fan.c                            | 172 +++++++++++++++++++--
+ 4 files changed, 229 insertions(+), 17 deletions(-)
+
 -- 
-1.9.1
+2.0.0.rc2
