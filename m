@@ -1,51 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: mvebu: Fix the CPU PM notifier usage
-Date: Wed, 04 Mar 2015 15:34:06 +0100
-Message-ID: <54F717DE.80106@linaro.org>
-References: <1424971248-29076-1-git-send-email-gregory.clement@free-electrons.com> <54F5CC0D.6060509@libero.it> <54F5D13A.1020002@linaro.org> <3654949.JbH3Ca4PON@vostro.rjw.lan>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 3/9] watchdog: at91rm9200: use the system timer syscon
+Date: Wed, 04 Mar 2015 06:51:51 -0800
+Message-ID: <54F71C07.6070204@roeck-us.net>
+References: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com> <1425478897-27322-4-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:44459 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758117AbbCDOeK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 09:34:10 -0500
-Received: by wiwl15 with SMTP id l15so31065422wiw.3
-        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2015 06:34:09 -0800 (PST)
-In-Reply-To: <3654949.JbH3Ca4PON@vostro.rjw.lan>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:57369 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758806AbbCDOv4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 09:51:56 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1YTAeR-003zUi-5x
+	for linux-pm@vger.kernel.org; Wed, 04 Mar 2015 14:51:55 +0000
+In-Reply-To: <1425478897-27322-4-git-send-email-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Fulvio <fbf@libero.it>, Gregory CLEMENT <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 03/04/2015 03:53 PM, Rafael J. Wysocki wrote:
-> On Tuesday, March 03, 2015 04:20:26 PM Daniel Lezcano wrote:
->> On 03/03/2015 03:58 PM, Fulvio wrote:
-
-[ ... ]
-
->> The fix is correct. The cpu_pm_enter/exit symmetry must be kept beca=
-use
->> we don't know what the notifier clients are doing.
->>
->> The point is : can we send it to stable@ as a bug fix or not ?
+On 03/04/2015 06:21 AM, Alexandre Belloni wrote:
+> Use a syscon regmap to access the systemr timer registers.
 >
-> Yes, we can, unless there's a risk of breaking things that cannot be
-> ignored.
+s/systemr/system/
 
-Ok, I added the stable@ tag.
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+...
+>
+>   static const struct of_device_id at91_wdt_dt_ids[] = {
+> +	{ .compatible = "atmel,at91rm9200-st" },
+>   	{ .compatible = "atmel,at91rm9200-wdt" },
+>   	{ /* sentinel */ }
+>   };
+> @@ -267,7 +276,7 @@ static struct platform_driver at91wdt_driver = {
+>   	.suspend	= at91wdt_suspend,
+>   	.resume		= at91wdt_resume,
+>   	.driver		= {
+> -		.name	= "at91_wdt",
+> +		.name	= "atmel_st_watchdog",
 
-Thanks
-   -- Daniel
+If you change the driver name you also need to change the MODULE_ALIAS
+a few lines down.
 
+But why change it in the first place ? Maybe that was discussed somewhere,
+but not here where it belongs, and not in patch 0/9 either.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Guenter
 
