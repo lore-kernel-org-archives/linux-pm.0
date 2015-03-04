@@ -1,83 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] genirq: describe IRQF_COND_SUSPEND
-Date: Wed, 04 Mar 2015 22:55:58 +0100
-Message-ID: <1456688.7sJdoQH1ZM@vostro.rjw.lan>
-References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com> <20150304194246.GF22156@leverpostej> <20150304200040.GA12126@leverpostej>
+From: Shawn Bohrer <shawn.bohrer@gmail.com>
+Subject: NFS Freezer and stuck tasks
+Date: Wed, 4 Mar 2015 16:00:27 -0600
+Message-ID: <20150304220027.GB20242@sbohrermbp13-local.rgmadvisors.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64947 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751207AbbCDVcX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 16:32:23 -0500
-In-Reply-To: <20150304200040.GA12126@leverpostej>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:38453 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbbCDWAa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 17:00:30 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-nfs@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mayoff@rgmadvisors.com
 
-On Wednesday, March 04, 2015 08:00:40 PM Mark Rutland wrote:
-> With certain restrictions it is possible for a wakeup device to share
-> and IRQ with an IRQF_NO_SUSPEND user, and the warnings introduced by
-> commit cab303be91dc47942bc25de33dc1140123540800 are spurious. The new
-> IRQF_COND_SUSPEND flag allows drivers to tell the core when these
-> restrictions are met, allowing spurious warnings to be silenced.
-> 
-> This patch documents how IRQF_COND_SUSPEND is expected to be used,
-> updating some of the text now made invalid by its addition.
-> 
-> Signed-off-by: Mark Rutland <mark.rutland@arm.com>
-> Cc: Boris Brezillon <boris.brezillon@free-electrons.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  Documentation/power/suspend-and-interrupts.txt | 16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
-> 
-> As promised previously, take IRQF_COND_SUSPEND into account in the
-> documentation.
-> 
-> Rafael, does this look OK to you?
+Hello,
 
-Yes, it does, thanks!
+We're using the Linux cgroup Freezer on some machines that use NFS and
+have run into what appears to be a bug where frozen tasks are blocking
+running tasks and preventing them from completing.  On one of our
+machines which happens to be running an older 3.10.46 kernel we have
+frozen some of the tasks on the system using the cgroup Freezer.  We
+also have a separate set of tasks which are NOT frozen which are stuck
+trying to open some files on NFS.
 
-I'll queue it up along with the rest of the IRQF_COND_SUSPEND patches.
+Looking at the frozen tasks there are several that have the following
+stack:
 
+[<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
+[<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
+[<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
+[<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
+[<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
+[<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
+[<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
+[<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
+[<ffffffff81147b3e>] finish_open+0x1e/0x30
+[<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
+[<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
+[<ffffffff81158c38>] do_filp_open+0x38/0x80
+[<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
+[<ffffffff81148dce>] SyS_open+0x1e/0x20
+[<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
+[<ffffffffffffffff>] 0xffffffffffffffff
 
-> diff --git a/Documentation/power/suspend-and-interrupts.txt b/Documentation/power/suspend-and-interrupts.txt
-> index 50493c9..8afb29a 100644
-> --- a/Documentation/power/suspend-and-interrupts.txt
-> +++ b/Documentation/power/suspend-and-interrupts.txt
-> @@ -112,8 +112,9 @@ any special interrupt handling logic for it to work.
->  IRQF_NO_SUSPEND and enable_irq_wake()
->  -------------------------------------
->  
-> -There are no valid reasons to use both enable_irq_wake() and the IRQF_NO_SUSPEND
-> -flag on the same IRQ.
-> +There are very few valid reasons to use both enable_irq_wake() and the
-> +IRQF_NO_SUSPEND flag on the same IRQ, and it is never valid to use both for the
-> +same device.
->  
->  First of all, if the IRQ is not shared, the rules for handling IRQF_NO_SUSPEND
->  interrupts (interrupt handlers are invoked after suspend_device_irqs()) are
-> @@ -122,4 +123,13 @@ handlers are not invoked after suspend_device_irqs()).
->  
->  Second, both enable_irq_wake() and IRQF_NO_SUSPEND apply to entire IRQs and not
->  to individual interrupt handlers, so sharing an IRQ between a system wakeup
-> -interrupt source and an IRQF_NO_SUSPEND interrupt source does not make sense.
-> +interrupt source and an IRQF_NO_SUSPEND interrupt source does not generally
-> +make sense.
-> +
-> +In rare cases an IRQ can be shared between a wakeup device driver and an
-> +IRQF_NO_SUSPEND user. In order for this to be safe, the wakeup device driver
-> +must be able to discern spurious IRQs from genuine wakeup events (signalling
-> +the latter to the core with pm_system_wakeup()), must use enable_irq_wake() to
-> +ensure that the IRQ will function as a wakeup source, and must request the IRQ
-> +with IRQF_COND_SUSPEND to tell the core that it meets these requirements. If
-> +these requirements are not met, it is not valid to use IRQF_COND_SUSPEND.
-> 
+Here it looks like we are waiting in a wait queue inside
+rpc_wait_bit_killable() for RPC_TASK_ACTIVE.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+And there is a single task with a stack that looks like the following:
+
+[<ffffffff8107dc05>] __refrigerator+0x55/0x150
+[<ffffffff814fd086>] rpc_wait_bit_killable+0x66/0x80
+[<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
+[<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
+[<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
+[<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
+[<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
+[<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
+[<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
+[<ffffffff81147b3e>] finish_open+0x1e/0x30
+[<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
+[<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
+[<ffffffff81158c38>] do_filp_open+0x38/0x80
+[<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
+[<ffffffff81148dce>] SyS_open+0x1e/0x20
+[<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
+[<ffffffffffffffff>] 0xffffffffffffffff
+
+This looks similar but the different offset into
+rpc_wait_bit_killable() shows that we have returned from the
+schedule() call in freezable_schedule() and are now blocked in
+__refrigerator() inside freezer_count()
+
+Similarly if you look at the tasks that are NOT frozen but are stuck
+opening a NFS file, they also have the following stack showing they are
+waiting in the wait queue for RPC_TASK_ACTIVE.
+
+[<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
+[<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
+[<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
+[<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
+[<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
+[<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
+[<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
+[<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
+[<ffffffff81147b3e>] finish_open+0x1e/0x30
+[<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
+[<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
+[<ffffffff81158c38>] do_filp_open+0x38/0x80
+[<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
+[<ffffffff81148dce>] SyS_open+0x1e/0x20
+[<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
+[<ffffffffffffffff>] 0xffffffffffffffff
+
+We have hit this a couple of times now and know that if we THAW all of
+the frozen tasks that running tasks will unwedge and finish.
+
+Additionally we have also tried thawing the single task that is frozen
+in __refrigerator() inside rpc_wait_bit_killable().  This usually
+results in different frozen task entering the __refrigerator() state
+inside rpc_wait_bit_killable().  It looks like each one of those tasks
+must wake up another letting it progress.  Again if you thaw enough of
+the frozen tasks eventually everything unwedges and everything
+completes.
+
+I've looked through the 3.10 stable patches since 3.10.46 and don't
+see anything that looks like it addresses this.  Does anyone have any
+idea what might be going on here, and what the fix might be?
+
+Thanks,
+Shawn
