@@ -1,54 +1,48 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: select on undefined THERMAL_POWER_ACTOR
-Date: Wed, 4 Mar 2015 17:46:24 +0000
-Message-ID: <20150304174623.GA14216@e104805>
-References: <CAD3Xx4KK5LGJSPHvsnX36EUB-T6j_6RgGw=oQ+gZyP8RBhC1=Q@mail.gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 3/9] watchdog: at91rm9200: use the system timer syscon
+Date: Wed, 4 Mar 2015 09:48:33 -0800
+Message-ID: <20150304174826.GA5568@roeck-us.net>
+References: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <1425478897-27322-4-git-send-email-alexandre.belloni@free-electrons.com>
+ <54F71C07.6070204@roeck-us.net>
+ <20150304150815.GG3989@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:55790 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758862AbbCDRq1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 12:46:27 -0500
-In-Reply-To: <CAD3Xx4KK5LGJSPHvsnX36EUB-T6j_6RgGw=oQ+gZyP8RBhC1=Q@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150304150815.GG3989@piout.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Valentin Rothberg <valentinrothberg@gmail.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Andreas Ruprecht <rupran@einserver.de>, Paul Bolle <pebolle@tiscali.nl>
 
-Hi Valentin,
-
-On Wed, Mar 04, 2015 at 01:19:25PM +0000, Valentin Rothberg wrote:
-> your commit 8754d5115693 ("thermal: introduce the Power Allocator
-> governor") is included in today's linux-next tree (i.e.,
-> next-20150304).
+On Wed, Mar 04, 2015 at 04:08:15PM +0100, Alexandre Belloni wrote:
+> On 04/03/2015 at 06:51:51 -0800, Guenter Roeck wrote :
+> > >@@ -267,7 +276,7 @@ static struct platform_driver at91wdt_driver = {
+> > >  	.suspend	= at91wdt_suspend,
+> > >  	.resume		= at91wdt_resume,
+> > >  	.driver		= {
+> > >-		.name	= "at91_wdt",
+> > >+		.name	= "atmel_st_watchdog",
+> > 
+> > If you change the driver name you also need to change the MODULE_ALIAS
+> > a few lines down.
+> > 
+> > But why change it in the first place ? Maybe that was discussed somewhere,
+> > but not here where it belongs, and not in patch 0/9 either.
+> > 
 > 
-> This patch adds a select on the Kconfig symbol THERMAL_POWER_ACTOR.
-> However, THERMAL_POWER_ACTOR is not defined so that this select is a
-> NOOP.
+> That's because it conflicts with drivers/watchdog/at91sam9_wdt.c
 > 
-> @@ -99,6 +107,13 @@ config THERMAL_GOV_USER_SPACE
->         help
->           Enable this to let the user space manage the platform thermals.
+You still have to update MODULE_ALIAS (or drop it if it is not needed anymore).
+
+Guenter
+
+> I'm not sure that is relevant anymore as they will only be probed using
+> DT now.
 > 
-> +config THERMAL_GOV_POWER_ALLOCATOR
-> +       bool "Power allocator thermal governor"
-> +       select THERMAL_POWER_ACTOR
 > 
-> Is there a patch queued somewhere that adds this Kconfig symbol?
-
-No there isn't, it's a leftover from a previous version of the
-patches.  I'll send a patch to remove it.
-
-Thanks for reporting it!
-Javi
-
->                                                                   I
-> detected the issue by running undertaker-checkpatch from the
-> Undertaker tool suite (undertaker.cs.fau.de).
-> 
-> Kind regards,
->  Valentin
-
+> -- 
+> Alexandre Belloni, Free Electrons
+> Embedded Linux, Kernel and Android engineering
+> http://free-electrons.com
