@@ -1,46 +1,39 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH] thermal: Fix build for !CONFIG_THERMAL
-Date: Wed,  4 Mar 2015 12:05:39 +0000
-Message-ID: <1425470739-16651-1-git-send-email-broonie@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>
+From: Valentin Rothberg <valentinrothberg@gmail.com>
+Subject: select on undefined THERMAL_POWER_ACTOR
+Date: Wed, 4 Mar 2015 14:19:25 +0100
+Message-ID: <CAD3Xx4KK5LGJSPHvsnX36EUB-T6j_6RgGw=oQ+gZyP8RBhC1=Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f170.google.com ([74.125.82.170]:43281 "EHLO
+	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbbCDNT4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 08:19:56 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: javi.merino@arm.com, rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Ruprecht <rupran@einserver.de>, Paul Bolle <pebolle@tiscali.nl>, Valentin Rothberg <valentinrothberg@gmail.com>
 
-Commit ddd4dd8ddf784 (thermal: extend the cooling device API to include
-power information) added stubs for newly introduced functions when
-!CONFIG_THERMAL but did not provide names for the parameters which is
-a syntax error causing build errors in such configurations. Add names to
-fix the issue.
+Hi Javi,
 
-Also remove an extra semicolon from power_actor_set_power() which also
-breaks the build and declare the functions as static inline to avoid
-both multiple definitions and sparse warnings.
+your commit 8754d5115693 ("thermal: introduce the Power Allocator
+governor") is included in today's linux-next tree (i.e.,
+next-20150304).
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- include/linux/thermal.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This patch adds a select on the Kconfig symbol THERMAL_POWER_ACTOR.
+However, THERMAL_POWER_ACTOR is not defined so that this select is a
+NOOP.
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 4fb31db70b6f..48131730187b 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -405,11 +405,11 @@ void thermal_notify_framework(struct thermal_zone_device *, int);
- #else
- static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
- { return false; }
--int power_actor_get_max_power(struct thermal_cooling_device *,
-+static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
- 			      struct thermal_zone_device *tz, u32 *max_power)
- { return 0; }
--int power_actor_set_power(struct thermal_cooling_device *,
--			  struct thermal_instance *, u32);
-+static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
-+			  struct thermal_instance *instance, u32 power)
- { return 0; }
- static inline struct thermal_zone_device *thermal_zone_device_register(
- 	const char *type, int trips, int mask, void *devdata,
--- 
-2.1.4
+@@ -99,6 +107,13 @@ config THERMAL_GOV_USER_SPACE
+        help
+          Enable this to let the user space manage the platform thermals.
+
++config THERMAL_GOV_POWER_ALLOCATOR
++       bool "Power allocator thermal governor"
++       select THERMAL_POWER_ACTOR
+
+Is there a patch queued somewhere that adds this Kconfig symbol?  I
+detected the issue by running undertaker-checkpatch from the
+Undertaker tool suite (undertaker.cs.fau.de).
+
+Kind regards,
+ Valentin
