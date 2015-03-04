@@ -1,39 +1,53 @@
-From: Valentin Rothberg <valentinrothberg@gmail.com>
-Subject: select on undefined THERMAL_POWER_ACTOR
-Date: Wed, 4 Mar 2015 14:19:25 +0100
-Message-ID: <CAD3Xx4KK5LGJSPHvsnX36EUB-T6j_6RgGw=oQ+gZyP8RBhC1=Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: ppc: Add missing #include <asm/smp.h>
+Date: Wed, 04 Mar 2015 15:22:57 +0100
+Message-ID: <6947572.xHtck0sm5U@vostro.rjw.lan>
+References: <1425470180-4650-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f170.google.com ([74.125.82.170]:43281 "EHLO
-	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbbCDNT4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 08:19:56 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1425470180-4650-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: javi.merino@arm.com, rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Ruprecht <rupran@einserver.de>, Paul Bolle <pebolle@tiscali.nl>, Valentin Rothberg <valentinrothberg@gmail.com>
 
-Hi Javi,
+On Wednesday, March 04, 2015 12:56:20 PM Geert Uytterhoeven wrote:
+> If CONFIG_SMP=n, <linux/smp.h> does not include <asm/smp.h>, causing:
+> 
+> drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
+> drivers/cpufreq/ppc-corenet-cpufreq.c:173:3: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Seen with e.g. corenet64_smp_defconfig + CONFIG_CPU_FREQ=y,
+> CONFIG_PPC_CORENET_CPUFREQ=y, CONFIG_SMP=n
+> 
+> v2:
+>   - Add comment for #include directive, as requested by Viresh
 
-your commit 8754d5115693 ("thermal: introduce the Power Allocator
-governor") is included in today's linux-next tree (i.e.,
-next-20150304).
+Applied, thanks!
 
-This patch adds a select on the Kconfig symbol THERMAL_POWER_ACTOR.
-However, THERMAL_POWER_ACTOR is not defined so that this select is a
-NOOP.
+> ---
+>  drivers/cpufreq/ppc-corenet-cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> index bee5df7794d33d10..7cb4b766cf948d3f 100644
+> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> @@ -22,6 +22,8 @@
+>  #include <linux/smp.h>
+>  #include <sysdev/fsl_soc.h>
+>  
+> +#include <asm/smp.h>	/* for get_hard_smp_processor_id() in UP configs */
+> +
+>  /**
+>   * struct cpu_data - per CPU data struct
+>   * @parent: the parent node of cpu clock
+> 
 
-@@ -99,6 +107,13 @@ config THERMAL_GOV_USER_SPACE
-        help
-          Enable this to let the user space manage the platform thermals.
-
-+config THERMAL_GOV_POWER_ALLOCATOR
-+       bool "Power allocator thermal governor"
-+       select THERMAL_POWER_ACTOR
-
-Is there a patch queued somewhere that adds this Kconfig symbol?  I
-detected the issue by running undertaker-checkpatch from the
-Undertaker tool suite (undertaker.cs.fau.de).
-
-Kind regards,
- Valentin
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
