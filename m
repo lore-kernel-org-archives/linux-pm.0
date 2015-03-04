@@ -1,67 +1,63 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] genirq / PM: Add flag for shared NO_SUSPEND interrupt lines
-Date: Wed, 04 Mar 2015 22:30:38 +0100
-Message-ID: <3299261.2jupvhrEvj@vostro.rjw.lan>
-References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com> <6864616.1aRDSmSsvx@vostro.rjw.lan> <20150304194246.GF22156@leverpostej>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
+Date: Wed, 04 Mar 2015 22:41:24 +0100
+Message-ID: <14143668.0aRkeVrc3Q@vostro.rjw.lan>
+References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com> <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com> <20150304183809.GD22156@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58315 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751447AbbCDVHD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 16:07:03 -0500
-In-Reply-To: <20150304194246.GF22156@leverpostej>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150304183809.GD22156@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Mark Rutland <mark.rutland@arm.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electron>
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 04, 2015 07:42:46 PM Mark Rutland wrote:
-> Hi Rafael,
+On Wednesday, March 04, 2015 06:38:09 PM Mark Rutland wrote:
+> Hi Boris,
 > 
-> I'm a little late to the party here, but I have just a couple of minor
-> comments...
-> 
-> [...]
-> 
-> > Link: http://marc.info/?l=linux-kernel&m=142252777602084&w=2
-> > Link: http://marc.info/?t=142252775300011&r=1&w=2
-> > Linx: https://lkml.org/lkml/2014/12/15/552
-> 
-> s/x/k/ ?
-
-Yes, thanks!
-
-> > Reported-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  include/linux/interrupt.h |    5 +++++
-> >  include/linux/irqdesc.h   |    1 +
-> >  kernel/irq/manage.c       |    7 ++++++-
-> >  kernel/irq/pm.c           |    7 ++++++-
-> >  4 files changed, 18 insertions(+), 2 deletions(-)
+> On Mon, Mar 02, 2015 at 09:18:17AM +0000, Boris Brezillon wrote:
+> > The watchdog interrupt (only used when activating software watchdog)
+> > shouldn't be suspended when entering suspend mode, because it is shared
+> > with a timer device (which request the line with IRQF_NO_SUSPEND) and once
+> > the watchdog "Mode Register" has been written, it cannot be changed (which
+> > means we cannot disable the watchdog interrupt when entering suspend).
 > > 
-> > Index: linux-pm/include/linux/interrupt.h
-> > ===================================================================
-> > --- linux-pm.orig/include/linux/interrupt.h
-> > +++ linux-pm/include/linux/interrupt.h
-> > @@ -57,6 +57,10 @@
-> >   * IRQF_NO_THREAD - Interrupt cannot be threaded
-> >   * IRQF_EARLY_RESUME - Resume IRQ early during syscore instead of at device
-> >   *                resume time.
-> > + * IRQF_COND_SUSPEND - If the IRQ is shared with a NO_SUSPEND user, execute this
-> > + *                interrupt handler after suspending interrupts. For system
-> > + *                wakeup devices users need to implement wakeup detection in
-> > + *                their interrupt handlers.
+> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > ---
+> >  drivers/watchdog/at91sam9_wdt.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/watchdog/at91sam9_wdt.c b/drivers/watchdog/at91sam9_wdt.c
+> > index 6df9405..1443b3c 100644
+> > --- a/drivers/watchdog/at91sam9_wdt.c
+> > +++ b/drivers/watchdog/at91sam9_wdt.c
+> > @@ -208,7 +208,8 @@ static int at91_wdt_init(struct platform_device *pdev, struct at91wdt *wdt)
+> >  
+> >  	if ((tmp & AT91_WDT_WDFIEN) && wdt->irq) {
+> >  		err = request_irq(wdt->irq, wdt_interrupt,
+> > -				  IRQF_SHARED | IRQF_IRQPOLL,
+> > +				  IRQF_SHARED | IRQF_IRQPOLL |
+> > +				  IRQF_NO_SUSPEND,
 > 
-> It's probably worth documenting this in suspend-and-interrupts.txt, as
-> this invalidates some of the "IRQF_NO_SUSPEND and enable_irq_wake()"
-> section. I'll send a patch momentarily to that effect.
->
-> Otherwise, this patch looks good, thanks for handling this!
-> 
-> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> I'm a little confused by this. What happens if the watchdog fires when
+> we're actually in the suspended state (when IRQF_NO_SUSPEND interrupts
+> aren't guaranteed to be delivered).
 
-Thanks!
+Why wouldn't they be delivered?
 
+If that's suspend-to-idle, we'll handle them normally.  If that's full suspend,
+they may not be handled at the last stage (when we run on one CPU with interrupts
+off), but that was the case before the wakeup interrupts rework already and I'd
+expect it to be taken into account somehow in the existing code (or if it isn't
+taken into account, we have a bug, but it is not related to this series).
+
+> Does this rely on the watchdog IRQ being taken while in the actual
+> suspended state (but not waking up the system while handling it)?
+
+It is going to work this way at least AFAICT.
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
