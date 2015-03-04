@@ -1,130 +1,89 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v3 4/9] power: reset: Add AT91RM9200 reset driver
-Date: Wed,  4 Mar 2015 15:21:32 +0100
-Message-ID: <1425478897-27322-5-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH v3 2/9] mfd: syscon: Add atmel system timer registers
+ definition
+Date: Wed,  4 Mar 2015 15:21:30 +0100
+Message-ID: <1425478897-27322-3-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1425478897-27322-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-AT91RM9200 uses the watchdog from the system timer to reset.
+AT91RM920 has a memory range reserved for timer and watchdog configuration.
+Expose those registers so that drivers can make use of the system timer syscon
+declared in at91 DTs.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/power/reset/Kconfig            |  7 ++++
- drivers/power/reset/Makefile           |  1 +
- drivers/power/reset/at91rm9200-reset.c | 70 ++++++++++++++++++++++++++++++++++
- 3 files changed, 78 insertions(+)
- create mode 100644 drivers/power/reset/at91rm9200-reset.c
+ include/linux/mfd/syscon/atmel-st.h | 47 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 include/linux/mfd/syscon/atmel-st.h
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 27f6646731b0..8d79e45ae754 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -30,6 +30,13 @@ config POWER_RESET_AT91_RESET
- 	  This driver supports restart for Atmel AT91SAM9 and SAMA5
- 	  SoCs
- 
-+config POWER_RESET_AT91RM9200_RESET
-+	bool "Atmel AT91RM9200 reset driver"
-+	depends on ARCH_AT91 && MFD_SYSCON
-+	default SOC_AT91RM9200
-+	help
-+	  This driver supports restart for Atmel AT91RM9200.
-+
- config POWER_RESET_AXXIA
- 	bool "LSI Axxia reset driver"
- 	depends on ARCH_AXXIA
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 11de15bae52e..96e972bbb922 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_POWER_RESET_AS3722) += as3722-poweroff.o
- obj-$(CONFIG_POWER_RESET_AT91_POWEROFF) += at91-poweroff.o
- obj-$(CONFIG_POWER_RESET_AT91_RESET) += at91-reset.o
-+obj-$(CONFIG_POWER_RESET_AT91RM9200_RESET) += at91rm9200-reset.o
- obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
-diff --git a/drivers/power/reset/at91rm9200-reset.c b/drivers/power/reset/at91rm9200-reset.c
+diff --git a/include/linux/mfd/syscon/atmel-st.h b/include/linux/mfd/syscon/atmel-st.h
 new file mode 100644
-index 000000000000..b4c542e39512
+index 000000000000..8e29a1028807
 --- /dev/null
-+++ b/drivers/power/reset/at91rm9200-reset.c
-@@ -0,0 +1,70 @@
++++ b/include/linux/mfd/syscon/atmel-st.h
+@@ -0,0 +1,47 @@
 +/*
-+ * Atmel AT91 SAM9 SoCs reset code
++ * Copyright (C) 2005 Ivan Kokshaysky
++ * Copyright (C) SAN People
 + *
-+ * Copyright (C) 2007 Atmel Corporation.
-+ * Copyright (C) BitBox Ltd 2010
-+ * Copyright (C) 2011 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcosoft.com>
-+ * Copyright (C) 2014 Free Electrons
++ * System Timer (ST) - System peripherals registers.
++ * Based on AT91RM9200 datasheet revision E.
 + *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
 +
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/mfd/syscon/atmel-st.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
++#ifndef _LINUX_MFD_SYSCON_ATMEL_ST_H
++#define _LINUX_MFD_SYSCON_ATMEL_ST_H
 +
-+static struct regmap *regmap_st;
++#define	AT91_ST_CR	0x00	/* Control Register */
++#define		AT91_ST_WDRST	(1 << 0)	/* Watchdog Timer Restart */
 +
-+static int at91rm9200_restart(struct notifier_block *this,
-+					unsigned long mode, void *cmd)
-+{
-+	/*
-+	 * Perform a hardware reset with the use of the Watchdog timer.
-+	 */
-+	regmap_write(regmap_st, AT91_ST_WDMR,
-+		     AT91_ST_RSTEN | AT91_ST_EXTEN | 1);
-+	regmap_write(regmap_st, AT91_ST_CR, AT91_ST_WDRST);
++#define	AT91_ST_PIMR	0x04	/* Period Interval Mode Register */
++#define		AT91_ST_PIV	(0xffff <<  0)	/* Period Interval Value */
 +
-+	mdelay(2000);
++#define	AT91_ST_WDMR	0x08	/* Watchdog Mode Register */
++#define		AT91_ST_WDV	(0xffff <<  0)	/* Watchdog Counter Value */
++#define		AT91_ST_RSTEN	(1 << 16)	/* Reset Enable */
++#define		AT91_ST_EXTEN	(1 << 17)	/* External Signal Assertion Enable */
 +
-+	pr_emerg("Unable to restart system\n");
-+	return NOTIFY_DONE;
-+}
++#define	AT91_ST_RTMR	0x0c	/* Real-time Mode Register */
++#define		AT91_ST_RTPRES	(0xffff <<  0)	/* Real-time Prescalar Value */
 +
-+static struct notifier_block at91rm9200_restart_nb = {
-+	.notifier_call = at91rm9200_restart,
-+	.priority = 192,
-+};
++#define	AT91_ST_SR	0x10	/* Status Register */
++#define		AT91_ST_PITS	(1 << 0)	/* Period Interval Timer Status */
++#define		AT91_ST_WDOVF	(1 << 1)	/* Watchdog Overflow */
++#define		AT91_ST_RTTINC	(1 << 2)	/* Real-time Timer Increment */
++#define		AT91_ST_ALMS	(1 << 3)	/* Alarm Status */
 +
-+static int at91rm9200_reset_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
++#define	AT91_ST_IER	0x14	/* Interrupt Enable Register */
++#define	AT91_ST_IDR	0x18	/* Interrupt Disable Register */
++#define	AT91_ST_IMR	0x1c	/* Interrupt Mask Register */
 +
-+	regmap_st = syscon_node_to_regmap(np);
-+	if (!regmap_st)
-+		return -ENODEV;
++#define	AT91_ST_RTAR	0x20	/* Real-time Alarm Register */
++#define		AT91_ST_ALMV	(0xfffff << 0)	/* Alarm Value */
 +
-+	return register_restart_handler(&at91rm9200_restart_nb);
-+}
++#define	AT91_ST_CRTR	0x24	/* Current Real-time Register */
++#define		AT91_ST_CRTV	(0xfffff << 0)	/* Current Real-Time Value */
 +
-+static const struct of_device_id at91rm9200_reset_of_match[] = {
-+	{ .compatible = "atmel,at91rm9200-st" },
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver at91rm9200_reset_driver = {
-+	.probe = at91rm9200_reset_probe,
-+	.driver = {
-+		.name = "at91rm9200-reset",
-+		.of_match_table = at91rm9200_reset_of_match,
-+	},
-+};
-+module_platform_driver(at91rm9200_reset_driver);
++#endif /* _LINUX_MFD_SYSCON_ATMEL_ST_H */
 -- 
 2.1.0
