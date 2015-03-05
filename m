@@ -1,91 +1,43 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v4 2/9] mfd: syscon: Add atmel system timer registers
- definition
-Date: Thu,  5 Mar 2015 16:49:47 +0100
-Message-ID: <1425570594-13124-3-git-send-email-alexandre.belloni@free-electrons.com>
-References: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v2 1/1] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Thu, 5 Mar 2015 18:11:28 +0200
+Message-ID: <CAHp75VfLj5moAXsbXz4bFh8Ukgv9+4DWYc63E_SOKckR+gqNeQ@mail.gmail.com>
+References: <1424880737-12119-1-git-send-email-boon.leong.ong@intel.com>
+	<1424880737-12119-2-git-send-email-boon.leong.ong@intel.com>
+	<54F48BCB.7070505@nexus-software.ie>
+	<AF233D1473C1364ABD51D28909A1B1B73276139A@PGSMSX105.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AF233D1473C1364ABD51D28909A1B1B73276139A@PGSMSX105.gar.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Cc: Bryan O'Donoghue <pure.logic@nexus-software.ie>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "Kweh, Hock Leong" <hock.leong.kweh@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-AT91RM920 has a memory range reserved for timer and watchdog configuration.
-Expose those registers so that drivers can make use of the system timer syscon
-declared in at91 DTs.
+On Tue, Mar 3, 2015 at 3:13 AM, Ong, Boon Leong
+<boon.leong.ong@intel.com> wrote:
+>>> +config INTEL_QUARK_DTS_THERMAL
+>>> +    tristate "Intel Quark DTS thermal driver"
+>>> +    depends on X86 && IOSF_MBI
+>>
+>>Since the change is in RC-1 suggest
+>>depends on X86_INTEL_QUARK
+>>you can skip this though it's not important.
+> Ya. That is true now since the below commit has been merged:
+> 8bbc2a135b63bee6b41fa90f415521a97995a49f to mainline in 4.0-rc1
+>
+> On another thought, how about adding INTEL_QUARK_DTS_THERMAL to
+> be selected by X86_INTEL_QUARK  in arch/x86/Kconfig ... and we can
+> drop the above dependencies from here.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- include/linux/mfd/syscon/atmel-st.h | 49 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
- create mode 100644 include/linux/mfd/syscon/atmel-st.h
+This driver as far as I understand is not critical to run Intel Quark.
+So, there is should not be a dependency in the platform definition.
 
-diff --git a/include/linux/mfd/syscon/atmel-st.h b/include/linux/mfd/syscon/atmel-st.h
-new file mode 100644
-index 000000000000..93c7affc2809
---- /dev/null
-+++ b/include/linux/mfd/syscon/atmel-st.h
-@@ -0,0 +1,49 @@
-+/*
-+ * Copyright (C) 2005 Ivan Kokshaysky
-+ * Copyright (C) SAN People
-+ *
-+ * System Timer (ST) - System peripherals registers.
-+ * Based on AT91RM9200 datasheet revision E.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef _LINUX_MFD_SYSCON_ATMEL_ST_H
-+#define _LINUX_MFD_SYSCON_ATMEL_ST_H
-+
-+#include <linux/bitops.h>
-+
-+#define	AT91_ST_CR	0x00	/* Control Register */
-+#define		AT91_ST_WDRST	BIT(0)	/* Watchdog Timer Restart */
-+
-+#define	AT91_ST_PIMR	0x04	/* Period Interval Mode Register */
-+#define		AT91_ST_PIV	0xffff	/* Period Interval Value */
-+
-+#define	AT91_ST_WDMR	0x08	/* Watchdog Mode Register */
-+#define		AT91_ST_WDV	0xffff	/* Watchdog Counter Value */
-+#define		AT91_ST_RSTEN	BIT(16)	/* Reset Enable */
-+#define		AT91_ST_EXTEN	BIT(17)	/* External Signal Assertion Enable */
-+
-+#define	AT91_ST_RTMR	0x0c	/* Real-time Mode Register */
-+#define		AT91_ST_RTPRES	0xffff	/* Real-time Prescalar Value */
-+
-+#define	AT91_ST_SR	0x10	/* Status Register */
-+#define		AT91_ST_PITS	BIT(0)	/* Period Interval Timer Status */
-+#define		AT91_ST_WDOVF	BIT(1)	/* Watchdog Overflow */
-+#define		AT91_ST_RTTINC	BIT(2)	/* Real-time Timer Increment */
-+#define		AT91_ST_ALMS	BIT(3)	/* Alarm Status */
-+
-+#define	AT91_ST_IER	0x14	/* Interrupt Enable Register */
-+#define	AT91_ST_IDR	0x18	/* Interrupt Disable Register */
-+#define	AT91_ST_IMR	0x1c	/* Interrupt Mask Register */
-+
-+#define	AT91_ST_RTAR	0x20	/* Real-time Alarm Register */
-+#define		AT91_ST_ALMV	0xfffff	/* Alarm Value */
-+
-+#define	AT91_ST_CRTR	0x24	/* Current Real-time Register */
-+#define		AT91_ST_CRTV	0xfffff	/* Current Real-Time Value */
-+
-+#endif /* _LINUX_MFD_SYSCON_ATMEL_ST_H */
+On the other hand is the driver will work exclusively on Quark? If so,
+better to leave the mentioned dependency, .i.e.
+depends on X86_INTEL_QUARK
+
 -- 
-2.1.0
+With Best Regards,
+Andy Shevchenko
