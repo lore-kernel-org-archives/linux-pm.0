@@ -1,83 +1,138 @@
-From: NeilBrown <neilb@suse.de>
-Subject: Re: [PATCH 04/15] twl4030_charger: use runtime_pm to keep usb phy
- active while charging.
-Date: Thu, 5 Mar 2015 16:48:18 +1100
-Message-ID: <20150305164818.53d7c318@notabene.brown>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
-	<20150224043350.4243.51289.stgit@notabene.brown>
-	<20150225072443.GG21323@x1>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: Make sysfs attributes of cooling devices
+ default attributes
+Date: Thu, 5 Mar 2015 01:56:22 -0400
+Message-ID: <20150305055620.GB3632@developer.hsd1.ca.comcast.net>
+References: <1424484608-20181-1-git-send-email-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- boundary="Sig_/v5A2qcLM684RDC9/=wtMc=2"; protocol="application/pgp-signature"
+	protocol="application/pgp-signature"; boundary="wq9mPyueHGvFACwf"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:42874 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752950AbbCEFsb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 Mar 2015 00:48:31 -0500
-In-Reply-To: <20150225072443.GG21323@x1>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:36153 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbbCEFza (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 00:55:30 -0500
+Received: by padfa1 with SMTP id fa1so33658649pad.3
+        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2015 21:55:29 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1424484608-20181-1-git-send-email-mka@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
---Sig_/v5A2qcLM684RDC9/=wtMc=2
-Content-Type: text/plain; charset=US-ASCII
+
+--wq9mPyueHGvFACwf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 25 Feb 2015 07:24:43 +0000 Lee Jones <lee.jones@linaro.org> wrote:
-
-> On Tue, 24 Feb 2015, NeilBrown wrote:
+On Fri, Feb 20, 2015 at 06:10:08PM -0800, Matthias Kaehlcke wrote:
+> Default attributes are created when the device is registered. Attributes
+> created after device registration can lead to race conditions, where user=
+ space
+> (e.g. udev) sees the device but not the attributes.
 >=20
-> > The twl4030 usb phy needs to be active while we are using
-> > the USB VBUS as a current source for charging.
-> > In particular, the usb3v1 regulator must be enabled and the
-> > PHY_PWR_PHYPWD bit must be set to keep the phy powered.
-> >=20
-> > commit ab37813f4093a5f59cb8e083cde277289dc72ed3
-> >     twl4030_charger: Allow charger to control the regulator that feeds =
-it
-> >=20
-> > Gave the charger control over the regulator, but didn't resolve
-> > the PHY_PWR_PHYPWD issue.
-> >=20
-> > Now that both of these are controlled by runtime_pm in
-> > phy-twl4030-usb, we can simply take a runtime_pm reference to the USB
-> > phy whenever the charger wants to use it as a current source.
-> >=20
-> > So this patch reverts the above commit, and adds the necessary
-> > runtime_pm calls.
-> >=20
-> > Signed-off-by: NeilBrown <neilb@suse.de>
-> > ---
-> >  drivers/mfd/twl-core.c          |    9 ++++-----
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+
+applied into -fixes branch. Thanks.
+
+> ---
+>  drivers/thermal/thermal_core.c | 37 +++++++++++++++++--------------------
+>  1 file changed, 17 insertions(+), 20 deletions(-)
 >=20
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 48491d1..174d3bc 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -899,6 +899,22 @@ thermal_cooling_device_trip_point_show(struct device=
+ *dev,
+>  		return sprintf(buf, "%d\n", instance->trip);
+>  }
+> =20
+> +static struct attribute *cooling_device_attrs[] =3D {
+> +	&dev_attr_cdev_type.attr,
+> +	&dev_attr_max_state.attr,
+> +	&dev_attr_cur_state.attr,
+> +	NULL,
+> +};
+> +
+> +static const struct attribute_group cooling_device_attr_group =3D {
+> +	.attrs =3D cooling_device_attrs,
+> +};
+> +
+> +static const struct attribute_group *cooling_device_attr_groups[] =3D {
+> +	&cooling_device_attr_group,
+> +	NULL,
+> +};
+> +
+>  /* Device management */
+> =20
+>  /**
+> @@ -1130,6 +1146,7 @@ __thermal_cooling_device_register(struct device_nod=
+e *np,
+>  	cdev->ops =3D ops;
+>  	cdev->updated =3D false;
+>  	cdev->device.class =3D &thermal_class;
+> +	cdev->device.groups =3D cooling_device_attr_groups;
+>  	cdev->devdata =3D devdata;
+>  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
+>  	result =3D device_register(&cdev->device);
+> @@ -1139,21 +1156,6 @@ __thermal_cooling_device_register(struct device_no=
+de *np,
+>  		return ERR_PTR(result);
+>  	}
+> =20
+> -	/* sys I/F */
+> -	if (type) {
+> -		result =3D device_create_file(&cdev->device, &dev_attr_cdev_type);
+> -		if (result)
+> -			goto unregister;
+> -	}
+> -
+> -	result =3D device_create_file(&cdev->device, &dev_attr_max_state);
+> -	if (result)
+> -		goto unregister;
+> -
+> -	result =3D device_create_file(&cdev->device, &dev_attr_cur_state);
+> -	if (result)
+> -		goto unregister;
+> -
+>  	/* Add 'this' new cdev to the global cdev list */
+>  	mutex_lock(&thermal_list_lock);
+>  	list_add(&cdev->node, &thermal_cdev_list);
+> @@ -1163,11 +1165,6 @@ __thermal_cooling_device_register(struct device_no=
+de *np,
+>  	bind_cdev(cdev);
+> =20
+>  	return cdev;
+> -
+> -unregister:
+> -	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
+> -	device_unregister(&cdev->device);
+> -	return ERR_PTR(result);
+>  }
+> =20
+>  /**
+> --=20
+> 2.2.0.rc0.207.ga3a616c
+>=20
 
-Thanks.
-I guess that clear it to go in though the 'power supply' tree.
-
-NeilBrown
-
---Sig_/v5A2qcLM684RDC9/=wtMc=2
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+--wq9mPyueHGvFACwf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIVAwUBVPfuIjnsnt1WYoG5AQJngBAAiGFHO1Pl5+ZlXb7vwO9rymqTd8rKGp1O
-SNiCzDn3flKIYADi1D1RFvNF87qOOLHOv/HNa6miQPqunt4nlbKyimF5pX1Z+U+h
-dO/hhhZNF7a+RPoR64/1tOacH92x8vuueNUqjLmTCedfekGOqcS4WaDIMEK1Cz1X
-sLiK2pIUpugx+0S3Dw+gNdGPdkro4+bbFPstEBcoNP7Grns4qOaQgwROwZa5A89z
-mxIqe0nHFdGU5BPcDXUEp7WdVSy6Z4EAJmMKQ7LlzjSW0pvuN1rDItWJVkXnNdCt
-98ENJPcGachh2/CMH1W9KdbcPSXz91N9IZSEPn+3XdnCmz5n3OdHiajvd42Hrd0D
-V8zK+WcQBnQuWS5yBJVBbCeEOWZSiYl5vqq36sVrqXaiWWhXvvt8GDX6ASy4X5xn
-S6PG7T3PcTk3E3NjDMMmzo2gv1TnaqCxwNgUDpYqT2xlNb2WIga0S+cRK9CJTciN
-wl62wse4EPa7Gju+FghqlLzGcUF4UwtPXvGW24ECL8qyGgnnatjXaeQwa6+oG2Mc
-/Zp5eACoTWLhYJsCkbSNWDy3jWErRNcd+MTOJLnl/tNRsR7jdWOp9RC/II4KNyWb
-rjIn3KzWsEI++wVy3YtZinbP8Qt+d/kr5pAV3EPwmkPKCa8oHqgve5kk3p6yjWWz
-0atkfBqyPBU=
-=h4Or
+iQEcBAEBAgAGBQJU9+/8AAoJEMLUO4d9pOJWl4UH/1FZABNtqiZTXz6YvahU4ZFA
+4NeVjz8QOVz3nIcSjs+Oh/TSEsBSw6ZUekcxGhrhpIQjHgJY3O6KcWwTCVb5m6fk
+7LYYmRvQnjvGzOEIqmVeL2Ljxduj3O6Psv81TXyWrpB/gCMMf+SlZULbtoDg5EUJ
+QaNS0uFTdlPpdWG7ANdFXd8ta1slkTB52t4B0TimFXQfLzhA8gKc6MBo78spuJhG
+N9D+1nM4qnwAIqIpG04SntjpKBml/nQl2tGtBsGmNx/VTtRPiFe3VvSo8uqK6t2r
+gvgjbU53bMOnk/abaqz0JJp0h9ipmYWDPdlUaDnmlLZKM1+YMCGpkB332x0r+E8=
+=QJVR
 -----END PGP SIGNATURE-----
 
---Sig_/v5A2qcLM684RDC9/=wtMc=2--
+--wq9mPyueHGvFACwf--
