@@ -1,72 +1,87 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper
- functions
-Date: Fri, 6 Mar 2015 14:05:43 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1503061358260.1407-100000@iolanthe.rowland.org>
-References: <20150306161920.GM13520@atomide.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal management updates for v4.0-rc3
+Date: Thu, 5 Mar 2015 08:53:48 -0400
+Message-ID: <20150305125346.GA26869@developer.amazonguestwifi.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:50010 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756164AbbCFTFp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Mar 2015 14:05:45 -0500
-In-Reply-To: <20150306161920.GM13520@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, 6 Mar 2015, Tony Lindgren wrote:
 
-> > > +	struct wakeirq_source *wirq = _wirq;
-> > > +	irqreturn_t ret = IRQ_NONE;
-> > > +
-> > > +	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
-> > > +	if (pm_runtime_suspended(wirq->dev)) {
-> > 
-> > What if the device is resumed on a different CPU right here?
-> 
-> Good point, sounds like we need to do this in some pm_runtime
-> function directly for the locking.
->  
-> > > +		pm_runtime_mark_last_busy(wirq->dev);
-> > > +		pm_runtime_resume(wirq->dev);
-> > 
-> > Calling this with disabled interrupts is a bad idea in general.
-> > Is the device guaranteed to have power.irq_safe set?
-> 
-> Well right now it's using threaded irq, and I'd like to get rid of
-> the pm_runtime calls in the regular driver interrupts completely.
-> We need to ensure the device runtime_resume is completed before
-> returning IRQ_HANDLED here.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-In general, runtime_resume methods are allowed to sleep.  They can't be
-used in an interrupt handler top half unless the driver has
-specifically promised they are IRQ-safe.  That's what Rafael was
-getting at.
+Hello Linus,
 
-Of course, if this routine is a threaded-irq bottom half then there's 
-no problem.
+Please pull from
 
-> > I guess what you want to call here is pm_request_resume() and
-> > I wouldn't say that calling pm_runtime_mark_last_busy() on a
-> > suspended device was valid.
-> 
-> I'll verify again, but I believe the issue was that without doing
-> mark_last_busy here the device falls back asleep right away.
-> That probably should be fixed in pm_runtime in general if that's
-> the case.
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
-It's up to the subsystem to handle this.  For example, the USB 
-subsystem's runtime-resume routine calls pm_runtime_mark_last_busy.
+to receive Thermal Management updates for v4.0-rc3 with top-most
 
-> Considering the above, should we add a new function something like
-> pm_resume_complete() that does not need irq_safe set but does
-> not return until the device has completed resume?
+2dc10f8963e6a03a1a75deafe1d1984bafab08dd:
 
-That doesn't make sense.  You're asking for a routine that is allowed
-to sleep but can safely be called in interrupt context.
+  thermal: Make sysfs attributes of cooling devices default attributes (2015-03-05 01:47:57 -0400)
 
-Alan Stern
+on top of commit 023a6007a08d342b64895a7342e426d12d9627dd:
 
+  Merge tag 'gpio-v4.0-2' of git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio (2015-03-02 14:13:39 -0800)
+
+Specifics:
+- adding Lukasz as maintainer of samsung thermal driver.
+- driver fixes: exynos and int430x.
+- one fix in the exynos cpufreq driver related to cpu cooling (acked by cpufreq maintainer).
+- fix default sysfs attributes of cooling devices
+
+Note: I am sending this pull on Rui's behalf while he fixes issues in his Linux box.
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Chanwoo Choi (1):
+      thermal: exynos: Fix wrong control of power down detection mode for Exynos7
+
+Eduardo Valentin (1):
+      Merge branch 'fixes' of github.com:lmajewski/linux-samsung-thermal into work-fixes
+
+Lukasz Majewski (2):
+      cpufreq: exynos: Use simple approach to asses if cpu cooling can be used
+      MAINTAINERS: Add entry for SAMSUNG THERMAL DRIVER
+
+Matthias Kaehlcke (1):
+      thermal: Make sysfs attributes of cooling devices default attributes
+
+Srinivas Pandruvada (1):
+      Thermal/int340x: Fix memleak for aux trip
+
+ MAINTAINERS                                        |  8 +++++
+ drivers/cpufreq/exynos-cpufreq.c                   | 21 ++++--------
+ .../thermal/int340x_thermal/int340x_thermal_zone.c | 10 +++---
+ drivers/thermal/samsung/exynos_tmu.c               |  3 +-
+ drivers/thermal/thermal_core.c                     | 37 ++++++++++------------
+ 5 files changed, 39 insertions(+), 40 deletions(-)
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJU+FHHAAoJEMLUO4d9pOJWRw8H/j4l04F4+22bI+Gt4DgHmWGu
+YiXqJE0Ze2QH8TpGx5f4eKPhKLgniNW4dsarj6ze7OGyZGDxACW1Zk1BgN/jmn1O
+uisQ4Kd73vW+e0/ZHc2wMXXXXSk8YrPVFmoziwm7RLYlplzt6gbsi8bd2OR36ML4
+BgkyOsXpXjxVEsrHOy08heGxURWR2sVB1QIW1zs7cLezf5mYehcfan98XuBdtEsj
+9xfE5uAPKdRqLpV+g6AzBcahAQUY3gJn2K6Ggsj307uffRpe8MWttJ8REviH2Z42
+Iygq7sAD9aNV9bGA6KC+q3+zR9JFYk0ZAhFthge6UAXjQW7ASxzjma0gc6GdaZk=
+=UcKR
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
