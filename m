@@ -1,35 +1,44 @@
-From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [RFC/PATCH v2 6/6] ARM: shmobile: Enable Renesas CPUIdle for shmobile_defconfig
-Date: Thu, 5 Mar 2015 17:59:03 +0900
-Message-ID: <1425545943-1440-7-git-send-email-keita.kobayashi.ym@renesas.com>
-References: <1425545943-1440-1-git-send-email-keita.kobayashi.ym@renesas.com>
+From: Michael Trimarchi <michael@amarulasolutions.com>
+Subject: Re: reboot command fails with low frequency
+Date: Thu, 5 Mar 2015 10:23:16 +0100
+Message-ID: <CAOf5uwkWvd_gH08t-AacU8Jp4gFmr4X42bMv4eT43Uhaaa5GMQ@mail.gmail.com>
+References: <CAJ2oMhLDbA_BVsZPnbNq460mYbUw6Z7QpB=YmSCjX65NL1BaFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1425545943-1440-1-git-send-email-keita.kobayashi.ym@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: horms@verge.net.au, rjw@rjwysocki.net
-Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com, badarkhe.manish@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f177.google.com ([209.85.223.177]:40459 "EHLO
+	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754644AbbCEJXS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 04:23:18 -0500
+Received: by iecrp18 with SMTP id rp18so6958170iec.7
+        for <linux-pm@vger.kernel.org>; Thu, 05 Mar 2015 01:23:16 -0800 (PST)
+In-Reply-To: <CAJ2oMhLDbA_BVsZPnbNq460mYbUw6Z7QpB=YmSCjX65NL1BaFg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
----
- arch/arm/configs/shmobile_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
+Hi
 
-diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
-index b58618e..1769fe3 100644
---- a/arch/arm/configs/shmobile_defconfig
-+++ b/arch/arm/configs/shmobile_defconfig
-@@ -44,6 +44,8 @@ CONFIG_CPU_FREQ_GOV_USERSPACE=y
- CONFIG_CPU_FREQ_GOV_ONDEMAND=y
- CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
- CONFIG_CPUFREQ_DT=y
-+CONFIG_CPU_IDLE=y
-+CONFIG_ARM_RENESAS_CPUIDLE=y
- CONFIG_VFP=y
- CONFIG_NEON=y
- # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--- 
-1.9.1
+On Thu, Mar 5, 2015 at 9:46 AM, Ran Shalit <ranshalit@gmail.com> wrote:
+>> I added power support to kernel menuconfig, such as cpuidle, and it
+>> seems to work fine. I also validated in counter that cpu gets into
+>> retention.
+>
+> We observer that with highest available frequency (600000) reboot
+> command is OK, but when frequency is changed to lower value, the
+> reboot command fails.
+> Has anyone observed such behaviour ?
 
+I remember some commit for this problem. What version of the linux are
+you running?
+
+Michael
+
+>
+> Regards,
+> Ran
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
