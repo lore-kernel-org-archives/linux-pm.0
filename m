@@ -1,7 +1,7 @@
 From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [RFC/PATCH v2 4/6] ARM: shmobile: r8a7791: Add Core-Standby CPUIdle support for r8a7791
-Date: Thu, 5 Mar 2015 17:59:01 +0900
-Message-ID: <1425545943-1440-5-git-send-email-keita.kobayashi.ym@renesas.com>
+Subject: [RFC/PATCH v2 5/6] ARM: shmobile: r8a7790: Add Core-Standby CPUIdle support for r8a7790
+Date: Thu, 5 Mar 2015 17:59:02 +0900
+Message-ID: <1425545943-1440-6-git-send-email-keita.kobayashi.ym@renesas.com>
 References: <1425545943-1440-1-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,18 +12,20 @@ To: horms@verge.net.au, rjw@rjwysocki.net
 Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com, badarkhe.manish@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch Add the wfi and Core-Standby for CPUIdle power states
-support for the r8a7791 SoC.
+Add the CPUIdle support power state support for the r8a7790 SoC.
+This patch add the wfi and Core-Standby for CPUIdle power states
+support for the Cortex-A15 and add the wfi power state support for
+the Cortex-A7.
 
 Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 ---
- arch/arm/mach-shmobile/pm-r8a7791.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ arch/arm/mach-shmobile/pm-r8a7790.c | 47 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7791.c b/arch/arm/mach-shmobile/pm-r8a7791.c
-index 25f107b..784c284 100644
---- a/arch/arm/mach-shmobile/pm-r8a7791.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7791.c
+diff --git a/arch/arm/mach-shmobile/pm-r8a7790.c b/arch/arm/mach-shmobile/pm-r8a7790.c
+index 80e8d95..70b2334 100644
+--- a/arch/arm/mach-shmobile/pm-r8a7790.c
++++ b/arch/arm/mach-shmobile/pm-r8a7790.c
 @@ -10,8 +10,13 @@
   * for more details.
   */
@@ -38,46 +40,59 @@ index 25f107b..784c284 100644
  #include <asm/io.h>
  #include "common.h"
  #include "pm-rcar.h"
-@@ -43,6 +48,32 @@ static inline void r8a7791_sysc_init(void) {}
+@@ -48,6 +53,46 @@ static inline void r8a7790_sysc_init(void) {}
  
  #endif /* CONFIG_SMP */
  
-+static struct cpuidle_driver r8a7791_cpuidle_driver = {
-+	.name = "rcar_r8a7791_cpuidle",
++static struct cpuidle_driver r8a7790_ca15_cpuidle_driver = {
++	.name = "rcar_r8a7790_ca15_cpuidle",
 +	.owner = THIS_MODULE,
 +	.states = {
 +		[0] = ARM_CPUIDLE_WFI_STATE,
 +		[1] = {
 +			.name = "Core-Standby",
 +			.desc = "Core Standby Mode",
-+			.exit_latency = 2800,
-+			.target_residency = 2800,
++			.exit_latency = 3000,
++			.target_residency = 3000,
 +			.enter = shmobile_smp_apmu_enter_cpuidle,
 +		},
 +	},
 +	.state_count = 2,
 +};
 +
-+static struct renesas_cpuidle_driver r8a7791_cpuidle = {
-+	.target_cpu	= ARM_CPU_PART_CORTEX_A15,
-+	.renesas_drv	= &r8a7791_cpuidle_driver,
++static struct cpuidle_driver r8a7790_ca7_cpuidle_driver = {
++	.name			= "rcar_r8a7790_ca7_cpuidle",
++	.owner			= THIS_MODULE,
++	.states[0]		= ARM_CPUIDLE_WFI_STATE,
++	.safe_state_index	= 0, /* C1 */
++	.state_count		= 1,
 +};
 +
-+static struct renesas_cpuidle r8a7791_data = {
-+	.num_drvs	= 1,
-+	.rcd		= &r8a7791_cpuidle,
++static struct renesas_cpuidle_driver r8a7790_cpuidle[] = {
++	[0] = {
++		.target_cpu	= ARM_CPU_PART_CORTEX_A15,
++		.renesas_drv	= &r8a7790_ca15_cpuidle_driver,
++	},
++	[1] = {
++		.target_cpu	= ARM_CPU_PART_CORTEX_A7,
++		.renesas_drv	= &r8a7790_ca7_cpuidle_driver,
++	},
 +};
 +
- void __init r8a7791_pm_init(void)
++static struct renesas_cpuidle r8a7790_data = {
++	.num_drvs	= ARRAY_SIZE(r8a7790_cpuidle),
++	.rcd		= r8a7790_cpuidle,
++};
++
+ void __init r8a7790_pm_init(void)
  {
  	void __iomem *p;
-@@ -70,4 +101,7 @@ void __init r8a7791_pm_init(void)
+@@ -79,4 +124,6 @@ void __init r8a7790_pm_init(void)
  
- 	r8a7791_sysc_init();
+ 	r8a7790_sysc_init();
  	shmobile_smp_apmu_suspend_init();
-+
 +	if (IS_ENABLED(CONFIG_ARM_RENESAS_CPUIDLE))
-+		shmobile_cpuidle_set_driver(&r8a7791_data);
++		shmobile_cpuidle_set_driver(&r8a7790_data);
  }
 -- 
 1.9.1
