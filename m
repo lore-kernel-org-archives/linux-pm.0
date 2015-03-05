@@ -1,106 +1,61 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v1] Thermal/int340x: Fix memleak for aux trip
-Date: Thu, 5 Mar 2015 01:57:02 -0400
-Message-ID: <20150305055700.GC3632@developer.hsd1.ca.comcast.net>
-References: <1425330727-18854-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1425330727-18854-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Zha, Qipeng" <qipeng.zha@intel.com>
+Subject: git tree
+Date: Thu, 5 Mar 2015 06:18:22 +0000
+Message-ID: <C6287702A945AC47BE5DB5DFD4B5C6DD01844A1A@SHSMSX104.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oJ71EGRlYNjSvfq7"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:44272 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbbCEF4L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 00:56:11 -0500
-Received: by padet14 with SMTP id et14so15883662pad.11
-        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2015 21:56:10 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1425330727-18854-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mga09.intel.com ([134.134.136.24]:42001 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752992AbbCEGSh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 Mar 2015 01:18:37 -0500
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Darren Hart <dvhart@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-
---oJ71EGRlYNjSvfq7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Mar 02, 2015 at 01:12:07PM -0800, Srinivas Pandruvada wrote:
-> When thermal zone device register fails or on module exit, the memory
-> for aux_trip is not freed. This change fixes this issue.
->=20
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-applied into -fixes branch. Thanks.
-
-> ---
->  drivers/thermal/int340x_thermal/int340x_thermal_zone.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c b/dri=
-vers/thermal/int340x_thermal/int340x_thermal_zone.c
-> index f88b088..1e25133 100644
-> --- a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
-> +++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
-> @@ -208,7 +208,7 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(=
-struct acpi_device *adev,
->  				trip_cnt, GFP_KERNEL);
->  		if (!int34x_thermal_zone->aux_trips) {
->  			ret =3D -ENOMEM;
-> -			goto free_mem;
-> +			goto err_trip_alloc;
->  		}
->  		trip_mask =3D BIT(trip_cnt) - 1;
->  		int34x_thermal_zone->aux_trip_nr =3D trip_cnt;
-> @@ -248,14 +248,15 @@ struct int34x_thermal_zone *int340x_thermal_zone_ad=
-d(struct acpi_device *adev,
->  						0, 0);
->  	if (IS_ERR(int34x_thermal_zone->zone)) {
->  		ret =3D PTR_ERR(int34x_thermal_zone->zone);
-> -		goto free_lpat;
-> +		goto err_thermal_zone;
->  	}
-> =20
->  	return int34x_thermal_zone;
-> =20
-> -free_lpat:
-> +err_thermal_zone:
->  	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
-> -free_mem:
-> +	kfree(int34x_thermal_zone->aux_trips);
-> +err_trip_alloc:
->  	kfree(int34x_thermal_zone);
->  	return ERR_PTR(ret);
->  }
-> @@ -266,6 +267,7 @@ void int340x_thermal_zone_remove(struct int34x_therma=
-l_zone
->  {
->  	thermal_zone_device_unregister(int34x_thermal_zone->zone);
->  	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
-> +	kfree(int34x_thermal_zone->aux_trips);
->  	kfree(int34x_thermal_zone);
->  }
->  EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
-> --=20
-> 1.9.3
->=20
-
---oJ71EGRlYNjSvfq7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU9/AkAAoJEMLUO4d9pOJW/MUH/izbiCrsnrjDXFOcE+Um0jgR
-x80lm8+kmtCirAYsW5ZyQO5Ssd/PQFQ+zN9zP/tucl2XJwwvpGUs/OG21YB++QP4
-X3vZnsBLuhfI947P8OMo1zebP40urw30LRyVM8ae2YLmC5F9bYRiMSvpkBBMPk2j
-YZgm0KbZO2IeeXZL/HLPL1SIq/KpU7+Wv0X9sxSTZ7n0CRtVldWnsRSmdDKIyn1L
-fjhKzXQ3GUQ5KEP7eSzZ9nkxr0wxfoCtpJdlEV5CyOb2MR/i4yrc/2LHvUK41EDh
-4+j8wkWTuK4JYagzwqGv6oSpP5vaPRmcaDUDyB9auzETtGmmD/Vkp2pwP1joxd4=
-=wSwh
------END PGP SIGNATURE-----
-
---oJ71EGRlYNjSvfq7--
+SGkgRGVhcg0KDQpDb3VsZCB5b3UgY29uZmlybSB0aGUgZ2l0IHRyZWUgaXMgYmVsb3cgdG8gbWFp
+bnRhaW4gcGxhdGZvcm0geDg2IGRyaXZlciA/IElmIG5vdCAsIGNvdWxkIHlvdSB0ZWxsIG1lIHdo
+aWNoIG9uZSBUaGFua3MuDQpJdCByZXBvcnQgbm9uIHJlYWNoYWJsZSB3aGVuIEkgY2xvbmUgaXQu
+DQpnaXQgY2xvbmUgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9n
+aXQvbWpnNTkvcGxhdGZvcm0tZHJpdmVycy14ODYuZ2l0DQoNCg0KDQpCZXN0IHdpc2hlcw0KUWlw
+ZW5nDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBwbGF0Zm9ybS1kcml2ZXIt
+eDg2LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOnBsYXRmb3JtLWRyaXZlci14ODYtb3du
+ZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgRGFycmVuIEhhcnQNClNlbnQ6IFdlZG5l
+c2RheSwgTWFyY2ggMDQsIDIwMTUgMTI6NDQgQU0NClRvOiBLcnp5c3p0b2YgS296bG93c2tpDQpD
+YzogU2ViYXN0aWFuIFJlaWNoZWw7IERtaXRyeSBFcmVtaW4tU29sZW5pa292OyBEYXZpZCBXb29k
+aG91c2U7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVs
+Lm9yZzsgQ2V6YXJ5IEphY2tpZXdpY3o7IHBsYXRmb3JtLWRyaXZlci14ODZAdmdlci5rZXJuZWwu
+b3JnOyBLeXVuZ21pbiBQYXJrOyBNYXJlayBTenlwcm93c2tpDQpTdWJqZWN0OiBSZTogW1BBVENI
+IHY0IDExLzIwXSBwb3dlcl9zdXBwbHk6IENoYW5nZSBvd25lcnNoaXAgZnJvbSBkcml2ZXIgdG8g
+Y29yZQ0KDQpPbiBUaHUsIEZlYiAyNiwgMjAxNSBhdCAxMjozMToxM1BNICswMTAwLCBLcnp5c3p0
+b2YgS296bG93c2tpIHdyb3RlOg0KPiBPbiBjencsIDIwMTUtMDItMjYgYXQgMTI6MjggKzAxMDAs
+IEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6DQo+ID4gT24gxZtybywgMjAxNS0wMi0yNSBhdCAy
+MjoxNCAtMDgwMCwgRGFycmVuIEhhcnQgd3JvdGU6DQo+ID4gPiBPbiBUaHUsIEZlYiAyNiwgMjAx
+NSBhdCAwMTo0NToyMkFNICswMTAwLCBTZWJhc3RpYW4gUmVpY2hlbCB3cm90ZToNCj4gPiANCj4g
+PiAoLi4uKQ0KPiA+IA0KPiA+ID4gPiBJIHdvdWxkIGxpa2UgdG8gbWVyZ2UgdGhpcyB2aWEgdGhl
+IHBvd2VyIHN1cHBseSBzdWJzeXN0ZW0uIFNvbWUgDQo+ID4gPiA+IG9mIHRoZSBmaWxlcyBiZWlu
+ZyBwYXRjaGVkIGFyZSBub3QgdW5kZXIgbXkgbWFpbnRhaW5lbmNlLCANCj4gPiA+ID4gdGhvdWdo
+LiBJdCB3b3VsZCBiZSBuaWNlIGlmIEkgZ2V0IGFuIEFja2VkLUJ5IGZyb20gdGhlaXIgbWFpbnRh
+aW5lcnMuDQo+ID4gPiA+IA0KPiA+ID4gPiBBcyBmYXIgYXMgSSBjYW4gc2VlIHRoaXMgcGF0Y2gg
+aXMgY3VycmVudGx5IG1pc3NpbmcgZmVlZGJhY2sgZnJvbToNCj4gPiA+ID4gDQo+ID4gPiA+IGFy
+Y2gveDg2L3BsYXRmb3JtL29scGM6IHg4NiBNYWludGFpbmVycw0KPiA+ID4gPiBkcml2ZXJzL2Fj
+cGk6IFJhZmFlbCBKLiBXeXNvY2tpLCBMZW4gQnJvd24NCj4gPiA+ID4gZHJpdmVycy9oaWQ6IEpp
+cmkgS29zaW5hDQo+ID4gPiA+IGRyaXZlcnMvcGxhdGZvcm0veDg2OiBEYXJyZW4gSGFydA0KPiA+
+ID4gDQo+ID4gPiBGb3IgY29tcGFsLWxhcHRvcC5jOg0KPiA+ID4gDQo+ID4gPiBBY2tlZC1ieTog
+RGFycmVuIEhhcnQgPGR2aGFydEBsaW51eC5pbnRlbC5jb20+DQo+IA0KPiAocHJldmlvdXMgbWFp
+bCBzZW50IGJ5IG1pc3Rha2UpDQo+IA0KPiBIaSBEYXJyZW4sDQo+IA0KPiBDb3VsZCB5b3UgYWxz
+byBsb29rIGF0IG15IG90aGVyIGZpeGVzIHNlbnQgZmV3IGRheXMgYWdvOg0KPiBodHRwczovL2xr
+bWwub3JnL2xrbWwvMjAxNS8yLzIwLzE1OA0KPiBjb21wYWwtbGFwdG9wOiBDaGVjayByZXR1cm4g
+dmFsdWUgb2YgcG93ZXJfc3VwcGx5X3JlZ2lzdGVyDQo+IA0KPiBJdCB0b3VjaGVzIHRoZSBzYW1l
+IGxpbmUgc28gdGhlIHBhdGNoc2V0IHBvd2VyLXN1cHBseS1yZXdvcmsgZGVwZW5kcyANCj4gb24g
+aXQgdG8gYXZvaWQgY29uZmxpY3RzLiBJZiB0aGUgZml4IGxvb2tzIE9LLCBtYXliZSBpdCBjb3Vs
+ZCBnbyANCj4gdGhyb3VnaCBTZWJhc3RpYW4ncyB0cmVlIHdpdGggeW91ciBhY2s/DQoNCkRvbmUs
+IGFuZCBhcG9sb2dpZXMgZm9yIHRoZSBkZWxheS4gR29pbmcgdGhyb3VnaCBTZWJhc3RpZW4gaXMg
+cHJlZmVycmVkLCB0aGFua3MuDQoNCi0tDQpEYXJyZW4gSGFydA0KSW50ZWwgT3BlbiBTb3VyY2Ug
+VGVjaG5vbG9neSBDZW50ZXINCi0tDQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2Vu
+ZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgcGxhdGZvcm0tZHJpdmVyLXg4NiIgaW4gdGhlIGJvZHkg
+b2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8g
+aW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo=
