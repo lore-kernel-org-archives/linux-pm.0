@@ -1,45 +1,53 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v8 15/18] cpufreq: Add cpufreq driver for Tegra124
-Date: Thu, 05 Mar 2015 12:15:10 +0200
-Message-ID: <54F82CAE.7070300@kapsi.fi>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>	 <1425213881-5262-16-git-send-email-mikko.perttunen@kapsi.fi> <1425286186.24292.76.camel@x220> <54F59C16.2010401@kapsi.fi> <54F6B03F.8080703@iki.fi>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 0/5] Rename regulator_set_optimum_mode
+Date: Thu, 5 Mar 2015 10:46:07 +0000
+Message-ID: <20150305104607.GG21293@sirena.org.uk>
+References: <1423712131-23795-1-git-send-email-bjorn.andersson@sonymobile.com>
+ <CAJAp7Oi67uuLEsXZbfo68zVa1XTOVhr7Q+V6n7QKC7rnQTywyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54F6B03F.8080703@iki.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
-Cc: Paul Bolle <pebolle@tiscali.nl>, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="OS1vLVgN5i9GLK6E"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50821 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbbCEKq2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 05:46:28 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJAp7Oi67uuLEsXZbfo68zVa1XTOVhr7Q+V6n7QKC7rnQTywyA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Andersson <bjorn@kryo.se>
+Cc: Bjorn Andersson <bjorn.andersson@sonymobile.com>, "James E.J. Bottomley" <JBottomley@parallels.com>, Felipe Balbi <balbi@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Liam Girdwood <lgirdwood@gmail.com>, Vinayak Holikatti <vinholikatti@gmail.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
 
-On 03/04/2015 09:11 AM, Tuomas Tynkkynen wrote:
-> On 03/03/2015 01:33 PM, Mikko Perttunen wrote:
->> On 03/02/2015 10:49 AM, Paul Bolle wrote:
->>> On Sun, 2015-03-01 at 14:44 +0200, Mikko Perttunen wrote:
->>>
->>> [...]
->>>
->>>> +static struct platform_driver tegra124_cpufreq_platdrv = {
->>>> +    .driver = {
->>>> +        .name    = "cpufreq-tegra124",
->>>> +        .owner    = THIS_MODULE,
->>>
->>> .owner will always be, in short, NULL.
->>>
->
-> Which reminds me: recently there have been cleanups that remove the
-> .owner field assignments (e.g. 30f51f248c1d "cpufreq: drop owner
-> assignment from platform_drivers"), so it can be removed from here as well.
->
->
->>
->> Well noticed! I changed the config symbol to be tristate.
->>
->> Thanks,
->> Mikko Perttunen
->>
 
-Yep, will remove.
+--OS1vLVgN5i9GLK6E
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Mikko
+On Wed, Feb 25, 2015 at 03:40:31PM -0800, Bjorn Andersson wrote:
+
+> Any comments on this?
+
+> I'm going to propose a patch to the mmc framework calling this api, so
+> it would be good to know before I add another consumer of the api.
+
+Please don't send content free nags.  They just add to the volume of
+mail that needs to be read and responded to.
+
+--OS1vLVgN5i9GLK6E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJU+DPuAAoJECTWi3JdVIfQcQ4H/AvousZHHw64WGJcLBqv6bGo
+1Or6BzDRK+5oph9+CfkdTVIXDKiFkgVF7E3x98c60aQI3OF6w87MKCUfUgzUb0p2
++Zv3JNCZr4xX/JSfrREewapdFjXZ6JFxzaotIDmi/AzzrwEj9914rYB+s8wAWQCQ
+cg+ebIcWYiDnFybgmujO4c4f6+v/jO5gjYJvWFYHi3NnKINqNImgdbdlRGAysIa4
++GzDNg519EW3mUmcGEt48EzdbgtvPJFO/9490B/AjZpc+bddKD9RefMGAQTne68d
+pb4Uf5Pz+PyMUSYgAqbM03lq/j2UZSxC2zlx3rDbuKev4ehciA/BIW1Y44r6cGU=
+=sOgk
+-----END PGP SIGNATURE-----
+
+--OS1vLVgN5i9GLK6E--
