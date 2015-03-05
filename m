@@ -1,124 +1,86 @@
-From: "Nicolae, Anda-maria" <anda-maria.nicolae@intel.com>
-Subject: RE: [PATCH 1/2] bq2415x_charger: Remove unnecessary else after
- return
-Date: Thu, 5 Mar 2015 16:31:10 +0000
-Message-ID: <11982715D62E664DBACA4351A418B05814363558@IRSMSX107.ger.corp.intel.com>
-References: <1425554637-26782-1-git-send-email-anda-maria.nicolae@intel.com>
-	 <1425554637-26782-2-git-send-email-anda-maria.nicolae@intel.com>,<1425571997.31859.4.camel@perches.com>
+From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
+ IRQF_NO_SUSPEND
+Date: Thu, 5 Mar 2015 16:32:27 +0000
+Message-ID: <20150305163227.GF14093@leverpostej>
+References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com>
+ <20150304183809.GD22156@leverpostej>
+ <14143668.0aRkeVrc3Q@vostro.rjw.lan>
+ <20150305105729.GB13617@leverpostej>
+ <CAJZ5v0h8vn26BeWPVhC4e_KNhBu15-mshnbq0K=OQ1M36vPQEQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:2038 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750959AbbCEQbP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 11:31:15 -0500
-In-Reply-To: <1425571997.31859.4.camel@perches.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h8vn26BeWPVhC4e_KNhBu15-mshnbq0K=OQ1M36vPQEQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, "linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Alexandr
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Thanks for feedback :).
+Hi Rafael,
 
-You are right, checkpatch.pl does not complain about issues in existing code. 
-I did these changes so that existing code has similar coding style with the newly added code. 
-This way, in the entire driver we will have the same coding style.
+> enable_irq_wake() has no effect on IRQF_NO_SUSPEND interrupts, so if the
+> driver uses IRQF_NO_SUSPEND, it does not need to use enable_irq_wake()
+> in addition to that.
 
-Regards,
-Anda
+That's not generally true -- certainly not for irq_chips without the
+IRQCHIP_SKIP_SET_WAKE flag.
 
-________________________________________
-From: Joe Perches [joe@perches.com]
-Sent: Thursday, March 05, 2015 6:13 PM
-To: Nicolae, Anda-maria
-Cc: sre@kernel.org; dbaryshkov@gmail.com; dwmw2@infradead.org; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] bq2415x_charger: Remove unnecessary else after return
+Consider systems where the suspended state results in power to the CPU
+being cut, and we rely on an external piece of logic attached to the
+irq_chip to detect wakeup IRQs and restore power.
 
-On Thu, 2015-03-05 at 13:23 +0200, Anda-Maria Nicolae wrote:
-> Fix coding style to comply with checkpatch.pl
+In those cases irq_chip::irq_set_wake() must be called to ensure that
+the wakeup logic is configured. If the wakeup logic is not configured to
+look out for an IRQ, then when the IRQ is asserted by a device the
+wakeup logic may not trigger. Thus the CPU power never gets restored, so
+the CPU cannot handle the interrupt.
 
-I think these are unnecessary changes.
+This is handled in enable_irq_wake() -- either the chip has the
+IRQCHIP_SKIP_SET_WAKE flag set or chip->irq_set_wake() must succeed. If
+neither is true enable_irq_wake() will return an error code to indicate
+we can't use the IRQ for wakeup.
 
-The current version of checkpatch should not emit
-a warning for the original code.
+The request_irq path never results in a call to chip->irq_set_wake(),
+even with the IRQF_NO_SUSPEND flag. So requesting an irq with
+IRQF_NO_SUSPEND does not guarantee wakeup; it only guarantees that the
+CPU can take the interrupt _around_ the suspended state, not necessarily
+while _in_ the suspended state.
 
-> diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
-[]
-> @@ -352,8 +352,7 @@ static int bq2415x_exec_command(struct bq2415x_device *bq,
->                       BQ2415X_BIT_CE);
->               if (ret < 0)
->                       return ret;
-> -             else
-> -                     return ret > 0 ? 0 : 1;
-> +             return ret > 0 ? 0 : 1;
+> Drivers using IRQF_COND_SUSPEND generally should use enable_irq_wake() too
+> in case they end up in a situation without sharing a NO_SUSPEND interrupt, in
+> which case their interrupt handlers won't be called after suspend_device_irqs(),
+> so they need to rely on the core to do the wakeup.
+> 
+> > I agree that if problematic, it's an existing bug. Given Boris's
+> > comments in the other thread this may just a minor semantic issue w.r.t.
+> > IRQF_NO_SUSPEND vs IRQF_COND_SUSPEND.
+> 
+> It depends on whether or not the watchdog's interrupt handler has to be
+> called immediately after receiving an interrupt (IRQF_NO_SUSPEND is
+> better then) or it can be deferred till the resume_device_irqs() time.
 
-maybe return !ret
+We seem to be conflating some related properties:
 
->       case BQ2415X_CHARGER_ENABLE:
->               return bq2415x_i2c_write_bit(bq, BQ2415X_REG_CONTROL,
->                               0, BQ2415X_BIT_CE);
-> @@ -426,20 +425,17 @@ static enum bq2415x_chip bq2415x_detect_chip(struct bq2415x_device *bq)
->               case 0:
->                       if (bq->chip == BQ24151A)
->                               return bq->chip;
-> -                     else
-> -                             return BQ24151;
-> +                     return BQ24151;
->               case 1:
->                       if (bq->chip == BQ24150A ||
->                               bq->chip == BQ24152 ||
->                               bq->chip == BQ24155)
->                               return bq->chip;
-> -                     else
-> -                             return BQ24150;
-> +                     return BQ24150;
->               case 2:
->                       if (bq->chip == BQ24153A)
->                               return bq->chip;
-> -                     else
-> -                             return BQ24153;
-> +                     return BQ24153;
->               default:
->                       return BQUNKNOWN;
->               }
-> @@ -450,8 +446,7 @@ static enum bq2415x_chip bq2415x_detect_chip(struct bq2415x_device *bq)
->               case 0:
->                       if (bq->chip == BQ24156A)
->                               return bq->chip;
-> -                     else
-> -                             return BQ24156;
-> +                     return BQ24156;
->               case 2:
->                       return BQ24158;
->               default:
-> @@ -480,8 +475,7 @@ static int bq2415x_detect_revision(struct bq2415x_device *bq)
->       case BQ24152:
->               if (ret >= 0 && ret <= 3)
->                       return ret;
-> -             else
-> -                     return -1;
-> +             return -1;
->       case BQ24153:
->       case BQ24153A:
->       case BQ24156:
-> @@ -491,13 +485,11 @@ static int bq2415x_detect_revision(struct bq2415x_device *bq)
->                       return 0;
->               else if (ret == 1)
->                       return 1;
-> -             else
-> -                     return -1;
-> +             return -1;
->       case BQ24155:
->               if (ret == 3)
->                       return 3;
-> -             else
-> -                     return -1;
-> +             return -1;
->       case BQUNKNOWN:
->               return -1;
->       }
+[a] The IRQ will be left unmasked.
+[b] The IRQ will be handled immediately when taken.
+[c] The IRQ will wake the system from suspend.
 
+Requesting an IRQ with IRQF_NO_SUSPEND guarantees [a,b], but does not
+guarantee [c].
 
+A successful enable_irq_wake() on an IRQ guarantees [a,c], but usually
+does not give [b] unless the IRQ was requested with IRQF_COND_SUSPEND
+and happens to be shared with an IRQF_NO_SUSPEND user.
 
+It sounds like for this kind of watchdog device we want [a,b,c], even if
+the IRQ is not shared with an IRQF_NO_SUSPEND user.
+
+Thanks,
+Mark.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
