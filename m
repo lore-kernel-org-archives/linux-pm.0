@@ -1,253 +1,81 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [RFC PATCH 2/2] drivers: cpuidle: cpuidle-arm64: heterogeneous systems extension
-Date: Thu,  5 Mar 2015 12:52:39 +0000
-Message-ID: <1425559959-1796-2-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1425559959-1796-1-git-send-email-lorenzo.pieralisi@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57107 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbbCEMx2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 Mar 2015 07:53:28 -0500
-In-Reply-To: <1425559959-1796-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Josh Boyer <jwboyer@fedoraproject.org>
+Subject: Re: intel_soc_dts_thermal binding issues
+Date: Thu, 5 Mar 2015 09:29:33 -0500
+Message-ID: <CA+5PVA58q==ieDyfoMEsJ=TxLXXRdNPoKC5gNWAg0MdTv4Eq+g@mail.gmail.com>
+References: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
+	<744357E9AAD1214791ACBA4B0B90926301491FCF@SHSMSX101.ccr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <744357E9AAD1214791ACBA4B0B90926301491FCF@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Some ARM systems (eg big.LITTLE ones) can be composed of CPUs having
-different hardware power management configurations and in the context
-of CPUidle, different idle states. The current ARM64 CPUidle driver
-treats all possible CPUs as equal and initializes a common idle driver
-through DT idle states for all possible CPUs.
+On Wed, Mar 4, 2015 at 8:55 PM, Zhang, Rui <rui.zhang@intel.com> wrote:
+> What kernel are you using?
+> I think it should be fixed by commit 014d9d5d0cc1da79bbe48fbc5e1068c5616238d2, which is merged in 3.19-rc5.
 
-Current driver cannot manage systems where CPUs are heterogeneous
-and therefore can have different idle states.
+The reporter with the ASUS machine was running 3.18.7.  However, on my
+NUC machine I still see this with 4.0-rc2 and the latest Linus tree:
 
-This patch augments the ARM64 CPUidle driver, by adding code that
-at boot creates CPUidle drivers by going through the cpu_possible_map
-and probes the DT in order to create a number of different idle
-drivers depending on the idle states present in the device tree.
+[jwboyer@nuc-celeron ~]$ uname -a
+Linux nuc-celeron 4.0.0-0.rc2.git1.1.fc23.x86_64 #1 SMP Thu Mar 5
+08:37:23 EST 2015 x86_64 x86_64 x86_64 GNU/Linux
+[jwboyer@nuc-celeron ~]$ dmesg | grep request_threaded
+[   11.187239] intel_soc_dts_thermal: request_threaded_irq ret -22
+[   11.261738] intel_soc_dts_thermal: request_threaded_irq ret -22
+[jwboyer@nuc-celeron ~]$ cat /proc/cpuinfo | grep "model name"
+model name    : Intel(R) Celeron(R) CPU  N2820  @ 2.13GHz
+model name    : Intel(R) Celeron(R) CPU  N2820  @ 2.13GHz
+[jwboyer@nuc-celeron ~]$
 
-The dynamically created drivers are then initialized through the DT
-idle states interface, that parses and initializes the DT idle states
-for the cpus set in the drivers cpumasks.
+The 4.0.0-rc2.git1.1 above corresponds to Linux
+v4.0-rc2-150-g6587457b4b3d in mainline.  We aren't carrying any
+patches that would impact this.
 
-Cc: Lina Iyer <lina.iyer@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- drivers/cpuidle/Kconfig.arm64   |   1 +
- drivers/cpuidle/cpuidle-arm64.c | 153 ++++++++++++++++++++++++++--------------
- 2 files changed, 101 insertions(+), 53 deletions(-)
+The commit you pointed to seems to imply that either INT340X_THERMAL
+or INTEL_SOC_DTS_THERMAL could be set, but not both.  In Fedora, we
+have them both enabled as modules:
 
-diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
-index 6effb36..8122308 100644
---- a/drivers/cpuidle/Kconfig.arm64
-+++ b/drivers/cpuidle/Kconfig.arm64
-@@ -4,6 +4,7 @@
- 
- config ARM64_CPUIDLE
- 	bool "Generic ARM64 CPU idle Driver"
-+	select CPU_IDLE_MULTIPLE_DRIVERS
- 	select DT_IDLE_STATES
- 	help
- 	  Select this to enable generic cpuidle driver for ARM64.
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 282fc33..539c094 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -58,9 +58,10 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
- 	return ret ? -1 : idx;
- }
- 
--static struct cpuidle_driver arm64_idle_driver = {
--	.name = "arm64_idle",
--	.owner = THIS_MODULE,
-+static void __init arm64_init_driver(struct cpuidle_driver *drv)
-+{
-+	drv->name = "arm64_idle";
-+	drv->owner = THIS_MODULE;
- 	/*
- 	 * State at index 0 is standby wfi and considered standard
- 	 * on all ARM platforms. If in some platforms simple wfi
-@@ -68,15 +69,13 @@ static struct cpuidle_driver arm64_idle_driver = {
- 	 * to work around this issue and allow installing a special
- 	 * handler for idle state index 0.
- 	 */
--	.states[0] = {
--		.enter                  = arm64_enter_idle_state,
--		.exit_latency           = 1,
--		.target_residency       = 1,
--		.power_usage		= UINT_MAX,
--		.name                   = "WFI",
--		.desc                   = "ARM64 WFI",
--	}
--};
-+	drv->states[0].enter = arm64_enter_idle_state;
-+	drv->states[0].exit_latency = 1;
-+	drv->states[0].target_residency = 1;
-+	drv->states[0].power_usage = UINT_MAX;
-+	strncpy(drv->states[0].name, "WFI", CPUIDLE_NAME_LEN - 1);
-+	strncpy(drv->states[0].desc, "ARM64 WFI", CPUIDLE_DESC_LEN - 1);
-+}
- 
- static const struct of_device_id arm64_idle_state_match[] __initconst = {
- 	{ .compatible = "arm,idle-state",
-@@ -84,63 +83,111 @@ static const struct of_device_id arm64_idle_state_match[] __initconst = {
- 	{ },
- };
- 
--/*
-- * arm64_idle_init
-- *
-- * Registers the arm64 specific cpuidle driver with the cpuidle
-- * framework. It relies on core code to parse the idle states
-- * and initialize them using driver data structures accordingly.
-- */
-+#define ARM64_CPUIDLE_MAX_DRIVERS 4
-+
- static int __init arm64_idle_init(void)
- {
--	int cpu, ret;
--	struct cpuidle_driver *drv = &arm64_idle_driver;
-+	int cpu, ret, cnt = 0;
-+	struct cpuidle_driver *drivers[ARM64_CPUIDLE_MAX_DRIVERS], *drv = NULL;
-+	cpumask_var_t tmpmask;
- 
--	drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
--	if (!drv->cpumask)
-+	if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL))
- 		return -ENOMEM;
- 
--	cpumask_copy(drv->cpumask, cpu_possible_mask);
-+	cpumask_copy(tmpmask, cpu_possible_mask);
-+
-+	while (!cpumask_empty(tmpmask)) {
- 
--	dt_probe_idle_affinity(drv->cpumask);
-+		if (cnt == ARM64_CPUIDLE_MAX_DRIVERS) {
-+			pr_warn("max number of idle drivers reached\n");
-+			break;
-+		}
-+
-+		if (!drv) {
-+			drv = kzalloc(sizeof(*drv), GFP_KERNEL);
-+			if (!drv) {
-+				ret = -ENOMEM;
-+				goto out_unregister;
-+			}
-+
-+			drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
-+			if (!drv->cpumask) {
-+				ret = -ENOMEM;
-+				goto out_driver;
-+			}
-+		}
- 
--	if (!cpumask_equal(drv->cpumask, cpu_possible_mask)) {
- 		/*
--		 * DT idle states are not uniform across all cpus, bail out
-+		 * Initialize driver default idle states and common variables
- 		 */
--		ret = -ENODEV;
--		goto out_mask;
--	}
--	/*
--	 * Initialize idle states data, starting at index 1.
--	 * This driver is DT only, if no DT idle states are detected (ret == 0)
--	 * let the driver initialization fail accordingly since there is no
--	 * reason to initialize the idle driver if only wfi is supported.
--	 */
--	ret = dt_init_idle_driver(drv, arm64_idle_state_match, 1);
--	if (ret <= 0) {
--		ret = ret ? : -ENODEV;
--		goto out_mask;
--	}
-+		arm64_init_driver(drv);
-+
-+		cpumask_copy(drv->cpumask, tmpmask);
-+
-+		dt_probe_idle_affinity(drv->cpumask);
-+		/*
-+		 * Remove the driver cpumask from the list of cpus
-+		 * that are still to be probed for idle states detection
-+		 */
-+		cpumask_andnot(tmpmask, tmpmask, drv->cpumask);
-+
-+		/*
-+		 * Initialize idle states data, starting at index 1.
-+		 * These drivers are DT only, if no DT idle states are detected
-+		 * (ret == 0) let the driver initialization fail accordingly
-+		 * since there is no reason to initialize the idle driver if
-+		 * only wfi is supported.
-+		 */
-+		ret = dt_init_idle_driver(drv, arm64_idle_state_match, 1);
-+		if (ret <= 0) {
-+			/*
-+			 * Give other drivers a chance to init
-+			 * even if for this cpumask no idle
-+			 * states were detected
-+			 */
-+			if (!ret)
-+				continue;
- 
--	/*
--	 * Call arch CPU operations in order to initialize
--	 * idle states suspend back-end specific data
--	 */
--	for_each_possible_cpu(cpu) {
--		ret = cpu_init_idle(cpu);
--		if (ret) {
--			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
- 			goto out_mask;
- 		}
-+
-+		/*
-+		 * Call arch CPU operations in order to initialize
-+		 * idle states suspend back-end specific data
-+		 */
-+		for_each_cpu(cpu, drv->cpumask) {
-+			ret = cpu_init_idle(cpu);
-+			if (ret) {
-+				pr_err("CPU %d failed to init idle CPU ops\n",
-+				       cpu);
-+				goto out_mask;
-+			}
-+		}
-+
-+		ret = cpuidle_register(drv, NULL);
-+		if (ret)
-+			goto out_mask;
-+
-+		drivers[cnt++] = drv;
-+		drv = NULL;
- 	}
- 
--	ret = cpuidle_register(drv, NULL);
--	if (!ret)
--		return ret;
-+	free_cpumask_var(tmpmask);
-+	return 0;
- 
-- out_mask:
-+out_mask:
- 	kfree(drv->cpumask);
-+out_driver:
-+	kfree(drv);
-+out_unregister:
-+	while (--cnt >= 0) {
-+		cpuidle_unregister(drivers[cnt]);
-+		kfree(drivers[cnt]->cpumask);
-+		kfree(drivers[cnt]);
-+	}
-+
-+	free_cpumask_var(tmpmask);
-+
- 	return ret;
- }
- device_initcall(arm64_idle_init);
--- 
-2.2.1
+[jwboyer@nuc-celeron ~]$ grep _THERMAL=m
+/boot/config-4.0.0-0.rc2.git1.1.fc23.x86_64
+CONFIG_X86_PKG_TEMP_THERMAL=m
+CONFIG_INTEL_SOC_DTS_THERMAL=m
+CONFIG_INT340X_THERMAL=m
+[jwboyer@nuc-celeron ~]$
 
+Maybe the commit should be checking for INTEL_SOC_DTS_THERMAL
+unconditionally, and not as an #elfi?
+
+josh
+
+>
+> Thanks,
+> rui
+>
+> -----Original Message-----
+> From: jwboyer@gmail.com [mailto:jwboyer@gmail.com] On Behalf Of Josh Boyer
+> Sent: Wednesday, March 4, 2015 10:05 PM
+> To: Zhang, Rui; Eduardo Valentin
+> Cc: Linux PM list; Linux-Kernel@Vger. Kernel. Org
+> Subject: intel_soc_dts_thermal binding issues
+> Importance: High
+>
+> Hi All,
+>
+> We've seen a number of reports where people see:
+>
+> [   20.499427] intel_soc_dts_thermal: request_threaded_irq ret -22
+> [   20.519160] intel_soc_dts_thermal: request_threaded_irq ret -22
+> [   20.532660] intel_soc_dts_thermal: request_threaded_irq ret -22
+>
+> in their boot logs.  They view this as a kernel bug and report is as such.  The above log came from an ASUS x200ma machine, which has a quad core Baytrail-M Pentium CPU (N3530).
+>
+> I can't tell if the issue is because the driver is trying to bind to all 4 cores and only CPU0 works, or what other issue would cause this.
+> I personally have a Celeron based NUC with a N2820 that gets the error above for both cores and the driver doesn't load at all.
+>
+> Is there something else the driver should be doing to bind to the various CPUs?  If there's nothing else it can key off of, can we drop the pr_err so it stops showing up in dmesg?
+>
+> josh
