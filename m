@@ -1,116 +1,50 @@
-From: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: Re: [RFC/PATCH 4/6] ARM: shmobile: r8a7791: Add Core-Standby CPUIdle
- support for r8a7791
-Date: Thu, 5 Mar 2015 10:19:12 +0900
-Message-ID: <54F7AF10.7070702@renesas.com>
-References: <1425444946-3084-1-git-send-email-keita.kobayashi.ym@renesas.com> <1425444946-3084-5-git-send-email-keita.kobayashi.ym@renesas.com> <CAKDJKT6vx8xhHtxCerXen0NqRao5d5hzZdj8LtSJ4hiMjhZXdA@mail.gmail.com> <20150305002931.GB4558@verge.net.au>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: intel_soc_dts_thermal binding issues
+Date: Thu, 5 Mar 2015 01:55:45 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B90926301491FCF@SHSMSX101.ccr.corp.intel.com>
+References: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor4.renesas.com ([210.160.252.174]:64450 "EHLO
-	relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753524AbbCEBT3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 20:19:29 -0500
-In-Reply-To: <20150305002931.GB4558@verge.net.au>
+Received: from mga02.intel.com ([134.134.136.20]:63876 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754125AbbCEB6q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2015 20:58:46 -0500
+In-Reply-To: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Manish Badarkhe <badarkhe.manish@gmail.com>, rjw@rjwysocki.net, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com
+To: Josh Boyer <jwboyer@fedoraproject.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-Hi Manish, Simon
+What kernel are you using?
+I think it should be fixed by commit 014d9d5d0cc1da79bbe48fbc5e1068c5616238d2, which is merged in 3.19-rc5.
 
-Thank you for your comment.
+Thanks,
+rui
 
-(2015/03/05 9:29), Simon Horman wrote:
+-----Original Message-----
+From: jwboyer@gmail.com [mailto:jwboyer@gmail.com] On Behalf Of Josh Boyer
+Sent: Wednesday, March 4, 2015 10:05 PM
+To: Zhang, Rui; Eduardo Valentin
+Cc: Linux PM list; Linux-Kernel@Vger. Kernel. Org
+Subject: intel_soc_dts_thermal binding issues
+Importance: High
 
-> On Wed, Mar 04, 2015 at 11:03:03AM +0530, Manish Badarkhe wrote:
->> Hi,
->>
->> On Wed, Mar 4, 2015 at 10:25 AM, Keita Kobayashi <
->> keita.kobayashi.ym@renesas.com> wrote:
->>
->>> This patch Add the wfi and Core-Standby for CPUIdle power states
->>> support for the r8a7791 SoC.
->>>
->>> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
->>> ---
->>>  arch/arm/mach-shmobile/pm-r8a7791.c | 41
->>> +++++++++++++++++++++++++++++++++++++
->>>  1 file changed, 41 insertions(+)
->>>
->>> diff --git a/arch/arm/mach-shmobile/pm-r8a7791.c
->>> b/arch/arm/mach-shmobile/pm-r8a7791.c
->>> index 25f107b..6c00d37 100644
->>> --- a/arch/arm/mach-shmobile/pm-r8a7791.c
->>> +++ b/arch/arm/mach-shmobile/pm-r8a7791.c
->>> @@ -10,8 +10,13 @@
->>>   * for more details.
->>>   */
->>>
->>> +#include <linux/cpuidle.h>
->>>  #include <linux/kernel.h>
->>>  #include <linux/smp.h>
->>> +#include <linux/platform_data/renesas-cpuidle.h>
->>> +#include <linux/pm.h>
->>> +#include <asm/cpuidle.h>
->>> +#include <asm/cputype.h>
->>>  #include <asm/io.h>
->>>  #include "common.h"
->>>  #include "pm-rcar.h"
->>> @@ -43,6 +48,41 @@ static inline void r8a7791_sysc_init(void) {}
->>>
->>>  #endif /* CONFIG_SMP */
->>>
->>> +#ifdef CONFIG_ARM_RENESAS_CPUIDLE
->>> +static struct cpuidle_driver r8a7791_cpuidle_driver = {
->>> +       .name = "rcar_r8a7791_cpuidle",
->>> +       .owner = THIS_MODULE,
->>> +       .states = {
->>> +               [0] = ARM_CPUIDLE_WFI_STATE,
->>> +               [1] = {
->>> +                       .name = "Core-Standby",
->>> +                       .desc = "Core Standby Mode",
->>> +                       .exit_latency = 2800,
->>> +                       .target_residency = 2800,
->>> +                       .enter = shmobile_smp_apmu_enter_cpuidle,
->>> +               },
->>> +       },
->>> +       .state_count = 2,
->>> +};
->>> +
->>> +static struct renesas_cpuidle_driver r8a7791_cpuidle = {
->>> +       .target_cpu     = ARM_CPU_PART_CORTEX_A15,
->>> +       .renesas_drv    = &r8a7791_cpuidle_driver,
->>> +};
->>> +
->>> +static struct renesas_cpuidle r8a7791_data = {
->>> +       .num_drvs       = 1,
->>> +       .rcd            = &r8a7791_cpuidle,
->>> +};
->>> +
->>> +static void __init r8a7791_cpuidle_init(void)
->>> +{
->>> +       shmobile_cpuidle_set_driver(&r8a7791_data);
->>> +}
->>> +#else
->>> +static void __init r8a7791_cpuidle_init(void) {}
->>> +#endif
->>>
->>
->> You can use 'IS_ENABLED' instead of this '#ifdef' during calling of
->> function 'r8a7791_cpuidle_init' to avoid empty function in '#else' part
->> of the code.
->>
->> May be it is possible to replace all '#ifdef' with 'IS_ENABLED' call
->> in this file and also rest of patches in this series.
-> 
-> Kobayashi-san,
-> 
-> it seems likely that Manish's suggestion will likely lead
-> to cleaner code. Could you look into it?
+Hi All,
 
-I will fix it with V2 patch series.
+We've seen a number of reports where people see:
 
-Regards.
-Keita Kobayashi
+[   20.499427] intel_soc_dts_thermal: request_threaded_irq ret -22
+[   20.519160] intel_soc_dts_thermal: request_threaded_irq ret -22
+[   20.532660] intel_soc_dts_thermal: request_threaded_irq ret -22
+
+in their boot logs.  They view this as a kernel bug and report is as such.  The above log came from an ASUS x200ma machine, which has a quad core Baytrail-M Pentium CPU (N3530).
+
+I can't tell if the issue is because the driver is trying to bind to all 4 cores and only CPU0 works, or what other issue would cause this.
+I personally have a Celeron based NUC with a N2820 that gets the error above for both cores and the driver doesn't load at all.
+
+Is there something else the driver should be doing to bind to the various CPUs?  If there's nothing else it can key off of, can we drop the pr_err so it stops showing up in dmesg?
+
+josh
