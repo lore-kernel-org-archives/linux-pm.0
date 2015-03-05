@@ -1,47 +1,45 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
-Date: Thu, 5 Mar 2015 07:57:03 +0000
-Message-ID: <20150305075703.GC29183@x1>
-References: <cover.1423082056.git.todd.e.brandt@linux.intel.com>
- <20150305003013.GA1033@earth>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 09/15] twl4030_charger: allow max_current to be managed
+ via sysfs.
+Date: Thu, 5 Mar 2015 09:17:51 +0100
+Message-ID: <20150305081751.GA9093@amd>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043351.4243.46323.stgit@notabene.brown>
+ <20150302210525.GN13270@amd>
+ <20150305172600.30951e70@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f180.google.com ([74.125.82.180]:44789 "EHLO
-	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754350AbbCEH5I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 02:57:08 -0500
-Received: by wesk11 with SMTP id k11so51166107wes.11
-        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2015 23:57:07 -0800 (PST)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150305003013.GA1033@earth>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150305172600.30951e70@notabene.brown>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Todd Brandt <todd.e.brandt@linux.intel.com>
 
-On Thu, 05 Mar 2015, Sebastian Reichel wrote:
 
-> Hi,
->=20
-> On Wed, Feb 04, 2015 at 04:24:35PM -0800, Todd Brandt wrote:
-> > New power_supply driver at driver/power which interfaces with the
-> > axp20x mfd driver as a cell. Provides battery info, monitors for
-> > changes, and generates alerts on temperature and capacity issues
-> >=20
-> > Sebestian, please review the patch set and consider it for 3.20 rc1=
-=2E
-> > I've applied it over git.infradead.org/battery-2.6.git/master and
-> > verified that it works. Thanks.
->=20
-> Lee, are you ok with patches 1+2 going through power supply
-> subsystem?
+> > Is this in uA or mA? uA. Ok.
+> 
+> uA, now described in Documentation/ABI/testing/sysfs-class-power-twl4030
+> 
+> +What: /sys/class/power_supply/twl4030_ac/max_current
+> +      /sys/class/power_supply/twl4030_usb/max_current
+> +Description:
+> +       Read/Write limit on current which which may
+> +       be drawn from the ac (Accessory Charger) or
+> +       USB port.
+> +
+> +       Value is in micro-Amps.
+> +
+> +       Value is set automatically to an appropriate
+> +       value when a cable is plugged on unplugged.
+> +
+> +       Value can the set by writing to the attribute.
+> +       The change will only persist until the next
+> +       plug event.  These event are reported via udev.
 
-Yeah, go for it.
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Thanks!
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
