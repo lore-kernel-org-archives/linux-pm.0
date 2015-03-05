@@ -1,72 +1,54 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
- IRQF_NO_SUSPEND
-Date: Thu, 5 Mar 2015 09:53:06 +0100
-Message-ID: <20150305095306.3db98ac8@bbrezillon>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
- <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com>
- <20150304183809.GD22156@leverpostej>
+From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+Subject: [RFC/PATCH v2 0/6] Add CPUIdle support for Renesas SoCs
+Date: Thu, 5 Mar 2015 17:58:57 +0900
+Message-ID: <1425545943-1440-1-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:55284 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751846AbbCEIxL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 03:53:11 -0500
-In-Reply-To: <20150304183809.GD22156@leverpostej>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: horms@verge.net.au, rjw@rjwysocki.net
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com, badarkhe.manish@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>lin
 
-Hi Mark,
+Hello
 
-On Wed, 4 Mar 2015 18:38:09 +0000
-Mark Rutland <mark.rutland@arm.com> wrote:
+These patches add CPUIdle support for Renesas SoCs. 
+These patches have been tested on Renesas Gen2 series with
+following cases on renesas-devel-20150301-v4.0-rc1 tag.
 
-> Hi Boris,
-> 
-> On Mon, Mar 02, 2015 at 09:18:17AM +0000, Boris Brezillon wrote:
-> > The watchdog interrupt (only used when activating software watchdog)
-> > shouldn't be suspended when entering suspend mode, because it is shared
-> > with a timer device (which request the line with IRQF_NO_SUSPEND) and once
-> > the watchdog "Mode Register" has been written, it cannot be changed (which
-> > means we cannot disable the watchdog interrupt when entering suspend).
-> > 
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> >  drivers/watchdog/at91sam9_wdt.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/watchdog/at91sam9_wdt.c b/drivers/watchdog/at91sam9_wdt.c
-> > index 6df9405..1443b3c 100644
-> > --- a/drivers/watchdog/at91sam9_wdt.c
-> > +++ b/drivers/watchdog/at91sam9_wdt.c
-> > @@ -208,7 +208,8 @@ static int at91_wdt_init(struct platform_device *pdev, struct at91wdt *wdt)
-> >  
-> >  	if ((tmp & AT91_WDT_WDFIEN) && wdt->irq) {
-> >  		err = request_irq(wdt->irq, wdt_interrupt,
-> > -				  IRQF_SHARED | IRQF_IRQPOLL,
-> > +				  IRQF_SHARED | IRQF_IRQPOLL |
-> > +				  IRQF_NO_SUSPEND,
-> 
-> I'm a little confused by this. What happens if the watchdog fires when
-> we're actually in the suspended state (when IRQF_NO_SUSPEND interrupts
-> aren't guaranteed to be delivered).
+[Test case]
+   a. Lager board(CA15 * 4)
+   b. Lager board(CA7 * 4)
+   c. Lager board(CA15 * 4 + CA7 *4)
+   d. Koelsch board(CA15 * 2)
 
-It reboot the system.
+These cases work fine.
 
-> 
-> Does this rely on the watchdog IRQ being taken while in the actual
-> suspended state (but not waking up the system while handling it)?
+Changes since v1
+- use 'IS_ENABLED' instead of '#ifdef'
 
-Actually this interrupt handler is just here to reboot the system if the
-user didn't refresh the watchdog.
-Do we really have to wake up the system to then call emergency_restart ?
+Keita Kobayashi (6):
+  cpuidle: renesas: Add CPUIdle Driver for Renesas SoCs
+  ARM: shmobile: Change CPUIdle InterFace
+  ARM: shmobile: APMU: Add Core-Standby function for CPUIdle
+  ARM: shmobile: r8a7791: Add Core-Standby CPUIdle support for r8a7791
+  ARM: shmobile: r8a7790: Add Core-Standby CPUIdle support for r8a7790
+  ARM: shmobile: Enable Renesas CPUIdle for shmobile_defconfig
 
+ arch/arm/configs/shmobile_defconfig           |   2 +
+ arch/arm/mach-shmobile/common.h               |  12 ++-
+ arch/arm/mach-shmobile/cpuidle.c              |  31 ++++---
+ arch/arm/mach-shmobile/platsmp-apmu.c         |  20 ++++-
+ arch/arm/mach-shmobile/pm-r8a7790.c           |  47 ++++++++++
+ arch/arm/mach-shmobile/pm-r8a7791.c           |  34 ++++++++
+ drivers/cpuidle/Kconfig.arm                   |   8 ++
+ drivers/cpuidle/Makefile                      |   1 +
+ drivers/cpuidle/cpuidle-renesas.c             | 118 ++++++++++++++++++++++++++
+ include/linux/platform_data/renesas-cpuidle.h |  24 ++++++
+ 10 files changed, 283 insertions(+), 14 deletions(-)
+ create mode 100644 drivers/cpuidle/cpuidle-renesas.c
+ create mode 100644 include/linux/platform_data/renesas-cpuidle.h
 
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+1.9.1
+
