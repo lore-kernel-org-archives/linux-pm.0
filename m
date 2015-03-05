@@ -1,302 +1,83 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/3] thermal: exynos: Add the support for Exynos5433 TMU
-Date: Thu, 05 Mar 2015 14:44:54 +0900
-Message-ID: <54F7ED56.8020403@samsung.com>
-References: <1424950521-6236-1-git-send-email-cw00.choi@samsung.com>
- <1424950521-6236-2-git-send-email-cw00.choi@samsung.com>
- <20150304113831.6da39aa8@amdc2363>
+From: NeilBrown <neilb@suse.de>
+Subject: Re: [PATCH 04/15] twl4030_charger: use runtime_pm to keep usb phy
+ active while charging.
+Date: Thu, 5 Mar 2015 16:48:18 +1100
+Message-ID: <20150305164818.53d7c318@notabene.brown>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+	<20150224043350.4243.51289.stgit@notabene.brown>
+	<20150225072443.GG21323@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20150304113831.6da39aa8@amdc2363>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, kgene@kernel.org, b.zolnierkie@samsung.com, amit.daniel@samsung.com, a.kesavan@samsung.com, inki.dae@samsung.com, chanho61.park@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ boundary="Sig_/v5A2qcLM684RDC9/=wtMc=2"; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:42874 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752950AbbCEFsb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 Mar 2015 00:48:31 -0500
+In-Reply-To: <20150225072443.GG21323@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Lukasz,
+--Sig_/v5A2qcLM684RDC9/=wtMc=2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On 03/04/2015 07:38 PM, Lukasz Majewski wrote:
-> Hi Chanwoo,
-> 
->> This patch adds the support for Exynos5433's TMU (Thermal Management
->> Unit). Exynos5433 has a little different register bit fields as
->> following description:
->> - Support the eight trip points for rising/falling interrupt by using
->> two registers
->> - Read the calibration type (1-point or 2-point) and sensor id from
->> TRIMINFO register
->> - Use a little different register address
->>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c | 161
->> +++++++++++++++++++++++++++++++++--
->> drivers/thermal/samsung/exynos_tmu.h |   1 + 2 files changed, 157
->> insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->> b/drivers/thermal/samsung/exynos_tmu.c index 1d30b09..1bb2fb7 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -97,6 +97,32 @@
->>  #define EXYNOS4412_MUX_ADDR_VALUE          6
->>  #define EXYNOS4412_MUX_ADDR_SHIFT          20
->>  
->> +/* Exynos5433 specific registers */
->> +#define EXYNOS5433_TMU_REG_CONTROL1		0x024
->> +#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
->> +#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
->> +#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
->> +#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
->> +#define EXYNOS5433_THD_TEMP_RISE3_0		0x050
->> +#define EXYNOS5433_THD_TEMP_RISE7_4		0x054
->> +#define EXYNOS5433_THD_TEMP_FALL3_0		0x060
->> +#define EXYNOS5433_THD_TEMP_FALL7_4		0x064
->> +#define EXYNOS5433_TMU_REG_INTEN		0x0c0
->> +#define EXYNOS5433_TMU_REG_INTPEND		0x0c8
->> +#define EXYNOS5433_TMU_EMUL_CON			0x110
->> +#define EXYNOS5433_TMU_PD_DET_EN		0x130
->> +
->> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT	16
->> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT	23
->> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_MASK	\
->> +			(0xf << EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT)
->> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_MASK	BIT(23)
->> +
->> +#define EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING	0
->> +#define EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING	1
->> +
->> +#define EXYNOS5433_PD_DET_EN			1
->> +
->>  /*exynos5440 specific registers*/
->>  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
->>  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
->> @@ -484,6 +510,101 @@ out:
->>  	return ret;
->>  }
->>  
->> +static int exynos5433_tmu_initialize(struct platform_device *pdev)
->> +{
->> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->> +	struct exynos_tmu_platform_data *pdata = data->pdata;
->> +	struct thermal_zone_device *tz = data->tzd;
->> +	unsigned int status, trim_info;
->> +	unsigned int rising_threshold = 0, falling_threshold = 0;
->> +	unsigned long temp, temp_hist;
->> +	int ret = 0, threshold_code, i, sensor_id, cal_type;
->> +
->> +	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
->> +	if (!status) {
->> +		ret = -EBUSY;
->> +		goto out;
->> +	}
->> +
->> +	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
->> +	sanitize_temp_error(data, trim_info);
->> +
->> +	/* Read the temperature sensor id */
->> +	sensor_id = (trim_info & EXYNOS5433_TRIMINFO_SENSOR_ID_MASK)
->> +				>>
->> EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT;
->> +	dev_info(&pdev->dev, "Temperature sensor ID: 0x%x\n",
->> sensor_id); +
-> 
-> 	Isn't dev_info a bit too noisy? IMHO, dev_dbg would be enough
-> 	here.
-> 
-> 	Please consider this globally.
+On Wed, 25 Feb 2015 07:24:43 +0000 Lee Jones <lee.jones@linaro.org> wrote:
 
-OK, I'll use dev_dbg.
+> On Tue, 24 Feb 2015, NeilBrown wrote:
+>=20
+> > The twl4030 usb phy needs to be active while we are using
+> > the USB VBUS as a current source for charging.
+> > In particular, the usb3v1 regulator must be enabled and the
+> > PHY_PWR_PHYPWD bit must be set to keep the phy powered.
+> >=20
+> > commit ab37813f4093a5f59cb8e083cde277289dc72ed3
+> >     twl4030_charger: Allow charger to control the regulator that feeds =
+it
+> >=20
+> > Gave the charger control over the regulator, but didn't resolve
+> > the PHY_PWR_PHYPWD issue.
+> >=20
+> > Now that both of these are controlled by runtime_pm in
+> > phy-twl4030-usb, we can simply take a runtime_pm reference to the USB
+> > phy whenever the charger wants to use it as a current source.
+> >=20
+> > So this patch reverts the above commit, and adds the necessary
+> > runtime_pm calls.
+> >=20
+> > Signed-off-by: NeilBrown <neilb@suse.de>
+> > ---
+> >  drivers/mfd/twl-core.c          |    9 ++++-----
+>=20
+> Acked-by: Lee Jones <lee.jones@linaro.org>
 
-> 
->> +	/* Read the calibration mode */
->> +	writel(trim_info, data->base + EXYNOS_TMU_REG_TRIMINFO);
->> +	cal_type = (trim_info & EXYNOS5433_TRIMINFO_CALIB_SEL_MASK)
->> +				>>
->> EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT; +
->> +	switch (cal_type) {
->> +	case EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING:
->> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
->> +		break;
->> +	case EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING:
->> +		pdata->cal_type = TYPE_TWO_POINT_TRIMMING;
->> +		break;
->> +	default:
->> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
->> +		break;
->> +	};
->> +
->> +	dev_info(&pdev->dev, "Calibration type is %d-point
->> calibration\n",
->> +			cal_type ?  2 : 1);
->> +
->> +	/* Write temperature code for rising and falling threshold */
->> +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
->> +		int rising_reg_offset, falling_reg_offset;
->> +		int j = 0;
->> +
->> +		switch (i) {
->> +		case 0:
->> +		case 1:
->> +		case 2:
->> +		case 3:
->> +			rising_reg_offset =
->> EXYNOS5433_THD_TEMP_RISE3_0;
->> +			falling_reg_offset =
->> EXYNOS5433_THD_TEMP_FALL3_0;
->> +			j = i;
->> +			break;
->> +		case 4:
->> +		case 5:
->> +		case 6:
->> +		case 7:
->> +			rising_reg_offset =
->> EXYNOS5433_THD_TEMP_RISE7_4;
->> +			falling_reg_offset =
->> EXYNOS5433_THD_TEMP_FALL7_4;
->> +			j = i - 4;
->> +			break;
->> +		default:
->> +			continue;
->> +		}
->> +
->> +		/* Write temperature code for rising threshold */
->> +		tz->ops->get_trip_temp(tz, i, &temp);
->> +		temp /= MCELSIUS;
->> +		threshold_code = temp_to_code(data, temp);
->> +
->> +		rising_threshold = readl(data->base +
->> rising_reg_offset);
->> +		rising_threshold |= (threshold_code << j * 8);
->> +		writel(rising_threshold, data->base +
->> rising_reg_offset); +
->> +		/* Write temperature code for falling threshold */
->> +		tz->ops->get_trip_hyst(tz, i, &temp_hist);
->> +		temp_hist = temp - (temp_hist / MCELSIUS);
->> +		threshold_code = temp_to_code(data, temp_hist);
->> +
->> +		falling_threshold = readl(data->base +
->> falling_reg_offset);
->> +		falling_threshold &= ~(0xff << j * 8);
->> +		falling_threshold |= (threshold_code << j * 8);
->> +		writel(falling_threshold, data->base +
->> falling_reg_offset);
->> +	}
->> +
->> +	data->tmu_clear_irqs(data);
->> +out:
->> +	return ret;
->> +}
->> +
->>  static int exynos5440_tmu_initialize(struct platform_device *pdev)
->>  {
->>  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->> @@ -682,7 +803,8 @@ static void exynos7_tmu_control(struct
->> platform_device *pdev, bool on) 
->>  	if (on) {
->>  		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
->> -		con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
->> +		if (data->soc == SOC_ARCH_EXYNOS7)
->> +			con |= (1 << EXYNOS7_PD_DET_EN_SHIFT);
-> 
-> 	Isn't exynos7 implying that we already have SOC_ARCH_EXYNOS7?
-> 	Why do we need this extra check?
+Thanks.
+I guess that clear it to go in though the 'power supply' tree.
 
-On this patch, Exynos5433 TMU use the exynos7_tmu_control function.
-But, as below your comment, I'll add the separate function for Exynos5433.
+NeilBrown
 
-> 
->>  		interrupt_en =
->>  			(of_thermal_is_trip_valid(tz, 7)
->>  			<< EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
->> @@ -705,11 +827,20 @@ static void exynos7_tmu_control(struct
->> platform_device *pdev, bool on) interrupt_en <<
->> EXYNOS_TMU_INTEN_FALL0_SHIFT; } else {
->>  		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
->> -		con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
->> +		if (data->soc == SOC_ARCH_EXYNOS7)
->> +			con &= ~(1 << EXYNOS7_PD_DET_EN_SHIFT);
->>  		interrupt_en = 0; /* Disable all interrupts */
->>  	}
->>  
->> -	writel(interrupt_en, data->base + EXYNOS7_TMU_REG_INTEN);
->> +	if (data->soc == SOC_ARCH_EXYNOS5433) {
->> +		int pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
->> +
->> +		writel(pd_det_en, data->base +
->> EXYNOS5433_TMU_PD_DET_EN);
->> +		writel(interrupt_en, data->base +
->> EXYNOS5433_TMU_REG_INTEN);
->> +	} else {
->> +		writel(interrupt_en, data->base +
->> EXYNOS7_TMU_REG_INTEN);
->> +	}
->> +
->>  	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
->>  }
->>  
->> @@ -770,6 +901,8 @@ static void exynos4412_tmu_set_emulation(struct
->> exynos_tmu_data *data, 
->>  	if (data->soc == SOC_ARCH_EXYNOS5260)
->>  		emul_con = EXYNOS5260_EMUL_CON;
->> +	if (data->soc == SOC_ARCH_EXYNOS5433)
->> +		emul_con = EXYNOS5433_TMU_EMUL_CON;
->>  	else if (data->soc == SOC_ARCH_EXYNOS7)
->>  		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
->>  	else
->> @@ -882,6 +1015,9 @@ static void exynos4210_tmu_clear_irqs(struct
->> exynos_tmu_data *data) } else if (data->soc == SOC_ARCH_EXYNOS7) {
->>  		tmu_intstat = EXYNOS7_TMU_REG_INTPEND;
->>  		tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
->> +	} else if (data->soc == SOC_ARCH_EXYNOS5433) {
->> +		tmu_intstat = EXYNOS5433_TMU_REG_INTPEND;
->> +		tmu_intclear = EXYNOS5433_TMU_REG_INTPEND;
->>  	} else {
->>  		tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
->>  		tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
->> @@ -926,6 +1062,7 @@ static const struct of_device_id
->> exynos_tmu_match[] = { { .compatible = "samsung,exynos5260-tmu", },
->>  	{ .compatible = "samsung,exynos5420-tmu", },
->>  	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
->> +	{ .compatible = "samsung,exynos5433-tmu", },
->>  	{ .compatible = "samsung,exynos5440-tmu", },
->>  	{ .compatible = "samsung,exynos7-tmu", },
->>  	{ /* sentinel */ },
->> @@ -949,6 +1086,8 @@ static int exynos_of_get_soc_type(struct
->> device_node *np) else if (of_device_is_compatible(np,
->>  					 "samsung,exynos5420-tmu-ext-triminfo"))
->>  		return SOC_ARCH_EXYNOS5420_TRIMINFO;
->> +	else if (of_device_is_compatible(np,
->> "samsung,exynos5433-tmu"))
->> +		return SOC_ARCH_EXYNOS5433;
->>  	else if (of_device_is_compatible(np,
->> "samsung,exynos5440-tmu")) return SOC_ARCH_EXYNOS5440;
->>  	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
->> @@ -1069,6 +1208,13 @@ static int exynos_map_dt_data(struct
->> platform_device *pdev) data->tmu_set_emulation =
->> exynos4412_tmu_set_emulation; data->tmu_clear_irqs =
->> exynos4210_tmu_clear_irqs; break;
->> +	case SOC_ARCH_EXYNOS5433:
->> +		data->tmu_initialize = exynos5433_tmu_initialize;
->> +		data->tmu_control = exynos7_tmu_control;
-> 
-> I must frankly admit that I'm a bit confused.
-> 
-> I'm curious why we didn't either define totally separate set of
-> exynos5433_tmu_* functions or reusing existing exynos7_tmu_* ?
-> 
-> Are exynos7 and exynos5433 so much different?
+--Sig_/v5A2qcLM684RDC9/=wtMc=2
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Exynos5444 TMU has a bit different register map from Exynos7 TMU.
-To remove some confusion between Exynos7 and Exnynos5433,
-I'll add seprate function for Exynos5433 TMU.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-[snip]
+iQIVAwUBVPfuIjnsnt1WYoG5AQJngBAAiGFHO1Pl5+ZlXb7vwO9rymqTd8rKGp1O
+SNiCzDn3flKIYADi1D1RFvNF87qOOLHOv/HNa6miQPqunt4nlbKyimF5pX1Z+U+h
+dO/hhhZNF7a+RPoR64/1tOacH92x8vuueNUqjLmTCedfekGOqcS4WaDIMEK1Cz1X
+sLiK2pIUpugx+0S3Dw+gNdGPdkro4+bbFPstEBcoNP7Grns4qOaQgwROwZa5A89z
+mxIqe0nHFdGU5BPcDXUEp7WdVSy6Z4EAJmMKQ7LlzjSW0pvuN1rDItWJVkXnNdCt
+98ENJPcGachh2/CMH1W9KdbcPSXz91N9IZSEPn+3XdnCmz5n3OdHiajvd42Hrd0D
+V8zK+WcQBnQuWS5yBJVBbCeEOWZSiYl5vqq36sVrqXaiWWhXvvt8GDX6ASy4X5xn
+S6PG7T3PcTk3E3NjDMMmzo2gv1TnaqCxwNgUDpYqT2xlNb2WIga0S+cRK9CJTciN
+wl62wse4EPa7Gju+FghqlLzGcUF4UwtPXvGW24ECL8qyGgnnatjXaeQwa6+oG2Mc
+/Zp5eACoTWLhYJsCkbSNWDy3jWErRNcd+MTOJLnl/tNRsR7jdWOp9RC/II4KNyWb
+rjIn3KzWsEI++wVy3YtZinbP8Qt+d/kr5pAV3EPwmkPKCa8oHqgve5kk3p6yjWWz
+0atkfBqyPBU=
+=h4Or
+-----END PGP SIGNATURE-----
 
-
-Thanks,
-Chanwoo Choi
+--Sig_/v5A2qcLM684RDC9/=wtMc=2--
