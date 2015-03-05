@@ -1,53 +1,122 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] genirq: describe IRQF_COND_SUSPEND
-Date: Thu, 5 Mar 2015 12:07:02 +0000
-Message-ID: <20150305120702.GB14093@leverpostej>
-References: <1424771762-16343-1-git-send-email-boris.brezillon@free-electrons.com>
- <8151717.nkhnGBri9h@vostro.rjw.lan>
- <20150226191724.0ae4ca4e@bbrezillon>
- <6864616.1aRDSmSsvx@vostro.rjw.lan>
- <20150304194246.GF22156@leverpostej>
- <20150304200040.GA12126@leverpostej>
- <20150304221729.GI3989@piout.net>
- <20150305110411.GC13617@leverpostej>
- <20150305113306.GP3989@piout.net>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Re: reboot command fails with low frequency
+Date: Thu, 5 Mar 2015 14:25:51 +0200
+Message-ID: <CAJ2oMhJk9_Hdov4ue-8WWNbEaDh862GhbYWwBtaUZTdbbFkWbQ@mail.gmail.com>
+References: <CAJ2oMhLDbA_BVsZPnbNq460mYbUw6Z7QpB=YmSCjX65NL1BaFg@mail.gmail.com>
+	<CAOf5uwkWvd_gH08t-AacU8Jp4gFmr4X42bMv4eT43Uhaaa5GMQ@mail.gmail.com>
+	<CAJ2oMh+HC7wuZ6+F7jXe9hGe68=WWsu5=H1h0OZanEUs6HqxzQ@mail.gmail.com>
+	<CAOf5uwmyOZOTMBGnQU38-D=Emo6Rdrd8fDW9Hk+_r4RG4=+nrA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56890 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbbCEMHb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 Mar 2015 07:07:31 -0500
-Content-Disposition: inline
-In-Reply-To: <20150305113306.GP3989@piout.net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAOf5uwmyOZOTMBGnQU38-D=Emo6Rdrd8fDW9Hk+_r4RG4=+nrA@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Michael Trimarchi <michael@amarulasolutions.com>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Boris Brezillon <boris.brezillon@free-electrons.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Mar 05, 2015 at 11:33:06AM +0000, Alexandre Belloni wrote:
-> On 05/03/2015 at 11:04:11 +0000, Mark Rutland wrote :
-> > > > +In rare cases an IRQ can be shared between a wakeup device driver and an
-> > > > +IRQF_NO_SUSPEND user. In order for this to be safe, the wakeup device driver
-> > > > +must be able to discern spurious IRQs from genuine wakeup events (signalling
-> > > 
-> > > And genuine question, should we use British English or American English
-> > > or we don't care ?
-> > 
-> > Have I written something that isn't valid American English there? I read
-> > over this a few times and failed to spot anything obvious.
-> > 
-> > I'm happy to change for consistency, I generally assume that's the most
-> > important thing.
-> 
-> I'd say signalling vs signaling. I actually had to look up which one was
-> correct. I'm personally using Incorrect/Broken English so I'm definitely
-> not here to give lessons.
+On Thu, Mar 5, 2015 at 12:58 PM, Michael Trimarchi
+<michael@amarulasolutions.com> wrote:
+> Hi
+>
+> You should find the twl4030 power script and you should have something like this
+>
+> static struct twl4030_ins wrst_seq[] __initdata = {
+>         {MSG_SINGULAR(DEV_GRP_NULL, 0x1b, RES_STATE_OFF), 2},
+>         {MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_WRST), 15},
+>         {MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_WRST), 15},
+>         {MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_WRST), 0x60},
+>         {MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 2},
+>         {MSG_SINGULAR(DEV_GRP_NULL, 0x1b, RES_STATE_ACTIVE), 2},
+> };
+>
+> static struct twl4030_script wrst_script __initdata = {
+>         .script = wrst_seq,
+>         .size   = ARRAY_SIZE(wrst_seq),
+>         .flags  = TWL4030_WRST_SCRIPT,
+> };
+>
+> static struct twl4030_script *omap3_power_scripts[] __initdata = {
+>         &wrst_script,
+> };
+>
+> If I remember it was solved by some change here. In my old kernel I
+> have this commit
+>
+>  Fix the reboot at lower frequency
+>
+>     Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+>
+> diff --git a/arch/arm/mach-omap2/board-panther.c
+> b/arch/arm/mach-omap2/board-panther.c
+> index ad2adf3..c71fdd9 100644
+> --- a/arch/arm/mach-omap2/board-panther.c
+> +++ b/arch/arm/mach-omap2/board-panther.c
+> @@ -368,7 +368,7 @@ static int __init panther_i2c_init(void)
+>  {
+>         omap3_pmic_get_config(&panther_twldata,
+>                         TWL_COMMON_PDATA_MADC |
+> -                       TWL_COMMON_PDATA_AUDIO,
+> +                       TWL_COMMON_PDATA_AUDIO | TWL_COMMON_PDATA_POWER,
+>                         TWL_COMMON_REGULATOR_VDAC);
+>
+>         omap3_pmic_init("twl4030", &panther_twldata);
+>
+> But this apply on an old device with a newer kernel and I don't
+> remember now the reason ;) Sorry.
+>
+> Is this an android device? (2.6.37??? is really old)
+>
+I have something quite different in my code:
 
-Easy option to keep everyone happy: s/signalling/indicating/
+static int __init twl4030_config_warmreset_sequence(u8 address)
+{
+int err;
+u8 rd_data;
 
-That should be valid for the English variants I'm aware of, and it has
-the same number of characters so we don't need to reflow the text.
+/* Set WARM RESET SEQ address for P1 */
+err = twl_i2c_write_u8(TWL4030_MODULE_PM_MASTER, address,
+R_SEQ_ADD_WARM);
+if (err)
+goto out;
 
-Mark.
+/* P1/P2/P3 enable WARMRESET */
+err = twl_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &rd_data,
+R_P1_SW_EVENTS);
+if (err)
+goto out;
+
+rd_data |= ENABLE_WARMRESET;
+err = twl_i2c_write_u8(TWL4030_MODULE_PM_MASTER, rd_data,
+R_P1_SW_EVENTS);
+if (err)
+goto out;
+
+err = twl_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &rd_data,
+R_P2_SW_EVENTS);
+if (err)
+goto out;
+
+rd_data |= ENABLE_WARMRESET;
+err = twl_i2c_write_u8(TWL4030_MODULE_PM_MASTER, rd_data,
+R_P2_SW_EVENTS);
+if (err)
+goto out;
+
+err = twl_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &rd_data,
+R_P3_SW_EVENTS);
+if (err)
+goto out;
+
+rd_data |= ENABLE_WARMRESET;
+err = twl_i2c_write_u8(TWL4030_MODULE_PM_MASTER, rd_data,
+R_P3_SW_EVENTS);
+out:
+if (err)
+pr_err("TWL4030 warmreset seq config error\n");
+return err;
+}
+
+And the board is TI's board_omap3evm.c.
+
+Ran
