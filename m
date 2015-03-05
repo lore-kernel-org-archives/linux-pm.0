@@ -1,51 +1,98 @@
-From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
- IRQF_NO_SUSPEND
-Date: Thu, 5 Mar 2015 10:57:29 +0000
-Message-ID: <20150305105729.GB13617@leverpostej>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
- <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com>
- <20150304183809.GD22156@leverpostej>
- <14143668.0aRkeVrc3Q@vostro.rjw.lan>
+From: Michael Trimarchi <michael@amarulasolutions.com>
+Subject: Re: reboot command fails with low frequency
+Date: Thu, 5 Mar 2015 11:58:28 +0100
+Message-ID: <CAOf5uwmyOZOTMBGnQU38-D=Emo6Rdrd8fDW9Hk+_r4RG4=+nrA@mail.gmail.com>
+References: <CAJ2oMhLDbA_BVsZPnbNq460mYbUw6Z7QpB=YmSCjX65NL1BaFg@mail.gmail.com>
+	<CAOf5uwkWvd_gH08t-AacU8Jp4gFmr4X42bMv4eT43Uhaaa5GMQ@mail.gmail.com>
+	<CAJ2oMh+HC7wuZ6+F7jXe9hGe68=WWsu5=H1h0OZanEUs6HqxzQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <14143668.0aRkeVrc3Q-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, "linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Alexandre Belloni <alexandre.belloni@free-electron>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f173.google.com ([209.85.223.173]:37922 "EHLO
+	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755066AbbCEK63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 05:58:29 -0500
+Received: by iecrd18 with SMTP id rd18so75331898iec.5
+        for <linux-pm@vger.kernel.org>; Thu, 05 Mar 2015 02:58:28 -0800 (PST)
+In-Reply-To: <CAJ2oMh+HC7wuZ6+F7jXe9hGe68=WWsu5=H1h0OZanEUs6HqxzQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-[...]
+Hi
 
-> > >  		err = request_irq(wdt->irq, wdt_interrupt,
-> > > -				  IRQF_SHARED | IRQF_IRQPOLL,
-> > > +				  IRQF_SHARED | IRQF_IRQPOLL |
-> > > +				  IRQF_NO_SUSPEND,
-> > 
-> > I'm a little confused by this. What happens if the watchdog fires when
-> > we're actually in the suspended state (when IRQF_NO_SUSPEND interrupts
-> > aren't guaranteed to be delivered).
-> 
-> Why wouldn't they be delivered?
-> 
-> If that's suspend-to-idle, we'll handle them normally.  If that's full suspend,
-> they may not be handled at the last stage (when we run on one CPU with interrupts
-> off), but that was the case before the wakeup interrupts rework already and I'd
-> expect it to be taken into account somehow in the existing code (or if it isn't
-> taken into account, we have a bug, but it is not related to this series).
+You should find the twl4030 power script and you should have something like this
 
-There's no enable_irq_wake(wdt->irq), and I was under the impression this
-is for full suspend.
+static struct twl4030_ins wrst_seq[] __initdata = {
+        {MSG_SINGULAR(DEV_GRP_NULL, 0x1b, RES_STATE_OFF), 2},
+        {MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_WRST), 15},
+        {MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_WRST), 15},
+        {MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_WRST), 0x60},
+        {MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 2},
+        {MSG_SINGULAR(DEV_GRP_NULL, 0x1b, RES_STATE_ACTIVE), 2},
+};
 
-I agree that if problematic, it's an existing bug. Given Boris's
-comments in the other thread this may just a minor semantic issue w.r.t.
-IRQF_NO_SUSPEND vs IRQF_COND_SUSPEND.
+static struct twl4030_script wrst_script __initdata = {
+        .script = wrst_seq,
+        .size   = ARRAY_SIZE(wrst_seq),
+        .flags  = TWL4030_WRST_SCRIPT,
+};
 
-Thanks,
-Mark.
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+static struct twl4030_script *omap3_power_scripts[] __initdata = {
+        &wrst_script,
+};
+
+If I remember it was solved by some change here. In my old kernel I
+have this commit
+
+ Fix the reboot at lower frequency
+
+    Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+
+diff --git a/arch/arm/mach-omap2/board-panther.c
+b/arch/arm/mach-omap2/board-panther.c
+index ad2adf3..c71fdd9 100644
+--- a/arch/arm/mach-omap2/board-panther.c
++++ b/arch/arm/mach-omap2/board-panther.c
+@@ -368,7 +368,7 @@ static int __init panther_i2c_init(void)
+ {
+        omap3_pmic_get_config(&panther_twldata,
+                        TWL_COMMON_PDATA_MADC |
+-                       TWL_COMMON_PDATA_AUDIO,
++                       TWL_COMMON_PDATA_AUDIO | TWL_COMMON_PDATA_POWER,
+                        TWL_COMMON_REGULATOR_VDAC);
+
+        omap3_pmic_init("twl4030", &panther_twldata);
+
+But this apply on an old device with a newer kernel and I don't
+remember now the reason ;) Sorry.
+
+Is this an android device? (2.6.37??? is really old)
+
+Michael
+
+On Thu, Mar 5, 2015 at 10:29 AM, Ran Shalit <ranshalit@gmail.com> wrote:
+>>> We observer that with highest available frequency (600000) reboot
+>>> command is OK, but when frequency is changed to lower value, the
+>>> reboot command fails.
+>>> Has anyone observed such behaviour ?
+>>
+>> I remember some commit for this problem. What version of the linux are
+>> you running?
+>
+> I use Linux version 2.6.37 #36 PREEMPT Thu Mar 5 10:56:04 IST 2015
+> armv7l GNU/Linux
+>
+> Do you know how I can find this fix ?
+>
+> Thanks!
+> Ran
+
+
+
+-- 
+| Michael Nazzareno Trimarchi                     Amarula Solutions BV |
+| COO  -  Founder                                      Cruquiuskade 47 |
+| +31(0)851119172                                 Amsterdam 1018 AM NL |
+|                  [`as] http://www.amarulasolutions.com               |
