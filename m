@@ -1,87 +1,60 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal management updates for v4.0-rc3
-Date: Thu, 5 Mar 2015 08:53:48 -0400
-Message-ID: <20150305125346.GA26869@developer.amazonguestwifi.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: twl4030_charger: need changes to get probed?
+Date: Fri, 6 Mar 2015 22:24:17 +0100
+Message-ID: <20150306212417.GA24169@amd>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043352.4243.11227.stgit@notabene.brown>
+ <20150302210926.GP13270@amd>
+ <20150305173350.50502b95@notabene.brown>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20150305173350.50502b95@notabene.brown>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.de>, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+According to n900 dts, twl4030-bci (aka charger) should be included.
 
-Hello Linus,
+(But it does not seem to do anything useful on n900. I was hoping for
+measurement of input voltage, but .. no.)
 
-Please pull from
+Any ideas why the patch below is needed?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-to receive Thermal Management updates for v4.0-rc3 with top-most
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_ch=
+arger.c
+index d35b83e..96bbbe9 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -714,6 +722,7 @@ static const struct of_device_id twl_bci_of_match[]=
+ =3D {
+ MODULE_DEVICE_TABLE(of, twl_bci_of_match);
+=20
+ static struct platform_driver twl4030_bci_driver =3D {
++	.probe =3D twl4030_bci_probe,
+ 	.driver	=3D {
+ 		.name	=3D "twl4030_bci",
+ 		.of_match_table =3D of_match_ptr(twl_bci_of_match),
+@@ -721,7 +730,7 @@ static struct platform_driver twl4030_bci_driver =3D=
+ {
+ 	.remove	=3D __exit_p(twl4030_bci_remove),
+ };
+=20
+-module_platform_driver_probe(twl4030_bci_driver, twl4030_bci_probe);
++module_platform_driver(twl4030_bci_driver);
+=20
+ MODULE_AUTHOR("Gra=C5=BEvydas Ignotas");
+ MODULE_DESCRIPTION("TWL4030 Battery Charger Interface driver");
 
-2dc10f8963e6a03a1a75deafe1d1984bafab08dd:
 
-  thermal: Make sysfs attributes of cooling devices default attributes (2015-03-05 01:47:57 -0400)
-
-on top of commit 023a6007a08d342b64895a7342e426d12d9627dd:
-
-  Merge tag 'gpio-v4.0-2' of git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio (2015-03-02 14:13:39 -0800)
-
-Specifics:
-- adding Lukasz as maintainer of samsung thermal driver.
-- driver fixes: exynos and int430x.
-- one fix in the exynos cpufreq driver related to cpu cooling (acked by cpufreq maintainer).
-- fix default sysfs attributes of cooling devices
-
-Note: I am sending this pull on Rui's behalf while he fixes issues in his Linux box.
-
-BR,
-
-Eduardo Valentin
-----------------------------------------------------------------
-Chanwoo Choi (1):
-      thermal: exynos: Fix wrong control of power down detection mode for Exynos7
-
-Eduardo Valentin (1):
-      Merge branch 'fixes' of github.com:lmajewski/linux-samsung-thermal into work-fixes
-
-Lukasz Majewski (2):
-      cpufreq: exynos: Use simple approach to asses if cpu cooling can be used
-      MAINTAINERS: Add entry for SAMSUNG THERMAL DRIVER
-
-Matthias Kaehlcke (1):
-      thermal: Make sysfs attributes of cooling devices default attributes
-
-Srinivas Pandruvada (1):
-      Thermal/int340x: Fix memleak for aux trip
-
- MAINTAINERS                                        |  8 +++++
- drivers/cpufreq/exynos-cpufreq.c                   | 21 ++++--------
- .../thermal/int340x_thermal/int340x_thermal_zone.c | 10 +++---
- drivers/thermal/samsung/exynos_tmu.c               |  3 +-
- drivers/thermal/thermal_core.c                     | 37 ++++++++++------------
- 5 files changed, 39 insertions(+), 40 deletions(-)
-
---PEIAKu/WMn1b1Hv9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU+FHHAAoJEMLUO4d9pOJWRw8H/j4l04F4+22bI+Gt4DgHmWGu
-YiXqJE0Ze2QH8TpGx5f4eKPhKLgniNW4dsarj6ze7OGyZGDxACW1Zk1BgN/jmn1O
-uisQ4Kd73vW+e0/ZHc2wMXXXXSk8YrPVFmoziwm7RLYlplzt6gbsi8bd2OR36ML4
-BgkyOsXpXjxVEsrHOy08heGxURWR2sVB1QIW1zs7cLezf5mYehcfan98XuBdtEsj
-9xfE5uAPKdRqLpV+g6AzBcahAQUY3gJn2K6Ggsj307uffRpe8MWttJ8REviH2Z42
-Iygq7sAD9aNV9bGA6KC+q3+zR9JFYk0ZAhFthge6UAXjQW7ASxzjma0gc6GdaZk=
-=UcKR
------END PGP SIGNATURE-----
-
---PEIAKu/WMn1b1Hv9--
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
