@@ -1,406 +1,161 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper functions
-Date: Fri, 06 Mar 2015 03:02:05 +0100
-Message-ID: <1805134.DQxHJSAxE3@vostro.rjw.lan>
-References: <1425602049-2674-1-git-send-email-tony@atomide.com> <1425602049-2674-2-git-send-email-tony@atomide.com>
+From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
+Date: Fri, 6 Mar 2015 13:49:12 +0800
+Message-ID: <CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
+References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
+	<1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
+	<CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
+	<CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
+	<CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425602049-2674-2-git-send-email-tony@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f44.google.com ([209.85.215.44]:36620 "EHLO
+	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755638AbbCFFtO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Mar 2015 00:49:14 -0500
+Received: by labgd6 with SMTP id gd6so8510913lab.3
+        for <linux-pm@vger.kernel.org>; Thu, 05 Mar 2015 21:49:12 -0800 (PST)
+In-Reply-To: <CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Mike Turquette <mturquette@linaro.org>, Chen Fan <fan.chen@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.k>
 
-Please always CC linux-pm on CC patches.
++cc Sascha
 
-On Thursday, March 05, 2015 04:34:06 PM Tony Lindgren wrote:
-> Some devices have separate wake-up interrupts in addition to the
-> normal device interrupts. The wake-up interrupts can be connected
-> to a separate interrupt controller that is always powered. This
-> allows the devices and the whole system to enter deeper idle states
-> while still being able to wake-up to events.
-> 
-> As some devices are already using wake-up interrupts, let's add
-> some helper functions. This is to avoid having the drivers getting
-> things wrong in a different ways. Some of these drivers also have
-> a interrupt re-entrancy problem as the normal device interrupt
-> handler is being called from the wake-up interrupt as pointed out
-> by Thomas Gleixner <tglx@linutronix.de>.
+On 5 March 2015 at 17:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 5 March 2015 at 12:57, Pi-Cheng Chen <pi-cheng.chen@linaro.org> wrote:
+>
+>> On 4 March 2015 at 19:09, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> There are 2 clusters, but only the big cluster need to do voltage scaling in the
+>> notifier, since the voltage controlling is done by cpufreq-dt driver
+>> in this version.
+>> Therefore only one dvfs_info struct here.
+>
+> Do you really think its readable enough that way? You must have added some
+> comments on how this is working. Also, what about putting this stuff in your
+> regulator driver, so that you don't really have to do this in PRE/POST
+> notifiers.
 
-We need to talk a bit about the design here IMO.
+Okay. I will add comments to describe some details about this. About putting
+those stuff into regulator driver, I think you mean creating a
+"virtual regulator
+device" and put all the voltage controlling complex into the driver, right?
+Maybe it's a good idea in this case, but I am sure if this kind of
+virtual regulator
+is acceptable. And the flexibility might be an issue, since we might
+use different
+PMIC for same SoC on different board.
 
-I need to have a look at this tomorrow or over the weekend and not in the
-middle of the night in particular.
+>
+>>>> +       inter_clk = clk_get(&pdev->dev, NULL);
+>>>
+>>> How is this supposed to work ? How will pdev->dev give intermediate
+>>> clock ?
+>>
+>> It works with the the device tree binding in the 2nd patch of this series, too.
+>> Since the cpufreq node is not allowed, would you have some suggestions on
+>> how to get the intermediate clock source in this case?
+>
+> How exactly? I am not doubting your work, just that I don't know how that DT
+> binding will reflect here with clock_get for pdev->dev..
 
-Some comments below, but I may be overlooking things ATM.
+Please correct me if I was wrong. IIUC, It does:
+clk_get() -> __of_clk_get_by_name() -> __of_clk_get()
+The "mtk-cpufreq" device tree node specified the intermediate clock source in
+"clocks" property. And the pdev here came from the "mtk-cpufreq" device tree
+node, so we can get the "clock specifier" by calling
+of_parse_phandle_with_args()
+to find "clocks" property in __of_clk_get().
 
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  arch/arm/mach-omap2/Kconfig  |   1 +
->  drivers/base/power/Makefile  |   1 +
->  drivers/base/power/wakeirq.c | 201 +++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_wakeirq.h   |  69 +++++++++++++++
->  kernel/power/Kconfig         |   4 +
->  5 files changed, 276 insertions(+)
->  create mode 100644 drivers/base/power/wakeirq.c
->  create mode 100644 include/linux/pm_wakeirq.h
-> 
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index 2b8e477..f3e9b88 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -83,6 +83,7 @@ config ARCH_OMAP2PLUS
->  	select OMAP_DM_TIMER
->  	select OMAP_GPMC
->  	select PINCTRL
-> +	select PM_WAKEIRQ
->  	select SOC_BUS
->  	select TI_PRIV_EDMA
->  	select OMAP_IRQCHIP
-> diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-> index 1cb8544..527546e 100644
-> --- a/drivers/base/power/Makefile
-> +++ b/drivers/base/power/Makefile
-> @@ -4,5 +4,6 @@ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
->  obj-$(CONFIG_PM_OPP)	+= opp.o
->  obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
->  obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
-> +obj-$(CONFIG_PM_WAKEIRQ)	+= wakeirq.o
->  
->  ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> new file mode 100644
-> index 0000000..566d69d
-> --- /dev/null
-> +++ b/drivers/base/power/wakeirq.c
-> @@ -0,0 +1,201 @@
-> +/*
-> + * wakeirq.c - Device wakeirq helper functions
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/irq.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/pm_wakeirq.h>
-> +
-> +/**
-> + * handle_dedicated_wakeirq - Handler for device wake-up interrupts
-> + * @wakeirq: Separate wake-up interrupt for a device different
-> + * @_wirq: Wake-up interrupt data
-> + *
-> + * Some devices have a separate wake-up interrupt in addition to the
-> + * regular device interrupt. The wake-up interrupts signal that the
-> + * device should be woken up from a deeper idle state. This handler
-> + * uses device specific pm_runtime functions to wake-up the device
-> + * and then it's up to the device to do whatever it needs to. Note
-> + * as the device may need to restore context and start up regulators,
-> + * this is not a fast path.
-> + *
-> + * Note that we are not resending the lost device interrupts. We assume
-> + * that the wake-up interrupt just needs to wake-up the device, and
-> + * the device pm_runtime_resume() can deal with the situation.
-> + */
-> +static irqreturn_t handle_dedicated_wakeirq(int wakeirq, void *_wirq)
-> +{
-> +	struct wakeirq_source *wirq = _wirq;
-> +	irqreturn_t ret = IRQ_NONE;
-> +
-> +	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
-> +	if (pm_runtime_suspended(wirq->dev)) {
+>
+>>>> +       pd->independent_clocks = 1,
+>>>
+>>> s/,/; ??
+>>
+>> It's strange that I didn't get a compiling error here.
+>> Will fix it.
+>
+> Its a perfectly valid statement :) and so no errors. Both will execute as they
+> will in case of ';', just that output of the later one will be
+> returned. But there
+> in no variable on LHS (left-hand-side) and so the value doesn't matter.
 
-What if the device is resumed on a different CPU right here?
+Thanks for your explanation. :)
 
-> +		pm_runtime_mark_last_busy(wirq->dev);
-> +		pm_runtime_resume(wirq->dev);
+>
+>>> Don't want to free OPP table here on error ?
+>>
+>> Please correct me if I was wrong. Since the OPP table in the dvfs_info is
+>> allocated by devm_kzalloc(), it is supposed to be freed if the probe function
+>> failed, isn't it?
+>>
+>> And the OPP table initialized by of_init_opp_table() in cpu_opp_table_init()
+>> was freed right before the function return since it will be initialized again in
+>> the cpufreq-dt driver.
+>
+> Okay, I was talking about this only and I missed it. We probably need to fix
+> this in OPP library so that multiple callers are allowed.
+>
+>>>> +       dev = platform_device_register_data(NULL, "cpufreq-dt", -1, pd,
+>>>> +                                           sizeof(*pd));
+>>>
+>>> So this routine is going to be called only once. Then how are you
+>>> initializing stuff
+>>> for both the clusters in the upper for loop ? It looked very very confusing.
+>>
+>> Please let me clarify this here.
+>> We have two clusters, one for big and another for little cores. For
+>> the little cores'
+>> cluster, only one voltage source needs to be controlled when doing CPU DVFS.
+>> Therefore the voltage scaling of little cores' cluster is done in the
+>> cpufreq-dt.
+>> But for the big cores' cluster, there are two voltage sources here to
+>> be controlled
+>> and these two voltage source need to be scaled up and down in a SoC specific
+>> manner which is implemented in the mtk_cpufreq_voltage_trace() function.
+>> Hence, we put the voltage scaling of big cores' cluster in the cpufreq
+>> notifier and
+>> that's also why we need a mtk-cpufreq driver in addition to cpufreq-dt.
+>>
+>> In the confusing loop above, I am trying to solve two problems:
+>> 1. to find out which CPUs shares the same clock / power domains among all CPUs
+>> 2. to initialize the dvfs_info which is only needed by big cores' cluster
+>>
+>> I think that's why the loop looks so confusing. Maybe doing it in two
+>> separate loops
+>> will make the code more readable? I'll try it in next version.
+>
+> Yes.
 
-Calling this with disabled interrupts is a bad idea in general.
-Is the device guaranteed to have power.irq_safe set?
+Combining comments and suggestions from you and Sascha[1], I conclude some
+architectural changes are going to be made in the next version:
 
-I guess what you want to call here is pm_request_resume() and
-I wouldn't say that calling pm_runtime_mark_last_busy() on a
-suspended device was valid.
+1. Use set_rate hook instead of determine_rate in clk driver, and
+switch to intermeidate
+    PLL parent and back to original CPU PLL parent explicitly in set_rate
+2. Therefore we don't need intermediate frequency support in
+cpufreq-dt to implement
+    cpufreq support for Mediatek SoC
+3. Use clk notifier to handle voltage controlling corresponding to
+intermediate clock rate
+4. Due to 3. we need to move all voltage controlling part back into
+the notifier in
+    mtk-cpufreq (Voltage controlling for little cores' cluster is
+handled in cpufreq-dt in this
+    version.)
 
-> +		ret = IRQ_HANDLED;
-> +	}
-> +
-> +	if (wirq->handler)
-> +		ret = wirq->handler(wakeirq, wirq->data);
-> +
-> +	return ret;
-> +}
-> +
-> +static void dev_pm_wakeirq_init(struct device *dev,
-> +				struct wakeirq_source *wirq)
-> +{
-> +	wirq->dev = dev;
-> +	wirq->wakeirq = -EINVAL;
-> +	wirq->handler = NULL;
-> +	wirq->data = NULL;
-> +	wirq->initialized = true;
-> +}
-> +
-> +/**
-> + * dev_pm_wakeirq_request - Request a wake-up interrupt
-> + * @dev: Device dev entry
-> + * @wakeirq: Device wake-up interrupt
-> + * @handler: Optional device specific handler
-> + * @irqflags: Optional irqflags, IRQF_ONESHOT if not specified
-> + * @data: Optional device specific data
-> + * @wirq: Wake-up irq data
-> + *
-> + * Sets up a threaded interrupt handler for a device that
-> + * by default just wakes up the device on a wake-up interrupt.
-> + * The interrupt starts disabled, and needs to be managed for
-> + * the device by the bus code or the device driver using
-> + * dev_pm_wakeirq_enable() and dev_pm_wakeirq_disable()
-> + * functions.
-> + */
-> +int dev_pm_wakeirq_request(struct device *dev,
-> +			   int wakeirq,
-> +			   irq_handler_t handler,
-> +			   unsigned long irqflags,
-> +			   void *data,
-> +			   struct wakeirq_source *wirq)
-> +{
-> +	int err;
-> +
-> +	if (!dev || !wirq)
-> +		return -EINVAL;
-> +
-> +	if (!wirq->initialized)
-> +		dev_pm_wakeirq_init(dev, wirq);
-> +
-> +	if (!irqflags)
-> +		irqflags = IRQF_ONESHOT;
-> +
-> +	irq_set_status_flags(wakeirq, IRQ_NOAUTOEN);
-> +
-> +	/*
-> +	 * Consumer device may need to power up and restore state
-> +	 * so let's just use threaded irq.
-> +	 */
-> +	err = devm_request_threaded_irq(wirq->dev,
-> +					wakeirq,
-> +					handler,
-> +					handle_dedicated_wakeirq,
-> +					irqflags,
-> +					dev_name(wirq->dev),
-> +					wirq);
-> +	if (err)
-> +		return err;
-> +
-> +	wirq->wakeirq = wakeirq;
-> +	wirq->handler = handler;
-> +	wirq->data = data;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_wakeirq_request);
-> +
-> +static int is_valid_wakeirq(struct wakeirq_source *wirq)
-> +{
-> +	return wirq && wirq->initialized && (wirq->wakeirq >= 0);
-> +}
-> +
-> +#define is_invalid_wakeirq(w)	!is_valid_wakeirq(w)
-> +
-> +/**
-> + * dev_pm_wakeirq_free - Free a wake-up interrupt
-> + * @wirq: Device wake-up interrupt
-> + */
-> +void dev_pm_wakeirq_free(struct wakeirq_source *wirq)
-> +{
-> +	if (is_invalid_wakeirq(wirq))
-> +		return;
-> +
-> +	devm_free_irq(wirq->dev, wirq->wakeirq, wirq);
-> +	wirq->wakeirq = -EINVAL;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_wakeirq_free);
-> +
-> +/**
-> + * dev_pm_wakeirq_enable - Enable device wake-up interrupt
-> + * @wirq: Device wake-up interrupt
-> + *
-> + * Called from the bus code or the device driver for
-> + * runtime_suspend() to enable the wake-up interrupt while
-> + * the device is running.
-> + *
-> + * Note that for runtime_suspend()) the wake-up interrupts
-> + * should be unconditionally enabled unlike for suspend()
-> + * that is conditional.
-> + */
-> +void dev_pm_wakeirq_enable(struct wakeirq_source *wirq)
-> +{
-> +	if (is_invalid_wakeirq(wirq))
-> +		return;
-> +
-> +	enable_irq(wirq->wakeirq);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_wakeirq_enable);
-> +
-> +/**
-> + * dev_pm_wakeirq_disable - Disable device wake-up interrupt
-> + * @wirq: Device wake-up interrupt
-> + *
-> + * Called from the bus code or the device driver for
-> + * runtime_resume() to disable the wake-up interrupt while
-> + * the device is running.
-> + */
-> +void dev_pm_wakeirq_disable(struct wakeirq_source *wirq)
-> +{
-> +	if (is_invalid_wakeirq(wirq))
-> +		return;
-> +
-> +	disable_irq_nosync(wirq->wakeirq);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_wakeirq_disable);
-> +
-> +/**
-> + * dev_pm_wakeirq_arm_for_suspend - Configure device wake-up
-> + * @wirq: Device wake-up interrupt
-> + *
-> + * Called from the bus code or the device driver for
-> + * device suspend(). Just sets up the wake-up event
-> + * conditionally based on the device_may_wake(). The
-> + * rest is handled automatically by the generic suspend()
-> + * code and runtime_suspend().
-> + */
-> +void dev_pm_wakeirq_arm_for_suspend(struct wakeirq_source *wirq)
-> +{
-> +	if (is_invalid_wakeirq(wirq))
-> +		return;
-> +
-> +	irq_set_irq_wake(wirq->wakeirq,
-> +			 device_may_wakeup(wirq->dev));
+And I have some other questions:
+1. According to the discussion[1], should we keep on working on the intermediate
+    frequency support in cpufreq-dt?
+2. Will the code be simpler to have a Mediatek cpufreq driver to
+handle all CPU DVFS
+    complexity instead of cpufreq-dt in the situation that all voltage
+scaling things need
+    to be done in the clk / cpufreq notifier of mtk-cpufreq driver?
 
-You want to do
+[1] http://marc.info/?l=linux-kernel&m=142546618015551&w=2
 
-	if (device_may_wakeup(wirq->dev))
-		enable_irq_wake(wirq->wakeirq);
-
-here or strange things may happen if two devices share a wakeup IRQ.
-
-Also instead of doing it this way, I'd prefer to hook system wakeup
-interrupts into the wakeup source objects pointed to by the power.wakeup
-fields in struct device.
-
-Then we could just walk the list of wakeup sources and do enable_irq_wake()
-automatically for the wakeup interrupts hooked up to them at the
-suspend_device_irqs() time without the need to do anything from drivers
-at suspend time.
-
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_wakeirq_arm_for_suspend);
-> +
-> diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
-> new file mode 100644
-> index 0000000..3ecbc1a
-> --- /dev/null
-> +++ b/include/linux/pm_wakeirq.h
-> @@ -0,0 +1,69 @@
-> +/*
-> + * pm_wakeirq.h - Device wakeirq helper functions
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#ifndef _LINUX_PM_WAKEIRQ_H
-> +#define _LINUX_PM_WAKEIRQ_H
-> +
-> +struct wakeirq_source {
-> +	struct device *dev;
-> +	int wakeirq;
-> +	bool initialized;
-> +	bool enabled;
-> +	irq_handler_t handler;
-> +	void *data;
-> +};
-
-Well, so now we have struct wakeup_source already and here we get struct wakeirq_source
-and they mean different things ...
-
-> +
-> +#ifdef CONFIG_PM_WAKEIRQ
-> +
-> +extern int dev_pm_wakeirq_request(struct device *dev,
-> +				  int wakeirq,
-> +				  irq_handler_t handler,
-> +				  unsigned long irqflags,
-> +				  void *data,
-> +				  struct wakeirq_source *wirq);
-> +extern void dev_pm_wakeirq_free(struct wakeirq_source *wirq);
-> +extern void dev_pm_wakeirq_enable(struct wakeirq_source *wirq);
-> +extern void dev_pm_wakeirq_disable(struct wakeirq_source *wirq);
-> +extern void dev_pm_wakeirq_arm_for_suspend(struct wakeirq_source *wirq);
-> +
-> +#else	/* !CONFIG_PM_WAKEIRQ */
-> +
-> +static inline int dev_pm_wakeirq_request(struct device *dev,
-> +					 int wakeirq,
-> +					 irq_handler_t handler,
-> +					 unsigned long irqflags,
-> +					 void *data,
-> +					 struct wakeirq_source *wirq)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void dev_pm_wakeirq_free(struct wakeirq_source *wirq)
-> +{
-> +}
-> +
-> +static inline void dev_pm_wakeirq_enable(struct wakeirq_source *wirq)
-> +{
-> +}
-> +
-> +static inline void dev_pm_wakeirq_disable(struct wakeirq_source *wirq)
-> +{
-> +}
-> +
-> +static inline void
-> +dev_pm_wakeirq_arm_for_suspend(struct wakeirq_source *wirq)
-> +{
-> +}
-> +
-> +#endif	/* CONFIG_PM_WAKEIRQ */
-> +#endif	/* _LINUX_PM_WAKEIRQ_H */
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 7e01f78..c249845 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -267,6 +267,10 @@ config PM_CLK
->  	def_bool y
->  	depends on PM && HAVE_CLK
->  
-> +config PM_WAKEIRQ
-> +	bool
-> +	depends on PM
-> +
->  config PM_GENERIC_DOMAINS
->  	bool
->  	depends on PM
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best Regards,
+Pi-Cheng
