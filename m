@@ -1,167 +1,92 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [RFC 2/4] power: core: Add generic interface to get battery
- specification.
-Date: Fri, 06 Mar 2015 12:16:06 +0100
-Message-ID: <1425640566.2197.2.camel@suse.de>
-References: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
-	 <1425638007-9411-3-git-send-email-jenny.tc@intel.com>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
+Date: Fri, 6 Mar 2015 13:39:14 +0100
+Message-ID: <CAJZ5v0jA-hRUnP_+mOdFw7vN7CGZ4o0FjUVu81rq7foi92f63g@mail.gmail.com>
+References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
+	<CAJZ5v0h8vn26BeWPVhC4e_KNhBu15-mshnbq0K=OQ1M36vPQEQ@mail.gmail.com>
+	<20150305163227.GF14093@leverpostej>
+	<1696230.CygTkv53VA@vostro.rjw.lan>
+	<20150306110618.GC8700@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425638007-9411-3-git-send-email-jenny.tc@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jenny TC <jenny.tc@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, jonghwa3.lee@samsung.com, myungjoo.ham@gmail.com, Pallala Ramakrishna <ramakrishna.pallala@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150306110618.GC8700@leverpostej>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, "linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2015-03-06 at 16:03 +0530, Jenny TC wrote:
-> In power supply system, battery specification's dealt as static
-> information regardless of battery chainging. And it often assumed
-> fuelgauge's role to hold battery specification even same driver is
-> used with different batteries. To make subsystem handles above cases
-> properly, this patch adds helper functions to manager the battery
-> specification.
-> 
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Signed-off-by: Jenny TC <jenny.tc@intel.com>
-> ---
->  drivers/power/power_supply_core.c |   86 +++++++++++++++++++++++++++++++++++++
->  include/linux/power_supply.h      |   12 ++++++
->  2 files changed, 98 insertions(+)
-> 
-> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-> index 694e8cd..99c3455 100644
-> --- a/drivers/power/power_supply_core.c
-> +++ b/drivers/power/power_supply_core.c
-> @@ -650,6 +650,92 @@ static void __exit power_supply_class_exit(void)
->  subsys_initcall(power_supply_class_init);
->  module_exit(power_supply_class_exit);
->  
-> +/****************************************************************
-> + *                   Battery information interface              *
-> + ****************************************************************/
-> +
-> +ATOMIC_NOTIFIER_HEAD(psy_battery_info_notifier);
-> +static LIST_HEAD(psy_battery_info_list);
-> +
-> +struct psy_battery_info {
-> +	struct list_head entry;
-> +	struct psy_charging_obj *info;
-> +};
-> +
-> +int psy_battery_info_notifier_register(struct notifier_block *nb)
-> +{
-> +	return atomic_notifier_chain_register(&psy_battery_info_notifier, nb);
-> +}
-> +EXPORT_SYMBOL_GPL(psy_battery_info_notifier_register);
-> +
-> +void psy_battery_info_notifier_unregister(struct notifier_block *nb)
-> +{
-> +	atomic_notifier_chain_unregister(&psy_battery_info_notifier, nb);
-> +}
-> +EXPORT_SYMBOL_GPL(psy_battery_info_notifier_unregister);
-> +
-> +struct psy_charging_obj *psy_get_battery_info(const char *name)
-> +{
-> +	struct psy_battery_info *battery;
-> +
-> +	/* Sanity check */
-> +	if (!name)
-> +		goto err_out;
-> +
-> +	list_for_each_entry(battery, &psy_battery_info_list, entry) {
-> +		if (!strcmp(battery->info->name, name))
-> +			return battery->info;
-> +	}
-> +
-> +err_out:
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL(psy_get_battery_info);
-> +
-> +int psy_register_battery_info(struct psy_charging_obj *info)
-> +{
-> +	struct psy_battery_info *battery;
-> +
-> +	/* Sanity check */
-> +	if (!info->name)
-> +		return -EINVAL;
-> +
-> +	/* Check if same data is existed */
-> +	list_for_each_entry(battery, &psy_battery_info_list, entry)
-> +		if (!strcmp(battery->info->name, info->name))
-> +			return -EEXIST;
-> +
-> +	battery = kzalloc(sizeof(*battery), GFP_KERNEL);
+On Fri, Mar 6, 2015 at 12:06 PM, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> wrote:
+> [...]
+>
+>> > The request_irq path never results in a call to chip->irq_set_wake(),
+>> > even with the IRQF_NO_SUSPEND flag. So requesting an irq with
+>> > IRQF_NO_SUSPEND does not guarantee wakeup; it only guarantees that the
+>> > CPU can take the interrupt _around_ the suspended state, not necessarily
+>> > while _in_ the suspended state.
+>>
+>> Right.  "Suspended state" meaning full suspend here I suppose?
+>
+> Yes; any state deeper than suspend-to-idle.
+>
+> [...]
+>
+>> > We seem to be conflating some related properties:
+>> >
+>> > [a] The IRQ will be left unmasked.
+>> > [b] The IRQ will be handled immediately when taken.
+>> > [c] The IRQ will wake the system from suspend.
+>> >
+>> > Requesting an IRQ with IRQF_NO_SUSPEND guarantees [a,b], but does not
+>> > guarantee [c].
+>>
+>> That's correct.  IRQF_NO_SUSPEND does not guarantee that interrupts from
+>> that IRQ will have any effect after arch_suspend_disable_irqs() in
+>> suspend_enter().
+>
+> [...]
+>
+>> > It sounds like for this kind of watchdog device we want [a,b,c], even if
+>> > the IRQ is not shared with an IRQF_NO_SUSPEND user.
+>>
+>> We can't guarantee that, though.  arch_suspend_disable_irqs() disables
+>> interrupts on the last working CPU and it won't get any.  It may be
+>> brought out of a low-power state by a pending interrupt, but it won't act
+>> upon that interrupt immediately anyway, only after the arch_suspend_enable_irqs()
+>> in suspend_enter().
+>
+> Ok, so [b] needs the caveat that it's only handled "immediately" outside
+> of the arch_suspend_disable_irqs() ... arch_suspend_enable_irqs()
+> section.
+>
+>> But then it might as well be deferred until after
+>> resume_device_irqs().
+>
+> That was my original line of thinking, in which case the watchdog driver
+> should use IRQF_COND_SUSPEND rather than IRQF_NO_SUSPEND, with
+> enable_irq_wake() if we care about the watchdog during suspend. I'm
+> happy with this.
+>
+> Considering that the use-case of a watchdog is to alert us to something
+> going hideously wrong in the kernel, we want to handle the IRQ after
+> executing the smallest amount of kernel code possible. For that, they
+> need to have their handlers to be called "immediately" outside of the
+> arch_suspend_disable_irqs() ... arch_suspend_enable_irqs() window, and
+> need to be enabled during suspend to attempt to catch bad wakeup device
+> configuration.
+>
+> I think it's possible (assuming the caveats on [b] above) to provide
+> [a,b,c] for this case.
 
-That is a race condition. If you check for duplication, you'll
-need a lock.
+OK
 
-> +	if (!battery)
-> +		return -ENOMEM;
-> +
-> +	battery->info = info;
-> +	list_add_tail(&battery->entry, &psy_battery_info_list);
-> +
-> +	atomic_notifier_call_chain(&psy_battery_info_notifier,
-> +				PSY_BATT_INFO_REGISTERED, info);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(psy_register_battery_info);
-> +
-> +void psy_unregister_battery_info(struct psy_charging_obj *info)
-> +{
-> +	struct psy_battery_info *battery, *tmp;
-> +
-> +	list_for_each_entry_safe(battery, tmp, &psy_battery_info_list, entry) {
-> +		if (battery->info == info) {
-> +			list_del(&battery->entry);
-> +			kfree(battery);
-> +			return;
-> +		}
-> +	}
-> +
-> +	atomic_notifier_call_chain(&psy_battery_info_notifier,
-> +				PSY_BATT_INFO_UNREGISTERED, info);
-> +}
-> +EXPORT_SYMBOL(psy_unregister_battery_info);
-> +
->  MODULE_DESCRIPTION("Universal power supply monitor class");
->  MODULE_AUTHOR("Ian Molton <spyro@f2s.com>, "
->  	      "Szabolcs Gyurko, "
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 7aada44..30145d8e 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -279,6 +279,11 @@ struct psy_charging_obj {
->  	struct psy_temp_mon_table temp_mon_table[PSY_MAX_TEMP_ZONE];
->  };
->  
-> +enum battery_info_notifier_events {
-> +	PSY_BATT_INFO_REGISTERED,
-> +	PSY_BATT_INFO_UNREGISTERED,
-> +};
-> +
->  extern struct atomic_notifier_head power_supply_notifier;
->  extern int power_supply_reg_notifier(struct notifier_block *nb);
->  extern void power_supply_unreg_notifier(struct notifier_block *nb);
-> @@ -311,6 +316,13 @@ extern int power_supply_powers(struct power_supply *psy, struct device *dev);
->  /* For APM emulation, think legacy userspace. */
->  extern struct class *power_supply_class;
->  
-> +/* Battery information helper */
-> +extern int psy_battery_info_notifier_register(struct notifier_block *);
-> +extern void psy_battery_info_notifier_unregister(struct notifier_block *);
-> +extern struct psy_charging_obj *psy_get_battery_info(const char *);
-> +extern int psy_register_battery_info(struct psy_charging_obj *);
-> +extern void psy_unregister_battery_info(struct psy_charging_obj *);
-> +
->  static inline bool power_supply_is_amp_property(enum power_supply_property psp)
->  {
->  	switch (psp) {
+But in this case the request_irq() passing IRQF_NO_SUSPEND *and* requiring
+enable_irq_wake() in addition to that needs a big fat comment explaining the
+whole thing or we'll forget about the gory details at one point and no one will
+know what's going on in there.
 
-
--- 
-Oliver Neukum <oneukum@suse.de>
+Rafael
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
