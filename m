@@ -1,134 +1,144 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for 4.0-rc3
-Date: Fri, 6 Mar 2015 16:16:57 +0100
-Message-ID: <CAJZ5v0htZRux=ZADN8+k3VcNsyadhQiv2iOpBz6zhNO3VDp7VQ@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper
+ functions
+Date: Fri, 6 Mar 2015 08:19:20 -0800
+Message-ID: <20150306161920.GM13520@atomide.com>
+References: <1425602049-2674-1-git-send-email-tony@atomide.com>
+ <1425602049-2674-2-git-send-email-tony@atomide.com>
+ <1805134.DQxHJSAxE3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1805134.DQxHJSAxE3@vostro.rjw.lan>
+Sender: linux-omap-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hi,
 
-Please pull from
+* Rafael J. Wysocki <rjw@rjwysocki.net> [150305 17:38]:
+> Please always CC linux-pm on CC patches.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.0-rc3
+Sure will do for the next rev, sorry forgot to add that.
+ 
+> On Thursday, March 05, 2015 04:34:06 PM Tony Lindgren wrote:
+> > +/**
+> > + * handle_dedicated_wakeirq - Handler for device wake-up interrupts
+> > + * @wakeirq: Separate wake-up interrupt for a device different
+> > + * @_wirq: Wake-up interrupt data
+> > + *
+> > + * Some devices have a separate wake-up interrupt in addition to the
+> > + * regular device interrupt. The wake-up interrupts signal that the
+> > + * device should be woken up from a deeper idle state. This handler
+> > + * uses device specific pm_runtime functions to wake-up the device
+> > + * and then it's up to the device to do whatever it needs to. Note
+> > + * as the device may need to restore context and start up regulators,
+> > + * this is not a fast path.
+> > + *
+> > + * Note that we are not resending the lost device interrupts. We assume
+> > + * that the wake-up interrupt just needs to wake-up the device, and
+> > + * the device pm_runtime_resume() can deal with the situation.
+> > + */
+> > +static irqreturn_t handle_dedicated_wakeirq(int wakeirq, void *_wirq)
+> > +{
+> > +	struct wakeirq_source *wirq = _wirq;
+> > +	irqreturn_t ret = IRQ_NONE;
+> > +
+> > +	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
+> > +	if (pm_runtime_suspended(wirq->dev)) {
+> 
+> What if the device is resumed on a different CPU right here?
 
-to receive power management and ACPI fixes for v4.0-rc1 with top-most
-commit e178e7d6df38dab67f51df4282927c4c7392879f
+Good point, sounds like we need to do this in some pm_runtime
+function directly for the locking.
+ 
+> > +		pm_runtime_mark_last_busy(wirq->dev);
+> > +		pm_runtime_resume(wirq->dev);
+> 
+> Calling this with disabled interrupts is a bad idea in general.
+> Is the device guaranteed to have power.irq_safe set?
 
- Merge branches 'pm-domains' and 'pm-cpufreq'
+Well right now it's using threaded irq, and I'd like to get rid of
+the pm_runtime calls in the regular driver interrupts completely.
+We need to ensure the device runtime_resume is completed before
+returning IRQ_HANDLED here.
+ 
+> I guess what you want to call here is pm_request_resume() and
+> I wouldn't say that calling pm_runtime_mark_last_busy() on a
+> suspended device was valid.
 
-on top of commit 13a7a6ac0a11197edcd0f756a035f472b42cdf8b
+I'll verify again, but I believe the issue was that without doing
+mark_last_busy here the device falls back asleep right away.
+That probably should be fixed in pm_runtime in general if that's
+the case.
 
- Linux 4.0-rc2
+Considering the above, should we add a new function something like
+pm_resume_complete() that does not need irq_safe set but does
+not return until the device has completed resume?
 
-These are fixes for recent regressions (ACPI resources management,
-suspend-to-idle), stable-candidate fixes (ACPI backlight), fixes
-related to the wakeup IRQ management changes made in v3.18, other
-fixes (suspend-to-idle, cpufreq ppc driver) and a couple of cleanups
-(suspend-to-idle, generic power domains, ACPI backlight).
+I think that would be pretty much probably just pm_request_resume
++ pm_runtime_barrier.
 
-Specifics:
+> > +/**
+> > + * dev_pm_wakeirq_arm_for_suspend - Configure device wake-up
+> > + * @wirq: Device wake-up interrupt
+> > + *
+> > + * Called from the bus code or the device driver for
+> > + * device suspend(). Just sets up the wake-up event
+> > + * conditionally based on the device_may_wake(). The
+> > + * rest is handled automatically by the generic suspend()
+> > + * code and runtime_suspend().
+> > + */
+> > +void dev_pm_wakeirq_arm_for_suspend(struct wakeirq_source *wirq)
+> > +{
+> > +	if (is_invalid_wakeirq(wirq))
+> > +		return;
+> > +
+> > +	irq_set_irq_wake(wirq->wakeirq,
+> > +			 device_may_wakeup(wirq->dev));
+> 
+> You want to do
+> 
+> 	if (device_may_wakeup(wirq->dev))
+> 		enable_irq_wake(wirq->wakeirq);
+> 
+> here or strange things may happen if two devices share a wakeup IRQ.
 
- - Fix ACPI resources management problems introduced by the recent
-   rework of the code in question (Jiang Liu) and a build issue
-   introduced by those changes (Joachim Nilsson).
+OK sure.
+ 
+> Also instead of doing it this way, I'd prefer to hook system wakeup
+> interrupts into the wakeup source objects pointed to by the power.wakeup
+> fields in struct device.
+> 
+> Then we could just walk the list of wakeup sources and do enable_irq_wake()
+> automatically for the wakeup interrupts hooked up to them at the
+> suspend_device_irqs() time without the need to do anything from drivers
+> at suspend time.
 
- - Fix a recent suspend-to-idle regression on systems where entering
-   idle states causes local timers to stop, prevent suspend-to-idle
-   from crashing in restricted configurations (no cpuidle driver,
-   cpuidle disabled etc.) and clean up the idle loop somewhat while
-   at it (Rafael J Wysocki).
+OK that's a good idea. Then we can drop dev_pm_wakeirq_arm_for_suspend()
+and make that part automatic.
 
- - Fix build problem in the cpufreq ppc driver (Geert Uytterhoeven).
+Then for runtime_pm, we could make the toggling of the wakeirq handling
+automatic too. Or do you see a problem with that?
 
- - Allow the ACPI backlight driver module to be loaded if ACPI is
-   disabled which helps the i915 driver in those configurations
-   (stable-candidate) and change the code to help debug unusual use
-   cases (Chris Wilson).
+> > +struct wakeirq_source {
+> > +	struct device *dev;
+> > +	int wakeirq;
+> > +	bool initialized;
+> > +	bool enabled;
+> > +	irq_handler_t handler;
+> > +	void *data;
+> > +};
+> 
+> Well, so now we have struct wakeup_source already and here we get struct wakeirq_source
+> and they mean different things ...
 
- - Wakeup IRQ management changes in v3.18 caused some drivers on the
-   at91 platform to trigger a warning from the IRQ core related to
-   an unexpected combination of interrupt action handler flags.
-   However, on at91 a timer IRQ is shared with some other devices
-   (including system wakeup ones) and that leads to the unusual
-   combination of flags in question.  To make it possible to avoid
-   the warning introduce a new interrupt action handler flag (which
-   can be used by drivers to indicate the special case to the core)
-   and rework the problematic at91 drivers to use it and work as
-   expected during system suspend/resume.  From Boris Brezillon,
-   Rafael J Wysocki and Mark Rutland.
+Well I was trying to keep it out of the way for most drivers not needing
+to use wakeirqs. I'll take a look at making it a pointer in the struct
+wakeup_source.
 
- - Clean up the generic power domains subsystem's debugfs interface
-   (Kevin Hilman).
+Regards,
 
-Thanks!
-
-
----------------
-
-Boris BREZILLON (6):
-      PM / wakeup: export pm_system_wakeup symbol
-      rtc: at91sam9: rework wakeup and interrupt handling
-      rtc: at91rm9200: rework wakeup and interrupt handling
-      clk: at91: implement suspend/resume for the PMC irqchip
-      watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
-      tty: serial: atmel: rework interrupt and wakeup handling
-
-Chris Wilson (2):
-      ACPI / video: Load the module even if ACPI is disabled
-      ACPI / video: Propagate the error code for acpi_video_register
-
-Geert Uytterhoeven (1):
-      cpufreq: ppc: Add missing #include <asm/smp.h>
-
-Jiang Liu (2):
-      x86/PCI/ACPI: Ignore resources consumed by host bridge itself
-      x86/PCI/ACPI: Relax ACPI resource descriptor checks to work
-around BIOS bugs
-
-Joachim Nilsson (1):
-      PCI: versatile: Update for list_for_each_entry() API change
-
-Kevin Hilman (1):
-      PM / Domains: cleanup: rename gpd -> genpd in debugfs interface
-
-Mark Rutland (2):
-      genirq / PM: better describe IRQF_NO_SUSPEND semantics
-      genirq / PM: describe IRQF_COND_SUSPEND
-
-Rafael J. Wysocki (5):
-      idle / sleep: Avoid excessive disabling and enabling interrupts
-      cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze() too
-      cpuidle: Clean up fallback handling in cpuidle_idle_call()
-      genirq / PM: Add flag for shared NO_SUSPEND interrupt lines
-      cpuidle / sleep: Use broadcast timer for states that stop local timer
-
----------------
-
- Documentation/power/suspend-and-interrupts.txt | 22 ++++++--
- arch/x86/pci/acpi.c                            | 11 ++--
- drivers/acpi/resource.c                        |  4 +-
- drivers/acpi/video.c                           | 20 +++++--
- drivers/base/power/domain.c                    | 24 ++++-----
- drivers/base/power/wakeup.c                    |  1 +
- drivers/clk/at91/pmc.c                         | 20 ++++++-
- drivers/clk/at91/pmc.h                         |  1 +
- drivers/cpufreq/ppc-corenet-cpufreq.c          |  2 +
- drivers/cpuidle/cpuidle.c                      | 61 +++++++++------------
- drivers/pci/host/pci-versatile.c               |  2 +-
- drivers/rtc/rtc-at91rm9200.c                   | 62 +++++++++++++++++-----
- drivers/rtc/rtc-at91sam9.c                     | 73 +++++++++++++++++++++-----
- drivers/tty/serial/atmel_serial.c              | 49 +++++++++++++++--
- drivers/watchdog/at91sam9_wdt.c                |  3 +-
- include/linux/cpuidle.h                        | 17 +++++-
- include/linux/interrupt.h                      |  9 +++-
- include/linux/irqdesc.h                        |  1 +
- kernel/irq/manage.c                            |  7 ++-
- kernel/irq/pm.c                                |  7 ++-
- kernel/sched/idle.c                            | 54 +++++++++++--------
- 21 files changed, 331 insertions(+), 119 deletions(-)
+Tony
