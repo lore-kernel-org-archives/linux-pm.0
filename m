@@ -1,83 +1,72 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
- IRQF_NO_SUSPEND
-Date: Fri, 6 Mar 2015 11:06:18 +0000
-Message-ID: <20150306110618.GC8700@leverpostej>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
- <CAJZ5v0h8vn26BeWPVhC4e_KNhBu15-mshnbq0K=OQ1M36vPQEQ@mail.gmail.com>
- <20150305163227.GF14093@leverpostej>
- <1696230.CygTkv53VA@vostro.rjw.lan>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [RFC 1/4] power_supply: Introduce charging object table
+Date: Fri, 06 Mar 2015 12:12:50 +0100
+Message-ID: <1425640370.2197.0.camel@suse.de>
+References: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
+	 <1425638007-9411-2-git-send-email-jenny.tc@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1696230.CygTkv53VA@vostro.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <1425638007-9411-2-git-send-email-jenny.tc@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandr
+To: Jenny TC <jenny.tc@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, jonghwa3.lee@samsung.com, myungjoo.ham@gmail.com, Pallala Ramakrishna <ramakrishna.pallala@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
-
-> > The request_irq path never results in a call to chip->irq_set_wake(),
-> > even with the IRQF_NO_SUSPEND flag. So requesting an irq with
-> > IRQF_NO_SUSPEND does not guarantee wakeup; it only guarantees that the
-> > CPU can take the interrupt _around_ the suspended state, not necessarily
-> > while _in_ the suspended state.
+On Fri, 2015-03-06 at 16:03 +0530, Jenny TC wrote:
+> Charging current (CC) and charging voltage (CV) may vary based on
+> battery temperature. To support CC and CV for different temperature
+> zones, defined a charging object which holds the properties related
+> to battery charging.
 > 
-> Right.  "Suspended state" meaning full suspend here I suppose?
-
-Yes; any state deeper than suspend-to-idle.
-
-[...]
-
-> > We seem to be conflating some related properties:
-> > 
-> > [a] The IRQ will be left unmasked.
-> > [b] The IRQ will be handled immediately when taken.
-> > [c] The IRQ will wake the system from suspend.
-> > 
-> > Requesting an IRQ with IRQF_NO_SUSPEND guarantees [a,b], but does not
-> > guarantee [c].
+> Signed-off-by: Jenny TC <jenny.tc@intel.com>
+> ---
+>  include/linux/power_supply.h |   27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
 > 
-> That's correct.  IRQF_NO_SUSPEND does not guarantee that interrupts from
-> that IRQ will have any effect after arch_suspend_disable_irqs() in
-> suspend_enter().
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 096dbce..7aada44 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -252,6 +252,33 @@ struct power_supply_info {
+>  	int use_for_apm;
+>  };
+>  
+> +
+> +struct psy_temp_mon_table {
+> +	int temp_max;
+> +	int temp_min;
+> +	int charging_current; /* CC */
+> +	int charging_voltage; /* CV */
 
-[...]
+In which units?
 
-> > It sounds like for this kind of watchdog device we want [a,b,c], even if
-> > the IRQ is not shared with an IRQF_NO_SUSPEND user.
-> 
-> We can't guarantee that, though.  arch_suspend_disable_irqs() disables
-> interrupts on the last working CPU and it won't get any.  It may be
-> brought out of a low-power state by a pending interrupt, but it won't act
-> upon that interrupt immediately anyway, only after the arch_suspend_enable_irqs()
-> in suspend_enter().
+> +	/* delta voltage at which charging should restart */
+> +	int maint_voltage_delta;
+> +};
+> +
+> +#define PSY_MAX_BAT_NAME_LEN 8
+> +#define PSY_MAX_TEMP_ZONE 6
+> +
+> +struct psy_charging_obj {
+> +	char name[PSY_MAX_BAT_NAME_LEN];
+> +	int battery_type;
+> +	int temp_max;
+> +	int temp_min;
+> +	int full_condition_soc;
+> +	int full_condition_capacity;
+> +	int full_condition_voltage;
+> +	int iterm; /* charge termination current */
+> +	/* CC/CV table for different temperature range */
+> +	int temp_mon_count; /* number of entries in temp_mon_table */
+> +	struct psy_temp_mon_table temp_mon_table[PSY_MAX_TEMP_ZONE];
+> +};
+> +
+>  extern struct atomic_notifier_head power_supply_notifier;
+>  extern int power_supply_reg_notifier(struct notifier_block *nb);
+>  extern void power_supply_unreg_notifier(struct notifier_block *nb);
 
-Ok, so [b] needs the caveat that it's only handled "immediately" outside
-of the arch_suspend_disable_irqs() ... arch_suspend_enable_irqs()
-section.
 
-> But then it might as well be deferred until after
-> resume_device_irqs().
-
-That was my original line of thinking, in which case the watchdog driver
-should use IRQF_COND_SUSPEND rather than IRQF_NO_SUSPEND, with
-enable_irq_wake() if we care about the watchdog during suspend. I'm
-happy with this.
-
-Considering that the use-case of a watchdog is to alert us to something
-going hideously wrong in the kernel, we want to handle the IRQ after
-executing the smallest amount of kernel code possible. For that, they
-need to have their handlers to be called "immediately" outside of the
-arch_suspend_disable_irqs() ... arch_suspend_enable_irqs() window, and
-need to be enabled during suspend to attempt to catch bad wakeup device
-configuration.
-
-I think it's possible (assuming the caveats on [b] above) to provide
-[a,b,c] for this case.
-
-Thanks,
-Mark.
+-- 
+Oliver Neukum <oneukum@suse.de>
