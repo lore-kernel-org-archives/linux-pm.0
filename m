@@ -1,77 +1,62 @@
-From: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: Re: [RFC/PATCH 0/6] Add CPUIdle support for Renesas SoCs
-Date: Fri, 6 Mar 2015 18:38:33 +0900
-Message-ID: <54F97599.7050904@renesas.com>
-References: <1425444946-3084-1-git-send-email-keita.kobayashi.ym@renesas.com> <54F89A23.1060008@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <54F89A23.1060008@linaro.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: horms@verge.net.au, rjw@rjwysocki.net, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com
+From: Jenny TC <jenny.tc@intel.com>
+Subject: [RFC 1/4] power_supply: Introduce charging object table
+Date: Fri,  6 Mar 2015 16:03:24 +0530
+Message-ID: <1425638007-9411-2-git-send-email-jenny.tc@intel.com>
+References: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+Cc: Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, jonghwa3.lee@samsung.com, myungjoo.ham@gmail.com, Pallala Ramakrishna <ramakrishna.pallala@intel.com>, Jenny TC <jenny.tc@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel
+Charging current (CC) and charging voltage (CV) may vary based on
+battery temperature. To support CC and CV for different temperature
+zones, defined a charging object which holds the properties related
+to battery charging.
 
-(2015/03/06 3:02), Daniel Lezcano wrote:
+Signed-off-by: Jenny TC <jenny.tc@intel.com>
+---
+ include/linux/power_supply.h |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-> On 03/04/2015 05:55 AM, Keita Kobayashi wrote:
->> Hello
->>
->> These patches add CPUIdle support for Renesas SoCs.
->> These patches have been tested on Renesas Gen2 series with
->> following cases on renesas-devel-20150301-v4.0-rc1 tag.
->>
->> [Test case]
->>     a. Lager board(CA15 * 4)
->>     b. Lager board(CA7 * 4)
->>     c. Lager board(CA15 * 4 + CA7 *4)
->>     d. Koelsch board(CA15 * 2)
->>
->> These cases work fine.
->>
->> Keita Kobayashi (6):
->>    cpuidle: renesas: Add CPUIdle Driver for Renesas SoCs
->>    ARM: shmobile: Change CPUIdle InterFace
->>    ARM: shmobile: APMU: Add Core-Standby function for CPUIdle
->>    ARM: shmobile: r8a7791: Add Core-Standby CPUIdle support for r8a7791
->>    ARM: shmobile: r8a7790: Add Core-Standby CPUIdle support for r8a7790
->>    ARM: shmobile: Enable Renesas CPUIdle for shmobile_defconfig
->>
->>   arch/arm/configs/shmobile_defconfig           |   2 +
->>   arch/arm/mach-shmobile/common.h               |   8 +-
->>   arch/arm/mach-shmobile/cpuidle.c              |  31 ++++---
->>   arch/arm/mach-shmobile/platsmp-apmu.c         |  20 ++++-
->>   arch/arm/mach-shmobile/pm-r8a7790.c           |  55 ++++++++++++
->>   arch/arm/mach-shmobile/pm-r8a7791.c           |  41 +++++++++
->>   drivers/cpuidle/Kconfig.arm                   |   8 ++
->>   drivers/cpuidle/Makefile                      |   1 +
->>   drivers/cpuidle/cpuidle-renesas.c             | 118 ++++++++++++++++++++++++++
->>   include/linux/platform_data/renesas-cpuidle.h |  24 ++++++
->>   10 files changed, 294 insertions(+), 14 deletions(-)
->>   create mode 100644 drivers/cpuidle/cpuidle-renesas.c
->>   create mode 100644 include/linux/platform_data/renesas-cpuidle.h
-> 
-> Hi Keita,
-> 
-> the platform approach to pass private data from the arch specific to the cpuidle driver no longer accepted. Unfortunately, there is no alternate solution upstream.
-> 
-> But hopefully, there is a patchset [1] submitted for upstreaming which unify arm32/64 into a single generic cpuidle driver and use the DT to define the idle functions to be used.
-> 
-> I suggest you have a look at this patchset if it can fit your need.
-> 
->   -- Daniel
-> 
-> [1] https://lkml.org/lkml/2015/3/3/271
-
-Thank you for information.
-I will take a look at the patch series.
-
-Regards.
-Keita Kobayashi
-
-> 
-> 
-
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 096dbce..7aada44 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -252,6 +252,33 @@ struct power_supply_info {
+ 	int use_for_apm;
+ };
+ 
++
++struct psy_temp_mon_table {
++	int temp_max;
++	int temp_min;
++	int charging_current; /* CC */
++	int charging_voltage; /* CV */
++	/* delta voltage at which charging should restart */
++	int maint_voltage_delta;
++};
++
++#define PSY_MAX_BAT_NAME_LEN 8
++#define PSY_MAX_TEMP_ZONE 6
++
++struct psy_charging_obj {
++	char name[PSY_MAX_BAT_NAME_LEN];
++	int battery_type;
++	int temp_max;
++	int temp_min;
++	int full_condition_soc;
++	int full_condition_capacity;
++	int full_condition_voltage;
++	int iterm; /* charge termination current */
++	/* CC/CV table for different temperature range */
++	int temp_mon_count; /* number of entries in temp_mon_table */
++	struct psy_temp_mon_table temp_mon_table[PSY_MAX_TEMP_ZONE];
++};
++
+ extern struct atomic_notifier_head power_supply_notifier;
+ extern int power_supply_reg_notifier(struct notifier_block *nb);
+ extern void power_supply_unreg_notifier(struct notifier_block *nb);
+-- 
+1.7.9.5
