@@ -1,155 +1,110 @@
-From: Jenny TC <jenny.tc@intel.com>
-Subject: [RFC 2/4] power: core: Add generic interface to get battery specification.
-Date: Fri,  6 Mar 2015 16:03:25 +0530
-Message-ID: <1425638007-9411-3-git-send-email-jenny.tc@intel.com>
-References: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 2/9] mfd: syscon: Add atmel system timer registers
+ definition
+Date: Fri, 6 Mar 2015 10:58:11 +0000
+Message-ID: <20150306105811.GC3318@x1>
+References: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <1425570594-13124-3-git-send-email-alexandre.belloni@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
+Content-Disposition: inline
+In-Reply-To: <1425570594-13124-3-git-send-email-alexandre.belloni@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
-Cc: Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, jonghwa3.lee@samsung.com, myungjoo.ham@gmail.com, Pallala Ramakrishna <ramakrishna.pallala@intel.com>, Jenny TC <jenny.tc@intel.com>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In power supply system, battery specification's dealt as static
-information regardless of battery chainging. And it often assumed
-fuelgauge's role to hold battery specification even same driver is
-used with different batteries. To make subsystem handles above cases
-properly, this patch adds helper functions to manager the battery
-specification.
+On Thu, 05 Mar 2015, Alexandre Belloni wrote:
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Signed-off-by: Jenny TC <jenny.tc@intel.com>
----
- drivers/power/power_supply_core.c |   86 +++++++++++++++++++++++++++++++++++++
- include/linux/power_supply.h      |   12 ++++++
- 2 files changed, 98 insertions(+)
+> AT91RM920 has a memory range reserved for timer and watchdog configur=
+ation.
+> Expose those registers so that drivers can make use of the system tim=
+er syscon
+> declared in at91 DTs.
+>=20
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.co=
+m>
+> ---
+>  include/linux/mfd/syscon/atmel-st.h | 49 +++++++++++++++++++++++++++=
+++++++++++
+>  1 file changed, 49 insertions(+)
+>  create mode 100644 include/linux/mfd/syscon/atmel-st.h
+>=20
+> diff --git a/include/linux/mfd/syscon/atmel-st.h b/include/linux/mfd/=
+syscon/atmel-st.h
+> new file mode 100644
+> index 000000000000..93c7affc2809
+> --- /dev/null
+> +++ b/include/linux/mfd/syscon/atmel-st.h
+> @@ -0,0 +1,49 @@
+> +/*
+> + * Copyright (C) 2005 Ivan Kokshaysky
+> + * Copyright (C) SAN People
+> + *
+> + * System Timer (ST) - System peripherals registers.
+> + * Based on AT91RM9200 datasheet revision E.
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License as published=
+ by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#ifndef _LINUX_MFD_SYSCON_ATMEL_ST_H
+> +#define _LINUX_MFD_SYSCON_ATMEL_ST_H
+> +
+> +#include <linux/bitops.h>
+> +
+> +#define	AT91_ST_CR	0x00	/* Control Register */
+> +#define		AT91_ST_WDRST	BIT(0)	/* Watchdog Timer Restart */
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 694e8cd..99c3455 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -650,6 +650,92 @@ static void __exit power_supply_class_exit(void)
- subsys_initcall(power_supply_class_init);
- module_exit(power_supply_class_exit);
- 
-+/****************************************************************
-+ *                   Battery information interface              *
-+ ****************************************************************/
-+
-+ATOMIC_NOTIFIER_HEAD(psy_battery_info_notifier);
-+static LIST_HEAD(psy_battery_info_list);
-+
-+struct psy_battery_info {
-+	struct list_head entry;
-+	struct psy_charging_obj *info;
-+};
-+
-+int psy_battery_info_notifier_register(struct notifier_block *nb)
-+{
-+	return atomic_notifier_chain_register(&psy_battery_info_notifier, nb);
-+}
-+EXPORT_SYMBOL_GPL(psy_battery_info_notifier_register);
-+
-+void psy_battery_info_notifier_unregister(struct notifier_block *nb)
-+{
-+	atomic_notifier_chain_unregister(&psy_battery_info_notifier, nb);
-+}
-+EXPORT_SYMBOL_GPL(psy_battery_info_notifier_unregister);
-+
-+struct psy_charging_obj *psy_get_battery_info(const char *name)
-+{
-+	struct psy_battery_info *battery;
-+
-+	/* Sanity check */
-+	if (!name)
-+		goto err_out;
-+
-+	list_for_each_entry(battery, &psy_battery_info_list, entry) {
-+		if (!strcmp(battery->info->name, name))
-+			return battery->info;
-+	}
-+
-+err_out:
-+	return NULL;
-+}
-+EXPORT_SYMBOL(psy_get_battery_info);
-+
-+int psy_register_battery_info(struct psy_charging_obj *info)
-+{
-+	struct psy_battery_info *battery;
-+
-+	/* Sanity check */
-+	if (!info->name)
-+		return -EINVAL;
-+
-+	/* Check if same data is existed */
-+	list_for_each_entry(battery, &psy_battery_info_list, entry)
-+		if (!strcmp(battery->info->name, info->name))
-+			return -EEXIST;
-+
-+	battery = kzalloc(sizeof(*battery), GFP_KERNEL);
-+	if (!battery)
-+		return -ENOMEM;
-+
-+	battery->info = info;
-+	list_add_tail(&battery->entry, &psy_battery_info_list);
-+
-+	atomic_notifier_call_chain(&psy_battery_info_notifier,
-+				PSY_BATT_INFO_REGISTERED, info);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(psy_register_battery_info);
-+
-+void psy_unregister_battery_info(struct psy_charging_obj *info)
-+{
-+	struct psy_battery_info *battery, *tmp;
-+
-+	list_for_each_entry_safe(battery, tmp, &psy_battery_info_list, entry) {
-+		if (battery->info == info) {
-+			list_del(&battery->entry);
-+			kfree(battery);
-+			return;
-+		}
-+	}
-+
-+	atomic_notifier_call_chain(&psy_battery_info_notifier,
-+				PSY_BATT_INFO_UNREGISTERED, info);
-+}
-+EXPORT_SYMBOL(psy_unregister_battery_info);
-+
- MODULE_DESCRIPTION("Universal power supply monitor class");
- MODULE_AUTHOR("Ian Molton <spyro@f2s.com>, "
- 	      "Szabolcs Gyurko, "
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 7aada44..30145d8e 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -279,6 +279,11 @@ struct psy_charging_obj {
- 	struct psy_temp_mon_table temp_mon_table[PSY_MAX_TEMP_ZONE];
- };
- 
-+enum battery_info_notifier_events {
-+	PSY_BATT_INFO_REGISTERED,
-+	PSY_BATT_INFO_UNREGISTERED,
-+};
-+
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
-@@ -311,6 +316,13 @@ extern int power_supply_powers(struct power_supply *psy, struct device *dev);
- /* For APM emulation, think legacy userspace. */
- extern struct class *power_supply_class;
- 
-+/* Battery information helper */
-+extern int psy_battery_info_notifier_register(struct notifier_block *);
-+extern void psy_battery_info_notifier_unregister(struct notifier_block *);
-+extern struct psy_charging_obj *psy_get_battery_info(const char *);
-+extern int psy_register_battery_info(struct psy_charging_obj *);
-+extern void psy_unregister_battery_info(struct psy_charging_obj *);
-+
- static inline bool power_supply_is_amp_property(enum power_supply_property psp)
- {
- 	switch (psp) {
--- 
-1.7.9.5
+Sorry for the incremental reviews, I'm exceptionally busy of late.
+
+The next white space character after #define should be a humble space.
+
+=2E.. at least for the register defines.  The bit assignments can be
+tabbed out to denote what they are.
+
+Once fixed, please resend with my:
+
+Acked-by: Lee Jones <lee.jones@linaro.org>
+
+> +#define	AT91_ST_PIMR	0x04	/* Period Interval Mode Register */
+> +#define		AT91_ST_PIV	0xffff	/* Period Interval Value */
+> +
+> +#define	AT91_ST_WDMR	0x08	/* Watchdog Mode Register */
+> +#define		AT91_ST_WDV	0xffff	/* Watchdog Counter Value */
+> +#define		AT91_ST_RSTEN	BIT(16)	/* Reset Enable */
+> +#define		AT91_ST_EXTEN	BIT(17)	/* External Signal Assertion Enable *=
+/
+> +
+> +#define	AT91_ST_RTMR	0x0c	/* Real-time Mode Register */
+> +#define		AT91_ST_RTPRES	0xffff	/* Real-time Prescalar Value */
+> +
+> +#define	AT91_ST_SR	0x10	/* Status Register */
+> +#define		AT91_ST_PITS	BIT(0)	/* Period Interval Timer Status */
+> +#define		AT91_ST_WDOVF	BIT(1)	/* Watchdog Overflow */
+> +#define		AT91_ST_RTTINC	BIT(2)	/* Real-time Timer Increment */
+> +#define		AT91_ST_ALMS	BIT(3)	/* Alarm Status */
+> +
+> +#define	AT91_ST_IER	0x14	/* Interrupt Enable Register */
+> +#define	AT91_ST_IDR	0x18	/* Interrupt Disable Register */
+> +#define	AT91_ST_IMR	0x1c	/* Interrupt Mask Register */
+> +
+> +#define	AT91_ST_RTAR	0x20	/* Real-time Alarm Register */
+> +#define		AT91_ST_ALMV	0xfffff	/* Alarm Value */
+> +
+> +#define	AT91_ST_CRTR	0x24	/* Current Real-time Register */
+> +#define		AT91_ST_CRTV	0xfffff	/* Current Real-Time Value */
+> +
+> +#endif /* _LINUX_MFD_SYSCON_ATMEL_ST_H */
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
