@@ -1,103 +1,98 @@
-From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v4 4/9] power: reset: Add AT91RM9200 reset driver
-Date: Thu, 5 Mar 2015 21:34:32 +0100
-Message-ID: <20150305203432.GB3989@piout.net>
-References: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1425570594-13124-5-git-send-email-alexandre.belloni@free-electrons.com>
- <1425584954.24292.243.camel@x220>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
+Date: Fri, 06 Mar 2015 01:29:03 +0100
+Message-ID: <1696230.CygTkv53VA@vostro.rjw.lan>
+References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com> <CAJZ5v0h8vn26BeWPVhC4e_KNhBu15-mshnbq0K=OQ1M36vPQEQ@mail.gmail.com> <20150305163227.GF14093@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1425584954.24292.243.camel@x220>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>
-Cc: Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62270 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752189AbbCFAF2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Mar 2015 19:05:28 -0500
+In-Reply-To: <20150305163227.GF14093@leverpostej>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Alexandr
 
-On 05/03/2015 at 20:49:14 +0100, Paul Bolle wrote :
-> On Thu, 2015-03-05 at 16:49 +0100, Alexandre Belloni wrote:
-> > --- a/drivers/power/reset/Kconfig
-> > +++ b/drivers/power/reset/Kconfig
-> > @@ -30,6 +30,13 @@ config POWER_RESET_AT91_RESET
-> >  	  This driver supports restart for Atmel AT91SAM9 and SAMA5
-> >  	  SoCs
-> >  
-> > +config POWER_RESET_AT91RM9200_RESET
-> > +	bool "Atmel AT91RM9200 reset driver"
+On Thursday, March 05, 2015 04:32:27 PM Mark Rutland wrote:
+> Hi Rafael,
 > 
-> This adds a bool symbol.
+> > enable_irq_wake() has no effect on IRQF_NO_SUSPEND interrupts, so if the
+> > driver uses IRQF_NO_SUSPEND, it does not need to use enable_irq_wake()
+> > in addition to that.
 > 
-> > +	depends on ARCH_AT91 && MFD_SYSCON
-> > +	default SOC_AT91RM9200
-> > +	help
-> > +	  This driver supports restart for Atmel AT91RM9200.
-> > +
-> >  config POWER_RESET_AXXIA
-> >  	bool "LSI Axxia reset driver"
-> >  	depends on ARCH_AXXIA
-> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> > index 11de15bae52e..96e972bbb922 100644
-> > --- a/drivers/power/reset/Makefile
-> > +++ b/drivers/power/reset/Makefile
-> > @@ -1,6 +1,7 @@
-> >  obj-$(CONFIG_POWER_RESET_AS3722) += as3722-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_AT91_POWEROFF) += at91-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_AT91_RESET) += at91-reset.o
-> > +obj-$(CONFIG_POWER_RESET_AT91RM9200_RESET) += at91rm9200-reset.o
+> That's not generally true -- certainly not for irq_chips without the
+> IRQCHIP_SKIP_SET_WAKE flag.
 > 
-> This objectfile will never be modular.
+> Consider systems where the suspended state results in power to the CPU
+> being cut, and we rely on an external piece of logic attached to the
+> irq_chip to detect wakeup IRQs and restore power.
 > 
-> >  obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
-> >  obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
-> >  obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
-> > diff --git a/drivers/power/reset/at91rm9200-reset.c b/drivers/power/reset/at91rm9200-reset.c
-> > new file mode 100644
-> > index 000000000000..b739ac82b9c9
-> > --- /dev/null
-> > +++ b/drivers/power/reset/at91rm9200-reset.c
-> > @@ -0,0 +1,72 @@
+> In those cases irq_chip::irq_set_wake() must be called to ensure that
+> the wakeup logic is configured. If the wakeup logic is not configured to
+> look out for an IRQ, then when the IRQ is asserted by a device the
+> wakeup logic may not trigger. Thus the CPU power never gets restored, so
+> the CPU cannot handle the interrupt.
 > 
-> > +#include <linux/module.h>
-> 
-> Is this needed?
-> 
-> > +static struct platform_driver at91rm9200_reset_driver = {
-> > +	.probe = at91rm9200_reset_probe,
-> > +	.driver = {
-> > +		.name = "at91rm9200-reset",
-> > +		.of_match_table = at91rm9200_reset_of_match,
-> > +	},
-> > +};
-> > +module_platform_driver(at91rm9200_reset_driver);
-> 
-> This should, perhaps, be replaced by a wrapper that calls
->     platform_driver_register(at91rm9200_reset_driver)
-> 
-> while that wrapper is, well, called through
->     device_initcall()
-> 
-> or something similar. I didn't test this suggestion.
-> 
-> > +MODULE_ALIAS("platform:at91rm9200-reset");
-> > +MODULE_AUTHOR("Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
-> > +MODULE_DESCRIPTION("Atmel at91rm9200 System Timer Reset driver");
-> > +MODULE_LICENSE("GPL v2");
-> 
-> All these macros will be, basically, preprocessed away.
-> 
-> 
+> This is handled in enable_irq_wake() -- either the chip has the
+> IRQCHIP_SKIP_SET_WAKE flag set or chip->irq_set_wake() must succeed. If
+> neither is true enable_irq_wake() will return an error code to indicate
+> we can't use the IRQ for wakeup.
 
-Indeed, a lot got cargo culted/copy-pasted. I'll fix it and the
-at91-reset driver too.
+Right.  I forgot about that part.
 
-Thanks!
+> The request_irq path never results in a call to chip->irq_set_wake(),
+> even with the IRQF_NO_SUSPEND flag. So requesting an irq with
+> IRQF_NO_SUSPEND does not guarantee wakeup; it only guarantees that the
+> CPU can take the interrupt _around_ the suspended state, not necessarily
+> while _in_ the suspended state.
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Right.  "Suspended state" meaning full suspend here I suppose?
+
+> > Drivers using IRQF_COND_SUSPEND generally should use enable_irq_wake() too
+> > in case they end up in a situation without sharing a NO_SUSPEND interrupt, in
+> > which case their interrupt handlers won't be called after suspend_device_irqs(),
+> > so they need to rely on the core to do the wakeup.
+> > 
+> > > I agree that if problematic, it's an existing bug. Given Boris's
+> > > comments in the other thread this may just a minor semantic issue w.r.t.
+> > > IRQF_NO_SUSPEND vs IRQF_COND_SUSPEND.
+> > 
+> > It depends on whether or not the watchdog's interrupt handler has to be
+> > called immediately after receiving an interrupt (IRQF_NO_SUSPEND is
+> > better then) or it can be deferred till the resume_device_irqs() time.
+> 
+> We seem to be conflating some related properties:
+> 
+> [a] The IRQ will be left unmasked.
+> [b] The IRQ will be handled immediately when taken.
+> [c] The IRQ will wake the system from suspend.
+> 
+> Requesting an IRQ with IRQF_NO_SUSPEND guarantees [a,b], but does not
+> guarantee [c].
+
+That's correct.  IRQF_NO_SUSPEND does not guarantee that interrupts from
+that IRQ will have any effect after arch_suspend_disable_irqs() in
+suspend_enter().
+
+> A successful enable_irq_wake() on an IRQ guarantees [a,c], but usually
+> does not give [b] unless the IRQ was requested with IRQF_COND_SUSPEND
+> and happens to be shared with an IRQF_NO_SUSPEND user.
+
+That's correct too.
+
+> It sounds like for this kind of watchdog device we want [a,b,c], even if
+> the IRQ is not shared with an IRQF_NO_SUSPEND user.
+
+We can't guarantee that, though.  arch_suspend_disable_irqs() disables
+interrupts on the last working CPU and it won't get any.  It may be
+brought out of a low-power state by a pending interrupt, but it won't act
+upon that interrupt immediately anyway, only after the arch_suspend_enable_irqs()
+in suspend_enter().  But then it might as well be deferred until after
+resume_device_irqs().
+
+Rafael
+
