@@ -1,61 +1,65 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1 0/3 RESEND] NI Ettus Research USRP E3x0 soft-poweroff.
-Date: Sat, 7 Mar 2015 20:53:56 +0100
-Message-ID: <20150307195356.GE5233@earth>
-References: <1425507949-30499-1-git-send-email-moritz.fischer@ettus.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Sat, 7 Mar 2015 21:13:40 +0100
+Message-ID: <20150307201340.GF5233@earth>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+ <1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="5oH/S/bF6lOfqCQb"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="dgjlcl3Tl+kb3YDk"
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1425507949-30499-1-git-send-email-moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Moritz Fischer <moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>
-Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Jaewon Kim <jaewon02.kim@samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Beomho Seo <beomho.seo@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---5oH/S/bF6lOfqCQb
+--dgjlcl3Tl+kb3YDk
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
+> From: Beomho Seo <beomho.seo@samsung.com>
+>=20
+> This patch adds device driver of max77843 charger. This driver provide
+> initialize each charging mode(e.g. fast charge, top-off mode and constant
+> charging mode so on.). Additionally, control charging paramters to use
+> i2c interface.
+>=20
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
 
-Please CC linux-pm.
+Reviewed-By: Sebastian Reichel <sre@kernel.org>
 
-On Wed, Mar 04, 2015 at 02:25:46PM -0800, Moritz Fischer wrote:
-> This patchset adds support for the NI Ettus Research USRP E3x0 SDR's poweroff
-> functionality.
-
-I would prefer to have a generic driver like syscon-reboot does for
-system reset.
+I can't take it as is, since it depends on the private header file
+of PATCHv1.
 
 -- Sebastian
 
---5oH/S/bF6lOfqCQb
+--dgjlcl3Tl+kb3YDk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU+1dTAAoJENju1/PIO/qaaEIP/iVvqPUkfkRm6Q82+1SDOw46
-rcEAeFA+qRGxsksVzrjCxCwXBYsvrgpmQjTazIoJV7PdRW1TYLqY1nisIHM0hWiB
-FxsJIiMUpPfsWIrziFUeVT0/GS+xhSbztaKcw/oim/LVYtsGZxHbirF0YBKGG/Y5
-63UeupkSn6NFjqJjBlCWMkTdrP8ZpZsuShiVmKxuHKXWnZElxVFPzx/t5u/yC7EH
-x1zZlbJAbL0GuY1/pXsJ7s8870CVrtHOC0rxYXhnohsFlGnQefCbrMKLr5EiJ2Ww
-TvBuN7t/fMHPeb3usigQWWkuDinMMRzKF2urm5AweEMba1/kf29EmAxYCgL3IuFR
-upYQxAGOgbEVrNXJyr2ndVRmgqdexURdfrtBu2lxlf8OkStoxqdZoYRYzHwfjCka
-2tdSLC5WwoPZnZLIExirG0IrRCUKJ5Py+wfMiuhOqBxfIhhDNvbbHfnKP6zNK50G
-Hxds0QQCcLZ4Obes8w6S4Qq0wrTCSXXn9THGPBcr69Ca8tlD0QuEQzZrSbnGGYC0
-u+1sOQr1wDR4Jv70IKEz0MZDrfIZO6cNztB7/LvfHd/jP3QXwtJ4ElHhtSX+g8kv
-6tmH0UaKnQZxauyybqVammWUWiUVuvGzB1LLqTVFI+gH86vhb0e9LJ5Vc2bgIxZ/
-uQzhmoLQ27OROVVuqxa6
-=QVnN
+iQIcBAEBCgAGBQJU+1vxAAoJENju1/PIO/qaR+sQAKOezF73YNi6TdbcO5ttMyb6
+gJ/hjTImgs6uaa7yk5XzFZilSNEZOJPW7A8Vh7uY55H7YnNezPXkzFxRvXg625ao
+W82l9S3B89skzff6+LwKe05ftxg33UWl1FZ9cwRkxTpAwZveBN42weUI9HORGezz
+qrUFzTD7Nrw4pBWK9F73tydVTdKjuydLgsNeKicrbjPyem/NtLwDqX3IbZDgLMx5
+It1A/N/UKvpnVQzjR1CWY9VtTgDC3FDS7U/YFPT5y/n+5e03U+GT9Tg05GKFDm/E
+2CCCc+eGal4C4naSm6fpWtADW8PqqFDIfEVm34KKsAHZxIw+896jl3jimv9SEAPb
+GnLmFP1ST/jlio6R/LXnBwcw4LW0gMDpiWHQpYC5S1rhjYSc3fEuqkcwTURjwi/3
+ZNuy9A7VWyJQUu30KS8uk9DZSBHYnf92f6U/tqy8HSQrxRe1szSPnytoVg3ss3J9
+k1ryfbu5dnnc1Rn/Tpi5nA3+6KgKFNwZAOas6TdfSuGH37Yg0y5YdF7Az0zVvYig
+qpztELxY07tjmhabt8kpYtL1XSSbZrolSlKazWXZ+LJu4kU2f6laGOFg0cIQaKj4
+/9ogHUuGy1c0tTGdDL/V956TW7qZYfEgnwYJbe8MVlip9uU7PsaBsWwMQD5D7274
+Ez6Y1AatrUQaO/+dEAa5
+=rrc5
 -----END PGP SIGNATURE-----
 
---5oH/S/bF6lOfqCQb--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--dgjlcl3Tl+kb3YDk--
