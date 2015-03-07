@@ -1,47 +1,81 @@
-From: Todd E Brandt <todd.e.brandt@linux.intel.com>
-Subject: Re: [PATCH v4 0/3] X-Power AXP288 PMIC Fuel Gauge Driver
-Date: Tue, 10 Mar 2015 11:00:43 -0700
-Message-ID: <20150310180043.GA1818@linux.intel.com>
-References: <cover.1423082056.git.todd.e.brandt@linux.intel.com>
- <20150307192610.GC5233@earth>
-Reply-To: todd.e.brandt@linux.intel.com
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: Do not log an error if thermal_zone_get_temp
+ returns -EAGAIN
+Date: Sat, 7 Mar 2015 02:51:17 -0400
+Message-ID: <20150307065114.GA28318@developer>
+References: <1426000006-15729-1-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:19579 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbbCJSAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 Mar 2015 14:00:47 -0400
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:42779 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbbCJSmm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2015 14:42:42 -0400
+Received: by padfa1 with SMTP id fa1so4349258pad.9
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2015 11:42:41 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150307192610.GC5233@earth>
+In-Reply-To: <1426000006-15729-1-git-send-email-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, todd.e.brandt@intel.com, jacob.jun.pan@linux.intel.com, sameo@linux.intel.com, lee.jones@linaro.org, david.woodhouse@intel.com, jic23@kernel.org, ramakrishna.pallala@intel.com
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org
 
-On Sat, Mar 07, 2015 at 08:26:11PM +0100, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Wed, Feb 04, 2015 at 04:24:35PM -0800, Todd Brandt wrote:
-> > New power_supply driver at driver/power which interfaces with the
-> > axp20x mfd driver as a cell. Provides battery info, monitors for
-> > changes, and generates alerts on temperature and capacity issues
-> > 
-> > Sebestian, please review the patch set and consider it for 3.20 rc1.
-> > I've applied it over git.infradead.org/battery-2.6.git/master and
-> > verified that it works. Thanks.
-> > 
-> > Todd Brandt (3):
-> >   mfd/axp20x: change battery cell name to fuel gauge
-> >   mfd/axp20x: add support for fuel gauge cell
-> >   X-Power AXP288 PMIC Fuel Gauge Driver
-> 
-> Thanks, queued for 4.1: 
-> 
-> http://git.infradead.org/battery-2.6.git/commit/5a5bf49088f4c92f36786a2e4c20e17f715f0827
-> 
-> -- Sebastian
+Hans,
 
-Excellent, thanks! Also, I should also mention that Ramakrishna Pallala was
-the author of the original draft of the XPower fuel gauge driver. I ported
-and tested it for upstream use. He can also serve as a maintainer.
+Thanks for fixing this. One minor request though.
+
+On Tue, Mar 10, 2015 at 04:06:46PM +0100, Hans de Goede wrote:
+> Some temperature sensors only get updated every few seconds and while
+> waiting for the first irq reporting a (new) temperature to happen there
+> get_temp operand will return -EAGAIN as it does not have any data to report
+> yet.
+> 
+> Not logging an error in this case avoids messages like these from showing
+> up in dmesg on affected systems:
+> 
+> [    1.219353] thermal thermal_zone0: failed to read out thermal zone 0
+> [    2.015433] thermal thermal_zone0: failed to read out thermal zone 0
+> [    2.416737] thermal thermal_zone0: failed to read out thermal zone 0
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  drivers/thermal/thermal_core.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 48491d1..e3cbf34 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -458,8 +458,10 @@ static void update_temperature(struct thermal_zone_device *tz)
+>  
+>  	ret = thermal_zone_get_temp(tz, &temp);
+>  	if (ret) {
+> -		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
+> -			 tz->id);
+> +		if (ret != -EAGAIN)
+> +			dev_warn(&tz->device,
+> +				 "failed to read out thermal zone %d\n",
+> +				 tz->id);
+
+Can you please take the opportunity to add the error code in the
+message? Something like:
++			dev_warn(&tz->device,
++				 "failed to read out thermal zone (%d)\n",
++				 ret);
+
+The thermal zone id (tz->id) is already included  in the error message
+as it is always appended to the thermal zone device name
+("thermal_zone%d", tz->id).
+
+
+BR,
+
+Eduardo Valentin
+
+>  		return;
+>  	}
+>  
+> -- 
+> 2.3.1
+> 
