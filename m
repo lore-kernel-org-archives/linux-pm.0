@@ -1,77 +1,71 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v7 4/5] Input: add haptic drvier on max77843
-Date: Sat, 7 Mar 2015 21:21:02 +0100
-Message-ID: <20150307202102.GH5233@earth>
-References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
- <1425291038-18269-5-git-send-email-jaewon02.kim@samsung.com>
- <20150302173223.GA17094@dtor-ws>
- <54F50FE5.3060605@samsung.com>
- <20150304224742.GA38298@dtor-ws>
+Subject: Re: [PATCH 03/15] twl4030_charger: use devres for
+ power_supply_register and kzalloc.
+Date: Sat, 7 Mar 2015 21:25:57 +0100
+Message-ID: <20150307202557.GI5233@earth>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043350.4243.6164.stgit@notabene.brown>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="fmEUq8M7S0s+Fl0V"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56744 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbbCGUVR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 7 Mar 2015 15:21:17 -0500
+	protocol="application/pgp-signature"; boundary="pe+tqlI1iYzVj1X/"
+Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150304224742.GA38298@dtor-ws>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150224043350.4243.6164.stgit@notabene.brown>
+Sender: linux-omap-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Beomho Seo <beomho.seo@samsung.com>
 
 
---fmEUq8M7S0s+Fl0V
+--pe+tqlI1iYzVj1X/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Mar 04, 2015 at 02:47:42PM -0800, Dmitry Torokhov wrote:
+On Tue, Feb 24, 2015 at 03:33:50PM +1100, NeilBrown wrote:
 > [...]
-> > >Do you want it to go through my or MFD tree?
-> > Other drivers merged in each maintainers git.
+> @@ -667,13 +667,6 @@ static int __init twl4030_bci_probe(struct platform_=
+device *pdev)
+>  	return 0;
+> =20
+>  fail:
+> -	power_supply_unregister(&bci->usb);
+> -fail_register_usb:
+> -	power_supply_unregister(&bci->ac);
+> -fail_register_ac:
+> -fail_no_battery:
+> -	kfree(bci);
+> -
+>  	return ret;
+>  }
 
-Actually only Lee took PATCH 1 so far.
-
-> > If you don`t hava a problem, please merge your input git tree.
->=20
-> Applied, thank you.
-
-Patches 2-4 depend on linux/mfd/max77843-private.h from Patch 1,
-so taking them independently will introduce build problems.
-
-> [...]
-> > >>+++ b/drivers/input/misc/max77843-haptic.c
-> > >>[...]
-> > >>+#include <linux/mfd/max77843-private.h>
-> > >>[...]
+Please replace "goto fail" with "return ret", goto is no
+longer needed.
 
 -- Sebastian
 
---fmEUq8M7S0s+Fl0V
+--pe+tqlI1iYzVj1X/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJU+12uAAoJENju1/PIO/qaWYgP/1ntTuxcz6WR9ZejqhmBwxTh
-5HOvZzRYXgyX3s46ttkgrki77eDT1dibyJxij1iah/NQlk+NjwFQU/BUMbNLsu8M
-WvSonG5y8yk+AsVsKJYPhhuAsKZ8tZ+xmR33J1ETDLdUViHw/umuqvqxp0d11EsL
-gGmjkKsrVdk1DGMMtMN0rCUZJpwIgMcHLl4/ubB/hqX1bh4a43VIW3cPYMaTQd/E
-jtv0RUN0qJ1GyXpAWfrKdm7rtAnvN5nGynu2E4MLJmgp5ftogSbFoBAZBQtM+mBb
-jd3myFVujQHFl2fz5oDsdJMxmSDG3nl5wd7s1FVUnGjREJGBGNUVznI/d+k6LTtC
-TY9oh2Rb07jXejifpF11eLAyzYxOvBH9zaZKQGl+z+O5HfghdB8B8fAlq/zald5E
-GPMu8KzE9Sw5LiDAGNNEYf/xC5LAMaSbrzx3ppg8iNY8NTa/Itn49L/UpQd/z34l
-BfKNDMoaHY5vEM6FKZdtqgL1Y8I0LsAyqw0Dt+B3OEKuDtBWkE6ajEyFTAl977Kq
-tFpPYxUfWJJSB/Lj7UhHUizsg7Pe+Rh1ZtpPb2ZLguNRHaZ6tfq7OpiuXnt7qZXU
-CEsFIUi+EqpD92a24slTa+VTyc/GcfZjZauHyIw6Nwhf+kNhLyycM0pd4058cBcZ
-R2vba3Vaodf/sdRtVG/u
-=Mqa+
+iQIcBAEBCgAGBQJU+17VAAoJENju1/PIO/qagJkQAINDjL3fKbDbLMNHoxXczD3x
+m36EFZ0bEbUW5VF9Kz6i06cR5PQZ3KJFtGdlH2kanI01MQNQQxyYG4ttSZjdOqWj
+Hy9gjilvW8XJDveREds8rTF93QElo5N6eSV5F4m+90s7CmL3gLt6Nn2huv7trsh4
+63kHuuTkUNbU4PoOE4TwOAfRuHm8NbA8PwrHRIX5xzXvCfOWTj1m8F/yywgu/Inp
+EsYo7zFSMPT0cN5s66bBsHY4hKeou62SdgN/TM03Z2yLgUGbbtENLAUn4OjF+f1p
+D9BhF3zFMWwSSbLJPN1SJ5nP2lxyWxi3MZd7i9yLtuDhu5aTCOIEIDp5Rrw0QXMA
+n5adEyPcu54v8aOBNbCwbk2IJRdqs3t48KOoVryDO+BvM8/b4npikYn2vMLeVf2+
+yTgF9bBQS3gqln48tt+YIZlnHeuQmK7pTl1ABvICAOey/HaiXrlXe7nUebedZmPz
+6kaVgmM5wIpuIobqoAGgGpGKD8hkTK+XKVB2irlZxF/ci3Y6QVIeYNQIdwwmjy2D
+fA1RqRZS48IGBfcyE3URI6LaAtL4/x5Q0RpkpSXPqVmoITpw+nQbGBDE7cc9qDyy
+J18VmHc7PfVMzdJRgG3G/fr8DSk+6MHpav8duSfSsIXENGHGQ5iyxjHCZ3JD46S0
+DTT6HMYzu8YEdgEA81iC
+=HPaH
 -----END PGP SIGNATURE-----
 
---fmEUq8M7S0s+Fl0V--
+--pe+tqlI1iYzVj1X/--
