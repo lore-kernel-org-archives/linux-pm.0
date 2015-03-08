@@ -1,56 +1,40 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper
- functions
-Date: Sun, 8 Mar 2015 11:43:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1503081142270.3638-100000@netrider.rowland.org>
-References: <142581656.cLu1yoPyFQ@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <142581656.cLu1yoPyFQ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+From: nicolassaenzj@gmail.com
+Subject: [PATCH] power: generic-adc-battery: Fix power_supply_property returned value
+Date: Sun,  8 Mar 2015 19:21:20 +0000
+Message-ID: <1425842480-8746-1-git-send-email-nicolassaenzj@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f45.google.com ([74.125.82.45]:38732 "EHLO
+	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbbCHTVa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 8 Mar 2015 15:21:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicolas Saenz Julienne <nicolassaenzj@gmail.com>
 
-On Sat, 7 Mar 2015, Rafael J. Wysocki wrote:
+From: Nicolas Saenz Julienne <nicolassaenzj@gmail.com>
 
-> But this is part of a bigger picture.  Namely, if a separete wakeup interrupt
-> is required for a device, the device's power.can_wakeup flag cannot be set
-> until that interrupt has been successfully requested.  Also for devices that
-> can signal wakeup via their own IO interrupts, it would make sense to allow
-> those interrupts to be registered somehow as "wakeup interrupts".
-> 
-> So I wonder if we can define a new struct along the lines of your
-> struct wakeirq_source, but call it struct wake_irq and make it look
-> something like this:
-> 
-> struct wake_irq {
->        struct device *dev;
->        int irq;
->        irq_handler_t handler;
-> };
-> 
-> Then, add a struct wake_irq pointer to struct dev_pm_info *and* to
-> struct wakeup_source.  Next, make dev_pm_request_wake_irq() allocate the
-> structure and request the interrupt and only set the pointer to it from
-> struct dev_pm_info *along* *with* power.can_wakeup if all that was
-> successful.
-> 
-> For devices that use their own IO IRQ for wakeup, we can add something
-> like dev_pm_set_wake_irq() that will work analogously, but without requesting
-> the interrupt.  It will just set the dev and irq members of struct wake_irq
-> and point struct dev_pm_info to it and set its power.can_wakeup flag.
-> 
-> Then, device_wakeup_enable() will be able to see that the device has a
-> wakeup IRQ and it may then point its own struct wake_irq pointer to that.
-> The core may then use that pointer to trigger enable_irq_wake() for the
-> IRQ in question and it will cover the devices that don't need separate
-> wakeup interrupts too.
-> 
-> Does that make sense to you?
+The POWER_SUPPLY_PROP_STATUS case in gab_get_property() wasn't providing any
+value.
 
-Can we back up a little?  What is the basic problem the two of you are 
-trying to solve?
+Signed-off-by: Nicolas Saenz Julienne <nicolassaenzj@gmail.com>
+---
+ drivers/power/generic-adc-battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Alan Stern
+diff --git a/drivers/power/generic-adc-battery.c b/drivers/power/generic-adc-battery.c
+index d72733e..0a566ac 100644
+--- a/drivers/power/generic-adc-battery.c
++++ b/drivers/power/generic-adc-battery.c
+@@ -159,7 +159,7 @@ static int gab_get_property(struct power_supply *psy,
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+-		gab_get_status(adc_bat);
++		val->intval = gab_get_status(adc_bat);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN:
+ 		val->intval = 0;
+-- 
+2.3.2
+
