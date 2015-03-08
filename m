@@ -1,83 +1,49 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC 4/4] charger-manager: Enable psy based charge control
-Date: Sun, 8 Mar 2015 03:14:09 +0100
-Message-ID: <20150308021409.GC25160@earth>
-References: <1425638007-9411-1-git-send-email-jenny.tc@intel.com>
- <1425638007-9411-5-git-send-email-jenny.tc@intel.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v7 4/5] Input: add haptic drvier on max77843
+Date: Sat, 7 Mar 2015 20:55:26 -0800
+Message-ID: <20150308045526.GB4054@dtor-ws>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+ <1425291038-18269-5-git-send-email-jaewon02.kim@samsung.com>
+ <20150302173223.GA17094@dtor-ws>
+ <54F50FE5.3060605@samsung.com>
+ <20150304224742.GA38298@dtor-ws>
+ <20150307202102.GH5233@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="E13BgyNx05feLLmH"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1425638007-9411-5-git-send-email-jenny.tc@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jenny TC <jenny.tc@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, jonghwa3.lee@samsung.com, myungjoo.ham@gmail.com, Pallala Ramakrishna <ramakrishna.pallala@intel.com>
-List-Id: linux-pm@vger.kernel.org
-
-
---E13BgyNx05feLLmH
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:32958 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbbCHEzb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Mar 2015 23:55:31 -0500
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20150307202102.GH5233@earth>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Beomho Seo <beomho.seo@samsung.com>
 
-Hi,
+On Sat, Mar 07, 2015 at 09:21:02PM +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Mar 04, 2015 at 02:47:42PM -0800, Dmitry Torokhov wrote:
+> > [...]
+> > > >Do you want it to go through my or MFD tree?
+> > > Other drivers merged in each maintainers git.
+> 
+> Actually only Lee took PATCH 1 so far.
+> 
+> > > If you don`t hava a problem, please merge your input git tree.
+> > 
+> > Applied, thank you.
+> 
+> Patches 2-4 depend on linux/mfd/max77843-private.h from Patch 1,
+> so taking them independently will introduce build problems.
 
-On Fri, Mar 06, 2015 at 04:03:27PM +0530, Jenny TC wrote:
-> At present charger manager support only regulator based charging
-> control. But most of the charger drivers are registered with power
-> supply subsystem. This patch adds support for power supply based
-> charging control along with the regulator based control. With the
-> patch, charging control can be done either using power supply
-> interface or with regulator interface. The charging is setup
-> based on battery parameters received through the battery info
-> handlers.
+Luckily at least the input driver depends no MFD core so while I agree
+that the situation is not ideal it is pretty safe since make *config
+will not allow selecting it.
 
-[...]
+Thanks.
 
-(so far I only skipped over the patch)
-
-[...]
-
-> @@ -1704,6 +1968,10 @@ static int charger_manager_probe(struct platform_d=
-evice *pdev)
->  		strncpy(cm->psy_name_buf, desc->psy_name, PSY_NAME_MAX);
->  	cm->charger_psy.name =3D cm->psy_name_buf;
-> =20
-> +	if (!power_supply_get_property(fuel_gauge, POWER_SUPPLY_PROP_MODEL_NAME,
-> +						&val))
-> +		cm->battery_info =3D psy_get_battery_info(val.strval);
-> +
->  	/* Allocate for psy properties because they may vary */
->  	cm->charger_psy.properties =3D devm_kzalloc(&pdev->dev,
->  				sizeof(enum power_supply_property)
-
-We are currently splitting battery data from fuel gauge data, so
-acquiring the battery using the fuel gauge's MODEL_NAME is not very
-nice.
-
--- Sebastian
-
---E13BgyNx05feLLmH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJU+7BuAAoJENju1/PIO/qaG80QAJEpupphPFj2L2GEwrqWa8XX
-F/krSMlGW32eqlFu/rhFlxM+YbS6V9hdnXQPsbfE7mX2JFpxDqGYn6z7RFB2WLkW
-v365+34634JlbSFBYiQeuokwY78ZQ5lWb9ErRFOzRFXQ5vqx7GylUhpt9cOYHBef
-8aedtCbyCKUqbChtQMrDIwIJuY87TprAz6+gzb30aO8hmOWh5Q+/MNBFqfsy9Z5V
-qGPJvBzl2rnatgNmnrjWIKR5JL8wGv1h72bdHPh3mMYUcg7qhELXbhUJqH2bECak
-1joaK3OjOSgz/kCx53Ni75EDmm2jaLbiXHHTe/mbo8MgTnquJQRWRGijoiD8gEVe
-/ubB3DrKRilxbkzZcMlohfkeRW4Fv71TXaTT8vCs9kAcmiWUcxIDUY38KiSI7ScR
-h4PA6HWT2axRvL0YIBnFpkiwDNCyQlO6XurOCK2oQLzXyvNh2n1Dk7LRM6WTKDfn
-c6ApcWPt3dpOei7a+kWI8XaZkaFAHs2GlHDQBDD9/d5S1N9tF9SXQ2fRwpxUKpn4
-hrP/7DZSY5uhhGYJYw+k2Gs+r5F9lkIPMdIvMkZUim+pwq+SXJToHxx54hzDYZpI
-CSfkJXoTiBhFz8I9jNadd0/leFgchkP6ZbtwJ7xFb7mZoDKBiseK0rHVVKoQ1rvP
-by3fMnUm9ZM0BdA3RoFg
-=IslA
------END PGP SIGNATURE-----
-
---E13BgyNx05feLLmH--
+-- 
+Dmitry
