@@ -1,106 +1,47 @@
-From: NeilBrown <neilb@suse.de>
-Subject: Re: twl4030_charger: need changes to get probed?
-Date: Mon, 9 Mar 2015 11:06:53 +1100
-Message-ID: <20150309110653.7532613c@notabene.brown>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
-	<20150224043352.4243.11227.stgit@notabene.brown>
-	<20150302210926.GP13270@amd>
-	<20150305173350.50502b95@notabene.brown>
-	<20150306212417.GA24169@amd>
-	<20150307210102.GL5233@earth>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Mon, 09 Mar 2015 09:35:10 +0900
+Message-ID: <54FCEABE.9000007@samsung.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+ <1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
+ <20150307201340.GF5233@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- boundary="Sig_/t8viym4Ys3iYI07D4d0NOPc"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:60906 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbbCIAHH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 8 Mar 2015 20:07:07 -0400
-In-Reply-To: <20150307210102.GL5233@earth>
+Received: from mailout4.samsung.com ([203.254.224.34]:28622 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752786AbbCIAfO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 8 Mar 2015 20:35:14 -0400
+In-reply-to: <20150307201340.GF5233@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@debian.org>
-Cc: Pavel Machek <pavel@ucw.cz>, pali.rohar@gmail.com, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
---Sig_/t8viym4Ys3iYI07D4d0NOPc
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
+> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
+>> From: Beomho Seo <beomho.seo@samsung.com>
+>>
+>> This patch adds device driver of max77843 charger. This driver provide
+>> initialize each charging mode(e.g. fast charge, top-off mode and constant
+>> charging mode so on.). Additionally, control charging paramters to use
+>> i2c interface.
+>>
+>> Cc: Sebastian Reichel <sre@kernel.org>
+>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> 
+> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+> 
+> I can't take it as is, since it depends on the private header file
+> of PATCHv1.
+> 
+> -- Sebastian
+> 
 
-On Sat, 7 Mar 2015 22:01:02 +0100 Sebastian Reichel <sre@debian.org> wrote:
+This patch reviewed by Sebastian.
+Could you Please merge that your git tree ?
 
-> Hi,
->=20
-> On Fri, Mar 06, 2015 at 10:24:17PM +0100, Pavel Machek wrote:
-> > According to n900 dts, twl4030-bci (aka charger) should be
-> > included.
->=20
-> its part of twl, but not used on N900 afaik.
->=20
-> > (But it does not seem to do anything useful on n900. I was hoping for
-> > measurement of input voltage, but .. no.)
->=20
-> check for rx51-battery.
->=20
-> > Any ideas why the patch below is needed?
->=20
-> platform_driver_probe() does not support deferred probing.
->=20
-> Neil, can you take this patch into your series for the next round?
-
-I could, but I do wonder if it is the right thing to do.
-
-Shouldn't we fix platform_driver_probe() to support deferred probing.
-
-As I understand it, it refused to retry a probe if there is an error, and t=
-he
-comments suggest that such retrying is avoided because it would be a waste
-of time:
-
-	/*
-	 * Prevent driver from requesting probe deferral to avoid further
-	 * futile probe attempts.
-	 */
-
-In this case, it isn't futile.
-
-Earlier there is a comment saying:
-
- * Use this instead of platform_driver_register() when you know the device
- * is not hotpluggable and has already been registered, and you want to
- * remove its run-once probe() infrastructure from memory after the driver
- * has bound to the device.
-
-I presume all this applies.  I assume that the only problem is a probe-order
-thing.  So maybe we should fix platform_driver_probe() to do the right thing
-with -EPROBEDEFER??
-
-Trouble is, I really don't understand the  point or mechanism for
-platform_driver_probe(), so I cannot suggest anything.
-But I have been annoyed before that platform_driver_probe doesn't cope with
-EPROBEDEFER, so I would like it fixed.
-
-NeilBrown
-
---Sig_/t8viym4Ys3iYI07D4d0NOPc
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIVAwUBVPzkHTnsnt1WYoG5AQKwHA//d5aOUNOlfZ59C9EtQGz1zSn+mpIsXjz0
-MHcL7ZbBSfBxd8PLDBUpb/JRL/SelK5vFqOo2zmXvgqG/ANyDSo3vING8UU0kK2w
-WiTQzOKJ5JPfcW4jAPo1TMbE8C7iGttB1/Z0jOEe6BlZiDYpobWYYKV7wtK3dVPl
-c+Gdc1tY1s2v4+zoSe4t5gjZdBEsbS0Z2+4Y1ldkQ5Jx6dZyR9bThe/Orp1rJz3q
-FgNuvxrtf27BJEHGhZ9+gucK/thxHqilVXqTjj2EBAPFnnIDftuRCzEnck/ukCFp
-rvtGBHuNyAP8bQJYAs1/fObFlDkIdu4OqJE5sKWT0hhirx6D6EpMzsnfiCFRy4DG
-ajmhXEJQ1sKo0PFoJE82W3zXrgAoMGefuy8+oeagToQG8WfHI3RuqDVhEijg3Rj2
-t131LOi3p2M4KlirhhBO3P9EXUvfPBtIOIo6Y1y2clxR/cIV5P1QSpTiuAm0G9Qt
-WvgrySckYYEv7naTF0wB9E3jr/7zV4qDlcloh50v0gqZlWIyvD24IFR0/NT89ByG
-tOKRs51XQ4fGphETeztoTX23N0OCd9+rY4uH4Sln34de6U24CVhlZQ9MEF/aZ0zh
-s3tK/ppkWEtWC4QgswqRTvXmER+5aRvUivkHOKcW8DbA3r+oHhNZmB03XOr7rnpY
-/K5p1mS9J+8=
-=4dn5
------END PGP SIGNATURE-----
-
---Sig_/t8viym4Ys3iYI07D4d0NOPc--
+Best regards,
+Beomho Seo
