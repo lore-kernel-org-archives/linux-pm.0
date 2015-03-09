@@ -1,57 +1,137 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
- device driver
-Date: Mon, 9 Mar 2015 12:02:56 +0100
-Message-ID: <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
-References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
-	<1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
-	<20150307201340.GF5233@earth>
-	<54FCEABE.9000007@samsung.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 8/9] clocksource: atmel-st: use syscon/regmap
+Date: Mon, 09 Mar 2015 12:13:54 +0100
+Message-ID: <54FD8072.5010803@linaro.org>
+References: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com> <1425570594-13124-9-git-send-email-alexandre.belloni@free-electrons.com> <54F96896.6040204@linaro.org> <20150306084727.GH3989@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f182.google.com ([209.85.220.182]:52836 "EHLO
-	mail-vc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbbCILC5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 07:02:57 -0400
-In-Reply-To: <54FCEABE.9000007@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150306084727.GH3989-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
-> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
->> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
->>> From: Beomho Seo <beomho.seo@samsung.com>
+On 03/06/2015 09:47 AM, Alexandre Belloni wrote:
+> On 06/03/2015 at 09:43:02 +0100, Daniel Lezcano wrote :
+>> On 03/05/2015 04:49 PM, Alexandre Belloni wrote:
+>>> The register range from the system timer is also used by the watchd=
+og driver.
+>>> Use a regmap to handle concurrent accesses.
 >>>
->>> This patch adds device driver of max77843 charger. This driver provide
->>> initialize each charging mode(e.g. fast charge, top-off mode and constant
->>> charging mode so on.). Additionally, control charging paramters to use
->>> i2c interface.
+>>> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.=
+com>
+>>> Acked-by: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+>>> ---
+>>>   drivers/clocksource/timer-atmel-st.c | 99 ++++++++++++++---------=
+-------------
+>>>   1 file changed, 37 insertions(+), 62 deletions(-)
 >>>
->>> Cc: Sebastian Reichel <sre@kernel.org>
->>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>> diff --git a/drivers/clocksource/timer-atmel-st.c b/drivers/clockso=
+urce/timer-atmel-st.c
+>>> index 7d062ab32674..c4a52e32675e 100644
+>>> --- a/drivers/clocksource/timer-atmel-st.c
+>>> +++ b/drivers/clocksource/timer-atmel-st.c
+>>> @@ -24,19 +24,19 @@
+>>>   #include <linux/irq.h>
+>>>   #include <linux/clockchips.h>
+>>>   #include <linux/export.h>
+>>> -#include <linux/of.h>
+>>> -#include <linux/of_address.h>
+>>> +#include <linux/mfd/syscon.h>
+>>> +#include <linux/mfd/syscon/atmel-st.h>
+>>>   #include <linux/of_irq.h>
+>>> +#include <linux/regmap.h>
+>>>
+>>>   #include <asm/mach/time.h>
+>>>
+>>> -#include <mach/at91_st.h>
+>>> -#include <mach/hardware.h>
+>>> -
+>>>   static unsigned long last_crtr;
+>>>   static u32 irqmask;
+>>>   static struct clock_event_device clkevt;
+>>> +static struct regmap *regmap_st;
+>>>
+>>> +#define AT91_SLOW_CLOCK		32768
+>>>   #define RM9200_TIMER_LATCH	((AT91_SLOW_CLOCK + HZ/2) / HZ)
+>>>
+>>>   /*
+>>> @@ -46,11 +46,11 @@ static struct clock_event_device clkevt;
+>>>    */
+>>>   static inline unsigned long read_CRTR(void)
+>>>   {
+>>> -	unsigned long x1, x2;
+>>> +	unsigned int x1, x2;
+>>>
+>>> -	x1 =3D at91_st_read(AT91_ST_CRTR);
+>>> +	regmap_read(regmap_st, AT91_ST_CRTR, &x1);
+>>>   	do {
+>>> -		x2 =3D at91_st_read(AT91_ST_CRTR);
+>>> +		regmap_read(regmap_st, AT91_ST_CRTR, &x2);
+>>>   		if (x1 =3D=3D x2)
+>>>   			break;
+>>>   		x1 =3D x2;
+>>> @@ -63,7 +63,10 @@ static inline unsigned long read_CRTR(void)
+>>>    */
+>>>   static irqreturn_t at91rm9200_timer_interrupt(int irq, void *dev_=
+id)
+>>>   {
+>>> -	u32	sr =3D at91_st_read(AT91_ST_SR) & irqmask;
+>>> +	u32 sr;
+>>> +
+>>> +	regmap_read(regmap_st, AT91_ST_SR, &sr);
+>>> +	sr &=3D irqmask;
+>>>
+>>>   	/*
+>>>   	 * irqs should be disabled here, but as the irq is shared they a=
+re only
+>>> @@ -96,7 +99,7 @@ static struct irqaction at91rm9200_timer_irq =3D =
+{
+>>>   	.name		=3D "at91_tick",
+>>>   	.flags		=3D IRQF_SHARED | IRQF_TIMER | IRQF_IRQPOLL,
+>>>   	.handler	=3D at91rm9200_timer_interrupt,
+>>> -	.irq		=3D NR_IRQS_LEGACY + AT91_ID_SYS,
+>>> +	.irq		=3D 0,
 >>
->> Reviewed-By: Sebastian Reichel <sre@kernel.org>
->>
->> I can't take it as is, since it depends on the private header file
->> of PATCHv1.
->>
->> -- Sebastian
+>> Is this change related to regmap ?
 >>
 >
-> This patch reviewed by Sebastian.
-> Could you Please merge that your git tree ?
+> It is related to the removing of hardware.h. I can do that in a separ=
+ate
+> patch if you prefer.
 
-Hi,
+Yeah, because it is not obvious to see a connection between the removal=
+=20
+of hardware.h and the syscon/regmap changes.
 
-... and again we are adding a new driver for very similar chipset to
-already supported. I looked at spec and the charger's registers are
-almost the same as for max77693. Their layout and addresses are the
-same. I see some minor differences, probably the most important would
-be different values current (fast-charge, top-off). But still 90% of
-registers are the same... Do we really have to add new driver?
+I would suggest you create a patch to replace setup_irq with=20
+register_irq so that will remove this structure and the irq=20
+initialization to zero.
 
-Best regards,
-Krzysztof
+>> By the way, perhaps take the opportunity to replace setup_irq by req=
+uest_irq
+>> (and check the return value) ?
+>>
+>
+> I tried and it fails, I didn't investigate yet.
+
+It shouldn't be a big deal, register_irq is more or less a wrapper to=20
+setup_irq.
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdo=
+g" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
