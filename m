@@ -1,57 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
-Date: Mon, 09 Mar 2015 15:30:01 +0100
-Message-ID: <1592385.fqRVVyPSPE@vostro.rjw.lan>
-References: <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com> <1615214.0rkGfM1gZL@vostro.rjw.lan> <20150309075546.GY3989@piout.net>
+From: 'Sebastian Reichel' <sre@kernel.org>
+Subject: Re: [RFC 1/4] power_supply: Introduce charging object table
+Date: Mon, 9 Mar 2015 15:08:32 +0100
+Message-ID: <20150309140831.GA950@earth>
+References: <20ADAB092842284E95860F279283C5642EEC90C3@BGSMSX104.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55938 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753685AbbCIOGU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 10:06:20 -0400
-In-Reply-To: <20150309075546.GY3989@piout.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20ADAB092842284E95860F279283C5642EEC90C3@BGSMSX104.gar.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Tc, Jenny" <jenny.tc@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Anton Vorontsov <anton.vorontsov@linaro.org>, David Woodhouse <dwmw2@infradead.org>, "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Sylvain Rochet <gradator@gradator.net>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Alessandro Zummo <a.zummo@towertech.it>, Mike Turquette <mturquette@linaro.org>, Jason Cooper <jason@lakedaemon.net>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Wim Van Sebroeck <wim@iguana.be>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>, linux-arm-kernel@lists.infradead.org
-
-On Monday, March 09, 2015 08:55:46 AM Alexandre Belloni wrote:
-> Hi,
-> 
-> On 08/03/2015 at 02:12:53 +0100, Rafael J. Wysocki wrote :
-> > > > I think you misunderstood, that is exactly the expected behaviour. This
-> > > > is hardware defined. Once the watchdog is started, nobody can stop it.
-> > > > Trying to change the mode register will result in a reset of the
-> > > > SoC.
-> > > 
-> > > Well, it boils down to "what is stronger". Desire to suspend the
-> > > system, or desire to reboot the system.
-> > > 
-> > > It is "echo mem > state", not "echo reboot > state".
-> > > 
-> > > > It is documented in the datasheet and any user wanting another behaviour
-> > > > is out of luck.
-> > > 
-> > > Actaully, your platform should just refuse to enter suspend-to-RAM
-> > > when hw watchdog is enabled.
-> > 
-> > Quite likely, depending on how exactly the suspend is implemented.
-> >
-> 
-> We've had absolutely zero complain on that. It is quite clear in the
-> datasheet that failing to refresh the watchdog once started will lead to
-> a reset and that it is impossible to stop.
-> It is actually quite convenient to also ensure that you can actually
-> wake up from suspend because that can obviously go wrong.
-
-I gather then that the suspend implementation is such that touching the
-watchdog periodically while suspended is not a problem.
-
-Again, can you please tell me how suspend is implemented on at91?
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Mar 09, 2015 at 12:26:21PM +0000, Tc, Jenny wrote:
+> > > +	char name[PSY_MAX_BAT_NAME_LEN];
+> >=20
+> > char *name;
+> >=20
+> > No need for arbitrary length limitation.
+>=20
+> The length limitation is introduced to form a packed structure so that
+> the data can be read directly from memory without parsing.
+
+This reason is ok for a device driver, but not for a kernel
+subsystem.
+
+-- Sebastian
+
+--nFreZHaLTZJo0R7j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU/alcAAoJENju1/PIO/qa+SUQAJCgptly6RlNIBGhFDzq/uPE
+SOpGpEmsIx/ATSXOyzMNu5doYD/VA8xno1pZEGg1M8hwO/uIJiYV/okDjH9Ciz/N
+Rh8Dod5pcMcSenYFxVuaQ4rO2gaUe4hTeCiL0Y94wOKz4mXvFQmKIwH2wCgKJj1n
+8qtJQYhWoKS/8wFhbE/Wknp9t4SyBCbZaW0NarreFovbtrMZBTbmcnjT97cVUZDR
+NYvc6O+zmIxi6FoJZ6oxYoe0NinAgzZQ2BbG0UAn4Di9bbPgb5nJsgaDruR9+HXJ
+Cnm5XReZWldz6ayVX5rSUOzA6ggi5UxH/GIIJkmdpC7V+/i9KYQivxfm0/6kojKw
+DfYZoKCRwrB4hRLvEJq+3INRtaS5nDHCSmRBeDTutXavkHrUyVHtUiqtGXEvexdR
+wYWKG4o33wRO1GTfVydJNou8j5DDAa202j9qQ0L58xIZmIzZB4mk5xO045rek9MZ
+o56Stm4+ZhWg2EVkml3ocB4I1XqKu+JOtTD4z7YC94CpIaLyFn5mxdlrbB1cIiRy
+fkPv0p2qlLNjZO+n9NWeXDeMX/xZfVOZU3v13D13imiGk3isZENLEgOEI7ucIyOI
+vKddeCU3N0LdpVDncwo2FpWv3pK6oqMdmvoq+KJtCCF8ZFbCzTuGYSJhNeCOK3oU
+PoMkMLl6OSEIcvupg4x4
+=KLad
+-----END PGP SIGNATURE-----
+
+--nFreZHaLTZJo0R7j--
