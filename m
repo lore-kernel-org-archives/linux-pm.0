@@ -1,34 +1,142 @@
-From: ethan zhao <ethan.zhao@oracle.com>
-Subject: Re: [PATCH Resend] cpufreq: Set cpufreq_cpu_data to NULL before putting
- kobject
-Date: Mon, 09 Mar 2015 12:14:05 +0800
-Message-ID: <54FD1E0D.8020406@oracle.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422663249.git.viresh.kumar@linaro.org> <54CEF123.5050106@oracle.com> <CAKohponOvEnG2Tt5sFPLAHA_bHckHboR7t35-7ey5b_cCKfvKg@mail.gmail.com> <54CEF574.6040404@oracle.com> <CAKohpom589bFL4-eyR1=qrc6uoRtjck_z_SBHS3XU8dJSc4yFg@mail.gmail.com> <54CEF7AA.80401@oracle.com> <CAKohponfkJVYFTsj6ijy0iY3t-R=zN=M0ZkoDmYa-WYTzPuvmw@mail.gmail.com> <54CEFA23.7040705@oracle.com> <CAKohpomBcBVXLW-RW1VXAtkTw-BKd7tHmeFJgmf9CM3vi1Ki-Q@mail.gmail.com> <54CF0106.5050601@oracle.com> <CAKohpomYpEAeQeaB7HVT0cBT5H_P8QQ-e+FQ5OqUoOvfz2ZnOQ@mail.gmail.com> <54CF9209.1050403@oracle.com> <CABawtvPtd2Ln6ghYRHhPy5SbUZqe2yncyeOta2CLt7fV1=504A@mail.gmail.com> <54ED50F5.5080603@linaro.org> <CABawtvPQNY91jS7gUWVVUZ87SG9zjtXDmTYsi0Q7hLbH_dPYng@mail.gmail.com> <54EDF8FC.80602
- 04@oracle.com> <CABawtvPAA2f9vv6WN98OvP3JR1UCApHtGoREpZnVkWSZGWS=kQ@mail.gmail.com> <CAKohponwTNuSpt_i2V=i5ZgfVrNgaFwo17AUFX=CT=pcEwoDVw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponwTNuSpt_i2V=i5ZgfVrNgaFwo17AUFX=CT=pcEwoDVw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ethan Zhao <ethan.kernel@gmail.com>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, guangyu.sun@oracle.com, "sriharsha.devdas@oracle.com" <sriharsha.devdas@oracle.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Ref the policy object sooner
+Date: Mon,  9 Mar 2015 09:50:22 +0530
+Message-ID: <1ba2266de234ebbafd680a520565361f5071df71.1425874657.git.viresh.kumar@linaro.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, stable@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, santosh.shilimkar@oracle.com, ethan.zhao@oracle.com, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
-On 2015/3/9 12:06, Viresh Kumar wrote:
-> On 9 March 2015 at 07:04, Ethan Zhao <ethan.kernel@gmail.com> wrote:
->> Viresh,
->>      Got that box and did some debug, found the policy->kobj is not initialized.
->> So the race happened between cpufreq_cpu_get() and
->> __cpufreq_add_dev(), and verified 'this' race could be fixed by commit
->>
->> 6d4e81e cpufreq: Ref the policy object sooner
->>
->>      I have reboot the box with crond for more than 12 hours, no warning found.
-> Oh, great. Thanks for your work Ethan. You want this to be pushed for 3.18
-> stable kernel, right? I will see what I can do.
-  Of course we are happy to see it in 3.18 branch.
+Upstream commit id: 6d4e81ed89c0
 
-  Thanks,
-  Ethan
+Do it before it's assigned to cpufreq_cpu_data, otherwise when a driver
+tries to get the cpu frequency during initialization the policy kobj is
+referenced and we get this warning:
+
+------------[ cut here ]------------
+WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
+Modules linked in:
+CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
+[<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
+[<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
+[<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
+[<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
+[<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
+[<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
+[<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
+[<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
+[<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
+[<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
+[<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
+[<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
+---[ end trace b7bd64a81b340c59 ]---
+
+Cc: 3.18 <stable@vger.kernel.org> # 3.18
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 42 +++++++++++++++++++++---------------------
+ 1 file changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 4473eba1d6b0..ae27ea61799a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -898,46 +898,31 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+ 	struct freq_attr **drv_attr;
+ 	int ret = 0;
+ 
+-	/* prepare interface data */
+-	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+-				   &dev->kobj, "cpufreq");
+-	if (ret)
+-		return ret;
+-
+ 	/* set up files for this cpu device */
+ 	drv_attr = cpufreq_driver->attr;
+ 	while ((drv_attr) && (*drv_attr)) {
+ 		ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
+ 		if (ret)
+-			goto err_out_kobj_put;
++			return ret;
+ 		drv_attr++;
+ 	}
+ 	if (cpufreq_driver->get) {
+ 		ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
+ 		if (ret)
+-			goto err_out_kobj_put;
++			return ret;
+ 	}
+ 
+ 	ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
+ 	if (ret)
+-		goto err_out_kobj_put;
++		return ret;
+ 
+ 	if (cpufreq_driver->bios_limit) {
+ 		ret = sysfs_create_file(&policy->kobj, &bios_limit.attr);
+ 		if (ret)
+-			goto err_out_kobj_put;
++			return ret;
+ 	}
+ 
+-	ret = cpufreq_add_dev_symlink(policy);
+-	if (ret)
+-		goto err_out_kobj_put;
+-
+-	return ret;
+-
+-err_out_kobj_put:
+-	kobject_put(&policy->kobj);
+-	wait_for_completion(&policy->kobj_unregister);
+-	return ret;
++	return cpufreq_add_dev_symlink(policy);
+ }
+ 
+ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+@@ -1196,6 +1181,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		goto err_set_policy_cpu;
+ 	}
+ 
++	down_write(&policy->rwsem);
++
+ 	/* related cpus should atleast have policy->cpus */
+ 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 
+@@ -1208,9 +1195,17 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (!recover_policy) {
+ 		policy->user_policy.min = policy->min;
+ 		policy->user_policy.max = policy->max;
++
++		/* prepare interface data */
++		ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
++					   &dev->kobj, "cpufreq");
++		if (ret) {
++			pr_err("%s: failed to init policy->kobj: %d\n",
++			       __func__, ret);
++			goto err_init_policy_kobj;
++		}
+ 	}
+ 
+-	down_write(&policy->rwsem);
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_cpu(j, policy->cpus)
+ 		per_cpu(cpufreq_cpu_data, j) = policy;
+@@ -1301,6 +1296,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
++	if (!recover_policy) {
++		kobject_put(&policy->kobj);
++		wait_for_completion(&policy->kobj_unregister);
++	}
++err_init_policy_kobj:
+ 	up_write(&policy->rwsem);
+ 
+ 	if (cpufreq_driver->exit)
+-- 
+2.3.0.rc0.44.ga94655d
