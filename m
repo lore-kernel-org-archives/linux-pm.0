@@ -1,60 +1,47 @@
-From: Andy Gross <agross@codeaurora.org>
-Subject: Re: [RFC PATCH v15 01/11] ARM: cpuidle: Register per cpuidle device
-Date: Mon, 9 Mar 2015 17:04:42 -0500
-Message-ID: <20150309220442.GA25292@qualcomm.com>
-References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
- <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
- <20150309212926.GB17839@qualcomm.com>
- <20150309214006.GA3727@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from suspend-to-idle
+Date: Mon, 09 Mar 2015 23:41:12 +0100
+Message-ID: <3127745.ybR8YAlvTb@vostro.rjw.lan>
+References: <2197217.yzvHkR7SyK@vostro.rjw.lan> <20150309180004.GA22993@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150309214006.GA3727@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20150309180004.GA22993@dtor-ws>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 09, 2015 at 03:40:06PM -0600, Lina Iyer wrote:
-<snip>
+On Monday, March 09, 2015 11:00:04 AM Dmitry Torokhov wrote:
+> Hi Rafael,
+> 
+> On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > If they keyboard interrupt is registered, mark the i8042 platform
+> > device as wakeup-capable and check the user space wakeup setting in
+> > i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
+> > respectively, the keyboard interrupt to wake up the system.
+> > 
+> > This makes it possible to use the PC keyboard to wake up the system
+> > from suspend-to-idle after writing "enabled" to the i8042 device's
+> > power/wakeup sysfs attribute.
+> 
+> Why do we do that for KBD but not AUX port? Should we mark individual
+> serio port be wakeup capable and not the whole i8042.
 
-> >> 	for_each_possible_cpu(cpu) {
-> >>+
-> >> 		ret = arm_cpuidle_init(cpu);
-> >>+		/*
-> >>+		 * This cpu does not support any idle states
-> >>+		 */
-> >>+		if (ret == -ENOSYS)
-> >>+			continue;
-> >>+
-> >> 		if (ret) {
-> >> 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
-> >> 			return ret;
-> >> 		}
-> >>+
-> >>+		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-> >
-> >devm_kzalloc?  Otherwise, failures could lead to lost memory.
-> >
-> I dont have a local device to work with for allocation. May be I can get
-> the cpu device node and the device therefore for allocation. Thoughts?
+We can do that, but only after the port serio device has been registered.
 
-Ah, well the cpu device node could be used.  My only concern is that dev cannot
-be referenced after the cpu is removed.
+I guess I can add code for that to i8042_register_ports().  Let me try that.
 
-> >>+		if (!dev)
-> >>+			return -ENOMEM;
-> >>+
-> >>+		dev->cpu = cpu;
-> >>+		ret = cpuidle_register_device(dev);
-> >>+		if (ret) {
-> >>+			pr_err("Failed to register cpuidle device for CPU %d\n",
-> >>+			       cpu);
+> Also, why exactly is this needed? My laptops seem to resume just fine
+> from keyboard activity without this patch...
 
-<snip>
+Mine don't.  At least not from suspend-to-idle ("echo freeze > /sys/power/state").
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Whether or not the PC keyboard wakes them up from suspend-to-RAM depends on the
+BIOS.  That only works for one of my laptops, but this patch doesn't help here.
+
+Rafael
+
