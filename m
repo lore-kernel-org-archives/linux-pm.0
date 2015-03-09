@@ -1,81 +1,86 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper
- functions
-Date: Mon, 9 Mar 2015 08:09:09 -0700
-Message-ID: <20150309150908.GC5264@atomide.com>
-References: <20150306230539.GA2651@atomide.com>
- <Pine.LNX.4.44L0.1503081134310.3638-100000@netrider.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1503081134310.3638-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [RFC PATCH v15 00/11] ARM: qcom: cpuidle support for 8064, 8074, 8084
+Date: Mon,  9 Mar 2015 09:16:35 -0600
+Message-ID: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:39530 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692AbbCIPRL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 11:17:11 -0400
+Received: by pabrd3 with SMTP id rd3so39832638pab.6
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2015 08:17:10 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-* Alan Stern <stern@rowland.harvard.edu> [150308 08:41]:
-> On Fri, 6 Mar 2015, Tony Lindgren wrote:
-> 
-> > > > I'll verify again, but I believe the issue was that without doing
-> > > > mark_last_busy here the device falls back asleep right away.
-> 
-> As it should.  If you don't increment the usage counter (for example, 
-> by calling pm_runtime_get instead of pm_request_resume) and you don't 
-> update last_busy then you are telling the PM core that the device 
-> currently isn't busy and it hasn't been in use since the last time it 
-> was suspended.  Under those circumstances, the PM core is _supposed_ to 
-> suspend the device right away.
+Hi,
 
-OK so it's a feature then.
- 
-> > > > That probably should be fixed in pm_runtime in general if that's
-> > > > the case.
-> > > 
-> > > It's up to the subsystem to handle this.  For example, the USB 
-> > > subsystem's runtime-resume routine calls pm_runtime_mark_last_busy.
-> > 
-> > Hmm.. OK thanks this probably explains why pm_request_resume() did
-> > not work.
-> > 
-> > For omaps, I could call this from the interconnect related code,
-> > but then how dow we deal with the subsystems that don't call it?
-> 
-> Start by determining _why_ they don't call it.  Maybe they have a good 
-> reason.  If they don't then fix them.
+I was able to use Daniel's series for the cpuidle_ops [5] and test it on QCOM
+SOCs. This alleviates the concerns raised in the previous revision of the QCOM
+cpuidle driver.
 
-Yes I'll check, it's just probably because the drivers have been
-calling it instead.
- 
-> > > > Considering the above, should we add a new function something like
-> > > > pm_resume_complete() that does not need irq_safe set but does
-> > > > not return until the device has completed resume?
-> > > 
-> > > That doesn't make sense.  You're asking for a routine that is allowed
-> > > to sleep but can safely be called in interrupt context.
-> > 
-> > Oh it naturally would not work in irq context, it's for the bottom
-> > half again.
-> 
-> In other words, you're suggesting we add a function that runs in 
-> process context and doesn't return until the device is fully resumed?  
-> That's exactly what pm_runtime_resume does right now.
+The previous revision of the QCOM cpuidle driver [1], creates cpuidle device
+after a successful probe of the SPM device for the CPU.  There was a concern
+regarding the initialization of unnecesary devices on a multi-v7 configuration
+[2]. The solutions proposed to solve this problem didnt turn up elegant either
+because of the restriction with the existing cpuidle framework.
 
-But doesn't it only wait for completion if the driver is marked with
-pm_runtime_irq_safe()?
- 
-> >  But I'll take a look if we can just call
-> > pm_request_resume() and disable_irq() on the wakeirq in without
-> > waiting for the device driver runtime_suspend to disable the wakeirq.
-> > That would minimize the interface to just dev_pm_request_wakeirq()
-> > and dev_pm_free_wakeirq().
-> 
-> Will that be acceptable in systems with shared IRQ lines?
+With Daniel's patches [5], I was able to address the concerns with the cpuidle
+driver and devices intialization. Please take a look at this series. The crux
+of the difference from the previous series [1] is in the spm_drv_probe() and
+registering of the cpuidle_ops and use of ARM generic cpuidle driver.
 
-Not without us keeping track of when the wakeirq is enabled or
-disabled :)
+Changes since v14:
+- Support for cpuidle_ops
+- SPM probe changes to register cpuidle
+- Rebase on top of 4.0-rc1
+- Remove SCM patches from series. Rebased on top of Kumar's tree[4]
+- Removed cpuidle-qcom.c in favor of ARM generic cpuidle driver
+- Included Daniel's change for supporting creating cpuidle devices by platform
 
-Regards,
+Tested on: 8074, 8084.
 
-Tony
+Thanks,
+Lina
+
+[1]. http://lists.infradead.org/pipermail/linux-arm-kernel/2014-December/308118.html
+[2]. http://lists.infradead.org/pipermail/linux-arm-kernel/2014-December/308465.html
+[3]. http://lists.infradead.org/pipermail/linux-arm-kernel/2014-December/311071.html
+[4]. http://www.spinics.net/lists/linux-arm-msm/msg13630.html
+[5]. https://lkml.org/lkml/2015/3/3/271
+
+Daniel Lezcano (1):
+  ARM: cpuidle: Register per cpuidle device
+
+Lina Iyer (10):
+  ARM: qcom: Add Subsystem Power Manager (SPM) driver
+  ARM: cpuidle: qcom: Add documentation for qcom cpuidle states.
+  ARM: cpuidle: Register cpuidle_ops for QCOM cpus
+  ARM: dts: qcom: Add power-controller device node for 8074 Krait CPUs
+  ARM: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+  ARM: dts: qcom: Update power-controller device node for 8064 Krait
+    CPUs
+  ARM: dts: qcom: Add idle states device nodes for 8074
+  ARM: dts: qcom: Add idle states device nodes for 8084
+  ARM: dts: qcom: Add idle state device nodes for 8064
+  ARM: qcom: Update defconfig
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  81 ++++
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  31 +-
+ arch/arm/boot/dts/qcom-apq8064.dtsi                |  38 +-
+ arch/arm/boot/dts/qcom-apq8084.dtsi                |  48 ++-
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  48 ++-
+ arch/arm/configs/qcom_defconfig                    |   2 +
+ arch/arm/include/asm/cpuidle_ops.h                 |   5 +
+ drivers/cpuidle/cpuidle-arm.c                      |  34 +-
+ drivers/soc/qcom/Kconfig                           |   7 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/spm.c                             | 422 +++++++++++++++++++++
+ 11 files changed, 700 insertions(+), 17 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 drivers/soc/qcom/spm.c
+
+-- 
+2.1.0
+
