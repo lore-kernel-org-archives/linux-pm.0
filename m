@@ -1,78 +1,44 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from
- suspend-to-idle
-Date: Mon, 9 Mar 2015 11:00:04 -0700
-Message-ID: <20150309180004.GA22993@dtor-ws>
-References: <2197217.yzvHkR7SyK@vostro.rjw.lan>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 0/5] Rename regulator_set_optimum_mode
+Date: Mon, 9 Mar 2015 18:33:19 +0000
+Message-ID: <20150309183319.GX28806@sirena.org.uk>
+References: <1423712131-23795-1-git-send-email-bjorn.andersson@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="KISHs/FnjYvFOG5B"
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2197217.yzvHkR7SyK@vostro.rjw.lan>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+In-Reply-To: <1423712131-23795-1-git-send-email-bjorn.andersson@sonymobile.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: "James E.J. Bottomley" <JBottomley@parallels.com>, Felipe Balbi <balbi@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Liam Girdwood <lgirdwood@gmail.com>, Vinayak Holikatti <vinholikatti@gmail.com>, linux-arm-msm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If they keyboard interrupt is registered, mark the i8042 platform
-> device as wakeup-capable and check the user space wakeup setting in
-> i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
-> respectively, the keyboard interrupt to wake up the system.
-> 
-> This makes it possible to use the PC keyboard to wake up the system
-> from suspend-to-idle after writing "enabled" to the i8042 device's
-> power/wakeup sysfs attribute.
+--KISHs/FnjYvFOG5B
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Why do we do that for KBD but not AUX port? Should we mark individual
-serio port be wakeup capable and not the whole i8042.
+On Wed, Feb 11, 2015 at 07:35:26PM -0800, Bjorn Andersson wrote:
+> Changing the name of the regulator_set_optimum_mode() to
+> regulator_set_load() better reflects that the API is doing.
 
-Also, why exactly is this needed? My laptops seem to resume just fine
-from keyboard activity without this patch...
+Applied all, thanks.
 
-Thanks.
+--KISHs/FnjYvFOG5B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/input/serio/i8042.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> Index: linux-pm/drivers/input/serio/i8042.c
-> ===================================================================
-> --- linux-pm.orig/drivers/input/serio/i8042.c
-> +++ linux-pm/drivers/input/serio/i8042.c
-> @@ -1163,12 +1163,17 @@ static int i8042_controller_resume(bool
->  static int i8042_pm_suspend(struct device *dev)
->  {
->  	i8042_controller_reset(true);
-> +	if (device_may_wakeup(&i8042_platform_device->dev))
-> +		enable_irq_wake(I8042_KBD_IRQ);
->  
->  	return 0;
->  }
->  
->  static int i8042_pm_resume(struct device *dev)
->  {
-> +	if (device_may_wakeup(&i8042_platform_device->dev))
-> +		disable_irq_wake(I8042_KBD_IRQ);
-> +
->  	/*
->  	 * On resume from S2R we always try to reset the controller
->  	 * to bring it in a sane state. (In case of S2D we expect
-> @@ -1406,6 +1411,7 @@ static int __init i8042_setup_kbd(void)
->  	if (error)
->  		goto err_free_irq;
->  
-> +	device_set_wakeup_capable(&i8042_platform_device->dev, true);
->  	i8042_kbd_irq_registered = true;
->  	return 0;
->  
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
--- 
-Dmitry
+iQEcBAEBCAAGBQJU/eduAAoJECTWi3JdVIfQjvkH/3mqcGHt5uJfgH8ibYfrGV9w
+UkPWVq/AXq49+q7a7JDJUmnp+hTSUFIfEj8sClnv7WbPSo9ZjiXrYbTgaSj2qy1A
+kb/4p4SbHQ/UB33KwP0KGzrZUYPURGEVSeDUf7RU6xx/H9FlN80lKlSWf+Tkf+We
+rAmre98IplNOFtFNCS7VycBcjDoau89n8J0so0LvXsF/O1OBgp1OBB1ONsHBouki
+fWAsjBq5GyGywxSjA029seyYFkU0BibYjPe8QliRvw7CEoQGnCwPIAIolVLUZqEZ
+/EOMOkZCJnFogTz0a41cS7qDxhaKL49BV54JqCjHUnaqfN2nXn5RrQ91AznlySA=
+=dQhH
+-----END PGP SIGNATURE-----
+
+--KISHs/FnjYvFOG5B--
