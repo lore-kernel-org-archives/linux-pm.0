@@ -1,88 +1,71 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v15 08/11] ARM: dts: qcom: Add idle states device nodes for 8074
-Date: Mon,  9 Mar 2015 09:16:43 -0600
-Message-ID: <1425914206-22295-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v15 07/11] ARM: dts: qcom: Update power-controller device node for 8064 Krait CPUs
+Date: Mon,  9 Mar 2015 09:16:42 -0600
+Message-ID: <1425914206-22295-8-git-send-email-lina.iyer@linaro.org>
 References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:34125 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778AbbCIPRb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 11:17:31 -0400
+Received: by pdno5 with SMTP id o5so21494135pdn.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2015 08:17:30 -0700 (PDT)
 In-Reply-To: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8074/8974.
-
-Support Standby and Standalone power collapse (power down that does not
-affect any SoC idle states) for each cpu.
+Update the SAW2 DT bindings to add qcom,apq8064-saw2-v1.1-cpu compatible
+binding string to configure SPM registers and allow the SPM to put the
+core in deeper idle states when the core is idle.
 
 Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 5a41f44..ea31c3a 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -22,6 +22,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index b3154c0..9fd24bc 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -139,26 +139,26 @@
+ 			reg = <0x020b8000 0x1000>, <0x02008000 0x1000>;
  		};
  
- 		cpu@1 {
-@@ -32,6 +33,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
+-		saw0: regulator@2089000 {
+-			compatible = "qcom,saw2";
++		saw0: power-controller@2089000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02089000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
  		};
  
- 		cpu@2 {
-@@ -42,6 +44,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
+-		saw1: regulator@2099000 {
+-			compatible = "qcom,saw2";
++		saw1: power-controller@2099000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02099000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
  		};
  
- 		cpu@3 {
-@@ -52,6 +55,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
+-		saw2: regulator@20a9000 {
+-			compatible = "qcom,saw2";
++		saw2: power-controller@20a9000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020a9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
  		};
  
- 		L2: l2-cache {
-@@ -59,6 +63,24 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
+-		saw3: regulator@20b9000 {
+-			compatible = "qcom,saw2";
++		saw3: power-controller@20b9000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020b9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
  		};
-+
-+		idle-states {
-+			CPU_STBY: standby {
-+				compatible = "qcom,idle-state-stby",
-+						"arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc",
-+						"arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
 -- 
 2.1.0
+
