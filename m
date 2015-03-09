@@ -1,100 +1,122 @@
-From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 4/6] clk: at91: implement suspend/resume for the PMC irqchip
-Date: Mon, 09 Mar 2015 15:34:06 -0700
-Message-ID: <20150309223406.14952.5669@quantum>
-References: <1425287898-15093-1-git-send-email-boris.brezillon@free-electrons.com>
- <1425287898-15093-5-git-send-email-boris.brezillon@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from suspend-to-idle
+Date: Tue, 10 Mar 2015 00:08:43 +0100
+Message-ID: <2514027.izE5Direg3@vostro.rjw.lan>
+References: <2197217.yzvHkR7SyK@vostro.rjw.lan> <20150309180004.GA22993@dtor-ws> <3127745.ybR8YAlvTb@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1425287898-15093-5-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <3127745.ybR8YAlvTb@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Boris Brezillon (2015-03-02 01:18:16)
-> The irq line used by the PMC block is shared with several peripherals
-> including the init timer which is registering its handler with
-> IRQF_NO_SUSPEND.
-> Implement the appropriate suspend/resume callback for the PMC irqchip,
-> and inform irq core that PMC irq handler can be safely called while
-> the system is suspended by setting IRQF_COND_SUSPEND.
+On Monday, March 09, 2015 11:41:12 PM Rafael J. Wysocki wrote:
+> On Monday, March 09, 2015 11:00:04 AM Dmitry Torokhov wrote:
+> > Hi Rafael,
+> > 
+> > On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > If they keyboard interrupt is registered, mark the i8042 platform
+> > > device as wakeup-capable and check the user space wakeup setting in
+> > > i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
+> > > respectively, the keyboard interrupt to wake up the system.
+> > > 
+> > > This makes it possible to use the PC keyboard to wake up the system
+> > > from suspend-to-idle after writing "enabled" to the i8042 device's
+> > > power/wakeup sysfs attribute.
+> > 
+> > Why do we do that for KBD but not AUX port? Should we mark individual
+> > serio port be wakeup capable and not the whole i8042.
 > 
-> Signed-off-by: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-
-Looks OK to me. I'm not picking it due to the dependency you listed in
-the cover letter.
-
-Regards,
-Mike
-
-> ---
->  drivers/clk/at91/pmc.c | 20 +++++++++++++++++++-
->  drivers/clk/at91/pmc.h |  1 +
->  2 files changed, 20 insertions(+), 1 deletion(-)
+> We can do that, but only after the port serio device has been registered.
 > 
-> diff --git a/drivers/clk/at91/pmc.c b/drivers/clk/at91/pmc.c
-> index f07c815..3f27d21 100644
-> --- a/drivers/clk/at91/pmc.c
-> +++ b/drivers/clk/at91/pmc.c
-> @@ -89,12 +89,29 @@ static int pmc_irq_set_type(struct irq_data *d, unsigned type)
->         return 0;
->  }
->  
-> +static void pmc_irq_suspend(struct irq_data *d)
-> +{
-> +       struct at91_pmc *pmc = irq_data_get_irq_chip_data(d);
-> +
-> +       pmc->imr = pmc_read(pmc, AT91_PMC_IMR);
-> +       pmc_write(pmc, AT91_PMC_IDR, pmc->imr);
-> +}
-> +
-> +static void pmc_irq_resume(struct irq_data *d)
-> +{
-> +       struct at91_pmc *pmc = irq_data_get_irq_chip_data(d);
-> +
-> +       pmc_write(pmc, AT91_PMC_IER, pmc->imr);
-> +}
-> +
->  static struct irq_chip pmc_irq = {
->         .name = "PMC",
->         .irq_disable = pmc_irq_mask,
->         .irq_mask = pmc_irq_mask,
->         .irq_unmask = pmc_irq_unmask,
->         .irq_set_type = pmc_irq_set_type,
-> +       .irq_suspend = pmc_irq_suspend,
-> +       .irq_resume = pmc_irq_resume,
->  };
->  
->  static struct lock_class_key pmc_lock_class;
-> @@ -224,7 +241,8 @@ static struct at91_pmc *__init at91_pmc_init(struct device_node *np,
->                 goto out_free_pmc;
->  
->         pmc_write(pmc, AT91_PMC_IDR, 0xffffffff);
-> -       if (request_irq(pmc->virq, pmc_irq_handler, IRQF_SHARED, "pmc", pmc))
-> +       if (request_irq(pmc->virq, pmc_irq_handler,
-> +                       IRQF_SHARED | IRQF_COND_SUSPEND, "pmc", pmc))
->                 goto out_remove_irqdomain;
->  
->         return pmc;
-> diff --git a/drivers/clk/at91/pmc.h b/drivers/clk/at91/pmc.h
-> index 52d2041..69abb08 100644
-> --- a/drivers/clk/at91/pmc.h
-> +++ b/drivers/clk/at91/pmc.h
-> @@ -33,6 +33,7 @@ struct at91_pmc {
->         spinlock_t lock;
->         const struct at91_pmc_caps *caps;
->         struct irq_domain *irqdomain;
-> +       u32 imr;
->  };
->  
->  static inline void pmc_lock(struct at91_pmc *pmc)
-> -- 
-> 1.9.1
-> 
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I guess I can add code for that to i8042_register_ports().  Let me try that.
+
+Yeah, that works too.  And you're right that there's no reason to do that for
+keyboard only.
+
+Patch below.
+
+Rafael
+
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: i8042 / PM: Allow i8042 ports to wake up from suspend-to-idle
+
+While registering serio device for i8042, mark them as wakeup-capable
+and check their user space wakeup settings in i8042_pm_suspend() and
+i8042_pm_resume() to enable or disable, respectively, their interrupts
+to wake up the system.
+
+This makes it possible to use the PC keyboard to wake up the system
+from suspend-to-idle, among other things, after writing "enabled" to
+the keyboard serio device's power/wakeup sysfs attribute.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/input/serio/i8042.c |   28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/input/serio/i8042.c
+===================================================================
+--- linux-pm.orig/drivers/input/serio/i8042.c
++++ linux-pm/drivers/input/serio/i8042.c
+@@ -1162,13 +1162,32 @@ static int i8042_controller_resume(bool
+ 
+ static int i8042_pm_suspend(struct device *dev)
+ {
++	int i;
++
+ 	i8042_controller_reset(true);
+ 
++	/* Set up serio interrupts for system wakeup. */
++	for (i = 0; i < I8042_NUM_PORTS; i++) {
++		struct serio *serio = i8042_ports[i].serio;
++
++		if (serio && device_may_wakeup(&serio->dev))
++			enable_irq_wake(i8042_ports[i].irq);
++	}
++
+ 	return 0;
+ }
+ 
+ static int i8042_pm_resume(struct device *dev)
+ {
++	int i;
++
++	for (i = 0; i < I8042_NUM_PORTS; i++) {
++		struct serio *serio = i8042_ports[i].serio;
++
++		if (serio && device_may_wakeup(&serio->dev))
++			disable_irq_wake(i8042_ports[i].irq);
++	}
++
+ 	/*
+ 	 * On resume from S2R we always try to reset the controller
+ 	 * to bring it in a sane state. (In case of S2D we expect
+@@ -1300,13 +1319,16 @@ static void __init i8042_register_ports(
+ 	int i;
+ 
+ 	for (i = 0; i < I8042_NUM_PORTS; i++) {
+-		if (i8042_ports[i].serio) {
++		struct serio *serio = i8042_ports[i].serio;
++
++		if (serio) {
+ 			printk(KERN_INFO "serio: %s at %#lx,%#lx irq %d\n",
+-				i8042_ports[i].serio->name,
++				serio->name,
+ 				(unsigned long) I8042_DATA_REG,
+ 				(unsigned long) I8042_COMMAND_REG,
+ 				i8042_ports[i].irq);
+-			serio_register_port(i8042_ports[i].serio);
++			serio_register_port(serio);
++			device_set_wakeup_capable(&serio->dev, true);
+ 		}
+ 	}
+ }
+
