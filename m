@@ -1,103 +1,95 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [RFC PATCH v15 01/11] ARM: cpuidle: Register per cpuidle device
-Date: Mon,  9 Mar 2015 09:16:36 -0600
-Message-ID: <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v15 06/11] ARM: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+Date: Mon,  9 Mar 2015 09:16:41 -0600
+Message-ID: <1425914206-22295-7-git-send-email-lina.iyer@linaro.org>
 References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1425914206-22295-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Each Krait CPU in the QCOM 8084 SoC has an SAW power controller to
+regulate the power to the cpu and aide the core in entering idle states.
+Reference the SAW instance and associate the instance with the CPU core.
 
-Some architectures have some cpus which does not support idle states.
-
-Let the underlying low level code to return -ENOSYS when it is not
-possible to set an idle state.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Minor clean ups and fixes of the per-cpu variable]
+Cc: Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/cpuidle/cpuidle-arm.c | 34 +++++++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index 1c94b88..f7cdb73 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -17,11 +17,14 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/slab.h>
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 1f130bc..71182bf 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -21,6 +21,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
++			qcom,saw = <&saw0>;
+ 		};
  
- #include <asm/cpuidle.h>
+ 		cpu@1 {
+@@ -30,6 +31,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
++			qcom,saw = <&saw1>;
+ 		};
  
- #include "dt_idle_states.h"
+ 		cpu@2 {
+@@ -39,6 +41,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
++			qcom,saw = <&saw2>;
+ 		};
  
-+static DEFINE_PER_CPU(struct cpuidle_device, *cpuidle_arm_dev);
-+
- /*
-  * arm_enter_idle_state - Programs CPU to enter the specified state
-  *
-@@ -93,6 +96,7 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
- static int __init arm_idle_init(void)
- {
- 	int cpu, ret;
-+	struct cpuidle_device *dev;
- 	struct cpuidle_driver *drv = &arm_idle_driver;
+ 		cpu@3 {
+@@ -48,6 +51,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
++			qcom,saw = <&saw3>;
+ 		};
  
- 	/*
-@@ -105,18 +109,46 @@ static int __init arm_idle_init(void)
- 	if (ret <= 0)
- 		return ret ? : -ENODEV;
+ 		L2: l2-cache {
+@@ -144,7 +148,27 @@
+ 			};
+ 		};
  
+-		saw_l2: regulator@f9012000 {
++		saw0: power-controller@f9089000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf9089000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
-+	ret = cpuidle_register_driver(drv);
-+	if (ret) {
-+		pr_err("Failed to register cpuidle driver\n");
-+		return ret;
-+	}
++		saw1: power-controller@f9099000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf9099000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
- 	/*
- 	 * Call arch CPU operations in order to initialize
- 	 * idle states suspend back-end specific data
- 	 */
- 	for_each_possible_cpu(cpu) {
++		saw2: power-controller@f90a9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf90a9000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
- 		ret = arm_cpuidle_init(cpu);
-+		/*
-+		 * This cpu does not support any idle states
-+		 */
-+		if (ret == -ENOSYS)
-+			continue;
++		saw3: power-controller@f90b9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu";
++			reg = <0xf90b9000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
- 		if (ret) {
- 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
- 			return ret;
- 		}
-+
-+		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+		if (!dev)
-+			return -ENOMEM;
-+
-+		dev->cpu = cpu;
-+		ret = cpuidle_register_device(dev);
-+		if (ret) {
-+			pr_err("Failed to register cpuidle device for CPU %d\n",
-+			       cpu);
-+			return ret;
-+		}
-+
-+		per_cpu(cpuidle_arm_dev, cpu) = dev;
- 	}
- 
--	return cpuidle_register(drv, NULL);
-+	return 0;
- }
- device_initcall(arm_idle_init);
++		saw_l2: power-controller@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
+ 			regulator;
 -- 
 2.1.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
