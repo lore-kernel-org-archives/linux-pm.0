@@ -1,142 +1,338 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Ref the policy object sooner
-Date: Mon,  9 Mar 2015 09:50:22 +0530
-Message-ID: <1ba2266de234ebbafd680a520565361f5071df71.1425874657.git.viresh.kumar@linaro.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, stable@vger.kernel.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, santosh.shilimkar@oracle.com, ethan.zhao@oracle.com, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v5 1/2] power: rt5033_charger: Add RT5033 charger device
+ driver
+Date: Mon, 09 Mar 2015 13:53:58 +0900
+Message-ID: <54FD2766.2090401@samsung.com>
+References: <1425864191-4121-1-git-send-email-beomho.seo@samsung.com>
+ <1425864191-4121-2-git-send-email-beomho.seo@samsung.com>
+ <20150309015020.GA941@earth> <54FD177B.1050200@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:63459 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbbCIEyU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 00:54:20 -0400
+In-reply-to: <54FD177B.1050200@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: broonie@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jones@linaro.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+On 03/09/2015 12:46 PM, Beomho Seo wrote:
+> On 03/09/2015 10:50 AM, Sebastian Reichel wrote:
+>> Hi Beomho,
+>>
+>> On Mon, Mar 09, 2015 at 10:23:10AM +0900, Beomho Seo wrote:
+>>> This patch add device driver of Richtek RT5033 PMIC. The driver support
+>>> switching charger. rt5033 charger provide three charging mode.
+>>> Three charging mode are pre charge mode, fast cahrge mode and constant voltage
+>>> mode. They are have vary charge rate, charge parameters. The charge parameters
+>>> can be controlled by i2c interface.
+>>
+>> Driver looks mostly ok, but I have some comments [inline].
+>>
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>>> Cc: David Woodhouse <dwmw2@infradead.org>
+>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>> ---
+>>> Changes in v5
+>>> - none.
+>>> Changes in v4
+>>> - Change power supply type to POWER_SUPPLY_TYPE_MAINS.
+>>> Changes in v3
+>>> Changes in v2
+>>> - none
+>>>
+>>>  drivers/power/Kconfig          |    8 +
+>>>  drivers/power/Makefile         |    1 +
+>>>  drivers/power/rt5033_charger.c |  485 ++++++++++++++++++++++++++++++++++++++++
+>>>  3 files changed, 494 insertions(+)
+>>>  create mode 100644 drivers/power/rt5033_charger.c
+>>>
+>>> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+>>> index 27b751b..67e9af7 100644
+>>> --- a/drivers/power/Kconfig
+>>> +++ b/drivers/power/Kconfig
+>>> @@ -418,6 +418,14 @@ config BATTERY_RT5033
+>>>  	  The fuelgauge calculates and determines the battery state of charge
+>>>  	  according to battery open circuit voltage.
+>>>  
+>>> +config CHARGER_RT5033
+>>> +	tristate "RT5033 battery charger support"
+>>> +	depends on MFD_RT5033
+>>> +	help
+>>> +	  This adds support for battery charger in Richtek RT5033 PMIC.
+>>> +	  The device supports pre-charge mode, fast charge mode and
+>>> +	  constant voltage mode.
+>>> +
+>>>  source "drivers/power/reset/Kconfig"
+>>>  
+>>>  endif # POWER_SUPPLY
+>>> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+>>> index 36f9e0d..c5d72e0 100644
+>>> --- a/drivers/power/Makefile
+>>> +++ b/drivers/power/Makefile
+>>> @@ -59,6 +59,7 @@ obj-$(CONFIG_CHARGER_BQ2415X)	+= bq2415x_charger.o
+>>>  obj-$(CONFIG_CHARGER_BQ24190)	+= bq24190_charger.o
+>>>  obj-$(CONFIG_CHARGER_BQ24735)	+= bq24735-charger.o
+>>>  obj-$(CONFIG_POWER_AVS)		+= avs/
+>>> +obj-$(CONFIG_POWER_RT5033)	+= rt5033_charger.o
+>>
+>> this should be 
+>>
+>> obj-$(CONFIG_CHARGER_RT5033) += rt5033_charger.o
+>>
+>> according to your Kconfig patch. How did you test it actually?
+>>
+> 
+> Sorry, My mistake. This patch have been tested on my board.
+> I will double-check before send patch set.
+> 
+>>>  obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
+>>>  obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
+>>>  obj-$(CONFIG_POWER_RESET)	+= reset/
+>>> diff --git a/drivers/power/rt5033_charger.c b/drivers/power/rt5033_charger.c
+>>> new file mode 100644
+>>> index 0000000..7f8f6c3
+>>> --- /dev/null
+>>> +++ b/drivers/power/rt5033_charger.c
+>>>
+>>> [...]
+>>>
+>>> +static int rt5033_get_charger_current(struct rt5033_charger *charger,
+>>> +		enum power_supply_property psp)
+>>> +{
+>>> +	struct regmap *regmap = charger->rt5033->regmap;
+>>> +	unsigned int state, reg_data, data;
+>>> +
+>>> +	if (psp == POWER_SUPPLY_PROP_CURRENT_MAX)
+>>> +		return RT5033_CHG_MAX_CURRENT;
+>>
+>> drop this psp check and the psp parameter to this function, so that
+>> the function only takes care of the current current.
+>>
+> 
+> OK. I will remove above lines.
+> 
+>>> +	regmap_read(regmap, RT5033_REG_CHG_CTRL5, &reg_data);
+>>> +
+>>> +	state = (reg_data >> RT5033_CHGCTRL5_ICHG_SHIFT) & 0xf;
+>>> +
+>>> +	if (state > RT5033_CHG_MAX_CURRENT)
+>>> +		state = RT5033_CHG_MAX_CURRENT;
+>>> +
+>>> +	data = state * 100 + 700;
+>>> +
+>>> +	return data;
+>>> +}
+>>> +
+>>> +static int rt5033_get_charge_voltage(struct rt5033_charger *charger,
+>>> +		enum power_supply_property psp)
+>>> +{
+>>> +	struct regmap *regmap = charger->rt5033->regmap;
+>>> +	unsigned int state, reg_data, data;
+>>> +
+>>> +	if (psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)
+>>> +		return RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+>>
+>> drop this psp check and the psp parameter to this function, so that
+>> the function only takes care of the current voltage.
+>>
+> 
+> OK. I will remove above lines.
+> 
+>>> +	regmap_read(regmap, RT5033_REG_CHG_CTRL2, &reg_data);
+>>> +
+>>> +	state = reg_data >> 2;
+>>> +
+>>> +	data = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MIN +
+>>> +		RT5033_CHARGER_CONST_VOLTAGE_STEP_NUM * state;
+>>> +
+>>> +	if (data > RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX)
+>>> +		data = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+>>> +
+>>> +	return data;
+>>> +}
+>>>
+>>> [...]
+>>>
+>>> +
+>>> +static enum power_supply_property rt5033_charger_props[] = {
+>>> +	POWER_SUPPLY_PROP_STATUS,
+>>> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+>>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>>> +	POWER_SUPPLY_PROP_CURRENT_MAX,
+>>> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+>>> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+>>> +	POWER_SUPPLY_PROP_MODEL_NAME,
+>>> +	POWER_SUPPLY_PROP_MANUFACTURER,
+>>> +};
+>>> +
+>>> +static int rt5033_charger_get_property(struct power_supply *psy,
+>>> +			enum power_supply_property psp,
+>>> +			union power_supply_propval *val)
+>>> +{
+>>> +	struct rt5033_charger *charger = container_of(psy,
+>>> +			struct rt5033_charger, psy);
+>>> +	int ret = 0;
+>>> +
+>>> +	switch (psp) {
+>>> +	case POWER_SUPPLY_PROP_STATUS:
+>>> +		val->intval = rt5033_get_charger_state(charger);
+>>> +		break;
+>>> +	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+>>> +		val->intval = rt5033_get_charger_type(charger);
+>>> +		break;
+>>> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>>> +	case POWER_SUPPLY_PROP_CURRENT_MAX:
+>>> +		val->intval = rt5033_get_charger_current(charger, psp);
+>>> +		break;
+>>
+>> remove the special handling of POWER_SUPPLY_PROP_CURRENT_MAX in 
+>> rt5033_get_charger_current() and do it like this:
+>>
+>> case POWER_SUPPLY_PROP_CURRENT_NOW:
+>>     val->intval = rt5033_get_charger_current(charger);
+>>     break;
+>> case POWER_SUPPLY_PROP_CURRENT_MAX:
+>>     val->intval = RT5033_CHG_MAX_CURRENT;
+>>     break;
+>>
+> 
+> OK. I will change comply with your comment.
+> 
 
-Upstream commit id: 6d4e81ed89c0
+RT5033_CHG_MAX_CURRENT is register value(hex).
+So It is better:
 
-Do it before it's assigned to cpufreq_cpu_data, otherwise when a driver
-tries to get the cpu frequency during initialization the policy kobj is
-referenced and we get this warning:
+case POWER_SUPPLY_PROP_CURRENT_MAX:
+	val->intval = RT5033_CHARGER_FAST_CURRENT_MAX;
 
-------------[ cut here ]------------
-WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
-Modules linked in:
-CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc4-next-20141114ccu-00050-g3eff942 #326
-[<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
-[<c001272c>] (show_stack) from [<c06085d8>] (dump_stack+0x98/0xd8)
-[<c06085d8>] (dump_stack) from [<c002892c>] (warn_slowpath_common+0x84/0xb4)
-[<c002892c>] (warn_slowpath_common) from [<c00289f8>] (warn_slowpath_null+0x1c/0x24)
-[<c00289f8>] (warn_slowpath_null) from [<c0220290>] (kobject_get+0x64/0x70)
-[<c0220290>] (kobject_get) from [<c03e944c>] (cpufreq_cpu_get+0x88/0xc8)
-[<c03e944c>] (cpufreq_cpu_get) from [<c03e9500>] (cpufreq_get+0xc/0x64)
-[<c03e9500>] (cpufreq_get) from [<c0285288>] (actmon_thread_isr+0x134/0x198)
-[<c0285288>] (actmon_thread_isr) from [<c0069008>] (irq_thread_fn+0x1c/0x40)
-[<c0069008>] (irq_thread_fn) from [<c0069324>] (irq_thread+0x134/0x174)
-[<c0069324>] (irq_thread) from [<c0040290>] (kthread+0xdc/0xf4)
-[<c0040290>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
----[ end trace b7bd64a81b340c59 ]---
+And then I will fix rt5033_get_charger_current function more readable.
 
-Cc: 3.18 <stable@vger.kernel.org> # 3.18
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c | 42 +++++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
+>>> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>>> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+>>> +		val->intval = rt5033_get_charge_voltage(charger, psp);
+>>> +		break;
+>>
+>> same as current handling:
+>>
+>> case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>>     val->intval = rt5033_get_charge_voltage(charger);
+>>     break;
+>> case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+>>     val->intval = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+>>     break;
+>>
+> 
+> Ditto.
+> 
+>>> +	case POWER_SUPPLY_PROP_MODEL_NAME:
+>>> +		val->strval = RT5033_CHARGER_MODEL;
+>>> +		break;
+>>> +	case POWER_SUPPLY_PROP_MANUFACTURER:
+>>> +		val->strval = RT5033_MANUFACTURER;
+>>> +		break;
+>>> +	default:
+>>> +		return -EINVAL;
+>>> +	}
+>>> +
+>>> +	return ret;
+>>> +}
+>>>
+>>> [...]
+>>>
+>>> +static int rt5033_charger_probe(struct platform_device *pdev)
+>>> +{
+>>> +	struct rt5033_charger *charger;
+>>> +	struct rt5033_dev *rt5033 = dev_get_drvdata(pdev->dev.parent);
+>>> +	int ret;
+>>> +
+>>> +	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+>>> +	if (!charger)
+>>> +		return -ENOMEM;
+>>> +
+>>> +	platform_set_drvdata(pdev, charger);
+>>> +	charger->dev = &pdev->dev;
+>>> +	charger->rt5033 = rt5033;
+>>> +
+>>> +	charger->chg = rt5033_charger_dt_init(pdev);
+>>> +	if (IS_ERR_OR_NULL(charger->chg))
+>>> +		return -ENODEV;
+>>> +
+>>> +	ret = rt5033_charger_reg_init(charger);
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>> +	charger->psy.name = "rt5033-charger",
+>>> +	charger->psy.type = POWER_SUPPLY_TYPE_MAINS,
+>>> +	charger->psy.properties = rt5033_charger_props,
+>>> +	charger->psy.num_properties = ARRAY_SIZE(rt5033_charger_props),
+>>> +	charger->psy.get_property = rt5033_charger_get_property,
+>>> +
+>>> +	ret = power_supply_register(&pdev->dev, &charger->psy);
+>>> +	if (ret) {
+>>> +		dev_err(&pdev->dev, "Failed to register power supply\n");
+>>> +		return ret;
+>>> +	}
+>>
+>> We have devm_power_supply_register() now, which would result in
+>> complete removal of the rt5033_charger_remove() function :)
+>>
+> 
+> OK, I will change comply with your comment.
+> 
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int rt5033_charger_remove(struct platform_device *pdev)
+>>> +{
+>>> +	struct rt5033_charger *charger = platform_get_drvdata(pdev);
+>>> +
+>>> +	power_supply_unregister(&charger->psy);
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static const struct platform_device_id rt5033_charger_id[] = {
+>>> +	{ "rt5033-charger", },
+>>> +	{ }
+>>> +};
+>>> +MODULE_DEVICE_TABLE(platform, rt5033_charger_id);
+>>> +
+>>> +static struct platform_driver rt5033_charger_driver = {
+>>> +	.driver = {
+>>> +		.name = "rt5033-charger",
+>>> +	},
+>>> +	.probe = rt5033_charger_probe,
+>>> +	.remove = rt5033_charger_remove,
+>>> +	.id_table = rt5033_charger_id,
+>>> +};
+>>> +module_platform_driver(rt5033_charger_driver);
+>>> +
+>>> +MODULE_DESCRIPTION("Richtek RT5033 charger driver");
+>>> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
+>>> +MODULE_LICENSE("GPL");
+>>
+>> This should be 
+>>
+>> MODULE_LICENSE("GPL v2");
+>>
+>> -- Sebastian
+>>
+> 
+> Thanks your comment.
+> I will change this patch as soon as I possibly can.
+> 
+> Best regards,
+> Beomho Seo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4473eba1d6b0..ae27ea61799a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -898,46 +898,31 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
- 	struct freq_attr **drv_attr;
- 	int ret = 0;
- 
--	/* prepare interface data */
--	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
--				   &dev->kobj, "cpufreq");
--	if (ret)
--		return ret;
--
- 	/* set up files for this cpu device */
- 	drv_attr = cpufreq_driver->attr;
- 	while ((drv_attr) && (*drv_attr)) {
- 		ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
- 		if (ret)
--			goto err_out_kobj_put;
-+			return ret;
- 		drv_attr++;
- 	}
- 	if (cpufreq_driver->get) {
- 		ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
- 		if (ret)
--			goto err_out_kobj_put;
-+			return ret;
- 	}
- 
- 	ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
- 	if (ret)
--		goto err_out_kobj_put;
-+		return ret;
- 
- 	if (cpufreq_driver->bios_limit) {
- 		ret = sysfs_create_file(&policy->kobj, &bios_limit.attr);
- 		if (ret)
--			goto err_out_kobj_put;
-+			return ret;
- 	}
- 
--	ret = cpufreq_add_dev_symlink(policy);
--	if (ret)
--		goto err_out_kobj_put;
--
--	return ret;
--
--err_out_kobj_put:
--	kobject_put(&policy->kobj);
--	wait_for_completion(&policy->kobj_unregister);
--	return ret;
-+	return cpufreq_add_dev_symlink(policy);
- }
- 
- static void cpufreq_init_policy(struct cpufreq_policy *policy)
-@@ -1196,6 +1181,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		goto err_set_policy_cpu;
- 	}
- 
-+	down_write(&policy->rwsem);
-+
- 	/* related cpus should atleast have policy->cpus */
- 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
- 
-@@ -1208,9 +1195,17 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	if (!recover_policy) {
- 		policy->user_policy.min = policy->min;
- 		policy->user_policy.max = policy->max;
-+
-+		/* prepare interface data */
-+		ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-+					   &dev->kobj, "cpufreq");
-+		if (ret) {
-+			pr_err("%s: failed to init policy->kobj: %d\n",
-+			       __func__, ret);
-+			goto err_init_policy_kobj;
-+		}
- 	}
- 
--	down_write(&policy->rwsem);
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = policy;
-@@ -1301,6 +1296,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	if (!recover_policy) {
-+		kobject_put(&policy->kobj);
-+		wait_for_completion(&policy->kobj_unregister);
-+	}
-+err_init_policy_kobj:
- 	up_write(&policy->rwsem);
- 
- 	if (cpufreq_driver->exit)
--- 
-2.3.0.rc0.44.ga94655d
