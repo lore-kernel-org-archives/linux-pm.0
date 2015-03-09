@@ -1,202 +1,106 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 2/2] Documentation: Add documentation for rt5033
- multifunction device
-Date: Mon, 9 Mar 2015 07:43:28 +0000
-Message-ID: <20150309074328.GG3318@x1>
-References: <1425864191-4121-1-git-send-email-beomho.seo@samsung.com>
- <1425864191-4121-3-git-send-email-beomho.seo@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1425864191-4121-3-git-send-email-beomho.seo@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: broonie@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sre@kernel.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
+From: Ong Boon Leong <boon.leong.ong@intel.com>
+Subject: [PATCHv3 0/1] Intel Quark X1000 DTS thermal driver
+Date: Mon,  9 Mar 2015 15:42:56 +0800
+Message-ID: <1425886977-31078-1-git-send-email-boon.leong.ong@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:61313 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752134AbbCIHpO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Mar 2015 03:45:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, pure.logic@nexus-software.ie, hock.leong.kweh@intel.com, andy.shevchenko@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-=46AO Mark,
+Dear maintainers & communities,
 
-> This patch device tree binding documentation for rt5033 multifunction=
- device.
->=20
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
-> Changes in v5
-> - Remove wrong Acked-by.
-> Changes in v4
-> - none.
-> Changes in v3
-> - Add Acked-by
-> Changes in v2
-> - Fix incorrect typo.
-> - Align -uamp and -uvolt names with regulator binding suffixes.
-> - Drop incorrect phandle.
-> - Fix incorrect example.
-> ---
->  Documentation/devicetree/bindings/mfd/rt5033.txt   |  101 ++++++++++=
-++++++++++
+This patch introduces DTS thermal driver for Intel Quark X1000.
+The code implementation is based on intel_soc_dts_thermal.c.
 
-[...]
+Intel Quark X1000 has one on-die DTS with two configurable trip points:
+critical and hot trip points. However, todate, UEFI BIOS for Quark X1000
+uses only critical trip point. UEFI BIOS always lock DTS register before
+hand-over to Linux kernel.
 
->  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+The minimalist thermal design is meant to trigger Linux distro to gracefully
+power-down the system when its DTS temperature exceeds the configured critical
+trip point.
 
-This change will be low resistance.  I suggest you separate it out
-into another patch.
+In anticipation that other variant of Quark platform may come with UEFI BIOS
+that does not lock DTS register during hand-over, this DTS driver is built
+with logics to handle such case too.
 
->  2 files changed, 102 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/rt5033.txt b/Docum=
-entation/devicetree/bindings/mfd/rt5033.txt
-> new file mode 100644
-> index 0000000..64b23e8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rt5033.txt
-> @@ -0,0 +1,101 @@
-> +Richtek RT5033 Power management Integrated Circuit
-> +
-> +RT5033 is a Multifunction device which includes battery charger, fue=
-l gauge,
-> +flash LED current source, LDO and synchronous Buck converter for por=
-table
-> +applications. It is interfaced to host controller using i2c interfac=
-e.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033"
-> +- reg : Specifies the i2c slave address of general part.
-> +- interrupts : This i2c devices has an IRQ line connected to the mai=
-n SoC.
-> +- interrupt-parent : The parent interrupt controller.
-> +
-> +Optional node:
-> +Regulators: The regulators of RT5033 have to be instantiated under s=
-ub-node
-> +named "regulators" using the following format.
-> +
-> +	regulators {
-> +		regulator-name {
-> +			regulator-name =3D LDO/BUCK
-> +			regulator subnodes called X, Y and Z
-> +		};
-> +	};
-> +	refer Documentation/devicetree/bindings/regulator/regulator.txt
-> +
-> +
-> +Battery charger: There battery charger of RT5033 have to be instanti=
-ated under
-> +sub-node named "charger" using the following format.
-> +
-> +Required properties:
-> +- compatible : Must be "richtek,rt5033-charger".
-> +- richtek,pre-uamp : Current of pre-charge mode. The pre-charge curr=
-ent levels
-> +  are 350 mA to 650 mA programmed by I2C per 100 mA.
-> +- richtek,fast-uamp : Current of fast-charge mode. The fast-charge c=
-urrent
-> +  levels are 700 mA to 2000 mA programmed by I2C per 100 mA.
-> +- richtek,eoc-uamp : This property is end of charge current. Its lev=
-el 150 mA
-> +  to 200 mA.
-> +- richtek,pre-threshold-uvolt : Voltage of threshold pre-charge mode=
-=2E Battery
-> +  voltage is below pre-charge threshold voltage, the charger is in p=
-re-charge
-> +  mode with pre-charge current. Its levels are 2.3 V  to 3.8 V progr=
-ammed
-> +  by I2C per 0.1 V.
-> +- richtek,const-uvolt :  Battery regulation voltage of constant volt=
-age mode.
-> +  This voltage level 3.65 V to 4.4 V bye I2C per 0.025 V.
+I have tested v1 of the patch on Intel Galileo Gen v2 board and found it
+satisfactory with logs below:
 
-These require a Regulator (or Charger?) Ack.
+  root@quark:/sys/class/thermal/thermal_zone0# echo disabled > mode
+  [   46.276881] intel_quark_dts_thermal: DTS is locked. Cannot disable DTS
+  -sh: echo: write error: Operation not permitted
+  root@quark:/sys/class/thermal/thermal_zone0#
+  root@quark:/sys/class/thermal/thermal_zone0# cat temp
+  53
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_temp
+  105
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_type
+  critical
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_temp
+  20
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_type
+  hot
+  root@quark:/sys/class/thermal/thermal_zone0# cat type
+  quark_dts
 
-> +	charger {
-> +		compatible =3D "richtek,rt5033-charger";
-> +		richtek,pre-uamp =3D <350000>;
-> +		richtek,fast-uamp =3D <2000000>;
-> +		richtek,eoc-uamp =3D <250000>;
-> +		richtek,pre-threshold-uvolt =3D <3400000>;
-> +		richtek,const-uvolt =3D <4350000>;
-> +
-> +	};
-> +
-> +
-> +Fuelgauge: There fuelgauge of RT5033 to be instantiated node named "=
-fuelgauge"
-> +using the following format.
-> +
-> +Required properties:
-> +- compatible =3D Must be "richtek,rt5033-battery".
-> +
-> +	rt5033@35 {
-> +		compatible =3D "richtek,rt5033-battery";
-> +		interrupt-parent =3D <&gpx2>;
-> +		interrupts =3D <3 0>;
-> +		reg =3D <0x35>;
-> +	};
-> +
-> +Example:
-> +
-> +		rt5033@34 {
-> +			compatible =3D "richtek,rt5033";
-> +			reg =3D <0x34>;
-> +			interrupt-parent =3D <&gpx1>;
-> +			interrupts =3D <5 0>;
-> +
-> +			regulators {
-> +				buck_reg: BUCK {
-> +					regulator-name =3D "BUCK";
-> +					regulator-min-microvolt =3D <1200000>;
-> +					regulator-max-microvolt =3D <1200000>;
-> +					regulator-always-on;
-> +				};
-> +			};
-> +
-> +			charger {
-> +				compatible =3D "richtek,rt5033-charger";
-> +				richtek,pre-uamp =3D <350000>;
-> +				richtek,fast-uamp =3D <2000000>;
-> +				richtek,eoc-uamp =3D <250000>;
-> +				richtek,pre-threshold-uvolt =3D <3400000>;
-> +				richtek,const-uvolt =3D <4350000>;
-> +			};
-> +
-> +		};
-> +
-> +		rt5033@35 {
-> +				compatible =3D "richtek,rt5033-battery";
-> +				interrupt-parent =3D <&gpx2>;
-> +				interrupts =3D <3 0>;
-> +				reg =3D <0x35>;
-> +		};
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/=
-Documentation/devicetree/bindings/vendor-prefixes.txt
-> index 389ca13..73d235a 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -149,6 +149,7 @@ ralink	Mediatek/Ralink Technology Corp.
->  ramtron	Ramtron International
->  realtek Realtek Semiconductor Corp.
->  renesas	Renesas Electronics Corporation
-> +richtek	Richtek Technology Corporation
->  ricoh	Ricoh Co. Ltd.
->  rockchip	Fuzhou Rockchip Electronics Co., Ltd
->  samsung	Samsung Semiconductor
+  root@quark:/sys/class/thermal/thermal_zone0# echo 105 > emul_temp
+  [  179.372981] thermal thermal_zone0: critical temperature reached(0 C),shutting down
+  root@quark:/sys/class/thermal/thermal_zone0#
+  [  OK  ] Stopped target Multi-User System.
+           Stopping Telephony service...
+           Stopping Lightning Fast Webserver With Light System Requirements...
+           Stopping Target Communication Framework agent...
+           Stopping Galileo Arduino Layer...
+  [  OK  ] Stopped target Login Prompts.
+           Stopping Getty on tty1...
+           Stopping Serial Getty on ttyS1...
+           Stopping Login Service...
+           Stopping D-Bus System Message Bus...
+           Starting Store Sound Card State...
+  [  OK  ] Stopped Telephony service.
+  [  OK  ] Stopped Galileo Arduino Layer.
+  [  OK  ] Stopped Login Service.
+  [  OK  ] Stopped D-Bus System Message Bus.
+  [  OK  ] Stopped Target Communication Framework agent.
+  [  OK  ] Stopped Lightning Fast Webserver With Light System Requirements.
+  [  OK  ] Stopped WPA supplicant.
+  [  OK  ] Stopped Getty on tty1.
+  [  OK  ] Stopped Serial Getty on ttyS1.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Please kindly review the patch at your convenient time and provide me feedback
+for improvement. Appreciate your time and effort.
+
+Thank You
+Ong Boon Leong
+Intel Corp.
+
+---
+Changes in v3:
+* Kconfig dependency changed to X86_INTEL_QUARK
+
+Changes in v2:
+* Fix several commit write-up grammar, choice of words.
+* Ensure "int ret" in correct order
+* Add comment to explain DTS register field read/write bit operation
+* Change to Dual BSD/GPL license
+* Add logic to ensure safe trip point threshold value being set
+
+Ong Boon Leong (1):
+  thermal: intel Quark SoC X1000 DTS thermal driver
+
+ drivers/thermal/Kconfig                   |   10
+ drivers/thermal/Makefile                  |    1
+ drivers/thermal/intel_quark_dts_thermal.c |  434 +++++++++++++++++++++++++++++
+ 3 files changed, 445 insertions(+)
+ create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
+
+-- 
+1.7.9.5
+
