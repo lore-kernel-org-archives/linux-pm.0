@@ -1,78 +1,57 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
-Date: Mon, 9 Mar 2015 16:28:09 +0000
-Message-ID: <20150309162809.GY8656@n2100.arm.linux.org.uk>
-References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
- <1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/4] PM / Wakeirq: Add minimal device wakeirq helper
+ functions
+Date: Mon, 9 Mar 2015 09:41:25 -0700
+Message-ID: <20150309164125.GG5264@atomide.com>
+References: <20150309150908.GC5264@atomide.com>
+ <Pine.LNX.4.44L0.1503091134240.1472-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:33146 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbbCIQ2Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 12:28:25 -0400
+Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.1503091134240.1472-100000@iolanthe.rowland.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linaro-kernel@lists.linaro.org, Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, fan.chen@mediatek.com, Howard Chen <ibanezchen@gmail.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, linux-mediatek@lists.infradead.org, Kumar Gala <galak@codeaurora.org>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Mar 04, 2015 at 04:49:15PM +0800, pi-cheng.chen wrote:
-> +static int cpu_opp_table_get_freq_index(unsigned int freq)
-> +{
-> +	struct cpu_opp_table *opp_tbl = dvfs_info->opp_tbl;
-> +	int i;
-> +
-> +	for (i = 0; opp_tbl[i].freq != 0; i++) {
-> +		if (opp_tbl[i].freq >= freq)
-> +			return i;
-> +	}
-> +
-> +	return -1;
+* Alan Stern <stern@rowland.harvard.edu> [150309 08:42]:
+> On Mon, 9 Mar 2015, Tony Lindgren wrote:
+> 
+> > > > > > Considering the above, should we add a new function something like
+> > > > > > pm_resume_complete() that does not need irq_safe set but does
+> > > > > > not return until the device has completed resume?
+> > > > > 
+> > > > > That doesn't make sense.  You're asking for a routine that is allowed
+> > > > > to sleep but can safely be called in interrupt context.
+> > > > 
+> > > > Oh it naturally would not work in irq context, it's for the bottom
+> > > > half again.
+> > > 
+> > > In other words, you're suggesting we add a function that runs in 
+> > > process context and doesn't return until the device is fully resumed?  
+> > > That's exactly what pm_runtime_resume does right now.
+> > 
+> > But doesn't it only wait for completion if the driver is marked with
+> > pm_runtime_irq_safe()?
+> 
+> Put it this way: pm_runtime_resume invokes a ->runtime_resume
+> callback routine (the subsystem's or the driver's or whichever), and it
+> assumes that if the routine returns 0 then the device has been resumed.  
+> It doesn't really _wait_ for anything; it just calls the callback
+> routine.
+> 
+> It behaves this way whether or not the irq_safe flag is set.  The only
+> difference is that if irq_safe is set then the callback routine is
+> invoked with interrupts disabled (and in this case pm_runtime_resume
+> may be called in interrupt context -- normally it can be called only in
+> process context).
 
-My "return -1" detector fired on this...
+Oh right you are. Looking at rpm_resume() again, it's the RPM_ASYNC that
+was causing problems to me earlier, not the irq_safe. Sorry it seems I
+was a bit confused. And yes, pm_runtime_resume() does not set RPM_ASYNC
+like you pointed out earlier so no need to do anything there.
 
-> +static int cpu_opp_table_get_volt_index(unsigned int volt)
-> +{
-> +	struct cpu_opp_table *opp_tbl = dvfs_info->opp_tbl;
-> +	int i;
-> +
-> +	for (i = 0; opp_tbl[i].vproc != -1; i++)
-> +		if (opp_tbl[i].vproc >= volt)
-> +			return i;
-> +
-> +	return -1;
+Regards,
 
-And this.
-
-> +static int mtk_cpufreq_notify(struct notifier_block *nb,
-> +			      unsigned long action, void *data)
-> +{
-> +	struct cpufreq_freqs *freqs = data;
-> +	struct cpu_opp_table *opp_tbl = dvfs_info->opp_tbl;
-> +	int old_vproc, new_vproc, old_index, new_index;
-> +
-> +	if (!cpumask_test_cpu(freqs->cpu, &dvfs_info->cpus))
-> +		return NOTIFY_DONE;
-> +
-> +	old_vproc = regulator_get_voltage(dvfs_info->proc_reg);
-> +	old_index = cpu_opp_table_get_volt_index(old_vproc);
-> +	new_index = cpu_opp_table_get_freq_index(freqs->new * 1000);
-> +	new_vproc = opp_tbl[new_index].vproc;
-
-Let's say that cpu_opp_table_get_freq_index() returns -1.  We then
-do no error checking on this, and access the memory immediately
-preceding opp_tbl[0].
-
-Since we'll be loading garbage from opp_tbl[-1], this probably means
-that mtk_cpufreq_voltage_trace() will go wrong.  Your method of using
-the vproc values to work out which direction we should walk between
-old_index...new_index means that we could end up walking through
-almost the whole UINT_MAX range to wrap around to the new index.
-
-Yet again, "return -1" proves to be a sure sign of a bug.
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+Tony
