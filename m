@@ -1,85 +1,57 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 1/2] power: rt5033_charger: Add RT5033 charger device
- driver
-Date: Mon, 9 Mar 2015 11:10:12 +0100
-Message-ID: <20150309101012.GA3914@earth>
-References: <1425864191-4121-1-git-send-email-beomho.seo@samsung.com>
- <1425864191-4121-2-git-send-email-beomho.seo@samsung.com>
- <20150309015020.GA941@earth>
- <54FD177B.1050200@samsung.com>
- <54FD2766.2090401@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Mon, 9 Mar 2015 12:02:56 +0100
+Message-ID: <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+	<1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
+	<20150307201340.GF5233@earth>
+	<54FCEABE.9000007@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54653 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753736AbbCIKKa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Mar 2015 06:10:30 -0400
-Content-Disposition: inline
-In-Reply-To: <54FD2766.2090401@samsung.com>
+Received: from mail-vc0-f182.google.com ([209.85.220.182]:52836 "EHLO
+	mail-vc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbbCILC5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 07:02:57 -0400
+In-Reply-To: <54FCEABE.9000007@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Beomho Seo <beomho.seo@samsung.com>
-Cc: broonie@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jones@linaro.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
+>> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
+>>> From: Beomho Seo <beomho.seo@samsung.com>
+>>>
+>>> This patch adds device driver of max77843 charger. This driver provide
+>>> initialize each charging mode(e.g. fast charge, top-off mode and constant
+>>> charging mode so on.). Additionally, control charging paramters to use
+>>> i2c interface.
+>>>
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>
+>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+>>
+>> I can't take it as is, since it depends on the private header file
+>> of PATCHv1.
+>>
+>> -- Sebastian
+>>
+>
+> This patch reviewed by Sebastian.
+> Could you Please merge that your git tree ?
 
 Hi,
 
-On Mon, Mar 09, 2015 at 01:53:58PM +0900, Beomho Seo wrote:
-> >> remove the special handling of POWER_SUPPLY_PROP_CURRENT_MAX in=20
-> >> rt5033_get_charger_current() and do it like this:
-> >>
-> >> case POWER_SUPPLY_PROP_CURRENT_NOW:
-> >>     val->intval =3D rt5033_get_charger_current(charger);
-> >>     break;
-> >> case POWER_SUPPLY_PROP_CURRENT_MAX:
-> >>     val->intval =3D RT5033_CHG_MAX_CURRENT;
-> >>     break;
-> >>
-> >=20
-> > OK. I will change comply with your comment.
-> >=20
->=20
-> RT5033_CHG_MAX_CURRENT is register value(hex).
-> So It is better:
->=20
-> case POWER_SUPPLY_PROP_CURRENT_MAX:
-> 	val->intval =3D RT5033_CHARGER_FAST_CURRENT_MAX;
->=20
-> And then I will fix rt5033_get_charger_current function more readable.
+... and again we are adding a new driver for very similar chipset to
+already supported. I looked at spec and the charger's registers are
+almost the same as for max77693. Their layout and addresses are the
+same. I see some minor differences, probably the most important would
+be different values current (fast-charge, top-off). But still 90% of
+registers are the same... Do we really have to add new driver?
 
-Right, I copied the wrong value.
-
-> [...]
-
--- Sebastian
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJU/XGCAAoJENju1/PIO/qayCIP/0JatnmGnRc5UpVDKGtAFxaJ
-IETP03Rn7zFdfKl0Qbj7GUWPR4JNsxwU+LvQrx2e69q/qVLfJoionouEiHatEJVZ
-ibkKYQ2OVYgrbQCV5PAAi2A5EPvmW2L9aiQXMBaWTscZnGeSNP7PP2JdNZKxpzmE
-0EjhI1NB9fMMjD7aJAfQ6JyoCqwyMvjC4r1pIYOL7m9mZVabmxCQZ/F5M07+jmEL
-7kKcXUkOv/xkSwwb0oLXUVLgNj6QEeFPJqSWkB+609vsPUP4Iim3d1zrm2fVq8UC
-pNDIK9vGNfO2elQ2JuZ9vqvHhqxVnq0Grjun6FRNr0WSnuNeKsyWpnURSRnYneK2
-RxX1jypObnnnwVrxFIpS6ORDhn+ZtVcNpSr+5azzDakwmgNGiVmiDHHN9+HUQxG3
-87wP5MssD+pCxb2zXH8tK8uvCDSLJRNug176VBL4yXlYgZCPhFSONnJ4HLHxziU+
-R+6CLZ3nF+mXnV9YkOJrIHAOgDKi+PeJ0aGH447MLYprXE7e308ebfTCFSBuql53
-vty5UJVqIywqEKPhcJwew3uafezdB1ItTBBKB7hHBPbORaT075/GyBnKBknxvywf
-iGMbZ6KoTtNCc1DHu6ITeY8XZJg58koo1R11sNK92jtgEjuVTn4H8Wv/Kp19o6S5
-o3SlpOB7pdjJleG7zVYV
-=N34s
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
+Best regards,
+Krzysztof
