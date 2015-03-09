@@ -1,92 +1,322 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: intel_soc_dts_thermal binding issues
-Date: Mon, 9 Mar 2015 02:43:14 +0000
-Message-ID: <1425868993.3944.30.camel@spandruv-mobl2>
-References: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
-	 <744357E9AAD1214791ACBA4B0B90926301491FCF@SHSMSX101.ccr.corp.intel.com>
-	 <CA+5PVA58q==ieDyfoMEsJ=TxLXXRdNPoKC5gNWAg0MdTv4Eq+g@mail.gmail.com>
-	 <744357E9AAD1214791ACBA4B0B9092630149275F@SHSMSX101.ccr.corp.intel.com>
-	 <CA+5PVA6oBotk-SLnwYvpAp-U+sPt+pRP-0AtyAD2H+qnekEqAg@mail.gmail.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v5 1/2] power: rt5033_charger: Add RT5033 charger device
+ driver
+Date: Mon, 09 Mar 2015 12:46:03 +0900
+Message-ID: <54FD177B.1050200@samsung.com>
+References: <1425864191-4121-1-git-send-email-beomho.seo@samsung.com>
+ <1425864191-4121-2-git-send-email-beomho.seo@samsung.com>
+ <20150309015020.GA941@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+5PVA6oBotk-SLnwYvpAp-U+sPt+pRP-0AtyAD2H+qnekEqAg@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <7FDF824BB143684EA37D66BD3857B465@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "jwboyer@fedoraproject.org" <jwboyer@fedoraproject.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:50211 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbbCIDqK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 8 Mar 2015 23:46:10 -0400
+In-reply-to: <20150309015020.GA941@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: broonie@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jones@linaro.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 
-T24gRnJpLCAyMDE1LTAzLTA2IGF0IDA4OjUxIC0wNTAwLCBKb3NoIEJveWVyIHdyb3RlOg0KPiBP
-biBUaHUsIE1hciA1LCAyMDE1IGF0IDg6MzcgUE0sIFpoYW5nLCBSdWkgPHJ1aS56aGFuZ0BpbnRl
-bC5jb20+IHdyb3RlOg0KPiA+IFBsZWFzZSBhdHRhY2ggdGhlIGFjcGlkdW1wIG91dHB1dC4NCj4g
-DQo+IEF0dGFjaGVkIGZvciBteSBtYWNoaW5lLg0KPiANClRoZXJlIGlzIG5vIElOVDM0MDEgaW4g
-dGhlIGFjcGkgZHVtcC4gQWxzbyBubyBvbmUgcmVnaXN0ZXJlZCBJUlEgODYuDQpTbyB0aGUgcmVx
-dWVzdF9pcnEgZmFpbGluZy4NCkl0IGlzIG5vdCBhIHByb2JsZW0sIHRoaXMgcGxhdGZvcm0gY2Fu
-J3Qgc3VwcG9ydC4NCkRvIHdlIHdhbnQgdG8gc2lsZW50bHkgYmFpbCBvdXQ/DQoNClRoYW5rcywN
-ClNyaW5pdmFzDQoNCg0KPiBqb3NoDQo+IA0KPiA+DQo+ID4gVGhhbmtzLA0KPiA+IHJ1aQ0KPiA+
-DQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBsaW51eC1wbS1vd25l
-ckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmdd
-IE9uIEJlaGFsZiBPZiBKb3NoIEJveWVyDQo+ID4gU2VudDogVGh1cnNkYXksIE1hcmNoIDUsIDIw
-MTUgMTA6MzAgUE0NCj4gPiBUbzogWmhhbmcsIFJ1aQ0KPiA+IENjOiBFZHVhcmRvIFZhbGVudGlu
-OyBMaW51eCBQTSBsaXN0OyBMaW51eC1LZXJuZWxAVmdlci4gS2VybmVsLiBPcmcNCj4gPiBTdWJq
-ZWN0OiBSZTogaW50ZWxfc29jX2R0c190aGVybWFsIGJpbmRpbmcgaXNzdWVzDQo+ID4gSW1wb3J0
-YW5jZTogSGlnaA0KPiA+DQo+ID4gT24gV2VkLCBNYXIgNCwgMjAxNSBhdCA4OjU1IFBNLCBaaGFu
-ZywgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPiB3cm90ZToNCj4gPj4gV2hhdCBrZXJuZWwgYXJl
-IHlvdSB1c2luZz8NCj4gPj4gSSB0aGluayBpdCBzaG91bGQgYmUgZml4ZWQgYnkgY29tbWl0IDAx
-NGQ5ZDVkMGNjMWRhNzliYmU0OGZiYzVlMTA2OGM1NjE2MjM4ZDIsIHdoaWNoIGlzIG1lcmdlZCBp
-biAzLjE5LXJjNS4NCj4gPg0KPiA+IFRoZSByZXBvcnRlciB3aXRoIHRoZSBBU1VTIG1hY2hpbmUg
-d2FzIHJ1bm5pbmcgMy4xOC43LiAgSG93ZXZlciwgb24gbXkgTlVDIG1hY2hpbmUgSSBzdGlsbCBz
-ZWUgdGhpcyB3aXRoIDQuMC1yYzIgYW5kIHRoZSBsYXRlc3QgTGludXMgdHJlZToNCj4gPg0KPiA+
-IFtqd2JveWVyQG51Yy1jZWxlcm9uIH5dJCB1bmFtZSAtYQ0KPiA+IExpbnV4IG51Yy1jZWxlcm9u
-IDQuMC4wLTAucmMyLmdpdDEuMS5mYzIzLng4Nl82NCAjMSBTTVAgVGh1IE1hciA1DQo+ID4gMDg6
-Mzc6MjMgRVNUIDIwMTUgeDg2XzY0IHg4Nl82NCB4ODZfNjQgR05VL0xpbnV4IFtqd2JveWVyQG51
-Yy1jZWxlcm9uIH5dJCBkbWVzZyB8IGdyZXAgcmVxdWVzdF90aHJlYWRlZA0KPiA+IFsgICAxMS4x
-ODcyMzldIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90aHJlYWRlZF9pcnEgcmV0IC0y
-Mg0KPiA+IFsgICAxMS4yNjE3MzhdIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90aHJl
-YWRlZF9pcnEgcmV0IC0yMg0KPiA+IFtqd2JveWVyQG51Yy1jZWxlcm9uIH5dJCBjYXQgL3Byb2Mv
-Y3B1aW5mbyB8IGdyZXAgIm1vZGVsIG5hbWUiDQo+ID4gbW9kZWwgbmFtZSAgICA6IEludGVsKFIp
-IENlbGVyb24oUikgQ1BVICBOMjgyMCAgQCAyLjEzR0h6DQo+ID4gbW9kZWwgbmFtZSAgICA6IElu
-dGVsKFIpIENlbGVyb24oUikgQ1BVICBOMjgyMCAgQCAyLjEzR0h6DQo+ID4gW2p3Ym95ZXJAbnVj
-LWNlbGVyb24gfl0kDQo+ID4NCj4gPiBUaGUgNC4wLjAtcmMyLmdpdDEuMSBhYm92ZSBjb3JyZXNw
-b25kcyB0byBMaW51eCB2NC4wLXJjMi0xNTAtZzY1ODc0NTdiNGIzZCBpbiBtYWlubGluZS4gIFdl
-IGFyZW4ndCBjYXJyeWluZyBhbnkgcGF0Y2hlcyB0aGF0IHdvdWxkIGltcGFjdCB0aGlzLg0KPiA+
-DQo+ID4gVGhlIGNvbW1pdCB5b3UgcG9pbnRlZCB0byBzZWVtcyB0byBpbXBseSB0aGF0IGVpdGhl
-ciBJTlQzNDBYX1RIRVJNQUwgb3IgSU5URUxfU09DX0RUU19USEVSTUFMIGNvdWxkIGJlIHNldCwg
-YnV0IG5vdCBib3RoLiAgSW4gRmVkb3JhLCB3ZSBoYXZlIHRoZW0gYm90aCBlbmFibGVkIGFzIG1v
-ZHVsZXM6DQo+ID4NCj4gPiBbandib3llckBudWMtY2VsZXJvbiB+XSQgZ3JlcCBfVEhFUk1BTD1t
-DQo+ID4gL2Jvb3QvY29uZmlnLTQuMC4wLTAucmMyLmdpdDEuMS5mYzIzLng4Nl82NA0KPiA+IENP
-TkZJR19YODZfUEtHX1RFTVBfVEhFUk1BTD1tDQo+ID4gQ09ORklHX0lOVEVMX1NPQ19EVFNfVEhF
-Uk1BTD1tDQo+ID4gQ09ORklHX0lOVDM0MFhfVEhFUk1BTD1tDQo+ID4gW2p3Ym95ZXJAbnVjLWNl
-bGVyb24gfl0kDQo+ID4NCj4gPiBNYXliZSB0aGUgY29tbWl0IHNob3VsZCBiZSBjaGVja2luZyBm
-b3IgSU5URUxfU09DX0RUU19USEVSTUFMIHVuY29uZGl0aW9uYWxseSwgYW5kIG5vdCBhcyBhbiAj
-ZWxmaT8NCj4gPg0KPiA+IGpvc2gNCj4gPg0KPiA+Pg0KPiA+PiBUaGFua3MsDQo+ID4+IHJ1aQ0K
-PiA+Pg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBqd2JveWVy
-QGdtYWlsLmNvbSBbbWFpbHRvOmp3Ym95ZXJAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YgSm9zaA0K
-PiA+PiBCb3llcg0KPiA+PiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDQsIDIwMTUgMTA6MDUgUE0N
-Cj4gPj4gVG86IFpoYW5nLCBSdWk7IEVkdWFyZG8gVmFsZW50aW4NCj4gPj4gQ2M6IExpbnV4IFBN
-IGxpc3Q7IExpbnV4LUtlcm5lbEBWZ2VyLiBLZXJuZWwuIE9yZw0KPiA+PiBTdWJqZWN0OiBpbnRl
-bF9zb2NfZHRzX3RoZXJtYWwgYmluZGluZyBpc3N1ZXMNCj4gPj4gSW1wb3J0YW5jZTogSGlnaA0K
-PiA+Pg0KPiA+PiBIaSBBbGwsDQo+ID4+DQo+ID4+IFdlJ3ZlIHNlZW4gYSBudW1iZXIgb2YgcmVw
-b3J0cyB3aGVyZSBwZW9wbGUgc2VlOg0KPiA+Pg0KPiA+PiBbICAgMjAuNDk5NDI3XSBpbnRlbF9z
-b2NfZHRzX3RoZXJtYWw6IHJlcXVlc3RfdGhyZWFkZWRfaXJxIHJldCAtMjINCj4gPj4gWyAgIDIw
-LjUxOTE2MF0gaW50ZWxfc29jX2R0c190aGVybWFsOiByZXF1ZXN0X3RocmVhZGVkX2lycSByZXQg
-LTIyDQo+ID4+IFsgICAyMC41MzI2NjBdIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90
-aHJlYWRlZF9pcnEgcmV0IC0yMg0KPiA+Pg0KPiA+PiBpbiB0aGVpciBib290IGxvZ3MuICBUaGV5
-IHZpZXcgdGhpcyBhcyBhIGtlcm5lbCBidWcgYW5kIHJlcG9ydCBpcyBhcyBzdWNoLiAgVGhlIGFi
-b3ZlIGxvZyBjYW1lIGZyb20gYW4gQVNVUyB4MjAwbWEgbWFjaGluZSwgd2hpY2ggaGFzIGEgcXVh
-ZCBjb3JlIEJheXRyYWlsLU0gUGVudGl1bSBDUFUgKE4zNTMwKS4NCj4gPj4NCj4gPj4gSSBjYW4n
-dCB0ZWxsIGlmIHRoZSBpc3N1ZSBpcyBiZWNhdXNlIHRoZSBkcml2ZXIgaXMgdHJ5aW5nIHRvIGJp
-bmQgdG8gYWxsIDQgY29yZXMgYW5kIG9ubHkgQ1BVMCB3b3Jrcywgb3Igd2hhdCBvdGhlciBpc3N1
-ZSB3b3VsZCBjYXVzZSB0aGlzLg0KPiA+PiBJIHBlcnNvbmFsbHkgaGF2ZSBhIENlbGVyb24gYmFz
-ZWQgTlVDIHdpdGggYSBOMjgyMCB0aGF0IGdldHMgdGhlIGVycm9yIGFib3ZlIGZvciBib3RoIGNv
-cmVzIGFuZCB0aGUgZHJpdmVyIGRvZXNuJ3QgbG9hZCBhdCBhbGwuDQo+ID4+DQo+ID4+IElzIHRo
-ZXJlIHNvbWV0aGluZyBlbHNlIHRoZSBkcml2ZXIgc2hvdWxkIGJlIGRvaW5nIHRvIGJpbmQgdG8g
-dGhlIHZhcmlvdXMgQ1BVcz8gIElmIHRoZXJlJ3Mgbm90aGluZyBlbHNlIGl0IGNhbiBrZXkgb2Zm
-IG9mLCBjYW4gd2UgZHJvcCB0aGUgcHJfZXJyIHNvIGl0IHN0b3BzIHNob3dpbmcgdXAgaW4gZG1l
-c2c/DQo+ID4+DQo+ID4+IGpvc2gNCj4gPiAtLQ0KPiA+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
-cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1wbSIgaW4gdGhlIGJvZHkg
-b2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8g
-aW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQoNCg==
+On 03/09/2015 10:50 AM, Sebastian Reichel wrote:
+> Hi Beomho,
+> 
+> On Mon, Mar 09, 2015 at 10:23:10AM +0900, Beomho Seo wrote:
+>> This patch add device driver of Richtek RT5033 PMIC. The driver support
+>> switching charger. rt5033 charger provide three charging mode.
+>> Three charging mode are pre charge mode, fast cahrge mode and constant voltage
+>> mode. They are have vary charge rate, charge parameters. The charge parameters
+>> can be controlled by i2c interface.
+> 
+> Driver looks mostly ok, but I have some comments [inline].
+> 
+>> Cc: Sebastian Reichel <sre@kernel.org>
+>> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> Cc: David Woodhouse <dwmw2@infradead.org>
+>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>> Changes in v5
+>> - none.
+>> Changes in v4
+>> - Change power supply type to POWER_SUPPLY_TYPE_MAINS.
+>> Changes in v3
+>> Changes in v2
+>> - none
+>>
+>>  drivers/power/Kconfig          |    8 +
+>>  drivers/power/Makefile         |    1 +
+>>  drivers/power/rt5033_charger.c |  485 ++++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 494 insertions(+)
+>>  create mode 100644 drivers/power/rt5033_charger.c
+>>
+>> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+>> index 27b751b..67e9af7 100644
+>> --- a/drivers/power/Kconfig
+>> +++ b/drivers/power/Kconfig
+>> @@ -418,6 +418,14 @@ config BATTERY_RT5033
+>>  	  The fuelgauge calculates and determines the battery state of charge
+>>  	  according to battery open circuit voltage.
+>>  
+>> +config CHARGER_RT5033
+>> +	tristate "RT5033 battery charger support"
+>> +	depends on MFD_RT5033
+>> +	help
+>> +	  This adds support for battery charger in Richtek RT5033 PMIC.
+>> +	  The device supports pre-charge mode, fast charge mode and
+>> +	  constant voltage mode.
+>> +
+>>  source "drivers/power/reset/Kconfig"
+>>  
+>>  endif # POWER_SUPPLY
+>> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+>> index 36f9e0d..c5d72e0 100644
+>> --- a/drivers/power/Makefile
+>> +++ b/drivers/power/Makefile
+>> @@ -59,6 +59,7 @@ obj-$(CONFIG_CHARGER_BQ2415X)	+= bq2415x_charger.o
+>>  obj-$(CONFIG_CHARGER_BQ24190)	+= bq24190_charger.o
+>>  obj-$(CONFIG_CHARGER_BQ24735)	+= bq24735-charger.o
+>>  obj-$(CONFIG_POWER_AVS)		+= avs/
+>> +obj-$(CONFIG_POWER_RT5033)	+= rt5033_charger.o
+> 
+> this should be 
+> 
+> obj-$(CONFIG_CHARGER_RT5033) += rt5033_charger.o
+> 
+> according to your Kconfig patch. How did you test it actually?
+> 
+
+Sorry, My mistake. This patch have been tested on my board.
+I will double-check before send patch set.
+
+>>  obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
+>>  obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
+>>  obj-$(CONFIG_POWER_RESET)	+= reset/
+>> diff --git a/drivers/power/rt5033_charger.c b/drivers/power/rt5033_charger.c
+>> new file mode 100644
+>> index 0000000..7f8f6c3
+>> --- /dev/null
+>> +++ b/drivers/power/rt5033_charger.c
+>>
+>> [...]
+>>
+>> +static int rt5033_get_charger_current(struct rt5033_charger *charger,
+>> +		enum power_supply_property psp)
+>> +{
+>> +	struct regmap *regmap = charger->rt5033->regmap;
+>> +	unsigned int state, reg_data, data;
+>> +
+>> +	if (psp == POWER_SUPPLY_PROP_CURRENT_MAX)
+>> +		return RT5033_CHG_MAX_CURRENT;
+> 
+> drop this psp check and the psp parameter to this function, so that
+> the function only takes care of the current current.
+> 
+
+OK. I will remove above lines.
+
+>> +	regmap_read(regmap, RT5033_REG_CHG_CTRL5, &reg_data);
+>> +
+>> +	state = (reg_data >> RT5033_CHGCTRL5_ICHG_SHIFT) & 0xf;
+>> +
+>> +	if (state > RT5033_CHG_MAX_CURRENT)
+>> +		state = RT5033_CHG_MAX_CURRENT;
+>> +
+>> +	data = state * 100 + 700;
+>> +
+>> +	return data;
+>> +}
+>> +
+>> +static int rt5033_get_charge_voltage(struct rt5033_charger *charger,
+>> +		enum power_supply_property psp)
+>> +{
+>> +	struct regmap *regmap = charger->rt5033->regmap;
+>> +	unsigned int state, reg_data, data;
+>> +
+>> +	if (psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)
+>> +		return RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+> 
+> drop this psp check and the psp parameter to this function, so that
+> the function only takes care of the current voltage.
+> 
+
+OK. I will remove above lines.
+
+>> +	regmap_read(regmap, RT5033_REG_CHG_CTRL2, &reg_data);
+>> +
+>> +	state = reg_data >> 2;
+>> +
+>> +	data = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MIN +
+>> +		RT5033_CHARGER_CONST_VOLTAGE_STEP_NUM * state;
+>> +
+>> +	if (data > RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX)
+>> +		data = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+>> +
+>> +	return data;
+>> +}
+>>
+>> [...]
+>>
+>> +
+>> +static enum power_supply_property rt5033_charger_props[] = {
+>> +	POWER_SUPPLY_PROP_STATUS,
+>> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +	POWER_SUPPLY_PROP_CURRENT_MAX,
+>> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+>> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+>> +	POWER_SUPPLY_PROP_MODEL_NAME,
+>> +	POWER_SUPPLY_PROP_MANUFACTURER,
+>> +};
+>> +
+>> +static int rt5033_charger_get_property(struct power_supply *psy,
+>> +			enum power_supply_property psp,
+>> +			union power_supply_propval *val)
+>> +{
+>> +	struct rt5033_charger *charger = container_of(psy,
+>> +			struct rt5033_charger, psy);
+>> +	int ret = 0;
+>> +
+>> +	switch (psp) {
+>> +	case POWER_SUPPLY_PROP_STATUS:
+>> +		val->intval = rt5033_get_charger_state(charger);
+>> +		break;
+>> +	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+>> +		val->intval = rt5033_get_charger_type(charger);
+>> +		break;
+>> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>> +	case POWER_SUPPLY_PROP_CURRENT_MAX:
+>> +		val->intval = rt5033_get_charger_current(charger, psp);
+>> +		break;
+> 
+> remove the special handling of POWER_SUPPLY_PROP_CURRENT_MAX in 
+> rt5033_get_charger_current() and do it like this:
+> 
+> case POWER_SUPPLY_PROP_CURRENT_NOW:
+>     val->intval = rt5033_get_charger_current(charger);
+>     break;
+> case POWER_SUPPLY_PROP_CURRENT_MAX:
+>     val->intval = RT5033_CHG_MAX_CURRENT;
+>     break;
+> 
+
+OK. I will change comply with your comment.
+
+>> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+>> +		val->intval = rt5033_get_charge_voltage(charger, psp);
+>> +		break;
+> 
+> same as current handling:
+> 
+> case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>     val->intval = rt5033_get_charge_voltage(charger);
+>     break;
+> case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+>     val->intval = RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+>     break;
+> 
+
+Ditto.
+
+>> +	case POWER_SUPPLY_PROP_MODEL_NAME:
+>> +		val->strval = RT5033_CHARGER_MODEL;
+>> +		break;
+>> +	case POWER_SUPPLY_PROP_MANUFACTURER:
+>> +		val->strval = RT5033_MANUFACTURER;
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>>
+>> [...]
+>>
+>> +static int rt5033_charger_probe(struct platform_device *pdev)
+>> +{
+>> +	struct rt5033_charger *charger;
+>> +	struct rt5033_dev *rt5033 = dev_get_drvdata(pdev->dev.parent);
+>> +	int ret;
+>> +
+>> +	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+>> +	if (!charger)
+>> +		return -ENOMEM;
+>> +
+>> +	platform_set_drvdata(pdev, charger);
+>> +	charger->dev = &pdev->dev;
+>> +	charger->rt5033 = rt5033;
+>> +
+>> +	charger->chg = rt5033_charger_dt_init(pdev);
+>> +	if (IS_ERR_OR_NULL(charger->chg))
+>> +		return -ENODEV;
+>> +
+>> +	ret = rt5033_charger_reg_init(charger);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	charger->psy.name = "rt5033-charger",
+>> +	charger->psy.type = POWER_SUPPLY_TYPE_MAINS,
+>> +	charger->psy.properties = rt5033_charger_props,
+>> +	charger->psy.num_properties = ARRAY_SIZE(rt5033_charger_props),
+>> +	charger->psy.get_property = rt5033_charger_get_property,
+>> +
+>> +	ret = power_supply_register(&pdev->dev, &charger->psy);
+>> +	if (ret) {
+>> +		dev_err(&pdev->dev, "Failed to register power supply\n");
+>> +		return ret;
+>> +	}
+> 
+> We have devm_power_supply_register() now, which would result in
+> complete removal of the rt5033_charger_remove() function :)
+> 
+
+OK, I will change comply with your comment.
+
+>> +	return 0;
+>> +}
+>> +
+>> +static int rt5033_charger_remove(struct platform_device *pdev)
+>> +{
+>> +	struct rt5033_charger *charger = platform_get_drvdata(pdev);
+>> +
+>> +	power_supply_unregister(&charger->psy);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct platform_device_id rt5033_charger_id[] = {
+>> +	{ "rt5033-charger", },
+>> +	{ }
+>> +};
+>> +MODULE_DEVICE_TABLE(platform, rt5033_charger_id);
+>> +
+>> +static struct platform_driver rt5033_charger_driver = {
+>> +	.driver = {
+>> +		.name = "rt5033-charger",
+>> +	},
+>> +	.probe = rt5033_charger_probe,
+>> +	.remove = rt5033_charger_remove,
+>> +	.id_table = rt5033_charger_id,
+>> +};
+>> +module_platform_driver(rt5033_charger_driver);
+>> +
+>> +MODULE_DESCRIPTION("Richtek RT5033 charger driver");
+>> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
+>> +MODULE_LICENSE("GPL");
+> 
+> This should be 
+> 
+> MODULE_LICENSE("GPL v2");
+> 
+> -- Sebastian
+> 
+
+Thanks your comment.
+I will change this patch as soon as I possibly can.
+
+Best regards,
+Beomho Seo
