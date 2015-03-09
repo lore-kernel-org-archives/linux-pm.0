@@ -1,137 +1,325 @@
-From: Ethan Zhao <ethan.kernel@gmail.com>
-Subject: Re: [PATCH Resend] cpufreq: Set cpufreq_cpu_data to NULL before
- putting kobject
-Date: Mon, 9 Mar 2015 09:34:20 +0800
-Message-ID: <CABawtvPAA2f9vv6WN98OvP3JR1UCApHtGoREpZnVkWSZGWS=kQ@mail.gmail.com>
-References: <ed8fd187687cb4ea9afd0bc32107ca5abf03e679.1422663249.git.viresh.kumar@linaro.org>
-	<54CEECF7.7020504@oracle.com>
-	<CAKohpon10=xemOZkvqMTV2JbdTMXPDiW+-v52Qzm8SsNymN-Kg@mail.gmail.com>
-	<54CEF123.5050106@oracle.com>
-	<CAKohponOvEnG2Tt5sFPLAHA_bHckHboR7t35-7ey5b_cCKfvKg@mail.gmail.com>
-	<54CEF574.6040404@oracle.com>
-	<CAKohpom589bFL4-eyR1=qrc6uoRtjck_z_SBHS3XU8dJSc4yFg@mail.gmail.com>
-	<54CEF7AA.80401@oracle.com>
-	<CAKohponfkJVYFTsj6ijy0iY3t-R=zN=M0ZkoDmYa-WYTzPuvmw@mail.gmail.com>
-	<54CEFA23.7040705@oracle.com>
-	<CAKohpomBcBVXLW-RW1VXAtkTw-BKd7tHmeFJgmf9CM3vi1Ki-Q@mail.gmail.com>
-	<54CF0106.5050601@oracle.com>
-	<CAKohpomYpEAeQeaB7HVT0cBT5H_P8QQ-e+FQ5OqUoOvfz2ZnOQ@mail.gmail.com>
-	<54CF9209.1050403@oracle.com>
-	<CABawtvPtd2Ln6ghYRHhPy5SbUZqe2yncyeOta2CLt7fV1=504A@mail.gmail.com>
-	<54ED50F5.5080603@linaro.org>
-	<CABawtvPQNY91jS7gUWVVUZ87SG9zjtXDmTYsi0Q7hLbH_dPYng@mail.gmail.com>
-	<54EDF8FC.8060204@oracle.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 1/2] power: rt5033_charger: Add RT5033 charger device
+ driver
+Date: Mon, 9 Mar 2015 02:50:21 +0100
+Message-ID: <20150309015020.GA941@earth>
+References: <1425864191-4121-1-git-send-email-beomho.seo@samsung.com>
+ <1425864191-4121-2-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f173.google.com ([209.85.223.173]:46459 "EHLO
-	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbbCIBeV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 8 Mar 2015 21:34:21 -0400
-In-Reply-To: <54EDF8FC.8060204@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1425864191-4121-2-git-send-email-beomho.seo@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: broonie@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lee.jones@linaro.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>
-Cc: ethan zhao <ethan.zhao@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, guangyu.sun@oracle.com, "sriharsha.devdas@oracle.com" <sriharsha.devdas@oracle.com>
-
-Viresh,
-    Got that box and did some debug, found the policy->kobj is not initialized.
-So the race happened between cpufreq_cpu_get() and
-__cpufreq_add_dev(), and verified 'this' race could be fixed by commit
-
-6d4e81e cpufreq: Ref the policy object sooner
-
-    I have reboot the box with crond for more than 12 hours, no warning found.
-
-    But obviously, the commit
-    cpufreq: Set cpufreq_cpu_data to NULL before putting kobject
-    also fixed one of the possible race condition.
 
 
-Thanks,
-Ethan
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 26, 2015 at 12:31 AM, santosh shilimkar
-<santosh.shilimkar@oracle.com> wrote:
-> On 2/24/2015 9:47 PM, Ethan Zhao wrote:
->>
->> Viresh,
->>
->>      Will do that when I get the test box.
->>
-> Thanks Ethan.
+Hi Beomho,
+
+On Mon, Mar 09, 2015 at 10:23:10AM +0900, Beomho Seo wrote:
+> This patch add device driver of Richtek RT5033 PMIC. The driver support
+> switching charger. rt5033 charger provide three charging mode.
+> Three charging mode are pre charge mode, fast cahrge mode and constant vo=
+ltage
+> mode. They are have vary charge rate, charge parameters. The charge param=
+eters
+> can be controlled by i2c interface.
+
+Driver looks mostly ok, but I have some comments [inline].
+
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+> Changes in v5
+> - none.
+> Changes in v4
+> - Change power supply type to POWER_SUPPLY_TYPE_MAINS.
+> Changes in v3
+> Changes in v2
+> - none
+>=20
+>  drivers/power/Kconfig          |    8 +
+>  drivers/power/Makefile         |    1 +
+>  drivers/power/rt5033_charger.c |  485 ++++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 494 insertions(+)
+>  create mode 100644 drivers/power/rt5033_charger.c
+>=20
+> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> index 27b751b..67e9af7 100644
+> --- a/drivers/power/Kconfig
+> +++ b/drivers/power/Kconfig
+> @@ -418,6 +418,14 @@ config BATTERY_RT5033
+>  	  The fuelgauge calculates and determines the battery state of charge
+>  	  according to battery open circuit voltage.
+> =20
+> +config CHARGER_RT5033
+> +	tristate "RT5033 battery charger support"
+> +	depends on MFD_RT5033
+> +	help
+> +	  This adds support for battery charger in Richtek RT5033 PMIC.
+> +	  The device supports pre-charge mode, fast charge mode and
+> +	  constant voltage mode.
+> +
+>  source "drivers/power/reset/Kconfig"
+> =20
+>  endif # POWER_SUPPLY
+> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+> index 36f9e0d..c5d72e0 100644
+> --- a/drivers/power/Makefile
+> +++ b/drivers/power/Makefile
+> @@ -59,6 +59,7 @@ obj-$(CONFIG_CHARGER_BQ2415X)	+=3D bq2415x_charger.o
+>  obj-$(CONFIG_CHARGER_BQ24190)	+=3D bq24190_charger.o
+>  obj-$(CONFIG_CHARGER_BQ24735)	+=3D bq24735-charger.o
+>  obj-$(CONFIG_POWER_AVS)		+=3D avs/
+> +obj-$(CONFIG_POWER_RT5033)	+=3D rt5033_charger.o
+
+this should be=20
+
+obj-$(CONFIG_CHARGER_RT5033) +=3D rt5033_charger.o
+
+according to your Kconfig patch. How did you test it actually?
+
+>  obj-$(CONFIG_CHARGER_SMB347)	+=3D smb347-charger.o
+>  obj-$(CONFIG_CHARGER_TPS65090)	+=3D tps65090-charger.o
+>  obj-$(CONFIG_POWER_RESET)	+=3D reset/
+> diff --git a/drivers/power/rt5033_charger.c b/drivers/power/rt5033_charge=
+r.c
+> new file mode 100644
+> index 0000000..7f8f6c3
+> --- /dev/null
+> +++ b/drivers/power/rt5033_charger.c
 >
+> [...]
 >
->>
->> On Wed, Feb 25, 2015 at 12:35 PM, viresh kumar <viresh.kumar@linaro.org>
->> wrote:
->>>
->>> On Wednesday 25 February 2015 08:54 AM, Ethan Zhao wrote:
->>>>
->>>> Viresh,
->>>>    With this patch applied, still got the following warning and panic,
->>>> seems it needs more care.
->>>>
->>>>       54.474618] ------------[ cut here ]------------
->>>> [   54.545816] WARNING: CPU: 0 PID: 213 at include/linux/kref.h:47
->>>> kobject_get+0x41/0x50()
->>>> [   54.642595] Modules linked in: i2c_i801(+) mfd_core shpchp(+)
->>>> acpi_cpufreq(+) edac_core ioatdma(+) xfs libcrc32c ast syscopyarea ixgbe
->>>> sysfillrect sysimgblt sr_mod sd_mod drm_kms_helper igb mdio cdrom e1000e
->>>> ahci
->>>> dca ttm libahci uas drm i2c_algo_bit ptp megaraid_sas libata usb_storage
->>>> i2c_core pps_core dm_mirror dm_region_hash dm_log dm_mod
->>>> [   55.007264] CPU: 0 PID: 213 Comm: kworker/0:2 Not tainted
->>>> 3.18.5
->>>> [   55.099970] Hardware name: Oracle Corporation SUN FIRE X4170 M2
->>>> SERVER
->>>>     /ASSY,MOTHERBOARD,X4170, BIOS 08120104 05/08/2012
->>>> [   55.239736] Workqueue: kacpi_notify acpi_os_execute_deferred
->>>> [   55.308598]  0000000000000000 00000000bd730b61 ffff88046742baf8
->>>> ffffffff816b7edb
->>>> [   55.398305]  0000000000000000 0000000000000000 ffff88046742bb38
->>>> ffffffff81078ae1
->>>> [   55.488040]  ffff88046742bbd8 ffff8806706b3000 0000000000000292
->>>> 0000000000000000
->>>> [   55.577776] Call Trace:
->>>> [   55.608228]  [<ffffffff816b7edb>] dump_stack+0x46/0x58
->>>> [   55.670895]  [<ffffffff81078ae1>] warn_slowpath_common+0x81/0xa0
->>>> [   55.743952]  [<ffffffff81078bfa>] warn_slowpath_null+0x1a/0x20
->>>> [   55.814929]  [<ffffffff8130d0d1>] kobject_get+0x41/0x50
->>>> [   55.878654]  [<ffffffff8153e955>] cpufreq_cpu_get+0x75/0xc0
->>>> [   55.946528]  [<ffffffff8153f37e>] cpufreq_update_policy+0x2e/0x1f0
->>>> [   56.021682]  [<ffffffff810bf9d2>] ? up+0x32/0x50
->>>> [   56.078126]  [<ffffffff813ab975>] ? acpi_ns_get_node+0xcb/0xf2
->>>> [   56.148974]  [<ffffffff813abdc9>] ? acpi_evaluate_object+0x22c/0x252
->>>> [   56.226066]  [<ffffffff813ac3c2>] ? acpi_get_handle+0x95/0xc0
->>>> [   56.295871]  [<ffffffff8138a7fb>] ? acpi_has_method+0x25/0x40
->>>> [   56.365661]  [<ffffffff813bbcd4>]
->>>> acpi_processor_ppc_has_changed+0x77/0x82
->>>> [   56.448956]  [<ffffffff8108f726>] ? move_linked_works+0x66/0x90
->>>> [   56.520842]  [<ffffffff813b87b9>] acpi_processor_notify+0x58/0xe7
->>>> [   56.594807]  [<ffffffff8139dfd8>] acpi_ev_notify_dispatch+0x44/0x5c
->>>> [   56.670859]  [<ffffffff81388fe3>] acpi_os_execute_deferred+0x15/0x22
->>>> [   56.747936]  [<ffffffff8109268e>] process_one_work+0x14e/0x3f0
->>>> [   56.818766]  [<ffffffff81092d9b>] worker_thread+0x11b/0x4d0
->>>> [   56.886486]  [<ffffffff81092c80>] ? rescuer_thread+0x350/0x350
->>>> [   56.957316]  [<ffffffff810984f1>] kthread+0xe1/0x100
->>>> [   57.017742]  [<ffffffff81098410>] ?
->>>> kthread_create_on_node+0x1b0/0x1b0
->>>> [   57.096903]  [<ffffffff816bfe7c>] ret_from_fork+0x7c/0xb0
->>>> [   57.162534]  [<ffffffff81098410>] ?
->>>> kthread_create_on_node+0x1b0/0x1b0
->>>> [   57.241680] ---[ end trace dce06bb76f547de5 ]---
->>>>
->>>>
->>>> Any idea ?
->>>
->>>
->>> No. Santosh reported this to me few days back, I asked him to perform
->>> some
->>> testing but don't know what happened after that..
->>>
-> I didn't get time to re-look into it so far.
+> +static int rt5033_get_charger_current(struct rt5033_charger *charger,
+> +		enum power_supply_property psp)
+> +{
+> +	struct regmap *regmap =3D charger->rt5033->regmap;
+> +	unsigned int state, reg_data, data;
+> +
+> +	if (psp =3D=3D POWER_SUPPLY_PROP_CURRENT_MAX)
+> +		return RT5033_CHG_MAX_CURRENT;
+
+drop this psp check and the psp parameter to this function, so that
+the function only takes care of the current current.
+
+> +	regmap_read(regmap, RT5033_REG_CHG_CTRL5, &reg_data);
+> +
+> +	state =3D (reg_data >> RT5033_CHGCTRL5_ICHG_SHIFT) & 0xf;
+> +
+> +	if (state > RT5033_CHG_MAX_CURRENT)
+> +		state =3D RT5033_CHG_MAX_CURRENT;
+> +
+> +	data =3D state * 100 + 700;
+> +
+> +	return data;
+> +}
+> +
+> +static int rt5033_get_charge_voltage(struct rt5033_charger *charger,
+> +		enum power_supply_property psp)
+> +{
+> +	struct regmap *regmap =3D charger->rt5033->regmap;
+> +	unsigned int state, reg_data, data;
+> +
+> +	if (psp =3D=3D POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)
+> +		return RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+
+drop this psp check and the psp parameter to this function, so that
+the function only takes care of the current voltage.
+
+> +	regmap_read(regmap, RT5033_REG_CHG_CTRL2, &reg_data);
+> +
+> +	state =3D reg_data >> 2;
+> +
+> +	data =3D RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MIN +
+> +		RT5033_CHARGER_CONST_VOLTAGE_STEP_NUM * state;
+> +
+> +	if (data > RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX)
+> +		data =3D RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+> +
+> +	return data;
+> +}
 >
-> Regards,
-> Santosh
+> [...]
 >
+> +
+> +static enum power_supply_property rt5033_charger_props[] =3D {
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+> +	POWER_SUPPLY_PROP_CURRENT_MAX,
+> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+> +	POWER_SUPPLY_PROP_MODEL_NAME,
+> +	POWER_SUPPLY_PROP_MANUFACTURER,
+> +};
+> +
+> +static int rt5033_charger_get_property(struct power_supply *psy,
+> +			enum power_supply_property psp,
+> +			union power_supply_propval *val)
+> +{
+> +	struct rt5033_charger *charger =3D container_of(psy,
+> +			struct rt5033_charger, psy);
+> +	int ret =3D 0;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_STATUS:
+> +		val->intval =3D rt5033_get_charger_state(charger);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+> +		val->intval =3D rt5033_get_charger_type(charger);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +	case POWER_SUPPLY_PROP_CURRENT_MAX:
+> +		val->intval =3D rt5033_get_charger_current(charger, psp);
+> +		break;
+
+remove the special handling of POWER_SUPPLY_PROP_CURRENT_MAX in=20
+rt5033_get_charger_current() and do it like this:
+
+case POWER_SUPPLY_PROP_CURRENT_NOW:
+    val->intval =3D rt5033_get_charger_current(charger);
+    break;
+case POWER_SUPPLY_PROP_CURRENT_MAX:
+    val->intval =3D RT5033_CHG_MAX_CURRENT;
+    break;
+
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+> +		val->intval =3D rt5033_get_charge_voltage(charger, psp);
+> +		break;
+
+same as current handling:
+
+case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+    val->intval =3D rt5033_get_charge_voltage(charger);
+    break;
+case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+    val->intval =3D RT5033_CHARGER_CONST_VOLTAGE_LIMIT_MAX;
+    break;
+
+> +	case POWER_SUPPLY_PROP_MODEL_NAME:
+> +		val->strval =3D RT5033_CHARGER_MODEL;
+> +		break;
+> +	case POWER_SUPPLY_PROP_MANUFACTURER:
+> +		val->strval =3D RT5033_MANUFACTURER;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return ret;
+> +}
+>
+> [...]
+>
+> +static int rt5033_charger_probe(struct platform_device *pdev)
+> +{
+> +	struct rt5033_charger *charger;
+> +	struct rt5033_dev *rt5033 =3D dev_get_drvdata(pdev->dev.parent);
+> +	int ret;
+> +
+> +	charger =3D devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+> +	if (!charger)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, charger);
+> +	charger->dev =3D &pdev->dev;
+> +	charger->rt5033 =3D rt5033;
+> +
+> +	charger->chg =3D rt5033_charger_dt_init(pdev);
+> +	if (IS_ERR_OR_NULL(charger->chg))
+> +		return -ENODEV;
+> +
+> +	ret =3D rt5033_charger_reg_init(charger);
+> +	if (ret)
+> +		return ret;
+> +
+> +	charger->psy.name =3D "rt5033-charger",
+> +	charger->psy.type =3D POWER_SUPPLY_TYPE_MAINS,
+> +	charger->psy.properties =3D rt5033_charger_props,
+> +	charger->psy.num_properties =3D ARRAY_SIZE(rt5033_charger_props),
+> +	charger->psy.get_property =3D rt5033_charger_get_property,
+> +
+> +	ret =3D power_supply_register(&pdev->dev, &charger->psy);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Failed to register power supply\n");
+> +		return ret;
+> +	}
+
+We have devm_power_supply_register() now, which would result in
+complete removal of the rt5033_charger_remove() function :)
+
+> +	return 0;
+> +}
+> +
+> +static int rt5033_charger_remove(struct platform_device *pdev)
+> +{
+> +	struct rt5033_charger *charger =3D platform_get_drvdata(pdev);
+> +
+> +	power_supply_unregister(&charger->psy);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct platform_device_id rt5033_charger_id[] =3D {
+> +	{ "rt5033-charger", },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(platform, rt5033_charger_id);
+> +
+> +static struct platform_driver rt5033_charger_driver =3D {
+> +	.driver =3D {
+> +		.name =3D "rt5033-charger",
+> +	},
+> +	.probe =3D rt5033_charger_probe,
+> +	.remove =3D rt5033_charger_remove,
+> +	.id_table =3D rt5033_charger_id,
+> +};
+> +module_platform_driver(rt5033_charger_driver);
+> +
+> +MODULE_DESCRIPTION("Richtek RT5033 charger driver");
+> +MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
+> +MODULE_LICENSE("GPL");
+
+This should be=20
+
+MODULE_LICENSE("GPL v2");
+
+-- Sebastian
+
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU/PxZAAoJENju1/PIO/qajtcP/RdGNBH/YUdecdKCf8af4J6r
+Nbkng1A7Z/aoGl3qOM4DFq+bJoxteylUUbv4L8K4OxgKdjXtKXHKEhitrN/jWl1l
++/E08kLeqrH3kMIHdLl9KKuWJeTNAf4BNZ7/0Lv/MI+zNfgOsrMBeS/Be0RoTFRd
+UAIPrAN33hQX9Vfq91SOqjwvHvN9SePNkxzAlNzLPKXZxGEv/uxIDWAriRs6/Egi
+wztCpmZNTWL0hqJTzy0qxM2IORwwwcefJ6sQnK+Bx0aI0bJtttyJ3hRmHYyYg/yT
+fRlHV8gEiHsQXY1FhjI/vMA2k0hB00p2eHXa2ZD5fAnxb+KL/2laSRKnZBng4Rgl
+C9EKaJu0H1LvCjpOJ9uMTgH2iRLS0LrVNWGRWUGw5PgSu4NE0jFjwyH9kpjXdTAa
+hKAou201kB9RUOMPfafAmeOXIu2rd2X7DBNcNW8RkiXYYS5vJO15nh5ZYsaPyWid
+oq4+mlSR4itHMW7n0AiA4947P1ti6Su+MoRnYqIylw2sVTZskl3F5ljdhBGw7K/f
+eavcQiY0ewNyXB5XgjEIMcBZpe8DrT0ggk75UEBwuBNa3UB4Swq0QTsz3xC9drjN
+4e/5of//t2s4/GpnNuNbrP6Mv2/uQQxB6KxyPh5jzm95i36cvBz5f7IWwFVg7I+R
+d6qyJDU1vFM+g0WGyDeO
+=cart
+-----END PGP SIGNATURE-----
+
+--HlL+5n6rz5pIUxbD--
