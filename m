@@ -1,55 +1,56 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
- IRQF_NO_SUSPEND
-Date: Mon, 9 Mar 2015 08:55:46 +0100
-Message-ID: <20150309075546.GY3989@piout.net>
-References: <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com>
- <20150307110645.GW3989@piout.net>
- <20150307112932.GA1372@amd>
- <1615214.0rkGfM1gZL@vostro.rjw.lan>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 3/5] power: max77843_battery: Add Max77843 fuel gauge
+ device driver
+Date: Mon, 9 Mar 2015 11:01:38 +0100
+Message-ID: <CAJKOXPcLa8jGBS9r=iAbuco5+9=XcjsEFazFtAWinYUQDArkUQ@mail.gmail.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+	<1425291038-18269-4-git-send-email-jaewon02.kim@samsung.com>
+	<20150307201426.GG5233@earth>
+	<54FCEB17.70809@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:47987 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750872AbbCIHzt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Mar 2015 03:55:49 -0400
-Content-Disposition: inline
-In-Reply-To: <1615214.0rkGfM1gZL@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <54FCEB17.70809@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Sylvain Rochet <gradator@gradator.net>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Alessandro Zummo <a.zummo@towertech.it>, Mike Turquette <mturquette@linaro.org>, Jason Cooper <jason@lakedaemon.net>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Wim Van Sebroeck <wim@iguana.be>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>, linux-arm-kernel@lists.infradead.org
+
+2015-03-09 1:36 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+> On 03/08/2015 05:14 AM, Sebastian Reichel wrote:
+>> Hi,
+>>
+>> On Mon, Mar 02, 2015 at 07:10:36PM +0900, Jaewon Kim wrote:
+>>> From: Beomho Seo <beomho.seo@samsung.com>
+>>>
+>>> This patch adds device driver of max77843 fuel gauge.
+>>> The driver support for battery fuel gauge in Maxim Max77843.
+>>> It is fuel-gauge systems for lithuum-ion batteries in handled and
+>>> portable devices.
+>>>
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>
+>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+>>
+>> I can't take it as is, since it depends on the private header file
+>> of PATCH 1.
+>>
+>> -- Sebastian
+>>
+>
+> This patch reviewed by Sebastian.
+> Could you Please merge that your git tree ?
 
 Hi,
 
-On 08/03/2015 at 02:12:53 +0100, Rafael J. Wysocki wrote :
-> > > I think you misunderstood, that is exactly the expected behaviour. This
-> > > is hardware defined. Once the watchdog is started, nobody can stop it.
-> > > Trying to change the mode register will result in a reset of the
-> > > SoC.
-> > 
-> > Well, it boils down to "what is stronger". Desire to suspend the
-> > system, or desire to reboot the system.
-> > 
-> > It is "echo mem > state", not "echo reboot > state".
-> > 
-> > > It is documented in the datasheet and any user wanting another behaviour
-> > > is out of luck.
-> > 
-> > Actaully, your platform should just refuse to enter suspend-to-RAM
-> > when hw watchdog is enabled.
-> 
-> Quite likely, depending on how exactly the suspend is implemented.
->
+Sorry for late response, but I finally got some time to look at this.
+This driver looks very similar to max17042_battery.c fuel gauge
+driver. Obtaining some properties looks exactly the same. The
+difference seems to be in new properties. The I2C address is the same.
 
-We've had absolutely zero complain on that. It is quite clear in the
-datasheet that failing to refresh the watchdog once started will lead to
-a reset and that it is impossible to stop.
-It is actually quite convenient to also ensure that you can actually
-wake up from suspend because that can obviously go wrong.
+I highly recommend to extend the max17042 driver instead. It already
+supports also max17047, max17050 and max77693.
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Best regards,
+Krzysztof
