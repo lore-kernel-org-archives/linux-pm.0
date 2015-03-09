@@ -1,253 +1,92 @@
-From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Subject: Re: [PATCH v3] PM-Trace: add pm-trace support for suspending phase
-Date: Mon, 09 Mar 2015 10:10:08 +0800
-Message-ID: <54FD0100.3070107@linux.intel.com>
-References: <54F5C12D.8030703@linux.intel.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: intel_soc_dts_thermal binding issues
+Date: Mon, 9 Mar 2015 02:43:14 +0000
+Message-ID: <1425868993.3944.30.camel@spandruv-mobl2>
+References: <CA+5PVA7SZ+csY8WwMkwRa-nOmsHP8SdVe4v=mUmq38RJ4LSsyA@mail.gmail.com>
+	 <744357E9AAD1214791ACBA4B0B90926301491FCF@SHSMSX101.ccr.corp.intel.com>
+	 <CA+5PVA58q==ieDyfoMEsJ=TxLXXRdNPoKC5gNWAg0MdTv4Eq+g@mail.gmail.com>
+	 <744357E9AAD1214791ACBA4B0B9092630149275F@SHSMSX101.ccr.corp.intel.com>
+	 <CA+5PVA6oBotk-SLnwYvpAp-U+sPt+pRP-0AtyAD2H+qnekEqAg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:28479 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbbCICKN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 8 Mar 2015 22:10:13 -0400
-In-Reply-To: <54F5C12D.8030703@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+5PVA6oBotk-SLnwYvpAp-U+sPt+pRP-0AtyAD2H+qnekEqAg@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <7FDF824BB143684EA37D66BD3857B465@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "jwboyer@fedoraproject.org" <jwboyer@fedoraproject.org>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-
-Any comments about this patch?
-
-
-Thanks,
-Zhonghui
-
-On 2015/3/3 22:11, Fu, Zhonghui wrote:
-> Occasionally, the system can't come back up after suspend/resume
-> due to problems of device suspending phase. This patch make
-> PM_TRACE infrastructure cover device suspending phase of
-> suspend/resume process, and the information in RTC can tell
-> developers which device suspending function make system hang.
->
-> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
-> ---
-> Changes in v3:
-> - Remove duplicate macro definition in arch/x86/include/asm/pm-trace.h.
->
->  .../x86/include/asm/{resume-trace.h => pm-trace.h} |   10 ++++++----
->  drivers/base/power/main.c                          |   20 ++++++++++++++++----
->  drivers/base/power/trace.c                         |    6 +++---
->  include/linux/{resume-trace.h => pm-trace.h}       |    9 +++++----
->  kernel/power/main.c                                |    2 +-
->  5 files changed, 31 insertions(+), 16 deletions(-)
->  rename arch/x86/include/asm/{resume-trace.h => pm-trace.h} (68%)
->  rename include/linux/{resume-trace.h => pm-trace.h} (75%)
->
-> diff --git a/arch/x86/include/asm/resume-trace.h b/arch/x86/include/asm/pm-trace.h
-> similarity index 68%
-> rename from arch/x86/include/asm/resume-trace.h
-> rename to arch/x86/include/asm/pm-trace.h
-> index 3ff1c2c..7b7ac42 100644
-> --- a/arch/x86/include/asm/resume-trace.h
-> +++ b/arch/x86/include/asm/pm-trace.h
-> @@ -1,5 +1,5 @@
-> -#ifndef _ASM_X86_RESUME_TRACE_H
-> -#define _ASM_X86_RESUME_TRACE_H
-> +#ifndef _ASM_X86_PM_TRACE_H
-> +#define _ASM_X86_PM_TRACE_H
->  
->  #include <asm/asm.h>
->  
-> @@ -14,8 +14,10 @@ do {								\
->  			     ".previous"			\
->  			     :"=r" (tracedata)			\
->  			     : "i" (__LINE__), "i" (__FILE__));	\
-> -		generate_resume_trace(tracedata, user);		\
-> +		generate_pm_trace(tracedata, user);		\
->  	}							\
->  } while (0)
->  
-> -#endif /* _ASM_X86_RESUME_TRACE_H */
-> +#define TRACE_SUSPEND(user)	TRACE_RESUME(user)
-> +
-> +#endif /* _ASM_X86_PM_TRACE_H */
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 9717d5f..3d874ec 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -23,7 +23,7 @@
->  #include <linux/mutex.h>
->  #include <linux/pm.h>
->  #include <linux/pm_runtime.h>
-> -#include <linux/resume-trace.h>
-> +#include <linux/pm-trace.h>
->  #include <linux/interrupt.h>
->  #include <linux/sched.h>
->  #include <linux/async.h>
-> @@ -1017,6 +1017,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->  	char *info = NULL;
->  	int error = 0;
->  
-> +	TRACE_DEVICE(dev);
-> +	TRACE_SUSPEND(0);
-> +
->  	if (async_error)
->  		goto Complete;
->  
-> @@ -1057,6 +1060,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->  
->  Complete:
->  	complete_all(&dev->power.completion);
-> +	TRACE_SUSPEND(error);
->  	return error;
->  }
->  
-> @@ -1078,7 +1082,7 @@ static int device_suspend_noirq(struct device *dev)
->  {
->  	reinit_completion(&dev->power.completion);
->  
-> -	if (pm_async_enabled && dev->power.async_suspend) {
-> +	if (is_async(dev)) {
->  		get_device(dev);
->  		async_schedule(async_suspend_noirq, dev);
->  		return 0;
-> @@ -1157,6 +1161,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->  	char *info = NULL;
->  	int error = 0;
->  
-> +	TRACE_DEVICE(dev);
-> +	TRACE_SUSPEND(0);
-> +
->  	__pm_runtime_disable(dev, false);
->  
->  	if (async_error)
-> @@ -1198,6 +1205,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->  		async_error = error;
->  
->  Complete:
-> +	TRACE_SUSPEND(error);
->  	complete_all(&dev->power.completion);
->  	return error;
->  }
-> @@ -1219,7 +1227,7 @@ static int device_suspend_late(struct device *dev)
->  {
->  	reinit_completion(&dev->power.completion);
->  
-> -	if (pm_async_enabled && dev->power.async_suspend) {
-> +	if (is_async(dev)) {
->  		get_device(dev);
->  		async_schedule(async_suspend_late, dev);
->  		return 0;
-> @@ -1338,6 +1346,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
->  	int error = 0;
->  	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
->  
-> +	TRACE_DEVICE(dev);
-> +	TRACE_SUSPEND(0);
-> +
->  	dpm_wait_for_children(dev, async);
->  
->  	if (async_error)
-> @@ -1444,6 +1455,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
->  	if (error)
->  		async_error = error;
->  
-> +	TRACE_SUSPEND(error);
->  	return error;
->  }
->  
-> @@ -1465,7 +1477,7 @@ static int device_suspend(struct device *dev)
->  {
->  	reinit_completion(&dev->power.completion);
->  
-> -	if (pm_async_enabled && dev->power.async_suspend) {
-> +	if (is_async(dev)) {
->  		get_device(dev);
->  		async_schedule(async_suspend, dev);
->  		return 0;
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index d94a1f5..a311cfa 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -7,7 +7,7 @@
->   * devices may be working.
->   */
->  
-> -#include <linux/resume-trace.h>
-> +#include <linux/pm-trace.h>
->  #include <linux/export.h>
->  #include <linux/rtc.h>
->  
-> @@ -154,7 +154,7 @@ EXPORT_SYMBOL(set_trace_device);
->   * it's not any guarantee, but it's a high _likelihood_ that
->   * the match is valid).
->   */
-> -void generate_resume_trace(const void *tracedata, unsigned int user)
-> +void generate_pm_trace(const void *tracedata, unsigned int user)
->  {
->  	unsigned short lineno = *(unsigned short *)tracedata;
->  	const char *file = *(const char **)(tracedata + 2);
-> @@ -164,7 +164,7 @@ void generate_resume_trace(const void *tracedata, unsigned int user)
->  	file_hash_value = hash_string(lineno, file, FILEHASH);
->  	set_magic_time(user_hash_value, file_hash_value, dev_hash_value);
->  }
-> -EXPORT_SYMBOL(generate_resume_trace);
-> +EXPORT_SYMBOL(generate_pm_trace);
->  
->  extern char __tracedata_start, __tracedata_end;
->  static int show_file_hash(unsigned int value)
-> diff --git a/include/linux/resume-trace.h b/include/linux/pm-trace.h
-> similarity index 75%
-> rename from include/linux/resume-trace.h
-> rename to include/linux/pm-trace.h
-> index f31db23..ecbde7a 100644
-> --- a/include/linux/resume-trace.h
-> +++ b/include/linux/pm-trace.h
-> @@ -1,8 +1,8 @@
-> -#ifndef RESUME_TRACE_H
-> -#define RESUME_TRACE_H
-> +#ifndef PM_TRACE_H
-> +#define PM_TRACE_H
->  
->  #ifdef CONFIG_PM_TRACE
-> -#include <asm/resume-trace.h>
-> +#include <asm/pm-trace.h>
->  #include <linux/types.h>
->  
->  extern int pm_trace_enabled;
-> @@ -14,7 +14,7 @@ static inline int pm_trace_is_enabled(void)
->  
->  struct device;
->  extern void set_trace_device(struct device *);
-> -extern void generate_resume_trace(const void *tracedata, unsigned int user);
-> +extern void generate_pm_trace(const void *tracedata, unsigned int user);
->  extern int show_trace_dev_match(char *buf, size_t size);
->  
->  #define TRACE_DEVICE(dev) do { \
-> @@ -28,6 +28,7 @@ static inline int pm_trace_is_enabled(void) { return 0; }
->  
->  #define TRACE_DEVICE(dev) do { } while (0)
->  #define TRACE_RESUME(dev) do { } while (0)
-> +#define TRACE_SUSPEND(dev) do { } while (0)
->  
->  #endif
->  
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 9a59d04..86e8157 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -11,7 +11,7 @@
->  #include <linux/export.h>
->  #include <linux/kobject.h>
->  #include <linux/string.h>
-> -#include <linux/resume-trace.h>
-> +#include <linux/pm-trace.h>
->  #include <linux/workqueue.h>
->  #include <linux/debugfs.h>
->  #include <linux/seq_file.h>
-> -- 1.7.1
->
->
-
+T24gRnJpLCAyMDE1LTAzLTA2IGF0IDA4OjUxIC0wNTAwLCBKb3NoIEJveWVyIHdyb3RlOg0KPiBP
+biBUaHUsIE1hciA1LCAyMDE1IGF0IDg6MzcgUE0sIFpoYW5nLCBSdWkgPHJ1aS56aGFuZ0BpbnRl
+bC5jb20+IHdyb3RlOg0KPiA+IFBsZWFzZSBhdHRhY2ggdGhlIGFjcGlkdW1wIG91dHB1dC4NCj4g
+DQo+IEF0dGFjaGVkIGZvciBteSBtYWNoaW5lLg0KPiANClRoZXJlIGlzIG5vIElOVDM0MDEgaW4g
+dGhlIGFjcGkgZHVtcC4gQWxzbyBubyBvbmUgcmVnaXN0ZXJlZCBJUlEgODYuDQpTbyB0aGUgcmVx
+dWVzdF9pcnEgZmFpbGluZy4NCkl0IGlzIG5vdCBhIHByb2JsZW0sIHRoaXMgcGxhdGZvcm0gY2Fu
+J3Qgc3VwcG9ydC4NCkRvIHdlIHdhbnQgdG8gc2lsZW50bHkgYmFpbCBvdXQ/DQoNClRoYW5rcywN
+ClNyaW5pdmFzDQoNCg0KPiBqb3NoDQo+IA0KPiA+DQo+ID4gVGhhbmtzLA0KPiA+IHJ1aQ0KPiA+
+DQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBsaW51eC1wbS1vd25l
+ckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmdd
+IE9uIEJlaGFsZiBPZiBKb3NoIEJveWVyDQo+ID4gU2VudDogVGh1cnNkYXksIE1hcmNoIDUsIDIw
+MTUgMTA6MzAgUE0NCj4gPiBUbzogWmhhbmcsIFJ1aQ0KPiA+IENjOiBFZHVhcmRvIFZhbGVudGlu
+OyBMaW51eCBQTSBsaXN0OyBMaW51eC1LZXJuZWxAVmdlci4gS2VybmVsLiBPcmcNCj4gPiBTdWJq
+ZWN0OiBSZTogaW50ZWxfc29jX2R0c190aGVybWFsIGJpbmRpbmcgaXNzdWVzDQo+ID4gSW1wb3J0
+YW5jZTogSGlnaA0KPiA+DQo+ID4gT24gV2VkLCBNYXIgNCwgMjAxNSBhdCA4OjU1IFBNLCBaaGFu
+ZywgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPiB3cm90ZToNCj4gPj4gV2hhdCBrZXJuZWwgYXJl
+IHlvdSB1c2luZz8NCj4gPj4gSSB0aGluayBpdCBzaG91bGQgYmUgZml4ZWQgYnkgY29tbWl0IDAx
+NGQ5ZDVkMGNjMWRhNzliYmU0OGZiYzVlMTA2OGM1NjE2MjM4ZDIsIHdoaWNoIGlzIG1lcmdlZCBp
+biAzLjE5LXJjNS4NCj4gPg0KPiA+IFRoZSByZXBvcnRlciB3aXRoIHRoZSBBU1VTIG1hY2hpbmUg
+d2FzIHJ1bm5pbmcgMy4xOC43LiAgSG93ZXZlciwgb24gbXkgTlVDIG1hY2hpbmUgSSBzdGlsbCBz
+ZWUgdGhpcyB3aXRoIDQuMC1yYzIgYW5kIHRoZSBsYXRlc3QgTGludXMgdHJlZToNCj4gPg0KPiA+
+IFtqd2JveWVyQG51Yy1jZWxlcm9uIH5dJCB1bmFtZSAtYQ0KPiA+IExpbnV4IG51Yy1jZWxlcm9u
+IDQuMC4wLTAucmMyLmdpdDEuMS5mYzIzLng4Nl82NCAjMSBTTVAgVGh1IE1hciA1DQo+ID4gMDg6
+Mzc6MjMgRVNUIDIwMTUgeDg2XzY0IHg4Nl82NCB4ODZfNjQgR05VL0xpbnV4IFtqd2JveWVyQG51
+Yy1jZWxlcm9uIH5dJCBkbWVzZyB8IGdyZXAgcmVxdWVzdF90aHJlYWRlZA0KPiA+IFsgICAxMS4x
+ODcyMzldIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90aHJlYWRlZF9pcnEgcmV0IC0y
+Mg0KPiA+IFsgICAxMS4yNjE3MzhdIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90aHJl
+YWRlZF9pcnEgcmV0IC0yMg0KPiA+IFtqd2JveWVyQG51Yy1jZWxlcm9uIH5dJCBjYXQgL3Byb2Mv
+Y3B1aW5mbyB8IGdyZXAgIm1vZGVsIG5hbWUiDQo+ID4gbW9kZWwgbmFtZSAgICA6IEludGVsKFIp
+IENlbGVyb24oUikgQ1BVICBOMjgyMCAgQCAyLjEzR0h6DQo+ID4gbW9kZWwgbmFtZSAgICA6IElu
+dGVsKFIpIENlbGVyb24oUikgQ1BVICBOMjgyMCAgQCAyLjEzR0h6DQo+ID4gW2p3Ym95ZXJAbnVj
+LWNlbGVyb24gfl0kDQo+ID4NCj4gPiBUaGUgNC4wLjAtcmMyLmdpdDEuMSBhYm92ZSBjb3JyZXNw
+b25kcyB0byBMaW51eCB2NC4wLXJjMi0xNTAtZzY1ODc0NTdiNGIzZCBpbiBtYWlubGluZS4gIFdl
+IGFyZW4ndCBjYXJyeWluZyBhbnkgcGF0Y2hlcyB0aGF0IHdvdWxkIGltcGFjdCB0aGlzLg0KPiA+
+DQo+ID4gVGhlIGNvbW1pdCB5b3UgcG9pbnRlZCB0byBzZWVtcyB0byBpbXBseSB0aGF0IGVpdGhl
+ciBJTlQzNDBYX1RIRVJNQUwgb3IgSU5URUxfU09DX0RUU19USEVSTUFMIGNvdWxkIGJlIHNldCwg
+YnV0IG5vdCBib3RoLiAgSW4gRmVkb3JhLCB3ZSBoYXZlIHRoZW0gYm90aCBlbmFibGVkIGFzIG1v
+ZHVsZXM6DQo+ID4NCj4gPiBbandib3llckBudWMtY2VsZXJvbiB+XSQgZ3JlcCBfVEhFUk1BTD1t
+DQo+ID4gL2Jvb3QvY29uZmlnLTQuMC4wLTAucmMyLmdpdDEuMS5mYzIzLng4Nl82NA0KPiA+IENP
+TkZJR19YODZfUEtHX1RFTVBfVEhFUk1BTD1tDQo+ID4gQ09ORklHX0lOVEVMX1NPQ19EVFNfVEhF
+Uk1BTD1tDQo+ID4gQ09ORklHX0lOVDM0MFhfVEhFUk1BTD1tDQo+ID4gW2p3Ym95ZXJAbnVjLWNl
+bGVyb24gfl0kDQo+ID4NCj4gPiBNYXliZSB0aGUgY29tbWl0IHNob3VsZCBiZSBjaGVja2luZyBm
+b3IgSU5URUxfU09DX0RUU19USEVSTUFMIHVuY29uZGl0aW9uYWxseSwgYW5kIG5vdCBhcyBhbiAj
+ZWxmaT8NCj4gPg0KPiA+IGpvc2gNCj4gPg0KPiA+Pg0KPiA+PiBUaGFua3MsDQo+ID4+IHJ1aQ0K
+PiA+Pg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBqd2JveWVy
+QGdtYWlsLmNvbSBbbWFpbHRvOmp3Ym95ZXJAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YgSm9zaA0K
+PiA+PiBCb3llcg0KPiA+PiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDQsIDIwMTUgMTA6MDUgUE0N
+Cj4gPj4gVG86IFpoYW5nLCBSdWk7IEVkdWFyZG8gVmFsZW50aW4NCj4gPj4gQ2M6IExpbnV4IFBN
+IGxpc3Q7IExpbnV4LUtlcm5lbEBWZ2VyLiBLZXJuZWwuIE9yZw0KPiA+PiBTdWJqZWN0OiBpbnRl
+bF9zb2NfZHRzX3RoZXJtYWwgYmluZGluZyBpc3N1ZXMNCj4gPj4gSW1wb3J0YW5jZTogSGlnaA0K
+PiA+Pg0KPiA+PiBIaSBBbGwsDQo+ID4+DQo+ID4+IFdlJ3ZlIHNlZW4gYSBudW1iZXIgb2YgcmVw
+b3J0cyB3aGVyZSBwZW9wbGUgc2VlOg0KPiA+Pg0KPiA+PiBbICAgMjAuNDk5NDI3XSBpbnRlbF9z
+b2NfZHRzX3RoZXJtYWw6IHJlcXVlc3RfdGhyZWFkZWRfaXJxIHJldCAtMjINCj4gPj4gWyAgIDIw
+LjUxOTE2MF0gaW50ZWxfc29jX2R0c190aGVybWFsOiByZXF1ZXN0X3RocmVhZGVkX2lycSByZXQg
+LTIyDQo+ID4+IFsgICAyMC41MzI2NjBdIGludGVsX3NvY19kdHNfdGhlcm1hbDogcmVxdWVzdF90
+aHJlYWRlZF9pcnEgcmV0IC0yMg0KPiA+Pg0KPiA+PiBpbiB0aGVpciBib290IGxvZ3MuICBUaGV5
+IHZpZXcgdGhpcyBhcyBhIGtlcm5lbCBidWcgYW5kIHJlcG9ydCBpcyBhcyBzdWNoLiAgVGhlIGFi
+b3ZlIGxvZyBjYW1lIGZyb20gYW4gQVNVUyB4MjAwbWEgbWFjaGluZSwgd2hpY2ggaGFzIGEgcXVh
+ZCBjb3JlIEJheXRyYWlsLU0gUGVudGl1bSBDUFUgKE4zNTMwKS4NCj4gPj4NCj4gPj4gSSBjYW4n
+dCB0ZWxsIGlmIHRoZSBpc3N1ZSBpcyBiZWNhdXNlIHRoZSBkcml2ZXIgaXMgdHJ5aW5nIHRvIGJp
+bmQgdG8gYWxsIDQgY29yZXMgYW5kIG9ubHkgQ1BVMCB3b3Jrcywgb3Igd2hhdCBvdGhlciBpc3N1
+ZSB3b3VsZCBjYXVzZSB0aGlzLg0KPiA+PiBJIHBlcnNvbmFsbHkgaGF2ZSBhIENlbGVyb24gYmFz
+ZWQgTlVDIHdpdGggYSBOMjgyMCB0aGF0IGdldHMgdGhlIGVycm9yIGFib3ZlIGZvciBib3RoIGNv
+cmVzIGFuZCB0aGUgZHJpdmVyIGRvZXNuJ3QgbG9hZCBhdCBhbGwuDQo+ID4+DQo+ID4+IElzIHRo
+ZXJlIHNvbWV0aGluZyBlbHNlIHRoZSBkcml2ZXIgc2hvdWxkIGJlIGRvaW5nIHRvIGJpbmQgdG8g
+dGhlIHZhcmlvdXMgQ1BVcz8gIElmIHRoZXJlJ3Mgbm90aGluZyBlbHNlIGl0IGNhbiBrZXkgb2Zm
+IG9mLCBjYW4gd2UgZHJvcCB0aGUgcHJfZXJyIHNvIGl0IHN0b3BzIHNob3dpbmcgdXAgaW4gZG1l
+c2c/DQo+ID4+DQo+ID4+IGpvc2gNCj4gPiAtLQ0KPiA+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
+cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1wbSIgaW4gdGhlIGJvZHkg
+b2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8g
+aW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQoNCg==
