@@ -1,137 +1,127 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 8/9] clocksource: atmel-st: use syscon/regmap
-Date: Mon, 09 Mar 2015 12:13:54 +0100
-Message-ID: <54FD8072.5010803@linaro.org>
-References: <1425570594-13124-1-git-send-email-alexandre.belloni@free-electrons.com> <1425570594-13124-9-git-send-email-alexandre.belloni@free-electrons.com> <54F96896.6040204@linaro.org> <20150306084727.GH3989@piout.net>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: twl4030_charger: need changes to get probed?
+Date: Mon, 9 Mar 2015 12:14:10 +0100
+Message-ID: <20150309111410.GB3914@earth>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <20150224043352.4243.11227.stgit@notabene.brown>
+ <20150302210926.GP13270@amd>
+ <20150305173350.50502b95@notabene.brown>
+ <20150306212417.GA24169@amd>
+ <20150307210102.GL5233@earth>
+ <20150309110653.7532613c@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150306084727.GH3989-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="1LKvkjL3sHcu1TtY"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:57720 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753957AbbCILO1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Mar 2015 07:14:27 -0400
+Content-Disposition: inline
+In-Reply-To: <20150309110653.7532613c@notabene.brown>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On 03/06/2015 09:47 AM, Alexandre Belloni wrote:
-> On 06/03/2015 at 09:43:02 +0100, Daniel Lezcano wrote :
->> On 03/05/2015 04:49 PM, Alexandre Belloni wrote:
->>> The register range from the system timer is also used by the watchd=
-og driver.
->>> Use a regmap to handle concurrent accesses.
->>>
->>> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.=
-com>
->>> Acked-by: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->>> ---
->>>   drivers/clocksource/timer-atmel-st.c | 99 ++++++++++++++---------=
--------------
->>>   1 file changed, 37 insertions(+), 62 deletions(-)
->>>
->>> diff --git a/drivers/clocksource/timer-atmel-st.c b/drivers/clockso=
-urce/timer-atmel-st.c
->>> index 7d062ab32674..c4a52e32675e 100644
->>> --- a/drivers/clocksource/timer-atmel-st.c
->>> +++ b/drivers/clocksource/timer-atmel-st.c
->>> @@ -24,19 +24,19 @@
->>>   #include <linux/irq.h>
->>>   #include <linux/clockchips.h>
->>>   #include <linux/export.h>
->>> -#include <linux/of.h>
->>> -#include <linux/of_address.h>
->>> +#include <linux/mfd/syscon.h>
->>> +#include <linux/mfd/syscon/atmel-st.h>
->>>   #include <linux/of_irq.h>
->>> +#include <linux/regmap.h>
->>>
->>>   #include <asm/mach/time.h>
->>>
->>> -#include <mach/at91_st.h>
->>> -#include <mach/hardware.h>
->>> -
->>>   static unsigned long last_crtr;
->>>   static u32 irqmask;
->>>   static struct clock_event_device clkevt;
->>> +static struct regmap *regmap_st;
->>>
->>> +#define AT91_SLOW_CLOCK		32768
->>>   #define RM9200_TIMER_LATCH	((AT91_SLOW_CLOCK + HZ/2) / HZ)
->>>
->>>   /*
->>> @@ -46,11 +46,11 @@ static struct clock_event_device clkevt;
->>>    */
->>>   static inline unsigned long read_CRTR(void)
->>>   {
->>> -	unsigned long x1, x2;
->>> +	unsigned int x1, x2;
->>>
->>> -	x1 =3D at91_st_read(AT91_ST_CRTR);
->>> +	regmap_read(regmap_st, AT91_ST_CRTR, &x1);
->>>   	do {
->>> -		x2 =3D at91_st_read(AT91_ST_CRTR);
->>> +		regmap_read(regmap_st, AT91_ST_CRTR, &x2);
->>>   		if (x1 =3D=3D x2)
->>>   			break;
->>>   		x1 =3D x2;
->>> @@ -63,7 +63,10 @@ static inline unsigned long read_CRTR(void)
->>>    */
->>>   static irqreturn_t at91rm9200_timer_interrupt(int irq, void *dev_=
-id)
->>>   {
->>> -	u32	sr =3D at91_st_read(AT91_ST_SR) & irqmask;
->>> +	u32 sr;
->>> +
->>> +	regmap_read(regmap_st, AT91_ST_SR, &sr);
->>> +	sr &=3D irqmask;
->>>
->>>   	/*
->>>   	 * irqs should be disabled here, but as the irq is shared they a=
-re only
->>> @@ -96,7 +99,7 @@ static struct irqaction at91rm9200_timer_irq =3D =
-{
->>>   	.name		=3D "at91_tick",
->>>   	.flags		=3D IRQF_SHARED | IRQF_TIMER | IRQF_IRQPOLL,
->>>   	.handler	=3D at91rm9200_timer_interrupt,
->>> -	.irq		=3D NR_IRQS_LEGACY + AT91_ID_SYS,
->>> +	.irq		=3D 0,
->>
->> Is this change related to regmap ?
->>
->
-> It is related to the removing of hardware.h. I can do that in a separ=
-ate
-> patch if you prefer.
-
-Yeah, because it is not obvious to see a connection between the removal=
-=20
-of hardware.h and the syscon/regmap changes.
-
-I would suggest you create a patch to replace setup_irq with=20
-register_irq so that will remove this structure and the irq=20
-initialization to zero.
-
->> By the way, perhaps take the opportunity to replace setup_irq by req=
-uest_irq
->> (and check the return value) ?
->>
->
-> I tried and it fails, I didn't investigate yet.
-
-It shouldn't be a big deal, register_irq is more or less a wrapper to=20
-setup_irq.
+To: NeilBrown <neilb@suse.de>
+Cc: Pavel Machek <pavel@ucw.cz>, pali.rohar@gmail.com, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, linux-pm@vger.kernel.org
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+--1LKvkjL3sHcu1TtY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Hi,
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdo=
-g" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Mon, Mar 09, 2015 at 11:06:53AM +1100, NeilBrown wrote:
+> On Sat, 7 Mar 2015 22:01:02 +0100 Sebastian Reichel <sre@debian.org> wrot=
+e:
+> > platform_driver_probe() does not support deferred probing.
+> >=20
+> > Neil, can you take this patch into your series for the next round?
+>=20
+> I could, but I do wonder if it is the right thing to do.
+>=20
+> Shouldn't we fix platform_driver_probe() to support deferred probing.
+
+well most drivers use platform_driver_register anyways. Other
+subsystems, like e.g. i2c have converted all drivers already.
+In drivers/power/ there are only three drivers using
+platform_driver_probe:
+
+drivers/power/avs/smartreflex.c - ok here
+drivers/power/reset/brcmstb-reboot.c - looks ok, too
+drivers/power/twl4030_charger.c - should probably be converted
+
+> As I understand it, it refused to retry a probe if there is an error, and=
+ the
+> comments suggest that such retrying is avoided because it would be a waste
+> of time:
+>=20
+> 	/*
+> 	 * Prevent driver from requesting probe deferral to avoid further
+> 	 * futile probe attempts.
+> 	 */
+>=20
+> In this case, it isn't futile.
+
+All drivers would benefit of being probed again if they returned
+EPROBEDEFER, but their probe function can't be called again if
+they use driver_platform_probe, since the probe function will be
+unloaded when it should be called again. Apart from that the
+=2Eprobe function pointer is not set. Thus trying to probe the
+driver again at a later point is "a waste of time" and "futile",
+since it will definitely fail.
+
+> Earlier there is a comment saying:
+>=20
+>  * Use this instead of platform_driver_register() when you know the device
+>  * is not hotpluggable and has already been registered, and you want to
+>  * remove its run-once probe() infrastructure from memory after the driver
+>  * has bound to the device.
+>=20
+> I presume all this applies.  I assume that the only problem is a probe-or=
+der
+> thing.  So maybe we should fix platform_driver_probe() to do the right th=
+ing
+> with -EPROBEDEFER??
+>=20
+> Trouble is, I really don't understand the  point or mechanism for
+> platform_driver_probe(), so I cannot suggest anything.
+> But I have been annoyed before that platform_driver_probe doesn't cope wi=
+th
+> EPROBEDEFER, so I would like it fixed.
+
+platform_driver_probe is not about probe-order, but about not having
+the probe function in memory once the driver is loaded. So the probe
+function cannot be called again. If you don't want this use
+platform_driver_register, as most drivers actually do.
+
+I guess we should add some coccinelle scripts for detection of
+potentially broken drivers (e.g. everything requesting gpios/pinctrl
+together with platform_driver_register).
+
+-- Sebastian
+
+--1LKvkjL3sHcu1TtY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJU/YB/AAoJENju1/PIO/qaW88P/ig40368TO4XO7Tk+tN9f8t8
+FTmjysb5RVkWZApJwFE/chA9/jkUvH1xhcM1HkHR0LmI2wfn5irGHBfOp4UHBtRT
++XHxR17aDLO2QNQ4tBbtelswWPgvsMB+LnixhmhPjFVZVVIlqCUkLVMFN508ZRmX
+1XXST5Ksr8yjjFvRyoDSN6p+EVjnt0hq07+2WSS2IjjRjhTKf2bmpWUCqd7hPxxg
+wUsywuyyHBFo4QXpmdDT3qwX07sGv4bJbTB848vXKEjJtquCxuuMus7JMevlMtbm
+5gfaiEiZzxvj12Zvm/wTVUq2M1m91r7YzhptC4uDacGf1aLri45HrjA2BysOh2SA
+S7sTDpk0hedYEO+nGez3qsc3MNyLzRNBA6qNAlkFETfP0h8TMSvv1cGeGWhbYL5/
+95YuMEpjOOQsnKy3sUAUYRZduAJW/Xpz8n8JLrMOZOG7l3740xBMHzyx/BsLtNro
+hIcmutXZxVtYyrsemNTty7zFEefCoFOO6bz8o95jZKyVt1/CXpAwjL7c5YY6YtcO
+xURoGfLc4ZgRCb9j1mZJFJ5fygVgdNmK7yauFKEVr7wlillNkv7cFyoIIbepPpLP
+dpr6/xreEMh8izu/AWF2FO987FZxT8BBhgwXBrd+DSoFp5DEfegEA7ZVGWnmKBSL
+icNJtGDaA+G7HRDi3JXB
+=OpG1
+-----END PGP SIGNATURE-----
+
+--1LKvkjL3sHcu1TtY--
