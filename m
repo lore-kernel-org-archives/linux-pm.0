@@ -1,65 +1,24 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC/PATCH 0/6] Add CPUIdle support for Renesas SoCs
-Date: Mon, 09 Mar 2015 16:32:26 +0100
-Message-ID: <54FDBD0A.5060001@linaro.org>
-References: <1425444946-3084-1-git-send-email-keita.kobayashi.ym@renesas.com> <54F89A23.1060008@linaro.org> <54F97599.7050904@renesas.com> <20150309152155.GC456@linaro.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [v4,3/9] watchdog: at91rm9200: use the system timer syscon
+Date: Mon, 9 Mar 2015 08:33:31 -0700
+Message-ID: <20150309153331.GA7875@roeck-us.net>
+References: <1425570594-13124-4-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20150309152155.GC456@linaro.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, horms@verge.net.au, rjw@rjwysocki.net, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1425570594-13124-4-git-send-email-alexandre.belloni@free-electrons.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Lee Jones <lee.jones@linaro.org>, Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/09/2015 04:21 PM, Lina Iyer wrote:
-> On Fri, Mar 06 2015 at 02:38 -0700, keita kobayashi wrote:
->> Hi Daniel
+On Thu, Mar 05, 2015 at 04:49:48PM +0100, Alexandre Belloni wrote:
+> Use a syscon regmap to access the system timer registers.
+> 
+> Also, rename the driver atmel_st_watchdog to stop conflicting with
+> at91sam9_wdt.c
+> 
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-[ ... ]
-
->>>
->>> Hi Keita,
->>>
->>> the platform approach to pass private data from the arch specific t=
-o
->>> the cpuidle driver no longer accepted. Unfortunately, there is no
->>> alternate solution upstream.
->>>
->>> But hopefully, there is a patchset [1] submitted for upstreaming
->>> which unify arm32/64 into a single generic cpuidle driver and use t=
-he
->>> DT to define the idle functions to be used.
->>>
->>> I suggest you have a look at this patchset if it can fit your need.
->>>
->>>   -- Daniel
->>>
->>> [1] https://lkml.org/lkml/2015/3/3/271
->>
->> Thank you for information.
->> I will take a look at the patch series.
->
-> Hi Kieta,
->
-> Please also have a look at the v15 of the cpuidle support for QCOM So=
-C.
-> Sent just now.  It is based on [1].
-
-Lina's patchset is available at:
-
-https://www.mail-archive.com/devicetree@vger.kernel.org/msg64700.html
-
-Thanks
-   -- Daniel
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
