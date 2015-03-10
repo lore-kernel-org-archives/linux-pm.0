@@ -1,45 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Bad rpath in cpupower with 4.0-rcX
-Date: Tue, 10 Mar 2015 23:30:44 +0100
-Message-ID: <15697793.jrEQ5UURAe@vostro.rjw.lan>
-References: <20150306134745.GC4801@hansolo.redhat.com> <CA+5PVA6Jo9LTbhduCs0eYXJxmdG-39PR-fOKmABNLO2F3btXUA@mail.gmail.com>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
+Date: Tue, 10 Mar 2015 23:31:52 +0100
+Message-ID: <1901056.Mqyykpv3e9@vostro.rjw.lan>
+References: <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com> <1592385.fqRVVyPSPE@vostro.rjw.lan> <20150310213317.GK9188@piout.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60066 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64773 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752477AbbCJWHA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2015 18:07:00 -0400
-In-Reply-To: <CA+5PVA6Jo9LTbhduCs0eYXJxmdG-39PR-fOKmABNLO2F3btXUA@mail.gmail.com>
+	with SMTP id S1752311AbbCJWII (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2015 18:08:08 -0400
+In-Reply-To: <20150310213317.GK9188@piout.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Boyer <jwboyer@fedoraproject.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Renninger <trenn@suse.de>, "sriram@marirs.net.in" <sriram@marirs.net.in>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Sylvain Rochet <gradator@gradator.net>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Alessandro Zummo <a.zummo@towertech.it>, Mike Turquette <mturquette@linaro.org>, Jason Cooper <jason@lakedaemon.net>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Wim Van Sebroeck <wim@iguana.be>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, March 10, 2015 08:33:54 AM Josh Boyer wrote:
-> On Fri, Mar 6, 2015 at 8:47 AM, Josh Boyer <jwboyer@fedoraproject.org> wrote:
-> > Hi All,
-> >
-> > Commit 5c1de006e8e66 (cpupower Makefile change to help run the tool
-> > without 'make install') added an rpath to the cpupower binary.  From
-> > what I can understand, this is to make it easier to run cpupower from
-> > the local build directory without having to run make install.  It does
-> > accomplish that, but it also leaves the binary with the rpath in it
-> > which is considered bad practice.  It also causes cpupower to fail in
-> > rpmbuild with the following error:
-> >
-> > ERROR   0004: file '/usr/bin/cpupower' contains an insecure rpath './'
-> > in [./]
-> > error: Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
-> >     Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
-> >
-> > I understand the want for eased development, but couldn't people just
-> > set LD_LIBRARY_PATH instead?
+On Tuesday, March 10, 2015 10:33:17 PM Alexandre Belloni wrote:
+> Hi,
 > 
-> No comments on this?  Should I just send a revert patch instead?
+> On 09/03/2015 at 15:30:01 +0100, Rafael J. Wysocki wrote :
+> > > > > Actaully, your platform should just refuse to enter suspend-to-RAM
+> > > > > when hw watchdog is enabled.
+> > > > 
+> > > > Quite likely, depending on how exactly the suspend is implemented.
+> > > >
+> > > 
+> > > We've had absolutely zero complain on that. It is quite clear in the
+> > > datasheet that failing to refresh the watchdog once started will lead to
+> > > a reset and that it is impossible to stop.
+> > > It is actually quite convenient to also ensure that you can actually
+> > > wake up from suspend because that can obviously go wrong.
+> > 
+> > I gather then that the suspend implementation is such that touching the
+> > watchdog periodically while suspended is not a problem.
+> > 
+> > Again, can you please tell me how suspend is implemented on at91?
+> > 
+> 
+> It actually depends on the architecture (at91rm9200, at91sam9 or sama5)
+> but basically, the clocks are switched off in almost all the peripheral
+> drivers then the ram self refresh activated, the master clock is
+> switched off using code running from SRAM and the core is then waiting
+> for interrupt.
 
-You can do that.
+OK, so it looks like enable_irq_wake() doesn't actually affect the hardware
+on those platforms, is that correct?
 
 
 -- 
