@@ -1,99 +1,36 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC PATCH v15 01/11] ARM: cpuidle: Register per cpuidle device
-Date: Tue, 10 Mar 2015 10:37:34 +0000
-Message-ID: <20150310103734.GK8656@n2100.arm.linux.org.uk>
-References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
- <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
+From: Josh Boyer <jwboyer@fedoraproject.org>
+Subject: Re: Bad rpath in cpupower with 4.0-rcX
+Date: Tue, 10 Mar 2015 08:33:54 -0400
+Message-ID: <CA+5PVA6Jo9LTbhduCs0eYXJxmdG-39PR-fOKmABNLO2F3btXUA@mail.gmail.com>
+References: <20150306134745.GC4801@hansolo.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:35002 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbbCJKhp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2015 06:37:45 -0400
-Content-Disposition: inline
-In-Reply-To: <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150306134745.GC4801@hansolo.redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Renninger <trenn@suse.de>
+Cc: "sriram@marirs.net.in" <sriram@marirs.net.in>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com
 
-On Mon, Mar 09, 2015 at 09:16:36AM -0600, Lina Iyer wrote:
-> @@ -105,18 +109,46 @@ static int __init arm_idle_init(void)
->  	if (ret <= 0)
->  		return ret ? : -ENODEV;
->  
-> +
+On Fri, Mar 6, 2015 at 8:47 AM, Josh Boyer <jwboyer@fedoraproject.org> wrote:
+> Hi All,
+>
+> Commit 5c1de006e8e66 (cpupower Makefile change to help run the tool
+> without 'make install') added an rpath to the cpupower binary.  From
+> what I can understand, this is to make it easier to run cpupower from
+> the local build directory without having to run make install.  It does
+> accomplish that, but it also leaves the binary with the rpath in it
+> which is considered bad practice.  It also causes cpupower to fail in
+> rpmbuild with the following error:
+>
+> ERROR   0004: file '/usr/bin/cpupower' contains an insecure rpath './'
+> in [./]
+> error: Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
+>     Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
+>
+> I understand the want for eased development, but couldn't people just
+> set LD_LIBRARY_PATH instead?
 
-A bit better formatting would be nice - you don't need the extra blank
-line here.
+No comments on this?  Should I just send a revert patch instead?
 
-> +	ret = cpuidle_register_driver(drv);
-> +	if (ret) {
-> +		pr_err("Failed to register cpuidle driver\n");
-> +		return ret;
-> +	}
-> +
->  	/*
->  	 * Call arch CPU operations in order to initialize
->  	 * idle states suspend back-end specific data
->  	 */
->  	for_each_possible_cpu(cpu) {
-> +
-
-This blank line is not necessary either.
-
->  		ret = arm_cpuidle_init(cpu);
-
-However, a blank line here would be a good thing.
-
-> +		/*
-> +		 * This cpu does not support any idle states
-> +		 */
-
-Also, formatting this as /* This cpu does not support any idle states */ is
-acceptable too, and doesn't waste as many lines.
-
-> +		if (ret == -ENOSYS)
-> +			continue;
-> +
->  		if (ret) {
->  			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
->  			return ret;
->  		}
-> +
-> +		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-> +		if (!dev)
-> +			return -ENOMEM;
-> +
-> +		dev->cpu = cpu;
-> +		ret = cpuidle_register_device(dev);
-> +		if (ret) {
-> +			pr_err("Failed to register cpuidle device for CPU %d\n",
-> +			       cpu);
-> +			return ret;
-
-It looks like we leak the 'dev' allocation here.
-
-Also, other error paths, it looks like we leave the previously registered
-cpuidle devices in place.  That may be acceptable if the intention is to
-initialise as many CPUs as possible - but we then miss the
-cpuidle_register() call below, which seems to make the registered devices
-useless.  It's a little inconsistent.
-
-Also, it's useful to report why something fails - printing the error code
-can help debugging if it isn't already printed elsewhere.
-
-> +		}
-> +
-> +		per_cpu(cpuidle_arm_dev, cpu) = dev;
->  	}
->  
-> -	return cpuidle_register(drv, NULL);
-> +	return 0;
->  }
->  device_initcall(arm_idle_init);
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+josh
