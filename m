@@ -1,47 +1,51 @@
-From: Michael Scott <michael.scott@linaro.org>
-Subject: [PATCH v3.10-stable] PM / QoS: remove duplicate call to pm_qos_update_target
-Date: Tue, 10 Mar 2015 13:15:02 -0700
-Message-ID: <1426018502-16010-1-git-send-email-michael.scott@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-stable@vger.kernel.org, linux-pm@vger.kernel.org, Michael Scott <michael.scott@linaro.org>
+From: Marek Belisko <marek@goldelico.com>
+Subject: [PATCH v4 0/6] Convert twl4030_madc_battery to IIO consumer and add DT aupport
+Date: Tue, 10 Mar 2015 22:27:21 +0100
+Message-ID: <1426022847-30912-1-git-send-email-marek@goldelico.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f178.google.com ([74.125.82.178]:45429 "EHLO
+	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbbCJV1p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2015 17:27:45 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: bcousson@baylibre.com, tony@atomide.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek@goldelico.com>
 
-In 3.10.y backport patch 1dba303727f52ea062580b0a9b3f0c3b462769cf,
-the logic to call pm_qos_update_target was moved to __pm_qos_update_request.
-However, the original code was left in function pm_qos_update_request.
+This patches adding support for twl4030_madc_battery to use twl4030_madc iio framework + DT support.
+Patches was tested on gta04 board. twl4030_madc_battery driver is converted in
+first patch to iio consumer and in next patches is added support for devicetree
++ some small fixes for module autoloading.
 
-Currently, if pm_qos_update_request is called where new_value !=
-req->node.prio then pm_qos_update_target will be called twice in a row.
-Once in pm_qos_update_request and then again in the following call to
-_pm_qos_update_request.
+Changes from V3:
+- added ti prefix for volt-to-capacity-discharging/charging-map properties
 
-Removing the left over code from pm_qos_update_request stops this second
-call to pm_qos_update_target where the work of removing / re-adding the
-new_value in the constraints list would be duplicated.
+Changes from V2:
+- fix property names
+- add MODULE_DEVICE_TABLE and MODULE_ALIAS
 
-Signed-off-by: Michael Scott <michael.scott@linaro.org>
----
- kernel/power/qos.c | 6 ------
- 1 file changed, 6 deletions(-)
+Changes from V1:
+- use iio_read_channel_processed instead iio_read_channel_processed
+- convert probe to use devm_ as part of adding error handling for iio
+- free iio channels on error and on module removal
 
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 25cf89b..8703fc7 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -369,12 +369,6 @@ void pm_qos_update_request(struct pm_qos_request *req,
- 	}
- 
- 	cancel_delayed_work_sync(&req->work);
--
--	if (new_value != req->node.prio)
--		pm_qos_update_target(
--			pm_qos_array[req->pm_qos_class]->constraints,
--			&req->node, PM_QOS_UPDATE_REQ, new_value);
--
- 	__pm_qos_update_request(req, new_value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
+[1] - https://lkml.org/lkml/2014/2/26/482dd
+
+Marek Belisko (6):
+  power: twl4030-madc-battery: Convert to iio consumer.
+  power: twl4030_madc_battery: Add device tree support
+  Documentation: DT: Document twl4030-madc-battery bindings
+  ARM: dts: omap3-gta04: Add battery support
+  power: twl4030_madc_battery: Add of_twl4030_madc_match to
+    MODULE_DEVICE_TABLE
+  power: twl4030_madc_battery: Add missing MODULE_ALIAS
+
+ .../bindings/power_supply/twl4030_madc_battery.txt |  43 +++++
+ arch/arm/boot/dts/omap3-gta04.dtsi                 |  30 ++++
+ drivers/power/twl4030_madc_battery.c               | 183 +++++++++++++++++----
+ 3 files changed, 221 insertions(+), 35 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+
 -- 
-2.1.4
+1.9.1
+
