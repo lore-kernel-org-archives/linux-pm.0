@@ -1,103 +1,51 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC PATCH v15 01/11] ARM: cpuidle: Register per cpuidle device
-Date: Tue, 10 Mar 2015 08:57:10 -0600
-Message-ID: <20150310145710.GB3727@linaro.org>
-References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
- <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
- <20150310103734.GK8656@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150310103734.GK8656@n2100.arm.linux.org.uk>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH] thermal: Do not log an error if thermal_zone_get_temp returns -EAGAIN
+Date: Tue, 10 Mar 2015 16:06:46 +0100
+Message-ID: <1426000006-15729-1-git-send-email-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:39178 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753617AbbCJPHB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Mar 2015 11:07:01 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 
-On Tue, Mar 10 2015 at 04:37 -0600, Russell King - ARM Linux wrote:
->On Mon, Mar 09, 2015 at 09:16:36AM -0600, Lina Iyer wrote:
->> @@ -105,18 +109,46 @@ static int __init arm_idle_init(void)
->>  	if (ret <= 0)
->>  		return ret ? : -ENODEV;
->>
->> +
->
->A bit better formatting would be nice - you don't need the extra blank
->line here.
->
->> +	ret = cpuidle_register_driver(drv);
->> +	if (ret) {
->> +		pr_err("Failed to register cpuidle driver\n");
->> +		return ret;
->> +	}
->> +
->>  	/*
->>  	 * Call arch CPU operations in order to initialize
->>  	 * idle states suspend back-end specific data
->>  	 */
->>  	for_each_possible_cpu(cpu) {
->> +
->
->This blank line is not necessary either.
->
->>  		ret = arm_cpuidle_init(cpu);
->
->However, a blank line here would be a good thing.
->
-Sure.
->> +		/*
->> +		 * This cpu does not support any idle states
->> +		 */
->
->Also, formatting this as /* This cpu does not support any idle states */ is
->acceptable too, and doesn't waste as many lines.
->
-Will fix.
->> +		if (ret == -ENOSYS)
->> +			continue;
->> +
->>  		if (ret) {
->>  			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
->>  			return ret;
->>  		}
->> +
->> +		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
->> +		if (!dev)
->> +			return -ENOMEM;
->> +
->> +		dev->cpu = cpu;
->> +		ret = cpuidle_register_device(dev);
->> +		if (ret) {
->> +			pr_err("Failed to register cpuidle device for CPU %d\n",
->> +			       cpu);
->> +			return ret;
->
->It looks like we leak the 'dev' allocation here.
->
+Some temperature sensors only get updated every few seconds and while
+waiting for the first irq reporting a (new) temperature to happen there
+get_temp operand will return -EAGAIN as it does not have any data to report
+yet.
 
-True, I will amend that.
+Not logging an error in this case avoids messages like these from showing
+up in dmesg on affected systems:
 
->Also, other error paths, it looks like we leave the previously registered
->cpuidle devices in place.  That may be acceptable if the intention is to
->initialise as many CPUs as possible - but we then miss the
->cpuidle_register() call below, which seems to make the registered devices
->useless.  It's a little inconsistent.
->
->Also, it's useful to report why something fails - printing the error code
->can help debugging if it isn't already printed elsewhere.
->
-Fair point.
->> +		}
->> +
->> +		per_cpu(cpuidle_arm_dev, cpu) = dev;
->>  	}
->>
->> -	return cpuidle_register(drv, NULL);
->> +	return 0;
->>  }
->>  device_initcall(arm_idle_init);
->
->-- 
->FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
->according to speedtest.net.
+[    1.219353] thermal thermal_zone0: failed to read out thermal zone 0
+[    2.015433] thermal thermal_zone0: failed to read out thermal zone 0
+[    2.416737] thermal thermal_zone0: failed to read out thermal zone 0
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/thermal/thermal_core.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 48491d1..e3cbf34 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -458,8 +458,10 @@ static void update_temperature(struct thermal_zone_device *tz)
+ 
+ 	ret = thermal_zone_get_temp(tz, &temp);
+ 	if (ret) {
+-		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
+-			 tz->id);
++		if (ret != -EAGAIN)
++			dev_warn(&tz->device,
++				 "failed to read out thermal zone %d\n",
++				 tz->id);
+ 		return;
+ 	}
+ 
+-- 
+2.3.1
+
