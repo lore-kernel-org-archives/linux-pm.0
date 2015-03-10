@@ -1,116 +1,103 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
- device driver
-Date: Tue, 10 Mar 2015 22:44:33 +0900
-Message-ID: <54FEF541.6000305@samsung.com>
-References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
- <1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
- <20150307201340.GF5233@earth> <54FCEABE.9000007@samsung.com>
- <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
- <54FD880E.30903@samsung.com> <1425903199.13415.9.camel@AMDC1943>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC PATCH v15 01/11] ARM: cpuidle: Register per cpuidle device
+Date: Tue, 10 Mar 2015 08:57:10 -0600
+Message-ID: <20150310145710.GB3727@linaro.org>
+References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org>
+ <1425914206-22295-2-git-send-email-lina.iyer@linaro.org>
+ <20150310103734.GK8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-reply-to: <1425903199.13415.9.camel@AMDC1943>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150310103734.GK8656@n2100.arm.linux.org.uk>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 03/09/2015 09:13 PM, Krzysztof Kozlowski wrote:
-> On pon, 2015-03-09 at 20:46 +0900, Beomho Seo wrote:
->> On 03/09/2015 08:02 PM, Krzysztof Kozlowski wrote:
->>> 2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
->>>> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
->>>>> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
->>>>>> From: Beomho Seo <beomho.seo@samsung.com>
->>>>>>
->>>>>> This patch adds device driver of max77843 charger. This driver provide
->>>>>> initialize each charging mode(e.g. fast charge, top-off mode and constant
->>>>>> charging mode so on.). Additionally, control charging paramters to use
->>>>>> i2c interface.
->>>>>>
->>>>>> Cc: Sebastian Reichel <sre@kernel.org>
->>>>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
->>>>>
->>>>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
->>>>>
->>>>> I can't take it as is, since it depends on the private header file
->>>>> of PATCHv1.
->>>>>
->>>>> -- Sebastian
->>>>>
->>>>
->>>> This patch reviewed by Sebastian.
->>>> Could you Please merge that your git tree ?
->>>
->>> Hi,
->>>
->>> ... and again we are adding a new driver for very similar chipset to
->>> already supported. I looked at spec and the charger's registers are
->>> almost the same as for max77693. Their layout and addresses are the
->>> same. I see some minor differences, probably the most important would
->>> be different values current (fast-charge, top-off). But still 90% of
->>> registers are the same... Do we really have to add new driver?
->>>
->>> Best regards,
->>> Krzysztof
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-input" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
+On Tue, Mar 10 2015 at 04:37 -0600, Russell King - ARM Linux wrote:
+>On Mon, Mar 09, 2015 at 09:16:36AM -0600, Lina Iyer wrote:
+>> @@ -105,18 +109,46 @@ static int __init arm_idle_init(void)
+>>  	if (ret <= 0)
+>>  		return ret ? : -ENODEV;
 >>
->> Hi,
+>> +
+>
+>A bit better formatting would be nice - you don't need the extra blank
+>line here.
+>
+>> +	ret = cpuidle_register_driver(drv);
+>> +	if (ret) {
+>> +		pr_err("Failed to register cpuidle driver\n");
+>> +		return ret;
+>> +	}
+>> +
+>>  	/*
+>>  	 * Call arch CPU operations in order to initialize
+>>  	 * idle states suspend back-end specific data
+>>  	 */
+>>  	for_each_possible_cpu(cpu) {
+>> +
+>
+>This blank line is not necessary either.
+>
+>>  		ret = arm_cpuidle_init(cpu);
+>
+>However, a blank line here would be a good thing.
+>
+Sure.
+>> +		/*
+>> +		 * This cpu does not support any idle states
+>> +		 */
+>
+>Also, formatting this as /* This cpu does not support any idle states */ is
+>acceptable too, and doesn't waste as many lines.
+>
+Will fix.
+>> +		if (ret == -ENOSYS)
+>> +			continue;
+>> +
+>>  		if (ret) {
+>>  			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+>>  			return ret;
+>>  		}
+>> +
+>> +		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+>> +		if (!dev)
+>> +			return -ENOMEM;
+>> +
+>> +		dev->cpu = cpu;
+>> +		ret = cpuidle_register_device(dev);
+>> +		if (ret) {
+>> +			pr_err("Failed to register cpuidle device for CPU %d\n",
+>> +			       cpu);
+>> +			return ret;
+>
+>It looks like we leak the 'dev' allocation here.
+>
+
+True, I will amend that.
+
+>Also, other error paths, it looks like we leave the previously registered
+>cpuidle devices in place.  That may be acceptable if the intention is to
+>initialise as many CPUs as possible - but we then miss the
+>cpuidle_register() call below, which seems to make the registered devices
+>useless.  It's a little inconsistent.
+>
+>Also, it's useful to report why something fails - printing the error code
+>can help debugging if it isn't already printed elsewhere.
+>
+Fair point.
+>> +		}
+>> +
+>> +		per_cpu(cpuidle_arm_dev, cpu) = dev;
+>>  	}
 >>
->> Thank you for your comment. As you say, both chip set are similar.
->> But new driver need for support max77843. It is support different below
->> - Provide Battery presence information.
-> 
-> Another set of power supply properties could be added for that chip.
-> This way the get_property() function would be the same but actually the
-> POWER_SUPPLY_PROP_PRESENT won't be called for max77693.
-> 
->> - Can OTG FET control.
-> 
-> Where the OTG FET feature is it enabled in your driver? I couldn't find
-> it.
-> 
-
-Sorry. This driver don't control OTG FET feature.
-
->> - Bigger Fast charge current, Top Off current Threshold selection.
->> - Various and bigger OTG current limitation.
->> - Bigger primary charger termination voltage setting.
->> - Different maximum input current limit selection(Different step).
-> 
-> Yes, I mentioned some of these differences (the Fast/top-off
-> differences). These are differences in values so it does not require new
-> driver. There is need to develop new driver just to support different
-> current (3.0 A instead of 2.1 A) or voltage threshold.
-> 
-
-They are different charging current, OTG current limitation, top off current,
-charging limitation value. In case OTG current limitation different not
-limitation value but using register bit(max77843 use[7:6] max77693 use[7]
-bit only). Even if this driver not support all feature, some register
-different with max77693(support value, use register bit).
-
-If this driver will combined with max77693 may even be beneficial for
-new Maxim driver. But the present, this driver is related with
-max77843 core driver and max77843-regulator. So I hope this driver
-merge first. And then will extend two driver(max77843 charger and max77693 charger).
-
-> So the only new feature - battery presence - can be easily added to
-> existing driver. The driver can be extended for different
-> current/voltage values. Such extension may even be beneficial for new
-> Maxim MUIC/PMIC chipsets.
-> 
-> 
-> Best regards,
-> Krzysztof
-> 
-
-Best regards,
-Beomho Seo
+>> -	return cpuidle_register(drv, NULL);
+>> +	return 0;
+>>  }
+>>  device_initcall(arm_idle_init);
+>
+>-- 
+>FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+>according to speedtest.net.
