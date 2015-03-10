@@ -1,143 +1,55 @@
-From: Marek Belisko <marek@goldelico.com>
-Subject: [PATCH v4 2/6] power: twl4030_madc_battery: Add device tree support
-Date: Tue, 10 Mar 2015 22:27:23 +0100
-Message-ID: <1426022847-30912-3-git-send-email-marek@goldelico.com>
-References: <1426022847-30912-1-git-send-email-marek@goldelico.com>
+From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with
+ IRQF_NO_SUSPEND
+Date: Tue, 10 Mar 2015 22:33:17 +0100
+Message-ID: <20150310213317.GK9188@piout.net>
+References: <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com>
+ <1615214.0rkGfM1gZL@vostro.rjw.lan>
+ <20150309075546.GY3989@piout.net>
+ <1592385.fqRVVyPSPE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1426022847-30912-1-git-send-email-marek@goldelico.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: bcousson@baylibre.com, tony@atomide.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, hns@goldelico.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, Marek Belisko <marek@goldelico.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1592385.fqRVVyPSPE-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Sylvain Rochet <gradator-XWGZPxRNpGHk1uMJSBkQmQ@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, "linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Marek Belisko <marek@goldelico.com>
----
- drivers/power/twl4030_madc_battery.c | 81 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
+Hi,
 
-diff --git a/drivers/power/twl4030_madc_battery.c b/drivers/power/twl4030_madc_battery.c
-index 6af28b5..4bcb4a9 100644
---- a/drivers/power/twl4030_madc_battery.c
-+++ b/drivers/power/twl4030_madc_battery.c
-@@ -20,6 +20,7 @@
- #include <linux/i2c/twl4030-madc.h>
- #include <linux/power/twl4030_madc_battery.h>
- #include <linux/iio/consumer.h>
-+#include <linux/of.h>
- 
- struct twl4030_madc_battery {
- 	struct power_supply psy;
-@@ -183,6 +184,82 @@ static int twl4030_cmp(const void *a, const void *b)
- 		((struct twl4030_madc_bat_calibration *)a)->voltage;
- }
- 
-+#ifdef CONFIG_OF
-+static struct twl4030_madc_bat_platform_data *
-+	twl4030_madc_dt_probe(struct platform_device *pdev)
-+{
-+	struct twl4030_madc_bat_platform_data *pdata;
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+	int i, proplen;
-+
-+	pdata = devm_kzalloc(&pdev->dev,
-+			sizeof(struct twl4030_madc_bat_platform_data),
-+			GFP_KERNEL);
-+	if (!pdata)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = of_property_read_u32(np, "capacity-uah", &pdata->capacity);
-+	if (ret != 0)
-+		return ERR_PTR(-EINVAL);
-+
-+	/* parse and prepare charging data */
-+	proplen = of_property_count_u32_elems(np, "ti,volt-to-capacity-charging-map");
-+	if (proplen < 0) {
-+		dev_warn(&pdev->dev, "No 'ti,volt-to-capacity-charging-map' property found\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	pdata->charging = devm_kzalloc(&pdev->dev,
-+		sizeof(struct twl4030_madc_bat_calibration) * (proplen / 2),
-+		GFP_KERNEL);
-+
-+	for (i = 0; i < proplen / 2; i++) {
-+		of_property_read_u32_index(np, "ti,volt-to-capacity-charging-map",
-+					   i * 2,
-+					   (u32 *)&pdata->charging[i].voltage);
-+		of_property_read_u32_index(np, "ti,volt-to-capacity-charging-map",
-+					  i * 2 + 1,
-+					  (u32 *)&pdata->charging[i].level);
-+	}
-+
-+	/* parse and prepare discharging data */
-+	proplen = of_property_count_u32_elems(np,
-+			"ti,volt-to-capacity-discharging-map");
-+	if (proplen < 0) {
-+		dev_warn(&pdev->dev, "No 'ti,volt-to-capacity-discharging-map' property found\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	pdata->discharging = devm_kzalloc(&pdev->dev,
-+		sizeof(struct twl4030_madc_bat_calibration) * (proplen / 2),
-+		GFP_KERNEL);
-+
-+	for (i = 0; i < proplen / 2; i++) {
-+		of_property_read_u32_index(np, "ti,volt-to-capacity-discharging-map",
-+					   i * 2,
-+					   (u32 *)&pdata->discharging[i].voltage);
-+		of_property_read_u32_index(np, "ti,volt-to-capacity-discharging-map",
-+					   i * 2 + 1,
-+					   (u32 *)&pdata->discharging[i].level);
-+	}
-+
-+	return pdata;
-+}
-+
-+static const struct of_device_id of_twl4030_madc_match[] = {
-+	{ .compatible = "ti,twl4030-madc-battery", },
-+	{},
-+};
-+
-+#else
-+static struct twl4030_madc_bat_platform_data *
-+	twl4030_madc_dt_probe(struct platform_device *pdev)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+#endif
-+
- static int twl4030_madc_battery_probe(struct platform_device *pdev)
- {
- 	struct twl4030_madc_battery *twl4030_madc_bat;
-@@ -194,6 +271,9 @@ static int twl4030_madc_battery_probe(struct platform_device *pdev)
- 	if (!twl4030_madc_bat)
- 		return -ENOMEM;
- 
-+	if (!pdata)
-+		pdata = twl4030_madc_dt_probe(pdev);
-+
- 	twl4030_madc_bat->psy.name = "twl4030_battery";
- 	twl4030_madc_bat->psy.type = POWER_SUPPLY_TYPE_BATTERY;
- 	twl4030_madc_bat->psy.properties = twl4030_madc_bat_props;
-@@ -263,6 +343,7 @@ static int twl4030_madc_battery_remove(struct platform_device *pdev)
- static struct platform_driver twl4030_madc_battery_driver = {
- 	.driver = {
- 		.name = "twl4030_madc_battery",
-+		.of_match_table = of_match_ptr(of_twl4030_madc_match),
- 	},
- 	.probe  = twl4030_madc_battery_probe,
- 	.remove = twl4030_madc_battery_remove,
+On 09/03/2015 at 15:30:01 +0100, Rafael J. Wysocki wrote :
+> > > > Actaully, your platform should just refuse to enter suspend-to-RAM
+> > > > when hw watchdog is enabled.
+> > > 
+> > > Quite likely, depending on how exactly the suspend is implemented.
+> > >
+> > 
+> > We've had absolutely zero complain on that. It is quite clear in the
+> > datasheet that failing to refresh the watchdog once started will lead to
+> > a reset and that it is impossible to stop.
+> > It is actually quite convenient to also ensure that you can actually
+> > wake up from suspend because that can obviously go wrong.
+> 
+> I gather then that the suspend implementation is such that touching the
+> watchdog periodically while suspended is not a problem.
+> 
+> Again, can you please tell me how suspend is implemented on at91?
+> 
+
+It actually depends on the architecture (at91rm9200, at91sam9 or sama5)
+but basically, the clocks are switched off in almost all the peripheral
+drivers then the ram self refresh activated, the master clock is
+switched off using code running from SRAM and the core is then waiting
+for interrupt.
+
+
 -- 
-1.9.1
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
