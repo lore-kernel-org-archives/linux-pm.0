@@ -1,36 +1,73 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: Re: Bad rpath in cpupower with 4.0-rcX
-Date: Tue, 10 Mar 2015 08:33:54 -0400
-Message-ID: <CA+5PVA6Jo9LTbhduCs0eYXJxmdG-39PR-fOKmABNLO2F3btXUA@mail.gmail.com>
-References: <20150306134745.GC4801@hansolo.redhat.com>
+From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v7 3/5] power: max77843_battery: Add Max77843 fuel gauge
+ device driver
+Date: Tue, 10 Mar 2015 22:44:14 +0900
+Message-ID: <54FEF52E.7060409@samsung.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+ <1425291038-18269-4-git-send-email-jaewon02.kim@samsung.com>
+ <20150307201426.GG5233@earth> <54FCEB17.70809@samsung.com>
+ <CAJKOXPcLa8jGBS9r=iAbuco5+9=XcjsEFazFtAWinYUQDArkUQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150306134745.GC4801@hansolo.redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Thomas Renninger <trenn@suse.de>
-Cc: "sriram@marirs.net.in" <sriram@marirs.net.in>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <CAJKOXPcLa8jGBS9r=iAbuco5+9=XcjsEFazFtAWinYUQDArkUQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jaewon Kim <jaewon02.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, SangBae Lee <sangbae90.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 6, 2015 at 8:47 AM, Josh Boyer <jwboyer@fedoraproject.org> wrote:
-> Hi All,
->
-> Commit 5c1de006e8e66 (cpupower Makefile change to help run the tool
-> without 'make install') added an rpath to the cpupower binary.  From
-> what I can understand, this is to make it easier to run cpupower from
-> the local build directory without having to run make install.  It does
-> accomplish that, but it also leaves the binary with the rpath in it
-> which is considered bad practice.  It also causes cpupower to fail in
-> rpmbuild with the following error:
->
-> ERROR   0004: file '/usr/bin/cpupower' contains an insecure rpath './'
-> in [./]
-> error: Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
->     Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
->
-> I understand the want for eased development, but couldn't people just
-> set LD_LIBRARY_PATH instead?
+On 03/09/2015 07:01 PM, Krzysztof Kozlowski wrote:
+> 2015-03-09 1:36 GMT+01:00 Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>:
+>> On 03/08/2015 05:14 AM, Sebastian Reichel wrote:
+>>> Hi,
+>>>
+>>> On Mon, Mar 02, 2015 at 07:10:36PM +0900, Jaewon Kim wrote:
+>>>> From: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>>>>
+>>>> This patch adds device driver of max77843 fuel gauge.
+>>>> The driver support for battery fuel gauge in Maxim Max77843.
+>>>> It is fuel-gauge systems for lithuum-ion batteries in handled and
+>>>> portable devices.
+>>>>
+>>>> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>>> Signed-off-by: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>>>
+>>> Reviewed-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>>
+>>> I can't take it as is, since it depends on the private header file
+>>> of PATCH 1.
+>>>
+>>> -- Sebastian
+>>>
+>>
+>> This patch reviewed by Sebastian.
+>> Could you Please merge that your git tree ?
+> 
+> Hi,
+> 
+> Sorry for late response, but I finally got some time to look at this.
+> This driver looks very similar to max17042_battery.c fuel gauge
+> driver. Obtaining some properties looks exactly the same. The
+> difference seems to be in new properties. The I2C address is the same.
+> 
+> I highly recommend to extend the max17042 driver instead. It already
+> supports also max17047, max17050 and max77693.
+> 
+> Best regards,
+> Krzysztof
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-No comments on this?  Should I just send a revert patch instead?
+OK. I will follow your opinion about fuel gauge. I will extend the max17042 driver.
+After test on my board, I will send a new patch set.
 
-josh
+Best regards,
+Beomho Seo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
