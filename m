@@ -1,55 +1,64 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: [PATCH] Revert "cpupower Makefile change to help run the tool
- without 'make install'"
-Date: Tue, 10 Mar 2015 20:26:36 -0400
-Message-ID: <20150311002635.GC8393@hansolo.redhat.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v2 5/6] watchdog: at91sam9: request the irq with IRQF_NO_SUSPEND
+Date: Wed, 11 Mar 2015 02:03:08 +0100
+Message-ID: <2194398.CCV6AEYQ7u@vostro.rjw.lan>
+References: <1425287898-15093-6-git-send-email-boris.brezillon@free-electrons.com> <1901056.Mqyykpv3e9@vostro.rjw.lan> <20150310223305.GN9188@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:60998 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbbCKA2A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 Mar 2015 20:28:00 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150310223305.GN9188-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Sylvain Rochet <gradator-XWGZPxRNpGHk1uMJSBkQmQ@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, "linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Renninger <trenn@suse.de>, "sriram@marirs.net.in" <sriram@marirs.net.in>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-This reverts commit 5c1de006e8e66b0be05be422416629e344c71652.
+On Tuesday, March 10, 2015 11:33:05 PM Alexandre Belloni wrote:
+> On 10/03/2015 at 23:31:52 +0100, Rafael J. Wysocki wrote :
+> > On Tuesday, March 10, 2015 10:33:17 PM Alexandre Belloni wrote:
+> > > Hi,
+> > > 
+> > > On 09/03/2015 at 15:30:01 +0100, Rafael J. Wysocki wrote :
+> > > > > > > Actaully, your platform should just refuse to enter suspend-to-RAM
+> > > > > > > when hw watchdog is enabled.
+> > > > > > 
+> > > > > > Quite likely, depending on how exactly the suspend is implemented.
+> > > > > >
+> > > > > 
+> > > > > We've had absolutely zero complain on that. It is quite clear in the
+> > > > > datasheet that failing to refresh the watchdog once started will lead to
+> > > > > a reset and that it is impossible to stop.
+> > > > > It is actually quite convenient to also ensure that you can actually
+> > > > > wake up from suspend because that can obviously go wrong.
+> > > > 
+> > > > I gather then that the suspend implementation is such that touching the
+> > > > watchdog periodically while suspended is not a problem.
+> > > > 
+> > > > Again, can you please tell me how suspend is implemented on at91?
+> > > > 
+> > > 
+> > > It actually depends on the architecture (at91rm9200, at91sam9 or sama5)
+> > > but basically, the clocks are switched off in almost all the peripheral
+> > > drivers then the ram self refresh activated, the master clock is
+> > > switched off using code running from SRAM and the core is then waiting
+> > > for interrupt.
+> > 
+> > OK, so it looks like enable_irq_wake() doesn't actually affect the hardware
+> > on those platforms, is that correct?
+> > 
+> 
+> I didn't exactly look in details but apart from the wakeup from gpio
+> handling (keeping the pio controller clocked in the case one of its gpio
+> has wakeup enabled), I don't think it does much more. It uses
+> irq_gc_set_wake().
 
-While the original commit makes it easier to run cpupower from the local build
-directory, it also leaves the binary with a rather poor rpath of './' in it
-after it is installed on a system via 'make install'.
+Well, that only modifies gc->wake_active, so no hardware interactions.
 
-This is considered bad practice and can cause cpupower to fail in rpmbuild
-with the following error:
 
-ERROR   0004: file '/usr/bin/cpupower' contains an insecure rpath './' in [./]
-error: Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
-    Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
-
-Developers should be able to use LD_LIBRARY_PATH to achieve the same effect
-and not introduce rpath into the binary.
-
-Signed-off-by: Josh Boyer <jwboyer@feoraproject.org>
----
- tools/power/cpupower/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 3ed7c0476d48..2e2ba2efa0d9 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -209,7 +209,7 @@ $(OUTPUT)%.o: %.c
- 
- $(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_MAJ)
- 	$(ECHO) "  CC      " $@
--	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -Wl,-rpath=./ -lrt -lpci -L$(OUTPUT) -o $@
-+	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -lrt -lpci -L$(OUTPUT) -o $@
- 	$(QUIET) $(STRIPCMD) $@
- 
- $(OUTPUT)po/$(PACKAGE).pot: $(UTIL_SRC)
 -- 
-2.1.0
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
