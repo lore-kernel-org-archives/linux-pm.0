@@ -1,33 +1,51 @@
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Subject: thermal: cpu_cooling: Power calculation when CPUs are hotplugged
-Date: Wed, 11 Mar 2015 17:53:35 +0000
-Message-ID: <1426096417-27522-1-git-send-email-kapileshwar.singh@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:37269 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbbCKRxr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 13:53:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [RFC PATCH v15 04/11] ARM: cpuidle: Register cpuidle_ops for
+ QCOM cpus
+Date: Wed, 11 Mar 2015 11:16:15 -0700
+Message-ID: <5500866F.6080704@codeaurora.org>
+References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org> <1425914206-22295-5-git-send-email-lina.iyer@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1425914206-22295-5-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>, daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, rui.zhang@intel.com, Javi.Merino@arm.com, Punit.Agrawal@arm.com, kapileshwar.singh@arm.com
 
-The following patch series aims at correcting the requested power
-calculation when CPUs are hotplugged out. These patches are based on
-the "linus" branch of Eduardo's tree.
+On 03/09/15 08:16, Lina Iyer wrote:
+> Register cpuidle ops for Krait Processor Sub-System.
+> Supports v1 and v2 versions of KPSS.
+>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  arch/arm/include/asm/cpuidle_ops.h | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/asm/cpuidle_ops.h
+> index be0a612..40cb262 100644
+> --- a/arch/arm/include/asm/cpuidle_ops.h
+> +++ b/arch/arm/include/asm/cpuidle_ops.h
+> @@ -1,3 +1,8 @@
+>  /*
+>   * List of cpuidle operations
+>   */
+> +
+> +#if IS_ENABLED(CONFIG_QCOM_PM)
 
-There is no need to update the cpu_dev pointer (cached) on the reception of=
- a
-policy CPU update notifier from cpufreq. This is not required as OPPs
-can be ascertained even if the CPU is offline.
+Why not #ifdef CONFIG_QCOM_PM? I thought IS_ENABLED was for C code where
+you want to put it in an if () statement.
 
-cpufreq_get_requested power ensures that a CPU is online before calculating
-the frequency for the CPUs and returns the power as 0 if all the CPUs
-are offline in the cooling device.
-
-Regards,
-KP
+> +CPUIDLE_OPS(qcom_kpss_v1)
+> +CPUIDLE_OPS(qcom_kpss_v2)
+> +#endif
 
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
