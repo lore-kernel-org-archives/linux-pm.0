@@ -1,89 +1,50 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v4 3/6] Documentation: DT: Document twl4030-madc-battery
- bindings
-Date: Wed, 11 Mar 2015 08:24:15 -0700
-Message-ID: <20150311152414.GX5264@atomide.com>
-References: <1426022847-30912-1-git-send-email-marek@goldelico.com>
- <1426022847-30912-4-git-send-email-marek@goldelico.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [RFC PATCH 2/2] arm64: kernel: perf: add pmu CPU PM notifier
+Date: Wed, 11 Mar 2015 09:02:17 -0700
+Message-ID: <7hh9try12u.fsf@deeprootsystems.com>
+References: <1426008682-5680-1-git-send-email-lorenzo.pieralisi@arm.com>
+	<1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1426022847-30912-4-git-send-email-marek@goldelico.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: bcousson@baylibre.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:42630 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbbCKQCV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 12:02:21 -0400
+Received: by pdbfl12 with SMTP id fl12so12202239pdb.9
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2015 09:02:20 -0700 (PDT)
+In-Reply-To: <1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
+	(Lorenzo Pieralisi's message of "Tue, 10 Mar 2015 17:31:22 +0000")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Hi,
+Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 
-* Marek Belisko <marek@goldelico.com> [150310 14:28]:
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  .../bindings/power_supply/twl4030_madc_battery.txt | 43 ++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
-> new file mode 100644
-> index 0000000..d3dd9d8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
-> @@ -0,0 +1,43 @@
-> +twl4030_madc_battery
-> +
-> +Required properties:
-> + - compatible : "ti,twl4030-madc-battery"
-> + - capacity-uah : battery capacity in uAh
-> + - ti,volt-to-capacity-charging-map : list of voltage(mV):level(%) values
-> +	for charging calibration (see example)
-> + - ti,volt-to-capacity-discharging-map : list of voltage(mV):level(%) values
-> +	for discharging calibration (see example)
-> + - io-channels: Should contain IIO channel specifiers
-> +	for each element in io-channel-names.
-> +- io-channel-names: Should contain the following values:
-> + * "temp" - The ADC channel for temperature reading
-> + * "ichg" - The ADC channel for battery charging status
-> + * "vbat" - The ADC channel to measure the battery voltage
-> +
-> +Example:
-> +	madc-battery {
-> +		compatible = "ti,twl4030-madc-battery";
-> +		capacity-uah = <1200000>;
-> +		ti,volt-to-capacity-charging-map = <4200 100>,
-> +					        <4100 75>,
-> +					        <4000 55>,
-> +					        <3900 25>,
-> +					        <3800 5>,
-> +					        <3700 2>,
-> +					        <3600 1>,
-> +					        <3300 0>;
-> +
-> +		ti,volt-to-capacity-discharging-map = <4200 100>
-> +						   <4100 95>,
-> +						   <4000 70>,
-> +						   <3800 50>,
-> +						   <3700 10>,
-> +						   <3600 5>,
-> +						   <3300 0>;
-> +		io-channels = <&twl_madc 1>,
-> +	                      <&twl_madc 10>,
-> +			      <&twl_madc 12>;
-> +		io-channel-names = "temp",
-> +		                   "ichg",
-> +		                   "vbat";
-> +	};
+> When a CPU is being profiled through PMU events and it enters suspend
+> or idle states, the PMU registers content can be lost, which means that
+> counters that were relied upon on power down entry are reset on power
+> up to values that are incosistent with the profile session.
+>
+> This patch adds a CPU PM notifier to arm64 perf code, that detects
+> on entry if events are being monitored, and if so, it returns
+> failure to the CPU PM notification chain, causing the suspend
+> thread or the idle thread to abort power down, therefore preventing
+> registers content loss.
+>
+> By triggering CPU PM notification failure this patch prevents
+> suspending a system if the suspend thread is being profiled and
+> it also prevents entering idle deep states on cores that have profile
+> events in use, somehow limiting power management capabilities when
+> there are active perf sessions.
 
-Rather than just making platform_data into device tree properties..
+I guess that's one choice.  Couldn't you also stop the PMU and
+save/restore it's context in the notifiers? so that you wouldn't affect
+PM capabilities?
 
-Can't you hide the these custom properties behind the compatible flag?
+That would imply that you lose the ability to profile after a certain
+point in suspend/idle, but maybe that's a better trade off than having
+profiling disable certain PM features?
 
-You can initialize that data in the driver based on the compatible
-flag and the match data.
-
-This makes sense if you can group things to similar configurations.
-
-Regards,
-
-Tony
-
+Kevin
