@@ -1,72 +1,23 @@
-From: kazutomo <kazutomo.yoshii@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH] powercap/rapl: handle domain energy unit
-Date: Wed, 11 Mar 2015 16:25:52 -0500
-Message-ID: <5500B2E0.9000107@gmail.com>
+Date: Wed, 11 Mar 2015 23:01:30 +0100
+Message-ID: <14265283.qm1vXaZEIU@vostro.rjw.lan>
 References: <1426078509-3767-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f42.google.com ([209.85.192.42]:42302 "EHLO
-	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbbCKVZz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 17:25:55 -0400
+Received: from v094114.home.net.pl ([79.96.170.134]:49865 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751378AbbCKVhq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 17:37:46 -0400
 In-Reply-To: <1426078509-3767-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>
 
-Hi Jacob,
-
-Wow, this is a really pitfall for people who are writing their own RAPL
-tool.
-Anyway, I've tested your patch on a Haswell system (2699v3), running a
-dgemm
-benchmark. NOTE: userspace governor is selected. All core are set to 2.3
-GHz.
-No power cap is set.
- 
-# before the patch is applied
-$ cd /sys/class/powercap/intel-rapl:0:0
-$ cat name
-dram
-$ for i in 1 2 3 ; do a=`cat energy_uj` ; sleep 1 ; b=`cat energy_uj` ;
-expr $b - $a ; done
-16853445
-16829355
-16666320
- 
-# after the patch is applied
-$ for i in 1 2 3 ; do a=`cat energy_uj` ; sleep 1 ; b=`cat energy_uj` ;
-expr $b - $a ; done 
-69751487
-68153897
-69689816
-
-
-I have a couple of questions. 
- 
-1. Is it possible to retrieve the DRAM energy unit from some MSRs
-*eventually* like the domain energy unit? 
- 
-2. Will the Intel software developer's manual (vol3b) be updated
-accordingly if you know? I'm assuming that you are working at Intel.
- 
-3. Is get_max_energy_range_uj still the same as other counters?
- 
-4. The current driver maintains the unit as an integer, instead of a
-shift value, and the multiplier is a relatively small number.  I guess
-the DRAM energy unit is technically ~15.2587 uJ = (0.5 ** 16) * 1e6,
-so it always reports a approx. 2 % smaller energy number, while the
-pkg energy unit is ~61.0351, so the error is ~0.5 %.  An easier
-solution would be to maintain the unit in pJ, instead of uJ. 
-or am I worrying too much? I guess the RAPL energy estimation may
-have some error, so maybe canceling out.
-
-- kaz
-
-On 03/11/2015 07:55 AM, Jacob Pan wrote:
+On Wednesday, March 11, 2015 05:55:09 AM Jacob Pan wrote:
 > The current driver assumes all RAPL domains within a CPU package
 > have the same energy unit. This is no longer true for HSW server
 > CPUs since DRAM domain has is own fixed energy unit which can be
@@ -75,15 +26,19 @@ On 03/11/2015 07:55 AM, Jacob Pan wrote:
 > whereas DRAM domain unit is 15.3uJ. The result is that DRAM power
 > consumption is counted 4x more than real power reported by energy
 > counters.
->
+> 
 > This patch adds domain specific energy unit per cpu type, it allows
 > domain energy unit to override package energy unit if non zero.
->
+> 
 > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+
+Should I regard this as a fix for 4.0?  If so, should it also go to "stable"
+(and which "stable" series should it go to in that case)?
+
 > ---
 >  drivers/powercap/intel_rapl.c | 35 ++++++++++++++++++++++++++++-------
 >  1 file changed, 28 insertions(+), 7 deletions(-)
->
+> 
 > diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
 > index 97b5e4e..af4c61e 100644
 > --- a/drivers/powercap/intel_rapl.c
@@ -200,4 +155,8 @@ On 03/11/2015 07:55 AM, Jacob Pan wrote:
 >  	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
 >  	RAPL_CPU(0x4C, rapl_defaults_atom),/* Braswell */
 >  	RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
+> 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
