@@ -1,42 +1,56 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
-Date: Wed, 11 Mar 2015 17:16:42 +0530
-Message-ID: <CAKohponaQYYgYFAbpY3KZjt4+QhjBsqQtEpG5QpdMH0p__YUEQ@mail.gmail.com>
-References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
-	<CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
-	<CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
-	<CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
-	<CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
-	<CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
-	<20150311105307.GW28806@sirena.org.uk>
-	<CAKohpom4riOhzc3hK8B2tiSwGx0zG96C7QNeQB0yZaPMd_OpLw@mail.gmail.com>
-	<1426074142.30734.7.camel@pengutronix.de>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: Bad rpath in cpupower with 4.0-rcX
+Date: Wed, 11 Mar 2015 12:53:57 +0100
+Message-ID: <3001692.z661NIszxI@skinner>
+References: <20150306134745.GC4801@hansolo.redhat.com> <CA+5PVA6Jo9LTbhduCs0eYXJxmdG-39PR-fOKmABNLO2F3btXUA@mail.gmail.com> <15697793.jrEQ5UURAe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426074142.30734.7.camel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Chen Fan <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Howard Chen <ibanezchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Joe.C" <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>Linux Kernel Mailing List <linux->
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:50299 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770AbbCKLyA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Mar 2015 07:54:00 -0400
+In-Reply-To: <15697793.jrEQ5UURAe@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "sriram@marirs.net.in" <sriram@marirs.net.in>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-On 11 March 2015 at 17:12, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> wrote:
-> Instead of creating virtual regulators I would be strongly in favor of
-> reviving the voltage-domain work. That would allow us to push all those
-> voltage dependencies we have seen on various SoCs into the domain
-> handling code and don't care about it in the drivers.
->
-> In that case cpufreq-dt wouldn't control a regulator directly, but
-> request a specific voltage from the domain the CPUs are located in and
-> those in turn would control the regulators supplying them.
+On Tuesday, March 10, 2015 11:30:44 PM Rafael J. Wysocki wrote:
+> On Tuesday, March 10, 2015 08:33:54 AM Josh Boyer wrote:
+> > On Fri, Mar 6, 2015 at 8:47 AM, Josh Boyer <jwboyer@fedoraproject.org> 
+wrote:
+> > > Hi All,
+> > > 
+> > > Commit 5c1de006e8e66 (cpupower Makefile change to help run the tool
+> > > without 'make install') added an rpath to the cpupower binary.  From
+> > > what I can understand, this is to make it easier to run cpupower from
+> > > the local build directory without having to run make install.  It does
+> > > accomplish that, but it also leaves the binary with the rpath in it
+> > > which is considered bad practice.  It also causes cpupower to fail in
+> > > rpmbuild with the following error:
+> > > 
+> > > ERROR   0004: file '/usr/bin/cpupower' contains an insecure rpath './'
+> > > in [./]
+> > > error: Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
+> > > 
+> > >     Bad exit status from /var/tmp/rpm-tmp.A6u26r (%install)
+> > > 
+> > > I understand the want for eased development, but couldn't people just
+> > > set LD_LIBRARY_PATH instead?
+> > 
+> > No comments on this?  Should I just send a revert patch instead?
 
-I agree that it would be the right approach but who is going to do that stuff ?
+I agree adding . as library path was not a good idea.
+This probably is also a potential security issue.
 
-I think until the time we revive the voltage-domain stuff we need to support
-mediatek's driver. And probably a virtual regulator is the best approach
-unless someone else comes up with another idea.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+What I do is building the libraries statically into the binary when
+testing. I will send a Makefile change introducing a static = true/false
+variable to do that easily.
+
+> You can do that.
+
+Thanks for sending the revert, it's the right thing to do.
+
+     Thomas
