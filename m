@@ -1,83 +1,42 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: If an OF node is found but no device probed
- yet, defer.
-Date: Wed, 11 Mar 2015 23:14:05 +0100
-Message-ID: <CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
-References: <1426087648-3862-1-git-send-email-eric@anholt.net>
-	<6516096.HanqZ05BXy@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Subject: [PATCHv2 0/2] Add support for generic register mapped poweroff.
+Date: Wed, 11 Mar 2015 15:32:23 -0700
+Message-ID: <1426113145-2921-1-git-send-email-moritz.fischer@ettus.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f179.google.com ([209.85.223.179]:35797 "EHLO
-	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbbCKWOg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 18:14:36 -0400
-In-Reply-To: <6516096.HanqZ05BXy@vostro.rjw.lan>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:43157 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbbCKWcq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 18:32:46 -0400
+Received: by pdjp10 with SMTP id p10so14613622pdj.10
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2015 15:32:46 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Eric Anholt <eric@anholt.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: sre@kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>
 
-On Wed, Mar 11, 2015 at 11:08 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> More CCes.
->
-> On Wednesday, March 11, 2015 08:27:28 AM Eric Anholt wrote:
->> If we've declared a power domain in the OF, and the OF node is found
->> but the requested domain hasn't been registered on it yet, then we
->> probably have just tried to probe before the power domain driver has.
->> Defer our device's probe until it shows up.
->>
->> Signed-off-by: Eric Anholt <eric@anholt.net>
->
-> Kevin, Ulf, any chance to have a look at this, please?
->
->> ---
->>
->> I ran into this when turning my ad-hoc code for BCM2835 (Raspberry Pi)
->> USB poweron support in the DWC2 controller to an OF-based power domain
->> declaration.
+This patchset adds support for generic register mapped poweroff via SYCON.
 
-I guess you are initializing the PM domains from module_init()?
+v2:
+ - Fixed documentation copy & paste
+ - Deal with OF dependecies as suggested by Sebastian
+ - Remove module specific stuff as suggested by Paul
 
-I use core_initcall() in arch/arm/mach-shmobile/pm-rmobile.c to make sure it's
-initialized earlier, as e.g. the interrupt controller uses postcore_initcall().
+v1:
+ - Earlier versions of this were specific to our product, however,
+   as Sebastian suggested, it can be generalized into a generic driver.
 
->> drivers/base/power/domain.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index ba4abbe..2b93c98 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -2064,7 +2064,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
->>  struct generic_pm_domain *of_genpd_get_from_provider(
->>                                       struct of_phandle_args *genpdspec)
->>  {
->> -     struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
->> +     struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
+Moritz Fischer (2):
+  power: reset: Add generic SYSCON register mapped poweroff.
+  dt: power: Add docs for generic SYSCON poweroff driver.
 
-Currently platform_drv_probe() just continues if dev_pm_domain_attach() returns
-a different error than -EPROBE_DEFER, which is what you are seeing.
+ .../bindings/power/reset/syscon-poweroff.txt       | 23 +++++
+ drivers/power/reset/Kconfig                        |  7 ++
+ drivers/power/reset/Makefile                       |  1 +
+ drivers/power/reset/syscon-poweroff.c              | 97 ++++++++++++++++++++++
+ 4 files changed, 128 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt
+ create mode 100644 drivers/power/reset/syscon-poweroff.c
 
-Your change does have the side effect that a new DT with PM domains won't
-work on an older kernel that doesn't have the PM domain driver yet.
+-- 
+1.9.3
 
-Whether this is a good or a bad thing depends on your bootloader. If all PM
-domains are powered when Linux boots, it can work without PM domain driver.
-Since DT PM domains are quite recent, I guess this is the case for most
-existing SoCs.
-
->>       struct of_genpd_provider *provider;
->>
->>       mutex_lock(&of_genpd_mutex);
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
