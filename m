@@ -1,189 +1,65 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v8 00/18] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
-Date: Wed, 11 Mar 2015 11:07:43 +0100
-Message-ID: <20150311100741.GK19577@ulmo.nvidia.com>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
+Date: Wed, 11 Mar 2015 10:53:07 +0000
+Message-ID: <20150311105307.GW28806@sirena.org.uk>
+References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
+ <CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
+ <CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
+ <CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
+ <CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
+ <CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="OX2aLCKeO1apYW07"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:41013 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbbCKKHt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 06:07:49 -0400
+	protocol="application/pgp-signature"; boundary="zN/UJhV2gvyhY9D2"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Chen Fan <fan.chen@mediatek.com>, Mike Turquette <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Howard Chen <ibanezchen@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, Eddie Huang <eddie.huang@mediatek.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electr>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi
 
 
---OX2aLCKeO1apYW07
+--zN/UJhV2gvyhY9D2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Mike,
+On Tue, Mar 10, 2015 at 08:20:43AM +0530, Viresh Kumar wrote:
 
-Have you had a chance to look at these changes to the Tegra clock
-driver? If you're fine with it, I'd like to take these patches through
-the Tegra tree because the rest of the series depends on them. I can
-provide a stable branch in case we need to base other Tegra clock
-changes on top of this.
+Please don't send upstream e-mail to my work account, I use this address
+pretty consistently for upstream.  Upstream mail to my work account
+frequently ends up unread.
 
-Thierry
+> On 6 March 2015 at 11:19, Pi-Cheng Chen <pi-cheng.chen@linaro.org> wrote:
+> > On 5 March 2015 at 17:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-On Sun, Mar 01, 2015 at 02:44:23PM +0200, Mikko Perttunen wrote:
-> Hi, this is v8 of the Tegra124 cpufreq series. Aside rebasing on latest -=
-next,
-> the following changes have been done:
->=20
-> clk: tegra: Add binding for the Tegra124 DFLL clocksource
-> - Changed dfll@ -> clock@
-> - Changed compatibility string to "nvidia,tegra124-dfll"
-> - Clarified how the vdd-cpu-supply property is used
-> - Marked nvidia,cg-scale as optional since it is a boolean property
-> - Expanded the 'FS mode' term to 'full speed mode'
-> - Added dvco reset control
->=20
-> ARM: tegra: Add the DFLL to Tegra124 device tree
-> - Changed dfll@ -> clock@
-> - Added dvco reset control
->=20
-> ARM: tegra: Enable the DFLL on the Jetson TK1
-> - Changed dfll@ -> clock@
->=20
-> clk: tegra: Initialize PLL_X before CCLK_G to ensure it has a parent
-> - Added
->=20
-> clk: tegra: Introduce ability for SoC-specific reset control callbacks
-> - Added
->=20
-> clk: tegra: Add DFLL DVCO reset control for Tegra124
-> - Changed to use SoC-specific reset control callback
->=20
-> clk: tegra: Add Tegra124 DFLL clocksource platform driver
-> - Don't set DVCO reset handlers
->=20
-> clk: tegra: Add library for the DFLL clock source (open-loop mode)
-> - Use reset control instead of function pointers
->=20
-> also added acks from v7.
->=20
-> The series is available in a git repository at
->   git://github.com/cyndis/linux.git cldvfs-v8
->=20
-> Tested by me on Jetson-TK1 (rev. D).
->=20
-> Original cover letter:
->=20
-> This series implements the DFLL/CL-DVFS clock source for the fast CPU
-> cluster on Tegra124, and a cpufreq driver that uses the DFLL for
-> clocking the CPU. Most of this is based on Paul Walmsley's public patch
-> set from December 2013, which is available at
-> http://comments.gmane.org/gmane.linux.ports.tegra/15273
->=20
-> The DFLL clock hardware is a voltage-controlled oscillator plus
-> control logic that compares the generated output clock with a
-> 51 MHz reference clock, and can make decisions to either lower
-> or raise the DFLL voltage to keep the output rate close to the
-> software-requested rate. The voltage changes are done by
-> communicating with an off-chip PMIC via either I2C or PWM.
-> As the DFLL oscillator is powered via the CPU rail, using
-> the DFLL as the CPU clocksource also gives us dynamic CPU
-> voltage scaling.
->=20
-> This series has been tested on the Jetson TK1 (Rev C). Porting this to
-> the Venice2 should be simple, though do note that it does not have
-> active cooling.
->=20
-> Thanks,
-> Tuomas
->=20
-> Mikko Perttunen (3):
->   clk: tegra: Introduce ability for SoC-specific reset control callbacks
->   clk: tegra: Initialize PLL_X before CCLK_G to ensure it has a parent
->   ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
->=20
-> Paul Walmsley (1):
->   clk: tegra: Add DFLL DVCO reset control for Tegra124
->=20
-> Tuomas Tynkkynen (14):
->   clk: tegra: Add binding for the Tegra124 DFLL clocksource
->   clk: tegra: Add library for the DFLL clock source (open-loop mode)
->   clk: tegra: Add closed loop support for the DFLL
->   clk: tegra: Add functions for parsing CVB tables
->   clk: tegra: Add Tegra124 DFLL clocksource platform driver
->   clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
->   clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
->   ARM: tegra: Add the DFLL to Tegra124 device tree
->   ARM: tegra: Enable the DFLL on the Jetson TK1
->   cpufreq: tegra124: Add device tree bindings
->   cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
->   cpufreq: Add cpufreq driver for Tegra124
->   ARM: tegra: Add entries for cpufreq on Tegra124
->   ARM: tegra: enable Tegra124 cpufreq driver by default
->=20
->  .../bindings/clock/nvidia,tegra124-dfll.txt        |   79 +
->  .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
->  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   15 +-
->  arch/arm/boot/dts/tegra124.dtsi                    |   34 +
->  arch/arm/configs/tegra_defconfig                   |    1 +
->  arch/arm/mach-tegra/Kconfig                        |    1 +
->  drivers/clk/tegra/Makefile                         |    3 +
->  drivers/clk/tegra/clk-dfll.c                       | 1755 ++++++++++++++=
-++++++
->  drivers/clk/tegra/clk-dfll.h                       |   54 +
->  drivers/clk/tegra/clk-tegra-super-gen4.c           |   50 +-
->  drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  163 ++
->  drivers/clk/tegra/clk-tegra124.c                   |   82 +
->  drivers/clk/tegra/clk.c                            |   36 +-
->  drivers/clk/tegra/clk.h                            |    3 +
->  drivers/clk/tegra/cvb.c                            |  133 ++
->  drivers/clk/tegra/cvb.h                            |   67 +
->  drivers/cpufreq/Kconfig.arm                        |   13 +-
->  drivers/cpufreq/Makefile                           |    3 +-
->  drivers/cpufreq/tegra124-cpufreq.c                 |  217 +++
->  .../cpufreq/{tegra-cpufreq.c =3D> tegra20-cpufreq.c} |    0
->  include/dt-bindings/reset/tegra124-car.h           |   11 +
->  21 files changed, 2730 insertions(+), 34 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra1=
-24-dfll.txt
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cp=
-ufreq.txt
->  create mode 100644 drivers/clk/tegra/clk-dfll.c
->  create mode 100644 drivers/clk/tegra/clk-dfll.h
->  create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
->  create mode 100644 drivers/clk/tegra/cvb.c
->  create mode 100644 drivers/clk/tegra/cvb.h
->  create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
->  rename drivers/cpufreq/{tegra-cpufreq.c =3D> tegra20-cpufreq.c} (100%)
->  create mode 100644 include/dt-bindings/reset/tegra124-car.h
->=20
-> --
-> 2.3.0
->=20
+> > About putting
+> > those stuff into regulator driver, I think you mean creating a
+> > "virtual regulator
+> > device" and put all the voltage controlling complex into the driver, right?
+> > Maybe it's a good idea in this case, but I am sure if this kind of
+> > virtual regulator is acceptable.
 
---OX2aLCKeO1apYW07
-Content-Type: application/pgp-signature
+> @Mark: Is this allowed to create virtual regulator for a CPU ?
+
+I don't really know what the above means or what problem it's supposed
+to solve.
+
+--zN/UJhV2gvyhY9D2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJVABPqAAoJEN0jrNd/PrOhyYQP/2giwh2WkLFyuj0ROTOvJxhQ
-svV79n45jh38xbJg/8JFYwF3uWHQaXgYQngKBU0BlKynwRQmozr/UxTs8ym5XMNv
-Y3e5X4dWGJnlMyt3swxt1cbK6SCeoHSocW0qu7Dr+5NlXZwdZRPpfEckGa+dOaE+
-NnbVJvrJ31rwjKW3sRs3plLhP5e6tMhnJtTgxPpxi18TJRCpyxLIvSs7Y3HhFXC2
-klj6rf/lqMFT7u2hMkHOXcII+wfL2lfrI6OvXsW+ehYCPGy+C9IA5mDTj2YEV6Xr
-VrL7/wTjPAUm2/T0FbRqVlUUD0JDO2g1VfescC8LPzDT7w6rrx57ECyZ9fqVpTUL
-HMR3SyrSXPUUobPc4FQEBV0W2k4mwIyCrR6iCVHmH1rOzs5fs7Ivj1GOJ2c5fzUw
-rm45OsmsjDQe+cDF6VUbkh8bcG5WTYkzqF1IRtm8Vjn2SAEBi9rI4LdlaWVU0vJ3
-S2wghNDSBfcsc0aXTMAcwCib83e5P8lPFa1Uxoztkh107PQT9u478HIwFS75SAT4
-BMkZOD8lyu4PLUSn73AqtqT6SV57nc02qJeLdfgc6/OMjXb7eH9FdeTr6J0+BVmj
-+PQC1KC72DqT4zf0e5yGz1RAA7nVFOGojulJTn/uZN70izicNrcWvtm1sbdH/3gQ
-OooZQY4de+PPb/IRnWW6
-=9FhG
+iQEcBAEBCAAGBQJVAB6SAAoJECTWi3JdVIfQF98H+wfuLk8ih7hLPb0M82LgRRu0
+zuTsLDbhahppU75QlvKU7OSRHF9JbC3KzXNbGOSonEtrEE1Zmec1eXKVEfrWQxpP
+2cLPMMtI6r3yu1IMqkTtDm1qSFzdwDnMa9Z0VGNTz5ESFiMiU3CJw+nKoPnvfQ2w
+m8bkNkZgapkpkEwVBPpdS9C//r3BYfl2kAuCZmXqTiIXiv1XGis4LYBOYpKzLCum
+W+NaC51XbG5esIxvWW+oUOnwQcqoU70H6yAe+Lz/EEmyh3Dnib7YCuYdjTjlvGQt
+mhOlu4KAgEVT4hHoayTufUi025P4UzEo1MeMeli9x6uh7iBjOHputLuDc6U/sSA=
+=FmP6
 -----END PGP SIGNATURE-----
 
---OX2aLCKeO1apYW07--
+--zN/UJhV2gvyhY9D2--
