@@ -1,50 +1,49 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [RFC PATCH 2/2] arm64: kernel: perf: add pmu CPU PM notifier
-Date: Wed, 11 Mar 2015 09:02:17 -0700
-Message-ID: <7hh9try12u.fsf@deeprootsystems.com>
-References: <1426008682-5680-1-git-send-email-lorenzo.pieralisi@arm.com>
-	<1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH v6 04/22] power_supply: Move run-time configuration to
+ separate structure
+Date: Wed, 11 Mar 2015 17:06:47 +0100 (CET)
+Message-ID: <alpine.LRH.2.00.1503111706310.13021@twin.jikos.cz>
+References: <1425976046-20973-1-git-send-email-k.kozlowski@samsung.com> <1425976046-20973-5-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:42630 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbbCKQCV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 12:02:21 -0400
-Received: by pdbfl12 with SMTP id fl12so12202239pdb.9
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2015 09:02:20 -0700 (PDT)
-In-Reply-To: <1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
-	(Lorenzo Pieralisi's message of "Tue, 10 Mar 2015 17:31:22 +0000")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1425976046-20973-5-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.orglinux-
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+On Tue, 10 Mar 2015, Krzysztof Kozlowski wrote:
 
-> When a CPU is being profiled through PMU events and it enters suspend
-> or idle states, the PMU registers content can be lost, which means that
-> counters that were relied upon on power down entry are reset on power
-> up to values that are incosistent with the profile session.
->
-> This patch adds a CPU PM notifier to arm64 perf code, that detects
-> on entry if events are being monitored, and if so, it returns
-> failure to the CPU PM notification chain, causing the suspend
-> thread or the idle thread to abort power down, therefore preventing
-> registers content loss.
->
-> By triggering CPU PM notification failure this patch prevents
-> suspending a system if the suspend thread is being profiled and
-> it also prevents entering idle deep states on cores that have profile
-> events in use, somehow limiting power management capabilities when
-> there are active perf sessions.
+> Add new structure 'power_supply_config' for holding run-time
+> initialization data like of_node, supplies and private driver data.
+> 
+> The power_supply_register() function is changed so all power supply
+> drivers need updating.
+> 
+> When registering the power supply this new 'power_supply_config' should be
+> used instead of directly initializing 'struct power_supply'. This allows
+> changing the ownership of power_supply structure from driver to the
+> power supply core in next patches.
+> 
+> When a driver does not use of_node or supplies then it should use NULL
+> as config. If driver uses of_node or supplies then it should allocate
+> config on stack and initialize it with proper values.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> 
+> [for the nvec part]
+> Reviewed-by: Marc Dietrich <marvin24@gmx.de>
+> 
+> [for drivers/platform/x86/compal-laptop.c]
+> Reviewed-by: Darren Hart <dvhart@linux.intel.com>
 
-I guess that's one choice.  Couldn't you also stop the PMU and
-save/restore it's context in the notifiers? so that you wouldn't affect
-PM capabilities?
+Reviewed-by: Jiri Kosina <jkosina@suse.cz>
 
-That would imply that you lose the ability to profile after a certain
-point in suspend/idle, but maybe that's a better trade off than having
-profiling disable certain PM features?
+for changes in drivers/hid/*
 
-Kevin
+-- 
+Jiri Kosina
+SUSE Labs
