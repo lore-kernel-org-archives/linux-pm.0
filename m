@@ -1,67 +1,61 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
-Date: Thu, 12 Mar 2015 19:15:56 +0800
-Message-ID: <CALx668U7EoiMB8D0Num5w9oC0zZkC55uKaSOLrrBhKnLXUtoOQ@mail.gmail.com>
-References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
-	<CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
-	<CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
-	<CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
-	<CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
-	<CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
-	<20150311105307.GW28806@sirena.org.uk>
-	<CAKohpom4riOhzc3hK8B2tiSwGx0zG96C7QNeQB0yZaPMd_OpLw@mail.gmail.com>
-	<20150311124555.GB28806@sirena.org.uk>
-	<CAKohpok=8vU6Nr21n49MHoyk=REEMkuibVk9L+0L7uLnFj==AQ@mail.gmail.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v6 17/22] x86/olpc/xo1/sci: Use newly added
+ power_supply_put API
+Date: Thu, 12 Mar 2015 12:20:57 +0100
+Message-ID: <20150312112057.GB8475@gmail.com>
+References: <1425976046-20973-1-git-send-email-k.kozlowski@samsung.com>
+ <1425976046-20973-18-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f43.google.com ([209.85.215.43]:42548 "EHLO
-	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753034AbbCLLP6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 07:15:58 -0400
-Received: by lams18 with SMTP id s18so14983073lam.9
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2015 04:15:57 -0700 (PDT)
-In-Reply-To: <CAKohpok=8vU6Nr21n49MHoyk=REEMkuibVk9L+0L7uLnFj==AQ@mail.gmail.com>
+Received: from mail-we0-f181.google.com ([74.125.82.181]:44319 "EHLO
+	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbbCLLVF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 07:21:05 -0400
+Content-Disposition: inline
+In-Reply-To: <1425976046-20973-18-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Sascha Hauer <s.hauer@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen Fan <fan.chen@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@li
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Jiri Kosina <jkosina@suse.cz>, David Herrmann <dh.herrmann@googlemail.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Support Opensource <support.opensource@diasemi.com>, Milo Kim <milo.kim@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.orglinux-
 
-On Thu, Mar 12, 2015 at 5:28 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 11 March 2015 at 18:15, Mark Brown <broonie@kernel.org> wrote:
->> Ugh, no - that's a hideous bodge which is only going to create trouble
->> later.  Remember, DT is an ABI and should describe the hardware so if
->> we're doing bodges that are visible there to shoehorn things onto our
->> implementation that's bad.  The concerns that Pi-Cheng had about what
->> happens if the PMIC gets changed definitely seem relevant here too.
->
-> Hmm..
->
->> Why not just write a custom cpufreq driver if it's too hard to abstract?
->
-> Hmm, probably all that can be solved with the new OPP bindings where
-> we can have support for multiple regulator or clock sources to the CPU.
->
-> @Pi-cheng: How are you going to pass voltages for both the regulators
-> as OPPs today only support a single regulator, in case you have to write
-> your own driver.
 
-The voltages of the two regulators need to be always under a limitation:
-100mV < Vsram - Vproc < 200mV
-For now, I just calculate the OPPs of Vsram from OPPs of Vproc.
+* Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
 
-Another thing I should mention, if the voltage difference of two adjacent
-OPPs is greater than 100mV, we need to set the regulator to some
-voltages which are not in OPP table considering the limitation above.
-I think that will make it more difficult to model such flow in a generic
-framework.
+> Replace direct usage of put_device() with new API: power_supply_put().
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Sebastian Reichel <sre@kernel.org>
+> ---
+>  arch/x86/platform/olpc/olpc-xo1-sci.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/platform/olpc/olpc-xo1-sci.c b/arch/x86/platform/olpc/olpc-xo1-sci.c
+> index e4ed28bbf79d..7fa8b3b53bc0 100644
+> --- a/arch/x86/platform/olpc/olpc-xo1-sci.c
+> +++ b/arch/x86/platform/olpc/olpc-xo1-sci.c
+> @@ -61,7 +61,7 @@ static void battery_status_changed(void)
+>  
+>  	if (psy) {
+>  		power_supply_changed(psy);
+> -		put_device(&psy->dev);
+> +		power_supply_put(psy);
+>  	}
+>  }
+>  
+> @@ -71,7 +71,7 @@ static void ac_status_changed(void)
+>  
+>  	if (psy) {
+>  		power_supply_changed(psy);
+> -		put_device(&psy->dev);
+> +		power_supply_put(psy);
+>  	}
+>  }
 
-Best Regards,
-Pi-Cheng
+Acked-by: Ingo Molnar <mingo@kernel.org>
 
->
-> _______________________________________________
-> Linux-mediatek mailing list
-> Linux-mediatek@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+Thanks,
+
+	Ingo
