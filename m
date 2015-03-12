@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RESEND PATCH v6 18/22] x86/olpc/xo15/sci: Use newly added
- power_supply_put API
-Date: Thu, 12 Mar 2015 08:44:16 +0100
-Message-ID: <1426146260-30081-19-git-send-email-k.kozlowski@samsung.com>
+Subject: [RESEND PATCH v6 22/22] arm: mach-pxa: Decrement the power supply's
+ device reference counter
+Date: Thu, 12 Mar 2015 08:44:20 +0100
+Message-ID: <1426146260-30081-23-git-send-email-k.kozlowski@samsung.com>
 References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-input-owner@vger.kernel.org>
 In-reply-to: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,38 +11,34 @@ To: Jiri Kosina <jkosina@suse.cz>, Henrik Rydberg <rydberg@bitmath.org>, linux-i
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace direct usage of put_device() with new API: power_supply_put().
+Use power_supply_put() to decrement the power supply's device reference
+counter.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Reviewed-by: Sebastian Reichel <sre@kernel.org>
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- arch/x86/platform/olpc/olpc-xo15-sci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-pxa/raumfeld.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/platform/olpc/olpc-xo15-sci.c b/arch/x86/platform/olpc/olpc-xo15-sci.c
-index 186634e9021d..55130846ac87 100644
---- a/arch/x86/platform/olpc/olpc-xo15-sci.c
-+++ b/arch/x86/platform/olpc/olpc-xo15-sci.c
-@@ -83,7 +83,7 @@ static void battery_status_changed(void)
+diff --git a/arch/arm/mach-pxa/raumfeld.c b/arch/arm/mach-pxa/raumfeld.c
+index a762b23ac830..6dc4f025e674 100644
+--- a/arch/arm/mach-pxa/raumfeld.c
++++ b/arch/arm/mach-pxa/raumfeld.c
+@@ -758,8 +758,10 @@ static void raumfeld_power_signal_charged(void)
+ 	struct power_supply *psy =
+ 		power_supply_get_by_name(raumfeld_power_supplicants[0]);
  
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(&psy->dev);
+-	if (psy)
++	if (psy) {
+ 		power_supply_set_battery_charged(psy);
 +		power_supply_put(psy);
- 	}
++	}
  }
  
-@@ -93,7 +93,7 @@ static void ac_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(&psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
+ static int raumfeld_power_resume(void)
 -- 
 1.9.1
 
