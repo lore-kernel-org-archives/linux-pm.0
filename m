@@ -1,71 +1,27 @@
-From: Moritz Fischer <moritz.fischer@ettus.com>
-Subject: Re: [PATCH 1/2] power: reset: Add generic SYSCON register mapped poweroff.
-Date: Wed, 11 Mar 2015 17:52:00 -0700
-Message-ID: <CAAtXAHd_imahuXFnGJY7JwpN+zRFG_pvGQbPN+O_u1VAruk8ug@mail.gmail.com>
-References: <1426029670-31775-1-git-send-email-moritz.fischer@ettus.com>
-	<1426029670-31775-2-git-send-email-moritz.fischer@ettus.com>
-	<1426066272.4244.37.camel@x220>
-	<CAAtXAHetS9354mN5LAneMBk07U23hq2eZfqOxoXapG384=+EzQ@mail.gmail.com>
-	<1426115936.4244.132.camel@x220>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] devfreq: event: Add 'const' keyword for devfreq_event_ops
+ structure
+Date: Thu, 12 Mar 2015 01:28:42 +0000 (GMT)
+Message-ID: <1281236635.1678801426123720852.JavaMail.weblogic@epmlwas01c>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:44605 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbbCLAwB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 20:52:01 -0400
-Received: by wivr20 with SMTP id r20so16227271wiv.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2015 17:52:00 -0700 (PDT)
-In-Reply-To: <1426115936.4244.132.camel@x220>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, =?utf-8?Q?=EA=B9=80=EA=B5=AD=EC=A7=84?= <kgene.kim@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Paul,
-
-On Wed, Mar 11, 2015 at 4:18 PM, Paul Bolle <pebolle@tiscali.nl> wrote:
-
-> MODULE_DEVICE_TABLE() is defined only in include/linux/module.h. The few
-> related lines read (in next-20150311):
->     #ifdef MODULE
->     /* Creates an alias so file2alias.c can find device table. */
->     #define MODULE_DEVICE_TABLE(type, name)                                     \
->     extern const typeof(name) __mod_##type##__##name##_device_table             \
->       __attribute__ ((unused, alias(__stringify(name))))
->     #else  /* !MODULE */
->     #define MODULE_DEVICE_TABLE(type, name)
->     #endif
->
-> So I think MODULE_DEVICE_TABLE() is always preprocessed away for boolean
-> code. Did I get that right?
-
-Yeah, looking at that convinced me :) I have it already removed in v2.
->
->> >> +module_platform_driver(syscon_poweroff_driver);
->> >
->> > I think the built-in equivalent of this would be adding a wrapper that
->> > only does
->> >     platform_driver_register(&syscon_poweroff_driver);
->>
->> I couldn't find other examples in the tree doing this. Any pointers?
->
-> Please note "think". But see drivers/cpufreq/dbx500-cpufreq.c:
->     static int __init dbx500_cpufreq_register(void)
->     {
->             return platform_driver_register(&dbx500_cpufreq_plat_driver);
->     }
->     device_initcall(dbx500_cpufreq_register);
->
-> or drivers/gpio/gpio-vf610.c:
->     static int __init gpio_vf610_init(void)
->     {
->             return platform_driver_register(&vf610_gpio_driver);
->     }
->     device_initcall(gpio_vf610_init);
-
-I included it into v3. Thanks.
-
-Thanks again for your feedback,
-
-Moritz
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSAnY29uc3QnIGtleXdvcmQgZm9yIGRldmZyZXFf
+ZXZlbnRfb3BzIHN0cnVjdHVyZQ0KPiBiZWNhdXNlIHRoZSBvcHMgb2YgZGV2ZnJlcV9ldmVudF9k
+ZXNjIHN0cnVjdHVyZSBzaG9sZCBub3QgYmUgY2hhbmdlZA0KPiBhZnRlciBpbml0aWFsaXphdGlv
+bi4NCj4gDQo+IENjOiBNeXVuZ2pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCj4g
+Q2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQo+IFNpZ25lZC1v
+ZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPg0KPiAtLS0NCj4gIGRy
+aXZlcnMvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBtdS5jIHwgMiArLQ0KPiAgaW5jbHVkZS9saW51
+eC9kZXZmcmVxLWV2ZW50LmggICAgICAgfCAyICstDQo+ICAyIGZpbGVzIGNoYW5nZWQsIDIgaW5z
+ZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gDQoNCk1lcmdlZCB3aXRoIGEgbGl0dGxlIHJl
+cGhyYXNpbmcuDQoNClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNh
+bXN1bmcuY29tPg0KDQoNCg==
