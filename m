@@ -1,69 +1,46 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCHv2 1/2] power: reset: Add generic SYSCON register mapped
- poweroff.
-Date: Thu, 12 Mar 2015 00:48:40 +0100
-Message-ID: <20150311234839.GA21023@earth>
-References: <1426113145-2921-1-git-send-email-moritz.fischer@ettus.com>
- <1426113145-2921-2-git-send-email-moritz.fischer@ettus.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Subject: [PATCHv3 0/2] Add support for generic register mapped poweroff.
+Date: Wed, 11 Mar 2015 17:37:17 -0700
+Message-ID: <1426120639-4248-1-git-send-email-moritz.fischer@ettus.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55992 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbbCKXtA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Mar 2015 19:49:00 -0400
-Content-Disposition: inline
-In-Reply-To: <1426113145-2921-2-git-send-email-moritz.fischer@ettus.com>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:35342 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbbCLAhg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2015 20:37:36 -0400
+Received: by pdbfp1 with SMTP id fp1so15413652pdb.2
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2015 17:37:36 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Moritz Fischer <moritz.fischer@ettus.com>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: sre@kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>
 
+This patchset adds support for generic register mapped poweroff via SYCON.
 
---Q68bSM7Ycu6FN28Q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+v3:
+ - Fixed OF dependecies (again) as suggested by Sebastian
+ - Remove (more) module specific stuff as suggested by Paul
 
-Hi Moritz,
+v2:
+ - Fixed documentation copy & paste
+ - Deal with OF dependecies as suggested by Sebastian
+ - Remove module specific stuff as suggested by Paul
 
-On Wed, Mar 11, 2015 at 03:32:24PM -0700, Moritz Fischer wrote:
-> [...]
-> +static struct platform_driver syscon_poweroff_driver = {
-> +	.probe = syscon_poweroff_probe,
-> +	.remove = syscon_poweroff_remove,
-> +	.driver = {
-> +		.name = "syscon-poweroff",
-> +		.of_match_table = of_match_ptr(syscon_poweroff_of_match),
+v1:
+ - Earlier versions of this were specific to our product, however,
+   as Sebastian suggested, it can be generalized into a generic driver.
 
-Sorry if it was unclear from my previous message - of_match_ptr() is
-only needed for optional OF support. Since you removed the #ifdef
-around syscon_poweroff_of_match, of_match_ptr() is not needed.
+Moritz Fischer (2):
+  power: reset: Add generic SYSCON register mapped poweroff.
+  dt: power: Add docs for generic SYSCON poweroff driver.
 
-> [...]
+ .../bindings/power/reset/syscon-poweroff.txt       |  23 +++++
+ drivers/power/reset/Kconfig                        |   7 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/syscon-poweroff.c              | 102 +++++++++++++++++++++
+ 4 files changed, 133 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt
+ create mode 100644 drivers/power/reset/syscon-poweroff.c
 
--- Sebastian
+-- 
+1.9.3
 
---Q68bSM7Ycu6FN28Q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVANRUAAoJENju1/PIO/qaGs4P/ihBCjKBr8eJpYk7WDSEL8cy
-yu7iBSUMhTUaqVX0GX0GRd/iT51wdlY2Mz/bm9wtqepvsDHPo9dW5zey+d1vOmTQ
-8mYoLMVI3pebO/fXdD06TEMFx5uAulnxz12jKYYPivHHy5NDYi0v+4hphzdQt+ED
-MbatH3IHPUUYDm6/ifc5t3iAxR7QKulw4BgIp5JUxl7SVrv+zcVXD0aFXQbhe7uk
-urfNG6A+58qE80aB9xPCvaVYzH/cQXNR7CzE1Q01X5xWFyU2KgUKHX7xdBA7Hu9U
-2jgjbGI4wNrTfAhv9Yf50BNxKB3/DNyyolTuc4Tr5w+xJorslxBrkI6E0gVBaAL6
-EbdBA66XTn4cSYNscLWAPLJoadkRHqA2939PXlkmhrkeJWDeOjH3c+jg+YmEMmzM
-p6JigZuBTHQPuMwjqvbY9x9ihXT4GRPRz7wdo/qwALF09ENPPcJOZG0zZU4R6183
-kiCyLtNHPbLnskONq8n45TctPO4Yt/ZFbH7KFM3R7m4bFlVQT9PgwtWsLcE4sxIE
-aWKow4cJNbLeAsoWcYoYwS+MG6PU+QBlszonGVTAJwusQle2Ek1eQO3EKSFClyoC
-XFb6+LR7YgXoF3D4wJFt9dxbWlYYRG2l+yVP3CxyAlm0nd2BkwkLC8Jbc3M2TTw/
-j7XgLsGrodG4Oiys8p8u
-=hZtH
------END PGP SIGNATURE-----
-
---Q68bSM7Ycu6FN28Q--
