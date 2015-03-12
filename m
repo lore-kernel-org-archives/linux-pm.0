@@ -1,167 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/9] pm: domains: sync runtime PM status with PM domains after probe
-Date: Fri, 13 Mar 2015 00:25:19 +0100
-Message-ID: <2041471.94k4reeAUh@vostro.rjw.lan>
-References: <20150312183020.GU8656@n2100.arm.linux.org.uk> <E1YW7sv-0003mA-JP@rmk-PC.arm.linux.org.uk>
+Subject: Re: [PATCH v4 1/2] Mailbox: Restructure and simplify PCC mailbox code
+Date: Fri, 13 Mar 2015 00:28:14 +0100
+Message-ID: <1993436.YrcLMSCsYF@vostro.rjw.lan>
+References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org> <CAJ5Y-eYVdTiHAh4QsMo-O12VnumuVGP2hgMaMOKObJEMHEv1fQ@mail.gmail.com> <CAJ5Y-eb96WKeenPGoENm90HTaTWNZD61tfyZcjyC+=o08F+opQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61812 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52823 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752838AbbCLXBd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 19:01:33 -0400
-In-Reply-To: <E1YW7sv-0003mA-JP@rmk-PC.arm.linux.org.uk>
+	with SMTP id S1751439AbbCLXE1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 19:04:27 -0400
+In-Reply-To: <CAJ5Y-eb96WKeenPGoENm90HTaTWNZD61tfyZcjyC+=o08F+opQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On Thursday, March 12, 2015 06:31:05 PM Russell King wrote:
-> Synchronise the PM domain status with runtime PM's status after a
-> platform device has been probed.  This augments the solution in commit
-> 2ed127697eb1 ("PM / Domains: Power on the PM domain right after attach
-> completes").
+On Friday, February 13, 2015 07:01:30 PM Ashwin Chaugule wrote:
+> On 13 February 2015 at 18:31, Ashwin Chaugule
+> <ashwin.chaugule@linaro.org> wrote:
+> > Hi Rafael,
+> >
+> > On 13 February 2015 at 09:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> On Friday, February 13, 2015 08:07:44 AM Ashwin Chaugule wrote:
+> >>> Hello,
+> >>>
+> >>> On 27 January 2015 at 16:03, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
+> >>> > Previously the PCC driver depended on the client
+> >>> > side to map the communication space base address. This region
+> >>> > was was then used in the PCC driver and the client side.
+> >>> > The client side used this region to read and write its data
+> >>> > and the PCC driver used it to only write the PCC command.
+> >>> > Removing this split simplifies the PCC driver a lot. This patch
+> >>> > moves all communication region read/writes to the client side.
+> >>> > The PCC clients can now drive the PCC mailbox controller via the
+> >>> > mbox_client_txdone() method.
+> >>> >
+> >>> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> >>> > ---
+> >>> >  drivers/mailbox/pcc.c | 122 +++++++++++++++-----------------------------------
+> >>> >  1 file changed, 37 insertions(+), 85 deletions(-)
+> >>>
+> >>> Gentle reminder for this patch specifically. It can be pulled in by
+> >>> itself separately from the CPPC patch[2/2], which understandably may
+> >>> need more time for review. Apart from the simplification done here,
+> >>> there is one more change based on a comment I got from Rafael tow
+> >>> convert a pr_err() in the init function to pr_debug(). The "PCC Probe
+> >>> failed" message seems to be raising false positives on X86 test
+> >>> reports. Please let me know if there are any other suggestions, before
+> >>> I respin another version for this.
+> >>
+> >> The patch changing the pr_err() to pr_debug() is in the Linus' tree already
+> >> as far as I can say.
+> >
+> > Thanks for that.
+> >
+> >>
+> >> Besides, this should be To: the maintainer of the mailbox susbsystem (not
+> >> me) or if you want me to pick it up, I need and ACK from that maintainer
+> >> anyway.
+> >
+> > Is there a way to do that separately for each patch in a patchset?
+> > Anyway, I'll rebase this patch to tip and send it separately To:
+> > Jassi.
 > 
-> The above commit added a call to power up the PM domain when a device
-> attaches to the domain in order to match the behaviour required by
-> drivers that make no use of runtime PM.  The assumption is that the
-> device driver will cause a runtime PM transition, which will synchronise
-> the PM domain state with the runtime PM state.
-> 
-> However, by default, runtime PM will assume that the device is initially
-> suspended, and some drivers may make use of this should they not need to
-> touch the hardware during probe.
-> 
-> In order to allow such drivers, trigger the PM domain code to check
-> whether the PM domain can be suspended after the probe function, undoing
-> the effect of the power-on prior to the probe.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> Rebasing to tip and applying this patch didnt cause any merge
+> conflicts. So I think instead of generating more patch traffic just
+> yet, its probably better to review this as is. Let me know if anyone
+> thinks otherwise. I'll try to ping Jassi offline.
 
-That works for me.
+Can you please remind me what the status here is?  Is this the final version
+I'm supposed to review or are you going to submit a new one?
 
-Kevin, Ulf?
-
-> ---
->  drivers/base/platform.c     |  2 ++
->  drivers/base/power/common.c | 15 +++++++++++++++
->  drivers/base/power/domain.c | 23 +++++++++++++++++++++++
->  include/linux/pm.h          |  1 +
->  include/linux/pm_domain.h   |  4 ++++
->  5 files changed, 45 insertions(+)
-> 
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index 9421fed40905..552d1affc060 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -512,6 +512,8 @@ static int platform_drv_probe(struct device *_dev)
->  		ret = drv->probe(dev);
->  		if (ret)
->  			dev_pm_domain_detach(_dev, true);
-> +		else
-> +			dev_pm_domain_sync(_dev);
->  	}
->  
->  	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
-> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index b0f138806bbc..8c739a14d3c7 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -134,3 +134,18 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
->  		dev->pm_domain->detach(dev, power_off);
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-> +
-> +/**
-> + * dev_pm_domain_sync - synchronise the PM domain state with its devices
-> + * @dev: device corresponding with domain
-> + *
-> + * Synchronise the PM domain state with the recently probed device, which
-> + * may be in a variety of PM states.  This ensures that a device which
-> + * enables runtime PM in suspended state, and never transitions to active
-> + * in its probe handler is properly suspended after the probe.
-> + */
-> +void dev_pm_domain_sync(struct device *dev)
-> +{
-> +	if (dev->pm_domain && dev->pm_domain->sync)
-> +		dev->pm_domain->sync(dev);
-> +}
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 11a1023fa64a..13ae3355dff7 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2157,6 +2157,28 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
->  	genpd_queue_power_off_work(pd);
->  }
->  
-> +static void genpd_dev_pm_sync(struct device *dev)
-> +{
-> +	struct generic_pm_domain *pd = NULL, *gpd;
-> +
-> +	if (!dev->pm_domain)
-> +		return;
-> +
-> +	mutex_lock(&gpd_list_lock);
-> +	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> +		if (&gpd->domain == dev->pm_domain) {
-> +			pd = gpd;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&gpd_list_lock);
-> +
-> +	if (!pd)
-> +		return;
-> +
-> +	genpd_queue_power_off_work(pd);
-> +}
-> +
->  /**
->   * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
->   * @dev: Device to attach.
-> @@ -2223,6 +2245,7 @@ int genpd_dev_pm_attach(struct device *dev)
->  	}
->  
->  	dev->pm_domain->detach = genpd_dev_pm_detach;
-> +	dev->pm_domain->sync = genpd_dev_pm_sync;
->  	pm_genpd_poweron(pd);
->  
->  	return 0;
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 8b5976364619..676ca4055239 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -607,6 +607,7 @@ extern int dev_pm_put_subsys_data(struct device *dev);
->  struct dev_pm_domain {
->  	struct dev_pm_ops	ops;
->  	void (*detach)(struct device *dev, bool power_off);
-> +	void (*sync)(struct device *dev);
->  };
->  
->  /*
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index a9edab2c787a..8d58b30e23ac 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -319,12 +319,16 @@ static inline int of_genpd_add_provider_onecell(struct device_node *np,
->  #ifdef CONFIG_PM
->  extern int dev_pm_domain_attach(struct device *dev, bool power_on);
->  extern void dev_pm_domain_detach(struct device *dev, bool power_off);
-> +void dev_pm_domain_sync(struct device *dev);
->  #else
->  static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
->  {
->  	return -ENODEV;
->  }
->  static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
-> +static inline void dev_pm_domain_sync(struct device *dev)
-> +{
-> +}
->  #endif
->  
->  #endif /* _LINUX_PM_DOMAIN_H */
-> 
 
 -- 
 I speak only for myself.
