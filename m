@@ -1,97 +1,95 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RESEND PATCH v6 09/22] mfd: ab8500: Use power_supply_*() API
- for accessing function attrs
-Date: Thu, 12 Mar 2015 12:03:51 +0000
-Message-ID: <20150312120351.GA3383@x1>
-References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
- <1426146260-30081-10-git-send-email-k.kozlowski@samsung.com>
- <20150312090156.GB3314@x1>
- <1426152267.31959.1.camel@AMDC1943>
- <20150312095017.GE3314@x1>
- <1426156597.6371.5.camel@AMDC1943>
+From: Vince Hsu <vinceh@nvidia.com>
+Subject: [PATCH v2 00/17] Add generic PM domain support for Tegra SoCs
+Date: Thu, 12 Mar 2015 20:15:01 +0800
+Message-ID: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1426156597.6371.5.camel@AMDC1943>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:6197 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbbCLMPB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 08:15:01 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: thierry.reding@gmail.com, pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gnurou@gmail.com, jroedel@suse.de, p.zabel@pengutronix.de, mturquette@linaro.org, pgaikwad@nvidia.com, sboyd@codeaurora.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tbergstrom@nvidia.com, airlied@linux.ie, bhelgaas@google.com, tj@kernel.org, arnd@arndb.de, robh@kernel.org, will.deacon@arm.com
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, Vince Hsu <vinceh@nvidia.com>
 
-On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
+Hi,
 
-> On czw, 2015-03-12 at 09:50 +0000, Lee Jones wrote:
-> > On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
-> > > On czw, 2015-03-12 at 09:01 +0000, Lee Jones wrote:
-> > > > On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
-> > > >=20
-> > > > > Replace direct calls to power supply function attributes with=
- wrappers.
-> > > > > Wrappers provide safe access in case of unregistering the pow=
-er
-> > > > > supply (e.g. by removing the driver). Replace:
-> > > > >  - get_property -> power_supply_get_property
-> > > > >=20
-> > > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > > > Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> > > > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > > > Acked-by: Lee Jones <lee.jones@linaro.org>
-> > > > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.=
-com>
-> > > > > Reviewed-by: Sebastian Reichel <sre@kernel.org>
-> > > > > ---
-> > > > >  drivers/mfd/ab8500-sysctrl.c | 7 ++++---
-> > > > >  1 file changed, 4 insertions(+), 3 deletions(-)
-> > > >=20
-> > > > Has the infrastructure for these been merged yet?
-> > > >=20
-> > > > I.e. Can I just take them?
-> > >=20
-> > > Previous patches were not merged yet so you cannot take it. This =
-whole
-> > > patchset can be applied incrementally but cherry picking won't wo=
-rk.
-> >=20
-> > So I only usually receive patches I've already Acked when a) the bu=
-lk
-> > of the set has been merged and I can apply the remaining lingerers,=
- or
-> > b) the whole set is due to be applied through the MFD tree.
-> >=20
-> > Receiving 2 patches of a 22 patch set, which I have already Acked a=
-nd
-> > that I can't pick is unwelcome noise.
->=20
-> Sorry for the noise, it should not happen.
->=20
-> That is strange, how did you receive this patch? I resent this only t=
-o
-> certain recipients because previous mail got lost in spam filters (to=
-o
-> many recipients).
->=20
-> I did not put other maintainers (like you) this time on cc-list.
-> git-send-email also did not cc-ed you (your email is not listed in
-> send-email log).
->=20
-> How this email managed to get to you? :)
+This is the v2 of Tegra generic PM domain support. The v1 is the RFC
+series[1].
 
-That's a good question.  It just arrived in my Inbox.
+Patch 1 adds the new function of_reset_control_get_by_index().
 
-Anyway, not to worry.
+Patch 2 - 5 add the MC flush operations for Tegra30/Tegra114/Tegra124.
 
-Let me know when the other patches have been merged, so I can apply
-these.
+Patch 6 is a PLLD fix for Tegra114.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe linux-input" =
-in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Patch 7 is based on Thierry's proof-of-concept work and adds necessary
+changes to support DT parsing and power sequence.
+
+Patch 8 - 11 add the power domain nodes into DT.
+
+Patch 12 - 17 are the clean up for the legacy powergate API. 
+
+TODO:
+* The GR3D is broken on ToT now. Have to verify it with this series after
+   we fix it properly.
+
+v2:
+* Add support for Tegra30/Tegra114
+* Address Alex's comments 
+
+[1] http://www.spinics.net/lists/linux-tegra/msg21012.html
+
+Thanks,
+Vince
+
+Thierry Reding (1):
+  soc: tegra: pmc: Add generic PM domain support
+
+Vince Hsu (16):
+  reset: add of_reset_control_get_by_index()
+  memory: tegra: add mc flush support
+  memory: tegra: add flush operation for Tegra30 memory clients
+  memory: tegra: add flush operation for Tegra114 memory clients
+  memory: tegra: add flush operation for Tegra124 memory clients
+  clk: tegra: remove TEGRA_PLL_USE_LOCK for PLLD/PLLD2
+  ARM: tegra: add PM domain device nodes to Tegra30 DT
+  ARM: tegra: add PM domain device nodes to Tegra114 DT
+  ARM: tegra: add PM domain device nodes to Tegra124 DT
+  ARM: tegra: add GPU power supply to Jetson TK1 DT
+  drm/tegra: dc: remove the power sequence from driver
+  PCI: tegra: remove the power sequence from driver
+  ata: ahci_tegra: remove power sequence from driver
+  drm/tegra: remove GR3D power sequence from driver
+  ARM: tegra: select PM_GENERIC_DOMAINS
+  soc/tegra: remove lagacy powergate APIs
+
+ arch/arm/boot/dts/tegra114.dtsi             |  43 +-
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts   |   4 +
+ arch/arm/boot/dts/tegra124.dtsi             |  86 +++-
+ arch/arm/boot/dts/tegra30.dtsi              |  45 +-
+ arch/arm/mach-tegra/Kconfig                 |   1 +
+ drivers/ata/ahci_tegra.c                    |  11 -
+ drivers/clk/tegra/clk-tegra114.c            |   6 +-
+ drivers/gpu/drm/tegra/dc.c                  |  46 +-
+ drivers/gpu/drm/tegra/gr3d.c                |  32 +-
+ drivers/memory/tegra/mc.c                   | 122 ++++++
+ drivers/memory/tegra/mc.h                   |   5 +
+ drivers/memory/tegra/tegra114.c             | 106 ++++-
+ drivers/memory/tegra/tegra124.c             |  38 +-
+ drivers/memory/tegra/tegra30.c              |  80 +++-
+ drivers/pci/host/pci-tegra.c                |  22 +-
+ drivers/reset/core.c                        |  44 +-
+ drivers/soc/tegra/pmc.c                     | 657 +++++++++++++++++++++++++---
+ include/dt-bindings/power/tegra-powergate.h |  30 ++
+ include/linux/reset.h                       |   9 +
+ include/soc/tegra/mc.h                      |  46 +-
+ include/soc/tegra/pmc.h                     |  22 -
+ 21 files changed, 1255 insertions(+), 200 deletions(-)
+ create mode 100644 include/dt-bindings/power/tegra-powergate.h
+
+-- 
+2.1.4
+
