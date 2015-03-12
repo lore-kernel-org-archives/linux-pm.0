@@ -1,101 +1,91 @@
-From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2 14/17] ata: ahci_tegra: remove power sequence from
- driver
-Date: Thu, 12 Mar 2015 20:23:18 +0800
-Message-ID: <55018536.2050904@nvidia.com>
-References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com> <1426162518-7405-15-git-send-email-vinceh@nvidia.com> <20150312121912.GJ25944@htj.duckdns.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH v15 04/11] ARM: cpuidle: Register cpuidle_ops for
+ QCOM cpus
+Date: Thu, 12 Mar 2015 13:34:08 +0100
+Message-ID: <550187C0.4020006@linaro.org>
+References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org> <1425914206-22295-5-git-send-email-lina.iyer@linaro.org> <5500866F.6080704@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="------------090109030103030308020303"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150312121912.GJ25944-piEFEHQLUPpN0TnZuCh8vA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jroedel-l3A5Bk7waGM@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:40492 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbbCLMeM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 08:34:12 -0400
+Received: by wevk48 with SMTP id k48so15989573wev.7
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2015 05:34:10 -0700 (PDT)
+In-Reply-To: <5500866F.6080704@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
 
---------------090109030103030308020303
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Cc'd Hans.
-
-Thanks,
-Vince
-
-On 03/12/2015 08:19 PM, Tejun Heo wrote:
-> On Thu, Mar 12, 2015 at 08:15:15PM +0800, Vince Hsu wrote:
->> We have the generic PM domain support for Tegra SoCs now. So remove the
->> duplicated sequence here.
+On 03/11/2015 07:16 PM, Stephen Boyd wrote:
+> On 03/09/15 08:16, Lina Iyer wrote:
+>> Register cpuidle ops for Krait Processor Sub-System.
+>> Supports v1 and v2 versions of KPSS.
 >>
->> Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> Can you please repost this patch w/ Hans de Goede
-> <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> cc'd?  Just reposting the patch as a reply to
-> itself w/ the cc added should do.
+>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Kevin Hilman <khilman@linaro.org>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>>   arch/arm/include/asm/cpuidle_ops.h | 5 +++++
+>>   1 file changed, 5 insertions(+)
+>>
+>> diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/a=
+sm/cpuidle_ops.h
+>> index be0a612..40cb262 100644
+>> --- a/arch/arm/include/asm/cpuidle_ops.h
+>> +++ b/arch/arm/include/asm/cpuidle_ops.h
+>> @@ -1,3 +1,8 @@
+>>   /*
+>>    * List of cpuidle operations
+>>    */
+>> +
+>> +#if IS_ENABLED(CONFIG_QCOM_PM)
 >
-> Thanks.
+> Why not #ifdef CONFIG_QCOM_PM? I thought IS_ENABLED was for C code wh=
+ere
+> you want to put it in an if () statement.
+
+This is right. But the IS_ENABLED is also valid.
+
+It seems the current trend is to replace #ifdef with #if IS_ENABLED. It=
+=20
+is supposed to prevent to create or'ed conditional with the module supp=
+ort.
+
+eg:
+
+#if defined(CONFIG_FOO) || defined(CONFIG_FOO_MODULE)
+
+is replaced by:
+
+#if IS_ENABLED(CONFIG_FOO)
+
+Lina: By the way, it would be preferable to use the=20
+CONFIG_ARM_QCOM_CPUIDLE where IS_ENABLED makes more sense even the=20
+drivers are not modules (who knows if they are converted as module agai=
+n=20
+hence #ifdef will be invalid).
+
+
+
+>> +CPUIDLE_OPS(qcom_kpss_v1)
+>> +CPUIDLE_OPS(qcom_kpss_v2)
+>> +#endif
+>
 >
 
 
---------------090109030103030308020303
-Content-Type: text/x-patch;
-	name="0014-ata-ahci_tegra-remove-power-sequence-from-driver.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="0014-ata-ahci_tegra-remove-power-sequence-from-driver.patch"
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
->From afff7ff2011f2c3f159726ffddeaeec8f62f013e Mon Sep 17 00:00:00 2001
-From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Date: Wed, 14 Jan 2015 11:01:06 +0800
-Subject: [PATCH v2 14/17] ata: ahci_tegra: remove power sequence from driver
-X-NVConfidentiality: public
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-We have the generic PM domain support for Tegra SoCs now. So remove the
-duplicated sequence here.
-
-Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
----
- drivers/ata/ahci_tegra.c | 11 -----------
- 1 file changed, 11 deletions(-)
-
-diff --git a/drivers/ata/ahci_tegra.c b/drivers/ata/ahci_tegra.c
-index 3a62eb246d80..8151587ddb70 100644
---- a/drivers/ata/ahci_tegra.c
-+++ b/drivers/ata/ahci_tegra.c
-@@ -120,12 +120,6 @@ static int tegra_ahci_power_on(struct ahci_host_priv *hpriv)
- 	if (ret)
- 		return ret;
- 
--	ret = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_SATA,
--						tegra->sata_clk,
--						tegra->sata_rst);
--	if (ret)
--		goto disable_regulators;
--
- 	reset_control_assert(tegra->sata_oob_rst);
- 	reset_control_assert(tegra->sata_cold_rst);
- 
-@@ -140,10 +134,6 @@ static int tegra_ahci_power_on(struct ahci_host_priv *hpriv)
- 
- disable_power:
- 	clk_disable_unprepare(tegra->sata_clk);
--
--	tegra_powergate_power_off(TEGRA_POWERGATE_SATA);
--
--disable_regulators:
- 	regulator_bulk_disable(ARRAY_SIZE(tegra->supplies), tegra->supplies);
- 
- 	return ret;
-@@ -160,7 +150,6 @@ static void tegra_ahci_power_off(struct ahci_host_priv *hpriv)
- 	reset_control_assert(tegra->sata_cold_rst);
- 
- 	clk_disable_unprepare(tegra->sata_clk);
--	tegra_powergate_power_off(TEGRA_POWERGATE_SATA);
- 
- 	regulator_bulk_disable(ARRAY_SIZE(tegra->supplies), tegra->supplies);
- }
--- 
-2.1.4
-
-
---------------090109030103030308020303--
