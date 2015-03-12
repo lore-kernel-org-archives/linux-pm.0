@@ -1,44 +1,60 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
-Date: Thu, 12 Mar 2015 14:58:55 +0530
-Message-ID: <CAKohpok=8vU6Nr21n49MHoyk=REEMkuibVk9L+0L7uLnFj==AQ@mail.gmail.com>
-References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
-	<CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
-	<CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
-	<CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
-	<CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
-	<CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
-	<20150311105307.GW28806@sirena.org.uk>
-	<CAKohpom4riOhzc3hK8B2tiSwGx0zG96C7QNeQB0yZaPMd_OpLw@mail.gmail.com>
-	<20150311124555.GB28806@sirena.org.uk>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RESEND PATCH v6 09/22] mfd: ab8500: Use power_supply_*() API
+ for accessing function attrs
+Date: Thu, 12 Mar 2015 09:50:18 +0000
+Message-ID: <20150312095017.GE3314@x1>
+References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
+ <1426146260-30081-10-git-send-email-k.kozlowski@samsung.com>
+ <20150312090156.GB3314@x1>
+ <1426152267.31959.1.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150311124555.GB28806-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Chen Fan <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Howard Chen <ibanezchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Joe.C" <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kumar
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1426152267.31959.1.camel@AMDC1943>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11 March 2015 at 18:15, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> Ugh, no - that's a hideous bodge which is only going to create trouble
-> later.  Remember, DT is an ABI and should describe the hardware so if
-> we're doing bodges that are visible there to shoehorn things onto our
-> implementation that's bad.  The concerns that Pi-Cheng had about what
-> happens if the PMIC gets changed definitely seem relevant here too.
+On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
+> On czw, 2015-03-12 at 09:01 +0000, Lee Jones wrote:
+> > On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
+> >=20
+> > > Replace direct calls to power supply function attributes with wra=
+ppers.
+> > > Wrappers provide safe access in case of unregistering the power
+> > > supply (e.g. by removing the driver). Replace:
+> > >  - get_property -> power_supply_get_property
+> > >=20
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > Acked-by: Lee Jones <lee.jones@linaro.org>
+> > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > > Reviewed-by: Sebastian Reichel <sre@kernel.org>
+> > > ---
+> > >  drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+> > >  1 file changed, 4 insertions(+), 3 deletions(-)
+> >=20
+> > Has the infrastructure for these been merged yet?
+> >=20
+> > I.e. Can I just take them?
+>=20
+> Previous patches were not merged yet so you cannot take it. This whol=
+e
+> patchset can be applied incrementally but cherry picking won't work.
 
-Hmm..
+So I only usually receive patches I've already Acked when a) the bulk
+of the set has been merged and I can apply the remaining lingerers, or
+b) the whole set is due to be applied through the MFD tree.
 
-> Why not just write a custom cpufreq driver if it's too hard to abstract?
+Receiving 2 patches of a 22 patch set, which I have already Acked and
+that I can't pick is unwelcome noise.
 
-Hmm, probably all that can be solved with the new OPP bindings where
-we can have support for multiple regulator or clock sources to the CPU.
-
-@Pi-cheng: How are you going to pass voltages for both the regulators
-as OPPs today only support a single regulator, in case you have to write
-your own driver.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
