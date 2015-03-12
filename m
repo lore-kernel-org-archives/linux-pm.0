@@ -1,70 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: If an OF node is found but no device probed
- yet, defer.
-Date: Thu, 12 Mar 2015 09:39:45 +0100
-Message-ID: <CAPDyKFrFOTUVZ6qd5D+-otwAQxXJ78G47p76Pnjmvv_TvkG0=w@mail.gmail.com>
-References: <1426087648-3862-1-git-send-email-eric@anholt.net>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RESEND PATCH v6 09/22] mfd: ab8500: Use power_supply_*() API
+ for accessing function attrs
+Date: Thu, 12 Mar 2015 09:01:56 +0000
+Message-ID: <20150312090156.GB3314@x1>
+References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
+ <1426146260-30081-10-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f170.google.com ([209.85.216.170]:44038 "EHLO
-	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbbCLIjp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 04:39:45 -0400
-Received: by qcwr17 with SMTP id r17so16660240qcw.11
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2015 01:39:45 -0700 (PDT)
-In-Reply-To: <1426087648-3862-1-git-send-email-eric@anholt.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1426146260-30081-10-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eric Anholt <eric@anholt.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 11 March 2015 at 16:27, Eric Anholt <eric@anholt.net> wrote:
-> If we've declared a power domain in the OF, and the OF node is found
-> but the requested domain hasn't been registered on it yet, then we
-> probably have just tried to probe before the power domain driver has.
-> Defer our device's probe until it shows up.
+On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
 
-As Geert also pointed out in his reply; I think the proper solution is
-to move the registration of the PM domain to an earlier init level.
-
-The main reason from my side is that I don't want us to invent yet
-another "probe scenario", since we currently already have some
-difficulties to handle the existing ones. Like the issue below.
-http://marc4.marc.info/?t=142392781500004&r=1&w=2
-
-Kind regards
-Uffe
-
->
-> Signed-off-by: Eric Anholt <eric@anholt.net>
+> Replace direct calls to power supply function attributes with wrapper=
+s.
+> Wrappers provide safe access in case of unregistering the power
+> supply (e.g. by removing the driver). Replace:
+>  - get_property -> power_supply_get_property
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Sebastian Reichel <sre@kernel.org>
 > ---
->
-> I ran into this when turning my ad-hoc code for BCM2835 (Raspberry Pi)
-> USB poweron support in the DWC2 controller to an OF-based power domain
-> declaration.
->
-> drivers/base/power/domain.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index ba4abbe..2b93c98 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2064,7 +2064,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
->  struct generic_pm_domain *of_genpd_get_from_provider(
->                                         struct of_phandle_args *genpdspec)
->  {
-> -       struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
-> +       struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
->         struct of_genpd_provider *provider;
->
->         mutex_lock(&of_genpd_mutex);
-> --
-> 2.1.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+
+Has the infrastructure for these been merged yet?
+
+I.e. Can I just take them?
+
+> diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctr=
+l.c
+> index cfff0b643f1b..d4a4b24be7c6 100644
+> --- a/drivers/mfd/ab8500-sysctrl.c
+> +++ b/drivers/mfd/ab8500-sysctrl.c
+> @@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+>  		if (!psy)
+>  			continue;
+> =20
+> -		ret =3D psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
+> +		ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+> +				&val);
+> =20
+>  		if (!ret && val.intval) {
+>  			charger_present =3D true;
+> @@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+>  	/* Check if battery is known */
+>  	psy =3D power_supply_get_by_name("ab8500_btemp");
+>  	if (psy) {
+> -		ret =3D psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+> -					&val);
+> +		ret =3D power_supply_get_property(psy,
+> +				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+>  		if (!ret && val.intval !=3D POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+>  			printk(KERN_INFO
+>  			       "Charger \"%s\" is connected with known battery."
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-input" =
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
