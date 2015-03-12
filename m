@@ -1,74 +1,94 @@
-From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v2 13/17] PCI: tegra: remove the power sequence from driver
-Date: Thu, 12 Mar 2015 20:15:14 +0800
-Message-ID: <1426162518-7405-14-git-send-email-vinceh@nvidia.com>
+From: Vince Hsu <vinceh@nvidia.com>
+Subject: [PATCH v2 15/17] drm/tegra: remove GR3D power sequence from driver
+Date: Thu, 12 Mar 2015 20:15:16 +0800
+Message-ID: <1426162518-7405-16-git-send-email-vinceh@nvidia.com>
 References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426162518-7405-1-git-send-email-vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jroedel-l3A5Bk7waGM@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: thierry.reding@gmail.com, pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gnurou@gmail.com, jroedel@suse.de, p.zabel@pengutronix.de, mturquette@linaro.org, pgaikwad@nvidia.com, sboyd@codeaurora.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tbergstrom@nvidia.com, airlied@linux.ie, bhelgaas@google.com, tj@kernel.org, arnd@arndb.de, robh@kernel.org, will.deacon@arm.com
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, Vince Hsu <vinceh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
 We have the generic PM domain support for Tegra SoCs now. So remove the
 duplicated power sequence here.
 
-Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Vince Hsu <vinceh@nvidia.com>
 ---
-v2: enable pex clock when powering on
+ drivers/gpu/drm/tegra/gr3d.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
- drivers/pci/host/pci-tegra.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index 00e92720d7f7..b1e2794d6dfa 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -931,12 +931,6 @@ static void tegra_pcie_power_off(struct tegra_pcie *pcie)
- 	if (err < 0)
- 		dev_warn(pcie->dev, "failed to power off PHY: %d\n", err);
+diff --git a/drivers/gpu/drm/tegra/gr3d.c b/drivers/gpu/drm/tegra/gr3d.c
+index 0b3f2b977ba0..fd8642cdc42f 100644
+--- a/drivers/gpu/drm/tegra/gr3d.c
++++ b/drivers/gpu/drm/tegra/gr3d.c
+@@ -281,21 +281,17 @@ static int gr3d_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
--	reset_control_assert(pcie->pcie_xrst);
--	reset_control_assert(pcie->afi_rst);
--	reset_control_assert(pcie->pex_rst);
--
--	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
--
- 	err = regulator_bulk_disable(pcie->num_supplies, pcie->supplies);
- 	if (err < 0)
- 		dev_warn(pcie->dev, "failed to disable regulators: %d\n", err);
-@@ -947,27 +941,17 @@ static int tegra_pcie_power_on(struct tegra_pcie *pcie)
- 	const struct tegra_pcie_soc_data *soc = pcie->soc_data;
- 	int err;
- 
--	reset_control_assert(pcie->pcie_xrst);
--	reset_control_assert(pcie->afi_rst);
--	reset_control_assert(pcie->pex_rst);
--
--	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
--
- 	/* enable regulators */
- 	err = regulator_bulk_enable(pcie->num_supplies, pcie->supplies);
- 	if (err < 0)
- 		dev_err(pcie->dev, "failed to enable regulators: %d\n", err);
- 
--	err = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_PCIE,
--						pcie->pex_clk,
--						pcie->pex_rst);
--	if (err) {
--		dev_err(pcie->dev, "powerup sequence failed: %d\n", err);
-+	err = clk_prepare_enable(pcie->pex_clk);
-+	if (err < 0) {
-+		dev_err(pcie->dev, "failed to enable PEX clock: %d\n", err);
+-	err = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_3D, gr3d->clk,
+-						gr3d->rst);
+-	if (err < 0) {
+-		dev_err(&pdev->dev, "failed to power up 3D unit\n");
++	err = clk_prepare_enable(gr3d->clk);
++	if (err) {
++		dev_err(&pdev->dev, "failed to enable clk\n");
  		return err;
  	}
  
--	reset_control_deassert(pcie->afi_rst);
--
- 	err = clk_prepare_enable(pcie->afi_clk);
+ 	if (gr3d->clk_secondary) {
+-		err = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_3D1,
+-							gr3d->clk_secondary,
+-							gr3d->rst_secondary);
+-		if (err < 0) {
+-			dev_err(&pdev->dev,
+-				"failed to power up secondary 3D unit\n");
+-			return err;
++		err = clk_prepare_enable(gr3d->clk_secondary);
++		if (err) {
++			dev_err(&pdev->dev, "failed to enable secondary clk\n");
++			goto err_clk_sec;
+ 		}
+ 	}
+ 
+@@ -313,7 +309,7 @@ static int gr3d_probe(struct platform_device *pdev)
  	if (err < 0) {
- 		dev_err(pcie->dev, "failed to enable AFI clock: %d\n", err);
+ 		dev_err(&pdev->dev, "failed to register host1x client: %d\n",
+ 			err);
+-		return err;
++		goto err_host1x;
+ 	}
+ 
+ 	/* initialize address register map */
+@@ -323,6 +319,13 @@ static int gr3d_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, gr3d);
+ 
+ 	return 0;
++
++err_clk_sec:
++	clk_disable_unprepare(gr3d->clk);
++err_host1x:
++	clk_disable_unprepare(gr3d->clk_secondary);
++
++	return err;
+ }
+ 
+ static int gr3d_remove(struct platform_device *pdev)
+@@ -337,12 +340,9 @@ static int gr3d_remove(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
+-	if (gr3d->clk_secondary) {
+-		tegra_powergate_power_off(TEGRA_POWERGATE_3D1);
++	if (gr3d->clk_secondary)
+ 		clk_disable_unprepare(gr3d->clk_secondary);
+-	}
+ 
+-	tegra_powergate_power_off(TEGRA_POWERGATE_3D);
+ 	clk_disable_unprepare(gr3d->clk);
+ 
+ 	return 0;
 -- 
 2.1.4
