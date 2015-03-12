@@ -1,162 +1,110 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 3/9] pm: domains: sync runtime PM status with PM domains after
- probe
-Date: Thu, 12 Mar 2015 18:31:05 +0000
-Message-ID: <E1YW7sv-0003mA-JP@rmk-PC.arm.linux.org.uk>
-References: <20150312183020.GU8656@n2100.arm.linux.org.uk>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH] PM / Domains: If an OF node is found but no device probed yet, defer.
+Date: Thu, 12 Mar 2015 12:31:54 -0700
+Message-ID: <877fumvwph.fsf@eliezer.anholt.net>
+References: <1426087648-3862-1-git-send-email-eric@anholt.net> <6516096.HanqZ05BXy@vostro.rjw.lan> <CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:40995 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbbCLSbW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 14:31:22 -0400
-In-Reply-To: <20150312183020.GU8656@n2100.arm.linux.org.uk>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-Synchronise the PM domain status with runtime PM's status after a
-platform device has been probed.  This augments the solution in commit
-2ed127697eb1 ("PM / Domains: Power on the PM domain right after attach
-completes").
+--=-=-=
+Content-Type: text/plain
 
-The above commit added a call to power up the PM domain when a device
-attaches to the domain in order to match the behaviour required by
-drivers that make no use of runtime PM.  The assumption is that the
-device driver will cause a runtime PM transition, which will synchronise
-the PM domain state with the runtime PM state.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-However, by default, runtime PM will assume that the device is initially
-suspended, and some drivers may make use of this should they not need to
-touch the hardware during probe.
+> On Wed, Mar 11, 2015 at 11:08 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> More CCes.
+>>
+>> On Wednesday, March 11, 2015 08:27:28 AM Eric Anholt wrote:
+>>> If we've declared a power domain in the OF, and the OF node is found
+>>> but the requested domain hasn't been registered on it yet, then we
+>>> probably have just tried to probe before the power domain driver has.
+>>> Defer our device's probe until it shows up.
+>>>
+>>> Signed-off-by: Eric Anholt <eric@anholt.net>
+>>
+>> Kevin, Ulf, any chance to have a look at this, please?
+>>
+>>> ---
+>>>
+>>> I ran into this when turning my ad-hoc code for BCM2835 (Raspberry Pi)
+>>> USB poweron support in the DWC2 controller to an OF-based power domain
+>>> declaration.
+>
+> I guess you are initializing the PM domains from module_init()?
+>
+> I use core_initcall() in arch/arm/mach-shmobile/pm-rmobile.c to make sure it's
+> initialized earlier, as e.g. the interrupt controller uses postcore_initcall().
 
-In order to allow such drivers, trigger the PM domain code to check
-whether the PM domain can be suspended after the probe function, undoing
-the effect of the power-on prior to the probe.
+Yeah, it's just going through normal DT-based module initialization as a
+module_platform_driver().  And it depends on another platform driver
+(the mailbox to talk to the firmware in the first place), so it's
+unlikely to show up early.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/base/platform.c     |  2 ++
- drivers/base/power/common.c | 15 +++++++++++++++
- drivers/base/power/domain.c | 23 +++++++++++++++++++++++
- include/linux/pm.h          |  1 +
- include/linux/pm_domain.h   |  4 ++++
- 5 files changed, 45 insertions(+)
+The BCM2835 architecture maintainers don't appear to be fans of fixed
+init sequence stuff (our sequence is just bcm2835_setup_restart(),
+bcm2835_init_clocks(), of_platform_populate()), and I figured
+dependencies expressed in DT were supposed to be the ideal way for
+things these days.  I can try turning my drivers into fixed init
+sequence code, but I don't expect this to go over well.
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 9421fed40905..552d1affc060 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -512,6 +512,8 @@ static int platform_drv_probe(struct device *_dev)
- 		ret = drv->probe(dev);
- 		if (ret)
- 			dev_pm_domain_detach(_dev, true);
-+		else
-+			dev_pm_domain_sync(_dev);
- 	}
- 
- 	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index b0f138806bbc..8c739a14d3c7 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -134,3 +134,18 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
- 		dev->pm_domain->detach(dev, power_off);
- }
- EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-+
-+/**
-+ * dev_pm_domain_sync - synchronise the PM domain state with its devices
-+ * @dev: device corresponding with domain
-+ *
-+ * Synchronise the PM domain state with the recently probed device, which
-+ * may be in a variety of PM states.  This ensures that a device which
-+ * enables runtime PM in suspended state, and never transitions to active
-+ * in its probe handler is properly suspended after the probe.
-+ */
-+void dev_pm_domain_sync(struct device *dev)
-+{
-+	if (dev->pm_domain && dev->pm_domain->sync)
-+		dev->pm_domain->sync(dev);
-+}
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 11a1023fa64a..13ae3355dff7 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2157,6 +2157,28 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
- 	genpd_queue_power_off_work(pd);
- }
- 
-+static void genpd_dev_pm_sync(struct device *dev)
-+{
-+	struct generic_pm_domain *pd = NULL, *gpd;
-+
-+	if (!dev->pm_domain)
-+		return;
-+
-+	mutex_lock(&gpd_list_lock);
-+	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-+		if (&gpd->domain == dev->pm_domain) {
-+			pd = gpd;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&gpd_list_lock);
-+
-+	if (!pd)
-+		return;
-+
-+	genpd_queue_power_off_work(pd);
-+}
-+
- /**
-  * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-  * @dev: Device to attach.
-@@ -2223,6 +2245,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 	}
- 
- 	dev->pm_domain->detach = genpd_dev_pm_detach;
-+	dev->pm_domain->sync = genpd_dev_pm_sync;
- 	pm_genpd_poweron(pd);
- 
- 	return 0;
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 8b5976364619..676ca4055239 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -607,6 +607,7 @@ extern int dev_pm_put_subsys_data(struct device *dev);
- struct dev_pm_domain {
- 	struct dev_pm_ops	ops;
- 	void (*detach)(struct device *dev, bool power_off);
-+	void (*sync)(struct device *dev);
- };
- 
- /*
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index a9edab2c787a..8d58b30e23ac 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -319,12 +319,16 @@ static inline int of_genpd_add_provider_onecell(struct device_node *np,
- #ifdef CONFIG_PM
- extern int dev_pm_domain_attach(struct device *dev, bool power_on);
- extern void dev_pm_domain_detach(struct device *dev, bool power_off);
-+void dev_pm_domain_sync(struct device *dev);
- #else
- static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
- {
- 	return -ENODEV;
- }
- static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
-+static inline void dev_pm_domain_sync(struct device *dev)
-+{
-+}
- #endif
- 
- #endif /* _LINUX_PM_DOMAIN_H */
--- 
-1.8.3.1
+>>> drivers/base/power/domain.c | 2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index ba4abbe..2b93c98 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -2064,7 +2064,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>>>  struct generic_pm_domain *of_genpd_get_from_provider(
+>>>                                       struct of_phandle_args *genpdspec)
+>>>  {
+>>> -     struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+>>> +     struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
+>
+> Currently platform_drv_probe() just continues if dev_pm_domain_attach() returns
+> a different error than -EPROBE_DEFER, which is what you are seeing.
+>
+> Your change does have the side effect that a new DT with PM domains won't
+> work on an older kernel that doesn't have the PM domain driver yet.
+>
+> Whether this is a good or a bad thing depends on your bootloader. If all PM
+> domains are powered when Linux boots, it can work without PM domain driver.
+> Since DT PM domains are quite recent, I guess this is the case for most
+> existing SoCs.
 
+The main bootloader doesn't turn on these domains, thus why I wrote a
+driver for it (so I could get USB and thus netowrking).  You can
+chainload U-Boot and it'll turn it on USB for you, though.
+
+Is there a way we could maybe tell if there's a driver due to try
+probing on the node but that hasn't had a chance yet?  That could
+mitigate the backwards kernel compat for new DT problem.
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVAemrAAoJELXWKTbR/J7oK8wQAKzA2KH69VuNkrkSzxSlcdPP
+EWhJuo4qjFmX/VxFnZcotW6DAVmBv7ykBUMWyhRWZhW0oa1q3SDXbhIQouNsAayZ
+DT3aF8CCE6dnTJRosxF0uURzpIlJ/naaKlWY7hNvhXzlL58LVzzJ3VRPcl7c38D0
+6Rps0G3LPU7yWVvcoK0teaJ3F9qDG7XmAca6fCbIkWiqW2aaVfHbUtsQoJT7j2fR
+dU89cFNCQjGMlVSTGj5qQ79F0MpBCqCuwBns2YQxfjAjd4rlqTqQJLrvK8T/cDXH
+CGxC+DcviL02AOHZbddClpbTVN/RMgI+NaDLNBXiAz/e3HoC7njlanFteThPi441
+ZyOIjtIGSLFBeqTVzP4phTFrbPqyGTFl38xb3xE/h5xyWrXtLz5s6XGBTtM3gxLE
+IOp2MLP8pvpBDZdK1c1ppqhZ2A8Wc1+oXIycQGOUQLhjBpeF1oNoEX0hQR6AuWNa
+fVpowTI9pFv2YD9l1blaa6HNdFp097B4uwwEdEMikqdyN229Q4B1AjeyM0hWhYdB
+15B3ykbJEBFFpMomkzQakr6BUx3wHEO2/F6z7w1FDQBFutBmQ4oeS1ADfRWuipeu
+wdiTzcnbUS2I+/E6l5LQC32enyxgimEUn//ORJEcOyshQghj9JnLSeG2iLz/iAib
+dQPCW8XC6/+zOmZFYADQ
+=wCzf
+-----END PGP SIGNATURE-----
+--=-=-=--
