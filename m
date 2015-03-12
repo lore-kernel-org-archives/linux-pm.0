@@ -1,124 +1,117 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [RESEND PATCH v6 13/22] power_supply: Change ownership from
- driver to core
-Date: Thu, 12 Mar 2015 09:47:03 -0400 (EDT)
-Message-ID: <alpine.LNX.2.00.1503120946220.24876@pobox.suse.cz>
-References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com> <1426146260-30081-14-git-send-email-k.kozlowski@samsung.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/6] ARM: cpuidle: Unify the ARM64/ARM DT approach
+Date: Thu, 12 Mar 2015 15:25:34 +0100
+Message-ID: <5501A1DE.9020804@linaro.org>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:40231 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754555AbbCLNrI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 12 Mar 2015 09:47:08 -0400
-In-Reply-To: <1426146260-30081-14-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1425385777-14766-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin.Marinas-5wv7dgnIgG8@public.gmane.org, robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
 
-> Change the ownership of power_supply structure from each driver
-> implementing the class to the power supply core.
-> 
-> The patch changes power_supply_register() function thus all drivers
-> implementing power supply class are adjusted.
-> 
-> Each driver provides the implementation of power supply. However it
-> should not be the owner of power supply class instance because it is
-> exposed by core to other subsystems with power_supply_get_by_name().
-> These other subsystems have no knowledge when the driver will unregister
-> the power supply. This leads to several issues when driver is unbound -
-> mostly because user of power supply accesses freed memory.
-> 
-> Instead let the core own the instance of struct 'power_supply'.  Other
-> users of this power supply will still access valid memory because it
-> will be freed when device reference count reaches 0. Currently this
-> means "it will leak" but power_supply_put() call in next patches will
-> solve it.
-> 
-> This solves invalid memory references in following race condition
-> scenario:
-> 
-> Thread 1: charger manager
-> Thread 2: power supply driver, used by charger manager
-> 
-> THREAD 1 (charger manager)         THREAD 2 (power supply driver)
-> ==========================         ==============================
-> psy = power_supply_get_by_name()
->                                    Driver unbind, .remove
->                                      power_supply_unregister()
->                                      Device fully removed
-> psy->get_property()
-> 
-> The 'get_property' call is executed in invalid context because the driver was
-> unbound and struct 'power_supply' memory was freed.
-> 
-> This could be observed easily with charger manager driver (here compiled
-> with max17040 fuel gauge):
-> 
-> $ cat /sys/devices/virtual/power_supply/cm-battery/capacity &
-> $ echo "1-0036" > /sys/bus/i2c/drivers/max17040/unbind
-> [   55.725123] Unable to handle kernel NULL pointer dereference at virtual address 00000000
-> [   55.732584] pgd = d98d4000
-> [   55.734060] [00000000] *pgd=5afa2831, *pte=00000000, *ppte=00000000
-> [   55.740318] Internal error: Oops: 80000007 [#1] PREEMPT SMP ARM
-> [   55.746210] Modules linked in:
-> [   55.749259] CPU: 1 PID: 2936 Comm: cat Tainted: G        W       3.19.0-rc1-next-20141226-00048-gf79f475f3c44-dirty #1496
-> [   55.760190] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-> [   55.766270] task: d9b76f00 ti: daf54000 task.ti: daf54000
-> [   55.771647] PC is at 0x0
-> [   55.774182] LR is at charger_get_property+0x2f4/0x36c
-> [   55.779201] pc : [<00000000>]    lr : [<c034b0b4>]    psr: 60000013
-> [   55.779201] sp : daf55e90  ip : 00000003  fp : 00000000
-> [   55.790657] r10: 00000000  r9 : c06e2878  r8 : d9b26c68
-> [   55.795865] r7 : dad81610  r6 : daec7410  r5 : daf55ebc  r4 : 00000000
-> [   55.802367] r3 : 00000000  r2 : daf55ebc  r1 : 0000002a  r0 : d9b26c68
-> [   55.808879] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-> [   55.815994] Control: 10c5387d  Table: 598d406a  DAC: 00000015
-> [   55.821723] Process cat (pid: 2936, stack limit = 0xdaf54210)
-> [   55.827451] Stack: (0xdaf55e90 to 0xdaf56000)
-> [   55.831795] 5e80:                                     60000013 c01459c4 0000002a c06f8ef8
-> [   55.839956] 5ea0: db651000 c06f8ef8 daebac00 c04cb668 daebac08 c0346864 00000000 c01459c4
-> [   55.848115] 5ec0: d99eaa80 c06f8ef8 00000fff 00001000 db651000 c027f25c c027f240 d99eaa80
-> [   55.856274] 5ee0: d9a06c00 c0146218 daf55f18 00001000 d99eaa80 db4c18c0 00000001 00000001
-> [   55.864468] 5f00: daf55f80 c0144c78 c0144c54 c0107f90 00015000 d99eaab0 00000000 00000000
-> [   55.872603] 5f20: 000051c7 00000000 db4c18c0 c04a9370 00015000 00001000 daf55f80 00001000
-> [   55.880763] 5f40: daf54000 00015000 00000000 c00e53dc db4c18c0 c00e548c 0000000d 00008124
-> [   55.888937] 5f60: 00000001 00000000 00000000 db4c18c0 db4c18c0 00001000 00015000 c00e5550
-> [   55.897099] 5f80: 00000000 00000000 00001000 00001000 00015000 00000003 00000003 c000f364
-> [   55.905239] 5fa0: 00000000 c000f1a0 00001000 00015000 00000003 00015000 00001000 0001333c
-> [   55.913399] 5fc0: 00001000 00015000 00000003 00000003 00000002 00000000 00000000 00000000
-> [   55.921560] 5fe0: 7fffe000 be999850 0000a225 b6f3c19c 60000010 00000003 00000000 00000000
-> [   55.929744] [<c034b0b4>] (charger_get_property) from [<c0346864>] (power_supply_show_property+0x48/0x20c)
-> [   55.939286] [<c0346864>] (power_supply_show_property) from [<c027f25c>] (dev_attr_show+0x1c/0x48)
-> [   55.948130] [<c027f25c>] (dev_attr_show) from [<c0146218>] (sysfs_kf_seq_show+0x84/0x104)
-> [   55.956298] [<c0146218>] (sysfs_kf_seq_show) from [<c0144c78>] (kernfs_seq_show+0x24/0x28)
-> [   55.964536] [<c0144c78>] (kernfs_seq_show) from [<c0107f90>] (seq_read+0x1b0/0x484)
-> [   55.972172] [<c0107f90>] (seq_read) from [<c00e53dc>] (__vfs_read+0x18/0x4c)
-> [   55.979188] [<c00e53dc>] (__vfs_read) from [<c00e548c>] (vfs_read+0x7c/0x100)
-> [   55.986304] [<c00e548c>] (vfs_read) from [<c00e5550>] (SyS_read+0x40/0x8c)
-> [   55.993164] [<c00e5550>] (SyS_read) from [<c000f1a0>] (ret_fast_syscall+0x0/0x48)
-> [   56.000626] Code: bad PC value
-> [   56.011652] ---[ end trace 7b64343fbdae8ef1 ]---
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> [for the nvec part]
-> Reviewed-by: Marc Dietrich <marvin24@gmx.de>
-> 
-> [for compal-laptop.c]
-> Acked-by: Darren Hart <dvhart@linux.intel.com>
-> 
-> [for the mfd part]
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+Catalin, Rob,
 
-Acked-by: Jiri Kosina <jkosina@suse.cz>
+do you agree with this patchset ?
 
-for drivers/hid/*
+Thanks
+   -- Daniel
 
--- 
-Jiri Kosina
-SUSE Labs
+On 03/03/2015 01:29 PM, Daniel Lezcano wrote:
+> There is a big number of cpuidle drivers for the ARM architecture.
+>
+> These drivers have been cleaned up and grouped into the drivers/cpuid=
+le
+> directory to keep track of the changes more easily and ensure the cod=
+e
+> is following the same scheme across the drivers.
+>
+> That had the benefit of simplifying the code and factor out a lot of =
+common
+> parts. Beside that, as the drivers belong to the 'drivers' directory,=
+ we had
+> to split the arch specific bits and the generic code in order to keep
+> everything self contained. The platform driver paradigm was used for =
+this
+> purpose.
+>
+> Unfortunately, this approach is now no longer accepted and a differen=
+t solution
+> must be provided to reach the same goal: one example is the Qualcomm =
+cpuidle
+> driver upstreaming attempt [1].
+>
+> In the meantime, ARM64 developed a generic cpuidle driver based on DT=
+ definition.
+>
+> The DT definition provides an 'enable-method' to specify one of the c=
+pu
+> operations (PSCI, ...).
+>
+> This patchset unify this driver with ARM32, using the same DT definit=
+ion.
+>
+> Thanks with this patchset we can use the 'enable-method' to specify a=
+ cpu
+> operations, hence get rid of the platform driver approach and go furt=
+her in the
+> cpuidle driver flexibility via the DT.
+>
+> Daniel Lezcano (6):
+>    ARM: cpuidle: Remove duplicate header inclusion
+>    ARM: cpuidle: Add a cpuidle ops structure to be used for DT
+>    ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 functi=
+on
+>    ARM64: cpuidle: Rename cpu_init_idle to a common function name
+>    ARM64: cpuidle: Remove arm64 reference
+>    ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
+>
+>   arch/arm/include/asm/cpuidle.h                     | 12 +++
+>   arch/arm/include/asm/cpuidle_ops.h                 |  3 +
+>   arch/arm/kernel/cpuidle.c                          | 87 +++++++++++=
+++++++++++-
+>   arch/arm/mach-davinci/cpuidle.c                    |  1 -
+>   arch/arm/mach-imx/cpuidle-imx6q.c                  |  1 -
+>   arch/arm/mach-imx/cpuidle-imx6sl.c                 |  1 -
+>   arch/arm/mach-imx/cpuidle-imx6sx.c                 |  1 -
+>   arch/arm/mach-omap2/cpuidle44xx.c                  |  1 -
+>   arch/arm/mach-tegra/cpuidle-tegra20.c              |  1 -
+>   arch/arm/mach-tegra/cpuidle-tegra30.c              |  1 -
+>   arch/arm64/include/asm/cpuidle.h                   |  9 ++-
+>   arch/arm64/kernel/cpuidle.c                        |  2 +-
+>   drivers/cpuidle/Kconfig                            |  7 +-
+>   drivers/cpuidle/Kconfig.arm                        | 10 +++
+>   drivers/cpuidle/Kconfig.arm64                      | 13 ----
+>   drivers/cpuidle/Makefile                           |  5 +-
+>   drivers/cpuidle/{cpuidle-arm64.c =3D> cpuidle-arm.c} | 38 +++++----=
+-
+>   drivers/cpuidle/cpuidle-at91.c                     |  1 -
+>   drivers/cpuidle/cpuidle-exynos.c                   |  1 -
+>   drivers/cpuidle/cpuidle-kirkwood.c                 |  1 -
+>   drivers/cpuidle/cpuidle-ux500.c                    |  1 -
+>   drivers/cpuidle/cpuidle-zynq.c                     |  1 -
+>   22 files changed, 139 insertions(+), 59 deletions(-)
+>   create mode 100644 arch/arm/include/asm/cpuidle_ops.h
+>   delete mode 100644 drivers/cpuidle/Kconfig.arm64
+>   rename drivers/cpuidle/{cpuidle-arm64.c =3D> cpuidle-arm.c} (72%)
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
