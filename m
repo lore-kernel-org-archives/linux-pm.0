@@ -1,40 +1,41 @@
-From: kazutomo <kazutomo.yoshii@gmail.com>
-Subject: Re: [PATCH] powercap/rapl: handle domain energy unit
-Date: Thu, 12 Mar 2015 17:50:20 -0500
-Message-ID: <5502182C.90304@gmail.com>
-References: <1426078509-3767-1-git-send-email-jacob.jun.pan@linux.intel.com>	<5500B2E0.9000107@gmail.com>	<20150312142413.7bd42863@icelake>	<55020C4F.3010406@gmail.com> <20150312150536.630c0644@icelake>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2 v4] cpufreq: qoriq: Make the driver usable on all QorIQ platforms
+Date: Fri, 13 Mar 2015 00:18:29 +0100
+Message-ID: <2439490.9WNany9TAP@vostro.rjw.lan>
+References: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f49.google.com ([209.85.192.49]:43799 "EHLO
-	mail-qg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbbCLWuX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 18:50:23 -0400
-In-Reply-To: <20150312150536.630c0644@icelake>
+Received: from v094114.home.net.pl ([79.96.170.134]:49657 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752074AbbCLWyn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 18:54:43 -0400
+In-Reply-To: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>
+To: Yuantian.Tang@freescale.com
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org
 
-On 03/12/2015 05:05 PM, Jacob Pan wrote:
-> On Thu, 12 Mar 2015 16:59:43 -0500
-> kazutomo <kazutomo.yoshii@gmail.com> wrote:
->
->>> according to the document, future DRAM energy unit will always be
->>> hardcoded to 15.3uJ, no enumeration since there is no domain
->>> specific MSR for energy unit.  
->> Which document are you referring to?
-> Intel DocID:330784-001 Sept 2014
-> Intel Xeon Processor E5-1600 and E5-2600 V2 of 2.
+On Tuesday, March 03, 2015 11:38:51 AM Yuantian.Tang@freescale.com wrote:
+> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> 
+> Freescale introduced new ARM core-based SoCs which support dynamic
+> frequency switch feature. DFS on new SoCs are compatible with current
+> PowerPC CoreNet platforms. In order to support those new platforms,
+> this driver needs to be updated. The main changes include:
+> 
+> 1. Changed the names of functions in driver.
+> 2. Added two new functions get_cpu_physical_id() and get_bus_freq().
+> 3. Used a new way to get the CPU mask which share clock wire.
+> 
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I think V2 is Ivy Bridge.  Is this typo?
- 
-By googling, I found a datasheet titled:
-"Intel Xeon Processor E5-1600 and E5-2600 v3 Product Families, Volume 2
-of 2. Datasheet, September 2014, Reference Number: 330784-001 "
+That doesn't apply for me on top of 4.0-rc3.  Can you please rebase and
+resubmit?
 
-It clearly says "ENERGY_UNIT for DRAM domain is 15.3uJ."
 
-- kaz
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
