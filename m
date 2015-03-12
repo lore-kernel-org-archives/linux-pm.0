@@ -1,65 +1,69 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 2/2] arm64: kernel: perf: add pmu CPU PM notifier
-Date: Thu, 12 Mar 2015 10:27:33 +0000
-Message-ID: <20150312102733.GC18414@red-moon>
-References: <1426008682-5680-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
- <7hh9try12u.fsf@deeprootsystems.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RESEND PATCH v6 09/22] mfd: ab8500: Use power_supply_*() API for
+ accessing function attrs
+Date: Thu, 12 Mar 2015 11:36:37 +0100
+Message-ID: <1426156597.6371.5.camel@AMDC1943>
+References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
+ <1426146260-30081-10-git-send-email-k.kozlowski@samsung.com>
+ <20150312090156.GB3314@x1> <1426152267.31959.1.camel@AMDC1943>
+ <20150312095017.GE3314@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48314 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbbCLK1f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 12 Mar 2015 06:27:35 -0400
-Content-Disposition: inline
-In-Reply-To: <7hh9try12u.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <20150312095017.GE3314@x1>
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, dave.martin@arm.com
 
-[Cc'ing Dave]
-
-On Wed, Mar 11, 2015 at 04:02:17PM +0000, Kevin Hilman wrote:
-> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+On czw, 2015-03-12 at 09:50 +0000, Lee Jones wrote:
+> On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
+> > On czw, 2015-03-12 at 09:01 +0000, Lee Jones wrote:
+> > > On Thu, 12 Mar 2015, Krzysztof Kozlowski wrote:
+> > > 
+> > > > Replace direct calls to power supply function attributes with wrappers.
+> > > > Wrappers provide safe access in case of unregistering the power
+> > > > supply (e.g. by removing the driver). Replace:
+> > > >  - get_property -> power_supply_get_property
+> > > > 
+> > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > > Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> > > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > > Acked-by: Lee Jones <lee.jones@linaro.org>
+> > > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > > > Reviewed-by: Sebastian Reichel <sre@kernel.org>
+> > > > ---
+> > > >  drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+> > > >  1 file changed, 4 insertions(+), 3 deletions(-)
+> > > 
+> > > Has the infrastructure for these been merged yet?
+> > > 
+> > > I.e. Can I just take them?
+> > 
+> > Previous patches were not merged yet so you cannot take it. This whole
+> > patchset can be applied incrementally but cherry picking won't work.
 > 
-> > When a CPU is being profiled through PMU events and it enters suspend
-> > or idle states, the PMU registers content can be lost, which means that
-> > counters that were relied upon on power down entry are reset on power
-> > up to values that are incosistent with the profile session.
-> >
-> > This patch adds a CPU PM notifier to arm64 perf code, that detects
-> > on entry if events are being monitored, and if so, it returns
-> > failure to the CPU PM notification chain, causing the suspend
-> > thread or the idle thread to abort power down, therefore preventing
-> > registers content loss.
-> >
-> > By triggering CPU PM notification failure this patch prevents
-> > suspending a system if the suspend thread is being profiled and
-> > it also prevents entering idle deep states on cores that have profile
-> > events in use, somehow limiting power management capabilities when
-> > there are active perf sessions.
+> So I only usually receive patches I've already Acked when a) the bulk
+> of the set has been merged and I can apply the remaining lingerers, or
+> b) the whole set is due to be applied through the MFD tree.
 > 
-> I guess that's one choice.  Couldn't you also stop the PMU and
-> save/restore it's context in the notifiers? so that you wouldn't affect
-> PM capabilities?
+> Receiving 2 patches of a 22 patch set, which I have already Acked and
+> that I can't pick is unwelcome noise.
 
-Yes, that's why I sent this an RFC. This solution can also be easily
-ported to power domains, when we put them in place.
+Sorry for the noise, it should not happen.
 
-To save/restore PMU counters we can either reuse perf core (IIRC Dave
-had a stab at this, it is not a trivial patch) or do arch specific
-save/restore (with related buffers for registers context) but I think
-Will does not like the idea at all (and he has a point since the context
-memory is already there in perf core).
+That is strange, how did you receive this patch? I resent this only to
+certain recipients because previous mail got lost in spam filters (too
+many recipients).
 
-> That would imply that you lose the ability to profile after a certain
-> point in suspend/idle, but maybe that's a better trade off than having
-> profiling disable certain PM features?
+I did not put other maintainers (like you) this time on cc-list.
+git-send-email also did not cc-ed you (your email is not listed in
+send-email log).
 
-I am ok either way, as long as we make a decision, it has been hanging
-in the balance for aeons.
+How this email managed to get to you? :)
 
-Thanks,
-Lorenzo
+Best regards,
+Krzysztof
+
+
