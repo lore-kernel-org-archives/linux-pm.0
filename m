@@ -1,49 +1,56 @@
-From: Vince Hsu <vinceh@nvidia.com>
-Subject: Re: [PATCH v2 17/17] soc/tegra: remove lagacy powergate APIs
-Date: Thu, 12 Mar 2015 21:11:52 +0800
-Message-ID: <55019098.3020901@nvidia.com>
-References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com> <1426162518-7405-18-git-send-email-vinceh@nvidia.com> <20150312124501.GA632@ulmo>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [RFC PATCH 2/2] arm64: kernel: perf: add pmu CPU PM notifier
+Date: Thu, 12 Mar 2015 09:18:54 -0400
+Message-ID: <CAJ5Y-eZBS9Z0BgQK92MggttEZLitgKOYPyZqg3-7=RggYAJWvw@mail.gmail.com>
+References: <1426008682-5680-1-git-send-email-lorenzo.pieralisi@arm.com>
+	<1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
+	<7hh9try12u.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:9860 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbbCLNNp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 09:13:45 -0400
-In-Reply-To: <20150312124501.GA632@ulmo>
+Received: from mail-lb0-f172.google.com ([209.85.217.172]:38728 "EHLO
+	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753602AbbCLNSz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 09:18:55 -0400
+Received: by lbiz12 with SMTP id z12so15868083lbi.5
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2015 06:18:54 -0700 (PDT)
+In-Reply-To: <7hh9try12u.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gnurou@gmail.com, jroedel@suse.de, p.zabel@pengutronix.de, mturquette@linaro.org, pgaikwad@nvidia.com, sboyd@codeaurora.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tbergstrom@nvidia.com, airlied@linux.ie, bhelgaas@google.com, tj@kernel.org, arnd@arndb.de, robh@kernel.org, will.deacon@arm.com, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Hi,
-
-On 03/12/2015 08:45 PM, Thierry Reding wrote:
-> * PGP Signed by an unknown key
+On 11 March 2015 at 12:02, Kevin Hilman <khilman@kernel.org> wrote:
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 >
-> On Thu, Mar 12, 2015 at 08:15:18PM +0800, Vince Hsu wrote:
->> We switch to generic power domain now. So remove the legacy functions.
+>> When a CPU is being profiled through PMU events and it enters suspend
+>> or idle states, the PMU registers content can be lost, which means that
+>> counters that were relied upon on power down entry are reset on power
+>> up to values that are incosistent with the profile session.
 >>
->> Signed-off-by: Vince Hsu <vinceh@nvidia.com>
->> ---
->>   drivers/soc/tegra/pmc.c | 68 -------------------------------------------------
->>   include/soc/tegra/pmc.h | 22 ----------------
->>   2 files changed, 90 deletions(-)
-> I don't think we can do this. What if somebody updates their kernel but
-> not the DTB? In that case they'll end up with drivers that don't enable
-> power partitions but at the same time the powergate driver won't enable
-> them either because it is missing the corresponding nodes in the DTB.
-You're right.
-
+>> This patch adds a CPU PM notifier to arm64 perf code, that detects
+>> on entry if events are being monitored, and if so, it returns
+>> failure to the CPU PM notification chain, causing the suspend
+>> thread or the idle thread to abort power down, therefore preventing
+>> registers content loss.
+>>
+>> By triggering CPU PM notification failure this patch prevents
+>> suspending a system if the suspend thread is being profiled and
+>> it also prevents entering idle deep states on cores that have profile
+>> events in use, somehow limiting power management capabilities when
+>> there are active perf sessions.
 >
-> What we'll have to do is probably keep the code that enables the power
-> partitions and make it conditional on the power domains somehow. Is
-> there a way to determine at runtime whether a device has been attached
-> to a power domain?
+> I guess that's one choice.  Couldn't you also stop the PMU and
+> save/restore it's context in the notifiers? so that you wouldn't affect
+> PM capabilities?
 >
-Yes, we can check if a power domain is bound to the GPD by DT in the 
-legacy powergate code.
+> That would imply that you lose the ability to profile after a certain
+> point in suspend/idle, but maybe that's a better trade off than having
+> profiling disable certain PM features?
 
-Thanks,
-Vince
+I had something like that a few years ago on the Kraits and Scorpions [1].
+
+[1] https://www.codeaurora.org/cgit/quic/la/kernel/msm/commit/arch/arm/kernel?h=msm-3.4&id=b5ca687960f0fea2f4735e83ca5c9543474c19de
+
+Cheers,
+Ashwin.
