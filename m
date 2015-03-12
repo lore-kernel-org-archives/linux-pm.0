@@ -1,7 +1,7 @@
 From: Vince Hsu <vinceh@nvidia.com>
-Subject: [PATCH v2 08/17] ARM: tegra: add PM domain device nodes to Tegra30 DT
-Date: Thu, 12 Mar 2015 20:15:09 +0800
-Message-ID: <1426162518-7405-9-git-send-email-vinceh@nvidia.com>
+Subject: [PATCH v2 12/17] drm/tegra: dc: remove the power sequence from driver
+Date: Thu, 12 Mar 2015 20:15:13 +0800
+Message-ID: <1426162518-7405-13-git-send-email-vinceh@nvidia.com>
 References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,93 +12,113 @@ To: thierry.reding@gmail.com, pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gn
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, Vince Hsu <vinceh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Also bind the PM domain provider and consumer together.
+We have the generic PM domain support for Tegra SoCs now. So remove the
+duplicated power sequence here.
 
 Signed-off-by: Vince Hsu <vinceh@nvidia.com>
 ---
- arch/arm/boot/dts/tegra30.dtsi | 45 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/tegra/dc.c | 46 +++++++++++-----------------------------------
+ 1 file changed, 11 insertions(+), 35 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
-index db4810df142c..bec1b17fdcab 100644
---- a/arch/arm/boot/dts/tegra30.dtsi
-+++ b/arch/arm/boot/dts/tegra30.dtsi
-@@ -2,6 +2,7 @@
- #include <dt-bindings/gpio/tegra-gpio.h>
- #include <dt-bindings/memory/tegra30-mc.h>
- #include <dt-bindings/pinctrl/pinctrl-tegra.h>
-+#include <dt-bindings/power/tegra-powergate.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 1a52522f5da7..838bb8634da7 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -28,7 +28,6 @@ struct tegra_dc_soc_info {
+ 	bool supports_cursor;
+ 	bool supports_block_linear;
+ 	unsigned int pitch_align;
+-	bool has_powergate;
+ };
  
- #include "skeleton.dtsi"
-@@ -36,6 +37,7 @@
- 			  0x82000000 0 0x20000000 0x20000000 0 0x08000000   /* non-prefetchable memory */
- 			  0xc2000000 0 0x28000000 0x28000000 0 0x18000000>; /* prefetchable memory */
+ struct tegra_plane {
+@@ -1786,7 +1785,6 @@ static const struct tegra_dc_soc_info tegra20_dc_soc_info = {
+ 	.supports_cursor = false,
+ 	.supports_block_linear = false,
+ 	.pitch_align = 8,
+-	.has_powergate = false,
+ };
  
-+		power-domains = <&pmc TEGRA_POWERGATE_PCIE>;
- 		clocks = <&tegra_car TEGRA30_CLK_PCIE>,
- 			 <&tegra_car TEGRA30_CLK_AFI>,
- 			 <&tegra_car TEGRA30_CLK_PLL_E>,
-@@ -149,6 +151,14 @@
- 		gr3d@54180000 {
- 			compatible = "nvidia,tegra30-gr3d";
- 			reg = <0x54180000 0x00040000>;
-+			/*
-+			 * Actually the gr3d has two power domains, but the
-+			 * generic power domain doesn't support multiple
-+			 * domain provider for one device yet. So we claim
-+			 * the gr3d is powered by the domain 3D1 here, and
-+			 * let the 3D1 depend on 3D below.
-+			 */
-+			power-domains = <&pmc TEGRA_POWERGATE_3D1>;
- 			clocks = <&tegra_car TEGRA30_CLK_GR3D
- 				  &tegra_car TEGRA30_CLK_GR3D2>;
- 			clock-names = "3d", "3d2";
-@@ -613,11 +623,44 @@
- 		status = "disabled";
- 	};
+ static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
+@@ -1795,7 +1793,6 @@ static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
+ 	.supports_cursor = false,
+ 	.supports_block_linear = false,
+ 	.pitch_align = 8,
+-	.has_powergate = false,
+ };
  
--	pmc@7000e400 {
-+	pmc: pmc@7000e400 {
- 		compatible = "nvidia,tegra30-pmc";
- 		reg = <0x7000e400 0x400>;
- 		clocks = <&tegra_car TEGRA30_CLK_PCLK>, <&clk32k_in>;
- 		clock-names = "pclk", "clk32k_in";
-+		#power-domain-cells = <1>;
-+	};
-+
-+	gr3dpd: gr3d-power-domain {
-+		compatible = "nvidia,power-domains";
-+		name = "gr3d-power-domain";
-+		domain = <TEGRA_POWERGATE_3D>;
-+		clocks = <&tegra_car TEGRA30_CLK_GR3D>;
-+		resets = <&tegra_car 24>;
-+		nvidia,swgroup = <&mc TEGRA_SWGROUP_NV>;
-+	};
-+
-+	gr3d2-power-domain {
-+		compatible = "nvidia,power-domains";
-+		name = "gr3d2-power-domain";
-+		domain = <TEGRA_POWERGATE_3D1>;
-+		clocks = <&tegra_car TEGRA30_CLK_GR3D2>;
-+		resets = <&tegra_car 98>;
-+		nvidia,swgroup = <&mc TEGRA_SWGROUP_NV2>;
-+		depend-on = <&gr3dpd>;
-+	};
-+
-+	pcie-power-domain {
-+		compatible = "nvidia,power-domains";
-+		name = "pcie-power-domain";
-+		domain = <TEGRA_POWERGATE_PCIE>;
-+		clocks = <&tegra_car TEGRA30_CLK_AFI>,
-+			 <&tegra_car TEGRA30_CLK_PCIE>,
-+			 <&tegra_car TEGRA30_CLK_CML0>;
-+		resets = <&tegra_car 70>,
-+			 <&tegra_car 72>,
-+			 <&tegra_car 74>;
-+		nvidia,swgroup = <&mc TEGRA_SWGROUP_AFI>;
- 	};
+ static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
+@@ -1804,7 +1801,6 @@ static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
+ 	.supports_cursor = false,
+ 	.supports_block_linear = false,
+ 	.pitch_align = 64,
+-	.has_powergate = true,
+ };
  
- 	mc: memory-controller@7000f000 {
+ static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
+@@ -1813,7 +1809,6 @@ static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
+ 	.supports_cursor = true,
+ 	.supports_block_linear = true,
+ 	.pitch_align = 64,
+-	.has_powergate = true,
+ };
+ 
+ static const struct of_device_id tegra_dc_of_match[] = {
+@@ -1906,33 +1901,18 @@ static int tegra_dc_probe(struct platform_device *pdev)
+ 		return PTR_ERR(dc->rst);
+ 	}
+ 
+-	if (dc->soc->has_powergate) {
+-		if (dc->pipe == 0)
+-			dc->powergate = TEGRA_POWERGATE_DIS;
+-		else
+-			dc->powergate = TEGRA_POWERGATE_DISB;
+-
+-		err = tegra_powergate_sequence_power_up(dc->powergate, dc->clk,
+-							dc->rst);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to power partition: %d\n",
+-				err);
+-			return err;
+-		}
+-	} else {
+-		err = clk_prepare_enable(dc->clk);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to enable clock: %d\n",
+-				err);
+-			return err;
+-		}
++	err = clk_prepare_enable(dc->clk);
++	if (err < 0) {
++		dev_err(&pdev->dev, "failed to enable clock: %d\n",
++			err);
++		return err;
++	}
+ 
+-		err = reset_control_deassert(dc->rst);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to deassert reset: %d\n",
+-				err);
+-			return err;
+-		}
++	err = reset_control_deassert(dc->rst);
++	if (err < 0) {
++		dev_err(&pdev->dev, "failed to deassert reset: %d\n",
++			err);
++		return err;
+ 	}
+ 
+ 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -1987,10 +1967,6 @@ static int tegra_dc_remove(struct platform_device *pdev)
+ 	}
+ 
+ 	reset_control_assert(dc->rst);
+-
+-	if (dc->soc->has_powergate)
+-		tegra_powergate_power_off(dc->powergate);
+-
+ 	clk_disable_unprepare(dc->clk);
+ 
+ 	return 0;
 -- 
 2.1.4
