@@ -1,7 +1,7 @@
 From: Vince Hsu <vinceh@nvidia.com>
-Subject: [PATCH v2 16/17] ARM: tegra: select PM_GENERIC_DOMAINS
-Date: Thu, 12 Mar 2015 20:15:17 +0800
-Message-ID: <1426162518-7405-17-git-send-email-vinceh@nvidia.com>
+Subject: [PATCH v2 11/17] ARM: tegra: add GPU power supply to Jetson TK1 DT
+Date: Thu, 12 Mar 2015 20:15:12 +0800
+Message-ID: <1426162518-7405-12-git-send-email-vinceh@nvidia.com>
 References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,25 +12,27 @@ To: thierry.reding@gmail.com, pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gn
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, Vince Hsu <vinceh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-We have added generic power domain support for Tegra SoCs. So now the option
-PM_GENERIC_DOMAINS must be enabled by default to have proper power sequence.
+Add power supply information which is board dependent for GK20A.
 
 Signed-off-by: Vince Hsu <vinceh@nvidia.com>
 ---
- arch/arm/mach-tegra/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
-index 5d1a318f1302..193d5b2da8ba 100644
---- a/arch/arm/mach-tegra/Kconfig
-+++ b/arch/arm/mach-tegra/Kconfig
-@@ -8,6 +8,7 @@ menuconfig ARCH_TEGRA
- 	select HAVE_ARM_SCU if SMP
- 	select HAVE_ARM_TWD if SMP
- 	select PINCTRL
-+	select PM_GENERIC_DOMAINS if PM
- 	select ARCH_HAS_RESET_CONTROLLER
- 	select RESET_CONTROLLER
- 	select SOC_BUS
+diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+index dbfaba09703a..7558f9280646 100644
+--- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
++++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+@@ -1682,6 +1682,10 @@
+ 		};
+ 	};
+ 
++	gpu-power-domain {
++		vdd-supply = <&vdd_gpu>;
++	};
++
+ 	/* Serial ATA */
+ 	sata@0,70020000 {
+ 		status = "okay";
 -- 
 2.1.4
