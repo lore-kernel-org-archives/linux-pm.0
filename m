@@ -1,77 +1,41 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] PM / Domains: If an OF node is found but no device probed yet, defer.
-Date: Fri, 13 Mar 2015 11:01:20 -0700
-Message-ID: <7hr3sspyj3.fsf@deeprootsystems.com>
-References: <1426087648-3862-1-git-send-email-eric@anholt.net>
-	<6516096.HanqZ05BXy@vostro.rjw.lan>
-	<CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 3/6] ARM64: cpuidle: Replace cpu_suspend by the common
+ ARM/ARM64 function
+Date: Fri, 13 Mar 2015 18:21:03 +0000
+Message-ID: <20150313182102.GS30671@e104818-lin.cambridge.arm.com>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
+ <1425385777-14766-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:43849 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbbCMSBY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 14:01:24 -0400
-Received: by pablj1 with SMTP id lj1so31161775pab.10
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 11:01:23 -0700 (PDT)
-In-Reply-To: <CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Wed, 11 Mar 2015 23:14:05 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1425385777-14766-4-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lina.iyer@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eric Anholt <eric@anholt.net>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+On Tue, Mar 03, 2015 at 01:29:34PM +0100, Daniel Lezcano wrote:
+> Call the common ARM/ARM64 'arm_cpuidle_suspend' instead of cpu_suspend function
+> which is specific to ARM64.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle-arm64.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
+> index 39a2c62..0cea244 100644
+> --- a/drivers/cpuidle/cpuidle-arm64.c
+> +++ b/drivers/cpuidle/cpuidle-arm64.c
+> @@ -49,7 +49,7 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
+>  		 * call the CPU ops suspend protocol with idle index as a
+>  		 * parameter.
+>  		 */
+> -		ret = cpu_suspend(idx);
+> +		arm_cpuidle_suspend(idx);
 
-> On Wed, Mar 11, 2015 at 11:08 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> More CCes.
->>
->> On Wednesday, March 11, 2015 08:27:28 AM Eric Anholt wrote:
->>> If we've declared a power domain in the OF, and the OF node is found
->>> but the requested domain hasn't been registered on it yet, then we
->>> probably have just tried to probe before the power domain driver has.
->>> Defer our device's probe until it shows up.
->>>
->>> Signed-off-by: Eric Anholt <eric@anholt.net>
->>
->> Kevin, Ulf, any chance to have a look at this, please?
->>
->>> ---
->>>
->>> I ran into this when turning my ad-hoc code for BCM2835 (Raspberry Pi)
->>> USB poweron support in the DWC2 controller to an OF-based power domain
->>> declaration.
->
-> I guess you are initializing the PM domains from module_init()?
->
-> I use core_initcall() in arch/arm/mach-shmobile/pm-rmobile.c to make sure it's
-> initialized earlier, as e.g. the interrupt controller uses postcore_initcall().
+Nitpick: why don't we just rename the arm one cpuidle_suspend()?
 
-Yeah, I think most existing users are initizling PM domains early, but IMO
-we should be working towards supporting PM domains that are created
-later as well (as this patch does.)
-
->>> drivers/base/power/domain.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index ba4abbe..2b93c98 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -2064,7 +2064,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
->>>  struct generic_pm_domain *of_genpd_get_from_provider(
->>>                                       struct of_phandle_args *genpdspec)
->>>  {
->>> -     struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
->>> +     struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
->
-> Currently platform_drv_probe() just continues if dev_pm_domain_attach() returns
-> a different error than -EPROBE_DEFER, which is what you are seeing.
->
-> Your change does have the side effect that a new DT with PM domains won't
-> work on an older kernel that doesn't have the PM domain driver yet.
-
-Is that a real problem though?  Using newer DTs on older kernels can
-cause many types of problems.
-
-Kevin
+-- 
+Catalin
