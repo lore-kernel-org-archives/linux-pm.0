@@ -1,64 +1,107 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 3/9] pm: domains: sync runtime PM status with PM domains
- after probe
-Date: Fri, 13 Mar 2015 13:39:36 +0000
-Message-ID: <20150313133936.GL8656@n2100.arm.linux.org.uk>
-References: <20150312183020.GU8656@n2100.arm.linux.org.uk>
- <E1YW7sv-0003mA-JP@rmk-PC.arm.linux.org.uk>
- <CAPDyKFrcjfLXCjLL8SGJUDz6ErROW=B8oDEg0eRPA92=m-dRQA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 2/9] PM / Domains: Enable genpd to support ->get|put() callbacks
+Date: Fri, 13 Mar 2015 16:43:42 +0100
+Message-ID: <1426261429-31883-3-git-send-email-ulf.hansson@linaro.org>
+References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:43043 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbbCMNjw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 09:39:52 -0400
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFrcjfLXCjLL8SGJUDz6ErROW=B8oDEg0eRPA92=m-dRQA@mail.gmail.com>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:43243 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756987AbbCMPoK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:10 -0400
+Received: by lbvp9 with SMTP id p9so23645674lbv.10
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:09 -0700 (PDT)
+In-Reply-To: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Fri, Mar 13, 2015 at 10:30:59AM +0100, Ulf Hansson wrote:
-> On 12 March 2015 at 19:31, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> > Synchronise the PM domain status with runtime PM's status after a
-> > platform device has been probed.  This augments the solution in commit
-> > 2ed127697eb1 ("PM / Domains: Power on the PM domain right after attach
-> > completes").
-> >
-> > The above commit added a call to power up the PM domain when a device
-> > attaches to the domain in order to match the behaviour required by
-> > drivers that make no use of runtime PM.  The assumption is that the
-> > device driver will cause a runtime PM transition, which will synchronise
-> > the PM domain state with the runtime PM state.
-> >
-> > However, by default, runtime PM will assume that the device is initially
-> > suspended, and some drivers may make use of this should they not need to
-> > touch the hardware during probe.
-> >
-> > In order to allow such drivers, trigger the PM domain code to check
-> > whether the PM domain can be suspended after the probe function, undoing
-> > the effect of the power-on prior to the probe.
-> >
-> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> > ---
-> >  drivers/base/platform.c     |  2 ++
-> 
-> Don't we need this for more buses than the platform bus?
+To provide users control over whether the power should be maintained,
+implement the ->get|put() callbacks for genpd's PM domain.
 
-It's worth noting that I won't be fixing SDIO:
+A usage count variable keeps track of the number of users. A positive
+value tells genpd to keep supplying power and also to power up if it's
+the first user.
 
-        sdio_acpi_set_handle(func);
-        ret = device_add(&func->dev);
-        if (ret == 0) {
-                sdio_func_set_present(func);
-                dev_pm_domain_attach(&func->dev, false);
-        }
+Once the usage count reaches zero, genpd tries to power off its PM
+domain.
 
-which is inherently racy - the driver can be probed in device_add().
-What happened to "setup stuff, then publish"...
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 26 +++++++++++++++++++++++++-
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 26 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 45937f8..7314459 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -495,10 +495,12 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+ 	 * (2) The domain is waiting for its master to power up.
+ 	 * (3) One of the domain's devices is being resumed right now.
+ 	 * (4) System suspend is in progress.
++	 * (5) The usage_count > 0, since it tells us to stay powered.
+ 	 */
+ 	if (genpd->status == GPD_STATE_POWER_OFF
+ 	    || genpd->status == GPD_STATE_WAIT_MASTER
+-	    || genpd->resume_count > 0 || genpd->prepared_count > 0)
++	    || genpd->resume_count > 0 || genpd->prepared_count > 0
++	    || atomic_read(&genpd->usage_count) > 0)
+ 		return 0;
+ 
+ 	if (atomic_read(&genpd->sd_count) > 0)
+@@ -1377,6 +1379,25 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
++static int genpd_get(struct dev_pm_domain *domain)
++{
++	struct generic_pm_domain *genpd = pd_to_genpd(domain);
++
++	atomic_inc(&genpd->usage_count);
++
++	return pm_genpd_poweron(genpd);
++}
++
++static void genpd_put(struct dev_pm_domain *domain)
++{
++	struct generic_pm_domain *genpd = pd_to_genpd(domain);
++
++	if (!atomic_dec_and_test(&genpd->usage_count))
++		return;
++
++	genpd_queue_power_off_work(genpd);
++}
++
+ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 					struct generic_pm_domain *genpd,
+ 					struct gpd_timing_data *td)
+@@ -1874,10 +1895,13 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
+ 	init_waitqueue_head(&genpd->status_wait_queue);
+ 	genpd->poweroff_task = NULL;
++	atomic_set(&genpd->usage_count, 0);
+ 	genpd->resume_count = 0;
+ 	genpd->device_count = 0;
+ 	genpd->max_off_time_ns = -1;
+ 	genpd->max_off_time_changed = true;
++	genpd->domain.get = genpd_get;
++	genpd->domain.put = genpd_put;
+ 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
+ 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
+ 	genpd->domain.ops.prepare = pm_genpd_prepare;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index c80d6ac..698ecbe 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -61,6 +61,7 @@ struct generic_pm_domain {
+ 	enum gpd_status status;	/* Current state of the domain */
+ 	wait_queue_head_t status_wait_queue;
+ 	struct task_struct *poweroff_task;	/* Powering off task */
++	atomic_t usage_count;		/* Number of users of the domain */
+ 	unsigned int resume_count;	/* Number of devices being resumed */
+ 	unsigned int device_count;	/* Number of devices */
+ 	unsigned int suspended_count;	/* System suspend device counter */
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+1.9.1
+
