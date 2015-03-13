@@ -1,15 +1,15 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 4/9] drivercore / platform: Keep PM domain powered during ->probe()
-Date: Fri, 13 Mar 2015 16:43:44 +0100
-Message-ID: <1426261429-31883-5-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 8/9] mmmc: core: Keep PM domain powered during ->probe() of SDIO func driver
+Date: Fri, 13 Mar 2015 16:43:48 +0100
+Message-ID: <1426261429-31883-9-git-send-email-ulf.hansson@linaro.org>
 References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:39938 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756851AbbCMPoP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:15 -0400
-Received: by lbiw7 with SMTP id w7so23679531lbi.7
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:14 -0700 (PDT)
+Received: from mail-lb0-f181.google.com ([209.85.217.181]:43309 "EHLO
+	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756885AbbCMPoY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:24 -0400
+Received: by lbvp9 with SMTP id p9so23647336lbv.10
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:23 -0700 (PDT)
 In-Reply-To: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -24,28 +24,28 @@ domain.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/platform.c | 7 +++++++
+ drivers/mmc/core/sdio_bus.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 9421fed..d35fef1 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -509,7 +509,14 @@ static int platform_drv_probe(struct device *_dev)
+diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+index 71357b8..0d89b4b 100644
+--- a/drivers/mmc/core/sdio_bus.c
++++ b/drivers/mmc/core/sdio_bus.c
+@@ -320,7 +320,14 @@ int sdio_add_func(struct sdio_func *func)
+ 	if (ret)
+ 		return ret;
  
- 	ret = dev_pm_domain_attach(_dev, true);
- 	if (ret != -EPROBE_DEFER) {
-+		ret = dev_pm_domain_get(_dev->pm_domain);
-+		if (ret) {
-+			dev_pm_domain_detach(_dev, true);
-+			return ret;
-+		}
++	ret = dev_pm_domain_get(func->dev.pm_domain);
++	if (ret) {
++		dev_pm_domain_detach(&func->dev, false);
++		return ret;
++	}
 +
- 		ret = drv->probe(dev);
-+		dev_pm_domain_put(_dev->pm_domain);
- 		if (ret)
- 			dev_pm_domain_detach(_dev, true);
- 	}
+ 	ret = device_add(&func->dev);
++	dev_pm_domain_put(func->dev.pm_domain);
+ 	if (ret) {
+ 		dev_pm_domain_detach(&func->dev, false);
+ 		return ret;
 -- 
 1.9.1
 
