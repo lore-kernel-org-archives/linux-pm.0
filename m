@@ -1,60 +1,41 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v4 0/3] firmware: qcom: scm: Add cpu power on/off support
-Date: Fri, 13 Mar 2015 11:16:56 -0600
-Message-ID: <20150313171656.GI497@linaro.org>
-References: <1425339030-45828-1-git-send-email-lina.iyer@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 02/10] pm: domains: factor out code to get the generic PM domain from a struct device
+Date: Fri, 13 Mar 2015 10:20:21 -0700
+Message-ID: <7hpp8crezu.fsf@deeprootsystems.com>
+References: <20150312183020.GU8656@n2100.arm.linux.org.uk>
+	<E1YWSMv-0006Fx-E6@rmk-PC.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1425339030-45828-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, agross@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, khilman@linaro.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:40941 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751415AbbCMRUZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 13:20:25 -0400
+Received: by padfb1 with SMTP id fb1so30966705pad.7
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 10:20:24 -0700 (PDT)
+In-Reply-To: <E1YWSMv-0006Fx-E6@rmk-PC.arm.linux.org.uk> (Russell King's
+	message of "Fri, 13 Mar 2015 16:23:25 +0000")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-Kumar, Stephen, Andy,
+Russell King <rmk+kernel@arm.linux.org.uk> writes:
 
-Any comments on this patchset?
+> The PM domain code contains two methods to get the generic PM domain
+> for a struct device.  One is dev_to_genpd() which is only safe when
+> we know for certain that the device has a generic PM domain attached.
+> The other is coded into genpd_dev_pm_detach() which ensures that the
+> PM domain in the struct device is a generic PM domain (and so is safer).
+>
+> This commit factors out the safer version and documents it.
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Thanks,
-Lina
+Acked-by: Kevin Hilman <khilman@linaro.org>
 
-On Mon, Mar 02 2015 at 16:30 -0700, Lina Iyer wrote:
->Hi,
->
->This series of patches adds SCM cold boot clean up and support for warm boot
->for QCOM quad core (and dual core) cpus.
->
->v4 Changes:
->- Added QCOM_SCM_CPU_DOWN_ prefix for L2 on/off enums, relocated them to be close
->  to the function declaration.
->
->v3 Changes:
->- Addressed review comments from Kumar.
->	+ Cleaned up the cold boot api and the warm boot api to match
->	+ Uniform qcom_scm_ prefix
->- Add support for cpu power down using scm_call_atomic1() from [1].
->	+ No longer dependent on the series from sboyd.
->
->v2 Changes:
->- Merge the warm boot patches into a single patch.
->
->[1]. https://lkml.org/lkml/2014/8/4/765
->
->Thanks,
->Lina
->
->Lina Iyer (3):
->  firmware: qcom: scm: Clean cold boot entry to export only the API
->  firmware: qcom: scm: Add qcom_scm_set_warm_boot_addr function
->  firmware: qcom: scm: Support cpu power down through SCM
->
-> arch/arm/mach-qcom/platsmp.c |  21 +-----
-> drivers/firmware/qcom_scm.c  | 154 ++++++++++++++++++++++++++++++++++++++++++-
-> include/linux/qcom_scm.h     |  17 +++--
-> 3 files changed, 163 insertions(+), 29 deletions(-)
->
->-- 
->2.1.0
->
+On top of this, I assume you're thinking that the externally available
+dev_to_genpd() should probably be replaced by pm_genpd_lookup_dev(), and
+dev_to_genpd() should only be used internally to genpd?
+
+Kevin
