@@ -1,38 +1,25 @@
-From: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 4/6] ARM64: cpuidle: Rename cpu_init_idle to a common
- function name
-Date: Fri, 13 Mar 2015 18:22:46 +0000
-Message-ID: <20150313182246.GT30671@e104818-lin.cambridge.arm.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 0/6] ARM: cpuidle: Unify the ARM64/ARM DT approach
+Date: Fri, 13 Mar 2015 18:29:08 +0000
+Message-ID: <20150313182908.GU30671@e104818-lin.cambridge.arm.com>
 References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
- <1425385777-14766-5-git-send-email-daniel.lezcano@linaro.org>
+ <5501A1DE.9020804@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1425385777-14766-5-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <5501A1DE.9020804@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lina.iyer@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 03, 2015 at 01:29:35PM +0100, Daniel Lezcano wrote:
-> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-> index 0cea244..6ef291c7 100644
-> --- a/drivers/cpuidle/cpuidle-arm64.c
-> +++ b/drivers/cpuidle/cpuidle-arm64.c
-> @@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
->  	 * idle states suspend back-end specific data
->  	 */
->  	for_each_possible_cpu(cpu) {
-> -		ret = cpu_init_idle(cpu);
-> +		ret = arm_cpuidle_init(cpu);
+On Thu, Mar 12, 2015 at 03:25:34PM +0100, Daniel Lezcano wrote:
+> do you agree with this patchset ?
 
-Same nitpick here about dropping the arm_ prefix (though here we already
-have a cpuidle_init).
+In principle yes, apart from some function naming and I'm waiting for
+Lorenzo's ack as well. Do you plan to upstream this directly via your
+tree? If yes, I'll look in more detail and give some acks.
 
 -- 
 Catalin
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
