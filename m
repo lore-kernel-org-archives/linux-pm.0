@@ -1,15 +1,15 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 6/9] spi: core: Keep PM domain powered during ->probe()
-Date: Fri, 13 Mar 2015 16:43:46 +0100
-Message-ID: <1426261429-31883-7-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 4/9] drivercore / platform: Keep PM domain powered during ->probe()
+Date: Fri, 13 Mar 2015 16:43:44 +0100
+Message-ID: <1426261429-31883-5-git-send-email-ulf.hansson@linaro.org>
 References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f48.google.com ([209.85.215.48]:40549 "EHLO
-	mail-la0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757444AbbCMPoU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:20 -0400
-Received: by labge10 with SMTP id ge10so23424748lab.7
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:18 -0700 (PDT)
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:39938 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756851AbbCMPoP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:15 -0400
+Received: by lbiw7 with SMTP id w7so23679531lbi.7
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:14 -0700 (PDT)
 In-Reply-To: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -24,27 +24,27 @@ domain.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/spi/spi.c | 7 +++++++
+ drivers/base/platform.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index c64a3e5..bb75a0f 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -263,7 +263,14 @@ static int spi_drv_probe(struct device *dev)
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 9421fed..d35fef1 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -509,7 +509,14 @@ static int platform_drv_probe(struct device *_dev)
  
- 	ret = dev_pm_domain_attach(dev, true);
+ 	ret = dev_pm_domain_attach(_dev, true);
  	if (ret != -EPROBE_DEFER) {
-+		ret = dev_pm_domain_get(dev->pm_domain);
++		ret = dev_pm_domain_get(_dev->pm_domain);
 +		if (ret) {
-+			dev_pm_domain_detach(dev, true);
++			dev_pm_domain_detach(_dev, true);
 +			return ret;
 +		}
 +
- 		ret = sdrv->probe(to_spi_device(dev));
-+		dev_pm_domain_put(dev->pm_domain);
+ 		ret = drv->probe(dev);
++		dev_pm_domain_put(_dev->pm_domain);
  		if (ret)
- 			dev_pm_domain_detach(dev, true);
+ 			dev_pm_domain_detach(_dev, true);
  	}
 -- 
 1.9.1
