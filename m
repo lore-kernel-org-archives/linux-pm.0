@@ -1,40 +1,41 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [FOR DISCUSSION 0/9] Dove PMU support
-Date: Fri, 13 Mar 2015 13:47:19 +0100
-Message-ID: <2953786.DBeOKcOQ8q@wuerfel>
-References: <20150312183020.GU8656@n2100.arm.linux.org.uk> <3456973.vXF9zkXSFZ@wuerfel> <20150313123211.GG8656@n2100.arm.linux.org.uk>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RESEND PATCH v6 00/22] power_supply: Allow safe usage of power
+ supply
+Date: Fri, 13 Mar 2015 14:02:24 +0100
+Message-ID: <1426251744.7024.3.camel@AMDC1943>
+References: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.10]:62880 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbbCMMro (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 08:47:44 -0400
-In-Reply-To: <20150313123211.GG8656@n2100.arm.linux.org.uk>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:9846 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbbCMNC3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 09:02:29 -0400
+In-reply-to: <1426146260-30081-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Henrik Rydberg <rydberg@bitmath.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Pavel Machek <pavel@ucw.cz>
 
-On Friday 13 March 2015 12:32:11 Russell King - ARM Linux wrote:
-> On Fri, Mar 13, 2015 at 01:26:17PM +0100, Arnd Bergmann wrote:
-> > On Friday 13 March 2015 12:11:27 Russell King - ARM Linux wrote:
-> > > Of course, I also have a patch which adds legacy support to
-> > > arch/arm/mach-dove, but I've assumed you're not interested in that...
-> > 
-> > You mean legacy support in mach-mvebu?
+On czw, 2015-03-12 at 08:43 +0100, Krzysztof Kozlowski wrote:
+> Hi,
 > 
-> No.
 > 
-> As you'll see, this uses a platform device notifier to hook the devices
-> onto the appropriate PM domain, which is why the driver needs to be
-> registered early.  This also gets used in DT mode with one legacy
-> platform device which is dynamically registered (something which can't
-> happen with DT.)
+> Resending patchset because it was filtered out by vger.kernel.org.
+> 
+> The patchset fixes invalid memory accesses in certain race scenarios by
+> moving ownership of struct power_supply to the core. All drivers are
+> modified.
 
-Ok, got it. I think that's fine too. If this helps you spend less
-time on forward-porting your patches and in turn completing the
-full dove support with DT faster, I'm all for merging this one too.
+Hi Sebastian,
 
-	Arnd
+All necessary folks have responded (Jiri for input, Ingo Molnar for x86,
+Rafael for ACPI). Additionally I think it would be the best to merge the
+patchset early so it will sit in linux-next for some time.
+
+Can you apply it?
+
+Best regards,
+Krzysztof
+
