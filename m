@@ -1,131 +1,121 @@
-From: Vince Hsu <vinceh@nvidia.com>
-Subject: Re: [PATCH v2 01/17] reset: add of_reset_control_get_by_index()
-Date: Fri, 13 Mar 2015 11:04:46 +0800
-Message-ID: <550253CE.80201@nvidia.com>
-References: <1426162518-7405-1-git-send-email-vinceh@nvidia.com>	 <1426162518-7405-2-git-send-email-vinceh@nvidia.com> <1426172504.14455.67.camel@pengutronix.de>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: cpu_cooling: Remove cpu_dev update on
+ policy CPU update
+Date: Fri, 13 Mar 2015 00:39:22 -0400
+Message-ID: <20150313043920.GA29762@developer.hsd1.ca.comcast.net>
+References: <1426096417-27522-1-git-send-email-kapileshwar.singh@arm.com>
+ <1426096417-27522-2-git-send-email-kapileshwar.singh@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:5820 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbbCMDE1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2015 23:04:27 -0400
-In-Reply-To: <1426172504.14455.67.camel@pengutronix.de>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:39457 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbbCMEjN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 00:39:13 -0400
+Received: by pdbft15 with SMTP id ft15so25741562pdb.6
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2015 21:39:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1426096417-27522-2-git-send-email-kapileshwar.singh@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: thierry.reding@gmail.com, pdeschrijver@nvidia.com, swarren@wwwdotorg.org, gnurou@gmail.com, jroedel@suse.de, mturquette@linaro.org, pgaikwad@nvidia.com, sboyd@codeaurora.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tbergstrom@nvidia.com, airlied@linux.ie, bhelgaas@google.com, tj@kernel.org, arnd@arndb.de, robh@kernel.org, will.deacon@arm.com, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+To: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, Javi.Merino@arm.com, Punit.Agrawal@arm.com
 
-Hi Philipp,
+KP,
 
-On 03/12/2015 11:01 PM, Philipp Zabel wrote:
-> Hi Vince,
->
-> Am Donnerstag, den 12.03.2015, 20:15 +0800 schrieb Vince Hsu:
->> Add of_reset_control_get_by_index() to allow the drivers to get reset device
->> without knowing its name.
-> I see this is useful in the case of PM domain drivers that just need to
-> trigger a list of resets in whatever order.
-Yep.
+On Wed, Mar 11, 2015 at 05:53:36PM +0000, Kapileshwar Singh wrote:
+> It was initially understood that an update to the cpu_device
+> (cached in cpufreq_cooling_device) was required to ascertain the
+> correct operating point of the device on a cpufreq policy->cpu update
+> or creation or deletion of a cpufreq policy.
+> (e.g. when the existing policy CPU goes offline).
+> 
+> This was added in:
+> 
+> e0128d8ab423 - thermal: cpu_cooling: implement the power cooling device API
 
->
->> Signed-off-by: Vince Hsu <vinceh@nvidia.com>
->>
->> ---
->> v2: minor changes according to Alex's comments
->>
->>   drivers/reset/core.c  | 44 +++++++++++++++++++++++++++++---------------
->>   include/linux/reset.h |  9 +++++++++
->>   2 files changed, 38 insertions(+), 15 deletions(-)
->>
->> diff --git a/drivers/reset/core.c b/drivers/reset/core.c
->> index 7955e00d04d4..5e78866acd62 100644
->> --- a/drivers/reset/core.c
->> +++ b/drivers/reset/core.c
->> @@ -140,28 +140,15 @@ int reset_control_status(struct reset_control *rstc)
->>   }
->>   EXPORT_SYMBOL_GPL(reset_control_status);
->>   
->> -/**
->> - * of_reset_control_get - Lookup and obtain a reference to a reset controller.
->> - * @node: device to be reset by the controller
->> - * @id: reset line name
->> - *
->> - * Returns a struct reset_control or IS_ERR() condition containing errno.
->> - *
->> - * Use of id names is optional.
->> - */
->> -struct reset_control *of_reset_control_get(struct device_node *node,
->> -					   const char *id)
->> +struct reset_control *__of_reset_control_get(struct device_node *node,
->> +						int index)
-> static
-Will merge to of_reset_control_get_by_index.
 
->
->>   {
->>   	struct reset_control *rstc = ERR_PTR(-EPROBE_DEFER);
->>   	struct reset_controller_dev *r, *rcdev;
->>   	struct of_phandle_args args;
->> -	int index = 0;
->>   	int rstc_id;
->>   	int ret;
->>   
->> -	if (id)
->> -		index = of_property_match_string(node,
->> -						 "reset-names", id);
->>   	ret = of_parse_phandle_with_args(node, "resets", "#reset-cells",
->>   					 index, &args);
->>   	if (ret)
->> @@ -202,6 +189,33 @@ struct reset_control *of_reset_control_get(struct device_node *node,
->>   
->>   	return rstc;
->>   }
->> +
->> +struct reset_control *of_reset_control_get_by_index(struct device_node *node,
->> +					   int index)
->> +{
->> +	return __of_reset_control_get(node, index);
->> +}
->> +EXPORT_SYMBOL_GPL(of_reset_control_get_by_index);
-> This function is missing a kerneldoc comment, and please add a note that
-> this is only to be used if the order of the resets doesn't matter.
-Will add comment.
+Can you please add a 'fixes' entry here?
 
->
-> Actually, I see no reason not to just merge __of_reset_control_get into
-> of_reset_control_get_by_index and then just call that from
-> of_reset_control_get.
-Indeed. Will fix.
+> 
+> This update is not required and it is possible to ascertain the OPPs
+> from the leading CPU in a cpufreq domain even if the CPU is hotplugged out.
+> 
+> Acked-by: Javi Merino <javi.merino@arm.com>
+> Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
+> ---
+>  drivers/thermal/cpu_cooling.c |   40 ----------------------------------------
 
-Thanks for the review. :)
-Vince
+Your patch looks fine to me, but you have to resend it (same applies to
+patch 02). The reason is that I've got it with the charset issue and
+characters are mangled. Can you please check with Javi or Punit on how
+to setup your mailer?
 
->
->> +/**
->> + * of_reset_control_get - Lookup and obtain a reference to a reset controller.
->> + * @node: device to be reset by the controller
->> + * @id: reset line name
->> + *
->> + * Returns a struct reset_control or IS_ERR() condition containing errno.
->> + *
->> + * Use of id names is optional.
->> + */
->> +struct reset_control *of_reset_control_get(struct device_node *node,
->> +					   const char *id)
->> +{
->> +	int index = 0;
->> +
->> +	if (id)
->> +		index = of_property_match_string(node,
->> +						 "reset-names", id);
->> +	return __of_reset_control_get(node, index);
->> +}
->>   EXPORT_SYMBOL_GPL(of_reset_control_get);
-> [...]
->
-> regards
-> Philipp
->
+Thanks,
 
+Eduardo Valentin
+>  1 file changed, 40 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index c4974144c787..2e15133b4793 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -199,39 +199,6 @@ unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
+>  
+> -static void update_cpu_device(int cpu)
+> -{
+> -	struct cpufreq_cooling_device *cpufreq_dev;
+> -
+> -	mutex_lock(&cooling_cpufreq_lock);
+> -	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+> -		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
+> -			cpufreq_dev->cpu_dev = get_cpu_device(cpu);
+> -			if (!cpufreq_dev->cpu_dev) {
+> -				dev_warn(&cpufreq_dev->cool_dev->device,
+> -					"No cpu device for new policy cpu %d\n",
+> -					 cpu);
+> -			}
+> -			break;
+> -		}
+> -	}
+> -	mutex_unlock(&cooling_cpufreq_lock);
+> -}
+> -
+> -static void remove_cpu_device(int cpu)
+> -{
+> -	struct cpufreq_cooling_device *cpufreq_dev;
+> -
+> -	mutex_lock(&cooling_cpufreq_lock);
+> -	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+> -		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
+> -			cpufreq_dev->cpu_dev = NULL;
+> -			break;
+> -		}
+> -	}
+> -	mutex_unlock(&cooling_cpufreq_lock);
+> -}
+> -
+>  /**
+>   * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
+>   * @nb:	struct notifier_block * with callback info.
+> @@ -268,13 +235,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+>  		}
+>  		mutex_unlock(&cooling_cpufreq_lock);
+>  		break;
+> -
+> -	case CPUFREQ_CREATE_POLICY:
+> -		update_cpu_device(policy->cpu);
+> -		break;
+> -	case CPUFREQ_REMOVE_POLICY:
+> -		remove_cpu_device(policy->cpu);
+> -		break;
+>  	default:
+>  		return NOTIFY_DONE;
+>  	}
+> -- 
+> 1.7.9.5
+> 
+> 
