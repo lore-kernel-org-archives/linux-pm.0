@@ -1,15 +1,15 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/9] amba: Keep PM domain powered during ->probe()
-Date: Fri, 13 Mar 2015 16:43:43 +0100
-Message-ID: <1426261429-31883-4-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 5/9] i2c: core: Keep PM domain powered during ->probe()
+Date: Fri, 13 Mar 2015 16:43:45 +0100
+Message-ID: <1426261429-31883-6-git-send-email-ulf.hansson@linaro.org>
 References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f45.google.com ([209.85.215.45]:33728 "EHLO
-	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756987AbbCMPoN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:13 -0400
-Received: by labmn12 with SMTP id mn12so23556209lab.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:12 -0700 (PDT)
+Received: from mail-la0-f51.google.com ([209.85.215.51]:36979 "EHLO
+	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757131AbbCMPoS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 11:44:18 -0400
+Received: by labgq15 with SMTP id gq15so23487229lab.4
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2015 08:44:16 -0700 (PDT)
 In-Reply-To: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -24,37 +24,29 @@ domain.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/amba/bus.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/i2c/i2c-core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-index f009936..19182b0 100644
---- a/drivers/amba/bus.c
-+++ b/drivers/amba/bus.c
-@@ -241,8 +241,15 @@ static int amba_probe(struct device *dev)
- 		if (ret == -EPROBE_DEFER)
- 			break;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 210cf48..0eabe55 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -655,8 +655,15 @@ static int i2c_device_probe(struct device *dev)
  
-+		ret = dev_pm_domain_get(dev->pm_domain);
-+		if (ret) {
-+			dev_pm_domain_detach(dev, true);
-+			break;
+ 	status = dev_pm_domain_attach(&client->dev, true);
+ 	if (status != -EPROBE_DEFER) {
++		status = dev_pm_domain_get(client->dev.pm_domain);
++		if (status) {
++			dev_pm_domain_detach(&client->dev, true);
++			return status;
 +		}
 +
- 		ret = amba_get_enable_pclk(pcdev);
- 		if (ret) {
-+			dev_pm_domain_put(dev->pm_domain);
- 			dev_pm_domain_detach(dev, true);
- 			break;
- 		}
-@@ -252,6 +259,7 @@ static int amba_probe(struct device *dev)
- 		pm_runtime_enable(dev);
- 
- 		ret = pcdrv->probe(pcdev, id);
-+		dev_pm_domain_put(dev->pm_domain);
- 		if (ret == 0)
- 			break;
- 
+ 		status = driver->probe(client, i2c_match_id(driver->id_table,
+ 					client));
++		dev_pm_domain_put(client->dev.pm_domain);
+ 		if (status)
+ 			dev_pm_domain_detach(&client->dev, true);
+ 	}
 -- 
 1.9.1
 
