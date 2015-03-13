@@ -1,41 +1,38 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH 3/6] ARM64: cpuidle: Replace cpu_suspend by the common
- ARM/ARM64 function
-Date: Fri, 13 Mar 2015 18:21:03 +0000
-Message-ID: <20150313182102.GS30671@e104818-lin.cambridge.arm.com>
+From: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH 4/6] ARM64: cpuidle: Rename cpu_init_idle to a common
+ function name
+Date: Fri, 13 Mar 2015 18:22:46 +0000
+Message-ID: <20150313182246.GT30671@e104818-lin.cambridge.arm.com>
 References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
- <1425385777-14766-4-git-send-email-daniel.lezcano@linaro.org>
+ <1425385777-14766-5-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1425385777-14766-4-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lina.iyer@linaro.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1425385777-14766-5-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 03, 2015 at 01:29:34PM +0100, Daniel Lezcano wrote:
-> Call the common ARM/ARM64 'arm_cpuidle_suspend' instead of cpu_suspend function
-> which is specific to ARM64.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle-arm64.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
+On Tue, Mar 03, 2015 at 01:29:35PM +0100, Daniel Lezcano wrote:
 > diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-> index 39a2c62..0cea244 100644
+> index 0cea244..6ef291c7 100644
 > --- a/drivers/cpuidle/cpuidle-arm64.c
 > +++ b/drivers/cpuidle/cpuidle-arm64.c
-> @@ -49,7 +49,7 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
->  		 * call the CPU ops suspend protocol with idle index as a
->  		 * parameter.
->  		 */
-> -		ret = cpu_suspend(idx);
-> +		arm_cpuidle_suspend(idx);
+> @@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
+>  	 * idle states suspend back-end specific data
+>  	 */
+>  	for_each_possible_cpu(cpu) {
+> -		ret = cpu_init_idle(cpu);
+> +		ret = arm_cpuidle_init(cpu);
 
-Nitpick: why don't we just rename the arm one cpuidle_suspend()?
+Same nitpick here about dropping the arm_ prefix (though here we already
+have a cpuidle_init).
 
 -- 
 Catalin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
