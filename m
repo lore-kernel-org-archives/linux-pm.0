@@ -1,101 +1,68 @@
-From: <Yuantian.Tang@freescale.com>
-Subject: [PATCH 2/2 v5] cpufreq: qoriq: rename the driver
-Date: Fri, 13 Mar 2015 12:39:02 +0800
-Message-ID: <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
-References: <1426221542-41043-1-git-send-email-Yuantian.Tang@freescale.com>
+From: keita kobayashi <keita.kobayashi.ym@renesas.com>
+Subject: Re: [RFC/PATCH 0/6] Add CPUIdle support for Renesas SoCs
+Date: Fri, 13 Mar 2015 14:01:39 +0900
+Message-ID: <55026F33.4020000@renesas.com>
+References: <1425444946-3084-1-git-send-email-keita.kobayashi.ym@renesas.com> <54F89A23.1060008@linaro.org> <54F97599.7050904@renesas.com> <20150309152155.GC456@linaro.org> <54FDBD0A.5060001@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bbn0105.outbound.protection.outlook.com ([157.56.111.105]:58372
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750973AbbCME50 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 Mar 2015 00:57:26 -0400
-In-Reply-To: <1426221542-41043-1-git-send-email-Yuantian.Tang@freescale.com>
+Received: from relmlor3.renesas.com ([210.160.252.173]:28754 "EHLO
+	relmlie2.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750853AbbCMFCB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 01:02:01 -0400
+In-Reply-To: <54FDBD0A.5060001@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, horms@verge.net.au, rjw@rjwysocki.net, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+Hi Daniel, Lina
 
-This driver works on all QorIQ platforms which include
-ARM-based cores and PPC-based cores.
-Rename it in order to represent better.
+Sorry for late reply.
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-v5:
-	- rebased to 4.0-rc3
-	- added Kconfig and Makefile entry
-v3, v4
-	- none
-v2:
-	- use -C -M options when format-patch
+(2015/03/10 0:32), Daniel Lezcano wrote:
 
- drivers/cpufreq/Kconfig                                    | 8 ++++++++
- drivers/cpufreq/Kconfig.powerpc                            | 9 ---------
- drivers/cpufreq/Makefile                                   | 2 +-
- drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} | 0
- 4 files changed, 9 insertions(+), 10 deletions(-)
- rename drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} (100%)
+> On 03/09/2015 04:21 PM, Lina Iyer wrote:
+>> On Fri, Mar 06 2015 at 02:38 -0700, keita kobayashi wrote:
+>>> Hi Daniel
+> 
+> [ ... ]
+> 
+>>>>
+>>>> Hi Keita,
+>>>>
+>>>> the platform approach to pass private data from the arch specific to
+>>>> the cpuidle driver no longer accepted. Unfortunately, there is no
+>>>> alternate solution upstream.
+>>>>
+>>>> But hopefully, there is a patchset [1] submitted for upstreaming
+>>>> which unify arm32/64 into a single generic cpuidle driver and use the
+>>>> DT to define the idle functions to be used.
+>>>>
+>>>> I suggest you have a look at this patchset if it can fit your need.
+>>>>
+>>>>   -- Daniel
+>>>>
+>>>> [1] https://lkml.org/lkml/2015/3/3/271
+>>>
+>>> Thank you for information.
+>>> I will take a look at the patch series.
+>>
+>> Hi Kieta,
+>>
+>> Please also have a look at the v15 of the cpuidle support for QCOM SoC.
+>> Sent just now.  It is based on [1].
+> > Lina's patchset is available at:
+> 
+> https://www.mail-archive.com/devicetree@vger.kernel.org/msg64700.html
+> 
+> Thanks
+>   -- Daniel
+> 
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index a171fef..659879a 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -293,5 +293,13 @@ config SH_CPU_FREQ
- 	  If unsure, say N.
- endif
- 
-+config QORIQ_CPUFREQ
-+	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-+	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-+	select CLK_QORIQ
-+	help
-+	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-+	  which are capable of changing the CPU's frequency dynamically.
-+
- endif
- endmenu
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 7ea2441..3a0595b 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -23,15 +23,6 @@ config CPU_FREQ_MAPLE
- 	  This adds support for frequency switching on Maple 970FX
- 	  Evaluation Board and compatible boards (IBM JS2x blades).
- 
--config PPC_CORENET_CPUFREQ
--	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
--	depends on PPC_E500MC && OF && COMMON_CLK
--	select CLK_QORIQ
--	help
--	  This adds the CPUFreq driver support for Freescale e500mc,
--	  e5500 and e6500 series SoCs which are capable of changing
--	  the CPU's frequency dynamically.
--
- config CPU_FREQ_PMAC
- 	bool "Support for Apple PowerBooks"
- 	depends on ADB_PMU && PPC32
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 82a1821..26df0ad 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -85,7 +85,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
- ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
- obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
- obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
--obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
-+obj-$(CONFIG_QORIQ_CPUFREQ)   		+= qoriq-cpufreq.o
- obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
- obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
- obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-similarity index 100%
-rename from drivers/cpufreq/ppc-corenet-cpufreq.c
-rename to drivers/cpufreq/qoriq-cpufreq.c
--- 
-2.1.0.27.g96db324
+Thank you for information.
+I will confirm it.
 
+Regards.
+Keita Kobayashi
