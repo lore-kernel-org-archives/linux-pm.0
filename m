@@ -1,40 +1,45 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/6] ARM: cpuidle: Unify the ARM64/ARM DT approach
-Date: Fri, 13 Mar 2015 22:31:09 +0100
-Message-ID: <5503571D.9000703@linaro.org>
-References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org> <5501A1DE.9020804@linaro.org> <CAL_Jsq+HSE997h4CtM-hM29t5Yhrkc0ikkfJDOUhHf3JTH-g4w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] cpuidle: 4.0-rc3 fixes
+Date: Fri, 13 Mar 2015 22:56:59 +0100
+Message-ID: <2429393.iDkfxR0R07@vostro.rjw.lan>
+References: <55032186.3000306@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_Jsq+HSE997h4CtM-hM29t5Yhrkc0ikkfJDOUhHf3JTH-g4w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lina.iyer@linaro.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58453 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751250AbbCMVdL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 17:33:11 -0400
+In-Reply-To: <55032186.3000306@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Sebastien Rannou <mxs@sbrk.org>, Gregory Clement <gregory.clement@free-electrons.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 03/13/2015 09:51 PM, Rob Herring wrote:
-> On Thu, Mar 12, 2015 at 9:25 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> Catalin, Rob,
->>
->> do you agree with this patchset ?
->
-> There's very little to do with DT, but looks fine to me.
+On Friday, March 13, 2015 06:42:30 PM Daniel Lezcano wrote:
+> 
+> Hi Rafael,
+> 
+> this pull request contains a couple of fixes:
+> 
+>   - Fix the cpu_pm_enter/exit symmetry in the mvebu driver (Gregory Clement)
+> 
+>   - Fix the mvebu drivers latency/residency values to reach an 
+> acceptable tradeoff between perf / power (Sebastian Rannou)
+> 
+> Thanks !
 
-Shall I consider as a acked-by for the entire patchset or only the DT p=
-art ?
+Pulled, but this is a bit too late for 4.0-rc4, so I'll queue it up for -rc5.
 
-Thanks for taking the time to look at the patches.
+> ps: I took the opportunity to double check the other drivers have their 
+> cpu_pm_entry/exit symmetry correct (everything ok).
 
-   -- Daniel
+OK, thanks!
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+BTW, please update the dead linux-pm address you have in your scripts.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
