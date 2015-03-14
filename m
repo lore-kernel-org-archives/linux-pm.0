@@ -1,89 +1,45 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
- "actual frequency"
-Date: Sat, 14 Mar 2015 13:18:55 -0400
-Message-ID: <CAJvTdKk8yUeHzEE6G1KNyBi28-fSmVnPnkB6K4fn8U2jNa1Srw@mail.gmail.com>
-References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
-	<5475F1EA.7020003@intel.com>
-	<CAHOOexses3--hwcL5Mz=hnk+e1O32T8NXH=y+Se24-VXkWWAcw@mail.gmail.com>
-	<3849711.qUm3dg8PlV@vostro.rjw.lan>
-	<CAHOOextX=QK1-x7SbgKG9_zSUaZFLBX5FU5+iCFzJaqeJ7BYrg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCHv2] thermal: add omap3 support
+Date: Sat, 14 Mar 2015 19:02:40 +0100
+Message-ID: <20150314180240.GB4332@amd>
+References: <20150103111146.GB7065@amd>
+ <20150118202824.GB29014@amd>
+ <20150313120935.GA27533@amd>
+ <20150313165343.GB30104@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAHOOextX=QK1-x7SbgKG9_zSUaZFLBX5FU5+iCFzJaqeJ7BYrg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Magdalena Dobosz <maj.dobosz@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41205 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbbCNSCm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2015 14:02:42 -0400
+Content-Disposition: inline
+In-Reply-To: <20150313165343.GB30104@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 
-> {PERF_STATUS} can be already stale? Why is that?
+On Fri 2015-03-13 12:53:45, Eduardo Valentin wrote:
+> 
+> Hey Pavel,
+> 
+> On Fri, Mar 13, 2015 at 01:09:35PM +0100, Pavel Machek wrote:
+> > Hi!
+> > 
+> > I checked 4.0-rc3 and linux-next as of today, and can not see omap3
+> > thermal support. Can you apply the patches?
+> 
+> Yeah, it should be possible. Apologize, it really fell into the cracks.
+> 
+> There is a comment on it though. Please check my concern in you v2.
 
-Hello Magdalena,
+And there's explanation for that concern :-). Let me know what you
+need.
 
-Say two cores share a voltage domain.
-core0 makes a P-state request via PERF_CTRL to run FAST.
-core1 makes a P-state request via PERF_CTRL to run SLOW.
-The hardware is responsible for programming the shared VR to
-support the most demanding request -- FAST.  It does this,
-and since it would be wasteful to have core1 run SLOW when
-the VR supports FAST, core1 also runs fast.
+Best regards,
+									Pavel
 
-Say core0 then goes idle.
-The SLOW request on core1 may now be the most demanding VR request,
-and so the VR is lowered, and core1 now runs SLOW.
-
-Say PERF_STATUS is read on core1 before and after this transition.
-One will read FAST, the other will read SLOW.  Which one is the
-real frequency?
-
-The problem is that they are *both* the real frequency, and *neither*
-is the real frequency.  Indeed, the concept of instantaneous frequency
-in  many scenarios is extremely mis-leading.
-
-There are other scenarios related to turbo-mode and thermal control
-that make instantaneous frequency even more mis-leading,
-particularly since the frequency can change many times per second.
-Thus, the OS itself, can't depend on PERF_STATUS for anything.
-
-Requested frequency, however, does actually have *some* meaning.
-
-Average frequency is generally more useful.
-It requires is an accurate count of elapsed cycles
-divided by a reliable measurement of elapsed time.
-The problem with this is who decides the interval,
-and what do you do if somebody wants an instantaneous answer?
-
-The turbostat utility computes average frequency this in user-space,
-of course.  intel_pstate can do it in-kernel because it is actually a
-governor+driver, and so it runs periodically.
-
-But if somebody wants to know the instantaneous frequency,
-you have to ask why, and what they'll do with it...
-
-> Anyway, cpufreq documentation is misleading:
-> it says "cpuinfo_cur_freq: Current frequency of the CPU
-> as obtained from the hardware, in KHz.
-> This is the frequency the CPU actually runs at."
-
-Yes, I see this in Documentation/cpu-freq/user-guide.txt
-
-It was added by this commit: da470db16c703d7f9617c366a36c6670f89a9830
-[CPUFREQ] update Doc for cpuinfo_cur_freq and scaling_cur_freq
-
-Maybe it would have been a better idea to not update
-that documentation, and instead leave these as vague?
-
-> while the value is
-> read from MSR_IA32_PERF_STATUS (or MSR_IA32_PERF_CTL
-> in newer kernels).
-
-Both of those are bugs.  The code that does this in acpi-cpufreq
-should be replaced with code that reads no MSR, and simply
-reutrns the last requested frequency (from memory).
-I think I had a patch to remove all that current-frequency
-cruft from the driver a while back -- perhaps time to revive it,
-and to fix the documentation too.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
