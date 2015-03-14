@@ -1,55 +1,114 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/9] pm: domains: avoid potential oops in pm_genpd_remove_device()
-Date: Sat, 14 Mar 2015 02:27:47 +0100
-Message-ID: <6087624.WOzBPsVyeT@vostro.rjw.lan>
-References: <20150312183020.GU8656@n2100.arm.linux.org.uk> <20150313092030.GC8656@n2100.arm.linux.org.uk> <CAMuHMdWmVLPqKs2ZyLjZ2DA2UAjhqzrr1LEtsW2CRYSTh+uoeQ@mail.gmail.com>
+Subject: Re: [PATCH 1/9] PM / Domains: Add dev_pm_domain_get|put() APIs
+Date: Sat, 14 Mar 2015 02:31:47 +0100
+Message-ID: <1566917.2Z45cAj17k@vostro.rjw.lan>
+References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org> <1426261429-31883-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60890 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:63867 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750818AbbCNBEA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 21:04:00 -0400
-In-Reply-To: <CAMuHMdWmVLPqKs2ZyLjZ2DA2UAjhqzrr1LEtsW2CRYSTh+uoeQ@mail.gmail.com>
+	with SMTP id S1751038AbbCNBH7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2015 21:07:59 -0400
+In-Reply-To: <1426261429-31883-2-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-arm-kernel@lists.infradead.org
 
-On Friday, March 13, 2015 01:45:52 PM Geert Uytterhoeven wrote:
-> On Fri, Mar 13, 2015 at 10:20 AM, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
-> > On Fri, Mar 13, 2015 at 09:56:02AM +0100, Ulf Hansson wrote:
-> >> On 12 March 2015 at 19:31, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> >> > pm_genpd_remove_device() should only be called with valid and present
-> >> > pm domain.  There are circumstances where we may end up with something
-> >> > that isn't a generic PM domain in dev->pm_domain (eg, vga_switcheroo
-> >> > stuff.)
-> >>
-> >> Could the "vga_switcheroo" code deal with this instead?
-> >
-> > How is there any possibility what so ever that vga_switcherroo could
-> > deal with this?
-> >
-> > The problem is if something which isn't a generic PM domain is registered
-> > in dev->pm_domain, pm_genpd_remove_device() will treat it as a generic PM
-> > domain, and try and de-reference it as if it were a generic PM domain.
-> >
-> > The problem is the generic PM domain code _assuming_ that whatever it
-> > finds in dev->pm_domain is always a generic PM domain.  That is a broken
-> > assumption.
+On Friday, March 13, 2015 04:43:41 PM Ulf Hansson wrote:
+> There may be more than one device in a PM domain which then will be
+> probed at different points in time.
 > 
-> Indeed, currently it's not possible to know which derivative of dev_pm_domain
-> is used. For genpd, you have to look it up in the genpd list.
-> This also complicates adding debug code.
-> In addition, it can be statically or dynamically allocated. Hence sometimes %ps
-> can tell you the type, sometimes it can't.
+> Depending on timing and runtime PM support, in for the device related
+> driver/subsystem, a PM domain may be advised to power off after a
+> successful probe sequence.
 > 
-> Should we add a type field to struct dev_pm_domain?
+> A general requirement for a device within a PM domain, is that the
+> PM domain must stay powered during the probe sequence. To cope with
+> such requirement, let's add the dev_pm_domain_get|put() APIs.
+> 
+> These APIs are intended to be invoked from subsystem-level code and the
+> calls between get/put needs to be balanced.
+> 
+> dev_pm_domain_get(), tells the PM domain that it needs to increase a
+> usage count and to keep supplying power. dev_pm_domain_put(), does the
+> opposite.
+> 
+> For a PM domain to support this feature, it must implement the optional
+> ->get|put() callbacks.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/common.c | 40 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h          |  2 ++
+>  include/linux/pm_domain.h   |  4 ++++
+>  3 files changed, 46 insertions(+)
+> 
+> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+> index f32b802..99225af 100644
+> --- a/drivers/base/power/common.c
+> +++ b/drivers/base/power/common.c
+> @@ -128,3 +128,43 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
+>  		dev->pm_domain->detach(dev, power_off);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
+> +
+> +/**
+> + * dev_pm_domain_get - Increase usage count to keep a PM domain powered.
+> + * @domain: The PM domain to operate on.
+> + *
+> + * This function will not by itself increase the usage count, that's up to each
+> + * PM domain implementation to support. Typically it should be invoked from
+> + * subsystem level code prior drivers starts probing.
+> + *
+> + * Do note, it's optional to implement the ->get() callback for a PM domain.
+> + *
+> + * Returns 0 on successfully increased usage count or negative error code.
+> + */
+> +int dev_pm_domain_get(struct dev_pm_domain *domain)
+> +{
+> +	int ret = 0;
+> +
+> +	if (domain && domain->get)
+> +		ret = domain->get(domain);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_domain_get);
+> +
+> +/**
+> + * dev_pm_domain_put - Decrease usage count to allow a PM domain to power off.
+> + * @domain: The PM domain to operate on.
+> + *
+> + * This function will not by itself decrease the usage count, that's up to each
+> + * PM domain implementation to support. Typically it should be invoked from
+> + * subsystem level code after drivers has finished probing.
+> + *
+> + * Do note, it's optional to implement the ->put() callback for a PM domain.
+> + */
+> +void dev_pm_domain_put(struct dev_pm_domain *domain)
+> +{
+> +	if (domain && domain->put)
+> +		domain->put(domain);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_domain_put);
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index e2f1be6..e62330b 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -607,6 +607,8 @@ extern void dev_pm_put_subsys_data(struct device *dev);
+>  struct dev_pm_domain {
+>  	struct dev_pm_ops	ops;
+>  	void (*detach)(struct device *dev, bool power_off);
+> +	int (*get)(struct dev_pm_domain *domain);
+> +	void (*put)(struct dev_pm_domain *domain);
 
-Then we'd have to keep track of all dev_pm_domain derivatives somehow and I'd
-prefer to avoid that if possible.
+I don't like these names.  They suggest that it's always going to be about
+reference counting which doesn't have to be the case in principle.
+
+Also what about calling these from the driver core, ie. really_probe()?
 
 
 -- 
