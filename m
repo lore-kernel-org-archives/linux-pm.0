@@ -1,43 +1,68 @@
-From: Ian Malone <ibmalone@gmail.com>
-Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
-Date: Sat, 14 Mar 2015 23:44:14 +0000
-Message-ID: <CAL3-7MoEXfW0LTdQi3pakL+OaiKcVHPzPng142KKjCX66mNXDg@mail.gmail.com>
-References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
-	<345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
-	<52D8567A.8090308@mit.edu>
-	<1389932442.5449.4.camel@marge.simpson.net>
-	<1390037633.5676.3.camel@marge.simpson.net>
-	<1390061684.5566.4.camel@marge.simpson.net>
+From: Ben Gamari <bgamari.foss@gmail.com>
+Subject: Re: [PATCH] PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
+Date: Sun, 15 Mar 2015 00:10:41 -0400
+Message-ID: <878ueyaoji.fsf@gmail.com>
+References: <7638065.14871400820762911.JavaMail.weblogic@epml08> <CAJ0PZbS_Xcu=OJuiy=xs7k_A1=ajp34KEdi4KGC3e-y8t3EUGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:38665 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbbCNXoQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2015 19:44:16 -0400
-In-Reply-To: <1390061684.5566.4.camel@marge.simpson.net>
+Received: from mail-qg0-f41.google.com ([209.85.192.41]:33261 "EHLO
+	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbbCOEK4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 15 Mar 2015 00:10:56 -0400
+In-Reply-To: <CAJ0PZbS_Xcu=OJuiy=xs7k_A1=ajp34KEdi4KGC3e-y8t3EUGw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <bitbucket@online.de>
-Cc: Andy Lutomirski <luto@amacapital.net>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+To: myungjoo.ham@gmail.com, Paul Bolle <pebolle@tiscali.nl>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, =?utf-8?B?6rmA6rWt?= =?utf-8?B?7KeE?= <kgene.kim@samsung.com>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 18 January 2014 at 16:14, Mike Galbraith <bitbucket@online.de> wrote:
-> On Sat, 2014-01-18 at 10:33 +0100, Mike Galbraith wrote:
->> On Fri, 2014-01-17 at 05:20 +0100, Mike Galbraith wrote:
+--=-=-=
+Content-Type: text/plain
 
-> Signed-off-by: Mike Galbraith <bitbucket@online.de>
-> Cc: <stable@vger.kernel.org> # 3.10+
-> ---
->  arch/x86/kernel/process.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+MyungJoo Ham <myungjoo.ham@samsung.com> writes:
+
+> On Fri, May 23, 2014 at 1:52 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> On Thu, May 22, 2014 at 5:37 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
+>>> Checks for CONFIG_EXYNOS_ASV were added in v3.3. But the related Kconfig
+>>> symbol has never been added to the tree. Remove these checks, as they
+>>> always evaluate to false.
+>>>
+>>> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+>>
+>> Thanks for pointing this out.
+>>
+>> ASV was supposed to be merged, but it appears it failed or never attempted.
+>>
+>> I will merge with the next batch (this week).
+>>
+>>
+>> Cheers,
+>> MyungJoo.
 >
-> --- a/arch/x86/kernel/process.c
-> +++ b/arch/x86/kernel/process.c
-> @@ -427,18 +427,21 @@ static int prefer_mwait_c1_over_halt(con
+> Uh.. ASV itself affects the power efficiency; thus, I'd like to keep
+> it alive, but not as the current form.
+>
+What is the current status of ASV? I've not seen any patches since this
+was sent.
 
-Hi, this series of patches never seem to have made it as far as the
-mainline kernel, anyone know what needs to happen next?
+Cheers,
 
--- 
-imalone
-http://ibmalone.blogspot.co.uk
+- Ben
+
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJVBQZBAAoJEHPt6ejPuu8BTQsIAKI4APrIB1L/lXslJ/OIqrNj
+R2SfucM3HB1H/PFshgoTfgZ57TC72K+zvBfv6zcuUQ8jgUzelIuLTwBosORVpB0b
+P6vxqLpdLqFg3VC5RH4FB6wBOXJiuNIfxF3zZrCH2Et67MTkcUrtf3ricdGT23xs
+cM+xX5Dd6b8EvFU0HqBIDIGhLEY/N4+4wj8/sgR3ED+ZPHDx8zsscsVGvR1+tOpC
+VmGovJMHWOMaAc9TYHcKVA8Mi2lVfqbOP/nOhKMVr8zVetFyyeYjfoRsNB+jIWYY
+Ur5l+Wtm49EfSd/0wPrrLhkUTkQvPsKUd+WtcHbmUgjNDhdAmK1sp62t+0ru3XU=
+=U3D4
+-----END PGP SIGNATURE-----
+--=-=-=--
