@@ -1,58 +1,139 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 4/6] ARM64: cpuidle: Rename cpu_init_idle to a common
- function name
-Date: Sun, 15 Mar 2015 16:26:08 +0000
-Message-ID: <20150315162608.GA21176@e102568-lin.cambridge.arm.com>
+Subject: Re: [PATCH 0/6] ARM: cpuidle: Unify the ARM64/ARM DT approach
+Date: Sun, 15 Mar 2015 16:48:48 +0000
+Message-ID: <20150315164848.GB21176@e102568-lin.cambridge.arm.com>
 References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
- <1425385777-14766-5-git-send-email-daniel.lezcano@linaro.org>
- <20150313182246.GT30671@e104818-lin.cambridge.arm.com>
- <20150314114109.GB9696@e104818-lin.cambridge.arm.com>
+ <5501A1DE.9020804@linaro.org>
+ <CAL_Jsq+HSE997h4CtM-hM29t5Yhrkc0ikkfJDOUhHf3JTH-g4w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:54988 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751215AbbCOQsy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 15 Mar 2015 12:48:54 -0400
 Content-Disposition: inline
-In-Reply-To: <20150314114109.GB9696@e104818-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
+In-Reply-To: <CAL_Jsq+HSE997h4CtM-hM29t5Yhrkc0ikkfJDOUhHf3JTH-g4w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
 
-On Sat, Mar 14, 2015 at 11:41:09AM +0000, Catalin Marinas wrote:
-> On Fri, Mar 13, 2015 at 06:22:46PM +0000, Catalin Marinas wrote:
-> > On Tue, Mar 03, 2015 at 01:29:35PM +0100, Daniel Lezcano wrote:
-> > > diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-> > > index 0cea244..6ef291c7 100644
-> > > --- a/drivers/cpuidle/cpuidle-arm64.c
-> > > +++ b/drivers/cpuidle/cpuidle-arm64.c
-> > > @@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
-> > >  	 * idle states suspend back-end specific data
-> > >  	 */
-> > >  	for_each_possible_cpu(cpu) {
-> > > -		ret = cpu_init_idle(cpu);
-> > > +		ret = arm_cpuidle_init(cpu);
-> > 
-> > Same nitpick here about dropping the arm_ prefix (though here we already
-> > have a cpuidle_init).
+On Fri, Mar 13, 2015 at 08:51:38PM +0000, Rob Herring wrote:
+> On Thu, Mar 12, 2015 at 9:25 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+> >
+> > Catalin, Rob,
+> >
+> > do you agree with this patchset ?
 > 
-> Actually, a question, probably for Lorenzo - why do we need to call
-> cpu_init_idle() from the driver? Is there any dependency on what the
-> driver had done before this call? If not, I suggest a core_initcall() in
-> the arch code for cpu_init_idle(). At a quick look through the code, the
-> back-end can be initialised on its own.
+> There's very little to do with DT, but looks fine to me.
 
-Because we want to register the driver if and only if both the generic
-idle states parsing AND the back-end initialization succeed. If we move
-the cpu_init_idle() to a core initcall() we still need a way to probe
-if the back end initialization succeeded or not, we do not want to
-have a driver initialized with back-end calls that fail.
+There are key points related to DT, that are not necessarily
+visible within this set, that I fully support BTW.
 
-It is also so, because we must guarantee the idle index mapping between
-generic driver and the back end, if either initialization fails, the
-driver should not be registered.
+(1) enable-method: we do need platforms to define an enable-method
+    to match cpuidle ops. Nothing new, but we should keep that in mind.
+(2) platform back-ends will match idle states according to idle state
+    compatible string (to know what function to execute on idle state
+    entry for a given idle state the compatible string is used, in DT
+    standard way, to match the compatible string and get corresponding
+    enter function and parameters/data). The cpuidle_ops suspend method
+    will get an index from the idle driver that through a look-up will be
+    translated into a idle entry call with respective parameters that are
+    back-end specific. PSCI does that already on ARM64.
 
-At the moment the driver is very similar to the x86 generic driver,
-which is a good thing for consistency; by the way x86 driver prefixes
-the function names with "intel_", I am not too fussed about the
-functions naming scheme, open to suggestions.
+If we agree on these two points there is not much to debate anymore,
+I will review and provide tags according this week, apart from a couple
+of nits on functions naming and cpuidle_ops structures replication
+the set seems good to go to me.
 
 Lorenzo
+
+> 
+> >
+> > Thanks
+> >   -- Daniel
+> >
+> >
+> > On 03/03/2015 01:29 PM, Daniel Lezcano wrote:
+> >>
+> >> There is a big number of cpuidle drivers for the ARM architecture.
+> >>
+> >> These drivers have been cleaned up and grouped into the drivers/cpuidle
+> >> directory to keep track of the changes more easily and ensure the code
+> >> is following the same scheme across the drivers.
+> >>
+> >> That had the benefit of simplifying the code and factor out a lot of
+> >> common
+> >> parts. Beside that, as the drivers belong to the 'drivers' directory, we
+> >> had
+> >> to split the arch specific bits and the generic code in order to keep
+> >> everything self contained. The platform driver paradigm was used for this
+> >> purpose.
+> >>
+> >> Unfortunately, this approach is now no longer accepted and a different
+> >> solution
+> >> must be provided to reach the same goal: one example is the Qualcomm
+> >> cpuidle
+> >> driver upstreaming attempt [1].
+> >>
+> >> In the meantime, ARM64 developed a generic cpuidle driver based on DT
+> >> definition.
+> >>
+> >> The DT definition provides an 'enable-method' to specify one of the cpu
+> >> operations (PSCI, ...).
+> >>
+> >> This patchset unify this driver with ARM32, using the same DT definition.
+> >>
+> >> Thanks with this patchset we can use the 'enable-method' to specify a cpu
+> >> operations, hence get rid of the platform driver approach and go further
+> >> in the
+> >> cpuidle driver flexibility via the DT.
+> >>
+> >> Daniel Lezcano (6):
+> >>    ARM: cpuidle: Remove duplicate header inclusion
+> >>    ARM: cpuidle: Add a cpuidle ops structure to be used for DT
+> >>    ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function
+> >>    ARM64: cpuidle: Rename cpu_init_idle to a common function name
+> >>    ARM64: cpuidle: Remove arm64 reference
+> >>    ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
+> >>
+> >>   arch/arm/include/asm/cpuidle.h                     | 12 +++
+> >>   arch/arm/include/asm/cpuidle_ops.h                 |  3 +
+> >>   arch/arm/kernel/cpuidle.c                          | 87
+> >> +++++++++++++++++++++-
+> >>   arch/arm/mach-davinci/cpuidle.c                    |  1 -
+> >>   arch/arm/mach-imx/cpuidle-imx6q.c                  |  1 -
+> >>   arch/arm/mach-imx/cpuidle-imx6sl.c                 |  1 -
+> >>   arch/arm/mach-imx/cpuidle-imx6sx.c                 |  1 -
+> >>   arch/arm/mach-omap2/cpuidle44xx.c                  |  1 -
+> >>   arch/arm/mach-tegra/cpuidle-tegra20.c              |  1 -
+> >>   arch/arm/mach-tegra/cpuidle-tegra30.c              |  1 -
+> >>   arch/arm64/include/asm/cpuidle.h                   |  9 ++-
+> >>   arch/arm64/kernel/cpuidle.c                        |  2 +-
+> >>   drivers/cpuidle/Kconfig                            |  7 +-
+> >>   drivers/cpuidle/Kconfig.arm                        | 10 +++
+> >>   drivers/cpuidle/Kconfig.arm64                      | 13 ----
+> >>   drivers/cpuidle/Makefile                           |  5 +-
+> >>   drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} | 38 +++++-----
+> >>   drivers/cpuidle/cpuidle-at91.c                     |  1 -
+> >>   drivers/cpuidle/cpuidle-exynos.c                   |  1 -
+> >>   drivers/cpuidle/cpuidle-kirkwood.c                 |  1 -
+> >>   drivers/cpuidle/cpuidle-ux500.c                    |  1 -
+> >>   drivers/cpuidle/cpuidle-zynq.c                     |  1 -
+> >>   22 files changed, 139 insertions(+), 59 deletions(-)
+> >>   create mode 100644 arch/arm/include/asm/cpuidle_ops.h
+> >>   delete mode 100644 drivers/cpuidle/Kconfig.arm64
+> >>   rename drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} (72%)
+> >>
+> >
+> >
+> > --
+> >  <http://www.linaro.org/> Linaro.org | Open source software for ARM SoCs
+> >
+> > Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> > <http://twitter.com/#!/linaroorg> Twitter |
+> > <http://www.linaro.org/linaro-blog/> Blog
+> >
+> 
