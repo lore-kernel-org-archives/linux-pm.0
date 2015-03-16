@@ -1,80 +1,33 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: If an OF node is found but no device probed
- yet, defer.
-Date: Mon, 16 Mar 2015 09:44:22 +0100
-Message-ID: <CAMuHMdX_-U9ZajtWnPsgKR-e3DMS_8oMM3Cq7UgvO-Q2kE7fng@mail.gmail.com>
-References: <1426087648-3862-1-git-send-email-eric@anholt.net>
-	<6516096.HanqZ05BXy@vostro.rjw.lan>
-	<CAMuHMdW0_9HNpqYJhJHpDvFcObYZx0MfKT6hmgqjZmwrtpTSzQ@mail.gmail.com>
-	<7hr3sspyj3.fsf@deeprootsystems.com>
+Subject: Re: [PATCH 9/9] Revert "PM / Domains: Power on the PM domain right
+ after attach completes"
+Date: Mon, 16 Mar 2015 10:07:24 +0100
+Message-ID: <CAMuHMdXYt8JwaUg1DPey7DTqGS_oOKDDeCOu5ojnQns8822TFA@mail.gmail.com>
+References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
+	<1426261429-31883-10-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7hr3sspyj3.fsf@deeprootsystems.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eric Anholt <eric@anholt.net>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:35957 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbbCPJHY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 05:07:24 -0400
+Received: by obdfc2 with SMTP id fc2so30807237obd.3
+        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2015 02:07:24 -0700 (PDT)
+In-Reply-To: <1426261429-31883-10-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Kevin,
+On Fri, Mar 13, 2015 at 4:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> Due to the invent of dev_pm_domain_get|put() API and related code in the
+> generic PM domain, we can now safely revert this commit.
 
-On Fri, Mar 13, 2015 at 7:01 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->> On Wed, Mar 11, 2015 at 11:08 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> More CCes.
->>>
->>> On Wednesday, March 11, 2015 08:27:28 AM Eric Anholt wrote:
->>>> If we've declared a power domain in the OF, and the OF node is found
->>>> but the requested domain hasn't been registered on it yet, then we
->>>> probably have just tried to probe before the power domain driver has.
->>>> Defer our device's probe until it shows up.
->>>>
->>>> Signed-off-by: Eric Anholt <eric@anholt.net>
->>>
->>> Kevin, Ulf, any chance to have a look at this, please?
->>>
->>>> ---
->>>>
->>>> I ran into this when turning my ad-hoc code for BCM2835 (Raspberry Pi)
->>>> USB poweron support in the DWC2 controller to an OF-based power domain
->>>> declaration.
->>
->> I guess you are initializing the PM domains from module_init()?
->>
->> I use core_initcall() in arch/arm/mach-shmobile/pm-rmobile.c to make sure it's
->> initialized earlier, as e.g. the interrupt controller uses postcore_initcall().
->
-> Yeah, I think most existing users are initizling PM domains early, but IMO
-> we should be working towards supporting PM domains that are created
-> later as well (as this patch does.)
+... revert commit 2ed127697eb13766 ("PM / Domains: Power on the PM domain
+right after attach completes").
 
-Sure. When interrupt controllers are involved (yes, they can be in a PM (Clock)
-Domain too), there are definitely some complex issues to resolve in the core OF
-probing code first. Cfr. the bug mentioned in
-http://marc.info/?l=devicetree&m=142325419327559&w=2
-
->>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>> index ba4abbe..2b93c98 100644
->>>> --- a/drivers/base/power/domain.c
->>>> +++ b/drivers/base/power/domain.c
->>>> @@ -2064,7 +2064,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
->>>>  struct generic_pm_domain *of_genpd_get_from_provider(
->>>>                                       struct of_phandle_args *genpdspec)
->>>>  {
->>>> -     struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
->>>> +     struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
->>
->> Currently platform_drv_probe() just continues if dev_pm_domain_attach() returns
->> a different error than -EPROBE_DEFER, which is what you are seeing.
->>
->> Your change does have the side effect that a new DT with PM domains won't
->> work on an older kernel that doesn't have the PM domain driver yet.
->
-> Is that a real problem though?  Using newer DTs on older kernels can
-> cause many types of problems.
-
-It means we cannot describe everything in (stable) DT before all support code
-has been implemented. Ignoring that, it enforces strict merge order.
+So not everyone has to look for the commit ID.
 
 Gr{oetje,eeting}s,
 
