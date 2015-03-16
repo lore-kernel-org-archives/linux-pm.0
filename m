@@ -1,76 +1,89 @@
-From: Chao <xiechao_linux@163.com>
-Subject: Re:[PATCH 2/9] PM / Domains: Enable genpd to support ->get|put()
- callbacks
-Date: Mon, 16 Mar 2015 10:11:24 +0800 (CST)
-Message-ID: <1158a1f5.a8f5.14c205997e0.Coremail.xiechao_linux@163.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 8/9] mmmc: core: Keep PM domain powered during ->probe()
+ of SDIO func driver
+Date: Mon, 16 Mar 2015 09:24:41 +0100
+Message-ID: <CAPDyKFrLnpKGX6f+0s0JYCGRinGfJtEEAcp7VpRvKoo7ZNy3Qw@mail.gmail.com>
 References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
- <1426261429-31883-3-git-send-email-ulf.hansson@linaro.org>
+	<1426261429-31883-9-git-send-email-ulf.hansson@linaro.org>
+	<20150313161014.GR8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m13-153.163.com ([220.181.13.153]:56850 "EHLO m13-153.163.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbbCPCgr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 15 Mar 2015 22:36:47 -0400
-In-Reply-To: <1426261429-31883-3-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:36781 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbbCPIYm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 04:24:42 -0400
+Received: by qcto4 with SMTP id o4so37137762qct.3
+        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2015 01:24:42 -0700 (PDT)
+In-Reply-To: <20150313161014.GR8656@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-CkF0IDIwMTUtMDMtMTMgMjM6NDM6NDIsICJVbGYgSGFuc3NvbiIgPHVsZi5oYW5zc29uQGxpbmFy
-by5vcmc+IHdyb3RlOgo+VG8gcHJvdmlkZSB1c2VycyBjb250cm9sIG92ZXIgd2hldGhlciB0aGUg
-cG93ZXIgc2hvdWxkIGJlIG1haW50YWluZWQsCj5pbXBsZW1lbnQgdGhlIC0+Z2V0fHB1dCgpIGNh
-bGxiYWNrcyBmb3IgZ2VucGQncyBQTSBkb21haW4uCj4KPkEgdXNhZ2UgY291bnQgdmFyaWFibGUg
-a2VlcHMgdHJhY2sgb2YgdGhlIG51bWJlciBvZiB1c2Vycy4gQSBwb3NpdGl2ZQo+dmFsdWUgdGVs
-bHMgZ2VucGQgdG8ga2VlcCBzdXBwbHlpbmcgcG93ZXIgYW5kIGFsc28gdG8gcG93ZXIgdXAgaWYg
-aXQncwo+dGhlIGZpcnN0IHVzZXIuCj4KPk9uY2UgdGhlIHVzYWdlIGNvdW50IHJlYWNoZXMgemVy
-bywgZ2VucGQgdHJpZXMgdG8gcG93ZXIgb2ZmIGl0cyBQTQo+ZG9tYWluLgo+Cj5TaWduZWQtb2Zm
-LWJ5OiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4KPi0tLQo+IGRyaXZlcnMv
-YmFzZS9wb3dlci9kb21haW4uYyB8IDI2ICsrKysrKysrKysrKysrKysrKysrKysrKystCj4gaW5j
-bHVkZS9saW51eC9wbV9kb21haW4uaCAgIHwgIDEgKwo+IDIgZmlsZXMgY2hhbmdlZCwgMjYgaW5z
-ZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQo+Cj5kaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bv
-d2VyL2RvbWFpbi5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL2RvbWFpbi5jCj5pbmRleCA0NTkzN2Y4
-Li43MzE0NDU5IDEwMDY0NAo+LS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL2RvbWFpbi5jCj4rKysg
-Yi9kcml2ZXJzL2Jhc2UvcG93ZXIvZG9tYWluLmMKPkBAIC00OTUsMTAgKzQ5NSwxMiBAQCBzdGF0
-aWMgaW50IHBtX2dlbnBkX3Bvd2Vyb2ZmKHN0cnVjdCBnZW5lcmljX3BtX2RvbWFpbiAqZ2VucGQp
-Cj4gCSAqICgyKSBUaGUgZG9tYWluIGlzIHdhaXRpbmcgZm9yIGl0cyBtYXN0ZXIgdG8gcG93ZXIg
-dXAuCj4gCSAqICgzKSBPbmUgb2YgdGhlIGRvbWFpbidzIGRldmljZXMgaXMgYmVpbmcgcmVzdW1l
-ZCByaWdodCBub3cuCj4gCSAqICg0KSBTeXN0ZW0gc3VzcGVuZCBpcyBpbiBwcm9ncmVzcy4KPisJ
-ICogKDUpIFRoZSB1c2FnZV9jb3VudCA+IDAsIHNpbmNlIGl0IHRlbGxzIHVzIHRvIHN0YXkgcG93
-ZXJlZC4KPiAJICovCj4gCWlmIChnZW5wZC0+c3RhdHVzID09IEdQRF9TVEFURV9QT1dFUl9PRkYK
-PiAJICAgIHx8IGdlbnBkLT5zdGF0dXMgPT0gR1BEX1NUQVRFX1dBSVRfTUFTVEVSCj4tCSAgICB8
-fCBnZW5wZC0+cmVzdW1lX2NvdW50ID4gMCB8fCBnZW5wZC0+cHJlcGFyZWRfY291bnQgPiAwKQo+
-KwkgICAgfHwgZ2VucGQtPnJlc3VtZV9jb3VudCA+IDAgfHwgZ2VucGQtPnByZXBhcmVkX2NvdW50
-ID4gMAo+KwkgICAgfHwgYXRvbWljX3JlYWQoJmdlbnBkLT51c2FnZV9jb3VudCkgPiAwKQo+IAkJ
-cmV0dXJuIDA7Cj4gCj4gCWlmIChhdG9taWNfcmVhZCgmZ2VucGQtPnNkX2NvdW50KSA+IDApCj5A
-QCAtMTM3Nyw2ICsxMzc5LDI1IEBAIEVYUE9SVF9TWU1CT0xfR1BMKHBtX2dlbnBkX3N5c2NvcmVf
-cG93ZXJvbik7Cj4gCj4gI2VuZGlmIC8qIENPTkZJR19QTV9TTEVFUCAqLwo+IAo+K3N0YXRpYyBp
-bnQgZ2VucGRfZ2V0KHN0cnVjdCBkZXZfcG1fZG9tYWluICpkb21haW4pCj4rewo+KwlzdHJ1Y3Qg
-Z2VuZXJpY19wbV9kb21haW4gKmdlbnBkID0gcGRfdG9fZ2VucGQoZG9tYWluKTsKPisKPisJYXRv
-bWljX2luYygmZ2VucGQtPnVzYWdlX2NvdW50KTsKPisKPisJcmV0dXJuIHBtX2dlbnBkX3Bvd2Vy
-b24oZ2VucGQpOwo+K30KPisKPitzdGF0aWMgdm9pZCBnZW5wZF9wdXQoc3RydWN0IGRldl9wbV9k
-b21haW4gKmRvbWFpbikKPit7Cj4rCXN0cnVjdCBnZW5lcmljX3BtX2RvbWFpbiAqZ2VucGQgPSBw
-ZF90b19nZW5wZChkb21haW4pOwo+Kwo+KwlpZiAoIWF0b21pY19kZWNfYW5kX3Rlc3QoJmdlbnBk
-LT51c2FnZV9jb3VudCkpCj4rCQlyZXR1cm47Cj4rCj4rCWdlbnBkX3F1ZXVlX3Bvd2VyX29mZl93
-b3JrKGdlbnBkKTsKPit9Cj4rCj4gc3RhdGljIHN0cnVjdCBnZW5lcmljX3BtX2RvbWFpbl9kYXRh
-ICpnZW5wZF9hbGxvY19kZXZfZGF0YShzdHJ1Y3QgZGV2aWNlICpkZXYsCj4gCQkJCQlzdHJ1Y3Qg
-Z2VuZXJpY19wbV9kb21haW4gKmdlbnBkLAo+IAkJCQkJc3RydWN0IGdwZF90aW1pbmdfZGF0YSAq
-dGQpCj5AQCAtMTg3NCwxMCArMTg5NSwxMyBAQCB2b2lkIHBtX2dlbnBkX2luaXQoc3RydWN0IGdl
-bmVyaWNfcG1fZG9tYWluICpnZW5wZCwKPiAJZ2VucGQtPnN0YXR1cyA9IGlzX29mZiA/IEdQRF9T
-VEFURV9QT1dFUl9PRkYgOiBHUERfU1RBVEVfQUNUSVZFOwo+IAlpbml0X3dhaXRxdWV1ZV9oZWFk
-KCZnZW5wZC0+c3RhdHVzX3dhaXRfcXVldWUpOwo+IAlnZW5wZC0+cG93ZXJvZmZfdGFzayA9IE5V
-TEw7Cj4rCWF0b21pY19zZXQoJmdlbnBkLT51c2FnZV9jb3VudCwgMCk7Cj4gCWdlbnBkLT5yZXN1
-bWVfY291bnQgPSAwOwo+IAlnZW5wZC0+ZGV2aWNlX2NvdW50ID0gMDsKPiAJZ2VucGQtPm1heF9v
-ZmZfdGltZV9ucyA9IC0xOwo+IAlnZW5wZC0+bWF4X29mZl90aW1lX2NoYW5nZWQgPSB0cnVlOwo+
-KwlnZW5wZC0+ZG9tYWluLmdldCA9IGdlbnBkX2dldDsKPisJZ2VucGQtPmRvbWFpbi5wdXQgPSBn
-ZW5wZF9wdXQ7CgoKV2hhdCBpcyB0aGUgZGlmZmVyZW5jZSB0aGF0IGNhbGwgcG1fcnVudGltZV9n
-ZXQvcHV0IHdoZW4gcHJvYmUgZGV2aWNlPwpXaGVuIHRoZSBkZXZpY2UgaXMgYXR0YWNoZWQgdG8g
-dGhlIHBvd2VyIGRvbWFpbi4KV2UgY2FuIHN0aWxsIHVzZSBwbV9ydW50aW1lX2dldC9wdXQgdG8g
-cG93ZXIgb24vc2h1dGRvd24gdGhlIHBvd2VyIGRvbWFpbiBhbmQgbWFrZSB0aGUgZGV2aWNlIHBy
-b2JlZCBjb3JyZWN0bHkgd2l0aCBwb3dlciBkb21haW4gb24uCgo+LS0gCj4xLjkuMQo+Cj4KPl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj5saW51eC1hcm0t
-a2VybmVsIG1haWxpbmcgbGlzdAo+bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3Jn
-Cj5odHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
-ZXJuZWwK
+On 13 March 2015 at 17:10, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Fri, Mar 13, 2015 at 04:43:48PM +0100, Ulf Hansson wrote:
+>> To sucessfully probe some devices their corresponding PM domains may
+>> need to be powered.
+>>
+>> Use the dev_pm_domain_get|put() APIs, to control the behavior of the PM
+>> domain.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/mmc/core/sdio_bus.c | 7 +++++++
+>>  1 file changed, 7 insertions(+)
+>>
+>> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+>> index 71357b8..0d89b4b 100644
+>> --- a/drivers/mmc/core/sdio_bus.c
+>> +++ b/drivers/mmc/core/sdio_bus.c
+>> @@ -320,7 +320,14 @@ int sdio_add_func(struct sdio_func *func)
+>>       if (ret)
+>>               return ret;
+>>
+>> +     ret = dev_pm_domain_get(func->dev.pm_domain);
+>> +     if (ret) {
+>> +             dev_pm_domain_detach(&func->dev, false);
+>> +             return ret;
+>> +     }
+>> +
+>>       ret = device_add(&func->dev);
+>> +     dev_pm_domain_put(func->dev.pm_domain);
+>
+> This is broken.  It assumes that the device will be probed in device_add().
+> That's not always the case.  Come on Ulf, I'm dismayed at you producing
+> bad and fragile patches like this.  You are the apparent maintainer for
+> several important subsystems, and you are putting yourself up for more,
+> yet you don't seem to know the basics about the kernel infrastructure.
+> That makes you dangerous.
+>
+> Look, device_add() adds the device to the list of available devices,
+> publishes it in sysfs, triggers a uevent, and tries to find a driver to
+> bind it to.
+>
+> If it doesn't find a driver already registered in the kernel, that could
+> be because the required driver is a module.  In that case, device_add()
+> will already have returned.
+>
+> At some point later, the module will be loaded by user space, and that
+> will cause the list of devices to be scanned, looking for devices which
+> the newly registered driver can bind to.  With your code above, these
+> will _not_ result in the PM domain being "got" before probing.
+>
+
+Indeed this is broken, thank you for spotting this!
+
+For sure I know how the driver model works,  but I have mistakenly
+looked past this for the sdio_bus.
+
+Commit 397a0253527a (mmc: sdio: Convert to
+dev_pm_domain_attach|detach()), should not only have converted to the
+new APIs but also moved the calls into sdio_bus' ->probe() and
+->remove() callbacks.
+
+I will fix this, in one way or the other.
+
+Kind regards
+Uffe
