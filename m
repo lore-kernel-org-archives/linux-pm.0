@@ -1,67 +1,50 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: PM: knowing the system state in the device callback
-Date: Mon, 16 Mar 2015 20:52:45 +0100
-Message-ID: <20150316205245.1b66bbea@bbrezillon>
-References: <20150316191742.GI4560@piout.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:36915 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932234AbbCPTxB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 15:53:01 -0400
-In-Reply-To: <20150316191742.GI4560@piout.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH 30/35 linux-next] devfreq: constify of_device_id array
+Date: Mon, 16 Mar 2015 20:54:40 +0100
+Message-ID: <1426535685-25996-9-git-send-email-fabf@skynet.be>
+References: <1426533469-25458-1-git-send-email-fabf@skynet.be>
+ <1426535685-25996-1-git-send-email-fabf@skynet.be>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1426535685-25996-1-git-send-email-fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Alexandre,
+of_device_id is always used as const.
+(See driver.of_match_table and open firmware functions)
 
-On Mon, 16 Mar 2015 20:17:42 +0100
-Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
+Signed-off-by: Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
+---
+ drivers/devfreq/event/exynos-ppmu.c | 2 +-
+ drivers/devfreq/tegra-devfreq.c     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> Hi,
-> 
-> I'm trying to get rid of at91_suspend_entering_slow_clock() which is
-> exposing the platform suspend_state_t to the devices. From what I
-> understand, whenever suspend_state_t is PM_SUSPEND_MEM or
-> PM_SUSPEND_STANDBY, the pm_message_t passed to the device driver is
-> always PM_EVENT_SUSPEND.
-> 
-> The requirement is to know whether we are going to cut the master clock
-> and in that case, avoid calling enable_irq_wake() because we will not be
-> able to wakeup from the device.
-
-Actually the master clock is never switched off, we're only changing
-its source (from PLLA to slow clk) which in turn changes its rate.
-
-> 
-> Is there a better way to do that? Or should I implement a similar
-> function in the pm core (which I guess would already be there if
-> really needed)?
-
-IMHO we should let devices (RTC/RTT, debug UART, GPIOC, ...) mark their
-interrupt line as a wakeup interrupt, and adapt the device
-configuration (UART baudrate, ...) according to the new master clock
-rate instead of testing the suspend mode to check whether we can mark
-irq lines as wakeup sources or not.
-The fact that we're disabling PLLA is not really related to
-suspend-to-ram mode (we could leave the master clock unchanged and
-still put the SDRAM chip in self-refresh mode).
-
-The problem here is that we need some kind of notifier infrastructure
-that would be called before the master clock source is switched to slow
-clock. This notifier must be written in asm so that it can be called
-from the asm code executed from SRAM (the SDRAM chip is placed in self
-refresh before switching to slow clock).
-
-Best Regards,
-
-Boris
-
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index ad83473..5afb851 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -354,7 +354,7 @@ static int exynos_ppmu_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id exynos_ppmu_id_match[] = {
++static const struct of_device_id exynos_ppmu_id_match[] = {
+ 	{ .compatible = "samsung,exynos-ppmu", },
+ 	{ /* sentinel */ },
+ };
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index 3479096..244d8db 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -695,7 +695,7 @@ static SIMPLE_DEV_PM_OPS(tegra_devfreq_pm_ops,
+ 			 tegra_devfreq_suspend,
+ 			 tegra_devfreq_resume);
+ 
+-static struct of_device_id tegra_devfreq_of_match[] = {
++static const struct of_device_id tegra_devfreq_of_match[] = {
+ 	{ .compatible = "nvidia,tegra124-actmon" },
+ 	{ },
+ };
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.1.0
