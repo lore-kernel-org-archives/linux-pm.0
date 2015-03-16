@@ -1,59 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from
- suspend-to-idle
-Date: Mon, 16 Mar 2015 22:11:08 +0100
-Message-ID: <20150316211108.GC11441@amd>
-References: <2197217.yzvHkR7SyK@vostro.rjw.lan>
- <20150309180004.GA22993@dtor-ws>
- <3127745.ybR8YAlvTb@vostro.rjw.lan>
- <2514027.izE5Direg3@vostro.rjw.lan>
+From: Belisko Marek <marek.belisko@gmail.com>
+Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery bindings
+Date: Mon, 16 Mar 2015 22:20:51 +0100
+Message-ID: <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com>
+References: <1423088075-10025-1-git-send-email-marek@goldelico.com>
+	<1423088075-10025-4-git-send-email-marek@goldelico.com>
+	<20150316210532.GA11441@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42695 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932913AbbCPVLL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 17:11:11 -0400
-Content-Disposition: inline
-In-Reply-To: <2514027.izE5Direg3@vostro.rjw.lan>
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:34856 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932713AbbCPVUx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 17:20:53 -0400
+In-Reply-To: <20150316210532.GA11441@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>, GTA04 owners <gta04-owner@goldelico.com>
 
-On Tue 2015-03-10 00:08:43, Rafael J. Wysocki wrote:
-> On Monday, March 09, 2015 11:41:12 PM Rafael J. Wysocki wrote:
-> > On Monday, March 09, 2015 11:00:04 AM Dmitry Torokhov wrote:
-> > > Hi Rafael,
-> > > 
-> > > On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > If they keyboard interrupt is registered, mark the i8042 platform
-> > > > device as wakeup-capable and check the user space wakeup setting in
-> > > > i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
-> > > > respectively, the keyboard interrupt to wake up the system.
-> > > > 
-> > > > This makes it possible to use the PC keyboard to wake up the system
-> > > > from suspend-to-idle after writing "enabled" to the i8042 device's
-> > > > power/wakeup sysfs attribute.
-> > > 
-> > > Why do we do that for KBD but not AUX port? Should we mark individual
-> > > serio port be wakeup capable and not the whole i8042.
-> > 
-> > We can do that, but only after the port serio device has been registered.
-> > 
-> > I guess I can add code for that to i8042_register_ports().  Let me try that.
-> 
-> Yeah, that works too.  And you're right that there's no reason to do that for
-> keyboard only.
+On Mon, Mar 16, 2015 at 10:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2015-02-04 23:14:32, Marek Belisko wrote:
+>> Signed-off-by: Marek Belisko <marek@goldelico.com>
+>> ---
+>>  .../bindings/power_supply/twl4030_madc_battery.txt | 43 ++++++++++++++++++++++
+>>  1 file changed, 43 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+>> new file mode 100644
+>> index 0000000..bb3580c
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+>> @@ -0,0 +1,43 @@
+>> +twl4030_madc_battery
+>> +
+>> +Required properties:
+>> + - compatible : "ti,twl4030-madc-battery"
+>> + - capacity-uah : battery capacity in uAh
+>
+> Could we make it capacity-uAh ?
+This name was suggested by Mark Rutland [1] and naming convention
+should be all lowercase. There exists already bindings
+without uppercase (e.g. ti,bb-uamp) so I would keep it consistent.
+>
+>> + - volt-to-capacity-charging-map : list of voltage(mV):level(%) values
+>> +     for charging calibration (see example)
+>> + - volt-to-capacity-discharging-map : list of voltage(mV):level(%) values
+>> +     for discharging calibration (see example)
+>
+> Would "mV-to-capacity..." be more accurate? Also, would it make sense
+Again maybe mv but it can be added also later.
+> to introduce coefficients for temperature and discharge rate?
+What do you mean? Nothing like that is used in current driver why do
+we need to add it?
+>
+> Thanks,
+>                                                                         Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Actually, are you sure?
+[1] - http://lists.openwall.net/linux-kernel/2014/10/09/104
 
-Resuming on mouse click is reasonable, resuming on mouse move is not,
-as table vibrations are likely to cause that.
+BR,
 
-									Pavel
+marek
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
+
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com
