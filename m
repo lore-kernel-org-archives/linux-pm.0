@@ -1,80 +1,51 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery bindings
-Date: Mon, 16 Mar 2015 22:20:51 +0100
-Message-ID: <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com>
-References: <1423088075-10025-1-git-send-email-marek@goldelico.com>
-	<1423088075-10025-4-git-send-email-marek@goldelico.com>
-	<20150316210532.GA11441@amd>
+From: Richard Weinberger <richard@nod.at>
+Subject: [PATCH 1/6] clocksource/sh_cmt.c: Fix !HAS_IOMEM build
+Date: Mon, 16 Mar 2015 22:27:05 +0100
+Message-ID: <1426541230-928-1-git-send-email-richard@nod.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:34856 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932713AbbCPVUx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 17:20:53 -0400
-In-Reply-To: <20150316210532.GA11441@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, jassisinghbrar@gmail.com, pmeerw@pmeerw.net, lars@metafoo.de, knaack.h@gmx.de, jic23@kernel.org, tglx@linutronix.de, daniel.lezcano@linaro.org, Richard Weinberger <richard@nod.at>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>, GTA04 owners <gta04-owner@goldelico.com>
 
-On Mon, Mar 16, 2015 at 10:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2015-02-04 23:14:32, Marek Belisko wrote:
->> Signed-off-by: Marek Belisko <marek@goldelico.com>
->> ---
->>  .../bindings/power_supply/twl4030_madc_battery.txt | 43 ++++++++++++++++++++++
->>  1 file changed, 43 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
->> new file mode 100644
->> index 0000000..bb3580c
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
->> @@ -0,0 +1,43 @@
->> +twl4030_madc_battery
->> +
->> +Required properties:
->> + - compatible : "ti,twl4030-madc-battery"
->> + - capacity-uah : battery capacity in uAh
->
-> Could we make it capacity-uAh ?
-This name was suggested by Mark Rutland [1] and naming convention
-should be all lowercase. There exists already bindings
-without uppercase (e.g. ti,bb-uamp) so I would keep it consistent.
->
->> + - volt-to-capacity-charging-map : list of voltage(mV):level(%) values
->> +     for charging calibration (see example)
->> + - volt-to-capacity-discharging-map : list of voltage(mV):level(%) values
->> +     for discharging calibration (see example)
->
-> Would "mV-to-capacity..." be more accurate? Also, would it make sense
-Again maybe mv but it can be added also later.
-> to introduce coefficients for temperature and discharge rate?
-What do you mean? Nothing like that is used in current driver why do
-we need to add it?
->
-> Thanks,
->                                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+=46ixes:
+drivers/clocksource/sh_cmt.c: In function =E2=80=98sh_cmt_map_memory=E2=
+=80=99:
+drivers/clocksource/sh_cmt.c:920:2: error: implicit declaration of func=
+tion =E2=80=98ioremap_nocache=E2=80=99 [-Werror=3Dimplicit-function-dec=
+laration]
+  cmt->mapbase =3D ioremap_nocache(mem->start, resource_size(mem));
+  ^
+drivers/clocksource/sh_cmt.c:920:15: warning: assignment makes pointer =
+from integer without a cast [enabled by default]
+  cmt->mapbase =3D ioremap_nocache(mem->start, resource_size(mem));
+               ^
+drivers/clocksource/sh_cmt.c: In function =E2=80=98sh_cmt_setup=E2=80=99=
+:
+drivers/clocksource/sh_cmt.c:1034:2: error: implicit declaration of fun=
+ction =E2=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-declaratio=
+n]
+  iounmap(cmt->mapbase);
 
-[1] - http://lists.openwall.net/linux-kernel/2014/10/09/104
+Signed-off-by: Richard Weinberger <richard@nod.at>
+---
+ drivers/clocksource/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-BR,
-
-marek
-
-
--- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
-
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
+index 68161f7..c948f4e 100644
+--- a/drivers/clocksource/Kconfig
++++ b/drivers/clocksource/Kconfig
+@@ -192,6 +192,7 @@ config SYS_SUPPORTS_EM_STI
+ config SH_TIMER_CMT
+ 	bool "Renesas CMT timer driver" if COMPILE_TEST
+ 	depends on GENERIC_CLOCKEVENTS
++	depends on HAS_IOMEM
+ 	default SYS_SUPPORTS_SH_CMT
+ 	help
+ 	  This enables build of a clocksource and clockevent driver for
+--=20
+1.8.4.5
