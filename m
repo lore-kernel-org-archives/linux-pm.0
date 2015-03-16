@@ -1,7 +1,7 @@
 From: Richard Weinberger <richard@nod.at>
-Subject: [PATCH 2/6] clocksource/sh_mtu2.c: Fix !HAS_IOMEM build
-Date: Mon, 16 Mar 2015 22:27:06 +0100
-Message-ID: <1426541230-928-2-git-send-email-richard@nod.at>
+Subject: [PATCH 3/6] clocksource/sh_tmu.c: Fix !HAS_IOMEM build
+Date: Mon, 16 Mar 2015 22:27:07 +0100
+Message-ID: <1426541230-928-3-git-send-email-richard@nod.at>
 References: <1426541230-928-1-git-send-email-richard@nod.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -14,23 +14,23 @@ Cc: linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, dwmw2@infradead.org, db
 List-Id: linux-pm@vger.kernel.org
 
 =46ixes:
-drivers/clocksource/sh_mtu2.c: In function =E2=80=98sh_mtu2_map_memory=E2=
+drivers/clocksource/sh_tmu.c: In function =E2=80=98sh_tmu_map_memory=E2=
 =80=99:
-drivers/clocksource/sh_mtu2.c:391:2: error: implicit declaration of fun=
-ction =E2=80=98ioremap_nocache=E2=80=99 [-Werror=3Dimplicit-function-de=
-claration]
-  mtu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
+drivers/clocksource/sh_tmu.c:506:2: error: implicit declaration of func=
+tion =E2=80=98ioremap_nocache=E2=80=99 [-Werror=3Dimplicit-function-dec=
+laration]
+  tmu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
   ^
-drivers/clocksource/sh_mtu2.c:391:15: warning: assignment makes pointer=
- from integer without a cast [enabled by default]
-  mtu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
+drivers/clocksource/sh_tmu.c:506:15: warning: assignment makes pointer =
+from integer without a cast [enabled by default]
+  tmu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
                ^
-drivers/clocksource/sh_mtu2.c: In function =E2=80=98sh_mtu2_setup=E2=80=
-=99:
-drivers/clocksource/sh_mtu2.c:448:2: error: implicit declaration of fun=
-ction =E2=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-declaratio=
-n]
-  iounmap(mtu->mapbase);
+drivers/clocksource/sh_tmu.c: In function =E2=80=98sh_tmu_setup=E2=80=99=
+:
+drivers/clocksource/sh_tmu.c:598:2: error: implicit declaration of func=
+tion =E2=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-declaration=
+]
+  iounmap(tmu->mapbase);
 
 Signed-off-by: Richard Weinberger <richard@nod.at>
 ---
@@ -38,16 +38,16 @@ Signed-off-by: Richard Weinberger <richard@nod.at>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
-index c948f4e..c4063a6 100644
+index c4063a6..a0b036c 100644
 --- a/drivers/clocksource/Kconfig
 +++ b/drivers/clocksource/Kconfig
-@@ -202,6 +202,7 @@ config SH_TIMER_CMT
- config SH_TIMER_MTU2
- 	bool "Renesas MTU2 timer driver" if COMPILE_TEST
+@@ -212,6 +212,7 @@ config SH_TIMER_MTU2
+ config SH_TIMER_TMU
+ 	bool "Renesas TMU timer driver" if COMPILE_TEST
  	depends on GENERIC_CLOCKEVENTS
 +	depends on HAS_IOMEM
- 	default SYS_SUPPORTS_SH_MTU2
+ 	default SYS_SUPPORTS_SH_TMU
  	help
- 	  This enables build of a clockevent driver for the Multi-Function
+ 	  This enables build of a clocksource and clockevent driver for
 --=20
 1.8.4.5
