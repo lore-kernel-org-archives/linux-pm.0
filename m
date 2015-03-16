@@ -1,50 +1,98 @@
-From: Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH 30/35 linux-next] devfreq: constify of_device_id array
-Date: Mon, 16 Mar 2015 20:54:40 +0100
-Message-ID: <1426535685-25996-9-git-send-email-fabf@skynet.be>
-References: <1426533469-25458-1-git-send-email-fabf@skynet.be>
- <1426535685-25996-1-git-send-email-fabf@skynet.be>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426535685-25996-1-git-send-email-fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Sylvain Rochet <sylvain.rochet@finsecur.com>
+Subject: Re: PM: knowing the system state in the device callback
+Date: Mon, 16 Mar 2015 21:32:52 +0100
+Message-ID: <20150316203252.GA3821@gradator.net>
+References: <20150316191742.GI4560@piout.net>
+ <20150316205245.1b66bbea@bbrezillon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150316205245.1b66bbea@bbrezillon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-of_device_id is always used as const.
-(See driver.of_match_table and open firmware functions)
+Hi,
 
-Signed-off-by: Fabian Frederick <fabf-AgBVmzD5pcezQB+pC5nmwQ@public.gmane.org>
----
- drivers/devfreq/event/exynos-ppmu.c | 2 +-
- drivers/devfreq/tegra-devfreq.c     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index ad83473..5afb851 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -354,7 +354,7 @@ static int exynos_ppmu_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--static struct of_device_id exynos_ppmu_id_match[] = {
-+static const struct of_device_id exynos_ppmu_id_match[] = {
- 	{ .compatible = "samsung,exynos-ppmu", },
- 	{ /* sentinel */ },
- };
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 3479096..244d8db 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -695,7 +695,7 @@ static SIMPLE_DEV_PM_OPS(tegra_devfreq_pm_ops,
- 			 tegra_devfreq_suspend,
- 			 tegra_devfreq_resume);
- 
--static struct of_device_id tegra_devfreq_of_match[] = {
-+static const struct of_device_id tegra_devfreq_of_match[] = {
- 	{ .compatible = "nvidia,tegra124-actmon" },
- 	{ },
- };
--- 
-2.1.0
+On Mon, Mar 16, 2015 at 08:52:45PM +0100, Boris Brezillon wrote:
+> Hi Alexandre,
+>=20
+> On Mon, 16 Mar 2015 20:17:42 +0100
+> Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
+>=20
+> > Hi,
+> >=20
+> > I'm trying to get rid of at91_suspend_entering_slow_clock() which i=
+s
+> > exposing the platform suspend_state_t to the devices. From what I
+> > understand, whenever suspend_state_t is PM_SUSPEND_MEM or
+> > PM_SUSPEND_STANDBY, the pm_message_t passed to the device driver is
+> > always PM_EVENT_SUSPEND.
+> >=20
+> > The requirement is to know whether we are going to cut the master c=
+lock
+> > and in that case, avoid calling enable_irq_wake() because we will n=
+ot be
+> > able to wakeup from the device.
+>=20
+> Actually the master clock is never switched off, we're only changing
+> its source (from PLLA to slow clk) which in turn changes its rate.
+
+That's more or less the same, the master clock set to 32k is unusable=20
+for almost all devices. I guess all except some very simple devices lik=
+e=20
+GPIO, AIC and PM controller.
+
+
+> > Is there a better way to do that? Or should I implement a similar
+> > function in the pm core (which I guess would already be there if
+> > really needed)?
+>=20
+> IMHO we should let devices (RTC/RTT, debug UART, GPIOC, ...) mark the=
+ir
+> interrupt line as a wakeup interrupt, and adapt the device
+> configuration (UART baudrate, ...) according to the new master clock
+> rate instead of testing the suspend mode to check whether we can mark
+> irq lines as wakeup sources or not.
+
+We are using a 32k clock, 115.2 bits/s which is very common is 3.5x=20
+faster than tje 32k clock. And, to reduce a bit more the memory=20
+consumption we can switch of to the 32k RC and not OSC (I do!), which i=
+s=20
+=C2=B110% off, that's way too much for UART.
+
+Also, if standby target is chosen, we are able to wake up on USB Host=20
+wake-up events, which needs the USB PLL to be running. If mem target is=
+=20
+chosen we are going to switch off the USB PLL because we are going to=20
+switch off the PLL source, the master clock, in this case we most ensur=
+e=20
+all USB drivers switches off their controller (this is what my USBA and=
+=20
+EHCI/OHCI PM series did).
+
+
+> The fact that we're disabling PLLA is not really related to
+> suspend-to-ram mode (we could leave the master clock unchanged and
+> still put the SDRAM chip in self-refresh mode).
+
+This is what we do in standby target.
+
+
+> The problem here is that we need some kind of notifier infrastructure
+> that would be called before the master clock source is switched to sl=
+ow
+> clock. This notifier must be written in asm so that it can be called
+> from the asm code executed from SRAM (the SDRAM chip is placed in sel=
+f
+> refresh before switching to slow clock).
+
+I don't think that's possible, some drivers needs to know the master=20
+clock is going to be switched off (USB).
+
+
+Sylvain
