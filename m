@@ -1,7 +1,7 @@
 From: Richard Weinberger <richard@nod.at>
-Subject: [PATCH 6/6] iio/adc/cc10001_adc.c: Fix !HAS_IOMEM build
-Date: Mon, 16 Mar 2015 22:27:10 +0100
-Message-ID: <1426541230-928-6-git-send-email-richard@nod.at>
+Subject: [PATCH 5/6] mailbox/altera.c: Fix !HAS_IOMEM build
+Date: Mon, 16 Mar 2015 22:27:09 +0100
+Message-ID: <1426541230-928-5-git-send-email-richard@nod.at>
 References: <1426541230-928-1-git-send-email-richard@nod.at>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1426541230-928-1-git-send-email-richard@nod.at>
@@ -11,27 +11,25 @@ Cc: linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, dwmw2@infradead.org, db
 List-Id: linux-pm@vger.kernel.org
 
 Fixes:
-drivers/built-in.o: In function `cc10001_adc_probe':
-cc10001_adc.c:(.text+0x412e92): undefined reference to `devm_ioremap_resource'
+drivers/built-in.o: In function `altera_mbox_probe':
+mailbox-altera.c:(.text+0x400196): undefined reference to `devm_ioremap_resource'
 
 Signed-off-by: Richard Weinberger <richard@nod.at>
 ---
- drivers/iio/adc/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/mailbox/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-index 202daf8..46379b1 100644
---- a/drivers/iio/adc/Kconfig
-+++ b/drivers/iio/adc/Kconfig
-@@ -137,7 +137,8 @@ config AXP288_ADC
+diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+index 84325f2..81b8fb1 100644
+--- a/drivers/mailbox/Kconfig
++++ b/drivers/mailbox/Kconfig
+@@ -47,6 +47,7 @@ config PCC
  
- config CC10001_ADC
- 	tristate "Cosmic Circuits 10001 ADC driver"
--	depends on HAS_IOMEM || HAVE_CLK || REGULATOR
-+	depends on HAVE_CLK || REGULATOR
+ config ALTERA_MBOX
+ 	tristate "Altera Mailbox"
 +	depends on HAS_IOMEM
- 	select IIO_BUFFER
- 	select IIO_TRIGGERED_BUFFER
  	help
+ 	  An implementation of the Altera Mailbox soft core. It is used
+ 	  to send message between processors. Say Y here if you want to use the
 -- 
 1.8.4.5
