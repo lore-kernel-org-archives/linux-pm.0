@@ -1,53 +1,39 @@
-From: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Subject: [PATCH v2 2/2] thermal: cpu_cooling: Fix power calculation when CPUs are offline
-Date: Mon, 16 Mar 2015 12:00:51 +0000
-Message-ID: <1426507251-26613-3-git-send-email-kapileshwar.singh@arm.com>
-References: <1426507251-26613-1-git-send-email-kapileshwar.singh@arm.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] PM / Domains: Correct unit address in power-controller example
+Date: Mon, 16 Mar 2015 15:47:12 +0100
+Message-ID: <1426517232-2592-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56226 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbbCPMBP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 16 Mar 2015 08:01:15 -0400
-In-Reply-To: <1426507251-26613-1-git-send-email-kapileshwar.singh@arm.com>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:39263 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753970AbbCPOrP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 10:47:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, rui.zhang@intel.com, Javi.Merino@arm.com, Punit.Agrawal@arm.com, kapileshwar.singh@arm.com
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Ensure that the CPU for which the frequency is being requested
-is online. If none of the CPUs are online the requested power is
-returned as 0.
+In example 2 of the generic PM domains DT bindings, the unit address of
+the device node representing the child power controller doesn't match
+its "reg" property. Correct it.
 
-Acked-by: Javi Merino <javi.merino@arm.com>
-Signed-off-by: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/thermal/cpu_cooling.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/power/power_domain.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 2e15133b4793..07a9629edf4b 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -555,7 +555,18 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 	u32 *load_cpu = NULL;
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 0f8ed3710c66e9e2..025b5e7df61c630c 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -48,7 +48,7 @@ Example 2:
+ 		#power-domain-cells = <1>;
+ 	};
  
--	freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
-+	cpu = cpumask_any_and(&cpufreq_device->allowed_cpus, cpu_online_mask);
-+
-+	/*
-+	 * All the CPUs are offline, thus the requested power by
-+	 * the cdev is 0
-+	 */
-+	if (cpu >= nr_cpu_ids) {
-+		*power = 0;
-+		return 0;
-+	}
-+
-+	freq = cpufreq_quick_get(cpu);
- 
- 	if (trace_thermal_power_cpu_get_power_enabled()) {
- 		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+-	child: power-controller@12340000 {
++	child: power-controller@12341000 {
+ 		compatible = "foo,power-controller";
+ 		reg = <0x12341000 0x1000>;
+ 		power-domains = <&parent 0>;
 -- 
-1.7.9.5
+1.9.1
 
