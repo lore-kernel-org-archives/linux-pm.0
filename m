@@ -1,169 +1,67 @@
-From: Fabian Frederick <fabf@skynet.be>
-Subject: [PATCH 06/35 linux-next] power: constify of_device_id array
-Date: Mon, 16 Mar 2015 20:17:12 +0100
-Message-ID: <1426533469-25458-7-git-send-email-fabf@skynet.be>
-References: <1426533469-25458-1-git-send-email-fabf@skynet.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1426533469-25458-1-git-send-email-fabf@skynet.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Fabian Frederick <fabf@skynet.be>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <ssantosh@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Subject: Re: PM: knowing the system state in the device callback
+Date: Mon, 16 Mar 2015 20:52:45 +0100
+Message-ID: <20150316205245.1b66bbea@bbrezillon>
+References: <20150316191742.GI4560@piout.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:36915 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932234AbbCPTxB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 15:53:01 -0400
+In-Reply-To: <20150316191742.GI4560@piout.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-of_device_id is always used as const.
-(See driver.of_match_table and open firmware functions)
+Hi Alexandre,
 
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
----
- drivers/power/charger-manager.c         | 2 +-
- drivers/power/reset/at91-poweroff.c     | 2 +-
- drivers/power/reset/at91-reset.c        | 4 ++--
- drivers/power/reset/hisi-reboot.c       | 2 +-
- drivers/power/reset/keystone-reset.c    | 2 +-
- drivers/power/reset/st-poweroff.c       | 2 +-
- drivers/power/reset/syscon-reboot.c     | 2 +-
- drivers/power/reset/vexpress-poweroff.c | 2 +-
- drivers/power/reset/xgene-reboot.c      | 2 +-
- drivers/power/tps65090-charger.c        | 2 +-
- 10 files changed, 11 insertions(+), 11 deletions(-)
+On Mon, 16 Mar 2015 20:17:42 +0100
+Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
 
-diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 14b0d85..bfd3842 100644
---- a/drivers/power/charger-manager.c
-+++ b/drivers/power/charger-manager.c
-@@ -1459,7 +1459,7 @@ static int cm_init_thermal_data(struct charger_manager *cm,
- 	return ret;
- }
- 
--static struct of_device_id charger_manager_match[] = {
-+static const struct of_device_id charger_manager_match[] = {
- 	{
- 		.compatible = "charger-manager",
- 	},
-diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
-index 4b72ea5..9847cfb 100644
---- a/drivers/power/reset/at91-poweroff.c
-+++ b/drivers/power/reset/at91-poweroff.c
-@@ -140,7 +140,7 @@ static int at91_poweroff_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static struct of_device_id at91_poweroff_of_match[] = {
-+static const struct of_device_id at91_poweroff_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-shdwc", },
- 	{ .compatible = "atmel,at91sam9rl-shdwc", },
- 	{ .compatible = "atmel,at91sam9x5-shdwc", },
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 13584e2..68b1896 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -152,14 +152,14 @@ static void __init at91_reset_status(struct platform_device *pdev)
- 	pr_info("AT91: Starting after %s\n", reason);
- }
- 
--static struct of_device_id at91_ramc_of_match[] = {
-+static const struct of_device_id at91_ramc_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-sdramc", },
- 	{ .compatible = "atmel,at91sam9g45-ddramc", },
- 	{ .compatible = "atmel,sama5d3-ddramc", },
- 	{ /* sentinel */ }
- };
- 
--static struct of_device_id at91_reset_of_match[] = {
-+static const struct of_device_id at91_reset_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-rstc", .data = at91sam9260_restart },
- 	{ .compatible = "atmel,at91sam9g45-rstc", .data = at91sam9g45_restart },
- 	{ /* sentinel */ }
-diff --git a/drivers/power/reset/hisi-reboot.c b/drivers/power/reset/hisi-reboot.c
-index 5385460..9ab7f56 100644
---- a/drivers/power/reset/hisi-reboot.c
-+++ b/drivers/power/reset/hisi-reboot.c
-@@ -64,7 +64,7 @@ static int hisi_reboot_probe(struct platform_device *pdev)
- 	return err;
- }
- 
--static struct of_device_id hisi_reboot_of_match[] = {
-+static const struct of_device_id hisi_reboot_of_match[] = {
- 	{ .compatible = "hisilicon,sysctrl" },
- 	{}
- };
-diff --git a/drivers/power/reset/keystone-reset.c b/drivers/power/reset/keystone-reset.c
-index faedf16..c70f1bf 100644
---- a/drivers/power/reset/keystone-reset.c
-+++ b/drivers/power/reset/keystone-reset.c
-@@ -70,7 +70,7 @@ static struct notifier_block rsctrl_restart_nb = {
- 	.priority = 128,
- };
- 
--static struct of_device_id rsctrl_of_match[] = {
-+static const struct of_device_id rsctrl_of_match[] = {
- 	{.compatible = "ti,keystone-reset", },
- 	{},
- };
-diff --git a/drivers/power/reset/st-poweroff.c b/drivers/power/reset/st-poweroff.c
-index 27383de..a488877 100644
---- a/drivers/power/reset/st-poweroff.c
-+++ b/drivers/power/reset/st-poweroff.c
-@@ -97,7 +97,7 @@ static struct notifier_block st_restart_nb = {
- 	.priority = 192,
- };
- 
--static struct of_device_id st_reset_of_match[] = {
-+static const struct of_device_id st_reset_of_match[] = {
- 	{
- 		.compatible = "st,stih415-restart",
- 		.data = (void *)&stih415_reset,
-diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/syscon-reboot.c
-index c4049f4..d3c7d24 100644
---- a/drivers/power/reset/syscon-reboot.c
-+++ b/drivers/power/reset/syscon-reboot.c
-@@ -76,7 +76,7 @@ static int syscon_reboot_probe(struct platform_device *pdev)
- 	return err;
- }
- 
--static struct of_device_id syscon_reboot_of_match[] = {
-+static const struct of_device_id syscon_reboot_of_match[] = {
- 	{ .compatible = "syscon-reboot" },
- 	{}
- };
-diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
-index be12d9b..6a9bf70 100644
---- a/drivers/power/reset/vexpress-poweroff.c
-+++ b/drivers/power/reset/vexpress-poweroff.c
-@@ -80,7 +80,7 @@ DEVICE_ATTR(active, S_IRUGO | S_IWUSR, vexpress_reset_active_show,
- 
- enum vexpress_reset_func { FUNC_RESET, FUNC_SHUTDOWN, FUNC_REBOOT };
- 
--static struct of_device_id vexpress_reset_of_match[] = {
-+static const struct of_device_id vexpress_reset_of_match[] = {
- 	{
- 		.compatible = "arm,vexpress-reset",
- 		.data = (void *)FUNC_RESET,
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index b0e5002..f07e93c 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -87,7 +87,7 @@ static int xgene_reboot_probe(struct platform_device *pdev)
- 	return err;
- }
- 
--static struct of_device_id xgene_reboot_of_match[] = {
-+static const struct of_device_id xgene_reboot_of_match[] = {
- 	{ .compatible = "apm,xgene-reboot" },
- 	{}
- };
-diff --git a/drivers/power/tps65090-charger.c b/drivers/power/tps65090-charger.c
-index 0f4e597..1c2edcd 100644
---- a/drivers/power/tps65090-charger.c
-+++ b/drivers/power/tps65090-charger.c
-@@ -344,7 +344,7 @@ static int tps65090_charger_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--static struct of_device_id of_tps65090_charger_match[] = {
-+static const struct of_device_id of_tps65090_charger_match[] = {
- 	{ .compatible = "ti,tps65090-charger", },
- 	{ /* end */ }
- };
+> Hi,
+> 
+> I'm trying to get rid of at91_suspend_entering_slow_clock() which is
+> exposing the platform suspend_state_t to the devices. From what I
+> understand, whenever suspend_state_t is PM_SUSPEND_MEM or
+> PM_SUSPEND_STANDBY, the pm_message_t passed to the device driver is
+> always PM_EVENT_SUSPEND.
+> 
+> The requirement is to know whether we are going to cut the master clock
+> and in that case, avoid calling enable_irq_wake() because we will not be
+> able to wakeup from the device.
+
+Actually the master clock is never switched off, we're only changing
+its source (from PLLA to slow clk) which in turn changes its rate.
+
+> 
+> Is there a better way to do that? Or should I implement a similar
+> function in the pm core (which I guess would already be there if
+> really needed)?
+
+IMHO we should let devices (RTC/RTT, debug UART, GPIOC, ...) mark their
+interrupt line as a wakeup interrupt, and adapt the device
+configuration (UART baudrate, ...) according to the new master clock
+rate instead of testing the suspend mode to check whether we can mark
+irq lines as wakeup sources or not.
+The fact that we're disabling PLLA is not really related to
+suspend-to-ram mode (we could leave the master clock unchanged and
+still put the SDRAM chip in self-refresh mode).
+
+The problem here is that we need some kind of notifier infrastructure
+that would be called before the master clock source is switched to slow
+clock. This notifier must be written in asm so that it can be called
+from the asm code executed from SRAM (the SDRAM chip is placed in self
+refresh before switching to slow clock).
+
+Best Regards,
+
+Boris
+
 -- 
-2.1.0
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
