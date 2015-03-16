@@ -1,33 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/20] cpufreq: Don't loose cpufreq history on CPU hotplug
-Date: Mon, 16 Mar 2015 15:15:25 +0530
-Message-ID: <CAKohpokc74qadgOVQxGF82BGbj2W2Xymu3y9CO=fU8-OdGTMXA@mail.gmail.com>
-References: <cover.1424345053.git.viresh.kumar@linaro.org>
-	<CAKohponfFhGCAm8Dn_9V4doLhJzt6362q31Ub2nC9C3+o1Mvug@mail.gmail.com>
-	<54F129BA.3030202@codeaurora.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Mon, 16 Mar 2015 15:24:20 +0530
+Message-ID: <CAKohpok1rQFywhgpajomXYu+uc7zmuhVhg0RY4vJzaH2uKNURA@mail.gmail.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
+	<CAKohpokF0_or8aXwzWZ=bUX1Robk8THyqRpKjbaarg9NHufLmw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:33805 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbbCPJp0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 05:45:26 -0400
-Received: by obbgg8 with SMTP id gg8so31412614obb.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2015 02:45:25 -0700 (PDT)
-In-Reply-To: <54F129BA.3030202@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAKohpokF0_or8aXwzWZ=bUX1Robk8THyqRpKjbaarg9NHufLmw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org" <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, santosh shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Thomas Abraham <ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viswanath Puttagunta <viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Prarit Bhargava <prarit@redhat.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Srivatsa Bhat <srivatsa@mit.edu>
 
-On 28 February 2015 at 08:06, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 02/26/2015 09:26 PM, Viresh Kumar wrote:
-
->> Gentle reminder for reviews !! :)
+On 27 February 2015 at 10:55, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 11 February 2015 at 13:46, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>> Now that I have received an verbal Ack from Rob Herring (in a personal
+>> conversation) about the bindings, I am showing how the code looks like with
+>> these new bindings.
 >>
-> Sorry, caught up on some internal work. Should be able to get to this by
-> Wednesday.
+>> Some part is still now done:
+>
+> s/now/not
+>
+>> - Interface for adding new detailed OPPs from platform code instead of DT
+>> - Providing cpufreq helpers for the next OPPs
+>> - Providing regulator helpers for the target/min/max ranges
+>>
+>> Please provide feedback on how this looks like..
+>
+> Can we have some reviews of the code changes please ?
 
-Will it be possible to get some reviews on this?
-@Rafael: Can you do them if Saravana isn't available? I don't want to miss
-another kernel release for this stuff.
+Rob/Rafael/Arnd/Nishanth,
+
+Reviews please? This had been hanging since a long time, can we get this merged
+in next merge window please?
+
+Bindings are already OK'd by Rob (in personal conversation) and its
+all about code
+now. Which can be updated later on as well if we find an issue..
+
+@Rob: Can you please Ack whatever stuff you are okay with ?
+
+--
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
