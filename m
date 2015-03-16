@@ -1,7 +1,7 @@
 From: Richard Weinberger <richard@nod.at>
-Subject: [PATCH 3/6] clocksource/sh_tmu.c: Fix !HAS_IOMEM build
-Date: Mon, 16 Mar 2015 22:27:07 +0100
-Message-ID: <1426541230-928-3-git-send-email-richard@nod.at>
+Subject: [PATCH 4/6] power/reset/rmobile-reset.c: Fix !HAS_IOMEM build
+Date: Mon, 16 Mar 2015 22:27:08 +0100
+Message-ID: <1426541230-928-4-git-send-email-richard@nod.at>
 References: <1426541230-928-1-git-send-email-richard@nod.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -14,40 +14,29 @@ Cc: linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, dwmw2@infradead.org, db
 List-Id: linux-pm@vger.kernel.org
 
 =46ixes:
-drivers/clocksource/sh_tmu.c: In function =E2=80=98sh_tmu_map_memory=E2=
-=80=99:
-drivers/clocksource/sh_tmu.c:506:2: error: implicit declaration of func=
-tion =E2=80=98ioremap_nocache=E2=80=99 [-Werror=3Dimplicit-function-dec=
-laration]
-  tmu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
-  ^
-drivers/clocksource/sh_tmu.c:506:15: warning: assignment makes pointer =
-from integer without a cast [enabled by default]
-  tmu->mapbase =3D ioremap_nocache(res->start, resource_size(res));
-               ^
-drivers/clocksource/sh_tmu.c: In function =E2=80=98sh_tmu_setup=E2=80=99=
-:
-drivers/clocksource/sh_tmu.c:598:2: error: implicit declaration of func=
-tion =E2=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-declaration=
-]
-  iounmap(tmu->mapbase);
+drivers/power/reset/rmobile-reset.c: In function =E2=80=98rmobile_reset=
+_probe=E2=80=99:
+drivers/power/reset/rmobile-reset.c:61:2: error: implicit declaration o=
+f function =E2=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-decla=
+ration]
+  iounmap(sysc_base2);
 
 Signed-off-by: Richard Weinberger <richard@nod.at>
 ---
- drivers/clocksource/Kconfig | 1 +
+ drivers/power/reset/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
-index c4063a6..a0b036c 100644
---- a/drivers/clocksource/Kconfig
-+++ b/drivers/clocksource/Kconfig
-@@ -212,6 +212,7 @@ config SH_TIMER_MTU2
- config SH_TIMER_TMU
- 	bool "Renesas TMU timer driver" if COMPILE_TEST
- 	depends on GENERIC_CLOCKEVENTS
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 27f6646..6f791fb 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -154,6 +154,7 @@ config POWER_RESET_SYSCON
+ config POWER_RESET_RMOBILE
+ 	tristate "Renesas R-Mobile reset driver"
+ 	depends on ARCH_RMOBILE || COMPILE_TEST
 +	depends on HAS_IOMEM
- 	default SYS_SUPPORTS_SH_TMU
  	help
- 	  This enables build of a clocksource and clockevent driver for
+ 	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
+=20
 --=20
 1.8.4.5
