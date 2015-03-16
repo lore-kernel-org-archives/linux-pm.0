@@ -1,53 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from suspend-to-idle
-Date: Tue, 17 Mar 2015 00:20:49 +0100
-Message-ID: <1902569.dAVq7nl4i8@vostro.rjw.lan>
-References: <2197217.yzvHkR7SyK@vostro.rjw.lan> <2514027.izE5Direg3@vostro.rjw.lan> <20150316211108.GC11441@amd>
+From: Ian Malone <ibmalone@gmail.com>
+Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
+Date: Mon, 16 Mar 2015 23:32:57 +0000
+Message-ID: <CAL3-7Mo_OFdHdGDXq61eNuSqYaQiiGeBWsuGiSBsfcxSa2xExQ@mail.gmail.com>
+References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
+	<345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+	<52D8567A.8090308@mit.edu>
+	<1389932442.5449.4.camel@marge.simpson.net>
+	<1390037633.5676.3.camel@marge.simpson.net>
+	<1390061684.5566.4.camel@marge.simpson.net>
+	<CAL3-7MoEXfW0LTdQi3pakL+OaiKcVHPzPng142KKjCX66mNXDg@mail.gmail.com>
+	<1426395191.2990.16.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20150316211108.GC11441@amd>
-Sender: linux-input-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1426395191.2990.16.camel@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mike Galbraith <umgwanakikbuti@gmail.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 16, 2015 10:11:08 PM Pavel Machek wrote:
-> On Tue 2015-03-10 00:08:43, Rafael J. Wysocki wrote:
-> > On Monday, March 09, 2015 11:41:12 PM Rafael J. Wysocki wrote:
-> > > On Monday, March 09, 2015 11:00:04 AM Dmitry Torokhov wrote:
-> > > > Hi Rafael,
-> > > > 
-> > > > On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
-> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > 
-> > > > > If they keyboard interrupt is registered, mark the i8042 platform
-> > > > > device as wakeup-capable and check the user space wakeup setting in
-> > > > > i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
-> > > > > respectively, the keyboard interrupt to wake up the system.
-> > > > > 
-> > > > > This makes it possible to use the PC keyboard to wake up the system
-> > > > > from suspend-to-idle after writing "enabled" to the i8042 device's
-> > > > > power/wakeup sysfs attribute.
-> > > > 
-> > > > Why do we do that for KBD but not AUX port? Should we mark individual
-> > > > serio port be wakeup capable and not the whole i8042.
-> > > 
-> > > We can do that, but only after the port serio device has been registered.
-> > > 
-> > > I guess I can add code for that to i8042_register_ports().  Let me try that.
-> > 
-> > Yeah, that works too.  And you're right that there's no reason to do that for
-> > keyboard only.
-> 
-> Actually, are you sure?
-> 
-> Resuming on mouse click is reasonable, resuming on mouse move is not,
-> as table vibrations are likely to cause that.
+On 15 March 2015 at 04:53, Mike Galbraith <umgwanakikbuti@gmail.com> wrote:
+> On Sat, 2015-03-14 at 23:44 +0000, Ian Malone wrote:
+>> On 18 January 2014 at 16:14, Mike Galbraith <bitbucket@online.de> wrote:
+>> > On Sat, 2014-01-18 at 10:33 +0100, Mike Galbraith wrote:
+>> >> On Fri, 2014-01-17 at 05:20 +0100, Mike Galbraith wrote:
+>>
+>> > Signed-off-by: Mike Galbraith <bitbucket@online.de>
+>> > Cc: <stable@vger.kernel.org> # 3.10+
+>> > ---
+>> >  arch/x86/kernel/process.c |    9 ++++++---
+>> >  1 file changed, 6 insertions(+), 3 deletions(-)
+>> >
+>> > --- a/arch/x86/kernel/process.c
+>> > +++ b/arch/x86/kernel/process.c
+>> > @@ -427,18 +427,21 @@ static int prefer_mwait_c1_over_halt(con
+>>
+>> Hi, this series of patches never seem to have made it as far as the
+>> mainline kernel, anyone know what needs to happen next?
+>
+> My plan is to keep on carrying it locally for as long as I run new
+> kernels on crusty ole core2 boxen, then stop caring about them entirely
+> like the rest of the planet :)
+>
 
-This is disabled by default, so user space has to enable it anyway if it wants
-to.
+Looks like Ingo Molnar has committed to tip which is probably a good
+sign, thanks all.
+(Have to hand this system on to someone who wont be patching kernels...)
 
-Rafael
-
+-- 
+imalone
+http://ibmalone.blogspot.co.uk
