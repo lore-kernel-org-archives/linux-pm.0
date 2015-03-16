@@ -1,87 +1,59 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v4 4/6] ARM: dts: omap3-gta04: Add battery support
-Date: Mon, 16 Mar 2015 14:04:39 -0700
-Message-ID: <20150316210439.GG12397@atomide.com>
-References: <1426022847-30912-1-git-send-email-marek@goldelico.com>
- <1426022847-30912-5-git-send-email-marek@goldelico.com>
- <20150316205341.GD12397@atomide.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] i8042 / PM: Allow PC keyboard to wake up from
+ suspend-to-idle
+Date: Mon, 16 Mar 2015 22:11:08 +0100
+Message-ID: <20150316211108.GC11441@amd>
+References: <2197217.yzvHkR7SyK@vostro.rjw.lan>
+ <20150309180004.GA22993@dtor-ws>
+ <3127745.ybR8YAlvTb@vostro.rjw.lan>
+ <2514027.izE5Direg3@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42695 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932913AbbCPVLL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 17:11:11 -0400
 Content-Disposition: inline
-In-Reply-To: <20150316205341.GD12397@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: bcousson@baylibre.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com
+In-Reply-To: <2514027.izE5Direg3@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [150316 13:59]:
-> * Marek Belisko <marek@goldelico.com> [150310 14:28]:
-> > Added battery support for gta04 devices.
+On Tue 2015-03-10 00:08:43, Rafael J. Wysocki wrote:
+> On Monday, March 09, 2015 11:41:12 PM Rafael J. Wysocki wrote:
+> > On Monday, March 09, 2015 11:00:04 AM Dmitry Torokhov wrote:
+> > > Hi Rafael,
+> > > 
+> > > On Mon, Mar 09, 2015 at 04:19:50PM +0100, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > 
+> > > > If they keyboard interrupt is registered, mark the i8042 platform
+> > > > device as wakeup-capable and check the user space wakeup setting in
+> > > > i8042_pm_suspend() and i8042_pm_resume() to enable or disable,
+> > > > respectively, the keyboard interrupt to wake up the system.
+> > > > 
+> > > > This makes it possible to use the PC keyboard to wake up the system
+> > > > from suspend-to-idle after writing "enabled" to the i8042 device's
+> > > > power/wakeup sysfs attribute.
+> > > 
+> > > Why do we do that for KBD but not AUX port? Should we mark individual
+> > > serio port be wakeup capable and not the whole i8042.
 > > 
-> > Signed-off-by: Marek Belisko <marek@goldelico.com>
+> > We can do that, but only after the port serio device has been registered.
+> > 
+> > I guess I can add code for that to i8042_register_ports().  Let me try that.
 > 
-> Picking up this patch into omap-for-v4.1/dt branch thanks.
+> Yeah, that works too.  And you're right that there's no reason to do that for
+> keyboard only.
 
-Actually not yet applying this as looks like Pavel just
-had few comments on these properties.
- 
-> Tony
-> 
-> > ---
-> >  arch/arm/boot/dts/omap3-gta04.dtsi | 30 ++++++++++++++++++++++++++++++
-> >  1 file changed, 30 insertions(+)
-> > 
-> > diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-> > index fb3a696..cbf515a 100644
-> > --- a/arch/arm/boot/dts/omap3-gta04.dtsi
-> > +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-> > @@ -49,6 +49,32 @@
-> >  		ti,codec = <&twl_audio>;
-> >  	};
-> >  
-> > +	battery {
-> > +		compatible = "ti,twl4030-madc-battery";
-> > +		capacity-uah = <1200000>;
-> > +		ti,volt-to-capacity-charging-map = <4200 100>,
-> > +					     <4100 75>,
-> > +					     <4000 55>,
-> > +					     <3900 25>,
-> > +					     <3800 5>,
-> > +					     <3700 2>,
-> > +					     <3600 1>,
-> > +					     <3300 0>;
-> > +		ti,volt-to-capacity-discharging-map = <4200 100>,
-> > +						<4100 95>,
-> > +						<4000 70>,
-> > +						<3800 50>,
-> > +						<3700 10>,
-> > +						<3600 5>,
-> > +						<3300 0>;
-> > +		io-channels = <&twl_madc 1>,
-> > +	                      <&twl_madc 10>,
-> > +			      <&twl_madc 12>;
-> > +		io-channel-names = "temp",
-> > +		                   "ichg",
-> > +		                   "vbat";
-> > +	};
-> > +
-> >  	spi_lcd {
-> >  		compatible = "spi-gpio";
-> >  		#address-cells = <0x1>;
-> > @@ -518,3 +544,7 @@
-> >  &mcbsp2 {
-> >  	status = "okay";
-> >  };
-> > +
-> > +&twl_madc {
-> > +	ti,system-uses-second-madc-irq;
-> > +};
-> > -- 
-> > 1.9.1
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Actually, are you sure?
+
+Resuming on mouse click is reasonable, resuming on mouse move is not,
+as table vibrations are likely to cause that.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
