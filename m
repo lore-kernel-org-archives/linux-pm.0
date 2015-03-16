@@ -1,139 +1,99 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [RFC PATCH v15 02/11] ARM: qcom: Add Subsystem Power Manager
- (SPM) driver
-Date: Mon, 16 Mar 2015 14:51:39 -0700
-Message-ID: <5507506B.6060201@codeaurora.org>
-References: <1425914206-22295-1-git-send-email-lina.iyer@linaro.org> <1425914206-22295-3-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH 2/6] ARM: cpuidle: Add a cpuidle ops structure to be used
+ for DT
+Date: Mon, 16 Mar 2015 15:08:19 -0700
+Message-ID: <55075453.2070503@codeaurora.org>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org> <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:39608 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:40704 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934373AbbCPVvm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 17:51:42 -0400
-In-Reply-To: <1425914206-22295-3-git-send-email-lina.iyer@linaro.org>
+	with ESMTP id S932933AbbCPWIW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 18:08:22 -0400
+In-Reply-To: <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org
 
-On 03/09/15 08:16, Lina Iyer wrote:
-> +
-> +static int qcom_idle_enter(int cpu, unsigned long index)
-> +{
-> +	if (!per_cpu(qcom_idle_ops, cpu)[index])
-> +		return -EOPNOTSUPP;
-
-Is this case still happening?
-
-> +
-> +	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
-> +}
-> +
-> +const struct of_device_id qcom_idle_state_match[] __initconst = {
-
-static?
-
-> +	{ .compatible = "qcom,idle-state-stby", .data = qcom_cpu_standby },
-> +	{ .compatible = "qcom,idle-state-spc", .data = qcom_cpu_spc },
-> +	{ },
-> +};
-> +
-> +static int __init qcom_cpuidle_init(struct device_node *cpu_node, int cpu)
-> +{
-> +	const struct of_device_id *match_id;
-> +	struct device_node *state_node;
-> +	int i;
-> +	int state_count = 0;
-> +	idle_fn idle_fns[CPUIDLE_STATE_MAX];
-> +	idle_fn *fns;
-> +	cpumask_t mask;
-> +	bool use_scm_power_down = false;
-> +
-> +	for (i = 0; ; i++) {
-> +		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		if (!state_node)
-> +			break;
-> +
-> +		if (!of_device_is_available(state_node))
-> +			continue;
-> +
-> +		if (i == CPUIDLE_STATE_MAX) {
-> +			pr_warn("%s: cpuidle states reached max possible\n",
-> +					__func__);
-> +			break;
-> +		}
-> +
-> +		match_id = of_match_node(qcom_idle_state_match, state_node);
-> +		if (!match_id)
-> +			return -ENODEV;
-> +
-> +		idle_fns[state_count] = match_id->data;
-> +
-> +		/* Check if any of the states allow power down */
-> +		if (match_id->data == qcom_cpu_spc)
-> +			use_scm_power_down = true;
-> +
-> +		state_count++;
-> +	}
-> +
-> +	if (!state_count) {
-> +		pr_warn("No idle ops founds for cpu %d\n", cpu);
-
-Maybe pr_debug? It's not the end of the world that we don't have cpuidle.
-
-> +		return -ENODEV;
-> +	}
-> +
-> +	fns = kcalloc(state_count, sizeof(*fns), GFP_KERNEL);
-> +	if (!fns)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < state_count; i++)
-> +		fns[i] = idle_fns[i];
-> +
-> +	if (use_scm_power_down) {
-> +		/* We have atlease one power down mode */
-
-s/atlease/at least/
-
-> +		cpumask_clear(&mask);
-> +		cpumask_set_cpu(cpu, &mask);
-> +		qcom_scm_set_warm_boot_addr(cpu_resume, &mask);
-> +	}
-> +
-> +	per_cpu(qcom_idle_ops, cpu) = fns;
-> +
-> +	/*
-> +	 * Condition: cpuidle_driver_register() needs to happen before
-> +	 * cpuidle_register_device().
-> +	 * Check if the SPM probe has happened -
-> +	 * - If SPM probed successfully before arm_idle_init(), then defer
-> +	 *   the registration of cpuidle_device back to arm_idle_init()
-> +	 * - If the SPM probe happens in the future, then let the SPM probe
-> +	 *   register the cpuidle device, return -ENOSYS.
-> +	 */
-> +	return per_cpu(cpu_spm_drv, cpu) ? 0 : -ENOSYS;
-> +}
-> +
-> +struct cpuidle_ops qcom_kpss_v1_cpuidle_ops __initdata = {
-> +	.name = "qcom,kpss-acc-v1",
-> +	.suspend = qcom_idle_enter,
-> +	.init = qcom_cpuidle_init,
-> +};
-> +
-> +struct cpuidle_ops qcom_kpss_v2_cpuidle_ops __initdata = {
-> +	.name = "qcom,kpss-acc-v2",
-> +	.suspend = qcom_idle_enter,
-> +	.init = qcom_cpuidle_init,
-> +};
-> +
+On 03/03/15 04:29, Daniel Lezcano wrote:
 >
+> The code is optimized to use the __init section intensively in order to reduce
+> the memory footprint after the driver is initialized and unify the function
+> names with ARM64.
+>
+> In order to prevent multiple declarations and the specific cpuidle ops to be
+> spread across the different headers, a mechanism, similar to the cgroup subsys,
+> has been introduced.
+>
+> A new platform willing to add its cpuidle ops must add an entry in the file
+> cpuidle_ops.h in the current form:
+>
+>  #if IS_ENABLED(CONFIG_ARM_FOO_CPUIDLE)
+>  CPUIDLE_OPS(foo)
+>  #endif
+>
+> ... and use the variable name in the specific low level code:
+>
+> struct cpuidle_ops foo_cpuidle_ops;
+>
+> The CPUIDLE_OPS macro will be processed in different way in the cpuidle.c file,
+> thus allowing to keep untouched the arm cpuidle core code in the future when
+> a new platform is added.
+[...]
+> diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/asm/cpuidle_ops.h
+> new file mode 100644
+> index 0000000..be0a612
+> --- /dev/null
+> +++ b/arch/arm/include/asm/cpuidle_ops.h
+> @@ -0,0 +1,3 @@
+> +/*
+> + * List of cpuidle operations
+> + */
+> diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+> index 45969f8..25e9789c 100644
+> --- a/arch/arm/kernel/cpuidle.c
+> +++ b/arch/arm/kernel/cpuidle.c
+> @@ -10,8 +10,29 @@
+>   */
+>  
+>  #include <linux/cpuidle.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <asm/cpuidle.h>
+>  
+> +#define CPUIDLE_OPS(__x) extern struct cpuidle_ops __x ## _cpuidle_ops;
+> +#include <asm/cpuidle_ops.h>
+> +#undef CPUIDLE_OPS
+> +
+> +#define CPUIDLE_OPS(__x) __x ## _cpuidle_ops_id,
+> +enum cpuidle_ops_id {
+> +#include <asm/cpuidle_ops.h>
+> +        CPUIDLE_OPS_COUNT,
+> +};
+> +#undef CPUIDLE_OPS
+> +
+> +#define CPUIDLE_OPS(__x) [__x ## _cpuidle_ops_id ] = &__x ## _cpuidle_ops,
+> +static struct cpuidle_ops *supported_cpuidle_ops[] __initconst = {
+> +#include <asm/cpuidle_ops.h>
+> +};
+> +#undef CPUIDLE_OPS
+> +
+> +static struct cpuidle_ops cpuidle_ops[NR_CPUS];
 
-This just looks weird because of the macro magic in Daniel's series. Any
-reason we can't use the linker instead of doing preprocessor magic so
-that it looks like these structures are actually used?
+Is there any reason why we aren't putting these structures into a linker
+section like we do for the smp operations structures?
+
+The nice thing about using the linker is it makes it clearer at the
+location where we define the structure that it's actually used by
+something. Right now the structures are defined non-static in a file and
+then we have to know that a CPUIDLE_OPS() define has been made in
+another architecture specific asm header file so that this macro magic
+works. The commit text says something about multiple declarations and
+ops spread across header files, which shouldn't apply if we're using the
+linker to find these ops and merge them into an array we can iterate over.
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
