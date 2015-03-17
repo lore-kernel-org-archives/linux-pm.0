@@ -1,68 +1,45 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 7/9] mmc: core: Attach PM domain prior probing of SDIO
- func driver
-Date: Tue, 17 Mar 2015 13:04:33 +0800
-Message-ID: <5507B5E1.6000208@intel.com>
-References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org> <1426261429-31883-8-git-send-email-ulf.hansson@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [GIT PULL] cpuidle: 4.0-rc3 fixes
+Date: Tue, 17 Mar 2015 07:53:50 +0100
+Message-ID: <CAMuHMdUiwGqrFSPATcBHYji_AYhh84GZYKXPbZoQNw=Q2M4vYg@mail.gmail.com>
+References: <55032186.3000306@linaro.org>
+	<2429393.iDkfxR0R07@vostro.rjw.lan>
+	<CAMuHMdWtu3f9S0aXGGdnoO4JSu+9FN1zvEO6goWGSo3wEbQXrQ@mail.gmail.com>
+	<1477703.PhCcfT3r53@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:61004 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbbCQFF6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 Mar 2015 01:05:58 -0400
-In-Reply-To: <1426261429-31883-8-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:36094 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbbCQGxv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 02:53:51 -0400
+In-Reply-To: <1477703.PhCcfT3r53@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastien Rannou <mxs@sbrk.org>, Gregory Clement <gregory.clement@free-electrons.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 03/13/2015 11:43 PM, Ulf Hansson wrote:
-> Align the behvaior to how other buses are handling attachment of PM
-> domains. Additionally, let's add error handling.
-> 
-> Cc: Aaron Lu <aaron.lu@intel.com>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Hi Rafael,
 
-Acked-by: Aaron Lu <aaron.lu@intel.com>
+On Tue, Mar 17, 2015 at 3:37 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > Pulled, but this is a bit too late for 4.0-rc4, so I'll queue it up for -rc5.
+>>
+>> Please note commit 43b68879de27b199 ("cpuidle: mvebu: Fix the CPU PM
+>> notifier usage") has a "Cc: stable@vger.kernel.org" tag.
+>
+> Yes, it does, and that's why I've queued it up for 4.0-rc5 and not for 4.1.
+>
+> Does it require any extra care or something?
 
-> ---
-> 
-> For reference, this change has been discussed before.
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-October/294278.html
-> 
-> ---
->  drivers/mmc/core/sdio_bus.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
-> index bee02e6..71357b8 100644
-> --- a/drivers/mmc/core/sdio_bus.c
-> +++ b/drivers/mmc/core/sdio_bus.c
-> @@ -315,13 +315,19 @@ int sdio_add_func(struct sdio_func *func)
->  
->  	sdio_set_of_node(func);
->  	sdio_acpi_set_handle(func);
-> +
-> +	ret = dev_pm_domain_attach(&func->dev, false);
-> +	if (ret)
-> +		return ret;
-> +
->  	ret = device_add(&func->dev);
-> -	if (ret == 0) {
-> -		sdio_func_set_present(func);
-> -		dev_pm_domain_attach(&func->dev, false);
-> +	if (ret) {
-> +		dev_pm_domain_detach(&func->dev, false);
-> +		return ret;
->  	}
->  
-> -	return ret;
-> +	sdio_func_set_present(func);
-> +	return 0;
->  }
->  
->  /*
-> 
+Nevermind, I replied too soon after reading "too late for 4.0...".
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
