@@ -1,69 +1,69 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v6 4/8] PM / devfreq: tegra: Use clock rate constraints
-Date: Tue, 17 Mar 2015 10:36:14 +0100
-Message-ID: <1426584991-11110-5-git-send-email-tomeu.vizoso@collabora.com>
-References: <1426584991-11110-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery
+ bindings
+Date: Tue, 17 Mar 2015 11:01:42 +0100
+Message-ID: <20150317100142.GA3759@amd>
+References: <1423088075-10025-1-git-send-email-marek@goldelico.com>
+ <1423088075-10025-4-git-send-email-marek@goldelico.com>
+ <20150316210532.GA11441@amd>
+ <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com>
+ <20150317084730.GA9761@amd>
+ <9A1B178A-2751-4864-94B5-FCDCDA2E3875@goldelico.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1426584991-11110-1-git-send-email-tomeu.vizoso@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <9A1B178A-2751-4864-94B5-FCDCDA2E3875@goldelico.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tegra@vger.kernel.org
-Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Belisko Marek <marek.belisko@gmail.com>, mark.rutland@arm.com, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, GTA04 owners <gta04-owner@goldelico.com>
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have per-user clocks and the possibility to set constraints
-in a clock, set a floor constraint on the EMC clock.
+On Tue 2015-03-17 10:07:12, Dr. H. Nikolaus Schaller wrote:
+> 
+> Am 17.03.2015 um 09:47 schrieb Pavel Machek <pavel@ucw.cz>:
+> 
+> > Hi!
+> > 
+> >>>> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+> >>>> new file mode 100644
+> >>>> index 0000000..bb3580c
+> >>>> --- /dev/null
+> >>>> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+> >>>> @@ -0,0 +1,43 @@
+> >>>> +twl4030_madc_battery
+> >>>> +
+> >>>> +Required properties:
+> >>>> + - compatible : "ti,twl4030-madc-battery"
+> >>>> + - capacity-uah : battery capacity in uAh
+> >>> 
+> >>> Could we make it capacity-uAh ?
+> >> This name was suggested by Mark Rutland [1] and naming convention
+> >> should be all lowercase. There exists already bindings
+> >> without uppercase (e.g. ti,bb-uamp) so I would keep it consistent.
+> > 
+> > Messing up SI units due to "convention" is _stupid_. Don't do it.
+> > 
+> >>> to introduce coefficients for temperature and discharge rate?
+> >> What do you mean? Nothing like that is used in current driver why do
+> >> we need to add it?
+> > 
+> > Well, conversion between Li-ion's voltage and state of charge at 0
+> > current is well known:
+> > 
+> >    def percent(m, v):
+> >    	u = 0.0387-(1.4523*(3.7835-v))
+> >        if u < 0:
+> >            return 0
+> >          return (0.1966+math.sqrt(u))*100
+> 
+> I forgot to ask: does the kernel have a sqrt() function?
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
- drivers/devfreq/tegra-devfreq.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+This could be good enough.
 
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index c71635a..5a6164c 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -497,10 +497,8 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	rate = dev_pm_opp_get_freq(opp);
- 	rcu_read_unlock();
- 
--	/* TODO: Once we have per-user clk constraints, set a floor */
--	clk_set_rate(tegra->emc_clock, rate);
--
--	/* TODO: Set voltage as well */
-+	clk_set_min_rate(tegra->emc_clock, rate);
-+	clk_set_rate(tegra->emc_clock, 0);
- 
- 	return 0;
- }
-@@ -619,7 +617,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	struct tegra_devfreq *tegra;
- 	struct tegra_devfreq_device *dev;
- 	struct resource *res;
--	unsigned long max_freq;
- 	unsigned int i;
- 	int irq;
- 	int err;
-@@ -658,6 +655,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	clk_set_rate(tegra->emc_clock, ULONG_MAX);
-+
- 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
- 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
- 	if (err) {
-@@ -677,11 +676,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 
- 	reset_control_deassert(tegra->reset);
- 
--	max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX);
--	tegra->max_freq = max_freq / KHZ;
--
--	clk_set_rate(tegra->emc_clock, max_freq);
--
-+	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
- 	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
- 
- 	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
+https://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.0/2.6.0-mm1/broken-out/fix-sqrt.patch
+
+									Pavel
 -- 
-2.1.0
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
