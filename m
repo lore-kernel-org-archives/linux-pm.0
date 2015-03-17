@@ -1,284 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/9] PM / Domains: Add dev_pm_domain_get|put() APIs
-Date: Tue, 17 Mar 2015 10:27:03 +0100
-Message-ID: <CAPDyKFoVcZAc4FKkG_ywk6qrqrGMp=0aT+LGigWPiXg-TTi0CA@mail.gmail.com>
-References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
-	<1566917.2Z45cAj17k@vostro.rjw.lan>
-	<CAPDyKFqpZn=URB3W5ZrW5msxdqoGzj9pdD-Z8bKk-OGnyLZvOA@mail.gmail.com>
-	<5508804.qPsCdhOgnd@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f173.google.com ([209.85.216.173]:33423 "EHLO
-	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932086AbbCQJ1F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 05:27:05 -0400
-Received: by qcyi15 with SMTP id i15so2801581qcy.0
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2015 02:27:04 -0700 (PDT)
-In-Reply-To: <5508804.qPsCdhOgnd@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [PATCH v6 0/8] Add support for Tegra Activity Monitor
+Date: Tue, 17 Mar 2015 10:36:10 +0100
+Message-ID: <1426584991-11110-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 17 March 2015 at 04:01, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, March 16, 2015 10:26:46 AM Ulf Hansson wrote:
->> On 14 March 2015 at 02:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Friday, March 13, 2015 04:43:41 PM Ulf Hansson wrote:
->> >> There may be more than one device in a PM domain which then will be
->> >> probed at different points in time.
->> >>
->> >> Depending on timing and runtime PM support, in for the device related
->> >> driver/subsystem, a PM domain may be advised to power off after a
->> >> successful probe sequence.
->> >>
->> >> A general requirement for a device within a PM domain, is that the
->> >> PM domain must stay powered during the probe sequence. To cope with
->> >> such requirement, let's add the dev_pm_domain_get|put() APIs.
->> >>
->> >> These APIs are intended to be invoked from subsystem-level code and the
->> >> calls between get/put needs to be balanced.
->> >>
->> >> dev_pm_domain_get(), tells the PM domain that it needs to increase a
->> >> usage count and to keep supplying power. dev_pm_domain_put(), does the
->> >> opposite.
->> >>
->> >> For a PM domain to support this feature, it must implement the optional
->> >> ->get|put() callbacks.
->> >>
->> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >> ---
->> >>  drivers/base/power/common.c | 40 ++++++++++++++++++++++++++++++++++++++++
->> >>  include/linux/pm.h          |  2 ++
->> >>  include/linux/pm_domain.h   |  4 ++++
->> >>  3 files changed, 46 insertions(+)
->> >>
->> >> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
->> >> index f32b802..99225af 100644
->> >> --- a/drivers/base/power/common.c
->> >> +++ b/drivers/base/power/common.c
->> >> @@ -128,3 +128,43 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
->> >>               dev->pm_domain->detach(dev, power_off);
->> >>  }
->> >>  EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
->> >> +
->> >> +/**
->> >> + * dev_pm_domain_get - Increase usage count to keep a PM domain powered.
->> >> + * @domain: The PM domain to operate on.
->> >> + *
->> >> + * This function will not by itself increase the usage count, that's up to each
->> >> + * PM domain implementation to support. Typically it should be invoked from
->> >> + * subsystem level code prior drivers starts probing.
->> >> + *
->> >> + * Do note, it's optional to implement the ->get() callback for a PM domain.
->> >> + *
->> >> + * Returns 0 on successfully increased usage count or negative error code.
->> >> + */
->> >> +int dev_pm_domain_get(struct dev_pm_domain *domain)
->> >> +{
->> >> +     int ret = 0;
->> >> +
->> >> +     if (domain && domain->get)
->> >> +             ret = domain->get(domain);
->> >> +
->> >> +     return ret;
->> >> +}
->> >> +EXPORT_SYMBOL_GPL(dev_pm_domain_get);
->> >> +
->> >> +/**
->> >> + * dev_pm_domain_put - Decrease usage count to allow a PM domain to power off.
->> >> + * @domain: The PM domain to operate on.
->> >> + *
->> >> + * This function will not by itself decrease the usage count, that's up to each
->> >> + * PM domain implementation to support. Typically it should be invoked from
->> >> + * subsystem level code after drivers has finished probing.
->> >> + *
->> >> + * Do note, it's optional to implement the ->put() callback for a PM domain.
->> >> + */
->> >> +void dev_pm_domain_put(struct dev_pm_domain *domain)
->> >> +{
->> >> +     if (domain && domain->put)
->> >> +             domain->put(domain);
->> >> +}
->> >> +EXPORT_SYMBOL_GPL(dev_pm_domain_put);
->> >> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> >> index e2f1be6..e62330b 100644
->> >> --- a/include/linux/pm.h
->> >> +++ b/include/linux/pm.h
->> >> @@ -607,6 +607,8 @@ extern void dev_pm_put_subsys_data(struct device *dev);
->> >>  struct dev_pm_domain {
->> >>       struct dev_pm_ops       ops;
->> >>       void (*detach)(struct device *dev, bool power_off);
->> >> +     int (*get)(struct dev_pm_domain *domain);
->> >> +     void (*put)(struct dev_pm_domain *domain);
->> >
->> > I don't like these names.  They suggest that it's always going to be about
->> > reference counting which doesn't have to be the case in principle.
->>
->> I am happy to change, you don't happen to have a proposal? :-)
->>
->> For genpd we already have these related APIs:
->>
->> pm_genpd_poweron()
->> pm_genpd_name_poweron()
->> pm_genpd_poweroff_unused()
->>
->> Theoretically we should be able to replace these with
->> dev_pm_domain_get|put() or whatever we decide to name them to.
->>
->> >
->> > Also what about calling these from the driver core, ie. really_probe()?
->>
->> I like that!
->>
->> That also implies moving the calls to dev_pm_domain_attach|detach()
->> out of the buses and into the drivercore, since we need the PM domain
->> to be attached before calling dev_pm_domain_get|put(). I assume that's
->> what you also propose me to change, right?
->
-> Not really.  I don't want to inflict the ACPI PM domain on every bus type
-> that may not be prepared for using it or even may not want to use it (like
-> PCI or PNP).  That applies to genpd too to some extent.
->
-> So bus types need to be able to opt in for using "default" PM domains, but
-> at the same time if they do, the core is a better place to invoke the
-> callbacks.
+Hello,
 
-Okay!
+something happened during the last cycle and an old version of the devfreq
+driver was merged.
 
->
-> The patch below shows how that can be done.  For the bus types using
-> genpd or the ACPI PM domain today ->pm_domain_init and ->pm_domain_exit
-> may point to the routines initializing/detaching those (which also will help
-> to reduce code duplication somewhat) and that guarantees that the domains
-> will be attached to devices before probing and the core can do the ->pre_probe
-> and ->post_probe things for everybody.
+This thread contains patches that bring it up to date to the last submitted
+version and also incorporates the feedback that that version received, plus
+some other small fixes and improvements that came up during rebase and
+testing.
 
-Overall, this seem like a very good idea!
+These patches implement support for setting the rate of the EMC clock based on
+stats collected from the ACTMON, a piece of hw in the Tegra124 that counts
+memory accesses (among others).
 
->
-> Rafael
->
->
-> ---
->  drivers/base/bus.c     |   12 +++++++++++-
->  drivers/base/dd.c      |    9 +++++++++
->  include/linux/device.h |    3 +++
->  include/linux/pm.h     |    2 ++
->  4 files changed, 25 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/base/bus.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/bus.c
-> +++ linux-pm/drivers/base/bus.c
-> @@ -509,10 +509,15 @@ int bus_add_device(struct device *dev)
->         int error = 0;
->
->         if (bus) {
-> +               if (bus->pm_domain_init) {
-> +                       error = bus->pm_domain_init(dev);
-> +                       if (error)
-> +                               goto out_put;
-> +               }
->                 pr_debug("bus: '%s': add device %s\n", bus->name, dev_name(dev));
->                 error = device_add_attrs(bus, dev);
->                 if (error)
-> -                       goto out_put;
-> +                       goto out_pm_domain;
->                 error = device_add_groups(dev, bus->dev_groups);
->                 if (error)
->                         goto out_groups;
-> @@ -534,6 +539,9 @@ out_groups:
->         device_remove_groups(dev, bus->dev_groups);
->  out_id:
->         device_remove_attrs(bus, dev);
-> +out_pm_domain:
-> +       if (bus->pm_domain_exit)
-> +               bus->pm_domain_exit(dev);
->  out_put:
->         bus_put(dev->bus);
->         return error;
+It depends on the following in-flight patches:
 
-To make this work for bus_add_device(), we first need to change the
-registration procedure for genpd DT providers. Currently that's done
-when "PM domain drivers" invokes the __of_genpd_add_provider() API,
-from SoC specific code and from different init levels.
+* EMC driver: http://thread.gmane.org/gmane.linux.kernel/1907035
+* CPUFreq driver: http://thread.gmane.org/gmane.linux.kernel/1897078
 
-We need to have the available gendp DT providers registered when the
-->pm_domain_init() callback is invoked.
+I have pushed a branch here for testing:
 
-Besides the changes above, genpd also needs to deal with attached
-devices, but which don't have a corresponding driver bound. I believe
-we have some corner cases to fix around this as well.
+http://cgit.collabora.com/git/user/tomeu/linux.git/log/?h=actmon-v6
 
-As an intermediate step, how about adding the similar code as above
-but into really_probe()? For the code in bus_remove_device() below, we
-could add that into __device_release_driver()?
+Regards,
 
-> @@ -597,6 +605,8 @@ void bus_remove_device(struct device *de
->         device_remove_groups(dev, dev->bus->dev_groups);
->         if (klist_node_attached(&dev->p->knode_bus))
->                 klist_del(&dev->p->knode_bus);
-> +       if (bus->pm_domain_exit)
-> +               bus->pm_domain_exit(dev);
->
->         pr_debug("bus: '%s': remove device %s\n",
->                  dev->bus->name, dev_name(dev));
-> Index: linux-pm/include/linux/device.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/device.h
-> +++ linux-pm/include/linux/device.h
-> @@ -123,6 +123,9 @@ struct bus_type {
->         int (*suspend)(struct device *dev, pm_message_t state);
->         int (*resume)(struct device *dev);
->
-> +       int (*pm_domain_init)(struct device *dev);
-> +       void (*pm_domain_exit)(struct device *dev);
-> +
->         const struct dev_pm_ops *pm;
->
->         const struct iommu_ops *iommu_ops;
-> Index: linux-pm/include/linux/pm.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm.h
-> +++ linux-pm/include/linux/pm.h
-> @@ -607,6 +607,8 @@ extern void dev_pm_put_subsys_data(struc
->  struct dev_pm_domain {
->         struct dev_pm_ops       ops;
->         void (*detach)(struct device *dev, bool power_off);
-> +       int (*pre_probe)(struct device *dev);
-> +       void (*post_probe)(struct device *dev);
->  };
->
->  /*
-> Index: linux-pm/drivers/base/dd.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/dd.c
-> +++ linux-pm/drivers/base/dd.c
-> @@ -298,6 +298,12 @@ static int really_probe(struct device *d
->                 goto probe_failed;
->         }
->
-> +       if (dev->pm_domain && dev->pm_domain->pre_probe) {
-> +               ret = dev->pm_domain->pre_probe(dev);
-> +               if (ret)
-> +                       goto probe_failed;
-> +       }
-> +
->         if (dev->bus->probe) {
->                 ret = dev->bus->probe(dev);
->                 if (ret)
-> @@ -308,6 +314,9 @@ static int really_probe(struct device *d
->                         goto probe_failed;
->         }
->
-> +       if (dev->pm_domain && dev->pm_domain->post_probe)
-> +               dev->pm_domain->post_probe(dev);
-> +
->         driver_bound(dev);
->         ret = 1;
->         pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
->
+Tomeu
 
-Kind regards
-Uffe
+Tomeu Vizoso (8):
+  of: Add binding for NVIDIA Tegra ACTMON node
+  PM / devfreq: tegra: Update to v5 of the submitted patches
+  clk: tegra: Have EMC clock implement determine_rate()
+  PM / devfreq: tegra: Use clock rate constraints
+  PM / devfreq: tegra: remove operating-points
+  PM / devfreq: tegra: Set drvdata before enabling the irq
+  PM / devfreq: tegra: Enable interrupts after resuming the devfreq
+    monitor
+  ARM: tegra: Add Tegra124 ACTMON support
+
+ .../devicetree/bindings/arm/tegra/actmon.txt       |  28 ++
+ arch/arm/boot/dts/tegra124.dtsi                    |  11 +
+ drivers/clk/tegra/clk-emc.c                        |  19 +-
+ drivers/devfreq/tegra-devfreq.c                    | 480 +++++++++++----------
+ 4 files changed, 316 insertions(+), 222 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/tegra/actmon.txt
+
+-- 
+2.1.0
