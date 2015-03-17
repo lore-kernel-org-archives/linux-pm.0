@@ -1,41 +1,46 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 30/35 linux-next] devfreq: constify of_device_id array
-Date: Tue, 17 Mar 2015 01:11:51 +0000 (GMT)
-Message-ID: <487895027.183321426554710978.JavaMail.weblogic@epmlwas07d>
-Reply-To: myungjoo.ham@samsung.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] cpuidle: 4.0-rc3 fixes
+Date: Tue, 17 Mar 2015 03:37:05 +0100
+Message-ID: <1477703.PhCcfT3r53@vostro.rjw.lan>
+References: <55032186.3000306@linaro.org> <2429393.iDkfxR0R07@vostro.rjw.lan> <CAMuHMdWtu3f9S0aXGGdnoO4JSu+9FN1zvEO6goWGSo3wEbQXrQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: Fabian Frederick <fabf@skynet.be>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58167 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751036AbbCQCNN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Mar 2015 22:13:13 -0400
+In-Reply-To: <CAMuHMdWtu3f9S0aXGGdnoO4JSu+9FN1zvEO6goWGSo3wEbQXrQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastien Rannou <mxs@sbrk.org>, Gregory Clement <gregory.clement@free-electrons.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-PiBvZl9kZXZpY2VfaWQgaXMgYWx3YXlzIHVzZWQgYXMgY29uc3QuDQo+IChTZWUgZHJpdmVyLm9m
-X21hdGNoX3RhYmxlIGFuZCBvcGVuIGZpcm13YXJlIGZ1bmN0aW9ucykNCj4gDQo+IFNpZ25lZC1v
-ZmYtYnk6IEZhYmlhbiBGcmVkZXJpY2sgPGZhYmZAc2t5bmV0LmJlPg0KDQpBY2tlZC1ieTogTXl1
-bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCj4gLS0tDQo+ICBkcml2ZXJz
-L2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyB8IDIgKy0NCj4gIGRyaXZlcnMvZGV2ZnJlcS90
-ZWdyYS1kZXZmcmVxLmMgICAgIHwgMiArLQ0KPiAgMiBmaWxlcyBjaGFuZ2VkLCAyIGluc2VydGlv
-bnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVx
-L2V2ZW50L2V4eW5vcy1wcG11LmMgYi9kcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUu
-Yw0KPiBpbmRleCBhZDgzNDczLi41YWZiODUxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2RldmZy
-ZXEvZXZlbnQvZXh5bm9zLXBwbXUuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5
-bm9zLXBwbXUuYw0KPiBAQCAtMzU0LDcgKzM1NCw3IEBAIHN0YXRpYyBpbnQgZXh5bm9zX3BwbXVf
-cmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJcmV0dXJuIDA7DQo+ICB9
-DQo+ICANCj4gLXN0YXRpYyBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGV4eW5vc19wcG11X2lkX21hdGNo
-W10gPSB7DQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBleHlub3NfcHBtdV9p
-ZF9tYXRjaFtdID0gew0KPiAgCXsgLmNvbXBhdGlibGUgPSAic2Ftc3VuZyxleHlub3MtcHBtdSIs
-IH0sDQo+ICAJeyAvKiBzZW50aW5lbCAqLyB9LA0KPiAgfTsNCj4gZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJl
-cS5jDQo+IGluZGV4IDM0NzkwOTYuLjI0NGQ4ZGIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2
-ZnJlcS90ZWdyYS1kZXZmcmVxLmMNCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZy
-ZXEuYw0KPiBAQCAtNjk1LDcgKzY5NSw3IEBAIHN0YXRpYyBTSU1QTEVfREVWX1BNX09QUyh0ZWdy
-YV9kZXZmcmVxX3BtX29wcywNCj4gIAkJCSB0ZWdyYV9kZXZmcmVxX3N1c3BlbmQsDQo+ICAJCQkg
-dGVncmFfZGV2ZnJlcV9yZXN1bWUpOw0KPiAgDQo+IC1zdGF0aWMgc3RydWN0IG9mX2RldmljZV9p
-ZCB0ZWdyYV9kZXZmcmVxX29mX21hdGNoW10gPSB7DQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9m
-X2RldmljZV9pZCB0ZWdyYV9kZXZmcmVxX29mX21hdGNoW10gPSB7DQo+ICAJeyAuY29tcGF0aWJs
-ZSA9ICJudmlkaWEsdGVncmExMjQtYWN0bW9uIiB9LA0KPiAgCXsgfSwNCj4gIH07DQo+IC0tIA0K
-PiAyLjEuMA0KPiANCj4gDQo=
+On Monday, March 16, 2015 10:24:27 AM Geert Uytterhoeven wrote:
+> Hi Rafael,
+> 
+> On Fri, Mar 13, 2015 at 10:56 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, March 13, 2015 06:42:30 PM Daniel Lezcano wrote:
+> >> this pull request contains a couple of fixes:
+> >>
+> >>   - Fix the cpu_pm_enter/exit symmetry in the mvebu driver (Gregory Clement)
+> >>
+> >>   - Fix the mvebu drivers latency/residency values to reach an
+> >> acceptable tradeoff between perf / power (Sebastian Rannou)
+> >>
+> >> Thanks !
+> >
+> > Pulled, but this is a bit too late for 4.0-rc4, so I'll queue it up for -rc5.
+> 
+> Please note commit 43b68879de27b199 ("cpuidle: mvebu: Fix the CPU PM
+> notifier usage") has a "Cc: stable@vger.kernel.org" tag.
+
+Yes, it does, and that's why I've queued it up for 4.0-rc5 and not for 4.1.
+
+Does it require any extra care or something?
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
