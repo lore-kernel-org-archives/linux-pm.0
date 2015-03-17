@@ -1,171 +1,110 @@
-From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery bindings
-Date: Tue, 17 Mar 2015 12:14:11 +0100
-Message-ID: <CDA0FF88-2D00-46E0-828E-DD6F4FF4ADAF@goldelico.com>
-References: <1423088075-10025-1-git-send-email-marek@goldelico.com> <1423088075-10025-4-git-send-email-marek@goldelico.com> <20150316210532.GA11441@amd> <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com> <20150317084730.GA9761@amd> <940EE988-03A4-4B1B-A168-959E367953A6@goldelico.com> <20150317103746.GB3759@amd>
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 2/6] ARM: cpuidle: Add a cpuidle ops structure to be used
+ for DT
+Date: Tue, 17 Mar 2015 11:29:05 +0000
+Message-ID: <20150317112905.GA14984@red-moon>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org>
+ <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org>
+ <55075453.2070503@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:34030 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbbCQLOv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 07:14:51 -0400
-In-Reply-To: <20150317103746.GB3759@amd>
+Received: from foss.arm.com ([217.140.101.70]:58723 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932631AbbCQL3G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 17 Mar 2015 07:29:06 -0400
+Content-Disposition: inline
+In-Reply-To: <55075453.2070503@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Belisko Marek <marek.belisko@gmail.com>, mark.rutland@arm.com, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, GTA04 owners <gta04-owner@goldelico.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
 
-Hi Pavel,
+On Mon, Mar 16, 2015 at 10:08:19PM +0000, Stephen Boyd wrote:
+> On 03/03/15 04:29, Daniel Lezcano wrote:
+> >
+> > The code is optimized to use the __init section intensively in order to reduce
+> > the memory footprint after the driver is initialized and unify the function
+> > names with ARM64.
+> >
+> > In order to prevent multiple declarations and the specific cpuidle ops to be
+> > spread across the different headers, a mechanism, similar to the cgroup subsys,
+> > has been introduced.
+> >
+> > A new platform willing to add its cpuidle ops must add an entry in the file
+> > cpuidle_ops.h in the current form:
+> >
+> >  #if IS_ENABLED(CONFIG_ARM_FOO_CPUIDLE)
+> >  CPUIDLE_OPS(foo)
+> >  #endif
+> >
+> > ... and use the variable name in the specific low level code:
+> >
+> > struct cpuidle_ops foo_cpuidle_ops;
+> >
+> > The CPUIDLE_OPS macro will be processed in different way in the cpuidle.c file,
+> > thus allowing to keep untouched the arm cpuidle core code in the future when
+> > a new platform is added.
+> [...]
+> > diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/asm/cpuidle_ops.h
+> > new file mode 100644
+> > index 0000000..be0a612
+> > --- /dev/null
+> > +++ b/arch/arm/include/asm/cpuidle_ops.h
+> > @@ -0,0 +1,3 @@
+> > +/*
+> > + * List of cpuidle operations
+> > + */
+> > diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+> > index 45969f8..25e9789c 100644
+> > --- a/arch/arm/kernel/cpuidle.c
+> > +++ b/arch/arm/kernel/cpuidle.c
+> > @@ -10,8 +10,29 @@
+> >   */
+> >  
+> >  #include <linux/cpuidle.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_device.h>
+> >  #include <asm/cpuidle.h>
+> >  
+> > +#define CPUIDLE_OPS(__x) extern struct cpuidle_ops __x ## _cpuidle_ops;
+> > +#include <asm/cpuidle_ops.h>
+> > +#undef CPUIDLE_OPS
+> > +
+> > +#define CPUIDLE_OPS(__x) __x ## _cpuidle_ops_id,
+> > +enum cpuidle_ops_id {
+> > +#include <asm/cpuidle_ops.h>
+> > +        CPUIDLE_OPS_COUNT,
+> > +};
+> > +#undef CPUIDLE_OPS
+> > +
+> > +#define CPUIDLE_OPS(__x) [__x ## _cpuidle_ops_id ] = &__x ## _cpuidle_ops,
+> > +static struct cpuidle_ops *supported_cpuidle_ops[] __initconst = {
+> > +#include <asm/cpuidle_ops.h>
+> > +};
+> > +#undef CPUIDLE_OPS
+> > +
+> > +static struct cpuidle_ops cpuidle_ops[NR_CPUS];
+> 
+> Is there any reason why we aren't putting these structures into a linker
+> section like we do for the smp operations structures?
 
-Am 17.03.2015 um 11:37 schrieb Pavel Machek <pavel@ucw.cz>:
+I think it can be done with an OF_TABLE, it is a bit of shame cpuidle_ops
+should work on UP too otherwise they could have been merged in
+smp_ops to create cpu_ops, like arm64 does.
 
-> Hi!
->=20
->>>>> to introduce coefficients for temperature and discharge rate?
->>>> What do you mean? Nothing like that is used in current driver why =
-do
->>>> we need to add it?
->>>=20
->>> Well, conversion between Li-ion's voltage and state of charge at 0
->>> current is well known:
->>=20
->> We can=92t measure at 0 current since the OMAP is driven from batter=
-y
->> and charger and may also draw some mA=85
->=20
-> Yes, but you know how many mA you are taking just now. So if you knew
-> the internal resistance, you could compute the voltage at 0
-> current. (And it should also work during charging, as long as you kno=
-w
-> how much current is going in.)
+> The nice thing about using the linker is it makes it clearer at the
+> location where we define the structure that it's actually used by
+> something. Right now the structures are defined non-static in a file and
+> then we have to know that a CPUIDLE_OPS() define has been made in
+> another architecture specific asm header file so that this macro magic
+> works. The commit text says something about multiple declarations and
+> ops spread across header files, which shouldn't apply if we're using the
+> linker to find these ops and merge them into an array we can iterate over.
 
-As far as I understand the twl4030 charger and MADC it is not possible =
-to
-separate these values. It is only reporting the inflow from charger to
-battery + system. So you don=92t know how many mA are supplying the sys=
-tem
-and how many mA are left over for charging.
+It makes sense, see above for UP vs SMP. I wonder if we can't find
+something to overcome the UP limitation nicely, the init code in
+arch/arm/kernel/devtree.c is identical for smp_ops and cpuidle_ops,
+apart from the CONFIG_SMP ifdeffery.
 
-You can only assume how much the system is drawing while running (somet=
-hing
-between 50 and 600 mA but this depends on system activities, power stat=
-e
-of peripherald and e.g. backlight being switched on).
-
-I think your basic assumption that we know any time how many mA the sys=
-tem
-is taking is not given.
-
->=20
->>>   def percent(m, v):
->>>   	u =3D 0.0387-(1.4523*(3.7835-v))
->>>       if u < 0:
->>>           return 0
->>>         return (0.1966+math.sqrt(u))*100
->>>=20
->>> And there's not much to calibrate there, and it should become libra=
-ry
->>> helper function; there's no need to write it to every single dts.
->>>=20
->>> The charge/discharge difference is due to internal battery resistan=
-ce,
->>> and Ohm's law. (Then, you should not need different values for
->>> charging/discharging case.)
->>=20
->> Yes, and that also depends on the board and battery type. So you alw=
-ays
->> need to specify some battery specific coefficient for that in the DT=
-=2E
->=20
-> Yes, and that coefficient should be internal battery resistance ;-).
-
-But where do you know this value from to write it into a DT file?
-Usually you can=92t measure it easily and for some batteries you don=92=
-t have
-a data sheet.
-
-Contrary, the calibration curves can easily be measured on the device
-(assuming that the charge level decreases/increases linearly over time
-between Full and Empty).
-
-I tend to make software easy to use for the user (developer of a board =
-support
-package) of a driver, not theoretically correct or mathematically elega=
-nt.
-
->=20
->> We simply did choose a table, because calculating the right coeffici=
-ents
->> is more complex and getting the table values can easily be done from
->> running one full charge-discharge-charge cycle.
->=20
-> Well.. One set of coefficients would be kind of ok. But you are doing
-> two, because it really depends on current, not charge/discharge. So
-> why not do it right, for all currents=85?
-
-Because the right solution for all these issues is to use a fuel gauge =
-chip
-(bq27xxx).
-
-This driver is just for systems where the hardware designer did forget
-(or did not want to spend money) for such a chip, but user space
-expects some /sys/class/power_supply indication (e.g. Android/Replicant=
-).
-
-The missing optimal precision is something we can live with.
-
->=20
->>> With your aproach, you'll get lower percentage when phone is under
->>> load vs. idle. Taking internal resistance into account would give y=
-ou
->>> more precise readings. (Attached, old patch for zaurus shows the
->>> needed computation).
->>=20
->> This is why we have a charging and a discharging table to compensate
->> for this effect.
->=20
-> Yes, but there's very different current during "idle" phone and durin=
-g
-> call (for example). So yes, you are compensating for different curren=
-t
-> during charge and discharge, but it is possible to do better.
-
-I am not convinced that it can be really done better, considering the
-limitations of the twl4030 circuits, and I doubt that it is worth the e=
-fforts
-of doing it better.
-
->=20
->>> I guess this should go into library somewhere, because many machine=
-s
->>> need similar code.
->>=20
->> Is a library easier to maintain and handle than just a set of table
->> values?
->=20
-> I think so, yes, because otherwise you need a set of tables for each
-> machine.
-
-Yes, but what is the problem? We have different device trees for each
-machine anyways. And as soon as they differ in battery characteristics
-the coefficients for your calculation have to be defined for each machi=
-ne.
-
-So someone has to write in some DT values (difficult to understand
-and derive coefficients or two simple mapping tables).
-
-To me it looks as if you want to make it a 100% solution while I am hap=
-py
-with the 80% solution, which already exists as a platform data driver a=
-nd
-just want to get it back into DT based boards.
-
-So I would suggest that Mareks patches to make the platform data
-driver DT compatible are applied first, and you are invited to submit a
-technically better solution for testing on real hardware.
-
-BR,
-Nikolaus
-
+Lorenzo
