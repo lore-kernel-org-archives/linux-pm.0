@@ -1,95 +1,85 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v16 05/11] ARM: dts: qcom: Add power-controller device node for 8074 Krait CPUs
-Date: Tue, 17 Mar 2015 16:33:45 -0600
-Message-ID: <1426631631-56937-6-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v16 10/11] ARM: dts: qcom: Add idle state device nodes for 8064
+Date: Tue, 17 Mar 2015 16:33:50 -0600
+Message-ID: <1426631631-56937-11-git-send-email-lina.iyer@linaro.org>
 References: <1426631631-56937-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426631631-56937-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:35169 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932764AbbCQWep (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 18:34:45 -0400
+Received: by pabyw6 with SMTP id yw6so22262197pab.2
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2015 15:34:44 -0700 (PDT)
+In-Reply-To: <1426631631-56937-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
-Each Krait CPU in the QCOM 8074/8974 SoC has an SAW power controller to
-regulate the power to the cpu and aide the core in entering idle states.
-Reference the SAW instance and associate the instance with the CPU core.
+Add ARM common idle state device bindings for cpuidle support for APQ
+8064.
 
-Cc: Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Support Standalone power collapse (SPC) idle state (power down that does not
+affect any SoC idle states) for each cpu.
+
+Cc: Kumar Gala <galak@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index e265ec1..5a41f44 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -21,6 +21,7 @@
- 			reg = <0>;
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index 9fd24bc..592e985 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -23,6 +23,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
-+			qcom,saw = <&saw0>;
+ 			qcom,saw = <&saw0>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		cpu@1 {
-@@ -30,6 +31,7 @@
- 			reg = <1>;
+@@ -33,6 +34,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
-+			qcom,saw = <&saw1>;
+ 			qcom,saw = <&saw1>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		cpu@2 {
-@@ -39,6 +41,7 @@
- 			reg = <2>;
+@@ -43,6 +45,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
-+			qcom,saw = <&saw2>;
+ 			qcom,saw = <&saw2>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		cpu@3 {
-@@ -48,6 +51,7 @@
- 			reg = <3>;
+@@ -53,12 +56,23 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
-+			qcom,saw = <&saw3>;
+ 			qcom,saw = <&saw3>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		L2: l2-cache {
-@@ -144,7 +148,27 @@
- 			};
+ 			compatible = "cache";
+ 			cache-level = <2>;
  		};
++
++		idle-states {
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc",
++						"arm,idle-state";
++				entry-latency-us = <400>;
++				exit-latency-us = <900>;
++				min-residency-us = <3000>;
++			};
++		};
+ 	};
  
--		saw_l2: regulator@f9012000 {
-+		saw0: power-controller@f9089000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9089000 0x1000>, <0xf9009000 0x1000>;
-+		};
-+
-+		saw1: power-controller@f9099000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9099000 0x1000>, <0xf9009000 0x1000>;
-+		};
-+
-+		saw2: power-controller@f90a9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90a9000 0x1000>, <0xf9009000 0x1000>;
-+		};
-+
-+		saw3: power-controller@f90b9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90b9000 0x1000>, <0xf9009000 0x1000>;
-+		};
-+
-+		saw_l2: power-controller@f9012000 {
- 			compatible = "qcom,saw2";
- 			reg = <0xf9012000 0x1000>;
- 			regulator;
+ 	cpu-pmu {
 -- 
 2.1.0
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
