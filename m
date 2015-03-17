@@ -1,131 +1,171 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/6] ARM: cpuidle: Add a cpuidle ops structure to be used
- for DT
-Date: Tue, 17 Mar 2015 12:01:59 +0100
-Message-ID: <550809A7.3020600@linaro.org>
-References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org> <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org> <20150316181659.GA13335@red-moon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery bindings
+Date: Tue, 17 Mar 2015 12:14:11 +0100
+Message-ID: <CDA0FF88-2D00-46E0-828E-DD6F4FF4ADAF@goldelico.com>
+References: <1423088075-10025-1-git-send-email-marek@goldelico.com> <1423088075-10025-4-git-send-email-marek@goldelico.com> <20150316210532.GA11441@amd> <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com> <20150317084730.GA9761@amd> <940EE988-03A4-4B1B-A168-959E367953A6@goldelico.com> <20150317103746.GB3759@amd>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150316181659.GA13335@red-moon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:34030 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042AbbCQLOv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 07:14:51 -0400
+In-Reply-To: <20150317103746.GB3759@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Belisko Marek <marek.belisko@gmail.com>, mark.rutland@arm.com, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, GTA04 owners <gta04-owner@goldelico.com>
 
-On 03/16/2015 07:16 PM, Lorenzo Pieralisi wrote:
-> On Tue, Mar 03, 2015 at 12:29:33PM +0000, Daniel Lezcano wrote:
->> The current state of the different cpuidle drivers is the different =
-PM
->
-> Nit: "The current state of cpuidle drivers is such that different ...=
-"
+Hi Pavel,
 
-Ok.
+Am 17.03.2015 um 11:37 schrieb Pavel Machek <pavel@ucw.cz>:
 
->> operations are passed via the platform_data using the platform drive=
-r
->> paradigm.
->>
->> This approach allowed to split the low level PM code from the arch s=
-pecific
->> and the generic cpuidle code.
->>
->> Unfortunately there are complains about this approach as, in the con=
-text of the
->
-> Nit: s/complains/complaints
+> Hi!
+>=20
+>>>>> to introduce coefficients for temperature and discharge rate?
+>>>> What do you mean? Nothing like that is used in current driver why =
+do
+>>>> we need to add it?
+>>>=20
+>>> Well, conversion between Li-ion's voltage and state of charge at 0
+>>> current is well known:
+>>=20
+>> We can=92t measure at 0 current since the OMAP is driven from batter=
+y
+>> and charger and may also draw some mA=85
+>=20
+> Yes, but you know how many mA you are taking just now. So if you knew
+> the internal resistance, you could compute the voltage at 0
+> current. (And it should also work during charging, as long as you kno=
+w
+> how much current is going in.)
 
-Ok.
+As far as I understand the twl4030 charger and MADC it is not possible =
+to
+separate these values. It is only reporting the inflow from charger to
+battery + system. So you don=92t know how many mA are supplying the sys=
+tem
+and how many mA are left over for charging.
 
-[ ... ]
+You can only assume how much the system is drawing while running (somet=
+hing
+between 50 and 600 mA but this depends on system activities, power stat=
+e
+of peripherald and e.g. backlight being switched on).
 
->> @@ -27,4 +27,14 @@ static inline int arm_cpuidle_simple_enter(struct=
- cpuidle_device *dev,
->>    */
->>   #define ARM_CPUIDLE_WFI_STATE ARM_CPUIDLE_WFI_STATE_PWR(UINT_MAX)
->>
->> +struct cpuidle_ops {
->> +	const char *name;
->> +	int (*suspend)(int cpu, unsigned long arg);
->> +	int (*init)(struct device_node *, int cpu);
->> +};
->> +
->> +extern int arm_cpuidle_suspend(int index);
->> +
->> +extern int arm_cpuidle_init(int cpu);
->
-> idle_cpu_suspend()
-> idle_cpu_init()
->
-> ?
->
-> I am really not fussed about the naming.
->
-> To make this and x86 driver name compliant (well, function signatures
-> are a bit different) we could use:
->
-> arm_idle()
-> arm_idle_cpu_init()
->
-> even though I think the arch prefix is useless.
->
-> Side note: why is the x86 driver in drivers/idle ? To have another di=
-r :) ?
+I think your basic assumption that we know any time how many mA the sys=
+tem
+is taking is not given.
 
-I believe it is there for historical reasons.
+>=20
+>>>   def percent(m, v):
+>>>   	u =3D 0.0387-(1.4523*(3.7835-v))
+>>>       if u < 0:
+>>>           return 0
+>>>         return (0.1966+math.sqrt(u))*100
+>>>=20
+>>> And there's not much to calibrate there, and it should become libra=
+ry
+>>> helper function; there's no need to write it to every single dts.
+>>>=20
+>>> The charge/discharge difference is due to internal battery resistan=
+ce,
+>>> and Ohm's law. (Then, you should not need different values for
+>>> charging/discharging case.)
+>>=20
+>> Yes, and that also depends on the board and battery type. So you alw=
+ays
+>> need to specify some battery specific coefficient for that in the DT=
+=2E
+>=20
+> Yes, and that coefficient should be internal battery resistance ;-).
 
-[ ... ]
+But where do you know this value from to write it into a DT file?
+Usually you can=92t measure it easily and for some batteries you don=92=
+t have
+a data sheet.
 
->> +static struct cpuidle_ops cpuidle_ops[NR_CPUS];
->
-> That's because you want platform cpuidle_ops to be __initdata ?
+Contrary, the calibration curves can easily be measured on the device
+(assuming that the charge level decreases/increases linearly over time
+between Full and Empty).
 
-Yes.
+I tend to make software easy to use for the user (developer of a board =
+support
+package) of a driver, not theoretically correct or mathematically elega=
+nt.
 
-> It should not be a big overhead on arm32 to have a number of
-> structs equal to NR_CPUS, on arm64 it is the other way around
-> there are few cpu_ops, but number of CPUs can be high so it
-> is an array of pointers.
->
-> I think it is ok to leave it as it is (or probably make cpuidle_ops
-> a single struct, I expect enable-method to be common across cpus).
+>=20
+>> We simply did choose a table, because calculating the right coeffici=
+ents
+>> is more complex and getting the table values can easily be done from
+>> running one full charge-discharge-charge cycle.
+>=20
+> Well.. One set of coefficients would be kind of ok. But you are doing
+> two, because it really depends on current, not charge/discharge. So
+> why not do it right, for all currents=85?
 
-I prefer to keep per cpu because I am not sure of this assumption.
+Because the right solution for all these issues is to use a fuel gauge =
+chip
+(bq27xxx).
 
-[ ... ]
+This driver is just for systems where the hardware designer did forget
+(or did not want to spend money) for such a chip, but user space
+expects some /sys/class/power_supply indication (e.g. Android/Replicant=
+).
 
->> +	cpuidle_ops[cpu] =3D *ops; /* structure copy */
->
-> See above.
->
->> +
->> +	pr_notice("cpuidle: enable-method property '%s'"
->> +		  " found operations\n", ops->name);
->> +
->> +	return 0;
->> +}
->> +
->> +int __init arm_cpuidle_init(int cpu)
->> +{
->> +	int ret =3D -EOPNOTSUPP;
->
-> Nit: You always assign ret, so there is no point in initializing it.
+The missing optimal precision is something we can live with.
 
-Ok, I will fix it.
+>=20
+>>> With your aproach, you'll get lower percentage when phone is under
+>>> load vs. idle. Taking internal resistance into account would give y=
+ou
+>>> more precise readings. (Attached, old patch for zaurus shows the
+>>> needed computation).
+>>=20
+>> This is why we have a charging and a discharging table to compensate
+>> for this effect.
+>=20
+> Yes, but there's very different current during "idle" phone and durin=
+g
+> call (for example). So yes, you are compensating for different curren=
+t
+> during charge and discharge, but it is possible to do better.
 
-Thanks for reviewing.
+I am not convinced that it can be really done better, considering the
+limitations of the twl4030 circuits, and I doubt that it is worth the e=
+fforts
+of doing it better.
 
-   -- Daniel
+>=20
+>>> I guess this should go into library somewhere, because many machine=
+s
+>>> need similar code.
+>>=20
+>> Is a library easier to maintain and handle than just a set of table
+>> values?
+>=20
+> I think so, yes, because otherwise you need a set of tables for each
+> machine.
 
+Yes, but what is the problem? We have different device trees for each
+machine anyways. And as soon as they differ in battery characteristics
+the coefficients for your calculation have to be defined for each machi=
+ne.
 
+So someone has to write in some DT values (difficult to understand
+and derive coefficients or two simple mapping tables).
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+To me it looks as if you want to make it a 100% solution while I am hap=
+py
+with the 80% solution, which already exists as a platform data driver a=
+nd
+just want to get it back into DT based boards.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+So I would suggest that Mareks patches to make the platform data
+driver DT compatible are applied first, and you are invited to submit a
+technically better solution for testing on real hardware.
+
+BR,
+Nikolaus
+
