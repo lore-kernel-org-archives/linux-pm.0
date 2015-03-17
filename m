@@ -1,52 +1,41 @@
-From: Ian Malone <ibmalone@gmail.com>
-Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
-Date: Mon, 16 Mar 2015 23:32:57 +0000
-Message-ID: <CAL3-7Mo_OFdHdGDXq61eNuSqYaQiiGeBWsuGiSBsfcxSa2xExQ@mail.gmail.com>
-References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
-	<345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
-	<52D8567A.8090308@mit.edu>
-	<1389932442.5449.4.camel@marge.simpson.net>
-	<1390037633.5676.3.camel@marge.simpson.net>
-	<1390061684.5566.4.camel@marge.simpson.net>
-	<CAL3-7MoEXfW0LTdQi3pakL+OaiKcVHPzPng142KKjCX66mNXDg@mail.gmail.com>
-	<1426395191.2990.16.camel@gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 30/35 linux-next] devfreq: constify of_device_id array
+Date: Tue, 17 Mar 2015 01:11:51 +0000 (GMT)
+Message-ID: <487895027.183321426554710978.JavaMail.weblogic@epmlwas07d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1426395191.2990.16.camel@gmail.com>
+MIME-version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+To: Fabian Frederick <fabf@skynet.be>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15 March 2015 at 04:53, Mike Galbraith <umgwanakikbuti@gmail.com> wrote:
-> On Sat, 2015-03-14 at 23:44 +0000, Ian Malone wrote:
->> On 18 January 2014 at 16:14, Mike Galbraith <bitbucket@online.de> wrote:
->> > On Sat, 2014-01-18 at 10:33 +0100, Mike Galbraith wrote:
->> >> On Fri, 2014-01-17 at 05:20 +0100, Mike Galbraith wrote:
->>
->> > Signed-off-by: Mike Galbraith <bitbucket@online.de>
->> > Cc: <stable@vger.kernel.org> # 3.10+
->> > ---
->> >  arch/x86/kernel/process.c |    9 ++++++---
->> >  1 file changed, 6 insertions(+), 3 deletions(-)
->> >
->> > --- a/arch/x86/kernel/process.c
->> > +++ b/arch/x86/kernel/process.c
->> > @@ -427,18 +427,21 @@ static int prefer_mwait_c1_over_halt(con
->>
->> Hi, this series of patches never seem to have made it as far as the
->> mainline kernel, anyone know what needs to happen next?
->
-> My plan is to keep on carrying it locally for as long as I run new
-> kernels on crusty ole core2 boxen, then stop caring about them entirely
-> like the rest of the planet :)
->
-
-Looks like Ingo Molnar has committed to tip which is probably a good
-sign, thanks all.
-(Have to hand this system on to someone who wont be patching kernels...)
-
--- 
-imalone
-http://ibmalone.blogspot.co.uk
+PiBvZl9kZXZpY2VfaWQgaXMgYWx3YXlzIHVzZWQgYXMgY29uc3QuDQo+IChTZWUgZHJpdmVyLm9m
+X21hdGNoX3RhYmxlIGFuZCBvcGVuIGZpcm13YXJlIGZ1bmN0aW9ucykNCj4gDQo+IFNpZ25lZC1v
+ZmYtYnk6IEZhYmlhbiBGcmVkZXJpY2sgPGZhYmZAc2t5bmV0LmJlPg0KDQpBY2tlZC1ieTogTXl1
+bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCj4gLS0tDQo+ICBkcml2ZXJz
+L2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyB8IDIgKy0NCj4gIGRyaXZlcnMvZGV2ZnJlcS90
+ZWdyYS1kZXZmcmVxLmMgICAgIHwgMiArLQ0KPiAgMiBmaWxlcyBjaGFuZ2VkLCAyIGluc2VydGlv
+bnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVx
+L2V2ZW50L2V4eW5vcy1wcG11LmMgYi9kcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUu
+Yw0KPiBpbmRleCBhZDgzNDczLi41YWZiODUxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2RldmZy
+ZXEvZXZlbnQvZXh5bm9zLXBwbXUuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5
+bm9zLXBwbXUuYw0KPiBAQCAtMzU0LDcgKzM1NCw3IEBAIHN0YXRpYyBpbnQgZXh5bm9zX3BwbXVf
+cmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJcmV0dXJuIDA7DQo+ICB9
+DQo+ICANCj4gLXN0YXRpYyBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGV4eW5vc19wcG11X2lkX21hdGNo
+W10gPSB7DQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBleHlub3NfcHBtdV9p
+ZF9tYXRjaFtdID0gew0KPiAgCXsgLmNvbXBhdGlibGUgPSAic2Ftc3VuZyxleHlub3MtcHBtdSIs
+IH0sDQo+ICAJeyAvKiBzZW50aW5lbCAqLyB9LA0KPiAgfTsNCj4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJl
+cS5jDQo+IGluZGV4IDM0NzkwOTYuLjI0NGQ4ZGIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2
+ZnJlcS90ZWdyYS1kZXZmcmVxLmMNCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZy
+ZXEuYw0KPiBAQCAtNjk1LDcgKzY5NSw3IEBAIHN0YXRpYyBTSU1QTEVfREVWX1BNX09QUyh0ZWdy
+YV9kZXZmcmVxX3BtX29wcywNCj4gIAkJCSB0ZWdyYV9kZXZmcmVxX3N1c3BlbmQsDQo+ICAJCQkg
+dGVncmFfZGV2ZnJlcV9yZXN1bWUpOw0KPiAgDQo+IC1zdGF0aWMgc3RydWN0IG9mX2RldmljZV9p
+ZCB0ZWdyYV9kZXZmcmVxX29mX21hdGNoW10gPSB7DQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9m
+X2RldmljZV9pZCB0ZWdyYV9kZXZmcmVxX29mX21hdGNoW10gPSB7DQo+ICAJeyAuY29tcGF0aWJs
+ZSA9ICJudmlkaWEsdGVncmExMjQtYWN0bW9uIiB9LA0KPiAgCXsgfSwNCj4gIH07DQo+IC0tIA0K
+PiAyLjEuMA0KPiANCj4gDQo=
