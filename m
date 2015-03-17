@@ -1,173 +1,678 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: PM: knowing the system state in the device callback
-Date: Tue, 17 Mar 2015 09:38:15 +0100
-Message-ID: <20150317093815.360a8e79@bbrezillon>
-References: <20150316191742.GI4560@piout.net>
-	<20150316205245.1b66bbea@bbrezillon>
-	<20150316203252.GA3821@gradator.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 3/6] Documentation: DT: Document twl4030-madc-battery
+ bindings
+Date: Tue, 17 Mar 2015 09:47:30 +0100
+Message-ID: <20150317084730.GA9761@amd>
+References: <1423088075-10025-1-git-send-email-marek@goldelico.com>
+ <1423088075-10025-4-git-send-email-marek@goldelico.com>
+ <20150316210532.GA11441@amd>
+ <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:40644 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752008AbbCQIi2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 04:38:28 -0400
-In-Reply-To: <20150316203252.GA3821@gradator.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAAfyv34vnRY=TAyx4+7s1SW7rVE7CFh9z+OOcCsbCx63y9aVog@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Belisko Marek <marek.belisko@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>, GTA04 owners <gta04-owner@goldelico.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sylvain Rochet <sylvain.rochet@finsecur.com>
-Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 
-Hi Sylvain,
 
-On Mon, 16 Mar 2015 21:32:52 +0100
-Sylvain Rochet <sylvain.rochet@finsecur.com> wrote:
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Hi,
->=20
->=20
-> On Mon, Mar 16, 2015 at 08:52:45PM +0100, Boris Brezillon wrote:
-> > Hi Alexandre,
-> >=20
-> > On Mon, 16 Mar 2015 20:17:42 +0100
-> > Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
-> >=20
-> > > Hi,
-> > >=20
-> > > I'm trying to get rid of at91_suspend_entering_slow_clock() which=
- is
-> > > exposing the platform suspend_state_t to the devices. From what I
-> > > understand, whenever suspend_state_t is PM_SUSPEND_MEM or
-> > > PM_SUSPEND_STANDBY, the pm_message_t passed to the device driver =
-is
-> > > always PM_EVENT_SUSPEND.
-> > >=20
-> > > The requirement is to know whether we are going to cut the master=
- clock
-> > > and in that case, avoid calling enable_irq_wake() because we will=
- not be
-> > > able to wakeup from the device.
-> >=20
-> > Actually the master clock is never switched off, we're only changin=
-g
-> > its source (from PLLA to slow clk) which in turn changes its rate.
->=20
-> That's more or less the same, the master clock set to 32k is unusable=
-=20
-> for almost all devices. I guess all except some very simple devices l=
-ike=20
-> GPIO, AIC and PM controller.
+Hi!
 
-Okay, I thought suspend-to-ram was only implying putting the SDRAM chip
-in self-refresh, and stopping everything that can be stopped.
-In the existing code we're actually forcing the switch to the slow
-clock even if some devices marked as wakeup sources need a fast master
-clock.
+> >> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+> >> new file mode 100644
+> >> index 0000000..bb3580c
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+> >> @@ -0,0 +1,43 @@
+> >> +twl4030_madc_battery
+> >> +
+> >> +Required properties:
+> >> + - compatible : "ti,twl4030-madc-battery"
+> >> + - capacity-uah : battery capacity in uAh
+> >
+> > Could we make it capacity-uAh ?
+> This name was suggested by Mark Rutland [1] and naming convention
+> should be all lowercase. There exists already bindings
+> without uppercase (e.g. ti,bb-uamp) so I would keep it consistent.
 
->=20
->=20
-> > > Is there a better way to do that? Or should I implement a similar
-> > > function in the pm core (which I guess would already be there if
-> > > really needed)?
-> >=20
-> > IMHO we should let devices (RTC/RTT, debug UART, GPIOC, ...) mark t=
-heir
-> > interrupt line as a wakeup interrupt, and adapt the device
-> > configuration (UART baudrate, ...) according to the new master cloc=
-k
-> > rate instead of testing the suspend mode to check whether we can ma=
-rk
-> > irq lines as wakeup sources or not.
->=20
-> We are using a 32k clock, 115.2 bits/s which is very common is 3.5x=20
-> faster than tje 32k clock.
+Messing up SI units due to "convention" is _stupid_. Don't do it.
 
-Right.
+> > to introduce coefficients for temperature and discharge rate?
+> What do you mean? Nothing like that is used in current driver why do
+> we need to add it?
 
-> And, to reduce a bit more the memory=20
-> consumption we can switch of to the 32k RC and not OSC (I do!), which=
- is=20
-> =C2=B110% off, that's way too much for UART.
+Well, conversion between Li-ion's voltage and state of charge at 0
+current is well known:
 
-Hm, I think we should stay focus on the mainline code for now, but I
-understand your concern.
+    def percent(m, v):
+    	u = 0.0387-(1.4523*(3.7835-v))
+        if u < 0:
+            return 0
+          return (0.1966+math.sqrt(u))*100
 
->=20
-> Also, if standby target is chosen, we are able to wake up on USB Host=
-=20
-> wake-up events, which needs the USB PLL to be running. If mem target =
-is=20
-> chosen we are going to switch off the USB PLL because we are going to=
-=20
-> switch off the PLL source, the master clock, in this case we most ens=
-ure=20
-> all USB drivers switches off their controller (this is what my USBA a=
-nd=20
-> EHCI/OHCI PM series did).
+And there's not much to calibrate there, and it should become library
+helper function; there's no need to write it to every single dts.
 
-Well, IMO we should never guess what the user want to do (and that's
-what we're currently doing in the existing code).
-If someone marked the USB controller as a wakeup source, then we should
-keep the USB device active even when entering suspend-to-ram mode.
-If this mean consuming more power when USB is a wakeup source, then
-it should be fine, because in the end it's the user who chooses which
-device should be a wakeup source (through sysfs), and if he really
-wants to consume less, he can decide to disable wakeup on USB events.
-In the other, letting the user think the system can wakeup on USB while
-it actually can't is a bit broken.
+The charge/discharge difference is due to internal battery resistance,
+and Ohm's law. (Then, you should not need different values for
+charging/discharging case.)
 
->=20
->=20
-> > The fact that we're disabling PLLA is not really related to
-> > suspend-to-ram mode (we could leave the master clock unchanged and
-> > still put the SDRAM chip in self-refresh mode).
->=20
-> This is what we do in standby target.
+With your aproach, you'll get lower percentage when phone is under
+load vs. idle. Taking internal resistance into account would give you
+more precise readings. (Attached, old patch for zaurus shows the
+needed computation).
 
-Ok, thanks for the pointer. I though standy mode was just some kind of
-cpuidle with a few devices disables (thanks to the PM ops implemented
-in each drivers), but apparently I was wrong.
+And if you wanted even more precise readings... internal resistance
+depends on temperature.
 
->=20
->=20
-> > The problem here is that we need some kind of notifier infrastructu=
-re
-> > that would be called before the master clock source is switched to =
-slow
-> > clock. This notifier must be written in asm so that it can be calle=
-d
-> > from the asm code executed from SRAM (the SDRAM chip is placed in s=
-elf
-> > refresh before switching to slow clock).
->=20
-> I don't think that's possible, some drivers needs to know the master=20
-> clock is going to be switched off (USB).
+I guess this should go into library somewhere, because many machines
+need similar code.
 
-Yep, you're right again.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Here is another approach thought about:
-1/ use clock constraints in device drivers to forbid any change on the
-   main clock
-2/ remove this constraint when suspend is called if the device is not
-   tagged as a wakeup source, or keep it if it is.
-3/ call a 'clk_test_rate' function in PM code to check if we can
-   switch to a 32kHz clk (clk_test_rate(mck, 32768)).
-   This clk_test_rate does not exist, but it would validate all mck
-   users constraint, returning an error code if the constraints does
-   not allow such a rate or 0 on success.
+--liOOAslEiF7prFVr
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="zbattery.10.diff"
 
-This is just an idea.
-Maybe exposing the current suspend state and testing its value in each
-driver is more appropriate, but from a user point of view, I find it
-weird to silently ignore the wakeup configuration on some devices when
-entering suspend-to-ram.
+./drivers/power - ./drivers/power.ofic
+diff -X /usr/src/linux/.gitignore -ur ./drivers/power.ofic/Makefile ./drivers/power/Makefile
+--- ./drivers/power.ofic/Makefile	2011-03-16 10:11:34.000000000 +0100
++++ ./drivers/power/Makefile	2011-04-29 15:12:14.000000000 +0200
+@@ -19,7 +19,9 @@
+ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+ obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
+ obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
++obj-m	+= spitz_battery.o
+ obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
++obj-m	+= spitz_battery.o
+ obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
+ obj-$(CONFIG_BATTERY_BQ20Z75)	+= bq20z75.o
+ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
+diff -X /usr/src/linux/.gitignore -ur ./drivers/power.ofic/power_supply_sysfs.c ./drivers/power/power_supply_sysfs.c
+--- ./drivers/power.ofic/power_supply_sysfs.c	2011-02-02 10:54:32.000000000 +0100
++++ ./drivers/power/power_supply_sysfs.c	2011-04-29 15:02:07.000000000 +0200
+@@ -40,7 +40,8 @@
+ 
+ static ssize_t power_supply_show_property(struct device *dev,
+ 					  struct device_attribute *attr,
+-					  char *buf) {
++					  char *buf)
++{
+ 	static char *type_text[] = {
+ 		"Battery", "UPS", "Mains", "USB",
+ 		"USB_DCP", "USB_CDP", "USB_ACA"
+@@ -102,7 +103,8 @@
+ 
+ static ssize_t power_supply_store_property(struct device *dev,
+ 					   struct device_attribute *attr,
+-					   const char *buf, size_t count) {
++					   const char *buf, size_t count)
++{
+ 	ssize_t ret;
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	const ptrdiff_t off = attr - power_supply_attrs;
+Only in ./drivers/power: spitz_battery.c
+./drivers/video - ./drivers/video.ofic
+diff -X /usr/src/linux/.gitignore -ur ./drivers/video.ofic/pxafb.c ./drivers/video/pxafb.c
+--- ./drivers/video.ofic/pxafb.c	2011-02-02 09:44:53.000000000 +0100
++++ ./drivers/video/pxafb.c	2011-04-29 14:50:27.000000000 +0200
+@@ -1648,6 +1648,9 @@
+ #endif
+ 
+ #ifdef CONFIG_PM
++
++static struct pxafb_info *my_fbi;
++
+ /*
+  * Power management hooks.  Note that we won't be called from IRQ context,
+  * unlike the blank functions above, so we may sleep.
+@@ -1656,6 +1659,8 @@
+ {
+ 	struct pxafb_info *fbi = dev_get_drvdata(dev);
+ 
++	my_fbi = fbi;
++
+ 	set_ctrlr_state(fbi, C_DISABLE_PM);
+ 	return 0;
+ }
+./arch/arm - ./arch/arm.ofic
+Binary files ./arch/arm.ofic/boot/Image and ./arch/arm/boot/Image differ
+Binary files ./arch/arm.ofic/boot/compressed/piggy.gzip and ./arch/arm/boot/compressed/piggy.gzip differ
+Binary files ./arch/arm.ofic/boot/compressed/vmlinux and ./arch/arm/boot/compressed/vmlinux differ
+Binary files ./arch/arm.ofic/boot/zImage and ./arch/arm/boot/zImage differ
+diff -X /usr/src/linux/.gitignore -ur ./arch/arm.ofic/mach-pxa/corgi_pm.c ./arch/arm/mach-pxa/corgi_pm.c
+--- ./arch/arm.ofic/mach-pxa/corgi_pm.c	2011-02-02 10:30:38.000000000 +0100
++++ ./arch/arm/mach-pxa/corgi_pm.c	2011-04-29 15:12:15.000000000 +0200
+@@ -43,6 +43,92 @@
+ 	{ CORGI_GPIO_KEY_INT,	  GPIOF_IN, "Key Interrupt" },
+ };
+ 
++static const struct battery_thresh corgi_battery_levels_acin[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 192,  45},
++	{ 191,  43},
++	{ 191,  40},
++	{ 190,  38},
++	{ 190,  35},
++	{ 189,  33},
++	{ 188,  30},
++	{ 187,  28},
++	{ 186,  25},
++	{ 185,  23},
++	{ 184,  20},
++	{ 183,  18},
++	{ 182,  15},
++	{ 181,  13},
++	{ 180,  10},
++	{ 179,   8},
++	{ 178,   5},
++	{   0,   0},
++};
++
++static const struct battery_thresh  corgi_battery_levels_noac[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 191,  45},
++	{ 190,  43},
++	{ 189,  40},
++	{ 188,  38},
++	{ 187,  35},
++	{ 186,  33},
++	{ 185,  30},
++	{ 184,  28},
++	{ 183,  25},
++	{ 182,  23},
++	{ 181,  20},
++	{ 180,  18},
++	{ 179,  15},
++	{ 178,  13},
++	{ 177,  10},
++	{ 176,   8},
++	{ 175,   5},
++	{   0,   0},
++};
++
+ static void corgi_charger_init(void)
+ {
+ 	gpio_request_array(ARRAY_AND_SIZE(charger_gpios));
+@@ -173,7 +259,6 @@
+ 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
+ 	.bat_levels       = 40,
+ 	.bat_levels_noac  = sharpsl_battery_levels_noac,
+-	.bat_levels_acin  = sharpsl_battery_levels_acin,
+ 	.status_high_acin = 188,
+ 	.status_low_acin  = 178,
+ 	.status_high_noac = 185,
+diff -X /usr/src/linux/.gitignore -ur ./arch/arm.ofic/mach-pxa/include/mach/sharpsl_pm.h ./arch/arm/mach-pxa/include/mach/sharpsl_pm.h
+--- ./arch/arm.ofic/mach-pxa/include/mach/sharpsl_pm.h	2011-02-02 10:30:38.000000000 +0100
++++ ./arch/arm/mach-pxa/include/mach/sharpsl_pm.h	2011-04-29 15:18:19.000000000 +0200
+@@ -110,4 +110,22 @@
+ int sharpsl_pm_pxa_read_max1111(int channel);
+ 
+ void corgi_lcd_limit_intensity(int limit);
++
++/*
++ * Constants
++ */
++#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (msecs_to_jiffies(1*60*1000))  /* 1 min */
++#define SHARPSL_CHARGE_FINISH_TIME             (msecs_to_jiffies(10*60*1000)) /* 10 min */
++#define SHARPSL_BATCHK_TIME                    (msecs_to_jiffies(15*1000))    /* 15 sec */
++#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10)                        /* 10 min */
++
++#define SHARPSL_WAIT_CO_TIME                   15  /* 15 sec */
++#define SHARPSL_WAIT_DISCHARGE_ON              100 /* 100 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP   10  /* 10 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT   10  /* 10 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_ACIN   10  /* 10 msec */
++#define SHARPSL_CHARGE_WAIT_TIME               15  /* 15 msec */
++#define SHARPSL_CHARGE_CO_CHECK_TIME           5   /* 5 msec */
++#define SHARPSL_CHARGE_RETRY_CNT               1   /* eqv. 10 min */
++
+ #endif
+diff -X /usr/src/linux/.gitignore -ur ./arch/arm.ofic/mach-pxa/sharpsl_pm.c ./arch/arm/mach-pxa/sharpsl_pm.c
+--- ./arch/arm.ofic/mach-pxa/sharpsl_pm.c	2011-03-16 10:07:44.000000000 +0100
++++ ./arch/arm/mach-pxa/sharpsl_pm.c	2011-04-29 15:27:09.000000000 +0200
+@@ -32,23 +32,6 @@
+ #include <mach/sharpsl_pm.h>
+ 
+ /*
+- * Constants
+- */
+-#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (msecs_to_jiffies(1*60*1000))  /* 1 min */
+-#define SHARPSL_CHARGE_FINISH_TIME             (msecs_to_jiffies(10*60*1000)) /* 10 min */
+-#define SHARPSL_BATCHK_TIME                    (msecs_to_jiffies(15*1000))    /* 15 sec */
+-#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10)                        /* 10 min */
+-
+-#define SHARPSL_WAIT_CO_TIME                   15  /* 15 sec */
+-#define SHARPSL_WAIT_DISCHARGE_ON              100 /* 100 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP   10  /* 10 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT   10  /* 10 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_ACIN   10  /* 10 msec */
+-#define SHARPSL_CHARGE_WAIT_TIME               15  /* 15 msec */
+-#define SHARPSL_CHARGE_CO_CHECK_TIME           5   /* 5 msec */
+-#define SHARPSL_CHARGE_RETRY_CNT               1   /* eqv. 10 min */
+-
+-/*
+  * Prototypes
+  */
+ #ifdef CONFIG_PM
+@@ -68,96 +51,32 @@
+  * Variables
+  */
+ struct sharpsl_pm_status sharpsl_pm;
++EXPORT_SYMBOL(sharpsl_pm);
+ static DECLARE_DELAYED_WORK(toggle_charger, sharpsl_charge_toggle);
+ static DECLARE_DELAYED_WORK(sharpsl_bat, sharpsl_battery_thread);
+ DEFINE_LED_TRIGGER(sharpsl_charge_led_trigger);
+ 
+ 
+ 
+-struct battery_thresh sharpsl_battery_levels_acin[] = {
+-	{ 213, 100},
+-	{ 212,  98},
+-	{ 211,  95},
+-	{ 210,  93},
+-	{ 209,  90},
+-	{ 208,  88},
+-	{ 207,  85},
+-	{ 206,  83},
+-	{ 205,  80},
+-	{ 204,  78},
+-	{ 203,  75},
+-	{ 202,  73},
+-	{ 201,  70},
+-	{ 200,  68},
+-	{ 199,  65},
+-	{ 198,  63},
+-	{ 197,  60},
+-	{ 196,  58},
+-	{ 195,  55},
+-	{ 194,  53},
+-	{ 193,  50},
+-	{ 192,  48},
+-	{ 192,  45},
+-	{ 191,  43},
+-	{ 191,  40},
+-	{ 190,  38},
+-	{ 190,  35},
+-	{ 189,  33},
+-	{ 188,  30},
+-	{ 187,  28},
+-	{ 186,  25},
+-	{ 185,  23},
+-	{ 184,  20},
+-	{ 183,  18},
+-	{ 182,  15},
+-	{ 181,  13},
+-	{ 180,  10},
+-	{ 179,   8},
+-	{ 178,   5},
+-	{   0,   0},
+-};
+-
+ struct battery_thresh sharpsl_battery_levels_noac[] = {
+-	{ 213, 100},
+-	{ 212,  98},
+-	{ 211,  95},
+-	{ 210,  93},
+-	{ 209,  90},
+-	{ 208,  88},
+-	{ 207,  85},
+-	{ 206,  83},
+-	{ 205,  80},
+-	{ 204,  78},
+-	{ 203,  75},
+-	{ 202,  73},
+-	{ 201,  70},
+-	{ 200,  68},
+-	{ 199,  65},
+-	{ 198,  63},
+-	{ 197,  60},
+-	{ 196,  58},
+-	{ 195,  55},
+-	{ 194,  53},
+-	{ 193,  50},
+-	{ 192,  48},
+-	{ 191,  45},
+-	{ 190,  43},
+-	{ 189,  40},
+-	{ 188,  38},
+-	{ 187,  35},
+-	{ 186,  33},
+-	{ 185,  30},
+-	{ 184,  28},
+-	{ 183,  25},
+-	{ 182,  23},
+-	{ 181,  20},
+-	{ 180,  18},
+-	{ 179,  15},
+-	{ 178,  13},
+-	{ 177,  10},
+-	{ 176,   8},
+-	{ 175,   5},
+-	{   0,   0},
++	{ 3980, 100 },
++	{ 3900, 95 },
++	{ 3860, 90 },
++	{ 3800, 85 },
++	{ 3760, 80 },
++	{ 3720, 74 },
++	{ 3680, 69 },
++	{ 3620, 65 },
++	{ 3570, 59 },
++	{ 3560, 55 },
++	{ 3550, 48 },
++	{ 3530, 45 },
++	{ 3510, 39 },
++	{ 3490, 33 },
++	{ 3470, 29 },
++	{ 3450, 23 },
++	{ 3410, 16 },
++	{    0, 0 },
+ };
+ 
+ /* MAX1111 Commands */
+@@ -185,22 +104,71 @@
+ 	return max1111_read_channel(channel >> 1);
+ }
+ 
+-static int get_percentage(int voltage)
++
++typedef int milliamp_t;
++typedef int milliohm_t;
++typedef int millivolt_t;
++
++milliamp_t basic_current = 125;
++milliohm_t battery_resistance = 100;
++
++/* 422 seems to be suitable for very old, 1Ah battery.
++   2Ah battery probably has better resistance */
++
++/* Unfortunately, resistance depends on state of charge, current
++ * direction and temperature.
++ *
++ * Ouch, and dependency is actually _not_ too simple. It is lowest
++ * at 3.55V, very slowly rises at 4V (approximately linear dependency),
++ * and quickly rises towards 3.2V (in something exponential-looking).
++ *
++ * It is about same at 25Celsius and 40Celsius, and about 2.5x the value
++ * on 0Celsius, rising _very_ sharply.
++ *
++ * Li-ion should only be charged between 0 and 45 Celsius, and discharged
++ * between -20 and 60 celsius.
++ */
++
++extern int backlight_current;
++
++/* Positive values: current drawn from battery */
++milliamp_t battery_current(void)
++{
++	if (sharpsl_pm.charge_mode == CHRG_ON)
++		return 0;
++
++	return basic_current;
++}
++
++millivolt_t liion_internal_voltage(millivolt_t voltage, milliamp_t current_ma)
++{
++	return voltage + (battery_resistance * current_ma / 1000);
++}
++
++/* returns mV */
++millivolt_t liion_voltage(int adc)
++{
++	/* Thanks to Stanislav B. ADC has 3.3V as reference,
++	   is connected to battery over 47kOhm,
++	   and to ground over 100kOhm. */
++	return (adc * 147 * 33)/256;
++}
++
++static int get_percentage(int voltage_adc)
+ {
+ 	int i = sharpsl_pm.machinfo->bat_levels - 1;
+ 	int bl_status = sharpsl_pm.machinfo->backlight_get_status ? sharpsl_pm.machinfo->backlight_get_status() : 0;
+ 	struct battery_thresh *thresh;
++	millivolt_t voltage = liion_voltage(voltage_adc);
+ 
+-	if (sharpsl_pm.charge_mode == CHRG_ON)
+-		thresh = bl_status ? sharpsl_pm.machinfo->bat_levels_acin_bl : sharpsl_pm.machinfo->bat_levels_acin;
+-	else
+-		thresh = bl_status ? sharpsl_pm.machinfo->bat_levels_noac_bl : sharpsl_pm.machinfo->bat_levels_noac;
++	thresh = sharpsl_pm.machinfo->bat_levels_noac;
+ 
+ 	while (i > 0 && (voltage > thresh[i].voltage))
+ 		i--;
+ 
+ 	return thresh[i].percentage;
+ }
++EXPORT_SYMBOL(get_percentage);
+ 
+ static int get_apm_status(int voltage)
+ {
+@@ -317,6 +285,8 @@
+ 
+ static void sharpsl_charge_error(void)
+ {
++	dev_warn(sharpsl_pm.dev, "Charger Error\n");
++
+ 	sharpsl_pm_led(SHARPSL_LED_ERROR);
+ 	sharpsl_pm.machinfo->charge(0);
+ 	sharpsl_pm.charge_mode = CHRG_ERROR;
+@@ -513,8 +483,10 @@
+ 	val = get_select_val(buff);
+ 
+ 	dev_dbg(sharpsl_pm.dev, "Temperature: %d\n", val);
+-	if (val > sharpsl_pm.machinfo->charge_on_temp) {
+-		printk(KERN_WARNING "Not charging: temperature out of limits.\n");
++	/* FIXME: this should catch battery read errors, but we should
++	   probably avoid charging in <0C temperatures, too. */
++	if ((val < 0) || (val > sharpsl_pm.machinfo->charge_on_temp)) {
++		dev_warn(sharpsl_pm.dev, "Not charging: temperature %d out of limits.\n", val);
+ 		return -1;
+ 	}
+ 
+diff -X /usr/src/linux/.gitignore -ur ./arch/arm.ofic/mach-pxa/spitz.c ./arch/arm/mach-pxa/spitz.c
+--- ./arch/arm.ofic/mach-pxa/spitz.c	2011-03-16 10:07:44.000000000 +0100
++++ ./arch/arm/mach-pxa/spitz.c	2011-04-29 15:25:47.000000000 +0200
+@@ -922,6 +922,15 @@
+ #endif
+ 
+ /******************************************************************************
++ * Battery
++ ******************************************************************************/
++
++static struct platform_device spitz_battery_device = {
++	.name	= "spitz-battery",
++	.id	= -1,
++};
++
++/******************************************************************************
+  * Machine init
+  ******************************************************************************/
+ static void spitz_poweroff(void)
+@@ -969,6 +978,7 @@
+ 	spitz_nor_init();
+ 	spitz_nand_init();
+ 	spitz_i2c_init();
++	platform_device_register(&spitz_battery_device);
+ }
+ 
+ static void __init spitz_fixup(struct machine_desc *desc,
+diff -X /usr/src/linux/.gitignore -ur ./arch/arm.ofic/mach-pxa/spitz_pm.c ./arch/arm/mach-pxa/spitz_pm.c
+--- ./arch/arm.ofic/mach-pxa/spitz_pm.c	2011-02-02 10:30:39.000000000 +0100
++++ ./arch/arm/mach-pxa/spitz_pm.c	2011-04-29 15:15:16.000000000 +0200
+@@ -45,6 +45,93 @@
+ 	{ SPITZ_GPIO_CHRG_ON,	  GPIOF_OUT_INIT_LOW, "Charger On" },
+ };
+ 
++static const struct battery_thresh spitz_battery_levels_acin[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 192,  45},
++	{ 191,  43},
++	{ 191,  40},
++	{ 190,  38},
++	{ 190,  35},
++	{ 189,  33},
++	{ 188,  30},
++	{ 187,  28},
++	{ 186,  25},
++	{ 185,  23},
++	{ 184,  20},
++	{ 183,  18},
++	{ 182,  15},
++	{ 181,  13},
++	{ 180,  10},
++	{ 179,   8},
++	{ 178,   5},
++	{   0,   0},
++};
++
++static const struct battery_thresh  spitz_battery_levels_noac[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 191,  45},
++	{ 190,  43},
++	{ 189,  40},
++	{ 188,  38},
++	{ 187,  35},
++	{ 186,  33},
++	{ 185,  30},
++	{ 184,  28},
++	{ 183,  25},
++	{ 182,  23},
++	{ 181,  20},
++	{ 180,  18},
++	{ 179,  15},
++	{ 178,  13},
++	{ 177,  10},
++	{ 176,   8},
++	{ 175,   5},
++	{   0,   0},
++};
++
++
+ static void spitz_charger_init(void)
+ {
+ 	gpio_request_array(ARRAY_AND_SIZE(spitz_charger_gpios));
+@@ -192,6 +279,11 @@
+ 	}
+ }
+ 
++int backlight_get_status(void)
++{
++	return 0;
++}
++
+ struct sharpsl_charger_machinfo spitz_pm_machinfo = {
+ 	.init             = spitz_charger_init,
+ 	.exit             = NULL,
+@@ -210,7 +302,7 @@
+ 	.charger_wakeup   = spitz_charger_wakeup,
+ 	.should_wakeup    = spitz_should_wakeup,
+ #if defined(CONFIG_LCD_CORGI)
+-	.backlight_limit = corgi_lcd_limit_intensity,
++	.backlight_limit  = corgi_lcd_limit_intensity,
+ #endif
+ 	.charge_on_volt	  = SHARPSL_CHARGE_ON_VOLT,
+ 	.charge_on_temp	  = SHARPSL_CHARGE_ON_TEMP,
+@@ -220,7 +312,6 @@
+ 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
+ 	.bat_levels       = 40,
+ 	.bat_levels_noac  = sharpsl_battery_levels_noac,
+-	.bat_levels_acin  = sharpsl_battery_levels_acin,
+ 	.status_high_acin = 188,
+ 	.status_low_acin  = 178,
+ 	.status_high_noac = 185,
 
-Best Regards,
-
-Boris
-
---=20
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+--liOOAslEiF7prFVr--
