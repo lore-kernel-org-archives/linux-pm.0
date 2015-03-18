@@ -1,244 +1,131 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 5/5] cpuidle: exynos: add coupled cpuidle support for
+Subject: Re: [PATCH v3 1/4] ARM: EXYNOS: fix CPU1 hotplug for AFTR mode on
  Exynos3250
-Date: Wed, 18 Mar 2015 14:09:57 +0100
-Message-ID: <1426684197-22281-6-git-send-email-b.zolnierkie@samsung.com>
-References: <1426684197-22281-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1426684197-22281-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Date: Wed, 18 Mar 2015 14:23:35 +0100
+Message-ID: <3449559.PngGo6WKuq@amdc1032>
+References: <1426683113-31209-1-git-send-email-b.zolnierkie@samsung.com>
+ <1426683113-31209-2-git-send-email-b.zolnierkie@samsung.com>
+ <CAJKOXPe3P0mO-WuufAwF_tB6P=kfr-ORyQ6pa2pRnvjytCuHZg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:26778 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932855AbbCRNXq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 09:23:46 -0400
+In-reply-to: <CAJKOXPe3P0mO-WuufAwF_tB6P=kfr-ORyQ6pa2pRnvjytCuHZg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-arm-kernel@lists.infradead.org
 
-The following patch adds coupled cpuidle support for Exynos3250 to
-an existing cpuidle-exynos driver.  As a result it enables AFTR mode
-to be used by default on Exynos3250 without the need to hot unplug
-CPU1 first.
 
-The detailed changelog:
-- use exynos_[get,set]_boot_addr() in cpuidle-exynos.c and then make
-  cpu_boot_reg_base() static
-- use exynos_core_restart() in exynos_cpu0_enter_aftr()
-- add missing smp_rmb() to exynos_cpu0_enter_aftr() (to make the code
-  in-sync with the platform SMP code)
-- add call_firmware_op(cpu_boot, 1) to exynos_cpu0_enter_aftr()
-- use dsb_sev() instead of IPI wakeup for Exynos3250 in
-  exynos_cpu0_enter_aftr()
-- add CPU0 vs CPU1 synchronization based on S5P_PMU_SPARE2 register
-  for Exynos3250 to cpuidle-exynos.c
-- add flush_cache_all() for CPU1/0 before powerdown/AFTR for
-  Exynos3250 to exynos_wfi_finisher()/exynos_do_idle()
+Hi,
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/mach-exynos/common.h   |  4 +++-
- arch/arm/mach-exynos/exynos.c   |  3 ++-
- arch/arm/mach-exynos/firmware.c |  1 +
- arch/arm/mach-exynos/platsmp.c  |  8 +++----
- arch/arm/mach-exynos/pm.c       | 51 ++++++++++++++++++++++++++++++++++-------
- 5 files changed, 53 insertions(+), 14 deletions(-)
+On Wednesday, March 18, 2015 02:10:31 PM Krzysztof Kozlowski wrote:
+> 2015-03-18 13:51 GMT+01:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
+> > CPU1 hotplug may hang when AFTR is used.  Fix it by:
+> > - setting AUTOWAKEUP_EN bit in ARM_COREx_CONFIGURATION register in
+> >   exynos_cpu_power_up()
+> > - not clearing reserved bits of ARM_COREx_CONFIGURATION register in
+> >   exynos_cpu_power_down()
+> > - waiting while an undocumented register 0x0908 becomes non-zero in
+> >   exynos_core_restart()
+> > - using dsb_sev() instead of IPI in exynos_boot_secondary() on
+> >   Exynos3250
+> >
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > ---
+> >  arch/arm/mach-exynos/platsmp.c  | 23 ++++++++++++++++++++---
+> >  arch/arm/mach-exynos/regs-pmu.h |  2 ++
+> >  2 files changed, 22 insertions(+), 3 deletions(-)
+> 
+> 
+> Looks good (except one nit below) and this also fixes hotplug issues
+> during resume from S2R:
+> $ echo mem > /sys/power/state
+> [  156.517266] Disabling non-boot CPUs ...
+> [  156.517781] IRQ18 no longer affine to CPU1
+> [  156.518043] CPU1: shutdown
+> [  156.544718] Enabling non-boot CPUs ...
+> [  156.554925] CPU1: Software reset
+> [  158.552631] CPU1: failed to come online
+> [  158.552753] Error taking CPU1 up: -5
+> 
+> Reviewed and tested on Rinato (Gear 2/Exynos 3250) board:
+> 
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index 826367f..bc515f0 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -163,7 +163,9 @@ extern void exynos_set_delayed_reset_assertion(bool enable);
- 
- extern void s5p_init_cpu(void __iomem *cpuid_addr);
- extern unsigned int samsung_rev(void);
--extern void __iomem *cpu_boot_reg_base(void);
-+extern void exynos_core_restart(u32 core_id);
-+extern int exynos_set_boot_addr(u32 core_id, unsigned long boot_addr);
-+extern int exynos_get_boot_addr(u32 core_id, unsigned long *boot_addr);
- 
- static inline void pmu_raw_writel(u32 val, u32 offset)
- {
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index ec0312b..c4a2852 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -264,7 +264,8 @@ static void __init exynos_dt_machine_init(void)
- 		exynos_sysram_init();
- 
- #if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
--	if (of_machine_is_compatible("samsung,exynos4210"))
-+	if (of_machine_is_compatible("samsung,exynos4210") ||
-+	    of_machine_is_compatible("samsung,exynos3250"))
- 		exynos_cpuidle.dev.platform_data = &cpuidle_coupled_exynos_data;
- #endif
- 	if (of_machine_is_compatible("samsung,exynos4210") ||
-diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
-index c9e4481..90db46f 100644
---- a/arch/arm/mach-exynos/firmware.c
-+++ b/arch/arm/mach-exynos/firmware.c
-@@ -49,6 +49,7 @@ static int exynos_do_idle(unsigned long mode)
- 			     sysram_ns_base_addr + 0x24);
- 		__raw_writel(EXYNOS_AFTR_MAGIC, sysram_ns_base_addr + 0x20);
- 		if (soc_is_exynos3250()) {
-+			flush_cache_all();
- 			exynos_smc(SMC_CMD_SAVE, OP_TYPE_CORE,
- 				   SMC_POWERSTATE_IDLE, 0);
- 			exynos_smc(SMC_CMD_SHUTDOWN, OP_TYPE_CLUSTER,
-diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
-index 449edd1..58e05a2 100644
---- a/arch/arm/mach-exynos/platsmp.c
-+++ b/arch/arm/mach-exynos/platsmp.c
-@@ -169,7 +169,7 @@ int exynos_cluster_power_state(int cluster)
- 		S5P_CORE_LOCAL_PWR_EN);
- }
- 
--void __iomem *cpu_boot_reg_base(void)
-+static void __iomem *cpu_boot_reg_base(void)
- {
- 	if (soc_is_exynos4210() && samsung_rev() == EXYNOS4210_REV_1_1)
- 		return pmu_base_addr + S5P_INFORM5;
-@@ -195,7 +195,7 @@ static inline void __iomem *cpu_boot_reg(int cpu)
-  *
-  * Currently this is needed only when booting secondary CPU on Exynos3250.
-  */
--static void exynos_core_restart(u32 core_id)
-+void exynos_core_restart(u32 core_id)
- {
- 	u32 val;
- 
-@@ -247,7 +247,7 @@ static void exynos_secondary_init(unsigned int cpu)
- 	spin_unlock(&boot_lock);
- }
- 
--static int exynos_set_boot_addr(u32 core_id, unsigned long boot_addr)
-+int exynos_set_boot_addr(u32 core_id, unsigned long boot_addr)
- {
- 	int ret;
- 
-@@ -272,7 +272,7 @@ fail:
- 	return ret;
- }
- 
--static int exynos_get_boot_addr(u32 core_id, unsigned long *boot_addr)
-+int exynos_get_boot_addr(u32 core_id, unsigned long *boot_addr)
- {
- 	int ret;
- 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index cc75ab4..9c1506b 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -22,6 +22,7 @@
- #include <asm/firmware.h>
- #include <asm/smp_scu.h>
- #include <asm/suspend.h>
-+#include <asm/cacheflush.h>
- 
- #include <mach/map.h>
- 
-@@ -209,6 +210,8 @@ static int exynos_cpu0_enter_aftr(void)
- 		 * sequence, let's wait for one of these to happen
- 		 */
- 		while (exynos_cpu_power_state(1)) {
-+			unsigned long boot_addr;
-+
- 			/*
- 			 * The other cpu may skip idle and boot back
- 			 * up again
-@@ -221,7 +224,11 @@ static int exynos_cpu0_enter_aftr(void)
- 			 * boot back up again, getting stuck in the
- 			 * boot rom code
- 			 */
--			if (__raw_readl(cpu_boot_reg_base()) == 0)
-+			ret = exynos_get_boot_addr(1, &boot_addr);
-+			if (ret)
-+				goto fail;
-+			ret = -1;
-+			if (boot_addr == 0)
- 				goto abort;
- 
- 			cpu_relax();
-@@ -233,11 +240,14 @@ static int exynos_cpu0_enter_aftr(void)
- 
- abort:
- 	if (cpu_online(1)) {
-+		unsigned long boot_addr = virt_to_phys(exynos_cpu_resume);
-+
- 		/*
- 		 * Set the boot vector to something non-zero
- 		 */
--		__raw_writel(virt_to_phys(exynos_cpu_resume),
--			     cpu_boot_reg_base());
-+		ret = exynos_set_boot_addr(1, boot_addr);
-+		if (ret)
-+			goto fail;
- 		dsb();
- 
- 		/*
-@@ -247,22 +257,42 @@ abort:
- 		while (exynos_cpu_power_state(1) != S5P_CORE_LOCAL_PWR_EN)
- 			cpu_relax();
- 
-+		if (soc_is_exynos3250()) {
-+			while (!pmu_raw_readl(S5P_PMU_SPARE2) &&
-+			       !atomic_read(&cpu1_wakeup))
-+				cpu_relax();
-+
-+			if (!atomic_read(&cpu1_wakeup))
-+				exynos_core_restart(1);
-+		}
-+
- 		while (!atomic_read(&cpu1_wakeup)) {
-+			smp_rmb();
-+
- 			/*
- 			 * Poke cpu1 out of the boot rom
- 			 */
--			__raw_writel(virt_to_phys(exynos_cpu_resume),
--				     cpu_boot_reg_base());
- 
--			arch_send_wakeup_ipi_mask(cpumask_of(1));
-+			ret = exynos_set_boot_addr(1, boot_addr);
-+			if (ret)
-+				goto fail;
-+
-+			call_firmware_op(cpu_boot, 1);
-+
-+			if (soc_is_exynos3250())
-+				dsb_sev();
-+			else
-+				arch_send_wakeup_ipi_mask(cpumask_of(1));
- 		}
- 	}
--
-+fail:
- 	return ret;
- }
- 
- static int exynos_wfi_finisher(unsigned long flags)
- {
-+	if (soc_is_exynos3250())
-+		flush_cache_all();
- 	cpu_do_idle();
- 
- 	return -1;
-@@ -283,6 +313,9 @@ static int exynos_cpu1_powerdown(void)
- 	 */
- 	exynos_cpu_power_down(1);
- 
-+	if (soc_is_exynos3250())
-+		pmu_raw_writel(0, S5P_PMU_SPARE2);
-+
- 	ret = cpu_suspend(0, exynos_wfi_finisher);
- 
- 	cpu_pm_exit();
-@@ -299,7 +332,9 @@ cpu1_aborted:
- 
- static void exynos_pre_enter_aftr(void)
- {
--	__raw_writel(virt_to_phys(exynos_cpu_resume), cpu_boot_reg_base());
-+	unsigned long boot_addr = virt_to_phys(exynos_cpu_resume);
-+
-+	(void)exynos_set_boot_addr(1, boot_addr);
- }
- 
- static void exynos_post_enter_aftr(void)
--- 
-1.8.2.3
+Thank you!
+
+> One comment below...
+> 
+> >
+> > diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
+> > index d2e9f12..ebd135b 100644
+> > --- a/arch/arm/mach-exynos/platsmp.c
+> > +++ b/arch/arm/mach-exynos/platsmp.c
+> > @@ -126,6 +126,8 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
+> >   */
+> >  void exynos_cpu_power_down(int cpu)
+> >  {
+> > +       u32 core_conf;
+> > +
+> >         if (cpu == 0 && (soc_is_exynos5420() || soc_is_exynos5800())) {
+> >                 /*
+> >                  * Bypass power down for CPU0 during suspend. Check for
+> > @@ -137,7 +139,10 @@ void exynos_cpu_power_down(int cpu)
+> >                 if (!(val & S5P_CORE_LOCAL_PWR_EN))
+> >                         return;
+> >         }
+> > -       pmu_raw_writel(0, EXYNOS_ARM_CORE_CONFIGURATION(cpu));
+> > +
+> > +       core_conf = pmu_raw_readl(EXYNOS_ARM_CORE_CONFIGURATION(cpu));
+> > +       core_conf &= ~S5P_CORE_LOCAL_PWR_EN;
+> > +       pmu_raw_writel(core_conf, EXYNOS_ARM_CORE_CONFIGURATION(cpu));
+> >  }
+> >
+> >  /**
+> > @@ -148,7 +153,12 @@ void exynos_cpu_power_down(int cpu)
+> >   */
+> >  void exynos_cpu_power_up(int cpu)
+> >  {
+> > -       pmu_raw_writel(S5P_CORE_LOCAL_PWR_EN,
+> > +       u32 core_conf = S5P_CORE_LOCAL_PWR_EN;
+> > +
+> > +       if (soc_is_exynos3250())
+> > +               core_conf |= S5P_CORE_AUTOWAKEUP_EN;
+> > +
+> > +       pmu_raw_writel(core_conf,
+> >                         EXYNOS_ARM_CORE_CONFIGURATION(cpu));
+> >  }
+> >
+> > @@ -226,6 +236,10 @@ static void exynos_core_restart(u32 core_id)
+> >         if (!of_machine_is_compatible("samsung,exynos3250"))
+> >                 return;
+> >
+> > +       while (!pmu_raw_readl(S5P_PMU_SPARE2))
+> > +               udelay(10);
+> > +       udelay(10);
+> 
+> We really need to start documenting this. Please add short description
+> why this SPARE2 check is here and who uses it. Without documenting
+> this behavior future generations won't be able to debug this stuff.
+> Imagine replacing sboot with uboot by someone...
+
+I've already planned to do this for this code and for coupled cpuidle
+use of SPARE2 as well.  However I would really prefer to do it in
+an incremental patch if there are no other issues with this patchset.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
