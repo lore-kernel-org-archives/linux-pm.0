@@ -1,267 +1,126 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH/RFC 4/5] ARM: shmobile: r8a7794 dtsi: Add CPG Clock Domain
-Date: Wed, 18 Mar 2015 20:46:56 +0100
-Message-ID: <1426708017-28885-5-git-send-email-geert+renesas@glider.be>
-References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426708017-28885-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 0/5] ARM: shmobile: rcar-gen2: Add CPG Clock Domain
+Date: Wed, 18 Mar 2015 20:46:52 +0100
+Message-ID: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:35937 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755182AbbCRTrB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 15:47:01 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add an appropriate "#power-domain-cells" property to the cpg_clocks
-device node, to create the CPG Clock Domain.
+	Hi,
 
-Add "power-domains" properties to all device nodes for devices that are
-part of the CPG Clock Domain and can be power-managed through their
-primary clock. This includes most present on-SoC devices.
+This RFC patch series adds Clock Domain support to the R-Car Gen2 Clock
+Pulse Generator (CPG) driver using the generic PM Domain.  This allows
+to power-manage the module clocks of SoC devices that are part of the
+CPG Clock Domain using Runtime PM, or for system suspend/resume.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
----
- arch/arm/boot/dts/r8a7794.dtsi | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+SoC devices that are part of the CPG Clock Domain and can be
+power-managed through their primary clock are tagged in DT with a proper
+"power-domains" property. Drivers for devices with multiple clocks
+(notably du and rcar-sound) still have to manage their (multiple module)
+clocks themselves.
 
-diff --git a/arch/arm/boot/dts/r8a7794.dtsi b/arch/arm/boot/dts/r8a7794.dtsi
-index 5667d284a3f0af92..2d0d5b20f98c16fa 100644
---- a/arch/arm/boot/dts/r8a7794.dtsi
-+++ b/arch/arm/boot/dts/r8a7794.dtsi
-@@ -49,6 +49,7 @@
- 			<0 0xf1006000 0 0x2000>;
- 		interrupts = <1 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
- 		clocks = <&mstp4_clks R8A7794_CLK_INTC_SYS>;
-+		power-domains = <&cpg_clocks>;
- 	};
- 
- 	cmt0: timer@ffca0000 {
-@@ -58,6 +59,7 @@
- 			     <0 143 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp1_clks R8A7794_CLK_CMT0>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 
- 		renesas,channels-mask = <0x60>;
- 
-@@ -77,6 +79,7 @@
- 			     <0 127 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7794_CLK_CMT1>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 
- 		renesas,channels-mask = <0xff>;
- 
-@@ -107,6 +110,7 @@
- 			     <0 16 IRQ_TYPE_LEVEL_HIGH>,
- 			     <0 17 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R8A7794_CLK_IRQC>;
-+		power-domains = <&cpg_clocks>;
- 	};
- 
- 	dmac0: dma-controller@e6700000 {
-@@ -135,6 +139,7 @@
- 				"ch12", "ch13", "ch14";
- 		clocks = <&mstp2_clks R8A7794_CLK_SYS_DMAC0>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 		#dma-cells = <1>;
- 		dma-channels = <15>;
- 	};
-@@ -165,6 +170,7 @@
- 				"ch12", "ch13", "ch14";
- 		clocks = <&mstp2_clks R8A7794_CLK_SYS_DMAC1>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 		#dma-cells = <1>;
- 		dma-channels = <15>;
- 	};
-@@ -175,6 +181,7 @@
- 		interrupts = <0 144 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFA0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -184,6 +191,7 @@
- 		interrupts = <0 145 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFA1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -193,6 +201,7 @@
- 		interrupts = <0 151 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFA2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -202,6 +211,7 @@
- 		interrupts = <0 29 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp11_clks R8A7794_CLK_SCIFA3>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -211,6 +221,7 @@
- 		interrupts = <0 30 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp11_clks R8A7794_CLK_SCIFA4>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -220,6 +231,7 @@
- 		interrupts = <0 31 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp11_clks R8A7794_CLK_SCIFA5>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -229,6 +241,7 @@
- 		interrupts = <0 148 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFB0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -238,6 +251,7 @@
- 		interrupts = <0 149 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFB1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -247,6 +261,7 @@
- 		interrupts = <0 150 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7794_CLK_SCIFB2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -256,6 +271,7 @@
- 		interrupts = <0 152 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -265,6 +281,7 @@
- 		interrupts = <0 153 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -274,6 +291,7 @@
- 		interrupts = <0 22 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -283,6 +301,7 @@
- 		interrupts = <0 23 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF3>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -292,6 +311,7 @@
- 		interrupts = <0 24 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF4>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -301,6 +321,7 @@
- 		interrupts = <0 25 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_SCIF5>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -310,6 +331,7 @@
- 		interrupts = <0 154 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_HSCIF0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -319,6 +341,7 @@
- 		interrupts = <0 155 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_HSCIF1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -328,6 +351,7 @@
- 		interrupts = <0 21 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp7_clks R8A7794_CLK_HSCIF2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -336,6 +360,7 @@
- 		reg = <0 0xee700000 0 0x400>;
- 		interrupts = <0 162 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp8_clks R8A7794_CLK_ETHER>;
-+		power-domains = <&cpg_clocks>;
- 		phy-mode = "rmii";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -347,6 +372,7 @@
- 		reg = <0 0xee100000 0 0x200>;
- 		interrupts = <0 165 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7794_CLK_SDHI0>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -355,6 +381,7 @@
- 		reg = <0 0xee140000 0 0x100>;
- 		interrupts = <0 167 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7794_CLK_SDHI1>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -363,6 +390,7 @@
- 		reg = <0 0xee160000 0 0x100>;
- 		interrupts = <0 168 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7794_CLK_SDHI2>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -389,6 +417,7 @@
- 			#clock-cells = <1>;
- 			clock-output-names = "main", "pll0", "pll1", "pll3",
- 					     "lb", "qspi", "sdh", "sd0", "z";
-+			#power-domain-cells = <0>;
- 		};
- 		/* Variable factor clocks */
- 		sd2_clk: sd2_clk@e6150078 {
+Finally, the legacy default PM domain hack in drivers/sh/pm_runtime.c is
+disabled when running on an R-Car Gen2 SoC with genpd support.
+
+Compared to the legacy default PM domain hack, the CPG Clock Domain has
+several advantages:
+  - It only affects on-SoC devices, not all platform devices,
+  - It only affects the on-SoC devices we want, as specified in DT,
+  - Allmost all module clocks of all on-SoC devices (barring devices
+    needed for wake-up[*]) are now gated during s2ram, saving more
+    power.
+
+Here's a list of all devices in the CPG Clock Domain on r8a7791:
+
+root@koelsch:~# cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+    domain                      status         slaves
+           /device                                      runtime status
+----------------------------------------------------------------------
+cpg_clocks                      on
+    /devices/platform/e61c0000.interrupt-controller     active
+    /devices/platform/e60b0000.i2c                      suspended
+    /devices/platform/ffca0000.timer                    suspended
+    /devices/platform/e6050000.gpio                     active
+    /devices/platform/e6051000.gpio                     active
+    /devices/platform/e6052000.gpio                     active
+    /devices/platform/e6053000.gpio                     active
+    /devices/platform/e6054000.gpio                     active
+    /devices/platform/e6055000.gpio                     active
+    /devices/platform/e6055400.gpio                     active
+    /devices/platform/e6055800.gpio                     active
+    /devices/platform/ee090000.pci                      active
+    /devices/platform/ee0d0000.pci                      active
+    /devices/platform/fe000000.pcie                     unsupported
+    /devices/platform/e6700000.dma-controller           active
+    /devices/platform/e6720000.dma-controller           active
+    /devices/platform/ec700000.dma-controller           active
+    /devices/platform/ec720000.dma-controller           suspended
+    /devices/platform/e6e60000.serial                   active
+    /devices/platform/e6e68000.serial                   active
+    /devices/platform/ee300000.sata                     unsupported
+    /devices/platform/e6b10000.spi                      suspended
+    /devices/platform/e6e20000.spi                      suspended
+    /devices/platform/ee700000.ethernet                 active
+    /devices/platform/e6530000.i2c                      suspended
+    /devices/platform/e6ef1000.video                    suspended
+    /devices/platform/e61f0000.thermal                  active
+    /devices/platform/ee100000.sd                       active
+    /devices/platform/ee140000.sd                       active
+    /devices/platform/ee160000.sd                       active
+root@koelsch:~#
+
+Logically, the CPG Clock Domain operates on the SoC CPG/MSTP block.
+As there's no single device node in DT representing this block (there
+are separate device nodes for the CPG and for the individual MSTP
+clocks), I bound the logic to the CPG device node.
+Perhaps this is something we should change for future SoCs?
+
+As usual when involving clocks and/or PM Domains, the DTS changes depend
+stricly on the driver change. The final patch must be applied last.
+
+The DTS changes also depend on the series "[PATCH 0/5] ARM: shmobile:
+Add INTC-SYS clock to device tree" I've just sent.
+
+This was tested on r8a7791/koelsch.
+
+Thanks for your comments!
+
+[*] GPIO wake-up requires "[PATCH 0/3] gpio: rcar: Fix wake up using
+gpio-keys with PM domain").
+
+Geert Uytterhoeven (5):
+  [RFC] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
+  [RFC] ARM: shmobile: r8a7790 dtsi: Add CPG Clock Domain
+  [RFC] ARM: shmobile: r8a7791 dtsi: Add CPG Clock Domain
+  [RFC] ARM: shmobile: r8a7794 dtsi: Add CPG Clock Domain
+  drivers: sh: Disable PM runtime for multi-platform R-Car Gen2 with
+    genpd
+
+ .../clock/renesas,rcar-gen2-cpg-clocks.txt         | 26 ++++++-
+ arch/arm/boot/dts/r8a7790.dtsi                     | 77 +++++++++++++++++++--
+ arch/arm/boot/dts/r8a7791.dtsi                     | 80 ++++++++++++++++++++--
+ arch/arm/boot/dts/r8a7794.dtsi                     | 29 ++++++++
+ arch/arm/mach-shmobile/Kconfig                     |  1 +
+ drivers/clk/shmobile/clk-rcar-gen2.c               | 63 +++++++++++++++++
+ drivers/sh/pm_runtime.c                            | 10 +--
+ 7 files changed, 268 insertions(+), 18 deletions(-)
+
 -- 
 1.9.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
