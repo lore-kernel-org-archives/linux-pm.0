@@ -1,57 +1,62 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH v12 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Wed, 18 Mar 2015 10:31:42 +0100
-Message-ID: <CABxcv=nRZiMy3_ynSV81TDTKKCNFXrF6Er7-xU9MavwMaJ=9jA@mail.gmail.com>
-References: <1416576682-5255-1-git-send-email-thomas.ab@samsung.com>
-	<CAMAWPa9fUJVjJ8V+93AkHy9DtEmUUnGs4MJDGcsoMdWwGmg5qg@mail.gmail.com>
-	<CAJKOXPfyPH7tyce6YB=q4krSP078aJVAmqObg89qCnLrL_Nbhg@mail.gmail.com>
-	<20150216105217.79315ffd@amdc2363>
-	<54E3A3CD.3020106@gmx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <54E3A3CD.3020106@gmx.net>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>
-Cc: Tobias Jakobi <liquid.acid@gmx.net>, Lukasz Majewski <l.majewski@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: add AFTR mode support for
+ Exynos3250
+Date: Wed, 18 Mar 2015 13:51:49 +0100
+Message-ID: <1426683113-31209-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:23476 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755590AbbCRMwN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 08:52:13 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-Hello Thomas,
+Hi,
 
-On Tue, Feb 17, 2015 at 9:25 PM, Tobias Jakobi <liquid.acid@gmx.net> wrote:
-> Hello!
->
-> Lukasz Majewski wrote:
->> Hi Krzysztof, Thomas,
->>
->>> 2015-01-08 22:17 GMT+01:00 Kevin Hilman <khilman@kernel.org>:
->>> Hi Thomas,
->>>
->>> Do you plan to continue with this work? It would be very helpful.
->>
->> +1 from me.
->>
->>>
->>> I also wonder if Exynos 4412 could be re-added (without the boost if
->>> these bindings are not ready)?
->>
->> I would prefer to have all platforms converted at once, since it might
->> happen that some parts of the work would get lost.
->
-> Joining in as well!
->
-> Reviving this patch series would be very much appreciated, especially if
-> it moves again into the direction of storing most information into the
-> DT (so that one can easily modify it in the board dts).
->
-> With best wishes,
-> Tobias
->
+This patch series adds support for AFTR idle mode on boards with
+Exynos3250 SoC and allows EXYNOS cpuidle driver usage on these
+boards.
 
-As others stated, it would be very useful to get this patch-set in but
-the current version has some issues as Kevin mentioned.
+It has been tested on Samsung Rinato board (Gear 2).
 
-Are you planning to continue working on this series?
+Depends on:
+- for-next branch (commit: 77105c882ba6) of linux-samsung.git
+  kernel tree
+
+Changes since v2:
+- rebased on top of for-next branch (commit: 77105c882ba6) of
+  linux-samsung.git kernel tree
+
+Changes since v1:
+- rebased on top of for-next branch (commit: ce275c369a0b) of
+  linux-samsung.git kernel tree
+- fixed lockup on hotplug by using dsb_sev() instead of IPI in
+  exynos_boot_secondary() on Exynos3250
 
 Best regards,
-Javier
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (4):
+  ARM: EXYNOS: fix CPU1 hotplug for AFTR mode on Exynos3250
+  ARM: EXYNOS: add code for setting/clearing boot flag
+  ARM: EXYNOS: cpuidle: add AFTR mode support for Exynos3250
+  ARM: EXYNOS: cpuidle: allow driver usage on Exynos3250 SoC
+
+ arch/arm/mach-exynos/common.h   |  6 ++++++
+ arch/arm/mach-exynos/exynos.c   | 26 ++++++++++++++++++++++++++
+ arch/arm/mach-exynos/firmware.c |  8 +++++++-
+ arch/arm/mach-exynos/platsmp.c  | 23 ++++++++++++++++++++---
+ arch/arm/mach-exynos/pm.c       | 12 +++++++++++-
+ arch/arm/mach-exynos/regs-pmu.h |  3 +++
+ arch/arm/mach-exynos/smc.h      |  9 +++++++++
+ 7 files changed, 82 insertions(+), 5 deletions(-)
+
+-- 
+1.8.2.3
+
