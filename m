@@ -1,131 +1,47 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Subject: Re: [PATCH v3 1/4] ARM: EXYNOS: fix CPU1 hotplug for AFTR mode on
  Exynos3250
-Date: Wed, 18 Mar 2015 14:23:35 +0100
-Message-ID: <3449559.PngGo6WKuq@amdc1032>
+Date: Wed, 18 Mar 2015 14:32:25 +0100
+Message-ID: <1426685545.23982.2.camel@AMDC1943>
 References: <1426683113-31209-1-git-send-email-b.zolnierkie@samsung.com>
  <1426683113-31209-2-git-send-email-b.zolnierkie@samsung.com>
  <CAJKOXPe3P0mO-WuufAwF_tB6P=kfr-ORyQ6pa2pRnvjytCuHZg@mail.gmail.com>
+ <3449559.PngGo6WKuq@amdc1032>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:26778 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932855AbbCRNXq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 09:23:46 -0400
-In-reply-to: <CAJKOXPe3P0mO-WuufAwF_tB6P=kfr-ORyQ6pa2pRnvjytCuHZg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <3449559.PngGo6WKuq@amdc1032>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
+On =C5=9Bro, 2015-03-18 at 14:23 +0100, Bartlomiej Zolnierkiewicz wrote=
+:
+> Hi,
+>=20
+> On Wednesday, March 18, 2015 02:10:31 PM Krzysztof Kozlowski wrote:
+> > 2015-03-18 13:51 GMT+01:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@=
+samsung.com>:
+> > >
+> > > +       while (!pmu_raw_readl(S5P_PMU_SPARE2))
+> > > +               udelay(10);
+> > > +       udelay(10);
+> >=20
+> > We really need to start documenting this. Please add short descript=
+ion
+> > why this SPARE2 check is here and who uses it. Without documenting
+> > this behavior future generations won't be able to debug this stuff.
+> > Imagine replacing sboot with uboot by someone...
+>=20
+> I've already planned to do this for this code and for coupled cpuidle
+> use of SPARE2 as well.  However I would really prefer to do it in
+> an incremental patch if there are no other issues with this patchset.
 
-Hi,
-
-On Wednesday, March 18, 2015 02:10:31 PM Krzysztof Kozlowski wrote:
-> 2015-03-18 13:51 GMT+01:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
-> > CPU1 hotplug may hang when AFTR is used.  Fix it by:
-> > - setting AUTOWAKEUP_EN bit in ARM_COREx_CONFIGURATION register in
-> >   exynos_cpu_power_up()
-> > - not clearing reserved bits of ARM_COREx_CONFIGURATION register in
-> >   exynos_cpu_power_down()
-> > - waiting while an undocumented register 0x0908 becomes non-zero in
-> >   exynos_core_restart()
-> > - using dsb_sev() instead of IPI in exynos_boot_secondary() on
-> >   Exynos3250
-> >
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > ---
-> >  arch/arm/mach-exynos/platsmp.c  | 23 ++++++++++++++++++++---
-> >  arch/arm/mach-exynos/regs-pmu.h |  2 ++
-> >  2 files changed, 22 insertions(+), 3 deletions(-)
-> 
-> 
-> Looks good (except one nit below) and this also fixes hotplug issues
-> during resume from S2R:
-> $ echo mem > /sys/power/state
-> [  156.517266] Disabling non-boot CPUs ...
-> [  156.517781] IRQ18 no longer affine to CPU1
-> [  156.518043] CPU1: shutdown
-> [  156.544718] Enabling non-boot CPUs ...
-> [  156.554925] CPU1: Software reset
-> [  158.552631] CPU1: failed to come online
-> [  158.552753] Error taking CPU1 up: -5
-> 
-> Reviewed and tested on Rinato (Gear 2/Exynos 3250) board:
-> 
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-
-Thank you!
-
-> One comment below...
-> 
-> >
-> > diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
-> > index d2e9f12..ebd135b 100644
-> > --- a/arch/arm/mach-exynos/platsmp.c
-> > +++ b/arch/arm/mach-exynos/platsmp.c
-> > @@ -126,6 +126,8 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
-> >   */
-> >  void exynos_cpu_power_down(int cpu)
-> >  {
-> > +       u32 core_conf;
-> > +
-> >         if (cpu == 0 && (soc_is_exynos5420() || soc_is_exynos5800())) {
-> >                 /*
-> >                  * Bypass power down for CPU0 during suspend. Check for
-> > @@ -137,7 +139,10 @@ void exynos_cpu_power_down(int cpu)
-> >                 if (!(val & S5P_CORE_LOCAL_PWR_EN))
-> >                         return;
-> >         }
-> > -       pmu_raw_writel(0, EXYNOS_ARM_CORE_CONFIGURATION(cpu));
-> > +
-> > +       core_conf = pmu_raw_readl(EXYNOS_ARM_CORE_CONFIGURATION(cpu));
-> > +       core_conf &= ~S5P_CORE_LOCAL_PWR_EN;
-> > +       pmu_raw_writel(core_conf, EXYNOS_ARM_CORE_CONFIGURATION(cpu));
-> >  }
-> >
-> >  /**
-> > @@ -148,7 +153,12 @@ void exynos_cpu_power_down(int cpu)
-> >   */
-> >  void exynos_cpu_power_up(int cpu)
-> >  {
-> > -       pmu_raw_writel(S5P_CORE_LOCAL_PWR_EN,
-> > +       u32 core_conf = S5P_CORE_LOCAL_PWR_EN;
-> > +
-> > +       if (soc_is_exynos3250())
-> > +               core_conf |= S5P_CORE_AUTOWAKEUP_EN;
-> > +
-> > +       pmu_raw_writel(core_conf,
-> >                         EXYNOS_ARM_CORE_CONFIGURATION(cpu));
-> >  }
-> >
-> > @@ -226,6 +236,10 @@ static void exynos_core_restart(u32 core_id)
-> >         if (!of_machine_is_compatible("samsung,exynos3250"))
-> >                 return;
-> >
-> > +       while (!pmu_raw_readl(S5P_PMU_SPARE2))
-> > +               udelay(10);
-> > +       udelay(10);
-> 
-> We really need to start documenting this. Please add short description
-> why this SPARE2 check is here and who uses it. Without documenting
-> this behavior future generations won't be able to debug this stuff.
-> Imagine replacing sboot with uboot by someone...
-
-I've already planned to do this for this code and for coupled cpuidle
-use of SPARE2 as well.  However I would really prefer to do it in
-an incremental patch if there are no other issues with this patchset.
+OK, please do so in incremental patch. Usage of various memory regions
+of sysram also should be documented. In patch 2 you add usage of 0x28 +
+4*cpu. The various sysrams regions are spread over different files...
 
 Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+Krzysztof
