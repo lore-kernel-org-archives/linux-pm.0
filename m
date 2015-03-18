@@ -1,101 +1,51 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH v6 0/8] Add support for Tegra Activity Monitor
-Date: Wed, 18 Mar 2015 07:27:19 +0100
-Message-ID: <CAAObsKDWuGatDaX2a8AqXDMayd0uJAUCLLdRYUmef1Oh=kvd3g@mail.gmail.com>
-References: <78905871.274971426655422042.JavaMail.weblogic@epmlwas07d>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 3/4] cpufreq: mediatek: add Mediatek cpufreq driver
+Date: Wed, 18 Mar 2015 12:29:43 +0530
+Message-ID: <CAKohpon8kXzfeKUUwrRhuei0cY9iVbMHfBjDwXW=M2SAYHdtYQ@mail.gmail.com>
+References: <1425458956-20665-1-git-send-email-pi-cheng.chen@linaro.org>
+	<1425458956-20665-4-git-send-email-pi-cheng.chen@linaro.org>
+	<CAKohpo=c2t4_2hdPP-vQM7xewK5SXaHBGNA9PhvTwDv3++pSTg@mail.gmail.com>
+	<CALx668VypyWbVuph0ir0SRt4kqASvYzwBuyc_r5tFeoHi+HieA@mail.gmail.com>
+	<CAKohpomxXTP6NdPoSmB=eq2sFqqgskS5vYtDNAT6a0VL5K6dCg@mail.gmail.com>
+	<CALx668VFRdeWcK_gKhJrJehnaH5uDpA0m2OfHLqPVUq8oocXaw@mail.gmail.com>
+	<CAKohpokT7fSniPGX2BfM61AtMoMCxEP8WDtbZ34bozUXscEWyg@mail.gmail.com>
+	<20150311105307.GW28806@sirena.org.uk>
+	<CAKohpom4riOhzc3hK8B2tiSwGx0zG96C7QNeQB0yZaPMd_OpLw@mail.gmail.com>
+	<20150311124555.GB28806@sirena.org.uk>
+	<CAKohpok=8vU6Nr21n49MHoyk=REEMkuibVk9L+0L7uLnFj==AQ@mail.gmail.com>
+	<CALx668U7EoiMB8D0Num5w9oC0zZkC55uKaSOLrrBhKnLXUtoOQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <78905871.274971426655422042.JavaMail.weblogic@epmlwas07d>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+WeqIh2JisoIxyg@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:33802 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbbCRG7o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 02:59:44 -0400
+Received: by oier21 with SMTP id r21so28901746oie.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2015 23:59:44 -0700 (PDT)
+In-Reply-To: <CALx668U7EoiMB8D0Num5w9oC0zZkC55uKaSOLrrBhKnLXUtoOQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Sascha Hauer <s.hauer@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen Fan <fan.chen@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@li
 
-On 18 March 2015 at 06:10, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
->> Hello,
->>
->> something happened during the last cycle and an old version of the devfreq
->> driver was merged.
->>
->> This thread contains patches that bring it up to date to the last submitted
->> version and also incorporates the feedback that that version received, plus
->> some other small fixes and improvements that came up during rebase and
->> testing.
->>
->> These patches implement support for setting the rate of the EMC clock based on
->> stats collected from the ACTMON, a piece of hw in the Tegra124 that counts
->> memory accesses (among others).
->>
->> It depends on the following in-flight patches:
->>
->> * EMC driver: http://thread.gmane.org/gmane.linux.kernel/1907035
->> * CPUFreq driver: http://thread.gmane.org/gmane.linux.kernel/1897078
->>
->> I have pushed a branch here for testing:
->>
->> http://cgit.collabora.com/git/user/tomeu/linux.git/log/?h=actmon-v6
->>
->> Regards,
->>
->> Tomeu
->>
->> Tomeu Vizoso (8):
->>   of: Add binding for NVIDIA Tegra ACTMON node
->>   PM / devfreq: tegra: Update to v5 of the submitted patches
->>   clk: tegra: Have EMC clock implement determine_rate()
->>   PM / devfreq: tegra: Use clock rate constraints
->>   PM / devfreq: tegra: remove operating-points
->>   PM / devfreq: tegra: Set drvdata before enabling the irq
->>   PM / devfreq: tegra: Enable interrupts after resuming the devfreq
->>     monitor
->>   ARM: tegra: Add Tegra124 ACTMON support
+On 12 March 2015 at 16:45, Pi-Cheng Chen <pi-cheng.chen@linaro.org> wrote:
+> The voltages of the two regulators need to be always under a limitation:
+> 100mV < Vsram - Vproc < 200mV
+> For now, I just calculate the OPPs of Vsram from OPPs of Vproc.
 >
-> Acked-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> for all PM / devfreq patches (2, 4, 5, 6, 7)
-> And merged in for-rc tree with a little modification.
+> Another thing I should mention, if the voltage difference of two adjacent
+> OPPs is greater than 100mV, we need to set the regulator to some
+> voltages which are not in OPP table considering the limitation above.
+> I think that will make it more difficult to model such flow in a generic
+> framework.
 
-Thanks. Though that's fine with me, I was wondering if Mikko or
-Alexandre would have any comments on the changes, even if they are
-small regarding what they already reviewed.
+Actually the problem is that OPP tables are insufficient for such cases,
+and we are adding work-arounds to fix that. Though it will get fixed
+with the new bindings we are adding.
 
-> In the patch 2/8, I would like to add "const" in Line 748.
-> Would it be fine with you?
+I am confused on what we should be doing here. Even if you write
+your own driver, you will be abusing DT with incorrect information.
 
-Yes, thanks, that's fine.
-
-Regards,
-
-Tomeu
-
-> (You may look at: https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/log/?h=for-rc )
->
->
-> The diff after applying all 2/8 to 7/8 will be:
->
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index 0d1edd5..8e633a6 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -740,7 +740,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
->         return 0;
->  }
->
-> -static struct of_device_id tegra_devfreq_of_match[] = {
-> +static const struct of_device_id tegra_devfreq_of_match[] = {
->         { .compatible = "nvidia,tegra124-actmon" },
->         { },
->  };
->
->
->>
->>  .../devicetree/bindings/arm/tegra/actmon.txt       |  28 ++
->>  arch/arm/boot/dts/tegra124.dtsi                    |  11 +
->>  drivers/clk/tegra/clk-emc.c                        |  19 +-
->>  drivers/devfreq/tegra-devfreq.c                    | 480 +++++++++++----------
->>  4 files changed, 316 insertions(+), 222 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/arm/tegra/actmon.txt
->>
->> --
->> 2.1.0
->>
+Even if you go around adding a new driver, I would like you to fallback
+to cpufreq-dt ones the new OPP bindings are in place.
