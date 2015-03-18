@@ -1,68 +1,99 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v3 1/4] ARM: EXYNOS: fix CPU1 hotplug for AFTR mode on
- Exynos3250
-Date: Wed, 18 Mar 2015 15:16:45 +0100
-Message-ID: <5511908.Xj1ZIW6HbI@amdc1032>
+Subject: Re: [PATCH v3 2/4] ARM: EXYNOS: add code for setting/clearing boot flag
+Date: Wed, 18 Mar 2015 15:23:59 +0100
+Message-ID: <3757903.ojJ3AYU7Ml@amdc1032>
 References: <1426683113-31209-1-git-send-email-b.zolnierkie@samsung.com>
- <3449559.PngGo6WKuq@amdc1032> <1426685545.23982.2.camel@AMDC1943>
+ <1426683113-31209-3-git-send-email-b.zolnierkie@samsung.com>
+ <CAJKOXPe_V8uj9opDQ_oYMZMb8aFsNc2CCC4MgV8nna9u2-rkaQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:55144 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933385AbbCROQw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 10:16:52 -0400
-In-reply-to: <1426685545.23982.2.camel@AMDC1943>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAJKOXPe_V8uj9opDQ_oYMZMb8aFsNc2CCC4MgV8nna9u2-rkaQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-arm-kernel@lists.infradead.org
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 18, 2015 02:32:25 PM Krzysztof Kozlowski wrote:
-> On =C5=9Bro, 2015-03-18 at 14:23 +0100, Bartlomiej Zolnierkiewicz wro=
-te:
-> > Hi,
-> >=20
-> > On Wednesday, March 18, 2015 02:10:31 PM Krzysztof Kozlowski wrote:
-> > > 2015-03-18 13:51 GMT+01:00 Bartlomiej Zolnierkiewicz <b.zolnierki=
-e@samsung.com>:
-> > > >
-> > > > +       while (!pmu_raw_readl(S5P_PMU_SPARE2))
-> > > > +               udelay(10);
-> > > > +       udelay(10);
-> > >=20
-> > > We really need to start documenting this. Please add short descri=
-ption
-> > > why this SPARE2 check is here and who uses it. Without documentin=
-g
-> > > this behavior future generations won't be able to debug this stuf=
-f.
-> > > Imagine replacing sboot with uboot by someone...
-> >=20
-> > I've already planned to do this for this code and for coupled cpuid=
-le
-> > use of SPARE2 as well.  However I would really prefer to do it in
-> > an incremental patch if there are no other issues with this patchse=
-t.
->=20
-> OK, please do so in incremental patch. Usage of various memory region=
-s
+On Wednesday, March 18, 2015 02:33:54 PM Krzysztof Kozlowski wrote:
+> 2015-03-18 13:51 GMT+01:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
+> > This code is needed for cpuidle (W-)AFTR mode support on Exynos3250.
+> >
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > ---
+> >  arch/arm/mach-exynos/common.h |  6 ++++++
+> >  arch/arm/mach-exynos/exynos.c | 25 +++++++++++++++++++++++++
+> >  2 files changed, 31 insertions(+)
+> >
+> > diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+> > index f70eca7..87bf1f3 100644
+> > --- a/arch/arm/mach-exynos/common.h
+> > +++ b/arch/arm/mach-exynos/common.h
+> > @@ -119,6 +119,12 @@ extern void __iomem *sysram_base_addr;
+> >  extern void __iomem *pmu_base_addr;
+> >  void exynos_sysram_init(void);
+> >
+> > +/* CPU BOOT mode flag */
+> > +#define C2_STATE       (1 << 3)
+> 
+> Is this "C2_STATE" like ACPI C2 state? It looks specific to Exynos3250
+> boot loader so maybe describe its real purpose?
 
-OK.
+According to my knowledge it is not like ACPI C2 but my knowledge is
+limited since this state is not documented anywhere.  I can add a comment
+about it being currently limited to Exynos3250 though.
 
-> of sysram also should be documented. In patch 2 you add usage of 0x28=
- +
-> 4*cpu. The various sysrams regions are spread over different files...
+> > +
+> > +void exynos_set_boot_flag(unsigned int cpu, unsigned int mode);
+> > +void exynos_clear_boot_flag(unsigned int cpu, unsigned int mode);
+> > +
+> >  enum {
+> >         FW_DO_IDLE_SLEEP,
+> >         FW_DO_IDLE_AFTR,
+> > diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> > index 4031a96..90ed2e5 100644
+> > --- a/arch/arm/mach-exynos/exynos.c
+> > +++ b/arch/arm/mach-exynos/exynos.c
+> > @@ -117,6 +117,31 @@ static void __init exynos_init_late(void)
+> >         exynos_pm_init();
+> >  }
+> >
+> > +#define REG_CPU_STATE_ADDR     (sysram_ns_base_addr + 0x28)
+> > +#define BOOT_MODE_MASK         0x1f
+> > +
+> > +void exynos_set_boot_flag(unsigned int cpu, unsigned int mode)
+> > +{
+> > +       unsigned int tmp;
+> > +
+> > +       tmp = __raw_readl(REG_CPU_STATE_ADDR + cpu * 4);
+> > +
+> > +       if (mode & BOOT_MODE_MASK)
+> > +               tmp &= ~BOOT_MODE_MASK;
+> > +
+> > +       tmp |= mode;
+> > +       __raw_writel(tmp, REG_CPU_STATE_ADDR + cpu * 4);
+> > +}
+> > +
+> > +void exynos_clear_boot_flag(unsigned int cpu, unsigned int mode)
+> > +{
+> > +       unsigned int tmp;
+> > +
+> > +       tmp = __raw_readl(REG_CPU_STATE_ADDR + cpu * 4);
+> > +       tmp &= ~mode;
+> > +       __raw_writel(tmp, REG_CPU_STATE_ADDR + cpu * 4);
+> > +}
+> > +
+> 
+> Shouldn't these to functions be put in firmware.c? The
+> exynos_set_cpu_boot_addr() is there already. It would be consistent to
+> have them in one place.
 
-I completely agree that there should be some Documentation file with
-the SYSRAM layout.  I'll do it later unless someone beats me to it (ple=
-ase
-also add this to our internal TODO list of open issues, thanks!).
+I can move it to firmware.c if this is desired.
 
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
-
