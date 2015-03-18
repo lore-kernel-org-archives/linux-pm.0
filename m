@@ -1,64 +1,64 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/7] ARM: shmobile: Add IRQC clock to device tree
-Date: Wed, 18 Mar 2015 19:55:54 +0100
-Message-ID: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:41047 "EHLO
-	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933215AbbCRS4E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 14:56:04 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 6/7] ARM: shmobile: r8a7791: Add IRQC clock to device tree
+Date: Wed, 18 Mar 2015 19:56:00 +0100
+Message-ID: <1426704961-27322-7-git-send-email-geert+renesas@glider.be>
+References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-	Hi,
+Link the external IRQ controller irqc0 to the IRQC module clock, so it
+can be power managed using that clock.
 
-This patch series adds the IRQC clock to the device tree on SoCs that
-have such a clock (r8a73a4 and r8a779x), and adds mininal runtime PM
-support to the renesas-irqc driver, to make sure the clock is enabled
-when needed by the external IRQ controller(s).
-Before, the clock was assumed enabled by the bootloader or reset state.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm/boot/dts/r8a7791.dtsi            | 9 +++++++++
+ include/dt-bindings/clock/r8a7791-clock.h | 3 +++
+ 2 files changed, 12 insertions(+)
 
-As usual when involving clocks, the DTS changes depend stricly on the
-driver changes. Else the clock will be disabled as assumed unused,
-breaking the boot.
-
-This was tested on r8a73a4/ape6evm and r8a7791/koelsch.
-
-Thanks!
-
-Geert Uytterhoeven (7):
-  irqchip: renesas-irqc: Add more register documentation
-  irqchip: renesas-irqc: Add minimal runtime PM support
-  irqchip: renesas-irqc: Add functional clock to bindings
-  ARM: shmobile: r8a7734: Add IRQC clock to device tree
-  ARM: shmobile: r8a7790: Add IRQC clock to device tree
-  ARM: shmobile: r8a7791: Add IRQC clock to device tree
-  ARM: shmobile: r8a7794: Add IRQC clock to device tree
-
- .../bindings/interrupt-controller/renesas,irqc.txt |  4 +++-
- arch/arm/boot/dts/r8a73a4.dtsi                     | 11 +++++----
- arch/arm/boot/dts/r8a7790.dtsi                     |  9 +++++++
- arch/arm/boot/dts/r8a7791.dtsi                     |  9 +++++++
- arch/arm/boot/dts/r8a7794.dtsi                     |  9 +++++++
- drivers/irqchip/irq-renesas-irqc.c                 | 28 ++++++++++++++++++----
- include/dt-bindings/clock/r8a73a4-clock.h          |  1 +
- include/dt-bindings/clock/r8a7790-clock.h          |  3 +++
- include/dt-bindings/clock/r8a7791-clock.h          |  3 +++
- include/dt-bindings/clock/r8a7794-clock.h          |  3 +++
- 10 files changed, 70 insertions(+), 10 deletions(-)
-
+diff --git a/arch/arm/boot/dts/r8a7791.dtsi b/arch/arm/boot/dts/r8a7791.dtsi
+index 4696062f6ddeaaeb..20ab7668088493b9 100644
+--- a/arch/arm/boot/dts/r8a7791.dtsi
++++ b/arch/arm/boot/dts/r8a7791.dtsi
+@@ -239,6 +239,7 @@
+ 			     <0 15 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <0 16 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <0 17 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp4_clks R8A7791_CLK_IRQC>;
+ 	};
+ 
+ 	dmac0: dma-controller@e6700000 {
+@@ -1160,6 +1161,14 @@
+ 				"mmcif0", "i2c7", "pciec", "i2c8", "ssusb", "cmt1",
+ 				"usbdmac0", "usbdmac1";
+ 		};
++		mstp4_clks: mstp4_clks@e6150140 {
++			compatible = "renesas,r8a7791-mstp-clocks", "renesas,cpg-mstp-clocks";
++			reg = <0 0xe6150140 0 4>, <0 0xe615004c 0 4>;
++			clocks = <&cp_clk>;
++			#clock-cells = <1>;
++			clock-indices = <R8A7791_CLK_IRQC>;
++			clock-output-names = "irqc";
++		};
+ 		mstp5_clks: mstp5_clks@e6150144 {
+ 			compatible = "renesas,r8a7791-mstp-clocks", "renesas,cpg-mstp-clocks";
+ 			reg = <0 0xe6150144 0 4>, <0 0xe615003c 0 4>;
+diff --git a/include/dt-bindings/clock/r8a7791-clock.h b/include/dt-bindings/clock/r8a7791-clock.h
+index 8fc5dc8faeea4051..402268384b99093c 100644
+--- a/include/dt-bindings/clock/r8a7791-clock.h
++++ b/include/dt-bindings/clock/r8a7791-clock.h
+@@ -70,6 +70,9 @@
+ #define R8A7791_CLK_USBDMAC0		30
+ #define R8A7791_CLK_USBDMAC1		31
+ 
++/* MSTP4 */
++#define R8A7791_CLK_IRQC		7
++
+ /* MSTP5 */
+ #define R8A7791_CLK_AUDIO_DMAC1		1
+ #define R8A7791_CLK_AUDIO_DMAC0		2
 -- 
 1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
