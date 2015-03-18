@@ -1,194 +1,251 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] driver core / PM: Add callbacks for PM domain initialization/cleanup
-Date: Wed, 18 Mar 2015 16:02:11 +0100
-Message-ID: <2317791.ICLpdqLgyu@vostro.rjw.lan>
+Subject: Re: [PATCH 1/9] PM / Domains: Add dev_pm_domain_get|put() APIs
+Date: Wed, 18 Mar 2015 16:09:30 +0100
+Message-ID: <17861400.Et3hRslWjQ@vostro.rjw.lan>
 References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org> <2524443.vpfcNqfmJz@vostro.rjw.lan> <CAPDyKFp_xjOOxCEu7GtWwamkWYffhN-oJ3B78-4xC5RFS-qFdQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55089 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64942 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932677AbbCROiR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 10:38:17 -0400
+	with SMTP id S964797AbbCROpg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 10:45:36 -0400
 In-Reply-To: <CAPDyKFp_xjOOxCEu7GtWwamkWYffhN-oJ3B78-4xC5RFS-qFdQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, March 18, 2015 02:41:47 PM Ulf Hansson wrote:
+> On 18 March 2015 at 02:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, March 17, 2015 03:40:47 PM Ulf Hansson wrote:
+> >> On 17 March 2015 at 15:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Tuesday, March 17, 2015 10:27:03 AM Ulf Hansson wrote:
+> >> >> On 17 March 2015 at 04:01, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> >> > On Monday, March 16, 2015 10:26:46 AM Ulf Hansson wrote:
+> >> >> >> On 14 March 2015 at 02:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> >> >> > On Friday, March 13, 2015 04:43:41 PM Ulf Hansson wrote:
+> >> >> >> >> There may be more than one device in a PM domain which then will be
+> >> >> >> >> probed at different points in time.
+> >> >> >> >>
+> >> >> >> >> Depending on timing and runtime PM support, in for the device related
+> >> >> >> >> driver/subsystem, a PM domain may be advised to power off after a
+> >> >> >> >> successful probe sequence.
+> >> >> >> >>
+> >> >> >> >> A general requirement for a device within a PM domain, is that the
+> >> >> >> >> PM domain must stay powered during the probe sequence. To cope with
+> >> >> >> >> such requirement, let's add the dev_pm_domain_get|put() APIs.
+> >> >> >> >>
+> >> >> >> >> These APIs are intended to be invoked from subsystem-level code and the
+> >> >> >> >> calls between get/put needs to be balanced.
+> >> >> >> >>
+> >> >> >> >> dev_pm_domain_get(), tells the PM domain that it needs to increase a
+> >> >> >> >> usage count and to keep supplying power. dev_pm_domain_put(), does the
+> >> >> >> >> opposite.
+> >> >> >> >>
+> >> >> >> >> For a PM domain to support this feature, it must implement the optional
+> >> >> >> >> ->get|put() callbacks.
+> >> >> >> >>
+> >> >> >> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> >> >> >> ---
+> >> >> >> >>  drivers/base/power/common.c | 40 ++++++++++++++++++++++++++++++++++++++++
+> >> >> >> >>  include/linux/pm.h          |  2 ++
+> >> >> >> >>  include/linux/pm_domain.h   |  4 ++++
+> >> >> >> >>  3 files changed, 46 insertions(+)
+> >> >> >> >>
+> >> >> >> >> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+> >> >> >> >> index f32b802..99225af 100644
+> >> >> >> >> --- a/drivers/base/power/common.c
+> >> >> >> >> +++ b/drivers/base/power/common.c
+> >> >> >> >> @@ -128,3 +128,43 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
+> >> >> >> >>               dev->pm_domain->detach(dev, power_off);
+> >> >> >> >>  }
+> >> >> >> >>  EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
+> >> >> >> >> +
+> >> >> >> >> +/**
+> >> >> >> >> + * dev_pm_domain_get - Increase usage count to keep a PM domain powered.
+> >> >> >> >> + * @domain: The PM domain to operate on.
+> >> >> >> >> + *
+> >> >> >> >> + * This function will not by itself increase the usage count, that's up to each
+> >> >> >> >> + * PM domain implementation to support. Typically it should be invoked from
+> >> >> >> >> + * subsystem level code prior drivers starts probing.
+> >> >> >> >> + *
+> >> >> >> >> + * Do note, it's optional to implement the ->get() callback for a PM domain.
+> >> >> >> >> + *
+> >> >> >> >> + * Returns 0 on successfully increased usage count or negative error code.
+> >> >> >> >> + */
+> >> >> >> >> +int dev_pm_domain_get(struct dev_pm_domain *domain)
+> >> >> >> >> +{
+> >> >> >> >> +     int ret = 0;
+> >> >> >> >> +
+> >> >> >> >> +     if (domain && domain->get)
+> >> >> >> >> +             ret = domain->get(domain);
+> >> >> >> >> +
+> >> >> >> >> +     return ret;
+> >> >> >> >> +}
+> >> >> >> >> +EXPORT_SYMBOL_GPL(dev_pm_domain_get);
+> >> >> >> >> +
+> >> >> >> >> +/**
+> >> >> >> >> + * dev_pm_domain_put - Decrease usage count to allow a PM domain to power off.
+> >> >> >> >> + * @domain: The PM domain to operate on.
+> >> >> >> >> + *
+> >> >> >> >> + * This function will not by itself decrease the usage count, that's up to each
+> >> >> >> >> + * PM domain implementation to support. Typically it should be invoked from
+> >> >> >> >> + * subsystem level code after drivers has finished probing.
+> >> >> >> >> + *
+> >> >> >> >> + * Do note, it's optional to implement the ->put() callback for a PM domain.
+> >> >> >> >> + */
+> >> >> >> >> +void dev_pm_domain_put(struct dev_pm_domain *domain)
+> >> >> >> >> +{
+> >> >> >> >> +     if (domain && domain->put)
+> >> >> >> >> +             domain->put(domain);
+> >> >> >> >> +}
+> >> >> >> >> +EXPORT_SYMBOL_GPL(dev_pm_domain_put);
+> >> >> >> >> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> >> >> >> >> index e2f1be6..e62330b 100644
+> >> >> >> >> --- a/include/linux/pm.h
+> >> >> >> >> +++ b/include/linux/pm.h
+> >> >> >> >> @@ -607,6 +607,8 @@ extern void dev_pm_put_subsys_data(struct device *dev);
+> >> >> >> >>  struct dev_pm_domain {
+> >> >> >> >>       struct dev_pm_ops       ops;
+> >> >> >> >>       void (*detach)(struct device *dev, bool power_off);
+> >> >> >> >> +     int (*get)(struct dev_pm_domain *domain);
+> >> >> >> >> +     void (*put)(struct dev_pm_domain *domain);
+> >> >> >> >
+> >> >> >> > I don't like these names.  They suggest that it's always going to be about
+> >> >> >> > reference counting which doesn't have to be the case in principle.
+> >> >> >>
+> >> >> >> I am happy to change, you don't happen to have a proposal? :-)
+> >> >> >>
+> >> >> >> For genpd we already have these related APIs:
+> >> >> >>
+> >> >> >> pm_genpd_poweron()
+> >> >> >> pm_genpd_name_poweron()
+> >> >> >> pm_genpd_poweroff_unused()
+> >> >> >>
+> >> >> >> Theoretically we should be able to replace these with
+> >> >> >> dev_pm_domain_get|put() or whatever we decide to name them to.
+> >> >> >>
+> >> >> >> >
+> >> >> >> > Also what about calling these from the driver core, ie. really_probe()?
+> >> >> >>
+> >> >> >> I like that!
+> >> >> >>
+> >> >> >> That also implies moving the calls to dev_pm_domain_attach|detach()
+> >> >> >> out of the buses and into the drivercore, since we need the PM domain
+> >> >> >> to be attached before calling dev_pm_domain_get|put(). I assume that's
+> >> >> >> what you also propose me to change, right?
+> >> >> >
+> >> >> > Not really.  I don't want to inflict the ACPI PM domain on every bus type
+> >> >> > that may not be prepared for using it or even may not want to use it (like
+> >> >> > PCI or PNP).  That applies to genpd too to some extent.
+> >> >> >
+> >> >> > So bus types need to be able to opt in for using "default" PM domains, but
+> >> >> > at the same time if they do, the core is a better place to invoke the
+> >> >> > callbacks.
+> >> >>
+> >> >> Okay!
+> >> >>
+> >> >> >
+> >> >> > The patch below shows how that can be done.  For the bus types using
+> >> >> > genpd or the ACPI PM domain today ->pm_domain_init and ->pm_domain_exit
+> >> >> > may point to the routines initializing/detaching those (which also will help
+> >> >> > to reduce code duplication somewhat) and that guarantees that the domains
+> >> >> > will be attached to devices before probing and the core can do the ->pre_probe
+> >> >> > and ->post_probe things for everybody.
+> >> >>
+> >> >> Overall, this seem like a very good idea!
+> >> >>
+> >> >> >
+> >> >> > Rafael
+> >> >> >
+> >> >> >
+> >> >> > ---
+> >> >> >  drivers/base/bus.c     |   12 +++++++++++-
+> >> >> >  drivers/base/dd.c      |    9 +++++++++
+> >> >> >  include/linux/device.h |    3 +++
+> >> >> >  include/linux/pm.h     |    2 ++
+> >> >> >  4 files changed, 25 insertions(+), 1 deletion(-)
+> >> >> >
+> >> >> > Index: linux-pm/drivers/base/bus.c
+> >> >> > ===================================================================
+> >> >> > --- linux-pm.orig/drivers/base/bus.c
+> >> >> > +++ linux-pm/drivers/base/bus.c
+> >> >> > @@ -509,10 +509,15 @@ int bus_add_device(struct device *dev)
+> >> >> >         int error = 0;
+> >> >> >
+> >> >> >         if (bus) {
+> >> >> > +               if (bus->pm_domain_init) {
+> >> >> > +                       error = bus->pm_domain_init(dev);
+> >> >> > +                       if (error)
+> >> >> > +                               goto out_put;
+> >> >> > +               }
+> >> >> >                 pr_debug("bus: '%s': add device %s\n", bus->name, dev_name(dev));
+> >> >> >                 error = device_add_attrs(bus, dev);
+> >> >> >                 if (error)
+> >> >> > -                       goto out_put;
+> >> >> > +                       goto out_pm_domain;
+> >> >> >                 error = device_add_groups(dev, bus->dev_groups);
+> >> >> >                 if (error)
+> >> >> >                         goto out_groups;
+> >> >> > @@ -534,6 +539,9 @@ out_groups:
+> >> >> >         device_remove_groups(dev, bus->dev_groups);
+> >> >> >  out_id:
+> >> >> >         device_remove_attrs(bus, dev);
+> >> >> > +out_pm_domain:
+> >> >> > +       if (bus->pm_domain_exit)
+> >> >> > +               bus->pm_domain_exit(dev);
+> >> >> >  out_put:
+> >> >> >         bus_put(dev->bus);
+> >> >> >         return error;
+> >> >>
+> >> >> To make this work for bus_add_device(), we first need to change the
+> >> >> registration procedure for genpd DT providers. Currently that's done
+> >> >> when "PM domain drivers" invokes the __of_genpd_add_provider() API,
+> >> >> from SoC specific code and from different init levels.
+> >> >>
+> >> >> We need to have the available gendp DT providers registered when the
+> >> >> ->pm_domain_init() callback is invoked.
+> >> >>
+> >> >> Besides the changes above, genpd also needs to deal with attached
+> >> >> devices, but which don't have a corresponding driver bound. I believe
+> >> >> we have some corner cases to fix around this as well.
+> >> >>
+> >> >> As an intermediate step, how about adding the similar code as above
+> >> >> but into really_probe()? For the code in bus_remove_device() below, we
+> >> >> could add that into __device_release_driver()?
+> >> >
+> >> > Well, I wouldn't really like to add new callbacks to struct bus_type for
+> >> > intermediate steps, because that's guaranteed to lead to confusion.
+> >> >
+> >> > So I think the infrastructure is better added first and users may be
+> >> > switched over to it gradually.
+> >> >
+> >> > I don't see any particular problems with moving the ACPI PM domain
+> >> > attach/detach to bus_add/remove_device(), so that can be done as the first
+> >> > step.  As for genpd, it can implement the ->post_probe thing first and do
+> >> > the rest in the bus type ->probe until the generic code is ready.
+> >>
+> >> Yes, that works.
+> >>
+> >> I will cook a new version of the patchset according to your suggestions.
+> >
+> > I'll send a cleaner version of my patch tomorrow (I actually would like to
+> > use different names for the new callbacks).
+> 
+> Okay, great!
 
-If PM domains are in use, it may be necessary to prepare the code
-handling a PM domain for driver probing.  For example, in some
-cases device drivers rely on the ability to power on the devices
-with the help of the IO runtime PM framework and the PM domain
-code needs to be ready for that.  Also, if that code has not been
-fully initialized yet, the driver probing should be deferred.
+OK, sent this one (https://patchwork.kernel.org/patch/6040241/).
 
-Moreover, after the probing is complete, it may be necessary to
-put the PM domain in question into the state reflecting the current
-needs of the devices in it, for example, to prevent power from being
-drawn in vain.
+> > Also I can do the ACPI part of the work, please let me know if you want me to.
+> 
+> Appreciate your help! I wouldn't mind giving this a quick try. If I am
+> way off, just nack the patches and then please help out implement it.
 
-For these reasons, introduce new PM domain callbacks, ->activate
-and ->sync, called, respectively, before probing for a device
-driver and after the probing has been completed.
+OK
 
-That is not sufficient, however, because the device's PM domain
-pointer has to be populated for the ->activate callback to be
-executed, so setting it in bus type ->probe callback routines
-would be too late.  Also, there are bus types where PM domains
-are not used at all and the core should not attempt to set the
-pm_domain pointer for the devices on those buses.
 
-To overcome that difficulty, introduce two new bus type
-callbacks, ->init and ->release, called by bus_add_device() and
-bus_remove_device(), respectively.  That will allow ->init to
-be used to populate the pm_domain pointer for the bus types
-that want to do that and ->release will be useful for any
-cleanup that may be necessary after removing a device that
-was part of a PM domain.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-It occured to me that we might want to ->sync regardless of whether or
-not the probing had been succenssful, so I changed the code in
-really_probe() along these lines.  Please let me know if that's
-not OK.
-
----
- drivers/base/bus.c     |   12 +++++++++++-
- drivers/base/dd.c      |   20 ++++++++++++++------
- include/linux/device.h |    5 +++++
- include/linux/pm.h     |    6 ++++++
- 4 files changed, 36 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/base/bus.c
-===================================================================
---- linux-pm.orig/drivers/base/bus.c
-+++ linux-pm/drivers/base/bus.c
-@@ -509,10 +509,15 @@ int bus_add_device(struct device *dev)
- 	int error = 0;
- 
- 	if (bus) {
-+		if (bus->init) {
-+			error = bus->init(dev);
-+			if (error)
-+				goto out_put;
-+		}
- 		pr_debug("bus: '%s': add device %s\n", bus->name, dev_name(dev));
- 		error = device_add_attrs(bus, dev);
- 		if (error)
--			goto out_put;
-+			goto out_release;
- 		error = device_add_groups(dev, bus->dev_groups);
- 		if (error)
- 			goto out_groups;
-@@ -534,6 +539,9 @@ out_groups:
- 	device_remove_groups(dev, bus->dev_groups);
- out_id:
- 	device_remove_attrs(bus, dev);
-+out_release:
-+	if (bus->release)
-+		bus->release(dev);
- out_put:
- 	bus_put(dev->bus);
- 	return error;
-@@ -597,6 +605,8 @@ void bus_remove_device(struct device *de
- 	device_remove_groups(dev, dev->bus->dev_groups);
- 	if (klist_node_attached(&dev->p->knode_bus))
- 		klist_del(&dev->p->knode_bus);
-+	if (bus->release)
-+		bus->release(dev);
- 
- 	pr_debug("bus: '%s': remove device %s\n",
- 		 dev->bus->name, dev_name(dev));
-Index: linux-pm/include/linux/device.h
-===================================================================
---- linux-pm.orig/include/linux/device.h
-+++ linux-pm/include/linux/device.h
-@@ -69,6 +69,8 @@ extern void bus_remove_file(struct bus_t
-  * @bus_groups:	Default attributes of the bus.
-  * @dev_groups:	Default attributes of the devices on the bus.
-  * @drv_groups: Default attributes of the device drivers on the bus.
-+ * @init:	Called when registering a device on this bus.
-+ * @release:	Called when unregistering a device on this bus.
-  * @match:	Called, perhaps multiple times, whenever a new device or driver
-  *		is added for this bus. It should return a nonzero value if the
-  *		given device can be handled by the given driver.
-@@ -111,6 +113,9 @@ struct bus_type {
- 	const struct attribute_group **dev_groups;
- 	const struct attribute_group **drv_groups;
- 
-+	int (*init)(struct device *dev);
-+	void (*release)(struct device *dev);
-+
- 	int (*match)(struct device *dev, struct device_driver *drv);
- 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
- 	int (*probe)(struct device *dev);
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
-  * Power domains provide callbacks that are executed during system suspend,
-  * hibernation, system resume and during runtime PM transitions along with
-  * subsystem-level and driver-level callbacks.
-+ *
-+ * @detach: Called when removing a device from the domain.
-+ * @activate: Called before executing probe routines for bus types and drivers.
-+ * @sync: Called after successful execiton of the probe routines.
-  */
- struct dev_pm_domain {
- 	struct dev_pm_ops	ops;
- 	void (*detach)(struct device *dev, bool power_off);
-+	int (*activate)(struct device *dev);
-+	void (*sync)(struct device *dev);
- };
- 
- /*
-Index: linux-pm/drivers/base/dd.c
-===================================================================
---- linux-pm.orig/drivers/base/dd.c
-+++ linux-pm/drivers/base/dd.c
-@@ -279,6 +279,7 @@ static int really_probe(struct device *d
- {
- 	int ret = 0;
- 	int local_trigger_count = atomic_read(&deferred_trigger_count);
-+	struct dev_pm_domain *pm_domain = dev->pm_domain;
- 
- 	atomic_inc(&probe_count);
- 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
-@@ -298,16 +299,23 @@ static int really_probe(struct device *d
- 		goto probe_failed;
- 	}
- 
--	if (dev->bus->probe) {
--		ret = dev->bus->probe(dev);
--		if (ret)
--			goto probe_failed;
--	} else if (drv->probe) {
--		ret = drv->probe(dev);
-+	if (pm_domain && pm_domain->activate) {
-+		ret = pm_domain->activate(dev);
- 		if (ret)
- 			goto probe_failed;
- 	}
- 
-+	if (dev->bus->probe)
-+		ret = dev->bus->probe(dev);
-+	else if (drv->probe)
-+		ret = drv->probe(dev);
-+
-+	if (pm_domain && pm_domain->sync)
-+		pm_domain->sync(dev);
-+
-+	if (ret)
-+		goto probe_failed;
-+
- 	driver_bound(dev);
- 	ret = 1;
- 	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
