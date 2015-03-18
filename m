@@ -1,116 +1,57 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 2/6] ARM: cpuidle: Add a cpuidle ops structure to be used
- for DT
-Date: Tue, 17 Mar 2015 18:14:08 -0700
-Message-ID: <5508D160.6090205@codeaurora.org>
-References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org> <1425385777-14766-3-git-send-email-daniel.lezcano@linaro.org> <55075453.2070503@codeaurora.org> <20150317112905.GA14984@red-moon>
+From: Ian Malone <ibmalone@gmail.com>
+Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
+Date: Wed, 18 Mar 2015 01:55:48 +0000
+Message-ID: <CAL3-7Mqxaeig50JLg0e28TW8eB2HvYMZgWAASayoO-6_BDoXsg@mail.gmail.com>
+References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
+	<345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+	<52D8567A.8090308@mit.edu>
+	<1389932442.5449.4.camel@marge.simpson.net>
+	<1390037633.5676.3.camel@marge.simpson.net>
+	<1390061684.5566.4.camel@marge.simpson.net>
+	<CAL3-7MoEXfW0LTdQi3pakL+OaiKcVHPzPng142KKjCX66mNXDg@mail.gmail.com>
+	<1426395191.2990.16.camel@gmail.com>
+	<CAL3-7Mo_OFdHdGDXq61eNuSqYaQiiGeBWsuGiSBsfcxSa2xExQ@mail.gmail.com>
+	<20150317082203.GC28462@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:37364 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbbCRBOL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Mar 2015 21:14:11 -0400
-In-Reply-To: <20150317112905.GA14984@red-moon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150317082203.GC28462@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Mike Galbraith <umgwanakikbuti@gmail.com>, Andy Lutomirski <luto@amacapital.net>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
 
-On 03/17/15 04:29, Lorenzo Pieralisi wrote:
-> On Mon, Mar 16, 2015 at 10:08:19PM +0000, Stephen Boyd wrote:
->> On 03/03/15 04:29, Daniel Lezcano wrote:
->>> The code is optimized to use the __init section intensively in order to reduce
->>> the memory footprint after the driver is initialized and unify the function
->>> names with ARM64.
->>>
->>> In order to prevent multiple declarations and the specific cpuidle ops to be
->>> spread across the different headers, a mechanism, similar to the cgroup subsys,
->>> has been introduced.
->>>
->>> A new platform willing to add its cpuidle ops must add an entry in the file
->>> cpuidle_ops.h in the current form:
->>>
->>>  #if IS_ENABLED(CONFIG_ARM_FOO_CPUIDLE)
->>>  CPUIDLE_OPS(foo)
->>>  #endif
->>>
->>> ... and use the variable name in the specific low level code:
->>>
->>> struct cpuidle_ops foo_cpuidle_ops;
->>>
->>> The CPUIDLE_OPS macro will be processed in different way in the cpuidle.c file,
->>> thus allowing to keep untouched the arm cpuidle core code in the future when
->>> a new platform is added.
->> [...]
->>> diff --git a/arch/arm/include/asm/cpuidle_ops.h b/arch/arm/include/asm/cpuidle_ops.h
->>> new file mode 100644
->>> index 0000000..be0a612
->>> --- /dev/null
->>> +++ b/arch/arm/include/asm/cpuidle_ops.h
->>> @@ -0,0 +1,3 @@
->>> +/*
->>> + * List of cpuidle operations
->>> + */
->>> diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
->>> index 45969f8..25e9789c 100644
->>> --- a/arch/arm/kernel/cpuidle.c
->>> +++ b/arch/arm/kernel/cpuidle.c
->>> @@ -10,8 +10,29 @@
->>>   */
->>>  
->>>  #include <linux/cpuidle.h>
->>> +#include <linux/of.h>
->>> +#include <linux/of_device.h>
->>>  #include <asm/cpuidle.h>
->>>  
->>> +#define CPUIDLE_OPS(__x) extern struct cpuidle_ops __x ## _cpuidle_ops;
->>> +#include <asm/cpuidle_ops.h>
->>> +#undef CPUIDLE_OPS
->>> +
->>> +#define CPUIDLE_OPS(__x) __x ## _cpuidle_ops_id,
->>> +enum cpuidle_ops_id {
->>> +#include <asm/cpuidle_ops.h>
->>> +        CPUIDLE_OPS_COUNT,
->>> +};
->>> +#undef CPUIDLE_OPS
->>> +
->>> +#define CPUIDLE_OPS(__x) [__x ## _cpuidle_ops_id ] = &__x ## _cpuidle_ops,
->>> +static struct cpuidle_ops *supported_cpuidle_ops[] __initconst = {
->>> +#include <asm/cpuidle_ops.h>
->>> +};
->>> +#undef CPUIDLE_OPS
->>> +
->>> +static struct cpuidle_ops cpuidle_ops[NR_CPUS];
->> Is there any reason why we aren't putting these structures into a linker
->> section like we do for the smp operations structures?
-> I think it can be done with an OF_TABLE, it is a bit of shame cpuidle_ops
-> should work on UP too otherwise they could have been merged in
-> smp_ops to create cpu_ops, like arm64 does.
+On 17 March 2015 at 08:22, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Ian Malone <ibmalone@gmail.com> wrote:
+>
 
-We should merge the two and remove the SMP dependency on arm32.
+>> Looks like Ingo Molnar has committed to tip which is probably a good
+>> sign, thanks all.
+>> (Have to hand this system on to someone who wont be patching kernels...)
+>
+> Guys, since I don't have the affected hardware, mind testing the
+> latest sched/core tree:
+>
+>   git clone git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+>   cd tip
+>   git checkout sched/core
+>   # build a test kernel and boot it
+>
+> Or if you already have a kernel git tree, do something like this to
+> pick up the scheduler development tree:
+>
+>   cd linux.git
+>   git remote add git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git tip
+>   git remote update
+>   git checkout tip/sched/core
+>   # build a test kernel and boot it
+>
+> and check whether the mwait related bugs are now fixed for good?
+>
 
->> The nice thing about using the linker is it makes it clearer at the
->> location where we define the structure that it's actually used by
->> something. Right now the structures are defined non-static in a file and
->> then we have to know that a CPUIDLE_OPS() define has been made in
->> another architecture specific asm header file so that this macro magic
->> works. The commit text says something about multiple declarations and
->> ops spread across header files, which shouldn't apply if we're using the
->> linker to find these ops and merge them into an array we can iterate over.
-> It makes sense, see above for UP vs SMP. I wonder if we can't find
-> something to overcome the UP limitation nicely, the init code in
-> arch/arm/kernel/devtree.c is identical for smp_ops and cpuidle_ops,
-> apart from the CONFIG_SMP ifdeffery.
-
-It should be possible to replace the arm32 smp_operations structure with
-something like the arm64 cpu_operations structure. Yes we would have to
-drop the SMP dependency, but that will be ok. It would require some work
-to make arm32 and arm64 the same, but for these purposes that isn't
-really required as long as we can put the cpu idle hook there.
+Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60770, thank you.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+imalone
+http://ibmalone.blogspot.co.uk
