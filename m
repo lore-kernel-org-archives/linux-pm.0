@@ -1,44 +1,236 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 3/8] ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function
-Date: Wed, 18 Mar 2015 19:46:07 +0100
-Message-ID: <1426704372-20406-4-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 1/8] ARM: cpuidle: Remove duplicate header inclusion
+Date: Wed, 18 Mar 2015 19:46:05 +0100
+Message-ID: <1426704372-20406-2-git-send-email-daniel.lezcano@linaro.org>
 References: <1426704372-20406-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:38592 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756750AbbCRSqX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 14:46:23 -0400
-Received: by wifj2 with SMTP id j2so47842411wif.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2015 11:46:22 -0700 (PDT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1426704372-20406-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org
+Cc: devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, Catalin.Marinas@arm.com, linux-kernel@vger.kernel.org, lina.iyer@linaro.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Call the common ARM/ARM64 'arm_cpuidle_suspend' instead of cpu_suspend function
-which is specific to ARM64.
+The cpu_do_idle() function is always used by the cpuidle drivers.
+
+That led to have each driver including cpuidle.h and proc-fns.h, they are
+always paired. That makes a lot of duplicate headers inclusion. Instead of
+including both in each .c file, move the proc-fns.h header inclusion in the
+cpuidle.h header file directly, so we can save some line of code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Acked-by: Kevin Hilman <khilman@linaro.org>
-Acked-by: Rob Herring <robherring2@gmail.com>
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- drivers/cpuidle/cpuidle-arm64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/include/asm/cpuidle.h        | 2 ++
+ arch/arm/kernel/cpuidle.c             | 2 +-
+ arch/arm/mach-davinci/cpuidle.c       | 1 -
+ arch/arm/mach-imx/cpuidle-imx6q.c     | 1 -
+ arch/arm/mach-imx/cpuidle-imx6sl.c    | 1 -
+ arch/arm/mach-imx/cpuidle-imx6sx.c    | 1 -
+ arch/arm/mach-omap2/cpuidle44xx.c     | 1 -
+ arch/arm/mach-s3c64xx/cpuidle.c       | 2 +-
+ arch/arm/mach-tegra/cpuidle-tegra20.c | 1 -
+ arch/arm/mach-tegra/cpuidle-tegra30.c | 1 -
+ drivers/cpuidle/cpuidle-at91.c        | 1 -
+ drivers/cpuidle/cpuidle-exynos.c      | 1 -
+ drivers/cpuidle/cpuidle-kirkwood.c    | 1 -
+ drivers/cpuidle/cpuidle-ux500.c       | 1 -
+ drivers/cpuidle/cpuidle-zynq.c        | 1 -
+ 15 files changed, 4 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 39a2c62..0cea244 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -49,7 +49,7 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
- 		 * call the CPU ops suspend protocol with idle index as a
- 		 * parameter.
- 		 */
--		ret = cpu_suspend(idx);
-+		arm_cpuidle_suspend(idx);
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index af319ac..348dc81 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -1,6 +1,8 @@
+ #ifndef __ASM_ARM_CPUIDLE_H
+ #define __ASM_ARM_CPUIDLE_H
  
- 		cpu_pm_exit();
- 	}
++#include <asm/proc-fns.h>
++
+ #ifdef CONFIG_CPU_IDLE
+ extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int index);
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 89545f6..45969f8 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -10,7 +10,7 @@
+  */
+ 
+ #include <linux/cpuidle.h>
+-#include <asm/proc-fns.h>
++#include <asm/cpuidle.h>
+ 
+ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int index)
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index e365c1b..306ebc5 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -17,7 +17,6 @@
+ #include <linux/cpuidle.h>
+ #include <linux/io.h>
+ #include <linux/export.h>
+-#include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+ 
+ #include <mach/cpuidle.h>
+diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
+index d76d086..8e21ccc 100644
+--- a/arch/arm/mach-imx/cpuidle-imx6q.c
++++ b/arch/arm/mach-imx/cpuidle-imx6q.c
+@@ -9,7 +9,6 @@
+ #include <linux/cpuidle.h>
+ #include <linux/module.h>
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ 
+ #include "common.h"
+ #include "cpuidle.h"
+diff --git a/arch/arm/mach-imx/cpuidle-imx6sl.c b/arch/arm/mach-imx/cpuidle-imx6sl.c
+index 7d92e65..5742a9f 100644
+--- a/arch/arm/mach-imx/cpuidle-imx6sl.c
++++ b/arch/arm/mach-imx/cpuidle-imx6sl.c
+@@ -9,7 +9,6 @@
+ #include <linux/cpuidle.h>
+ #include <linux/module.h>
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ 
+ #include "common.h"
+ #include "cpuidle.h"
+diff --git a/arch/arm/mach-imx/cpuidle-imx6sx.c b/arch/arm/mach-imx/cpuidle-imx6sx.c
+index 5a36722..2c9f1a8 100644
+--- a/arch/arm/mach-imx/cpuidle-imx6sx.c
++++ b/arch/arm/mach-imx/cpuidle-imx6sx.c
+@@ -10,7 +10,6 @@
+ #include <linux/cpu_pm.h>
+ #include <linux/module.h>
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ #include <asm/suspend.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2/cpuidle44xx.c
+index 01e398a..7622dbb 100644
+--- a/arch/arm/mach-omap2/cpuidle44xx.c
++++ b/arch/arm/mach-omap2/cpuidle44xx.c
+@@ -17,7 +17,6 @@
+ #include <linux/clockchips.h>
+ 
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ 
+ #include "common.h"
+ #include "pm.h"
+diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/cpuidle.c
+index 2eb0724..93aa8cb 100644
+--- a/arch/arm/mach-s3c64xx/cpuidle.c
++++ b/arch/arm/mach-s3c64xx/cpuidle.c
+@@ -16,7 +16,7 @@
+ #include <linux/export.h>
+ #include <linux/time.h>
+ 
+-#include <asm/proc-fns.h>
++#include <asm/cpuidle.h>
+ 
+ #include <mach/map.h>
+ 
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
+index 4f25a7c..e22b0d9 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra20.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
+@@ -27,7 +27,6 @@
+ #include <linux/module.h>
+ 
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ #include <asm/smp_plat.h>
+ #include <asm/suspend.h>
+ 
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
+index f8815ed..a2400ab4 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra30.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
+@@ -27,7 +27,6 @@
+ #include <linux/module.h>
+ 
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ #include <asm/smp_plat.h>
+ #include <asm/suspend.h>
+ 
+diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidle-at91.c
+index aae7bfc..f2446c7 100644
+--- a/drivers/cpuidle/cpuidle-at91.c
++++ b/drivers/cpuidle/cpuidle-at91.c
+@@ -19,7 +19,6 @@
+ #include <linux/cpuidle.h>
+ #include <linux/io.h>
+ #include <linux/export.h>
+-#include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+ 
+ #define AT91_MAX_STATES	2
+diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+index 26f5f29..0c06ea2 100644
+--- a/drivers/cpuidle/cpuidle-exynos.c
++++ b/drivers/cpuidle/cpuidle-exynos.c
+@@ -19,7 +19,6 @@
+ #include <linux/of.h>
+ #include <linux/platform_data/cpuidle-exynos.h>
+ 
+-#include <asm/proc-fns.h>
+ #include <asm/suspend.h>
+ #include <asm/cpuidle.h>
+ 
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index cea0a6c..d23d8f4 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -21,7 +21,6 @@
+ #include <linux/cpuidle.h>
+ #include <linux/io.h>
+ #include <linux/export.h>
+-#include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+ 
+ #define KIRKWOOD_MAX_STATES	2
+diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
+index 66f81e4..8bf895c 100644
+--- a/drivers/cpuidle/cpuidle-ux500.c
++++ b/drivers/cpuidle/cpuidle-ux500.c
+@@ -19,7 +19,6 @@
+ #include <linux/platform_device.h>
+ 
+ #include <asm/cpuidle.h>
+-#include <asm/proc-fns.h>
+ 
+ static atomic_t master = ATOMIC_INIT(0);
+ static DEFINE_SPINLOCK(master_lock);
+diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
+index 002b8c9..543292b 100644
+--- a/drivers/cpuidle/cpuidle-zynq.c
++++ b/drivers/cpuidle/cpuidle-zynq.c
+@@ -28,7 +28,6 @@
+ #include <linux/init.h>
+ #include <linux/cpuidle.h>
+ #include <linux/platform_device.h>
+-#include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+ 
+ #define ZYNQ_MAX_STATES		2
 -- 
 1.9.1
-
