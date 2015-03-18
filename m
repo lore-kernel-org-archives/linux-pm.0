@@ -1,74 +1,68 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v4 2/4] ARM: EXYNOS: add code for setting/clearing boot flag
-Date: Wed, 18 Mar 2015 17:00:51 +0100
-Message-ID: <1426694453-3242-3-git-send-email-b.zolnierkie@samsung.com>
-References: <1426694453-3242-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1426694453-3242-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Subject: Re: [PATCH v2 0/5] cpuidle: exynos: add coupled cpuidle support for
+ Exynos3250
+Date: Wed, 18 Mar 2015 17:05:42 +0100
+Message-ID: <2630890.UpA1dPndHV@amdc1032>
+References: <1426684197-22281-1-git-send-email-b.zolnierkie@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1426684197-22281-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This code is needed for cpuidle (W-)AFTR mode support on Exynos3250.
+On Wednesday, March 18, 2015 02:09:52 PM Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> The following patchset adds coupled cpuidle support for Exynos3250
+> to an existing cpuidle-exynos driver.  As a result it enables AFTR
+> mode to be used by default on Exynos3250 without the need to hot
+> unplug CPU1 first.
+> 
+> The patchset depends on:
+> - for-next branch (commit: 77105c882ba6) of linux-samsung.git
+>   kernel tree
+> - "[PATCH] ARM: EXYNOS: Fix failed second suspend on Exynos4"
+>   (https://lkml.org/lkml/2015/2/3/481)
+> - "[PATCH v3 0/4] ARM: EXYNOS: cpuidle: add AFTR mode support for
+>   Exynos3250"
+>   (https://lkml.org/lkml/2015/3/18/282)
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/mach-exynos/common.h   |  6 ++++++
- arch/arm/mach-exynos/firmware.c | 25 +++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+This patchset also applies fine on top of v4 of the above patchset:
+"[PATCH v4 0/4] ARM: EXYNOS: cpuidle: add AFTR mode support for Exynos3250"
+(https://lkml.org/lkml/2015/3/18/505).
 
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index f70eca7..acd5b56 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -126,6 +126,12 @@ enum {
- 
- void exynos_firmware_init(void);
- 
-+/* CPU BOOT mode flag for Exynos3250 SoC bootloader */
-+#define C2_STATE	(1 << 3)
-+
-+void exynos_set_boot_flag(unsigned int cpu, unsigned int mode);
-+void exynos_clear_boot_flag(unsigned int cpu, unsigned int mode);
-+
- extern u32 exynos_get_eint_wake_mask(void);
- 
- #ifdef CONFIG_PM_SLEEP
-diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
-index 4791a3c..27b8ae3 100644
---- a/arch/arm/mach-exynos/firmware.c
-+++ b/arch/arm/mach-exynos/firmware.c
-@@ -206,3 +206,28 @@ void __init exynos_firmware_init(void)
- 		outer_cache.configure = exynos_l2_configure;
- 	}
- }
-+
-+#define REG_CPU_STATE_ADDR	(sysram_ns_base_addr + 0x28)
-+#define BOOT_MODE_MASK		0x1f
-+
-+void exynos_set_boot_flag(unsigned int cpu, unsigned int mode)
-+{
-+	unsigned int tmp;
-+
-+	tmp = __raw_readl(REG_CPU_STATE_ADDR + cpu * 4);
-+
-+	if (mode & BOOT_MODE_MASK)
-+		tmp &= ~BOOT_MODE_MASK;
-+
-+	tmp |= mode;
-+	__raw_writel(tmp, REG_CPU_STATE_ADDR + cpu * 4);
-+}
-+
-+void exynos_clear_boot_flag(unsigned int cpu, unsigned int mode)
-+{
-+	unsigned int tmp;
-+
-+	tmp = __raw_readl(REG_CPU_STATE_ADDR + cpu * 4);
-+	tmp &= ~mode;
-+	__raw_writel(tmp, REG_CPU_STATE_ADDR + cpu * 4);
-+}
--- 
-1.8.2.3
+> Changes since v1:
+> - rebased on top of for-next branch (commit: 77105c882ba6) of
+>   linux-samsung.git kernel tree
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (5):
+>   ARM: EXYNOS: fix exynos_boot_secondary() return value on timeout
+>   ARM: EXYNOS: make exynos_core_restart() less verbose
+>   ARM: EXYNOS: add exynos_set_boot_addr() helper
+>   ARM: EXYNOS: add exynos_get_boot_addr() helper
+>   cpuidle: exynos: add coupled cpuidle support for Exynos3250
+> 
+>  arch/arm/include/asm/firmware.h |  4 ++
+>  arch/arm/mach-exynos/common.h   |  4 +-
+>  arch/arm/mach-exynos/exynos.c   |  3 +-
+>  arch/arm/mach-exynos/firmware.c | 18 +++++++++
+>  arch/arm/mach-exynos/platsmp.c  | 86 ++++++++++++++++++++++++++++-------------
+>  arch/arm/mach-exynos/pm.c       | 51 ++++++++++++++++++++----
+>  6 files changed, 129 insertions(+), 37 deletions(-)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
