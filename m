@@ -1,56 +1,58 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH 3/7] irqchip: renesas-irqc: Add functional clock to bindings
-Date: Wed, 18 Mar 2015 19:55:57 +0100
-Message-ID: <1426704961-27322-4-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 1/7] irqchip: renesas-irqc: Add more register documentation
+Date: Wed, 18 Mar 2015 19:55:55 +0100
+Message-ID: <1426704961-27322-2-git-send-email-geert+renesas@glider.be>
 References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:35559 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933161AbbCRS4E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 14:56:04 -0400
+In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-The external IRQ controller has a functional clock, which is used for
-power management. Document it.
-
-Fix a typo in the r8a73a4 SoC name while we're at it.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- .../devicetree/bindings/interrupt-controller/renesas,irqc.txt         | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/irqchip/irq-renesas-irqc.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
-index 1a88e62228e59631..4f85aeb658e4c833 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
-+++ b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
-@@ -4,7 +4,7 @@ Required properties:
+diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
+index 2ea3412fdf8cc668..2ce2edf8ec8ec182 100644
+--- a/drivers/irqchip/irq-renesas-irqc.c
++++ b/drivers/irqchip/irq-renesas-irqc.c
+@@ -30,14 +30,24 @@
+ #include <linux/module.h>
+ #include <linux/platform_data/irq-renesas-irqc.h>
  
- - compatible: has to be "renesas,irqc-<soctype>", "renesas,irqc" as fallback.
-   Examples with soctypes are:
--    - "renesas,irqc-r8a73a4" (R-Mobile AP6)
-+    - "renesas,irqc-r8a73a4" (R-Mobile APE6)
-     - "renesas,irqc-r8a7790" (R-Car H2)
-     - "renesas,irqc-r8a7791" (R-Car M2-W)
-     - "renesas,irqc-r8a7792" (R-Car V2H)
-@@ -12,6 +12,7 @@ Required properties:
-     - "renesas,irqc-r8a7794" (R-Car E2)
- - #interrupt-cells: has to be <2>: an interrupt index and flags, as defined in
-   interrupts.txt in this directory
-+- clocks: Must contain a reference to the functional clock.
+-#define IRQC_IRQ_MAX 32 /* maximum 32 interrupts per driver instance */
++#define IRQC_IRQ_MAX	32	/* maximum 32 interrupts per driver instance */
  
- Optional properties:
+-#define IRQC_REQ_STS 0x00
+-#define IRQC_EN_STS 0x04
+-#define IRQC_EN_SET 0x08
++#define IRQC_REQ_STS	0x00	/* Interrupt Request Status Register */
++#define IRQC_EN_STS	0x04	/* Interrupt Enable Status Register */
++#define IRQC_EN_SET	0x08	/* Interrupt Enable Set Register */
+ #define IRQC_INT_CPU_BASE(n) (0x000 + ((n) * 0x10))
+-#define DETECT_STATUS 0x100
++				/* SYS-CPU vs. RT-CPU */
++#define DETECT_STATUS	0x100	/* IRQn Detect Status Register */
++#define MONITOR		0x104	/* IRQn Signal Level Monitor Register */
++#define HLVL_STS	0x108	/* IRQn High Level Detect Status Register */
++#define LLVL_STS	0x10c	/* IRQn Low Level Detect Status Register */
++#define S_R_EDGE_STS	0x110	/* IRQn Sync Rising Edge Detect Status Reg. */
++#define S_F_EDGE_STS	0x114	/* IRQn Sync Falling Edge Detect Status Reg. */
++#define A_R_EDGE_STS	0x118	/* IRQn Async Rising Edge Detect Status Reg. */
++#define A_F_EDGE_STS	0x11c	/* IRQn Async Falling Edge Detect Status Reg. */
++#define CHTEN_STS	0x120	/* Chattering Reduction Status Register */
+ #define IRQC_CONFIG(n) (0x180 + ((n) * 0x04))
++				/* IRQn Configuration Register */
  
-@@ -29,4 +30,5 @@ Example:
- 			     <0 1 IRQ_TYPE_LEVEL_HIGH>,
- 			     <0 2 IRQ_TYPE_LEVEL_HIGH>,
- 			     <0 3 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp4_clks R8A7790_CLK_IRQC>;
- 	};
+ struct irqc_irq {
+ 	int hw_irq;
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
