@@ -1,64 +1,34 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v6 5/8] PM / devfreq: tegra: remove operating-points
-Date: Wed, 18 Mar 2015 05:24:00 +0000 (GMT)
-Message-ID: <192647817.276191426656237193.JavaMail.weblogic@epmlwas07d>
-Reply-To: myungjoo.ham@samsung.com
+From: Andy Gross <agross@codeaurora.org>
+Subject: Re: [PATCH v16 00/11] ARM: qcom: cpuidle support for 8064, 8074, 8084
+Date: Wed, 18 Mar 2015 01:05:10 -0500
+Message-ID: <20150318060510.GA15705@qualcomm.com>
+References: <1426631631-56937-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:49954 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbbCRFYF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 01:24:05 -0400
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NLE007ZL702LG40@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 18 Mar 2015 14:24:02 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1426631631-56937-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-PiBBcyB0aGUgRFQgYmluZGluZ3MgZG9uJ3QgaGF2ZSBhbiBvcGVyYXRpbmctcG9pbnRzIHByb3Bl
-cnR5IGFueSBtb3JlLA0KPiBidWlsZCB0aGUgT1BQIHRhYmxlIGZyb20gdGhlIGZyZXF1ZW5jaWVz
-IHN1cHBvcnRlZCBieSB0aGUgRU1DIGNsb2NrLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogVG9tZXUg
-Vml6b3NvIDx0b21ldS52aXpvc29AY29sbGFib3JhLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2Rl
-dmZyZXEvdGVncmEtZGV2ZnJlcS5jIHwgMTIgKysrKysrLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdl
-ZCwgNiBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2
-ZnJlcS5jDQo+IGluZGV4IDVhNjE2NGMuLjFkZTNmOGIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
-ZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMNCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRl
-dmZyZXEuYw0KPiBAQCAtNjE4LDYgKzYxOCw3IEBAIHN0YXRpYyBpbnQgdGVncmFfZGV2ZnJlcV9w
-cm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgCXN0cnVjdCB0ZWdyYV9kZXZm
-cmVxX2RldmljZSAqZGV2Ow0KPiAgCXN0cnVjdCByZXNvdXJjZSAqcmVzOw0KPiAgCXVuc2lnbmVk
-IGludCBpOw0KPiArCXVuc2lnbmVkIGxvbmcgcmF0ZTsNCj4gIAlpbnQgaXJxOw0KPiAgCWludCBl
-cnI7DQo+ICANCj4gQEAgLTY0OSwxMiArNjUwLDYgQEAgc3RhdGljIGludCB0ZWdyYV9kZXZmcmVx
-X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJCXJldHVybiBQVFJfRVJS
-KHRlZ3JhLT5lbWNfY2xvY2spOw0KPiAgCX0NCj4gIA0KPiAtCWVyciA9IG9mX2luaXRfb3BwX3Rh
-YmxlKCZwZGV2LT5kZXYpOw0KPiAtCWlmIChlcnIpIHsNCj4gLQkJZGV2X2VycigmcGRldi0+ZGV2
-LCAiRmFpbGVkIHRvIGluaXQgb3BlcmF0aW5nIHBvaW50IHRhYmxlXG4iKTsNCj4gLQkJcmV0dXJu
-IGVycjsNCj4gLQl9DQo+IC0NCj4gIAljbGtfc2V0X3JhdGUodGVncmEtPmVtY19jbG9jaywgVUxP
-TkdfTUFYKTsNCj4gIA0KPiAgCXRlZ3JhLT5yYXRlX2NoYW5nZV9uYi5ub3RpZmllcl9jYWxsID0g
-dGVncmFfYWN0bW9uX3JhdGVfbm90aWZ5X2NiOw0KPiBAQCAtNjkxLDYgKzY4NiwxMSBAQCBzdGF0
-aWMgaW50IHRlZ3JhX2RldmZyZXFfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikN
-Cj4gIAkJdGVncmFfYWN0bW9uX2NvbmZpZ3VyZV9kZXZpY2UodGVncmEsIGRldik7DQo+ICAJfQ0K
-PiAgDQo+ICsJZm9yIChyYXRlID0gMDsgcmF0ZSA8PSB0ZWdyYS0+bWF4X2ZyZXEgKiBLSFo7IHJh
-dGUrKykgew0KPiArCQlyYXRlID0gY2xrX3JvdW5kX3JhdGUodGVncmEtPmVtY19jbG9jaywgcmF0
-ZSk7DQo+ICsJCWRldl9wbV9vcHBfYWRkKCZwZGV2LT5kZXYsIHJhdGUsIDApOw0KPiArCX0NCj4g
-Kw0KDQpBbHRob3VnaCBJIGFtIG5vdCBnb2luZyB0byBOQUNLIGZvciB0aGUgc2luZ2xlLXRpbWUg
-cGVyZm9ybWFuY2Ugb2YgYQ0Kc2luZ2xlIGRldmljZSBkcml2ZXIgZm9yIGEgZGV2aWNlIHRoYXQg
-SSBkbyBub3QgaGF2ZSBvciBmdWxseSB1bmRlcnN0YW5kLA0KcGxlYXNlIG5vdGUgdGhhdCB5b3Ug
-bWF5IGJlIHdhc3Rpbmcgc2V2ZXJhbCBiaWxsaW9uIGN5Y2xlcyB1bmxlc3MNCnlvdXIgcHJvZHVj
-dCBpcyBydW5uaW5nIGF0IE1IWi9rSFogbGV2ZWwuDQoNCldoYXQgaXMgZ29pbmcgb24gd2l0aCB0
-aGlzIGxvb3A/IERvIHlvdSByZWFsbHkgaGF2ZSBzdWNoIGEgdmlydHVhbGx5LWNvbnRpbnVvdXMN
-CmZyZXF1ZW5jeSBzY2FsaW5nIGluIHlvdXIgcHJvZHVjdD8gKFdvdy4uLi4gYnV0IGluIHN1Y2gg
-YSBjYXNlLCBJIGRvbid0IHRoaW5rDQpPUFAgaXMgYXBwcm9wcmlhdGUuKQ0KDQoNCkNoZWVycywN
-Ck15dW5nSm9vDQoNCg0KPiAgCWlycSA9IHBsYXRmb3JtX2dldF9pcnEocGRldiwgMCk7DQo+ICAJ
-aWYgKGlycSA8PSAwKSB7DQo+ICAJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byBnZXQg
-SVJRXG4iKTsNCj4gLS0gDQo+IDIuMS4wDQo+IA0K
+On Tue, Mar 17, 2015 at 04:33:40PM -0600, Lina Iyer wrote:
 
+<snip>
 
+> 
+> Tested on: 8074, 8084.
+> 
+
+These worked fine for me on IPQ8064 (ap148), however I did have to add my own DT
+entries for the idle states and saw changes.
+
+Also tested on APQ8064 (ifc6410).
+
+Tested-by: Andy Gross <agross@codeaurora.org>
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
