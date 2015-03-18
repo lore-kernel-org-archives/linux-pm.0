@@ -1,41 +1,63 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH] PM / devfreq: correct misleading comment
-Date: Wed, 18 Mar 2015 04:39:41 +0000 (GMT)
-Message-ID: <1574894840.271961426653581871.JavaMail.weblogic@epmlwas07d>
-Reply-To: myungjoo.ham@samsung.com
+From: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v6 0/8] Add support for Tegra Activity Monitor
+Date: Wed, 18 Mar 2015 05:10:22 +0000 (GMT)
+Message-ID: <78905871.274971426655422042.JavaMail.weblogic@epmlwas07d>
+Reply-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:44017 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbbCREjn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 00:39:43 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NLE00F2Q4Y6BW40@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 18 Mar 2015 13:39:42 +0900 (KST)
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: dramasub@codeaurora.org, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=ED=95=A8=EB=AA=85=EC=A3=BC?= <myungjoo.ham@samsung.com>
 
-DQpfcmVtb3ZlX2RldmZyZXEoKSBkb2VzIG5vdCBoYXZlIEBza2lwIGFueW1vcmUgYWZ0ZXIgMy4x
-Ni4NClRoZSBjb21tZW50IGZvciBfcmVtb3ZlX2RldmZyZXEoKSBoYXMgYmVlbiB1cGRhdGVkIGNv
-cnJlc3BvbmRpbmdseS4NCg0KU2lnbmVkLW9mZi1ieTogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
-YW1Ac2Ftc3VuZy5jb20+DQotLS0NCiBkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jIHwgMSAtDQog
-MSBmaWxlIGNoYW5nZWQsIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
-ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQppbmRleCAzMGI1Mzhk
-OC4uY2ExYjM2MiAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCisrKyBi
-L2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCkBAIC0zOTIsNyArMzkyLDYgQEAgc3RhdGljIGlu
-dCBkZXZmcmVxX25vdGlmaWVyX2NhbGwoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwgdW5zaWdu
-ZWQgbG9uZyB0eXBlLA0KIC8qKg0KICAqIF9yZW1vdmVfZGV2ZnJlcSgpIC0gUmVtb3ZlIGRldmZy
-ZXEgZnJvbSB0aGUgbGlzdCBhbmQgcmVsZWFzZSBpdHMgcmVzb3VyY2VzLg0KICAqIEBkZXZmcmVx
-Ogl0aGUgZGV2ZnJlcSBzdHJ1Y3QNCi0gKiBAc2tpcDoJc2tpcCBjYWxsaW5nIGRldmljZV91bnJl
-Z2lzdGVyKCkuDQogICovDQogc3RhdGljIHZvaWQgX3JlbW92ZV9kZXZmcmVxKHN0cnVjdCBkZXZm
-cmVxICpkZXZmcmVxKQ0KIHsNCi0tIA0KMS45LjENCg0K
-
-
+PiBIZWxsbywNCj4gDQo+IHNvbWV0aGluZyBoYXBwZW5lZCBkdXJpbmcgdGhlIGxhc3QgY3ljbGUg
+YW5kIGFuIG9sZCB2ZXJzaW9uIG9mIHRoZSBkZXZmcmVxDQo+IGRyaXZlciB3YXMgbWVyZ2VkLg0K
+PiANCj4gVGhpcyB0aHJlYWQgY29udGFpbnMgcGF0Y2hlcyB0aGF0IGJyaW5nIGl0IHVwIHRvIGRh
+dGUgdG8gdGhlIGxhc3Qgc3VibWl0dGVkDQo+IHZlcnNpb24gYW5kIGFsc28gaW5jb3Jwb3JhdGVz
+IHRoZSBmZWVkYmFjayB0aGF0IHRoYXQgdmVyc2lvbiByZWNlaXZlZCwgcGx1cw0KPiBzb21lIG90
+aGVyIHNtYWxsIGZpeGVzIGFuZCBpbXByb3ZlbWVudHMgdGhhdCBjYW1lIHVwIGR1cmluZyByZWJh
+c2UgYW5kDQo+IHRlc3RpbmcuDQo+IA0KPiBUaGVzZSBwYXRjaGVzIGltcGxlbWVudCBzdXBwb3J0
+IGZvciBzZXR0aW5nIHRoZSByYXRlIG9mIHRoZSBFTUMgY2xvY2sgYmFzZWQgb24NCj4gc3RhdHMg
+Y29sbGVjdGVkIGZyb20gdGhlIEFDVE1PTiwgYSBwaWVjZSBvZiBodyBpbiB0aGUgVGVncmExMjQg
+dGhhdCBjb3VudHMNCj4gbWVtb3J5IGFjY2Vzc2VzIChhbW9uZyBvdGhlcnMpLg0KPiANCj4gSXQg
+ZGVwZW5kcyBvbiB0aGUgZm9sbG93aW5nIGluLWZsaWdodCBwYXRjaGVzOg0KPiANCj4gKiBFTUMg
+ZHJpdmVyOiBodHRwOi8vdGhyZWFkLmdtYW5lLm9yZy9nbWFuZS5saW51eC5rZXJuZWwvMTkwNzAz
+NQ0KPiAqIENQVUZyZXEgZHJpdmVyOiBodHRwOi8vdGhyZWFkLmdtYW5lLm9yZy9nbWFuZS5saW51
+eC5rZXJuZWwvMTg5NzA3OA0KPiANCj4gSSBoYXZlIHB1c2hlZCBhIGJyYW5jaCBoZXJlIGZvciB0
+ZXN0aW5nOg0KPiANCj4gaHR0cDovL2NnaXQuY29sbGFib3JhLmNvbS9naXQvdXNlci90b21ldS9s
+aW51eC5naXQvbG9nLz9oPWFjdG1vbi12Ng0KPiANCj4gUmVnYXJkcywNCj4gDQo+IFRvbWV1DQo+
+IA0KPiBUb21ldSBWaXpvc28gKDgpOg0KPiAgIG9mOiBBZGQgYmluZGluZyBmb3IgTlZJRElBIFRl
+Z3JhIEFDVE1PTiBub2RlDQo+ICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogVXBkYXRlIHRvIHY1IG9m
+IHRoZSBzdWJtaXR0ZWQgcGF0Y2hlcw0KPiAgIGNsazogdGVncmE6IEhhdmUgRU1DIGNsb2NrIGlt
+cGxlbWVudCBkZXRlcm1pbmVfcmF0ZSgpDQo+ICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogVXNlIGNs
+b2NrIHJhdGUgY29uc3RyYWludHMNCj4gICBQTSAvIGRldmZyZXE6IHRlZ3JhOiByZW1vdmUgb3Bl
+cmF0aW5nLXBvaW50cw0KPiAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IFNldCBkcnZkYXRhIGJlZm9y
+ZSBlbmFibGluZyB0aGUgaXJxDQo+ICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogRW5hYmxlIGludGVy
+cnVwdHMgYWZ0ZXIgcmVzdW1pbmcgdGhlIGRldmZyZXENCj4gICAgIG1vbml0b3INCj4gICBBUk06
+IHRlZ3JhOiBBZGQgVGVncmExMjQgQUNUTU9OIHN1cHBvcnQNCg0KQWNrZWQtYnk6IE15dW5nSm9v
+IEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KZm9yIGFsbCBQTSAvIGRldmZyZXEgcGF0
+Y2hlcyAoMiwgNCwgNSwgNiwgNykNCkFuZCBtZXJnZWQgaW4gZm9yLXJjIHRyZWUgd2l0aCBhIGxp
+dHRsZSBtb2RpZmljYXRpb24uDQoNCkluIHRoZSBwYXRjaCAyLzgsIEkgd291bGQgbGlrZSB0byBh
+ZGQgImNvbnN0IiBpbiBMaW5lIDc0OC4NCldvdWxkIGl0IGJlIGZpbmUgd2l0aCB5b3U/DQooWW91
+IG1heSBsb29rIGF0OiBodHRwczovL2dpdC5rZXJuZWwub3JnL2NnaXQvbGludXgva2VybmVsL2dp
+dC9tengvZGV2ZnJlcS5naXQvbG9nLz9oPWZvci1yYyApDQoNCg0KVGhlIGRpZmYgYWZ0ZXIgYXBw
+bHlpbmcgYWxsIDIvOCB0byA3Lzggd2lsbCBiZToNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
+ZnJlcS90ZWdyYS1kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jDQpp
+bmRleCAwZDFlZGQ1Li44ZTYzM2E2IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9kZXZmcmVxL3RlZ3Jh
+LWRldmZyZXEuYw0KKysrIGIvZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYw0KQEAgLTc0
+MCw3ICs3NDAsNyBAQCBzdGF0aWMgaW50IHRlZ3JhX2RldmZyZXFfcmVtb3ZlKHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYpDQogICAgICAgIHJldHVybiAwOw0KIH0NCiANCi1zdGF0aWMgc3Ry
+dWN0IG9mX2RldmljZV9pZCB0ZWdyYV9kZXZmcmVxX29mX21hdGNoW10gPSB7DQorc3RhdGljIGNv
+bnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgdGVncmFfZGV2ZnJlcV9vZl9tYXRjaFtdID0gew0KICAg
+ICAgICB7IC5jb21wYXRpYmxlID0gIm52aWRpYSx0ZWdyYTEyNC1hY3Rtb24iIH0sDQogICAgICAg
+IHsgfSwNCiB9Ow0KDQoNCj4gDQo+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vdGVncmEv
+YWN0bW9uLnR4dCAgICAgICB8ICAyOCArKw0KPiAgYXJjaC9hcm0vYm9vdC9kdHMvdGVncmExMjQu
+ZHRzaSAgICAgICAgICAgICAgICAgICAgfCAgMTEgKw0KPiAgZHJpdmVycy9jbGsvdGVncmEvY2xr
+LWVtYy5jICAgICAgICAgICAgICAgICAgICAgICAgfCAgMTkgKy0NCj4gIGRyaXZlcnMvZGV2ZnJl
+cS90ZWdyYS1kZXZmcmVxLmMgICAgICAgICAgICAgICAgICAgIHwgNDgwICsrKysrKysrKysrLS0t
+LS0tLS0tLQ0KPiAgNCBmaWxlcyBjaGFuZ2VkLCAzMTYgaW5zZXJ0aW9ucygrKSwgMjIyIGRlbGV0
+aW9ucygtKQ0KPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9hcm0vdGVncmEvYWN0bW9uLnR4dA0KPiANCj4gLS0gDQo+IDIuMS4wDQo+IA0K
