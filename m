@@ -1,57 +1,50 @@
-From: Ian Malone <ibmalone@gmail.com>
-Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
-Date: Wed, 18 Mar 2015 01:55:48 +0000
-Message-ID: <CAL3-7Mqxaeig50JLg0e28TW8eB2HvYMZgWAASayoO-6_BDoXsg@mail.gmail.com>
-References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
-	<345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
-	<52D8567A.8090308@mit.edu>
-	<1389932442.5449.4.camel@marge.simpson.net>
-	<1390037633.5676.3.camel@marge.simpson.net>
-	<1390061684.5566.4.camel@marge.simpson.net>
-	<CAL3-7MoEXfW0LTdQi3pakL+OaiKcVHPzPng142KKjCX66mNXDg@mail.gmail.com>
-	<1426395191.2990.16.camel@gmail.com>
-	<CAL3-7Mo_OFdHdGDXq61eNuSqYaQiiGeBWsuGiSBsfcxSa2xExQ@mail.gmail.com>
-	<20150317082203.GC28462@gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Fix faulty error message
+Date: Wed, 18 Mar 2015 04:12:34 +0000 (GMT)
+Message-ID: <1926965615.269101426651953270.JavaMail.weblogic@epmlwas07d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150317082203.GC28462@gmail.com>
+MIME-version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Mike Galbraith <umgwanakikbuti@gmail.com>, Andy Lutomirski <luto@amacapital.net>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+To: Deva Ramasubramanian <dramasub@codeaurora.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17 March 2015 at 08:22, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Ian Malone <ibmalone@gmail.com> wrote:
->
-
->> Looks like Ingo Molnar has committed to tip which is probably a good
->> sign, thanks all.
->> (Have to hand this system on to someone who wont be patching kernels...)
->
-> Guys, since I don't have the affected hardware, mind testing the
-> latest sched/core tree:
->
->   git clone git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
->   cd tip
->   git checkout sched/core
->   # build a test kernel and boot it
->
-> Or if you already have a kernel git tree, do something like this to
-> pick up the scheduler development tree:
->
->   cd linux.git
->   git remote add git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git tip
->   git remote update
->   git checkout tip/sched/core
->   # build a test kernel and boot it
->
-> and check whether the mwait related bugs are now fixed for good?
->
-
-Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60770, thank you.
-
--- 
-imalone
-http://ibmalone.blogspot.co.uk
+PiBUaGUgbWlzbGVhZGluZyBsb2cgInJlbGVhc2luZyBkZXZmcmVxIHdoaWNoIGRvZXNuJ3QgZXhp
+c3QiIHByaW50cyBvdXQNCj4gZm9yIHdlbGwgYmVoYXZlZCBjbGllbnRzLiAgVGhpcyBpcyBkdWUg
+dG8gdGhlIGZhY3QgdGhhdCBfcmVtb3ZlX2RldmZyZXENCj4gY2FsbHMgaXRzZWxmIHJlY3Vyc2l2
+ZWx5IGJ5IHByb3h5ICh2aWEgcHV0X2RldmljZSgpKS4gIFRoZSBzZWNvbmQgdGltZQ0KPiBfZGV2
+ZnJlcV9yZW1vdmUgaXMgY2FsbGVkIHRoZSByZXNwZWN0aXZlIGRldmljZSBoYXMgYWxyZWFkeSBi
+ZWVuDQo+IGRlbGV0ZWQsIGNhdXNpbmcgdGhlIG1pc2xlYWRpbmcgd2FybmluZy4NCj4gDQo+IFNv
+IGp1c3Qgc2tpcCBwcmludGluZyB0aGUgbWVzc2FnZSBpZiBfZGV2ZnJlcV9yZW1vdmUgd2FzIGNh
+bGxlZCB2aWENCj4gcHV0X2RldmljZSgpLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogRGV2YSBSYW1h
+c3VicmFtYW5pYW4gPGRyYW1hc3ViQGNvZGVhdXJvcmEub3JnPg0KPiAtLS0NCj4gIGRyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLmMgfCAzICsrLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9k
+ZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IGluZGV4IDMwYjUzOGQ4Li5i
+ZWU1OWRiIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+ICsrKyBi
+L2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCj4gQEAgLTM5OSw3ICszOTksOCBAQCBzdGF0aWMg
+dm9pZCBfcmVtb3ZlX2RldmZyZXEoc3RydWN0IGRldmZyZXEgKmRldmZyZXEpDQo+ICAJbXV0ZXhf
+bG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOw0KPiAgCWlmIChJU19FUlIoZmluZF9kZXZpY2VfZGV2
+ZnJlcShkZXZmcmVxLT5kZXYucGFyZW50KSkpIHsNCj4gIAkJbXV0ZXhfdW5sb2NrKCZkZXZmcmVx
+X2xpc3RfbG9jayk7DQo+IC0JCWRldl93YXJuKCZkZXZmcmVxLT5kZXYsICJyZWxlYXNpbmcgZGV2
+ZnJlcSB3aGljaCBkb2Vzbid0IGV4aXN0XG4iKTsNCj4gKwkJaWYgKCFza2lwKQ0KPiArCQkJZGV2
+X3dhcm4oJmRldmZyZXEtPmRldiwgInJlbGVhc2luZyBkZXZmcmVxIHdoaWNoIGRvZXNuJ3QgZXhp
+c3RcbiIpOw0KDQpUaGVyZSBpcyBubyB2YXJpYWJsZSAnc2tpcCcgaW4gdGhlIGZ1bmN0aW9uLiAo
+eW91IGdldCBidWlsZCBlcnJvci4pDQpBbmQgd2l0aCBwYXRjaCA1ODVmYzgzZWNlNDNiZTYzLCB3
+ZSBkbyBub3QgY2FsbCB0aGUgZnVuY3Rpb24gcmVjdXJzaXZlbHksIGVpdGhlci4NCg0KLS0tDQpk
+cml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jOiBJbiBmdW5jdGlvbiDigJhfcmVtb3ZlX2RldmZyZXHi
+gJk6DQpkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jOjQwMjo4OiBlcnJvcjog4oCYc2tpcOKAmSB1
+bmRlY2xhcmVkIChmaXJzdCB1c2UgaW4gdGhpcyBmdW5jdGlvbikNCmRyaXZlcnMvZGV2ZnJlcS9k
+ZXZmcmVxLmM6NDAyOjg6IG5vdGU6IGVhY2ggdW5kZWNsYXJlZCBpZGVudGlmaWVyIGlzIHJlcG9y
+dGVkIG9ubHkgb25jZSBmb3IgZWFjaCBmdW5jdGlvbiBpdCBhcHBlYXJzIGluDQptYWtlWzJdOiAq
+KiogW2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLm9dIEVycm9yIDENCm1ha2VbMV06ICoqKiBbZHJp
+dmVycy9kZXZmcmVxXSBFcnJvciAyDQptYWtlWzFdOiAqKiogV2FpdGluZyBmb3IgdW5maW5pc2hl
+ZCBqb2JzLi4uLg0KLS0tDQoNCkknbGwgdXBkYXRlIHRoZSBmdW5jdGlvbiBkZXNjcmlwdGlvbi4N
+Cg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KPiAgCQlyZXR1cm47DQo+ICAJfQ0KPiAgCWxpc3Rf
+ZGVsKCZkZXZmcmVxLT5ub2RlKTsNCj4gLS0gDQo+IFRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENl
+bnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiB0aGUgQ29kZSBBdXJvcmEgRm9ydW0sDQo+IGEgTGlu
+dXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFByb2plY3QNCg==
