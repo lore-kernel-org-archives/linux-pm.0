@@ -1,69 +1,56 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 5/7] ARM: shmobile: r8a7790: Add IRQC clock to device tree
-Date: Wed, 18 Mar 2015 19:55:59 +0100
-Message-ID: <1426704961-27322-6-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH 3/7] irqchip: renesas-irqc: Add functional clock to bindings
+Date: Wed, 18 Mar 2015 19:55:57 +0100
+Message-ID: <1426704961-27322-4-git-send-email-geert+renesas@glider.be>
 References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from xavier.telenet-ops.be ([195.130.132.52]:58542 "EHLO
-	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933036AbbCRS4E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 14:56:04 -0400
-In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Link the external IRQ controller irqc0 to the IRQC module clock, so it
-can be power managed using that clock.
+The external IRQ controller has a functional clock, which is used for
+power management. Document it.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Fix a typo in the r8a73a4 SoC name while we're at it.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
- arch/arm/boot/dts/r8a7790.dtsi            | 9 +++++++++
- include/dt-bindings/clock/r8a7790-clock.h | 3 +++
- 2 files changed, 12 insertions(+)
+ .../devicetree/bindings/interrupt-controller/renesas,irqc.txt         | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
-index 4bb2f4c17321bd55..a81cfda0872fc30a 100644
---- a/arch/arm/boot/dts/r8a7790.dtsi
-+++ b/arch/arm/boot/dts/r8a7790.dtsi
-@@ -252,6 +252,7 @@
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
+index 1a88e62228e59631..4f85aeb658e4c833 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
++++ b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
+@@ -4,7 +4,7 @@ Required properties:
+ 
+ - compatible: has to be "renesas,irqc-<soctype>", "renesas,irqc" as fallback.
+   Examples with soctypes are:
+-    - "renesas,irqc-r8a73a4" (R-Mobile AP6)
++    - "renesas,irqc-r8a73a4" (R-Mobile APE6)
+     - "renesas,irqc-r8a7790" (R-Car H2)
+     - "renesas,irqc-r8a7791" (R-Car M2-W)
+     - "renesas,irqc-r8a7792" (R-Car V2H)
+@@ -12,6 +12,7 @@ Required properties:
+     - "renesas,irqc-r8a7794" (R-Car E2)
+ - #interrupt-cells: has to be <2>: an interrupt index and flags, as defined in
+   interrupts.txt in this directory
++- clocks: Must contain a reference to the functional clock.
+ 
+ Optional properties:
+ 
+@@ -29,4 +30,5 @@ Example:
  			     <0 1 IRQ_TYPE_LEVEL_HIGH>,
  			     <0 2 IRQ_TYPE_LEVEL_HIGH>,
  			     <0 3 IRQ_TYPE_LEVEL_HIGH>;
 +		clocks = <&mstp4_clks R8A7790_CLK_IRQC>;
  	};
- 
- 	dmac0: dma-controller@e6700000 {
-@@ -1158,6 +1159,14 @@
- 				"iic0", "pciec", "iic1", "ssusb", "cmt1",
- 				"usbdmac0", "usbdmac1";
- 		};
-+		mstp4_clks: mstp4_clks@e6150140 {
-+			compatible = "renesas,r8a7790-mstp-clocks", "renesas,cpg-mstp-clocks";
-+			reg = <0 0xe6150140 0 4>, <0 0xe615004c 0 4>;
-+			clocks = <&cp_clk>;
-+			#clock-cells = <1>;
-+			clock-indices = <R8A7790_CLK_IRQC>;
-+			clock-output-names = "irqc";
-+		};
- 		mstp5_clks: mstp5_clks@e6150144 {
- 			compatible = "renesas,r8a7790-mstp-clocks", "renesas,cpg-mstp-clocks";
- 			reg = <0 0xe6150144 0 4>, <0 0xe615003c 0 4>;
-diff --git a/include/dt-bindings/clock/r8a7790-clock.h b/include/dt-bindings/clock/r8a7790-clock.h
-index 3f2c6b198d4ac289..ff7ca3584e169589 100644
---- a/include/dt-bindings/clock/r8a7790-clock.h
-+++ b/include/dt-bindings/clock/r8a7790-clock.h
-@@ -79,6 +79,9 @@
- #define R8A7790_CLK_USBDMAC0		30
- #define R8A7790_CLK_USBDMAC1		31
- 
-+/* MSTP4 */
-+#define R8A7790_CLK_IRQC		7
-+
- /* MSTP5 */
- #define R8A7790_CLK_AUDIO_DMAC1		1
- #define R8A7790_CLK_AUDIO_DMAC0		2
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
