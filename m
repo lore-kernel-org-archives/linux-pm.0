@@ -1,198 +1,99 @@
-From: kongxinwei <kong.kongxinwei@hisilicon.com>
-Subject: [PATCH 2/3] dts: hi6220: enable thermal sensor for hisilicon SoC
-Date: Thu, 19 Mar 2015 15:57:28 +0800
-Message-ID: <1426751849-10604-3-git-send-email-kong.kongxinwei@hisilicon.com>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
+Subject: [PATCH] PM / Hiberante : optimize swsusp_free()
+Date: Thu, 19 Mar 2015 17:28:58 +0900
+Message-ID: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga01-in.huawei.com ([58.251.152.64]:58011 "EHLO
-	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbbCSH6J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 03:58:09 -0400
-In-Reply-To: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
+Received: from mail-pd0-f196.google.com ([209.85.192.196]:33156 "EHLO
+	mail-pd0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbbCSI3X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 04:29:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhuang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com, devicetree@vger.kernel.org, liguozhu@hisilicon.com, xuwei5@hisilicon.com
+To: pavel@ucw.cz, len.brown@intel.com, jroedel@suse.de, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
 
-There have two parts for thermal sensor:
+From: "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
 
-1. The first part is related with thermal sensor, every sensor need to
-pass the sensor id, the threshold and reset temperature; so the sensor
-will be registered as sensor devices;
+I tested the performance of swsusp_free operation.
+The free time took about 58768us before commit fdd64ed, and
+the free time took about 40535us after the commit fdd64ed.
 
-2. The second part is related with thermal zones, in this part it will
-define the thermal zones and which sensor device should be bound to. it
-also need specify the polling interval for every thermal zone.
+But, I optimized the function before I saw commit fdd64ed.
+So, I applied the patch in my system.(ARM Coretex A9, Dual Core 1GHz)
+The free time took about 35164us.
+I think that the finding routine for the same pfn is redundant
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
-Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
+Signed-off-by: Tom(JeHyeon) Yeon <tom.yeon@windriver.com>
 ---
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 153 ++++++++++++++++++++++++++++++
- 1 file changed, 153 insertions(+)
- create mode 100644 arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+ kernel/power/snapshot.c |   43 ++++++++++---------------------------------
+ 1 file changed, 10 insertions(+), 33 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-new file mode 100644
-index 0000000..da49790
---- /dev/null
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -0,0 +1,153 @@
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+/ {
-+
-+	tsensor: tsensor@0,f7030700 {
-+		compatible = "hisilicon,tsensor";
-+		reg = <0x0 0xf7030700 0x0 0x1000>;
-+		interrupts = <0 7 0x4>;
-+		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
-+		clock-names = "thermal_clk";
-+		#thermal-sensor-cells = <1>;
-+
-+		local_sensor {
-+			hisilicon,tsensor-id = <0>;
-+			hisilicon,tsensor-thres-temp = <80000>;
-+			hisilicon,tsensor-reset-temp = <100000>;
-+			hisilicon,tsensor-bind-irq;
-+		};
-+
-+		acpu1_sensor {
-+			hisilicon,tsensor-id = <1>;
-+			hisilicon,tsensor-thres-temp = <80000>;
-+			hisilicon,tsensor-reset-temp = <100000>;
-+		};
-+
-+		acpu0_sensor {
-+			hisilicon,tsensor-id = <2>;
-+			hisilicon,tsensor-thres-temp = <80000>;
-+			hisilicon,tsensor-reset-temp = <100000>;
-+		};
-+
-+		gpu_sensor {
-+			hisilicon,tsensor-id = <3>;
-+			hisilicon,tsensor-thres-temp = <80000>;
-+			hisilicon,tsensor-reset-temp = <100000>;
-+		};
-+	};
-+
-+	thermal-zones {
-+		local: local {
-+			/* milliseconds */
-+			polling-delay-passive = <1000>;
-+			/* milliseconds */
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  0>;
-+
-+			trips {
-+				local_alert: local_alert {
-+					/* millicelsius */
-+					temperature = <70000>;
-+					/* millicelsius */
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				local_crit: local_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+
-+		cluster1: cluster1 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  1>;
-+
-+			trips {
-+				cluster1_alert: cluster1_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cluster1_crit: cluster1_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+
-+		cluster0: cluster0 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  2>;
-+
-+			trips {
-+				cluster0_alert: cluster0_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cluster0_crit: cluster0_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cluster0_alert>;
-+					cooling-device =
-+					    <&cpu0 THERMAL_NO_LIMIT
-+						THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		gpu: gpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  3>;
-+
-+			trips {
-+				gpu_alert: gpu_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				gpu_crit: gpu_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+	};
-+}
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c24d5a2..a1ad801 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -726,14 +726,6 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
+ 	clear_bit(bit, addr);
+ }
+ 
+-static void memory_bm_clear_current(struct memory_bitmap *bm)
+-{
+-	int bit;
+-
+-	bit = max(bm->cur.node_bit - 1, 0);
+-	clear_bit(bit, bm->cur.node->data);
+-}
+-
+ static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
+ {
+ 	void *addr;
+@@ -1342,36 +1334,21 @@ static struct memory_bitmap copy_bm;
+ 
+ void swsusp_free(void)
+ {
+-	unsigned long fb_pfn, fr_pfn;
++	unsigned long pfn;
+ 
+ 	if (!forbidden_pages_map || !free_pages_map)
+ 		goto out;
+ 
+ 	memory_bm_position_reset(forbidden_pages_map);
+-	memory_bm_position_reset(free_pages_map);
+-
+-loop:
+-	fr_pfn = memory_bm_next_pfn(free_pages_map);
+-	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
+-
+-	/*
+-	 * Find the next bit set in both bitmaps. This is guaranteed to
+-	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
+-	 */
+-	do {
+-		if (fb_pfn < fr_pfn)
+-			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
+-		if (fr_pfn < fb_pfn)
+-			fr_pfn = memory_bm_next_pfn(free_pages_map);
+-	} while (fb_pfn != fr_pfn);
+-
+-	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
+-		struct page *page = pfn_to_page(fr_pfn);
+-
+-		memory_bm_clear_current(forbidden_pages_map);
+-		memory_bm_clear_current(free_pages_map);
+-		__free_page(page);
+-		goto loop;
++	for ( ; ; ) {
++		pfn  = memory_bm_next_pfn(forbidden_pages_map);
++		if (BM_END_OF_MAP == pfn)
++			break;
++		if (memory_bm_test_bit(free_pages_map, pfn)) {
++			memory_bm_clear_bit(forbidden_pages_map, pfn);
++			memory_bm_clear_bit(free_pages_map, pfn);
++			__free_page(pfn_to_page(pfn));
++		}
+ 	}
+ 
+ out:
 -- 
-1.9.1
-
+1.7.9.5
 
