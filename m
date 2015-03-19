@@ -1,173 +1,145 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 7/8] ARM: cpuidle: Register per cpuidle device
-Date: Thu, 19 Mar 2015 18:11:21 +0100
-Message-ID: <550B0339.6010609@linaro.org>
-References: <1426704372-20406-1-git-send-email-daniel.lezcano@linaro.org> <1426704372-20406-8-git-send-email-daniel.lezcano@linaro.org> <20150319153112.GA589@linaro.org> <550AEC3C.5090200@linaro.org> <20150319154247.GB589@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Thu, 19 Mar 2015 22:51:37 +0100
+Message-ID: <1810625.BTgaNclHRk@vostro.rjw.lan>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan> <3998390.WErrfO4Yno@vostro.rjw.lan> <5975784.LhOHuiUKGO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150319154247.GB589@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60941 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750778AbbCSV1m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 17:27:42 -0400
+In-Reply-To: <5975784.LhOHuiUKGO@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/19/2015 04:42 PM, Lina Iyer wrote:
-> On Thu, Mar 19 2015 at 09:33 -0600, Daniel Lezcano wrote:
->> On 03/19/2015 04:31 PM, Lina Iyer wrote:
->>> On Wed, Mar 18 2015 at 12:46 -0600, Daniel Lezcano wrote:
->>>> Some architectures have some cpus which does not support idle stat=
-es.
->>>>
->>>> Let the underlying low level code to return -ENOSYS when it is not
->>>> possible to set an idle state.
->>>>
->>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>> ---
->>>> drivers/cpuidle/cpuidle-arm.c | 45
->>>> +++++++++++++++++++++++++++++++++++++++++--
->>>> 1 file changed, 43 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/cpuidle/cpuidle-arm.c
->>>> b/drivers/cpuidle/cpuidle-arm.c
->>>> index 1c94b88..0682ed0 100644
->>>> --- a/drivers/cpuidle/cpuidle-arm.c
->>>> +++ b/drivers/cpuidle/cpuidle-arm.c
->>>> @@ -17,11 +17,14 @@
->>>> #include <linux/kernel.h>
->>>> #include <linux/module.h>
->>>> #include <linux/of.h>
->>>> +#include <linux/slab.h>
->>>>
->>>> #include <asm/cpuidle.h>
->>>>
->>>> #include "dt_idle_states.h"
->>>>
->>>> +static DEFINE_PER_CPU(struct cpuidle_device, *cpuidle_arm_dev);
->>>
->>> Is a per-cpu variable needed? There seems to be no per-cpu access, =
-other
->>> than at init.
->>
->> :)
->>
->> Actually it is the cpuidle framework which is using the per cpu vari=
-able.
->>
->
-> But this is static pointer, I can see that struct cpuidle_device * be=
-ing
-> used by cpuidle framework.
->
-> It gets stored here?
->
-> DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
->
-> But we dont need to save it here, for in this file, there is no per-c=
-pu
-> access, other than when the registration fails.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
 
-Indeed, that is true. There is no need of these cpuidle variables.=20
-=46urthermore, we can access the cpuidle_devices directly as they are=20
-exported in cpuidle.h.
+If PM domains are in use, it may be necessary to prepare the code
+handling a PM domain for driver probing.  For example, in some
+cases device drivers rely on the ability to power on the devices
+with the help of the IO runtime PM framework and the PM domain
+code needs to be ready for that.  Also, if that code has not been
+fully initialized yet, the driver probing should be deferred.
 
-I will fix it.
+Moreover, after the probing is complete, it may be necessary to
+put the PM domain in question into the state reflecting the current
+needs of the devices in it, for example, so that power is not drawn
+in vain.  The same should be done after removing a driver from
+a device, as the PM domain state may need to be changed to reflect
+the new situation.
 
-Thanks
-   -- Daniel
+For these reasons, introduce new PM domain callbacks, ->activate
+and ->sync, called, respectively, before probing for a device
+driver and after the probing has been completed or the driver
+has been removed.
 
->>>> +
->>>> /*
->>>> * arm_enter_idle_state - Programs CPU to enter the specified state
->>>> *
->>>> @@ -94,6 +97,7 @@ static int __init arm_idle_init(void)
->>>> {
->>>>    int cpu, ret;
->>>>    struct cpuidle_driver *drv =3D &arm_idle_driver;
->>>> +    struct cpuidle_device *dev;
->>>>
->>>>    /*
->>>>     * Initialize idle states data, starting at index 1.
->>>> @@ -105,18 +109,55 @@ static int __init arm_idle_init(void)
->>>>    if (ret <=3D 0)
->>>>        return ret ? : -ENODEV;
->>>>
->>>> +    ret =3D cpuidle_register_driver(drv);
->>>> +    if (ret) {
->>>> +        pr_err("Failed to register cpuidle driver\n");
->>>> +        return ret;
->>>> +    }
->>>> +
->>>>    /*
->>>>     * Call arch CPU operations in order to initialize
->>>>     * idle states suspend back-end specific data
->>>>     */
->>>>    for_each_possible_cpu(cpu) {
->>>>        ret =3D arm_cpuidle_init(cpu);
->>>> +
->>>> +        /* This cpu does not support any idle states */
->>>> +        if (ret =3D=3D -ENOSYS)
->>>> +            continue;
->>>> +
->>>>        if (ret) {
->>>>            pr_err("CPU %d failed to init idle CPU ops\n", cpu);
->>>> -            return ret;
->>>> +            goto out_fail;
->>>> +        }
->>>> +
->>>> +        dev =3D kzalloc(sizeof(*dev), GFP_KERNEL);
->>>> +        if (!dev) {
->>>> +            pr_err("Failed to allocate cpuidle device\n");
->>>> +            goto out_fail;
->>>> +        }
->>>> +
->>>> +        dev->cpu =3D cpu;
->>>> +        per_cpu(cpuidle_arm_dev, cpu) =3D dev;
->>>> +
->>>> +        ret =3D cpuidle_register_device(dev);
->>>> +        if (ret) {
->>>> +            pr_err("Failed to register cpuidle device for CPU %d\=
-n",
->>>> +                   cpu);
->>>> +            kfree(dev);
->>>> +            goto out_fail;
->>>>        }
->>>>    }
->>>> +out:
->>>> +    return ret;
->>>>
->>>> -    return cpuidle_register(drv, NULL);
->>>> +out_fail:
->>>> +    for (cpu--; cpu <=3D 0; cpu--) {
->>>> +        dev =3D per_cpu(cpuidle_arm_dev, cpu);
->>>> +        cpuidle_unregister_device(dev);
->>>> +        kfree(dev);
->>>> +    }
->>>> +    cpuidle_unregister_driver(drv);
->>>> +    goto out;
->>>> }
->>>> device_initcall(arm_idle_init);
->>>> --
->>>> 1.9.1
->>>>
->>
->>
->> --
->> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
->>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+> ---
+> 
+> This is an update without the additional bus type callbacks.  This should
+> be suffucient at this point for the use cases we have.
+> 
+> I've decided to also call ->sync on driver removal as that is consistent
+> with what happens for failing probe.
+> 
+> ---
 
+One more update.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+I've realized that in the PM domain's ->sync callback is called after
+clearing the device's driver field (in the failed probe or driver removal
+case) rather than before it, that could be used to distinguish between the
+two cases (successful probe vs no driver), so I reworked the patch accordingly.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+---
+ drivers/base/dd.c  |   16 ++++++++++++++++
+ include/linux/pm.h |    6 ++++++
+ 2 files changed, 22 insertions(+)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
+  * Power domains provide callbacks that are executed during system suspend,
+  * hibernation, system resume and during runtime PM transitions along with
+  * subsystem-level and driver-level callbacks.
++ *
++ * @detach: Called when removing a device from the domain.
++ * @activate: Called before executing probe routines for bus types and drivers.
++ * @sync: Called after driver probe and removal.
+  */
+ struct dev_pm_domain {
+ 	struct dev_pm_ops	ops;
+ 	void (*detach)(struct device *dev, bool power_off);
++	int (*activate)(struct device *dev);
++	void (*sync)(struct device *dev);
+ };
+ 
+ /*
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -279,6 +279,7 @@ static int really_probe(struct device *d
+ {
+ 	int ret = 0;
+ 	int local_trigger_count = atomic_read(&deferred_trigger_count);
++	struct dev_pm_domain *pm_domain = dev->pm_domain;
+ 
+ 	atomic_inc(&probe_count);
+ 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+@@ -298,6 +299,12 @@ static int really_probe(struct device *d
+ 		goto probe_failed;
+ 	}
+ 
++	if (pm_domain && pm_domain->activate) {
++		ret = pm_domain->activate(dev);
++		if (ret)
++			goto probe_failed;
++	}
++
+ 	if (dev->bus->probe) {
+ 		ret = dev->bus->probe(dev);
+ 		if (ret)
+@@ -308,6 +315,9 @@ static int really_probe(struct device *d
+ 			goto probe_failed;
+ 	}
+ 
++	if (pm_domain && pm_domain->sync)
++		pm_domain->sync(dev);
++
+ 	driver_bound(dev);
+ 	ret = 1;
+ 	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+@@ -319,6 +329,8 @@ probe_failed:
+ 	driver_sysfs_remove(dev);
+ 	dev->driver = NULL;
+ 	dev_set_drvdata(dev, NULL);
++	if (pm_domain && pm_domain->sync)
++		pm_domain->sync(dev);
+ 
+ 	if (ret == -EPROBE_DEFER) {
+ 		/* Driver requested deferred probing */
+@@ -522,9 +534,13 @@ static void __device_release_driver(stru
+ 			dev->bus->remove(dev);
+ 		else if (drv->remove)
+ 			drv->remove(dev);
++
+ 		devres_release_all(dev);
+ 		dev->driver = NULL;
+ 		dev_set_drvdata(dev, NULL);
++		if (dev->pm_domain && dev->pm_domain->sync)
++			dev->pm_domain->sync(dev);
++
+ 		klist_remove(&dev->p->knode_driver);
+ 		if (dev->bus)
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+
