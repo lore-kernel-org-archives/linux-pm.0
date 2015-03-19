@@ -1,103 +1,129 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core / PM: Add callbacks for PM domain initialization/cleanup
-Date: Thu, 19 Mar 2015 17:18:34 +0100
-Message-ID: <3998390.WErrfO4Yno@vostro.rjw.lan>
-References: <3533423.QQDErEmeTO@vostro.rjw.lan> <356697065.8Z1o4ApA72@vostro.rjw.lan> <CAPDyKFo8YNpnriaAcLnEJ8tLZ+G68N_fyfOAYoEjBPHP=wyWbQ@mail.gmail.com>
+Subject: [PATCH] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Thu, 19 Mar 2015 17:58 +0100
+Message-ID: <5975784.LhOHuiUKGO@vostro.rjw.lan>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan> <CAPDyKFo8YNpnriaAcLnEJ8tLZ+G68N_fyfOAYoEjBPHP=wyWbQ@mail.gmail.com> <3998390.WErrfO4Yno@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61148 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:63775 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751463AbbCSPyj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 11:54:39 -0400
-In-Reply-To: <CAPDyKFo8YNpnriaAcLnEJ8tLZ+G68N_fyfOAYoEjBPHP=wyWbQ@mail.gmail.com>
+	with SMTP id S1754805AbbCSQeG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 12:34:06 -0400
+In-Reply-To: <3998390.WErrfO4Yno@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thursday, March 19, 2015 04:48:22 PM Ulf Hansson wrote:
-> On 19 March 2015 at 17:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, March 19, 2015 04:37:26 PM Ulf Hansson wrote:
-> >> On 19 March 2015 at 16:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Thursday, March 19, 2015 03:45:07 PM Ulf Hansson wrote:
-> >> >> On 19 March 2015 at 15:20, Alan Stern <stern@rowland.harvard.edu> wrote:
-> >> >> > On Thu, 19 Mar 2015, Rafael J. Wysocki wrote:
-> >> >> >
-> >> >> >> > This doesn't make sense to me.  A bus just called bus_add_device, it can
-> >> >> >> > do whatever it wanted to right before calling this function, no need for
-> >> >> >> > another callback.
-> >> >> >>
-> >> >> >> The only caller of bus_add_device() is device_add().
-> >> >> >>
-> >> >> >> What do you mean by "bus just called bus_add_device"?  Do you think that
-> >> >> >> the pm_domain pointer should be populated before calling device_add()?
-> >> >> >>
-> >> >> >> That wouldn't work for the ACPI PM domain at least, because ACPI companions
-> >> >> >> are generally added during device_add() and we arguably cannot point a
-> >> >> >> device to the ACPI PM domain before its ACPI companion is set.
-> >> >> >
-> >> >> >
-> >> >> >> There are two alternatives to them.  One is to do PM domain attach/detach in
-> >> >> >> the bus type's ->probe and ->remove, but that's suboptimal, because it is
-> >> >> >> then carried out every time a driver is probed/removed for a device.  The
-> >> >> >> other one would be to have each interested bus type register a bus type
-> >> >> >> notifier for itself, but that would be rather ugly, wouldn't it?
-> >> >> >
-> >> >> > Driver probing and removal is not a hot path.  Successful probes
-> >> >> > usually occur only once for each device.  I don't know how many
-> >> >> > unsuccessful probes there are on average, but probably not many.
-> >> >> >
-> >> >> > Doing the PM domain attach/detach in ->probe and ->remove makes sense
-> >> >> > to me.
-> >> >>
-> >> >> Let me elaborate a bit on the current approach, with PM domain
-> >> >> attach/detach in ->probe() and ->remove(). This comes with the
-> >> >> following limitations.
-> >> >>
-> >> >> 1) If the device gets probed earlier than the PM domain has been
-> >> >> initialized, we can't return -EPROBE_DEFER since we just don't know
-> >> >> anything about the PM domain yet.
-> >> >>
-> >> >> 2) The PM domain won't be able to operate on a device without having a
-> >> >> driver bound to it, since the device's PM domain pointer is removed at
-> >> >> ->remove().
-> >> >>
-> >> >> Perhaps Rafael want to add something to these? I don't know whether we
-> >> >> think it's okay to keep these limitations or not.
-> >> >
-> >> > There are arguments both ways as you can see.
-> >> >
-> >> > At this point, the most straightforward approach would be to apply the Russell's
-> >> > patch adding the ->sync callback alone.
-> >> >
-> >> > I will then need the ->activate callback for another use case (a PM domain that
-> >> > may not be ready for the device to be probed), but in that case I actually know
-> >> > that the pm_domain pointer is populated at the really_probe() time.
-> >>
-> >> Then, how about adding only the ->sync() and ->activate() callback in
-> >> one patch - and invoke them from really_probe()? That's seems to fit
-> >> both our short and long term approach.
-> >>
-> >> Genpd may then implement the ->sync() callback, which is similar to
-> >> Russell's patch, except that it will now cover all buses and not just
-> >> the platform bus as it where before.
-> >
-> > OK
-> >
-> > So do we need to do ->sync at the driver removal time too?  I guess we do?
-> 
-> For genpd, it will currently not matter since the device will be
-> detached from its PM domain before that ->sync() would be called.
-> 
-> Though, to prepare for the "long term" solution we could decide to add it...
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK, at that time.
+If PM domains are in use, it may be necessary to prepare the code
+handling a PM domain for driver probing.  For example, in some
+cases device drivers rely on the ability to power on the devices
+with the help of the IO runtime PM framework and the PM domain
+code needs to be ready for that.  Also, if that code has not been
+fully initialized yet, the driver probing should be deferred.
 
-Fine, I'll send an update, then.
+Moreover, after the probing is complete, it may be necessary to
+put the PM domain in question into the state reflecting the current
+needs of the devices in it, for example, so that power is not drawn
+in vain.  The same should be done after removing a driver from
+a device, as the PM domain state may need to be changed to reflect
+the new situation.
 
+For these reasons, introduce new PM domain callbacks, ->activate
+and ->sync, called, respectively, before probing for a device
+driver and after the probing has been completed or the driver
+has been removed.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This is an update without the additional bus type callbacks.  This should
+be suffucient at this point for the use cases we have.
+
+I've decided to also call ->sync on driver removal as that is consistent
+with what happens for failing probe.
+
+---
+ drivers/base/dd.c  |   24 ++++++++++++++++++------
+ include/linux/pm.h |    6 ++++++
+ 2 files changed, 24 insertions(+), 6 deletions(-)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
+  * Power domains provide callbacks that are executed during system suspend,
+  * hibernation, system resume and during runtime PM transitions along with
+  * subsystem-level and driver-level callbacks.
++ *
++ * @detach: Called when removing a device from the domain.
++ * @activate: Called before executing probe routines for bus types and drivers.
++ * @sync: Called after driver probe and removal.
+  */
+ struct dev_pm_domain {
+ 	struct dev_pm_ops	ops;
+ 	void (*detach)(struct device *dev, bool power_off);
++	int (*activate)(struct device *dev);
++	void (*sync)(struct device *dev);
+ };
+ 
+ /*
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -279,6 +279,7 @@ static int really_probe(struct device *d
+ {
+ 	int ret = 0;
+ 	int local_trigger_count = atomic_read(&deferred_trigger_count);
++	struct dev_pm_domain *pm_domain = dev->pm_domain;
+ 
+ 	atomic_inc(&probe_count);
+ 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+@@ -298,16 +299,23 @@ static int really_probe(struct device *d
+ 		goto probe_failed;
+ 	}
+ 
+-	if (dev->bus->probe) {
+-		ret = dev->bus->probe(dev);
+-		if (ret)
+-			goto probe_failed;
+-	} else if (drv->probe) {
+-		ret = drv->probe(dev);
++	if (pm_domain && pm_domain->activate) {
++		ret = pm_domain->activate(dev);
+ 		if (ret)
+ 			goto probe_failed;
+ 	}
+ 
++	if (dev->bus->probe)
++		ret = dev->bus->probe(dev);
++	else if (drv->probe)
++		ret = drv->probe(dev);
++
++	if (pm_domain && pm_domain->sync)
++		pm_domain->sync(dev);
++
++	if (ret)
++		goto probe_failed;
++
+ 	driver_bound(dev);
+ 	ret = 1;
+ 	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+@@ -522,6 +530,10 @@ static void __device_release_driver(stru
+ 			dev->bus->remove(dev);
+ 		else if (drv->remove)
+ 			drv->remove(dev);
++
++		if (dev->pm_domain && dev->pm_domain->sync)
++			dev->pm_domain->sync(dev);
++
+ 		devres_release_all(dev);
+ 		dev->driver = NULL;
+ 		dev_set_drvdata(dev, NULL);
+
