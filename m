@@ -1,127 +1,51 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] driver core / PM: Add callbacks for PM domain
- initialization/cleanup
-Date: Thu, 19 Mar 2015 14:29:07 +0100
-Message-ID: <20150319132907.GA3707@kroah.com>
-References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org>
- <2524443.vpfcNqfmJz@vostro.rjw.lan>
- <CAPDyKFp_xjOOxCEu7GtWwamkWYffhN-oJ3B78-4xC5RFS-qFdQ@mail.gmail.com>
- <2317791.ICLpdqLgyu@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Disabling power management firmware decisions
+Date: Thu, 19 Mar 2015 14:33:34 +0100
+Message-ID: <550AD02E.2080507@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:47820 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbbCSN3L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 09:29:11 -0400
-Content-Disposition: inline
-In-Reply-To: <2317791.ICLpdqLgyu@vostro.rjw.lan>
+Received: from mail-wg0-f53.google.com ([74.125.82.53]:35699 "EHLO
+	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbbCSNdi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 09:33:38 -0400
+Received: by wgdm6 with SMTP id m6so62566249wgd.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2015 06:33:37 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-
-On Wed, Mar 18, 2015 at 04:02:11PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If PM domains are in use, it may be necessary to prepare the code
-> handling a PM domain for driver probing.  For example, in some
-> cases device drivers rely on the ability to power on the devices
-> with the help of the IO runtime PM framework and the PM domain
-> code needs to be ready for that.  Also, if that code has not been
-> fully initialized yet, the driver probing should be deferred.
-> 
-> Moreover, after the probing is complete, it may be necessary to
-> put the PM domain in question into the state reflecting the current
-> needs of the devices in it, for example, to prevent power from being
-> drawn in vain.
-> 
-> For these reasons, introduce new PM domain callbacks, ->activate
-> and ->sync, called, respectively, before probing for a device
-> driver and after the probing has been completed.
-> 
-> That is not sufficient, however, because the device's PM domain
-> pointer has to be populated for the ->activate callback to be
-> executed, so setting it in bus type ->probe callback routines
-> would be too late.  Also, there are bus types where PM domains
-> are not used at all and the core should not attempt to set the
-> pm_domain pointer for the devices on those buses.
-> 
-> To overcome that difficulty, introduce two new bus type
-> callbacks, ->init and ->release, called by bus_add_device() and
-> bus_remove_device(), respectively.  That will allow ->init to
-> be used to populate the pm_domain pointer for the bus types
-> that want to do that and ->release will be useful for any
-> cleanup that may be necessary after removing a device that
-> was part of a PM domain.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> It occured to me that we might want to ->sync regardless of whether or
-> not the probing had been succenssful, so I changed the code in
-> really_probe() along these lines.  Please let me know if that's
-> not OK.
-> 
-> ---
->  drivers/base/bus.c     |   12 +++++++++++-
->  drivers/base/dd.c      |   20 ++++++++++++++------
->  include/linux/device.h |    5 +++++
->  include/linux/pm.h     |    6 ++++++
->  4 files changed, 36 insertions(+), 7 deletions(-)
-> 
-> Index: linux-pm/drivers/base/bus.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/bus.c
-> +++ linux-pm/drivers/base/bus.c
-> @@ -509,10 +509,15 @@ int bus_add_device(struct device *dev)
->  	int error = 0;
->  
->  	if (bus) {
-> +		if (bus->init) {
-> +			error = bus->init(dev);
-> +			if (error)
-> +				goto out_put;
-> +		}
-
-This doesn't make sense to me.  A bus just called bus_add_device, it can
-do whatever it wanted to right before calling this function, no need for
-another callback.
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
 
->  		pr_debug("bus: '%s': add device %s\n", bus->name, dev_name(dev));
->  		error = device_add_attrs(bus, dev);
->  		if (error)
-> -			goto out_put;
-> +			goto out_release;
->  		error = device_add_groups(dev, bus->dev_groups);
->  		if (error)
->  			goto out_groups;
-> @@ -534,6 +539,9 @@ out_groups:
->  	device_remove_groups(dev, bus->dev_groups);
->  out_id:
->  	device_remove_attrs(bus, dev);
-> +out_release:
-> +	if (bus->release)
-> +		bus->release(dev);
+Hi,
 
->  out_put:
->  	bus_put(dev->bus);
->  	return error;
-> @@ -597,6 +605,8 @@ void bus_remove_device(struct device *de
->  	device_remove_groups(dev, dev->bus->dev_groups);
->  	if (klist_node_attached(&dev->p->knode_bus))
->  		klist_del(&dev->p->knode_bus);
-> +	if (bus->release)
-> +		bus->release(dev);
+I would like to do some experiments with the x86 platform but I am=20
+facing one big issue.
 
-Same with release(), this happens when a bus wants to remove a device,
-it controls this, why have a callback right away?  These both shouldn't
-be needed.
+When I use the rapl register to measure the energy consumption with=20
+turbostat and another tool written by me. I see no differences between=20
+my kernel changes while using the idlestat tool, I see big differences=20
+in the idle state durations with the traces.
 
-sorry if I missed this before, I hadn't noticed these callbacks in
-previous patches but I wasn't paying much attention.
+I remember on x86 the firmware overrides all kernel decisions to do the=
+=20
+power management. So I assume, it is possible my changes are not=20
+measurable because of that.
 
-thanks,
+Is there a way to tell the firmware to stop overriding the kernel=20
+decisions in order to let the kernel handle idle/dvfs on its own ?
 
-greg k-h
+Thanks
+
+   -- Daniel
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
