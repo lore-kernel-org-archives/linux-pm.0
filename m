@@ -1,81 +1,119 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core / PM: Add callbacks for PM domain initialization/cleanup
-Date: Thu, 19 Mar 2015 16:44:25 +0100
-Message-ID: <2137701.iWHrxeTcxg@vostro.rjw.lan>
-References: <3533423.QQDErEmeTO@vostro.rjw.lan> <Pine.LNX.4.44L0.1503191017590.1135-100000@iolanthe.rowland.org> <CAPDyKFqmSoKEfbtowk1h0USf4LcJvH1qVYgqkh7VFc7iekyaNQ@mail.gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH V2 7/8] ARM: cpuidle: Register per cpuidle device
+Date: Thu, 19 Mar 2015 09:31:12 -0600
+Message-ID: <20150319153112.GA589@linaro.org>
+References: <1426704372-20406-1-git-send-email-daniel.lezcano@linaro.org>
+ <1426704372-20406-8-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53719 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750734AbbCSPUa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 11:20:30 -0400
-In-Reply-To: <CAPDyKFqmSoKEfbtowk1h0USf4LcJvH1qVYgqkh7VFc7iekyaNQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1426704372-20406-8-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thursday, March 19, 2015 03:45:07 PM Ulf Hansson wrote:
-> On 19 March 2015 at 15:20, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Thu, 19 Mar 2015, Rafael J. Wysocki wrote:
-> >
-> >> > This doesn't make sense to me.  A bus just called bus_add_device, it can
-> >> > do whatever it wanted to right before calling this function, no need for
-> >> > another callback.
-> >>
-> >> The only caller of bus_add_device() is device_add().
-> >>
-> >> What do you mean by "bus just called bus_add_device"?  Do you think that
-> >> the pm_domain pointer should be populated before calling device_add()?
-> >>
-> >> That wouldn't work for the ACPI PM domain at least, because ACPI companions
-> >> are generally added during device_add() and we arguably cannot point a
-> >> device to the ACPI PM domain before its ACPI companion is set.
-> >
-> >
-> >> There are two alternatives to them.  One is to do PM domain attach/detach in
-> >> the bus type's ->probe and ->remove, but that's suboptimal, because it is
-> >> then carried out every time a driver is probed/removed for a device.  The
-> >> other one would be to have each interested bus type register a bus type
-> >> notifier for itself, but that would be rather ugly, wouldn't it?
-> >
-> > Driver probing and removal is not a hot path.  Successful probes
-> > usually occur only once for each device.  I don't know how many
-> > unsuccessful probes there are on average, but probably not many.
-> >
-> > Doing the PM domain attach/detach in ->probe and ->remove makes sense
-> > to me.
-> 
-> Let me elaborate a bit on the current approach, with PM domain
-> attach/detach in ->probe() and ->remove(). This comes with the
-> following limitations.
-> 
-> 1) If the device gets probed earlier than the PM domain has been
-> initialized, we can't return -EPROBE_DEFER since we just don't know
-> anything about the PM domain yet.
-> 
-> 2) The PM domain won't be able to operate on a device without having a
-> driver bound to it, since the device's PM domain pointer is removed at
-> ->remove().
-> 
-> Perhaps Rafael want to add something to these? I don't know whether we
-> think it's okay to keep these limitations or not.
+On Wed, Mar 18 2015 at 12:46 -0600, Daniel Lezcano wrote:
+>Some architectures have some cpus which does not support idle states.
+>
+>Let the underlying low level code to return -ENOSYS when it is not
+>possible to set an idle state.
+>
+>Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>---
+> drivers/cpuidle/cpuidle-arm.c | 45 +++++++++++++++++++++++++++++++++++++++++--
+> 1 file changed, 43 insertions(+), 2 deletions(-)
+>
+>diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+>index 1c94b88..0682ed0 100644
+>--- a/drivers/cpuidle/cpuidle-arm.c
+>+++ b/drivers/cpuidle/cpuidle-arm.c
+>@@ -17,11 +17,14 @@
+> #include <linux/kernel.h>
+> #include <linux/module.h>
+> #include <linux/of.h>
+>+#include <linux/slab.h>
+>
+> #include <asm/cpuidle.h>
+>
+> #include "dt_idle_states.h"
+>
+>+static DEFINE_PER_CPU(struct cpuidle_device, *cpuidle_arm_dev);
 
-There are arguments both ways as you can see.
+Is a per-cpu variable needed? There seems to be no per-cpu access, other
+than at init.
 
-At this point, the most straightforward approach would be to apply the Russell's
-patch adding the ->sync callback alone.
-
-I will then need the ->activate callback for another use case (a PM domain that
-may not be ready for the device to be probed), but in that case I actually know
-that the pm_domain pointer is populated at the really_probe() time.
-
-Going forward we may want to move the attach/detach operations for genpd and
-the ACPI PM domain out of bus type ->probe, but I think that can wait.
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>+
+> /*
+>  * arm_enter_idle_state - Programs CPU to enter the specified state
+>  *
+>@@ -94,6 +97,7 @@ static int __init arm_idle_init(void)
+> {
+> 	int cpu, ret;
+> 	struct cpuidle_driver *drv = &arm_idle_driver;
+>+	struct cpuidle_device *dev;
+>
+> 	/*
+> 	 * Initialize idle states data, starting at index 1.
+>@@ -105,18 +109,55 @@ static int __init arm_idle_init(void)
+> 	if (ret <= 0)
+> 		return ret ? : -ENODEV;
+>
+>+	ret = cpuidle_register_driver(drv);
+>+	if (ret) {
+>+		pr_err("Failed to register cpuidle driver\n");
+>+		return ret;
+>+	}
+>+
+> 	/*
+> 	 * Call arch CPU operations in order to initialize
+> 	 * idle states suspend back-end specific data
+> 	 */
+> 	for_each_possible_cpu(cpu) {
+> 		ret = arm_cpuidle_init(cpu);
+>+
+>+		/* This cpu does not support any idle states */
+>+		if (ret == -ENOSYS)
+>+			continue;
+>+
+> 		if (ret) {
+> 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+>-			return ret;
+>+			goto out_fail;
+>+		}
+>+
+>+		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+>+		if (!dev) {
+>+			pr_err("Failed to allocate cpuidle device\n");
+>+			goto out_fail;
+>+		}
+>+
+>+		dev->cpu = cpu;
+>+		per_cpu(cpuidle_arm_dev, cpu) = dev;
+>+
+>+		ret = cpuidle_register_device(dev);
+>+		if (ret) {
+>+			pr_err("Failed to register cpuidle device for CPU %d\n",
+>+			       cpu);
+>+			kfree(dev);
+>+			goto out_fail;
+> 		}
+> 	}
+>+out:
+>+	return ret;
+>
+>-	return cpuidle_register(drv, NULL);
+>+out_fail:
+>+	for (cpu--; cpu <= 0; cpu--) {
+>+		dev = per_cpu(cpuidle_arm_dev, cpu);
+>+		cpuidle_unregister_device(dev);
+>+		kfree(dev);
+>+	}
+>+	cpuidle_unregister_driver(drv);
+>+	goto out;
+> }
+> device_initcall(arm_idle_init);
+>-- 
+>1.9.1
+>
