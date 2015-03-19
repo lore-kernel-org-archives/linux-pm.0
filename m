@@ -1,107 +1,162 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2 v5] cpufreq: qoriq: rename the driver
-Date: Thu, 19 Mar 2015 23:03:44 +0100
-Message-ID: <1632290.3aq8l1mgG0@vostro.rjw.lan>
-References: <1426221542-41043-1-git-send-email-Yuantian.Tang@freescale.com> <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Thu, 19 Mar 2015 15:42:03 -0700
+Message-ID: <CAKdAkRRkmSGTxb8USPznmtKgW4AXosvd2JQQo6YvKcNpvy1BuA@mail.gmail.com>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan>
+	<3998390.WErrfO4Yno@vostro.rjw.lan>
+	<5975784.LhOHuiUKGO@vostro.rjw.lan>
+	<1810625.BTgaNclHRk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63629 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751373AbbCSVjs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 17:39:48 -0400
-In-Reply-To: <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:36804 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbbCSWmF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 18:42:05 -0400
+Received: by lamx15 with SMTP id x15so74250905lam.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2015 15:42:03 -0700 (PDT)
+In-Reply-To: <1810625.BTgaNclHRk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuantian.Tang@freescale.com
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Friday, March 13, 2015 12:39:02 PM Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> 
-> This driver works on all QorIQ platforms which include
-> ARM-based cores and PPC-based cores.
-> Rename it in order to represent better.
-> 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Both queued up for 4.1, thanks!
-
+On Thu, Mar 19, 2015 at 2:51 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
+>
+> If PM domains are in use, it may be necessary to prepare the code
+> handling a PM domain for driver probing.  For example, in some
+> cases device drivers rely on the ability to power on the devices
+> with the help of the IO runtime PM framework and the PM domain
+> code needs to be ready for that.  Also, if that code has not been
+> fully initialized yet, the driver probing should be deferred.
+>
+> Moreover, after the probing is complete, it may be necessary to
+> put the PM domain in question into the state reflecting the current
+> needs of the devices in it, for example, so that power is not drawn
+> in vain.  The same should be done after removing a driver from
+> a device, as the PM domain state may need to be changed to reflect
+> the new situation.
+>
+> For these reasons, introduce new PM domain callbacks, ->activate
+> and ->sync, called, respectively, before probing for a device
+> driver and after the probing has been completed or the driver
+> has been removed.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
-> v5:
-> 	- rebased to 4.0-rc3
-> 	- added Kconfig and Makefile entry
-> v3, v4
-> 	- none
-> v2:
-> 	- use -C -M options when format-patch
-> 
->  drivers/cpufreq/Kconfig                                    | 8 ++++++++
->  drivers/cpufreq/Kconfig.powerpc                            | 9 ---------
->  drivers/cpufreq/Makefile                                   | 2 +-
->  drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} | 0
->  4 files changed, 9 insertions(+), 10 deletions(-)
->  rename drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} (100%)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index a171fef..659879a 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -293,5 +293,13 @@ config SH_CPU_FREQ
->  	  If unsure, say N.
->  endif
->  
-> +config QORIQ_CPUFREQ
-> +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> +	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-> +	select CLK_QORIQ
-> +	help
-> +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> +	  which are capable of changing the CPU's frequency dynamically.
+>> ---
+>>
+>> This is an update without the additional bus type callbacks.  This should
+>> be suffucient at this point for the use cases we have.
+>>
+>> I've decided to also call ->sync on driver removal as that is consistent
+>> with what happens for failing probe.
+>>
+>> ---
+>
+> One more update.
+>
+> I've realized that in the PM domain's ->sync callback is called after
+> clearing the device's driver field (in the failed probe or driver removal
+> case) rather than before it, that could be used to distinguish between the
+> two cases (successful probe vs no driver), so I reworked the patch accordingly.
+
+That is very non-obvious. dev->drv belongs to driver core and maybe
+bus, nothing else should really be looking at it. Why can't we add an
+explicit argument to the callback indicating device state?
+
+Thanks.
+
+>
+> ---
+>  drivers/base/dd.c  |   16 ++++++++++++++++
+>  include/linux/pm.h |    6 ++++++
+>  2 files changed, 22 insertions(+)
+>
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
+>   * Power domains provide callbacks that are executed during system suspend,
+>   * hibernation, system resume and during runtime PM transitions along with
+>   * subsystem-level and driver-level callbacks.
+> + *
+> + * @detach: Called when removing a device from the domain.
+> + * @activate: Called before executing probe routines for bus types and drivers.
+> + * @sync: Called after driver probe and removal.
+>   */
+>  struct dev_pm_domain {
+>         struct dev_pm_ops       ops;
+>         void (*detach)(struct device *dev, bool power_off);
+> +       int (*activate)(struct device *dev);
+> +       void (*sync)(struct device *dev);
+>  };
+>
+>  /*
+> Index: linux-pm/drivers/base/dd.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/dd.c
+> +++ linux-pm/drivers/base/dd.c
+> @@ -279,6 +279,7 @@ static int really_probe(struct device *d
+>  {
+>         int ret = 0;
+>         int local_trigger_count = atomic_read(&deferred_trigger_count);
+> +       struct dev_pm_domain *pm_domain = dev->pm_domain;
+>
+>         atomic_inc(&probe_count);
+>         pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+> @@ -298,6 +299,12 @@ static int really_probe(struct device *d
+>                 goto probe_failed;
+>         }
+>
+> +       if (pm_domain && pm_domain->activate) {
+> +               ret = pm_domain->activate(dev);
+> +               if (ret)
+> +                       goto probe_failed;
+> +       }
 > +
->  endif
->  endmenu
-> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-> index 7ea2441..3a0595b 100644
-> --- a/drivers/cpufreq/Kconfig.powerpc
-> +++ b/drivers/cpufreq/Kconfig.powerpc
-> @@ -23,15 +23,6 @@ config CPU_FREQ_MAPLE
->  	  This adds support for frequency switching on Maple 970FX
->  	  Evaluation Board and compatible boards (IBM JS2x blades).
->  
-> -config PPC_CORENET_CPUFREQ
-> -	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-> -	depends on PPC_E500MC && OF && COMMON_CLK
-> -	select CLK_QORIQ
-> -	help
-> -	  This adds the CPUFreq driver support for Freescale e500mc,
-> -	  e5500 and e6500 series SoCs which are capable of changing
-> -	  the CPU's frequency dynamically.
-> -
->  config CPU_FREQ_PMAC
->  	bool "Support for Apple PowerBooks"
->  	depends on ADB_PMU && PPC32
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 82a1821..26df0ad 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -85,7 +85,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
->  ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
->  obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
-> -obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
-> +obj-$(CONFIG_QORIQ_CPUFREQ)   		+= qoriq-cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
->  obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> similarity index 100%
-> rename from drivers/cpufreq/ppc-corenet-cpufreq.c
-> rename to drivers/cpufreq/qoriq-cpufreq.c
-> 
+>         if (dev->bus->probe) {
+>                 ret = dev->bus->probe(dev);
+>                 if (ret)
+> @@ -308,6 +315,9 @@ static int really_probe(struct device *d
+>                         goto probe_failed;
+>         }
+>
+> +       if (pm_domain && pm_domain->sync)
+> +               pm_domain->sync(dev);
+> +
+>         driver_bound(dev);
+>         ret = 1;
+>         pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+> @@ -319,6 +329,8 @@ probe_failed:
+>         driver_sysfs_remove(dev);
+>         dev->driver = NULL;
+>         dev_set_drvdata(dev, NULL);
+> +       if (pm_domain && pm_domain->sync)
+> +               pm_domain->sync(dev);
+>
+>         if (ret == -EPROBE_DEFER) {
+>                 /* Driver requested deferred probing */
+> @@ -522,9 +534,13 @@ static void __device_release_driver(stru
+>                         dev->bus->remove(dev);
+>                 else if (drv->remove)
+>                         drv->remove(dev);
+> +
+>                 devres_release_all(dev);
+>                 dev->driver = NULL;
+>                 dev_set_drvdata(dev, NULL);
+> +               if (dev->pm_domain && dev->pm_domain->sync)
+> +                       dev->pm_domain->sync(dev);
+> +
+>                 klist_remove(&dev->p->knode_driver);
+>                 if (dev->bus)
+>                         blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>
+
+
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Dmitry
