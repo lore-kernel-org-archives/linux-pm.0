@@ -1,83 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4 0/4] ARM: EXYNOS: cpuidle: add AFTR mode support for
- Exynos3250
-Date: Thu, 19 Mar 2015 14:11:48 +0900
-Message-ID: <550A5A94.2080207@samsung.com>
-References: <1426694453-3242-1-git-send-email-b.zolnierkie@samsung.com>
+From: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Subject: [PATCH 0/3] 96boards: add thermal senor support to hikey board
+Date: Thu, 19 Mar 2015 15:57:26 +0800
+Message-ID: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:11330 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbbCSFLu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 01:11:50 -0400
-In-reply-to: <1426694453-3242-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Bartlomiej,
+The Linaro connect introduce 96boards series in Hong Kong,The HiKey board
+is the first board to be certified 96Boards Consumer Edition compatible.
+This board is based on the HiSilicon SoC. you can get more information
+from https://www.96boards.org.
 
-I tested this patch-set for AFTR mode.
-When CPU1 is offline state, I checked that CPU0 enter the AFTR mode.
+The hisilicon SoC contains thermal module, this thermal module has 4 sensors,
 
-Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
+	- sensor 0: local sensor;
+	- sensor 1: remote sensor for ACPU cluster 1;
+	- sensor 2: remote sensor for ACPU cluster 2;
+	- sensor 3: remote sensor for GPU;
 
-Best Regards,
-Chanwoo Choi
+It can obtain this device temperature by operating this hardware. The new
+sensor driver satisfies thermal framework and to realize the ACPU ,GPU and
+so on to cool function.
 
-On 03/19/2015 01:00 AM, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> This patch series adds support for AFTR idle mode on boards with
-> Exynos3250 SoC and allows EXYNOS cpuidle driver usage on these
-> boards.
-> 
-> It has been tested on Samsung Rinato board (Gear 2).
-> 
-> Depends on:
-> - for-next branch (commit: 77105c882ba6) of linux-samsung.git
->   kernel tree
-> 
-> Changes since v3:
-> - enhanced patch description for patch #1
-> - added Reviewed-by/Tested-by tags from Krzysztof
-> - enhanced C2_STATE BOOT mode flag comment
-> - moved exynos_{set,clear}_boot_flag() to firmware.c
-> - added patch description to patch #3
-> 
-> Changes since v2:
-> - rebased on top of for-next branch (commit: 77105c882ba6) of
->   linux-samsung.git kernel tree
-> 
-> Changes since v1:
-> - rebased on top of for-next branch (commit: ce275c369a0b) of
->   linux-samsung.git kernel tree
-> - fixed lockup on hotplug by using dsb_sev() instead of IPI in
->   exynos_boot_secondary() on Exynos3250
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (4):
->   ARM: EXYNOS: fix CPU1 hotplug on Exynos3250
->   ARM: EXYNOS: add code for setting/clearing boot flag
->   ARM: EXYNOS: cpuidle: add AFTR mode support for Exynos3250
->   ARM: EXYNOS: cpuidle: allow driver usage on Exynos3250 SoC
-> 
->  arch/arm/mach-exynos/common.h   |  6 ++++++
->  arch/arm/mach-exynos/exynos.c   |  1 +
->  arch/arm/mach-exynos/firmware.c | 33 ++++++++++++++++++++++++++++++++-
->  arch/arm/mach-exynos/platsmp.c  | 23 ++++++++++++++++++++---
->  arch/arm/mach-exynos/pm.c       | 12 +++++++++++-
->  arch/arm/mach-exynos/regs-pmu.h |  3 +++
->  arch/arm/mach-exynos/smc.h      |  9 +++++++++
->  7 files changed, 82 insertions(+), 5 deletions(-)
-> 
+kongxinwei (3):
+  thermal: hisilicon: add new hisilicon thermal sensor driver
+  dts: hi6220: enable thermal sensor for hisilicon SoC
+  dt-bindings: Document the hi6220 thermal sensor bindings
 
+ .../bindings/thermal/hisilicon-thermal.txt         |  51 ++
+ arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 153 ++++++
+ drivers/thermal/Kconfig                            |   8 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/hisi_thermal.c                     | 531 +++++++++++++++++++++
+ 5 files changed, 744 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+ create mode 100644 arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+ create mode 100644 drivers/thermal/hisi_thermal.c
+
+-- 
+1.9.1
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
