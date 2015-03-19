@@ -1,76 +1,61 @@
-From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Subject: Re: [PATCH 2/7] irqchip: renesas-irqc: Add minimal runtime PM support
-Date: Thu, 19 Mar 2015 10:37:48 +0900
-Message-ID: <20150319013748.GH14051@verge.net.au>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 3/7] irqchip: renesas-irqc: Add functional clock to
+ bindings
+Date: Thu, 19 Mar 2015 10:41:44 +0900
+Message-ID: <20150319014143.GI14051@verge.net.au>
 References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
- <1426704961-27322-3-git-send-email-geert+renesas@glider.be>
+ <1426704961-27322-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1426704961-27322-3-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1426704961-27322-4-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 18, 2015 at 07:55:56PM +0100, Geert Uytterhoeven wrote:
-> This is just enough to let pm_clk_*() enable the functional clock, and
-> manage it for suspend/resume, if present.
-> Before, it was assumed enabled by the bootloader or reset state.
+On Wed, Mar 18, 2015 at 07:55:57PM +0100, Geert Uytterhoeven wrote:
+> The external IRQ controller has a functional clock, which is used for
+> power management. Document it.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+> Fix a typo in the r8a73a4 SoC name while we're at it.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Reviewed-by: Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
 
 > ---
->  drivers/irqchip/irq-renesas-irqc.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  .../devicetree/bindings/interrupt-controller/renesas,irqc.txt         | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
-> index 2ce2edf8ec8ec182..718f01cd1aea19f6 100644
-> --- a/drivers/irqchip/irq-renesas-irqc.c
-> +++ b/drivers/irqchip/irq-renesas-irqc.c
-> @@ -29,6 +29,7 @@
->  #include <linux/slab.h>
->  #include <linux/module.h>
->  #include <linux/platform_data/irq-renesas-irqc.h>
-> +#include <linux/pm_runtime.h>
+> diff --git a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
+> index 1a88e62228e59631..4f85aeb658e4c833 100644
+> --- a/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
+> +++ b/Documentation/devicetree/bindings/interrupt-controller/renesas,irqc.txt
+> @@ -4,7 +4,7 @@ Required properties:
 >  
->  #define IRQC_IRQ_MAX	32	/* maximum 32 interrupts per driver instance */
+>  - compatible: has to be "renesas,irqc-<soctype>", "renesas,irqc" as fallback.
+>    Examples with soctypes are:
+> -    - "renesas,irqc-r8a73a4" (R-Mobile AP6)
+> +    - "renesas,irqc-r8a73a4" (R-Mobile APE6)
+>      - "renesas,irqc-r8a7790" (R-Car H2)
+>      - "renesas,irqc-r8a7791" (R-Car M2-W)
+>      - "renesas,irqc-r8a7792" (R-Car V2H)
+> @@ -12,6 +12,7 @@ Required properties:
+>      - "renesas,irqc-r8a7794" (R-Car E2)
+>  - #interrupt-cells: has to be <2>: an interrupt index and flags, as defined in
+>    interrupts.txt in this directory
+> +- clocks: Must contain a reference to the functional clock.
 >  
-> @@ -180,6 +181,9 @@ static int irqc_probe(struct platform_device *pdev)
->  	p->pdev = pdev;
->  	platform_set_drvdata(pdev, p);
+>  Optional properties:
 >  
-> +	pm_runtime_enable(&pdev->dev);
-> +	pm_runtime_get_sync(&pdev->dev);
-> +
->  	/* get hold of manadatory IOMEM */
->  	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	if (!io) {
-> @@ -260,6 +264,8 @@ err3:
->  err2:
->  	iounmap(p->iomem);
->  err1:
-> +	pm_runtime_put(&pdev->dev);
-> +	pm_runtime_disable(&pdev->dev);
->  	kfree(p);
->  err0:
->  	return ret;
-> @@ -275,6 +281,8 @@ static int irqc_remove(struct platform_device *pdev)
->  
->  	irq_domain_remove(p->irq_domain);
->  	iounmap(p->iomem);
-> +	pm_runtime_put(&pdev->dev);
-> +	pm_runtime_disable(&pdev->dev);
->  	kfree(p);
->  	return 0;
->  }
+> @@ -29,4 +30,5 @@ Example:
+>  			     <0 1 IRQ_TYPE_LEVEL_HIGH>,
+>  			     <0 2 IRQ_TYPE_LEVEL_HIGH>,
+>  			     <0 3 IRQ_TYPE_LEVEL_HIGH>;
+> +		clocks = <&mstp4_clks R8A7790_CLK_IRQC>;
+>  	};
 > -- 
 > 1.9.1
 > 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
