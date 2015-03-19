@@ -1,141 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core / PM: Add callbacks for PM domain initialization/cleanup
-Date: Thu, 19 Mar 2015 15:21:14 +0100
-Message-ID: <3533423.QQDErEmeTO@vostro.rjw.lan>
-References: <1426261429-31883-1-git-send-email-ulf.hansson@linaro.org> <2317791.ICLpdqLgyu@vostro.rjw.lan> <20150319132907.GA3707@kroah.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 0/3] 96boards: add thermal senor support to hikey board
+Date: Thu, 19 Mar 2015 13:59:46 +0000
+Message-ID: <20150319135946.GG18473@leverpostej>
+References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58055 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750756AbbCSN5T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 09:57:19 -0400
-In-Reply-To: <20150319132907.GA3707@kroah.com>
+Received: from foss.arm.com ([217.140.101.70]:37207 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754578AbbCSOAT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Mar 2015 10:00:19 -0400
+Content-Disposition: inline
+In-Reply-To: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: kongxinwei <kong.kongxinwei@hisilicon.com>
+Cc: "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>
 
-On Thursday, March 19, 2015 02:29:07 PM Greg Kroah-Hartman wrote:
-> On Wed, Mar 18, 2015 at 04:02:11PM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > If PM domains are in use, it may be necessary to prepare the code
-> > handling a PM domain for driver probing.  For example, in some
-> > cases device drivers rely on the ability to power on the devices
-> > with the help of the IO runtime PM framework and the PM domain
-> > code needs to be ready for that.  Also, if that code has not been
-> > fully initialized yet, the driver probing should be deferred.
-> > 
-> > Moreover, after the probing is complete, it may be necessary to
-> > put the PM domain in question into the state reflecting the current
-> > needs of the devices in it, for example, to prevent power from being
-> > drawn in vain.
-> > 
-> > For these reasons, introduce new PM domain callbacks, ->activate
-> > and ->sync, called, respectively, before probing for a device
-> > driver and after the probing has been completed.
-> > 
-> > That is not sufficient, however, because the device's PM domain
-> > pointer has to be populated for the ->activate callback to be
-> > executed, so setting it in bus type ->probe callback routines
-> > would be too late.  Also, there are bus types where PM domains
-> > are not used at all and the core should not attempt to set the
-> > pm_domain pointer for the devices on those buses.
-> > 
-> > To overcome that difficulty, introduce two new bus type
-> > callbacks, ->init and ->release, called by bus_add_device() and
-> > bus_remove_device(), respectively.  That will allow ->init to
-> > be used to populate the pm_domain pointer for the bus types
-> > that want to do that and ->release will be useful for any
-> > cleanup that may be necessary after removing a device that
-> > was part of a PM domain.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > It occured to me that we might want to ->sync regardless of whether or
-> > not the probing had been succenssful, so I changed the code in
-> > really_probe() along these lines.  Please let me know if that's
-> > not OK.
-> > 
-> > ---
-> >  drivers/base/bus.c     |   12 +++++++++++-
-> >  drivers/base/dd.c      |   20 ++++++++++++++------
-> >  include/linux/device.h |    5 +++++
-> >  include/linux/pm.h     |    6 ++++++
-> >  4 files changed, 36 insertions(+), 7 deletions(-)
-> > 
-> > Index: linux-pm/drivers/base/bus.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/bus.c
-> > +++ linux-pm/drivers/base/bus.c
-> > @@ -509,10 +509,15 @@ int bus_add_device(struct device *dev)
-> >  	int error = 0;
-> >  
-> >  	if (bus) {
-> > +		if (bus->init) {
-> > +			error = bus->init(dev);
-> > +			if (error)
-> > +				goto out_put;
-> > +		}
+On Thu, Mar 19, 2015 at 07:57:26AM +0000, kongxinwei wrote:
+> The Linaro connect introduce 96boards series in Hong Kong,The HiKey board
+> is the first board to be certified 96Boards Consumer Edition compatible.
+> This board is based on the HiSilicon SoC. you can get more information
+> from https://www.96boards.org.
 > 
-> This doesn't make sense to me.  A bus just called bus_add_device, it can
-> do whatever it wanted to right before calling this function, no need for
-> another callback.
-
-The only caller of bus_add_device() is device_add().
-
-What do you mean by "bus just called bus_add_device"?  Do you think that
-the pm_domain pointer should be populated before calling device_add()?
-
-That wouldn't work for the ACPI PM domain at least, because ACPI companions
-are generally added during device_add() and we arguably cannot point a
-device to the ACPI PM domain before its ACPI companion is set.
-
-> >  		pr_debug("bus: '%s': add device %s\n", bus->name, dev_name(dev));
-> >  		error = device_add_attrs(bus, dev);
-> >  		if (error)
-> > -			goto out_put;
-> > +			goto out_release;
-> >  		error = device_add_groups(dev, bus->dev_groups);
-> >  		if (error)
-> >  			goto out_groups;
-> > @@ -534,6 +539,9 @@ out_groups:
-> >  	device_remove_groups(dev, bus->dev_groups);
-> >  out_id:
-> >  	device_remove_attrs(bus, dev);
-> > +out_release:
-> > +	if (bus->release)
-> > +		bus->release(dev);
+> The hisilicon SoC contains thermal module, this thermal module has 4 sensors,
 > 
-> >  out_put:
-> >  	bus_put(dev->bus);
-> >  	return error;
-> > @@ -597,6 +605,8 @@ void bus_remove_device(struct device *de
-> >  	device_remove_groups(dev, dev->bus->dev_groups);
-> >  	if (klist_node_attached(&dev->p->knode_bus))
-> >  		klist_del(&dev->p->knode_bus);
-> > +	if (bus->release)
-> > +		bus->release(dev);
+> 	- sensor 0: local sensor;
+> 	- sensor 1: remote sensor for ACPU cluster 1;
+> 	- sensor 2: remote sensor for ACPU cluster 2;
+> 	- sensor 3: remote sensor for GPU;
 > 
-> Same with release(), this happens when a bus wants to remove a device,
-> it controls this, why have a callback right away?  These both shouldn't
-> be needed.
+> It can obtain this device temperature by operating this hardware. The new
+> sensor driver satisfies thermal framework and to realize the ACPU ,GPU and
+> so on to cool function.
+> 
+> kongxinwei (3):
+>   thermal: hisilicon: add new hisilicon thermal sensor driver
+>   dts: hi6220: enable thermal sensor for hisilicon SoC
+>   dt-bindings: Document the hi6220 thermal sensor bindings
+> 
+>  .../bindings/thermal/hisilicon-thermal.txt         |  51 ++
+>  arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 153 ++++++
+>  drivers/thermal/Kconfig                            |   8 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/hisi_thermal.c                     | 531 +++++++++++++++++++++
 
-This is for symmetry with bus_add_device() and please see the argument there.
+Mainline does not have a hi6220 dtsi.
 
-> sorry if I missed this before, I hadn't noticed these callbacks in
-> previous patches but I wasn't paying much attention.
+Which tree is this against?
 
-No, they were not present before.
+What are your dependencies?
 
-There are two alternatives to them.  One is to do PM domain attach/detach in
-the bus type's ->probe and ->remove, but that's suboptimal, because it is
-then carried out every time a driver is probed/removed for a device.  The
-other one would be to have each interested bus type register a bus type
-notifier for itself, but that would be rather ugly, wouldn't it?
-
-Rafael
-
+Mark.
