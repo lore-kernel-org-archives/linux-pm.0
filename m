@@ -1,106 +1,50 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Thu, 19 Mar 2015 14:17:53 +0000
-Message-ID: <20150319141753.GB25967@leverpostej>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core / PM: Add callbacks for PM domain
+ initialization/cleanup
+Date: Thu, 19 Mar 2015 10:20:38 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1503191017590.1135-100000@iolanthe.rowland.org>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37302 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754980AbbCSOS0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Mar 2015 10:18:26 -0400
-Content-Disposition: inline
-In-Reply-To: <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:57095 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752017AbbCSOUj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 10:20:39 -0400
+In-Reply-To: <3533423.QQDErEmeTO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kongxinwei <kong.kongxinwei@hisilicon.com>
-Cc: "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, Mar 19, 2015 at 07:57:27AM +0000, kongxinwei wrote:
-> This patch adds the support for hisilicon thermal sensor, within
-> hisilicon SoC. there will register sensors for thermal framework
-> and use device tree to bind cooling device.
+On Thu, 19 Mar 2015, Rafael J. Wysocki wrote:
+
+> > This doesn't make sense to me.  A bus just called bus_add_device, it can
+> > do whatever it wanted to right before calling this function, no need for
+> > another callback.
 > 
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
-> ---
->  drivers/thermal/Kconfig        |   8 +
->  drivers/thermal/Makefile       |   1 +
->  drivers/thermal/hisi_thermal.c | 531 +++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 540 insertions(+)
->  create mode 100644 drivers/thermal/hisi_thermal.c
-
-[...]
-
-> +       ret = of_property_read_u32(np, "hisilicon,tsensor-lag-value",
-> +                                  &sensor->lag);
-
-This wasn't in the binding.
-
-[...]
-
-> +       ret = of_property_read_u32(np, "hisilicon,tsensor-thres-temp",
-> +                                  &sensor->thres_temp);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "failed to get thres value %d: %d\n",
-> +                       index, ret);
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_u32(np, "hisilicon,tsensor-reset-temp",
-> +                                  &sensor->reset_temp);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "failed to get reset value %d: %d\n",
-> +                       index, ret);
-> +               return ret;
-> +       }
-
-I see now that these properties result in the HW being programmed. You
-should figure out how to reconcile these with thermal-zone trip points
-rather than having parallel properties.
-
-> +
-> +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
-> +
-> +               if (data->irq_bind_sensor != -1)
-> +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
-> +                                data->irq_bind_sensor);
-> +
-> +               /* bind irq to this sensor */
-> +               data->irq_bind_sensor = index;
-> +       }
-
-I don't see why this should be specified in the DT. Why do you believe
-it should?
-
-[...]
-
-> +static int hisi_thermal_probe(struct platform_device *pdev)
-> +{
-> +       struct hisi_thermal_data *data;
-> +       struct resource *res;
-> +       int i;
-> +       int ret;
-> +
-> +       if (!cpufreq_get_current_driver()) {
-> +               dev_dbg(&pdev->dev, "no cpufreq driver!");
-> +               return -EPROBE_DEFER;
-> +       }
-
-Surely we care about not burning out the board even if we don't have
-cpufreq?
-
-Is there any ordering guarantee between the probing of this driver and
-cpufreq?
+> The only caller of bus_add_device() is device_add().
+> 
+> What do you mean by "bus just called bus_add_device"?  Do you think that
+> the pm_domain pointer should be populated before calling device_add()?
+> 
+> That wouldn't work for the ACPI PM domain at least, because ACPI companions
+> are generally added during device_add() and we arguably cannot point a
+> device to the ACPI PM domain before its ACPI companion is set.
 
 
-[...]
+> There are two alternatives to them.  One is to do PM domain attach/detach in
+> the bus type's ->probe and ->remove, but that's suboptimal, because it is
+> then carried out every time a driver is probed/removed for a device.  The
+> other one would be to have each interested bus type register a bus type
+> notifier for itself, but that would be rather ugly, wouldn't it?
 
-> +       data->clk = devm_clk_get(&pdev->dev, NULL);
+Driver probing and removal is not a hot path.  Successful probes 
+usually occur only once for each device.  I don't know how many 
+unsuccessful probes there are on average, but probably not many.
 
-You gave this clock a name in the binding. Use it or drop it.
+Doing the PM domain attach/detach in ->probe and ->remove makes sense 
+to me.
 
-Mark. 
+Alan Stern
+
