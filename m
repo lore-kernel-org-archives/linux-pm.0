@@ -1,73 +1,42 @@
 From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 0/7] ARM: shmobile: Add IRQC clock to device tree
-Date: Thu, 19 Mar 2015 10:43:29 +0900
-Message-ID: <20150319014328.GJ14051@verge.net.au>
-References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH V2] ARM: shmobile: cpuidle: Remove the pointless default
+ driver
+Date: Thu, 19 Mar 2015 11:05:26 +0900
+Message-ID: <20150319020526.GL14051@verge.net.au>
+References: <1426605912-28032-1-git-send-email-daniel.lezcano@linaro.org>
+ <550847BA.8050503@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:60453 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbbCSCF2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2015 22:05:28 -0400
 Content-Disposition: inline
-In-Reply-To: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <550847BA.8050503@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: geert Uytterhoeven <geert@linux-m68k.org>, magnus.damm@gmail.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Thanks Geert,
+On Tue, Mar 17, 2015 at 04:26:50PM +0100, Daniel Lezcano wrote:
+> 
+> Sorry Geert, I forget to Cc you.
+> 
+> On 03/17/2015 04:25 PM, Daniel Lezcano wrote:
+> >The default idle driver uses one state with the WFI instruction.
+> >The default idle routine invokes WFI when no cpuidle driver is present.
+> >
+> >The default cpuidle driver is pointless and does not give more than the
+> >default idle routine and moreover it pulls all the mathematics tied with
+> >the cpuidle governor for nothing, hence consuming more energy.
+> >
+> >Remove the default driver, the related code and register the driver directly.
+> >
+> >[compiled only - no board - no test]
+> >
+> >Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Wed, Mar 18, 2015 at 07:55:54PM +0100, Geert Uytterhoeven wrote:
-> 	Hi,
-> 
-> This patch series adds the IRQC clock to the device tree on SoCs that
-> have such a clock (r8a73a4 and r8a779x), and adds mininal runtime PM
-> support to the renesas-irqc driver, to make sure the clock is enabled
-> when needed by the external IRQ controller(s).
-> Before, the clock was assumed enabled by the bootloader or reset state.
-> 
-> As usual when involving clocks, the DTS changes depend stricly on the
-> driver changes. Else the clock will be disabled as assumed unused,
-> breaking the boot.
-> 
-> This was tested on r8a73a4/ape6evm and r8a7791/koelsch.
+Thanks Daniel,
 
-I will defer the DTS changes until the irqchip changes, which I
-have reviewed, are accepted.
-
-> 
-> Thanks!
-> 
-> Geert Uytterhoeven (7):
->   irqchip: renesas-irqc: Add more register documentation
->   irqchip: renesas-irqc: Add minimal runtime PM support
->   irqchip: renesas-irqc: Add functional clock to bindings
->   ARM: shmobile: r8a7734: Add IRQC clock to device tree
->   ARM: shmobile: r8a7790: Add IRQC clock to device tree
->   ARM: shmobile: r8a7791: Add IRQC clock to device tree
->   ARM: shmobile: r8a7794: Add IRQC clock to device tree
-> 
->  .../bindings/interrupt-controller/renesas,irqc.txt |  4 +++-
->  arch/arm/boot/dts/r8a73a4.dtsi                     | 11 +++++----
->  arch/arm/boot/dts/r8a7790.dtsi                     |  9 +++++++
->  arch/arm/boot/dts/r8a7791.dtsi                     |  9 +++++++
->  arch/arm/boot/dts/r8a7794.dtsi                     |  9 +++++++
->  drivers/irqchip/irq-renesas-irqc.c                 | 28 ++++++++++++++++++----
->  include/dt-bindings/clock/r8a73a4-clock.h          |  1 +
->  include/dt-bindings/clock/r8a7790-clock.h          |  3 +++
->  include/dt-bindings/clock/r8a7791-clock.h          |  3 +++
->  include/dt-bindings/clock/r8a7794-clock.h          |  3 +++
->  10 files changed, 70 insertions(+), 10 deletions(-)
-> 
-> -- 
-> 1.9.1
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+I have queued this up for v4.1.
