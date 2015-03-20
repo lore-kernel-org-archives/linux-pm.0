@@ -1,153 +1,86 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Fri, 20 Mar 2015 22:53:53 +0800
-Message-ID: <20150320145353.GA20461@leoy-linaro>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
- <20150319141753.GB25967@leverpostej>
- <20150320060653.GC18907@leoy-linaro>
- <20150320112414.GD14766@leverpostej>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150320112414.GD14766@leverpostej>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: kongxinwei <kong.kongxinwei@hisilicon.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V2] PM / Domains: Sync runtime PM status with genpd after probe
+Date: Fri, 20 Mar 2015 15:55:12 +0100
+Message-ID: <1426863312-31132-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f54.google.com ([209.85.215.54]:36296 "EHLO
+	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbbCTOzw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 10:55:52 -0400
+Received: by labe2 with SMTP id e2so13660187lab.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 07:55:51 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>
 
-On Fri, Mar 20, 2015 at 11:24:14AM +0000, Mark Rutland wrote:
-> > > > +       ret = of_property_read_u32(np, "hisilicon,tsensor-thres-temp",
-> > > > +                                  &sensor->thres_temp);
-> > > > +       if (ret) {
-> > > > +               dev_err(&pdev->dev, "failed to get thres value %d: %d\n",
-> > > > +                       index, ret);
-> > > > +               return ret;
-> > > > +       }
-> > > > +
-> > > > +       ret = of_property_read_u32(np, "hisilicon,tsensor-reset-temp",
-> > > > +                                  &sensor->reset_temp);
-> > > > +       if (ret) {
-> > > > +               dev_err(&pdev->dev, "failed to get reset value %d: %d\n",
-> > > > +                       index, ret);
-> > > > +               return ret;
-> > > > +       }
-> > > 
-> > > I see now that these properties result in the HW being programmed. You
-> > > should figure out how to reconcile these with thermal-zone trip points
-> > > rather than having parallel properties.
-> >  
-> > Set "tsensor-thres-temp" to register so that if thermal reaches the
-> > threshold, the sensor will trigger h/w interrupt.
-> > 
-> > Set "tsensor-reset-temp" to register so that if thermal reaches the
-> > reset value, the sensor will assert SoC reset signal to trigger h/w
-> > reset.
-> 
-> I understand this.
-> 
-> > This is different w/t thermal-zone trip points, the trip points are
-> > used for timer polling.
-> 
-> That may be the case in the code as it stands today, but per the binding
-> the trip points are the temperatures at which an action is to be taken.
-> 
-> The thermal-zone has poilling-delay and polling-delay-passive, but
-> there's no reason you couldn't also use the interrupt to handle the
-> "hot" trip-point, adn the reset at the "critical" trip-point. All that's
-> missing is the plumbing in order to do so.
-> 
-> So please co-ordinate with the thermal framework to do that.
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Let's dig further more for this point, so that we can get more specific
-gudiance and have a good preparation for next version's patch set.
+Buses which currently supports attaching devices to their PM domains,
+will invoke the dev_pm_domain_attach() API from their ->probe()
+callbacks. During the attach procedure, genpd power up the PM domain.
 
-After i reviewed the thermal framework code, currently have one smooth
-way to co-ordinate the trip points w/t thermal framework: use the function
-*thermal_zone_device_register()* to register sensor, and can use the
-callback function .get_trip_temp to tell thermal framework for the
-trip points' temperature.
+In those scenarios where the bus/driver don't need to access its device
+during probe, it may leave it in runtime PM suspended state since
+that's also the default state. In that way, no notifications through
+the runtime PM callbacks will reach the PM domain during probe.
 
-For hisi thermal case, now the driver is using the function
-*thermal_zone_of_sensor_register* to register sensor, but use this way
-i have not found there have standard APIs which can be used by sensor
-driver to get the trip points info from thermal framework.
+For genpd, the consequence from the above scenario means the PM domain
+will remain powered. Therefore, implement the struct dev_pm_domain's
+->sync() callback, which is invoked from driver core after the
+bus/driver has probed the device. It allows genpd to power off the PM
+domain if it's unused.
 
-I may miss something for thermal framework, so if have existed APIs to
-get the trip points, could pls point out?
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+[Ulf: Updated patch according to updates in driver core]
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-> > Do u think below modification is more reasonable?
-> > 
-> > - Set "tsensor-thres-temp" = 700000, which equal to thermal-zone
-> >   passive trip point, so that we can use h/w interrupt to update the
-> >   thermal value immediately, rather than using polling method w/t long
-> >   delay;
-> > 
-> > - Set "tsensor-reset-temp" = <100000>, which is higher than
-> >   thermal-zone critical trip point, so that the s/w reset method has
-> >   higher priority than h/w reset; we also can easily know the reset is
-> >   caused by thermal framework; "tsensor-reset-temp" is only used to
-> >   protect h/w circuit.
-> 
-> As mentioned above, I think that you should co-ordinate with the thermal
-> framework. You're worknig around limitations inthe code as it stands
-> today rather than solving the fundamental issue.
-> 
-> > > > +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
-> > > > +
-> > > > +               if (data->irq_bind_sensor != -1)
-> > > > +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
-> > > > +                                data->irq_bind_sensor);
-> > > > +
-> > > > +               /* bind irq to this sensor */
-> > > > +               data->irq_bind_sensor = index;
-> > > > +       }
-> > > 
-> > > I don't see why this should be specified in the DT. Why do you believe
-> > > it should?
-> > 
-> > The thermal sensor module has four sensors, but have only one
-> > interrupt signal; This interrupt can only be used by one sensor;
-> > So want to use dts to bind the interrupt with one selected sensor.
-> 
-> That's not all that great, though I'm not exactly sure how the kernel
-> would select the best sensor to measure with. It would be good if you
-> could talk to the thermal maintainers w.r.t. this.
+Changes in v2:
+	- I picked up Russell's earlier patch [1] and updated it to fit the
+	changes [2] proposed to be done to the driver core.
 
-This will be decided by the silicon, right? Every soc has different
-combination with cpu/gpu/vpu, so which part is hottest, this maybe
-highly dependent on individual SoC.
+	[1]: [PATCH 3/9] pm: domains: sync runtime PM status with PM domains
+	after probe
 
-S/W just need provide the flexibility so that later can choose
-the interrupt to bind with the sensor within the hottest part.
+	[2]: [PATCH v3] driver core / PM: Add PM domain callbacks for device
+	setup/cleanup
+	http://www.spinics.net/lists/arm-kernel/msg407394.html
 
-> > > > +static int hisi_thermal_probe(struct platform_device *pdev)
-> > > > +{
-> > > > +       struct hisi_thermal_data *data;
-> > > > +       struct resource *res;
-> > > > +       int i;
-> > > > +       int ret;
-> > > > +
-> > > > +       if (!cpufreq_get_current_driver()) {
-> > > > +               dev_dbg(&pdev->dev, "no cpufreq driver!");
-> > > > +               return -EPROBE_DEFER;
-> > > > +       }
-> > > 
-> > > Surely we care about not burning out the board even if we don't have
-> > > cpufreq?
-> > > 
-> > > Is there any ordering guarantee between the probing of this driver and
-> > > cpufreq?
-> > 
-> > Yes, here need binding the thermal sensor w/t cpu cooling device,
-> > and cpu cooling device is based on cpufreq driver.
-> 
-> Sure, but if you don't have a cooling device you still want the critical
-> temperature reset and so on, no?
+---
+ drivers/base/power/domain.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Okay, let's remove this dependency.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 45937f8..295ff71 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2130,6 +2130,17 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ 	genpd_queue_power_off_work(pd);
+ }
+ 
++static void genpd_dev_pm_sync(struct device *dev)
++{
++	struct generic_pm_domain *pd;
++
++	pd = dev_to_genpd(dev);
++	if (IS_ERR(pd))
++		return;
++
++	genpd_queue_power_off_work(pd);
++}
++
+ /**
+  * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
+  * @dev: Device to attach.
+@@ -2196,6 +2207,7 @@ int genpd_dev_pm_attach(struct device *dev)
+ 	}
+ 
+ 	dev->pm_domain->detach = genpd_dev_pm_detach;
++	dev->pm_domain->sync = genpd_dev_pm_sync;
+ 	pm_genpd_poweron(pd);
+ 
+ 	return 0;
+-- 
+1.9.1
 
-Thanks,
-Leo Yan
