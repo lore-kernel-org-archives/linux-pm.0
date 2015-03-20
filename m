@@ -1,138 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
-Date: Fri, 20 Mar 2015 13:31:46 +0100
-Message-ID: <178365735.3ZOqcVG98c@vostro.rjw.lan>
-References: <3533423.QQDErEmeTO@vostro.rjw.lan> <CAPDyKFr-c+SNKw1+5BE_8K0_jWMNavkEX5+dhST8b9Ggzx-cyw@mail.gmail.com> <CAPDyKFpvBvWOM0V0jAbz4tTQEvtzp8A6naV316p7S1sAYF43uw@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [FOR DISCUSSION 0/9] Dove PMU support
+Date: Fri, 20 Mar 2015 12:16:59 +0000
+Message-ID: <20150320121659.GJ8656@n2100.arm.linux.org.uk>
+References: <20150312183020.GU8656@n2100.arm.linux.org.uk>
+ <1575145.KH9tPKGaeR@vostro.rjw.lan>
+ <1824813.kJQ02QuMbA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56657 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750827AbbCTMHu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 08:07:50 -0400
-In-Reply-To: <CAPDyKFpvBvWOM0V0jAbz4tTQEvtzp8A6naV316p7S1sAYF43uw@mail.gmail.com>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:59223 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbbCTMRS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 08:17:18 -0400
+Content-Disposition: inline
+In-Reply-To: <1824813.kJQ02QuMbA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 
-On Friday, March 20, 2015 12:37:47 PM Ulf Hansson wrote:
-> On 20 March 2015 at 08:45, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > On 19 March 2015 at 22:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
-> >>
-> >> If PM domains are in use, it may be necessary to prepare the code
-> >> handling a PM domain for driver probing.  For example, in some
-> >> cases device drivers rely on the ability to power on the devices
-> >> with the help of the IO runtime PM framework and the PM domain
-> >> code needs to be ready for that.  Also, if that code has not been
-> >> fully initialized yet, the driver probing should be deferred.
-> >>
-> >> Moreover, after the probing is complete, it may be necessary to
-> >> put the PM domain in question into the state reflecting the current
-> >> needs of the devices in it, for example, so that power is not drawn
-> >> in vain.  The same should be done after removing a driver from
-> >> a device, as the PM domain state may need to be changed to reflect
-> >> the new situation.
-> >>
-> >> For these reasons, introduce new PM domain callbacks, ->activate
-> >> and ->sync, called, respectively, before probing for a device
-> >> driver and after the probing has been completed or the driver
-> >> has been removed.
-> >>
-> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > This looks good to me!
-> >
-> > Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Thu, Mar 19, 2015 at 11:02:35PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, March 19, 2015 10:59:20 PM Rafael J. Wysocki wrote:
+> > On Thursday, March 12, 2015 06:30:21 PM Russell King - ARM Linux wrote:
+> > > This is a re-posting of the patch set which I posted almost 10 months
+> > > ago to support the Dove PMU, with a few additional changes.  This set
+> > > is based upon 3.19.
+> > > 
+> > > In this set are:
+> > > 
+> > > * two patches which Rafael originally acked, but there was indecision
+> > >   last time around how to handle them due to potential conflicts with
+> > >   work that Ulf was doing.  These patches have been updated to apply
+> > >   cleanly to 3.19.  I don't know if people want to take these as
+> > >   fixes to the PM domain code or not (hence why I'm posting this
+> > >   series during the merge window - if it weren't for this, I'd hold
+> > >   it off.)
+> > > 
+> > > * what I regard as a fix to the PM domain code; as a result of a
+> > >   previous commit, the PM domain code mismatches the runtime PM state,
+> > >   which leads to the PM domain being unexpectedly left on.  This patch
+> > >   has been re-worked to try an alternative approach, syncing the PM
+> > >   domain state with the runtime PM state after the probe has completed.
+> > > 
+> > > * the addition of the core Dove PMU driver, which consists of a reset,
+> > >   IRQ controller, and power domains.  The reset and power domain code
+> > >   has to be closely related due to the power up/down requirements of
+> > >   the GPU/VPU subsystems needing to be performed atomically.  (This
+> > >   requirement prevents it using the MFD infrastructure, because we
+> > >   would need to hold spinlocks while calling several different
+> > >   sub-drivers.)
+> > > 
+> > > * addition of the RTC interrupt, so we can now receive and act on
+> > >   alarms generated by the Dove RTC.
+> > > 
+> > > * addition of the DT descriptions for the GPU and VPU power domains.
+> > >   These patches do not themselves add the DT descriptions for these
+> > >   units, so these patches serve as illustrations how these should be
+> > >   described.
+> > > 
+> > 
+> > I can apply patches [1-3/9] from this series if that helps.
 > 
-> I was a bit too quick acking this a minor fix is needed. See below.
-> 
-> >
-> >> ---
-> >>> ---
-> >>>
-> >>> This is an update without the additional bus type callbacks.  This should
-> >>> be suffucient at this point for the use cases we have.
-> >>>
-> >>> I've decided to also call ->sync on driver removal as that is consistent
-> >>> with what happens for failing probe.
-> >>>
-> >>> ---
-> >>
-> >> One more update.
-> >>
-> >> I've realized that in the PM domain's ->sync callback is called after
-> >> clearing the device's driver field (in the failed probe or driver removal
-> >> case) rather than before it, that could be used to distinguish between the
-> >> two cases (successful probe vs no driver), so I reworked the patch accordingly.
-> >>
-> >> ---
-> >>  drivers/base/dd.c  |   16 ++++++++++++++++
-> >>  include/linux/pm.h |    6 ++++++
-> >>  2 files changed, 22 insertions(+)
-> >>
-> >> Index: linux-pm/include/linux/pm.h
-> >> ===================================================================
-> >> --- linux-pm.orig/include/linux/pm.h
-> >> +++ linux-pm/include/linux/pm.h
-> >> @@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
-> >>   * Power domains provide callbacks that are executed during system suspend,
-> >>   * hibernation, system resume and during runtime PM transitions along with
-> >>   * subsystem-level and driver-level callbacks.
-> >> + *
-> >> + * @detach: Called when removing a device from the domain.
-> >> + * @activate: Called before executing probe routines for bus types and drivers.
-> >> + * @sync: Called after driver probe and removal.
-> >>   */
-> >>  struct dev_pm_domain {
-> >>         struct dev_pm_ops       ops;
-> >>         void (*detach)(struct device *dev, bool power_off);
-> >> +       int (*activate)(struct device *dev);
-> >> +       void (*sync)(struct device *dev);
-> >>  };
-> >>
-> >>  /*
-> >> Index: linux-pm/drivers/base/dd.c
-> >> ===================================================================
-> >> --- linux-pm.orig/drivers/base/dd.c
-> >> +++ linux-pm/drivers/base/dd.c
-> >> @@ -279,6 +279,7 @@ static int really_probe(struct device *d
-> >>  {
-> >>         int ret = 0;
-> >>         int local_trigger_count = atomic_read(&deferred_trigger_count);
-> >> +       struct dev_pm_domain *pm_domain = dev->pm_domain;
-> >>
-> >>         atomic_inc(&probe_count);
-> >>         pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
-> >> @@ -298,6 +299,12 @@ static int really_probe(struct device *d
-> >>                 goto probe_failed;
-> >>         }
-> >>
-> 
-> 
-> 
-> >> +       if (pm_domain && pm_domain->activate) {
-> 
-> You need to re-fetch the pm_domain pointer at this point, since it
-> will be updated during ->probe().
+> I mean from the next version of it ([FOR DISCUSSION 0/10] Dove PMU support).
 
-Right.
+Kevin had some comments on patch 2 which I think ought to be addressed.
+He's quite right that dev_to_genpd() should be hidden from view and
+replaced with the safer pm_genpd_lookup_dev() version - even though
+pm_genpd_lookup_dev() itself is not fully safe against the domain
+on a device changing beneath it.
 
-> Maybe it's just safer to always do the following check:
-> 
-> if (dev->pm_domain && dev->pm_domain->activate|sync)
+If you want to hold on, I'll respin with his comments there addressed,
+or if you prefer to merge them as-is and fix Kevin's comments afterwards,
+that's also fine by me.
 
-Yes, it is.
+I'd just be happy to see some progress on this series. :)
 
-Well, overoptimization.  I seem to always forget to avoid them. :-)
-
-Will send a v3 with that fixed and the Dmitry's comment taken into account
-shortly.
-
+Thanks.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
