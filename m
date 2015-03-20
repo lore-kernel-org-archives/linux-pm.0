@@ -1,62 +1,35 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 1/3] pm: domains: quieten down generic pm domains
-Date: Fri, 20 Mar 2015 17:20:28 +0000
-Message-ID: <E1YZ0ay-0000sk-HM@rmk-PC.arm.linux.org.uk>
-References: <20150320171941.GK8656@n2100.arm.linux.org.uk>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [FOR DISCUSSION 0/9] Dove PMU support
+Date: Fri, 20 Mar 2015 17:19:41 +0000
+Message-ID: <20150320171941.GK8656@n2100.arm.linux.org.uk>
+References: <20150312183020.GU8656@n2100.arm.linux.org.uk>
+ <1824813.kJQ02QuMbA@vostro.rjw.lan>
+ <20150320121659.GJ8656@n2100.arm.linux.org.uk>
+ <1466359.8taRhRkKWI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:59739 "EHLO
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:59753 "EHLO
 	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbbCTRUt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 13:20:49 -0400
-In-Reply-To: <20150320171941.GK8656@n2100.arm.linux.org.uk>
+	with ESMTP id S1751077AbbCTRVH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 13:21:07 -0400
 Content-Disposition: inline
+In-Reply-To: <1466359.8taRhRkKWI@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 
-PM domains are rather noisy; scheduling behaviour can cause callbacks
-to take longer, which causes them to spit out a warning-level message
-each time a callback takes a little longer than the previous time.
-There really isn't a need for this, except when debugging.
+On Fri, Mar 20, 2015 at 01:44:30PM +0100, Rafael J. Wysocki wrote:
+> Both work for me, actually.  I think that Kevin has ACKed the patch despite
+> the comments, so it would be fine to apply it I guess.
 
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/base/power/domain.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Here's the set of three - with the second one reworked.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 0d8780c04a5e..b3fbc21da2dc 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -173,8 +173,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 	genpd->power_on_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	genpd_recalc_cpu_exit_latency(genpd);
--	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
--		genpd->name, "on", elapsed_ns);
-+	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
-+		 genpd->name, "on", elapsed_ns);
- 
- 	return ret;
- }
-@@ -199,8 +199,8 @@ static int genpd_power_off(struct generic_pm_domain *genpd)
- 
- 	genpd->power_off_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
--	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
--		genpd->name, "off", elapsed_ns);
-+	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
-+		 genpd->name, "off", elapsed_ns);
- 
- 	return ret;
- }
+ drivers/base/power/domain.c | 58 +++++++++++++++++++++++++++++----------------
+ include/linux/pm_domain.h   |  6 ++---
+ 2 files changed, 40 insertions(+), 24 deletions(-)
+
 -- 
-1.8.3.1
-
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
