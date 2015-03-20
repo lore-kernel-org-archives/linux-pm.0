@@ -1,128 +1,175 @@
-From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Fri, 20 Mar 2015 11:24:14 +0000
-Message-ID: <20150320112414.GD14766@leverpostej>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
- <20150319141753.GB25967@leverpostej>
- <20150320060653.GC18907@leoy-linaro>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Fri, 20 Mar 2015 12:37:47 +0100
+Message-ID: <CAPDyKFpvBvWOM0V0jAbz4tTQEvtzp8A6naV316p7S1sAYF43uw@mail.gmail.com>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan>
+	<3998390.WErrfO4Yno@vostro.rjw.lan>
+	<5975784.LhOHuiUKGO@vostro.rjw.lan>
+	<1810625.BTgaNclHRk@vostro.rjw.lan>
+	<CAPDyKFr-c+SNKw1+5BE_8K0_jWMNavkEX5+dhST8b9Ggzx-cyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150320060653.GC18907@leoy-linaro>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org" <linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>, "xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org" <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org" <liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f47.google.com ([209.85.192.47]:34719 "EHLO
+	mail-qg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbbCTLhs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 07:37:48 -0400
+Received: by qgh62 with SMTP id 62so89900512qgh.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 04:37:47 -0700 (PDT)
+In-Reply-To: <CAPDyKFr-c+SNKw1+5BE_8K0_jWMNavkEX5+dhST8b9Ggzx-cyw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-> > > +       ret = of_property_read_u32(np, "hisilicon,tsensor-thres-temp",
-> > > +                                  &sensor->thres_temp);
-> > > +       if (ret) {
-> > > +               dev_err(&pdev->dev, "failed to get thres value %d: %d\n",
-> > > +                       index, ret);
-> > > +               return ret;
-> > > +       }
-> > > +
-> > > +       ret = of_property_read_u32(np, "hisilicon,tsensor-reset-temp",
-> > > +                                  &sensor->reset_temp);
-> > > +       if (ret) {
-> > > +               dev_err(&pdev->dev, "failed to get reset value %d: %d\n",
-> > > +                       index, ret);
-> > > +               return ret;
-> > > +       }
-> > 
-> > I see now that these properties result in the HW being programmed. You
-> > should figure out how to reconcile these with thermal-zone trip points
-> > rather than having parallel properties.
->  
-> Set "tsensor-thres-temp" to register so that if thermal reaches the
-> threshold, the sensor will trigger h/w interrupt.
-> 
-> Set "tsensor-reset-temp" to register so that if thermal reaches the
-> reset value, the sensor will assert SoC reset signal to trigger h/w
-> reset.
+On 20 March 2015 at 08:45, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 19 March 2015 at 22:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
+>>
+>> If PM domains are in use, it may be necessary to prepare the code
+>> handling a PM domain for driver probing.  For example, in some
+>> cases device drivers rely on the ability to power on the devices
+>> with the help of the IO runtime PM framework and the PM domain
+>> code needs to be ready for that.  Also, if that code has not been
+>> fully initialized yet, the driver probing should be deferred.
+>>
+>> Moreover, after the probing is complete, it may be necessary to
+>> put the PM domain in question into the state reflecting the current
+>> needs of the devices in it, for example, so that power is not drawn
+>> in vain.  The same should be done after removing a driver from
+>> a device, as the PM domain state may need to be changed to reflect
+>> the new situation.
+>>
+>> For these reasons, introduce new PM domain callbacks, ->activate
+>> and ->sync, called, respectively, before probing for a device
+>> driver and after the probing has been completed or the driver
+>> has been removed.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> This looks good to me!
+>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-I understand this.
+I was a bit too quick acking this a minor fix is needed. See below.
 
-> This is different w/t thermal-zone trip points, the trip points are
-> used for timer polling.
+>
+>> ---
+>>> ---
+>>>
+>>> This is an update without the additional bus type callbacks.  This should
+>>> be suffucient at this point for the use cases we have.
+>>>
+>>> I've decided to also call ->sync on driver removal as that is consistent
+>>> with what happens for failing probe.
+>>>
+>>> ---
+>>
+>> One more update.
+>>
+>> I've realized that in the PM domain's ->sync callback is called after
+>> clearing the device's driver field (in the failed probe or driver removal
+>> case) rather than before it, that could be used to distinguish between the
+>> two cases (successful probe vs no driver), so I reworked the patch accordingly.
+>>
+>> ---
+>>  drivers/base/dd.c  |   16 ++++++++++++++++
+>>  include/linux/pm.h |    6 ++++++
+>>  2 files changed, 22 insertions(+)
+>>
+>> Index: linux-pm/include/linux/pm.h
+>> ===================================================================
+>> --- linux-pm.orig/include/linux/pm.h
+>> +++ linux-pm/include/linux/pm.h
+>> @@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
+>>   * Power domains provide callbacks that are executed during system suspend,
+>>   * hibernation, system resume and during runtime PM transitions along with
+>>   * subsystem-level and driver-level callbacks.
+>> + *
+>> + * @detach: Called when removing a device from the domain.
+>> + * @activate: Called before executing probe routines for bus types and drivers.
+>> + * @sync: Called after driver probe and removal.
+>>   */
+>>  struct dev_pm_domain {
+>>         struct dev_pm_ops       ops;
+>>         void (*detach)(struct device *dev, bool power_off);
+>> +       int (*activate)(struct device *dev);
+>> +       void (*sync)(struct device *dev);
+>>  };
+>>
+>>  /*
+>> Index: linux-pm/drivers/base/dd.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/dd.c
+>> +++ linux-pm/drivers/base/dd.c
+>> @@ -279,6 +279,7 @@ static int really_probe(struct device *d
+>>  {
+>>         int ret = 0;
+>>         int local_trigger_count = atomic_read(&deferred_trigger_count);
+>> +       struct dev_pm_domain *pm_domain = dev->pm_domain;
+>>
+>>         atomic_inc(&probe_count);
+>>         pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+>> @@ -298,6 +299,12 @@ static int really_probe(struct device *d
+>>                 goto probe_failed;
+>>         }
+>>
 
-That may be the case in the code as it stands today, but per the binding
-the trip points are the temperatures at which an action is to be taken.
 
-The thermal-zone has poilling-delay and polling-delay-passive, but
-there's no reason you couldn't also use the interrupt to handle the
-"hot" trip-point, adn the reset at the "critical" trip-point. All that's
-missing is the plumbing in order to do so.
 
-So please co-ordinate with the thermal framework to do that.
+>> +       if (pm_domain && pm_domain->activate) {
 
-> Do u think below modification is more reasonable?
-> 
-> - Set "tsensor-thres-temp" = 700000, which equal to thermal-zone
->   passive trip point, so that we can use h/w interrupt to update the
->   thermal value immediately, rather than using polling method w/t long
->   delay;
-> 
-> - Set "tsensor-reset-temp" = <100000>, which is higher than
->   thermal-zone critical trip point, so that the s/w reset method has
->   higher priority than h/w reset; we also can easily know the reset is
->   caused by thermal framework; "tsensor-reset-temp" is only used to
->   protect h/w circuit.
+You need to re-fetch the pm_domain pointer at this point, since it
+will be updated during ->probe().
 
-As mentioned above, I think that you should co-ordinate with the thermal
-framework. You're worknig around limitations inthe code as it stands
-today rather than solving the fundamental issue.
+Maybe it's just safer to always do the following check:
 
-> > > +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
-> > > +
-> > > +               if (data->irq_bind_sensor != -1)
-> > > +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
-> > > +                                data->irq_bind_sensor);
-> > > +
-> > > +               /* bind irq to this sensor */
-> > > +               data->irq_bind_sensor = index;
-> > > +       }
-> > 
-> > I don't see why this should be specified in the DT. Why do you believe
-> > it should?
-> 
-> The thermal sensor module has four sensors, but have only one
-> interrupt signal; This interrupt can only be used by one sensor;
-> So want to use dts to bind the interrupt with one selected sensor.
+if (dev->pm_domain && dev->pm_domain->activate|sync)
+...
 
-That's not all that great, though I'm not exactly sure how the kernel
-would select the best sensor to measure with. It would be good if you
-could talk to the thermal maintainers w.r.t. this.
+>> +               ret = pm_domain->activate(dev);
+>> +               if (ret)
+>> +                       goto probe_failed;
+>> +       }
+>> +
+>>         if (dev->bus->probe) {
+>>                 ret = dev->bus->probe(dev);
+>>                 if (ret)
+>> @@ -308,6 +315,9 @@ static int really_probe(struct device *d
+>>                         goto probe_failed;
+>>         }
+>>
+>> +       if (pm_domain && pm_domain->sync)
+>> +               pm_domain->sync(dev);
+>> +
+>>         driver_bound(dev);
+>>         ret = 1;
+>>         pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+>> @@ -319,6 +329,8 @@ probe_failed:
+>>         driver_sysfs_remove(dev);
+>>         dev->driver = NULL;
+>>         dev_set_drvdata(dev, NULL);
+>> +       if (pm_domain && pm_domain->sync)
+>> +               pm_domain->sync(dev);
+>>
+>>         if (ret == -EPROBE_DEFER) {
+>>                 /* Driver requested deferred probing */
+>> @@ -522,9 +534,13 @@ static void __device_release_driver(stru
+>>                         dev->bus->remove(dev);
+>>                 else if (drv->remove)
+>>                         drv->remove(dev);
+>> +
+>>                 devres_release_all(dev);
+>>                 dev->driver = NULL;
+>>                 dev_set_drvdata(dev, NULL);
+>> +               if (dev->pm_domain && dev->pm_domain->sync)
+>> +                       dev->pm_domain->sync(dev);
+>> +
+>>                 klist_remove(&dev->p->knode_driver);
+>>                 if (dev->bus)
+>>                         blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>>
 
-> > > +static int hisi_thermal_probe(struct platform_device *pdev)
-> > > +{
-> > > +       struct hisi_thermal_data *data;
-> > > +       struct resource *res;
-> > > +       int i;
-> > > +       int ret;
-> > > +
-> > > +       if (!cpufreq_get_current_driver()) {
-> > > +               dev_dbg(&pdev->dev, "no cpufreq driver!");
-> > > +               return -EPROBE_DEFER;
-> > > +       }
-> > 
-> > Surely we care about not burning out the board even if we don't have
-> > cpufreq?
-> > 
-> > Is there any ordering guarantee between the probing of this driver and
-> > cpufreq?
-> 
-> Yes, here need binding the thermal sensor w/t cpu cooling device,
-> and cpu cooling device is based on cpufreq driver.
-
-Sure, but if you don't have a cooling device you still want the critical
-temperature reset and so on, no?
-
-Mark.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Kind regards
+Uffe
