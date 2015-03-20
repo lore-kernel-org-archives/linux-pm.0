@@ -1,86 +1,163 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v4 1/2] Mailbox: Restructure and simplify PCC mailbox code
-Date: Thu, 19 Mar 2015 19:11:42 -0400
-Message-ID: <CAJ5Y-eZaQP0GRzfZQC8o4BaF34UWCTFCAKNaYMb=nUJmFq7Tew@mail.gmail.com>
-References: <1422392638-31334-1-git-send-email-ashwin.chaugule@linaro.org>
-	<CAJ5Y-eYVdTiHAh4QsMo-O12VnumuVGP2hgMaMOKObJEMHEv1fQ@mail.gmail.com>
-	<CAJ5Y-eb96WKeenPGoENm90HTaTWNZD61tfyZcjyC+=o08F+opQ@mail.gmail.com>
-	<1993436.YrcLMSCsYF@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Fri, 20 Mar 2015 01:43:36 +0100
+Message-ID: <2669979.KjLdG5zoJ9@vostro.rjw.lan>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan> <1810625.BTgaNclHRk@vostro.rjw.lan> <CAKdAkRRkmSGTxb8USPznmtKgW4AXosvd2JQQo6YvKcNpvy1BuA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:34039 "EHLO
-	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbbCSXLn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 19:11:43 -0400
-Received: by oier21 with SMTP id r21so78172268oie.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2015 16:11:42 -0700 (PDT)
-In-Reply-To: <1993436.YrcLMSCsYF@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:49863 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751069AbbCTATl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2015 20:19:41 -0400
+In-Reply-To: <CAKdAkRRkmSGTxb8USPznmtKgW4AXosvd2JQQo6YvKcNpvy1BuA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "rwells@codeaurora.org" <rwells@codeaurora.org>, Linda Knippers <linda.knippers@hp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Patch Tracking <patches@linaro.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 12 March 2015 at 19:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, February 13, 2015 07:01:30 PM Ashwin Chaugule wrote:
->> On 13 February 2015 at 18:31, Ashwin Chaugule
->> <ashwin.chaugule@linaro.org> wrote:
->> > Hi Rafael,
->> >
->> > On 13 February 2015 at 09:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> On Friday, February 13, 2015 08:07:44 AM Ashwin Chaugule wrote:
->> >>> Hello,
->> >>>
->> >>> On 27 January 2015 at 16:03, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
->> >>> > Previously the PCC driver depended on the client
->> >>> > side to map the communication space base address. This region
->> >>> > was was then used in the PCC driver and the client side.
->> >>> > The client side used this region to read and write its data
->> >>> > and the PCC driver used it to only write the PCC command.
->> >>> > Removing this split simplifies the PCC driver a lot. This patch
->> >>> > moves all communication region read/writes to the client side.
->> >>> > The PCC clients can now drive the PCC mailbox controller via the
->> >>> > mbox_client_txdone() method.
->> >>> >
->> >>> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->> >>> > ---
->> >>> >  drivers/mailbox/pcc.c | 122 +++++++++++++++-----------------------------------
->> >>> >  1 file changed, 37 insertions(+), 85 deletions(-)
->> >>>
->> >>> Gentle reminder for this patch specifically. It can be pulled in by
->> >>> itself separately from the CPPC patch[2/2], which understandably may
->> >>> need more time for review. Apart from the simplification done here,
->> >>> there is one more change based on a comment I got from Rafael tow
->> >>> convert a pr_err() in the init function to pr_debug(). The "PCC Probe
->> >>> failed" message seems to be raising false positives on X86 test
->> >>> reports. Please let me know if there are any other suggestions, before
->> >>> I respin another version for this.
->> >>
->> >> The patch changing the pr_err() to pr_debug() is in the Linus' tree already
->> >> as far as I can say.
->> >
->> > Thanks for that.
->> >
->> >>
->> >> Besides, this should be To: the maintainer of the mailbox susbsystem (not
->> >> me) or if you want me to pick it up, I need and ACK from that maintainer
->> >> anyway.
->> >
->> > Is there a way to do that separately for each patch in a patchset?
->> > Anyway, I'll rebase this patch to tip and send it separately To:
->> > Jassi.
->>
->> Rebasing to tip and applying this patch didnt cause any merge
->> conflicts. So I think instead of generating more patch traffic just
->> yet, its probably better to review this as is. Let me know if anyone
->> thinks otherwise. I'll try to ping Jassi offline.
->
-> Can you please remind me what the status here is?  Is this the final version
-> I'm supposed to review or are you going to submit a new one?
+On Thursday, March 19, 2015 03:42:03 PM Dmitry Torokhov wrote:
+> On Thu, Mar 19, 2015 at 2:51 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
+> >
+> > If PM domains are in use, it may be necessary to prepare the code
+> > handling a PM domain for driver probing.  For example, in some
+> > cases device drivers rely on the ability to power on the devices
+> > with the help of the IO runtime PM framework and the PM domain
+> > code needs to be ready for that.  Also, if that code has not been
+> > fully initialized yet, the driver probing should be deferred.
+> >
+> > Moreover, after the probing is complete, it may be necessary to
+> > put the PM domain in question into the state reflecting the current
+> > needs of the devices in it, for example, so that power is not drawn
+> > in vain.  The same should be done after removing a driver from
+> > a device, as the PM domain state may need to be changed to reflect
+> > the new situation.
+> >
+> > For these reasons, introduce new PM domain callbacks, ->activate
+> > and ->sync, called, respectively, before probing for a device
+> > driver and after the probing has been completed or the driver
+> > has been removed.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >> ---
+> >>
+> >> This is an update without the additional bus type callbacks.  This should
+> >> be suffucient at this point for the use cases we have.
+> >>
+> >> I've decided to also call ->sync on driver removal as that is consistent
+> >> with what happens for failing probe.
+> >>
+> >> ---
+> >
+> > One more update.
+> >
+> > I've realized that in the PM domain's ->sync callback is called after
+> > clearing the device's driver field (in the failed probe or driver removal
+> > case) rather than before it, that could be used to distinguish between the
+> > two cases (successful probe vs no driver), so I reworked the patch accordingly.
+> 
+> That is very non-obvious. dev->drv belongs to driver core and maybe
+> bus, nothing else should really be looking at it. Why can't we add an
+> explicit argument to the callback indicating device state?
 
-As a heads up, Jassi had already picked up this patch in his tree:
+Well, if that's a concern, I'd rather introduce a separate callback to
+be run on driver removal/failing probe, like in the patch below, as it is
+then clear what the conditions for each callback's execution are (and one
+can always define them as wrappers around the same routine if need be).
 
-https://git.linaro.org/landing-teams/working/fujitsu/integration.git/shortlog/refs/heads/mailbox-devel
+I still think that this ordering of code is the right one, though.
 
-Thanks,
-Ashwin.
+Rafael
+
+
+---
+ drivers/base/dd.c  |   16 ++++++++++++++++
+ include/linux/pm.h |    8 ++++++++
+ 2 files changed, 24 insertions(+)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -603,10 +603,18 @@ extern void dev_pm_put_subsys_data(struc
+  * Power domains provide callbacks that are executed during system suspend,
+  * hibernation, system resume and during runtime PM transitions along with
+  * subsystem-level and driver-level callbacks.
++ *
++ * @detach: Called when removing a device from the domain.
++ * @activate: Called before executing probe routines for bus types and drivers.
++ * @sync: Called after successful driver probe.
++ * @dismiss: Called after unsuccessful driver probe and after driver removal.
+  */
+ struct dev_pm_domain {
+ 	struct dev_pm_ops	ops;
+ 	void (*detach)(struct device *dev, bool power_off);
++	int (*activate)(struct device *dev);
++	void (*sync)(struct device *dev);
++	void (*dismiss)(struct device *dev);
+ };
+ 
+ /*
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -279,6 +279,7 @@ static int really_probe(struct device *d
+ {
+ 	int ret = 0;
+ 	int local_trigger_count = atomic_read(&deferred_trigger_count);
++	struct dev_pm_domain *pm_domain = dev->pm_domain;
+ 
+ 	atomic_inc(&probe_count);
+ 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+@@ -298,6 +299,12 @@ static int really_probe(struct device *d
+ 		goto probe_failed;
+ 	}
+ 
++	if (pm_domain && pm_domain->activate) {
++		ret = pm_domain->activate(dev);
++		if (ret)
++			goto probe_failed;
++	}
++
+ 	if (dev->bus->probe) {
+ 		ret = dev->bus->probe(dev);
+ 		if (ret)
+@@ -308,6 +315,9 @@ static int really_probe(struct device *d
+ 			goto probe_failed;
+ 	}
+ 
++	if (pm_domain && pm_domain->sync)
++		pm_domain->sync(dev);
++
+ 	driver_bound(dev);
+ 	ret = 1;
+ 	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+@@ -319,6 +329,8 @@ probe_failed:
+ 	driver_sysfs_remove(dev);
+ 	dev->driver = NULL;
+ 	dev_set_drvdata(dev, NULL);
++	if (pm_domain && pm_domain->dismiss)
++		pm_domain->dismiss(dev);
+ 
+ 	if (ret == -EPROBE_DEFER) {
+ 		/* Driver requested deferred probing */
+@@ -522,9 +534,13 @@ static void __device_release_driver(stru
+ 			dev->bus->remove(dev);
+ 		else if (drv->remove)
+ 			drv->remove(dev);
++
+ 		devres_release_all(dev);
+ 		dev->driver = NULL;
+ 		dev_set_drvdata(dev, NULL);
++		if (dev->pm_domain && dev->pm_domain->dismiss)
++			dev->pm_domain->dismiss(dev);
++
+ 		klist_remove(&dev->p->knode_driver);
+ 		if (dev->bus)
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+
