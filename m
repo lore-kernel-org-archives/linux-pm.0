@@ -1,76 +1,125 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3 4/8] ARM64: cpuidle: Rename cpu_init_idle to a common function name
-Date: Fri, 20 Mar 2015 12:43:57 +0100
-Message-ID: <1426851841-2072-5-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V3 8/8] ARM: cpuidle: Change function name to be consistent with x86
+Date: Fri, 20 Mar 2015 12:44:01 +0100
+Message-ID: <1426851841-2072-9-git-send-email-daniel.lezcano@linaro.org>
 References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:36681 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbbCTLoP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 07:44:15 -0400
-Received: by wetk59 with SMTP id k59so80034739wet.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 04:44:14 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org, sboyd@codeaurora.org
+List-Id: linux-pm@vger.kernel.org
 
-With this change the cpuidle-arm64.c file calls the same function name
-for both ARM and ARM64.
+Change the functions name:
+ arm_cpuidle_suspend => arm_idle
+ arm_cpuidle_init    => arm_idle_cpu_init
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Acked-by: Rob Herring <robherring2@gmail.com>
 ---
- arch/arm64/include/asm/cpuidle.h | 4 ++--
+ arch/arm/include/asm/cpuidle.h   | 4 ++--
+ arch/arm/kernel/cpuidle.c        | 4 ++--
+ arch/arm64/include/asm/cpuidle.h | 6 +++---
  arch/arm64/kernel/cpuidle.c      | 2 +-
- drivers/cpuidle/cpuidle-arm64.c  | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle-arm.c    | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
 
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index 0f84249..5f547c0 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -44,8 +44,8 @@ struct of_cpuidle_method {
+ 	__used __section(__cpuidle_method_of_table)			\
+ 	= { .method = _method, .ops = _ops }
+ 
+-extern int arm_cpuidle_suspend(int index);
++extern int arm_idle(int index);
+ 
+-extern int arm_cpuidle_init(int cpu);
++extern int arm_idle_cpu_init(int cpu);
+ 
+ #endif
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 7b42a40..05a2c3e 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -29,7 +29,7 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 	return index;
+ }
+ 
+-int arm_cpuidle_suspend(int index)
++int arm_idle(int index)
+ {
+ 	int ret = -EOPNOTSUPP;
+ 	int cpu = smp_processor_id();
+@@ -75,7 +75,7 @@ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
+ 	return 0;
+ }
+ 
+-int __init arm_cpuidle_init(int cpu)
++int __init arm_idle_cpu_init(int cpu)
+ {
+ 	int ret = -EOPNOTSUPP;
+ 	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
 diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
-index 460a38b..141b2fc 100644
+index 141b2fc..e9c0dc4e 100644
 --- a/arch/arm64/include/asm/cpuidle.h
 +++ b/arch/arm64/include/asm/cpuidle.h
 @@ -4,10 +4,10 @@
  #include <asm/proc-fns.h>
  
  #ifdef CONFIG_CPU_IDLE
--extern int cpu_init_idle(unsigned int cpu);
-+extern int arm_cpuidle_init(unsigned int cpu);
+-extern int arm_cpuidle_init(unsigned int cpu);
++extern int arm_idle_cpu_init(unsigned int cpu);
  extern int cpu_suspend(unsigned long arg);
  #else
--static inline int cpu_init_idle(unsigned int cpu)
-+static inline int arm_cpuidle_init(unsigned int cpu)
+-static inline int arm_cpuidle_init(unsigned int cpu)
++static inline int arm_idle_cpu_init(unsigned int cpu)
  {
  	return -EOPNOTSUPP;
  }
+@@ -17,7 +17,7 @@ static inline int cpu_suspend(unsigned long arg)
+ 	return -EOPNOTSUPP;
+ }
+ #endif
+-static inline int arm_cpuidle_suspend(int index)
++static inline int arm_idle(int index)
+ {
+ 	return cpu_suspend(index);
+ }
 diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
-index 5c08966..a78143a 100644
+index a78143a..b6b4fcf 100644
 --- a/arch/arm64/kernel/cpuidle.c
 +++ b/arch/arm64/kernel/cpuidle.c
 @@ -15,7 +15,7 @@
  #include <asm/cpuidle.h>
  #include <asm/cpu_ops.h>
  
--int cpu_init_idle(unsigned int cpu)
-+int arm_cpuidle_init(unsigned int cpu)
+-int arm_cpuidle_init(unsigned int cpu)
++int arm_idle_cpu_init(unsigned int cpu)
  {
  	int ret = -EOPNOTSUPP;
  	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 0cea244..6ef291c7 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index e4a6eba..37c732d 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -50,7 +50,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 		 * call the CPU ops suspend protocol with idle index as a
+ 		 * parameter.
+ 		 */
+-		arm_cpuidle_suspend(idx);
++		arm_idle(idx);
+ 
+ 		cpu_pm_exit();
+ 	}
+@@ -118,7 +118,7 @@ static int __init arm_idle_init(void)
  	 * idle states suspend back-end specific data
  	 */
  	for_each_possible_cpu(cpu) {
--		ret = cpu_init_idle(cpu);
-+		ret = arm_cpuidle_init(cpu);
- 		if (ret) {
- 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
- 			return ret;
+-		ret = arm_cpuidle_init(cpu);
++		ret = arm_idle_cpu_init(cpu);
+ 
+ 		/* This cpu does not support any idle states */
+ 		if (ret == -ENXIO)
 -- 
 1.9.1
-
