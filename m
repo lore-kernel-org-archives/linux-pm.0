@@ -1,346 +1,135 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2] thermal: exynos: Add the support for Exynos5433 TMU
-Date: Fri, 20 Mar 2015 08:48:50 +0100
-Message-ID: <20150320084850.539010f5@amdc2363>
-References: <1425954224-31035-1-git-send-email-cw00.choi@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH/RFC 0/5] ARM: shmobile: rcar-gen2: Add CPG Clock Domain
+Date: Fri, 20 Mar 2015 09:54:33 +0100
+Message-ID: <CAPDyKFox=MoUX5tzxyVjLh+d61AFNsPR+LY0sP-VF+68Gs_rKw@mail.gmail.com>
+References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:17349 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbbCTHtD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 03:49:03 -0400
-In-reply-to: <1425954224-31035-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, edubezval@gmail.com
-Cc: rui.zhang@intel.com, kgene@kernel.org, inki.dae@samsung.com, chanho61.park@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Chanwoo,
+On 18 March 2015 at 20:46, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>         Hi,
+>
+> This RFC patch series adds Clock Domain support to the R-Car Gen2 Clock
+> Pulse Generator (CPG) driver using the generic PM Domain.  This allows
+> to power-manage the module clocks of SoC devices that are part of the
+> CPG Clock Domain using Runtime PM, or for system suspend/resume.
+>
+> SoC devices that are part of the CPG Clock Domain and can be
+> power-managed through their primary clock are tagged in DT with a proper
+> "power-domains" property. Drivers for devices with multiple clocks
+> (notably du and rcar-sound) still have to manage their (multiple module)
+> clocks themselves.
+>
+> Finally, the legacy default PM domain hack in drivers/sh/pm_runtime.c is
+> disabled when running on an R-Car Gen2 SoC with genpd support.
+>
+> Compared to the legacy default PM domain hack, the CPG Clock Domain has
+> several advantages:
+>   - It only affects on-SoC devices, not all platform devices,
+>   - It only affects the on-SoC devices we want, as specified in DT,
+>   - Allmost all module clocks of all on-SoC devices (barring devices
+>     needed for wake-up[*]) are now gated during s2ram, saving more
+>     power.
+>
+> Here's a list of all devices in the CPG Clock Domain on r8a7791:
+>
+> root@koelsch:~# cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+>     domain                      status         slaves
+>            /device                                      runtime status
+> ----------------------------------------------------------------------
+> cpg_clocks                      on
+>     /devices/platform/e61c0000.interrupt-controller     active
+>     /devices/platform/e60b0000.i2c                      suspended
+>     /devices/platform/ffca0000.timer                    suspended
+>     /devices/platform/e6050000.gpio                     active
+>     /devices/platform/e6051000.gpio                     active
+>     /devices/platform/e6052000.gpio                     active
+>     /devices/platform/e6053000.gpio                     active
+>     /devices/platform/e6054000.gpio                     active
+>     /devices/platform/e6055000.gpio                     active
+>     /devices/platform/e6055400.gpio                     active
+>     /devices/platform/e6055800.gpio                     active
+>     /devices/platform/ee090000.pci                      active
+>     /devices/platform/ee0d0000.pci                      active
+>     /devices/platform/fe000000.pcie                     unsupported
+>     /devices/platform/e6700000.dma-controller           active
+>     /devices/platform/e6720000.dma-controller           active
+>     /devices/platform/ec700000.dma-controller           active
+>     /devices/platform/ec720000.dma-controller           suspended
+>     /devices/platform/e6e60000.serial                   active
+>     /devices/platform/e6e68000.serial                   active
+>     /devices/platform/ee300000.sata                     unsupported
+>     /devices/platform/e6b10000.spi                      suspended
+>     /devices/platform/e6e20000.spi                      suspended
+>     /devices/platform/ee700000.ethernet                 active
+>     /devices/platform/e6530000.i2c                      suspended
+>     /devices/platform/e6ef1000.video                    suspended
+>     /devices/platform/e61f0000.thermal                  active
+>     /devices/platform/ee100000.sd                       active
+>     /devices/platform/ee140000.sd                       active
+>     /devices/platform/ee160000.sd                       active
+> root@koelsch:~#
+>
+> Logically, the CPG Clock Domain operates on the SoC CPG/MSTP block.
+> As there's no single device node in DT representing this block (there
+> are separate device nodes for the CPG and for the individual MSTP
+> clocks), I bound the logic to the CPG device node.
+> Perhaps this is something we should change for future SoCs?
+>
+> As usual when involving clocks and/or PM Domains, the DTS changes depend
+> stricly on the driver change. The final patch must be applied last.
+>
+> The DTS changes also depend on the series "[PATCH 0/5] ARM: shmobile:
+> Add INTC-SYS clock to device tree" I've just sent.
+>
+> This was tested on r8a7791/koelsch.
+>
+> Thanks for your comments!
+>
+> [*] GPIO wake-up requires "[PATCH 0/3] gpio: rcar: Fix wake up using
+> gpio-keys with PM domain").
+>
+> Geert Uytterhoeven (5):
+>   [RFC] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
+>   [RFC] ARM: shmobile: r8a7790 dtsi: Add CPG Clock Domain
+>   [RFC] ARM: shmobile: r8a7791 dtsi: Add CPG Clock Domain
+>   [RFC] ARM: shmobile: r8a7794 dtsi: Add CPG Clock Domain
+>   drivers: sh: Disable PM runtime for multi-platform R-Car Gen2 with
+>     genpd
+>
+>  .../clock/renesas,rcar-gen2-cpg-clocks.txt         | 26 ++++++-
+>  arch/arm/boot/dts/r8a7790.dtsi                     | 77 +++++++++++++++++++--
+>  arch/arm/boot/dts/r8a7791.dtsi                     | 80 ++++++++++++++++++++--
+>  arch/arm/boot/dts/r8a7794.dtsi                     | 29 ++++++++
+>  arch/arm/mach-shmobile/Kconfig                     |  1 +
+>  drivers/clk/shmobile/clk-rcar-gen2.c               | 63 +++++++++++++++++
+>  drivers/sh/pm_runtime.c                            | 10 +--
+>  7 files changed, 268 insertions(+), 18 deletions(-)
 
-> This patch adds the support for Exynos5433's TMU (Thermal Management
-> Unit). Exynos5433 has a little different register bit fields as
-> following description:
-> - Support the eight trip points for rising/falling interrupt by using
-> two registers
-> - Read the calibration type (1-point or 2-point) and sensor id from
-> TRIMINFO register
-> - Use a little different register address
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
-> Changes from v1:
-> (https://lkml.org/lkml/2015/2/26/234)
-> - Add exynos5433_tmu_control() instead of using exynos7_tmu_control()
-> on both Exynos5433 and Exynos7.
-> - Separate the patches related to devicetree and then send send
-> Exnos5433's tmu patches[1] with other Exynos5433 devicetree patches.
->   [1] https://lkml.org/lkml/2015/3/9/1036
-> 
->  drivers/thermal/samsung/exynos_tmu.c | 187
-> ++++++++++++++++++++++++++++++++++-
-> drivers/thermal/samsung/exynos_tmu.h |   1 + 2 files changed, 186
-> insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> b/drivers/thermal/samsung/exynos_tmu.c index 1d30b09..531f4b17 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -97,6 +97,32 @@
->  #define EXYNOS4412_MUX_ADDR_VALUE          6
->  #define EXYNOS4412_MUX_ADDR_SHIFT          20
->  
-> +/* Exynos5433 specific registers */
-> +#define EXYNOS5433_TMU_REG_CONTROL1		0x024
-> +#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
-> +#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
-> +#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
-> +#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
-> +#define EXYNOS5433_THD_TEMP_RISE3_0		0x050
-> +#define EXYNOS5433_THD_TEMP_RISE7_4		0x054
-> +#define EXYNOS5433_THD_TEMP_FALL3_0		0x060
-> +#define EXYNOS5433_THD_TEMP_FALL7_4		0x064
-> +#define EXYNOS5433_TMU_REG_INTEN		0x0c0
-> +#define EXYNOS5433_TMU_REG_INTPEND		0x0c8
-> +#define EXYNOS5433_TMU_EMUL_CON			0x110
-> +#define EXYNOS5433_TMU_PD_DET_EN		0x130
-> +
-> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT	16
-> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT	23
-> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_MASK	\
-> +			(0xf << EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT)
-> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_MASK	BIT(23)
-> +
-> +#define EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING	0
-> +#define EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING	1
-> +
-> +#define EXYNOS5433_PD_DET_EN			1
-> +
->  /*exynos5440 specific registers*/
->  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
->  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
-> @@ -484,6 +510,101 @@ out:
->  	return ret;
->  }
->  
-> +static int exynos5433_tmu_initialize(struct platform_device *pdev)
-> +{
-> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> +	struct exynos_tmu_platform_data *pdata = data->pdata;
-> +	struct thermal_zone_device *tz = data->tzd;
-> +	unsigned int status, trim_info;
-> +	unsigned int rising_threshold = 0, falling_threshold = 0;
-> +	unsigned long temp, temp_hist;
-> +	int ret = 0, threshold_code, i, sensor_id, cal_type;
-> +
-> +	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
-> +	if (!status) {
-> +		ret = -EBUSY;
-> +		goto out;
-> +	}
-> +
-> +	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
-> +	sanitize_temp_error(data, trim_info);
-> +
-> +	/* Read the temperature sensor id */
-> +	sensor_id = (trim_info & EXYNOS5433_TRIMINFO_SENSOR_ID_MASK)
-> +				>>
-> EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT;
-> +	dev_info(&pdev->dev, "Temperature sensor ID: 0x%x\n",
-> sensor_id); +
-> +	/* Read the calibration mode */
-> +	writel(trim_info, data->base + EXYNOS_TMU_REG_TRIMINFO);
-> +	cal_type = (trim_info & EXYNOS5433_TRIMINFO_CALIB_SEL_MASK)
-> +				>>
-> EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT; +
-> +	switch (cal_type) {
-> +	case EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING:
-> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-> +		break;
-> +	case EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING:
-> +		pdata->cal_type = TYPE_TWO_POINT_TRIMMING;
-> +		break;
-> +	default:
-> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
-> +		break;
-> +	};
-> +
-> +	dev_info(&pdev->dev, "Calibration type is %d-point
-> calibration\n",
-> +			cal_type ?  2 : 1);
-> +
-> +	/* Write temperature code for rising and falling threshold */
-> +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
-> +		int rising_reg_offset, falling_reg_offset;
-> +		int j = 0;
-> +
-> +		switch (i) {
-> +		case 0:
-> +		case 1:
-> +		case 2:
-> +		case 3:
-> +			rising_reg_offset =
-> EXYNOS5433_THD_TEMP_RISE3_0;
-> +			falling_reg_offset =
-> EXYNOS5433_THD_TEMP_FALL3_0;
-> +			j = i;
-> +			break;
-> +		case 4:
-> +		case 5:
-> +		case 6:
-> +		case 7:
-> +			rising_reg_offset =
-> EXYNOS5433_THD_TEMP_RISE7_4;
-> +			falling_reg_offset =
-> EXYNOS5433_THD_TEMP_FALL7_4;
-> +			j = i - 4;
-> +			break;
-> +		default:
-> +			continue;
-> +		}
-> +
-> +		/* Write temperature code for rising threshold */
-> +		tz->ops->get_trip_temp(tz, i, &temp);
-> +		temp /= MCELSIUS;
-> +		threshold_code = temp_to_code(data, temp);
-> +
-> +		rising_threshold = readl(data->base +
-> rising_reg_offset);
-> +		rising_threshold |= (threshold_code << j * 8);
-> +		writel(rising_threshold, data->base +
-> rising_reg_offset); +
-> +		/* Write temperature code for falling threshold */
-> +		tz->ops->get_trip_hyst(tz, i, &temp_hist);
-> +		temp_hist = temp - (temp_hist / MCELSIUS);
-> +		threshold_code = temp_to_code(data, temp_hist);
-> +
-> +		falling_threshold = readl(data->base +
-> falling_reg_offset);
-> +		falling_threshold &= ~(0xff << j * 8);
-> +		falling_threshold |= (threshold_code << j * 8);
-> +		writel(falling_threshold, data->base +
-> falling_reg_offset);
-> +	}
-> +
-> +	data->tmu_clear_irqs(data);
-> +out:
-> +	return ret;
-> +}
-> +
->  static int exynos5440_tmu_initialize(struct platform_device *pdev)
->  {
->  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> @@ -643,6 +764,48 @@ static void exynos4210_tmu_control(struct
-> platform_device *pdev, bool on) writel(con, data->base +
-> EXYNOS_TMU_REG_CONTROL); }
->  
-> +static void exynos5433_tmu_control(struct platform_device *pdev,
-> bool on) +{
-> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> +	struct thermal_zone_device *tz = data->tzd;
-> +	unsigned int con, interrupt_en, pd_det_en;
-> +
-> +	con = get_con_reg(data, readl(data->base +
-> EXYNOS_TMU_REG_CONTROL)); +
-> +	if (on) {
-> +		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> +		interrupt_en =
-> +			(of_thermal_is_trip_valid(tz, 7)
-> +			<< EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 6)
-> +			<< EXYNOS7_TMU_INTEN_RISE6_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 5)
-> +			<< EXYNOS7_TMU_INTEN_RISE5_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 4)
-> +			<< EXYNOS7_TMU_INTEN_RISE4_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 3)
-> +			<< EXYNOS7_TMU_INTEN_RISE3_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 2)
-> +			<< EXYNOS7_TMU_INTEN_RISE2_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 1)
-> +			<< EXYNOS7_TMU_INTEN_RISE1_SHIFT) |
-> +			(of_thermal_is_trip_valid(tz, 0)
-> +			<< EXYNOS7_TMU_INTEN_RISE0_SHIFT);
-> +
-> +		interrupt_en |=
-> +			interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
-> +	} else {
-> +		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> +		interrupt_en = 0; /* Disable all interrupts */
-> +	}
-> +
-> +	pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
-> +
-> +	writel(pd_det_en, data->base + EXYNOS5433_TMU_PD_DET_EN);
-> +	writel(interrupt_en, data->base + EXYNOS5433_TMU_REG_INTEN);
-> +	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
-> +}
-> +
->  static void exynos5440_tmu_control(struct platform_device *pdev,
-> bool on) {
->  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> @@ -770,6 +933,8 @@ static void exynos4412_tmu_set_emulation(struct
-> exynos_tmu_data *data, 
->  	if (data->soc == SOC_ARCH_EXYNOS5260)
->  		emul_con = EXYNOS5260_EMUL_CON;
-> +	if (data->soc == SOC_ARCH_EXYNOS5433)
-> +		emul_con = EXYNOS5433_TMU_EMUL_CON;
->  	else if (data->soc == SOC_ARCH_EXYNOS7)
->  		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
->  	else
-> @@ -882,6 +1047,9 @@ static void exynos4210_tmu_clear_irqs(struct
-> exynos_tmu_data *data) } else if (data->soc == SOC_ARCH_EXYNOS7) {
->  		tmu_intstat = EXYNOS7_TMU_REG_INTPEND;
->  		tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
-> +	} else if (data->soc == SOC_ARCH_EXYNOS5433) {
-> +		tmu_intstat = EXYNOS5433_TMU_REG_INTPEND;
-> +		tmu_intclear = EXYNOS5433_TMU_REG_INTPEND;
->  	} else {
->  		tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
->  		tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
-> @@ -926,6 +1094,7 @@ static const struct of_device_id
-> exynos_tmu_match[] = { { .compatible = "samsung,exynos5260-tmu", },
->  	{ .compatible = "samsung,exynos5420-tmu", },
->  	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
-> +	{ .compatible = "samsung,exynos5433-tmu", },
->  	{ .compatible = "samsung,exynos5440-tmu", },
->  	{ .compatible = "samsung,exynos7-tmu", },
->  	{ /* sentinel */ },
-> @@ -949,6 +1118,8 @@ static int exynos_of_get_soc_type(struct
-> device_node *np) else if (of_device_is_compatible(np,
->  					 "samsung,exynos5420-tmu-ext-triminfo"))
->  		return SOC_ARCH_EXYNOS5420_TRIMINFO;
-> +	else if (of_device_is_compatible(np,
-> "samsung,exynos5433-tmu"))
-> +		return SOC_ARCH_EXYNOS5433;
->  	else if (of_device_is_compatible(np,
-> "samsung,exynos5440-tmu")) return SOC_ARCH_EXYNOS5440;
->  	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
-> @@ -1069,6 +1240,13 @@ static int exynos_map_dt_data(struct
-> platform_device *pdev) data->tmu_set_emulation =
-> exynos4412_tmu_set_emulation; data->tmu_clear_irqs =
-> exynos4210_tmu_clear_irqs; break;
-> +	case SOC_ARCH_EXYNOS5433:
-> +		data->tmu_initialize = exynos5433_tmu_initialize;
-> +		data->tmu_control = exynos5433_tmu_control;
-> +		data->tmu_read = exynos4412_tmu_read;
-> +		data->tmu_set_emulation =
-> exynos4412_tmu_set_emulation;
-> +		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-> +		break;
->  	case SOC_ARCH_EXYNOS5440:
->  		data->tmu_initialize = exynos5440_tmu_initialize;
->  		data->tmu_control = exynos5440_tmu_control;
-> @@ -1172,7 +1350,9 @@ static int exynos_tmu_probe(struct
-> platform_device *pdev) goto err_clk_sec;
->  	}
->  
-> -	if (data->soc == SOC_ARCH_EXYNOS7) {
-> +	switch (data->soc) {
-> +	case SOC_ARCH_EXYNOS5433:
-> +	case SOC_ARCH_EXYNOS7:
->  		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
->  		if (IS_ERR(data->sclk)) {
->  			dev_err(&pdev->dev, "Failed to get sclk\n");
-> @@ -1184,7 +1364,10 @@ static int exynos_tmu_probe(struct
-> platform_device *pdev) goto err_clk;
->  			}
->  		}
-> -	}
-> +		break;
-> +	default:
-> +		break;
-> +	};
->  
->  	ret = exynos_tmu_initialize(pdev);
->  	if (ret) {
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h
-> b/drivers/thermal/samsung/exynos_tmu.h index 4d71ec6..440c714 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -33,6 +33,7 @@ enum soc_type {
->  	SOC_ARCH_EXYNOS5260,
->  	SOC_ARCH_EXYNOS5420,
->  	SOC_ARCH_EXYNOS5420_TRIMINFO,
-> +	SOC_ARCH_EXYNOS5433,
->  	SOC_ARCH_EXYNOS5440,
->  	SOC_ARCH_EXYNOS7,
->  };
+For the complete patchset.
 
-Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-I will test this patch (@ Odroid U3) when linux-samusng-thermal/next
-branch would be updated to newest mainline.
+Kind regards
+Uffe
 
-Eduardo, could you update your -next branch?
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+>
+> --
+> 1.9.1
+>
+> Gr{oetje,eeting}s,
+>
+>                                                 Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                                             -- Linus Torvalds
