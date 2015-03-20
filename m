@@ -1,95 +1,205 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V3 0/8] ARM: cpuidle: Unify the ARM64/ARM DT approach
-Date: Fri, 20 Mar 2015 12:43:53 +0100
-Message-ID: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin.Marinas-5wv7dgnIgG8@public.gmane.org, robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V3 2/8] ARM: cpuidle: Add a cpuidle ops structure to be used for DT
+Date: Fri, 20 Mar 2015 12:43:55 +0100
+Message-ID: <1426851841-2072-3-git-send-email-daniel.lezcano@linaro.org>
+References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f44.google.com ([74.125.82.44]:35212 "EHLO
+	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbbCTLoL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 07:44:11 -0400
+Received: by wgdm6 with SMTP id m6so87112738wgd.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 04:44:09 -0700 (PDT)
+In-Reply-To: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org, sboyd@codeaurora.org
 
-There is a big number of cpuidle drivers for the ARM architecture.
+The current state of the different cpuidle drivers is the different PM
+operations are passed via the platform_data using the platform driver
+paradigm.
 
-These drivers have been cleaned up and grouped into the drivers/cpuidle
-directory to keep track of the changes more easily and ensure the code
-is following the same scheme across the drivers.
+This approach allowed to split the low level PM code from the arch specific
+and the generic cpuidle code.
 
-That had the benefit of simplifying the code and factor out a lot of common
-parts. Beside that, as the drivers belong to the 'drivers' directory, we had
-to split the arch specific bits and the generic code in order to keep
-everything self contained. The platform driver paradigm was used for this
-purpose.
+Unfortunately there are complaints about this approach as, in the context of the
+single kernel image, we have multiple drivers loaded in memory for nothing and
+the platform driver is not adequate for cpuidle.
 
-Unfortunately, this approach is now no longer accepted and a different solution
-must be provided to reach the same goal: one example is the Qualcomm cpuidle
-driver upstreaming attempt.
+This patch provides a common interface via cpuidle ops for all new cpuidle
+driver and a definition for the device tree.
 
-In the meantime, ARM64 developed a generic cpuidle driver based on DT definition.
+It will allow with the next patches to a have a common definition with ARM64
+and share the same cpuidle driver.
 
-The DT definition provides an 'enable-method' to specify one of the cpu
-operations (PSCI, ...).
+The code is optimized to use the __init section intensively in order to reduce
+the memory footprint after the driver is initialized and unify the function
+names with ARM64.
 
-This patchset unify this driver with ARM32, using the same DT definition.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Kevin Hilman <khilman@linaro.org>
+Acked-by: Rob Herring <robherring2@gmail.com>
+---
+ arch/arm/include/asm/cpuidle.h    | 21 ++++++++++++
+ arch/arm/kernel/cpuidle.c         | 72 +++++++++++++++++++++++++++++++++++++++
+ arch/arm64/include/asm/cpuidle.h  |  5 ++-
+ include/asm-generic/vmlinux.lds.h |  2 ++
+ 4 files changed, 99 insertions(+), 1 deletion(-)
 
-Thanks with this patchset we can use the 'enable-method' to specify a cpu
-operations, hence get rid of the platform driver approach and go further in the
-cpuidle driver flexibility via the DT.
-
-Changelog:
-
- V3:
-	* Fixed unroll loop when failing to register the device
-	* Removed the per cpu cpuidle_device
-	* Remove goto statement in the registration path
-	* Fixed a compilation failure with allyesconfig on arm64
-
- V2:
-	* Used smp_operations style for cpuidle_ops
-	* Fixed some nits in the comments
-	* Added a patch to change the name of the functions
-	* Added per cpu device registration patch
-
-Daniel Lezcano (8):
-  ARM: cpuidle: Remove duplicate header inclusion
-  ARM: cpuidle: Add a cpuidle ops structure to be used for DT
-  ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function
-  ARM64: cpuidle: Rename cpu_init_idle to a common function name
-  ARM64: cpuidle: Remove arm64 reference
-  ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
-  ARM: cpuidle: Register per cpuidle device
-  ARM: cpuidle: Change function name to be consistent with x86
-
- arch/arm/include/asm/cpuidle.h                     | 23 +++++++
- arch/arm/kernel/cpuidle.c                          | 74 +++++++++++++++++++-
- arch/arm/mach-davinci/cpuidle.c                    |  1 -
- arch/arm/mach-imx/cpuidle-imx6q.c                  |  1 -
- arch/arm/mach-imx/cpuidle-imx6sl.c                 |  1 -
- arch/arm/mach-imx/cpuidle-imx6sx.c                 |  1 -
- arch/arm/mach-omap2/cpuidle44xx.c                  |  1 -
- arch/arm/mach-s3c64xx/cpuidle.c                    |  2 +-
- arch/arm/mach-tegra/cpuidle-tegra20.c              |  1 -
- arch/arm/mach-tegra/cpuidle-tegra30.c              |  1 -
- arch/arm64/include/asm/cpuidle.h                   |  9 ++-
- arch/arm64/kernel/cpuidle.c                        |  2 +-
- drivers/cpuidle/Kconfig                            |  7 +-
- drivers/cpuidle/Kconfig.arm                        | 12 +++-
- drivers/cpuidle/Kconfig.arm64                      | 13 ----
- drivers/cpuidle/Makefile                           |  5 +-
- drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} | 80 ++++++++++++++++------
- drivers/cpuidle/cpuidle-at91.c                     |  1 -
- drivers/cpuidle/cpuidle-exynos.c                   |  1 -
- drivers/cpuidle/cpuidle-kirkwood.c                 |  1 -
- drivers/cpuidle/cpuidle-ux500.c                    |  1 -
- drivers/cpuidle/cpuidle-zynq.c                     |  1 -
- include/asm-generic/vmlinux.lds.h                  |  2 +
- 23 files changed, 178 insertions(+), 63 deletions(-)
- delete mode 100644 drivers/cpuidle/Kconfig.arm64
- rename drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} (57%)
-
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index 348dc81..0f84249 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -27,4 +27,25 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+  */
+ #define ARM_CPUIDLE_WFI_STATE ARM_CPUIDLE_WFI_STATE_PWR(UINT_MAX)
+ 
++struct device_node;
++
++struct cpuidle_ops {
++	int (*suspend)(int cpu, unsigned long arg);
++	int (*init)(struct device_node *, int cpu);
++};
++
++struct of_cpuidle_method {
++	const char *method;
++	struct cpuidle_ops *ops;
++};
++
++#define CPUIDLE_METHOD_OF_DECLARE(name, _method, _ops)			\
++	static const struct of_cpuidle_method __cpuidle_method_of_table_##name \
++	__used __section(__cpuidle_method_of_table)			\
++	= { .method = _method, .ops = _ops }
++
++extern int arm_cpuidle_suspend(int index);
++
++extern int arm_cpuidle_init(int cpu);
++
+ #endif
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 45969f8..7b42a40 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -10,8 +10,17 @@
+  */
+ 
+ #include <linux/cpuidle.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
+ #include <asm/cpuidle.h>
+ 
++extern struct of_cpuidle_method __cpuidle_method_of_table[];
++
++static const struct of_cpuidle_method __cpuidle_method_of_table_sentinel
++	__used __section(__cpuidle_method_of_table_end);
++
++static struct cpuidle_ops cpuidle_ops[NR_CPUS];
++
+ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int index)
+ {
+@@ -19,3 +28,66 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 
+ 	return index;
+ }
++
++int arm_cpuidle_suspend(int index)
++{
++	int ret = -EOPNOTSUPP;
++	int cpu = smp_processor_id();
++
++	if (cpuidle_ops[cpu].suspend)
++		ret = cpuidle_ops[cpu].suspend(cpu, index);
++
++	return ret;
++}
++
++static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
++{
++	struct of_cpuidle_method *m = __cpuidle_method_of_table;
++
++	for (; m->method; m++)
++		if (!strcmp(m->method, method))
++			return m->ops;
++
++	return NULL;
++}
++
++static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
++{
++	const char *enable_method;
++	struct cpuidle_ops *ops;
++
++	enable_method = of_get_property(dn, "enable-method", NULL);
++	if (!enable_method)
++		return -ENOENT;
++
++	ops = arm_cpuidle_get_ops(enable_method);
++	if (!ops) {
++		pr_warn("%s: unsupported enable-method property: %s\n",
++			dn->full_name, enable_method);
++		return -EOPNOTSUPP;
++	}
++
++	cpuidle_ops[cpu] = *ops; /* structure copy */
++
++	pr_notice("cpuidle: enable-method property '%s'"
++		  " found operations\n", enable_method);
++
++	return 0;
++}
++
++int __init arm_cpuidle_init(int cpu)
++{
++	int ret = -EOPNOTSUPP;
++	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
++
++	if (!cpu_node)
++		return -ENODEV;
++
++	ret = arm_cpuidle_read_ops(cpu_node, cpu);
++	if (!ret && cpuidle_ops[cpu].init)
++		ret = cpuidle_ops[cpu].init(cpu_node, cpu);
++
++	of_node_put(cpu_node);
++
++	return ret;
++}
+diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
+index c60643f..460a38b 100644
+--- a/arch/arm64/include/asm/cpuidle.h
++++ b/arch/arm64/include/asm/cpuidle.h
+@@ -17,5 +17,8 @@ static inline int cpu_suspend(unsigned long arg)
+ 	return -EOPNOTSUPP;
+ }
+ #endif
+-
++static inline int arm_cpuidle_suspend(int index)
++{
++	return cpu_suspend(index);
++}
+ #endif
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index ac78910..91c0930 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -167,6 +167,7 @@
+ #define IOMMU_OF_TABLES()	OF_TABLE(CONFIG_OF_IOMMU, iommu)
+ #define RESERVEDMEM_OF_TABLES()	OF_TABLE(CONFIG_OF_RESERVED_MEM, reservedmem)
+ #define CPU_METHOD_OF_TABLES()	OF_TABLE(CONFIG_SMP, cpu_method)
++#define CPUIDLE_METHOD_OF_TABLES() OF_TABLE(CONFIG_CPU_IDLE, cpuidle_method)
+ #define EARLYCON_OF_TABLES()	OF_TABLE(CONFIG_SERIAL_EARLYCON, earlycon)
+ 
+ #define KERNEL_DTB()							\
+@@ -501,6 +502,7 @@
+ 	CLKSRC_OF_TABLES()						\
+ 	IOMMU_OF_TABLES()						\
+ 	CPU_METHOD_OF_TABLES()						\
++	CPUIDLE_METHOD_OF_TABLES()					\
+ 	KERNEL_DTB()							\
+ 	IRQCHIP_OF_MATCH_TABLE()					\
+ 	EARLYCON_OF_TABLES()
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
