@@ -1,116 +1,87 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2 06/20] cpufreq: Create for_each_{in}active_policy()
-Date: Fri, 20 Mar 2015 12:18:49 -0700
-Message-ID: <550C7299.7030308@codeaurora.org>
-References: <cover.1424345053.git.viresh.kumar@linaro.org> <3335dcc924b60249617dfad711c602927fb1f2b7.1424345053.git.viresh.kumar@linaro.org> <550B7159.7090601@codeaurora.org> <CAKohpokanT+6scDTYotp90GNhyatURQNyjKpkfDKxgU9vhbWqQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41162 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbbCTTSv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 15:18:51 -0400
-In-Reply-To: <CAKohpokanT+6scDTYotp90GNhyatURQNyjKpkfDKxgU9vhbWqQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v17 00/11] ARM: qcom: cpuidle support for 8064, 8074, 8084
+Date: Fri, 20 Mar 2015 14:21:07 -0600
+Message-ID: <1426882877-33008-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On 03/19/2015 09:41 PM, Viresh Kumar wrote:
-> On 20 March 2015 at 06:31, Saravana Kannan <skannan@codeaurora.org> wrote:
->> On 02/19/2015 03:32 AM, Viresh Kumar wrote:
->
->>> +static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
->>> +                                         bool active)
->>> +{
->>> +       while (1) {
->>
->>
->> I don't like while(1) unless it's really meant to be an infinite loop. I
->
-> I don't hate it that much, and neither does other parts of kernel :)
->
->> think a do while would work here and also be more compact and readable.
->
-> So you want this:
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d3f9ce3b94d3..ecbd8c2118c2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -47,7 +47,7 @@ static inline bool policy_is_inactive(struct
-> cpufreq_policy *policy)
->   static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
->                                            bool active)
->   {
-> -       while (1) {
-> +       do {
->                  if (likely(policy))
->                          policy = list_next_entry(policy, policy_list);
->                  else
-> @@ -69,9 +69,9 @@ static struct cpufreq_policy *next_policy(struct
-> cpufreq_policy *policy,
->                   *      1               0                       policy
->                   *      1               1                       next
->                   */
-> -               if (active ^ policy_is_inactive(policy))
-> -                       return policy;
-> -       };
-> +       } while (!(active ^ policy_is_inactive(policy)));
-> +
-> +       return policy;
->   }
+Hi,
 
-Yes please!! The other uses like inside a thread seem more reasonable to me.
+This v17 revision of patch has minor changes since v16. Primarily rebased on
+top of Daniels' changes [1].
 
->
-> Not sure which one looked better :)
->
->>> +               if (likely(policy))
->>> +                       policy = list_next_entry(policy, policy_list);
->>> +               else
->>> +                       policy = list_first_entry(&cpufreq_policy_list,
->>> +                                                 typeof(*policy),
->>> policy_list);
->>
->>
->> Can't you just move this part into expr1? That would make it much
->> clear/easier to understand
->
-> No, because we want that for-loop to iterate over active/inactive
-> policies only, and we need to run this routine to find it..
->
-> For ex:
-> - We want to iterate over active policies only
-> - The first policy of the list is inactive
-> - The change you are suggesting will break things here..
+Changes since v16:
+- Dropped per-cpu cpuidle changes in the cpuidle-arm driver, Daniel submitted
+  it as part of his series.
+- Rebase on top of [1].
+- Return -ENXIO when qcom_cpuidle_init() detects SPM device is not probed yet.
+- Declare cpuidle_ops using CPUIDLE_METHOD_OF_DECLARE.
 
-Ah, right. Makes sense.
+Changes since v15:
+https://www.mail-archive.com/devicetree@vger.kernel.org/msg64700.html
+- Clean up cpuidle-arm.c to use devm_kzalloc and print error codes.
+- Remove qcom,idle-state-stby as a DT mode, instead use the ARM WFI defined in
+  ARM cpuidle driver for clock gating/standby modes. The platform driver will
+  default to standby for all cpus after executing any low power state. This allows
+  us to be completely compatible with generic ARM cpuidle driver and not send out
+  cpu_pm notifications that are sent out for all 'platform states'.
+- Cleaned up comments around setting SPM states.
+- Platform idle state (SPC) starts at index 1, previous patch was overwritting
+  ARM WFI state, which is mandated to be default state at index 0. 
+- Removed duplicate cpu_pm_enter() and cpu_pm_exit() callbacks.
+- Re-introduce ARM_QCOM_CPUIDLE defconfig item to enable/disable QCOM cpuidle
+  support.
+- Update documentation on standby state to indicate that this state is no longer
+  defined in the DT.
+- Remove unused qcom,saw2-v1.* compatibles from documentation.
+- Rebased on top of SCM changes that were pulled in Kumar's 'soc' branch [2].
+- Removed Reviewed-by tags from DT patches due to change in idle states.
 
->
->>> +
->>> +               /* No more policies */
->>> +               if (&policy->policy_list == &cpufreq_policy_list)
->>> +                       return policy;
->>
->>
->> I'm kinda confused by the fact that you return policy here unconditionally.
->> I think it's a bug. No? Eg: Is there's only one policy in the system and you
->> are looking for an inactive policy. Wouldn't this return the only policy --
->> the one that's active.
->
-> No. What we are returning here isn't a real policy actually but an container-of
-> of the HEAD of the list, so it only has a valid ->policy_list value,
-> others might
-> give us a crash. See how list_next_entry() works :)
+Changes since v14:
+- Support for cpuidle_ops
+- SPM probe changes to register cpuidle
+- Rebase on top of 4.0-rc1
+- Remove SCM patches from series. Rebased on top of Kumar's tree
+- Removed cpuidle-qcom.c in favor of ARM generic cpuidle driver
+- Included Daniel's change for supporting creating cpuidle devices by platform
 
-I thought the last valid entry is what would point to the list head. Not 
-the actual list head. I'll check again.
+Tested on: 8074, 8084.
 
--Saravana
+Thanks,
+Lina
 
+[1]. https://lkml.org/lkml/2015/3/20/165
+
+
+Lina Iyer (10):
+  ARM: qcom: Add Subsystem Power Manager (SPM) driver
+  ARM: cpuidle: qcom: Add documentation for qcom cpuidle states
+  ARM: cpuidle: Add cpuidle support for QCOM cpus
+  ARM: dts: qcom: Add power-controller device node for 8074 Krait CPUs
+  ARM: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+  ARM: dts: qcom: Update power-controller device node for 8064 Krait
+    CPUs
+  ARM: dts: qcom: Add idle states device nodes for 8974/8074
+  ARM: dts: qcom: Add idle states device nodes for 8084
+  ARM: dts: qcom: Add idle state device nodes for 8064
+  ARM: qcom: Update defconfig to enable cpuidle
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  84 +++++
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  29 +-
+ arch/arm/boot/dts/qcom-apq8064.dtsi                |  30 +-
+ arch/arm/boot/dts/qcom-apq8084.dtsi                |  40 +-
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  40 +-
+ arch/arm/configs/qcom_defconfig                    |   2 +
+ drivers/cpuidle/Kconfig.arm                        |   7 +
+ drivers/soc/qcom/Kconfig                           |   7 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/spm.c                             | 405 +++++++++++++++++++++
+ 10 files changed, 629 insertions(+), 16 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 drivers/soc/qcom/spm.c
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.1.0
