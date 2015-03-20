@@ -1,84 +1,155 @@
-From: kongxinwei <kong.kongxinwei@hisilicon.com>
-Subject: Re: [PATCH 0/3] 96boards: add thermal senor support to hikey board
-Date: Fri, 20 Mar 2015 15:41:37 +0800
-Message-ID: <550BCF31.2000009@hisilicon.com>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com> <20150319135946.GG18473@leverpostej> <550B8F98.3070701@hisilicon.com> <20150320061322.GD18907@leoy-linaro>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Fri, 20 Mar 2015 08:45:21 +0100
+Message-ID: <CAPDyKFr-c+SNKw1+5BE_8K0_jWMNavkEX5+dhST8b9Ggzx-cyw@mail.gmail.com>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan>
+	<3998390.WErrfO4Yno@vostro.rjw.lan>
+	<5975784.LhOHuiUKGO@vostro.rjw.lan>
+	<1810625.BTgaNclHRk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150320061322.GD18907@leoy-linaro>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, jorge.ramirez-ortiz@linaro.org, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f177.google.com ([209.85.216.177]:36603 "EHLO
+	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbbCTHpW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 03:45:22 -0400
+Received: by qcto4 with SMTP id o4so86953380qct.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 00:45:21 -0700 (PDT)
+In-Reply-To: <1810625.BTgaNclHRk@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
+On 19 March 2015 at 22:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
+>
+> If PM domains are in use, it may be necessary to prepare the code
+> handling a PM domain for driver probing.  For example, in some
+> cases device drivers rely on the ability to power on the devices
+> with the help of the IO runtime PM framework and the PM domain
+> code needs to be ready for that.  Also, if that code has not been
+> fully initialized yet, the driver probing should be deferred.
+>
+> Moreover, after the probing is complete, it may be necessary to
+> put the PM domain in question into the state reflecting the current
+> needs of the devices in it, for example, so that power is not drawn
+> in vain.  The same should be done after removing a driver from
+> a device, as the PM domain state may need to be changed to reflect
+> the new situation.
+>
+> For these reasons, introduce new PM domain callbacks, ->activate
+> and ->sync, called, respectively, before probing for a device
+> driver and after the probing has been completed or the driver
+> has been removed.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+This looks good to me!
 
-=E5=9C=A8 2015/3/20 14:13, Leo Yan =E5=86=99=E9=81=93:
-> On Fri, Mar 20, 2015 at 11:10:16AM +0800, kongxinwei wrote:
->> hi Mark Rutland:
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+> ---
+>> ---
 >>
->> =E5=9C=A8 2015/3/19 21:59, Mark Rutland =E5=86=99=E9=81=93:
->>> On Thu, Mar 19, 2015 at 07:57:26AM +0000, kongxinwei wrote:
->>>> The Linaro connect introduce 96boards series in Hong Kong,The HiKe=
-y board
->>>> is the first board to be certified 96Boards Consumer Edition compa=
-tible.
->>>> This board is based on the HiSilicon SoC. you can get more informa=
-tion
->>>> from https://www.96boards.org.
->>>>
->>>> The hisilicon SoC contains thermal module, this thermal module has=
- 4 sensors,
->>>>
->>>> 	- sensor 0: local sensor;
->>>> 	- sensor 1: remote sensor for ACPU cluster 1;
->>>> 	- sensor 2: remote sensor for ACPU cluster 2;
->>>> 	- sensor 3: remote sensor for GPU;
->>>>
->>>> It can obtain this device temperature by operating this hardware. =
-The new
->>>> sensor driver satisfies thermal framework and to realize the ACPU =
-,GPU and
->>>> so on to cool function.
->>>>
->>>> kongxinwei (3):
->>>>   thermal: hisilicon: add new hisilicon thermal sensor driver
->>>>   dts: hi6220: enable thermal sensor for hisilicon SoC
->>>>   dt-bindings: Document the hi6220 thermal sensor bindings
->>>>
->>>>  .../bindings/thermal/hisilicon-thermal.txt         |  51 ++
->>>>  arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 153 ++++++
->>>>  drivers/thermal/Kconfig                            |   8 +
->>>>  drivers/thermal/Makefile                           |   1 +
->>>>  drivers/thermal/hisi_thermal.c                     | 531 ++++++++=
-+++++++++++++
->>>
->>> Mainline does not have a hi6220 dtsi.
->>>
->>> Which tree is this against?
->>>
->>> What are your dependencies?
->>>
->>> Mark.
->>>
->> Hikey board code are being upstreamed by our team.If hi6220 dtsi be =
-accepted, this patch is ok.
->=20
-> Xinwei, u could resend this patch after hi6220 dtsi related patches h=
-as
-> been merged. Suggest this patchset are only for thermal driver.
->=20
-> Thanks,
-> Leo Yan
->=20
-
-Oh,i wish that many persons review it and give some comments, then i wi=
-ll
-send v2 patch and reduce dts file.
-
-Thanks,
-Xin Wei
-> .
->=20
+>> This is an update without the additional bus type callbacks.  This should
+>> be suffucient at this point for the use cases we have.
+>>
+>> I've decided to also call ->sync on driver removal as that is consistent
+>> with what happens for failing probe.
+>>
+>> ---
+>
+> One more update.
+>
+> I've realized that in the PM domain's ->sync callback is called after
+> clearing the device's driver field (in the failed probe or driver removal
+> case) rather than before it, that could be used to distinguish between the
+> two cases (successful probe vs no driver), so I reworked the patch accordingly.
+>
+> ---
+>  drivers/base/dd.c  |   16 ++++++++++++++++
+>  include/linux/pm.h |    6 ++++++
+>  2 files changed, 22 insertions(+)
+>
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
+>   * Power domains provide callbacks that are executed during system suspend,
+>   * hibernation, system resume and during runtime PM transitions along with
+>   * subsystem-level and driver-level callbacks.
+> + *
+> + * @detach: Called when removing a device from the domain.
+> + * @activate: Called before executing probe routines for bus types and drivers.
+> + * @sync: Called after driver probe and removal.
+>   */
+>  struct dev_pm_domain {
+>         struct dev_pm_ops       ops;
+>         void (*detach)(struct device *dev, bool power_off);
+> +       int (*activate)(struct device *dev);
+> +       void (*sync)(struct device *dev);
+>  };
+>
+>  /*
+> Index: linux-pm/drivers/base/dd.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/dd.c
+> +++ linux-pm/drivers/base/dd.c
+> @@ -279,6 +279,7 @@ static int really_probe(struct device *d
+>  {
+>         int ret = 0;
+>         int local_trigger_count = atomic_read(&deferred_trigger_count);
+> +       struct dev_pm_domain *pm_domain = dev->pm_domain;
+>
+>         atomic_inc(&probe_count);
+>         pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+> @@ -298,6 +299,12 @@ static int really_probe(struct device *d
+>                 goto probe_failed;
+>         }
+>
+> +       if (pm_domain && pm_domain->activate) {
+> +               ret = pm_domain->activate(dev);
+> +               if (ret)
+> +                       goto probe_failed;
+> +       }
+> +
+>         if (dev->bus->probe) {
+>                 ret = dev->bus->probe(dev);
+>                 if (ret)
+> @@ -308,6 +315,9 @@ static int really_probe(struct device *d
+>                         goto probe_failed;
+>         }
+>
+> +       if (pm_domain && pm_domain->sync)
+> +               pm_domain->sync(dev);
+> +
+>         driver_bound(dev);
+>         ret = 1;
+>         pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+> @@ -319,6 +329,8 @@ probe_failed:
+>         driver_sysfs_remove(dev);
+>         dev->driver = NULL;
+>         dev_set_drvdata(dev, NULL);
+> +       if (pm_domain && pm_domain->sync)
+> +               pm_domain->sync(dev);
+>
+>         if (ret == -EPROBE_DEFER) {
+>                 /* Driver requested deferred probing */
+> @@ -522,9 +534,13 @@ static void __device_release_driver(stru
+>                         dev->bus->remove(dev);
+>                 else if (drv->remove)
+>                         drv->remove(dev);
+> +
+>                 devres_release_all(dev);
+>                 dev->driver = NULL;
+>                 dev_set_drvdata(dev, NULL);
+> +               if (dev->pm_domain && dev->pm_domain->sync)
+> +                       dev->pm_domain->sync(dev);
+> +
+>                 klist_remove(&dev->p->knode_driver);
+>                 if (dev->bus)
+>                         blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>
