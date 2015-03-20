@@ -1,155 +1,346 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] driver core / PM: Add PM domain callbacks for device setup/cleanup
-Date: Fri, 20 Mar 2015 08:45:21 +0100
-Message-ID: <CAPDyKFr-c+SNKw1+5BE_8K0_jWMNavkEX5+dhST8b9Ggzx-cyw@mail.gmail.com>
-References: <3533423.QQDErEmeTO@vostro.rjw.lan>
-	<3998390.WErrfO4Yno@vostro.rjw.lan>
-	<5975784.LhOHuiUKGO@vostro.rjw.lan>
-	<1810625.BTgaNclHRk@vostro.rjw.lan>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2] thermal: exynos: Add the support for Exynos5433 TMU
+Date: Fri, 20 Mar 2015 08:48:50 +0100
+Message-ID: <20150320084850.539010f5@amdc2363>
+References: <1425954224-31035-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f177.google.com ([209.85.216.177]:36603 "EHLO
-	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbbCTHpW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 03:45:22 -0400
-Received: by qcto4 with SMTP id o4so86953380qct.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 00:45:21 -0700 (PDT)
-In-Reply-To: <1810625.BTgaNclHRk@vostro.rjw.lan>
+Received: from mailout2.samsung.com ([203.254.224.25]:17349 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbbCTHtD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 03:49:03 -0400
+In-reply-to: <1425954224-31035-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, edubezval@gmail.com
+Cc: rui.zhang@intel.com, kgene@kernel.org, inki.dae@samsung.com, chanho61.park@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 19 March 2015 at 22:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: driver core / PM: Add PM domain callbacks for device setup/cleanup
->
-> If PM domains are in use, it may be necessary to prepare the code
-> handling a PM domain for driver probing.  For example, in some
-> cases device drivers rely on the ability to power on the devices
-> with the help of the IO runtime PM framework and the PM domain
-> code needs to be ready for that.  Also, if that code has not been
-> fully initialized yet, the driver probing should be deferred.
->
-> Moreover, after the probing is complete, it may be necessary to
-> put the PM domain in question into the state reflecting the current
-> needs of the devices in it, for example, so that power is not drawn
-> in vain.  The same should be done after removing a driver from
-> a device, as the PM domain state may need to be changed to reflect
-> the new situation.
->
-> For these reasons, introduce new PM domain callbacks, ->activate
-> and ->sync, called, respectively, before probing for a device
-> driver and after the probing has been completed or the driver
-> has been removed.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Chanwoo,
 
-This looks good to me!
-
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-
+> This patch adds the support for Exynos5433's TMU (Thermal Management
+> Unit). Exynos5433 has a little different register bit fields as
+> following description:
+> - Support the eight trip points for rising/falling interrupt by using
+> two registers
+> - Read the calibration type (1-point or 2-point) and sensor id from
+> TRIMINFO register
+> - Use a little different register address
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 > ---
->> ---
->>
->> This is an update without the additional bus type callbacks.  This should
->> be suffucient at this point for the use cases we have.
->>
->> I've decided to also call ->sync on driver removal as that is consistent
->> with what happens for failing probe.
->>
->> ---
->
-> One more update.
->
-> I've realized that in the PM domain's ->sync callback is called after
-> clearing the device's driver field (in the failed probe or driver removal
-> case) rather than before it, that could be used to distinguish between the
-> two cases (successful probe vs no driver), so I reworked the patch accordingly.
->
-> ---
->  drivers/base/dd.c  |   16 ++++++++++++++++
->  include/linux/pm.h |    6 ++++++
->  2 files changed, 22 insertions(+)
->
-> Index: linux-pm/include/linux/pm.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm.h
-> +++ linux-pm/include/linux/pm.h
-> @@ -603,10 +603,16 @@ extern void dev_pm_put_subsys_data(struc
->   * Power domains provide callbacks that are executed during system suspend,
->   * hibernation, system resume and during runtime PM transitions along with
->   * subsystem-level and driver-level callbacks.
-> + *
-> + * @detach: Called when removing a device from the domain.
-> + * @activate: Called before executing probe routines for bus types and drivers.
-> + * @sync: Called after driver probe and removal.
->   */
->  struct dev_pm_domain {
->         struct dev_pm_ops       ops;
->         void (*detach)(struct device *dev, bool power_off);
-> +       int (*activate)(struct device *dev);
-> +       void (*sync)(struct device *dev);
->  };
->
->  /*
-> Index: linux-pm/drivers/base/dd.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/dd.c
-> +++ linux-pm/drivers/base/dd.c
-> @@ -279,6 +279,7 @@ static int really_probe(struct device *d
+> Changes from v1:
+> (https://lkml.org/lkml/2015/2/26/234)
+> - Add exynos5433_tmu_control() instead of using exynos7_tmu_control()
+> on both Exynos5433 and Exynos7.
+> - Separate the patches related to devicetree and then send send
+> Exnos5433's tmu patches[1] with other Exynos5433 devicetree patches.
+>   [1] https://lkml.org/lkml/2015/3/9/1036
+> 
+>  drivers/thermal/samsung/exynos_tmu.c | 187
+> ++++++++++++++++++++++++++++++++++-
+> drivers/thermal/samsung/exynos_tmu.h |   1 + 2 files changed, 186
+> insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> b/drivers/thermal/samsung/exynos_tmu.c index 1d30b09..531f4b17 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -97,6 +97,32 @@
+>  #define EXYNOS4412_MUX_ADDR_VALUE          6
+>  #define EXYNOS4412_MUX_ADDR_SHIFT          20
+>  
+> +/* Exynos5433 specific registers */
+> +#define EXYNOS5433_TMU_REG_CONTROL1		0x024
+> +#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
+> +#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
+> +#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
+> +#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
+> +#define EXYNOS5433_THD_TEMP_RISE3_0		0x050
+> +#define EXYNOS5433_THD_TEMP_RISE7_4		0x054
+> +#define EXYNOS5433_THD_TEMP_FALL3_0		0x060
+> +#define EXYNOS5433_THD_TEMP_FALL7_4		0x064
+> +#define EXYNOS5433_TMU_REG_INTEN		0x0c0
+> +#define EXYNOS5433_TMU_REG_INTPEND		0x0c8
+> +#define EXYNOS5433_TMU_EMUL_CON			0x110
+> +#define EXYNOS5433_TMU_PD_DET_EN		0x130
+> +
+> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT	16
+> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT	23
+> +#define EXYNOS5433_TRIMINFO_SENSOR_ID_MASK	\
+> +			(0xf << EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT)
+> +#define EXYNOS5433_TRIMINFO_CALIB_SEL_MASK	BIT(23)
+> +
+> +#define EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING	0
+> +#define EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING	1
+> +
+> +#define EXYNOS5433_PD_DET_EN			1
+> +
+>  /*exynos5440 specific registers*/
+>  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
+>  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
+> @@ -484,6 +510,101 @@ out:
+>  	return ret;
+>  }
+>  
+> +static int exynos5433_tmu_initialize(struct platform_device *pdev)
+> +{
+> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> +	struct exynos_tmu_platform_data *pdata = data->pdata;
+> +	struct thermal_zone_device *tz = data->tzd;
+> +	unsigned int status, trim_info;
+> +	unsigned int rising_threshold = 0, falling_threshold = 0;
+> +	unsigned long temp, temp_hist;
+> +	int ret = 0, threshold_code, i, sensor_id, cal_type;
+> +
+> +	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
+> +	if (!status) {
+> +		ret = -EBUSY;
+> +		goto out;
+> +	}
+> +
+> +	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
+> +	sanitize_temp_error(data, trim_info);
+> +
+> +	/* Read the temperature sensor id */
+> +	sensor_id = (trim_info & EXYNOS5433_TRIMINFO_SENSOR_ID_MASK)
+> +				>>
+> EXYNOS5433_TRIMINFO_SENSOR_ID_SHIFT;
+> +	dev_info(&pdev->dev, "Temperature sensor ID: 0x%x\n",
+> sensor_id); +
+> +	/* Read the calibration mode */
+> +	writel(trim_info, data->base + EXYNOS_TMU_REG_TRIMINFO);
+> +	cal_type = (trim_info & EXYNOS5433_TRIMINFO_CALIB_SEL_MASK)
+> +				>>
+> EXYNOS5433_TRIMINFO_CALIB_SEL_SHIFT; +
+> +	switch (cal_type) {
+> +	case EXYNOS5433_TRIMINFO_ONE_POINT_TRIMMING:
+> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
+> +		break;
+> +	case EXYNOS5433_TRIMINFO_TWO_POINT_TRIMMING:
+> +		pdata->cal_type = TYPE_TWO_POINT_TRIMMING;
+> +		break;
+> +	default:
+> +		pdata->cal_type = TYPE_ONE_POINT_TRIMMING;
+> +		break;
+> +	};
+> +
+> +	dev_info(&pdev->dev, "Calibration type is %d-point
+> calibration\n",
+> +			cal_type ?  2 : 1);
+> +
+> +	/* Write temperature code for rising and falling threshold */
+> +	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+> +		int rising_reg_offset, falling_reg_offset;
+> +		int j = 0;
+> +
+> +		switch (i) {
+> +		case 0:
+> +		case 1:
+> +		case 2:
+> +		case 3:
+> +			rising_reg_offset =
+> EXYNOS5433_THD_TEMP_RISE3_0;
+> +			falling_reg_offset =
+> EXYNOS5433_THD_TEMP_FALL3_0;
+> +			j = i;
+> +			break;
+> +		case 4:
+> +		case 5:
+> +		case 6:
+> +		case 7:
+> +			rising_reg_offset =
+> EXYNOS5433_THD_TEMP_RISE7_4;
+> +			falling_reg_offset =
+> EXYNOS5433_THD_TEMP_FALL7_4;
+> +			j = i - 4;
+> +			break;
+> +		default:
+> +			continue;
+> +		}
+> +
+> +		/* Write temperature code for rising threshold */
+> +		tz->ops->get_trip_temp(tz, i, &temp);
+> +		temp /= MCELSIUS;
+> +		threshold_code = temp_to_code(data, temp);
+> +
+> +		rising_threshold = readl(data->base +
+> rising_reg_offset);
+> +		rising_threshold |= (threshold_code << j * 8);
+> +		writel(rising_threshold, data->base +
+> rising_reg_offset); +
+> +		/* Write temperature code for falling threshold */
+> +		tz->ops->get_trip_hyst(tz, i, &temp_hist);
+> +		temp_hist = temp - (temp_hist / MCELSIUS);
+> +		threshold_code = temp_to_code(data, temp_hist);
+> +
+> +		falling_threshold = readl(data->base +
+> falling_reg_offset);
+> +		falling_threshold &= ~(0xff << j * 8);
+> +		falling_threshold |= (threshold_code << j * 8);
+> +		writel(falling_threshold, data->base +
+> falling_reg_offset);
+> +	}
+> +
+> +	data->tmu_clear_irqs(data);
+> +out:
+> +	return ret;
+> +}
+> +
+>  static int exynos5440_tmu_initialize(struct platform_device *pdev)
 >  {
->         int ret = 0;
->         int local_trigger_count = atomic_read(&deferred_trigger_count);
-> +       struct dev_pm_domain *pm_domain = dev->pm_domain;
->
->         atomic_inc(&probe_count);
->         pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
-> @@ -298,6 +299,12 @@ static int really_probe(struct device *d
->                 goto probe_failed;
->         }
->
-> +       if (pm_domain && pm_domain->activate) {
-> +               ret = pm_domain->activate(dev);
-> +               if (ret)
-> +                       goto probe_failed;
-> +       }
+>  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> @@ -643,6 +764,48 @@ static void exynos4210_tmu_control(struct
+> platform_device *pdev, bool on) writel(con, data->base +
+> EXYNOS_TMU_REG_CONTROL); }
+>  
+> +static void exynos5433_tmu_control(struct platform_device *pdev,
+> bool on) +{
+> +	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> +	struct thermal_zone_device *tz = data->tzd;
+> +	unsigned int con, interrupt_en, pd_det_en;
 > +
->         if (dev->bus->probe) {
->                 ret = dev->bus->probe(dev);
->                 if (ret)
-> @@ -308,6 +315,9 @@ static int really_probe(struct device *d
->                         goto probe_failed;
->         }
->
-> +       if (pm_domain && pm_domain->sync)
-> +               pm_domain->sync(dev);
+> +	con = get_con_reg(data, readl(data->base +
+> EXYNOS_TMU_REG_CONTROL)); +
+> +	if (on) {
+> +		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> +		interrupt_en =
+> +			(of_thermal_is_trip_valid(tz, 7)
+> +			<< EXYNOS7_TMU_INTEN_RISE7_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 6)
+> +			<< EXYNOS7_TMU_INTEN_RISE6_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 5)
+> +			<< EXYNOS7_TMU_INTEN_RISE5_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 4)
+> +			<< EXYNOS7_TMU_INTEN_RISE4_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 3)
+> +			<< EXYNOS7_TMU_INTEN_RISE3_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 2)
+> +			<< EXYNOS7_TMU_INTEN_RISE2_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 1)
+> +			<< EXYNOS7_TMU_INTEN_RISE1_SHIFT) |
+> +			(of_thermal_is_trip_valid(tz, 0)
+> +			<< EXYNOS7_TMU_INTEN_RISE0_SHIFT);
 > +
->         driver_bound(dev);
->         ret = 1;
->         pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
-> @@ -319,6 +329,8 @@ probe_failed:
->         driver_sysfs_remove(dev);
->         dev->driver = NULL;
->         dev_set_drvdata(dev, NULL);
-> +       if (pm_domain && pm_domain->sync)
-> +               pm_domain->sync(dev);
->
->         if (ret == -EPROBE_DEFER) {
->                 /* Driver requested deferred probing */
-> @@ -522,9 +534,13 @@ static void __device_release_driver(stru
->                         dev->bus->remove(dev);
->                 else if (drv->remove)
->                         drv->remove(dev);
+> +		interrupt_en |=
+> +			interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
+> +	} else {
+> +		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> +		interrupt_en = 0; /* Disable all interrupts */
+> +	}
 > +
->                 devres_release_all(dev);
->                 dev->driver = NULL;
->                 dev_set_drvdata(dev, NULL);
-> +               if (dev->pm_domain && dev->pm_domain->sync)
-> +                       dev->pm_domain->sync(dev);
+> +	pd_det_en = on ? EXYNOS5433_PD_DET_EN : 0;
 > +
->                 klist_remove(&dev->p->knode_driver);
->                 if (dev->bus)
->                         blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->
+> +	writel(pd_det_en, data->base + EXYNOS5433_TMU_PD_DET_EN);
+> +	writel(interrupt_en, data->base + EXYNOS5433_TMU_REG_INTEN);
+> +	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+> +}
+> +
+>  static void exynos5440_tmu_control(struct platform_device *pdev,
+> bool on) {
+>  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> @@ -770,6 +933,8 @@ static void exynos4412_tmu_set_emulation(struct
+> exynos_tmu_data *data, 
+>  	if (data->soc == SOC_ARCH_EXYNOS5260)
+>  		emul_con = EXYNOS5260_EMUL_CON;
+> +	if (data->soc == SOC_ARCH_EXYNOS5433)
+> +		emul_con = EXYNOS5433_TMU_EMUL_CON;
+>  	else if (data->soc == SOC_ARCH_EXYNOS7)
+>  		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+>  	else
+> @@ -882,6 +1047,9 @@ static void exynos4210_tmu_clear_irqs(struct
+> exynos_tmu_data *data) } else if (data->soc == SOC_ARCH_EXYNOS7) {
+>  		tmu_intstat = EXYNOS7_TMU_REG_INTPEND;
+>  		tmu_intclear = EXYNOS7_TMU_REG_INTPEND;
+> +	} else if (data->soc == SOC_ARCH_EXYNOS5433) {
+> +		tmu_intstat = EXYNOS5433_TMU_REG_INTPEND;
+> +		tmu_intclear = EXYNOS5433_TMU_REG_INTPEND;
+>  	} else {
+>  		tmu_intstat = EXYNOS_TMU_REG_INTSTAT;
+>  		tmu_intclear = EXYNOS_TMU_REG_INTCLEAR;
+> @@ -926,6 +1094,7 @@ static const struct of_device_id
+> exynos_tmu_match[] = { { .compatible = "samsung,exynos5260-tmu", },
+>  	{ .compatible = "samsung,exynos5420-tmu", },
+>  	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
+> +	{ .compatible = "samsung,exynos5433-tmu", },
+>  	{ .compatible = "samsung,exynos5440-tmu", },
+>  	{ .compatible = "samsung,exynos7-tmu", },
+>  	{ /* sentinel */ },
+> @@ -949,6 +1118,8 @@ static int exynos_of_get_soc_type(struct
+> device_node *np) else if (of_device_is_compatible(np,
+>  					 "samsung,exynos5420-tmu-ext-triminfo"))
+>  		return SOC_ARCH_EXYNOS5420_TRIMINFO;
+> +	else if (of_device_is_compatible(np,
+> "samsung,exynos5433-tmu"))
+> +		return SOC_ARCH_EXYNOS5433;
+>  	else if (of_device_is_compatible(np,
+> "samsung,exynos5440-tmu")) return SOC_ARCH_EXYNOS5440;
+>  	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
+> @@ -1069,6 +1240,13 @@ static int exynos_map_dt_data(struct
+> platform_device *pdev) data->tmu_set_emulation =
+> exynos4412_tmu_set_emulation; data->tmu_clear_irqs =
+> exynos4210_tmu_clear_irqs; break;
+> +	case SOC_ARCH_EXYNOS5433:
+> +		data->tmu_initialize = exynos5433_tmu_initialize;
+> +		data->tmu_control = exynos5433_tmu_control;
+> +		data->tmu_read = exynos4412_tmu_read;
+> +		data->tmu_set_emulation =
+> exynos4412_tmu_set_emulation;
+> +		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+> +		break;
+>  	case SOC_ARCH_EXYNOS5440:
+>  		data->tmu_initialize = exynos5440_tmu_initialize;
+>  		data->tmu_control = exynos5440_tmu_control;
+> @@ -1172,7 +1350,9 @@ static int exynos_tmu_probe(struct
+> platform_device *pdev) goto err_clk_sec;
+>  	}
+>  
+> -	if (data->soc == SOC_ARCH_EXYNOS7) {
+> +	switch (data->soc) {
+> +	case SOC_ARCH_EXYNOS5433:
+> +	case SOC_ARCH_EXYNOS7:
+>  		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
+>  		if (IS_ERR(data->sclk)) {
+>  			dev_err(&pdev->dev, "Failed to get sclk\n");
+> @@ -1184,7 +1364,10 @@ static int exynos_tmu_probe(struct
+> platform_device *pdev) goto err_clk;
+>  			}
+>  		}
+> -	}
+> +		break;
+> +	default:
+> +		break;
+> +	};
+>  
+>  	ret = exynos_tmu_initialize(pdev);
+>  	if (ret) {
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h
+> b/drivers/thermal/samsung/exynos_tmu.h index 4d71ec6..440c714 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -33,6 +33,7 @@ enum soc_type {
+>  	SOC_ARCH_EXYNOS5260,
+>  	SOC_ARCH_EXYNOS5420,
+>  	SOC_ARCH_EXYNOS5420_TRIMINFO,
+> +	SOC_ARCH_EXYNOS5433,
+>  	SOC_ARCH_EXYNOS5440,
+>  	SOC_ARCH_EXYNOS7,
+>  };
+
+Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+
+I will test this patch (@ Odroid U3) when linux-samusng-thermal/next
+branch would be updated to newest mainline.
+
+Eduardo, could you update your -next branch?
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
