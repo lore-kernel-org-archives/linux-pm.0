@@ -1,90 +1,100 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Fri, 20 Mar 2015 15:55:27 +0000
-Message-ID: <20150320155527.GJ14766@leverpostej>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
- <20150319141753.GB25967@leverpostej>
- <20150320060653.GC18907@leoy-linaro>
- <20150320112414.GD14766@leverpostej>
- <20150320145353.GA20461@leoy-linaro>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 4/6] ARM64: cpuidle: Rename cpu_init_idle to a common
+ function name
+Date: Fri, 20 Mar 2015 17:01:00 +0100
+Message-ID: <550C443C.8060305@linaro.org>
+References: <1425385777-14766-1-git-send-email-daniel.lezcano@linaro.org> <1425385777-14766-5-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40490 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbbCTP4C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 Mar 2015 11:56:02 -0400
-Content-Disposition: inline
-In-Reply-To: <20150320145353.GA20461@leoy-linaro>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1425385777-14766-5-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Catalin.Marinas-5wv7dgnIgG8@public.gmane.org
+Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: kongxinwei <kong.kongxinwei@hisilicon.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-> > That may be the case in the code as it stands today, but per the binding
-> > the trip points are the temperatures at which an action is to be taken.
-> > 
-> > The thermal-zone has poilling-delay and polling-delay-passive, but
-> > there's no reason you couldn't also use the interrupt to handle the
-> > "hot" trip-point, adn the reset at the "critical" trip-point. All that's
-> > missing is the plumbing in order to do so.
-> > 
-> > So please co-ordinate with the thermal framework to do that.
-> 
-> Let's dig further more for this point, so that we can get more specific
-> gudiance and have a good preparation for next version's patch set.
-> 
-> After i reviewed the thermal framework code, currently have one smooth
-> way to co-ordinate the trip points w/t thermal framework: use the function
-> *thermal_zone_device_register()* to register sensor, and can use the
-> callback function .get_trip_temp to tell thermal framework for the
-> trip points' temperature.
-> 
-> For hisi thermal case, now the driver is using the function
-> *thermal_zone_of_sensor_register* to register sensor, but use this way
-> i have not found there have standard APIs which can be used by sensor
-> driver to get the trip points info from thermal framework.
-> 
-> I may miss something for thermal framework, so if have existed APIs to
-> get the trip points, could pls point out?
+On 03/03/2015 01:29 PM, Daniel Lezcano wrote:
+> With this change the cpuidle-arm64.c file calls the same function nam=
+e
+> for both ARM and ARM64.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-I am only familiar with the binding, not the Linux implementation -- The
-latter can change to accomodate your hardware without requiring binding
-changes. Please co-ordinate with the thermal maintainers.
+Hi Catalin,
 
-> > > > > +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
-> > > > > +
-> > > > > +               if (data->irq_bind_sensor != -1)
-> > > > > +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
-> > > > > +                                data->irq_bind_sensor);
-> > > > > +
-> > > > > +               /* bind irq to this sensor */
-> > > > > +               data->irq_bind_sensor = index;
-> > > > > +       }
-> > > > 
-> > > > I don't see why this should be specified in the DT. Why do you believe
-> > > > it should?
-> > > 
-> > > The thermal sensor module has four sensors, but have only one
-> > > interrupt signal; This interrupt can only be used by one sensor;
-> > > So want to use dts to bind the interrupt with one selected sensor.
-> > 
-> > That's not all that great, though I'm not exactly sure how the kernel
-> > would select the best sensor to measure with. It would be good if you
-> > could talk to the thermal maintainers w.r.t. this.
-> 
-> This will be decided by the silicon, right? Every soc has different
-> combination with cpu/gpu/vpu, so which part is hottest, this maybe
-> highly dependent on individual SoC.
-> 
-> S/W just need provide the flexibility so that later can choose
-> the interrupt to bind with the sensor within the hottest part.
+do you mind to ack the ARM64 if you agree with these changes ?
 
-Then the property you care about is which sensor is closest to what is
-likely to be the hottest component. Given that, the kernel can decide
-how to use the interrupt.
+Thanks.
 
-Thanks,
-Mark.
+   -- Daniel
+
+> ---
+>   arch/arm64/include/asm/cpuidle.h | 4 ++--
+>   arch/arm64/kernel/cpuidle.c      | 2 +-
+>   drivers/cpuidle/cpuidle-arm64.c  | 2 +-
+>   3 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/as=
+m/cpuidle.h
+> index 1bee287..2bc2732 100644
+> --- a/arch/arm64/include/asm/cpuidle.h
+> +++ b/arch/arm64/include/asm/cpuidle.h
+> @@ -2,10 +2,10 @@
+>   #define __ASM_CPUIDLE_H
+>
+>   #ifdef CONFIG_CPU_IDLE
+> -extern int cpu_init_idle(unsigned int cpu);
+> +extern int arm_cpuidle_init(unsigned int cpu);
+>   extern int cpu_suspend(unsigned long arg);
+>   #else
+> -static inline int cpu_init_idle(unsigned int cpu)
+> +static inline int arm_cpuidle_init(unsigned int cpu)
+>   {
+>   	return -EOPNOTSUPP;
+>   }
+> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.=
+c
+> index 5c08966..a78143a 100644
+> --- a/arch/arm64/kernel/cpuidle.c
+> +++ b/arch/arm64/kernel/cpuidle.c
+> @@ -15,7 +15,7 @@
+>   #include <asm/cpuidle.h>
+>   #include <asm/cpu_ops.h>
+>
+> -int cpu_init_idle(unsigned int cpu)
+> +int arm_cpuidle_init(unsigned int cpu)
+>   {
+>   	int ret =3D -EOPNOTSUPP;
+>   	struct device_node *cpu_node =3D of_cpu_device_node_get(cpu);
+> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidl=
+e-arm64.c
+> index 0cea244..6ef291c7 100644
+> --- a/drivers/cpuidle/cpuidle-arm64.c
+> +++ b/drivers/cpuidle/cpuidle-arm64.c
+> @@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
+>   	 * idle states suspend back-end specific data
+>   	 */
+>   	for_each_possible_cpu(cpu) {
+> -		ret =3D cpu_init_idle(cpu);
+> +		ret =3D arm_cpuidle_init(cpu);
+>   		if (ret) {
+>   			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+>   			return ret;
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
