@@ -1,230 +1,138 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V3 1/8] ARM: cpuidle: Remove duplicate header inclusion
-Date: Fri, 20 Mar 2015 12:43:54 +0100
-Message-ID: <1426851841-2072-2-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V3 5/8] ARM64: cpuidle: Remove arm64 reference
+Date: Fri, 20 Mar 2015 12:43:58 +0100
+Message-ID: <1426851841-2072-6-git-send-email-daniel.lezcano@linaro.org>
 References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426851841-2072-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin.Marinas-5wv7dgnIgG8@public.gmane.org, robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:35430 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbbCTLoS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 07:44:18 -0400
+Received: by wibdy8 with SMTP id dy8so14807870wib.0
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 04:44:16 -0700 (PDT)
+In-Reply-To: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org, sboyd@codeaurora.org
 
-The cpu_do_idle() function is always used by the cpuidle drivers.
+In the next patch, this driver will be common across ARM/ARM64. Remove all refs
+to ARM64 as it will be shared with ARM32.
 
-That led to have each driver including cpuidle.h and proc-fns.h, they are
-always paired. That makes a lot of duplicate headers inclusion. Instead of
-including both in each .c file, move the proc-fns.h header inclusion in the
-cpuidle.h header file directly, so we can save some line of code.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Kevin Hilman <khilman@linaro.org>
+Acked-by: Rob Herring <robherring2@gmail.com>
 ---
- arch/arm/include/asm/cpuidle.h        | 2 ++
- arch/arm/kernel/cpuidle.c             | 2 +-
- arch/arm/mach-davinci/cpuidle.c       | 1 -
- arch/arm/mach-imx/cpuidle-imx6q.c     | 1 -
- arch/arm/mach-imx/cpuidle-imx6sl.c    | 1 -
- arch/arm/mach-imx/cpuidle-imx6sx.c    | 1 -
- arch/arm/mach-omap2/cpuidle44xx.c     | 1 -
- arch/arm/mach-s3c64xx/cpuidle.c       | 2 +-
- arch/arm/mach-tegra/cpuidle-tegra20.c | 1 -
- arch/arm/mach-tegra/cpuidle-tegra30.c | 1 -
- drivers/cpuidle/cpuidle-at91.c        | 1 -
- drivers/cpuidle/cpuidle-exynos.c      | 1 -
- drivers/cpuidle/cpuidle-kirkwood.c    | 1 -
- drivers/cpuidle/cpuidle-ux500.c       | 1 -
- drivers/cpuidle/cpuidle-zynq.c        | 1 -
- 15 files changed, 4 insertions(+), 14 deletions(-)
+ drivers/cpuidle/cpuidle-arm64.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index af319ac..348dc81 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -1,6 +1,8 @@
- #ifndef __ASM_ARM_CPUIDLE_H
- #define __ASM_ARM_CPUIDLE_H
- 
-+#include <asm/proc-fns.h>
-+
- #ifdef CONFIG_CPU_IDLE
- extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int index);
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 89545f6..45969f8 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -10,7 +10,7 @@
+diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
+index 6ef291c7..1c94b88 100644
+--- a/drivers/cpuidle/cpuidle-arm64.c
++++ b/drivers/cpuidle/cpuidle-arm64.c
+@@ -1,5 +1,5 @@
+ /*
+- * ARM64 generic CPU idle driver.
++ * ARM/ARM64 generic CPU idle driver.
+  *
+  * Copyright (C) 2014 ARM Ltd.
+  * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+@@ -9,7 +9,7 @@
+  * published by the Free Software Foundation.
   */
  
+-#define pr_fmt(fmt) "CPUidle arm64: " fmt
++#define pr_fmt(fmt) "CPUidle arm: " fmt
+ 
  #include <linux/cpuidle.h>
--#include <asm/proc-fns.h>
-+#include <asm/cpuidle.h>
+ #include <linux/cpumask.h>
+@@ -23,7 +23,7 @@
+ #include "dt_idle_states.h"
  
- int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int index)
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index e365c1b..306ebc5 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -17,7 +17,6 @@
- #include <linux/cpuidle.h>
- #include <linux/io.h>
- #include <linux/export.h>
--#include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
+ /*
+- * arm64_enter_idle_state - Programs CPU to enter the specified state
++ * arm_enter_idle_state - Programs CPU to enter the specified state
+  *
+  * dev: cpuidle device
+  * drv: cpuidle driver
+@@ -32,8 +32,8 @@
+  * Called from the CPUidle framework to program the device to the
+  * specified target state selected by the governor.
+  */
+-static int arm64_enter_idle_state(struct cpuidle_device *dev,
+-				  struct cpuidle_driver *drv, int idx)
++static int arm_enter_idle_state(struct cpuidle_device *dev,
++				struct cpuidle_driver *drv, int idx)
+ {
+ 	int ret;
  
- #include <mach/cpuidle.h>
-diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
-index d76d086..8e21ccc 100644
---- a/arch/arm/mach-imx/cpuidle-imx6q.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6q.c
-@@ -9,7 +9,6 @@
- #include <linux/cpuidle.h>
- #include <linux/module.h>
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
+@@ -57,8 +57,8 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
+ 	return ret ? -1 : idx;
+ }
  
- #include "common.h"
- #include "cpuidle.h"
-diff --git a/arch/arm/mach-imx/cpuidle-imx6sl.c b/arch/arm/mach-imx/cpuidle-imx6sl.c
-index 7d92e65..5742a9f 100644
---- a/arch/arm/mach-imx/cpuidle-imx6sl.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6sl.c
-@@ -9,7 +9,6 @@
- #include <linux/cpuidle.h>
- #include <linux/module.h>
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
+-static struct cpuidle_driver arm64_idle_driver = {
+-	.name = "arm64_idle",
++static struct cpuidle_driver arm_idle_driver = {
++	.name = "arm_idle",
+ 	.owner = THIS_MODULE,
+ 	/*
+ 	 * State at index 0 is standby wfi and considered standard
+@@ -68,32 +68,32 @@ static struct cpuidle_driver arm64_idle_driver = {
+ 	 * handler for idle state index 0.
+ 	 */
+ 	.states[0] = {
+-		.enter                  = arm64_enter_idle_state,
++		.enter                  = arm_enter_idle_state,
+ 		.exit_latency           = 1,
+ 		.target_residency       = 1,
+ 		.power_usage		= UINT_MAX,
+ 		.name                   = "WFI",
+-		.desc                   = "ARM64 WFI",
++		.desc                   = "ARM WFI",
+ 	}
+ };
  
- #include "common.h"
- #include "cpuidle.h"
-diff --git a/arch/arm/mach-imx/cpuidle-imx6sx.c b/arch/arm/mach-imx/cpuidle-imx6sx.c
-index 5a36722..2c9f1a8 100644
---- a/arch/arm/mach-imx/cpuidle-imx6sx.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6sx.c
-@@ -10,7 +10,6 @@
- #include <linux/cpu_pm.h>
- #include <linux/module.h>
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
- #include <asm/suspend.h>
+-static const struct of_device_id arm64_idle_state_match[] __initconst = {
++static const struct of_device_id arm_idle_state_match[] __initconst = {
+ 	{ .compatible = "arm,idle-state",
+-	  .data = arm64_enter_idle_state },
++	  .data = arm_enter_idle_state },
+ 	{ },
+ };
  
- #include "common.h"
-diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2/cpuidle44xx.c
-index 01e398a..7622dbb 100644
---- a/arch/arm/mach-omap2/cpuidle44xx.c
-+++ b/arch/arm/mach-omap2/cpuidle44xx.c
-@@ -17,7 +17,6 @@
- #include <linux/clockchips.h>
+ /*
+- * arm64_idle_init
++ * arm_idle_init
+  *
+- * Registers the arm64 specific cpuidle driver with the cpuidle
++ * Registers the arm specific cpuidle driver with the cpuidle
+  * framework. It relies on core code to parse the idle states
+  * and initialize them using driver data structures accordingly.
+  */
+-static int __init arm64_idle_init(void)
++static int __init arm_idle_init(void)
+ {
+ 	int cpu, ret;
+-	struct cpuidle_driver *drv = &arm64_idle_driver;
++	struct cpuidle_driver *drv = &arm_idle_driver;
  
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
+ 	/*
+ 	 * Initialize idle states data, starting at index 1.
+@@ -101,7 +101,7 @@ static int __init arm64_idle_init(void)
+ 	 * let the driver initialization fail accordingly since there is no
+ 	 * reason to initialize the idle driver if only wfi is supported.
+ 	 */
+-	ret = dt_init_idle_driver(drv, arm64_idle_state_match, 1);
++	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+ 	if (ret <= 0)
+ 		return ret ? : -ENODEV;
  
- #include "common.h"
- #include "pm.h"
-diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/cpuidle.c
-index 2eb0724..93aa8cb 100644
---- a/arch/arm/mach-s3c64xx/cpuidle.c
-+++ b/arch/arm/mach-s3c64xx/cpuidle.c
-@@ -16,7 +16,7 @@
- #include <linux/export.h>
- #include <linux/time.h>
+@@ -119,4 +119,4 @@ static int __init arm64_idle_init(void)
  
--#include <asm/proc-fns.h>
-+#include <asm/cpuidle.h>
- 
- #include <mach/map.h>
- 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index 4f25a7c..e22b0d9 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -27,7 +27,6 @@
- #include <linux/module.h>
- 
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
- #include <asm/smp_plat.h>
- #include <asm/suspend.h>
- 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
-index f8815ed..a2400ab4 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra30.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
-@@ -27,7 +27,6 @@
- #include <linux/module.h>
- 
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
- #include <asm/smp_plat.h>
- #include <asm/suspend.h>
- 
-diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidle-at91.c
-index aae7bfc..f2446c7 100644
---- a/drivers/cpuidle/cpuidle-at91.c
-+++ b/drivers/cpuidle/cpuidle-at91.c
-@@ -19,7 +19,6 @@
- #include <linux/cpuidle.h>
- #include <linux/io.h>
- #include <linux/export.h>
--#include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
- 
- #define AT91_MAX_STATES	2
-diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-index 26f5f29..0c06ea2 100644
---- a/drivers/cpuidle/cpuidle-exynos.c
-+++ b/drivers/cpuidle/cpuidle-exynos.c
-@@ -19,7 +19,6 @@
- #include <linux/of.h>
- #include <linux/platform_data/cpuidle-exynos.h>
- 
--#include <asm/proc-fns.h>
- #include <asm/suspend.h>
- #include <asm/cpuidle.h>
- 
-diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-index cea0a6c..d23d8f4 100644
---- a/drivers/cpuidle/cpuidle-kirkwood.c
-+++ b/drivers/cpuidle/cpuidle-kirkwood.c
-@@ -21,7 +21,6 @@
- #include <linux/cpuidle.h>
- #include <linux/io.h>
- #include <linux/export.h>
--#include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
- 
- #define KIRKWOOD_MAX_STATES	2
-diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
-index 66f81e4..8bf895c 100644
---- a/drivers/cpuidle/cpuidle-ux500.c
-+++ b/drivers/cpuidle/cpuidle-ux500.c
-@@ -19,7 +19,6 @@
- #include <linux/platform_device.h>
- 
- #include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
- 
- static atomic_t master = ATOMIC_INIT(0);
- static DEFINE_SPINLOCK(master_lock);
-diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
-index 002b8c9..543292b 100644
---- a/drivers/cpuidle/cpuidle-zynq.c
-+++ b/drivers/cpuidle/cpuidle-zynq.c
-@@ -28,7 +28,6 @@
- #include <linux/init.h>
- #include <linux/cpuidle.h>
- #include <linux/platform_device.h>
--#include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
- 
- #define ZYNQ_MAX_STATES		2
+ 	return cpuidle_register(drv, NULL);
+ }
+-device_initcall(arm64_idle_init);
++device_initcall(arm_idle_init);
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
