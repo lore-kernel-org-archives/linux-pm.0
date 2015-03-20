@@ -1,161 +1,84 @@
 From: kongxinwei <kong.kongxinwei@hisilicon.com>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Fri, 20 Mar 2015 15:37:24 +0800
-Message-ID: <550BCE34.9010904@hisilicon.com>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com> <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com> <20150319141753.GB25967@leverpostej>
+Subject: Re: [PATCH 0/3] 96boards: add thermal senor support to hikey board
+Date: Fri, 20 Mar 2015 15:41:37 +0800
+Message-ID: <550BCF31.2000009@hisilicon.com>
+References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com> <20150319135946.GG18473@leverpostej> <550B8F98.3070701@hisilicon.com> <20150320061322.GD18907@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150319141753.GB25967@leverpostej>
+In-Reply-To: <20150320061322.GD18907@leoy-linaro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, jorge.ramirez-ortiz@linaro.org, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-=E5=9C=A8 2015/3/19 22:17, Mark Rutland =E5=86=99=E9=81=93:
-> On Thu, Mar 19, 2015 at 07:57:27AM +0000, kongxinwei wrote:
->> This patch adds the support for hisilicon thermal sensor, within
->> hisilicon SoC. there will register sensors for thermal framework
->> and use device tree to bind cooling device.
+=E5=9C=A8 2015/3/20 14:13, Leo Yan =E5=86=99=E9=81=93:
+> On Fri, Mar 20, 2015 at 11:10:16AM +0800, kongxinwei wrote:
+>> hi Mark Rutland:
 >>
->> Signed-off-by: Leo Yan <leo.yan@linaro.org>
->> Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
->> ---
->>  drivers/thermal/Kconfig        |   8 +
->>  drivers/thermal/Makefile       |   1 +
->>  drivers/thermal/hisi_thermal.c | 531 ++++++++++++++++++++++++++++++=
-+++++++++++
->>  3 files changed, 540 insertions(+)
->>  create mode 100644 drivers/thermal/hisi_thermal.c
+>> =E5=9C=A8 2015/3/19 21:59, Mark Rutland =E5=86=99=E9=81=93:
+>>> On Thu, Mar 19, 2015 at 07:57:26AM +0000, kongxinwei wrote:
+>>>> The Linaro connect introduce 96boards series in Hong Kong,The HiKe=
+y board
+>>>> is the first board to be certified 96Boards Consumer Edition compa=
+tible.
+>>>> This board is based on the HiSilicon SoC. you can get more informa=
+tion
+>>>> from https://www.96boards.org.
+>>>>
+>>>> The hisilicon SoC contains thermal module, this thermal module has=
+ 4 sensors,
+>>>>
+>>>> 	- sensor 0: local sensor;
+>>>> 	- sensor 1: remote sensor for ACPU cluster 1;
+>>>> 	- sensor 2: remote sensor for ACPU cluster 2;
+>>>> 	- sensor 3: remote sensor for GPU;
+>>>>
+>>>> It can obtain this device temperature by operating this hardware. =
+The new
+>>>> sensor driver satisfies thermal framework and to realize the ACPU =
+,GPU and
+>>>> so on to cool function.
+>>>>
+>>>> kongxinwei (3):
+>>>>   thermal: hisilicon: add new hisilicon thermal sensor driver
+>>>>   dts: hi6220: enable thermal sensor for hisilicon SoC
+>>>>   dt-bindings: Document the hi6220 thermal sensor bindings
+>>>>
+>>>>  .../bindings/thermal/hisilicon-thermal.txt         |  51 ++
+>>>>  arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 153 ++++++
+>>>>  drivers/thermal/Kconfig                            |   8 +
+>>>>  drivers/thermal/Makefile                           |   1 +
+>>>>  drivers/thermal/hisi_thermal.c                     | 531 ++++++++=
++++++++++++++
+>>>
+>>> Mainline does not have a hi6220 dtsi.
+>>>
+>>> Which tree is this against?
+>>>
+>>> What are your dependencies?
+>>>
+>>> Mark.
+>>>
+>> Hikey board code are being upstreamed by our team.If hi6220 dtsi be =
+accepted, this patch is ok.
 >=20
-> [...]
+> Xinwei, u could resend this patch after hi6220 dtsi related patches h=
+as
+> been merged. Suggest this patchset are only for thermal driver.
 >=20
->> +       ret =3D of_property_read_u32(np, "hisilicon,tsensor-lag-valu=
-e",
->> +                                  &sensor->lag);
->=20
-> This wasn't in the binding.
->=20
-
-good comment, delete it.
-
-Xinwei
-
-> [...]
->=20
->> +       ret =3D of_property_read_u32(np, "hisilicon,tsensor-thres-te=
-mp",
->> +                                  &sensor->thres_temp);
->> +       if (ret) {
->> +               dev_err(&pdev->dev, "failed to get thres value %d: %=
-d\n",
->> +                       index, ret);
->> +               return ret;
->> +       }
->> +
->> +       ret =3D of_property_read_u32(np, "hisilicon,tsensor-reset-te=
-mp",
->> +                                  &sensor->reset_temp);
->> +       if (ret) {
->> +               dev_err(&pdev->dev, "failed to get reset value %d: %=
-d\n",
->> +                       index, ret);
->> +               return ret;
->> +       }
->=20
-> I see now that these properties result in the HW being programmed. Yo=
-u
-> should figure out how to reconcile these with thermal-zone trip point=
-s
-> rather than having parallel properties.
->=20
-oh,firstly,this "tsensor-thres-temp" property is threshold temperature =
-value
-which causes interrupt function by setting thermal value register. "the=
-rmal
--zone trip points" applies scanning mode to cause other function such a=
-s
-cooling freq .., but this "tsensor-thres-temp" property be used by inte=
-rrupt
-mode. when scanning mode don't satisfies systerm demands, the interrut =
-mode
-perfectly help scanning mode to complete function. "tsensor-thres-temp"=
- temp-
-erature is higher than "thermal-zone trip points" temperature, so this =
-"
-tsensor-thres-temp" property is secondary attribute.
-
-secondly, this "tsensor-reset-temp" property is hardware protect temper=
-ature
-which is close to or is below to burn out the SoC. When SoC temperature=
- is
-"tsensor-reset-temp" temperature value, SoC will be force to reboot and=
- ensure
-SoC not to burn out. So it don't conflict thermal-zone.
-
-
->> +
->> +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq"))=
- {
->> +
->> +               if (data->irq_bind_sensor !=3D -1)
->> +                       dev_warn(&pdev->dev, "irq has bound to index=
- %d\n",
->> +                                data->irq_bind_sensor);
->> +
->> +               /* bind irq to this sensor */
->> +               data->irq_bind_sensor =3D index;
->> +       }
->=20
-> I don't see why this should be specified in the DT. Why do you believ=
-e
-> it should?
->=20
-SoC include foure thermal sensor modules,every modules is able to cause
-interrupt,so binding a module to realize interupt function and i believ=
-e
-it should be specified.
-> [...]
->=20
->> +static int hisi_thermal_probe(struct platform_device *pdev)
->> +{
->> +       struct hisi_thermal_data *data;
->> +       struct resource *res;
->> +       int i;
->> +       int ret;
->> +
->> +       if (!cpufreq_get_current_driver()) {
->> +               dev_dbg(&pdev->dev, "no cpufreq driver!");
->> +               return -EPROBE_DEFER;
->> +       }
->=20
-> Surely we care about not burning out the board even if we don't have
-> cpufreq?
->=20
-> Is there any ordering guarantee between the probing of this driver an=
-d
-> cpufreq?
->=20
->=20
-Yes! It will use thermal framework to realize cpu cooling device functi=
-on.
-
-> [...]
->=20
->> +       data->clk =3D devm_clk_get(&pdev->dev, NULL);
->=20
-> You gave this clock a name in the binding. Use it or drop it.
->
-
-Thanks comment,use it.
-
-> Mark.=20
+> Thanks,
+> Leo Yan
 >=20
 
-Xinwei
+Oh,i wish that many persons review it and give some comments, then i wi=
+ll
+send v2 patch and reduce dts file.
+
+Thanks,
+Xin Wei
 > .
 >=20
