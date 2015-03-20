@@ -1,88 +1,116 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V3 0/8] ARM: cpuidle: Unify the ARM64/ARM DT approach
-Date: Fri, 20 Mar 2015 19:39:23 +0100
-Message-ID: <550C695B.7080200@linaro.org>
-References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org> <20150320183111.GA8891@red-moon>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH V2 06/20] cpufreq: Create for_each_{in}active_policy()
+Date: Fri, 20 Mar 2015 12:18:49 -0700
+Message-ID: <550C7299.7030308@codeaurora.org>
+References: <cover.1424345053.git.viresh.kumar@linaro.org> <3335dcc924b60249617dfad711c602927fb1f2b7.1424345053.git.viresh.kumar@linaro.org> <550B7159.7090601@codeaurora.org> <CAKohpokanT+6scDTYotp90GNhyatURQNyjKpkfDKxgU9vhbWqQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f52.google.com ([74.125.82.52]:33714 "EHLO
-	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbbCTSj2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 14:39:28 -0400
-Received: by wgbcc7 with SMTP id cc7so96353280wgb.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 11:39:26 -0700 (PDT)
-In-Reply-To: <20150320183111.GA8891@red-moon>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41162 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750950AbbCTTSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 15:18:51 -0400
+In-Reply-To: <CAKohpokanT+6scDTYotp90GNhyatURQNyjKpkfDKxgU9vhbWqQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-On 03/20/2015 07:31 PM, Lorenzo Pieralisi wrote:
-> Hi Daniel,
+On 03/19/2015 09:41 PM, Viresh Kumar wrote:
+> On 20 March 2015 at 06:31, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> On 02/19/2015 03:32 AM, Viresh Kumar wrote:
 >
-> On Fri, Mar 20, 2015 at 11:43:53AM +0000, Daniel Lezcano wrote:
->> There is a big number of cpuidle drivers for the ARM architecture.
+>>> +static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+>>> +                                         bool active)
+>>> +{
+>>> +       while (1) {
 >>
->> These drivers have been cleaned up and grouped into the drivers/cpui=
-dle
->> directory to keep track of the changes more easily and ensure the co=
-de
->> is following the same scheme across the drivers.
 >>
->> That had the benefit of simplifying the code and factor out a lot of=
- common
->> parts. Beside that, as the drivers belong to the 'drivers' directory=
-, we had
->> to split the arch specific bits and the generic code in order to kee=
-p
->> everything self contained. The platform driver paradigm was used for=
- this
->> purpose.
->>
->> Unfortunately, this approach is now no longer accepted and a differe=
-nt solution
->> must be provided to reach the same goal: one example is the Qualcomm=
- cpuidle
->> driver upstreaming attempt.
->>
->> In the meantime, ARM64 developed a generic cpuidle driver based on D=
-T definition.
->>
->> The DT definition provides an 'enable-method' to specify one of the =
-cpu
->> operations (PSCI, ...).
->>
->> This patchset unify this driver with ARM32, using the same DT defini=
-tion.
->>
->> Thanks with this patchset we can use the 'enable-method' to specify =
-a cpu
->> operations, hence get rid of the platform driver approach and go fur=
-ther in the
->> cpuidle driver flexibility via the DT.
+>> I don't like while(1) unless it's really meant to be an infinite loop. I
 >
-> I had a look and the series seems fine, if you have a branch I can pu=
-ll from
-> I will test on arm64 and add the required tags.
+> I don't hate it that much, and neither does other parts of kernel :)
+>
+>> think a do while would work here and also be more compact and readable.
+>
+> So you want this:
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d3f9ce3b94d3..ecbd8c2118c2 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -47,7 +47,7 @@ static inline bool policy_is_inactive(struct
+> cpufreq_policy *policy)
+>   static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+>                                            bool active)
+>   {
+> -       while (1) {
+> +       do {
+>                  if (likely(policy))
+>                          policy = list_next_entry(policy, policy_list);
+>                  else
+> @@ -69,9 +69,9 @@ static struct cpufreq_policy *next_policy(struct
+> cpufreq_policy *policy,
+>                   *      1               0                       policy
+>                   *      1               1                       next
+>                   */
+> -               if (active ^ policy_is_inactive(policy))
+> -                       return policy;
+> -       };
+> +       } while (!(active ^ policy_is_inactive(policy)));
+> +
+> +       return policy;
+>   }
 
-Yes, sure.
+Yes please!! The other uses like inside a thread seem more reasonable to me.
 
-http://git.linaro.org/git-ro/people/daniel.lezcano/linux.git cpuidle/4.=
-1
+>
+> Not sure which one looked better :)
+>
+>>> +               if (likely(policy))
+>>> +                       policy = list_next_entry(policy, policy_list);
+>>> +               else
+>>> +                       policy = list_first_entry(&cpufreq_policy_list,
+>>> +                                                 typeof(*policy),
+>>> policy_list);
+>>
+>>
+>> Can't you just move this part into expr1? That would make it much
+>> clear/easier to understand
+>
+> No, because we want that for-loop to iterate over active/inactive
+> policies only, and we need to run this routine to find it..
+>
+> For ex:
+> - We want to iterate over active policies only
+> - The first policy of the list is inactive
+> - The change you are suggesting will break things here..
 
-Thanks !
+Ah, right. Makes sense.
 
-   -- Daniel
+>
+>>> +
+>>> +               /* No more policies */
+>>> +               if (&policy->policy_list == &cpufreq_policy_list)
+>>> +                       return policy;
+>>
+>>
+>> I'm kinda confused by the fact that you return policy here unconditionally.
+>> I think it's a bug. No? Eg: Is there's only one policy in the system and you
+>> are looking for an inactive policy. Wouldn't this return the only policy --
+>> the one that's active.
+>
+> No. What we are returning here isn't a real policy actually but an container-of
+> of the HEAD of the list, so it only has a valid ->policy_list value,
+> others might
+> give us a crash. See how list_next_entry() works :)
+
+I thought the last valid entry is what would point to the list head. Not 
+the actual list head. I'll check again.
+
+-Saravana
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
