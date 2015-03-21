@@ -1,79 +1,62 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v17 07/10] ARM: dts: qcom: Add idle states device nodes for 8974/8074
-Date: Fri, 20 Mar 2015 14:21:14 -0600
-Message-ID: <1426882877-33008-8-git-send-email-lina.iyer@linaro.org>
-References: <1426882877-33008-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1426882877-33008-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v3] driver core / PM: Add PM domain callbacks for device setup/cleanup
+Date: Fri, 20 Mar 2015 17:09:30 -0700
+Message-ID: <7hzj77i539.fsf@deeprootsystems.com>
+References: <3533423.QQDErEmeTO@vostro.rjw.lan>
+	<1810625.BTgaNclHRk@vostro.rjw.lan>
+	<1654636.FxBHsexDm1@vostro.rjw.lan>
+	<3289026.ADmXXipokh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34381 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbbCUAJe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 20:09:34 -0400
+Received: by pacwe9 with SMTP id we9so123807076pac.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 17:09:33 -0700 (PDT)
+In-Reply-To: <3289026.ADmXXipokh@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Fri, 20 Mar 2015 13:59:27 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Add ARM common idle states device bindings for cpuidle support for APQ
-8974/8074.
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-Support Standalone power collapse (SPC) idle state (power down that does
-not affect any SoC idle states) for each cpu.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If PM domains are in use, it may be necessary to prepare the code
+> handling a PM domain for driver probing.  For example, in some
+> cases device drivers rely on the ability to power on the devices
+> with the help of the IO runtime PM framework and the PM domain
+> code needs to be ready for that.  Also, if that code has not been
+> fully initialized yet, the driver probing should be deferred.
+>
+> Moreover, after the probing is complete, it may be necessary to
+> put the PM domain in question into the state reflecting the current
+> needs of the devices in it, for example, so that power is not drawn
+> in vain.  The same should be done after removing a driver from
+> a device, as the PM domain state may need to be changed to reflect
+> the new situation.
+>
+> For these reasons, introduce new PM domain callbacks, ->activate,
+> ->sync and ->dismiss called, respectively, before probing for a
+> device driver, after the probing has completed successfully and
+> if the probing has failed or the driver has been removed.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> One more update taking Dmitry's comments into account and fixing an
+> overoptimization bug spotted by Ulf.
+>
+> And this actually contains the patch this time (clicked on "Send" too
+> early last time, sorry about that).
 
-Cc: Kumar Gala <galak@codeaurora.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- arch/arm/boot/dts/qcom-msm8974.dtsi | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 5a41f44..1c28f0f 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -22,6 +22,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@1 {
-@@ -32,6 +33,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@2 {
-@@ -42,6 +44,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@3 {
-@@ -52,6 +55,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -59,6 +63,16 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
-+
-+		idle-states {
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc",
-+						"arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
--- 
-2.1.0
+Unless I'm missing somthing, this along with the just the genpd part of
+Russell's patch should then fix his problem as well.
+
+Kevin
