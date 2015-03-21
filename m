@@ -1,114 +1,124 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v3 06/13] clk: qcom: Add HFPLL driver
-Date: Fri, 20 Mar 2015 23:45:25 -0700
-Message-ID: <1426920332-9340-7-git-send-email-sboyd@codeaurora.org>
+From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v3 10/13] clk: qcom: Add KPSS ACC/GCC driver
+Date: Fri, 20 Mar 2015 23:45:29 -0700
+Message-ID: <1426920332-9340-11-git-send-email-sboyd@codeaurora.org>
 References: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53668 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbbCUGpj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 02:45:39 -0400
-In-Reply-To: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1426920332-9340-1-git-send-email-sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
 
-On some devices (MSM8974 for example), the HFPLLs are
-instantiated within the Krait processor subsystem as separate
-register regions. Add a driver for these PLLs so that we can
-provide HFPLL clocks for use by the system.
+The ACC and GCC regions present in KPSSv1 contain registers to
+control clocks and power to each Krait CPU and L2. For CPUfreq
+purposes probe these devices and expose a mux clock that chooses
+between PXO and PLL8.
 
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Signed-off-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- .../devicetree/bindings/clock/qcom,hfpll.txt       |  40 ++++++++
- drivers/clk/qcom/Kconfig                           |   8 ++
- drivers/clk/qcom/Makefile                          |   1 +
- drivers/clk/qcom/hfpll.c                           | 109 +++++++++++++++++++++
- 4 files changed, 158 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
- create mode 100644 drivers/clk/qcom/hfpll.c
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  7 ++
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 28 +++++++
+ drivers/clk/qcom/Kconfig                           |  8 ++
+ drivers/clk/qcom/Makefile                          |  1 +
+ drivers/clk/qcom/kpss-xcc.c                        | 95 ++++++++++++++++++++++
+ 5 files changed, 139 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ create mode 100644 drivers/clk/qcom/kpss-xcc.c
 
-diff --git a/Documentation/devicetree/bindings/clock/qcom,hfpll.txt b/Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+index 1333db9acfee..382a574a5c55 100644
+--- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+@@ -21,10 +21,17 @@ PROPERTIES
+ 		    the register region. An optional second element specifies
+ 		    the base address and size of the alias register region.
+ 
++- clock-output-names:
++	Usage: optional
++	Value type: <string>
++	Definition: Name of the output clock. Typically acpuX_aux where X is a
++		    CPU number starting at 0.
++
+ Example:
+ 
+ 	clock-controller@2088000 {
+ 		compatible = "qcom,kpss-acc-v2";
+ 		reg = <0x02088000 0x1000>,
+ 		      <0x02008000 0x1000>;
++		clock-output-names = "acpu0_aux";
+ 	};
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
 new file mode 100644
-index 000000000000..fee92bb30344
+index 000000000000..d1e12f16a28c
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/qcom,hfpll.txt
-@@ -0,0 +1,40 @@
-+High-Frequency PLL (HFPLL)
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+@@ -0,0 +1,28 @@
++Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
 +
 +PROPERTIES
 +
 +- compatible:
 +	Usage: required
 +	Value type: <string>
-+	Definition: must be "qcom,hfpll"
++	Definition: should be one of:
++			"qcom,kpss-gcc"
 +
 +- reg:
 +	Usage: required
 +	Value type: <prop-encoded-array>
-+	Definition: address and size of HPLL registers. An optional second
-+		    element specifies the address and size of the alias
-+		    register region.
++	Definition: base address and size of the register region
 +
 +- clock-output-names:
 +	Usage: required
 +	Value type: <string>
-+	Definition: Name of the PLL. Typically hfpllX where X is a CPU number
-+		    starting at 0. Otherwise hfpll_Y where Y is more specific
-+		    such as "l2".
++	Definition: Name of the output clock. Typically acpu_l2_aux indicating
++		    an L2 cache auxiliary clock.
 +
 +Example:
 +
-+1) An HFPLL for the L2 cache.
-+
-+	clock-controller@f9016000 {
-+		compatible = "qcom,hfpll";
-+		reg = <0xf9016000 0x30>;
-+		clock-output-names = "hfpll_l2";
-+	};
-+
-+2) An HFPLL for CPU0. This HFPLL has the alias register region.
-+
-+	clock-controller@f908a000 {
-+		compatible = "qcom,hfpll";
-+		reg = <0xf908a000 0x30>, <0xf900a000 0x30>;
-+		clock-output-names = "hfpll0";
++	l2cc: clock-controller@2011000 {
++		compatible = "qcom,kpss-gcc";
++		reg = <0x2011000 0x1000>;
++		clock-output-names = "acpu_l2_aux";
 +	};
 diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 0d7ab52b7ab0..d421fd195114 100644
+index 7b82b3c4e259..92eb883533d5 100644
 --- a/drivers/clk/qcom/Kconfig
 +++ b/drivers/clk/qcom/Kconfig
-@@ -88,3 +88,11 @@ config MSM_MMCC_8974
- 	  Support for the multimedia clock controller on msm8974 devices.
- 	  Say Y if you want to support multimedia devices such as display,
- 	  graphics, video encode/decode, camera, etc.
-+
-+config QCOM_HFPLL
-+	tristate "High-Frequency PLL (HFPLL) Clock Controller"
+@@ -97,6 +97,14 @@ config QCOM_HFPLL
+ 	  Say Y if you want to support CPU frequency scaling on devices
+ 	  such as MSM8974, APQ8084, etc.
+ 
++config KPSS_XCC
++	tristate "KPSS Clock Controller"
 +	depends on COMMON_CLK_QCOM
 +	help
-+	  Support for the high-frequency PLLs present on Qualcomm devices.
-+	  Say Y if you want to support CPU frequency scaling on devices
-+	  such as MSM8974, APQ8084, etc.
++	  Support for the Krait ACC and GCC clock controllers. Say Y
++	  if you want to support CPU frequency scaling on devices such
++	  as MSM8960, APQ8064, etc.
++
+ config KRAIT_CLOCKS
+ 	bool
+ 	select KRAIT_L2_ACCESSORS
 diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index 953f792d2133..b1076179fb17 100644
+index f8d7cfaee4a2..6327dd623773 100644
 --- a/drivers/clk/qcom/Makefile
 +++ b/drivers/clk/qcom/Makefile
-@@ -21,3 +21,4 @@ obj-$(CONFIG_MSM_LCC_8960) += lcc-msm8960.o
+@@ -22,4 +22,5 @@ obj-$(CONFIG_MSM_LCC_8960) += lcc-msm8960.o
  obj-$(CONFIG_MSM_GCC_8974) += gcc-msm8974.o
  obj-$(CONFIG_MSM_MMCC_8960) += mmcc-msm8960.o
  obj-$(CONFIG_MSM_MMCC_8974) += mmcc-msm8974.o
-+obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
-diff --git a/drivers/clk/qcom/hfpll.c b/drivers/clk/qcom/hfpll.c
++obj-$(CONFIG_KPSS_XCC) += kpss-xcc.o
+ obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
+diff --git a/drivers/clk/qcom/kpss-xcc.c b/drivers/clk/qcom/kpss-xcc.c
 new file mode 100644
-index 000000000000..0092017b257d
+index 000000000000..abf6bfd053c1
 --- /dev/null
-+++ b/drivers/clk/qcom/hfpll.c
-@@ -0,0 +1,109 @@
-+/*
-+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
++++ b/drivers/clk/qcom/kpss-xcc.c
+@@ -0,0 +1,95 @@
++/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 and
@@ -124,99 +134,90 @@ index 000000000000..0092017b257d
 +#include <linux/init.h>
 +#include <linux/module.h>
 +#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/io.h>
 +#include <linux/of.h>
++#include <linux/of_device.h>
 +#include <linux/clk.h>
 +#include <linux/clk-provider.h>
-+#include <linux/regmap.h>
 +
-+#include "clk-regmap.h"
-+#include "clk-hfpll.h"
-+
-+static const struct hfpll_data hdata = {
-+	.mode_reg = 0x00,
-+	.l_reg = 0x04,
-+	.m_reg = 0x08,
-+	.n_reg = 0x0c,
-+	.user_reg = 0x10,
-+	.config_reg = 0x14,
-+	.config_val = 0x430405d,
-+	.status_reg = 0x1c,
-+	.lock_bit = 16,
-+
-+	.user_val = 0x8,
-+	.user_vco_mask = 0x100000,
-+	.low_vco_max_rate = 1248000000,
-+	.min_rate = 537600000UL,
-+	.max_rate = 2900000000UL,
++static const char *aux_parents[] = {
++	"pll8_vote",
++	"pxo",
 +};
 +
-+static const struct of_device_id qcom_hfpll_match_table[] = {
-+	{ .compatible = "qcom,hfpll" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, qcom_hfpll_match_table);
-+
-+static const struct regmap_config hfpll_regmap_config = {
-+	.reg_bits	= 32,
-+	.reg_stride	= 4,
-+	.val_bits	= 32,
-+	.max_register	= 0x30,
-+	.fast_io	= true,
++static unsigned int aux_parent_map[] = {
++	3,
++	0,
 +};
 +
-+static int qcom_hfpll_probe(struct platform_device *pdev)
++static const struct of_device_id kpss_xcc_match_table[] = {
++	{ .compatible = "qcom,kpss-acc-v1", .data = (void *)1UL },
++	{ .compatible = "qcom,kpss-gcc" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, kpss_xcc_match_table);
++
++static int kpss_xcc_driver_probe(struct platform_device *pdev)
 +{
++	const struct of_device_id *id;
 +	struct clk *clk;
 +	struct resource *res;
-+	struct device *dev = &pdev->dev;
 +	void __iomem *base;
-+	struct regmap *regmap;
-+	struct clk_hfpll *h;
-+	struct clk_init_data init = {
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_ops_hfpll,
-+	};
++	const char *name;
 +
-+	h = devm_kzalloc(dev, sizeof(*h), GFP_KERNEL);
-+	if (!h)
-+		return -ENOMEM;
++	id = of_match_device(kpss_xcc_match_table, &pdev->dev);
++	if (!id)
++		return -ENODEV;
 +
 +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	base = devm_ioremap_resource(dev, res);
++	base = devm_ioremap_resource(&pdev->dev, res);
 +	if (IS_ERR(base))
 +		return PTR_ERR(base);
 +
-+	regmap = devm_regmap_init_mmio(&pdev->dev, base, &hfpll_regmap_config);
-+	if (IS_ERR(regmap))
-+		return PTR_ERR(regmap);
++	if (id->data) {
++		if (of_property_read_string_index(pdev->dev.of_node,
++					"clock-output-names", 0, &name))
++			return -ENODEV;
++		base += 0x14;
++	} else {
++		name = "acpu_l2_aux";
++		base += 0x28;
++	}
 +
-+	if (of_property_read_string_index(dev->of_node, "clock-output-names",
-+						  0, &init.name))
-+		return -ENODEV;
++	clk = clk_register_mux_table(&pdev->dev, name, aux_parents,
++				     ARRAY_SIZE(aux_parents), 0, base, 0, 0x3,
++				     0, aux_parent_map, NULL);
 +
-+	h->d = &hdata;
-+	h->clkr.hw.init = &init;
-+	spin_lock_init(&h->lock);
-+
-+	clk = devm_clk_register_regmap(&pdev->dev, &h->clkr);
++	platform_set_drvdata(pdev, clk);
 +
 +	return PTR_ERR_OR_ZERO(clk);
 +}
 +
-+static struct platform_driver qcom_hfpll_driver = {
-+	.probe		= qcom_hfpll_probe,
-+	.driver		= {
-+		.name	= "qcom-hfpll",
-+		.of_match_table = qcom_hfpll_match_table,
++static int kpss_xcc_driver_remove(struct platform_device *pdev)
++{
++	clk_unregister_mux(platform_get_drvdata(pdev));
++	return 0;
++}
++
++static struct platform_driver kpss_xcc_driver = {
++	.probe = kpss_xcc_driver_probe,
++	.remove = kpss_xcc_driver_remove,
++	.driver = {
++		.name = "kpss-xcc",
++		.of_match_table = kpss_xcc_match_table,
 +	},
 +};
-+module_platform_driver(qcom_hfpll_driver);
++module_platform_driver(kpss_xcc_driver);
 +
-+MODULE_DESCRIPTION("QCOM HFPLL Clock Driver");
++MODULE_DESCRIPTION("Krait Processor Sub System (KPSS) Clock Driver");
 +MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:qcom-hfpll");
++MODULE_ALIAS("platform:kpss-xcc");
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
