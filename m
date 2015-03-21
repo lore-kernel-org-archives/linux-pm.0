@@ -1,124 +1,63 @@
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v3 10/13] clk: qcom: Add KPSS ACC/GCC driver
-Date: Fri, 20 Mar 2015 23:45:29 -0700
-Message-ID: <1426920332-9340-11-git-send-email-sboyd@codeaurora.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: [PATCH v3 09/13] clk: qcom: Add support for Krait clocks
+Date: Fri, 20 Mar 2015 23:45:28 -0700
+Message-ID: <1426920332-9340-10-git-send-email-sboyd@codeaurora.org>
 References: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426920332-9340-1-git-send-email-sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The ACC and GCC regions present in KPSSv1 contain registers to
-control clocks and power to each Krait CPU and L2. For CPUfreq
-purposes probe these devices and expose a mux clock that chooses
-between PXO and PLL8.
+The Krait clocks are made up of a series of muxes and a divider
+that choose between a fixed rate clock and dedicated HFPLLs for
+each CPU. Instead of using mmio accesses to remux parents, the
+Krait implementation exposes the remux control via cp15
+registers. Support these clocks.
 
-Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Signed-off-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  7 ++
- .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 28 +++++++
- drivers/clk/qcom/Kconfig                           |  8 ++
- drivers/clk/qcom/Makefile                          |  1 +
- drivers/clk/qcom/kpss-xcc.c                        | 95 ++++++++++++++++++++++
- 5 files changed, 139 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
- create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ drivers/clk/qcom/Kconfig     |   4 ++
+ drivers/clk/qcom/Makefile    |   1 +
+ drivers/clk/qcom/clk-krait.c | 166 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/clk-krait.h |  49 +++++++++++++
+ 4 files changed, 220 insertions(+)
+ create mode 100644 drivers/clk/qcom/clk-krait.c
+ create mode 100644 drivers/clk/qcom/clk-krait.h
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-index 1333db9acfee..382a574a5c55 100644
---- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-@@ -21,10 +21,17 @@ PROPERTIES
- 		    the register region. An optional second element specifies
- 		    the base address and size of the alias register region.
- 
-+- clock-output-names:
-+	Usage: optional
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpuX_aux where X is a
-+		    CPU number starting at 0.
-+
- Example:
- 
- 	clock-controller@2088000 {
- 		compatible = "qcom,kpss-acc-v2";
- 		reg = <0x02088000 0x1000>,
- 		      <0x02008000 0x1000>;
-+		clock-output-names = "acpu0_aux";
- 	};
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
-new file mode 100644
-index 000000000000..d1e12f16a28c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
-@@ -0,0 +1,28 @@
-+Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
-+
-+PROPERTIES
-+
-+- compatible:
-+	Usage: required
-+	Value type: <string>
-+	Definition: should be one of:
-+			"qcom,kpss-gcc"
-+
-+- reg:
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: base address and size of the register region
-+
-+- clock-output-names:
-+	Usage: required
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpu_l2_aux indicating
-+		    an L2 cache auxiliary clock.
-+
-+Example:
-+
-+	l2cc: clock-controller@2011000 {
-+		compatible = "qcom,kpss-gcc";
-+		reg = <0x2011000 0x1000>;
-+		clock-output-names = "acpu_l2_aux";
-+	};
 diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 7b82b3c4e259..92eb883533d5 100644
+index d421fd195114..7b82b3c4e259 100644
 --- a/drivers/clk/qcom/Kconfig
 +++ b/drivers/clk/qcom/Kconfig
-@@ -97,6 +97,14 @@ config QCOM_HFPLL
+@@ -96,3 +96,7 @@ config QCOM_HFPLL
+ 	  Support for the high-frequency PLLs present on Qualcomm devices.
  	  Say Y if you want to support CPU frequency scaling on devices
  	  such as MSM8974, APQ8084, etc.
- 
-+config KPSS_XCC
-+	tristate "KPSS Clock Controller"
-+	depends on COMMON_CLK_QCOM
-+	help
-+	  Support for the Krait ACC and GCC clock controllers. Say Y
-+	  if you want to support CPU frequency scaling on devices such
-+	  as MSM8960, APQ8064, etc.
 +
- config KRAIT_CLOCKS
- 	bool
- 	select KRAIT_L2_ACCESSORS
++config KRAIT_CLOCKS
++	bool
++	select KRAIT_L2_ACCESSORS
 diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index f8d7cfaee4a2..6327dd623773 100644
+index b1076179fb17..f8d7cfaee4a2 100644
 --- a/drivers/clk/qcom/Makefile
 +++ b/drivers/clk/qcom/Makefile
-@@ -22,4 +22,5 @@ obj-$(CONFIG_MSM_LCC_8960) += lcc-msm8960.o
- obj-$(CONFIG_MSM_GCC_8974) += gcc-msm8974.o
- obj-$(CONFIG_MSM_MMCC_8960) += mmcc-msm8960.o
- obj-$(CONFIG_MSM_MMCC_8974) += mmcc-msm8974.o
-+obj-$(CONFIG_KPSS_XCC) += kpss-xcc.o
- obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
-diff --git a/drivers/clk/qcom/kpss-xcc.c b/drivers/clk/qcom/kpss-xcc.c
+@@ -8,6 +8,7 @@ clk-qcom-y += clk-rcg2.o
+ clk-qcom-y += clk-branch.o
+ clk-qcom-y += clk-regmap-divider.o
+ clk-qcom-y += clk-regmap-mux.o
++clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
+ clk-qcom-y += clk-hfpll.o
+ clk-qcom-y += reset.o
+ 
+diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
 new file mode 100644
-index 000000000000..abf6bfd053c1
+index 000000000000..6506730d085e
 --- /dev/null
-+++ b/drivers/clk/qcom/kpss-xcc.c
-@@ -0,0 +1,95 @@
-+/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
++++ b/drivers/clk/qcom/clk-krait.c
+@@ -0,0 +1,166 @@
++/*
++ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 and
@@ -131,93 +70,213 @@ index 000000000000..abf6bfd053c1
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
++#include <linux/init.h>
 +#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/err.h>
 +#include <linux/clk-provider.h>
++#include <linux/spinlock.h>
 +
-+static const char *aux_parents[] = {
-+	"pll8_vote",
-+	"pxo",
-+};
++#include <asm/krait-l2-accessors.h>
 +
-+static unsigned int aux_parent_map[] = {
-+	3,
-+	0,
-+};
++#include "clk-krait.h"
 +
-+static const struct of_device_id kpss_xcc_match_table[] = {
-+	{ .compatible = "qcom,kpss-acc-v1", .data = (void *)1UL },
-+	{ .compatible = "qcom,kpss-gcc" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, kpss_xcc_match_table);
++/* Secondary and primary muxes share the same cp15 register */
++static DEFINE_SPINLOCK(krait_clock_reg_lock);
 +
-+static int kpss_xcc_driver_probe(struct platform_device *pdev)
++#define LPL_SHIFT	8
++static void __krait_mux_set_sel(struct krait_mux_clk *mux, int sel)
 +{
-+	const struct of_device_id *id;
-+	struct clk *clk;
-+	struct resource *res;
-+	void __iomem *base;
-+	const char *name;
++	unsigned long flags;
++	u32 regval;
 +
-+	id = of_match_device(kpss_xcc_match_table, &pdev->dev);
-+	if (!id)
-+		return -ENODEV;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	if (id->data) {
-+		if (of_property_read_string_index(pdev->dev.of_node,
-+					"clock-output-names", 0, &name))
-+			return -ENODEV;
-+		base += 0x14;
-+	} else {
-+		name = "acpu_l2_aux";
-+		base += 0x28;
++	spin_lock_irqsave(&krait_clock_reg_lock, flags);
++	regval = krait_get_l2_indirect_reg(mux->offset);
++	regval &= ~(mux->mask << mux->shift);
++	regval |= (sel & mux->mask) << mux->shift;
++	if (mux->lpl) {
++		regval &= ~(mux->mask << (mux->shift + LPL_SHIFT));
++		regval |= (sel & mux->mask) << (mux->shift + LPL_SHIFT);
 +	}
++	krait_set_l2_indirect_reg(mux->offset, regval);
++	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
 +
-+	clk = clk_register_mux_table(&pdev->dev, name, aux_parents,
-+				     ARRAY_SIZE(aux_parents), 0, base, 0, 0x3,
-+				     0, aux_parent_map, NULL);
-+
-+	platform_set_drvdata(pdev, clk);
-+
-+	return PTR_ERR_OR_ZERO(clk);
++	/* Wait for switch to complete. */
++	mb();
++	udelay(1);
 +}
 +
-+static int kpss_xcc_driver_remove(struct platform_device *pdev)
++static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
 +{
-+	clk_unregister_mux(platform_get_drvdata(pdev));
++	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++	u32 sel;
++
++	sel = clk_mux_reindex(index, mux->parent_map, 0);
++	mux->en_mask = sel;
++	/* Don't touch mux if CPU is off as it won't work */
++	if (__clk_is_enabled(hw->clk))
++		__krait_mux_set_sel(mux, sel);
 +	return 0;
 +}
 +
-+static struct platform_driver kpss_xcc_driver = {
-+	.probe = kpss_xcc_driver_probe,
-+	.remove = kpss_xcc_driver_remove,
-+	.driver = {
-+		.name = "kpss-xcc",
-+		.of_match_table = kpss_xcc_match_table,
-+	},
-+};
-+module_platform_driver(kpss_xcc_driver);
++static u8 krait_mux_get_parent(struct clk_hw *hw)
++{
++	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++	u32 sel;
 +
-+MODULE_DESCRIPTION("Krait Processor Sub System (KPSS) Clock Driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:kpss-xcc");
++	sel = krait_get_l2_indirect_reg(mux->offset);
++	sel >>= mux->shift;
++	sel &= mux->mask;
++	mux->en_mask = sel;
++
++	return clk_mux_get_parent(hw, sel, mux->parent_map, 0);
++}
++
++static struct clk_hw *krait_mux_get_safe_parent(struct clk_hw *hw)
++{
++	int i;
++	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++	int num_parents = __clk_get_num_parents(hw->clk);
++
++	i = mux->safe_sel;
++	for (i = 0; i < num_parents; i++)
++		if (mux->safe_sel == mux->parent_map[i])
++			break;
++
++	return __clk_get_hw(clk_get_parent_by_index(hw->clk, i));
++}
++
++static int krait_mux_enable(struct clk_hw *hw)
++{
++	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++
++	__krait_mux_set_sel(mux, mux->en_mask);
++
++	return 0;
++}
++
++static void krait_mux_disable(struct clk_hw *hw)
++{
++	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++
++	__krait_mux_set_sel(mux, mux->safe_sel);
++}
++
++const struct clk_ops krait_mux_clk_ops = {
++	.enable = krait_mux_enable,
++	.disable = krait_mux_disable,
++	.set_parent = krait_mux_set_parent,
++	.get_parent = krait_mux_get_parent,
++	.determine_rate = __clk_mux_determine_rate_closest,
++	.get_safe_parent = krait_mux_get_safe_parent,
++};
++EXPORT_SYMBOL_GPL(krait_mux_clk_ops);
++
++/* The divider can divide by 2, 4, 6 and 8. But we only really need div-2. */
++static long krait_div2_round_rate(struct clk_hw *hw, unsigned long rate,
++				  unsigned long *parent_rate)
++{
++	*parent_rate = __clk_round_rate(__clk_get_parent(hw->clk), rate * 2);
++	return DIV_ROUND_UP(*parent_rate, 2);
++}
++
++static int krait_div2_set_rate(struct clk_hw *hw, unsigned long rate,
++			unsigned long parent_rate)
++{
++	struct krait_div2_clk *d = to_krait_div2_clk(hw);
++	unsigned long flags;
++	u32 val;
++	u32 mask = BIT(d->width) - 1;
++
++	if (d->lpl)
++		mask = mask << (d->shift + LPL_SHIFT) | mask << d->shift;
++
++	spin_lock_irqsave(&krait_clock_reg_lock, flags);
++	val = krait_get_l2_indirect_reg(d->offset);
++	val &= ~mask;
++	krait_set_l2_indirect_reg(d->offset, val);
++	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
++
++	return 0;
++}
++
++static unsigned long
++krait_div2_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
++{
++	struct krait_div2_clk *d = to_krait_div2_clk(hw);
++	u32 mask = BIT(d->width) - 1;
++	u32 div;
++
++	div = krait_get_l2_indirect_reg(d->offset);
++	div >>= d->shift;
++	div &= mask;
++	div = (div + 1) * 2;
++
++	return DIV_ROUND_UP(parent_rate, div);
++}
++
++const struct clk_ops krait_div2_clk_ops = {
++	.round_rate = krait_div2_round_rate,
++	.set_rate = krait_div2_set_rate,
++	.recalc_rate = krait_div2_recalc_rate,
++};
++EXPORT_SYMBOL_GPL(krait_div2_clk_ops);
+diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
+new file mode 100644
+index 000000000000..5d0063538e5d
+--- /dev/null
++++ b/drivers/clk/qcom/clk-krait.h
+@@ -0,0 +1,49 @@
++/*
++ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __QCOM_CLK_KRAIT_H
++#define __QCOM_CLK_KRAIT_H
++
++#include <linux/clk-provider.h>
++
++struct krait_mux_clk {
++	unsigned int	*parent_map;
++	bool		has_safe_parent;
++	u8		safe_sel;
++	u32		offset;
++	u32		mask;
++	u32		shift;
++	u32		en_mask;
++	bool		lpl;
++
++	struct clk_hw	hw;
++};
++
++#define to_krait_mux_clk(_hw) container_of(_hw, struct krait_mux_clk, hw)
++
++extern const struct clk_ops krait_mux_clk_ops;
++
++struct krait_div2_clk {
++	u32		offset;
++	u8		width;
++	u32		shift;
++	bool		lpl;
++
++	struct clk_hw	hw;
++};
++
++#define to_krait_div2_clk(_hw) container_of(_hw, struct krait_div2_clk, hw)
++
++extern const struct clk_ops krait_div2_clk_ops;
++
++#endif
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
