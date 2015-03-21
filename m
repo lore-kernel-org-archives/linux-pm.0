@@ -1,319 +1,136 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v3 12/13] cpufreq: Add module to register cpufreq on Krait CPUs
-Date: Fri, 20 Mar 2015 23:45:31 -0700
-Message-ID: <1426920332-9340-13-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v3 03/13] clk: Avoid sending high rates to downstream clocks during set_rate
+Date: Fri, 20 Mar 2015 23:45:22 -0700
+Message-ID: <1426920332-9340-4-git-send-email-sboyd@codeaurora.org>
 References: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from smtp.codeaurora.org ([198.145.29.96]:53652 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751381AbbCUGpl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 02:45:41 -0400
+	with ESMTP id S1751174AbbCUGph (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 02:45:37 -0400
 In-Reply-To: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Register a cpufreq-generic device whenever we detect that a
-"qcom,krait" compatible CPU is present in DT.
+If a clock is on and we call clk_set_rate() on it we may get into
+a situation where the clock temporarily increases in rate
+dramatically while we walk the tree and call .set_rate() ops. For
+example, consider a case where a PLL feeds into a divider.
+Initially the divider is set to divide by 1 and the PLL is
+running fairly slow (100MHz). The downstream consumer of the
+divider output can only handle rates =< 400 MHz, but the divider
+can only choose between divisors of 1 and 4.
 
-Cc: <devicetree@vger.kernel.org>
+ +-----+   +----------------+
+ | PLL |-->| div 1 or div 4 |---> consumer device
+ +-----+   +----------------+
+
+To achieve a rate of 400MHz on the output of the divider, we
+would have to set the rate of the PLL to 1.6 GHz and then divide
+it by 4. The current code would set the PLL to 1.6GHz first while
+the divider is still set to 1, thus causing the downstream
+consumer of the clock to receive a few clock cycles of 1.6GHz
+clock (far beyond it's maximum acceptable rate). We should be
+changing the divider first before increasing the PLL rate to
+avoid this problem.
+
+Therefore, set the rate of any child clocks that are increasing
+in rate from their current rate so that they can increase their
+dividers if necessary. We assume that there isn't such a thing as
+minimum rate requirements.
+
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- .../devicetree/bindings/arm/msm/qcom,pvs.txt       |  38 ++++
- drivers/cpufreq/Kconfig.arm                        |   9 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/qcom-cpufreq.c                     | 204 +++++++++++++++++++++
- 4 files changed, 252 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
- create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+ drivers/clk/clk.c | 34 ++++++++++++++++++++++------------
+ 1 file changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
-new file mode 100644
-index 000000000000..e7cb10426a3b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
-@@ -0,0 +1,38 @@
-+Qualcomm Process Voltage Scaling Tables
-+
-+The node name is required to be "qcom,pvs". There shall only be one
-+such node present in the root of the tree.
-+
-+PROPERTIES
-+
-+- qcom,pvs-format-a or qcom,pvs-format-b:
-+	Usage: required
-+	Value type: <empty>
-+	Definition: Indicates the format of qcom,speedX-pvsY-bin-vZ properties.
-+		    If qcom,pvs-format-a is used the table is two columns
-+		    (frequency and voltage in that order). If qcom,pvs-format-b 		    is used the table is three columns (frequency, voltage,
-+		    and current in that order).
-+
-+- qcom,speedX-pvsY-bin-vZ:
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: The PVS table corresponding to the speed bin X, pvs bin Y,
-+		    and version Z.
-+Example:
-+
-+	qcom,pvs {
-+		qcom,pvs-format-a;
-+		qcom,speed0-pvs0-bin-v0 =
-+			<  384000000  950000 >,
-+			<  486000000  975000 >,
-+			<  594000000 1000000 >,
-+			<  702000000 1025000 >,
-+			<  810000000 1075000 >,
-+			<  918000000 1100000 >,
-+			< 1026000000 1125000 >,
-+			< 1134000000 1175000 >,
-+			< 1242000000 1200000 >,
-+			< 1350000000 1225000 >,
-+			< 1458000000 1237500 >,
-+			< 1512000000 1250000 >;
-+	};
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 1b06fc4640e2..3829d5521dfc 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -137,6 +137,15 @@ config ARM_OMAP2PLUS_CPUFREQ
- 	depends on ARCH_OMAP2PLUS
- 	default ARCH_OMAP2PLUS
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index eb0152961d3c..0712bea649c1 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -1689,21 +1689,24 @@ static struct clk_core *clk_propagate_rate_change(struct clk_core *clk,
+  * walk down a subtree and set the new rates notifying the rate
+  * change on the way
+  */
+-static void clk_change_rate(struct clk_core *clk)
++static void
++clk_change_rate(struct clk_core *clk, unsigned long best_parent_rate)
+ {
+ 	struct clk_core *child;
+ 	struct hlist_node *tmp;
+ 	unsigned long old_rate;
+-	unsigned long best_parent_rate = 0;
+ 	bool skip_set_rate = false;
+ 	struct clk_core *old_parent;
  
-+config ARM_QCOM_CPUFREQ
-+	tristate "Qualcomm based"
-+	depends on ARCH_QCOM
-+	select PM_OPP
-+	help
-+	  This adds the CPUFreq driver for Qualcomm SoC based boards.
-+
-+	  If in doubt, say N.
-+
- config ARM_S3C_CPUFREQ
- 	bool
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 82a1821471fd..be95ed8d6873 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -65,6 +65,7 @@ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-+obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
- obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
-diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
-new file mode 100644
-index 000000000000..c9f86a062cdd
---- /dev/null
-+++ b/drivers/cpufreq/qcom-cpufreq.c
-@@ -0,0 +1,204 @@
-+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+#include <linux/cpufreq-dt.h>
-+
-+static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
-+{
-+	void __iomem *base;
-+	u32 pte_efuse;
-+
-+	*speed = *pvs = *pvs_ver = 0;
-+
-+	base = ioremap(0x007000c0, 4);
-+	if (!base) {
-+		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
-+		return;
+-	old_rate = clk->rate;
++	hlist_for_each_entry(child, &clk->children, child_node) {
++		/* Skip children who will be reparented to another clock */
++		if (child->new_parent && child->new_parent != clk)
++			continue;
++		if (child->new_rate > child->rate)
++			clk_change_rate(child, clk->new_rate);
 +	}
+ 
+-	if (clk->new_parent)
+-		best_parent_rate = clk->new_parent->rate;
+-	else if (clk->parent)
+-		best_parent_rate = clk->parent->rate;
++	old_rate = clk->rate;
+ 
+ 	if (clk->new_parent && clk->new_parent != clk->parent) {
+ 		old_parent = __clk_set_parent_before(clk, clk->new_parent);
+@@ -1723,7 +1726,7 @@ static void clk_change_rate(struct clk_core *clk)
+ 	if (!skip_set_rate && clk->ops->set_rate)
+ 		clk->ops->set_rate(clk->hw, clk->new_rate, best_parent_rate);
+ 
+-	clk->rate = clk_recalc(clk, best_parent_rate);
++	clk->rate = clk->new_rate;
+ 
+ 	if (clk->notifier_count && old_rate != clk->rate)
+ 		__clk_notify(clk, POST_RATE_CHANGE, old_rate, clk->rate);
+@@ -1736,12 +1739,13 @@ static void clk_change_rate(struct clk_core *clk)
+ 		/* Skip children who will be reparented to another clock */
+ 		if (child->new_parent && child->new_parent != clk)
+ 			continue;
+-		clk_change_rate(child);
++		if (child->new_rate != child->rate)
++			clk_change_rate(child, clk->new_rate);
+ 	}
+ 
+ 	/* handle the new child who might not be in clk->children yet */
+-	if (clk->new_child)
+-		clk_change_rate(clk->new_child);
++	if (clk->new_child && clk->new_child->new_rate != clk->new_child->rate)
++		clk_change_rate(clk->new_child, clk->new_rate);
+ }
+ 
+ static int clk_core_set_rate_nolock(struct clk_core *clk,
+@@ -1750,6 +1754,7 @@ static int clk_core_set_rate_nolock(struct clk_core *clk,
+ 	struct clk_core *top, *fail_clk;
+ 	unsigned long rate = req_rate;
+ 	int ret = 0;
++	unsigned long parent_rate;
+ 
+ 	if (!clk)
+ 		return 0;
+@@ -1775,8 +1780,13 @@ static int clk_core_set_rate_nolock(struct clk_core *clk,
+ 		return -EBUSY;
+ 	}
+ 
++	if (top->parent)
++		parent_rate = top->parent->rate;
++	else
++		parent_rate = 0;
 +
-+	pte_efuse = readl_relaxed(base);
-+	iounmap(base);
-+
-+	*speed = pte_efuse & 0xf;
-+	if (*speed == 0xf)
-+		*speed = (pte_efuse >> 4) & 0xf;
-+
-+	if (*speed == 0xf) {
-+		*speed = 0;
-+		pr_warn("Speed bin: Defaulting to %d\n", *speed);
-+	} else {
-+		pr_info("Speed bin: %d\n", *speed);
-+	}
-+
-+	*pvs = (pte_efuse >> 10) & 0x7;
-+	if (*pvs == 0x7)
-+		*pvs = (pte_efuse >> 13) & 0x7;
-+
-+	if (*pvs == 0x7) {
-+		*pvs = 0;
-+		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
-+	} else {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	}
-+}
-+
-+static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
-+{
-+	u32 pte_efuse, redundant_sel;
-+	void __iomem *base;
-+
-+	*speed = 0;
-+	*pvs = 0;
-+	*pvs_ver = 0;
-+
-+	base = ioremap(0xfc4b80b0, 8);
-+	if (!base) {
-+		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
-+		return;
-+	}
-+
-+	pte_efuse = readl_relaxed(base);
-+	redundant_sel = (pte_efuse >> 24) & 0x7;
-+	*speed = pte_efuse & 0x7;
-+	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
-+	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
-+	*pvs_ver = (pte_efuse >> 4) & 0x3;
-+
-+	switch (redundant_sel) {
-+	case 1:
-+		*speed = (pte_efuse >> 27) & 0xf;
-+		break;
-+	case 2:
-+		*pvs = (pte_efuse >> 27) & 0xf;
-+		break;
-+	}
-+
-+	/* Check SPEED_BIN_BLOW_STATUS */
-+	if (pte_efuse & BIT(3)) {
-+		pr_info("Speed bin: %d\n", *speed);
-+	} else {
-+		pr_warn("Speed bin not set. Defaulting to 0!\n");
-+		*speed = 0;
-+	}
-+
-+	/* Check PVS_BLOW_STATUS */
-+	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
-+	if (pte_efuse) {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	} else {
-+		pr_warn("PVS bin not set. Defaulting to 0!\n");
-+		*pvs = 0;
-+	}
-+
-+	pr_info("PVS version: %d\n", *pvs_ver);
-+	iounmap(base);
-+}
-+
-+static int __init qcom_cpufreq_populate_opps(void)
-+{
-+	int len, rows, cols, i, k, speed, pvs, pvs_ver;
-+	char table_name[] = "qcom,speedXX-pvsXX-bin-vXX";
-+	struct device_node *np;
-+	struct device *dev;
-+	int cpu = 0;
-+
-+	np = of_find_node_by_name(NULL, "qcom,pvs");
-+	if (!np)
-+		return -ENODEV;
-+
-+	if (of_property_read_bool(np, "qcom,pvs-format-a")) {
-+		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
-+		cols = 2;
-+	} else if (of_property_read_bool(np, "qcom,pvs-format-b")) {
-+		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
-+		cols = 3;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	snprintf(table_name, sizeof(table_name),
-+			"qcom,speed%d-pvs%d-bin-v%d", speed, pvs, pvs_ver);
-+
-+	if (!of_find_property(np, table_name, &len))
-+		return -EINVAL;
-+
-+	len /= sizeof(u32);
-+	if (len % cols || len == 0)
-+		return -EINVAL;
-+
-+	rows = len / cols;
-+
-+	for (i = 0, k = 0; i < rows; i++) {
-+		u32 freq, volt;
-+
-+		of_property_read_u32_index(np, table_name, k++, &freq);
-+		of_property_read_u32_index(np, table_name, k++, &volt);
-+		while (k % cols)
-+			k++; /* Skip uA entries if present */
-+		for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
-+			dev = get_cpu_device(cpu);
-+			if (!dev)
-+				return -ENODEV;
-+			if (dev_pm_opp_add(dev, freq, volt))
-+				pr_warn("failed to add OPP %u\n", freq);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init qcom_cpufreq_driver_init(void)
-+{
-+	struct cpufreq_dt_platform_data pdata = { .independent_clocks = true };
-+	struct platform_device_info devinfo = {
-+		.name = "cpufreq-dt",
-+		.data = &pdata,
-+		.size_data = sizeof(pdata),
-+	};
-+	struct device *cpu_dev;
-+	struct device_node *np;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -ENOENT;
-+
-+	if (!of_device_is_compatible(np, "qcom,krait")) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+	of_node_put(np);
-+
-+	ret = qcom_cpufreq_populate_opps();
-+	if (ret)
-+		return ret;
-+
-+	return PTR_ERR_OR_ZERO(platform_device_register_full(&devinfo));
-+}
-+module_init(qcom_cpufreq_driver_init);
-+
-+MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
-+MODULE_LICENSE("GPL v2");
+ 	/* change the rates */
+-	clk_change_rate(top);
++	clk_change_rate(top, parent_rate);
+ 
+ 	clk->req_rate = req_rate;
+ 
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
