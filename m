@@ -1,136 +1,250 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v3 03/13] clk: Avoid sending high rates to downstream clocks during set_rate
-Date: Fri, 20 Mar 2015 23:45:22 -0700
-Message-ID: <1426920332-9340-4-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v3 07/13] clk: qcom: Add MSM8960/APQ8064's HFPLLs
+Date: Fri, 20 Mar 2015 23:45:26 -0700
+Message-ID: <1426920332-9340-8-git-send-email-sboyd@codeaurora.org>
 References: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53652 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:53664 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbbCUGph (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 02:45:37 -0400
+	with ESMTP id S1751339AbbCUGpk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 02:45:40 -0400
 In-Reply-To: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-If a clock is on and we call clk_set_rate() on it we may get into
-a situation where the clock temporarily increases in rate
-dramatically while we walk the tree and call .set_rate() ops. For
-example, consider a case where a PLL feeds into a divider.
-Initially the divider is set to divide by 1 and the PLL is
-running fairly slow (100MHz). The downstream consumer of the
-divider output can only handle rates =< 400 MHz, but the divider
-can only choose between divisors of 1 and 4.
-
- +-----+   +----------------+
- | PLL |-->| div 1 or div 4 |---> consumer device
- +-----+   +----------------+
-
-To achieve a rate of 400MHz on the output of the divider, we
-would have to set the rate of the PLL to 1.6 GHz and then divide
-it by 4. The current code would set the PLL to 1.6GHz first while
-the divider is still set to 1, thus causing the downstream
-consumer of the clock to receive a few clock cycles of 1.6GHz
-clock (far beyond it's maximum acceptable rate). We should be
-changing the divider first before increasing the PLL rate to
-avoid this problem.
-
-Therefore, set the rate of any child clocks that are increasing
-in rate from their current rate so that they can increase their
-dividers if necessary. We assume that there isn't such a thing as
-minimum rate requirements.
+Describe the HFPLLs present on MSM8960 and APQ8064 devices.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/clk.c | 34 ++++++++++++++++++++++------------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+ drivers/clk/qcom/gcc-msm8960.c               | 172 +++++++++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h |   2 +
+ 2 files changed, 174 insertions(+)
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index eb0152961d3c..0712bea649c1 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1689,21 +1689,24 @@ static struct clk_core *clk_propagate_rate_change(struct clk_core *clk,
-  * walk down a subtree and set the new rates notifying the rate
-  * change on the way
-  */
--static void clk_change_rate(struct clk_core *clk)
-+static void
-+clk_change_rate(struct clk_core *clk, unsigned long best_parent_rate)
- {
- 	struct clk_core *child;
- 	struct hlist_node *tmp;
- 	unsigned long old_rate;
--	unsigned long best_parent_rate = 0;
- 	bool skip_set_rate = false;
- 	struct clk_core *old_parent;
+diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+index b0b562b9ce0e..0cd3e26f9995 100644
+--- a/drivers/clk/qcom/gcc-msm8960.c
++++ b/drivers/clk/qcom/gcc-msm8960.c
+@@ -30,6 +30,7 @@
+ #include "clk-pll.h"
+ #include "clk-rcg.h"
+ #include "clk-branch.h"
++#include "clk-hfpll.h"
+ #include "reset.h"
  
--	old_rate = clk->rate;
-+	hlist_for_each_entry(child, &clk->children, child_node) {
-+		/* Skip children who will be reparented to another clock */
-+		if (child->new_parent && child->new_parent != clk)
-+			continue;
-+		if (child->new_rate > child->rate)
-+			clk_change_rate(child, clk->new_rate);
-+	}
+ static struct clk_pll pll3 = {
+@@ -75,6 +76,164 @@ static struct clk_regmap pll8_vote = {
+ 	},
+ };
  
--	if (clk->new_parent)
--		best_parent_rate = clk->new_parent->rate;
--	else if (clk->parent)
--		best_parent_rate = clk->parent->rate;
-+	old_rate = clk->rate;
- 
- 	if (clk->new_parent && clk->new_parent != clk->parent) {
- 		old_parent = __clk_set_parent_before(clk, clk->new_parent);
-@@ -1723,7 +1726,7 @@ static void clk_change_rate(struct clk_core *clk)
- 	if (!skip_set_rate && clk->ops->set_rate)
- 		clk->ops->set_rate(clk->hw, clk->new_rate, best_parent_rate);
- 
--	clk->rate = clk_recalc(clk, best_parent_rate);
-+	clk->rate = clk->new_rate;
- 
- 	if (clk->notifier_count && old_rate != clk->rate)
- 		__clk_notify(clk, POST_RATE_CHANGE, old_rate, clk->rate);
-@@ -1736,12 +1739,13 @@ static void clk_change_rate(struct clk_core *clk)
- 		/* Skip children who will be reparented to another clock */
- 		if (child->new_parent && child->new_parent != clk)
- 			continue;
--		clk_change_rate(child);
-+		if (child->new_rate != child->rate)
-+			clk_change_rate(child, clk->new_rate);
- 	}
- 
- 	/* handle the new child who might not be in clk->children yet */
--	if (clk->new_child)
--		clk_change_rate(clk->new_child);
-+	if (clk->new_child && clk->new_child->new_rate != clk->new_child->rate)
-+		clk_change_rate(clk->new_child, clk->new_rate);
- }
- 
- static int clk_core_set_rate_nolock(struct clk_core *clk,
-@@ -1750,6 +1754,7 @@ static int clk_core_set_rate_nolock(struct clk_core *clk,
- 	struct clk_core *top, *fail_clk;
- 	unsigned long rate = req_rate;
- 	int ret = 0;
-+	unsigned long parent_rate;
- 
- 	if (!clk)
- 		return 0;
-@@ -1775,8 +1780,13 @@ static int clk_core_set_rate_nolock(struct clk_core *clk,
- 		return -EBUSY;
- 	}
- 
-+	if (top->parent)
-+		parent_rate = top->parent->rate;
-+	else
-+		parent_rate = 0;
++static struct hfpll_data hfpll0_data = {
++	.mode_reg = 0x3200,
++	.l_reg = 0x3208,
++	.m_reg = 0x320c,
++	.n_reg = 0x3210,
++	.config_reg = 0x3204,
++	.status_reg = 0x321c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3214,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
 +
- 	/* change the rates */
--	clk_change_rate(top);
-+	clk_change_rate(top, parent_rate);
++static struct clk_hfpll hfpll0 = {
++	.d = &hfpll0_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll0",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
++};
++
++static struct hfpll_data hfpll1_8064_data = {
++	.mode_reg = 0x3240,
++	.l_reg = 0x3248,
++	.m_reg = 0x324c,
++	.n_reg = 0x3250,
++	.config_reg = 0x3244,
++	.status_reg = 0x325c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3254,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll1_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll1 = {
++	.d = &hfpll1_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll1",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
++};
++
++static struct hfpll_data hfpll2_data = {
++	.mode_reg = 0x3280,
++	.l_reg = 0x3288,
++	.m_reg = 0x328c,
++	.n_reg = 0x3290,
++	.config_reg = 0x3284,
++	.status_reg = 0x329c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3294,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll2 = {
++	.d = &hfpll2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll2.lock),
++};
++
++static struct hfpll_data hfpll3_data = {
++	.mode_reg = 0x32c0,
++	.l_reg = 0x32c8,
++	.m_reg = 0x32cc,
++	.n_reg = 0x32d0,
++	.config_reg = 0x32c4,
++	.status_reg = 0x32dc,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x32d4,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll3 = {
++	.d = &hfpll3_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll3",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll3.lock),
++};
++
++static struct hfpll_data hfpll_l2_8064_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll_l2_data = {
++	.mode_reg = 0x3400,
++	.l_reg = 0x3408,
++	.m_reg = 0x340c,
++	.n_reg = 0x3410,
++	.config_reg = 0x3404,
++	.status_reg = 0x341c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3414,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll_l2 = {
++	.d = &hfpll_l2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll_l2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
++};
++
+ static struct clk_pll pll14 = {
+ 	.l_reg = 0x31c4,
+ 	.m_reg = 0x31c8,
+@@ -3140,6 +3299,9 @@ static struct clk_regmap *gcc_msm8960_clks[] = {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
+ };
  
- 	clk->req_rate = req_rate;
+ static const struct qcom_reset_map gcc_msm8960_resets[] = {
+@@ -3350,6 +3512,11 @@ static struct clk_regmap *gcc_apq8064_clks[] = {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
++	[PLL16] = &hfpll2.clkr,
++	[PLL17] = &hfpll3.clkr,
+ };
  
+ static const struct qcom_reset_map gcc_apq8064_resets[] = {
+@@ -3496,6 +3663,11 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 	if (!match)
+ 		return -EINVAL;
+ 
++	if (match->data == &gcc_apq8064_desc) {
++		hfpll1.d = &hfpll1_8064_data;
++		hfpll_l2.d = &hfpll_l2_8064_data;
++	}
++
+ 	/* Temporary until RPM clocks supported */
+ 	clk = clk_register_fixed_rate(dev, "cxo", NULL, CLK_IS_ROOT, 19200000);
+ 	if (IS_ERR(clk))
+diff --git a/include/dt-bindings/clock/qcom,gcc-msm8960.h b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+index 7d20eedfee98..e02742fc81cc 100644
+--- a/include/dt-bindings/clock/qcom,gcc-msm8960.h
++++ b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+@@ -319,5 +319,7 @@
+ #define CE3_SRC					303
+ #define CE3_CORE_CLK				304
+ #define CE3_H_CLK				305
++#define PLL16					306
++#define PLL17					307
+ 
+ #endif
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
