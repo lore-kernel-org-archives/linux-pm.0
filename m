@@ -1,7 +1,7 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v3 09/13] clk: qcom: Add support for Krait clocks
-Date: Fri, 20 Mar 2015 23:45:28 -0700
-Message-ID: <1426920332-9340-10-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v3 13/13] ARM: dts: qcom: Add necessary DT data for Krait cpufreq
+Date: Fri, 20 Mar 2015 23:45:32 -0700
+Message-ID: <1426920332-9340-14-git-send-email-sboyd@codeaurora.org>
 References: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1426920332-9340-1-git-send-email-sboyd@codeaurora.org>
@@ -10,273 +10,759 @@ To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The Krait clocks are made up of a series of muxes and a divider
-that choose between a fixed rate clock and dedicated HFPLLs for
-each CPU. Instead of using mmio accesses to remux parents, the
-Krait implementation exposes the remux control via cp15
-registers. Support these clocks.
+Add the necessary DT nodes and data so we can probe the cpufreq
+driver on MSM devices with Krait CPUs.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig     |   4 ++
- drivers/clk/qcom/Makefile    |   1 +
- drivers/clk/qcom/clk-krait.c | 166 +++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/qcom/clk-krait.h |  49 +++++++++++++
- 4 files changed, 220 insertions(+)
- create mode 100644 drivers/clk/qcom/clk-krait.c
- create mode 100644 drivers/clk/qcom/clk-krait.h
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 230 ++++++++++++++++++++++++++
+ arch/arm/boot/dts/qcom-msm8960.dtsi |  49 ++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 311 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 586 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index d421fd195114..7b82b3c4e259 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -96,3 +96,7 @@ config QCOM_HFPLL
- 	  Support for the high-frequency PLLs present on Qualcomm devices.
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as MSM8974, APQ8084, etc.
-+
-+config KRAIT_CLOCKS
-+	bool
-+	select KRAIT_L2_ACCESSORS
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index b1076179fb17..f8d7cfaee4a2 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -8,6 +8,7 @@ clk-qcom-y += clk-rcg2.o
- clk-qcom-y += clk-branch.o
- clk-qcom-y += clk-regmap-divider.o
- clk-qcom-y += clk-regmap-mux.o
-+clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
- clk-qcom-y += clk-hfpll.o
- clk-qcom-y += reset.o
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index b3154c071652..a97cbec75abe 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -23,6 +23,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
+ 			qcom,saw = <&saw0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
  
-diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
-new file mode 100644
-index 000000000000..6506730d085e
---- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.c
-@@ -0,0 +1,166 @@
-+/*
-+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+ 		cpu@1 {
+@@ -33,6 +36,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
+ 			qcom,saw = <&saw1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -43,6 +49,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
+ 			qcom,saw = <&saw2>;
++			clocks = <&kraitcc 2>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -53,6 +62,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
+ 			qcom,saw = <&saw3>;
++			clocks = <&kraitcc 3>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -66,6 +78,214 @@
+ 		interrupts = <1 10 0x304>;
+ 	};
+ 
++	qcom,pvs {
++		qcom,pvs-format-a;
++		qcom,speed0-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 975000  >,
++			< 594000000 1000000  >,
++			< 702000000 1025000  >,
++			< 810000000 1075000  >,
++			< 918000000 1100000  >;
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/clk-provider.h>
-+#include <linux/spinlock.h>
++		qcom,speed0-pvs1-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 925000  >,
++			< 594000000 950000  >,
++			< 702000000 975000  >,
++			< 810000000 1025000  >,
++			< 918000000 1050000  >;
 +
-+#include <asm/krait-l2-accessors.h>
++		qcom,speed0-pvs3-bin-v0 =
++			< 384000000 850000  >,
++			< 486000000 875000  >,
++			< 594000000 900000  >,
++			< 702000000 925000  >,
++			< 810000000 975000  >,
++			< 918000000 1000000  >;
 +
-+#include "clk-krait.h"
++		qcom,speed0-pvs4-bin-v0 =
++			< 384000000 850000  >,
++			< 486000000 875000  >,
++			< 594000000 900000  >,
++			< 702000000 925000  >,
++			< 810000000 962500  >,
++			< 918000000 975000  >;
 +
-+/* Secondary and primary muxes share the same cp15 register */
-+static DEFINE_SPINLOCK(krait_clock_reg_lock);
++		qcom,speed1-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 962500  >,
++			< 810000000 1000000  >,
++			< 918000000 1025000  >;
 +
-+#define LPL_SHIFT	8
-+static void __krait_mux_set_sel(struct krait_mux_clk *mux, int sel)
-+{
-+	unsigned long flags;
-+	u32 regval;
++		qcom,speed1-pvs1-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 962500  >,
++			< 810000000 975000  >,
++			< 918000000 1000000  >;
 +
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	regval = krait_get_l2_indirect_reg(mux->offset);
-+	regval &= ~(mux->mask << mux->shift);
-+	regval |= (sel & mux->mask) << mux->shift;
-+	if (mux->lpl) {
-+		regval &= ~(mux->mask << (mux->shift + LPL_SHIFT));
-+		regval |= (sel & mux->mask) << (mux->shift + LPL_SHIFT);
-+	}
-+	krait_set_l2_indirect_reg(mux->offset, regval);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
++		qcom,speed1-pvs2-bin-v0 =
++			< 384000000 925000  >,
++			< 486000000 925000  >,
++			< 594000000 925000  >,
++			< 702000000 925000  >,
++			< 810000000 937500  >,
++			< 918000000 950000  >;
 +
-+	/* Wait for switch to complete. */
-+	mb();
-+	udelay(1);
-+}
++		qcom,speed1-pvs3-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 900000  >,
++			< 918000000 925000  >;
 +
-+static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
++		qcom,speed1-pvs4-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+	sel = clk_mux_reindex(index, mux->parent_map, 0);
-+	mux->en_mask = sel;
-+	/* Don't touch mux if CPU is off as it won't work */
-+	if (__clk_is_enabled(hw->clk))
-+		__krait_mux_set_sel(mux, sel);
-+	return 0;
-+}
++		qcom,speed1-pvs5-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+static u8 krait_mux_get_parent(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
++		qcom,speed1-pvs6-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+	sel = krait_get_l2_indirect_reg(mux->offset);
-+	sel >>= mux->shift;
-+	sel &= mux->mask;
-+	mux->en_mask = sel;
++		qcom,speed2-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 950000  >,
++			< 810000000 962500  >,
++			< 918000000 975000  >;
 +
-+	return clk_mux_get_parent(hw, sel, mux->parent_map, 0);
-+}
++		qcom,speed2-pvs1-bin-v0 =
++			< 384000000 925000  >,
++			< 486000000 925000  >,
++			< 594000000 925000  >,
++			< 702000000 925000  >,
++			< 810000000 937500  >,
++			< 918000000 950000  >;
 +
-+static struct clk_hw *krait_mux_get_safe_parent(struct clk_hw *hw)
-+{
-+	int i;
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	int num_parents = __clk_get_num_parents(hw->clk);
++		qcom,speed2-pvs2-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 912500  >,
++			< 918000000 925000  >;
 +
-+	i = mux->safe_sel;
-+	for (i = 0; i < num_parents; i++)
-+		if (mux->safe_sel == mux->parent_map[i])
-+			break;
++		qcom,speed2-pvs3-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 900000  >,
++			< 918000000 912500  >;
 +
-+	return __clk_get_hw(clk_get_parent_by_index(hw->clk, i));
-+}
++		qcom,speed2-pvs4-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+static int krait_mux_enable(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++		qcom,speed2-pvs5-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+	__krait_mux_set_sel(mux, mux->en_mask);
++		qcom,speed2-pvs6-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
 +
-+	return 0;
-+}
++		qcom,speed14-pvs0-bin-v0 =
++			< 384000000 950000 >,
++			< 486000000 950000 >,
++			< 594000000 950000 >,
++			< 702000000 962500 >,
++			< 810000000 1000000 >,
++			< 918000000 1025000 >;
 +
-+static void krait_mux_disable(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
++		qcom,speed14-pvs1-bin-v0 =
++			< 384000000 950000 >,
++			< 486000000 950000 >,
++			< 594000000 950000 >,
++			< 702000000 962500 >,
++			< 810000000 975000 >,
++			< 918000000 1000000 >;
 +
-+	__krait_mux_set_sel(mux, mux->safe_sel);
-+}
++		qcom,speed14-pvs2-bin-v0 =
++			< 384000000 925000 >,
++			< 486000000 925000 >,
++			< 594000000 925000 >,
++			< 702000000 925000 >,
++			< 810000000 937500 >,
++			< 918000000 950000 >;
 +
-+const struct clk_ops krait_mux_clk_ops = {
-+	.enable = krait_mux_enable,
-+	.disable = krait_mux_disable,
-+	.set_parent = krait_mux_set_parent,
-+	.get_parent = krait_mux_get_parent,
-+	.determine_rate = __clk_mux_determine_rate_closest,
-+	.get_safe_parent = krait_mux_get_safe_parent,
-+};
-+EXPORT_SYMBOL_GPL(krait_mux_clk_ops);
++		qcom,speed14-pvs3-bin-v0 =
++			< 384000000 900000 >,
++			< 486000000 900000 >,
++			< 594000000 900000 >,
++			< 702000000 900000 >,
++			< 810000000 900000 >,
++			< 918000000 925000 >;
 +
-+/* The divider can divide by 2, 4, 6 and 8. But we only really need div-2. */
-+static long krait_div2_round_rate(struct clk_hw *hw, unsigned long rate,
-+				  unsigned long *parent_rate)
-+{
-+	*parent_rate = __clk_round_rate(__clk_get_parent(hw->clk), rate * 2);
-+	return DIV_ROUND_UP(*parent_rate, 2);
-+}
++		qcom,speed14-pvs4-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
 +
-+static int krait_div2_set_rate(struct clk_hw *hw, unsigned long rate,
-+			unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	unsigned long flags;
-+	u32 val;
-+	u32 mask = BIT(d->width) - 1;
++		qcom,speed14-pvs5-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
 +
-+	if (d->lpl)
-+		mask = mask << (d->shift + LPL_SHIFT) | mask << d->shift;
++		qcom,speed14-pvs6-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
++	};
 +
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	val = krait_get_l2_indirect_reg(d->offset);
-+	val &= ~mask;
-+	krait_set_l2_indirect_reg(d->offset, val);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v1";
++		#clock-cells = <1>;
++	};
 +
-+	return 0;
-+}
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -122,21 +342,31 @@
+ 		acc0: clock-controller@2088000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02088000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu0_aux";
+ 		};
+ 
+ 		acc1: clock-controller@2098000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02098000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu1_aux";
+ 		};
+ 
+ 		acc2: clock-controller@20a8000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x020a8000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu2_aux";
+ 		};
+ 
+ 		acc3: clock-controller@20b8000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x020b8000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu3_aux";
++		};
 +
-+static unsigned long
-+krait_div2_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	u32 mask = BIT(d->width) - 1;
-+	u32 div;
++		l2cc: clock-controller@2011000 {
++			compatible = "qcom,kpss-gcc";
++			reg = <0x2011000 0x1000>;
++			clock-output-names = "acpu_l2_aux";
+ 		};
+ 
+ 		saw0: regulator@2089000 {
+diff --git a/arch/arm/boot/dts/qcom-msm8960.dtsi b/arch/arm/boot/dts/qcom-msm8960.dtsi
+index e1b0d5cd9e3c..ef89daf7a258 100644
+--- a/arch/arm/boot/dts/qcom-msm8960.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8960.dtsi
+@@ -24,6 +24,10 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
+ 			qcom,saw = <&saw0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
 +
-+	div = krait_get_l2_indirect_reg(d->offset);
-+	div >>= d->shift;
-+	div &= mask;
-+	div = (div + 1) * 2;
+ 		};
+ 
+ 		cpu@1 {
+@@ -34,6 +38,10 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
+ 			qcom,saw = <&saw1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
 +
-+	return DIV_ROUND_UP(parent_rate, div);
-+}
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -48,6 +56,39 @@
+ 		qcom,no-pc-write;
+ 	};
+ 
++	qcom,pvs {
++		qcom,pvs-format-a;
++			/* Hz		uV */
++		qcom,speed0-pvs0-bin-v0 =
++			<  384000000  950000 >,
++			<  486000000  975000 >,
++			<  594000000 1000000 >,
++			<  702000000 1025000 >,
++			<  810000000 1075000 >,
++			<  918000000 1100000 >;
 +
-+const struct clk_ops krait_div2_clk_ops = {
-+	.round_rate = krait_div2_round_rate,
-+	.set_rate = krait_div2_set_rate,
-+	.recalc_rate = krait_div2_recalc_rate,
-+};
-+EXPORT_SYMBOL_GPL(krait_div2_clk_ops);
-diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
-new file mode 100644
-index 000000000000..5d0063538e5d
---- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.h
-@@ -0,0 +1,49 @@
-+/*
-+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
++		qcom,speed0-pvs1-bin-v0 =
++			<  384000000  900000 >,
++			<  486000000  925000 >,
++			<  594000000  950000 >,
++			<  702000000  975000 >,
++			<  810000000 1025000 >,
++			<  918000000 1050000 >;
 +
-+#ifndef __QCOM_CLK_KRAIT_H
-+#define __QCOM_CLK_KRAIT_H
++		qcom,speed0-pvs3-bin-v0 =
++			<  384000000  850000 >,
++			<  486000000  875000 >,
++			<  594000000  900000 >,
++			<  702000000  925000 >,
++			<  810000000  975000 >,
++			<  918000000 1000000 >;
++	};
 +
-+#include <linux/clk-provider.h>
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v1";
++		#clock-cells = <1>;
++	};
 +
-+struct krait_mux_clk {
-+	unsigned int	*parent_map;
-+	bool		has_safe_parent;
-+	u8		safe_sel;
-+	u32		offset;
-+	u32		mask;
-+	u32		shift;
-+	u32		en_mask;
-+	bool		lpl;
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -101,11 +142,19 @@
+ 		acc0: clock-controller@2088000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02088000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu0_aux";
+ 		};
+ 
+ 		acc1: clock-controller@2098000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02098000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu1_aux";
++		};
 +
-+	struct clk_hw	hw;
-+};
++		l2cc: clock-controller@2011000 {
++			compatible = "qcom,kpss-gcc";
++			reg = <0x2011000 0x1000>;
++			clock-output-names = "acpu_l2_aux";
+ 		};
+ 
+ 		saw0: regulator@2089000 {
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index e265ec16a787..45ff96d74079 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -14,40 +14,52 @@
+ 		#size-cells = <0>;
+ 		interrupts = <1 9 0xf04>;
+ 
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@1 {
++		cpu1: cpu@1 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@2 {
++		cpu2: cpu@2 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
++			clocks = <&kraitcc 2>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@3 {
++		cpu3: cpu@3 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
++			clocks = <&kraitcc 3>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -71,6 +83,267 @@
+ 		clock-frequency = <19200000>;
+ 	};
+ 
++	qcom,pvs {
++		qcom,pvs-format-b;
++			/* Hz		uV	ua */
++		qcom,speed0-pvs0-bin-v0 =
++			<  300000000  815000  73 >,
++			<  345600000  825000  85 >,
++			<  422400000  835000 104 >,
++			<  499200000  845000 124 >,
++			<  576000000  855000 144 >,
++			<  652800000  865000 165 >,
++			<  729600000  875000 186 >,
++			<  806400000  890000 208 >,
++			<  883200000  900000 229 >,
++			<  960000000  915000 252 >;
 +
-+#define to_krait_mux_clk(_hw) container_of(_hw, struct krait_mux_clk, hw)
++		qcom,speed0-pvs1-bin-v0 =
++			<  300000000  800000  73 >,
++			<  345600000  810000  85 >,
++			<  422400000  820000 104 >,
++			<  499200000  830000 124 >,
++			<  576000000  840000 144 >,
++			<  652800000  850000 165 >,
++			<  729600000  860000 186 >,
++			<  806400000  875000 208 >,
++			<  883200000  885000 229 >,
++			<  960000000  895000 252 >;
 +
-+extern const struct clk_ops krait_mux_clk_ops;
++		qcom,speed0-pvs2-bin-v0 =
++			<  300000000  785000  73 >,
++			<  345600000  795000  85 >,
++			<  422400000  805000 104 >,
++			<  499200000  815000 124 >,
++			<  576000000  825000 144 >,
++			<  652800000  835000 165 >,
++			<  729600000  845000 186 >,
++			<  806400000  855000 208 >,
++			<  883200000  865000 229 >,
++			<  960000000  875000 252 >;
 +
-+struct krait_div2_clk {
-+	u32		offset;
-+	u8		width;
-+	u32		shift;
-+	bool		lpl;
++		qcom,speed0-pvs3-bin-v0 =
++			<  300000000  775000  73 >,
++			<  345600000  780000  85 >,
++			<  422400000  790000 104 >,
++			<  499200000  800000 124 >,
++			<  576000000  810000 144 >,
++			<  652800000  820000 165 >,
++			<  729600000  830000 186 >,
++			<  806400000  840000 208 >,
++			<  883200000  850000 229 >,
++			<  960000000  860000 252 >;
 +
-+	struct clk_hw	hw;
-+};
++		qcom,speed0-pvs4-bin-v0 =
++			<  300000000  775000  73 >,
++			<  345600000  775000  85 >,
++			<  422400000  780000 104 >,
++			<  499200000  790000 124 >,
++			<  576000000  800000 144 >,
++			<  652800000  810000 165 >,
++			<  729600000  820000 186 >,
++			<  806400000  830000 208 >,
++			<  883200000  840000 229 >,
++			<  960000000  850000 252 >;
 +
-+#define to_krait_div2_clk(_hw) container_of(_hw, struct krait_div2_clk, hw)
++		qcom,speed0-pvs5-bin-v0 =
++			<  300000000  750000  73 >,
++			<  345600000  760000  85 >,
++			<  422400000  770000 104 >,
++			<  499200000  780000 124 >,
++			<  576000000  790000 144 >,
++			<  652800000  800000 165 >,
++			<  729600000  810000 186 >,
++			<  806400000  820000 208 >,
++			<  883200000  830000 229 >,
++			<  960000000  840000 252 >;
 +
-+extern const struct clk_ops krait_div2_clk_ops;
++		qcom,speed0-pvs6-bin-v0 =
++			<  300000000  750000  73 >,
++			<  345600000  750000  85 >,
++			<  422400000  760000 104 >,
++			<  499200000  770000 124 >,
++			<  576000000  780000 144 >,
++			<  652800000  790000 165 >,
++			<  729600000  800000 186 >,
++			<  806400000  810000 208 >,
++			<  883200000  820000 229 >,
++			<  960000000  830000 252 >;
 +
-+#endif
++		qcom,speed2-pvs0-bin-v0 =
++			<  300000000  800000  72 >,
++			<  345600000  800000  83 >,
++			<  422400000  805000 102 >,
++			<  499200000  815000 121 >,
++			<  576000000  825000 141 >,
++			<  652800000  835000 161 >,
++			<  729600000  845000 181 >,
++			<  806400000  855000 202 >,
++			<  883200000  865000 223 >,
++			<  960000000  875000 245 >;
++
++		qcom,speed2-pvs1-bin-v0 =
++			<  300000000  800000  72 >,
++			<  345600000  800000  83 >,
++			<  422400000  800000 102 >,
++			<  499200000  800000 121 >,
++			<  576000000  810000 141 >,
++			<  652800000  820000 161 >,
++			<  729600000  830000 181 >,
++			<  806400000  840000 202 >,
++			<  883200000  850000 223 >,
++			<  960000000  860000 245 >;
++
++		qcom,speed2-pvs2-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  785000 121 >,
++			<  576000000  795000 141 >,
++			<  652800000  805000 161 >,
++			<  729600000  815000 181 >,
++			<  806400000  825000 202 >,
++			<  883200000  835000 223 >,
++			<  960000000  845000 245 >;
++
++		qcom,speed2-pvs3-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  775000 121 >,
++			<  576000000  780000 141 >,
++			<  652800000  790000 161 >,
++			<  729600000  800000 181 >,
++			<  806400000  810000 202 >,
++			<  883200000  820000 223 >,
++			<  960000000  830000 245 >;
++
++		qcom,speed2-pvs4-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  775000 121 >,
++			<  576000000  775000 141 >,
++			<  652800000  780000 161 >,
++			<  729600000  790000 181 >,
++			<  806400000  800000 202 >,
++			<  883200000  810000 223 >,
++			<  960000000  820000 245 >;
++
++		qcom,speed2-pvs5-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 102 >,
++			<  499200000  750000 121 >,
++			<  576000000  760000 141 >,
++			<  652800000  770000 161 >,
++			<  729600000  780000 181 >,
++			<  806400000  790000 202 >,
++			<  883200000  800000 223 >,
++			<  960000000  810000 245 >;
++
++		qcom,speed2-pvs6-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 102 >,
++			<  499200000  750000 121 >,
++			<  576000000  750000 141 >,
++			<  652800000  760000 161 >,
++			<  729600000  770000 181 >,
++			<  806400000  780000 202 >,
++			<  883200000  790000 223 >,
++			<  960000000  800000 245 >;
++
++		qcom,speed1-pvs0-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 101 >,
++			<  499200000  780000 120 >,
++			<  576000000  790000 139 >,
++			<  652800000  800000 159 >,
++			<  729600000  810000 180 >,
++			<  806400000  820000 200 >,
++			<  883200000  830000 221 >,
++			<  960000000  840000 242 >;
++
++		qcom,speed1-pvs1-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 101 >,
++			<  499200000  775000 120 >,
++			<  576000000  775000 139 >,
++			<  652800000  785000 159 >,
++			<  729600000  795000 180 >,
++			<  806400000  805000 200 >,
++			<  883200000  815000 221 >,
++			<  960000000  825000 242 >;
++
++		qcom,speed1-pvs2-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  760000 139 >,
++			<  652800000  770000 159 >,
++			<  729600000  780000 180 >,
++			<  806400000  790000 200 >,
++			<  883200000  800000 221 >,
++			<  960000000  810000 242 >;
++
++		qcom,speed1-pvs3-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  750000 139 >,
++			<  652800000  755000 159 >,
++			<  729600000  765000 180 >,
++			<  806400000  775000 200 >,
++			<  883200000  785000 221 >,
++			<  960000000  795000 242 >;
++
++		qcom,speed1-pvs4-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  750000 139 >,
++			<  652800000  750000 159 >,
++			<  729600000  755000 180 >,
++			<  806400000  765000 200 >,
++			<  883200000  775000 221 >,
++			<  960000000  785000 242 >;
++
++		qcom,speed1-pvs5-bin-v0 =
++			<  300000000  725000  72 >,
++			<  345600000  725000  83 >,
++			<  422400000  725000 101 >,
++			<  499200000  725000 120 >,
++			<  576000000  725000 139 >,
++			<  652800000  735000 159 >,
++			<  729600000  745000 180 >,
++			<  806400000  755000 200 >,
++			<  883200000  765000 221 >,
++			<  960000000  775000 242 >;
++
++		qcom,speed1-pvs6-bin-v0 =
++			<  300000000  725000  72 >,
++			<  345600000  725000  83 >,
++			<  422400000  725000 101 >,
++			<  499200000  725000 120 >,
++			<  576000000  725000 139 >,
++			<  652800000  725000 159 >,
++			<  729600000  735000 180 >,
++			<  806400000  745000 200 >,
++			<  883200000  755000 221 >,
++			<  960000000  765000 242 >;
++	};
++
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v2";
++		#clock-cells = <1>;
++	};
++
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -144,6 +417,36 @@
+ 			};
+ 		};
+ 
++		clock-controller@f9016000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf9016000 0x30>;
++			clock-output-names = "hfpll_l2";
++		};
++
++		clock-controller@f908a000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf908a000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll0";
++		};
++
++		clock-controller@f909a000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf909a000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll1";
++		};
++
++		clock-controller@f90aa000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf90aa000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll2";
++		};
++
++		clock-controller@f90ba000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf90ba000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll3";
++		};
++
+ 		saw_l2: regulator@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
