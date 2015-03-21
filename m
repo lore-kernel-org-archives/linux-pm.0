@@ -1,60 +1,87 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH V2] PM / Domains: Sync runtime PM status with genpd after probe
-Date: Fri, 20 Mar 2015 17:14:34 -0700
-Message-ID: <7hvbhvi4ut.fsf@deeprootsystems.com>
-References: <1426863312-31132-1-git-send-email-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management and ACPI fixes for 4.0-rc5
+Date: Sat, 21 Mar 2015 01:32:22 +0100
+Message-ID: <CAJZ5v0jUbdNRvoYwW=LrC+fnyAB2=OEO6yidNNFnKhugZx_D1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33129 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbbCUAOh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2015 20:14:37 -0400
-Received: by pabxg6 with SMTP id xg6so111075565pab.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2015 17:14:37 -0700 (PDT)
-In-Reply-To: <1426863312-31132-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Fri, 20 Mar 2015 15:55:12 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+Hi Linus,
 
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
->
-> Buses which currently supports attaching devices to their PM domains,
-> will invoke the dev_pm_domain_attach() API from their ->probe()
-> callbacks. During the attach procedure, genpd power up the PM domain.
->
-> In those scenarios where the bus/driver don't need to access its device
-> during probe, it may leave it in runtime PM suspended state since
-> that's also the default state. In that way, no notifications through
-> the runtime PM callbacks will reach the PM domain during probe.
->
-> For genpd, the consequence from the above scenario means the PM domain
-> will remain powered. Therefore, implement the struct dev_pm_domain's
-> ->sync() callback, which is invoked from driver core after the
-> bus/driver has probed the device. It allows genpd to power off the PM
-> domain if it's unused.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> [Ulf: Updated patch according to updates in driver core]
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->
-> Changes in v2:
-> 	- I picked up Russell's earlier patch [1] and updated it to fit the
-> 	changes [2] proposed to be done to the driver core.
->
-> 	[1]: [PATCH 3/9] pm: domains: sync runtime PM status with PM domains
-> 	after probe
->
-> 	[2]: [PATCH v3] driver core / PM: Add PM domain callbacks for device
-> 	setup/cleanup
-> 	http://www.spinics.net/lists/arm-kernel/msg407394.html
+Please pull from
 
-Ah, I hadn't seen this when I reviewed Rafael's v3 and suggested
-Russell's patch be reworked.  This is just what I had in mind.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.0-rc5
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+to receive power management and ACPI fixes for v4.0-rc5 with top-most
+commit 9c86286a60b28bd25cb1c70eb2aba34f182d1063
+
+ Merge branches 'pm-cpuidle', 'powercap', 'irq-pm' and 'acpi-resources'
+
+on top of commit 06e5801b8cb3fc057d88cb4dc03c0b64b2744cda
+
+ Linux 4.0-rc4
+
+These are fixes for recent regressions (PCI/ACPI resources and
+at91 RTC locking), a stable-candidate powercap RAPL driver fix
+and two ARM cpuidle fixes (one stable-candidate too).
+
+Specifics:
+
+ - Revert a recent PCI commit related to IRQ resources management
+   that introduced a regression for drivers attempting to bind to
+   devices whose previous drivers did not balance pci_enable_device()
+   and pci_disable_device() as expected (Rafael J Wysocki).
+
+ - Fix a deadlock in at91_rtc_interrupt() introduced by a typo in a
+   recent commit related to wakeup interrupt handling (Dan Carpenter).
+
+ - Allow the power capping RAPL (Running-Average Power Limit) driver
+   to use different energy units for domains within one CPU package
+   which is necessary to handle Intel Haswell EP processors correctly
+   (Jacob Pan).
+
+ - Improve the cpuidle mvebu driver's handling of Armada XP SoCs by
+   updating the target residency and exit latency numbers for those
+   chips (Sebastien Rannou).
+
+ - Prevent the cpuidle mvebu driver from calling cpu_pm_enter() twice
+   in a row before cpu_pm_exit() is called on the same CPU which
+   breaks the core's assumptions regarding the usage of those
+   functions (Gregory Clement).
+
+Thanks!
+
+
+---------------
+
+Dan Carpenter (1):
+      rtc: at91rm9200: double locking bug in at91_rtc_interrupt()
+
+Gregory CLEMENT (1):
+      cpuidle: mvebu: Fix the CPU PM notifier usage
+
+Jacob Pan (1):
+      powercap / RAPL: handle domains with different energy units
+
+Rafael J. Wysocki (1):
+      Revert "x86/PCI: Refine the way to release PCI IRQ resources"
+
+Sebastien Rannou (1):
+      cpuidle: mvebu: Update cpuidle thresholds for Armada XP SOCs
+
+---------------
+
+ arch/x86/include/asm/pci_x86.h     |  2 ++
+ arch/x86/pci/common.c              | 34 +++++-------------------
+ arch/x86/pci/intel_mid_pci.c       |  4 +--
+ arch/x86/pci/irq.c                 | 15 ++++++++++-
+ drivers/acpi/pci_irq.c             |  9 ++++++-
+ drivers/cpuidle/cpuidle-mvebu-v7.c | 12 ++++-----
+ drivers/powercap/intel_rapl.c      | 54 +++++++++++++++++++++++++++-----------
+ drivers/rtc/rtc-at91rm9200.c       |  2 +-
+ 8 files changed, 78 insertions(+), 54 deletions(-)
