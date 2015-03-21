@@ -1,42 +1,75 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 6/6] iio/adc/cc10001_adc.c: Fix !HAS_IOMEM build
-Date: Sat, 21 Mar 2015 11:35:14 +0000
-Message-ID: <550D5772.2010400@kernel.org>
-References: <1426541230-928-1-git-send-email-richard@nod.at> <1426541230-928-6-git-send-email-richard@nod.at>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH] thermal: Do not log an error if thermal_zone_get_temp
+ returns -EAGAIN
+Date: Sat, 21 Mar 2015 14:59:48 +0100
+Message-ID: <550D7954.9020006@redhat.com>
+References: <1426000006-15729-1-git-send-email-hdegoede@redhat.com> <20150307065114.GA28318@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426541230-928-6-git-send-email-richard-/L3Ra7n9ekc@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:45567 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbbCUN77 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 21 Mar 2015 09:59:59 -0400
+In-Reply-To: <20150307065114.GA28318@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org
 
-On 16/03/15 21:27, Richard Weinberger wrote:
-> Fixes:
-> drivers/built-in.o: In function `cc10001_adc_probe':
-> cc10001_adc.c:(.text+0x412e92): undefined reference to `devm_ioremap_resource'
-> 
-> Signed-off-by: Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>
-Applied to the fixes-togreg branch of iio.git.
-Won't push this out for a day or so as waiting for Greg to pull the previous set.
-> ---
->  drivers/iio/adc/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-> index 202daf8..46379b1 100644
-> --- a/drivers/iio/adc/Kconfig
-> +++ b/drivers/iio/adc/Kconfig
-> @@ -137,7 +137,8 @@ config AXP288_ADC
->  
->  config CC10001_ADC
->  	tristate "Cosmic Circuits 10001 ADC driver"
-> -	depends on HAS_IOMEM || HAVE_CLK || REGULATOR
-> +	depends on HAVE_CLK || REGULATOR
-> +	depends on HAS_IOMEM
->  	select IIO_BUFFER
->  	select IIO_TRIGGERED_BUFFER
->  	help
-> 
+Hi,
+
+On 07-03-15 07:51, Eduardo Valentin wrote:
+> Hans,
+>
+> Thanks for fixing this. One minor request though.
+>
+> On Tue, Mar 10, 2015 at 04:06:46PM +0100, Hans de Goede wrote:
+>> Some temperature sensors only get updated every few seconds and while
+>> waiting for the first irq reporting a (new) temperature to happen there
+>> get_temp operand will return -EAGAIN as it does not have any data to report
+>> yet.
+>>
+>> Not logging an error in this case avoids messages like these from showing
+>> up in dmesg on affected systems:
+>>
+>> [    1.219353] thermal thermal_zone0: failed to read out thermal zone 0
+>> [    2.015433] thermal thermal_zone0: failed to read out thermal zone 0
+>> [    2.416737] thermal thermal_zone0: failed to read out thermal zone 0
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>   drivers/thermal/thermal_core.c | 6 ++++--
+>>   1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 48491d1..e3cbf34 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -458,8 +458,10 @@ static void update_temperature(struct thermal_zone_device *tz)
+>>
+>>   	ret = thermal_zone_get_temp(tz, &temp);
+>>   	if (ret) {
+>> -		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
+>> -			 tz->id);
+>> +		if (ret != -EAGAIN)
+>> +			dev_warn(&tz->device,
+>> +				 "failed to read out thermal zone %d\n",
+>> +				 tz->id);
+>
+> Can you please take the opportunity to add the error code in the
+> message? Something like:
+> +			dev_warn(&tz->device,
+> +				 "failed to read out thermal zone (%d)\n",
+> +				 ret);
+>
+> The thermal zone id (tz->id) is already included  in the error message
+> as it is always appended to the thermal zone device name
+> ("thermal_zone%d", tz->id).
+
+Ok, v2 coming up.
+
+Regards,
+
+Hans
