@@ -1,94 +1,72 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
- driver
-Date: Mon, 23 Mar 2015 12:46:12 +0800
-Message-ID: <20150323044612.GB20840@leoy-linaro>
-References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
- <20150319141753.GB25967@leverpostej>
- <20150320060653.GC18907@leoy-linaro>
- <20150320112414.GD14766@leverpostej>
- <20150320145353.GA20461@leoy-linaro>
- <20150320155527.GJ14766@leverpostej>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Sun, 22 Mar 2015 18:56:27 +0000
+Message-ID: <20150322185627.GI6643@sirena.org.uk>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
+ <20150212005220.GG11190@codeaurora.org>
+ <CAKohponaLt51hiHd=uTocK_fPPwRDgkse5wc_PGG5tFQNnvfAQ@mail.gmail.com>
+ <20150212082004.GJ11190@codeaurora.org>
+ <CAKohpo=uJJw0=T+yfV=aAUQq+Z2-kZFJWFqxnN6B8QtSb2XHqg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="yKpjvgUFh4AHjl21"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52332 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbbCWFBE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 01:01:04 -0400
 Content-Disposition: inline
-In-Reply-To: <20150320155527.GJ14766@leverpostej>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: kongxinwei <kong.kongxinwei@hisilicon.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <CAKohpo=uJJw0=T+yfV=aAUQq+Z2-kZFJWFqxnN6B8QtSb2XHqg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.or>
 
-On Fri, Mar 20, 2015 at 03:55:27PM +0000, Mark Rutland wrote:
-> > > That may be the case in the code as it stands today, but per the binding
-> > > the trip points are the temperatures at which an action is to be taken.
-> > > 
-> > > The thermal-zone has poilling-delay and polling-delay-passive, but
-> > > there's no reason you couldn't also use the interrupt to handle the
-> > > "hot" trip-point, adn the reset at the "critical" trip-point. All that's
-> > > missing is the plumbing in order to do so.
-> > > 
-> > > So please co-ordinate with the thermal framework to do that.
-> > 
-> > Let's dig further more for this point, so that we can get more specific
-> > gudiance and have a good preparation for next version's patch set.
-> > 
-> > After i reviewed the thermal framework code, currently have one smooth
-> > way to co-ordinate the trip points w/t thermal framework: use the function
-> > *thermal_zone_device_register()* to register sensor, and can use the
-> > callback function .get_trip_temp to tell thermal framework for the
-> > trip points' temperature.
-> > 
-> > For hisi thermal case, now the driver is using the function
-> > *thermal_zone_of_sensor_register* to register sensor, but use this way
-> > i have not found there have standard APIs which can be used by sensor
-> > driver to get the trip points info from thermal framework.
-> > 
-> > I may miss something for thermal framework, so if have existed APIs to
-> > get the trip points, could pls point out?
-> 
-> I am only familiar with the binding, not the Linux implementation -- The
-> latter can change to accomodate your hardware without requiring binding
-> changes. Please co-ordinate with the thermal maintainers.
 
-Found the functions of_thermal_get_trip_points(tz) and of_thermal_get_ntrips(tz)
-will help for this.
+--yKpjvgUFh4AHjl21
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> > > > > > +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
-> > > > > > +
-> > > > > > +               if (data->irq_bind_sensor != -1)
-> > > > > > +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
-> > > > > > +                                data->irq_bind_sensor);
-> > > > > > +
-> > > > > > +               /* bind irq to this sensor */
-> > > > > > +               data->irq_bind_sensor = index;
-> > > > > > +       }
-> > > > > 
-> > > > > I don't see why this should be specified in the DT. Why do you believe
-> > > > > it should?
-> > > > 
-> > > > The thermal sensor module has four sensors, but have only one
-> > > > interrupt signal; This interrupt can only be used by one sensor;
-> > > > So want to use dts to bind the interrupt with one selected sensor.
-> > > 
-> > > That's not all that great, though I'm not exactly sure how the kernel
-> > > would select the best sensor to measure with. It would be good if you
-> > > could talk to the thermal maintainers w.r.t. this.
-> > 
-> > This will be decided by the silicon, right? Every soc has different
-> > combination with cpu/gpu/vpu, so which part is hottest, this maybe
-> > highly dependent on individual SoC.
-> > 
-> > S/W just need provide the flexibility so that later can choose
-> > the interrupt to bind with the sensor within the hottest part.
-> 
-> Then the property you care about is which sensor is closest to what is
-> likely to be the hottest component. Given that, the kernel can decide
-> how to use the interrupt.
+On Tue, Feb 17, 2015 at 01:16:25PM +0530, Viresh Kumar wrote:
+> On 12 February 2015 at 16:20, Stephen Boyd <sboyd@codeaurora.org> wrote:
 
-Will modify the driver to dynamically bind the interrupt to hottest
-sensor; Appreciate for good suggestion.
+> > voltages. I suppose something like opp-microvolt-names would work
+> > though but I don't know how software would correlate that to the
+> > regulator it uses because that information is elsewhere in the
 
-Thanks,
-Leo Yan
+> I hope the CPU node will have an array of supplies to support multiple
+> regulators, right? If yes, then we can just keep the array of <t/min/max>
+> in the same order. And software should be able to correlate then?
+
+It's probably not *too* bad for small numbers of supplies but bindings
+that require that indexes into two different arrays match up
+(particularly with different step sizes as here) do have legibility
+issues - it's easy to miscount when reading things.
+
+> > device's node. Why not put the information about which clock and
+> > regulator is used into the opp node?
+
+> Don't know. I have been asked specifically to keem them out of the OPPs,
+> as they belong to the CPU or device instead.
+
+The DT should describe the hardware and how it's connected.  No power
+supplies or clocks are connected to an OPP, an OPP is a property of
+something else.
+
+--yKpjvgUFh4AHjl21
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVDxBaAAoJECTWi3JdVIfQjqkIAIGE71HONJ2arX93F/fC2cZQ
+fipjQEMHjoPTjRItZjAadNjk2H7xyEEncHt2f1JzOcTcg81mvJNZtoQroAiSqKeQ
+alM2tAL7COxWP4RfCA97evDHuT2I/K+R0mQoEP3/tl3EgijwcLd8pgweEWRucglZ
+YEJdRWdzPoUXKTBm3CnKRA9berpj6ozrYmwrTRnVzAzYBM+fBZSxT7zvUOTyRC09
+LGFDF2kGJd9P3YriU6nLJlbaEo7AAldajH3BKhhWIi0X2HAsVYmyvLbjQLKqgygk
+kZN5Loo5pG+p+qfWA2P0q/DCcTd2+FsYfqMmiUKWiufRz9OvKTuNx62TyxyHqbI=
+=5mSd
+-----END PGP SIGNATURE-----
+
+--yKpjvgUFh4AHjl21--
