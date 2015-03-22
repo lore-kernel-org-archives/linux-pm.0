@@ -1,104 +1,88 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: [PATCH 3/7] DT: add binding for MXS regulator
-Date: Sun, 22 Mar 2015 00:29:59 +0000
-Message-ID: <1426984203-9133-4-git-send-email-stefan.wahren@i2se.com>
-References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426984203-9133-1-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, marex-ynQEQJNshbs@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH 0/7] power: enable cpufreq-dt support for i.MX23/i.MX28
+Date: Sun, 22 Mar 2015 00:29:56 +0000
+Message-ID: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.131]:53863 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbbCVAbY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 20:31:24 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: shawn.guo@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, broonie@kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, galak@codeaurora.org
+Cc: fabio.estevam@freescale.com, marex@denx.de, kernel@pengutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
-This patch adds the device tree bindings for the Freescale MXS on-chip
-regulators.
+This patch series adds cpufreq-dt support to Freescale i.MX23 and i.MX28.
+It's the result of some discussions since August 2014 [1],[2],[3].
 
-Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
----
- .../bindings/regulator/mxs-regulator.txt           |   70 ++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+Summary
+=======
+
+Patch 1,2 - add driver for mxs power subsystem
+Patch 3,4,5 - enable regulator support for i.MX23/i.MX28
+Patch 6,7 - enable cpufreq-dt support for i.MX23/i.MX28
+
+The main use of mxs_power driver is to trigger probing of the underlying DT
+child nodes like the on-chip regulators. The mxs-regulator driver provides
+for instance the voltage scaling support.
+
+A detailed description of the MXS power subsystem is in the reference manual 
+[4],[5].
+
+Known issue
+===========
+
+The mxs clock driver provide the clock rate in Hz (454736842), but the 
+operating points must be specified in kHz with less precision (454737).
+
+So we get the following warning on boot [4]:
+
+cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: 454736 KHz
+cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency changed to: 454737 KHz
+
+Changes
+=======
+- rebase on next-20150320
+- complete rewrite of regulator ops based on helper functions and imx-bootlets
+- move DC-DC handling from mxs_power into mxs-regulator
+- make DC-DC switching frequency a device tree property
+- fix NULL pointer dereference in mxs_power_remove()
+- add i.MX23 support
+- add cpufreq-dt support
+
+[1] - http://www.spinics.net/lists/arm-kernel/msg356455.html
+[2] - https://lkml.org/lkml/2014/9/26/932
+[3] - http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/304688.html
+[4] - http://cache.freescale.com/files/dsp/doc/ref_manual/IMX23RM.pdf
+[5] - http://cache.freescale.com/files/dsp/doc/ref_manual/MCIMX28RM.pdf
+[6] - http://marc.info/?l=linux-pm&m=141225587213505&w=2
+
+Stefan Wahren (7):
+  DT: add binding for mxs power subsystem
+  power: mxs_power: add driver for mxs power subsystem
+  DT: add binding for MXS regulator
+  regulator: add mxs regulator driver
+  ARM: dts: enable regulator support for i.MX23/i.MX28
+  ARM: mxs: register cpufreq-dt in pm init
+  ARM: dts: add OPPs for i.MX23/i.MX28
+
+ .../devicetree/bindings/power/mxs_power.txt        |   23 +
+ .../bindings/regulator/mxs-regulator.txt           |   70 +++
+ arch/arm/boot/dts/imx23.dtsi                       |   82 ++-
+ arch/arm/boot/dts/imx28.dtsi                       |   82 ++-
+ arch/arm/mach-mxs/pm.c                             |    6 +
+ drivers/power/Kconfig                              |    8 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/mxs_power.c                          |  146 +++++
+ drivers/regulator/Kconfig                          |    8 +
+ drivers/regulator/Makefile                         |    1 +
+ drivers/regulator/mxs-regulator.c                  |  624 ++++++++++++++++++++
+ 11 files changed, 1045 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/mxs_power.txt
  create mode 100644 Documentation/devicetree/bindings/regulator/mxs-regulator.txt
+ create mode 100644 drivers/power/mxs_power.c
+ create mode 100644 drivers/regulator/mxs-regulator.c
 
-diff --git a/Documentation/devicetree/bindings/regulator/mxs-regulator.txt b/Documentation/devicetree/bindings/regulator/mxs-regulator.txt
-new file mode 100644
-index 0000000..88452d2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/regulator/mxs-regulator.txt
-@@ -0,0 +1,70 @@
-+Regulators for Freescale i.MX23/i.MX28
-+
-+Required properties:
-+For imx23 regulators
-+- compatible:
-+  - "fsl,imx23-dcdc" for DC-DC converter
-+  - "fsl,imx23-vddd" for VDDD linear regulator
-+  - "fsl,imx23-vdda" for VDDA linear regulator
-+  - "fsl,imx23-vddio" for VDDIO linear regulator
-+For imx28 regulators
-+- compatible:
-+  - "fsl,imx28-dcdc" for DC-DC converter
-+  - "fsl,imx28-vddd" for VDDD linear regulator
-+  - "fsl,imx28-vdda" for VDDA linear regulator
-+  - "fsl,imx28-vddio" for VDDIO linear regulator
-+- reg: Address and length of the register set for the device. It contains
-+  the information of registers in the same order as described by reg-names
-+- reg-names: Should contain the reg names
-+  - "base-address"	- contains base address of regulator
-+  - "status-address"	- contains status address of regulator
-+  - "v5ctrl-address"	- contains 5V control address of DC-DC converter
-+			  (required only for linear regulators)
-+  - "misc-address"      - contains misc control address of DC-DC converter
-+			  (required only for DC-DC converter)
-+
-+Optional properties:
-+- switching-frequency: switching frequency of the DC-DC converter in Hz.
-+  Possible values are <19200000>, <22000000> or <24000000> (default).
-+
-+Any regulator property defined as part of the core regulator
-+binding, defined in regulator.txt, can also be used.
-+
-+Example for i.MX28:
-+
-+	power: power@80044000 {
-+		compatible = "fsl,imx28-power";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0x80044000 0x2000>;
-+		interrupts = <6>;
-+		ranges;
-+
-+		dcdc: regulator@80044010 {
-+			reg = <0x80044010 0x10>,
-+			      <0x80044090 0x10>,
-+			      <0x800440c0 0x10>;
-+			reg-names = "base-address",
-+				    "misc-address",
-+				    "status-address";
-+			compatible = "fsl,imx28-dcdc";
-+			regulator-name = "dcdc";
-+			regulator-boot-on;
-+			regulator-always-on;
-+			switching-frequency = <24000000>;
-+		};
-+
-+		reg_vddd: regulator@80044040 {
-+			reg = <0x80044040 0x10>,
-+			      <0x80044010 0x10>,
-+			      <0x800440c0 0x10>;
-+			reg-names = "base-address",
-+				    "v5ctrl-address",
-+				    "status-address";
-+			compatible = "fsl,imx28-vddd";
-+			regulator-name = "vddd";
-+			regulator-min-microvolt = <1350000>;
-+			regulator-max-microvolt = <1550000>;
-+		};
-+	};
-+
 -- 
 1.7.9.5
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
