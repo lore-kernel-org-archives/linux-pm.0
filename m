@@ -1,7 +1,7 @@
 From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH 7/7] ARM: dts: add OPPs for i.MX23/i.MX28
-Date: Sun, 22 Mar 2015 00:30:03 +0000
-Message-ID: <1426984203-9133-8-git-send-email-stefan.wahren@i2se.com>
+Subject: [PATCH 5/7] ARM: dts: enable regulator support for i.MX23/i.MX28
+Date: Sun, 22 Mar 2015 00:30:01 +0000
+Message-ID: <1426984203-9133-6-git-send-email-stefan.wahren@i2se.com>
 References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,74 +21,172 @@ To: shawn.guo@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.
 Cc: fabio.estevam@freescale.com, marex@denx.de, devicetree@vger.kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Stefan Wahren <stefan.wahren@i2se.com>, kernel@pengutronix.de, sebastien.szymanski@armadeus.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the OPPs for i.MX23/i.MX28 which are necessary
-for cpufreq support.
+This patch enables the on-chip regulator support for all i.MX23 and
+i.MX28 boards.
 
 Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
- arch/arm/boot/dts/imx23.dtsi |   15 +++++++++++++--
- arch/arm/boot/dts/imx28.dtsi |   15 +++++++++++++--
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/imx23.dtsi |   67 +++++++++++++++++++++++++++++++++++++++++-
+ arch/arm/boot/dts/imx28.dtsi |   67 +++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 132 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/imx23.dtsi b/arch/arm/boot/dts/imx23.dtsi
-index be0aee8..885c79c 100644
+index bbcfb5a..be0aee8 100644
 --- a/arch/arm/boot/dts/imx23.dtsi
 +++ b/arch/arm/boot/dts/imx23.dtsi
-@@ -27,12 +27,23 @@
- 	};
+@@ -404,8 +404,73 @@
+ 			};
  
- 	cpus {
--		#address-cells = <0>;
-+		#address-cells = <1>;
- 		#size-cells = <0>;
+ 			power@80044000 {
++				compatible = "fsl,imx23-power";
++				#address-cells = <1>;
++				#size-cells = <1>;
+ 				reg = <0x80044000 0x2000>;
+-				status = "disabled";
++				interrupts = <3>;
++				ranges;
++
++				dcdc: regulator@80044010 {
++					reg = <0x80044010 0x10>,
++					      <0x80044090 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "misc-address",
++						    "status-address";
++					compatible = "fsl,imx23-dcdc";
++					regulator-name = "dcdc";
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vddd: regulator@80044040 {
++					reg = <0x80044040 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx23-vddd";
++					regulator-name = "vddd";
++					regulator-min-microvolt = <1350000>;
++					regulator-max-microvolt = <1550000>;
++					vddd-supply = <&reg_vdda>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vdda: regulator@80044050 {
++					reg = <0x80044050 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx23-vdda";
++					regulator-name = "vdda";
++					regulator-min-microvolt = <1725000>;
++					regulator-max-microvolt = <1950000>;
++					vdda-supply = <&reg_vddio>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vddio: regulator@80044060 {
++					reg = <0x80044060 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx23-vddio";
++					regulator-name = "vddio";
++					regulator-min-microvolt = <3000000>;
++					regulator-max-microvolt = <3575000>;
++					regulator-microvolt-offset = <80000>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
+ 			};
  
--		cpu {
-+		cpu@0 {
- 			compatible = "arm,arm926ej-s";
- 			device_type = "cpu";
-+			reg = <0x0>;
-+			operating-points = <
-+				/* kHz	uV */
-+				261819  1350000
-+				360000  1350000
-+				392728  1450000
-+				454737  1550000
-+			>;
-+			clocks = <&clks 2>;
-+			clock-latency = <61036>; /* two CLK32 periods */
-+			cpu-supply = <&reg_vddd>;
- 		};
- 	};
- 
+ 			saif1: saif@80046000 {
 diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
-index 98c1be6..21c1921 100644
+index 02330f4..98c1be6 100644
 --- a/arch/arm/boot/dts/imx28.dtsi
 +++ b/arch/arm/boot/dts/imx28.dtsi
-@@ -38,12 +38,23 @@
- 	};
+@@ -1022,8 +1022,73 @@
+ 			};
  
- 	cpus {
--		#address-cells = <0>;
-+		#address-cells = <1>;
- 		#size-cells = <0>;
+ 			power: power@80044000 {
++				compatible = "fsl,imx28-power";
++				#address-cells = <1>;
++				#size-cells = <1>;
+ 				reg = <0x80044000 0x2000>;
+-				status = "disabled";
++				interrupts = <6>;
++				ranges;
++
++				dcdc: regulator@80044010 {
++					reg = <0x80044010 0x10>,
++					      <0x80044090 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "misc-address",
++						    "status-address";
++					compatible = "fsl,imx28-dcdc";
++					regulator-name = "dcdc";
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vddd: regulator@80044040 {
++					reg = <0x80044040 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx28-vddd";
++					regulator-name = "vddd";
++					regulator-min-microvolt = <1350000>;
++					regulator-max-microvolt = <1550000>;
++					vddd-supply = <&reg_vdda>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vdda: regulator@80044050 {
++					reg = <0x80044050 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx28-vdda";
++					regulator-name = "vdda";
++					regulator-min-microvolt = <1725000>;
++					regulator-max-microvolt = <1950000>;
++					vdda-supply = <&reg_vddio>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
++
++				reg_vddio: regulator@80044060 {
++					reg = <0x80044060 0x10>,
++					      <0x80044010 0x10>,
++					      <0x800440c0 0x10>;
++					reg-names = "base-address",
++						    "v5ctrl-address",
++						    "status-address";
++					compatible = "fsl,imx28-vddio";
++					regulator-name = "vddio";
++					regulator-min-microvolt = <3000000>;
++					regulator-max-microvolt = <3550000>;
++					regulator-microvolt-offset = <80000>;
++					regulator-boot-on;
++					regulator-always-on;
++				};
+ 			};
  
--		cpu {
-+		cpu@0 {
- 			compatible = "arm,arm926ej-s";
- 			device_type = "cpu";
-+			reg = <0x0>;
-+			operating-points = <
-+				/* kHz	uV */
-+				261819  1350000
-+				360000  1350000
-+				392728  1450000
-+				454737  1550000
-+			>;
-+			clocks = <&clks 4>;
-+			clock-latency = <61036>; /* two CLK32 periods */
-+			cpu-supply = <&reg_vddd>;
- 		};
- 	};
- 
+ 			saif1: saif@80046000 {
 -- 
 1.7.9.5
