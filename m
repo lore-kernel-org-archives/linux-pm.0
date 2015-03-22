@@ -1,64 +1,57 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v3] driver core / PM: Add PM domain callbacks for device
- setup/cleanup
-Date: Sun, 22 Mar 2015 12:46:31 +0100
-Message-ID: <20150322114631.GA23465@kroah.com>
-References: <3533423.QQDErEmeTO@vostro.rjw.lan>
- <1654636.FxBHsexDm1@vostro.rjw.lan>
- <3289026.ADmXXipokh@vostro.rjw.lan>
- <1945120.Dj0Xbsak18@vostro.rjw.lan>
+From: NeilBrown <neil@brown.name>
+Subject: [PATCH 0/2] Allow twl4030_charger to find phy reliably.
+Date: Mon, 23 Mar 2015 09:52:48 +1100
+Message-ID: <20150322225053.22311.45510.stgit@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:55337 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbbCVLqf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Mar 2015 07:46:35 -0400
-Content-Disposition: inline
-In-Reply-To: <1945120.Dj0Xbsak18@vostro.rjw.lan>
+Received: from cantor2.suse.de ([195.135.220.15]:57529 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbbCVWxD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 22 Mar 2015 18:53:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Sebastian Reichel <sre@kernel.org>, Felipe Balbi <balbi@ti.com>, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>
+Cc: devicetree@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Sat, Mar 21, 2015 at 02:00:24AM +0100, Rafael J. Wysocki wrote:
-> On Friday, March 20, 2015 01:59:27 PM Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > If PM domains are in use, it may be necessary to prepare the code
-> > handling a PM domain for driver probing.  For example, in some
-> > cases device drivers rely on the ability to power on the devices
-> > with the help of the IO runtime PM framework and the PM domain
-> > code needs to be ready for that.  Also, if that code has not been
-> > fully initialized yet, the driver probing should be deferred.
-> > 
-> > Moreover, after the probing is complete, it may be necessary to
-> > put the PM domain in question into the state reflecting the current
-> > needs of the devices in it, for example, so that power is not drawn
-> > in vain.  The same should be done after removing a driver from
-> > a device, as the PM domain state may need to be changed to reflect
-> > the new situation.
-> > 
-> > For these reasons, introduce new PM domain callbacks, ->activate,
-> > ->sync and ->dismiss called, respectively, before probing for a
-> > device driver, after the probing has completed successfully and
-> > if the probing has failed or the driver has been removed.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > One more update taking Dmitry's comments into account and fixing an
-> > overoptimization bug spotted by Ulf.
-> > 
-> > And this actually contains the patch this time (clicked on "Send" too
-> > early last time, sorry about that).
-> 
-> Hi Greg,
-> 
-> Since everybody seems to like this one, do you have any objectctions against it?
-> 
-> If not, would it be a problem if I queued it up for 4.1?
+The twl4030_charger is physically paired with the twl4030 USB phy,
+so the drivers need to be able to reliably find each other.
 
-No problem, nice cleanup:
+twl4030_charger currently uses usb_get_phy(), which works if there is
+only one phy to choose from, but is not reliable in more complex
+configurations.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+These patches add a new interface to allow a phy to be found given a
+device node, and then use that interface in twl4030_charger so that
+it finds its sibling in the devicetree, and gets the phy associated
+with that.
+
+===
+
+This is a resend with improved documentation.  I'm hoping this can go
+in to the next merge window, though should it go through usb/phy or
+power???
+
+Thanks,
+NeilBrown
+
+
+
+---
+
+NeilBrown (2):
+      usb: phy: Add interface to get phy give of device_node.
+      twl4030_charger: find associated phy by more reliable means.
+
+
+ .../devicetree/bindings/power/twl-charger.txt      |   10 ++
+ .../devicetree/bindings/usb/twlxxxx-usb.txt        |    3 +
+ drivers/power/twl4030_charger.c                    |   21 ++--
+ drivers/usb/phy/phy.c                              |   97 ++++++++++++++------
+ include/linux/usb/phy.h                            |    2 
+ 5 files changed, 94 insertions(+), 39 deletions(-)
+
+--
+Signature
+
