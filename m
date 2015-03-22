@@ -1,72 +1,149 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
-Date: Sun, 22 Mar 2015 18:56:27 +0000
-Message-ID: <20150322185627.GI6643@sirena.org.uk>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
- <20150212005220.GG11190@codeaurora.org>
- <CAKohponaLt51hiHd=uTocK_fPPwRDgkse5wc_PGG5tFQNnvfAQ@mail.gmail.com>
- <20150212082004.GJ11190@codeaurora.org>
- <CAKohpo=uJJw0=T+yfV=aAUQq+Z2-kZFJWFqxnN6B8QtSb2XHqg@mail.gmail.com>
+Subject: Re: [PATCH 4/7] regulator: add mxs regulator driver
+Date: Sun, 22 Mar 2015 16:14:25 +0000
+Message-ID: <20150322161425.GC6643@sirena.org.uk>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+ <1426984203-9133-5-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="yKpjvgUFh4AHjl21"
+	protocol="application/pgp-signature"; boundary="f0KYrhQ4vYSV2aJu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52332 "EHLO
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52491 "EHLO
 	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbbCWFBE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 01:01:04 -0400
+	with ESMTP id S1753090AbbCWFED (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 01:04:03 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKohpo=uJJw0=T+yfV=aAUQq+Z2-kZFJWFqxnN6B8QtSb2XHqg@mail.gmail.com>
+In-Reply-To: <1426984203-9133-5-git-send-email-stefan.wahren@i2se.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <rob.herring@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Thomas Abraham <ta.omasab@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, santosh shilimkar <santosh.shilimkar@oracle.com>, Rafael Wysocki <rjw@rjwysocki.net>, "olof@lixom.net" <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.or>
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: shawn.guo@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, lgirdwood@gmail.com, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, galak@codeaurora.org, fabio.estevam@freescale.com, marex@denx.de, kernel@pengutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
 
---yKpjvgUFh4AHjl21
+--f0KYrhQ4vYSV2aJu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tue, Feb 17, 2015 at 01:16:25PM +0530, Viresh Kumar wrote:
-> On 12 February 2015 at 16:20, Stephen Boyd <sboyd@codeaurora.org> wrote:
+On Sun, Mar 22, 2015 at 12:30:00AM +0000, Stefan Wahren wrote:
 
-> > voltages. I suppose something like opp-microvolt-names would work
-> > though but I don't know how software would correlate that to the
-> > regulator it uses because that information is elsewhere in the
+> +	/* Accept only values recommend by Freescale */
+> +	switch (khz) {
+> +	case 19200:
+> +		val |= HW_POWER_MISC_FREQSEL_19200_KHZ << SHIFT_FREQSEL;
+> +		break;
+> +	case 20000:
+> +		val |= HW_POWER_MISC_FREQSEL_20000_KHZ << SHIFT_FREQSEL;
+> +		break;
+> +	case 24000:
+> +		val |= HW_POWER_MISC_FREQSEL_24000_KHZ << SHIFT_FREQSEL;
+> +		break;
+> +	default:
+> +		ret = -EINVAL;
+> +		break;
+> +	}
+> +	if (ret)
+> +		return ret;
 
-> I hope the CPU node will have an array of supplies to support multiple
-> regulators, right? If yes, then we can just keep the array of <t/min/max>
-> in the same order. And software should be able to correlate then?
+Just return directly, it'd be a bit easier to follow.  It'd also be
+better to print an error message saying we're rejecting the value - that
+will make it easier for someone writing a DT to figure out that they
+have made a typo or whatever.
 
-It's probably not *too* bad for small numbers of supplies but bindings
-that require that indexes into two different arrays match up
-(particularly with different step sizes as here) do have legibility
-issues - it's easy to miscount when reading things.
+> +static int mxs_ldo_set_voltage_sel(struct regulator_dev *reg, unsigned sel)
+> +{
+> +	struct mxs_ldo *ldo = rdev_get_drvdata(reg);
+> +	struct regulator_desc *desc = &ldo->desc;
+> +	unsigned long start;
+> +	u32 regs;
+> +	int uV;
+> +	u8 power_source = HW_POWER_UNKNOWN_SOURCE;
+> +
+> +	uV = regulator_list_voltage_linear(reg, sel);
 
-> > device's node. Why not put the information about which clock and
-> > regulator is used into the opp node?
+This would be strange execpt uV doesn't seem to be referenced at all so
+it could be removed instead.
 
-> Don't know. I have been asked specifically to keem them out of the OPPs,
-> as they belong to the CPU or device instead.
+> +	if (ldo->get_power_source)
+> +		power_source = ldo->get_power_source(reg);
+> +
+> +	switch (power_source) {
+> +	case HW_POWER_LINREG_DCDC_OFF:
+> +	case HW_POWER_LINREG_DCDC_READY:
+> +	case HW_POWER_EXTERNAL_SOURCE_5V:
+> +		usleep_range(1000, 2000);
+> +		return 0;
+> +	}
 
-The DT should describe the hardware and how it's connected.  No power
-supplies or clocks are connected to an OPP, an OPP is a property of
-something else.
+I'd expect the switch to be in the if here?
 
---yKpjvgUFh4AHjl21
+> +
+> +	usleep_range(15, 20);
+> +	start = jiffies;
+> +	while (1) {
+> +		if (readl(ldo->status_addr) & BM_POWER_STS_DC_OK)
+> +			return 0;
+> +
+> +		if (time_after(jiffies, start +	msecs_to_jiffies(20)))
+> +			break;
+> +
+> +		schedule();
+> +	}
+
+So, this isn't actually quite a busy wait because we do a schedule()
+rather than a cpu_relax() but still it could devolve into that - 20ms
+seems a long time to burn doing that.  If we're expecting this to finish
+very quickly can we do an initial busy wait then fall back to something
+with an actual sleep or soemthing?
+
+> +static int mxs_ldo_get_voltage_sel(struct regulator_dev *reg)
+> +{
+> +	struct mxs_ldo *ldo = rdev_get_drvdata(reg);
+> +	struct regulator_desc *desc = &ldo->desc;
+> +	int ret, uV;
+> +
+> +	ret = readl(ldo->base_addr) & desc->vsel_mask;
+> +	uV = regulator_list_voltage_linear(reg, ret);
+> +
+> +	return ret;
+> +}
+
+Again with the uV lookup...
+
+> +static int mxs_ldo_is_enabled(struct regulator_dev *reg)
+> +{
+> +	struct mxs_ldo *ldo = rdev_get_drvdata(reg);
+> +	u8 power_source = HW_POWER_UNKNOWN_SOURCE;
+> +
+> +	if (ldo->get_power_source)
+> +		power_source = ldo->get_power_source(reg);
+> +
+> +	switch (power_source) {
+> +	case HW_POWER_LINREG_DCDC_OFF:
+> +	case HW_POWER_LINREG_DCDC_READY:
+> +	case HW_POWER_DCDC_LINREG_ON:
+> +		return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+
+Some comments explaining what the logic here is might be helpful, it's
+all a bit surprising.
+
+--f0KYrhQ4vYSV2aJu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJVDxBaAAoJECTWi3JdVIfQjqkIAIGE71HONJ2arX93F/fC2cZQ
-fipjQEMHjoPTjRItZjAadNjk2H7xyEEncHt2f1JzOcTcg81mvJNZtoQroAiSqKeQ
-alM2tAL7COxWP4RfCA97evDHuT2I/K+R0mQoEP3/tl3EgijwcLd8pgweEWRucglZ
-YEJdRWdzPoUXKTBm3CnKRA9berpj6ozrYmwrTRnVzAzYBM+fBZSxT7zvUOTyRC09
-LGFDF2kGJd9P3YriU6nLJlbaEo7AAldajH3BKhhWIi0X2HAsVYmyvLbjQLKqgygk
-kZN5Loo5pG+p+qfWA2P0q/DCcTd2+FsYfqMmiUKWiufRz9OvKTuNx62TyxyHqbI=
-=5mSd
+iQEcBAEBCAAGBQJVDupgAAoJECTWi3JdVIfQZdgH/A7beEsLJl1GdT2uui0BsUWf
+hhxtuAFIc/UBwwCApmYZZanaK1dC98RTeq+q6QkIrTg1mFBWJYbEOQcj8UAk2iPI
+aELjS9Ko7Dbd4buGY/ui5JgFktzdlPcFhFY95bXaT4IHmmNxJshmkB7t/dIgimj6
+BWoAvx9unGh9OQF8KBYxpb7+H86sG+7bsYIt1vHBK0djoj1eVm4hZPGsNdXSPRWk
+oFPlw8MUNHGw7UyQzco9EQssaeBznkDA/2E2oc5w8LNDOmK4CrntcfmQqnH/nWGJ
+Md/UtILgv2rHW7LnijHodUTII96vX6s6LPjAHWtfcI0ImaBH0EZfBQ+KFVtsFg0=
+=ObGq
 -----END PGP SIGNATURE-----
 
---yKpjvgUFh4AHjl21--
+--f0KYrhQ4vYSV2aJu--
