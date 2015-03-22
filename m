@@ -1,51 +1,52 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH V2 3/8] ARM64: cpuidle: Replace cpu_suspend by the common
- ARM/ARM64 function
-Date: Sat, 21 Mar 2015 20:56:27 +0000
-Message-ID: <20150321205627.GG22354@red-moon>
-References: <1426704372-20406-1-git-send-email-daniel.lezcano@linaro.org>
- <1426704372-20406-4-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1426704372-20406-4-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH 6/7] ARM: mxs: register cpufreq-dt in pm init
+Date: Sun, 22 Mar 2015 00:30:02 +0000
+Message-ID: <1426984203-9133-7-git-send-email-stefan.wahren@i2se.com>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:60752 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbbCVAab (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2015 20:30:31 -0400
+In-Reply-To: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: shawn.guo@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, broonie@kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, galak@codeaurora.org
+Cc: fabio.estevam@freescale.com, marex@denx.de, kernel@pengutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
-On Wed, Mar 18, 2015 at 06:46:07PM +0000, Daniel Lezcano wrote:
-> Call the common ARM/ARM64 'arm_cpuidle_suspend' instead of cpu_suspend function
-> which is specific to ARM64.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Kevin Hilman <khilman@linaro.org>
-> Acked-by: Rob Herring <robherring2@gmail.com>
+This patch adds the registration of cpufreq-dt into pm init to get
+cpufreq support for MXS platform.
 
-I think that's ok even though I would like with this set to stop
-churning out arm64 cpuidle related functions renaming, so:
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+---
+ arch/arm/mach-mxs/pm.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+diff --git a/arch/arm/mach-mxs/pm.c b/arch/arm/mach-mxs/pm.c
+index 0170e99..23c52e0 100644
+--- a/arch/arm/mach-mxs/pm.c
++++ b/arch/arm/mach-mxs/pm.c
+@@ -15,6 +15,7 @@
+ #include <linux/kernel.h>
+ #include <linux/suspend.h>
+ #include <linux/io.h>
++#include <linux/platform_device.h>
+ #include "pm.h"
+ 
+ static int mxs_suspend_enter(suspend_state_t state)
+@@ -35,7 +36,12 @@ static struct platform_suspend_ops mxs_suspend_ops = {
+ 	.valid = suspend_valid_only_mem,
+ };
+ 
++static struct platform_device mxs_cpufreq_pdev = {
++	.name = "cpufreq-dt",
++};
++
+ void __init mxs_pm_init(void)
+ {
+ 	suspend_set_ops(&mxs_suspend_ops);
++	platform_device_register(&mxs_cpufreq_pdev);
+ }
+-- 
+1.7.9.5
 
-> ---
->  drivers/cpuidle/cpuidle-arm64.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-> index 39a2c62..0cea244 100644
-> --- a/drivers/cpuidle/cpuidle-arm64.c
-> +++ b/drivers/cpuidle/cpuidle-arm64.c
-> @@ -49,7 +49,7 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
->  		 * call the CPU ops suspend protocol with idle index as a
->  		 * parameter.
->  		 */
-> -		ret = cpu_suspend(idx);
-> +		arm_cpuidle_suspend(idx);
->  
->  		cpu_pm_exit();
->  	}
-> -- 
-> 1.9.1
-> 
-> 
