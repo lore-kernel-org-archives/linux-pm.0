@@ -1,71 +1,71 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 5/7] ARM: dts: enable regulator support for i.MX23/i.MX28
-Date: Mon, 23 Mar 2015 07:07:06 +0100
-Message-ID: <20150323060706.GB4946@pengutronix.de>
-References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
- <1426984203-9133-6-git-send-email-stefan.wahren@i2se.com>
+From: Alexandre Courbot <gnurou@gmail.com>
+Subject: Re: [PATCH v6 0/8] Add support for Tegra Activity Monitor
+Date: Mon, 23 Mar 2015 16:35:00 +0900
+Message-ID: <CAAVeFuLf=FEci=NtCLi2p3kOkpWDNfCdAA8Wm9C5Z2cTGBiRzQ@mail.gmail.com>
+References: <78905871.274971426655422042.JavaMail.weblogic@epmlwas07d> <CAAObsKDWuGatDaX2a8AqXDMayd0uJAUCLLdRYUmef1Oh=kvd3g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33498 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbbCWGOB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 02:14:01 -0400
-Content-Disposition: inline
-In-Reply-To: <1426984203-9133-6-git-send-email-stefan.wahren@i2se.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAAObsKDWuGatDaX2a8AqXDMayd0uJAUCLLdRYUmef1Oh=kvd3g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Arto Merilainen <amerilainen@nvidia.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Stephen Warren <swarren@wwwdotorg>
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: shawn.guo@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, broonie@kernel.org, lgirdwood@gmail.com, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, galak@codeaurora.org, fabio.estevam@freescale.com, marex@denx.de, kernel@pengutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Sun, Mar 22, 2015 at 12:30:01AM +0000, Stefan Wahren wrote:
-> This patch enables the on-chip regulator support for all i.MX23 and
-> i.MX28 boards.
-> 
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> ---
->  arch/arm/boot/dts/imx23.dtsi |   67 +++++++++++++++++++++++++++++++++++++++++-
->  arch/arm/boot/dts/imx28.dtsi |   67 +++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 132 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx23.dtsi b/arch/arm/boot/dts/imx23.dtsi
-> index bbcfb5a..be0aee8 100644
-> --- a/arch/arm/boot/dts/imx23.dtsi
-> +++ b/arch/arm/boot/dts/imx23.dtsi
-> @@ -404,8 +404,73 @@
->  			};
->  
->  			power@80044000 {
-> +				compatible = "fsl,imx23-power";
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
->  				reg = <0x80044000 0x2000>;
-> -				status = "disabled";
-> +				interrupts = <3>;
-> +				ranges;
-> +
-> +				dcdc: regulator@80044010 {
-> +					reg = <0x80044010 0x10>,
-> +					      <0x80044090 0x10>,
-> +					      <0x800440c0 0x10>;
-> +					reg-names = "base-address",
-> +						    "misc-address",
-> +						    "status-address";
-> +					compatible = "fsl,imx23-dcdc";
-> +					regulator-name = "dcdc";
-> +					regulator-boot-on;
-> +					regulator-always-on;
-> +				};
+On Wed, Mar 18, 2015 at 3:27 PM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+> On 18 March 2015 at 06:10, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>>> Hello,
+>>>
+>>> something happened during the last cycle and an old version of the devfreq
+>>> driver was merged.
+>>>
+>>> This thread contains patches that bring it up to date to the last submitted
+>>> version and also incorporates the feedback that that version received, plus
+>>> some other small fixes and improvements that came up during rebase and
+>>> testing.
+>>>
+>>> These patches implement support for setting the rate of the EMC clock based on
+>>> stats collected from the ACTMON, a piece of hw in the Tegra124 that counts
+>>> memory accesses (among others).
+>>>
+>>> It depends on the following in-flight patches:
+>>>
+>>> * EMC driver: http://thread.gmane.org/gmane.linux.kernel/1907035
+>>> * CPUFreq driver: http://thread.gmane.org/gmane.linux.kernel/1897078
+>>>
+>>> I have pushed a branch here for testing:
+>>>
+>>> http://cgit.collabora.com/git/user/tomeu/linux.git/log/?h=actmon-v6
+>>>
+>>> Regards,
+>>>
+>>> Tomeu
+>>>
+>>> Tomeu Vizoso (8):
+>>>   of: Add binding for NVIDIA Tegra ACTMON node
+>>>   PM / devfreq: tegra: Update to v5 of the submitted patches
+>>>   clk: tegra: Have EMC clock implement determine_rate()
+>>>   PM / devfreq: tegra: Use clock rate constraints
+>>>   PM / devfreq: tegra: remove operating-points
+>>>   PM / devfreq: tegra: Set drvdata before enabling the irq
+>>>   PM / devfreq: tegra: Enable interrupts after resuming the devfreq
+>>>     monitor
+>>>   ARM: tegra: Add Tegra124 ACTMON support
+>>
+>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>> for all PM / devfreq patches (2, 4, 5, 6, 7)
+>> And merged in for-rc tree with a little modification.
+>
+> Thanks. Though that's fine with me, I was wondering if Mikko or
+> Alexandre would have any comments on the changes, even if they are
+> small regarding what they already reviewed.
 
-It is very unusual to describe the regulators of a device on a register
-level like this and to iomemap each register individually. I think you
-should drop the registers here and put this knowledge into the driver
-like (nearly?) all others do.
+After a quick look I think I'm good with it. I will try to look in
+further detail. If there is anything wrong, we can fix it with fixup
+patches, since what has been merged is good stuff already!
 
-Sascha
+I guess it would now be interesting to look at the watermark support
+for devfreq. I am not sure if anything is happening to it? Arto?
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+https://lkml.org/lkml/2014/12/5/262
