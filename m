@@ -1,64 +1,49 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/3] pm: domains: avoid potential oops in pm_genpd_remove_device()
-Date: Mon, 23 Mar 2015 14:32:03 +0100
-Message-ID: <CAPDyKFo-SY5r5REjHS30EYgmgmxxKPqP9LxZjXYBOFth4_C-4A@mail.gmail.com>
-References: <20150320171941.GK8656@n2100.arm.linux.org.uk>
-	<E1YZ0b8-0000ss-Nq@rmk-PC.arm.linux.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: prevent disk from spinning up at system resume
+Date: Mon, 23 Mar 2015 09:57:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1503230956210.1336-100000@iolanthe.rowland.org>
+References: <87iodsht89.fsf@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f170.google.com ([209.85.216.170]:36058 "EHLO
-	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310AbbCWNcE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 09:32:04 -0400
-Received: by qcto4 with SMTP id o4so144463720qct.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2015 06:32:03 -0700 (PDT)
-In-Reply-To: <E1YZ0b8-0000ss-Nq@rmk-PC.arm.linux.org.uk>
+Received: from iolanthe.rowland.org ([192.131.102.54]:49966 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752144AbbCWN5Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 09:57:16 -0400
+In-Reply-To: <87iodsht89.fsf@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: =?utf-8?Q?Peter_M=C3=BCnster?= <pmlists@free.fr>
+Cc: linux-pm@vger.kernel.org
 
-On 20 March 2015 at 18:20, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> pm_genpd_remove_device() tries hard to validate the generic PM domain
-> passed to it, but the validation is not complete.
->
-> dev->pm_domain contains a struct dev_pm_domain, which is the "base
-> class" of generic PM domains.  Other users of dev_pm_domains include
-> stuff like vga_switheroo.  Hence, a device could have a generic PM
-> domain or a vga_switcheroo PM domain in dev->pm_domain.
->
-> We need ot be certain that the PM domain is actually valid before we
-> try to remove it.  We can do this easily as we have a way to get the
-> current validated generic PM domain for a struct device.  This must
-> match the generic PM domain being requested for removal.
->
-> Convert the code to use this alternative validation method instead.
->
-> Acked-by: Kevin Hilman <khilman@linaro.org>
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+On Mon, 23 Mar 2015, Peter M=C3=BCnster wrote:
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Hi,
+>=20
+> My SATA disk (sdb) spins up at every system resume. How could I avoid
+> that please?
+>=20
+> Some details:
+>=20
+> - sdb not mounted
+> - echo 0 >/sys/block/sdb/device/scsi_disk/2:0:0:0/manage_start_stop
+> - hdparm -C /dev/sdb :   "drive state is:  standby"
+> - s2ram
+> - after wake up:         "drive state is:  active/idle"
+> - kernel message at wakeup: "sd 2:0:0:0: [sdb] Synchronizing SCSI cac=
+he"
+> - when doing "echo scsi remove-single-device 2 0 0 0 >/proc/scsi/scsi=
+"
+>   before s2ram, sdb keeps sleeping after resume
 
-> ---
->  drivers/base/power/domain.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 89d2eea7f561..5f560fa45a32 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1538,9 +1538,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->
->         dev_dbg(dev, "%s()\n", __func__);
->
-> -       if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev)
-> -           ||  IS_ERR_OR_NULL(dev->pm_domain)
-> -           ||  pd_to_genpd(dev->pm_domain) != genpd)
-> +       if (!genpd || genpd != pm_genpd_lookup_dev(dev))
->                 return -EINVAL;
->
->         genpd_acquire_lock(genpd);
-> --
-> 1.8.3.1
->
+It looks like you already have your answer.
+
+> I need the disk only about once per week. I use s2ram several times p=
+er
+> day, and I prefer that sdb keeps sleeping.
+>=20
+> TIA for any hints,
+
+Alan Stern
+
