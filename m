@@ -1,76 +1,107 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 2/3] pm: domains: factor out code to get the generic PM
- domain from a struct device
-Date: Mon, 23 Mar 2015 15:17:40 +0000
-Message-ID: <20150323151740.GR8656@n2100.arm.linux.org.uk>
-References: <20150320171941.GK8656@n2100.arm.linux.org.uk>
- <E1YZ0b3-0000so-KG@rmk-PC.arm.linux.org.uk>
- <CAPDyKFrpM0TYnNvAX8Jw6zUAekh0=XXMJyxWxSgKSao=TQf62Q@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH V3 0/8] ARM: cpuidle: Unify the ARM64/ARM DT approach
+Date: Mon, 23 Mar 2015 15:27:37 +0000
+Message-ID: <20150323152737.GB18904@red-moon>
+References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:37074 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753111AbbCWPR5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 11:17:57 -0400
+Received: from foss.arm.com ([217.140.101.70]:45924 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbbCWP1a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Mar 2015 11:27:30 -0400
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFrpM0TYnNvAX8Jw6zUAekh0=XXMJyxWxSgKSao=TQf62Q@mail.gmail.com>
+In-Reply-To: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>
 
-On Mon, Mar 23, 2015 at 02:28:14PM +0100, Ulf Hansson wrote:
-> On 20 March 2015 at 18:20, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> > The PM domain code contains two methods to get the generic PM domain
-> > for a struct device.  One is dev_to_genpd() which is only safe when
-> > we know for certain that the device has a generic PM domain attached.
-> > The other is coded into genpd_dev_pm_detach() which ensures that the
-> > PM domain in the struct device is a generic PM domain (and so is safer).
-> >
-> > This commit factors out the safer version, documents it, and hides the
-> > unsafe dev_to_genpd().
-> >
-> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> > ---
-> >  drivers/base/power/domain.c | 46 +++++++++++++++++++++++++++++++--------------
-> >  include/linux/pm_domain.h   |  6 +++---
-> >  2 files changed, 35 insertions(+), 17 deletions(-)
-> >
-> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > index b3fbc21da2dc..89d2eea7f561 100644
-> > --- a/drivers/base/power/domain.c
-> > +++ b/drivers/base/power/domain.c
-> > @@ -68,7 +68,36 @@ static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
-> >         return genpd;
-> >  }
-> >
-> > -struct generic_pm_domain *dev_to_genpd(struct device *dev)
-> > +/*
-> > + * Get the generic PM domain for a particular struct device.
-> > + * This validates the struct device pointer, the PM domain pointer,
-> > + * and checks that the PM domain pointer is a real generic PM domain.
-> > + * Any failure results in NULL being returned.
-> > + */
-> > +struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+On Fri, Mar 20, 2015 at 11:43:53AM +0000, Daniel Lezcano wrote:
+> There is a big number of cpuidle drivers for the ARM architecture.
 > 
-> I wouldn't mind keeping also this function static, unless you foresee
-> users outside genpd?
+> These drivers have been cleaned up and grouped into the drivers/cpuidle
+> directory to keep track of the changes more easily and ensure the code
+> is following the same scheme across the drivers.
+> 
+> That had the benefit of simplifying the code and factor out a lot of common
+> parts. Beside that, as the drivers belong to the 'drivers' directory, we had
+> to split the arch specific bits and the generic code in order to keep
+> everything self contained. The platform driver paradigm was used for this
+> purpose.
+> 
+> Unfortunately, this approach is now no longer accepted and a different solution
+> must be provided to reach the same goal: one example is the Qualcomm cpuidle
+> driver upstreaming attempt.
+> 
+> In the meantime, ARM64 developed a generic cpuidle driver based on DT definition.
+> 
+> The DT definition provides an 'enable-method' to specify one of the cpu
+> operations (PSCI, ...).
+> 
+> This patchset unify this driver with ARM32, using the same DT definition.
+> 
+> Thanks with this patchset we can use the 'enable-method' to specify a cpu
+> operations, hence get rid of the platform driver approach and go further in the
+> cpuidle driver flexibility via the DT.
 
-_I_ have users of it outside at the moment.
+Tested on arm64 Juno and FVP models.
 
-Once the major churn in PM domains is over and I have no use for this
-externally, I'll consider making it static in my patch set - but all
-the time that doing so results in breakage for me...
+Tested-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Plus, you're asking me to do yet another 20+ minute re-spin of this
-patch set.  I'm going to refuse; I'm almost at the point of just not
-giving a damn on this stuff, it's wasting too much of my time.
-Especially as, yet again, you should have replied to the emails in the
-previous round suggesting this change.
-
-Rafael, please merge these three as we previously agreed.  Thanks.
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+> 
+> Changelog:
+> 
+>  V3:
+> 	* Fixed unroll loop when failing to register the device
+> 	* Removed the per cpu cpuidle_device
+> 	* Remove goto statement in the registration path
+> 	* Fixed a compilation failure with allyesconfig on arm64
+> 
+>  V2:
+> 	* Used smp_operations style for cpuidle_ops
+> 	* Fixed some nits in the comments
+> 	* Added a patch to change the name of the functions
+> 	* Added per cpu device registration patch
+> 
+> Daniel Lezcano (8):
+>   ARM: cpuidle: Remove duplicate header inclusion
+>   ARM: cpuidle: Add a cpuidle ops structure to be used for DT
+>   ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function
+>   ARM64: cpuidle: Rename cpu_init_idle to a common function name
+>   ARM64: cpuidle: Remove arm64 reference
+>   ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
+>   ARM: cpuidle: Register per cpuidle device
+>   ARM: cpuidle: Change function name to be consistent with x86
+> 
+>  arch/arm/include/asm/cpuidle.h                     | 23 +++++++
+>  arch/arm/kernel/cpuidle.c                          | 74 +++++++++++++++++++-
+>  arch/arm/mach-davinci/cpuidle.c                    |  1 -
+>  arch/arm/mach-imx/cpuidle-imx6q.c                  |  1 -
+>  arch/arm/mach-imx/cpuidle-imx6sl.c                 |  1 -
+>  arch/arm/mach-imx/cpuidle-imx6sx.c                 |  1 -
+>  arch/arm/mach-omap2/cpuidle44xx.c                  |  1 -
+>  arch/arm/mach-s3c64xx/cpuidle.c                    |  2 +-
+>  arch/arm/mach-tegra/cpuidle-tegra20.c              |  1 -
+>  arch/arm/mach-tegra/cpuidle-tegra30.c              |  1 -
+>  arch/arm64/include/asm/cpuidle.h                   |  9 ++-
+>  arch/arm64/kernel/cpuidle.c                        |  2 +-
+>  drivers/cpuidle/Kconfig                            |  7 +-
+>  drivers/cpuidle/Kconfig.arm                        | 12 +++-
+>  drivers/cpuidle/Kconfig.arm64                      | 13 ----
+>  drivers/cpuidle/Makefile                           |  5 +-
+>  drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} | 80 ++++++++++++++++------
+>  drivers/cpuidle/cpuidle-at91.c                     |  1 -
+>  drivers/cpuidle/cpuidle-exynos.c                   |  1 -
+>  drivers/cpuidle/cpuidle-kirkwood.c                 |  1 -
+>  drivers/cpuidle/cpuidle-ux500.c                    |  1 -
+>  drivers/cpuidle/cpuidle-zynq.c                     |  1 -
+>  include/asm-generic/vmlinux.lds.h                  |  2 +
+>  23 files changed, 178 insertions(+), 63 deletions(-)
+>  delete mode 100644 drivers/cpuidle/Kconfig.arm64
+>  rename drivers/cpuidle/{cpuidle-arm64.c => cpuidle-arm.c} (57%)
+> 
+> -- 
+> 1.9.1
+> 
+> 
