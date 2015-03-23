@@ -1,100 +1,65 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCHv2] thermal: add omap3 support
-Date: Mon, 23 Mar 2015 13:55:12 -0400
-Message-ID: <20150323175508.GA28302@developer>
-References: <20150103111146.GB7065@amd>
- <20150118202824.GB29014@amd>
- <20150323143149.GA18339@developer.hsd1.ca.comcast.net>
- <20150323155830.GB13297@amd>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 5/7] ARM: dts: enable regulator support for i.MX23/i.MX28
+Date: Mon, 23 Mar 2015 18:54:34 +0100 (CET)
+Message-ID: <1469391177.549604.1427133274978.JavaMail.open-xchange@oxbaltgw02.schlund.de>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+ <1426984203-9133-6-git-send-email-stefan.wahren@i2se.com>
+ <20150323060706.GB4946@pengutronix.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6c2NcOVqGQ03X4Wi"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:33476 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbbCWRzR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 13:55:17 -0400
-Content-Disposition: inline
-In-Reply-To: <20150323155830.GB13297@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20150323060706.GB4946@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sascha Hauer <s.hauer@pengutronix.de>, broonie@kernel.org
+Cc: fabio.estevam@freescale.com, mark.rutland@arm.com, marex@denx.de, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, dbaryshkov@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, sre@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, kernel@pengutronix.de, galak@codeaurora.org, sebastien.szymanski@armadeus.com, shawn.guo@linaro.org, dwmw2@infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 
-
---6c2NcOVqGQ03X4Wi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Mar 23, 2015 at 04:58:30PM +0100, Pavel Machek wrote:
-> On Mon 2015-03-23 10:31:51, Eduardo Valentin wrote:
-> > On Sun, Jan 18, 2015 at 09:28:24PM +0100, Pavel Machek wrote:
-> > >=20
-> > > Add support for omap3430 sensor. Tested on Nokia N900.
-> > >=20
-> > > Fix help text to be closer to english.
-> > >=20
-> > > Ifdefs in ti-bandgap.h are not neccessary, as users have #ifdefs,
-> > > already.
-> > >=20
-> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> >=20
-> > You need to update the driver device tree binding documentation. Please
-> > include an example of its usage there.
-> >=20
-> > Also, a separate patch with the required DT changes is always
-> > welcome.
->=20
-> I can do it, but can you merge:
->=20
-> Date: Sun, 18 Jan 2015 21:24:47 +0100
-> From: Pavel Machek <pavel@ucw.cz>
-> Subject: [PATCHv2] ti-soc-thermal: request temperature periodically if
-> hw can't do that itself
->=20
->=20
-> Date: Sun, 18 Jan 2015 21:20:51 +0100
-> From: Pavel Machek <pavel@ucw.cz>
-> Subject: [PATCHv2] ti-soc-thermal: implement eocz bit to make driver
-> useful on omap3
->=20
-> Date: Sun, 18 Jan 2015 21:17:10 +0100
-> From: Pavel Machek <pavel@ucw.cz>
-> Subject: [PATCHv2] cleanup ti-soc-thermal
->=20
-> First? They are nicely split, as you requested, and I already have too
-> many patches in flight.
->=20
-> Thanks for the comments, I'll fix them in my local tree.
-> 								Pavel
-
-Somehow I really thought I already sent those above. I really apologize
-for the inconvenience. It seams like they've fallen into the cracks.
-
-
-I will check those and apply accordingly.
-
->=20
-> --=20
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
-
---6c2NcOVqGQ03X4Wi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJVEFNwAAoJEMLUO4d9pOJWmDsH/2dlkDuo4lNVubAQjoFO+iyh
-DyV9o0o121ulZf58XIrzshE7vCbhDytJNdueLM89IOvghHJVMZJVbSGV2IB2WLBn
-0e9POltV8PfOr+R6bhpiYea6YfhusQhr4zephm4Z9jo+EG6/HLYT06ZlUgrFyoou
-czSb12Eg4dGoim1jg3NFxnabVYZjC45VC53l7IMpcOYBoYfpFE8eg9uwh/OYFPZ7
-PAzzgDTv46gF7W2bYfi4DQy1JqTv5GQ/L1SLKbB5BST78IpBIVcdc0vG+3GlaIKg
-JRDHC4/VWIV6h5zeI0nIH/lSQpHUq2OtjvsYBzebc9mj+UCB2y9+gUvfsnR8+Rg=
-=fm3X
------END PGP SIGNATURE-----
-
---6c2NcOVqGQ03X4Wi--
+SGkgU2FzY2hhLAoKPiBTYXNjaGEgSGF1ZXIgPHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU+IGhhdCBh
+bSAyMy4gTcOkcnogMjAxNSB1bSAwNzowNwo+IGdlc2NocmllYmVuOgo+Cj4KPiBPbiBTdW4sIE1h
+ciAyMiwgMjAxNSBhdCAxMjozMDowMUFNICswMDAwLCBTdGVmYW4gV2FocmVuIHdyb3RlOgo+ID4g
+VGhpcyBwYXRjaCBlbmFibGVzIHRoZSBvbi1jaGlwIHJlZ3VsYXRvciBzdXBwb3J0IGZvciBhbGwg
+aS5NWDIzIGFuZAo+ID4gaS5NWDI4IGJvYXJkcy4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBTdGVm
+YW4gV2FocmVuIDxzdGVmYW4ud2FocmVuQGkyc2UuY29tPgo+ID4gLS0tCj4gPiBhcmNoL2FybS9i
+b290L2R0cy9pbXgyMy5kdHNpIHwgNjcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKystCj4gPiBhcmNoL2FybS9ib290L2R0cy9pbXgyOC5kdHNpIHwgNjcgKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystCj4gPiAyIGZpbGVzIGNoYW5nZWQsIDEz
+MiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9hcmNo
+L2FybS9ib290L2R0cy9pbXgyMy5kdHNpIGIvYXJjaC9hcm0vYm9vdC9kdHMvaW14MjMuZHRzaQo+
+ID4gaW5kZXggYmJjZmI1YS4uYmUwYWVlOCAxMDA2NDQKPiA+IC0tLSBhL2FyY2gvYXJtL2Jvb3Qv
+ZHRzL2lteDIzLmR0c2kKPiA+ICsrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDIzLmR0c2kKPiA+
+IEBAIC00MDQsOCArNDA0LDczIEBACj4gPiB9Owo+ID4KPiA+IHBvd2VyQDgwMDQ0MDAwIHsKPiA+
+ICsgY29tcGF0aWJsZSA9ICJmc2wsaW14MjMtcG93ZXIiOwo+ID4gKyAjYWRkcmVzcy1jZWxscyA9
+IDwxPjsKPiA+ICsgI3NpemUtY2VsbHMgPSA8MT47Cj4gPiByZWcgPSA8MHg4MDA0NDAwMCAweDIw
+MDA+Owo+ID4gLSBzdGF0dXMgPSAiZGlzYWJsZWQiOwo+ID4gKyBpbnRlcnJ1cHRzID0gPDM+Owo+
+ID4gKyByYW5nZXM7Cj4gPiArCj4gPiArIGRjZGM6IHJlZ3VsYXRvckA4MDA0NDAxMCB7Cj4gPiAr
+IHJlZyA9IDwweDgwMDQ0MDEwIDB4MTA+LAo+ID4gKyA8MHg4MDA0NDA5MCAweDEwPiwKPiA+ICsg
+PDB4ODAwNDQwYzAgMHgxMD47Cj4gPiArIHJlZy1uYW1lcyA9ICJiYXNlLWFkZHJlc3MiLAo+ID4g
+KyAibWlzYy1hZGRyZXNzIiwKPiA+ICsgInN0YXR1cy1hZGRyZXNzIjsKPiA+ICsgY29tcGF0aWJs
+ZSA9ICJmc2wsaW14MjMtZGNkYyI7Cj4gPiArIHJlZ3VsYXRvci1uYW1lID0gImRjZGMiOwo+ID4g
+KyByZWd1bGF0b3ItYm9vdC1vbjsKPiA+ICsgcmVndWxhdG9yLWFsd2F5cy1vbjsKPiA+ICsgfTsK
+Pgo+IEl0IGlzIHZlcnkgdW51c3VhbCB0byBkZXNjcmliZSB0aGUgcmVndWxhdG9ycyBvZiBhIGRl
+dmljZSBvbiBhIHJlZ2lzdGVyCj4gbGV2ZWwgbGlrZSB0aGlzIGFuZCB0byBpb21lbWFwIGVhY2gg
+cmVnaXN0ZXIgaW5kaXZpZHVhbGx5LiBJIHRoaW5rIHlvdQo+IHNob3VsZCBkcm9wIHRoZSByZWdp
+c3RlcnMgaGVyZSBhbmQgcHV0IHRoaXMga25vd2xlZGdlIGludG8gdGhlIGRyaXZlcgo+IGxpa2Ug
+KG5lYXJseT8pIGFsbCBvdGhlcnMgZG8uCgpkbyBtZWFuIGRyb3BwaW5nIHRoZSBiYXNlIGFkZHJl
+c3Mgb2YgdGhlIHJlZ3VsYXRvciwgdG9vPwoKSG93IHdvdWxkIHlvdSBpbXBsZW1lbnQgaXQgKGJh
+cmUgcmVnaXN0ZXIgYWRkcmVzcyBvciByZWdtYXAgb3Igc3lzY29uKSwgc2luY2UKdGhlcmUKYXJl
+IG92ZXJsYXBwaW5nIHJlZ2lzdGVyIHJlZ2lvbnMgZm9yIGRpZmZlcmVudCBkcml2ZXI/CgpATWFy
+azogV2hhdCdzIHlvdXIgb3Bpbmlvbj8KClN0ZWZhbgoKPgo+IFNhc2NoYQo+Cj4gLS0KPiBQZW5n
+dXRyb25peCBlLksuIHwgfAo+IEluZHVzdHJpYWwgTGludXggU29sdXRpb25zIHwgaHR0cDovL3d3
+dy5wZW5ndXRyb25peC5kZS8gfAo+IFBlaW5lciBTdHIuIDYtOCwgMzExMzcgSGlsZGVzaGVpbSwg
+R2VybWFueSB8IFBob25lOiArNDktNTEyMS0yMDY5MTctMCB8Cj4gQW10c2dlcmljaHQgSGlsZGVz
+aGVpbSwgSFJBIDI2ODYgfCBGYXg6ICs0OS01MTIxLTIwNjkxNy01NTU1IHwKCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFp
+bGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
+dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
