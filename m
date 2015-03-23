@@ -1,118 +1,72 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V4] ARM: cpuidle: Register per cpuidle device
-Date: Mon, 23 Mar 2015 17:50:24 +0100
-Message-ID: <1427129424-17175-1-git-send-email-daniel.lezcano@linaro.org>
-References: <20150323162514.GE18904@red-moon>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:33088 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbbCWQu2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 12:50:28 -0400
-Received: by wixw10 with SMTP id w10so38176268wix.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2015 09:50:27 -0700 (PDT)
-In-Reply-To: <20150323162514.GE18904@red-moon>
-Sender: linux-pm-owner@vger.kernel.org
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 4/7] regulator: add mxs regulator driver
+Date: Mon, 23 Mar 2015 18:45:41 +0100 (CET)
+Message-ID: <1459171144.549216.1427132741792.JavaMail.open-xchange@oxbaltgw02.schlund.de>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+ <1426984203-9133-5-git-send-email-stefan.wahren@i2se.com>
+ <20150322161425.GC6643@sirena.org.uk>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20150322161425.GC6643@sirena.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Cc: fabio.estevam@freescale.com, mark.rutland@arm.com, marex@denx.de, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, dbaryshkov@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, sre@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, kernel@pengutronix.de, galak@codeaurora.org, sebastien.szymanski@armadeus.com, shawn.guo@linaro.org, dwmw2@infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: lorenzo.pieralisi@arm.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org, sboyd@codeaurora.org
 
-On some platforms, the low level PM code may not be initialized correctly for
-a specific cpu. In this case, the EXNIO tells the cpuidle driver to not
-initialize the cpuidle device as the associated low level PM is not operational.
+Hi Mark,
 
-That prevents the system to crash and allows to handle the error gracefully.
+>
+> > + if (ldo->get_power_source)
+> > + power_source = ldo->get_power_source(reg);
+> > +
+> > + switch (power_source) {
+> > + case HW_POWER_LINREG_DCDC_OFF:
+> > + case HW_POWER_LINREG_DCDC_READY:
+> > + case HW_POWER_EXTERNAL_SOURCE_5V:
+> > + usleep_range(1000, 2000);
+> > + return 0;
+> > + }
+>
+> I'd expect the switch to be in the if here?
 
-For example, on Qcom's platform, each core has a SPM. The device associated
-with this SPM is initialized before the cpuidle framework. If there is an error
-in the initialization (eg. error in the DT), the system continues to boot but
-in degraded mode as some SPM may not be correctly initialized.
+yes, that's possible too.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle-arm.c | 46 +++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 44 insertions(+), 2 deletions(-)
+>
+> > +
+> > + usleep_range(15, 20);
+> > + start = jiffies;
+> > + while (1) {
+> > + if (readl(ldo->status_addr) & BM_POWER_STS_DC_OK)
+> > + return 0;
+> > +
+> > + if (time_after(jiffies, start + msecs_to_jiffies(20)))
+> > + break;
+> > +
+> > + schedule();
+> > + }
+>
+> So, this isn't actually quite a busy wait because we do a schedule()
+> rather than a cpu_relax() but still it could devolve into that - 20ms
+> seems a long time to burn doing that. If we're expecting this to finish
+> very quickly can we do an initial busy wait then fall back to something
+> with an actual sleep or soemthing?
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index 1c94b88..a7a01ce 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -17,6 +17,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/slab.h>
- 
- #include <asm/cpuidle.h>
- 
-@@ -94,6 +95,7 @@ static int __init arm_idle_init(void)
- {
- 	int cpu, ret;
- 	struct cpuidle_driver *drv = &arm_idle_driver;
-+	struct cpuidle_device *dev;
- 
- 	/*
- 	 * Initialize idle states data, starting at index 1.
-@@ -105,18 +107,58 @@ static int __init arm_idle_init(void)
- 	if (ret <= 0)
- 		return ret ? : -ENODEV;
- 
-+	ret = cpuidle_register_driver(drv);
-+	if (ret) {
-+		pr_err("Failed to register cpuidle driver\n");
-+		return ret;
-+	}
-+
- 	/*
- 	 * Call arch CPU operations in order to initialize
- 	 * idle states suspend back-end specific data
- 	 */
- 	for_each_possible_cpu(cpu) {
- 		ret = arm_cpuidle_init(cpu);
-+
-+		/* 
-+		 * Do not register the cpuidle device. This situation could
-+		 * happen when the low level PM was not able to initialize
-+		 * for any reaon.
-+		 */
-+		if (ret == -ENXIO)
-+			continue;
-+
- 		if (ret) {
- 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
--			return ret;
-+			goto out_fail;
-+		}
-+
-+		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+		if (!dev) {
-+			pr_err("Failed to allocate cpuidle device\n");
-+			goto out_fail;
-+		}
-+		dev->cpu = cpu;
-+
-+		ret = cpuidle_register_device(dev);
-+		if (ret) {
-+			pr_err("Failed to register cpuidle device for CPU %d\n",
-+			       cpu);
-+			kfree(dev);
-+			goto out_fail;
- 		}
- 	}
- 
--	return cpuidle_register(drv, NULL);
-+	return 0;
-+out_fail:
-+	while (--cpu >= 0) {
-+		dev = per_cpu(cpuidle_devices, cpu);
-+		cpuidle_unregister_device(dev);
-+		kfree(dev);
-+	}
-+
-+	cpuidle_unregister_driver(drv);
-+
-+	return ret;
- }
- device_initcall(arm_idle_init);
--- 
-1.9.1
+We will need to keep the initial usleep_range(). So do you think of the
+following:
 
+1. usleep_range
+2. busy_wait for BM_POWER_STS_DC_OK
+3. msleep (for the timeout case)
+
+Stefan
