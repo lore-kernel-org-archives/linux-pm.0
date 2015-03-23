@@ -1,71 +1,98 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Subject: Re: [PATCH v6 0/8] Add support for Tegra Activity Monitor
-Date: Mon, 23 Mar 2015 16:35:00 +0900
-Message-ID: <CAAVeFuLf=FEci=NtCLi2p3kOkpWDNfCdAA8Wm9C5Z2cTGBiRzQ@mail.gmail.com>
-References: <78905871.274971426655422042.JavaMail.weblogic@epmlwas07d> <CAAObsKDWuGatDaX2a8AqXDMayd0uJAUCLLdRYUmef1Oh=kvd3g@mail.gmail.com>
+From: kongxinwei <xweikong@hotmail.com>
+Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
+ driver
+Date: Mon, 23 Mar 2015 16:30:59 +0800
+Message-ID: <BLU436-SMTP68AF510203FB039DA92B6CC10D0@phx.gbl>
+References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com> <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com> <20150319141753.GB25967@leverpostej> <20150320060653.GC18907@leoy-linaro> <20150320112414.GD14766@leverpostej> <20150320145353.GA20461@leoy-linaro> <20150320155527.GJ14766@leverpostej> <20150323044612.GB20840@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAObsKDWuGatDaX2a8AqXDMayd0uJAUCLLdRYUmef1Oh=kvd3g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Arto Merilainen <amerilainen@nvidia.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Stephen Warren <swarren@wwwdotorg>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from blu004-omc1s3.hotmail.com ([65.55.116.14]:63962 "EHLO
+	BLU004-OMC1S3.hotmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028AbbCWIbH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 04:31:07 -0400
+In-Reply-To: <20150323044612.GB20840@leoy-linaro>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: kongxinwei <kong.kongxinwei@hisilicon.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Mar 18, 2015 at 3:27 PM, Tomeu Vizoso
-<tomeu.vizoso@collabora.com> wrote:
-> On 18 March 2015 at 06:10, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->>> Hello,
+
+On 03/23/2015 12:46 PM, Leo Yan wrote:
+> On Fri, Mar 20, 2015 at 03:55:27PM +0000, Mark Rutland wrote:
+>>>> That may be the case in the code as it stands today, but per the binding
+>>>> the trip points are the temperatures at which an action is to be taken.
+>>>>
+>>>> The thermal-zone has poilling-delay and polling-delay-passive, but
+>>>> there's no reason you couldn't also use the interrupt to handle the
+>>>> "hot" trip-point, adn the reset at the "critical" trip-point. All that's
+>>>> missing is the plumbing in order to do so.
+>>>>
+>>>> So please co-ordinate with the thermal framework to do that.
+>>> Let's dig further more for this point, so that we can get more specific
+>>> gudiance and have a good preparation for next version's patch set.
 >>>
->>> something happened during the last cycle and an old version of the devfreq
->>> driver was merged.
+>>> After i reviewed the thermal framework code, currently have one smooth
+>>> way to co-ordinate the trip points w/t thermal framework: use the function
+>>> *thermal_zone_device_register()* to register sensor, and can use the
+>>> callback function .get_trip_temp to tell thermal framework for the
+>>> trip points' temperature.
 >>>
->>> This thread contains patches that bring it up to date to the last submitted
->>> version and also incorporates the feedback that that version received, plus
->>> some other small fixes and improvements that came up during rebase and
->>> testing.
+>>> For hisi thermal case, now the driver is using the function
+>>> *thermal_zone_of_sensor_register* to register sensor, but use this way
+>>> i have not found there have standard APIs which can be used by sensor
+>>> driver to get the trip points info from thermal framework.
 >>>
->>> These patches implement support for setting the rate of the EMC clock based on
->>> stats collected from the ACTMON, a piece of hw in the Tegra124 that counts
->>> memory accesses (among others).
->>>
->>> It depends on the following in-flight patches:
->>>
->>> * EMC driver: http://thread.gmane.org/gmane.linux.kernel/1907035
->>> * CPUFreq driver: http://thread.gmane.org/gmane.linux.kernel/1897078
->>>
->>> I have pushed a branch here for testing:
->>>
->>> http://cgit.collabora.com/git/user/tomeu/linux.git/log/?h=actmon-v6
->>>
->>> Regards,
->>>
->>> Tomeu
->>>
->>> Tomeu Vizoso (8):
->>>   of: Add binding for NVIDIA Tegra ACTMON node
->>>   PM / devfreq: tegra: Update to v5 of the submitted patches
->>>   clk: tegra: Have EMC clock implement determine_rate()
->>>   PM / devfreq: tegra: Use clock rate constraints
->>>   PM / devfreq: tegra: remove operating-points
->>>   PM / devfreq: tegra: Set drvdata before enabling the irq
->>>   PM / devfreq: tegra: Enable interrupts after resuming the devfreq
->>>     monitor
->>>   ARM: tegra: Add Tegra124 ACTMON support
->>
->> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->> for all PM / devfreq patches (2, 4, 5, 6, 7)
->> And merged in for-rc tree with a little modification.
+>>> I may miss something for thermal framework, so if have existed APIs to
+>>> get the trip points, could pls point out?
+>> I am only familiar with the binding, not the Linux implementation -- The
+>> latter can change to accomodate your hardware without requiring binding
+>> changes. Please co-ordinate with the thermal maintainers.
+> Found the functions of_thermal_get_trip_points(tz) and of_thermal_get_ntrips(tz)
+> will help for this.
 >
-> Thanks. Though that's fine with me, I was wondering if Mikko or
-> Alexandre would have any comments on the changes, even if they are
-> small regarding what they already reviewed.
+>>>>>>> +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
+>>>>>>> +
+>>>>>>> +               if (data->irq_bind_sensor != -1)
+>>>>>>> +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
+>>>>>>> +                                data->irq_bind_sensor);
+>>>>>>> +
+>>>>>>> +               /* bind irq to this sensor */
+>>>>>>> +               data->irq_bind_sensor = index;
+>>>>>>> +       }
+>>>>>> I don't see why this should be specified in the DT. Why do you believe
+>>>>>> it should?
+>>>>> The thermal sensor module has four sensors, but have only one
+>>>>> interrupt signal; This interrupt can only be used by one sensor;
+>>>>> So want to use dts to bind the interrupt with one selected sensor.
+>>>> That's not all that great, though I'm not exactly sure how the kernel
+>>>> would select the best sensor to measure with. It would be good if you
+>>>> could talk to the thermal maintainers w.r.t. this.
+>>> This will be decided by the silicon, right? Every soc has different
+>>> combination with cpu/gpu/vpu, so which part is hottest, this maybe
+>>> highly dependent on individual SoC.
+>>>
+>>> S/W just need provide the flexibility so that later can choose
+>>> the interrupt to bind with the sensor within the hottest part.
+>> Then the property you care about is which sensor is closest to what is
+>> likely to be the hottest component. Given that, the kernel can decide
+>> how to use the interrupt.
+> Will modify the driver to dynamically bind the interrupt to hottest
+> sensor; Appreciate for good suggestion.
+>
+> Thanks,
+> Leo Yan
 
-After a quick look I think I'm good with it. I will try to look in
-further detail. If there is anything wrong, we can fix it with fixup
-patches, since what has been merged is good stuff already!
+Hi mark:
+    Thank you for your comments,please wait the next version to slove your
+presenting problem.
 
-I guess it would now be interesting to look at the watermark support
-for devfreq. I am not sure if anything is happening to it? Arto?
+Thanks.
+Xinwei
 
-https://lkml.org/lkml/2014/12/5/262
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
