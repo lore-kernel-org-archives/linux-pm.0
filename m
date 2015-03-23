@@ -1,120 +1,125 @@
 From: Kumar Gala <galak@codeaurora.org>
-Subject: Re: [PATCH v17 04/10] ARM: dts: qcom: Add power-controller device node for 8074 Krait CPUs
-Date: Mon, 23 Mar 2015 15:05:22 -0700
-Message-ID: <292C2E97-ED74-4F17-B592-B5EA7BDD1E8E@codeaurora.org>
-References: <1426882877-33008-1-git-send-email-lina.iyer@linaro.org> <1426882877-33008-5-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH v17 01/10] ARM: qcom: Add Subsystem Power Manager (SPM) driver
+Date: Mon, 23 Mar 2015 15:06:21 -0700
+Message-ID: <F7886F3F-50DF-4E1B-A6DF-5463362B2BC7@codeaurora.org>
+References: <1426882877-33008-1-git-send-email-lina.iyer@linaro.org> <1426882877-33008-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45706 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbbCWWF0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 18:05:26 -0400
-In-Reply-To: <1426882877-33008-5-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1426882877-33008-2-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Arnd Bergmann <arnd@arndb.de>
+List-Id: linux-pm@vger.kernel.org
 
 
 On Mar 20, 2015, at 1:21 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
 
-> Each Krait CPU in the QCOM 8074/8974 SoC has an SAW power controller =
-to
-> regulate the power to the cpu and aide the core in entering idle stat=
-es.
-> Reference the SAW instance and associate the instance with the CPU co=
-re.
 >=20
-> Cc: Kumar Gala <galak@codeaurora.org>
+> Based on work by: Mahesh Sivasubramanian <msivasub@codeaurora.org>,
+> Ai Li <ali@codeaurora.org>, Praveen Chidambaram <pchidamb@codeaurora.=
+org>
+> Original tree available at -
+> git://codeaurora.org/quic/la/kernel/msm-3.10.git
+>=20
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 > ---
-> arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
-> 1 file changed, 25 insertions(+), 1 deletion(-)
+> .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  29 +-
+> drivers/soc/qcom/Kconfig                           |   7 +
+> drivers/soc/qcom/Makefile                          |   1 +
+> drivers/soc/qcom/spm.c                             | 405 ++++++++++++=
++++++++++
+> 4 files changed, 436 insertions(+), 6 deletions(-)
+> create mode 100644 drivers/soc/qcom/spm.c
 >=20
-> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/=
-qcom-msm8974.dtsi
-> index e265ec1..5a41f44 100644
-> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-> @@ -21,6 +21,7 @@
-> 			reg =3D <0>;
-> 			next-level-cache =3D <&L2>;
-> 			qcom,acc =3D <&acc0>;
-> +			qcom,saw =3D <&saw0>;
-> 		};
+> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt =
+b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+> index 1505fb8..664aa91 100644
+> --- a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+> @@ -2,11 +2,20 @@ SPM AVS Wrapper 2 (SAW2)
 >=20
-> 		cpu@1 {
-> @@ -30,6 +31,7 @@
-> 			reg =3D <1>;
-> 			next-level-cache =3D <&L2>;
-> 			qcom,acc =3D <&acc1>;
-> +			qcom,saw =3D <&saw1>;
-> 		};
+> The SAW2 is a wrapper around the Subsystem Power Manager (SPM) and th=
+e
+> Adaptive Voltage Scaling (AVS) hardware. The SPM is a programmable
+> -micro-controller that transitions a piece of hardware (like a proces=
+sor or
+> +power-controller that transitions a piece of hardware (like a proces=
+sor or
+> subsystem) into and out of low power modes via a direct connection to
+> the PMIC. It can also be wired up to interact with other processors i=
+n the
+> system, notifying them when a low power state is entered or exited.
 >=20
-> 		cpu@2 {
-> @@ -39,6 +41,7 @@
-> 			reg =3D <2>;
-> 			next-level-cache =3D <&L2>;
-> 			qcom,acc =3D <&acc2>;
-> +			qcom,saw =3D <&saw2>;
-> 		};
+> +Multiple revisions of the SAW hardware are supported using these Dev=
+ice Nodes.
+> +SAW2 revisions differ in the register offset and configuration data.=
+ Also, the
+> +same revision of the SAW in different SoCs may have different config=
+uration
+> +data due the the differences in hardware capabilities. Hence the SoC=
+ name, the
+> +version of the SAW hardware in that SoC and the distinction between =
+cpu (big
+> +or Little) or cache, may be needed to uniquely identify the SAW regi=
+ster
+> +configuration and initialization data. The compatible string is used=
+ to
+> +indicate this parameter.
+> +
+> PROPERTIES
 >=20
-> 		cpu@3 {
-> @@ -48,6 +51,7 @@
-> 			reg =3D <3>;
-> 			next-level-cache =3D <&L2>;
-> 			qcom,acc =3D <&acc3>;
-> +			qcom,saw =3D <&saw3>;
-> 		};
->=20
-> 		L2: l2-cache {
-> @@ -144,7 +148,27 @@
-> 			};
-> 		};
->=20
-> -		saw_l2: regulator@f9012000 {
-> +		saw0: power-controller@f9089000 {
-> +			compatible =3D "qcom,msm8974-saw2-v2.1-cpu=94;
+> - compatible:
+> @@ -14,10 +23,11 @@ PROPERTIES
+> 	Value type: <string>
+> 	Definition: shall contain "qcom,saw2". A more specific value should =
+be
+> 		    one of:
 
-Should these include =93qcom,saw=94?
+Does =93qcom,saw2=94 have any meaning anymore?  I see we use it in some=
+ places, but not everywhere on the .dts.  We also see to have the L2 ju=
+st be a =93qcom,saw2=94 node, do we expect that to change?
 
-> +			reg =3D <0xf9089000 0x1000>, <0xf9009000 0x1000>;
-> +		};
-> +
-> +		saw1: power-controller@f9099000 {
-> +			compatible =3D "qcom,msm8974-saw2-v2.1-cpu";
-> +			reg =3D <0xf9099000 0x1000>, <0xf9009000 0x1000>;
-> +		};
-> +
-> +		saw2: power-controller@f90a9000 {
-> +			compatible =3D "qcom,msm8974-saw2-v2.1-cpu";
-> +			reg =3D <0xf90a9000 0x1000>, <0xf9009000 0x1000>;
-> +		};
-> +
-> +		saw3: power-controller@f90b9000 {
-> +			compatible =3D "qcom,msm8974-saw2-v2.1-cpu";
-> +			reg =3D <0xf90b9000 0x1000>, <0xf9009000 0x1000>;
-> +		};
-> +
-> +		saw_l2: power-controller@f9012000 {
-> 			compatible =3D "qcom,saw2";
-> 			reg =3D <0xf9012000 0x1000>;
-> 			regulator;
-> --=20
-> 2.1.0
+> -			 "qcom,saw2-v1"
+> -			 "qcom,saw2-v1.1"
+> -			 "qcom,saw2-v2"
+> -			 "qcom,saw2-v2.1"
+> +			"qcom,saw2-v2"
+> +			"qcom,saw2-v2.1"
+> +			"qcom,apq8064-saw2-v1.1-cpu"
+> +			"qcom,msm8974-saw2-v2.1-cpu"
+> +			"qcom,apq8084-saw2-v2.1-cpu"
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-m=
-sm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> - reg:
+> 	Usage: required
+> @@ -26,10 +36,17 @@ PROPERTIES
+> 		    the register region. An optional second element specifies
+> 		    the base address and size of the alias register region.
+>=20
+> +- regulator:
+> +	Usage: optional
+> +	Value type: boolean
+> +	Definition: Indicates that this SPM device acts as a regulator devi=
+ce
+> +			device for the core (CPU or Cache) the SPM is attached
+> +			to.
+>=20
+> Example:
+>=20
+> -	regulator@2099000 {
+> +	power-controller@2099000 {
+> 		compatible =3D "qcom,saw2";
+> 		reg =3D <0x02099000 0x1000>, <0x02009000 0x1000>;
+> +		regulator;
+> 	};
 
 --=20
 Qualcomm Innovation Center, Inc.
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
 um,
 a Linux Foundation Collaborative Project
-
