@@ -1,59 +1,64 @@
-From: =?utf-8?Q?Peter_M=C3=BCnster?= <pmlists@free.fr>
-Subject: Re: prevent disk from spinning up at system resume
-Date: Mon, 23 Mar 2015 15:36:20 +0100
-Message-ID: <877fu7hjbv.fsf@roche-blanche.net>
-References: <871tkfiz8q.fsf@free.fr>
-	<Pine.LNX.4.44L0.1503231015390.1336-100000@iolanthe.rowland.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V3 7/8] ARM: cpuidle: Register per cpuidle device
+Date: Mon, 23 Mar 2015 15:42:01 +0100
+Message-ID: <55102639.4000305@linaro.org>
+References: <1426851841-2072-1-git-send-email-daniel.lezcano@linaro.org> <1426851841-2072-8-git-send-email-daniel.lezcano@linaro.org> <20150321203546.GE22354@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:43375 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbbCWOgq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 Mar 2015 10:36:46 -0400
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1Ya3T2-0005eT-Fu
-	for linux-pm@vger.kernel.org; Mon, 23 Mar 2015 15:36:36 +0100
-Received: from arennes-651-1-273-185.w2-2.abo.wanadoo.fr ([2.2.240.185])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2015 15:36:36 +0100
-Received: from pmlists by arennes-651-1-273-185.w2-2.abo.wanadoo.fr with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2015 15:36:36 +0100
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150321203546.GE22354@red-moon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-On Mon, Mar 23 2015, Alan Stern wrote:
+On 03/21/2015 09:35 PM, Lorenzo Pieralisi wrote:
+> On Fri, Mar 20, 2015 at 11:44:00AM +0000, Daniel Lezcano wrote:
+>> Some architectures have some cpus which does not support idle states=
+=2E
+>>
+>> Let the underlying low level code to return -ENXIO when it is not
+>> possible to set an idle state.
+>
+> Well, this is getting interesting. We are parsing possible CPUs to
+> detect if they have common idle states in DT. If a CPU does not suppo=
+rt
+> idle states, the cpu node for that CPU should not define any idle
+> state.
+>
+> The approach above will work with my heterogenous system patch, since
+> the respective CPUidle driver mask will be created by parsing the DT
+> idle states.
+>
+> http://www.spinics.net/lists/arm-kernel/msg403190.html
+>
+> In current approach if a "possible " CPU does not have idle states, w=
+e do
+> not init CPUidle at all.
+>
+> So, to cut a long story short, what does "a cpu does not support idle
+> states" mean ?
+>
+> Does it mean that firmware defines idle states for that CPU in DT but
+> initializing them fail ?
+>
+> I am fine with this patch, but we need to define -ENXIO return proper=
+ly.
 
-> Why does the disk need to be mounted if you aren't using it more than 
-> once a week or so?  Why not mount it only while it is in use?
+Ok, I think that needs more discussion.
 
-The workflow would be quite different:
-normal workflow:
-- application needs file on sdb
-- sdb spins up
-- application can open the file
+I will drop this patch from my patchset as we agreed on the other=20
+patches and resubmit.
 
-workflow with unmounted sdb:
-- application needs file on sdb
-- error message: no such file (or similar)
-- user sees error message: "oh dear, the file is on sdb..."
-- superuser needs to "add-single-device" and mount it
-- user can continue with application
+   -- Daniel
 
 
-> The kernel wakes up _every_ device during system resume, even ones that
-> were in runtime suspend when the system suspend started.  With only a
-> few exceptions, there is no way around this in the current kernel.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-Even after  "echo 0 >/sys/block/sdb/device/scsi_disk/2:0:0:0/manage_start_stop" ?
-
-If there wasn't the "Synchronizing SCSI cache" at system resume, would
-the disk spin up nevertheless?
-
--- 
-           Peter
-
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
