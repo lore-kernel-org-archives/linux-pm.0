@@ -1,72 +1,100 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH 4/7] regulator: add mxs regulator driver
-Date: Mon, 23 Mar 2015 18:45:41 +0100 (CET)
-Message-ID: <1459171144.549216.1427132741792.JavaMail.open-xchange@oxbaltgw02.schlund.de>
-References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
- <1426984203-9133-5-git-send-email-stefan.wahren@i2se.com>
- <20150322161425.GC6643@sirena.org.uk>
-Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv2] thermal: add omap3 support
+Date: Mon, 23 Mar 2015 13:55:12 -0400
+Message-ID: <20150323175508.GA28302@developer>
+References: <20150103111146.GB7065@amd>
+ <20150118202824.GB29014@amd>
+ <20150323143149.GA18339@developer.hsd1.ca.comcast.net>
+ <20150323155830.GB13297@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20150322161425.GC6643@sirena.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Brown <broonie@kernel.org>
-Cc: fabio.estevam@freescale.com, mark.rutland@arm.com, marex@denx.de, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, dbaryshkov@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, sre@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, kernel@pengutronix.de, galak@codeaurora.org, sebastien.szymanski@armadeus.com, shawn.guo@linaro.org, dwmw2@infradead.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6c2NcOVqGQ03X4Wi"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:33476 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbbCWRzR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 13:55:17 -0400
+Content-Disposition: inline
+In-Reply-To: <20150323155830.GB13297@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com
 
-Hi Mark,
 
->
-> > + if (ldo->get_power_source)
-> > + power_source = ldo->get_power_source(reg);
-> > +
-> > + switch (power_source) {
-> > + case HW_POWER_LINREG_DCDC_OFF:
-> > + case HW_POWER_LINREG_DCDC_READY:
-> > + case HW_POWER_EXTERNAL_SOURCE_5V:
-> > + usleep_range(1000, 2000);
-> > + return 0;
-> > + }
->
-> I'd expect the switch to be in the if here?
+--6c2NcOVqGQ03X4Wi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-yes, that's possible too.
+On Mon, Mar 23, 2015 at 04:58:30PM +0100, Pavel Machek wrote:
+> On Mon 2015-03-23 10:31:51, Eduardo Valentin wrote:
+> > On Sun, Jan 18, 2015 at 09:28:24PM +0100, Pavel Machek wrote:
+> > >=20
+> > > Add support for omap3430 sensor. Tested on Nokia N900.
+> > >=20
+> > > Fix help text to be closer to english.
+> > >=20
+> > > Ifdefs in ti-bandgap.h are not neccessary, as users have #ifdefs,
+> > > already.
+> > >=20
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> >=20
+> > You need to update the driver device tree binding documentation. Please
+> > include an example of its usage there.
+> >=20
+> > Also, a separate patch with the required DT changes is always
+> > welcome.
+>=20
+> I can do it, but can you merge:
+>=20
+> Date: Sun, 18 Jan 2015 21:24:47 +0100
+> From: Pavel Machek <pavel@ucw.cz>
+> Subject: [PATCHv2] ti-soc-thermal: request temperature periodically if
+> hw can't do that itself
+>=20
+>=20
+> Date: Sun, 18 Jan 2015 21:20:51 +0100
+> From: Pavel Machek <pavel@ucw.cz>
+> Subject: [PATCHv2] ti-soc-thermal: implement eocz bit to make driver
+> useful on omap3
+>=20
+> Date: Sun, 18 Jan 2015 21:17:10 +0100
+> From: Pavel Machek <pavel@ucw.cz>
+> Subject: [PATCHv2] cleanup ti-soc-thermal
+>=20
+> First? They are nicely split, as you requested, and I already have too
+> many patches in flight.
+>=20
+> Thanks for the comments, I'll fix them in my local tree.
+> 								Pavel
 
->
-> > +
-> > + usleep_range(15, 20);
-> > + start = jiffies;
-> > + while (1) {
-> > + if (readl(ldo->status_addr) & BM_POWER_STS_DC_OK)
-> > + return 0;
-> > +
-> > + if (time_after(jiffies, start + msecs_to_jiffies(20)))
-> > + break;
-> > +
-> > + schedule();
-> > + }
->
-> So, this isn't actually quite a busy wait because we do a schedule()
-> rather than a cpu_relax() but still it could devolve into that - 20ms
-> seems a long time to burn doing that. If we're expecting this to finish
-> very quickly can we do an initial busy wait then fall back to something
-> with an actual sleep or soemthing?
+Somehow I really thought I already sent those above. I really apologize
+for the inconvenience. It seams like they've fallen into the cracks.
 
-We will need to keep the initial usleep_range(). So do you think of the
-following:
 
-1. usleep_range
-2. busy_wait for BM_POWER_STS_DC_OK
-3. msleep (for the timeout case)
+I will check those and apply accordingly.
 
-Stefan
+>=20
+> --=20
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
+
+--6c2NcOVqGQ03X4Wi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJVEFNwAAoJEMLUO4d9pOJWmDsH/2dlkDuo4lNVubAQjoFO+iyh
+DyV9o0o121ulZf58XIrzshE7vCbhDytJNdueLM89IOvghHJVMZJVbSGV2IB2WLBn
+0e9POltV8PfOr+R6bhpiYea6YfhusQhr4zephm4Z9jo+EG6/HLYT06ZlUgrFyoou
+czSb12Eg4dGoim1jg3NFxnabVYZjC45VC53l7IMpcOYBoYfpFE8eg9uwh/OYFPZ7
+PAzzgDTv46gF7W2bYfi4DQy1JqTv5GQ/L1SLKbB5BST78IpBIVcdc0vG+3GlaIKg
+JRDHC4/VWIV6h5zeI0nIH/lSQpHUq2OtjvsYBzebc9mj+UCB2y9+gUvfsnR8+Rg=
+=fm3X
+-----END PGP SIGNATURE-----
+
+--6c2NcOVqGQ03X4Wi--
