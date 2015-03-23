@@ -1,120 +1,94 @@
-From: NeilBrown <neilb@suse.de>
-Subject: Re: [PATCH 13/15] twl4030_charger: add ac/mode to match usb/mode
-Date: Mon, 23 Mar 2015 10:13:19 +1100
-Message-ID: <20150323101319.642c6638@notabene.brown>
-References: <20150224043341.4243.23291.stgit@notabene.brown>
-	<20150224043352.4243.8071.stgit@notabene.brown>
-	<CANOLnOOJhz3JSevuz7T+XZDquEvJ-UiVM4KVHxxa4mSqb-yTpg@mail.gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 1/3] thermal: hisilicon: add new hisilicon thermal sensor
+ driver
+Date: Mon, 23 Mar 2015 12:46:12 +0800
+Message-ID: <20150323044612.GB20840@leoy-linaro>
+References: <1426751849-10604-1-git-send-email-kong.kongxinwei@hisilicon.com>
+ <1426751849-10604-2-git-send-email-kong.kongxinwei@hisilicon.com>
+ <20150319141753.GB25967@leverpostej>
+ <20150320060653.GC18907@leoy-linaro>
+ <20150320112414.GD14766@leverpostej>
+ <20150320145353.GA20461@leoy-linaro>
+ <20150320155527.GJ14766@leverpostej>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- boundary="Sig_/PyAArOqmcTvmjIePPcf_o9t"; protocol="application/pgp-signature"
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <CANOLnOOJhz3JSevuz7T+XZDquEvJ-UiVM4KVHxxa4mSqb-yTpg@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, GTA04 owners <gta04-owner@goldelico.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150320155527.GJ14766@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: kongxinwei <kong.kongxinwei@hisilicon.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxarm@huawei.com" <linuxarm@huawei.com>, "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhuang@intel.com" <rui.zhuang@intel.com>, "liguozhu@hisilicon.com" <liguozhu@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
---Sig_/PyAArOqmcTvmjIePPcf_o9t
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 20, 2015 at 03:55:27PM +0000, Mark Rutland wrote:
+> > > That may be the case in the code as it stands today, but per the binding
+> > > the trip points are the temperatures at which an action is to be taken.
+> > > 
+> > > The thermal-zone has poilling-delay and polling-delay-passive, but
+> > > there's no reason you couldn't also use the interrupt to handle the
+> > > "hot" trip-point, adn the reset at the "critical" trip-point. All that's
+> > > missing is the plumbing in order to do so.
+> > > 
+> > > So please co-ordinate with the thermal framework to do that.
+> > 
+> > Let's dig further more for this point, so that we can get more specific
+> > gudiance and have a good preparation for next version's patch set.
+> > 
+> > After i reviewed the thermal framework code, currently have one smooth
+> > way to co-ordinate the trip points w/t thermal framework: use the function
+> > *thermal_zone_device_register()* to register sensor, and can use the
+> > callback function .get_trip_temp to tell thermal framework for the
+> > trip points' temperature.
+> > 
+> > For hisi thermal case, now the driver is using the function
+> > *thermal_zone_of_sensor_register* to register sensor, but use this way
+> > i have not found there have standard APIs which can be used by sensor
+> > driver to get the trip points info from thermal framework.
+> > 
+> > I may miss something for thermal framework, so if have existed APIs to
+> > get the trip points, could pls point out?
+> 
+> I am only familiar with the binding, not the Linux implementation -- The
+> latter can change to accomodate your hardware without requiring binding
+> changes. Please co-ordinate with the thermal maintainers.
 
-On Fri, 6 Mar 2015 23:59:04 +0200 Grazvydas Ignotas <notasas@gmail.com> wro=
-te:
+Found the functions of_thermal_get_trip_points(tz) and of_thermal_get_ntrips(tz)
+will help for this.
 
-> On Tue, Feb 24, 2015 at 6:33 AM, NeilBrown <neilb@suse.de> wrote:
-> > This allows AC charging to be turned off, much like usb charging.
-> >
-> > "continuous" (aka "linear") mode maps to the CVENAC (constant voltage)
-> > feature of the twl4030.
->=20
-> Are you sure? Before your patches CVENAC was set at all times and and
-> charger still worked in automatic mode.
->=20
-> >
-> > Signed-off-by: NeilBrown <neilb@suse.de>
-> > ---
-> >  drivers/power/twl4030_charger.c |   40 +++++++++++++++++++++++++++++--=
---------
-> >  1 file changed, 30 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_ch=
-arger.c
-> > index 6c53f0b601a4..e5a0225ea87e 100644
-> > --- a/drivers/power/twl4030_charger.c
-> > +++ b/drivers/power/twl4030_charger.c
-> > @@ -112,7 +112,7 @@ struct twl4030_bci {
-> >         int                     ichg_eoc, ichg_lo, ichg_hi;
-> >         int                     usb_cur, ac_cur;
-> >         bool                    ac_is_active;
-> > -       int                     usb_mode; /* charging mode requested */
-> > +       int                     usb_mode, ac_mode; /* charging mode req=
-uested */
-> >  #define        CHARGE_OFF      0
-> >  #define        CHARGE_AUTO     1
-> >  #define        CHARGE_LINEAR   2
-> > @@ -449,12 +449,18 @@ static int twl4030_charger_enable_usb(struct twl4=
-030_bci *bci, bool enable)
-> >  /*
-> >   * Enable/Disable AC Charge funtionality.
-> >   */
-> > -static int twl4030_charger_enable_ac(bool enable)
-> > +static int twl4030_charger_enable_ac(struct twl4030_bci *bci, bool ena=
-ble)
-> >  {
-> >         int ret;
-> >
-> > -       if (enable)
-> > -               ret =3D twl4030_clear_set_boot_bci(0, TWL4030_BCIAUTOAC=
-);
-> > +       if (bci->ac_mode =3D=3D CHARGE_OFF)
-> > +               enable =3D false;
-> > +
-> > +       if (enable && bci->ac_mode =3D=3D CHARGE_LINEAR)
-> > +               ret =3D twl4030_clear_set_boot_bci(0, (TWL4030_CVENAC |
-> > +                                                    TWL4030_BCIAUTOAC)=
-);
-> > +       else if (enable)
-> > +               ret =3D twl4030_clear_set_boot_bci(TWL4030_CVENAC, TWL4=
-030_BCIAUTOAC);
-> >         else
-> >                 ret =3D twl4030_clear_set_boot_bci(TWL4030_BCIAUTOAC, 0=
-);
->=20
-> CVENAC is required to be set for operation on AC without battery
-> (which works fine on most pandora boards). After this patch, when
-> booted without battery,  the board will reset before there is a chance
-> to set the linear mode by userspace, because this is called on
-> probe...
->=20
+> > > > > > +       if (of_property_read_bool(np, "hisilicon,tsensor-bind-irq")) {
+> > > > > > +
+> > > > > > +               if (data->irq_bind_sensor != -1)
+> > > > > > +                       dev_warn(&pdev->dev, "irq has bound to index %d\n",
+> > > > > > +                                data->irq_bind_sensor);
+> > > > > > +
+> > > > > > +               /* bind irq to this sensor */
+> > > > > > +               data->irq_bind_sensor = index;
+> > > > > > +       }
+> > > > > 
+> > > > > I don't see why this should be specified in the DT. Why do you believe
+> > > > > it should?
+> > > > 
+> > > > The thermal sensor module has four sensors, but have only one
+> > > > interrupt signal; This interrupt can only be used by one sensor;
+> > > > So want to use dts to bind the interrupt with one selected sensor.
+> > > 
+> > > That's not all that great, though I'm not exactly sure how the kernel
+> > > would select the best sensor to measure with. It would be good if you
+> > > could talk to the thermal maintainers w.r.t. this.
+> > 
+> > This will be decided by the silicon, right? Every soc has different
+> > combination with cpu/gpu/vpu, so which part is hottest, this maybe
+> > highly dependent on individual SoC.
+> > 
+> > S/W just need provide the flexibility so that later can choose
+> > the interrupt to bind with the sensor within the hottest part.
+> 
+> Then the property you care about is which sensor is closest to what is
+> likely to be the hottest component. Given that, the kernel can decide
+> how to use the interrupt.
 
-Yes, it looks like I misunderstood CVENAC a bit - thanks.
-
-I've removed 'continuous' mode for AC and no longer clear or set that bit.
+Will modify the driver to dynamically bind the interrupt to hottest
+sensor; Appreciate for good suggestion.
 
 Thanks,
-NeilBrown
-
---Sig_/PyAArOqmcTvmjIePPcf_o9t
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIVAwUBVQ9MkDnsnt1WYoG5AQIklA//YFoMBf1xlxWoHcb+Tun1Jxiz9zaJgGzR
-6XvqH4ESTMYkOy14omPiyWQpsgnbWxWpezhhoWVXpaAThFuJyMO3SkiL1Ve7OJDy
-aOsbLNUVKHdWsO0Hb5VHdxr7J+YoEokRbsYtAlu5KNhiiLGDDdHgGrIE6LZ5hSqH
-Quou86ABDQ//FfB1g91JNefR+81p+paK9RfQTr3lxbRQ4Us2Mn5aNIsdbBogTuGH
-B6q8WScIit4TUGS6cx+KzR8t6BiMger7LXI5uNm+01YA4QLrqcEOCRwBmJPReFOR
-ce2ugIg5+POmi44WDNN1aTft1q2w5f0qKYU2BWs86ZdK8sxTVc0SGhirswO2haO2
-jZyQR3+OanHE7KKDLl9NW73Lav7HbzeMV//vavRy2W+kAn/Zbdno5DdElzuhRaLo
-vP1oN8Atsw7COuGoi2Le8Qm14OLHb0Z9iCbcUIarcIpxBcoPJ6/HHM4f6EWM44jo
-hgD3GoM6xgj5vcFpW3QlaReaLSd/SwbXNXjws9g2AoJ6wvovoQAOzmJJ6ZoEWR5D
-ZRx5PkHP7XlSET9K4XOIgvZ2PTHNezGP3WilXJ2WPtgSd5bXCwS5yPWSUOPpIjfz
-5/OOo72Bz/Jl8lex/W86x6a5OmBFznJCA8CoOWsDHCsf7Umc6ocQN6e8/Mz68dBQ
-clTdw0T3IHg=
-=QP5i
------END PGP SIGNATURE-----
-
---Sig_/PyAArOqmcTvmjIePPcf_o9t--
+Leo Yan
