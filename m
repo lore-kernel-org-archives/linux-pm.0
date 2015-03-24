@@ -1,58 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH 0/4] mmc: sdhci: Support maximum DMA latency request via PM QoS
-Date: Tue, 24 Mar 2015 21:13:01 +0100
-Message-ID: <4768637.QcvINVrrJ9@vostro.rjw.lan>
-References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com>
+From: Juergen Borleis <juergen@kreuzholzen.de>
+Subject: Re: [PATCH 7/7] ARM: dts: add OPPs for i.MX23/i.MX28
+Date: Tue, 24 Mar 2015 21:45:23 +0100
+Message-ID: <201503242145.26370.juergen@kreuzholzen.de>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+ <1426984203-9133-8-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1426984203-9133-8-git-send-email-stefan.wahren@i2se.com>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Stefan Wahren <stefan.wahren@i2se.com>, mark.rutland@arm.com, marex@denx.de, fabio.estevam@freescale.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, dbaryshkov@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, sre@kernel.org, robh+dt@kernel.org, lgirdwood@gmail.com, devicetree@vger.kernel.org, broonie@kernel.org, kernel@pengutronix.de, galak@codeaurora.org, sebastien.szymanski@armadeus.com, shawn.guo@linaro.org, dwmw2@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 24, 2015 03:40:36 PM Adrian Hunter wrote:
-> Hi
-> 
-> Here are some patches to address an issue with SDHCI
-> in Intel Baytrail. Intel Baytrail has been observed
-> sometimes to hang if host controllers are using DMA
-> while deep C-states are used. Workaround that by
-> specifying a maximum DMA latency that will prevent
-> deep C-states.
-> 
-> The first patch adds a new PM QOS function so that
-> the SDHCI driver can do a "lazy" cancel of the QoS
-> request from within its "finish" tasklet.
-> 
-> The second patch adds support to SDHCI for specifying a
-> maximum DMA latency.
-> 
-> The third and fourth patches take that facility into
-> use for Baytrail.
-> 
-> Ad hoc testing with Lenovo Thinkpad 10 showed a stress
-> test could run for at least 24 hours with the patches,
-> compared to less than an hour without.
-> 
-> These patches are on top of my driver strength patches
-> which are on top of my re-tuning patches.
-> 
-> 
-> Adrian Hunter (4):
->       PM / QoS: Add pm_qos_cancel_request_lazy() that doesn't sleep
->       mmc: sdhci: Support maximum DMA latency request via PM QOS
->       mmc: sdhci-acpi: Fix device hang on Intel BayTrail
->       mmc: sdhci-pci: Fix device hang on Intel BayTrail
+Stefan Wahren wrote:
+> [...]
+> diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
+> index 98c1be6..21c1921 100644
+> --- a/arch/arm/boot/dts/imx28.dtsi
+> +++ b/arch/arm/boot/dts/imx28.dtsi
+> @@ -38,12 +38,23 @@
+>  	};
+>
+>  	cpus {
+> -		#address-cells = <0>;
+> +		#address-cells = <1>;
+>  		#size-cells = <0>;
+>
+> -		cpu {
+> +		cpu@0 {
+>  			compatible = "arm,arm926ej-s";
+>  			device_type = "cpu";
+> +			reg = <0x0>;
+> +			operating-points = <
+> +				/* kHz	uV */
+> +				261819  1350000
+> +				360000  1350000
+> +				392728  1450000
+> +				454737  1550000
+> +			>;
+> +			clocks = <&clks 4>;
+> +			clock-latency = <61036>; /* two CLK32 periods */
+> +			cpu-supply = <&reg_vddd>;
+>  		};
+>  	};
 
-I'm a bit concerned about the CPUID-based blacklisting of things and
-whether or not the SDHCI driver is the right place for doing that.
+Maybe you should take into account not to reduce VDD below 1.55 V if the SDRAM 
+controller runs above 196 MHz. The i.MX28 datasheet[1] lists these 
+restrictions. VDD powers the SDRAM controller as well. From the datasheet the 
+table "Frequency versus Voltage for EMICLK" shows:
+                     
+             EMICLK Fmax (MHz)
+VDDD (V)      DDR2       mDDR
+--------------------------------
+ 1.550       205.71     205.71
+ 1.450       196.36     196.36
+ 1.350       196.36     196.36
 
-Maybe we should do it from within the LPSS driver instead?
+jbe
 
+[1]
+  i.MX28 Applications
+Processors for Consumer
+     Products
+  Silicon Version 1.2
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Document Number: IMX28CEC
+   Rev. 3, 07/2012
