@@ -1,66 +1,50 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 3/3] Thermal: do thermal zone update after a cooling device registered
-Date: Tue, 24 Mar 2015 13:21:30 +0800
-Message-ID: <1427174490-7974-4-git-send-email-rui.zhang@intel.com>
-References: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 0/3] Thermal: thermal enhancements for boot and system sleep
+Date: Tue, 24 Mar 2015 13:21:27 +0800
+Message-ID: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga14.intel.com ([192.55.52.115]:64496 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbbCXFXm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 Mar 2015 01:23:42 -0400
-In-Reply-To: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
+	id S1752312AbbCXFXj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 Mar 2015 01:23:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, stable@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>
 
-When a new cooling device is registered, we need to update the
-thermal zone to set the new registered cooling device to a proper
-state.
+Currently, there are a couple of problems in thermal core framework after boot
+and resume from system sleep state, because the thermal zone devices are not
+put into a proper state in these cases.
 
-This fixes a problem that the system is cool, while the fan devices are left
-running on full speed after boot, if fan device is registered after
-thermal zone device.
+Details of the problems are described in the patch change logs.
 
-CC: <stable@vger.kernel.org> #3.18+
-Reference:https://bugzilla.kernel.org/show_bug.cgi?id=92431
-Tested-by: Manuel Krause <manuelkrause@netscape.net>
-Tested-by: szegad <szegadlo@poczta.onet.pl>
-Tested-by: prash <prash.n.rao@gmail.com>
-Tested-by: amish <ammdispose-arch@yahoo.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+In general, altogether they fix three bugs
+https://bugzilla.kernel.org/show_bug.cgi?id=78201
+https://bugzilla.kernel.org/show_bug.cgi?id=91411
+https://bugzilla.kernel.org/show_bug.cgi?id=92431
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9c03561..7cef579 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1141,6 +1141,7 @@ __thermal_cooling_device_register(struct device_node *np,
- 				  const struct thermal_cooling_device_ops *ops)
- {
- 	struct thermal_cooling_device *cdev;
-+	struct thermal_instance *pos, *next;
- 	int result;
- 
- 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-@@ -1185,6 +1186,15 @@ __thermal_cooling_device_register(struct device_node *np,
- 	/* Update binding information for 'this' new cdev */
- 	bind_cdev(cdev);
- 
-+	list_for_each_entry_safe(pos, next, &cdev->thermal_instances, cdev_node) {
-+			if (next->cdev_node.next == &cdev->thermal_instances) {
-+				thermal_zone_device_update(next->tz);
-+				break;
-+			}
-+			if (pos->tz != next->tz)
-+				thermal_zone_device_update(pos->tz);
-+	}
-+
- 	return cdev;
- }
- 
--- 
-1.9.1
+Bug 78201 needs patch 1/3 and 2/3.
+Bug 91411 and 92431 are regressions caused by
+commit 19593a1fb1f6718406afca5b867dab184289d406
+Author: Aaron Lu <aaron.lu@intel.com>
+Date:   Tue Nov 19 16:59:20 2013 +0800
 
+    ACPI / fan: convert to platform driver
+
+    Convert ACPI fan driver to a platform driver for the purpose of phasing
+    out ACPI bus.
+
+    Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+
+which is shipped in 3.18.
+
+Bug 91411 needs patch 1/3, 2/3 to fix, while 92431 needs all three patches.
+
+If possible, I'd like to push these patches into 4.0-rc and 3.18/3.19 stable
+kernel as it actually fixes a regression in 3.18.
+
+Any comments are welcome.
+
+thanks,
+rui
